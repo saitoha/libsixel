@@ -441,8 +441,16 @@ test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) \
         $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@
 endif
+# Automake emits the link rule unconditionally, so a _LINK defined only
+# in one branch leaves the variable empty everywhere else and make then
+# tries to run the first object file as a command.  Spell out the
+# default for the other branch.
 if OPENVMS_GNV
 test_runner_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+else
+test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_runner_CFLAGS) \
+	$(CFLAGS) $(test_runner_LDFLAGS) $(LDFLAGS) -o $@
 endif
 
 LOG_DRIVER = $(T_LOG_DRIVER)

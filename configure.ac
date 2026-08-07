@@ -5436,17 +5436,22 @@ AC_CONFIG_COMMANDS([openvms-makefiles], [
     do
       test -f "$mf" || continue
       mf_tmp=${mf}.openvms-tmp
+      dnl awk's whole-record variable has to be written $[0] here.  Inside a
+      dnl macro argument m4 reads a bare $0 as the enclosing macro's name, and
+      dnl autoconf re-expands the body it stores for config.status, so the
+      dnl substituted name gets rescanned over and over: leaving it unquoted
+      dnl took autoreconf from seconds to over twenty minutes.
       awk '
         /^#	/ { next }
         skip_tagged {
-          if ($0 !~ /\\$/) {
+          if ($[0] !~ /\\$/) {
             skip_tagged = 0
           }
           next
         }
         /^am__tagged_files =/ {
           print "am__tagged_files ="
-          if ($0 ~ /\\$/) {
+          if ($[0] ~ /\\$/) {
             skip_tagged = 1
           }
           next

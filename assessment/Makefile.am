@@ -109,8 +109,16 @@ EXTRA_lsqa_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
 endif
+# Automake emits the link rule unconditionally, so a _LINK defined only
+# in one branch leaves the variable empty everywhere else and make then
+# tries to run the first object file as a command.  Spell out the
+# default for the other branch.
 if OPENVMS_GNV
 lsqa_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+else
+lsqa_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lsqa_CFLAGS) \
+	$(CFLAGS) $(lsqa_LDFLAGS) $(LDFLAGS) -o $@
 endif
 
 if WITH_SHEBANG_FILE

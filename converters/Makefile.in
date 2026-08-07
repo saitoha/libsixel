@@ -168,7 +168,8 @@ am__DEPENDENCIES_3 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
@@ -185,14 +186,6 @@ am__DEPENDENCIES_3 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_DEPENDENCIES = $(am__DEPENDENCIES_3) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_2)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
-img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
-	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
-@OPENVMS_GNV_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 am__sixel2png_SOURCES_DIST = $(srcdir)/sixel2png.c $(srcdir)/cli.c \
 	$(srcdir)/cli.h $(srcdir)/malloc_stub.c \
 	$(srcdir)/malloc_stub.h $(srcdir)/getopt_stub.h \
@@ -223,10 +216,6 @@ sixel2png_OBJECTS = $(am_sixel2png_OBJECTS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_4)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES = $(am__DEPENDENCIES_3) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_4)
-sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
-	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
-@OPENVMS_GNV_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -256,6 +245,10 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/sixel2png-malloc_stub.Po \
 	./$(DEPDIR)/sixel2png-sixel2png.Po
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -482,6 +475,8 @@ LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+METAL_CFLAGS = @METAL_CFLAGS@
+METAL_LIBS = @METAL_LIBS@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -514,8 +509,6 @@ PYTHON_STATICCHECK = @PYTHON_STATICCHECK@
 PYTHON_VERSION = @PYTHON_VERSION@
 QUICKLOOK_CFLAGS = @QUICKLOOK_CFLAGS@
 QUICKLOOK_LIBS = @QUICKLOOK_LIBS@
-METAL_CFLAGS = @METAL_CFLAGS@
-METAL_LIBS = @METAL_LIBS@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
 RUBY = @RUBY@
@@ -526,6 +519,7 @@ RUBY_EXT_LDFLAGS = @RUBY_EXT_LDFLAGS@
 RUBY_EXT_LIB = @RUBY_EXT_LIB@
 RUBY_SITE_LIBDIR = @RUBY_SITE_LIBDIR@
 RUBY_VERSION = @RUBY_VERSION@
+RUNTIME_ENV_IS_OPENVMS = @RUNTIME_ENV_IS_OPENVMS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -545,6 +539,7 @@ SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH = @SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@
 SIXEL_TEST_ADDITIOANL_PATH = @SIXEL_TEST_ADDITIOANL_PATH@
 SIXEL_TEST_ADDITIONAL_PATH = @SIXEL_TEST_ADDITIONAL_PATH@
+SIXEL_TEST_GZIP = @SIXEL_TEST_GZIP@
 SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
 STRIP = @STRIP@
@@ -713,6 +708,15 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(AMALGAMATION_TOOL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@	$(am__append_5)
 @BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@EXTRA_img2sixel_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
+@OPENVMS_GNV_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+@OPENVMS_GNV_FALSE@@WANT_IMG2SIXEL_TRUE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
+@OPENVMS_GNV_FALSE@@WANT_IMG2SIXEL_TRUE@	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
+
+# Automake emits the link rule unconditionally, so a _LINK defined only
+# in one branch leaves the variable empty everywhere else and make then
+# tries to run the first object file as a command.  Spell out the
+# default for the other branch.
+@OPENVMS_GNV_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = $(AM_CPPFLAGS) \
 @WANT_SIXEL2PNG_TRUE@	$(am__append_11) $(am__append_12)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c \
@@ -748,6 +752,11 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(AMALGAMATION_TOOL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_13)
 @BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@EXTRA_sixel2png_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
+@OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+@OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
+@OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
+
+@OPENVMS_GNV_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS) $(pkglibexec_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = converters-shebang.stamp
 
@@ -898,14 +907,14 @@ $(top_builddir)/amalgamation/img2sixel-sixel.$(OBJEXT):  \
 
 img2sixel$(EXEEXT): $(img2sixel_OBJECTS) $(img2sixel_DEPENDENCIES) $(EXTRA_img2sixel_DEPENDENCIES) 
 	@rm -f img2sixel$(EXEEXT)
-	$(AM_V_CCLD)$(img2sixel_LINK) $(img2sixel_OBJECTS) $(img2sixel_LDADD) $(LIBS)
+	$(AM_V_GEN)$(img2sixel_LINK) $(img2sixel_OBJECTS) $(img2sixel_LDADD) $(LIBS)
 $(top_builddir)/amalgamation/sixel2png-sixel.$(OBJEXT):  \
 	$(top_builddir)/amalgamation/$(am__dirstamp) \
 	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 sixel2png$(EXEEXT): $(sixel2png_OBJECTS) $(sixel2png_DEPENDENCIES) $(EXTRA_sixel2png_DEPENDENCIES) 
 	@rm -f sixel2png$(EXEEXT)
-	$(AM_V_CCLD)$(sixel2png_LINK) $(sixel2png_OBJECTS) $(sixel2png_LDADD) $(LIBS)
+	$(AM_V_GEN)$(sixel2png_LINK) $(sixel2png_OBJECTS) $(sixel2png_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

@@ -89,6 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@OPENVMS_GNV_FALSE@TESTS = @SIXEL_CHECK_TESTS@
 check_PROGRAMS = test_runner$(EXEEXT)
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_1 = -x objective-c
 subdir = tests
@@ -200,6 +201,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0002_kmedoids_constraints.c \
 	quant/palette/0003_kcenter_constraints.c \
 	quant/palette/0004_palette_factory.c \
+	quant/palette/0005_cover_anchor.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/status/0001_status_timeout.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -237,7 +239,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0011_filter_encode_accumulation_buffer.$(OBJEXT) \
-	processing/filter/test_runner-0012_filter_encode_6delta_plane.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0012_filter_encode_6delta_plane.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OBJEXT) \
@@ -309,6 +311,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0004_palette_factory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0005_cover_anchor.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
@@ -354,6 +357,7 @@ am__DEPENDENCIES_1 =
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2) \
@@ -371,17 +375,10 @@ am__DEPENDENCIES_1 =
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1)
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
-test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_runner_CFLAGS) \
-	$(CFLAGS) $(test_runner_LDFLAGS) $(LDFLAGS) -o $@
-@OPENVMS_GNV_TRUE@test_runner_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -454,26 +451,6 @@ am__depfiles_remade =  \
 	loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
-	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
-	processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po \
-	processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po \
-	processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po \
-	processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po \
-	processing/encoder-core/$(DEPDIR)/test_runner-0005_encoder_core_ormode_pipeline_matches_body.Po \
-	processing/encoder-core/$(DEPDIR)/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.Po \
-	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
-	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
-	processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po \
-	processing/filter/$(DEPDIR)/test_runner-0004_filter_colors.Po \
-	processing/filter/$(DEPDIR)/test_runner-0005_filter_lookup.Po \
-	processing/filter/$(DEPDIR)/test_runner-0006_filter_final_merge.Po \
-	processing/filter/$(DEPDIR)/test_runner-0007_filter_fhedt.Po \
-	processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po \
-	processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po \
-	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
-	processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po \
-	processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po \
-	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po \
@@ -495,6 +472,26 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0020_decoder_pixels_body_api.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0021_decoder_selective_blur_threshold.Po \
+	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0005_encoder_core_ormode_pipeline_matches_body.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.Po \
+	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
+	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
+	processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po \
+	processing/filter/$(DEPDIR)/test_runner-0004_filter_colors.Po \
+	processing/filter/$(DEPDIR)/test_runner-0005_filter_lookup.Po \
+	processing/filter/$(DEPDIR)/test_runner-0006_filter_final_merge.Po \
+	processing/filter/$(DEPDIR)/test_runner-0007_filter_fhedt.Po \
+	processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po \
+	processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po \
+	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
+	processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po \
+	processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po \
+	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
@@ -505,8 +502,13 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po \
 	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po \
 	quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po \
-	quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po
+	quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po \
+	quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -872,6 +874,8 @@ LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+METAL_CFLAGS = @METAL_CFLAGS@
+METAL_LIBS = @METAL_LIBS@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -904,8 +908,6 @@ PYTHON_STATICCHECK = @PYTHON_STATICCHECK@
 PYTHON_VERSION = @PYTHON_VERSION@
 QUICKLOOK_CFLAGS = @QUICKLOOK_CFLAGS@
 QUICKLOOK_LIBS = @QUICKLOOK_LIBS@
-METAL_CFLAGS = @METAL_CFLAGS@
-METAL_LIBS = @METAL_LIBS@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
 RUBY = @RUBY@
@@ -916,6 +918,7 @@ RUBY_EXT_LDFLAGS = @RUBY_EXT_LDFLAGS@
 RUBY_EXT_LIB = @RUBY_EXT_LIB@
 RUBY_SITE_LIBDIR = @RUBY_SITE_LIBDIR@
 RUBY_VERSION = @RUBY_VERSION@
+RUNTIME_ENV_IS_OPENVMS = @RUNTIME_ENV_IS_OPENVMS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -1019,15 +1022,12 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-@OPENVMS_GNV_FALSE@TESTS = @SIXEL_CHECK_TESTS@
+# OpenVMS record-oriented files can reject the full test list when
+# config.status writes it as one substituted line.  Avoid feeding the large
+# list to Automake variables on that platform; check-TESTS reads this file.
 @OPENVMS_GNV_TRUE@OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
-@OPENVMS_GNV_TRUE@# Keep the default serialized on OpenVMS.  N=2 sharding is still available for
-@OPENVMS_GNV_TRUE@# experiments, but the extra GNV process and file I/O overhead is slower on the
-@OPENVMS_GNV_TRUE@# current runner.
-@OPENVMS_GNV_TRUE@OPENVMS_TEST_JOBS ?= 1
 @OPENVMS_GNV_TRUE@OPENVMS_TEST_SHARD_DIR = $(builddir)/check-tests-shards
 @OPENVMS_GNV_TRUE@OPENVMS_TEST_WORKER_LIST = $(OPENVMS_CHECK_TESTS_LIST)
-@OPENVMS_GNV_TRUE@TESTS =
 XFAIL_TESTS = \
     loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
     loader/builtin/1317_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t \
@@ -1329,6 +1329,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0011_filter_encode_accumulation_buffer.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0012_filter_encode_6delta_plane.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -1404,6 +1405,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0002_kmedoids_constraints.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0003_kcenter_constraints.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0004_palette_factory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0005_cover_anchor.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/status/0001_status_timeout.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -1423,6 +1425,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/cli.c
 
+@OPENVMS_GNV_FALSE@test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+@OPENVMS_GNV_FALSE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_runner_CFLAGS) \
+@OPENVMS_GNV_FALSE@	$(CFLAGS) $(test_runner_LDFLAGS) $(LDFLAGS) -o $@
+
+# Automake emits the link rule unconditionally, so a _LINK defined only
+# in one branch leaves the variable empty everywhere else and make then
+# tries to run the first object file as a command.  Spell out the
+# default for the other branch.
+@OPENVMS_GNV_TRUE@test_runner_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 LOG_DRIVER = $(T_LOG_DRIVER)
 LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
@@ -1615,6 +1626,9 @@ processing/filter/test_runner-0010_filter_encode.$(OBJEXT):  \
 processing/filter/test_runner-0011_filter_encode_accumulation_buffer.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0012_filter_encode_6delta_plane.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/$(am__dirstamp):
 	@$(MKDIR_P) processing/encoder-core
 	@: >>processing/encoder-core/$(am__dirstamp)
@@ -1631,6 +1645,12 @@ processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OB
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0005_encoder_core_ormode_pipeline_matches_body.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.$(OBJEXT):  \
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 processing/sixel-writer/$(am__dirstamp):
@@ -1684,6 +1704,9 @@ processing/threadpool/$(DEPDIR)/$(am__dirstamp):
 processing/threadpool/test_runner-0001_threadpool_service.$(OBJEXT):  \
 	processing/threadpool/$(am__dirstamp) \
 	processing/threadpool/$(DEPDIR)/$(am__dirstamp)
+processing/threadpool/test_runner-0002_thread_default_counts.$(OBJEXT):  \
+	processing/threadpool/$(am__dirstamp) \
+	processing/threadpool/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/$(am__dirstamp):
 	@$(MKDIR_P) processing/decoder
 	@: >>processing/decoder/$(am__dirstamp)
@@ -1691,6 +1714,66 @@ processing/decoder/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) processing/decoder/$(DEPDIR)
 	@: >>processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0002_decoder_ormode_raw_overlay.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0003_decoder_ormode_wide_overlay.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0004_decoder_ormode_direct_overlay.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0005_decoder_ormode_repeat_overlay.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0006_decoder_ormode_legacy_api.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0007_decoder_ormode_parallel_request.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0008_decoder_pixels_output_formats.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0010_decoder_kundither_default.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0011_decoder_kundither_similarity.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0012_decoder_kundither_edge.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0013_decoder_kundither_parallel_matches_scalar.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0014_decoder_kundither_fast4_parallel_matches_scalar.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0016_decoder_parallel_fallback_keeps_image_clean.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0017_decoder_parallel_sparse_split_matches_serial.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0020_decoder_pixels_body_api.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0021_decoder_selective_blur_threshold.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/$(am__dirstamp):
@@ -1879,6 +1962,9 @@ quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT):  \
 quant/palette/test_runner-0004_palette_factory.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0005_cover_anchor.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
 	@$(MKDIR_P) diagnostics/probe
 	@: >>diagnostics/probe/$(am__dirstamp)
@@ -1987,7 +2073,7 @@ $(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT):  \
 
 test_runner$(EXEEXT): $(test_runner_OBJECTS) $(test_runner_DEPENDENCIES) $(EXTRA_test_runner_DEPENDENCIES) 
 	@rm -f test_runner$(EXEEXT)
-	$(AM_V_CCLD)$(test_runner_LINK) $(test_runner_OBJECTS) $(test_runner_LDADD) $(LIBS)
+	$(AM_V_GEN)$(test_runner_LINK) $(test_runner_OBJECTS) $(test_runner_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -2084,25 +2170,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0005_encoder_core_ormode_pipeline_matches_body.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0004_filter_colors.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0005_filter_lookup.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0006_filter_final_merge.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0007_filter_fhedt.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po@am__quote@ # am--include-marker
@@ -2124,9 +2191,30 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0020_decoder_pixels_body_api.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0021_decoder_selective_blur_threshold.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0005_encoder_core_ormode_pipeline_matches_body.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0004_filter_colors.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0005_filter_lookup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0006_filter_final_merge.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0007_filter_fhedt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0002_thread_default_counts.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0001_timeline_logger_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po@am__quote@ # am--include-marker
@@ -2134,6 +2222,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -2402,6 +2491,20 @@ processing/filter/test_runner-0011_filter_encode_accumulation_buffer.obj: proces
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0011_filter_encode_accumulation_buffer.c' object='processing/filter/test_runner-0011_filter_encode_accumulation_buffer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0011_filter_encode_accumulation_buffer.obj `if test -f 'processing/filter/0011_filter_encode_accumulation_buffer.c'; then $(CYGPATH_W) 'processing/filter/0011_filter_encode_accumulation_buffer.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0011_filter_encode_accumulation_buffer.c'; fi`
+
+processing/filter/test_runner-0012_filter_encode_6delta_plane.o: processing/filter/0012_filter_encode_6delta_plane.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0012_filter_encode_6delta_plane.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Tpo -c -o processing/filter/test_runner-0012_filter_encode_6delta_plane.o `test -f 'processing/filter/0012_filter_encode_6delta_plane.c' || echo '$(srcdir)/'`processing/filter/0012_filter_encode_6delta_plane.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Tpo processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0012_filter_encode_6delta_plane.c' object='processing/filter/test_runner-0012_filter_encode_6delta_plane.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0012_filter_encode_6delta_plane.o `test -f 'processing/filter/0012_filter_encode_6delta_plane.c' || echo '$(srcdir)/'`processing/filter/0012_filter_encode_6delta_plane.c
+
+processing/filter/test_runner-0012_filter_encode_6delta_plane.obj: processing/filter/0012_filter_encode_6delta_plane.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0012_filter_encode_6delta_plane.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Tpo -c -o processing/filter/test_runner-0012_filter_encode_6delta_plane.obj `if test -f 'processing/filter/0012_filter_encode_6delta_plane.c'; then $(CYGPATH_W) 'processing/filter/0012_filter_encode_6delta_plane.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0012_filter_encode_6delta_plane.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Tpo processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0012_filter_encode_6delta_plane.c' object='processing/filter/test_runner-0012_filter_encode_6delta_plane.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0012_filter_encode_6delta_plane.obj `if test -f 'processing/filter/0012_filter_encode_6delta_plane.c'; then $(CYGPATH_W) 'processing/filter/0012_filter_encode_6delta_plane.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0012_filter_encode_6delta_plane.c'; fi`
 
 processing/encoder-core/test_runner-0001_encoder_core_factory.o: processing/encoder-core/0001_encoder_core_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0001_encoder_core_factory.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Tpo -c -o processing/encoder-core/test_runner-0001_encoder_core_factory.o `test -f 'processing/encoder-core/0001_encoder_core_factory.c' || echo '$(srcdir)/'`processing/encoder-core/0001_encoder_core_factory.c
@@ -3397,6 +3500,20 @@ quant/palette/test_runner-0004_palette_factory.obj: quant/palette/0004_palette_f
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0004_palette_factory.obj `if test -f 'quant/palette/0004_palette_factory.c'; then $(CYGPATH_W) 'quant/palette/0004_palette_factory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0004_palette_factory.c'; fi`
 
+quant/palette/test_runner-0005_cover_anchor.o: quant/palette/0005_cover_anchor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0005_cover_anchor.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Tpo -c -o quant/palette/test_runner-0005_cover_anchor.o `test -f 'quant/palette/0005_cover_anchor.c' || echo '$(srcdir)/'`quant/palette/0005_cover_anchor.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Tpo quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0005_cover_anchor.c' object='quant/palette/test_runner-0005_cover_anchor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0005_cover_anchor.o `test -f 'quant/palette/0005_cover_anchor.c' || echo '$(srcdir)/'`quant/palette/0005_cover_anchor.c
+
+quant/palette/test_runner-0005_cover_anchor.obj: quant/palette/0005_cover_anchor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0005_cover_anchor.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Tpo -c -o quant/palette/test_runner-0005_cover_anchor.obj `if test -f 'quant/palette/0005_cover_anchor.c'; then $(CYGPATH_W) 'quant/palette/0005_cover_anchor.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0005_cover_anchor.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Tpo quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0005_cover_anchor.c' object='quant/palette/test_runner-0005_cover_anchor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0005_cover_anchor.obj `if test -f 'quant/palette/0005_cover_anchor.c'; then $(CYGPATH_W) 'quant/palette/0005_cover_anchor.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0005_cover_anchor.c'; fi`
+
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
@@ -3991,6 +4108,7 @@ clean-generic:
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
+	-$(am__rm_f) $(DISTCLEANFILES)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
@@ -4124,25 +4242,6 @@ distclean: distclean-am
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
-	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0005_encoder_core_ormode_pipeline_matches_body.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0004_filter_colors.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0005_filter_lookup.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0006_filter_final_merge.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0007_filter_fhedt.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
-	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po
@@ -4164,6 +4263,26 @@ distclean: distclean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0020_decoder_pixels_body_api.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0021_decoder_selective_blur_threshold.Po
+	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0005_encoder_core_ormode_pipeline_matches_body.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0004_filter_colors.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0005_filter_lookup.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0006_filter_final_merge.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0007_filter_fhedt.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
@@ -4175,6 +4294,7 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -4276,25 +4396,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
-	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0005_encoder_core_ormode_pipeline_matches_body.Po
-	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0004_filter_colors.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0005_filter_lookup.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0006_filter_final_merge.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0007_filter_fhedt.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
-	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po
@@ -4316,6 +4417,26 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0020_decoder_pixels_body_api.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0021_decoder_selective_blur_threshold.Po
+	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0005_encoder_core_ormode_pipeline_matches_body.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0004_filter_colors.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0005_filter_lookup.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0006_filter_final_merge.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0007_filter_fhedt.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
@@ -4327,6 +4448,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -4365,6 +4487,10 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
+# Keep the default serialized on OpenVMS.  N=2 sharding is still available for
+# experiments, but the extra GNV process and file I/O overhead is slower on the
+# current runner.
+@OPENVMS_GNV_TRUE@OPENVMS_TEST_JOBS ?= 1
 SIXEL_INSTALLCHECK ?= 0
 
 .PHONY: \

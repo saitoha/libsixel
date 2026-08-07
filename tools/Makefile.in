@@ -134,17 +134,9 @@ am__lso_timeout_SOURCES_DIST = lso-timeout.c
 lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
 @BUILD_LSO_TIMEOUT_TRUE@lso_timeout_DEPENDENCIES =  \
 @BUILD_LSO_TIMEOUT_TRUE@	$(am__DEPENDENCIES_1)
-lso_timeout_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timeout_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-@BUILD_LSO_TIMEOUT_TRUE@@OPENVMS_GNV_TRUE@lso_timeout_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 am_lso_timer_OBJECTS = lso_timer-timer.$(OBJEXT)
 lso_timer_OBJECTS = $(am_lso_timer_OBJECTS)
 lso_timer_DEPENDENCIES = $(am__DEPENDENCIES_1)
-lso_timer_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timer_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-@OPENVMS_GNV_TRUE@lso_timer_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -340,6 +332,8 @@ LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+METAL_CFLAGS = @METAL_CFLAGS@
+METAL_LIBS = @METAL_LIBS@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -382,6 +376,7 @@ RUBY_EXT_LDFLAGS = @RUBY_EXT_LDFLAGS@
 RUBY_EXT_LIB = @RUBY_EXT_LIB@
 RUBY_SITE_LIBDIR = @RUBY_SITE_LIBDIR@
 RUBY_VERSION = @RUBY_VERSION@
+RUNTIME_ENV_IS_OPENVMS = @RUNTIME_ENV_IS_OPENVMS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -401,6 +396,7 @@ SIXEL_SHEBANG_HELPER = @SIXEL_SHEBANG_HELPER@
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH = @SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@
 SIXEL_TEST_ADDITIOANL_PATH = @SIXEL_TEST_ADDITIOANL_PATH@
 SIXEL_TEST_ADDITIONAL_PATH = @SIXEL_TEST_ADDITIONAL_PATH@
+SIXEL_TEST_GZIP = @SIXEL_TEST_GZIP@
 SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
 STRIP = @STRIP@
@@ -509,9 +505,23 @@ EXTRA_DIST = libsixel-config.in \
 lso_timer_SOURCES = timer.c
 lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
 lso_timer_CFLAGS = $(AM_CFLAGS)
+@OPENVMS_GNV_FALSE@lso_timer_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+@OPENVMS_GNV_FALSE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timer_CFLAGS) \
+@OPENVMS_GNV_FALSE@	$(CFLAGS) $(lso_timer_LDFLAGS) $(LDFLAGS) -o $@
+
+# Automake emits the link rule unconditionally, so a _LINK defined only
+# in one branch leaves the variable empty everywhere else and make then
+# tries to run the first object file as a command.  Spell out the
+# default for the other branch.
+@OPENVMS_GNV_TRUE@lso_timer_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 @BUILD_LSO_TIMEOUT_TRUE@lso_timeout_SOURCES = lso-timeout.c
 @BUILD_LSO_TIMEOUT_TRUE@lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
 @BUILD_LSO_TIMEOUT_TRUE@lso_timeout_CFLAGS = $(AM_CFLAGS)
+@BUILD_LSO_TIMEOUT_TRUE@@OPENVMS_GNV_FALSE@lso_timeout_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+@BUILD_LSO_TIMEOUT_TRUE@@OPENVMS_GNV_FALSE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timeout_CFLAGS) \
+@BUILD_LSO_TIMEOUT_TRUE@@OPENVMS_GNV_FALSE@	$(CFLAGS) $(lso_timeout_LDFLAGS) $(LDFLAGS) -o $@
+
+@BUILD_LSO_TIMEOUT_TRUE@@OPENVMS_GNV_TRUE@lso_timeout_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 all: all-am
 
 .SUFFIXES:
@@ -558,11 +568,11 @@ jpegref$(EXEEXT): $(jpegref_OBJECTS) $(jpegref_DEPENDENCIES) $(EXTRA_jpegref_DEP
 
 lso-timeout$(EXEEXT): $(lso_timeout_OBJECTS) $(lso_timeout_DEPENDENCIES) $(EXTRA_lso_timeout_DEPENDENCIES) 
 	@rm -f lso-timeout$(EXEEXT)
-	$(AM_V_CCLD)$(lso_timeout_LINK) $(lso_timeout_OBJECTS) $(lso_timeout_LDADD) $(LIBS)
+	$(AM_V_GEN)$(lso_timeout_LINK) $(lso_timeout_OBJECTS) $(lso_timeout_LDADD) $(LIBS)
 
 lso-timer$(EXEEXT): $(lso_timer_OBJECTS) $(lso_timer_DEPENDENCIES) $(EXTRA_lso_timer_DEPENDENCIES) 
 	@rm -f lso-timer$(EXEEXT)
-	$(AM_V_CCLD)$(lso_timer_LINK) $(lso_timer_OBJECTS) $(lso_timer_LDADD) $(LIBS)
+	$(AM_V_GEN)$(lso_timer_LINK) $(lso_timer_OBJECTS) $(lso_timer_LDADD) $(LIBS)
 install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \

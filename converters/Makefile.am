@@ -166,8 +166,16 @@ EXTRA_img2sixel_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
 endif
+# Automake emits the link rule unconditionally, so a _LINK defined only
+# in one branch leaves the variable empty everywhere else and make then
+# tries to run the first object file as a command.  Spell out the
+# default for the other branch.
 if OPENVMS_GNV
 img2sixel_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+else
+img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
+	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
 endif
 dist_man_MANS += $(srcdir)/img2sixel.1
 dist_bashcompletion_DATA += $(srcdir)/shell-completion/bash/img2sixel
@@ -227,6 +235,10 @@ endif
 endif
 if OPENVMS_GNV
 sixel2png_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+else
+sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
+	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
 endif
 dist_man_MANS += $(srcdir)/sixel2png.1
 endif

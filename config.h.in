@@ -370,11 +370,11 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* whether Metal GPU palette apply is available */
-#undef HAVE_METAL
-
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
+
+/* whether Metal GPU palette apply is available */
+#undef HAVE_METAL
 
 /* Define to 1 if you have the `mkdir' function. */
 #undef HAVE_MKDIR
@@ -467,9 +467,6 @@
 /* Define to 1 if you have the `stat' function. */
 #undef HAVE_STAT
 
-/* Define to 1 if the system has the type `struct timeval'. */
-#undef HAVE_STRUCT_TIMEVAL
-
 /* Define to 1 if you have the <stdarg.h> header file. */
 #undef HAVE_STDARG_H
 
@@ -524,11 +521,8 @@
 /* Define to 1 if you have the `strtoul' function. */
 #undef HAVE_STRTOUL
 
-/* Define to 1 if you have the `tcgetattr' function. */
-#undef HAVE_TCGETATTR
-
-/* Define to 1 if you have the `tcsetattr' function. */
-#undef HAVE_TCSETATTR
+/* Define to 1 if the system has the type `struct timeval'. */
+#undef HAVE_STRUCT_TIMEVAL
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
 #undef HAVE_SYS_IOCTL_H
@@ -562,6 +556,12 @@
 
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #undef HAVE_SYS_WAIT_H
+
+/* Define to 1 if you have the `tcgetattr' function. */
+#undef HAVE_TCGETATTR
+
+/* Define to 1 if you have the `tcsetattr' function. */
+#undef HAVE_TCSETATTR
 
 /* Define to 1 if you have the <termios.h> header file. */
 #undef HAVE_TERMIOS_H
@@ -675,14 +675,14 @@
    */
 #undef HAVE___BUILTIN_UNREACHABLE
 
+/* Define when building with OpenVMS and GNV. */
+#undef LIBSIXEL_OPENVMS
+
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Name of package */
 #undef PACKAGE
-
-/* Define when building with OpenVMS and GNV. */
-#undef LIBSIXEL_OPENVMS
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

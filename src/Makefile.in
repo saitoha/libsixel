@@ -97,16 +97,16 @@ host_triplet = @host@
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_2 = \
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/quicklook_thumbnailing.m
 
-@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_metal = \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_3 = \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal.m
 
-@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_3 = \
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_4 = \
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_macos.m
 
-@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_4 = \
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_5 = \
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_carbon.c
 
-@WITH_SHEBANG_FILE_TRUE@am__append_5 = $(SIXEL_SHEBANG_STAMP)
+@WITH_SHEBANG_FILE_TRUE@am__append_6 = $(SIXEL_SHEBANG_STAMP)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -160,7 +160,7 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/output-factory.h $(srcdir)/sixel-writer.c \
 	$(srcdir)/sixel-writer.h $(srcdir)/encoder-core.c \
@@ -195,7 +195,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-policy-vptree.h $(srcdir)/lookup-policy-rbc.h \
 	$(srcdir)/lookup-policy-mahalanobis.h $(srcdir)/factory.h \
 	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
-	$(srcdir)/palette-common-cover.c palette-common-merge.c \
+	$(srcdir)/palette-common-cover.c \
+	$(srcdir)/palette-common-cover.h \
+	$(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
 	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
@@ -208,9 +210,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette.c $(srcdir)/palette-factory.h \
 	$(srcdir)/palette.h $(srcdir)/palette-private.h \
 	$(srcdir)/dither.c $(srcdir)/dither.h \
-	$(srcdir)/oklch-lattice256.h \
-	$(srcdir)/dither-policy.c $(srcdir)/dither-policy.h \
-	$(srcdir)/dither-policy-none.c $(srcdir)/dither-policy-fs.c \
+	$(srcdir)/oklch-lattice256.h $(srcdir)/dither-policy.c \
+	$(srcdir)/dither-policy.h $(srcdir)/dither-policy-none.c \
+	$(srcdir)/dither-policy-fs.c \
 	$(srcdir)/dither-policy-atkinson.c \
 	$(srcdir)/dither-policy-jajuni.c \
 	$(srcdir)/dither-policy-stucki.c \
@@ -238,7 +240,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-policy-interframe.h \
 	$(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
-	$(srcdir)/gpu-dequant.h $(srcdir)/bluenoise_64x64.h \
+	$(srcdir)/gpu-dequant.h $(srcdir)/gpu-palette.c \
+	$(srcdir)/gpu-palette.h $(srcdir)/bluenoise_64x64.h \
 	$(srcdir)/dither-interframe-method.c \
 	$(srcdir)/dither-interframe-method.h \
 	$(srcdir)/dither-interframe-stbn-source.c \
@@ -328,17 +331,18 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/tty.h $(srcdir)/threading.c $(srcdir)/threading.h \
 	$(srcdir)/threadpool.c $(srcdir)/threadpool.h \
 	$(srcdir)/probe.c $(srcdir)/probe.h \
-	$(srcdir)/sixel_decode_pixels.c $(srcdir)/sixel_decode_pixels.h \
+	$(srcdir)/sixel_decode_pixels.c \
+	$(srcdir)/sixel_decode_pixels.h \
 	$(srcdir)/sixel_atomic_fallback.c $(srcdir)/sixel_atomic.h \
 	$(srcdir)/classid-factory.h $(srcdir)/classid-service.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
-	$(srcdir)/gpu-palette.c $(srcdir)/gpu-palette.h \
-	$(srcdir)/gpu-palette-metal.m $(srcdir)/quicklook_thumbnailing.m \
-	$(srcdir)/clipboard_macos.m $(srcdir)/clipboard_carbon.c
+	$(srcdir)/quicklook_thumbnailing.m \
+	$(srcdir)/gpu-palette-metal.m $(srcdir)/clipboard_macos.m \
+	$(srcdir)/clipboard_carbon.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
-@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_metal = libsixel_la-gpu-palette-metal.lo
-@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-clipboard_macos.lo
-@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_carbon.lo
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-palette-metal.lo
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
 @WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel-writer.lo \
@@ -367,7 +371,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vptree-8bit.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vptree-float32.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-cover.lo libsixel_la-palette-common-merge.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-cover.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-merge.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-snap.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-assign.lo \
@@ -392,6 +397,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-interframe.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-lso2.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-interframe-method.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-interframe-stbn-source.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-interframe-stbn-source-hash.lo \
@@ -480,19 +487,16 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-probe.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_decode_pixels.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_atomic_fallback.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_1) \
-@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_metal) \
-@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_2) $(am__objects_3)
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_1) $(am__objects_2) \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_3) $(am__objects_4)
 @WANT_AMALGAMATED_LIB_TRUE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither.lo \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_1) $(am__objects_2) \
-@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_3)
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_3) $(am__objects_4)
 am__dirstamp = $(am__leading_dot)dirstamp
-@WANT_AMALGAMATED_LIB_TRUE@am__objects_4 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
+@WANT_AMALGAMATED_LIB_TRUE@am__objects_5 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
 @WANT_AMALGAMATED_LIB_TRUE@nodist_libsixel_la_OBJECTS =  \
-@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_4)
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_5)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) \
 	$(nodist_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -637,6 +641,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-mapfile.Plo \
 	./$(DEPDIR)/libsixel_la-options.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
+	./$(DEPDIR)/libsixel_la-palette-common-cover.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-merge.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-snap.Plo \
 	./$(DEPDIR)/libsixel_la-palette-heckbert.Plo \
@@ -824,8 +829,6 @@ LIBWEBP_CFLAGS = @LIBWEBP_CFLAGS@
 LIBWEBP_LIBS = @LIBWEBP_LIBS@
 LIPO = @LIPO@
 LN_S = @LN_S@
-METAL_CFLAGS = @METAL_CFLAGS@
-METAL_LIBS = @METAL_LIBS@
 LSO_TAP_DATE_CMD = @LSO_TAP_DATE_CMD@
 LS_DASH_PATH = @LS_DASH_PATH@
 LS_DEFAULT_MAKEFLAGS = @LS_DEFAULT_MAKEFLAGS@
@@ -836,6 +839,8 @@ LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+METAL_CFLAGS = @METAL_CFLAGS@
+METAL_LIBS = @METAL_LIBS@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -878,6 +883,7 @@ RUBY_EXT_LDFLAGS = @RUBY_EXT_LDFLAGS@
 RUBY_EXT_LIB = @RUBY_EXT_LIB@
 RUBY_SITE_LIBDIR = @RUBY_SITE_LIBDIR@
 RUBY_VERSION = @RUBY_VERSION@
+RUNTIME_ENV_IS_OPENVMS = @RUNTIME_ENV_IS_OPENVMS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -897,6 +903,7 @@ SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH = @SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@
 SIXEL_TEST_ADDITIOANL_PATH = @SIXEL_TEST_ADDITIOANL_PATH@
 SIXEL_TEST_ADDITIONAL_PATH = @SIXEL_TEST_ADDITIONAL_PATH@
+SIXEL_TEST_GZIP = @SIXEL_TEST_GZIP@
 SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
 STRIP = @STRIP@
@@ -996,8 +1003,9 @@ zshcompletiondir = @zshcompletiondir@
 # Pass '-LD' via libtool's compiler-driver escape hatch so it is not
 # misparsed as '-L<path>' during libtool argument scanning.
 @USING_CL_TRUE@MAYBE_MSVC_DLL_DRIVER_FLAG = -XCClinker -LD
-CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* $(am__append_5)
-DISTCLEANFILES = $(DEPDIR)/libsixel_la-gpu-palette.Plo \
+CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* $(am__append_6)
+DISTCLEANFILES = \
+                $(DEPDIR)/libsixel_la-gpu-palette.Plo \
                 $(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
 
 lib_LTLIBRARIES = libsixel.la
@@ -1054,6 +1062,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-cover.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-cover.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-merge.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-merge.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-snap.c \
@@ -1107,6 +1117,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-interframe.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/bluenoise_64x64.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-interframe-method.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-interframe-method.h \
@@ -1285,19 +1299,14 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-service.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/rgblookup.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_metal) \
-@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_2) $(am__append_3) \
-@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_4)
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h $(am__append_2) \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_3) $(am__append_4) \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_5)
 @WANT_AMALGAMATED_LIB_TRUE@libsixel_la_SOURCES = $(srcdir)/dither.c \
 @WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither.h \
 @WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/oklch-lattice256.h \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__append_2) $(am__append_3) \
-@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_4)
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_4) $(am__append_5)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include \
                 -I$(top_srcdir) $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
@@ -1317,6 +1326,7 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(WIC_CFLAGS) \
                 $(COREGRAPHICS_CFLAGS) \
                 $(QUICKLOOK_CFLAGS) \
+                $(METAL_CFLAGS) \
                 $(CLIPBOARD_CFLAGS) \
                 @THREAD_CFLAGS@
 
@@ -1634,6 +1644,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-mapfile.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-cover.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-merge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-snap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert.Plo@am__quote@ # am--include-marker
@@ -1882,6 +1893,13 @@ libsixel_la-palette-heckbert.lo: palette-heckbert.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-heckbert.lo `test -f 'palette-heckbert.c' || echo '$(srcdir)/'`palette-heckbert.c
 
+libsixel_la-palette-common-cover.lo: palette-common-cover.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-common-cover.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-common-cover.Tpo -c -o libsixel_la-palette-common-cover.lo `test -f 'palette-common-cover.c' || echo '$(srcdir)/'`palette-common-cover.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-common-cover.Tpo $(DEPDIR)/libsixel_la-palette-common-cover.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-common-cover.c' object='libsixel_la-palette-common-cover.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-common-cover.lo `test -f 'palette-common-cover.c' || echo '$(srcdir)/'`palette-common-cover.c
+
 libsixel_la-palette-common-merge.lo: palette-common-merge.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-common-merge.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-common-merge.Tpo -c -o libsixel_la-palette-common-merge.lo `test -f 'palette-common-merge.c' || echo '$(srcdir)/'`palette-common-merge.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-common-merge.Tpo $(DEPDIR)/libsixel_la-palette-common-merge.Plo
@@ -2057,6 +2075,20 @@ libsixel_la-dither-common-pipeline.lo: dither-common-pipeline.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-common-pipeline.lo `test -f 'dither-common-pipeline.c' || echo '$(srcdir)/'`dither-common-pipeline.c
 
+libsixel_la-gpu-dequant.lo: gpu-dequant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-dequant.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-dequant.Tpo -c -o libsixel_la-gpu-dequant.lo `test -f 'gpu-dequant.c' || echo '$(srcdir)/'`gpu-dequant.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-dequant.Tpo $(DEPDIR)/libsixel_la-gpu-dequant.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-dequant.c' object='libsixel_la-gpu-dequant.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-dequant.lo `test -f 'gpu-dequant.c' || echo '$(srcdir)/'`gpu-dequant.c
+
+libsixel_la-gpu-palette.lo: gpu-palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette.Tpo -c -o libsixel_la-gpu-palette.lo `test -f 'gpu-palette.c' || echo '$(srcdir)/'`gpu-palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-palette.Tpo $(DEPDIR)/libsixel_la-gpu-palette.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-palette.c' object='libsixel_la-gpu-palette.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-palette.lo `test -f 'gpu-palette.c' || echo '$(srcdir)/'`gpu-palette.c
+
 libsixel_la-dither-interframe-method.lo: dither-interframe-method.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-interframe-method.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-interframe-method.Tpo -c -o libsixel_la-dither-interframe-method.lo `test -f 'dither-interframe-method.c' || echo '$(srcdir)/'`dither-interframe-method.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-interframe-method.Tpo $(DEPDIR)/libsixel_la-dither-interframe-method.Plo
@@ -2203,20 +2235,6 @@ libsixel_la-filter-palette.lo: filter-palette.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-palette.c' object='libsixel_la-filter-palette.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-palette.lo `test -f 'filter-palette.c' || echo '$(srcdir)/'`filter-palette.c
-
-libsixel_la-gpu-dequant.lo: gpu-dequant.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-dequant.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-dequant.Tpo -c -o libsixel_la-gpu-dequant.lo `test -f 'gpu-dequant.c' || echo '$(srcdir)/'`gpu-dequant.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-dequant.Tpo $(DEPDIR)/libsixel_la-gpu-dequant.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-dequant.c' object='libsixel_la-gpu-dequant.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-dequant.lo `test -f 'gpu-dequant.c' || echo '$(srcdir)/'`gpu-dequant.c
-
-libsixel_la-gpu-palette.lo: gpu-palette.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette.Tpo -c -o libsixel_la-gpu-palette.lo `test -f 'gpu-palette.c' || echo '$(srcdir)/'`gpu-palette.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-palette.Tpo $(DEPDIR)/libsixel_la-gpu-palette.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-palette.c' object='libsixel_la-gpu-palette.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-palette.lo `test -f 'gpu-palette.c' || echo '$(srcdir)/'`gpu-palette.c
 
 libsixel_la-filter-fhedt.lo: filter-fhedt.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-fhedt.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-fhedt.Tpo -c -o libsixel_la-filter-fhedt.lo `test -f 'filter-fhedt.c' || echo '$(srcdir)/'`filter-fhedt.c
@@ -2919,8 +2937,8 @@ clean-generic:
 
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
-	-$(am__rm_f) $(DISTCLEANFILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
+	-$(am__rm_f) $(DISTCLEANFILES)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
 
@@ -3013,6 +3031,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
@@ -3051,6 +3071,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-mapfile.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
@@ -3203,6 +3224,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
@@ -3241,6 +3264,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-mapfile.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
@@ -3326,9 +3350,9 @@ uninstall-man: uninstall-man5
 #
 # This target lets the top-level Makefile overlap executable object
 # compilation in other directories with the libsixel link step.
-@OPENVMS_GNV_TRUE@# GNV make can report the following libtool object target as failed after a
-@OPENVMS_GNV_TRUE@# successful compile when many libtool objects are prerequisites of one target.
-@OPENVMS_GNV_TRUE@# Invoke one recursive make per object so each compile has a fresh make state.
+# GNV make can report the following libtool object target as failed after a
+# successful compile when many libtool objects are prerequisites of one target.
+# Invoke one recursive make per object so each compile has a fresh make state.
 @OPENVMS_GNV_TRUE@libobjs:
 @OPENVMS_GNV_TRUE@	@set -e; \
 @OPENVMS_GNV_TRUE@	for obj in $(libsixel_la_OBJECTS); do \

@@ -47,8 +47,16 @@ endif
 lso_timer_SOURCES = timer.c
 lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
 lso_timer_CFLAGS = $(AM_CFLAGS)
+# Automake emits the link rule unconditionally, so a _LINK defined only
+# in one branch leaves the variable empty everywhere else and make then
+# tries to run the first object file as a command.  Spell out the
+# default for the other branch.
 if OPENVMS_GNV
 lso_timer_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+else
+lso_timer_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timer_CFLAGS) \
+	$(CFLAGS) $(lso_timer_LDFLAGS) $(LDFLAGS) -o $@
 endif
 if BUILD_LSO_TIMEOUT
 lso_timeout_SOURCES = lso-timeout.c
@@ -56,6 +64,10 @@ lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
 lso_timeout_CFLAGS = $(AM_CFLAGS)
 if OPENVMS_GNV
 lso_timeout_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+else
+lso_timeout_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timeout_CFLAGS) \
+	$(CFLAGS) $(lso_timeout_LDFLAGS) $(LDFLAGS) -o $@
 endif
 endif
 

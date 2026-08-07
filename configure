@@ -663,8 +663,6 @@ HAVE_WIC_FALSE
 HAVE_WIC_TRUE
 HAVE_COREGRAPHICS_FALSE
 HAVE_COREGRAPHICS_TRUE
-HAVE_METAL_FALSE
-HAVE_METAL_TRUE
 HAVE_PNG_FALSE
 HAVE_PNG_TRUE
 HAVE_JPEG_FALSE
@@ -683,6 +681,7 @@ PYTHON_STATICCHECK
 CODESPELL
 SHELLCHECK
 ACTIONLINT
+SIXEL_TEST_GZIP
 HAVE_BASH_FALSE
 HAVE_BASH_TRUE
 BASH
@@ -762,6 +761,8 @@ HAVE_QUICKLOOK_THUMBNAILING_FALSE
 HAVE_QUICKLOOK_THUMBNAILING_TRUE
 QUICKLOOK_LIBS
 QUICKLOOK_CFLAGS
+HAVE_METAL_FALSE
+HAVE_METAL_TRUE
 METAL_LIBS
 METAL_CFLAGS
 COREGRAPHICS_LIBS
@@ -865,9 +866,6 @@ USING_CL_TRUE
 UPDATE_MIME_DATABASE
 LN_S
 CPP
-OPENVMS_GNV_FALSE
-OPENVMS_GNV_TRUE
-RUNTIME_ENV_IS_OPENVMS
 am__fastdepOBJC_FALSE
 am__fastdepOBJC_TRUE
 OBJCDEPMODE
@@ -892,7 +890,6 @@ CFLAGS
 CC
 SIXEL_MSVC_CC
 SIXEL_EMSCRIPTEN_CC
-SIXEL_TEST_GZIP
 SIXEL_TEST_ADDITIONAL_PATH
 SIXEL_TEST_ADDITIOANL_PATH
 RANLIB
@@ -900,6 +897,8 @@ NM
 ARFLAGS
 AR
 LD
+OPENVMS_GNV_FALSE
+OPENVMS_GNV_TRUE
 MAINT
 MAINTAINER_MODE_FALSE
 MAINTAINER_MODE_TRUE
@@ -935,6 +934,7 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
+RUNTIME_ENV_IS_OPENVMS
 host_os
 host_vendor
 host_cpu
@@ -1076,7 +1076,6 @@ STRIP
 RANLIB
 SIXEL_TEST_ADDITIOANL_PATH
 SIXEL_TEST_ADDITIONAL_PATH
-SIXEL_TEST_GZIP
 CC
 CFLAGS
 LDFLAGS
@@ -1121,6 +1120,7 @@ RUBY_EXT_CPPFLAGS
 RUBY_EXT_LDFLAGS
 RUBY_EXT_DLEXT
 BASH
+SIXEL_TEST_GZIP
 SIXEL_TEST_SHELL'
 
 
@@ -1901,8 +1901,6 @@ Some influential environment variables:
               additional runtime library search path for test execution
   SIXEL_TEST_ADDITIONAL_PATH
               alias of SIXEL_TEST_ADDITIOANL_PATH
-  SIXEL_TEST_GZIP
-              gzip command used to expand packaged test fixtures
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -1980,6 +1978,8 @@ Some influential environment variables:
   RUBY_EXT_DLEXT
               Ruby dynamic library extension
   BASH        Path to the Bash shell for converter tests
+  SIXEL_TEST_GZIP
+              gzip command used to expand packaged test fixtures
   SIXEL_TEST_SHELL
               Shell path used to run TAP test scripts (default: detect dash,
               sh, then fallback /bin/sh)
@@ -3608,10 +3608,13 @@ host_os=$*
 IFS=$ac_save_IFS
 case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
+
+
 if test "x$sixel_openvms_mode" = "xyes"
 then :
 
-  printf "%s\n" "#define LIBSIXEL_OPENVMS 1" >>confdefs.h
+
+printf "%s\n" "#define LIBSIXEL_OPENVMS 1" >>confdefs.h
 
 
 fi
@@ -3620,15 +3623,6 @@ if test "x$sixel_openvms_mode" = "xyes"
 then :
   RUNTIME_ENV_IS_OPENVMS=1
 fi
-
- if test "x$sixel_openvms_mode" = "xyes"; then
-  OPENVMS_GNV_TRUE=
-  OPENVMS_GNV_FALSE='#'
-else
-  OPENVMS_GNV_TRUE='#'
-  OPENVMS_GNV_FALSE=
-fi
-
 
 
 am__api_version='1.18'
@@ -4517,6 +4511,14 @@ fi
 AM_DEFAULT_VERBOSITY=0
 
 
+ if test "x$sixel_openvms_mode" = "xyes"; then
+  OPENVMS_GNV_TRUE=
+  OPENVMS_GNV_FALSE='#'
+else
+  OPENVMS_GNV_TRUE='#'
+  OPENVMS_GNV_FALSE=
+fi
+
 
 # Let configure users override the MSVC companion tools explicitly while still
 # allowing the defaults below to keep simple --host=*-msvc builds short.
@@ -4828,8 +4830,7 @@ then :
 
 fi
 
-
-  if test "x$sixel_openvms_mode" = "xyes" &&
+if test "x$sixel_openvms_mode" = "xyes" &&
        test "${enable_dependency_tracking+set}" != set
 then :
 
@@ -4839,6 +4840,8 @@ then :
   enable_dependency_tracking=no
 
 fi
+
+
 
 
 
@@ -6121,6 +6124,7 @@ else
   am__fastdepCC_FALSE=
 fi
 
+
 if test "x$sixel_openvms_mode" = "xyes" &&
        test "x$ac_env_CC_set" != "xset"
 then :
@@ -6129,7 +6133,6 @@ then :
   CC="${CONFIG_SHELL-$SHELL} $sixel_openvms_cc_wrapper $CC"
 
 fi
-
 ac_ext=m
 ac_cpp='$OBJCPP $CPPFLAGS'
 ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -16004,7 +16007,7 @@ case " $MAKEFLAGS " in
   *\ -j*|*\ --jobs*|*\ --jobs=* )
     ;;
   *)
-      if test "x$sixel_openvms_mode" != "xyes"
+    if test "x$sixel_openvms_mode" != "xyes"
 then :
 
       LS_DEFAULT_MAKEFLAGS="-j${CPU_COUNT}"
@@ -18235,6 +18238,7 @@ esac
 fi
 
 
+
 # Check whether --with-metal was given.
 if test ${with_metal+y}
 then :
@@ -18726,8 +18730,7 @@ fi
 # Check whether --enable-tests was given.
 if test ${enable_tests+y}
 then :
-  enableval=$enable_tests;
-enable_tests="$enableval"
+  enableval=$enable_tests; enable_tests="$enableval"
 else case e in #(
   e) enable_tests=yes ;;
 esac
@@ -18739,7 +18742,6 @@ then :
 printf "%s\n" "#define HAVE_TESTS 1" >>confdefs.h
 
 fi
-
  if test x$enable_tests != xno; then
   COND_TESTS_TRUE=
   COND_TESTS_FALSE='#'
@@ -19013,11 +19015,11 @@ LIBSIXEL_LDFLAGS=""
 printf "%s\n" "#define HAVE_MSVC 1" >>confdefs.h
 
 else
-
   attr_var_deprecated=
   attr_func_deprecated=
   if test "x$sixel_openvms_mode" != "xyes"
 then :
+
 
 
 
@@ -19075,10 +19077,9 @@ fi
 
 
 
-  if test x$ax_cv_have_var_attribute_deprecated != x; then
-      attr_var_deprecated='__attribute__((deprecated))'
-
-  fi
+    if test x$ax_cv_have_var_attribute_deprecated != x; then
+        attr_var_deprecated='__attribute__((deprecated))'
+    fi
 
 
 
@@ -19134,13 +19135,14 @@ fi
 
 
 
-  if test x$ax_cv_have_func_attribute_deprecated != x; then
-      attr_func_deprecated='__attribute__((deprecated))'
-
-  fi
-
+    if test x$ax_cv_have_func_attribute_deprecated != x; then
+        attr_func_deprecated='__attribute__((deprecated))'
+    fi
 
 fi
+
+
+
 
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_unreachable" >&5
@@ -19185,6 +19187,8 @@ printf "%s\n" "#define HAVE___BUILTIN_UNREACHABLE 1" >>confdefs.h
 
 fi
 
+
+
   if test "x$sixel_openvms_mode" != "xyes"
 then :
 
@@ -19228,8 +19232,8 @@ else case e in #(
 esac
 fi
 
-fi
 
+fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wall" >&5
 printf %s "checking if $CC supports -Wall... " >&6; }
 if test ${ac_cv_cc_flag_wall+y}
@@ -19353,8 +19357,8 @@ else case e in #(
 esac
 fi
 
-fi
 
+fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wsign-conversion" >&5
 printf %s "checking if $CC supports -Wsign-conversion... " >&6; }
 if test ${ac_cv_cc_flag_wsign_conversion+y}
@@ -20091,6 +20095,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+
   ac_check_headers_parallel_includes=""
   ac_check_headers_parallel_dir="accheckheaders$$"
   ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
@@ -20441,7 +20447,8 @@ if test ${ls_cv_type_ssize_t+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  e)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #if !defined(_POSIX_C_SOURCE)
@@ -20470,24 +20477,28 @@ else case e in #(
   e) ls_cv_type_ssize_t=no ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+ ;;
 esac
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ls_cv_type_ssize_t" >&5
 printf "%s\n" "$ls_cv_type_ssize_t" >&6; }
 if test "x$ls_cv_type_ssize_t" = xyes
 then :
-  printf "%s\n" "#define HAVE_SSIZE_T 1" >>confdefs.h
+
+
+printf "%s\n" "#define HAVE_SSIZE_T 1" >>confdefs.h
+
 
 fi
-
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for struct timeval" >&5
 printf %s "checking for struct timeval... " >&6; }
 if test ${ls_cv_type_struct_timeval+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  e)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #if !defined(_POSIX_C_SOURCE)
@@ -20522,17 +20533,20 @@ else case e in #(
   e) ls_cv_type_struct_timeval=no ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+ ;;
 esac
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ls_cv_type_struct_timeval" >&5
 printf "%s\n" "$ls_cv_type_struct_timeval" >&6; }
 if test "x$ls_cv_type_struct_timeval" = xyes
 then :
-  printf "%s\n" "#define HAVE_STRUCT_TIMEVAL 1" >>confdefs.h
+
+
+printf "%s\n" "#define HAVE_STRUCT_TIMEVAL 1" >>confdefs.h
+
 
 fi
-
 ac_fn_c_find_uintX_t "$LINENO" "16" "ac_cv_c_uint16_t"
 case $ac_cv_c_uint16_t in #(
   no|yes) ;; #(
@@ -21003,6 +21017,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+
+
+
   ac_check_funcs_parallel_includes=""
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for -fno-builtin" >&5
 printf %s "checking for -fno-builtin... " >&6; }
@@ -21267,6 +21285,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+
 if test "x$sixel_openvms_mode" = "xyes"
 then :
 
@@ -21292,15 +21311,15 @@ printf %s "checking for $ac_func with OpenVMS CRTL headers... " >&6; }
         getopt) sixel_openvms_func_body='return getopt(0, (char * const *)0, "");' ;;
         isatty) sixel_openvms_func_body='return isatty(0);' ;;
         mkdir) sixel_openvms_func_body='return mkdir("conftest.dir", 0777);' ;;
-        mkstemp) sixel_openvms_func_body='char tmpl[] = "tmpXXXXXX"; return mkstemp(tmpl);' ;;
-        mktemp) sixel_openvms_func_body='char tmpl[] = "tmpXXXXXX"; return mktemp(tmpl) == 0;' ;;
+        mkstemp) sixel_openvms_func_body='char tmpl = "tmpXXXXXX"; return mkstemp(tmpl);' ;;
+        mktemp) sixel_openvms_func_body='char tmpl = "tmpXXXXXX"; return mktemp(tmpl) == 0;' ;;
         open) sixel_openvms_func_body='return open("conftest.no", O_RDONLY);' ;;
-        realpath) sixel_openvms_func_body='char path[4096]; return realpath(".", path) == 0;' ;;
+        realpath) sixel_openvms_func_body='char path4096; return realpath(".", path) == 0;' ;;
         select) sixel_openvms_func_body='return select(0, 0, 0, 0, 0);' ;;
         setenv) sixel_openvms_func_body='return setenv("A", "B", 1);' ;;
         stat) sixel_openvms_func_body='struct stat st; return stat("conftest.no", &st);' ;;
         strcasecmp) sixel_openvms_func_body='return strcasecmp("a", "A");' ;;
-        strerror_r) sixel_openvms_func_body='char buf[64]; return strerror_r(1, buf, sizeof(buf));' ;;
+        strerror_r) sixel_openvms_func_body='char buf64; return strerror_r(1, buf, sizeof(buf));' ;;
         strdup) sixel_openvms_func_body='return strdup("x") == 0;' ;;
         waitpid) sixel_openvms_func_body='int status; return waitpid(-1, &status, 0);' ;;
       esac
@@ -21368,7 +21387,7 @@ else case e in #(
   e) sixel_openvms_func_result=no ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
+      rm -f core conftest.err conftest.$ac_objext conftest.beam \
         conftest$ac_exeext conftest.$ac_ext
       eval "ac_cv_func_$ac_func=\$sixel_openvms_func_result"
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_openvms_func_result" >&5
@@ -21423,7 +21442,8 @@ printf "%s\n" "$ac_cv_func_setjmp" >&6; }
     if test "x$ac_cv_func_setjmp" = "xyes"
 then :
 
-      printf "%s\n" "#define HAVE_SETJMP 1" >>confdefs.h
+
+printf "%s\n" "#define HAVE_SETJMP 1" >>confdefs.h
 
 
 fi
@@ -21431,7 +21451,6 @@ fi
 fi
 
 fi
-
 LIBS=$LS_SAVED_LIBS
 
 ac_fn_c_check_func "$LINENO" "_sopen_s" "ac_cv_func__sopen_s"
@@ -23050,7 +23069,8 @@ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
 
         saved_LIBS="$LIBS"
         LIBS="$LIBS -framework Metal -framework Foundation"
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
@@ -23109,7 +23129,6 @@ else
   HAVE_METAL_TRUE='#'
   HAVE_METAL_FALSE=
 fi
-
 
 
 QUICKLOOK_LIBS=""
@@ -23188,8 +23207,7 @@ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
                                    -framework UniformTypeIdentifiers \
                                    -framework Foundation"
                 LIBS="$LIBS $added_OBJC_LIBS"
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #import <Foundation/Foundation.h>
 #import <QuickLookThumbnailing/QuickLookThumbnailing.h>
@@ -23713,7 +23731,8 @@ esac
 AMALGAMATION_NEEDS_OBJC=no
 if test x$want_amalgamated_sources = xyes; then
     if test x$have_clipboard_macos_appkit = xyes \
-        || test x$have_quicklook_thumbnailing = xyes; then
+        || test x$have_quicklook_thumbnailing = xyes \
+        || test x$have_metal = xyes; then
         AMALGAMATION_NEEDS_OBJC=yes
     fi
 fi
@@ -29021,17 +29040,18 @@ then :
 then :
 
     SIXEL_CHECK_TESTS=
-    mkdir -p tests
+    as_dir=tests; as_fn_mkdir_p
     $SHELL "$srcdir/build-aux/read-check-test-list.sh" \
         tests "$srcdir/tests" "$sixel_ruby_tests_mode" newline \
         > tests/check-tests.list ||
       as_fn_error $? "could not create tests/check-tests.list" "$LINENO" 5
 
-else $as_nop
-
+else case e in #(
+  e)
     SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
         tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
-
+   ;;
+esac
 fi
 
 fi
@@ -29113,7 +29133,7 @@ then :
 printf "%s\n" "$as_me: WARNING: bash not found; converter tests will be skipped" >&2;}
 
 fi
-if test "x$BASH" != x -a "x$BASH" != xno; then
+ if test "x$BASH" != x -a "x$BASH" != xno; then
   HAVE_BASH_TRUE=
   HAVE_BASH_FALSE='#'
 else
@@ -29122,21 +29142,23 @@ else
 fi
 
 
-if test "x$SIXEL_TEST_GZIP" != x
-then :
 
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: SIXEL_TEST_GZIP preset to ${SIXEL_TEST_GZIP}" >&5
-printf "%s\n" "$as_me: SIXEL_TEST_GZIP preset to ${SIXEL_TEST_GZIP}" >&6;}
-
-else case e in #(
-  e)
 for ac_prog in gzip gzip.exe
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+if test ${ac_cv_path_SIXEL_TEST_GZIP+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $SIXEL_TEST_GZIP in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_SIXEL_TEST_GZIP="$SIXEL_TEST_GZIP" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
 do
   IFS=$as_save_IFS
@@ -29147,7 +29169,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    SIXEL_TEST_GZIP="$as_dir$ac_word$ac_exec_ext"
+    ac_cv_path_SIXEL_TEST_GZIP="$as_dir$ac_word$ac_exec_ext"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -29155,6 +29177,11 @@ done
   done
 IFS=$as_save_IFS
 
+  ;;
+esac ;;
+esac
+fi
+SIXEL_TEST_GZIP=$ac_cv_path_SIXEL_TEST_GZIP
 if test -n "$SIXEL_TEST_GZIP"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SIXEL_TEST_GZIP" >&5
 printf "%s\n" "$SIXEL_TEST_GZIP" >&6; }
@@ -29166,9 +29193,6 @@ fi
 
   test -n "$SIXEL_TEST_GZIP" && break
 done
- ;;
-esac
-fi
 
 
 # Extract the first word of "actionlint", so it can be a program name with args.
@@ -29633,7 +29657,9 @@ ac_config_files="$ac_config_files amalgamation/Makefile"
 # with the configured version and ABI values instead of leaving @...@ tokens.
 ac_config_commands="$ac_config_commands rubyconstants"
 
+
 ac_config_commands="$ac_config_commands perlconstants"
+
 
 # GNV make 3.78.1 can hang while reading long Automake comments and
 # expanded tags prerequisites. The tags targets are developer conveniences,
@@ -29655,6 +29681,17 @@ fi
 
   ls_saved_no_create=$no_create
   no_create=yes
+  if test "x$sixel_openvms_mode" = "xyes"
+then :
+
+    # Some GNV probes can leave configure under a temporary directory.  Return
+    # before AC_OUTPUT writes config.status and any generated build files.
+    cd "$ac_pwd" || as_fn_exit $?
+    PWD=$ac_pwd
+    export PWD
+    as_fn_unset OLDPWD
+
+fi
   cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -29796,6 +29833,10 @@ if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${OPENVMS_GNV_TRUE}" && test -z "${OPENVMS_GNV_FALSE}"; then
+  as_fn_error $? "conditional \"OPENVMS_GNV\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${AMDEP_TRUE}" && test -z "${AMDEP_FALSE}"; then
   as_fn_error $? "conditional \"AMDEP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -29810,10 +29851,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_CL_TRUE}" && test -z "${USING_CL_FALSE}"; then
   as_fn_error $? "conditional \"USING_CL\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${OPENVMS_GNV_TRUE}" && test -z "${OPENVMS_GNV_FALSE}"; then
-  as_fn_error $? "conditional \"OPENVMS_GNV\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILDING_ON_WINDOWS_TRUE}" && test -z "${BUILDING_ON_WINDOWS_FALSE}"; then
@@ -29972,18 +30009,6 @@ if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-    if test "x$sixel_openvms_mode" = "xyes"
-then :
-
-    # Some GNV probes can leave configure under a temporary directory.  Return
-    # before AC_OUTPUT writes config.status and any generated build files.
-    cd "$ac_pwd" || as_fn_exit $?
-    PWD=$ac_pwd
-    export PWD
-    as_fn_unset OLDPWD
-
-fi
-
 
     test -d quicklook-extension/generated-resources || mkdir -p quicklook-extension/generated-resources
 
@@ -30462,11 +30487,6 @@ INSTALL='$INSTALL'
 MKDIR_P='$MKDIR_P'
 AWK='$AWK'
 test -n "\$AWK" || AWK=awk
-sixel_openvms_mode='$sixel_openvms_mode'
-enable_ruby='$enable_ruby'
-RUBY='$RUBY'
-enable_perl='$enable_perl'
-PERL='$PERL'
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
@@ -30858,6 +30878,11 @@ fi
 
 
 
+enable_ruby=$enable_ruby
+RUBY=$RUBY
+enable_perl=$enable_perl
+PERL=$PERL
+sixel_openvms_mode=$sixel_openvms_mode
 
 _ACEOF
 
@@ -32193,7 +32218,7 @@ ltmain=$ac_aux_dir/ltmain.sh
     do
       test -f "$mf" || continue
       mf_tmp=${mf}.openvms-tmp
-      awk '
+                                    awk '
         /^#	/ { next }
         skip_tagged {
           if ($0 !~ /\\$/) {
@@ -32363,6 +32388,12 @@ then :
       PWD=$ac_pwd
       export PWD
       as_fn_unset OLDPWD
+
+      # GNV /bin/sh can run the EXIT trap from helper subprocesses used while
+      # config.status is still consuming its temporary AWK files.  It also
+      # mishandles some Autoconf compound redirections against those files.
+      # Disable the generated trap, split the fragile setup commands into
+      # simple commands, and clean the temp directory explicitly at normal exit.
       $AWK '
         BEGIN {
           dollar = sprintf("%c", 36)
@@ -32370,28 +32401,28 @@ then :
         {
           line = $ 0
         }
-        line ~ /test ! -d "[$]ac_tmp" \|\| rm -fr "[$]ac_tmp"; [}] && exit [$]exit_status/ {
+        line ~ /test ! -d "$ac_tmp" \|\| rm -fr "$ac_tmp"; } && exit $exit_status/ {
           print "  { test ! -d \"" dollar "ac_tmp\" || rm -fr \"" \
                 dollar "ac_tmp\" || :; }"
           print "  exit " dollar "exit_status"
           next
         }
-        /^ac_tmp=[$]tmp$/ {
+        /^ac_tmp=$tmp$/ {
           print line
           print "trap - 0"
           next
         }
-        line ~ /echo '\''BEGIN [{]'\'' >"[$]ac_tmp\/subs1[.]awk" &&$/ {
+        line ~ /echo '\''BEGIN {'\'' >"$ac_tmp\/subs1.awk" &&$/ {
           sub(/ &&$/, "", line)
           print line
           next
         }
-        line ~ /cat >>"[$]ac_tmp\/subs1[.]awk" <<\\?_ACAWK &&$/ {
+        line ~ /cat >>"$ac_tmp\/subs1.awk" <<\\?_ACAWK &&$/ {
           sub(/ &&$/, "", line)
           print line
           next
         }
-        line ~ /if sed "s\/[$]ac_cr\/\/" < \/dev\/null/ {
+        line ~ /if sed "s\/$ac_cr\/\/" < \/dev\/null/ {
           print "test -s \"" dollar "ac_tmp/subs1.awk\" || \\"
           print "  as_fn_error " dollar "? \"could not setup config files machinery\" \"" dollar "LINENO\" 5"
           print "if sed \"s/" dollar "ac_cr//\" < /dev/null > /dev/null 2>&1; then"
@@ -32408,7 +32439,7 @@ then :
           skip = 1
           next
         }
-        line ~ /cat >"[$]ac_tmp\/defines[.]awk" <<\\_ACAWK \|\|/ {
+        line ~ /cat >"$ac_tmp\/defines.awk" <<\\_ACAWK \|\|/ {
           print "cat >\"" dollar "ac_tmp/defines.awk\" <<\\_ACAWK"
           header = 1
           next
@@ -32499,3 +32530,4 @@ echo "       fuzz targets            : $sixel_fuzz_summary"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""
+
