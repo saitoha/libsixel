@@ -94,7 +94,8 @@ key_encode_frame(sixel_encoder_t *encoder,
                  sixel_allocator_t *allocator,
                  unsigned char *canvas,
                  int box_white,
-                 int frame_no)
+                 int frame_no,
+                 long *kept_out)
 {
     SIXELSTATUS status;
     sixel_frame_t *frame;
@@ -118,6 +119,9 @@ key_encode_frame(sixel_encoder_t *encoder,
     decoded_height = 0;
     ncolors = 0;
     memset(&payload, 0, sizeof(payload));
+    if (kept_out != NULL) {
+        *kept_out = 0;
+    }
 
     pixels = (unsigned char *)sixel_allocator_malloc(
         allocator,
@@ -172,6 +176,9 @@ key_encode_frame(sixel_encoder_t *encoder,
 
             index = (int)decoded[(size_t)y * decoded_width + x];
             if (index >= ncolors) {
+                if (kept_out != NULL) {
+                    (*kept_out)++;
+                }
                 continue; /* transparent: the canvas keeps its old color */
             }
             canvas_offset = ((size_t)y * KEY_WIDTH + (size_t)x) * 3u;
@@ -268,7 +275,7 @@ test_filter_0013_filter_encode_6delta_keycolor(int argc, char **argv)
                                              "keep"))
         || SIXEL_FAILED(sixel_encoder_setopt(encoder,
                                              SIXEL_OPTFLAG_6DELTA_THRESHOLD,
-                                             "10"))) {
+                                             "0"))) {
         fprintf(stderr, "encoder setup failed\n");
         goto end;
     }
@@ -278,7 +285,8 @@ test_filter_0013_filter_encode_6delta_keycolor(int argc, char **argv)
                                           allocator,
                                           canvas,
                                           sequence[index],
-                                          (int)index + 1))) {
+                                          (int)index + 1,
+                                          NULL))) {
             fprintf(stderr, "frame %lu failed\n", (unsigned long)index);
             goto end;
         }
@@ -297,6 +305,33 @@ test_filter_0013_filter_encode_6delta_keycolor(int argc, char **argv)
                     "pixel resolved to the transparency key\n",
                     (unsigned long)index,
                     mean);
+            goto end;
+        }
+    }
+    /*
+     * Threshold 0 used to mean "keep only on a bit-exact match", which a
+     * quantized palette essentially never produces, so 6delta did nothing at
+     * all by default.  Keeping is now decided by comparing against the entry
+     * the lookup picked, so an unchanged frame has to be kept even at 0.
+     */
+    {
+        long kept;
+
+        kept = 0;
+        if (SIXEL_FAILED(key_encode_frame(encoder,
+                                          allocator,
+                                          canvas,
+                                          sequence[(sizeof(sequence)
+                                                    / sizeof(sequence[0])) - 1],
+                                          (int)(sizeof(sequence)
+                                                / sizeof(sequence[0])) + 1,
+                                          &kept))) {
+            fprintf(stderr, "repeat frame failed\n");
+            goto end;
+        }
+        if (kept == 0) {
+            fprintf(stderr,
+                    "an unchanged frame kept nothing at threshold 0\n");
             goto end;
         }
     }

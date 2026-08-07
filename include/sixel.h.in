@@ -722,7 +722,9 @@ typedef int SIXELSTATUS;
 /* add transparent left/top pixel offset for P2=1 image-plane reuse */
 #define SIXEL_OPTFLAG_TRANSPARENT_OFFSET ('+')
 /* -Z DELTA, --6delta-threshold=DELTA */
-/* set per-channel RGB tolerance for 6delta encoding early keep */
+/* set the 6delta lookup shortcut: a pixel is kept whenever the displayed */
+/* color beats the palette, and this tolerance decides that before the    */
+/* lookup runs, trading accuracy for speed                                */
 #define SIXEL_OPTFLAG_6DELTA_THRESHOLD ('Z')
 /* -Y MODE, --6delta-error=MODE */
 /* choose 6delta kept-pixel error handling: diffuse or skip */

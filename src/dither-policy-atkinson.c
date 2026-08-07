@@ -268,6 +268,41 @@ sixel_dither_apply_atkinson_8bit(
             color_index = lookup_policy->vtbl->map_pixel(
                 lookup_policy,
                 source_pixel);
+            /*
+             * Now that the palette has had its say, let the color already on
+             * screen compete with it.  Keeping wins ties because it costs no
+             * output at all, and it can only be chosen when it is at least as
+             * close to the source as the entry the lookup picked -- so this
+             * never trades quality for bytes.
+             */
+            if (absolute_y >= 0 && depth >= 3) {
+                is_6delta_keep =
+                    sixel_dither_pipeline_6delta_try_keep_after_lookup(
+                        dither,
+                        absolute_index,
+                        x,
+                        absolute_y,
+                        source_pixel,
+                        palette + (size_t)color_index * (size_t)depth,
+                        record_result,
+                        &accumulation_pixel,
+                        &accumulation_keycolor);
+                if (is_6delta_keep != 0) {
+                    if (record_result != 0) {
+                        result[pos] = (sixel_index_t)accumulation_keycolor;
+                    }
+                    if (diffuse_6delta_error != 0) {
+                        for (n = 0; n < depth; ++n) {
+                            offset = (int)source_pixel[n]
+                                - (int)accumulation_pixel[n];
+                            atkinson_diffuse_atkinson(
+                                data + n, width, height, x, y,
+                                depth, offset, direction);
+                        }
+                    }
+                    continue;
+                }
+            }
             output_index = color_index;
 
             if (absolute_y >= output_start) {

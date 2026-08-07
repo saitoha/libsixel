@@ -1486,10 +1486,12 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
         return 0;
     }
     /*
-     * 6delta is an early keep gate.  When the desired RGB is already inside
-     * the caller's per-channel threshold, the policy can emit keycolor without
-     * paying for a nearest-palette lookup.  The dither policy decides whether
-     * to diffuse the resulting error or to skip it for speed.
+     * The early keep gate.  When the desired RGB is already inside the
+     * caller's per-channel threshold, the policy can emit keycolor without
+     * paying for a nearest-palette lookup.  This is a speed shortcut and
+     * nothing more: what the caller is really owed is the post-lookup rule in
+     * sixel_dither_pipeline_6delta_try_keep_after_lookup(), which keeps a
+     * pixel whenever the displayed color beats every palette entry.
      *
      * The retained plane is addressed in plane coordinates, not frame
      * coordinates: a damage rectangle that moves between frames still lands on
@@ -1524,6 +1526,120 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
     }
     if (keycolor_out != NULL) {
         *keycolor_out = keycolor;
+    }
+
+    return 1;
+}
+
+/*
+ * Resolve the retained plane color for one frame pixel, or NULL when the plane
+ * has nothing trustworthy there.
+ */
+static unsigned char const *
+sixel_dither_pipeline_6delta_plane_pixel(sixel_dither_t const *dither,
+                                         int x,
+                                         int y)
+{
+    size_t total_pixels;
+    size_t plane_index;
+
+    if (dither == NULL || dither->pipeline_6delta_enabled == 0) {
+        return NULL;
+    }
+    if (dither->pipeline_accumulation_width <= 0
+            || dither->pipeline_accumulation_height <= 0) {
+        return NULL;
+    }
+    total_pixels = (size_t)dither->pipeline_accumulation_width
+        * (size_t)dither->pipeline_accumulation_height;
+    if (!sixel_dither_has_compatible_accumulation_hint(
+            dither,
+            dither->pipeline_accumulation_width,
+            dither->pipeline_accumulation_height,
+            total_pixels)) {
+        return NULL;
+    }
+    if (!sixel_dither_accumulation_plane_index(dither, x, y, &plane_index)) {
+        return NULL;
+    }
+    if (plane_index >= total_pixels) {
+        return NULL;
+    }
+    if (dither->pipeline_accumulation_valid_mask != NULL
+            && dither->pipeline_accumulation_valid_mask[plane_index] == 0u) {
+        return NULL;
+    }
+
+    return dither->pipeline_accumulation_pixels + plane_index * 3u;
+}
+
+static unsigned int
+sixel_dither_rgb888_distance_sq(unsigned char const *a, unsigned char const *b)
+{
+    int dr;
+    int dg;
+    int db;
+
+    dr = (int)a[0] - (int)b[0];
+    dg = (int)a[1] - (int)b[1];
+    db = (int)a[2] - (int)b[2];
+
+    return (unsigned int)(dr * dr + dg * dg + db * db);
+}
+
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_try_keep_after_lookup(
+    sixel_dither_t *dither,
+    size_t index,
+    int x,
+    int y,
+    unsigned char const *rgb,
+    unsigned char const *chosen_rgb,
+    int record_result,
+    unsigned char const **accumulation_rgb_out,
+    int *keycolor_out)
+{
+    unsigned char const *accumulation_pixel;
+
+    if (accumulation_rgb_out != NULL) {
+        *accumulation_rgb_out = NULL;
+    }
+    if (keycolor_out != NULL) {
+        *keycolor_out = (-1);
+    }
+    if (dither == NULL || rgb == NULL || chosen_rgb == NULL) {
+        return 0;
+    }
+    accumulation_pixel = sixel_dither_pipeline_6delta_plane_pixel(dither, x, y);
+    if (accumulation_pixel == NULL) {
+        return 0;
+    }
+    /*
+     * Treat what the terminal is already showing as one more candidate in the
+     * same nearest-color contest the palette just went through.  If it is at
+     * least as close as the entry the lookup picked, keeping the pixel is
+     * strictly better than painting it: the color is nearer to what was asked
+     * for and it costs no output at all.  Ties go to keeping for the same
+     * reason.
+     *
+     * Because the candidate is the plane's own per-pixel color, this cannot
+     * repeat the failure of giving the transparency key a fixed color and
+     * letting it compete: there is no fixed color involved.
+     */
+    if (sixel_dither_rgb888_distance_sq(rgb, accumulation_pixel)
+            > sixel_dither_rgb888_distance_sq(rgb, chosen_rgb)) {
+        return 0;
+    }
+    if (record_result != 0
+            && dither->pipeline_accumulation_result_mask != NULL
+            && dither->pipeline_accumulation_result_mask_size > index) {
+        dither->pipeline_accumulation_result_mask[index] = 1u;
+    }
+    if (accumulation_rgb_out != NULL) {
+        *accumulation_rgb_out = accumulation_pixel;
+    }
+    if (keycolor_out != NULL) {
+        *keycolor_out = dither->pipeline_accumulation_keycolor;
     }
 
     return 1;

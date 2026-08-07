@@ -746,8 +746,17 @@ static cli_option_help_t const g_option_help_table[] = {
         'Z',
         "6delta-threshold",
         "-Z DELTA, --6delta-threshold=DELTA\n"
-        "    enable 6delta encoding and set RGB per-channel tolerance.\n"
-        "    DELTA must be 0..255 (default: disabled).\n"
+        "    enable 6delta encoding and set its lookup shortcut.\n"
+        "    a pixel is kept whenever the color already on screen is at\n"
+        "    least as close to the source as the palette entry the\n"
+        "    nearest-color lookup picks, so 0 already keeps everything\n"
+        "    that can be kept without loss.  DELTA raises a per-channel\n"
+        "    tolerance for deciding that before the lookup runs, trading\n"
+        "    accuracy for speed: 255 was ~37% faster here and let some\n"
+        "    pixels stay slightly off.  the shortcut compares against the\n"
+        "    quantized color on screen, so at 0 it never fires and every\n"
+        "    pixel goes through the lookup.  DELTA must be 0..255\n"
+        "    (default: disabled).\n"
     },
     {
         'Y',

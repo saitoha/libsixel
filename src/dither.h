@@ -295,6 +295,26 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
     unsigned char const **accumulation_rgb_out,
     int *keycolor_out);
 
+/*
+ * Post-lookup keep.  CHOSEN_RGB is the palette color the nearest-color lookup
+ * settled on for this pixel.  The retained plane's color at the same position
+ * competes against it in the same metric, and wins ties, because emitting
+ * nothing is free.  This is what makes keeping principled rather than a
+ * threshold guess -- and it is safe to let the plane compete, unlike a
+ * transparency key carrying one fixed color for the whole image.
+ */
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_try_keep_after_lookup(
+    sixel_dither_t *dither,
+    size_t index,
+    int x,
+    int y,
+    unsigned char const *rgb,
+    unsigned char const *chosen_rgb,
+    int record_result,
+    unsigned char const **accumulation_rgb_out,
+    int *keycolor_out);
+
 SIXEL_INTERNAL_API int
 sixel_dither_pipeline_6delta_error_mode(sixel_dither_t const *dither);
 
