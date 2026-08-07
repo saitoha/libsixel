@@ -229,7 +229,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      points of the RGB cube.  Error diffusion cannot reach a color\n"
         "      the palette does not enclose, so without them a small\n"
         "      saturated area -- a scrub bar, a status light -- renders as a\n"
-        "      muted approximation, and under --sixel-delta it can flicker\n"
+        "      muted approximation, and under -Z it can flicker\n"
         "      as the palette changes from frame to frame.\n"
         "        :cover=SET     off, corners (8), faces (14), edges/all (26),\n"
         "                       auto (default: by palette size).  each set\n"

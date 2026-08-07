@@ -112,14 +112,15 @@ cover_nearest_sq(unsigned char const *rgb,
     return best;
 }
 
-/* Build a palette for MODEL and copy it out. */
+/* Build a palette for MODEL at REQCOLORS and copy it out. */
 static int
-cover_build_palette(int model,
-                    unsigned char const *pixels,
-                    sixel_allocator_t *allocator,
-                    unsigned char *palette_out,
-                    unsigned int *ncolors_out,
-                    unsigned int palette_out_max)
+cover_build_palette_n(int model,
+                      unsigned int reqcolors,
+                      unsigned char const *pixels,
+                      sixel_allocator_t *allocator,
+                      unsigned char *palette_out,
+                      unsigned int *ncolors_out,
+                      unsigned int palette_out_max)
 {
     SIXELSTATUS status;
     sixel_dither_t *dither;
@@ -131,7 +132,7 @@ cover_build_palette(int model,
     memset(&view, 0, sizeof(view));
     *ncolors_out = 0u;
 
-    status = sixel_dither_new(&dither, COVER_COLORS, allocator);
+    status = sixel_dither_new(&dither, (int)reqcolors, allocator);
     if (SIXEL_FAILED(status) || dither == NULL) {
         goto end;
     }
@@ -168,6 +169,18 @@ end:
         sixel_dither_unref(dither);
     }
     return ok;
+}
+
+static int
+cover_build_palette(int model,
+                    unsigned char const *pixels,
+                    sixel_allocator_t *allocator,
+                    unsigned char *palette_out,
+                    unsigned int *ncolors_out,
+                    unsigned int palette_out_max)
+{
+    return cover_build_palette_n(model, COVER_COLORS, pixels, allocator,
+                                 palette_out, ncolors_out, palette_out_max);
 }
 
 /* Anchor classes, for asserting which set a policy actually bought. */
@@ -418,6 +431,35 @@ cover_check_grow(unsigned char const *pixels, sixel_allocator_t *allocator)
     if (cover_count_reached(cover_corner_list, 8u, palette, grown) != 8u
             || cover_count_reached(cover_face_list, 6u, palette, grown) != 6u) {
         fprintf(stderr, "grown palette did not reach the faces rung\n");
+        goto end;
+    }
+
+    /*
+     * Near the ceiling there is room to grow for only a few anchors, and the
+     * rest still have to be funded by merging.  Growing a 250-color palette
+     * once bought seven corners and then stopped, losing the faces and edges
+     * that merging alone would have placed -- cover_grow=on came out strictly
+     * worse than cover_grow=off, which is the opposite of what it promises.
+     */
+    cover_set_override(1, SIXEL_PALETTE_COVER_EDGES, 1);
+    if (!cover_build_palette_n(SIXEL_QUANTIZE_MODEL_MEDIANCUT,
+                               (unsigned int)SIXEL_PALETTE_MAX - 6u,
+                               pixels, allocator, palette, &grown,
+                               SIXEL_PALETTE_MAX)) {
+        fprintf(stderr, "near-ceiling palette build failed\n");
+        goto end;
+    }
+    if (cover_count_reached(cover_corner_list, 8u, palette, grown) != 8u
+            || cover_count_reached(cover_face_list, 6u, palette, grown) != 6u
+            || cover_count_reached(cover_edge_list, 12u, palette, grown)
+                != 12u) {
+        fprintf(stderr,
+                "near the ceiling cover_grow=on placed only %u corners, "
+                "%u faces, %u edges; the anchors that did not fit have to "
+                "fall back to merging\n",
+                cover_count_reached(cover_corner_list, 8u, palette, grown),
+                cover_count_reached(cover_face_list, 6u, palette, grown),
+                cover_count_reached(cover_edge_list, 12u, palette, grown));
         goto end;
     }
     ok = 1;

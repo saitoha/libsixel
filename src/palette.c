@@ -1461,11 +1461,18 @@ success:
                            3u);
                 }
                 ncolors += added;
-            } else {
-                (void)sixel_palette_cover_anchor_rgb888(storage->entries,
-                                                        ncolors,
-                                                        (int)depth);
             }
+            /*
+             * Growing is capped by the ceiling, not by the anchor count, so a
+             * palette that starts near SIXEL_PALETTE_MAX has room for only the
+             * first few.  Merge for whatever is still missing: without this,
+             * asking to grow a 250-color palette bought seven corners and lost
+             * the faces and edges that merging alone would have placed, making
+             * cover_grow=on strictly worse than cover_grow=off.
+             */
+            (void)sixel_palette_cover_anchor_rgb888(storage->entries,
+                                                    ncolors,
+                                                    (int)depth);
         } else {
             (void)sixel_palette_cover_anchor_rgb888(storage->entries,
                                                     ncolors,
