@@ -105,9 +105,18 @@ sixel_filter_sample_frame(const sixel_filter_sample_config_t *config,
 #define SIXEL_SAMPLE_SOLID_SEPARATION_SQ (12 * 12 * 3)
 
 /*
- * Collect up to OUT_MAX distinct solid colors of PIXELS, most-seen first,
- * writing DEPTH bytes each.  MASK, when not NULL, excludes transparent
- * pixels.  Returns how many were written.
+ * Collect up to OUT_MAX solid colors of PIXELS, writing DEPTH bytes each.
+ * MASK, when not NULL, excludes transparent pixels.  Returns how many were
+ * written.
+ *
+ * Selection is farthest-point, not most-seen.  Ranking by how many pixels a
+ * color covers puts the background at the top and fills every slot with it:
+ * measured on autumn.png, egret.jpg and snake-fs8.png, all 32 slots went to
+ * background colors and a 3-pixel bar was crowded out in 17 of 17 phases --
+ * the flicker, back again.  The grid pick already represents whatever covers
+ * a lot of the frame; what it misses is small, and small is what this has to
+ * find.  Maximising the distance to the colors already chosen keeps a
+ * saturated bar in a brown photograph, because it is far from everything.
  */
 SIXEL_INTERNAL_API unsigned int
 sixel_filter_sample_solid_colors(
@@ -121,7 +130,8 @@ sixel_filter_sample_solid_colors(
     int                 /* in */   clip_width,
     int                 /* in */   clip_height,
     unsigned char       /* out */ *out,
-    unsigned int        /* in */   out_max);
+    unsigned int        /* in */   out_max,
+    sixel_allocator_t   /* in */  *allocator);
 
 #endif /* LIBSIXEL_FILTER_SAMPLE_H */
 

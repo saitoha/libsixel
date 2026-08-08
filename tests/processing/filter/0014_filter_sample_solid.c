@@ -155,14 +155,20 @@ test_filter_0014_filter_sample_solid(int argc, char **argv)
 {
     unsigned char *pixels;
     unsigned char colors[SIXEL_SAMPLE_SOLID_MAX * 3u];
+    sixel_allocator_t *allocator;
     int phase;
     int ok;
 
     (void)argc;
     (void)argv;
     ok = 0;
+    allocator = NULL;
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return EXIT_FAILURE;
+    }
     pixels = (unsigned char *)malloc((size_t)SOLID_WIDTH * SOLID_HEIGHT * 3u);
     if (pixels == NULL) {
+        sixel_allocator_unref(allocator);
         return EXIT_FAILURE;
     }
 
@@ -185,7 +191,8 @@ test_filter_0014_filter_sample_solid(int argc, char **argv)
                                                  SOLID_WIDTH,
                                                  SOLID_HEIGHT,
                                                  colors,
-                                                 SIXEL_SAMPLE_SOLID_MAX);
+                                                 SIXEL_SAMPLE_SOLID_MAX,
+                                                 allocator);
         if (!solid_contains(colors, count,
                             SOLID_HBAR_R, SOLID_HBAR_G, SOLID_HBAR_B)) {
             fprintf(stderr,
@@ -238,7 +245,8 @@ test_filter_0014_filter_sample_solid(int argc, char **argv)
                                                  SOLID_WIDTH,
                                                  SOLID_HEIGHT,
                                                  colors,
-                                                 SIXEL_SAMPLE_SOLID_MAX);
+                                                 SIXEL_SAMPLE_SOLID_MAX,
+                                                 allocator);
         for (index = 0u; index < count; ++index) {
             unsigned char const *c;
 
@@ -255,13 +263,82 @@ test_filter_0014_filter_sample_solid(int argc, char **argv)
         }
     }
 
+    /*
+     * Crowding-out.  Selection is farthest-point and not most-seen, because
+     * most-seen fills every slot with the background: measured on autumn.png,
+     * egret.jpg and snake-fs8.png, a 3-pixel bar was crowded out in 17 of 17
+     * phases that way.  Here the frame is paved with solid blocks, every one
+     * of which covers far more area than the bar, so a count ranking cannot
+     * keep the bar and a distance ranking must.
+     */
+    {
+        unsigned int count;
+        int block;
+        int phase;
+
+        for (phase = 0; phase < 5; ++phase) {
+            solid_fill(pixels, 150 + phase, 250 + phase);
+            /*
+             * Forty blocks, each covering more scanned points than the bar and
+             * each far enough from its neighbours to land in its own histogram
+             * cell.  Both properties are needed: fewer points and a count
+             * ranking still keeps the bar, and closer colors merge and leave
+             * slots free.
+             */
+            for (block = 0; block < 40; ++block) {
+                int bx;
+                int by;
+                int x;
+                int y;
+
+                bx = (block % 10) * 32;
+                by = (block / 10) * 36;
+                for (y = by; y < by + 36 && y < 144; ++y) {
+                    for (x = bx; x < bx + 32 && x < SOLID_WIDTH; ++x) {
+                        size_t offset;
+
+                        offset = ((size_t)y * SOLID_WIDTH + (size_t)x) * 3u;
+                        pixels[offset] =
+                            (unsigned char)(30 + (block % 5) * 34);
+                        pixels[offset + 1u] =
+                            (unsigned char)(50 + ((block / 5) % 4) * 34);
+                        pixels[offset + 2u] =
+                            (unsigned char)(60 + ((block / 20) % 2) * 90);
+                    }
+                }
+            }
+            count = sixel_filter_sample_solid_colors(pixels,
+                                                     SOLID_WIDTH,
+                                                     SOLID_HEIGHT,
+                                                     3,
+                                                     NULL,
+                                                     0,
+                                                     0,
+                                                     SOLID_WIDTH,
+                                                     SOLID_HEIGHT,
+                                                     colors,
+                                                     SIXEL_SAMPLE_SOLID_MAX,
+                                                     allocator);
+            if (!solid_contains(colors, count,
+                                SOLID_HBAR_R, SOLID_HBAR_G, SOLID_HBAR_B)) {
+                fprintf(stderr,
+                        "phase %d: the bar was crowded out by %u larger "
+                        "solid regions; selection has to rank by distance "
+                        "from what is already chosen, not by area\n",
+                        phase, count);
+                goto end;
+            }
+        }
+    }
+
     /* Formats the reader cannot handle must decline rather than guess. */
     {
         if (sixel_filter_sample_solid_colors(pixels, SOLID_WIDTH,
                                              SOLID_HEIGHT, 1, NULL,
                                              0, 0, SOLID_WIDTH, SOLID_HEIGHT,
                                              colors,
-                                             SIXEL_SAMPLE_SOLID_MAX) != 0u) {
+                                             SIXEL_SAMPLE_SOLID_MAX,
+                                             allocator) != 0u) {
             fprintf(stderr, "a depth of 1 should collect nothing\n");
             goto end;
         }
@@ -270,6 +347,7 @@ test_filter_0014_filter_sample_solid(int argc, char **argv)
 
 end:
     free(pixels);
+    sixel_allocator_unref(allocator);
 
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -216,6 +216,15 @@ sixel_filter_sample_color_distance_sq(unsigned char const *a,
     return total;
 }
 
+/* One histogram cell of solid colors: how many, and their sum for the mean. */
+typedef struct sixel_filter_sample_solid_cell {
+    unsigned int count;
+    unsigned int sum[4];
+} sixel_filter_sample_solid_cell_t;
+
+#define SIXEL_SAMPLE_SOLID_BITS 4
+#define SIXEL_SAMPLE_SOLID_CELLS (1u << (SIXEL_SAMPLE_SOLID_BITS * 3u))
+
 SIXEL_INTERNAL_API unsigned int
 sixel_filter_sample_solid_colors(unsigned char const *pixels,
                                  int width,
@@ -227,15 +236,20 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
                                  int clip_width,
                                  int clip_height,
                                  unsigned char *out,
-                                 unsigned int out_max)
+                                 unsigned int out_max,
+                                 sixel_allocator_t *allocator)
 {
-    unsigned int counts[SIXEL_SAMPLE_SOLID_MAX];
+    sixel_filter_sample_solid_cell_t *cells;
+    unsigned int const shift = 8u - SIXEL_SAMPLE_SOLID_BITS;
     unsigned int found;
+    unsigned int seen;
     int x;
     int y;
+    int c;
 
     found = 0u;
-    if (pixels == NULL || out == NULL || out_max == 0u
+    seen = 0u;
+    if (pixels == NULL || out == NULL || allocator == NULL || out_max == 0u
             || depth < 3 || depth > 4
             || clip_width <= 0 || clip_height <= 0) {
         return 0u;
@@ -243,14 +257,19 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
     if (out_max > SIXEL_SAMPLE_SOLID_MAX) {
         out_max = SIXEL_SAMPLE_SOLID_MAX;
     }
+    cells = (sixel_filter_sample_solid_cell_t *)sixel_allocator_calloc(
+        allocator,
+        (size_t)SIXEL_SAMPLE_SOLID_CELLS,
+        sizeof(sixel_filter_sample_solid_cell_t));
+    if (cells == NULL) {
+        return 0u;
+    }
     for (y = clip_y; y < clip_y + clip_height; y += SIXEL_SAMPLE_SOLID_STRIDE) {
         for (x = clip_x;
              x < clip_x + clip_width;
              x += SIXEL_SAMPLE_SOLID_STRIDE) {
             unsigned char const *px;
-            unsigned int index;
-            unsigned int nearest;
-            unsigned int best;
+            unsigned int key;
 
             if (mask != NULL
                     && mask[(size_t)y * (size_t)width + (size_t)x] != 0) {
@@ -271,66 +290,106 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
             }
             px = pixels + ((size_t)y * (size_t)width + (size_t)x)
                           * (size_t)depth;
-            nearest = out_max;
-            best = ~0u;
-            for (index = 0u; index < found; ++index) {
-                unsigned int d;
-
-                d = sixel_filter_sample_color_distance_sq(
-                    px, out + (size_t)index * (size_t)depth, depth);
-                if (d < best) {
-                    best = d;
-                    nearest = index;
-                }
+            key = ((unsigned int)(px[0] >> shift)
+                   << (SIXEL_SAMPLE_SOLID_BITS * 2u))
+                | ((unsigned int)(px[1] >> shift) << SIXEL_SAMPLE_SOLID_BITS)
+                | (unsigned int)(px[2] >> shift);
+            cells[key].count++;
+            for (c = 0; c < depth; ++c) {
+                cells[key].sum[c] += px[c];
             }
-            if (nearest < found
-                    && best <= (unsigned int)SIXEL_SAMPLE_SOLID_SEPARATION_SQ) {
-                counts[nearest]++;
-                continue;
-            }
-            if (found >= out_max) {
-                /*
-                 * Full.  Keep counting into the closest entry rather than
-                 * dropping the observation, so the counts stay meaningful for
-                 * the ranking below.
-                 */
-                if (nearest < found) {
-                    counts[nearest]++;
-                }
-                continue;
-            }
-            memcpy(out + (size_t)found * (size_t)depth, px, (size_t)depth);
-            counts[found] = 1u;
-            found++;
+            seen++;
         }
+    }
+    if (seen == 0u) {
+        sixel_allocator_free(allocator, cells);
+        return 0u;
     }
 
     /*
-     * Most-seen first, so a truncated list keeps the elements that occupy the
-     * most screen.  Insertion sort: the list is at most a few dozen long.
+     * Farthest-point selection.  The first pick is the most-seen cell, which
+     * is the frame's dominant solid color and belongs in any summary; every
+     * pick after it is the qualifying cell furthest from everything already
+     * chosen.  That is what keeps a small saturated element: it is far from
+     * the background even though the background outnumbers it hugely.
+     *
+     * Each cell carries its distance to the nearest color chosen so far, so a
+     * round is one pass rather than one pass times the number chosen.  Doing
+     * it the naive way measured 1.1 ms of the frame at 1472x760, which is
+     * most of what this stage costs.
      */
     {
-        unsigned int i;
-        unsigned int j;
+        unsigned int *nearest;
+        unsigned int index;
 
-        for (i = 1u; i < found; ++i) {
-            unsigned char key[4];
-            unsigned int key_count;
-
-            memcpy(key, out + (size_t)i * (size_t)depth, (size_t)depth);
-            key_count = counts[i];
-            j = i;
-            while (j > 0u && counts[j - 1u] < key_count) {
-                memcpy(out + (size_t)j * (size_t)depth,
-                       out + (size_t)(j - 1u) * (size_t)depth,
-                       (size_t)depth);
-                counts[j] = counts[j - 1u];
-                --j;
-            }
-            memcpy(out + (size_t)j * (size_t)depth, key, (size_t)depth);
-            counts[j] = key_count;
+        nearest = (unsigned int *)sixel_allocator_calloc(
+            allocator, (size_t)SIXEL_SAMPLE_SOLID_CELLS, sizeof(unsigned int));
+        if (nearest == NULL) {
+            sixel_allocator_free(allocator, cells);
+            return 0u;
         }
+        for (index = 0u; index < SIXEL_SAMPLE_SOLID_CELLS; ++index) {
+            nearest[index] = ~0u;
+        }
+        while (found < out_max) {
+            unsigned char rgb[4];
+            unsigned int best_cell;
+            unsigned int best_score;
+            int have_best;
+
+            best_cell = 0u;
+            best_score = 0u;
+            have_best = 0;
+            for (index = 0u; index < SIXEL_SAMPLE_SOLID_CELLS; ++index) {
+                unsigned int score;
+
+                if (cells[index].count == 0u) {
+                    continue;
+                }
+                if (found == 0u) {
+                    score = cells[index].count;
+                } else {
+                    if (nearest[index]
+                            <= (unsigned int)SIXEL_SAMPLE_SOLID_SEPARATION_SQ) {
+                        continue;
+                    }
+                    score = nearest[index];
+                }
+                if (score > best_score) {
+                    best_score = score;
+                    best_cell = index;
+                    have_best = 1;
+                }
+            }
+            if (!have_best) {
+                break;
+            }
+            for (c = 0; c < depth; ++c) {
+                rgb[c] = (unsigned char)(cells[best_cell].sum[c]
+                                         / cells[best_cell].count);
+                out[(size_t)found * (size_t)depth + (size_t)c] = rgb[c];
+            }
+            found++;
+            for (index = 0u; index < SIXEL_SAMPLE_SOLID_CELLS; ++index) {
+                unsigned char other[4];
+                unsigned int d;
+
+                if (cells[index].count == 0u) {
+                    continue;
+                }
+                for (c = 0; c < depth; ++c) {
+                    other[c] = (unsigned char)(cells[index].sum[c]
+                                               / cells[index].count);
+                }
+                d = sixel_filter_sample_color_distance_sq(other, rgb, depth);
+                if (d < nearest[index]) {
+                    nearest[index] = d;
+                }
+            }
+        }
+        sixel_allocator_free(allocator, nearest);
     }
+    sixel_allocator_free(allocator, cells);
 
     return found;
 }
@@ -560,7 +619,8 @@ sixel_filter_sample_copy_frame(
                                                    width,
                                                    height,
                                                    solid,
-                                                   SIXEL_SAMPLE_SOLID_MAX);
+                                                   SIXEL_SAMPLE_SOLID_MAX,
+                                                   allocator);
     if (solid_count > 0u) {
         size_t grid_count;
 
