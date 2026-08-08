@@ -65,6 +65,64 @@ sixel_filter_sample_frame(const sixel_filter_sample_config_t *config,
                           sixel_frame_t **sample_out,
                           sixel_timeline_logger_t *logger);
 
+/*
+ * Solid-region detection.
+ *
+ * The sample is a grid pick, so a thin element is present or absent depending
+ * on where the grid falls: measured on a 1472x760 frame at -p 64, where the
+ * stride is 17, a 700x3 bar landed in the sample in only 3 of 17 row phases.
+ * In motion the phase changes every frame, and that is the flicker -- the
+ * palette gains and loses the color from one frame to the next.  No rule
+ * applied to the sample can repair this, because in the other 14 phases the
+ * color is simply not there.
+ *
+ * So solid regions are found in the source and their colors appended to the
+ * sample, which makes the sample's content independent of the grid phase.
+ *
+ * A point counts as solid when the pixels along a short line through it, on
+ * either axis, are all within SIXEL_SAMPLE_SOLID_TOL of it.  The test has to
+ * be a LINE and not a square: a square kernel of radius r rejects every
+ * feature thinner than 2r+1, so a 5x5 kernel discards a 3-pixel bar for
+ * exactly the reason it discards a hot pixel.  Measured, a 5x5 kernel found
+ * the bar in 0 of 17 phases even scanning every pixel, while the two-axis line
+ * test found it in all 17 -- and still rejected a noisy patch and a hot pixel
+ * completely.
+ *
+ * The scan stride must not exceed the thinnest feature worth protecting: a
+ * 3-pixel bar is guaranteed to contain a scanned row at stride 3, and at
+ * stride 4 detection fell to 13 of 17.  Cost at 1472x760 is 0.27 ms, and it
+ * scales with the damaged area rather than the screen.
+ */
+#define SIXEL_SAMPLE_SOLID_STRIDE 3
+#define SIXEL_SAMPLE_SOLID_HALF 2
+#define SIXEL_SAMPLE_SOLID_TOL 6
+#define SIXEL_SAMPLE_SOLID_MAX 32u
+
+/*
+ * Two solid colors nearer than this are the same UI element as far as the
+ * palette is concerned, so they share a slot in the collected list.
+ */
+#define SIXEL_SAMPLE_SOLID_SEPARATION_SQ (12 * 12 * 3)
+
+/*
+ * Collect up to OUT_MAX distinct solid colors of PIXELS, most-seen first,
+ * writing DEPTH bytes each.  MASK, when not NULL, excludes transparent
+ * pixels.  Returns how many were written.
+ */
+SIXEL_INTERNAL_API unsigned int
+sixel_filter_sample_solid_colors(
+    unsigned char const /* in */  *pixels,
+    int                 /* in */   width,
+    int                 /* in */   height,
+    int                 /* in */   depth,
+    unsigned char const /* in */  *mask,
+    int                 /* in */   clip_x,
+    int                 /* in */   clip_y,
+    int                 /* in */   clip_width,
+    int                 /* in */   clip_height,
+    unsigned char       /* out */ *out,
+    unsigned int        /* in */   out_max);
+
 #endif /* LIBSIXEL_FILTER_SAMPLE_H */
 
 /* emacs Local Variables:      */

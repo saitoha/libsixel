@@ -150,6 +150,191 @@ sixel_filter_sample_create_frame(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
+
+/* max |channel difference| from the centre along one axis */
+static int
+sixel_filter_sample_line_spread(unsigned char const *pixels,
+                                int width,
+                                int height,
+                                int depth,
+                                int cx,
+                                int cy,
+                                int dx,
+                                int dy)
+{
+    unsigned char const *centre;
+    int worst;
+    int i;
+    int c;
+
+    if (cx - SIXEL_SAMPLE_SOLID_HALF * dx < 0
+            || cx + SIXEL_SAMPLE_SOLID_HALF * dx >= width
+            || cy - SIXEL_SAMPLE_SOLID_HALF * dy < 0
+            || cy + SIXEL_SAMPLE_SOLID_HALF * dy >= height) {
+        return 255;
+    }
+    centre = pixels + ((size_t)cy * (size_t)width + (size_t)cx)
+                      * (size_t)depth;
+    worst = 0;
+    for (i = -SIXEL_SAMPLE_SOLID_HALF; i <= SIXEL_SAMPLE_SOLID_HALF; ++i) {
+        unsigned char const *px;
+
+        px = pixels + ((size_t)(cy + dy * i) * (size_t)width
+                       + (size_t)(cx + dx * i)) * (size_t)depth;
+        for (c = 0; c < depth; ++c) {
+            int d;
+
+            d = (int)px[c] - (int)centre[c];
+            if (d < 0) {
+                d = -d;
+            }
+            if (d > worst) {
+                worst = d;
+            }
+        }
+    }
+
+    return worst;
+}
+
+static unsigned int
+sixel_filter_sample_color_distance_sq(unsigned char const *a,
+                                      unsigned char const *b,
+                                      int depth)
+{
+    unsigned int total;
+    int c;
+
+    total = 0u;
+    for (c = 0; c < depth && c < 3; ++c) {
+        int d;
+
+        d = (int)a[c] - (int)b[c];
+        total += (unsigned int)(d * d);
+    }
+
+    return total;
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_filter_sample_solid_colors(unsigned char const *pixels,
+                                 int width,
+                                 int height,
+                                 int depth,
+                                 unsigned char const *mask,
+                                 int clip_x,
+                                 int clip_y,
+                                 int clip_width,
+                                 int clip_height,
+                                 unsigned char *out,
+                                 unsigned int out_max)
+{
+    unsigned int counts[SIXEL_SAMPLE_SOLID_MAX];
+    unsigned int found;
+    int x;
+    int y;
+
+    found = 0u;
+    if (pixels == NULL || out == NULL || out_max == 0u
+            || depth < 3 || depth > 4
+            || clip_width <= 0 || clip_height <= 0) {
+        return 0u;
+    }
+    if (out_max > SIXEL_SAMPLE_SOLID_MAX) {
+        out_max = SIXEL_SAMPLE_SOLID_MAX;
+    }
+    for (y = clip_y; y < clip_y + clip_height; y += SIXEL_SAMPLE_SOLID_STRIDE) {
+        for (x = clip_x;
+             x < clip_x + clip_width;
+             x += SIXEL_SAMPLE_SOLID_STRIDE) {
+            unsigned char const *px;
+            unsigned int index;
+            unsigned int nearest;
+            unsigned int best;
+
+            if (mask != NULL
+                    && mask[(size_t)y * (size_t)width + (size_t)x] != 0) {
+                continue;
+            }
+            /*
+             * Either axis qualifies.  A horizontal run is a scrub bar or an
+             * underline, a vertical run is a scrollbar or a window edge, and
+             * requiring both would reject every one of them.
+             */
+            if (sixel_filter_sample_line_spread(pixels, width, height, depth,
+                                                x, y, 1, 0)
+                        > SIXEL_SAMPLE_SOLID_TOL
+                    && sixel_filter_sample_line_spread(pixels, width, height,
+                                                       depth, x, y, 0, 1)
+                        > SIXEL_SAMPLE_SOLID_TOL) {
+                continue;
+            }
+            px = pixels + ((size_t)y * (size_t)width + (size_t)x)
+                          * (size_t)depth;
+            nearest = out_max;
+            best = ~0u;
+            for (index = 0u; index < found; ++index) {
+                unsigned int d;
+
+                d = sixel_filter_sample_color_distance_sq(
+                    px, out + (size_t)index * (size_t)depth, depth);
+                if (d < best) {
+                    best = d;
+                    nearest = index;
+                }
+            }
+            if (nearest < found
+                    && best <= (unsigned int)SIXEL_SAMPLE_SOLID_SEPARATION_SQ) {
+                counts[nearest]++;
+                continue;
+            }
+            if (found >= out_max) {
+                /*
+                 * Full.  Keep counting into the closest entry rather than
+                 * dropping the observation, so the counts stay meaningful for
+                 * the ranking below.
+                 */
+                if (nearest < found) {
+                    counts[nearest]++;
+                }
+                continue;
+            }
+            memcpy(out + (size_t)found * (size_t)depth, px, (size_t)depth);
+            counts[found] = 1u;
+            found++;
+        }
+    }
+
+    /*
+     * Most-seen first, so a truncated list keeps the elements that occupy the
+     * most screen.  Insertion sort: the list is at most a few dozen long.
+     */
+    {
+        unsigned int i;
+        unsigned int j;
+
+        for (i = 1u; i < found; ++i) {
+            unsigned char key[4];
+            unsigned int key_count;
+
+            memcpy(key, out + (size_t)i * (size_t)depth, (size_t)depth);
+            key_count = counts[i];
+            j = i;
+            while (j > 0u && counts[j - 1u] < key_count) {
+                memcpy(out + (size_t)j * (size_t)depth,
+                       out + (size_t)(j - 1u) * (size_t)depth,
+                       (size_t)depth);
+                counts[j] = counts[j - 1u];
+                --j;
+            }
+            memcpy(out + (size_t)j * (size_t)depth, key, (size_t)depth);
+            counts[j] = key_count;
+        }
+    }
+
+    return found;
+}
+
 static SIXELSTATUS
 sixel_filter_sample_copy_frame(
         sixel_filter_sample_config_t const *config,
@@ -196,8 +381,17 @@ sixel_filter_sample_copy_frame(
     int x;
     int y;
     unsigned char *normalized_src_pixels;
+    unsigned char solid[SIXEL_SAMPLE_SOLID_MAX * 4u];
+    unsigned int solid_count;
+    unsigned int solid_weight;
+    size_t solid_slots;
+    int solid_rows;
 
     status = SIXEL_FALSE;
+    solid_count = 0u;
+    solid_weight = 0u;
+    solid_slots = 0u;
+    solid_rows = 0;
     sample = NULL;
     frame_if = NULL;
     sample_if = NULL;
@@ -352,6 +546,43 @@ sixel_filter_sample_copy_frame(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    /*
+     * Find the solid regions before sizing the sample, because their colors
+     * are appended to it and the extra rows have to be accounted for here.
+     */
+    solid_count = sixel_filter_sample_solid_colors(src_pixels,
+                                                   src_width,
+                                                   src_height,
+                                                   depth,
+                                                   src_mask,
+                                                   clip_x,
+                                                   clip_y,
+                                                   width,
+                                                   height,
+                                                   solid,
+                                                   SIXEL_SAMPLE_SOLID_MAX);
+    if (solid_count > 0u) {
+        size_t grid_count;
+
+        grid_count = (size_t)sample_width * (size_t)sample_height;
+        /*
+         * Enough copies of each color that it clears the mass floor the
+         * palette's anchoring applies, with margin.  Fewer would let a solid
+         * element be dismissed as noise -- which is the discrimination this
+         * whole path exists to get right.
+         */
+        solid_weight = (unsigned int)(grid_count / 512u);
+        if (solid_weight < 4u) {
+            solid_weight = 4u;
+        }
+        solid_slots = (size_t)solid_count * (size_t)solid_weight;
+        solid_rows = (int)((solid_slots + (size_t)sample_width - 1u)
+                           / (size_t)sample_width);
+        sample_height += solid_rows;
+        /* The row is filled round-robin, so the padding is not one color. */
+        solid_slots = (size_t)solid_rows * (size_t)sample_width;
+    }
+
     if (sample_width_out != NULL) {
         *sample_width_out = sample_width;
     }
@@ -433,6 +664,12 @@ sixel_filter_sample_copy_frame(
         src_transparency.alpha_zero_is_transparent;
     if (src_mask != NULL &&
         src_transparency.transparent_mask_size >= src_pixel_count) {
+        /*
+         * sample_count already includes the appended rows, so the mask covers
+         * them; they are zero-filled below, which marks them opaque.  Sizing
+         * the mask to the grid alone would leave every appended color outside
+         * the declared extent.
+         */
         mask_size = sample_count;
         dst_mask = (unsigned char *)sixel_allocator_malloc(allocator,
                                                            mask_size);
@@ -469,6 +706,28 @@ sixel_filter_sample_copy_frame(
             ++dst_index;
         }
 
+    }
+
+    /*
+     * Append the solid colors, round-robin so the row padding is shared out
+     * rather than over-weighting whichever color happened to be last.
+     */
+    if (solid_count > 0u) {
+        size_t slot;
+
+        for (slot = 0u; slot < solid_slots && dst_index < sample_count;
+             ++slot) {
+            unsigned int which;
+
+            which = (unsigned int)(slot % (size_t)solid_count);
+            memcpy(dst_pixels + dst_index * (size_t)depth,
+                   solid + (size_t)which * (size_t)depth,
+                   (size_t)depth);
+            if (dst_mask != NULL) {
+                dst_mask[dst_index] = 0;
+            }
+            ++dst_index;
+        }
     }
 
     *sample_out = sample;

@@ -128,6 +128,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0011_filter_encode_accumulation_buffer.c \
 	processing/filter/0012_filter_encode_6delta_plane.c \
 	processing/filter/0013_filter_encode_6delta_keycolor.c \
+	processing/filter/0014_filter_sample_solid.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 	processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -242,6 +243,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0011_filter_encode_accumulation_buffer.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0012_filter_encode_6delta_plane.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0013_filter_encode_6delta_keycolor.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0014_filter_sample_solid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OBJEXT) \
@@ -494,6 +496,7 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po \
 	processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po \
 	processing/filter/$(DEPDIR)/test_runner-0013_filter_encode_6delta_keycolor.Po \
+	processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
@@ -1334,6 +1337,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0011_filter_encode_accumulation_buffer.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0012_filter_encode_6delta_plane.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0013_filter_encode_6delta_keycolor.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0014_filter_sample_solid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -1634,6 +1638,9 @@ processing/filter/test_runner-0012_filter_encode_6delta_plane.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/filter/test_runner-0013_filter_encode_6delta_keycolor.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0014_filter_sample_solid.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/$(am__dirstamp):
@@ -2218,6 +2225,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0013_filter_encode_6delta_keycolor.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
@@ -2527,6 +2535,20 @@ processing/filter/test_runner-0013_filter_encode_6delta_keycolor.obj: processing
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0013_filter_encode_6delta_keycolor.c' object='processing/filter/test_runner-0013_filter_encode_6delta_keycolor.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0013_filter_encode_6delta_keycolor.obj `if test -f 'processing/filter/0013_filter_encode_6delta_keycolor.c'; then $(CYGPATH_W) 'processing/filter/0013_filter_encode_6delta_keycolor.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0013_filter_encode_6delta_keycolor.c'; fi`
+
+processing/filter/test_runner-0014_filter_sample_solid.o: processing/filter/0014_filter_sample_solid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0014_filter_sample_solid.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Tpo -c -o processing/filter/test_runner-0014_filter_sample_solid.o `test -f 'processing/filter/0014_filter_sample_solid.c' || echo '$(srcdir)/'`processing/filter/0014_filter_sample_solid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Tpo processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0014_filter_sample_solid.c' object='processing/filter/test_runner-0014_filter_sample_solid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0014_filter_sample_solid.o `test -f 'processing/filter/0014_filter_sample_solid.c' || echo '$(srcdir)/'`processing/filter/0014_filter_sample_solid.c
+
+processing/filter/test_runner-0014_filter_sample_solid.obj: processing/filter/0014_filter_sample_solid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0014_filter_sample_solid.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Tpo -c -o processing/filter/test_runner-0014_filter_sample_solid.obj `if test -f 'processing/filter/0014_filter_sample_solid.c'; then $(CYGPATH_W) 'processing/filter/0014_filter_sample_solid.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0014_filter_sample_solid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Tpo processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0014_filter_sample_solid.c' object='processing/filter/test_runner-0014_filter_sample_solid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0014_filter_sample_solid.obj `if test -f 'processing/filter/0014_filter_sample_solid.c'; then $(CYGPATH_W) 'processing/filter/0014_filter_sample_solid.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0014_filter_sample_solid.c'; fi`
 
 processing/encoder-core/test_runner-0001_encoder_core_factory.o: processing/encoder-core/0001_encoder_core_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0001_encoder_core_factory.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Tpo -c -o processing/encoder-core/test_runner-0001_encoder_core_factory.o `test -f 'processing/encoder-core/0001_encoder_core_factory.c' || echo '$(srcdir)/'`processing/encoder-core/0001_encoder_core_factory.c
@@ -4305,6 +4327,7 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0013_filter_encode_6delta_keycolor.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
@@ -4460,6 +4483,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0013_filter_encode_6delta_keycolor.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0014_filter_sample_solid.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
