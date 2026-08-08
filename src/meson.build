@@ -37,6 +37,8 @@ srcs = [
   'sleep.h',
   'palette-heckbert.c',
   'palette-heckbert.h',
+  'palette-common-cover.c',
+  'palette-common-cover.h',
   'palette-common-merge.c',
   'palette-common-merge.h',
   'palette-common-snap.c',

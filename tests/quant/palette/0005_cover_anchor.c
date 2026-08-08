@@ -535,6 +535,7 @@ cover_check_soft(unsigned char const *pixels, sixel_allocator_t *allocator)
     unsigned int hard;
     unsigned int count;
     unsigned int index;
+    unsigned int nearest;
     int ok;
 
     ok = 0;
@@ -613,11 +614,9 @@ cover_check_soft(unsigned char const *pixels, sixel_allocator_t *allocator)
         SIXEL_PALETTE_COVER_ANCHOR_MAX,
         allocator);
     for (index = 0u; index < count; ++index) {
-        unsigned int near;
-
-        near = cover_nearest_sq(anchors + (size_t)index * 3u,
-                                pixels, pixel_count);
-        if (near > (unsigned int)SIXEL_PALETTE_COVER_NEAR_SQ) {
+        nearest = cover_nearest_sq(anchors + (size_t)index * 3u,
+                                   pixels, pixel_count);
+        if (nearest > (unsigned int)SIXEL_PALETTE_COVER_NEAR_SQ) {
             fprintf(stderr,
                     "candidate %u = (%u,%u,%u) is %u from the nearest "
                     "sample; soft may only nominate colors the image has\n",
@@ -625,7 +624,7 @@ cover_check_soft(unsigned char const *pixels, sixel_allocator_t *allocator)
                     (unsigned int)anchors[index * 3u],
                     (unsigned int)anchors[index * 3u + 1u],
                     (unsigned int)anchors[index * 3u + 2u],
-                    near);
+                    nearest);
             goto end;
         }
     }

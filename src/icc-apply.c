@@ -678,6 +678,9 @@ sixel_icc_encode_xyz_d50_to_pcs_unit(double pcs_unit[3],
 {
     double lab[3];
 
+    lab[0] = 0.0;
+    lab[1] = 0.0;
+    lab[2] = 0.0;
     if (pcs_unit == NULL || xyz_d50 == NULL) {
         return 0;
     }

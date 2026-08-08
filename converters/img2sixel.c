@@ -1480,6 +1480,21 @@ static cli_env_help_t const g_env_help_table[] = {
         "integers override automatic sizing."
     },
     {
+        "SIXEL_PALETTE_COVER",
+        "select palette coverage anchoring: off, corners, faces, edges,\n"
+        "all, auto, or on. The default is auto."
+    },
+    {
+        "SIXEL_PALETTE_COVER_GROW",
+        "allow coverage anchors to exceed the requested palette size.\n"
+        "Non-zero values enable growth; the default keeps the size fixed."
+    },
+    {
+        "SIXEL_PALETTE_COVER_MODE",
+        "choose soft image-color anchors or hard RGB-lattice anchors.\n"
+        "Accepts soft (default) or hard."
+    },
+    {
         "SIXEL_PALETTE_ANIMATION_MODE",
         "enable frame-to-frame palette stabilization for animated inputs.\n"
         "Accepts 0 or 1 (default 0)."

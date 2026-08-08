@@ -274,7 +274,6 @@ test_filter_0014_filter_sample_solid(int argc, char **argv)
     {
         unsigned int count;
         int block;
-        int phase;
 
         for (phase = 0; phase < 5; ++phase) {
             solid_fill(pixels, 150 + phase, 250 + phase);

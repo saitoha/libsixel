@@ -4235,6 +4235,19 @@ sixel_encoder_update_accumulation_from_frame(
             goto end;
         }
     }
+    /*
+     * Keep the reset helper's allocation contract explicit at the use site.
+     * Besides guarding future helper changes, this lets static analyzers prove
+     * that the retained plane below is large enough for every frame update.
+     */
+    if (encoder->accumulation_pixels == NULL ||
+        encoder->accumulation_pixels_size < plane_rgb_size) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_update_accumulation_from_frame: "
+            "accumulation plane is unavailable.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
     if (encoder->accumulation_valid_mask == NULL ||
             encoder->accumulation_valid_mask_size < plane_pixel_count) {
         status = sixel_encoder_ensure_accumulation_valid_mask(

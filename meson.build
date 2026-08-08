@@ -2099,6 +2099,8 @@ loader_helper_sources = files(
   'src/cpu.h',
   'src/pixelformat.c',
   'src/palette.c',
+  'src/palette-common-cover.c',
+  'src/palette-common-cover.h',
   'src/palette-common-merge.c',
   'src/palette-common-snap.c',
   'src/palette-heckbert.c',

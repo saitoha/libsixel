@@ -34,6 +34,7 @@
 
 #include <sixel.h>
 
+#include "compat_stub.h"
 #include "palette-common-cover.h"
 
 /*
@@ -90,7 +91,7 @@ sixel_palette_cover_mode(void)
     if (g_sixel_palette_cover_override_enabled != 0) {
         return g_sixel_palette_cover_override.mode;
     }
-    value = getenv("SIXEL_PALETTE_COVER_MODE");
+    value = sixel_compat_getenv("SIXEL_PALETTE_COVER_MODE");
     if (value != NULL && strcmp(value, "hard") == 0) {
         return SIXEL_PALETTE_COVER_MODE_HARD;
     }
@@ -110,7 +111,7 @@ sixel_palette_cover_policy(void)
      * The environment stays available for callers that build a palette
      * directly rather than through the encoder's option layer.
      */
-    value = getenv("SIXEL_PALETTE_COVER");
+    value = sixel_compat_getenv("SIXEL_PALETTE_COVER");
     if (value == NULL) {
         return SIXEL_PALETTE_COVER_AUTO;
     }
@@ -138,7 +139,7 @@ sixel_palette_cover_grow_enabled(void)
     if (g_sixel_palette_cover_override_enabled != 0) {
         return g_sixel_palette_cover_override.grow;
     }
-    value = getenv("SIXEL_PALETTE_COVER_GROW");
+    value = sixel_compat_getenv("SIXEL_PALETTE_COVER_GROW");
 
     return value != NULL && strcmp(value, "0") != 0 ? 1 : 0;
 }
