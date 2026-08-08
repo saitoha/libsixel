@@ -9880,7 +9880,7 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_cover_grow_override = 0;
     (*ppencoder)->quantize_model_cover_grow = 0;
     (*ppencoder)->quantize_model_cover_mode_override = 0;
-    (*ppencoder)->quantize_model_cover_mode = SIXEL_PALETTE_COVER_MODE_HARD;
+    (*ppencoder)->quantize_model_cover_mode = SIXEL_PALETTE_COVER_MODE_SOFT;
     (*ppencoder)->quantize_model_cover      = SIXEL_PALETTE_COVER_AUTO;
     (*ppencoder)->quantize_model_animation_mode_override = 0;
     (*ppencoder)->quantize_model_animation_mode = 0;
@@ -14590,18 +14590,6 @@ sixel_encoder_setopt(
                         &match_value)) {
                     sixel_helper_set_additional_message(
                         "invalid -Q cover_mode resolution.");
-                    status = SIXEL_BAD_ARGUMENT;
-                    goto end;
-                }
-                if (match_value == SIXEL_PALETTE_COVER_MODE_SOFT) {
-                    /*
-                     * Refuse rather than fall back to hard: a configuration
-                     * that asks for soft must not silently change meaning the
-                     * day soft is implemented.
-                     */
-                    sixel_helper_set_additional_message(
-                        "-Q cover_mode=soft is not implemented yet; "
-                        "only cover_mode=hard is available.");
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }

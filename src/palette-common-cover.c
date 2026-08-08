@@ -82,12 +82,97 @@ sixel_set_palette_cover_override(int enabled,
 SIXEL_INTERNAL_API int
 sixel_palette_cover_mode(void)
 {
+    char const *value;
+
+    if (g_sixel_palette_cover_override_enabled != 0) {
+        return g_sixel_palette_cover_override.mode;
+    }
+    value = getenv("SIXEL_PALETTE_COVER_MODE");
+    if (value != NULL && strcmp(value, "hard") == 0) {
+        return SIXEL_PALETTE_COVER_MODE_HARD;
+    }
+
+    return SIXEL_PALETTE_COVER_MODE_SOFT;
+}
+
+/*
+ * Read the extent of the samples the solver was handed.
+ *
+ * This is the whole of soft's evidence gathering: one pass over the buffer
+ * that is already in hand at the anchoring site, producing six numbers.  It
+ * deliberately does not go looking at the source frame -- a color missing from
+ * the sample is a sampling problem, and paying for it here would buy a
+ * different bug rather than fix this one.
+ */
+SIXEL_INTERNAL_API int
+sixel_palette_cover_measure_extent(void const *data,
+                                   unsigned int length,
+                                   int pixelformat,
+                                   sixel_palette_cover_extent_t *extent)
+{
+    unsigned char const *bytes;
+    unsigned int stride;
+    unsigned int offset;
+    unsigned int pixels;
+    unsigned int i;
+    int k;
+    int depth;
+
+    if (data == NULL || extent == NULL || length == 0u) {
+        return 0;
+    }
     /*
-     * Soft anchoring does not exist yet, so every channel that cannot report
-     * an error resolves to hard.  The option layer refuses it outright, which
-     * is where a user who asks for it finds out.
+     * Only the byte-per-channel formats that actually reach a solver are read.
+     * Float32 and sub-byte packings fall through to the cube, which is what
+     * they get today, rather than to a silently wrong box.
      */
-    return SIXEL_PALETTE_COVER_MODE_HARD;
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+        stride = 3u; offset = 0u; break;
+    case SIXEL_PIXELFORMAT_BGR888:
+        stride = 3u; offset = 0u; break;
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        stride = 4u; offset = 0u; break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        stride = 4u; offset = 1u; break;
+    default:
+        return 0;
+    }
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth <= 0 || (unsigned int)depth != stride) {
+        return 0;
+    }
+    pixels = length / stride;
+    if (pixels == 0u) {
+        return 0;
+    }
+    bytes = (unsigned char const *)data;
+    for (k = 0; k < 3; ++k) {
+        extent->lo[k] = 0xffu;
+        extent->hi[k] = 0x00u;
+    }
+    for (i = 0u; i < pixels; ++i) {
+        unsigned char const *px;
+
+        px = bytes + (size_t)i * (size_t)stride + offset;
+        for (k = 0; k < 3; ++k) {
+            if (px[k] < extent->lo[k]) {
+                extent->lo[k] = px[k];
+            }
+            if (px[k] > extent->hi[k]) {
+                extent->hi[k] = px[k];
+            }
+        }
+    }
+    /*
+     * BGR channel order does not matter.  The box is measured and the anchors
+     * are built in the same order, and the lattice is symmetric under
+     * permuting the axes, so the placed points are the same set either way.
+     */
+
+    return 1;
 }
 
 SIXEL_INTERNAL_API int
@@ -180,6 +265,39 @@ sixel_palette_cover_anchor_count(int policy)
     }
 }
 
+/*
+ * The anchor for table entry INDEX.
+ *
+ * The table doubles as a direction table: an entry's channel is 0x00, 0x80 or
+ * 0xff, which reads as -1, 0 or +1.  Hard takes the cube's support in that
+ * direction, which is the table value itself; soft takes the sample box's.
+ * Keeping one table means the ladder, its ordering and the auto resolution are
+ * shared by both modes and cannot drift apart.
+ */
+static void
+sixel_palette_cover_anchor_point(unsigned int index,
+                                 sixel_palette_cover_extent_t const *extent,
+                                 unsigned char *out)
+{
+    int k;
+
+    for (k = 0; k < 3; ++k) {
+        unsigned char v;
+
+        v = sixel_palette_cover_anchors[index][k];
+        if (extent == NULL) {
+            out[k] = v;
+        } else if (v == 0xffu) {
+            out[k] = extent->hi[k];
+        } else if (v == 0x00u) {
+            out[k] = extent->lo[k];
+        } else {
+            out[k] = (unsigned char)(((int)extent->lo[k]
+                                      + (int)extent->hi[k]) / 2);
+        }
+    }
+}
+
 static unsigned int
 sixel_palette_cover_distance_sq(unsigned char const *a, unsigned char const *b)
 {
@@ -222,6 +340,7 @@ sixel_palette_cover_missing_anchors(unsigned char const *entries,
                                     unsigned int entry_count,
                                     int depth,
                                     int policy,
+                                    sixel_palette_cover_extent_t const *extent,
                                     unsigned char *out,
                                     unsigned int out_max)
 {
@@ -236,9 +355,9 @@ sixel_palette_cover_missing_anchors(unsigned char const *entries,
     wanted = sixel_palette_cover_anchor_count(
         sixel_palette_cover_resolve_policy(policy, entry_count));
     for (index = 0u; index < wanted && found < out_max; ++index) {
-        unsigned char const *anchor;
+        unsigned char anchor[3];
 
-        anchor = sixel_palette_cover_anchors[index];
+        sixel_palette_cover_anchor_point(index, extent, anchor);
         /*
          * Skip an anchor the palette already reaches.  The test depends only
          * on the palette, so it cannot make the anchor set flicker from frame
@@ -317,12 +436,15 @@ sixel_palette_cover_free_slot(unsigned char *entries,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_cover_anchor_rgb888(unsigned char *entries,
                                   unsigned int entry_count,
-                                  int depth)
+                                  int depth,
+                                  sixel_palette_cover_extent_t const *extent)
 {
     unsigned char wanted[SIXEL_PALETTE_COVER_ANCHOR_MAX * 3u];
     unsigned int count;
     unsigned int index;
     unsigned int gap;
+    unsigned int round;
+    unsigned int placed;
     int slot;
 
     if (entries == NULL) {
@@ -331,39 +453,62 @@ sixel_palette_cover_anchor_rgb888(unsigned char *entries,
     if (depth != 3) {
         return SIXEL_OK;
     }
-    count = sixel_palette_cover_missing_anchors(
-        entries,
-        entry_count,
-        depth,
-        sixel_palette_cover_policy(),
-        wanted,
-        SIXEL_PALETTE_COVER_ANCHOR_MAX);
 
-    for (index = 0u; index < count; ++index) {
-        unsigned char const *anchor;
-
-        anchor = wanted + (size_t)index * 3u;
-        /* Re-measure: an earlier anchor may already have covered this one. */
-        gap = sixel_palette_cover_nearest_sq(anchor,
-                                             entries,
-                                             entry_count,
-                                             depth);
-        if (gap <= (unsigned int)SIXEL_PALETTE_COVER_NEAR_SQ) {
-            continue;
-        }
-        slot = sixel_palette_cover_free_slot(
+    /*
+     * Placing is iterated rather than done in one sweep, because funding an
+     * anchor moves a pair of entries to their midpoint and that can pull an
+     * entry away from an anchor already judged reachable.  Measured on an
+     * inset fixture, an anchor sitting 40.8 away -- inside the reach
+     * threshold, so skipped -- was left 49.6 away by a merge made for an
+     * earlier anchor, and the single sweep never looked at it again.
+     *
+     * A round that places nothing terminates the loop, so the cap is only a
+     * backstop; each round either makes progress or is the last.
+     */
+    for (round = 0u; round < SIXEL_PALETTE_COVER_MAX_ROUNDS; ++round) {
+        count = sixel_palette_cover_missing_anchors(
             entries,
             entry_count,
             depth,
-            gap / SIXEL_PALETTE_COVER_MERGE_MARGIN);
-        /*
-         * Nothing cheap enough for this anchor does not mean nothing cheap
-         * enough for the next: the anchors are a list, not a ranking.
-         */
-        if (slot < 0) {
-            continue;
+            sixel_palette_cover_policy(),
+            extent,
+            wanted,
+            SIXEL_PALETTE_COVER_ANCHOR_MAX);
+        if (count == 0u) {
+            break;
         }
-        memcpy(entries + (size_t)slot * (size_t)depth, anchor, 3u);
+        placed = 0u;
+        for (index = 0u; index < count; ++index) {
+            unsigned char const *anchor;
+
+            anchor = wanted + (size_t)index * 3u;
+            /* Re-measure: an earlier anchor may already have covered this. */
+            gap = sixel_palette_cover_nearest_sq(anchor,
+                                                 entries,
+                                                 entry_count,
+                                                 depth);
+            if (gap <= (unsigned int)SIXEL_PALETTE_COVER_NEAR_SQ) {
+                continue;
+            }
+            slot = sixel_palette_cover_free_slot(
+                entries,
+                entry_count,
+                depth,
+                gap / SIXEL_PALETTE_COVER_MERGE_MARGIN);
+            /*
+             * Nothing cheap enough for this anchor does not mean nothing
+             * cheap enough for the next: the anchors are a list, not a
+             * ranking.
+             */
+            if (slot < 0) {
+                continue;
+            }
+            memcpy(entries + (size_t)slot * (size_t)depth, anchor, 3u);
+            placed++;
+        }
+        if (placed == 0u) {
+            break;
+        }
     }
 
     return SIXEL_OK;

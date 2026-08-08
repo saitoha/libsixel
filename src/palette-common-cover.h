@@ -92,6 +92,34 @@ extern "C" {
 #define SIXEL_PALETTE_COVER_MODE_HARD 0
 #define SIXEL_PALETTE_COVER_MODE_SOFT 1
 
+/*
+ * The per-channel extent of the colors the solver was given.  Soft anchoring
+ * places the lattice on this box instead of on the cube.
+ *
+ * The box is the cheapest set that CONTAINS the sample hull, and containment
+ * is the property that matters: the support points themselves lie ON the hull,
+ * so the convex hull of 26 of them is inscribed and cuts the corners between
+ * sampled directions.  Measured on a tilted cloud, anchoring to the support
+ * points left 70% of probe colors unreachable against 82% for no anchoring at
+ * all, while anchoring to the box left 4%.
+ */
+typedef struct sixel_palette_cover_extent {
+    unsigned char lo[3];
+    unsigned char hi[3];
+} sixel_palette_cover_extent_t;
+
+/*
+ * Measure the extent of a sample buffer.  Returns non-zero when the extent is
+ * usable; a format this cannot read, or an empty buffer, returns zero and the
+ * caller falls back to the cube.
+ */
+SIXEL_INTERNAL_API int
+sixel_palette_cover_measure_extent(
+    void const                     /* in */  *data,
+    unsigned int                   /* in */   length,
+    int                            /* in */   pixelformat,
+    sixel_palette_cover_extent_t   /* out */ *extent);
+
 /* Anchoring options, resolved from the override, then env, then defaults. */
 typedef struct sixel_palette_cover_options {
     int policy;  /* SIXEL_PALETTE_COVER_*      */
@@ -114,6 +142,13 @@ typedef struct sixel_palette_cover_options {
  * entries, so any constant tuned for a median-cut palette rejects every merge.
  */
 #define SIXEL_PALETTE_COVER_MERGE_MARGIN 2u
+
+/*
+ * How many times placement may sweep the anchor list.  Funding one anchor can
+ * un-reach another, so a single sweep is not a fixed point; a sweep that
+ * places nothing ends the loop, making this only a backstop.
+ */
+#define SIXEL_PALETTE_COVER_MAX_ROUNDS 4u
 
 /*
  * Resolve SIXEL_PALETTE_COVER_AUTO for a palette of ENTRY_COUNT colors.
@@ -147,15 +182,19 @@ sixel_palette_cover_resolve_policy(int policy, unsigned int entry_count);
 /*
  * Collect the anchors of POLICY that ENTRY_COUNT colors do not already reach,
  * writing them to OUT as RGB triples.  Returns how many were written.
+ *
+ * EXTENT selects where the lattice sits: NULL puts it on the RGB cube (hard),
+ * and a measured extent puts it on that box (soft).
  */
 SIXEL_INTERNAL_API unsigned int
 sixel_palette_cover_missing_anchors(
-    unsigned char const /* in */  *entries,
-    unsigned int        /* in */   entry_count,
-    int                 /* in */   depth,
-    int                 /* in */   policy,
-    unsigned char       /* out */ *out,
-    unsigned int        /* in */   out_max);
+    unsigned char const                /* in */  *entries,
+    unsigned int                       /* in */   entry_count,
+    int                                /* in */   depth,
+    int                                /* in */   policy,
+    sixel_palette_cover_extent_t const /* in */  *extent,
+    unsigned char                      /* out */ *out,
+    unsigned int                       /* in */   out_max);
 
 /*
  * Anchor a finished palette in place, funding each anchor by merging the
@@ -164,9 +203,10 @@ sixel_palette_cover_missing_anchors(
  */
 SIXELAPI SIXELSTATUS
 sixel_palette_cover_anchor_rgb888(
-    unsigned char /* in out */ *entries,
-    unsigned int  /* in */      entry_count,
-    int           /* in */      depth);
+    unsigned char                      /* in out */ *entries,
+    unsigned int                       /* in */      entry_count,
+    int                                /* in */      depth,
+    sixel_palette_cover_extent_t const /* in */     *extent);
 
 /*
  * Override anchoring from the encoder so it can be driven as a quantize model
@@ -186,7 +226,22 @@ sixel_palette_cover_policy(void);
 SIXEL_INTERNAL_API int
 sixel_palette_cover_grow_enabled(void);
 
-/* Resolved mode.  Only SIXEL_PALETTE_COVER_MODE_HARD is implemented. */
+/*
+ * Resolved mode: override first, then SIXEL_PALETTE_COVER_MODE, then soft.
+ *
+ * Soft is the default because hard cannot be told apart from a defect on the
+ * content it is wrong for.  A frame whose colors stay away from the gamut
+ * boundary gains nothing from a cube anchor and pays twice for it: the slot,
+ * and the fact that the anchor becomes the ONLY place a small residual can
+ * discharge.  Measured on a slightly greenish black desktop at -p 32, where
+ * the sole green in the palette was the anchor at (0,255,0), error diffusion
+ * -- working exactly as specified -- had to emit 6910 pure-green pixels to
+ * represent a few units of green excess, and MSE went from 299 to 2055.  The
+ * same lattice placed on the sample box emitted none and cost 376.
+ *
+ * Hard remains right when coverage is needed for colors that are not in this
+ * frame at all, which soft cannot see by construction.
+ */
 SIXEL_INTERNAL_API int
 sixel_palette_cover_mode(void);
 

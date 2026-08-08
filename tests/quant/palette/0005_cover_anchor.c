@@ -68,14 +68,21 @@ cover_fill_inset(unsigned char *pixels)
 }
 
 static void
-cover_set_override(int enabled, int policy, int grow)
+cover_set_override_mode(int enabled, int policy, int grow, int mode)
 {
     sixel_palette_cover_options_t options;
 
     options.policy = policy;
     options.grow = grow;
-    options.mode = SIXEL_PALETTE_COVER_MODE_HARD;
+    options.mode = mode;
     sixel_set_palette_cover_override(enabled, &options);
+}
+
+static void
+cover_set_override(int enabled, int policy, int grow)
+{
+    cover_set_override_mode(enabled, policy, grow,
+                            SIXEL_PALETTE_COVER_MODE_HARD);
 }
 
 static unsigned int
@@ -284,7 +291,8 @@ cover_check_spread_palette(void)
 
     if (SIXEL_FAILED(sixel_palette_cover_anchor_rgb888(entries,
                                                        COVER_COLORS,
-                                                       3))) {
+                                                       3,
+                                                       NULL))) {
         fprintf(stderr, "anchoring a spread palette failed\n");
         return 0;
     }
@@ -330,7 +338,7 @@ cover_check_ladder(void)
          * it, so ask against a palette of it and count what comes back.
          */
         got = sixel_palette_cover_missing_anchors(
-            empty, 1u, 3, rungs[index].policy,
+            empty, 1u, 3, rungs[index].policy, NULL,
             out, SIXEL_PALETTE_COVER_ANCHOR_MAX);
         if (got != rungs[index].total) {
             fprintf(stderr,
@@ -348,7 +356,7 @@ cover_check_ladder(void)
         unsigned int got;
 
         got = sixel_palette_cover_missing_anchors(
-            empty, 1u, 3, SIXEL_PALETTE_COVER_FACES,
+            empty, 1u, 3, SIXEL_PALETTE_COVER_FACES, NULL,
             out, SIXEL_PALETTE_COVER_ANCHOR_MAX);
         if (cover_count_reached(cover_corner_list, 8u, out, got) != 8u
                 || cover_count_reached(cover_face_list, 6u, out, got) != 6u
@@ -470,6 +478,138 @@ end:
 }
 
 /*
+ * Soft anchoring: the lattice goes on the extent of the samples, not the cube.
+ *
+ * The invariant asserted here is the one that matters in practice, and it is
+ * stronger than "the anchors landed somewhere sensible": under soft, NO entry
+ * may lie outside the sample's own extent.  A cube anchor in a frame that
+ * never reaches the cube is not merely a wasted slot -- it becomes the only
+ * place a small residual can discharge, and error diffusion then has to emit
+ * it as isolated full-intensity pixels.  On a slightly greenish black desktop
+ * where the palette's sole green was the anchor at (0,255,0), that produced
+ * thousands of pure-green dots on near-black; putting the same lattice on the
+ * sample box produced none.  If any entry escapes the box, that artifact is
+ * back.
+ */
+static int
+cover_check_soft(unsigned char const *pixels, sixel_allocator_t *allocator)
+{
+    unsigned char palette[SIXEL_PALETTE_MAX * 3];
+    sixel_palette_cover_extent_t extent;
+    unsigned int ncolors;
+    unsigned int index;
+    unsigned int reached_cube;
+    int k;
+    int ok;
+
+    ok = 0;
+
+    /* The measured extent has to be the fixture's, exactly. */
+    if (!sixel_palette_cover_measure_extent(
+            pixels,
+            (unsigned int)COVER_WIDTH * COVER_HEIGHT * 3u,
+            SIXEL_PIXELFORMAT_RGB888,
+            &extent)) {
+        fprintf(stderr, "measuring the sample extent failed\n");
+        goto end;
+    }
+    for (k = 0; k < 3; ++k) {
+        if (extent.lo[k] < 48u || extent.hi[k] > 207u) {
+            fprintf(stderr,
+                    "measured extent [%u,%u] on channel %d escapes the "
+                    "fixture's [48,207]\n",
+                    (unsigned int)extent.lo[k],
+                    (unsigned int)extent.hi[k],
+                    k);
+            goto end;
+        }
+    }
+
+    cover_set_override_mode(1, SIXEL_PALETTE_COVER_EDGES, 0,
+                            SIXEL_PALETTE_COVER_MODE_SOFT);
+    if (!cover_build_palette(SIXEL_QUANTIZE_MODEL_MEDIANCUT, pixels,
+                             allocator, palette, &ncolors, COVER_COLORS)) {
+        fprintf(stderr, "soft palette build failed\n");
+        goto end;
+    }
+    for (index = 0u; index < ncolors; ++index) {
+        for (k = 0; k < 3; ++k) {
+            unsigned char v;
+
+            v = palette[(size_t)index * 3u + (size_t)k];
+            if (v < extent.lo[k] || v > extent.hi[k]) {
+                fprintf(stderr,
+                        "soft placed entry %u = (%u,%u,%u) outside the "
+                        "sample extent r[%u,%u] g[%u,%u] b[%u,%u]; that "
+                        "entry is where a residual discharges as a visible "
+                        "full-intensity dot\n",
+                        index,
+                        (unsigned int)palette[index * 3u],
+                        (unsigned int)palette[index * 3u + 1u],
+                        (unsigned int)palette[index * 3u + 2u],
+                        (unsigned int)extent.lo[0], (unsigned int)extent.hi[0],
+                        (unsigned int)extent.lo[1], (unsigned int)extent.hi[1],
+                        (unsigned int)extent.lo[2], (unsigned int)extent.hi[2]);
+                goto end;
+            }
+        }
+    }
+
+    /*
+     * And soft still anchors: the box corners have to be reachable even though
+     * the cube corners must not be.  Without this the invariant above would be
+     * satisfied by doing nothing at all.
+     */
+    {
+        unsigned char box[8][3];
+        unsigned int corner;
+        unsigned int reached_box;
+
+        for (corner = 0u; corner < 8u; ++corner) {
+            for (k = 0; k < 3; ++k) {
+                box[corner][k] = ((corner >> k) & 1u)
+                    ? extent.hi[k] : extent.lo[k];
+            }
+        }
+        reached_box = cover_count_reached(
+            (unsigned char const (*)[3])box, 8u, palette, ncolors);
+        if (reached_box < 8u) {
+            fprintf(stderr,
+                    "soft reached only %u of 8 box corners\n", reached_box);
+            goto end;
+        }
+    }
+    reached_cube = cover_count_reached_corners(palette, ncolors);
+    if (reached_cube != 0u) {
+        fprintf(stderr,
+                "soft reached %u cube corners on an inset image\n",
+                reached_cube);
+        goto end;
+    }
+
+    /*
+     * Hard on the same fixture must still reach the cube.  Running both here
+     * makes the difference the assertion rather than leaving it implied.
+     */
+    cover_set_override_mode(1, SIXEL_PALETTE_COVER_EDGES, 0,
+                            SIXEL_PALETTE_COVER_MODE_HARD);
+    if (!cover_build_palette(SIXEL_QUANTIZE_MODEL_MEDIANCUT, pixels,
+                             allocator, palette, &ncolors, COVER_COLORS)) {
+        fprintf(stderr, "hard palette build failed\n");
+        goto end;
+    }
+    if (cover_count_reached_corners(palette, ncolors) < 8u) {
+        fprintf(stderr, "hard stopped reaching the cube corners\n");
+        goto end;
+    }
+    ok = 1;
+
+end:
+    cover_set_override(0, SIXEL_PALETTE_COVER_AUTO, 0);
+    return ok;
+}
+
+/*
  * -Q MODEL:cover=on|off reaches the pass through this override, and has to win
  * over the environment: an explicit option is a stronger statement than an
  * inherited variable.
@@ -507,6 +647,7 @@ cover_check_override(void)
 end:
     cover_set_override(0, SIXEL_PALETTE_COVER_AUTO, 0);
     (void)sixel_compat_setenv("SIXEL_PALETTE_COVER", "1");
+    (void)sixel_compat_setenv("SIXEL_PALETTE_COVER_MODE", "soft");
     return ok;
 }
 
@@ -562,6 +703,9 @@ test_palette_0005_cover_anchor(int argc, char **argv)
     if (!cover_check_grow(pixels, allocator)) {
         goto end;
     }
+    if (!cover_check_soft(pixels, allocator)) {
+        goto end;
+    }
 
     for (index = 0u; index < sizeof(models) / sizeof(models[0]); ++index) {
         /*
@@ -587,7 +731,9 @@ test_palette_0005_cover_anchor(int argc, char **argv)
             goto end;
         }
 
-        if (sixel_compat_setenv("SIXEL_PALETTE_COVER", "1") != 0) {
+        if (sixel_compat_setenv("SIXEL_PALETTE_COVER", "1") != 0
+                || sixel_compat_setenv("SIXEL_PALETTE_COVER_MODE",
+                                       "hard") != 0) {
             fprintf(stderr, "failed to enable cover anchoring\n");
             goto end;
         }
@@ -626,8 +772,9 @@ test_palette_0005_cover_anchor(int argc, char **argv)
     ok = 1;
 
 end:
-    /* Leave anchoring on, which is the default, for whatever runs next. */
+    /* Leave the defaults -- anchoring on, soft -- for whatever runs next. */
     (void)sixel_compat_setenv("SIXEL_PALETTE_COVER", "1");
+    (void)sixel_compat_setenv("SIXEL_PALETTE_COVER_MODE", "soft");
     if (pixels != NULL) {
         sixel_allocator_free(allocator, pixels);
     }

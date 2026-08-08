@@ -1424,6 +1424,26 @@ success:
      */
     if (SIXEL_SUCCEEDED(status) && storage->entries != NULL
             && storage->entries_float32 == NULL) {
+        sixel_palette_cover_extent_t extent;
+        sixel_palette_cover_extent_t const *anchor_extent;
+
+        /*
+         * Soft puts the lattice on the extent of the samples the solver was
+         * given rather than on the RGB cube.  The samples are still in the
+         * request, so this needs no plumbing and no second pass over the
+         * frame: six numbers, read where the anchoring already happens.
+         *
+         * A format that cannot be read falls back to the cube, which is the
+         * behavior those formats have today.
+         */
+        anchor_extent = NULL;
+        if (sixel_palette_cover_mode() == SIXEL_PALETTE_COVER_MODE_SOFT
+                && sixel_palette_cover_measure_extent(request->data,
+                                                      request->length,
+                                                      request->pixelformat,
+                                                      &extent)) {
+            anchor_extent = &extent;
+        }
         if (sixel_palette_cover_grow_enabled()
                 && ncolors < (unsigned int)SIXEL_PALETTE_MAX) {
             /*
@@ -1446,6 +1466,7 @@ success:
                 ncolors,
                 (int)depth,
                 sixel_palette_cover_policy(),
+                anchor_extent,
                 extra,
                 room);
             if (added > 0u
@@ -1472,13 +1493,16 @@ success:
              */
             (void)sixel_palette_cover_anchor_rgb888(storage->entries,
                                                     ncolors,
-                                                    (int)depth);
+                                                    (int)depth,
+                                                    anchor_extent);
         } else {
             (void)sixel_palette_cover_anchor_rgb888(storage->entries,
                                                     ncolors,
-                                                    (int)depth);
+                                                    (int)depth,
+                                                    anchor_extent);
         }
     }
+
     storage->entry_count = ncolors;
     storage->original_colors = origcolors;
     storage->depth = (int)depth;
