@@ -119,10 +119,27 @@ typedef struct sixel_palette_cover_options {
  * Resolve SIXEL_PALETTE_COVER_AUTO for a palette of ENTRY_COUNT colors.
  *
  * The anchors cost a fixed number of slots, so their relative price falls as
- * the palette grows.  Measured against photographs at 64 colors, the full set
- * costs up to 13% more local error, while at 128 and 256 it was consistently
- * better than not anchoring at all.  The face set is roughly half that price
- * for most of the benefit, so it is what the middle of the range gets.
+ * the palette grows.  Anchoring is never free in mean squared error -- it
+ * spends slots to buy reachability, which MSE over a whole photograph barely
+ * registers because the colors it rescues occupy little area.  Measured
+ * through the encoder and decoder on photographs, MSE against the source with
+ * the face set versus no anchoring at all:
+ *
+ *              -p 64          -p 128        -p 256
+ *   autumn     +23%           +6%           +3%
+ *   egret      +27%           +7%           +5%
+ *
+ * So the ladder is a price schedule, not a quality curve: climb it as the
+ * palette grows and each anchor costs a smaller share of the whole.  Below 32
+ * colors the price is indefensible at any coverage.
+ *
+ * The cost is also content-dependent in a way this fixed lattice cannot see.
+ * An image whose colors never approach the gamut boundary pays for anchors it
+ * can never use, and worse: measured on content compressed into r[86,145],
+ * cover=faces took MSE from 57.8 to 110.1 and put 749 pixels on screen in a
+ * color the source never contained.  That is what cover_mode=soft exists to
+ * fix -- anchoring to the support of the image's own colors rather than the
+ * cube's, which degrades to a no-op exactly when the content is interior.
  */
 SIXEL_INTERNAL_API int
 sixel_palette_cover_resolve_policy(int policy, unsigned int entry_count);
