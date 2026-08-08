@@ -1424,27 +1424,74 @@ success:
      */
     if (SIXEL_SUCCEEDED(status) && storage->entries != NULL
             && storage->entries_float32 == NULL) {
-        sixel_palette_cover_extent_t extent;
-        sixel_palette_cover_extent_t const *anchor_extent;
+        unsigned char anchors[SIXEL_PALETTE_COVER_ANCHOR_MAX * 3u];
+        unsigned int anchor_count;
+        unsigned int budget;
 
         /*
-         * Soft puts the lattice on the extent of the samples the solver was
-         * given rather than on the RGB cube.  The samples are still in the
-         * request, so this needs no plumbing and no second pass over the
-         * frame: six numbers, read where the anchoring already happens.
-         *
-         * A format that cannot be read falls back to the cube, which is the
-         * behavior those formats have today.
+         * Soft takes its anchors out of the samples the solver was given, so
+         * every anchor is a color the image actually contains.  The samples
+         * are still in the request, so this needs no plumbing.
          */
-        anchor_extent = NULL;
-        if (sixel_palette_cover_mode() == SIXEL_PALETTE_COVER_MODE_SOFT
-                && sixel_palette_cover_measure_extent(request->data,
-                                                      request->length,
-                                                      request->pixelformat,
-                                                      &extent)) {
-            anchor_extent = &extent;
+        anchor_count = 0u;
+        budget = sixel_palette_cover_budget(sixel_palette_cover_policy(),
+                                            ncolors);
+        if (budget > SIXEL_PALETTE_COVER_ANCHOR_MAX) {
+            budget = SIXEL_PALETTE_COVER_ANCHOR_MAX;
         }
-        if (sixel_palette_cover_grow_enabled()
+        if (sixel_palette_cover_mode() == SIXEL_PALETTE_COVER_MODE_SOFT
+                && sixel_palette_cover_candidates_supported(
+                       request->pixelformat)) {
+            /*
+             * Soft owns the outcome once the format is readable, INCLUDING
+             * the outcome of finding nothing to do.  Falling back to hard on
+             * an empty candidate list would put the cube lattice on exactly
+             * the images the palette already covers -- the ones the cube is
+             * worst for.
+             */
+            if (budget > 0u) {
+                anchor_count = sixel_palette_cover_collect_candidates(
+                    request->data,
+                    request->length,
+                    request->pixelformat,
+                    storage->entries,
+                    ncolors,
+                    (int)depth,
+                    anchors,
+                    budget,
+                    work_allocator);
+            }
+            if (sixel_palette_cover_grow_enabled()
+                    && ncolors < (unsigned int)SIXEL_PALETTE_MAX) {
+                unsigned int room;
+                unsigned int i;
+
+                room = (unsigned int)SIXEL_PALETTE_MAX - ncolors;
+                if (room > anchor_count) {
+                    room = anchor_count;
+                }
+                if (SIXEL_SUCCEEDED(sixel_palette_resize_entries(
+                            palette, ncolors + room, depth, work_allocator))
+                        && storage->entries != NULL) {
+                    for (i = 0u; i < room; ++i) {
+                        memcpy(storage->entries
+                                   + (size_t)(ncolors + i) * (size_t)depth,
+                               anchors + (size_t)i * 3u,
+                               3u);
+                    }
+                    ncolors += room;
+                }
+            }
+            /*
+             * Whatever did not fit as a new entry is funded by merging, the
+             * same way cover_grow=off funds everything.
+             */
+            sixel_palette_cover_place(storage->entries,
+                                      ncolors,
+                                      (int)depth,
+                                      anchors,
+                                      anchor_count);
+        } else if (sixel_palette_cover_grow_enabled()
                 && ncolors < (unsigned int)SIXEL_PALETTE_MAX) {
             /*
              * Growing spends no existing entry, so the anchors cost nothing in
@@ -1466,7 +1513,6 @@ success:
                 ncolors,
                 (int)depth,
                 sixel_palette_cover_policy(),
-                anchor_extent,
                 extra,
                 room);
             if (added > 0u
@@ -1493,13 +1539,11 @@ success:
              */
             (void)sixel_palette_cover_anchor_rgb888(storage->entries,
                                                     ncolors,
-                                                    (int)depth,
-                                                    anchor_extent);
+                                                    (int)depth);
         } else {
             (void)sixel_palette_cover_anchor_rgb888(storage->entries,
                                                     ncolors,
-                                                    (int)depth,
-                                                    anchor_extent);
+                                                    (int)depth);
         }
     }
 

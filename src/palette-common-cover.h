@@ -66,66 +66,20 @@ extern "C" {
  * spot no anchor set reaches; anchoring cannot help a color that already is a
  * palette entry.
  */
+/*
+ * Under hard these name points of the RGB cube.  Under soft the geometry is
+ * gone -- anchors come from the image -- so the same names are a BUDGET: how
+ * many anchors may be bought, 8, 14 or 26.  The spelling, the ordering and the
+ * auto ladder are shared, so a configuration means the same amount of effort
+ * in either mode.
+ */
 #define SIXEL_PALETTE_COVER_OFF     0  /* no anchoring */
-#define SIXEL_PALETTE_COVER_CORNERS 1  /* 8 cube corners */
-#define SIXEL_PALETTE_COVER_FACES   2  /* + 6 face centres = 14 */
-#define SIXEL_PALETTE_COVER_EDGES   3  /* + 12 edge midpoints = 26 */
+#define SIXEL_PALETTE_COVER_CORNERS 1  /* 8 cube corners  / 8 anchors  */
+#define SIXEL_PALETTE_COVER_FACES   2  /* + 6 face centres / 14 anchors */
+#define SIXEL_PALETTE_COVER_EDGES   3  /* + 12 edge mids   / 26 anchors */
 #define SIXEL_PALETTE_COVER_AUTO    4  /* choose by palette size */
 
 #define SIXEL_PALETTE_COVER_ANCHOR_MAX 26u
-
-/*
- * How the anchors are chosen.
- *
- * HARD places the fixed lattice above and nothing else.  It cannot miss a
- * region of the cube, and it cannot know which regions the image actually
- * uses -- the palette is built from a ~4096-pixel subsample, so by the time
- * anchoring runs the content is no longer available to look at.
- *
- * SOFT is reserved for the opposite trade: choose the anchors from the image
- * itself -- the histogram, or a thumbnail -- so that a color the image leans
- * on is protected even when it sits nowhere near a lattice point, and lattice
- * points the image never approaches cost nothing.  It is not implemented; the
- * option layer rejects it rather than quietly running HARD, so that a
- * configuration asking for it does not change meaning when it lands.
- */
-#define SIXEL_PALETTE_COVER_MODE_HARD 0
-#define SIXEL_PALETTE_COVER_MODE_SOFT 1
-
-/*
- * The per-channel extent of the colors the solver was given.  Soft anchoring
- * places the lattice on this box instead of on the cube.
- *
- * The box is the cheapest set that CONTAINS the sample hull, and containment
- * is the property that matters: the support points themselves lie ON the hull,
- * so the convex hull of 26 of them is inscribed and cuts the corners between
- * sampled directions.  Measured on a tilted cloud, anchoring to the support
- * points left 70% of probe colors unreachable against 82% for no anchoring at
- * all, while anchoring to the box left 4%.
- */
-typedef struct sixel_palette_cover_extent {
-    unsigned char lo[3];
-    unsigned char hi[3];
-} sixel_palette_cover_extent_t;
-
-/*
- * Measure the extent of a sample buffer.  Returns non-zero when the extent is
- * usable; a format this cannot read, or an empty buffer, returns zero and the
- * caller falls back to the cube.
- */
-SIXEL_INTERNAL_API int
-sixel_palette_cover_measure_extent(
-    void const                     /* in */  *data,
-    unsigned int                   /* in */   length,
-    int                            /* in */   pixelformat,
-    sixel_palette_cover_extent_t   /* out */ *extent);
-
-/* Anchoring options, resolved from the override, then env, then defaults. */
-typedef struct sixel_palette_cover_options {
-    int policy;  /* SIXEL_PALETTE_COVER_*      */
-    int grow;    /* anchors may exceed -p N    */
-    int mode;    /* SIXEL_PALETTE_COVER_MODE_* */
-} sixel_palette_cover_options_t;
 
 /*
  * An anchor closer than this to an existing entry is already reachable, so
@@ -151,50 +105,131 @@ typedef struct sixel_palette_cover_options {
 #define SIXEL_PALETTE_COVER_MAX_ROUNDS 4u
 
 /*
- * Resolve SIXEL_PALETTE_COVER_AUTO for a palette of ENTRY_COUNT colors.
+ * How the anchors are chosen.
  *
- * The anchors cost a fixed number of slots, so their relative price falls as
- * the palette grows.  Anchoring is never free in mean squared error -- it
- * spends slots to buy reachability, which MSE over a whole photograph barely
- * registers because the colors it rescues occupy little area.  Measured
- * through the encoder and decoder on photographs, MSE against the source with
- * the face set versus no anchoring at all:
+ * HARD places the fixed lattice above and nothing else.  It cannot miss a
+ * region of the cube, and it cannot know which regions the image actually
+ * uses, so it is right exactly when coverage is needed for colors that are
+ * not in this frame at all.
  *
- *              -p 64          -p 128        -p 256
- *   autumn     +23%           +6%           +3%
- *   egret      +27%           +7%           +5%
- *
- * So the ladder is a price schedule, not a quality curve: climb it as the
- * palette grows and each anchor costs a smaller share of the whole.  Below 32
- * colors the price is indefensible at any coverage.
- *
- * The cost is also content-dependent in a way this fixed lattice cannot see.
- * An image whose colors never approach the gamut boundary pays for anchors it
- * can never use, and worse: measured on content compressed into r[86,145],
- * cover=faces took MSE from 57.8 to 110.1 and put 749 pixels on screen in a
- * color the source never contained.  That is what cover_mode=soft exists to
- * fix -- anchoring to the support of the image's own colors rather than the
- * cube's, which degrades to a no-op exactly when the content is interior.
+ * SOFT takes the opposite trade: the anchors are colors of the image, so a
+ * color the image leans on is protected wherever it sits, and a region of the
+ * cube the image never approaches costs nothing.  It cannot protect what the
+ * frame does not contain.
+ */
+#define SIXEL_PALETTE_COVER_MODE_HARD 0
+#define SIXEL_PALETTE_COVER_MODE_SOFT 1
+
+/* Anchoring options, resolved from the override, then env, then defaults. */
+typedef struct sixel_palette_cover_options {
+    int policy;  /* SIXEL_PALETTE_COVER_*      */
+    int grow;    /* anchors may exceed -p N    */
+    int mode;    /* SIXEL_PALETTE_COVER_MODE_* */
+} sixel_palette_cover_options_t;
+
+/*
+ * Resolve SIXEL_PALETTE_COVER_AUTO for a palette of ENTRY_COUNT colors, and
+ * report how many anchors a resolved policy is worth.
  */
 SIXEL_INTERNAL_API int
 sixel_palette_cover_resolve_policy(int policy, unsigned int entry_count);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_palette_cover_budget(int policy, unsigned int entry_count);
+
+/*
+ * Soft anchoring picks its anchors out of the image instead of constructing
+ * them.  Two earlier shapes were measured and rejected:
+ *
+ *   support points -- the sample maximising <d,x> for each lattice direction.
+ *   These lie ON the hull, so the convex hull of 26 of them is inscribed and
+ *   cuts the corners between sampled directions: 70% of probe colors stayed
+ *   unreachable against 82% for no anchoring at all.
+ *
+ *   the bounding box -- which does contain the hull, and does fix that.  But a
+ *   real color cloud is elongated along luminance, so the box is mostly empty:
+ *   on a bright outdoor frame containing a dark panel, six of the eight box
+ *   corners had no pixel within 156 units.  An anchor on an unoccupied color
+ *   is the same trap as a cube corner -- it becomes the only place a residual
+ *   can discharge, and error diffusion has to emit it as isolated
+ *   full-intensity pixels.  One hot pixel inflated the box and made seven of
+ *   eight corners empty, because a componentwise min/max is the least robust
+ *   statistic there is.
+ *
+ * So an anchor must be a color the image actually contains, in quantity.  The
+ * candidates are the populous cells of a coarse histogram, ranked by how far
+ * they sit from the finished palette, which is exactly the population that
+ * error diffusion cannot reach.  Constructed colors never enter the palette,
+ * so the artifact class cannot recur.
+ */
+
+/* Histogram cell width for candidate mass, in bits per channel. */
+#define SIXEL_PALETTE_COVER_CANDIDATE_BITS 4
+
+/*
+ * A cell needs this share of the samples to be a candidate.  The samples are a
+ * few thousand pixels, so this is a handful of them: enough that a hot pixel,
+ * a cursor, or compression ringing cannot nominate a color, and few enough
+ * that a scrub bar covering a fraction of a percent still can.
+ */
+#define SIXEL_PALETTE_COVER_CANDIDATE_SHARE 1024u
+#define SIXEL_PALETTE_COVER_CANDIDATE_MIN 2u
+
+/*
+ * Collect up to OUT_MAX soft anchors: populous colors of DATA that the current
+ * ENTRIES do not already reach, farthest first, each separated from the ones
+ * before it.  Returns how many were written.  ALLOCATOR provides the
+ * histogram; a format the reader cannot handle returns zero.
+ */
+/*
+ * Whether the candidate reader understands PIXELFORMAT.  Soft has to be able
+ * to tell "nothing needs anchoring" from "I cannot read this", because the
+ * first is a no-op and the second must fall back to hard.  Collapsing them
+ * makes soft silently place the cube lattice on every image it fully covers,
+ * which is exactly the content the cube is worst for.
+ */
+SIXEL_INTERNAL_API int
+sixel_palette_cover_candidates_supported(int pixelformat);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_palette_cover_collect_candidates(
+    void const          /* in */  *data,
+    unsigned int        /* in */   length,
+    int                 /* in */   pixelformat,
+    unsigned char const /* in */  *entries,
+    unsigned int        /* in */   entry_count,
+    int                 /* in */   depth,
+    unsigned char       /* out */ *out,
+    unsigned int        /* in */   out_max,
+    sixel_allocator_t   /* in */  *allocator);
+
+/*
+ * Place ANCHORS into ENTRIES, funding each by merging the closest pair.
+ * Iterated to a fixed point: funding one anchor moves a pair of entries to
+ * their midpoint, which can pull an entry away from an anchor already judged
+ * reachable.
+ */
+SIXEL_INTERNAL_API void
+sixel_palette_cover_place(
+    unsigned char       /* in out */ *entries,
+    unsigned int        /* in */      entry_count,
+    int                 /* in */      depth,
+    unsigned char const /* in */     *anchors,
+    unsigned int        /* in */      anchor_count);
 
 /*
  * Collect the anchors of POLICY that ENTRY_COUNT colors do not already reach,
  * writing them to OUT as RGB triples.  Returns how many were written.
  *
- * EXTENT selects where the lattice sits: NULL puts it on the RGB cube (hard),
- * and a measured extent puts it on that box (soft).
  */
 SIXEL_INTERNAL_API unsigned int
 sixel_palette_cover_missing_anchors(
-    unsigned char const                /* in */  *entries,
-    unsigned int                       /* in */   entry_count,
-    int                                /* in */   depth,
-    int                                /* in */   policy,
-    sixel_palette_cover_extent_t const /* in */  *extent,
-    unsigned char                      /* out */ *out,
-    unsigned int                       /* in */   out_max);
+    unsigned char const /* in */  *entries,
+    unsigned int        /* in */   entry_count,
+    int                 /* in */   depth,
+    int                 /* in */   policy,
+    unsigned char       /* out */ *out,
+    unsigned int        /* in */   out_max);
 
 /*
  * Anchor a finished palette in place, funding each anchor by merging the
@@ -203,10 +238,9 @@ sixel_palette_cover_missing_anchors(
  */
 SIXELAPI SIXELSTATUS
 sixel_palette_cover_anchor_rgb888(
-    unsigned char                      /* in out */ *entries,
-    unsigned int                       /* in */      entry_count,
-    int                                /* in */      depth,
-    sixel_palette_cover_extent_t const /* in */     *extent);
+    unsigned char /* in out */ *entries,
+    unsigned int  /* in */      entry_count,
+    int           /* in */      depth);
 
 /*
  * Override anchoring from the encoder so it can be driven as a quantize model
