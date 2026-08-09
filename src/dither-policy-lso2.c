@@ -256,6 +256,55 @@ diffuse_lso2(unsigned char *data,
     }
 }
 
+/*
+ * Diffuse the error from a pixel that 6delta leaves unchanged.  The retained
+ * RGB value is what the terminal will display, so it replaces the palette
+ * entry as the LSO2 error target.  SAMPLE_SCALED preserves the sample before
+ * any channel updates mutate the working buffer.
+ */
+static void
+diffuse_lso2_6delta_error(unsigned char *data,
+                          int width,
+                          int height,
+                          int x,
+                          int y,
+                          int depth,
+                          int32_t const *sample_scaled,
+                          unsigned char const *source_pixel,
+                          unsigned char const *retained_pixel,
+                          int direction)
+{
+    int32_t target_scaled;
+    int32_t error_scaled;
+    int diff;
+    int n;
+
+    if (data == NULL || sample_scaled == NULL || source_pixel == NULL ||
+        retained_pixel == NULL) {
+        return;
+    }
+    for (n = 0; n < depth; ++n) {
+        diff = (int)source_pixel[n] - (int)retained_pixel[n];
+        if (diff < 0) {
+            diff = -diff;
+        }
+        if (diff > 255) {
+            diff = 255;
+        }
+        target_scaled = (int32_t)retained_pixel[n] << VARERR_SCALE_SHIFT;
+        error_scaled = sample_scaled[n] - target_scaled;
+        diffuse_lso2(data + n,
+                     width,
+                     height,
+                     x,
+                     y,
+                     depth,
+                     error_scaled,
+                     diff,
+                     direction);
+    }
+}
+
 static SIXELSTATUS
 sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                              sixel_dither_policy_lso2_context_t *context
@@ -292,6 +341,11 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     int use_transparent_fence;
     int is_transparent;
     size_t absolute_index;
+    unsigned char const *accumulation_pixel;
+    int accumulation_keycolor;
+    int is_6delta_keep;
+    int record_result;
+    int diffuse_6delta_error;
 
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -318,6 +372,13 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     transparent_mask_size = 0U;
     transparent_keycolor = (-1);
     use_transparent_fence = 0;
+    accumulation_pixel = NULL;
+    accumulation_keycolor = (-1);
+    is_6delta_keep = 0;
+    record_result = 0;
+    diffuse_6delta_error =
+        sixel_dither_pipeline_6delta_error_mode(dither)
+        == SIXEL_6DELTA_ERROR_DIFFUSE ? 1 : 0;
     if (dither != NULL
             && dither->pipeline_transparent_mask != NULL
             && dither->pipeline_transparent_keycolor >= 0
@@ -343,9 +404,12 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
             pos = y * context->width + x;
             base = (size_t)pos * (size_t)depth;
             is_transparent = 0;
+            absolute_index = 0U;
+            if (absolute_y >= 0) {
+                absolute_index = (size_t)absolute_y
+                    * (size_t)context->width + (size_t)x;
+            }
             if (use_transparent_fence && absolute_y >= 0) {
-                absolute_index = (size_t)absolute_y * (size_t)context->width
-                    + (size_t)x;
                 if (absolute_index < transparent_mask_size
                         && transparent_mask[absolute_index] != 0U) {
                     is_transparent = 1;
@@ -364,14 +428,86 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
             }
             source_pixel = data + base;
 
+            record_result = absolute_y >= context->output_start ? 1 : 0;
+            is_6delta_keep = 0;
+            if (absolute_y >= 0) {
+                is_6delta_keep =
+                    sixel_dither_pipeline_6delta_try_keep_rgb888(
+                        dither,
+                        absolute_index,
+                        x,
+                        absolute_y,
+                        source_pixel,
+                        record_result,
+                        &accumulation_pixel,
+                        &accumulation_keycolor);
+            }
+            if (is_6delta_keep != 0) {
+                if (record_result != 0) {
+                    context->result[pos] =
+                        (sixel_index_t)accumulation_keycolor;
+                }
+                if (diffuse_6delta_error != 0) {
+                    diffuse_lso2_6delta_error(data,
+                                             context->width,
+                                             context->height,
+                                             x,
+                                             y,
+                                             depth,
+                                             sample_scaled,
+                                             source_pixel,
+                                             accumulation_pixel,
+                                             direction);
+                }
+                continue;
+            }
+
             color_index = context->lookup_policy->vtbl->map_pixel(
                 context->lookup_policy,
                 source_pixel);
 
-                output_index = color_index;
-                if (absolute_y >= context->output_start) {
-                    context->result[pos] = (sixel_index_t)output_index;
+            /*
+             * Let the displayed color compete with LSO2's palette choice.
+             * Keeping wins ties because it preserves quality while emitting
+             * no pixel data.
+             */
+            if (absolute_y >= 0 && depth >= 3) {
+                is_6delta_keep =
+                    sixel_dither_pipeline_6delta_try_keep_after_lookup(
+                        dither,
+                        absolute_index,
+                        x,
+                        absolute_y,
+                        source_pixel,
+                        palette + (size_t)color_index * (size_t)depth,
+                        record_result,
+                        &accumulation_pixel,
+                        &accumulation_keycolor);
+                if (is_6delta_keep != 0) {
+                    if (record_result != 0) {
+                        context->result[pos] =
+                            (sixel_index_t)accumulation_keycolor;
+                    }
+                    if (diffuse_6delta_error != 0) {
+                        diffuse_lso2_6delta_error(data,
+                                                 context->width,
+                                                 context->height,
+                                                 x,
+                                                 y,
+                                                 depth,
+                                                 sample_scaled,
+                                                 source_pixel,
+                                                 accumulation_pixel,
+                                                 direction);
+                    }
+                    continue;
                 }
+            }
+
+            output_index = color_index;
+            if (absolute_y >= context->output_start) {
+                context->result[pos] = (sixel_index_t)output_index;
+            }
 
             for (n = 0; n < depth; ++n) {
                 palette_value = palette[color_index * depth + n];
