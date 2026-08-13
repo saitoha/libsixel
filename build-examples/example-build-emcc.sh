@@ -57,7 +57,7 @@ EOF
   PATH="${EMSCRIPTEN_WRAPPERDIR}:${PATH}"
   export PATH
 fi
- 
+
 cd "${BUILDDIR}" && (
 CC=emcc \
 ../../configure \
@@ -65,7 +65,8 @@ CC=emcc \
   --with-shebang-file="${SHEBANG_FILE}" \
   --disable-shared \
   --with-png \
-  --with-jpeg
+  --with-jpeg \
+  --without-librsvg
 make all V=1
 make check
 )
