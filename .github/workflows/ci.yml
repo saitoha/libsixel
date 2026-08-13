@@ -20,7 +20,7 @@ concurrency:
 env:
   # Pin vcpkg to a stable release to avoid fetching future tool builds that
   # depend on unavailable CMake versions during bootstrap.
-  VCPKG_REF: 2024.12.16
+  VCPKG_REF: 2026.07.29
   # Enforce Node.js 24 for JavaScript actions before the hosted-runner switch.
   # Node.js 24 becomes default on 2026-06-02 and Node.js 20 is removed on
   # 2026-09-16.
