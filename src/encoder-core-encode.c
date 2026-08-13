@@ -771,6 +771,7 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
         ctx->output->penetrate_multiplexer;
     state->output->encode_policy = ctx->output->encode_policy;
     state->output->ormode = ctx->output->ormode;
+    state->output->keycolor_reserved = ctx->output->keycolor_reserved;
 
     state->initialized = 1;
     state->index = (-1);
@@ -2659,7 +2660,7 @@ sixel_put_node(
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
 
-    if (ncolors != 2 || keycolor == (-1)) {
+    if (ncolors != 2 || keycolor == (-1) || output->keycolor_reserved) {
         /* designate palette index */
         if (output->active_palette != np->pal) {
             sixel_putc(output->buffer + output->pos, '#');
@@ -3271,7 +3272,16 @@ sixel_encode_emit_palette(int bodyonly,
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
 
-    if (bodyonly || (ncolors == 2 && keycolor != (-1))) {
+    /*
+     * Two colors with a key is the caller's mono convention (-e): the visible
+     * color is whatever the terminal has selected, so emitting a definition
+     * would override it.  A key the encoder reserved carries no such promise --
+     * skipping the palette there paints the frame in the register the previous
+     * frame happened to leave behind.
+     */
+    if (bodyonly
+            || (ncolors == 2 && keycolor != (-1)
+                && !output->keycolor_reserved)) {
         return SIXEL_OK;
     }
 
@@ -4689,6 +4699,13 @@ sixel_encode_dither(
             goto end;
         }
     }
+
+    /*
+     * A key the encoder reserved for itself (6delta appends one to every
+     * frame) must not trigger the legacy two-color mono shortcut below.  Refresh
+     * it per encode so a recycled output object cannot carry a stale value.
+     */
+    output->keycolor_reserved = dither->keycolor_reserved != 0 ? 1 : 0;
 
     status = sixel_encode_header(encoded_width,
                                  encoded_height,
