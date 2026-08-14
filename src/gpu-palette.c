@@ -106,17 +106,21 @@ sixel_gpu_palette_accumulation_is_supported(
          * happens when the retained plane is larger than the frame: the kernel
          * below addresses the plane by frame pixel index and would compare
          * against unrelated pixels.  Decline so the CPU dither policy, which
-         * does understand a plane origin, handles the frame instead.  Only the
-         * undiffused policies implement the keep gate, so nothing is gained by
-         * declining for the other methods the GPU accepts.
+         * does understand a plane origin, handles the frame instead.  Both
+         * GPU palette policies implement the keep gate and must not silently
+         * paint a frame whose retained plane they cannot address.
          */
         if (request->sixdelta_enabled != 0 &&
-                request->method_for_diffuse == SIXEL_DIFFUSE_NONE) {
+                (request->method_for_diffuse == SIXEL_DIFFUSE_NONE ||
+                 request->method_for_diffuse ==
+                    SIXEL_DIFFUSE_BLUENOISE_DITHER)) {
             return 0;
         }
         return 1;
     }
-    if (request->method_for_diffuse != SIXEL_DIFFUSE_NONE) {
+    if (request->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
+            request->method_for_diffuse !=
+                SIXEL_DIFFUSE_BLUENOISE_DITHER) {
         return 0;
     }
     if (request->accumulation_pixels == NULL ||

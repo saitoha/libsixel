@@ -4155,7 +4155,9 @@ sixel_dither_apply_palette_with_mode(
          */
         gpu_request.has_6delta_accumulation =
             dither->pipeline_6delta_enabled != 0 &&
-            dither->method_for_diffuse == SIXEL_DIFFUSE_NONE &&
+            (dither->method_for_diffuse == SIXEL_DIFFUSE_NONE ||
+             dither->method_for_diffuse ==
+                SIXEL_DIFFUSE_BLUENOISE_DITHER) &&
             sixel_dither_has_compatible_accumulation_hint(dither,
                                                           width,
                                                           height,

@@ -109,6 +109,8 @@ int test_filter_0020_filter_dither_6delta_sierra2(int argc, char **argv);
 int test_filter_0021_filter_dither_6delta_sierra3(int argc, char **argv);
 int test_filter_0022_filter_dither_6delta_a_dither(int argc, char **argv);
 int test_filter_0023_filter_dither_6delta_x_dither(int argc, char **argv);
+int test_filter_0024_filter_dither_6delta_bluenoise(int argc, char **argv);
+int test_filter_0025_filter_dither_6delta_bluenoise_gpu(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
 int test_encoder_core_0002_encoder_core_ormode_body_full_band(int argc,
                                                               char **argv);
@@ -319,6 +321,10 @@ static test_entry_t const test_entries[] = {
       test_filter_0022_filter_dither_6delta_a_dither },
     { "filter/0023_filter_dither_6delta_x_dither",
       test_filter_0023_filter_dither_6delta_x_dither },
+    { "filter/0024_filter_dither_6delta_bluenoise",
+      test_filter_0024_filter_dither_6delta_bluenoise },
+    { "filter/0025_filter_dither_6delta_bluenoise_gpu",
+      test_filter_0025_filter_dither_6delta_bluenoise_gpu },
     { "security/0001_issue222_encoder_encode_bytes_packed_g1",
       test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
     { "encoder-core/0001_encoder_core_factory",
