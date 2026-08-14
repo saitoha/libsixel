@@ -104,6 +104,9 @@ int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
 int test_filter_0016_filter_dither_6delta_jajuni(int argc, char **argv);
 int test_filter_0017_filter_dither_6delta_stucki(int argc, char **argv);
 int test_filter_0018_filter_dither_6delta_burkes(int argc, char **argv);
+int test_filter_0019_filter_dither_6delta_sierra1(int argc, char **argv);
+int test_filter_0020_filter_dither_6delta_sierra2(int argc, char **argv);
+int test_filter_0021_filter_dither_6delta_sierra3(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
 int test_encoder_core_0002_encoder_core_ormode_body_full_band(int argc,
                                                               char **argv);
@@ -304,6 +307,12 @@ static test_entry_t const test_entries[] = {
       test_filter_0017_filter_dither_6delta_stucki },
     { "filter/0018_filter_dither_6delta_burkes",
       test_filter_0018_filter_dither_6delta_burkes },
+    { "filter/0019_filter_dither_6delta_sierra1",
+      test_filter_0019_filter_dither_6delta_sierra1 },
+    { "filter/0020_filter_dither_6delta_sierra2",
+      test_filter_0020_filter_dither_6delta_sierra2 },
+    { "filter/0021_filter_dither_6delta_sierra3",
+      test_filter_0021_filter_dither_6delta_sierra3 },
     { "security/0001_issue222_encoder_encode_bytes_packed_g1",
       test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
     { "encoder-core/0001_encoder_core_factory",
