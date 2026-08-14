@@ -140,6 +140,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0023_filter_dither_6delta_x_dither.c \
 	processing/filter/0024_filter_dither_6delta_bluenoise.c \
 	processing/filter/0025_filter_dither_6delta_bluenoise_gpu.c \
+	processing/filter/0026_filter_dither_6delta_diffusion_skip.c \
+	processing/filter/0027_filter_gpu_6delta_disabled_reject.c \
+	processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
+	processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 	processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -266,6 +270,10 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0023_filter_dither_6delta_x_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0024_filter_dither_6delta_bluenoise.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0025_filter_dither_6delta_bluenoise_gpu.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OBJEXT) \
@@ -530,6 +538,10 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po \
 	processing/filter/$(DEPDIR)/test_runner-0024_filter_dither_6delta_bluenoise.Po \
 	processing/filter/$(DEPDIR)/test_runner-0025_filter_dither_6delta_bluenoise_gpu.Po \
+	processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Po \
+	processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Po \
+	processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po \
+	processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
@@ -1250,6 +1262,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_FILTER_DITHER_6DELTA_X_DITHER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_FILTER_DITHER_6DELTA_BLUENOISE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_FILTER_DITHER_6DELTA_BLUENOISE_GPU \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_FILTER_DITHER_6DELTA_DIFFUSION_SKIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_FILTER_GPU_6DELTA_DISABLED_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
@@ -1397,6 +1413,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0023_filter_dither_6delta_x_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0024_filter_dither_6delta_bluenoise.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0025_filter_dither_6delta_bluenoise_gpu.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0026_filter_dither_6delta_diffusion_skip.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0027_filter_gpu_6delta_disabled_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -1733,6 +1753,18 @@ processing/filter/test_runner-0024_filter_dither_6delta_bluenoise.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/filter/test_runner-0025_filter_dither_6delta_bluenoise_gpu.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/$(am__dirstamp):
@@ -2329,6 +2361,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0024_filter_dither_6delta_bluenoise.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0025_filter_dither_6delta_bluenoise_gpu.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
@@ -2806,6 +2842,62 @@ processing/filter/test_runner-0025_filter_dither_6delta_bluenoise_gpu.obj: proce
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0025_filter_dither_6delta_bluenoise_gpu.c' object='processing/filter/test_runner-0025_filter_dither_6delta_bluenoise_gpu.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0025_filter_dither_6delta_bluenoise_gpu.obj `if test -f 'processing/filter/0025_filter_dither_6delta_bluenoise_gpu.c'; then $(CYGPATH_W) 'processing/filter/0025_filter_dither_6delta_bluenoise_gpu.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0025_filter_dither_6delta_bluenoise_gpu.c'; fi`
+
+processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.o: processing/filter/0026_filter_dither_6delta_diffusion_skip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Tpo -c -o processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.o `test -f 'processing/filter/0026_filter_dither_6delta_diffusion_skip.c' || echo '$(srcdir)/'`processing/filter/0026_filter_dither_6delta_diffusion_skip.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Tpo processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0026_filter_dither_6delta_diffusion_skip.c' object='processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.o `test -f 'processing/filter/0026_filter_dither_6delta_diffusion_skip.c' || echo '$(srcdir)/'`processing/filter/0026_filter_dither_6delta_diffusion_skip.c
+
+processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.obj: processing/filter/0026_filter_dither_6delta_diffusion_skip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Tpo -c -o processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.obj `if test -f 'processing/filter/0026_filter_dither_6delta_diffusion_skip.c'; then $(CYGPATH_W) 'processing/filter/0026_filter_dither_6delta_diffusion_skip.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0026_filter_dither_6delta_diffusion_skip.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Tpo processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0026_filter_dither_6delta_diffusion_skip.c' object='processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0026_filter_dither_6delta_diffusion_skip.obj `if test -f 'processing/filter/0026_filter_dither_6delta_diffusion_skip.c'; then $(CYGPATH_W) 'processing/filter/0026_filter_dither_6delta_diffusion_skip.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0026_filter_dither_6delta_diffusion_skip.c'; fi`
+
+processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.o: processing/filter/0027_filter_gpu_6delta_disabled_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Tpo -c -o processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.o `test -f 'processing/filter/0027_filter_gpu_6delta_disabled_reject.c' || echo '$(srcdir)/'`processing/filter/0027_filter_gpu_6delta_disabled_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Tpo processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0027_filter_gpu_6delta_disabled_reject.c' object='processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.o `test -f 'processing/filter/0027_filter_gpu_6delta_disabled_reject.c' || echo '$(srcdir)/'`processing/filter/0027_filter_gpu_6delta_disabled_reject.c
+
+processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.obj: processing/filter/0027_filter_gpu_6delta_disabled_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Tpo -c -o processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.obj `if test -f 'processing/filter/0027_filter_gpu_6delta_disabled_reject.c'; then $(CYGPATH_W) 'processing/filter/0027_filter_gpu_6delta_disabled_reject.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0027_filter_gpu_6delta_disabled_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Tpo processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0027_filter_gpu_6delta_disabled_reject.c' object='processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.obj `if test -f 'processing/filter/0027_filter_gpu_6delta_disabled_reject.c'; then $(CYGPATH_W) 'processing/filter/0027_filter_gpu_6delta_disabled_reject.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0027_filter_gpu_6delta_disabled_reject.c'; fi`
+
+processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.o: processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Tpo -c -o processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.o `test -f 'processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c' || echo '$(srcdir)/'`processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Tpo processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c' object='processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.o `test -f 'processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c' || echo '$(srcdir)/'`processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c
+
+processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.obj: processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Tpo -c -o processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.obj `if test -f 'processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c'; then $(CYGPATH_W) 'processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Tpo processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c' object='processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.obj `if test -f 'processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c'; then $(CYGPATH_W) 'processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c'; fi`
+
+processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.o: processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Tpo -c -o processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.o `test -f 'processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c' || echo '$(srcdir)/'`processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Tpo processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c' object='processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.o `test -f 'processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c' || echo '$(srcdir)/'`processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c
+
+processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj: processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Tpo -c -o processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj `if test -f 'processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; then $(CYGPATH_W) 'processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Tpo processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c' object='processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj `if test -f 'processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; then $(CYGPATH_W) 'processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; fi`
 
 processing/encoder-core/test_runner-0001_encoder_core_factory.o: processing/encoder-core/0001_encoder_core_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0001_encoder_core_factory.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Tpo -c -o processing/encoder-core/test_runner-0001_encoder_core_factory.o `test -f 'processing/encoder-core/0001_encoder_core_factory.c' || echo '$(srcdir)/'`processing/encoder-core/0001_encoder_core_factory.c
@@ -4596,6 +4688,10 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0024_filter_dither_6delta_bluenoise.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0025_filter_dither_6delta_bluenoise_gpu.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
@@ -4763,6 +4859,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0024_filter_dither_6delta_bluenoise.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0025_filter_dither_6delta_bluenoise_gpu.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0026_filter_dither_6delta_diffusion_skip.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0027_filter_gpu_6delta_disabled_reject.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po

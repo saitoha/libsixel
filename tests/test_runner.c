@@ -111,6 +111,15 @@ int test_filter_0022_filter_dither_6delta_a_dither(int argc, char **argv);
 int test_filter_0023_filter_dither_6delta_x_dither(int argc, char **argv);
 int test_filter_0024_filter_dither_6delta_bluenoise(int argc, char **argv);
 int test_filter_0025_filter_dither_6delta_bluenoise_gpu(int argc, char **argv);
+int test_filter_0026_filter_dither_6delta_diffusion_skip(int argc,
+                                                        char **argv);
+int test_filter_0027_filter_gpu_6delta_disabled_reject(int argc, char **argv);
+int test_filter_0028_filter_dither_6delta_bluenoise_gpu_exact_plane(
+    int argc,
+    char **argv);
+int test_filter_0029_filter_dither_6delta_bluenoise_gpu_auto_fallback(
+    int argc,
+    char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
 int test_encoder_core_0002_encoder_core_ormode_body_full_band(int argc,
                                                               char **argv);
@@ -325,6 +334,14 @@ static test_entry_t const test_entries[] = {
       test_filter_0024_filter_dither_6delta_bluenoise },
     { "filter/0025_filter_dither_6delta_bluenoise_gpu",
       test_filter_0025_filter_dither_6delta_bluenoise_gpu },
+    { "filter/0026_filter_dither_6delta_diffusion_skip",
+      test_filter_0026_filter_dither_6delta_diffusion_skip },
+    { "filter/0027_filter_gpu_6delta_disabled_reject",
+      test_filter_0027_filter_gpu_6delta_disabled_reject },
+    { "filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane",
+      test_filter_0028_filter_dither_6delta_bluenoise_gpu_exact_plane },
+    { "filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback",
+      test_filter_0029_filter_dither_6delta_bluenoise_gpu_auto_fallback },
     { "security/0001_issue222_encoder_encode_bytes_packed_g1",
       test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
     { "encoder-core/0001_encoder_core_factory",

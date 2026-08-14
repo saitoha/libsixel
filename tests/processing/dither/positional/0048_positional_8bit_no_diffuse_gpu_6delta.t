@@ -147,6 +147,7 @@ main(void)
     request.transparent_mask = transparent_mask;
     request.transparent_mask_size = sizeof(transparent_mask);
     request.transparent_keycolor = TEST_KEYCOLOR;
+    request.sixdelta_enabled = 1;
     request.has_6delta_accumulation = 1;
     request.accumulation_pixels = accumulation;
     request.accumulation_pixels_size = sizeof(accumulation);

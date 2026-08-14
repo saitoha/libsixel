@@ -12,9 +12,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
+#include "src/compat_stub.h"
 #include "src/dither.h"
 #include "src/filter.h"
 #include "tests/processing/filter/filter_test_common.h"
@@ -31,8 +33,12 @@ test_filter_0022_filter_dither_6delta_a_dither(int argc, char **argv)
     unsigned char retained[3];
     unsigned char valid_mask[1];
     unsigned char const *result_mask;
+    char const *strength_env;
+    char *saved_strength;
     size_t result_mask_size;
+    size_t saved_strength_size;
     int result_value;
+    int strength_overridden;
     int ok;
 
     (void)argc;
@@ -42,22 +48,43 @@ test_filter_0022_filter_dither_6delta_a_dither(int argc, char **argv)
     dither = NULL;
     indexes = NULL;
     result_mask = NULL;
+    strength_env = NULL;
+    saved_strength = NULL;
     result_mask_size = 0U;
+    saved_strength_size = 0U;
     result_value = -1;
+    strength_overridden = 0;
     ok = 0;
-    palette[0] = 0u;
-    palette[1] = 0u;
-    palette[2] = 0u;
-    palette[3] = 255u;
-    palette[4] = 255u;
-    palette[5] = 255u;
-    pixel[0] = 140u;
-    pixel[1] = 140u;
-    pixel[2] = 140u;
-    retained[0] = 255u;
-    retained[1] = 255u;
-    retained[2] = 255u;
+    palette[0] = 255u;
+    palette[1] = 255u;
+    palette[2] = 255u;
+    palette[3] = 96u;
+    palette[4] = 106u;
+    palette[5] = 115u;
+    pixel[0] = 128u;
+    pixel[1] = 128u;
+    pixel[2] = 128u;
+    retained[0] = 130u;
+    retained[1] = 130u;
+    retained[2] = 130u;
     valid_mask[0] = 1u;
+
+    strength_env = sixel_compat_getenv(
+        "SIXEL_DITHER_A_DITHER_STRENGTH");
+    if (strength_env != NULL) {
+        saved_strength_size = strlen(strength_env) + 1U;
+        saved_strength = (char *)malloc(saved_strength_size);
+        if (saved_strength == NULL) {
+            fprintf(stderr, "A-dither strength save allocation failed\n");
+            goto end;
+        }
+        memcpy(saved_strength, strength_env, saved_strength_size);
+    }
+    if (sixel_compat_setenv("SIXEL_DITHER_A_DITHER_STRENGTH", "1") != 0) {
+        fprintf(stderr, "A-dither strength setup failed\n");
+        goto end;
+    }
+    strength_overridden = 1;
 
     status = make_allocator(&allocator);
     if (SIXEL_FAILED(status)) {
@@ -94,6 +121,10 @@ test_filter_0022_filter_dither_6delta_a_dither(int argc, char **argv)
         SIXEL_6DELTA_ERROR_DIFFUSE);
     sixel_dither_set_pipeline_accumulation_result_enabled(dither, 1);
 
+    /*
+     * At strength 1, A-dither maps (128,128,128) to (96,106,115).
+     * The retained (130,130,130) is closer only to the unjittered source.
+     */
     indexes = sixel_dither_apply_palette(dither, pixel, 1, 1);
     if (indexes == NULL) {
         fprintf(stderr, "A-dither palette application failed\n");
@@ -115,6 +146,13 @@ test_filter_0022_filter_dither_6delta_a_dither(int argc, char **argv)
     ok = 1;
 
 end:
+    if (strength_overridden != 0 && sixel_compat_setenv(
+            "SIXEL_DITHER_A_DITHER_STRENGTH",
+            saved_strength != NULL ? saved_strength : "") != 0) {
+        fprintf(stderr, "A-dither strength restore failed\n");
+        ok = 0;
+    }
+    free(saved_strength);
     if (indexes != NULL && allocator != NULL) {
         sixel_allocator_free(allocator, indexes);
     }

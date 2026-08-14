@@ -52,9 +52,9 @@ test_filter_0016_filter_dither_6delta_jajuni(int argc, char **argv)
     pixel[3] = 130u;
     pixel[4] = 130u;
     pixel[5] = 130u;
-    retained[0] = 255u;
-    retained[1] = 255u;
-    retained[2] = 255u;
+    retained[0] = 250u;
+    retained[1] = 250u;
+    retained[2] = 250u;
     retained[3] = 0u;
     retained[4] = 0u;
     retained[5] = 0u;
@@ -106,9 +106,14 @@ test_filter_0016_filter_dither_6delta_jajuni(int argc, char **argv)
                 (unsigned int)indexes[0]);
         goto end;
     }
-    if (pixel[3] >= 130u) {
+    /*
+     * Pixel 130 selects palette 255, while retained 250 is closer.  The
+     * retained error -120 and Jajuni's 7/48 weight produce 113 here;
+     * diffusing the palette error -125 would produce 112 instead.
+     */
+    if (pixel[3] != 113u) {
         fprintf(stderr,
-                "jajuni lost kept-pixel error before the next pixel: %u\n",
+                "jajuni neighbor is %u instead of retained-error value 113\n",
                 (unsigned int)pixel[3]);
         goto end;
     }

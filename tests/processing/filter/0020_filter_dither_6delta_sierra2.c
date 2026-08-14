@@ -52,9 +52,9 @@ test_filter_0020_filter_dither_6delta_sierra2(int argc, char **argv)
     pixel[3] = 130u;
     pixel[4] = 130u;
     pixel[5] = 130u;
-    retained[0] = 255u;
-    retained[1] = 255u;
-    retained[2] = 255u;
+    retained[0] = 250u;
+    retained[1] = 250u;
+    retained[2] = 250u;
     retained[3] = 0u;
     retained[4] = 0u;
     retained[5] = 0u;
@@ -106,9 +106,14 @@ test_filter_0020_filter_dither_6delta_sierra2(int argc, char **argv)
                 (unsigned int)indexes[0]);
         goto end;
     }
-    if (pixel[3] >= 130u) {
+    /*
+     * Pixel 130 selects palette 255, while retained 250 is closer.  The
+     * retained error -120 and Sierra Two-row's 4/32 weight produce 115;
+     * diffusing the palette error -125 would produce 114 instead.
+     */
+    if (pixel[3] != 115u) {
         fprintf(stderr,
-                "sierra2 lost kept-pixel error before the next pixel: %u\n",
+                "sierra2 neighbor is %u instead of retained-error value 115\n",
                 (unsigned int)pixel[3]);
         goto end;
     }

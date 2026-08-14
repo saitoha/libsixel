@@ -118,6 +118,14 @@ sixel_gpu_palette_accumulation_is_supported(
         }
         return 1;
     }
+    /*
+     * A retained plane describes capability, while sixdelta_enabled carries
+     * the caller's intent.  Reject contradictory internal requests instead of
+     * letting the Metal kernel turn availability into an unsolicited keep.
+     */
+    if (request->sixdelta_enabled == 0) {
+        return 0;
+    }
     if (request->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
             request->method_for_diffuse !=
                 SIXEL_DIFFUSE_BLUENOISE_DITHER) {

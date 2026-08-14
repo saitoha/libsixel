@@ -226,6 +226,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0023_FILTER_DITHER_6DELTA_X_DITHER \
     -DBUILD_TEST_0024_FILTER_DITHER_6DELTA_BLUENOISE \
     -DBUILD_TEST_0025_FILTER_DITHER_6DELTA_BLUENOISE_GPU \
+    -DBUILD_TEST_0026_FILTER_DITHER_6DELTA_DIFFUSION_SKIP \
+    -DBUILD_TEST_0027_FILTER_GPU_6DELTA_DISABLED_REJECT \
+    -DBUILD_TEST_0028_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
+    -DBUILD_TEST_0029_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
     -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
@@ -348,6 +352,10 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0023_filter_dither_6delta_x_dither.c \
     processing/filter/0024_filter_dither_6delta_bluenoise.c \
     processing/filter/0025_filter_dither_6delta_bluenoise_gpu.c \
+    processing/filter/0026_filter_dither_6delta_diffusion_skip.c \
+    processing/filter/0027_filter_gpu_6delta_disabled_reject.c \
+    processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
+    processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
     processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
