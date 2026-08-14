@@ -49,6 +49,7 @@ typedef struct sixel_dither_policy_a_dither_context {
     int band_origin;
     int output_start;
     int depth;
+    unsigned char *palette;
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
     int pixelformat;
@@ -205,6 +206,12 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
     int transparent_keycolor;
     int use_transparent_fence;
     int is_transparent;
+    unsigned char const *source_pixel;
+    unsigned char const *accumulation_pixel;
+    size_t absolute_index;
+    int accumulation_keycolor;
+    int is_6delta_keep;
+    int record_result;
 
     serpentine = 0;
     y = 0;
@@ -224,9 +231,16 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
     transparent_keycolor = -1;
     use_transparent_fence = 0;
     is_transparent = 0;
+    source_pixel = NULL;
+    accumulation_pixel = NULL;
+    absolute_index = 0U;
+    accumulation_keycolor = -1;
+    is_6delta_keep = 0;
+    record_result = 0;
 
     if (dither == NULL || context == NULL
             || context->pixels == NULL
+            || context->palette == NULL
             || context->result == NULL
             || context->lookup_policy == NULL
             || context->lookup_policy->vtbl == NULL
@@ -261,6 +275,11 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
 
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
+            absolute_index = 0U;
+            if (absolute_y >= 0) {
+                absolute_index = (size_t)absolute_y
+                    * (size_t)context->width + (size_t)x;
+            }
             is_transparent = sixel_dither_a_is_transparent_pixel(
                 context,
                 transparent_mask,
@@ -275,8 +294,34 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
                 continue;
             }
 
+            source_pixel = context->pixels
+                + (size_t)pos * (size_t)context->depth;
+            record_result =
+                absolute_y >= context->output_start ? 1 : 0;
+            is_6delta_keep = 0;
+            if (absolute_y >= 0) {
+                is_6delta_keep =
+                    sixel_dither_pipeline_6delta_try_keep_rgb888(
+                        dither,
+                        absolute_index,
+                        x,
+                        absolute_y,
+                        source_pixel,
+                        record_result,
+                        &accumulation_pixel,
+                        &accumulation_keycolor);
+            }
+            if (is_6delta_keep != 0) {
+                if (record_result != 0) {
+                    context->result[pos] =
+                        (sixel_index_t)accumulation_keycolor;
+                }
+                /* A-dither has no neighboring error state to update. */
+                continue;
+            }
+
             for (d = 0; d < context->depth; ++d) {
-                val = context->pixels[pos * context->depth + d]
+                val = source_pixel[d]
                     + (int)(sixel_dither_a_noise(x, y, d, strength) * 32.0f);
                 quantized[d] = (unsigned char)(
                     val < 0 ? 0 : val > 255 ? 255 : val);
@@ -286,7 +331,35 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
                 context->lookup_policy,
                 quantized);
 
-            if (absolute_y >= context->output_start) {
+            /*
+             * Noise chooses the palette candidate, but fidelity is measured
+             * against the original pixel.  Keeping wins ties and avoids an
+             * emitted replacement pixel.
+             */
+            if (absolute_y >= 0 && context->depth >= 3) {
+                is_6delta_keep =
+                    sixel_dither_pipeline_6delta_try_keep_after_lookup(
+                        dither,
+                        absolute_index,
+                        x,
+                        absolute_y,
+                        source_pixel,
+                        context->palette
+                            + (size_t)color_index * (size_t)context->depth,
+                        record_result,
+                        &accumulation_pixel,
+                        &accumulation_keycolor);
+                if (is_6delta_keep != 0) {
+                    if (record_result != 0) {
+                        context->result[pos] =
+                            (sixel_index_t)accumulation_keycolor;
+                    }
+                    /* A-dither has no neighboring error state to update. */
+                    continue;
+                }
+            }
+
+            if (record_result != 0) {
                 context->result[pos] = (sixel_index_t)color_index;
             }
         }
@@ -562,6 +635,7 @@ sixel_dither_policy_a_dither_build_context(
     context->band_origin = request->band_origin;
     context->output_start = request->output_start;
     context->depth = request->depth;
+    context->palette = request->palette;
     context->lookup_policy = request->lookup_policy;
     context->pixels = request->data;
     context->pixelformat = request->pixelformat;

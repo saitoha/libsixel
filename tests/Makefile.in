@@ -136,6 +136,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0019_filter_dither_6delta_sierra1.c \
 	processing/filter/0020_filter_dither_6delta_sierra2.c \
 	processing/filter/0021_filter_dither_6delta_sierra3.c \
+	processing/filter/0022_filter_dither_6delta_a_dither.c \
+	processing/filter/0023_filter_dither_6delta_x_dither.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 	processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -258,6 +260,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0019_filter_dither_6delta_sierra1.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0020_filter_dither_6delta_sierra2.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0021_filter_dither_6delta_sierra3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0022_filter_dither_6delta_a_dither.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0023_filter_dither_6delta_x_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OBJEXT) \
@@ -518,6 +522,8 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0019_filter_dither_6delta_sierra1.Po \
 	processing/filter/$(DEPDIR)/test_runner-0020_filter_dither_6delta_sierra2.Po \
 	processing/filter/$(DEPDIR)/test_runner-0021_filter_dither_6delta_sierra3.Po \
+	processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Po \
+	processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
@@ -1234,6 +1240,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_FILTER_DITHER_6DELTA_SIERRA1 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_FILTER_DITHER_6DELTA_SIERRA2 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_FILTER_DITHER_6DELTA_SIERRA3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_FILTER_DITHER_6DELTA_A_DITHER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_FILTER_DITHER_6DELTA_X_DITHER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
@@ -1377,6 +1385,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0019_filter_dither_6delta_sierra1.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0020_filter_dither_6delta_sierra2.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0021_filter_dither_6delta_sierra3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0022_filter_dither_6delta_a_dither.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0023_filter_dither_6delta_x_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -1701,6 +1711,12 @@ processing/filter/test_runner-0020_filter_dither_6delta_sierra2.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/filter/test_runner-0021_filter_dither_6delta_sierra3.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0022_filter_dither_6delta_a_dither.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0023_filter_dither_6delta_x_dither.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/$(am__dirstamp):
@@ -2293,6 +2309,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0019_filter_dither_6delta_sierra1.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0020_filter_dither_6delta_sierra2.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0021_filter_dither_6delta_sierra3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
@@ -2714,6 +2732,34 @@ processing/filter/test_runner-0021_filter_dither_6delta_sierra3.obj: processing/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0021_filter_dither_6delta_sierra3.c' object='processing/filter/test_runner-0021_filter_dither_6delta_sierra3.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0021_filter_dither_6delta_sierra3.obj `if test -f 'processing/filter/0021_filter_dither_6delta_sierra3.c'; then $(CYGPATH_W) 'processing/filter/0021_filter_dither_6delta_sierra3.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0021_filter_dither_6delta_sierra3.c'; fi`
+
+processing/filter/test_runner-0022_filter_dither_6delta_a_dither.o: processing/filter/0022_filter_dither_6delta_a_dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0022_filter_dither_6delta_a_dither.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Tpo -c -o processing/filter/test_runner-0022_filter_dither_6delta_a_dither.o `test -f 'processing/filter/0022_filter_dither_6delta_a_dither.c' || echo '$(srcdir)/'`processing/filter/0022_filter_dither_6delta_a_dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Tpo processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0022_filter_dither_6delta_a_dither.c' object='processing/filter/test_runner-0022_filter_dither_6delta_a_dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0022_filter_dither_6delta_a_dither.o `test -f 'processing/filter/0022_filter_dither_6delta_a_dither.c' || echo '$(srcdir)/'`processing/filter/0022_filter_dither_6delta_a_dither.c
+
+processing/filter/test_runner-0022_filter_dither_6delta_a_dither.obj: processing/filter/0022_filter_dither_6delta_a_dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0022_filter_dither_6delta_a_dither.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Tpo -c -o processing/filter/test_runner-0022_filter_dither_6delta_a_dither.obj `if test -f 'processing/filter/0022_filter_dither_6delta_a_dither.c'; then $(CYGPATH_W) 'processing/filter/0022_filter_dither_6delta_a_dither.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0022_filter_dither_6delta_a_dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Tpo processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0022_filter_dither_6delta_a_dither.c' object='processing/filter/test_runner-0022_filter_dither_6delta_a_dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0022_filter_dither_6delta_a_dither.obj `if test -f 'processing/filter/0022_filter_dither_6delta_a_dither.c'; then $(CYGPATH_W) 'processing/filter/0022_filter_dither_6delta_a_dither.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0022_filter_dither_6delta_a_dither.c'; fi`
+
+processing/filter/test_runner-0023_filter_dither_6delta_x_dither.o: processing/filter/0023_filter_dither_6delta_x_dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0023_filter_dither_6delta_x_dither.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Tpo -c -o processing/filter/test_runner-0023_filter_dither_6delta_x_dither.o `test -f 'processing/filter/0023_filter_dither_6delta_x_dither.c' || echo '$(srcdir)/'`processing/filter/0023_filter_dither_6delta_x_dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Tpo processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0023_filter_dither_6delta_x_dither.c' object='processing/filter/test_runner-0023_filter_dither_6delta_x_dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0023_filter_dither_6delta_x_dither.o `test -f 'processing/filter/0023_filter_dither_6delta_x_dither.c' || echo '$(srcdir)/'`processing/filter/0023_filter_dither_6delta_x_dither.c
+
+processing/filter/test_runner-0023_filter_dither_6delta_x_dither.obj: processing/filter/0023_filter_dither_6delta_x_dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0023_filter_dither_6delta_x_dither.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Tpo -c -o processing/filter/test_runner-0023_filter_dither_6delta_x_dither.obj `if test -f 'processing/filter/0023_filter_dither_6delta_x_dither.c'; then $(CYGPATH_W) 'processing/filter/0023_filter_dither_6delta_x_dither.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0023_filter_dither_6delta_x_dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Tpo processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0023_filter_dither_6delta_x_dither.c' object='processing/filter/test_runner-0023_filter_dither_6delta_x_dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0023_filter_dither_6delta_x_dither.obj `if test -f 'processing/filter/0023_filter_dither_6delta_x_dither.c'; then $(CYGPATH_W) 'processing/filter/0023_filter_dither_6delta_x_dither.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0023_filter_dither_6delta_x_dither.c'; fi`
 
 processing/encoder-core/test_runner-0001_encoder_core_factory.o: processing/encoder-core/0001_encoder_core_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0001_encoder_core_factory.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Tpo -c -o processing/encoder-core/test_runner-0001_encoder_core_factory.o `test -f 'processing/encoder-core/0001_encoder_core_factory.c' || echo '$(srcdir)/'`processing/encoder-core/0001_encoder_core_factory.c
@@ -4500,6 +4546,8 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0019_filter_dither_6delta_sierra1.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0020_filter_dither_6delta_sierra2.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0021_filter_dither_6delta_sierra3.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
@@ -4663,6 +4711,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0019_filter_dither_6delta_sierra1.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0020_filter_dither_6delta_sierra2.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0021_filter_dither_6delta_sierra3.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0022_filter_dither_6delta_a_dither.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0023_filter_dither_6delta_x_dither.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
