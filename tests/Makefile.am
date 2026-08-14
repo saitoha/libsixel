@@ -216,6 +216,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_FILTER_ENCODE_6DELTA_KEYCOLOR \
     -DBUILD_TEST_0014_FILTER_SAMPLE_SOLID \
     -DBUILD_TEST_0015_FILTER_DITHER_6DELTA_LSO2 \
+    -DBUILD_TEST_0016_FILTER_DITHER_6DELTA_JAJUNI \
+    -DBUILD_TEST_0017_FILTER_DITHER_6DELTA_STUCKI \
+    -DBUILD_TEST_0018_FILTER_DITHER_6DELTA_BURKES \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
     -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
@@ -328,6 +331,9 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0013_filter_encode_6delta_keycolor.c \
     processing/filter/0014_filter_sample_solid.c \
     processing/filter/0015_filter_dither_6delta_lso2.c \
+    processing/filter/0016_filter_dither_6delta_jajuni.c \
+    processing/filter/0017_filter_dither_6delta_stucki.c \
+    processing/filter/0018_filter_dither_6delta_burkes.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
     processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
