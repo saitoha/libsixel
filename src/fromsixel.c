@@ -311,6 +311,29 @@ image_buffer_finalize_ormode_direct(image_buffer_t *image)
 }
 
 /*
+ * OR mode has no unpainted cells: every pixel inside the raster carries a
+ * composed index, and index 0 is an ordinary palette color instead of the
+ * transparent sentinel.  The bit-plane store only marks cells whose sixel bit
+ * was set, so callers that derive alpha from the paint mask -- the dequantize
+ * path in sixel_decoder_decode_pixels() -- would drop every index-0 pixel to
+ * transparent.  Mark the whole raster painted once the parser is done, which
+ * matches what image_buffer_finalize_ormode_direct() does for direct color.
+ */
+static void
+image_buffer_fill_ormode_paint_mask(image_buffer_t *image)
+{
+    size_t pixels;
+
+    if (image == NULL || image->paint_mask == NULL ||
+            image->width <= 0 || image->height <= 0) {
+        return;
+    }
+
+    pixels = (size_t)image->width * (size_t)image->height;
+    memset(image->paint_mask, 0xff, pixels);
+}
+
+/*
  * OR mode is a bit-plane dialect.  Keep this path separate from normal
  * repaint semantics so the common decoder path keeps its old overwrite
  * behavior.  The direct-color path only composes indexes here; a final linear
@@ -1847,6 +1870,10 @@ sixel_decode_image(
         image_buffer_release_paint_mask(image, allocator);
         image_buffer_release_ormode_indexes(image, allocator);
         goto end;
+    }
+
+    if (context->ormode) {
+        image_buffer_fill_ormode_paint_mask(image);
     }
 
     status = SIXEL_OK;

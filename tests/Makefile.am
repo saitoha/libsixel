@@ -391,6 +391,7 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c \
     processing/decoder/0020_decoder_pixels_body_api.c \
     processing/decoder/0021_decoder_selective_blur_threshold.c \
+    processing/decoder/0022_decoder_ormode_dequantize_opaque.c \
     processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
