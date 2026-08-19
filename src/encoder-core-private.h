@@ -95,6 +95,19 @@ struct sixel_output {
     unsigned char buffer[1];
 };
 
+/*
+ * Transparent-offset margins grow the emitted image: the source rectangle is
+ * placed at (left, top) inside an image of (width + left) x (height + top) and
+ * everything outside it stays transparent.  Writers need the enlarged extent
+ * for the raster attributes and for their band loops.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_compute_transparent_extent(sixel_output_t const *output,
+                                        int width,
+                                        int height,
+                                        int *encoded_width,
+                                        int *encoded_height);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_encode_dispatch(
     sixel_encoder_core_encode_request_t const *request);

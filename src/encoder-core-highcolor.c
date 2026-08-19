@@ -768,6 +768,9 @@ sixel_encode_highcolor(
     unsigned char palhitcount[SIXEL_PALETTE_MAX];
     unsigned char palstate[SIXEL_PALETTE_MAX];
     int output_count;
+    int encoded_width;
+    int encoded_height;
+    int saved_offset_top;
     int const maxcolors = 1 << 15;
     int whole_size = width * height  /* for paletted_pixels */
                    + maxcolors       /* for rgbhit */
@@ -795,6 +798,23 @@ sixel_encode_highcolor(
             "sixel_encode_highcolor: invalid argument "
             "(pixels == NULL || dither == NULL || output == NULL)");
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * height is rewritten per pass below, so the emitted image extent has to
+     * be taken from the original geometry.  The top margin belongs to the
+     * first emitted body only: later passes continue from the sixel position
+     * the previous body left behind, so re-emitting the margin would push
+     * them further down the page.
+     */
+    saved_offset_top = output->transparent_offset_top;
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
@@ -958,7 +978,10 @@ next:
             orig_height = height;
 
             if (output_count++ == 0) {
-                status = sixel_encode_header(width, height, dither->keycolor, output);
+                status = sixel_encode_header(encoded_width,
+                                             encoded_height,
+                                             dither->keycolor,
+                                             output);
                 if (SIXEL_FAILED(status)) {
                     goto error;
                 }
@@ -981,6 +1004,7 @@ next:
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
+            output->transparent_offset_top = 0;
             if (y >= orig_height) {
               goto end;
             }
@@ -997,7 +1021,10 @@ next:
 
 end:
     if (output_count == 0) {
-        status = sixel_encode_header(width, height, dither->keycolor, output);
+        status = sixel_encode_header(encoded_width,
+                                     encoded_height,
+                                     dither->keycolor,
+                                     output);
         if (SIXEL_FAILED(status)) {
             goto error;
         }
@@ -1026,6 +1053,7 @@ end:
     }
 
 error:
+    output->transparent_offset_top = saved_offset_top;
     if (palette_entries != NULL) {
         sixel_allocator_free(dither->allocator, palette_entries);
     }

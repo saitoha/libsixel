@@ -237,12 +237,6 @@ static void sixel_band_finish(sixel_encode_work_t *work,
 static void sixel_band_clear_map(sixel_encode_work_t *work);
 static int sixel_output_has_transparent_offset(sixel_output_t const *output);
 static int sixel_count_sixel_bands(int height);
-static SIXELSTATUS
-sixel_output_compute_transparent_extent(sixel_output_t const *output,
-                                        int width,
-                                        int height,
-                                        int *encoded_width,
-                                        int *encoded_height);
 static SIXELSTATUS sixel_band_classify_row(sixel_encode_work_t *work,
                                            sixel_band_state_t *state,
                                            sixel_index_t *pixels,
@@ -284,6 +278,17 @@ sixel_encode_body_ormode_band(sixel_index_t const *pixels,
                               int band_index,
                               int nplanes,
                               sixel_output_t *output);
+static SIXELSTATUS
+sixel_encode_body_ormode_band_offset(sixel_index_t const *pixels,
+                                     int width,
+                                     int height,
+                                     int band_index,
+                                     int nplanes,
+                                     int encoded_width,
+                                     int encoded_height,
+                                     int offset_left,
+                                     int offset_top,
+                                     sixel_output_t *output);
 
 #if SIXEL_ENABLE_THREADS
 static void
@@ -467,7 +472,7 @@ sixel_count_sixel_bands(int height)
     return bands;
 }
 
-static SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_compute_transparent_extent(sixel_output_t const *output,
                                         int width,
                                         int height,
@@ -4261,6 +4266,147 @@ sixel_encode_body_ormode_band(sixel_index_t const *pixels,
     return SIXEL_OK;
 }
 
+/*
+ * Column bits for one OR-mode band under a transparent offset.  Columns and
+ * rows outside the source image contribute no bits, which OR mode paints as
+ * "leave the terminal pixel alone".  That is what makes the offset margin
+ * transparent here without a separate key color.
+ */
+static int
+sixel_encode_body_ormode_column(sixel_index_t const *pixels,
+                                int width,
+                                int height,
+                                int band_start,
+                                int band_height,
+                                int x,
+                                int offset_left,
+                                int offset_top,
+                                int plane)
+{
+    int source_x;
+    int source_row;
+    int pix;
+    int y;
+
+    source_x = x - offset_left;
+    if (source_x < 0 || source_x >= width) {
+        return 0;
+    }
+
+    pix = 0;
+    for (y = 0; y < band_height; y++) {
+        source_row = band_start + y - offset_top;
+        if (source_row < 0 || source_row >= height) {
+            continue;
+        }
+        pix |= (((pixels[(size_t)source_row * (size_t)width +
+                         (size_t)source_x] >> plane) & 0x1) << y);
+    }
+
+    return pix;
+}
+
+static SIXELSTATUS
+sixel_encode_body_ormode_band_offset(sixel_index_t const *pixels,
+                                     int width,
+                                     int height,
+                                     int band_index,
+                                     int nplanes,
+                                     int encoded_width,
+                                     int encoded_height,
+                                     int offset_left,
+                                     int offset_top,
+                                     sixel_output_t *output)
+{
+    SIXELSTATUS status;
+    int band_start;
+    int band_height;
+    int nwrite;
+    int plane;
+    int plane_bit;
+    int first_x;
+    int first_pix;
+    int x;
+    int pix;
+
+    if (pixels == NULL || output == NULL || width < 1 || height < 0 ||
+            band_index < 0 || nplanes < 1 || encoded_width < 1 ||
+            encoded_height < 1 || offset_left < 0 || offset_top < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    band_start = band_index * 6;
+    if (band_start >= encoded_height) {
+        return SIXEL_OK;
+    }
+    band_height = encoded_height - band_start;
+    if (band_height > 6) {
+        band_height = 6;
+    }
+
+    for (plane = 0; plane < nplanes; plane++) {
+        plane_bit = 1 << plane;
+        first_x = (-1);
+        first_pix = 0;
+        for (x = 0; x < encoded_width; x++) {
+            pix = sixel_encode_body_ormode_column(pixels,
+                                                  width,
+                                                  height,
+                                                  band_start,
+                                                  band_height,
+                                                  x,
+                                                  offset_left,
+                                                  offset_top,
+                                                  plane);
+            if (pix != 0) {
+                first_x = x;
+                first_pix = pix;
+                break;
+            }
+        }
+        if (first_x < 0) {
+            continue;
+        }
+
+        sixel_putc(output->buffer + output->pos, '#');
+        sixel_advance(output, 1);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                              plane_bit);
+        sixel_advance(output, nwrite);
+
+        status = sixel_emit_run(output, '?', first_x);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        sixel_put_pixel(output, first_pix);
+        for (x = first_x + 1; x < encoded_width; x++) {
+            pix = sixel_encode_body_ormode_column(pixels,
+                                                  width,
+                                                  height,
+                                                  band_start,
+                                                  band_height,
+                                                  x,
+                                                  offset_left,
+                                                  offset_top,
+                                                  plane);
+            sixel_put_pixel(output, pix);
+        }
+        status = sixel_put_flash(output);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+
+        sixel_putc(output->buffer + output->pos, '$');
+        sixel_advance(output, 1);
+    }
+    if (band_height == 6) {
+        sixel_putc(output->buffer + output->pos, '-');
+        sixel_advance(output, 1);
+    }
+
+    return SIXEL_OK;
+}
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encode_body_ormode(
     sixel_index_t       /* in */ *pixels,
@@ -4272,6 +4418,10 @@ sixel_encode_body_ormode(
     sixel_output_t      /* in */ *output)
 {
     SIXELSTATUS status;
+    int encoded_width;
+    int encoded_height;
+    int offset_left;
+    int offset_top;
     int nplanes;
     int nbands;
     int band_index;
@@ -4279,6 +4429,17 @@ sixel_encode_body_ormode(
     if (pixels == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    offset_left = output->transparent_offset_left;
+    offset_top = output->transparent_offset_top;
 
     status = sixel_encode_body_ormode_emit_palette(palette,
                                                    ncolors,
@@ -4289,14 +4450,27 @@ sixel_encode_body_ormode(
     }
 
     nplanes = sixel_encode_body_ormode_nplanes(ncolors);
-    nbands = (height + 5) / 6;
+    nbands = (encoded_height + 5) / 6;
     for (band_index = 0; band_index < nbands; band_index++) {
-        status = sixel_encode_body_ormode_band(pixels,
-                                               width,
-                                               height,
-                                               band_index,
-                                               nplanes,
-                                               output);
+        if (offset_left == 0 && offset_top == 0) {
+            status = sixel_encode_body_ormode_band(pixels,
+                                                   width,
+                                                   height,
+                                                   band_index,
+                                                   nplanes,
+                                                   output);
+        } else {
+            status = sixel_encode_body_ormode_band_offset(pixels,
+                                                          width,
+                                                          height,
+                                                          band_index,
+                                                          nplanes,
+                                                          encoded_width,
+                                                          encoded_height,
+                                                          offset_left,
+                                                          offset_top,
+                                                          output);
+        }
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -4366,12 +4540,6 @@ sixel_encode_dither(
         goto end;
     }
     if (sixel_output_has_transparent_offset(output) != 0) {
-        if (output->ormode != 0) {
-            sixel_helper_set_additional_message(
-                "transparent-offset cannot be used with ormode.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
         if (output->transparent_policy != SIXEL_TRANSPARENT_POLICY_KEEP) {
             sixel_helper_set_additional_message(
                 "transparent-offset requires transparent-policy=keep.");
@@ -4462,7 +4630,9 @@ sixel_encode_dither(
          * own band encoder, so it can share this producer/writer path without
          * dereferencing input_pixels on the caller side.
          */
-        if (pipeline_threads > 1 && pipeline_nbands > 1) {
+        if (pipeline_threads > 1 && pipeline_nbands > 1 &&
+                !(output->ormode != 0 &&
+                  sixel_output_has_transparent_offset(output) != 0)) {
             pipeline_active = 1;
             input_pixels = NULL;
         } else {
@@ -4810,12 +4980,6 @@ sixel_encoder_core_encode_dispatch(
     }
     if (request->width < 1 || request->height < 1) {
         return SIXEL_BAD_INPUT;
-    }
-    if (sixel_output_has_transparent_offset(request->output) != 0 &&
-        request->dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
-        sixel_helper_set_additional_message(
-            "transparent-offset cannot be used with high-color output.");
-        return SIXEL_BAD_ARGUMENT;
     }
 
     (void)request->depth;

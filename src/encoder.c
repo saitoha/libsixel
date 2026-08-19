@@ -7886,16 +7886,6 @@ sixel_encoder_validate_transparent_offset(sixel_encoder_t const *encoder)
     if (sixel_encoder_transparent_offset_enabled(encoder) == 0) {
         return SIXEL_OK;
     }
-    if (encoder->ormode != 0) {
-        sixel_helper_set_additional_message(
-            "transparent-offset cannot be used with ormode.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
-        sixel_helper_set_additional_message(
-            "transparent-offset cannot be used with high-color output.");
-        return SIXEL_BAD_ARGUMENT;
-    }
     if (encoder->transparent_policy_override != 0 &&
         encoder->transparent_policy != SIXEL_TRANSPARENT_POLICY_KEEP) {
         sixel_helper_set_additional_message(

@@ -970,7 +970,7 @@ steps.
 -+ LEFT,TOP, --transparent-offset=LEFT,TOP
                            add transparent left/top pixel offset with
                            DCS P2=1 image-plane reuse. 0,0 disables
-                           the offset. Incompatible with -O and -I.
+                           the offset. Requires transparent-policy=keep.
 -Z DELTA, --6delta-threshold=DELTA
                            set RGB per-channel tolerance for
                            6delta encoding. DELTA must be 0..255
