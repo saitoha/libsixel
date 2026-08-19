@@ -3118,6 +3118,18 @@ sixel_decoder_decode_pixels_dequant_try(
         goto end;
     }
 
+    /*
+     * High color streams redefine registers while painting, so the index
+     * plane and the single returned palette describe different moments and
+     * dequantizing them yields garbage.  There is nothing to un-dither in a
+     * direct color image anyway; report the reason and let the caller decode
+     * it through the plain RGBA path.
+     */
+    if ((*result_flags & SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED) != 0U) {
+        status = SIXEL_FALSE;
+        goto end;
+    }
+
     if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
         status = sixel_dequantize_k_undither_fast4_rgba(
             indexed_pixels,
@@ -3296,6 +3308,16 @@ sixel_decoder_decode_pixels(sixel_decoder_t *decoder,
                                                      &width,
                                                      &height,
                                                      &first_flags);
+    if ((first_flags & SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED) != 0U) {
+        /* Indexed dequantization cannot describe this stream; decode it
+         * directly instead of retrying the same conversion. */
+        status = sixel_decode_pixels(data,
+                                     size,
+                                     options,
+                                     result,
+                                     decoder->allocator);
+        goto end;
+    }
     if (status == SIXEL_OK) {
         result_flags = first_flags;
     } else {
@@ -3382,6 +3404,8 @@ sixel_decoder_decode(
     sixel_timeline_logger_t *logger;
     int logger_prepared;
     unsigned int gpu_result_flags;
+    unsigned int raw_result_flags;
+    int dequantize_method;
 
     sx = 0;
     sy = 0;
@@ -3405,6 +3429,8 @@ sixel_decoder_decode(
     input_fp = NULL;
     logger = NULL;
     gpu_result_flags = 0U;
+    raw_result_flags = 0U;
+    dequantize_method = decoder->dequantize_method;
     (void)sixel_timeline_logger_prepare_env(decoder->allocator, &logger);
     logger_prepared = logger != NULL;
 
@@ -3502,8 +3528,8 @@ sixel_decoder_decode(
     ncolors = 0;
 
     if (decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE &&
-            decoder->dequantize_method != SIXEL_DEQUANTIZE_NONE &&
-            decoder->dequantize_method !=
+            dequantize_method != SIXEL_DEQUANTIZE_NONE &&
+            dequantize_method !=
                 SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
         sixel_helper_set_additional_message(
             "sixel_decoder_decode: GPU dequant supports fast4 only.");
@@ -3511,7 +3537,7 @@ sixel_decoder_decode(
         goto end;
     }
 
-    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+    if (dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
         /*
          * The decoder GPU dequantizer consumes the direct RGBA image that the
          * SIXEL parser already knows how to produce.  The legacy frame API can
@@ -3569,7 +3595,7 @@ sixel_decoder_decode(
                 decoder->direct_color != 0,
                 decoder->dequantize_similarity_bias,
                 0U,
-                NULL,
+                &raw_result_flags,
                 &fast4_pixels,
                 &sx,
                 &sy,
@@ -3583,7 +3609,7 @@ sixel_decoder_decode(
             }
         }
     } else if (decoder->direct_color != 0 &&
-            decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
+            dequantize_method == SIXEL_DEQUANTIZE_NONE) {
         status = sixel_decode_direct(
             raw_data,
             raw_len,
@@ -3592,14 +3618,16 @@ sixel_decoder_decode(
             &sy,
             decoder->allocator);
     } else {
-        status = sixel_decode_raw(
+        status = sixel_decode_raw_with_options(
             raw_data,
             raw_len,
+            0U,
             &indexed_pixels,
             &sx,
             &sy,
             &palette,
             &ncolors,
+            &raw_result_flags,
             decoder->allocator);
     }
     if (SIXEL_FAILED(status)) {
@@ -3611,14 +3639,58 @@ sixel_decoder_decode(
         goto end;
     }
 
-    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+    /*
+     * High color streams redefine registers while painting, so no single
+     * index plane and palette pair describes them and dequantizing that pair
+     * yields garbage.  A direct color image has no quantization to undo
+     * either, so drop the request and decode the stream as it is.
+     */
+    if (((raw_result_flags | gpu_result_flags) &
+            SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED) != 0U &&
+            dequantize_method != SIXEL_DEQUANTIZE_NONE) {
+        dequantize_method = SIXEL_DEQUANTIZE_NONE;
+        sixel_allocator_free(decoder->allocator, fast4_pixels);
+        fast4_pixels = NULL;
+        if (decoder->direct_color != 0) {
+            sixel_allocator_free(decoder->allocator, indexed_pixels);
+            indexed_pixels = NULL;
+            sixel_allocator_free(decoder->allocator, palette);
+            palette = NULL;
+            ncolors = 0;
+            status = sixel_decode_direct(raw_data,
+                                         raw_len,
+                                         &direct_pixels,
+                                         &sx,
+                                         &sy,
+                                         decoder->allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        } else if (indexed_pixels == NULL) {
+            status = sixel_decode_raw_with_options(raw_data,
+                                                   raw_len,
+                                                   0U,
+                                                   &indexed_pixels,
+                                                   &sx,
+                                                   &sy,
+                                                   &palette,
+                                                   &ncolors,
+                                                   &raw_result_flags,
+                                                   decoder->allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+    }
+
+    if (dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
         output_pixels = fast4_pixels;
         output_palette = NULL;
         output_pixelformat = decoder->direct_color != 0 ?
             SIXEL_PIXELFORMAT_RGBA8888 : SIXEL_PIXELFORMAT_RGB888;
         frame_ncolors = 0;
     } else if (decoder->direct_color != 0 &&
-            decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
+            dequantize_method == SIXEL_DEQUANTIZE_NONE) {
         output_pixels = direct_pixels;
         output_palette = NULL;
         output_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
@@ -3628,7 +3700,7 @@ sixel_decoder_decode(
         output_palette = palette;
         output_pixelformat = SIXEL_PIXELFORMAT_PAL8;
 
-        if (decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER) {
+        if (dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER) {
             if (logger_prepared) {
                 sixel_timeline_logger_logf(logger,
                                   "decoder",
@@ -3692,7 +3764,7 @@ sixel_decoder_decode(
                 output_palette = NULL;
                 output_pixelformat = SIXEL_PIXELFORMAT_RGB888;
             }
-        } else if (decoder->dequantize_method ==
+        } else if (dequantize_method ==
                 SIXEL_DEQUANTIZE_SELECTIVE_BLUR) {
             if (logger_prepared) {
                 sixel_timeline_logger_logf(logger,

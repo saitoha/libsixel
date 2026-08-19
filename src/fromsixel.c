@@ -447,6 +447,8 @@ typedef struct parser_context {
     int bgindex;
     int ormode;
     int painted_outside_raster;
+    int painted;
+    int palette_redefined_after_paint;
     int param;
     int nparams;
     int params[DECSIXEL_PARAMS_MAX];
@@ -873,6 +875,8 @@ parser_context_init(parser_context_t *context)
     context->bgindex = (-1);
     context->ormode = 0;
     context->painted_outside_raster = 0;
+    context->painted = 0;
+    context->palette_redefined_after_paint = 0;
     context->nparams = 0;
     context->param = 0;
 
@@ -1257,6 +1261,7 @@ sixel_decode_raw_impl(
                 break;
             default:
                 if (*p >= '?' && *p <= '~') {  /* sixel characters */
+                    context->painted = 1;
 #if SIXEL_ENABLE_THREADS
                     if (!palette_ready) {
                         palette_ready = 1;
@@ -1662,6 +1667,15 @@ sixel_decode_raw_impl(
                 }
 
                 if (context->nparams > 4) {
+                    /*
+                     * A definition that lands after painting has begun makes
+                     * the index plane and the palette disagree over time.
+                     * High color output relies on exactly that, so record it
+                     * for callers that consume raw indexes.
+                     */
+                    if (context->painted) {
+                        context->palette_redefined_after_paint = 1;
+                    }
                     if (context->params[1] == 1) {
                         /* HLS */
                         if (context->params[2] > 360) {
@@ -2036,6 +2050,9 @@ sixel_decode_raw_with_options_internal(
             *result_flags |= SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER;
         }
     }
+    if (result_flags != NULL && context.palette_redefined_after_paint) {
+        *result_flags |= SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED;
+    }
 
     status = SIXEL_OK;
     goto end;
@@ -2278,6 +2295,9 @@ sixel_decode_kundither_fast4_with_options(unsigned char *p,
                 SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE) != 0U) {
             *result_flags |= SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER;
         }
+    }
+    if (result_flags != NULL && context.palette_redefined_after_paint) {
+        *result_flags |= SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED;
     }
     if (undither.pixels != NULL) {
         *pixels = undither.pixels;
@@ -2553,6 +2573,9 @@ sixel_decode_direct_context_with_options(
                 SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE) != 0U) {
             *result_flags |= SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER;
         }
+    }
+    if (result_flags != NULL && context.palette_redefined_after_paint) {
+        *result_flags |= SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED;
     }
     if (palette != NULL && ncolors != NULL) {
         *ncolors = alloc_size = image->ncolors;

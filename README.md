@@ -1909,6 +1909,10 @@ The result flags are:
 - `SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER`: out-of-raster paint was seen
   while `TRUST_RASTER_SIZE` was set, so those pixels were discarded.  This flag
   is reported together with `PAINT_OUTSIDE_RASTER`.
+- `SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED`: a color register was
+  redefined after painting had started, as high color output (`img2sixel -I`)
+  does, so the stream cannot be described by one index plane plus one palette.
+  Decoding falls back to the direct path and palette dequantization is skipped.
 
 ## Perl interface
 

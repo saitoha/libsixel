@@ -1304,6 +1304,13 @@ sixel_decode_direct(
 #define SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE         0x0001u
 #define SIXEL_DECODE_PIXELS_RESULT_PAINT_OUTSIDE_RASTER 0x0002u
 #define SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER    0x0004u
+/*
+ * PALETTE_REDEFINED means a color register was redefined after painting
+ * had already started, so the stream cannot be represented by one index
+ * plane plus one palette.  High color output (img2sixel -I) is built that
+ * way, and decoders that work on indexed pixels must not trust them.
+ */
+#define SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED    0x0008u
 
 typedef struct sixel_decode_options {
     unsigned int flags;        /* bitwise OR of SIXEL_DECODE_PIXELS_OPTION_* */
