@@ -19,7 +19,7 @@
 #include "tests/processing/filter/filter_test_common.h"
 
 int
-test_filter_0029_filter_dither_6delta_bluenoise_gpu_auto_fallback(
+test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback(
     int argc,
     char **argv)
 {

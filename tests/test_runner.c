@@ -117,7 +117,7 @@ int test_filter_0027_filter_gpu_6delta_disabled_reject(int argc, char **argv);
 int test_filter_0028_filter_dither_6delta_bluenoise_gpu_exact_plane(
     int argc,
     char **argv);
-int test_filter_0029_filter_dither_6delta_bluenoise_gpu_auto_fallback(
+int test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback(
     int argc,
     char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
@@ -343,7 +343,7 @@ static test_entry_t const test_entries[] = {
     { "filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane",
       test_filter_0028_filter_dither_6delta_bluenoise_gpu_exact_plane },
     { "filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback",
-      test_filter_0029_filter_dither_6delta_bluenoise_gpu_auto_fallback },
+      test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback },
     { "security/0001_issue222_encoder_encode_bytes_packed_g1",
       test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
     { "encoder-core/0001_encoder_core_factory",
