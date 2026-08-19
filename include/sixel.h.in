@@ -721,14 +721,6 @@ typedef int SIXELSTATUS;
 /* -+ LEFT,TOP, --transparent-offset=LEFT,TOP */
 /* add transparent left/top pixel offset for P2=1 image-plane reuse */
 #define SIXEL_OPTFLAG_TRANSPARENT_OFFSET ('+')
-/*
- * Every encoder writer honours the transparent offset, including OR mode and
- * high-color output.  Older libsixel implemented the margin only in the
- * indexed dither writer and rejected the other two, so callers that place
- * images with the margin can test this macro instead of maintaining their own
- * exclusion list.
- */
-#define SIXEL_HAVE_TRANSPARENT_OFFSET_ALL_WRITERS 1
 /* -Z DELTA, --6delta-threshold=DELTA */
 /* set the 6delta lookup shortcut: a pixel is kept whenever the displayed */
 /* color beats the palette, and this tolerance decides that before the    */
