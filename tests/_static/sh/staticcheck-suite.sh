@@ -573,6 +573,10 @@ run_case_tap "staticcheck-binding-loader-setopt-sync" \
     "$src_root/tests/_static/sh/staticcheck-binding-loader-setopt-sync.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-binding-constants-sync" \
+    "$src_root/tests/_static/sh/staticcheck-binding-constants-sync.sh" \
+    "$src_root" "$build_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-python-compileall" \
     "$src_root/tests/_static/sh/staticcheck-python-compileall.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?

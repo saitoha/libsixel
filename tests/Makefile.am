@@ -555,6 +555,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-no-grep-awk \
 	staticcheck-artifact-local-dir-mkdir \
 	staticcheck-binding-loader-setopt-sync \
+	staticcheck-binding-constants-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
 	staticcheck-help-quantize-source-contract \
@@ -616,6 +617,7 @@ staticcheck-test-webp-serial-unique \
 staticcheck-test-no-grep-awk \
 staticcheck-artifact-local-dir-mkdir \
 staticcheck-binding-loader-setopt-sync \
+staticcheck-binding-constants-sync \
 staticcheck-build-doc-configure-help \
 staticcheck-build-doc-meson-options \
 staticcheck-help-quantize-source-contract \
@@ -1139,6 +1141,16 @@ staticcheck-binding-loader-setopt-sync:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-binding-loader-setopt-sync.sh" \
 		"$(abs_top_srcdir)"
+
+staticcheck-binding-constants-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-binding-constants-sync" \
+		--log-file staticcheck-binding-constants-sync.log \
+		--trs-file staticcheck-binding-constants-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-binding-constants-sync.sh" \
+		"$(abs_top_srcdir)" "$(abs_top_builddir)" "$(RUBY)" "$(PERL)"
 
 staticcheck-build-doc-configure-help:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -2065,6 +2077,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-suite.sh \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \
+    _static/sh/staticcheck-binding-constants-sync.sh \
     _static/sh/staticcheck-shellcheck.sh \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
