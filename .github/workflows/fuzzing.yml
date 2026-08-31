@@ -83,10 +83,7 @@ jobs:
         if: ${{ steps.struct_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
-          set -euxo pipefail
-          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          bash .github/scripts/install-ubuntu-packages.sh \
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore struct fuzz corpus cache
@@ -357,10 +354,7 @@ jobs:
         if: ${{ steps.loader_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
-          set -euxo pipefail
-          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          bash .github/scripts/install-ubuntu-packages.sh \
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore loader-format fuzz corpus cache
@@ -548,10 +542,7 @@ jobs:
         if: ${{ steps.autodetect_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
-          set -euxo pipefail
-          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          bash .github/scripts/install-ubuntu-packages.sh \
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore loader-autodetect fuzz corpus cache
@@ -716,10 +707,7 @@ jobs:
         if: ${{ steps.image_api_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
-          set -euxo pipefail
-          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          bash .github/scripts/install-ubuntu-packages.sh \
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore image API fuzz corpus cache
@@ -927,10 +915,7 @@ jobs:
         if: ${{ steps.cli_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
-          set -euxo pipefail
-          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          bash .github/scripts/install-ubuntu-packages.sh \
             afl++ clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Configure AFL core_pattern

@@ -542,6 +542,7 @@ AM_LOG_FLAGS =
 	staticcheck-src-makefile-dist-sources-sync \
 	staticcheck-test-inc-extra-dist-sync \
 	staticcheck-meson-palette-sources \
+	staticcheck-metal-source-literal-length \
 	staticcheck-kmedoids-suboption-env-sync \
 	staticcheck-kcenter-suboption-env-sync \
 	staticcheck-completion-medoids-tokens \
@@ -603,6 +604,7 @@ staticcheck-psb-large-fixture-clean-sync \
 staticcheck-src-makefile-dist-sources-sync \
 staticcheck-test-inc-extra-dist-sync \
 staticcheck-meson-palette-sources \
+staticcheck-metal-source-literal-length \
 staticcheck-kmedoids-suboption-env-sync \
 staticcheck-kcenter-suboption-env-sync \
 staticcheck-completion-medoids-tokens \
@@ -999,6 +1001,16 @@ staticcheck-meson-palette-sources:
 		--trs-file staticcheck-meson-palette-sources.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-meson-palette-sources.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-metal-source-literal-length:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-metal-source-literal-length" \
+		--log-file staticcheck-metal-source-literal-length.log \
+		--trs-file staticcheck-metal-source-literal-length.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-metal-source-literal-length.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-kmedoids-suboption-env-sync:
@@ -2113,6 +2125,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
     _static/sh/staticcheck-test-inc-extra-dist-sync.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
+    _static/sh/staticcheck-metal-source-literal-length.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-kcenter-suboption-env-sync.sh \
     _static/sh/staticcheck-completion-medoids-tokens.sh \

@@ -414,6 +414,10 @@ run_case_tap "staticcheck-meson-palette-sources" \
     "$src_root/tests/_static/sh/staticcheck-meson-palette-sources.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-metal-source-literal-length" \
+    "$src_root/tests/_static/sh/staticcheck-metal-source-literal-length.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-amalgamation-static-symbols" \
     "$src_root/tests/_static/sh/staticcheck-amalgamation-static-symbols.sh" \
     "$src_root" || fail_and_exit $?

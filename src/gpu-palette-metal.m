@@ -372,7 +372,7 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uchar3 retained;\n"
 "    int dr;\n"
 "    int dg;\n"
-"    int db;\n"
+"    int db;\n",
 "    if (gid >= params.pixel_count) {\n"
 "        return;\n"
 "    }\n"

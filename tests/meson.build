@@ -749,6 +749,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-metal-source-literal-length',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-metal-source-literal-length.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-amalgamation-static-symbols',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-amalgamation-static-symbols.sh',

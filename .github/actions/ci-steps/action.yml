@@ -198,16 +198,18 @@ runs:
         sync_files: runner-to-vm
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
-          pkgman refresh
           for attempt in 1 2 3; do
-            if pkgman install -y ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}; then
+            # Refresh and install belong to one retry boundary because either
+            # operation can fail while a Haiku package mirror is unavailable.
+            if pkgman refresh &&
+                pkgman install -y ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}; then
               break
             fi
             if [ "$attempt" -eq 3 ]; then
-              echo "pkgman install failed after ${attempt} attempts" >&2
+              echo "pkgman refresh/install failed after ${attempt} attempts" >&2
               exit 1
             fi
-            sleep $((attempt * 5))
+            sleep $((attempt * 10))
           done
 
     - name: Setup MSVC developer env (vcvars, x86_64 target)
