@@ -210,6 +210,8 @@ srcs = [
   'decoder-parallel.h',
   'decoder-image.h',
   'options.c',
+  'options-registry.c',
+  'options-registry.h',
   'path.c',
   'writer.c',
   'stb_image_write.c',

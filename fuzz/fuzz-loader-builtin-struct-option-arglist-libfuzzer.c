@@ -17,157 +17,8 @@
 #include <sixel.h>
 
 #include "options.h"
+#include "options-registry.h"
 #include "fuzz-loader-builtin-struct-common.h"
-
-static sixel_suboption_choice_t const g_choice_onoff[] = {
-    { "on", 1 },
-    { "off", 0 }
-};
-
-static sixel_suboption_choice_t const g_choice_cms[] = {
-    { "none", 0 },
-    { "auto", 1 },
-    { "builtin", 2 },
-    { "lcms2", 3 },
-    { "colorsync", 4 }
-};
-
-static sixel_suboption_choice_t const g_choice_tonemap[] = {
-    { "none", 0 },
-    { "reinhard", 1 },
-    { "aces", 2 },
-    { "hable", 3 }
-};
-
-static sixel_suboption_choice_t const g_choice_colorspace[] = {
-    { "gamma", 0 },
-    { "linear", 1 },
-    { "cielab", 2 },
-    { "oklab", 3 },
-    { "din99d", 4 }
-};
-
-static sixel_suboption_key_t const g_subkeys_builtin[] = {
-    {
-        "cms_engine",
-        "e",
-        "SIXEL_LOADER_BUILTIN_CMS_ENGINE",
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_choice_cms,
-        sizeof(g_choice_cms) / sizeof(g_choice_cms[0])
-    },
-    {
-        "target",
-        "t",
-        "SIXEL_LOADER_CMS_TARGET_COLORSPACE",
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_choice_colorspace,
-        sizeof(g_choice_colorspace) / sizeof(g_choice_colorspace[0])
-    }
-};
-
-static sixel_suboption_key_t const g_subkeys_hdr[] = {
-    {
-        "tonemap",
-        "t",
-        "SIXEL_LOADER_HDR_TONEMAP",
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_choice_tonemap,
-        sizeof(g_choice_tonemap) / sizeof(g_choice_tonemap[0])
-    },
-    {
-        "ev",
-        "e",
-        "SIXEL_LOADER_HDR_EXPOSURE_EV",
-        SIXEL_SUBOPTION_VALUE_FREE,
-        NULL,
-        0u
-    },
-    {
-        "header",
-        "h",
-        "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_choice_onoff,
-        sizeof(g_choice_onoff) / sizeof(g_choice_onoff[0])
-    }
-};
-
-static sixel_suboption_key_t const g_subkeys_wic[] = {
-    {
-        "ico_minsize",
-        "m",
-        "SIXEL_LOADER_WIC_ICO_MINSIZE",
-        SIXEL_SUBOPTION_VALUE_FREE,
-        NULL,
-        0u
-    }
-};
-
-static sixel_suboption_key_t const g_subkeys_generic[] = {
-    {
-        "orientation",
-        "o",
-        "SIXEL_LOADER_ORIENTATION",
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_choice_onoff,
-        sizeof(g_choice_onoff) / sizeof(g_choice_onoff[0])
-    },
-    {
-        "cms_engine",
-        "e",
-        "SIXEL_LOADER_CMS_ENGINE",
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_choice_cms,
-        sizeof(g_choice_cms) / sizeof(g_choice_cms[0])
-    }
-};
-
-static sixel_option_value_schema_t const g_values[] = {
-    {
-        "builtin",
-        0,
-        g_subkeys_builtin,
-        sizeof(g_subkeys_builtin) / sizeof(g_subkeys_builtin[0])
-    },
-    {
-        "hdr",
-        1,
-        g_subkeys_hdr,
-        sizeof(g_subkeys_hdr) / sizeof(g_subkeys_hdr[0])
-    },
-    {
-        "wic",
-        2,
-        g_subkeys_wic,
-        sizeof(g_subkeys_wic) / sizeof(g_subkeys_wic[0])
-    },
-    {
-        "libpng",
-        3,
-        g_subkeys_generic,
-        sizeof(g_subkeys_generic) / sizeof(g_subkeys_generic[0])
-    },
-    {
-        "libjpeg",
-        4,
-        g_subkeys_generic,
-        sizeof(g_subkeys_generic) / sizeof(g_subkeys_generic[0])
-    },
-    {
-        "coregraphics",
-        5,
-        g_subkeys_generic,
-        sizeof(g_subkeys_generic) / sizeof(g_subkeys_generic[0])
-    }
-};
-
-static sixel_option_argument_schema_t const g_schema = {
-    SIXEL_OPTFLAG_LOADERS,
-    "loaders",
-    g_values,
-    sizeof(g_values) / sizeof(g_values[0])
-};
 
 static char const *g_free_values[] = {
     "0",
@@ -218,9 +69,11 @@ fuzz_pick_free_value(fuzz_cursor_t *cursor)
 static int
 fuzz_build_argument(fuzz_cursor_t *cursor, char *buffer, size_t buffer_size)
 {
+    sixel_option_argument_schema_t const *schema;
     size_t item_count;
     size_t item_index;
     size_t offset;
+    char short_name[2];
 
     if (cursor == NULL || buffer == NULL || buffer_size < 8u) {
         return 0;
@@ -228,6 +81,13 @@ fuzz_build_argument(fuzz_cursor_t *cursor, char *buffer, size_t buffer_size)
 
     buffer[0] = '\0';
     offset = 0u;
+    short_name[0] = '\0';
+    short_name[1] = '\0';
+    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_LOADERS);
+    if (schema == NULL || schema->values == NULL ||
+        schema->value_count == 0u) {
+        return 0;
+    }
 
     item_count = 1u + (size_t)(fuzz_cursor_take_u8(cursor, 0u) % 4u);
     for (item_index = 0u; item_index < item_count; ++item_index) {
@@ -237,8 +97,8 @@ fuzz_build_argument(fuzz_cursor_t *cursor, char *buffer, size_t buffer_size)
         size_t sub_index;
 
         value_index = (size_t)(fuzz_cursor_take_u8(cursor, 0u)
-                               % (sizeof(g_values) / sizeof(g_values[0])));
-        value_def = &g_values[value_index];
+                               % schema->value_count);
+        value_def = schema->values + value_index;
 
         if (item_index > 0u) {
             if (!fuzz_append_text(buffer, buffer_size, &offset, ",")) {
@@ -249,30 +109,41 @@ fuzz_build_argument(fuzz_cursor_t *cursor, char *buffer, size_t buffer_size)
             return 0;
         }
 
-        if (value_def->subkey_count == 0u) {
+        sub_count = sixel_option_registry_suboption_count(schema,
+                                                          value_def);
+        if (sub_count == 0u) {
             continue;
         }
 
         sub_count = (size_t)(fuzz_cursor_take_u8(cursor, 0u)
-                             % (value_def->subkey_count + 1u));
+                             % (sub_count + 1u));
         for (sub_index = 0u; sub_index < sub_count; ++sub_index) {
             sixel_suboption_key_t const *key_def;
             size_t key_index;
+            size_t key_count;
 
+            key_count = sixel_option_registry_suboption_count(schema,
+                                                               value_def);
             key_index = (size_t)(fuzz_cursor_take_u8(cursor, 0u)
-                                 % value_def->subkey_count);
-            key_def = &value_def->subkeys[key_index];
+                                 % key_count);
+            key_def = sixel_option_registry_suboption_at(schema,
+                                                         value_def,
+                                                         key_index);
+            if (key_def == NULL) {
+                return 0;
+            }
 
             if (!fuzz_append_text(buffer, buffer_size, &offset, ":")) {
                 return 0;
             }
 
             if ((fuzz_cursor_take_u8(cursor, 0u) & 0x01u) != 0u &&
-                key_def->short_name != NULL && key_def->short_name[0] != '\0') {
+                key_def->short_name != '\0') {
+                short_name[0] = key_def->short_name;
                 if (!fuzz_append_text(buffer,
                                       buffer_size,
                                       &offset,
-                                      key_def->short_name)) {
+                                      short_name)) {
                     return 0;
                 }
             } else {
@@ -321,12 +192,17 @@ fuzz_build_argument(fuzz_cursor_t *cursor, char *buffer, size_t buffer_size)
 static void
 fuzz_verify_roundtrip(char const *argument)
 {
+    sixel_option_argument_schema_t const *schema;
     sixel_option_argument_list_resolution_t resolution;
     sixel_option_argument_list_resolution_t reparsed;
     SIXELSTATUS status;
     char diagnostic[512];
 
     if (argument == NULL) {
+        return;
+    }
+    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_LOADERS);
+    if (schema == NULL) {
         return;
     }
 
@@ -339,7 +215,7 @@ fuzz_verify_roundtrip(char const *argument)
 
     status = sixel_option_parse_argument_list_with_suboptions(
         argument,
-        &g_schema,
+        schema,
         &resolution,
         diagnostic,
         sizeof(diagnostic));
@@ -355,7 +231,7 @@ fuzz_verify_roundtrip(char const *argument)
 
     status = sixel_option_parse_argument_list_with_suboptions(
         resolution.canonical_argument,
-        &g_schema,
+        schema,
         &reparsed,
         diagnostic,
         sizeof(diagnostic));

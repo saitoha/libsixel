@@ -2092,6 +2092,7 @@ loader_helper_sources = files(
   'src/loader-common.c',
   'src/loader-order-schema.c',
   'src/loader-manager.c',
+  'src/options-registry.c',
   'src/factory.c',
   'src/compat_stub.c',
   'src/malloc_stub.c',

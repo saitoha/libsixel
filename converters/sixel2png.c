@@ -129,11 +129,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             lso_undither:Vlight\n"
         "                             l:Vl              -> light causal\n"
         "                                                  undither\n"
+        "                               env: SIXEL_DEQUANTIZE_LSO_VARIANT\n"
         "                             selective_blur:threshold=24\n"
         "                                               -> selective\n"
         "                                                  3x3 blur\n"
         "                             s:T24             -> compact\n"
         "                                                  3x3 blur\n"
+        "                               env: SIXEL_DEQUANTIZE_\n"
+        "                                    SELECTIVE_BLUR_THRESHOLD\n"
     },
     {
         'S',

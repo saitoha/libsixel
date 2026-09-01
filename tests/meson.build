@@ -761,6 +761,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-suboption-registry',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-suboption-registry.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-gperf-generated-undefs',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-gperf-generated-undefs.sh',

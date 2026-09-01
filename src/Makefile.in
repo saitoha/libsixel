@@ -320,11 +320,12 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
 	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
 	$(srcdir)/decoder-parallel.h $(srcdir)/decoder-image.h \
-	$(srcdir)/options.c $(srcdir)/options.h $(srcdir)/path.c \
-	$(srcdir)/path.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
-	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
-	$(srcdir)/stb_image_write.h $(srcdir)/status.c \
-	$(srcdir)/status.h $(srcdir)/stdio_stub.h \
+	$(srcdir)/options.c $(srcdir)/options.h \
+	$(srcdir)/options-registry.c $(srcdir)/options-registry.h \
+	$(srcdir)/path.c $(srcdir)/path.h $(srcdir)/stb_image.h \
+	$(srcdir)/writer.c $(srcdir)/writer.h \
+	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
+	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
@@ -474,6 +475,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder-parallel.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-options.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-options-registry.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-path.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-writer.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-stb_image_write.lo \
@@ -639,6 +641,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo \
 	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
 	./$(DEPDIR)/libsixel_la-mapfile.Plo \
+	./$(DEPDIR)/libsixel_la-options-registry.Plo \
 	./$(DEPDIR)/libsixel_la-options.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-cover.Plo \
@@ -1270,6 +1273,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-image.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options-registry.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options-registry.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/path.c $(srcdir)/path.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/stb_image.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/writer.c \
@@ -1642,6 +1647,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-mapfile.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options-registry.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-cover.Plo@am__quote@ # am--include-marker
@@ -2614,6 +2620,13 @@ libsixel_la-options.lo: options.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-options.lo `test -f 'options.c' || echo '$(srcdir)/'`options.c
 
+libsixel_la-options-registry.lo: options-registry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-options-registry.lo -MD -MP -MF $(DEPDIR)/libsixel_la-options-registry.Tpo -c -o libsixel_la-options-registry.lo `test -f 'options-registry.c' || echo '$(srcdir)/'`options-registry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-options-registry.Tpo $(DEPDIR)/libsixel_la-options-registry.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options-registry.c' object='libsixel_la-options-registry.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-options-registry.lo `test -f 'options-registry.c' || echo '$(srcdir)/'`options-registry.c
+
 libsixel_la-path.lo: path.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-path.lo -MD -MP -MF $(DEPDIR)/libsixel_la-path.Tpo -c -o libsixel_la-path.lo `test -f 'path.c' || echo '$(srcdir)/'`path.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-path.Tpo $(DEPDIR)/libsixel_la-path.Plo
@@ -3069,6 +3082,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-mapfile.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-options-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo
@@ -3262,6 +3276,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-mapfile.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-options-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo

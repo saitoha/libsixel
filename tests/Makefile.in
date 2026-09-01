@@ -1594,6 +1594,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-inc-extra-dist-sync.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-metal-source-literal-length.sh \
+    _static/sh/staticcheck-suboption-registry.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-kcenter-suboption-env-sync.sh \
     _static/sh/staticcheck-completion-medoids-tokens.sh \

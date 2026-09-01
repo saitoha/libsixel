@@ -256,6 +256,29 @@ Supported k-medoids suboptions:
 \fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
 .br
 \fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
+.br
+Compact suboption names use one uppercase letter followed by the value:
+.br
+all models: merge=G, merge_oversplit=O, merge_lloyd=L, cover=C,
+cover_grow=V, cover_mode=W;
+.br
+heckbert: profile=P;
+.br
+kmeans: inittype=I, threshold=T, binning=B, binbits=N, mapping=M,
+softdist=D, autoratio=R, feedback=F, prune=P, seed=S, restarts=E,
+iter=A, iter_max=X, miniter=U, polish_iter=H, feedback_slots=K,
+feedback_interval=J;
+.br
+medoids: algo=A, seed=S, iter=I, sample=M, clara_trials=T,
+clara_sample=K, clarans_local=J, clarans_neighbors=N, bandit_iter=D,
+bandit_candidates=E, bandit_batch=X, histbits=H, point_budget=B,
+rare_keep=R, prune_mass=U, auction=Q, auction_shortlist=Y;
+.br
+center: algo=A, profile=P, seed=S, auto_policy=Q,
+auto_fft_threshold=F, space_policy=E, candidate_policy=Z, restarts=X,
+init_seeds=N, iter=I, histbits=H, point_budget=B, rare_keep=R,
+prune_mass=U, budget_policy=D, budget_scale=Y, swap_topk=K,
+swap_update=M, swap_patience=T, swap_min_gain=J.
 .TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
 transform image colors to match this set of colors. Accepts image files
@@ -431,6 +454,13 @@ sub-option:
 \fBfastpath=0|1\fP -> enable pmj fast path (bit-exact, default 0)
 .br
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
+.br
+Compact diffusion suboption names use one uppercase letter plus the value:
+all methods scan=N; sierra variant=V; interframe diffusion=D;
+stbn source=S, diffusion=D, strength=T, motion_adapt=M,
+scene_cut_reset=C, scene_detect=E, alpha_guard=A, perceptual_weight=P,
+fastpath=F; bluenoise strength=T, gradient_factor=G, phase=P, seed=S,
+channel=C, size=Z.
 .TP 5
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
 choose method for finding the largest dimension of median
@@ -546,13 +576,15 @@ auto      -> follow pixel depth to pick bucket size
 .br
            sub-option:
 .br
-             shared_instance=0|1 (0: worker-local, 1: shared)
+             shared_instance=0|1, short form S0 or S1
+             (0: worker-local, 1: shared)
 .br
 6bit      -> force 6-bit RGB buckets (RGB inputs only)
 .br
            sub-option:
 .br
-             shared_instance=0|1 (0: worker-local, 1: shared)
+             shared_instance=0|1, short form S0 or S1
+             (0: worker-local, 1: shared)
 .br
 none      -> disable LUT caching and scan the palette directly
 .br
@@ -560,7 +592,8 @@ certlut -> certified hierarchical LUT with zero approximation
 .br
           sub-option:
 .br
-            shared_instance=0|1 (0: worker-local, 1: shared)
+            shared_instance=0|1, short form S0 or S1
+            (0: worker-local, 1: shared)
 .br
           The RGB cube is divided into 64x64x64 cells and refined only
           where necessary.  certlut reuses a single kd-tree built from
@@ -777,8 +810,10 @@ coregraphics, and builtin loaders accept
 The libpng, libjpeg, libwebp, libtiff, and builtin loaders accept
 \fBcms_engine=none|auto|builtin|lcms2|colorsync\fP (short form \fBEvalue\fP,
 default none).
-The WIC loader also accepts suboptions such as \fBwic:ico_minsize=SIZE\fP to pick
-the smallest ICO frame whose edge is at least SIZE.
+The builtin loader accepts \fBbmp_info40_mode=MODE\fP (short form
+\fBBMODE\fP). The WIC loader accepts \fBwic:ico_minsize=SIZE\fP (short
+form \fBISIZE\fP) to pick the smallest ICO frame whose edge is at least
+SIZE.
 .br
 Recognized loader names (availability depends on the build):
 .RS
@@ -1100,6 +1135,26 @@ For SVG decoded via \fBlibrsvg\fP, the source raster remains cairo ARGB32
 (8-bit per channel); float32 improves downstream processing precision but does
 not recover higher source bit depth from the loader.
 .TP 5
+.B SIXEL_DEQUANTIZE_LSO_VARIANT
+.br
+set the sixel2png default for the lso_undither variant to fs or light.
+The decoder suboption takes precedence.
+.TP 5
+.B SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD
+.br
+set the sixel2png default selective-blur RGB distance threshold to a value
+from 0 through 441. The decoder suboption takes precedence.
+.TP 5
+.B SIXEL_DITHER_SCAN
+.br
+set the default diffusion scan order to auto, serpentine, or raster.
+The scan suboption takes precedence.
+.TP 5
+.B SIXEL_DITHER_SIERRA_VARIANT
+.br
+set the default Sierra variant to 1, 2, or 3.
+The sierra variant suboption takes precedence.
+.TP 5
 .B SIXEL_PLANNER_RESIZE_PRECISION_MODE
 .br
 force the resize precision planner. Accepts 1 (preserve integer buffers), 2
@@ -1390,6 +1445,11 @@ legacy alias for \fBSIXEL_LOADER_WIC_ICO_MINSIZE\fP.
 request a specific sample count for palette estimation. Positive integers
 override automatic sizing.
 .TP 5
+.B SIXEL_PALETTE_FINAL_MERGE
+.br
+select the final palette merge: auto, none, or ward.
+The quantize-model merge suboption takes precedence.
+.TP 5
 .B SIXEL_PALETTE_OVERSPLIT_FACTOR
 .br
 scale the provisional palette before the final merge (1.0-3.0,
@@ -1399,6 +1459,11 @@ default 1.81).
 .br
 run Lloyd refinement after the final merge stage. Accepts 0-30.
 Defaults to 3 iterations.
+.TP 5
+.B SIXEL_PALETTE_HECKBERT_PROFILE
+.br
+select the Heckbert preset: compat, speed, or quality.
+The heckbert profile suboption takes precedence.
 .TP 5
 .B SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX
 .br

@@ -333,6 +333,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/decoder-image.h \
                 $(srcdir)/options.c \
                 $(srcdir)/options.h \
+                $(srcdir)/options-registry.c \
+                $(srcdir)/options-registry.h \
                 $(srcdir)/path.c \
                 $(srcdir)/path.h \
                 $(srcdir)/stb_image.h \

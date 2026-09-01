@@ -39,6 +39,7 @@
 
 #define SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT 24
 #define SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_MAX 441
+#define SIXEL_OPTION_DEQUANTIZE_LSO_BASE (-1)
 
 /*
  * The choice descriptor couples the textual prefix with the integral
@@ -59,7 +60,8 @@ typedef enum sixel_option_choice_result {
 
 /*
  * Suboption values may either be matched against a fixed choice table or
- * accepted as free-form text validated by caller-specific logic.
+ * accepted as free-form text.  The registry is the only owner of suboption
+ * names, compact aliases, and environment bindings.
  */
 typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_FREE = 0,
@@ -71,23 +73,39 @@ typedef struct sixel_suboption_choice {
     int value;
 } sixel_suboption_choice_t;
 
-typedef struct sixel_suboption_key {
+/* Getopt characters are not unique across encoder and decoder contexts. */
+typedef enum sixel_option_schema_id {
+    SIXEL_OPTION_SCHEMA_DEQUANTIZE = 0,
+    SIXEL_OPTION_SCHEMA_DIFFUSION,
+    SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+    SIXEL_OPTION_SCHEMA_LUT_POLICY,
+    SIXEL_OPTION_SCHEMA_LOADERS
+} sixel_option_schema_id_t;
+
+typedef struct sixel_option_value_schema {
     char const *name;
-    char const *short_name;
+    int value;
+    /* Insert option-wide suboptions after this many base-specific rows. */
+    size_t common_suboption_offset;
+} sixel_option_value_schema_t;
+
+typedef struct sixel_suboption_key {
+    sixel_option_schema_id_t option_id;
+    /* NULL makes the suboption common to every base of the option. */
+    sixel_option_value_schema_t const *base_def;
+    char const *name;
+    /* A compact suboption name is exactly one uppercase ASCII letter. */
+    char short_name;
     char const *env_name;
+    char const *env_fallback_name;
+    char const *env_legacy_name;
     sixel_suboption_value_kind_t value_kind;
     sixel_suboption_choice_t const *choices;
     size_t choice_count;
 } sixel_suboption_key_t;
 
-typedef struct sixel_option_value_schema {
-    char const *name;
-    int value;
-    sixel_suboption_key_t const *subkeys;
-    size_t subkey_count;
-} sixel_option_value_schema_t;
-
 typedef struct sixel_option_argument_schema {
+    sixel_option_schema_id_t option_id;
     int optflag;
     char const *option_name;
     sixel_option_value_schema_t const *values;

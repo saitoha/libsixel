@@ -6,11 +6,11 @@ set -eu
 echo "1..1"
 
 src_root=$1
-encoder_file=$src_root/src/encoder.c
+registry_file=$src_root/src/options-registry.c
 help_file=$src_root/converters/img2sixel.c
 
-if test ! -f "$encoder_file" || test ! -f "$help_file"; then
-    echo "ok 1 # SKIP missing src/encoder.c or converters/img2sixel.c"
+if test ! -f "$registry_file" || test ! -f "$help_file"; then
+    echo "ok 1 # SKIP missing registry or converters/img2sixel.c"
     exit 0
 fi
 
@@ -43,37 +43,25 @@ auction_shortlist	SIXEL_PALETTE_KMEDOIDS_AUCTION_SHORTLIST
 EOF
 
 awk '
-/g_subkeys_quantize_model_kmedoids\[\][[:space:]]*=[[:space:]]*\{/ {
+/SIXEL_REGISTRY_(CHOICE|FREE)\(/ {
     in_block = 1
-    state = 0
-    key = ""
+    entry = $0
     next
 }
-in_block && /^[[:space:]]*};/ {
+in_block {
+    entry = entry " " $0
+}
+in_block && /\),[[:space:]]*$/ {
     in_block = 0
-    next
-}
-!in_block { next }
-{
-    line = $0
-    if (state == 0) {
-        if (line ~ /^[[:space:]]*"[^"]+",[[:space:]]*$/) {
-            sub(/^[[:space:]]*"/, "", line)
-            sub(/",.*/, "", line)
-            key = line
-            state = 1
+    if (entry ~ /SIXEL_QUANTIZE_BASE_MEDOIDS/) {
+        count = split(entry, quoted, /"/)
+        if (count >= 4 && quoted[4] ~ /^SIXEL_PALETTE_KMEDOIDS_/) {
+            printf "%s\t%s\n", quoted[2], quoted[4]
         }
-        next
     }
-    if (line ~ /"SIXEL_PALETTE_KMEDOIDS_[A-Z0-9_]+"/) {
-        sub(/^[^"]*"/, "", line)
-        sub(/".*/, "", line)
-        printf "%s\t%s\n", key, line
-        key = ""
-        state = 0
-    }
+    entry = ""
 }
-' "$encoder_file" | LC_ALL=C sort -u > "$actual"
+' "$registry_file" | LC_ALL=C sort -u > "$actual"
 
 awk '
 /^[[:space:]]*"SIXEL_PALETTE_KMEDOIDS_[A-Z0-9_]+"/ {
@@ -89,7 +77,7 @@ status=0
 while IFS="$(printf '\t')" read -r key env; do
     test -n "$key" || continue
     if ! grep -Fxq "$key	$env" "$actual"; then
-        echo "# src/encoder.c: missing kmedoids key/env pair: $key -> $env" \
+        echo "# registry: missing kmedoids key/env pair: $key -> $env" \
             >> "$missing"
         status=1
     fi

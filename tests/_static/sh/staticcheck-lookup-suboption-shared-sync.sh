@@ -6,12 +6,13 @@ set -eu
 echo "1..1"
 
 src_root=$1
-encoder_file=$src_root/src/encoder.c
+registry_file=$src_root/src/options-registry.c
 help_file=$src_root/converters/img2sixel.c
 man_file=$src_root/converters/img2sixel.1
 
-if test ! -f "$encoder_file" || test ! -f "$help_file" || test ! -f "$man_file"; then
-    echo "ok 1 # SKIP missing encoder/help/man source file"
+if test ! -f "$registry_file" || test ! -f "$help_file" || \
+        test ! -f "$man_file"; then
+    echo "ok 1 # SKIP missing registry/help/man source file"
     exit 0
 fi
 
@@ -24,77 +25,38 @@ missing=$tmpdir/missing.txt
 status=0
 
 cat > "$expected" <<'EOT'
-auto	NULL
-5bit	g_subkeys_lookup_policy_shared
-6bit	g_subkeys_lookup_policy_shared
-none	NULL
-certlut	g_subkeys_lookup_policy_shared
-eytzinger	NULL
-fhedt	NULL
-vptree	NULL
-rbc	NULL
-mahalanobis	NULL
+SIXEL_LOOKUP_BASE_5BIT	SIXEL_LOOKUP_5BIT_SHARED_INSTANCE
+SIXEL_LOOKUP_BASE_6BIT	SIXEL_LOOKUP_6BIT_SHARED_INSTANCE
+SIXEL_LOOKUP_BASE_CERTLUT	SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE
 EOT
 
 awk '
-/g_schema_lookup_policy_values\[\][[:space:]]*=[[:space:]]*\{/ {
+/SIXEL_REGISTRY_(CHOICE|FREE)\(/ {
     in_block = 1
-    in_entry = 0
-    field = 0
-    name = ""
-    subkeys = ""
+    entry = $0
     next
 }
-in_block && /^[[:space:]]*};/ {
+in_block {
+    entry = entry " " $0
+}
+in_block && /\),[[:space:]]*$/ {
     in_block = 0
-    next
-}
-!in_block {
-    next
-}
-{
-    line = $0
-    if (line ~ /^[[:space:]]*\{[[:space:]]*$/) {
-        in_entry = 1
-        field = 0
-        name = ""
-        subkeys = ""
-        next
-    }
-    if (!in_entry) {
-        next
-    }
-    if (line ~ /^[[:space:]]*\},?[[:space:]]*$/) {
-        if (name != "" && subkeys != "") {
-            printf "%s\t%s\n", name, subkeys
-        }
-        in_entry = 0
-        next
-    }
-    if (line ~ /^[[:space:]]*"[^"]+",[[:space:]]*$/) {
-        token = line
-        sub(/^[[:space:]]*"/, "", token)
-        sub(/",[[:space:]]*$/, "", token)
-        field += 1
-        if (field == 1) {
-            name = token
-        }
-        next
-    }
-    if (line ~ /^[[:space:]]*[A-Za-z0-9_]+,[[:space:]]*$/) {
-        token = line
-        sub(/^[[:space:]]*/, "", token)
-        sub(/,[[:space:]]*$/, "", token)
-        field += 1
-        if (field == 3) {
-            subkeys = token
+    if (entry ~ /SIXEL_OPTION_SCHEMA_LUT_POLICY/ &&
+        entry ~ /"shared_instance"/) {
+        count = split(entry, quoted, /"/)
+        count = split(entry, fields, /,[[:space:]]*/)
+        base = fields[2]
+        sub(/^.*\+ /, "", base)
+        if (count >= 5) {
+            print base "\t" quoted[4]
         }
     }
+    entry = ""
 }
-' "$encoder_file" > "$actual"
+' "$registry_file" > "$actual"
 
 if ! cmp -s "$expected" "$actual"; then
-    echo "# src/encoder.c: lookup policy schema mismatch" >> "$missing"
+    echo "# registry: lookup shared_instance mapping mismatch" >> "$missing"
     if command -v diff >/dev/null 2>&1; then
         diff -u "$expected" "$actual" | sed 's/^/# /' >> "$missing"
     fi

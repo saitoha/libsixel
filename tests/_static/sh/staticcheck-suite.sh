@@ -422,6 +422,10 @@ run_case_tap "staticcheck-amalgamation-static-symbols" \
     "$src_root/tests/_static/sh/staticcheck-amalgamation-static-symbols.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-suboption-registry" \
+    "$src_root/tests/_static/sh/staticcheck-suboption-registry.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-kmedoids-suboption-env-sync" \
     "$src_root/tests/_static/sh/staticcheck-kmedoids-suboption-env-sync.sh" \
     "$src_root" || fail_and_exit $?

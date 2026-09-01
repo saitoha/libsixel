@@ -18,6 +18,7 @@
 
 #include "loader-order-schema.h"
 #include "options.h"
+#include "options-registry.h"
 #include "fuzz-loader-builtin-struct-common.h"
 
 static char const *g_free_values[] = {
@@ -89,6 +90,7 @@ fuzz_build_argument(fuzz_cursor_t *cursor, char *buffer, size_t buffer_size)
     size_t item_count;
     size_t item_index;
     size_t offset;
+    char short_name[2];
 
     if (cursor == NULL || buffer == NULL || buffer_size < 8u) {
         return 0;
@@ -101,6 +103,8 @@ fuzz_build_argument(fuzz_cursor_t *cursor, char *buffer, size_t buffer_size)
 
     buffer[0] = '\0';
     offset = 0u;
+    short_name[0] = '\0';
+    short_name[1] = '\0';
 
     item_count = 1u + (size_t)(fuzz_cursor_take_u8(cursor, 0u) % 5u);
     for (item_index = 0u; item_index < item_count; ++item_index) {
@@ -125,6 +129,7 @@ fuzz_build_argument(fuzz_cursor_t *cursor, char *buffer, size_t buffer_size)
             size_t value_index;
             size_t sub_count;
             size_t sub_index;
+            size_t key_count;
 
             value_index = (size_t)(fuzz_cursor_take_u8(cursor, 0u)
                                    % schema->value_count);
@@ -133,30 +138,38 @@ fuzz_build_argument(fuzz_cursor_t *cursor, char *buffer, size_t buffer_size)
                 return 0;
             }
 
-            if (value_def->subkey_count == 0u) {
+            key_count = sixel_option_registry_suboption_count(schema,
+                                                              value_def);
+            if (key_count == 0u) {
                 continue;
             }
 
             sub_count = (size_t)(fuzz_cursor_take_u8(cursor, 0u)
-                                 % (value_def->subkey_count + 1u));
+                                 % (key_count + 1u));
             for (sub_index = 0u; sub_index < sub_count; ++sub_index) {
                 sixel_suboption_key_t const *key_def;
                 size_t key_index;
 
                 key_index = (size_t)(fuzz_cursor_take_u8(cursor, 0u)
-                                     % value_def->subkey_count);
-                key_def = &value_def->subkeys[key_index];
+                                     % key_count);
+                key_def = sixel_option_registry_suboption_at(schema,
+                                                             value_def,
+                                                             key_index);
+                if (key_def == NULL) {
+                    return 0;
+                }
 
                 if (!fuzz_append_text(buffer, buffer_size, &offset, ":")) {
                     return 0;
                 }
 
                 if ((fuzz_cursor_take_u8(cursor, 0u) & 0x01u) != 0u &&
-                    key_def->short_name != NULL && key_def->short_name[0] != '\0') {
+                    key_def->short_name != '\0') {
+                    short_name[0] = key_def->short_name;
                     if (!fuzz_append_text(buffer,
                                           buffer_size,
                                           &offset,
-                                          key_def->short_name)) {
+                                          short_name)) {
                         return 0;
                     }
                 } else {

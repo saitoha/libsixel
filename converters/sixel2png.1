@@ -79,6 +79,12 @@ range 0..441.
 .B s:T24
 Compact form of selective_blur:threshold=24.
 .RE
+.PP
+Set \fBSIXEL_DEQUANTIZE_LSO_VARIANT\fP to fs or light to select the
+default lso_undither variant. Set
+\fBSIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD\fP to an integer from 0 through
+441 to select the default selective_blur threshold. Explicit suboptions take
+precedence over these defaults.
 .TP 5
 .B \-S
 Specify similarity bias for dequantization.
@@ -145,6 +151,16 @@ opt in explicitly.
 Override the decoder worker count using the same syntax as the
 \-=/\-\-threads option.  Accepts positive integers or "auto" to match the
 hardware thread count. Empty or unset values make sixel2png use "auto".
+.TP 5
+.B SIXEL_DEQUANTIZE_LSO_VARIANT
+.br
+Set the default lso_undither variant to fs or light. The dequantize
+suboption takes precedence.
+.TP 5
+.B SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD
+.br
+Set the default selective_blur RGB distance threshold to an integer from
+0 through 441. The dequantize suboption takes precedence.
 
 
 .SH "SEE ALSO"

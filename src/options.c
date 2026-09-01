@@ -62,6 +62,7 @@
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "options.h"
+#include "options-registry.h"
 #include "output.h"
 
 /*
@@ -74,7 +75,6 @@
 #define SIXEL_OPTION_CHOICE_SUGGESTION_LIMIT 5u
 #define SIXEL_OPTION_CHOICE_SUGGESTION_THRESHOLD 0.6
 #define SIXEL_OPTION_CHOICE_SHORT_NAME_LENGTH 3u
-#define SIXEL_OPTION_DEQUANTIZE_LSO_BASE (-1)
 
 #if defined(__clang__)
 # if __has_attribute(unused)
@@ -102,66 +102,6 @@ typedef struct sixel_option_choice_suggestion {
     double score;
     size_t distance;
 } sixel_option_choice_suggestion_t;
-
-static sixel_suboption_choice_t const
-g_sixel_option_dequantize_lso_variant_choices[] = {
-    { "fs", SIXEL_DEQUANTIZE_LSO_UNDITHER_VFS },
-    { "light", SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT }
-};
-
-static sixel_suboption_key_t const
-g_sixel_option_dequantize_lso_subkeys[] = {
-    {
-        "variant",
-        "V",
-        NULL,
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_sixel_option_dequantize_lso_variant_choices,
-        sizeof(g_sixel_option_dequantize_lso_variant_choices)
-        / sizeof(g_sixel_option_dequantize_lso_variant_choices[0])
-    }
-};
-
-static sixel_suboption_key_t const
-g_sixel_option_dequantize_selective_blur_subkeys[] = {
-    {
-        "threshold",
-        "T",
-        NULL,
-        SIXEL_SUBOPTION_VALUE_FREE,
-        NULL,
-        0u
-    }
-};
-
-static sixel_option_value_schema_t const
-g_sixel_option_dequantize_values[] = {
-    { "none", SIXEL_DEQUANTIZE_NONE, NULL, 0u },
-    { "k_undither", SIXEL_DEQUANTIZE_K_UNDITHER, NULL, 0u },
-    {
-        "lso_undither",
-        SIXEL_OPTION_DEQUANTIZE_LSO_BASE,
-        g_sixel_option_dequantize_lso_subkeys,
-        sizeof(g_sixel_option_dequantize_lso_subkeys)
-        / sizeof(g_sixel_option_dequantize_lso_subkeys[0])
-    },
-    {
-        "selective_blur",
-        SIXEL_DEQUANTIZE_SELECTIVE_BLUR,
-        g_sixel_option_dequantize_selective_blur_subkeys,
-        sizeof(g_sixel_option_dequantize_selective_blur_subkeys)
-        / sizeof(g_sixel_option_dequantize_selective_blur_subkeys[0])
-    }
-};
-
-static sixel_option_argument_schema_t const
-g_sixel_option_dequantize_schema = {
-    SIXEL_OPTFLAG_DEQUANTIZE,
-    "dequantize",
-    g_sixel_option_dequantize_values,
-    sizeof(g_sixel_option_dequantize_values)
-    / sizeof(g_sixel_option_dequantize_values[0])
-};
 
 static double
 sixel_option_normalized_levenshtein(
@@ -291,8 +231,8 @@ sixel_option_append_suboption_assignment(
 static sixel_option_choice_result_t
 sixel_option_match_suboption_key(
     char const *token,
-    sixel_suboption_key_t const *keys,
-    size_t key_count,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
     int *matched_index,
     char *diagnostic,
     size_t diagnostic_size);
@@ -300,15 +240,10 @@ sixel_option_match_suboption_key(
 static sixel_option_choice_result_t
 sixel_option_match_suboption_short_key(
     char const *token,
-    sixel_suboption_key_t const *keys,
-    size_t key_count,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
     int *matched_index,
     char const **value_text_out);
-
-static int
-sixel_option_suboption_key_token_is_removed_alias(
-    sixel_suboption_key_t const *key,
-    char const *token);
 
 static sixel_option_choice_result_t
 sixel_option_match_schema_value(
@@ -505,33 +440,41 @@ sixel_option_report_invalid_choice(
 
 static void
 sixel_option_emit_candidate_list_from_subkeys(
-    sixel_suboption_key_t const *subkeys,
-    size_t subkey_count,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
     char *buffer,
     size_t buffer_size)
 {
     size_t index;
+    size_t subkey_count;
     size_t offset;
     size_t available;
     size_t copy_length;
     char const *name;
+    sixel_suboption_key_t const *subkey;
 
     index = 0u;
+    subkey_count = 0u;
     offset = 0u;
     available = 0u;
     copy_length = 0u;
     name = NULL;
+    subkey = NULL;
     if (buffer == NULL || buffer_size == 0u) {
         return;
     }
 
     buffer[0] = '\0';
-    if (subkeys == NULL || subkey_count == 0u) {
+    subkey_count = sixel_option_registry_suboption_count(schema, base_def);
+    if (subkey_count == 0u) {
         return;
     }
 
     while (index < subkey_count && offset + 1u < buffer_size) {
-        name = subkeys[index].name;
+        subkey = sixel_option_registry_suboption_at(schema,
+                                                    base_def,
+                                                    index);
+        name = subkey != NULL ? subkey->name : NULL;
         if (name == NULL || name[0] == '\0') {
             ++index;
             continue;
@@ -735,8 +678,8 @@ static void
 sixel_option_report_unknown_suboption_key(
     char const *key_token,
     char const *suggestions,
-    sixel_suboption_key_t const *subkeys,
-    size_t subkey_count,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
     char *buffer,
     size_t buffer_size)
 {
@@ -751,8 +694,8 @@ sixel_option_report_unknown_suboption_key(
     candidates[0] = '\0';
     written = 0;
     diag_mode_code = 0;
-    sixel_option_emit_candidate_list_from_subkeys(subkeys,
-                                                  subkey_count,
+    sixel_option_emit_candidate_list_from_subkeys(schema,
+                                                  base_def,
                                                   candidates,
                                                   sizeof(candidates));
     if (buffer == NULL || buffer_size == 0u) {
@@ -872,6 +815,7 @@ sixel_option_parse_argument_with_suboptions(
     int key_index;
     int value_choice;
     size_t index;
+    size_t subkey_count;
     sixel_option_choice_result_t match_result;
     sixel_suboption_key_t const *key_def;
     char const *value_text;
@@ -888,6 +832,7 @@ sixel_option_parse_argument_with_suboptions(
     key_index = 0;
     value_choice = 0;
     index = 0u;
+    subkey_count = 0u;
     match_result = SIXEL_OPTION_CHOICE_NONE;
     key_def = NULL;
     value_text = NULL;
@@ -898,6 +843,11 @@ sixel_option_parse_argument_with_suboptions(
         diagnostic[0] = '\0';
     }
     if (resolution == NULL || schema == NULL || argument == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!sixel_option_registry_validate()) {
+        sixel_helper_set_additional_message(
+            "invalid suboption registry metadata.");
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -947,6 +897,9 @@ sixel_option_parse_argument_with_suboptions(
 
     resolution->resolved_base_value = schema->values[value_index].value;
     resolution->base_def = schema->values + value_index;
+    subkey_count = sixel_option_registry_suboption_count(
+        schema,
+        resolution->base_def);
 
     while (cursor != NULL && *cursor != '\0') {
         entry_end = strchr(cursor, ':');
@@ -970,16 +923,16 @@ sixel_option_parse_argument_with_suboptions(
             value_text = equal_pos + 1;
             match_result = sixel_option_match_suboption_key(
                 cursor,
-                resolution->base_def->subkeys,
-                resolution->base_def->subkey_count,
+                schema,
+                resolution->base_def,
                 &key_index,
                 diagnostic,
                 diagnostic_size);
         } else {
             match_result = sixel_option_match_suboption_short_key(
                 cursor,
-                resolution->base_def->subkeys,
-                resolution->base_def->subkey_count,
+                schema,
+                resolution->base_def,
                 &key_index,
                 &value_text);
         }
@@ -995,15 +948,26 @@ sixel_option_parse_argument_with_suboptions(
             sixel_option_report_unknown_suboption_key(
                 cursor,
                 diagnostic,
-                resolution->base_def->subkeys,
-                resolution->base_def->subkey_count,
+                schema,
+                resolution->base_def,
                 match_message,
                 sizeof(match_message));
             status = SIXEL_BAD_ARGUMENT;
             goto cleanup;
         }
 
-        key_def = resolution->base_def->subkeys + key_index;
+        if (key_index < 0 || (size_t)key_index >= subkey_count) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        key_def = sixel_option_registry_suboption_at(
+            schema,
+            resolution->base_def,
+            (size_t)key_index);
+        if (key_def == NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
         resolved_text = value_text;
         if (key_def->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE) {
             match_result = sixel_option_match_choice(
@@ -1152,7 +1116,7 @@ sixel_option_parse_dequantize_argument_with_options(
 
     status = sixel_option_parse_argument_with_suboptions(
         argument,
-        &g_sixel_option_dequantize_schema,
+        sixel_option_registry_get(SIXEL_OPTION_SCHEMA_DEQUANTIZE),
         &resolution,
         diagnostic,
         diagnostic_size);
@@ -1719,38 +1683,41 @@ sixel_option_match_schema_value(
 static sixel_option_choice_result_t
 sixel_option_match_suboption_key(
     char const *token,
-    sixel_suboption_key_t const *keys,
-    size_t key_count,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
     int *matched_index,
     char *diagnostic,
     size_t diagnostic_size)
 {
     size_t index;
+    size_t key_count;
     size_t choice_count;
     sixel_option_choice_t *choices;
+    sixel_suboption_key_t const *key;
     int candidate_index;
 
     index = 0u;
+    key_count = 0u;
     choice_count = 0u;
     choices = NULL;
+    key = NULL;
     candidate_index = (-1);
 
     if (matched_index != NULL) {
         *matched_index = 0;
     }
-    if (keys == NULL || key_count == 0u) {
+    key_count = sixel_option_registry_suboption_count(schema, base_def);
+    if (key_count == 0u) {
         return SIXEL_OPTION_CHOICE_NONE;
     }
 
     while (index < key_count) {
-        if (sixel_option_suboption_key_token_is_removed_alias(
-                keys + index,
-                token)) {
+        key = sixel_option_registry_suboption_at(schema, base_def, index);
+        if (key == NULL) {
             ++index;
             continue;
         }
-        if (keys[index].name != NULL &&
-                strcmp(keys[index].name, token) == 0) {
+        if (key->name != NULL && strcmp(key->name, token) == 0) {
             if (candidate_index != (-1)) {
                 return SIXEL_OPTION_CHOICE_AMBIGUOUS;
             }
@@ -1782,14 +1749,13 @@ sixel_option_match_suboption_key(
     choice_count = 0u;
     index = 0u;
     while (index < key_count) {
-        if (sixel_option_suboption_key_token_is_removed_alias(
-                keys + index,
-                token)) {
+        key = sixel_option_registry_suboption_at(schema, base_def, index);
+        if (key == NULL) {
             ++index;
             continue;
         }
-        if (keys[index].name != NULL && keys[index].name[0] != '\0') {
-            choices[choice_count].name = keys[index].name;
+        if (key->name != NULL && key->name[0] != '\0') {
+            choices[choice_count].name = key->name;
             choices[choice_count].value = (int)index;
             choice_count += 1u;
         }
@@ -1809,20 +1775,22 @@ sixel_option_match_suboption_key(
 static sixel_option_choice_result_t
 sixel_option_match_suboption_short_key(
     char const *token,
-    sixel_suboption_key_t const *keys,
-    size_t key_count,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
     int *matched_index,
     char const **value_text_out)
 {
     size_t index;
-    size_t short_length;
+    size_t key_count;
     int candidate_index;
     char const *candidate_value_text;
+    sixel_suboption_key_t const *key;
 
     index = 0u;
-    short_length = 0u;
+    key_count = 0u;
     candidate_index = (-1);
     candidate_value_text = NULL;
+    key = NULL;
 
     if (matched_index != NULL) {
         *matched_index = 0;
@@ -1830,28 +1798,24 @@ sixel_option_match_suboption_short_key(
     if (value_text_out != NULL) {
         *value_text_out = NULL;
     }
-    if (token == NULL || keys == NULL || key_count == 0u) {
+    key_count = sixel_option_registry_suboption_count(schema, base_def);
+    if (token == NULL || key_count == 0u) {
         return SIXEL_OPTION_CHOICE_NONE;
     }
 
-    /*
-     * Short spellings are stored in schema as canonical uppercase prefixes.
-     * A nonempty suffix is required because the suffix is the value text.
-     */
+    /* A nonempty suffix is required because it is the value text. */
     while (index < key_count) {
-        if (keys[index].short_name == NULL ||
-                keys[index].short_name[0] == '\0') {
+        key = sixel_option_registry_suboption_at(schema, base_def, index);
+        if (key == NULL) {
             ++index;
             continue;
         }
-        short_length = strlen(keys[index].short_name);
-        if (strncmp(token, keys[index].short_name, short_length) == 0
-                && token[short_length] != '\0') {
+        if (token[0] == key->short_name && token[1] != '\0') {
             if (candidate_index != (-1)) {
                 return SIXEL_OPTION_CHOICE_AMBIGUOUS;
             }
             candidate_index = (int)index;
-            candidate_value_text = token + short_length;
+            candidate_value_text = token + 1;
         }
         ++index;
     }
@@ -1868,27 +1832,6 @@ sixel_option_match_suboption_short_key(
     }
 
     return SIXEL_OPTION_CHOICE_MATCH;
-}
-
-static int
-sixel_option_suboption_key_token_is_removed_alias(
-    sixel_suboption_key_t const *key,
-    char const *token)
-{
-    if (key == NULL || key->name == NULL || token == NULL) {
-        return 0;
-    }
-
-    /*
-     * `medoids:prune` was removed and must stay rejected even though
-     * `prune_mass` remains available.
-     */
-    if (strcmp(key->name, "prune_mass") == 0
-            && strcmp(token, "prune") == 0) {
-        return 1;
-    }
-
-    return 0;
 }
 
 static int

@@ -297,6 +297,27 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :merge=MODE (:GMODE) auto, none, ward\n"
         "          :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
         "          :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
+        "      compact suboption names (uppercase letter + value):\n"
+        "        all models: merge=G, merge_oversplit=O, merge_lloyd=L,\n"
+        "          cover=C, cover_grow=V, cover_mode=W\n"
+        "        heckbert: profile=P\n"
+        "        kmeans: inittype=I, threshold=T, binning=B, binbits=N,\n"
+        "          mapping=M, softdist=D, autoratio=R, feedback=F,\n"
+        "          prune=P, seed=S, restarts=E, iter=A, iter_max=X,\n"
+        "          miniter=U, polish_iter=H, feedback_slots=K,\n"
+        "          feedback_interval=J\n"
+        "        medoids: algo=A, seed=S, iter=I, sample=M,\n"
+        "          clara_trials=T, clara_sample=K, clarans_local=J,\n"
+        "          clarans_neighbors=N, bandit_iter=D,\n"
+        "          bandit_candidates=E, bandit_batch=X, histbits=H,\n"
+        "          point_budget=B, rare_keep=R, prune_mass=U, auction=Q,\n"
+        "          auction_shortlist=Y\n"
+        "        center: algo=A, profile=P, seed=S, auto_policy=Q,\n"
+        "          auto_fft_threshold=F, space_policy=E,\n"
+        "          candidate_policy=Z, restarts=X, init_seeds=N, iter=I,\n"
+        "          histbits=H, point_budget=B, rare_keep=R, prune_mass=U,\n"
+        "          budget_policy=D, budget_scale=Y, swap_topk=K,\n"
+        "          swap_update=M, swap_patience=T, swap_min_gain=J\n"
         "      medoids -> k-medoids clustering. sub-option:\n"
         "          :algo=NAME (:ANAME) choose k-medoids solver:\n"
         "              auto      -> adaptive default (small PAM, mid CLARA, large BanditPAM)\n"
@@ -553,6 +574,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                   (default 0)\n"
         "          scan=SCANTYPE         -> auto, raster, or serpentine\n"
         "                                   (default raster)\n"
+        "      compact suboption names (uppercase letter + value):\n"
+        "        all methods: scan=N; sierra: variant=V\n"
+        "        interframe: diffusion=D\n"
+        "        stbn: source=S, diffusion=D, strength=T, motion_adapt=M,\n"
+        "          scene_cut_reset=C, scene_detect=E, alpha_guard=A,\n"
+        "          perceptual_weight=P, fastpath=F\n"
+        "        bluenoise: strength=T, gradient_factor=G, phase=P,\n"
+        "          seed=S, channel=C, size=Z\n"
     },
     {
         'f',
@@ -641,18 +670,18 @@ static cli_option_help_t const g_option_help_table[] = {
         "      auto      -> follow pixel depth\n"
         "      5bit      -> force classic 5-bit buckets\n"
         "        sub-option:\n"
-        "          :shared_instance=0|1\n"
+        "          :shared_instance=0|1 (:S0 or :S1)\n"
         "          0 -> build worker-local lookup state\n"
         "          1 -> share one lookup state across workers\n"
         "      6bit      -> favor 6-bit RGB buckets\n"
         "        sub-option:\n"
-        "          :shared_instance=0|1\n"
+        "          :shared_instance=0|1 (:S0 or :S1)\n"
         "          0 -> build worker-local lookup state\n"
         "          1 -> share one lookup state across workers\n"
         "      none      -> disable LUT caching and scan directly\n"
         "      certlut   -> certified hierarchical lookup tree with zero error\n"
         "        sub-option:\n"
-        "          :shared_instance=0|1\n"
+        "          :shared_instance=0|1 (:S0 or :S1)\n"
         "          0 -> build worker-local lookup state\n"
         "          1 -> share one lookup state across workers\n"
         "      eytzinger -> implicit binary tree lookup with local neighbour scan (default)\n"
@@ -804,7 +833,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               libpng/libjpeg/libwebp/libtiff/builtin support\n"
         "                               :cms_engine=none|auto|builtin|lcms2|"
         "colorsync (or :Evalue,\n"
-        "                               default none). WIC supports :ico_minsize=SIZE to choose\n"
+        "                               default none). builtin supports\n"
+        "                               :bmp_info40_mode=MODE (or :BMODE).\n"
+        "                               WIC supports :ico_minsize=SIZE (or :ISIZE) to choose\n"
         "                               the smallest ICO frame with edge >= SIZE. Append \"!\" to\n"
         "                               disable fallbacks. Use -H to list available loaders.\n"
     },
@@ -1071,6 +1102,26 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_FLOAT32_DITHER",
         "prefer the float32 quantization path. Any non-zero/true string\n"
         "enables it while 0, off, false, or no keep the 8-bit pipeline."
+    },
+    {
+        "SIXEL_DEQUANTIZE_LSO_VARIANT",
+        "sixel2png default for -d lso_undither:variant. Accepts fs or\n"
+        "light. The decoder suboption takes precedence."
+    },
+    {
+        "SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD",
+        "sixel2png default for -d selective_blur:threshold. Accepts\n"
+        "0..441. The decoder suboption takes precedence."
+    },
+    {
+        "SIXEL_DITHER_SCAN",
+        "default diffusion scan order. Accepts auto, serpentine, or raster.\n"
+        "Overridden by the scan suboption."
+    },
+    {
+        "SIXEL_DITHER_SIERRA_VARIANT",
+        "default Sierra family variant. Accepts 1, 2, or 3.\n"
+        "Overridden by -d sierra:variant=LEVEL."
     },
     {
         "SIXEL_DITHER_STBN_SOURCE",
@@ -1487,6 +1538,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Accepts soft (default) or hard."
     },
     {
+        "SIXEL_PALETTE_FINAL_MERGE",
+        "select the final palette merge: auto, none, or ward.\n"
+        "Overridden by the quantize-model merge suboption."
+    },
+    {
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         "Scale provisional palette size before the final merge. Accepts\n"
         "1.0-3.0, default 1.81."
@@ -1495,6 +1551,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         "Repeat Lloyd refinement after the final merge. Accepts 0-30.\n"
         "Default is 3."
+    },
+    {
+        "SIXEL_PALETTE_HECKBERT_PROFILE",
+        "select the Heckbert preset: compat, speed, or quality.\n"
+        "Overridden by -Q heckbert:profile=NAME."
     },
     {
         "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX",

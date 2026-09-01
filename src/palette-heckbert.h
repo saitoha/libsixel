@@ -37,6 +37,13 @@
 extern "C" {
 #endif
 
+/* Solver-local presets selected by the quantize-model profile suboption. */
+typedef enum sixel_heckbert_profile {
+    SIXEL_HECKBERT_PROFILE_COMPAT = 0,
+    SIXEL_HECKBERT_PROFILE_SPEED = 1,
+    SIXEL_HECKBERT_PROFILE_QUALITY = 2
+} sixel_heckbert_profile_t;
+
 SIXELSTATUS
 sixel_palette_build_heckbert(sixel_palette_t *palette,
                              unsigned char const *data,
