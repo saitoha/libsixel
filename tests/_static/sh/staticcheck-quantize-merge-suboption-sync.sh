@@ -30,7 +30,7 @@ merge_oversplit	SIXEL_PALETTE_OVERSPLIT_FACTOR
 EOF
 
 awk '
-/SIXEL_REGISTRY_(CHOICE|FREE)\(/ {
+/SIXEL_REGISTRY_[A-Z_]+\(/ {
     in_block = 1
     entry = $0
     next

@@ -58,20 +58,47 @@ typedef enum sixel_option_choice_result {
     SIXEL_OPTION_CHOICE_NONE = 2
 } sixel_option_choice_result_t;
 
-/*
- * Suboption values may either be matched against a fixed choice table or
- * accepted as free-form text.  The registry is the only owner of suboption
- * names, compact aliases, and environment bindings.
- */
+/* The registry owns both syntax and typed value validation. */
 typedef enum sixel_suboption_value_kind {
-    SIXEL_SUBOPTION_VALUE_FREE = 0,
-    SIXEL_SUBOPTION_VALUE_CHOICE = 1
+    SIXEL_SUBOPTION_VALUE_CHOICE = 0,
+    SIXEL_SUBOPTION_VALUE_INT,
+    SIXEL_SUBOPTION_VALUE_UINT,
+    SIXEL_SUBOPTION_VALUE_FLOAT,
+    SIXEL_SUBOPTION_VALUE_DOUBLE,
+    SIXEL_SUBOPTION_VALUE_INT_PAIR,
+    SIXEL_SUBOPTION_VALUE_SCALED_U8
 } sixel_suboption_value_kind_t;
 
 typedef struct sixel_suboption_choice {
     char const *name;
     int value;
 } sixel_suboption_choice_t;
+
+typedef enum sixel_suboption_target_class {
+    SIXEL_SUBOPTION_TARGET_NONE = 0,
+    SIXEL_SUBOPTION_TARGET_ENCODER,
+    SIXEL_SUBOPTION_TARGET_LOADER,
+    SIXEL_SUBOPTION_TARGET_DEQUANTIZE
+} sixel_suboption_target_class_t;
+
+typedef enum sixel_suboption_storage_kind {
+    SIXEL_SUBOPTION_STORAGE_INT = 0,
+    SIXEL_SUBOPTION_STORAGE_UINT,
+    SIXEL_SUBOPTION_STORAGE_FLOAT,
+    SIXEL_SUBOPTION_STORAGE_DOUBLE,
+    SIXEL_SUBOPTION_STORAGE_INT_PAIR
+} sixel_suboption_storage_kind_t;
+
+#define SIXEL_SUBOPTION_OFFSET_NONE ((size_t)-1)
+
+typedef struct sixel_suboption_binding {
+    sixel_suboption_target_class_t target_class;
+    sixel_suboption_storage_kind_t storage_kind;
+    size_t value_offset;
+    size_t second_value_offset;
+    size_t override_offset;
+    size_t mirror_offset;
+} sixel_suboption_binding_t;
 
 /* Getopt characters are not unique across encoder and decoder contexts. */
 typedef enum sixel_option_schema_id {
@@ -82,11 +109,23 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_LOADERS
 } sixel_option_schema_id_t;
 
+/*
+ * Base policies describe initialization which cannot be represented by a
+ * single suboption binding.  Keeping the policy beside the base definition
+ * prevents encoder code from dispatching on option names.
+ */
+typedef enum sixel_option_base_policy {
+    SIXEL_OPTION_BASE_POLICY_NONE = 0,
+    SIXEL_OPTION_BASE_POLICY_DIFFUSION_INTERFRAME,
+    SIXEL_OPTION_BASE_POLICY_DIFFUSION_STBN
+} sixel_option_base_policy_t;
+
 typedef struct sixel_option_value_schema {
     char const *name;
     int value;
     /* Insert option-wide suboptions after this many base-specific rows. */
     size_t common_suboption_offset;
+    sixel_option_base_policy_t base_policy;
 } sixel_option_value_schema_t;
 
 typedef struct sixel_suboption_key {
@@ -102,7 +141,35 @@ typedef struct sixel_suboption_key {
     sixel_suboption_value_kind_t value_kind;
     sixel_suboption_choice_t const *choices;
     size_t choice_count;
+    /* Environment-only aliases preserve strict CLI vocabularies. */
+    sixel_suboption_choice_t const *environment_choices;
+    size_t environment_choice_count;
+    double minimum;
+    double maximum;
+    int has_minimum;
+    int has_maximum;
+    int allow_zero;
+    int environment_clamp_maximum;
+    char const *invalid_value_message;
+    char const *invalid_value_suffix;
+    sixel_suboption_binding_t binding;
 } sixel_suboption_key_t;
+
+typedef union sixel_suboption_value {
+    int int_value;
+    unsigned int uint_value;
+    float float_value;
+    double double_value;
+    struct {
+        int first;
+        int second;
+    } int_pair;
+} sixel_suboption_value_t;
+
+typedef struct sixel_dequantize_options {
+    int method;
+    int selective_blur_threshold;
+} sixel_dequantize_options_t;
 
 typedef struct sixel_option_argument_schema {
     sixel_option_schema_id_t option_id;
@@ -116,6 +183,7 @@ typedef struct sixel_suboption_assignment {
     sixel_suboption_key_t const *key_def;
     char const *resolved_key_name;
     char *resolved_value_text;
+    sixel_suboption_value_t value;
 } sixel_suboption_assignment_t;
 
 typedef struct sixel_option_argument_resolution {
@@ -191,6 +259,37 @@ sixel_option_parse_argument_with_suboptions(
     sixel_option_argument_resolution_t *resolution,
     char *diagnostic,
     size_t diagnostic_size);
+
+int
+sixel_option_resolve_suboption_environment(
+    sixel_suboption_key_t const *key_def,
+    sixel_suboption_value_t *value);
+
+int
+sixel_option_apply_suboption_value(
+    sixel_suboption_key_t const *key_def,
+    sixel_suboption_value_t const *value,
+    void *target,
+    sixel_suboption_target_class_t target_class);
+
+int
+sixel_option_apply_suboption_assignments(
+    sixel_option_argument_resolution_t const *resolution,
+    void *target,
+    sixel_suboption_target_class_t target_class);
+
+void
+sixel_option_apply_suboption_environment(
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
+    void *target,
+    sixel_suboption_target_class_t target_class);
+
+void
+sixel_option_reset_suboption_overrides(
+    sixel_option_argument_schema_t const *schema,
+    void *target,
+    sixel_suboption_target_class_t target_class);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument(

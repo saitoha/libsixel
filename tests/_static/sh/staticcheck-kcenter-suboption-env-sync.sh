@@ -46,7 +46,7 @@ swap_min_gain	SIXEL_PALETTE_KCENTER_SWAP_MIN_GAIN
 TSV
 
 awk '
-/SIXEL_REGISTRY_(CHOICE|FREE)\(/ {
+/SIXEL_REGISTRY_[A-Z_]+\(/ {
     in_block = 1
     entry = $0
     next

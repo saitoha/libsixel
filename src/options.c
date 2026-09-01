@@ -33,6 +33,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -226,7 +227,22 @@ static int
 sixel_option_append_suboption_assignment(
     sixel_option_argument_resolution_t *resolution,
     sixel_suboption_key_t const *key_def,
-    char const *resolved_value_text);
+    char const *resolved_value_text,
+    sixel_suboption_value_t const *value);
+
+static SIXELSTATUS
+sixel_option_parse_typed_suboption_value(
+    sixel_suboption_key_t const *key_def,
+    char const *text,
+    sixel_suboption_value_t *value,
+    int clamp_maximum,
+    int report_error);
+
+static int
+sixel_option_parse_environment_value(
+    sixel_suboption_key_t const *key_def,
+    char const *text,
+    sixel_suboption_value_t *value);
 
 static sixel_option_choice_result_t
 sixel_option_match_suboption_key(
@@ -292,6 +308,7 @@ sixel_option_match_choice(
     size_t diag_length;
     size_t copy_length;
 
+    index = 0u;
     if (diagnostic != NULL && diagnostic_size > 0u) {
         diagnostic[0] = '\0';
     }
@@ -304,7 +321,6 @@ sixel_option_match_choice(
         return SIXEL_OPTION_CHOICE_NONE;
     }
 
-    index = 0u;
     candidate_index = (-1);
     match_count = 0u;
     base_value = 0;
@@ -820,6 +836,7 @@ sixel_option_parse_argument_with_suboptions(
     sixel_suboption_key_t const *key_def;
     char const *value_text;
     char const *resolved_text;
+    sixel_suboption_value_t typed_value;
     char match_message[512];
 
     status = SIXEL_OK;
@@ -837,6 +854,7 @@ sixel_option_parse_argument_with_suboptions(
     key_def = NULL;
     value_text = NULL;
     resolved_text = NULL;
+    memset(&typed_value, 0, sizeof(typed_value));
     match_message[0] = '\0';
 
     if (diagnostic != NULL && diagnostic_size > 0u) {
@@ -1005,12 +1023,24 @@ sixel_option_parse_argument_with_suboptions(
                 }
                 ++index;
             }
+            typed_value.int_value = value_choice;
+        } else {
+            status = sixel_option_parse_typed_suboption_value(
+                key_def,
+                value_text,
+                &typed_value,
+                0,
+                1);
+            if (SIXEL_FAILED(status)) {
+                goto cleanup;
+            }
         }
 
         if (!sixel_option_append_suboption_assignment(
                 resolution,
                 key_def,
-                resolved_text)) {
+                resolved_text,
+                &typed_value)) {
             sixel_helper_set_additional_message(
                 "failed to store parsed suboption assignment.");
             status = SIXEL_BAD_ALLOCATION;
@@ -1052,36 +1082,6 @@ sixel_option_free_argument_resolution(
     sixel_option_reset_argument_resolution(resolution);
 }
 
-static SIXELSTATUS
-sixel_option_parse_dequantize_selective_blur_threshold(char const *text,
-                                                       int *threshold)
-{
-    long parsed_value;
-    char *endptr;
-
-    parsed_value = 0L;
-    endptr = NULL;
-    if (text == NULL || text[0] == '\0' || threshold == NULL) {
-        sixel_helper_set_additional_message(
-            "selective_blur threshold must be an integer in range 0..441.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    errno = 0;
-    parsed_value = strtol(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0' || errno == ERANGE ||
-            parsed_value < 0L ||
-            parsed_value >
-                SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_MAX) {
-        sixel_helper_set_additional_message(
-            "selective_blur threshold must be an integer in range 0..441.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    *threshold = (int)parsed_value;
-    return SIXEL_OK;
-}
-
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument_with_options(
     char const *argument,
@@ -1092,17 +1092,14 @@ sixel_option_parse_dequantize_argument_with_options(
 {
     SIXELSTATUS status;
     sixel_option_argument_resolution_t resolution;
-    sixel_suboption_assignment_t const *assignment;
-    int parsed_method;
-    int parsed_threshold;
-    size_t index;
+    sixel_option_argument_schema_t const *schema;
+    sixel_dequantize_options_t options;
 
     status = SIXEL_OK;
-    assignment = NULL;
-    parsed_method = SIXEL_DEQUANTIZE_NONE;
-    parsed_threshold =
+    schema = NULL;
+    options.method = SIXEL_DEQUANTIZE_NONE;
+    options.selective_blur_threshold =
         SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT;
-    index = 0u;
     memset(&resolution, 0, sizeof(resolution));
 
     if (diagnostic != NULL && diagnostic_size > 0u) {
@@ -1114,9 +1111,10 @@ sixel_option_parse_dequantize_argument_with_options(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_DEQUANTIZE);
     status = sixel_option_parse_argument_with_suboptions(
         argument,
-        sixel_option_registry_get(SIXEL_OPTION_SCHEMA_DEQUANTIZE),
+        schema,
         &resolution,
         diagnostic,
         diagnostic_size);
@@ -1124,49 +1122,29 @@ sixel_option_parse_dequantize_argument_with_options(
         return status;
     }
 
-    parsed_method = resolution.resolved_base_value;
-    if (parsed_method == SIXEL_OPTION_DEQUANTIZE_LSO_BASE) {
-        if (resolution.assignment_count != 1u) {
-            sixel_helper_set_additional_message(
-                "lso_undither requires Vfs or Vlight.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto cleanup;
-        }
-        assignment = &resolution.assignments[0];
-        if (strcmp(assignment->resolved_value_text, "fs") == 0) {
-            parsed_method = SIXEL_DEQUANTIZE_LSO_UNDITHER_VFS;
-        } else if (strcmp(assignment->resolved_value_text, "light") == 0) {
-            parsed_method = SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT;
-        } else {
-            sixel_helper_set_additional_message(
-                "unsupported lso_undither variant.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto cleanup;
-        }
-    } else if (parsed_method == SIXEL_DEQUANTIZE_SELECTIVE_BLUR) {
-        while (index < resolution.assignment_count) {
-            assignment = &resolution.assignments[index];
-            if (strcmp(assignment->key_def->name, "threshold") == 0) {
-                status =
-                    sixel_option_parse_dequantize_selective_blur_threshold(
-                        assignment->resolved_value_text,
-                        &parsed_threshold);
-                if (SIXEL_FAILED(status)) {
-                    goto cleanup;
-                }
-            }
-            ++index;
-        }
-    } else if (resolution.assignment_count != 0u) {
+    options.method = resolution.resolved_base_value;
+    sixel_option_apply_suboption_environment(
+        schema,
+        resolution.base_def,
+        &options,
+        SIXEL_SUBOPTION_TARGET_DEQUANTIZE);
+    if (!sixel_option_apply_suboption_assignments(
+            &resolution,
+            &options,
+            SIXEL_SUBOPTION_TARGET_DEQUANTIZE)) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    if (options.method == SIXEL_OPTION_DEQUANTIZE_LSO_BASE) {
         sixel_helper_set_additional_message(
-            "this dequantize method does not accept suboptions.");
+            "lso_undither requires Vfs or Vlight.");
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
-    *method = parsed_method;
+    *method = options.method;
     if (selective_blur_threshold != NULL) {
-        *selective_blur_threshold = parsed_threshold;
+        *selective_blur_threshold = options.selective_blur_threshold;
     }
 
 cleanup:
@@ -1566,11 +1544,454 @@ sixel_option_reset_argument_resolution(
     resolution->assignment_count = 0u;
 }
 
+/*
+ * Parse every non-enumerated suboption value through metadata in the
+ * registry.  Callers may suppress diagnostics when probing environment
+ * defaults, but the accepted syntax and range remain identical.
+ */
+static SIXELSTATUS
+sixel_option_parse_typed_suboption_value(
+    sixel_suboption_key_t const *key_def,
+    char const *text,
+    sixel_suboption_value_t *value,
+    int clamp_maximum,
+    int report_error)
+{
+    char *endptr;
+    char const *comma;
+    long parsed_int;
+    unsigned long long parsed_uint;
+    double parsed_double;
+    double scaled;
+    char message[256];
+    int valid;
+
+    endptr = NULL;
+    comma = NULL;
+    parsed_int = 0L;
+    parsed_uint = 0ULL;
+    parsed_double = 0.0;
+    scaled = 0.0;
+    message[0] = '\0';
+    valid = 0;
+
+    if (key_def == NULL || text == NULL || text[0] == '\0' ||
+        value == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    switch (key_def->value_kind) {
+    case SIXEL_SUBOPTION_VALUE_INT:
+        errno = 0;
+        parsed_int = strtol(text, &endptr, 10);
+        valid = endptr != text && endptr != NULL && endptr[0] == '\0' &&
+            errno != ERANGE && parsed_int >= (long)INT_MIN &&
+            parsed_int <= (long)INT_MAX;
+        if (valid && key_def->has_minimum) {
+            valid = (double)parsed_int >= key_def->minimum;
+        }
+        if (valid && key_def->has_maximum) {
+            valid = (double)parsed_int <= key_def->maximum;
+        }
+        if (valid) {
+            value->int_value = (int)parsed_int;
+        }
+        break;
+    case SIXEL_SUBOPTION_VALUE_UINT:
+        errno = 0;
+        parsed_uint = strtoull(text, &endptr, 10);
+        valid = text[0] != '-' && endptr != text && endptr != NULL &&
+            endptr[0] == '\0' && errno != ERANGE &&
+            parsed_uint <= (unsigned long long)UINT_MAX;
+        if (valid && key_def->allow_zero && parsed_uint == 0ULL) {
+            value->uint_value = 0u;
+            return SIXEL_OK;
+        }
+        if (valid && key_def->has_minimum) {
+            valid = (double)parsed_uint >= key_def->minimum;
+        }
+        if (valid && clamp_maximum && key_def->has_maximum &&
+            (double)parsed_uint > key_def->maximum) {
+            parsed_uint = (unsigned long long)key_def->maximum;
+        }
+        if (valid && key_def->has_maximum) {
+            valid = (double)parsed_uint <= key_def->maximum;
+        }
+        if (valid) {
+            value->uint_value = (unsigned int)parsed_uint;
+        }
+        break;
+    case SIXEL_SUBOPTION_VALUE_FLOAT:
+    case SIXEL_SUBOPTION_VALUE_DOUBLE:
+    case SIXEL_SUBOPTION_VALUE_SCALED_U8:
+        errno = 0;
+        parsed_double = strtod(text, &endptr);
+        valid = endptr != text && endptr != NULL && endptr[0] == '\0' &&
+            errno != ERANGE;
+        if (valid && (key_def->has_minimum || key_def->has_maximum) &&
+            parsed_double != parsed_double) {
+            valid = 0;
+        }
+        if (valid && key_def->has_minimum) {
+            valid = parsed_double >= key_def->minimum;
+        }
+        if (valid && key_def->has_maximum) {
+            valid = parsed_double <= key_def->maximum;
+        }
+        if (valid && key_def->value_kind == SIXEL_SUBOPTION_VALUE_FLOAT) {
+            value->float_value = (float)parsed_double;
+        } else if (valid &&
+                   key_def->value_kind == SIXEL_SUBOPTION_VALUE_DOUBLE) {
+            value->double_value = parsed_double;
+        } else if (valid) {
+            scaled = parsed_double * 255.0;
+            if (scaled > 255.0) {
+                scaled = 255.0;
+            }
+            value->int_value = (int)(scaled + 0.5);
+        }
+        break;
+    case SIXEL_SUBOPTION_VALUE_INT_PAIR:
+        comma = strchr(text, ',');
+        if (comma == NULL) {
+            break;
+        }
+        errno = 0;
+        parsed_int = strtol(text, &endptr, 10);
+        valid = endptr == comma && errno != ERANGE &&
+            parsed_int >= (long)INT_MIN && parsed_int <= (long)INT_MAX;
+        if (valid) {
+            value->int_pair.first = (int)parsed_int;
+            errno = 0;
+            parsed_int = strtol(comma + 1, &endptr, 10);
+            valid = endptr != comma + 1 && endptr != NULL &&
+                endptr[0] == '\0' && errno != ERANGE &&
+                parsed_int >= (long)INT_MIN && parsed_int <= (long)INT_MAX;
+        }
+        if (valid) {
+            value->int_pair.second = (int)parsed_int;
+        }
+        break;
+    case SIXEL_SUBOPTION_VALUE_CHOICE:
+    default:
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (valid) {
+        return SIXEL_OK;
+    }
+    if (report_error && key_def->invalid_value_message != NULL) {
+        if (key_def->invalid_value_suffix != NULL) {
+            (void)sixel_compat_snprintf(message,
+                                        sizeof(message),
+                                        "%s%s%s",
+                                        key_def->invalid_value_message,
+                                        text,
+                                        key_def->invalid_value_suffix);
+        } else {
+            (void)sixel_compat_snprintf(message,
+                                        sizeof(message),
+                                        "%s",
+                                        key_def->invalid_value_message);
+        }
+        sixel_helper_set_additional_message(message);
+    }
+    return SIXEL_BAD_ARGUMENT;
+}
+
+static int
+sixel_option_parse_environment_value(
+    sixel_suboption_key_t const *key_def,
+    char const *text,
+    sixel_suboption_value_t *value)
+{
+    size_t index;
+
+    index = 0u;
+    if (key_def == NULL || text == NULL || text[0] == '\0' ||
+        value == NULL) {
+        return 0;
+    }
+
+    if (key_def->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE) {
+        return SIXEL_SUCCEEDED(sixel_option_parse_typed_suboption_value(
+            key_def,
+            text,
+            value,
+            key_def->environment_clamp_maximum,
+            0));
+    }
+
+    while (index < key_def->environment_choice_count) {
+        if (key_def->environment_choices[index].name != NULL &&
+            sixel_compat_strcasecmp(
+                key_def->environment_choices[index].name,
+                text) == 0) {
+            value->int_value =
+                key_def->environment_choices[index].value;
+            return 1;
+        }
+        ++index;
+    }
+
+    index = 0u;
+    while (index < key_def->choice_count) {
+        if (key_def->choices[index].name != NULL &&
+            sixel_compat_strcasecmp(key_def->choices[index].name, text) == 0) {
+            value->int_value = key_def->choices[index].value;
+            return 1;
+        }
+        ++index;
+    }
+
+    return 0;
+}
+
+/*
+ * Resolve primary, shared-fallback, and legacy environment spellings in one
+ * place.  A present but invalid canonical value never falls through to a
+ * legacy typo; shared fallback variables still provide the documented
+ * process default.
+ */
+int
+sixel_option_resolve_suboption_environment(
+    sixel_suboption_key_t const *key_def,
+    sixel_suboption_value_t *value)
+{
+    char const *text;
+    int primary_present;
+
+    text = NULL;
+    primary_present = 0;
+    if (key_def == NULL || value == NULL || key_def->env_name == NULL) {
+        return 0;
+    }
+
+    text = sixel_compat_getenv(key_def->env_name);
+    primary_present = text != NULL && text[0] != '\0';
+    if (primary_present &&
+        sixel_option_parse_environment_value(key_def, text, value)) {
+        return 1;
+    }
+
+    if (key_def->env_fallback_name != NULL) {
+        text = sixel_compat_getenv(key_def->env_fallback_name);
+        if (text != NULL && text[0] != '\0' &&
+            sixel_option_parse_environment_value(key_def, text, value)) {
+            return 1;
+        }
+    }
+
+    if (primary_present || key_def->env_legacy_name == NULL) {
+        return 0;
+    }
+    text = sixel_compat_getenv(key_def->env_legacy_name);
+    if (text == NULL || text[0] == '\0') {
+        return 0;
+    }
+    return sixel_option_parse_environment_value(key_def, text, value);
+}
+
+static int
+sixel_option_store_suboption_value(
+    sixel_suboption_key_t const *key_def,
+    sixel_suboption_value_t const *value,
+    unsigned char *target,
+    size_t offset)
+{
+    int int_value;
+
+    int_value = 0;
+    if (key_def == NULL || value == NULL || target == NULL ||
+        offset == SIXEL_SUBOPTION_OFFSET_NONE) {
+        return 0;
+    }
+
+    switch (key_def->binding.storage_kind) {
+    case SIXEL_SUBOPTION_STORAGE_INT:
+        if (key_def->value_kind == SIXEL_SUBOPTION_VALUE_UINT) {
+            int_value = (int)value->uint_value;
+        } else {
+            int_value = value->int_value;
+        }
+        *(int *)(void *)(target + offset) = int_value;
+        break;
+    case SIXEL_SUBOPTION_STORAGE_UINT:
+        *(unsigned int *)(void *)(target + offset) = value->uint_value;
+        break;
+    case SIXEL_SUBOPTION_STORAGE_FLOAT:
+        *(float *)(void *)(target + offset) = value->float_value;
+        break;
+    case SIXEL_SUBOPTION_STORAGE_DOUBLE:
+        *(double *)(void *)(target + offset) = value->double_value;
+        break;
+    case SIXEL_SUBOPTION_STORAGE_INT_PAIR:
+        *(int *)(void *)(target + offset) = value->int_pair.first;
+        if (key_def->binding.second_value_offset ==
+            SIXEL_SUBOPTION_OFFSET_NONE) {
+            return 0;
+        }
+        *(int *)(void *)(target + key_def->binding.second_value_offset) =
+            value->int_pair.second;
+        break;
+    default:
+        return 0;
+    }
+
+    return 1;
+}
+
+int
+sixel_option_apply_suboption_value(
+    sixel_suboption_key_t const *key_def,
+    sixel_suboption_value_t const *value,
+    void *target,
+    sixel_suboption_target_class_t target_class)
+{
+    unsigned char *bytes;
+
+    bytes = (unsigned char *)target;
+    if (key_def == NULL || value == NULL || target == NULL ||
+        key_def->binding.target_class != target_class ||
+        target_class == SIXEL_SUBOPTION_TARGET_NONE) {
+        return 0;
+    }
+    if (!sixel_option_store_suboption_value(
+            key_def,
+            value,
+            bytes,
+            key_def->binding.value_offset)) {
+        return 0;
+    }
+    if (key_def->binding.override_offset != SIXEL_SUBOPTION_OFFSET_NONE) {
+        *(int *)(void *)(bytes + key_def->binding.override_offset) = 1;
+    }
+    if (key_def->binding.mirror_offset != SIXEL_SUBOPTION_OFFSET_NONE &&
+        !sixel_option_store_suboption_value(
+            key_def,
+            value,
+            bytes,
+            key_def->binding.mirror_offset)) {
+        return 0;
+    }
+
+    return 1;
+}
+
+int
+sixel_option_apply_suboption_assignments(
+    sixel_option_argument_resolution_t const *resolution,
+    void *target,
+    sixel_suboption_target_class_t target_class)
+{
+    size_t index;
+
+    index = 0u;
+    if (resolution == NULL || target == NULL) {
+        return 0;
+    }
+    while (index < resolution->assignment_count) {
+        if (!sixel_option_apply_suboption_value(
+                resolution->assignments[index].key_def,
+                &resolution->assignments[index].value,
+                target,
+                target_class)) {
+            return 0;
+        }
+        ++index;
+    }
+
+    return 1;
+}
+
+void
+sixel_option_apply_suboption_environment(
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
+    void *target,
+    sixel_suboption_target_class_t target_class)
+{
+    size_t index;
+    size_t count;
+    sixel_suboption_key_t const *key_def;
+    sixel_suboption_value_t value;
+
+    index = 0u;
+    count = 0u;
+    key_def = NULL;
+    memset(&value, 0, sizeof(value));
+    if (schema == NULL || base_def == NULL || target == NULL) {
+        return;
+    }
+
+    count = sixel_option_registry_suboption_count(schema, base_def);
+    while (index < count) {
+        key_def = sixel_option_registry_suboption_at(
+            schema,
+            base_def,
+            index);
+        if (sixel_option_resolve_suboption_environment(key_def, &value)) {
+            (void)sixel_option_apply_suboption_value(
+                key_def,
+                &value,
+                target,
+                target_class);
+        }
+        ++index;
+    }
+}
+
+void
+sixel_option_reset_suboption_overrides(
+    sixel_option_argument_schema_t const *schema,
+    void *target,
+    sixel_suboption_target_class_t target_class)
+{
+    size_t base_index;
+    size_t key_index;
+    size_t key_count;
+    sixel_suboption_key_t const *key_def;
+    unsigned char *bytes;
+
+    base_index = 0u;
+    key_index = 0u;
+    key_count = 0u;
+    key_def = NULL;
+    bytes = (unsigned char *)target;
+    if (schema == NULL || target == NULL ||
+        target_class == SIXEL_SUBOPTION_TARGET_NONE) {
+        return;
+    }
+
+    while (base_index < schema->value_count) {
+        key_count = sixel_option_registry_suboption_count(
+            schema,
+            schema->values + base_index);
+        key_index = 0u;
+        while (key_index < key_count) {
+            key_def = sixel_option_registry_suboption_at(
+                schema,
+                schema->values + base_index,
+                key_index);
+            if (key_def != NULL &&
+                key_def->binding.target_class == target_class &&
+                key_def->binding.override_offset !=
+                    SIXEL_SUBOPTION_OFFSET_NONE) {
+                *(int *)(void *)(bytes + key_def->binding.override_offset) =
+                    0;
+            }
+            ++key_index;
+        }
+        ++base_index;
+    }
+}
+
 static int
 sixel_option_append_suboption_assignment(
     sixel_option_argument_resolution_t *resolution,
     sixel_suboption_key_t const *key_def,
-    char const *resolved_value_text)
+    char const *resolved_value_text,
+    sixel_suboption_value_t const *value)
 {
     size_t index;
     char *value_copy;
@@ -1580,7 +2001,8 @@ sixel_option_append_suboption_assignment(
     value_copy = NULL;
     grown = NULL;
 
-    if (resolution == NULL || key_def == NULL || resolved_value_text == NULL) {
+    if (resolution == NULL || key_def == NULL ||
+        resolved_value_text == NULL || value == NULL) {
         return 0;
     }
 
@@ -1595,6 +2017,7 @@ sixel_option_append_suboption_assignment(
                                       resolved_value_text);
             free(resolution->assignments[index].resolved_value_text);
             resolution->assignments[index].resolved_value_text = value_copy;
+            resolution->assignments[index].value = *value;
             return 1;
         }
         ++index;
@@ -1622,6 +2045,7 @@ sixel_option_append_suboption_assignment(
         key_def->name;
     resolution->assignments[resolution->assignment_count].resolved_value_text =
         value_copy;
+    resolution->assignments[resolution->assignment_count].value = *value;
     resolution->assignment_count += 1u;
 
     return 1;

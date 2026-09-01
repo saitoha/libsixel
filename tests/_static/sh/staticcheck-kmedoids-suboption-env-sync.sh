@@ -43,7 +43,7 @@ auction_shortlist	SIXEL_PALETTE_KMEDOIDS_AUCTION_SHORTLIST
 EOF
 
 awk '
-/SIXEL_REGISTRY_(CHOICE|FREE)\(/ {
+/SIXEL_REGISTRY_[A-Z_]+\(/ {
     in_block = 1
     entry = $0
     next

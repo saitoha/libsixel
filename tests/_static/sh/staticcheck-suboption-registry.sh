@@ -1,18 +1,20 @@
 #!/bin/sh
 # Emit TAP for the single suboption registry and its mandatory metadata.
 
-set -eu
+set -eux
 
 echo "1..1"
+set -v
 
 src_root=$1
 registry_file=$src_root/src/options-registry.c
 duplicates=
+dispatchers=
 
 test -f "$registry_file" || {
     echo "not ok 1 - suboptions use one complete registry"
     echo "# missing src/options-registry.c"
-    exit 1
+    exit 0
 }
 
 duplicates=$(find "$src_root/src" -maxdepth 1 -type f -name '*.c' \
@@ -26,7 +28,22 @@ test -z "$duplicates" || {
     echo "not ok 1 - suboptions use one complete registry"
     echo "# suboption tables exist outside src/options-registry.c"
     printf '%s\n' "$duplicates" | sed 's/^/# /'
-    exit 1
+    exit 0
+}
+
+dispatchers=$(find "$src_root/src" -maxdepth 1 -type f -name '*.[ch]' \
+    ! -name 'options.c' ! -name 'options.h' \
+    ! -name 'loader-order-schema.c' -exec awk '
+/resolved_key_name|resolved_value_text/ {
+    print FILENAME ":" FNR ":" $0
+}
+' {} +)
+
+test -z "$dispatchers" || {
+    echo "not ok 1 - suboptions use one complete registry"
+    echo "# suboption application dispatch exists outside src/options.c"
+    printf '%s\n' "$dispatchers" | sed 's/^/# /'
+    exit 0
 }
 
 awk '
@@ -35,9 +52,11 @@ function fail(message) {
     failed = 1
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
-                 exact_key, shared_key) {
+                 exact_key, shared_key, macro) {
     gsub(/[[:space:]]+/, " ", row)
-    sub(/^.*SIXEL_REGISTRY_(CHOICE|FREE)\(/, "", row)
+    match(row, /SIXEL_REGISTRY_[A-Z_]+/)
+    macro = substr(row, RSTART, RLENGTH)
+    sub(/^.*SIXEL_REGISTRY_[A-Z_]+\(/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
     if (count < 7) {
@@ -58,6 +77,9 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     }
     if (env == "NULL" || env == "") {
         fail(option_id ":" name " needs an environment variable")
+    }
+    if (macro !~ /BOUND|ENCODER/) {
+        fail(option_id ":" name " needs a typed target binding")
     }
     exact_key = option_id SUBSEP base SUBSEP alias
     if (seen_exact[exact_key]) {
@@ -93,7 +115,7 @@ in_registry && /^[[:space:]]*};/ {
     in_registry = 0
     next
 }
-in_registry && /SIXEL_REGISTRY_(CHOICE|FREE)\(/ {
+in_registry && /SIXEL_REGISTRY_[A-Z_]+\(/ {
     in_row = 1
     row = $0
     next
@@ -124,7 +146,7 @@ END {
 }
 ' "$registry_file" || {
     echo "not ok 1 - suboptions use one complete registry"
-    exit 1
+    exit 0
 }
 
 echo "ok 1 - suboptions use one complete registry"

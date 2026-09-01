@@ -43,7 +43,7 @@ feedback_interval	SIXEL_PALETTE_KMEANS_FEEDBACK_INTERVAL
 EOF
 
 awk '
-/SIXEL_REGISTRY_(CHOICE|FREE)\(/ {
+/SIXEL_REGISTRY_[A-Z_]+\(/ {
     in_block = 1
     entry = $0
     next
