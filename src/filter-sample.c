@@ -706,11 +706,7 @@ sixel_filter_sample_copy_frame(
         return status;
     }
 
-    /*
-     * Preserve timeline metadata so downstream palette/quantize stages can
-     * apply frame-history logic even when the palette path runs on sampled
-     * frames.
-     */
+    /* Preserve frame context in logs emitted by sampled palette jobs. */
     timeline.handoff_shareable = 0;
     status = sample_vtbl->set_timeline(sample_if, &timeline);
     if (SIXEL_FAILED(status)) {

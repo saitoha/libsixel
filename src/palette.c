@@ -1373,13 +1373,7 @@ sixel_palette_vtbl_generate(
             depth = (unsigned int)storage->depth;
             goto success;
         }
-    } else if (context.quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
-            || context.quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
-        /*
-         * Sticky is a temporal encoder mode.  The per-frame candidate palette
-         * still comes from the Heckbert builder and is either kept after a
-         * scene cut or replaced by the previous palette in the encoder.
-         */
+    } else if (context.quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
         status = sixel_palette_apply_mediancut_engine(palette,
                                                       request->data,
                                                       request->length,

@@ -96,26 +96,10 @@ extract_merge_pairs() {
                 key = token
             } else if (field_index == 3) {
                 if (key != "") {
-                    if (token ~ /^SIXEL_PALETTE_(ANIMATION_MODE|SCENE_CUT_THRESHOLD|OVERSPLIT_FACTOR|FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT)$/) {
+                    if (token ~ /^SIXEL_PALETTE_(OVERSPLIT_FACTOR|FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT)$/) {
                         printf "%s\t%s\n", key, token
                         key = ""
                     }
-                }
-            }
-            next
-        }
-        if (line ~ /^[[:space:]]*SIXEL_PALETTE_(ANIMATION_MODE_ENVVAR|SCENE_CUT_THRESHOLD_ENVVAR),[[:space:]]*$/) {
-            token = line
-            sub(/^[[:space:]]*/, "", token)
-            sub(/,[[:space:]]*$/, "", token)
-            field_index += 1
-            if (field_index == 3 && key != "") {
-                if (token == "SIXEL_PALETTE_ANIMATION_MODE_ENVVAR") {
-                    printf "%s\tSIXEL_PALETTE_ANIMATION_MODE\n", key
-                    key = ""
-                } else if (token == "SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR") {
-                    printf "%s\tSIXEL_PALETTE_SCENE_CUT_THRESHOLD\n", key
-                    key = ""
                 }
             }
             next
@@ -143,7 +127,7 @@ extract_merge_pairs g_subkeys_quantize_model_kmedoids > "$kmedoids_pairs"
 extract_merge_pairs g_subkeys_quantize_model_center > "$center_pairs"
 
 awk '
-/^[[:space:]]*"SIXEL_PALETTE_(ANIMATION_MODE|SCENE_CUT_THRESHOLD|OVERSPLIT_FACTOR|FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT)"/ {
+/^[[:space:]]*"SIXEL_PALETTE_(OVERSPLIT_FACTOR|FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT)"/ {
     line = $0
     sub(/^[[:space:]]*"/, "", line)
     sub(/".*$/, "", line)
@@ -153,7 +137,7 @@ awk '
 
 status=0
 
-for key in animation_mode scene_cut_threshold merge merge_oversplit merge_lloyd; do
+for key in merge merge_oversplit merge_lloyd; do
     grep -Fxq "$key" "$merge_only_keys" || {
         echo "# merge-only block missing key: $key" >> "$missing"
         status=1
@@ -177,8 +161,6 @@ for key in animation_mode scene_cut_threshold merge merge_oversplit merge_lloyd;
 done
 
 for pair in \
-    "animation_mode	SIXEL_PALETTE_ANIMATION_MODE" \
-    "scene_cut_threshold	SIXEL_PALETTE_SCENE_CUT_THRESHOLD" \
     "merge_oversplit	SIXEL_PALETTE_OVERSPLIT_FACTOR" \
     "merge_lloyd	SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT"; do
     grep -Fxq "$pair" "$merge_only_pairs" || {
@@ -204,8 +186,6 @@ for pair in \
 done
 
 for env_name in \
-    SIXEL_PALETTE_ANIMATION_MODE \
-    SIXEL_PALETTE_SCENE_CUT_THRESHOLD \
     SIXEL_PALETTE_OVERSPLIT_FACTOR \
     SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT; do
     grep -Fxq "$env_name" "$help_vars" || {

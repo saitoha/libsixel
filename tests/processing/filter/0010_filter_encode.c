@@ -235,7 +235,8 @@ test_encoder_encode_frame_writes_output(void)
         goto cleanup;
     }
     status =
-        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_QUANTIZE_MODEL, "sticky");
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_QUANTIZE_MODEL,
+                             "heckbert");
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }

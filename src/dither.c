@@ -2425,14 +2425,9 @@ sixel_dither_initialize(
     sixel_dither_set_method_for_largest(dither, method_for_largest);
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
-    /*
-     * Largest-axis heuristics belong to Heckbert median-cut. Sticky uses
-     * median-cut for scene-cut candidate palettes, so it keeps the same
-     * split-axis controls while preserving its user-facing model id.
-     */
+    /* Largest-axis heuristics belong to Heckbert median-cut only. */
     method_for_largest_for_palette = SIXEL_LARGE_NORM;
-    if (dither->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
-            || dither->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
+    if (dither->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
         method_for_largest_for_palette = dither->method_for_largest;
     }
 
@@ -4350,8 +4345,8 @@ sixel_dither_apply_palette_with_mode(
         /*
          * Keep output palette slots stable for forced-palette mode.
          * Index resolution may touch fewer colors per frame, but callers
-         * relying on fixed slots (for example animation palette locking)
-         * need the original entry count preserved.
+         * relying on a fixed palette need the original entry count
+         * preserved.
          */
         ncolors = palette_entry_limit;
     }

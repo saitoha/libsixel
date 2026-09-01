@@ -685,11 +685,10 @@ test_palette_0005_cover_anchor(int argc, char **argv)
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
         SIXEL_QUANTIZE_MODEL_KMEANS,
         SIXEL_QUANTIZE_MODEL_KMEDOIDS,
-        SIXEL_QUANTIZE_MODEL_KCENTER,
-        SIXEL_QUANTIZE_MODEL_STICKY
+        SIXEL_QUANTIZE_MODEL_KCENTER
     };
     static char const *const names[] = {
-        "auto", "mediancut", "kmeans", "kmedoids", "kcenter", "sticky"
+        "auto", "mediancut", "kmeans", "kmedoids", "kcenter"
     };
     sixel_allocator_t *allocator;
     unsigned char *pixels;
