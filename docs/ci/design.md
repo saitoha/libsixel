@@ -15,6 +15,11 @@ runtimes. A green result in one common Linux configuration is not sufficient.
 The generated [CI Support Matrix](support-matrix.md) lists the build
 configurations configured in both systems.
 
+The user-facing [Build, Runtime, and Platform Support](../platform-support.md)
+document defines the support tiers and summarizes the OS, architecture,
+compiler, and build-system coverage. The generated inventory remains the
+source of truth for individual CI configurations.
+
 ## GitHub Actions workflow responsibilities
 
 ### Primary build and test
@@ -148,8 +153,10 @@ When adding, removing, or renaming a CI job:
 2. regenerate the support inventory, refreshing the local snapshot when
    applicable;
 3. review the generated list as part of the CI change;
-4. run `make staticcheck` before committing;
-5. verify the actual replacement job in the corresponding CI system.
+4. update `docs/platform-support.md` when the change adds or removes an OS,
+   architecture, compiler family, ABI, or supported build system;
+5. run `make staticcheck` before committing;
+6. verify the actual replacement job in the corresponding CI system.
 
 ## Matrix design principles
 

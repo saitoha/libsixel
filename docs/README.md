@@ -4,6 +4,20 @@ This directory contains the durable libsixel documentation that users and
 contributors should be able to discover from the repository. Detailed topics
 are grouped by domain so each area can grow without overloading one document.
 
+## Project and format
+
+- [Project history and lineage](project-history.md) explains how libsixel was
+  derived from KMIYA's `sixel`, how the project developed, and how community
+  contributions shaped it.
+- [SIXEL format](sixel-format.md) is a practical guide to the DEC SIXEL wire
+  format, its control functions, rendering model, and interoperability limits.
+
+## Requirements and support
+
+- [Build, runtime, and platform support](platform-support.md) defines the
+  build requirements, runtime assumptions, CI-backed support tiers, and the
+  OS, architecture, compiler, and build-system matrix.
+
 ## Functionality
 
 - [Functional overview](functionality/overview.md) describes the product

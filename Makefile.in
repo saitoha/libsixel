@@ -577,6 +577,9 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/resolve-test-tool-paths.sh.in \
 	docs/AGENTS.md \
 	docs/README.md \
+	docs/platform-support.md \
+	docs/project-history.md \
+	docs/sixel-format.md \
 	docs/ci/design.md \
 	docs/ci/local-jobs.tsv \
 	docs/ci/support-matrix.md \

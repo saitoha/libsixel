@@ -16,6 +16,12 @@ can grow into multiple documents without crowding the top level.
 Start from the [documentation index](README.md). Read the relevant document
 before changing its subject area:
 
+- [Project history and lineage](project-history.md): origin, development
+  milestones, contribution history, and attribution sources.
+- [SIXEL format](sixel-format.md): wire syntax, control functions, rendering
+  semantics, interoperability, and implementation references.
+- [Build, runtime, and platform support](platform-support.md): build and
+  runtime requirements, CI-backed support tiers, and platform matrix.
 - [Functionality](functionality/overview.md): capabilities, components, data
   flow, and architectural boundaries.
 - [CLI](cli/design-policy.md): option design, compatibility, parsing,
@@ -32,6 +38,8 @@ before changing its subject area:
 ## Documentation rules
 
 - Write documentation in English.
+- Keep project-wide entry documents intended for users, such as project
+  history, format, and platform support references, directly under `docs/`.
 - Keep one major concern per file and one broad subject per directory. Link
   related documents instead of merging their full contents into one large
   guide.

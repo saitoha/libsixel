@@ -48,6 +48,9 @@ Use the [documentation index](docs/README.md) to find durable project
 references. [docs/AGENTS.md](docs/AGENTS.md) defines the maintenance policy for
 that documentation. The principal references are:
 
+- [Project history and lineage](docs/project-history.md)
+- [SIXEL format](docs/sixel-format.md)
+- [Build, runtime, and platform support](docs/platform-support.md)
 - [Functional overview](docs/functionality/overview.md)
 - [CLI design policy](docs/cli/design-policy.md)
 - [Quality measurement policy](docs/quality/measurement-policy.md)
