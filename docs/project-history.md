@@ -12,6 +12,20 @@ Git-hosting fork that retained an upstream commit graph. The original source
 was distributed as an archive and was imported into a separately created Git
 repository.
 
+Two different fork relationships appear in the project's history:
+
+- libsixel itself is a code-lineage fork of KMIYA's archive, not a GitHub
+  fork;
+- [`libsixel/libsixel`](https://github.com/libsixel/libsixel) is a GitHub fork
+  of [`saitoha/libsixel`](https://github.com/saitoha/libsixel), created in 2021
+  after updates by @saitoha had been stalled for more than a year.
+
+The second relationship was not a planned division of maintenance or a
+transfer of the original repository. It was a community continuation created
+in response to the update gap. Because it supplied later releases while the
+original repository was inactive, many distributions and users came to treat
+`libsixel/libsixel` as the practical successor and upstream.
+
 ## KMIYA's `sixel`
 
 KMIYA's `sixel` was a compact C encoder and decoder distributed from
@@ -89,13 +103,62 @@ input a central part of the decoder and loader contract. Work in the same
 period improved VPATH builds, packaging, dependency handling, and immutable
 release artifacts.
 
-### 2021-2025: build-system and platform renewal
+### 2020-2021: stalled updates and the community fork
 
-Meson support and GitHub Actions were added alongside the established
-Autotools build. Python bindings moved to Python 3 packaging. Later work
-renewed Windows support, optional native loaders, generated build inputs, and
-cross-platform CI coverage while preserving compatibility with existing
-library and command-line users.
+The last @saitoha-led merge before the gap was made in January 2020. Other
+contributors continued to prepare fixes, but updates to the original
+repository stalled. That created practical problems for security fixes,
+packagers, pending pull requests, and downstream projects that needed a
+maintained release.
+
+On 2021-06-09, Fredrick R. Brennan (`@ctrlcctrlv`) announced the
+[`libsixel/libsixel`](https://github.com/libsixel/libsixel) fork in
+[`saitoha/libsixel` issue 154](https://github.com/saitoha/libsixel/issues/154).
+The new `libsixel` GitHub organization presented the fork as a community
+continuation while @saitoha was inactive. It imported pending contributions,
+addressed security issues, and aimed to provide responsive review and releases.
+The original `saitoha/libsixel` repository was neither renamed nor transferred.
+
+### 2021-2025: work in `libsixel/libsixel`
+
+The community fork developed its own release line. Its contributors added
+security and lifetime fixes, GitHub Actions, Meson support, Python 3 packaging,
+dependency and distribution improvements, and other maintenance work. It
+published v1.9.0 and the v1.10 series through v1.10.5. Fredrick R. Brennan,
+nick black (`@dankamongmen`), Eli Schwartz, Henner Zeller, WSLUser, and other
+contributors participated at different points in that work.
+
+This period must not be collapsed into inactivity in the wider project
+history: even though updates in `saitoha/libsixel` had stalled, substantial
+maintenance and release work continued in `libsixel/libsixel`. The fork became
+the de facto successor for much of the packaged ecosystem. Through 2026,
+[Debian stable](https://packages.debian.org/stable/source/libsixel),
+[Arch Linux](https://archlinux.org/packages/extra/x86_64/libsixel/), and
+[Fedora 43](https://packages.fedoraproject.org/pkgs/libsixel/libsixel/fedora-43.html)
+continued to ship the fork's v1.10.5 line; Arch also identified
+`libsixel/libsixel` as its upstream URL.
+
+That downstream status does not erase the original repository or make the two
+Git histories interchangeable. The fork's issues, pull requests, releases,
+and commits are a distinct and essential part of the project's development
+record. Because both lines use the same project and library names, package and
+security records should identify the repository and commit or tag explicitly;
+a version number or issue number alone can be ambiguous.
+
+### 2025: development resumes in `saitoha/libsixel`
+
+Active development resumed in the original repository in 2025. The two
+repositories had accumulated different commits and release histories, so the
+result was not a simple rename or fast-forward from the community fork. Work
+from the fork has been incorporated or reimplemented where appropriate, and
+the current repository still refers to `libsixel/libsixel` issues and commits
+when preserving that provenance.
+
+The repository documented here is the resumed `saitoha/libsixel` development
+line. This statement identifies the source tree, not an exclusive claim to the
+name in downstream packaging. `libsixel/libsixel`, which GitHub archived on
+2025-02-12, remains the source of the v1.10 line used by many distributions and
+an important source of fixes, releases, discussion, and contributor credit.
 
 ### 2026 and the current development line
 
@@ -121,8 +184,9 @@ The project records credit in several complementary places:
   reporters for specific changes.
 - [`ChangeLog`](../ChangeLog) and the Git history preserve detailed development
   chronology.
-- Issue and pull-request discussions preserve design context that a commit
-  author line cannot capture.
+- Issue and pull-request discussions in both `saitoha/libsixel` and
+  `libsixel/libsixel` preserve design context that a commit author line cannot
+  capture.
 
 No single one of these is a complete measure of contribution. In particular,
 commit counts undercount review, testing, research, security reporting, and
@@ -133,6 +197,8 @@ discussion and update the durable record where appropriate.
 ## Further reading
 
 - [KMIYA `sixel` source mirror](https://github.com/saitoha/sixel)
+- [`libsixel/libsixel` community fork](https://github.com/libsixel/libsixel)
+- [Community-fork announcement and rationale](https://github.com/saitoha/libsixel/issues/154)
 - [libsixel release history](../NEWS)
 - [libsixel contributors](../AUTHORS)
 - [SIXEL format](sixel-format.md)
