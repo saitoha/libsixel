@@ -14,14 +14,14 @@ output=$(
         --env SIXEL_PALETTE_KMEANS_MAPPING=srgb \
         --env SIXEL_PALETTE_KMEANS_SOFTDIST=trilinear \
         --env SIXEL_PALETTE_KMEANS_AUTORATIO=64 \
-        --env SIXEL_PALETTE_KMEANS_FEEDBACK=on \
+        --env SIXEL_PALETTE_KMEANS_FEEDBACK=1 \
         "palette/0001_kmeans_init" --histogram
 ) || output=""
 
 cr=$(printf '\r')
 test "${output%"${cr}"}" != "${output}" && output=${output%"${cr}"}
 
-test "${output}" = "binning=soft binbits=5 mapping=srgb softdist=trilinear autoratio=64 feedback=on" || {
+test "${output}" = "binning=soft binbits=5 mapping=srgb softdist=trilinear autoratio=64 feedback=1" || {
     echo "not ok" 1 - "unexpected kmeans histogram env output: ${output}"
     exit 0
 }

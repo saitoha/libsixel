@@ -19,19 +19,19 @@ input_exif="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png
 input_plain="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_12x8.png"
 
 static_on=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lcoregraphics:orientation=on! "${input_exif}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics static orientation=on decode failed"
+    -Lcoregraphics:orientation=1! "${input_exif}" 2>/dev/null) || {
+    echo "not ok 1 - coregraphics static orientation=1 decode failed"
     exit 0
 }
 
 static_off=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lcoregraphics:orientation=off! "${input_exif}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics static orientation=off decode failed"
+    -Lcoregraphics:orientation=0! "${input_exif}" 2>/dev/null) || {
+    echo "not ok 1 - coregraphics static orientation=0 decode failed"
     exit 0
 }
 
 test "${static_on}" != "${static_off}" || {
-    echo "not ok 1 - coregraphics static EXIF orientation on/off were equal"
+    echo "not ok 1 - coregraphics static EXIF orientation 1/0 were equal"
     exit 0
 }
 
@@ -47,14 +47,14 @@ test "${static_default}" = "${static_on}" || {
 }
 
 plain_on=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lcoregraphics:orientation=on! "${input_plain}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics plain static orientation=on decode failed"
+    -Lcoregraphics:orientation=1! "${input_plain}" 2>/dev/null) || {
+    echo "not ok 1 - coregraphics plain static orientation=1 decode failed"
     exit 0
 }
 
 plain_off=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lcoregraphics:orientation=off! "${input_plain}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics plain static orientation=off decode failed"
+    -Lcoregraphics:orientation=0! "${input_plain}" 2>/dev/null) || {
+    echo "not ok 1 - coregraphics plain static orientation=0 decode failed"
     exit 0
 }
 
@@ -63,5 +63,5 @@ test "${plain_on}" = "${plain_off}" || {
     exit 0
 }
 
-echo "ok 1 - coregraphics static EXIF orientation on/off works"
+echo "ok 1 - coregraphics static EXIF orientation 1/0 works"
 exit 0

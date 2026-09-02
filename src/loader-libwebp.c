@@ -59,6 +59,7 @@
 #include "frame-factory.h"
 #include "loader-common.h"
 #include "loader-libwebp.h"
+#include "options.h"
 #include "timeline-logger.h"
 #include "compat_stub.h"
 
@@ -418,25 +419,6 @@ webp_decode_status_name(VP8StatusCode status)
         return "VP8_STATUS_NOT_ENOUGH_DATA";
     default:
         return "VP8_STATUS_UNKNOWN";
-    }
-}
-
-static int
-webp_env_value_is_truthy(char const *value)
-{
-    if (value == NULL || value[0] == '\0') {
-        return 0;
-    }
-
-    switch (value[0]) {
-    case '1':
-    case 'y':
-    case 'Y':
-    case 't':
-    case 'T':
-        return 1;
-    default:
-        return 0;
     }
 }
 
@@ -1461,7 +1443,6 @@ load_webp(unsigned char **result,
     WebPBitstreamFeatures features;
     int bytes_per_pixel;
     int cms_converted;
-    char const *force_rgb_env;
     int force_rgb_decode;
     size_t stride;
     size_t size;
@@ -1472,7 +1453,6 @@ load_webp(unsigned char **result,
 
     status = SIXEL_BAD_INPUT;
     cms_converted = 0;
-    force_rgb_env = NULL;
     force_rgb_decode = 0;
     feature_status = VP8_STATUS_OK;
     memset(error_message, 0, sizeof(error_message));
@@ -1523,9 +1503,9 @@ load_webp(unsigned char **result,
      * Keep a test/debug escape hatch so regression tests can compare the
      * lossy YUV path against the legacy RGB decode path.
      */
-    force_rgb_env = sixel_compat_getenv(
-        "SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE");
-    if (webp_env_value_is_truthy(force_rgb_env)) {
+    if (sixel_option_resolve_boolean_environment(
+            "SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
+            0)) {
         force_rgb_decode = 1;
     }
 

@@ -37,59 +37,59 @@ case "${msg_default}" in
         ;;
 esac
 
-msg_truthy=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
+msg_one=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "single-frame animation decode failed (truthy force-rgb)"
+    echo "not ok" 1 - "single-frame animation decode failed (value 1)"
     printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg_truthy}" >&2
+    printf '%s\n' "${msg_one}" >&2
     exit 0
 }
 
-case "${msg_truthy}" in
+case "${msg_one}" in
     *"static decode path=rgb_u8 "*" force_rgb=1"*)
         ;;
     *)
-        echo "not ok" 1 - "single-frame animation truthy trace did not use static rgb_u8 force_rgb=1"
+        echo "not ok" 1 - "single-frame value 1 trace did not use rgb_u8"
         printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg_truthy}" >&2
+        printf '%s\n' "${msg_one}" >&2
         exit 0
         ;;
 esac
 
-msg_falsey=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=n \
+msg_zero=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "single-frame animation decode failed (falsey force-rgb)"
+    echo "not ok" 1 - "single-frame animation decode failed (value 0)"
     printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg_falsey}" >&2
+    printf '%s\n' "${msg_zero}" >&2
     exit 0
 }
 
-case "${msg_falsey}" in
+case "${msg_zero}" in
     *"static decode path=lossy_yuv "*" force_rgb=0"*)
         ;;
     *)
-        echo "not ok" 1 - "single-frame animation falsey trace did not use static lossy_yuv force_rgb=0"
+        echo "not ok" 1 - "single-frame value 0 trace did not use lossy_yuv"
         printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg_falsey}" >&2
+        printf '%s\n' "${msg_zero}" >&2
         exit 0
         ;;
 esac
 
-msg_prefixed=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=' true' \
+msg_empty=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE='' \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "single-frame animation decode failed (prefixed force-rgb)"
+    echo "not ok" 1 - "single-frame animation decode failed (empty value)"
     printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg_prefixed}" >&2
+    printf '%s\n' "${msg_empty}" >&2
     exit 0
 }
 
-case "${msg_prefixed}" in
+case "${msg_empty}" in
     *"static decode path=lossy_yuv "*" force_rgb=0"*)
         ;;
     *)
-        echo "not ok" 1 - "single-frame animation prefixed trace did not use static lossy_yuv force_rgb=0"
+        echo "not ok" 1 - "single-frame empty trace did not use lossy_yuv"
         printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg_prefixed}" >&2
+        printf '%s\n' "${msg_empty}" >&2
         exit 0
         ;;
 esac

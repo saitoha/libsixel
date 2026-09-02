@@ -24,7 +24,7 @@ output_builtin="${ARTIFACT_ROOT}/${0##*/}.builtin.png"
 output_libwebp="${ARTIFACT_ROOT}/${0##*/}.libwebp.png"
 lsqa_msg=''
 
-SIXEL_LOADER_BUILTIN_ORIENTATION=on
+SIXEL_LOADER_BUILTIN_ORIENTATION=1
 export SIXEL_LOADER_BUILTIN_ORIENTATION
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -S -L builtin! -ldisable \
     -o "${output_builtin}" "${input_webp}" >/dev/null || {

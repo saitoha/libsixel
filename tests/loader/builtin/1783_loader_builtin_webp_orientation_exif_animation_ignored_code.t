@@ -21,19 +21,19 @@ nl='
 
 SIXEL_TRACE_TOPIC=webp_decode
 export SIXEL_TRACE_TOPIC
-SIXEL_LOADER_BUILTIN_ORIENTATION=off
+SIXEL_LOADER_BUILTIN_ORIENTATION=0
 export SIXEL_LOADER_BUILTIN_ORIENTATION
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -S -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp decode failed with orientation=off"
+    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp decode failed with orientation=0"
     exit 0
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
 test "${diag_line}" != "${trace_output}" || {
-    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp missing LSXWEBP1 contract header with orientation=off"
+    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp missing LSXWEBP1 contract header with orientation=0"
     exit 0
 }
 
@@ -41,19 +41,19 @@ diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
 test "${diag_line#LSXWEBP1\|rc=0\|kind=OK\|codes=}" != "${diag_line}" || {
-    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp malformed success contract header with orientation=off"
+    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp malformed success contract header with orientation=0"
     exit 0
 }
 
 test "${diag_line#*W_OK_ANIM*}" != "${diag_line}" || {
-    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp missing W_OK_ANIM with orientation=off"
+    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp missing W_OK_ANIM with orientation=0"
     exit 0
 }
 
 test "${diag_line#*W_META_EXIF_IGNORED*}" != "${diag_line}" || {
-    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp missing W_META_EXIF_IGNORED with orientation=off"
+    echo "not ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp missing W_META_EXIF_IGNORED with orientation=0"
     exit 0
 }
 
-echo "ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp emits W_META_EXIF_IGNORED with orientation=off"
+echo "ok" 1 - "builtin orientation_exif_o6_anim_12x8.webp emits W_META_EXIF_IGNORED with orientation=0"
 exit 0

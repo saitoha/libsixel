@@ -37,6 +37,7 @@
 #include "dither-interframe-stbn-source-hash.h"
 #include "dither-interframe-stbn-source-mask.h"
 #include "dither-interframe-stbn-source-pmj.h"
+#include "options.h"
 
 static int
 sixel_interframe_parse_noise_strength_common(char const *text,
@@ -90,60 +91,6 @@ sixel_interframe_noise_strength_u8_from_env_common(void)
         scaled = 255.0;
     }
     return (int)(scaled + 0.5);
-}
-
-static SIXELSTATUS
-sixel_interframe_parse_toggle_01_text_common(char const *text,
-                                             char const *label,
-                                             int *out_value)
-{
-    if (text == NULL || label == NULL || out_value == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (strcmp(text, "0") == 0) {
-        *out_value = 0;
-        return SIXEL_OK;
-    }
-    if (strcmp(text, "1") == 0) {
-        *out_value = 1;
-        return SIXEL_OK;
-    }
-
-    sixel_helper_set_additional_message(label);
-    return SIXEL_BAD_ARGUMENT;
-}
-
-static SIXELSTATUS
-sixel_interframe_toggle_from_env_common(char const *envvar,
-                                        char const *label,
-                                        int *out_value)
-{
-    char const *text;
-    int resolved;
-    SIXELSTATUS status;
-
-    text = NULL;
-    resolved = 0;
-    status = SIXEL_OK;
-    if (envvar == NULL || label == NULL || out_value == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    text = sixel_compat_getenv(envvar);
-    if (text == NULL) {
-        *out_value = 0;
-        return SIXEL_OK;
-    }
-
-    status = sixel_interframe_parse_toggle_01_text_common(text,
-                                                         label,
-                                                         &resolved);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    *out_value = resolved;
-    return SIXEL_OK;
 }
 
 int
@@ -279,7 +226,6 @@ sixel_interframe_stbn_prepare_state_default_common(
     sixel_interframe_stbn_state_common_t *stbn_state,
     int can_update)
 {
-    SIXELSTATUS status;
     int resolved_strength_u8;
     int motion_adapt_enabled;
     int scene_cut_reset_enabled;
@@ -290,7 +236,6 @@ sixel_interframe_stbn_prepare_state_default_common(
 
     (void)can_update;
 
-    status = SIXEL_OK;
     resolved_strength_u8 = 0;
     motion_adapt_enabled = 0;
     scene_cut_reset_enabled = 0;
@@ -314,69 +259,45 @@ sixel_interframe_stbn_prepare_state_default_common(
     if (dither != NULL && dither->stbn_motion_adapt_override != 0) {
         motion_adapt_enabled = dither->stbn_motion_adapt_enabled ? 1 : 0;
     } else {
-        status = sixel_interframe_toggle_from_env_common(
+        motion_adapt_enabled = sixel_option_resolve_boolean_environment(
             SIXEL_DITHER_STBN_MOTION_ADAPT_ENVVAR,
-            "SIXEL_DITHER_STBN_MOTION_ADAPT must be 0 or 1.",
-            &motion_adapt_enabled);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
+            0);
     }
     if (dither != NULL && dither->stbn_scene_cut_reset_override != 0) {
         scene_cut_reset_enabled = dither->stbn_scene_cut_reset_enabled ? 1 : 0;
     } else {
-        status = sixel_interframe_toggle_from_env_common(
+        scene_cut_reset_enabled = sixel_option_resolve_boolean_environment(
             SIXEL_DITHER_STBN_SCENE_CUT_RESET_ENVVAR,
-            "SIXEL_DITHER_STBN_SCENE_CUT_RESET must be 0 or 1.",
-            &scene_cut_reset_enabled);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
+            0);
     }
     if (dither != NULL && dither->stbn_scene_detect_override != 0) {
         scene_detect_enabled = dither->stbn_scene_detect_enabled ? 1 : 0;
     } else {
-        status = sixel_interframe_toggle_from_env_common(
+        scene_detect_enabled = sixel_option_resolve_boolean_environment(
             SIXEL_DITHER_STBN_SCENE_DETECT_ENVVAR,
-            "SIXEL_DITHER_STBN_SCENE_DETECT must be 0 or 1.",
-            &scene_detect_enabled);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
+            0);
     }
     if (dither != NULL && dither->stbn_alpha_guard_override != 0) {
         alpha_guard_enabled = dither->stbn_alpha_guard_enabled ? 1 : 0;
     } else {
-        status = sixel_interframe_toggle_from_env_common(
+        alpha_guard_enabled = sixel_option_resolve_boolean_environment(
             SIXEL_DITHER_STBN_ALPHA_GUARD_ENVVAR,
-            "SIXEL_DITHER_STBN_ALPHA_GUARD must be 0 or 1.",
-            &alpha_guard_enabled);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
+            0);
     }
     if (dither != NULL && dither->stbn_perceptual_weight_override != 0) {
         perceptual_weight_enabled =
             dither->stbn_perceptual_weight_enabled ? 1 : 0;
     } else {
-        status = sixel_interframe_toggle_from_env_common(
+        perceptual_weight_enabled = sixel_option_resolve_boolean_environment(
             SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT_ENVVAR,
-            "SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT must be 0 or 1.",
-            &perceptual_weight_enabled);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
+            0);
     }
     if (dither != NULL && dither->stbn_fastpath_override != 0) {
         fastpath_enabled = dither->stbn_fastpath_enabled ? 1 : 0;
     } else {
-        status = sixel_interframe_toggle_from_env_common(
+        fastpath_enabled = sixel_option_resolve_boolean_environment(
             SIXEL_DITHER_STBN_FASTPATH_ENVVAR,
-            "SIXEL_DITHER_STBN_FASTPATH must be 0 or 1.",
-            &fastpath_enabled);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
+            0);
     }
     /*
      * Resolve interframe-noise strength once per state prepare so hot pixel

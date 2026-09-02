@@ -216,7 +216,7 @@ struct sixel_encoder {
     int quantize_model_merge_lloyd_override;
     unsigned int quantize_model_merge_lloyd;
     /*
-     * Gamut anchoring, reachable as -Q MODEL:cover=SET, :cover_grow=on|off
+     * Gamut anchoring, reachable as -Q MODEL:cover=SET, :cover_grow=0|1
      * and :cover_mode=hard.  It applies to whichever solver ran, so it is
      * stored once rather than per model.
      */

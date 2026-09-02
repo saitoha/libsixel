@@ -24,7 +24,7 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
+test "${msg#*boolean suboption must be 0 or 1.*}" != "${msg}" || {
     echo "not ok" 1 - "missing stbn scene_detect invalid-value diagnostic"
     exit 0
 }

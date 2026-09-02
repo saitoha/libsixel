@@ -35,6 +35,7 @@
 #include <sixel.h>
 
 #include "compat_stub.h"
+#include "options.h"
 #include "palette-common-cover.h"
 
 /*
@@ -134,14 +135,13 @@ sixel_palette_cover_policy(void)
 SIXEL_INTERNAL_API int
 sixel_palette_cover_grow_enabled(void)
 {
-    char const *value;
-
     if (g_sixel_palette_cover_override_enabled != 0) {
         return g_sixel_palette_cover_override.grow;
     }
-    value = sixel_compat_getenv("SIXEL_PALETTE_COVER_GROW");
 
-    return value != NULL && strcmp(value, "0") != 0 ? 1 : 0;
+    return sixel_option_resolve_boolean_environment(
+        "SIXEL_PALETTE_COVER_GROW",
+        0);
 }
 
 SIXEL_INTERNAL_API int

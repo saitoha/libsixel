@@ -3092,31 +3092,6 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
     return status;
 }
 
-static int
-sixel_encoder_env_prefers_float32(char const *text)
-{
-    char lowered[8];
-    size_t i;
-
-    if (text == NULL || *text == '\0') {
-        return 0;
-    }
-
-    for (i = 0; i < sizeof(lowered) - 1 && text[i] != '\0'; ++i) {
-        lowered[i] = (char)tolower((unsigned char)text[i]);
-    }
-    lowered[i] = '\0';
-
-    if (strcmp(lowered, "0") == 0
-        || strcmp(lowered, "off") == 0
-        || strcmp(lowered, "false") == 0
-        || strcmp(lowered, "no") == 0) {
-        return 0;
-    }
-
-    return 1;
-}
-
 static SIXELSTATUS
 sixel_encoder_apply_precision_override(
     sixel_encoder_t *encoder,
@@ -7508,7 +7483,6 @@ sixel_encoder_new(
     SIXELSTATUS status = SIXEL_FALSE;
     char const *env_default_bgcolor = NULL;
     char const *env_default_ncolors = NULL;
-    char const *env_prefer_float32 = NULL;
     char const *env_lookup_policy = NULL;
     char const *env_gpu_policy = NULL;
     char const *env_sample_target = NULL;
@@ -7836,14 +7810,13 @@ sixel_encoder_new(
     sixel_encoding_planner_init(&(*ppencoder)->planner);
     (*ppencoder)->allocator             = allocator;
 
-    prefer_float32 = 0;
-    env_prefer_float32 = sixel_compat_getenv(
-        SIXEL_ENCODER_PRECISION_ENVVAR);
     /*
      * $SIXEL_FLOAT32_DITHER seeds the precision preference and is later
      * overridden by the precision CLI flag when provided.
      */
-    prefer_float32 = sixel_encoder_env_prefers_float32(env_prefer_float32);
+    prefer_float32 = sixel_option_resolve_boolean_environment(
+        SIXEL_ENCODER_PRECISION_ENVVAR,
+        0);
     (*ppencoder)->prefer_float32 = prefer_float32;
 
     /*

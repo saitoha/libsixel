@@ -41,6 +41,7 @@
 #include <sixel.h>
 
 #include "compat_stub.h"
+#include "options.h"
 #include "threading.h"
 #include "pixelformat.h"
 
@@ -899,7 +900,6 @@ static int palette_table_mutex_ready;
 static int
 sixel_init_palette_tables(void)
 {
-    char const *disable_tables;
     int value;
     int i;
     int init_result;
@@ -910,10 +910,9 @@ sixel_init_palette_tables(void)
      * the fallback without introducing additional code paths in
      * production builds.
      */
-    disable_tables = sixel_compat_getenv(
-            "SIXEL_PALETTE_DISABLE_TABLES");
-    if (disable_tables != NULL && disable_tables[0] != '\0' &&
-            disable_tables[0] != '0') {
+    if (sixel_option_resolve_boolean_environment(
+            "SIXEL_PALETTE_DISABLE_TABLES",
+            0)) {
         return 0;
     }
 

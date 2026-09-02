@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying unknown orientation suboption values are rejected.
+# TAP test verifying orientation uses the shared boolean validator.
 
 set -eux
 
@@ -21,44 +21,30 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=yes! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown orientation suboption value unexpectedly succeeded"
+    echo "not ok" 1 - "invalid orientation suboption value succeeded"
     exit 0
 }
 
-test "${msg#*unknown suboption value*}" != "${msg}" || {
-    echo "not ok" 1 - "missing unknown orientation suboption diagnostic"
+test "${msg#*boolean suboption must be 0 or 1.*}" != "${msg}" || {
+    echo "not ok" 1 - "missing shared boolean diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*\"yes\"*}" != "${msg}" || {
+test "${msg#*libpng:orientation=yes!*}" != "${msg}" || {
     echo "not ok" 1 - "unknown orientation value token not reported"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*\"orientation\"*}" != "${msg}" || {
+test "${msg#*:orientation=0|1*}" != "${msg}" || {
     echo "not ok" 1 - "orientation key token not reported"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test "${msg#*valid values*}" != "${msg}" || {
-    echo "not ok" 1 - "valid-values hint missing for orientation suboption"
-    printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg}" >&2
-    exit 0
-}
-
-test "${msg#*on*off*}" != "${msg}" || {
-    echo "not ok" 1 - "orientation valid values did not list on/off"
-    printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg}" >&2
-    exit 0
-}
-
-echo "ok" 1 - "unknown orientation suboption value is rejected"
+echo "ok" 1 - "orientation uses the shared boolean validator"
 exit 0

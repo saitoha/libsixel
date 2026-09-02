@@ -19,21 +19,21 @@ input_exif="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_apng_12x
 input_plain="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
 
 apng_on=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lcoregraphics:orientation=on! -S --start-frame=1 \
+    -Lcoregraphics:orientation=1! -S --start-frame=1 \
     "${input_exif}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics APNG frame1 orientation=on decode failed"
+    echo "not ok 1 - coregraphics APNG frame1 orientation=1 decode failed"
     exit 0
 }
 
 apng_off=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lcoregraphics:orientation=off! -S --start-frame=1 \
+    -Lcoregraphics:orientation=0! -S --start-frame=1 \
     "${input_exif}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics APNG frame1 orientation=off decode failed"
+    echo "not ok 1 - coregraphics APNG frame1 orientation=0 decode failed"
     exit 0
 }
 
 test "${apng_on}" != "${apng_off}" || {
-    echo "not ok 1 - coregraphics APNG frame1 orientation on/off were equal"
+    echo "not ok 1 - coregraphics APNG frame1 orientation 1/0 were equal"
     exit 0
 }
 
@@ -49,16 +49,16 @@ test "${apng_default}" = "${apng_on}" || {
 }
 
 plain_on=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lcoregraphics:orientation=on! -S --start-frame=1 \
+    -Lcoregraphics:orientation=1! -S --start-frame=1 \
     "${input_plain}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics plain APNG orientation=on decode failed"
+    echo "not ok 1 - coregraphics plain APNG orientation=1 decode failed"
     exit 0
 }
 
 plain_off=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lcoregraphics:orientation=off! -S --start-frame=1 \
+    -Lcoregraphics:orientation=0! -S --start-frame=1 \
     "${input_plain}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics plain APNG orientation=off decode failed"
+    echo "not ok 1 - coregraphics plain APNG orientation=0 decode failed"
     exit 0
 }
 

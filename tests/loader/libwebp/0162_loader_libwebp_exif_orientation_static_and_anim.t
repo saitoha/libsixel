@@ -22,19 +22,19 @@ input_static_plain="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_12
 input_anim_exif="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_anim_12x8.webp"
 
 static_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibwebp:orientation=on! "${input_static_exif}" -p 2 2>/dev/null) || {
-    echo "not ok" 1 - "libwebp static orientation=on decode failed"
+    -Llibwebp:orientation=1! "${input_static_exif}" -p 2 2>/dev/null) || {
+    echo "not ok" 1 - "libwebp static orientation=1 decode failed"
     exit 0
 }
 
 static_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibwebp:orientation=off! "${input_static_exif}" -p 2 2>/dev/null) || {
-    echo "not ok" 1 - "libwebp static orientation=off decode failed"
+    -Llibwebp:orientation=0! "${input_static_exif}" -p 2 2>/dev/null) || {
+    echo "not ok" 1 - "libwebp static orientation=0 decode failed"
     exit 0
 }
 
 test "${static_on}" != "${static_off}" || {
-    echo "not ok" 1 - "libwebp static EXIF orientation on/off outputs were identical"
+    echo "not ok" 1 - "libwebp static EXIF orientation 1/0 outputs were identical"
     exit 0
 }
 
@@ -50,14 +50,14 @@ test "${static_default}" = "${static_on}" || {
 }
 
 plain_static_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibwebp:orientation=on! "${input_static_plain}" -p 2 2>/dev/null) || {
-    echo "not ok" 1 - "libwebp plain static orientation=on decode failed"
+    -Llibwebp:orientation=1! "${input_static_plain}" -p 2 2>/dev/null) || {
+    echo "not ok" 1 - "libwebp plain static orientation=1 decode failed"
     exit 0
 }
 
 plain_static_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibwebp:orientation=off! "${input_static_plain}" -p 2 2>/dev/null) || {
-    echo "not ok" 1 - "libwebp plain static orientation=off decode failed"
+    -Llibwebp:orientation=0! "${input_static_plain}" -p 2 2>/dev/null) || {
+    echo "not ok" 1 - "libwebp plain static orientation=0 decode failed"
     exit 0
 }
 
@@ -67,21 +67,21 @@ test "${plain_static_on}" = "${plain_static_off}" || {
 }
 
 anim_on_f1=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibwebp:orientation=on! -S --start-frame=1 \
+    -Llibwebp:orientation=1! -S --start-frame=1 \
     "${input_anim_exif}" -p 2 2>/dev/null) || {
-    echo "not ok" 1 - "libwebp animation frame1 orientation=on decode failed"
+    echo "not ok" 1 - "libwebp animation frame1 orientation=1 decode failed"
     exit 0
 }
 
 anim_off_f1=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibwebp:orientation=off! -S --start-frame=1 \
+    -Llibwebp:orientation=0! -S --start-frame=1 \
     "${input_anim_exif}" -p 2 2>/dev/null) || {
-    echo "not ok" 1 - "libwebp animation frame1 orientation=off decode failed"
+    echo "not ok" 1 - "libwebp animation frame1 orientation=0 decode failed"
     exit 0
 }
 
 test "${anim_on_f1}" != "${anim_off_f1}" || {
-    echo "not ok" 1 - "libwebp animation frame1 orientation on/off outputs were identical"
+    echo "not ok" 1 - "libwebp animation frame1 orientation 1/0 outputs were identical"
     exit 0
 }
 

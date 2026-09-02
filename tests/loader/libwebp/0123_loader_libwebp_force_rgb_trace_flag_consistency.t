@@ -37,40 +37,40 @@ case "${msg_default}" in
         ;;
 esac
 
-msg_truthy=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
+msg_one=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_lossy_rgb}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "truthy force-rgb static lossy decode failed"
+    echo "not ok" 1 - "force-rgb value 1 static lossy decode failed"
     printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg_truthy}" >&2
+    printf '%s\n' "${msg_one}" >&2
     exit 0
 }
 
-case "${msg_truthy}" in
+case "${msg_one}" in
     *"static decode path=rgb_u8 "*" force_rgb=1"*)
         ;;
     *)
-        echo "not ok" 1 - "truthy force-rgb trace did not report force_rgb=1 with rgb_u8 path"
+        echo "not ok" 1 - "value 1 trace did not report force_rgb=1"
         printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg_truthy}" >&2
+        printf '%s\n' "${msg_one}" >&2
         exit 0
         ;;
 esac
 
-msg_falsey=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=n \
+msg_zero=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_lossy_rgb}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "falsey force-rgb static lossy decode failed"
+    echo "not ok" 1 - "force-rgb value 0 static lossy decode failed"
     printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg_falsey}" >&2
+    printf '%s\n' "${msg_zero}" >&2
     exit 0
 }
 
-case "${msg_falsey}" in
+case "${msg_zero}" in
     *"static decode path=lossy_yuv "*" force_rgb=0"*)
         ;;
     *)
-        echo "not ok" 1 - "falsey force-rgb trace did not report force_rgb=0 with lossy_yuv path"
+        echo "not ok" 1 - "value 0 trace did not report force_rgb=0"
         printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg_falsey}" >&2
+        printf '%s\n' "${msg_zero}" >&2
         exit 0
         ;;
 esac

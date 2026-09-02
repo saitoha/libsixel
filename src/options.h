@@ -61,6 +61,7 @@ typedef enum sixel_option_choice_result {
 /* The registry owns both syntax and typed value validation. */
 typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_CHOICE = 0,
+    SIXEL_SUBOPTION_VALUE_BOOLEAN,
     SIXEL_SUBOPTION_VALUE_INT,
     SIXEL_SUBOPTION_VALUE_UINT,
     SIXEL_SUBOPTION_VALUE_FLOAT,
@@ -165,6 +166,17 @@ typedef union sixel_suboption_value {
         int second;
     } int_pair;
 } sixel_suboption_value_t;
+
+/*
+ * Boolean controls deliberately accept only the ASCII values "0" and "1".
+ * Keeping this parser shared by the registry and direct library fallbacks
+ * prevents individual algorithms from growing incompatible boolean aliases.
+ */
+int
+sixel_option_parse_boolean_text(char const *text, int *value);
+
+int
+sixel_option_resolve_boolean_environment(char const *name, int fallback);
 
 typedef struct sixel_dequantize_options {
     int method;

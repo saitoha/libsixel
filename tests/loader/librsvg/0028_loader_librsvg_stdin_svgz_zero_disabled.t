@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming falsey stdin .svgz opt-in keeps default rejection.
+# TAP test confirming value 0 keeps stdin .svgz decoding disabled.
 
 set -eux
 
@@ -20,7 +20,7 @@ svgz_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-transparent-2color.sv
 status=0
 msg=$(
     set +xv
-    SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ='  no  '
+    SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=0
     export SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -L librsvg! - -o/dev/null 2>&1 \
@@ -28,7 +28,7 @@ msg=$(
 ) || status="$?"
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "falsey stdin .svgz opt-in unexpectedly succeeded"
+    echo "not ok" 1 - "value 0 stdin .svgz opt-in unexpectedly succeeded"
     exit 0
 }
 
@@ -36,10 +36,10 @@ case "${msg}" in
     *"requires file-path decode"*)
         ;;
     *)
-        echo "not ok" 1 - "falsey stdin .svgz opt-in missing rejection diagnostics"
+        echo "not ok" 1 - "value 0 stdin .svgz opt-in missing diagnostics"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "falsey stdin .svgz opt-in keeps rejection behavior"
+echo "ok" 1 - "value 0 keeps stdin .svgz decoding disabled"
 exit 0

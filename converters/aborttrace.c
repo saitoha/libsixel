@@ -248,16 +248,6 @@ sixel_aborttrace_write_unsigned(unsigned int value)
 }
 #endif
 
-static unsigned char
-sixel_aborttrace_ascii_tolower(unsigned char value)
-{
-    if (value >= 'A' && value <= 'Z') {
-        return (unsigned char)(value - 'A' + 'a');
-    }
-
-    return value;
-}
-
 /*
  * Environment readers prefer _dupenv_s on MSVC to silence deprecation
  * diagnostics. Other platforms duplicate getenv strings into caller-owned
@@ -301,68 +291,19 @@ sixel_aborttrace_getenv_dup(char const *name)
 }
 
 static int
-sixel_aborttrace_match_token(char const *value, char const *token)
-{
-    size_t index;
-
-    if (value == NULL || token == NULL) {
-        return 0;
-    }
-
-    index = 0U;
-    while (value[index] != '\0' && token[index] != '\0') {
-        unsigned char lhs;
-        unsigned char rhs;
-
-        lhs = sixel_aborttrace_ascii_tolower((unsigned char)value[index]);
-        rhs = sixel_aborttrace_ascii_tolower((unsigned char)token[index]);
-        if (lhs != rhs) {
-            return 0;
-        }
-
-        index += 1U;
-    }
-
-    return value[index] == '\0' && token[index] == '\0';
-}
-
-static int
 sixel_aborttrace_env_enabled(void)
 {
     char *value;
-    char *legacy;
-
-    legacy = sixel_aborttrace_getenv_dup("SIXEL_NO_ABORT_TRACE");
-    if (legacy != NULL && legacy[0] != '\0') {
-        if (!sixel_aborttrace_match_token(legacy, "0") &&
-            !sixel_aborttrace_match_token(legacy, "false") &&
-            !sixel_aborttrace_match_token(legacy, "off")) {
-            free(legacy);
-            return 0;
-        }
-    }
-    free(legacy);
 
     value = sixel_aborttrace_getenv_dup("SIXEL_ABORT_TRACE");
-    if (value == NULL || value[0] == '\0' ||
-        sixel_aborttrace_match_token(value, "auto")) {
+    if (value == NULL || value[0] == '\0') {
         free(value);
         return 1;
     }
 
-    if (sixel_aborttrace_match_token(value, "0") ||
-        sixel_aborttrace_match_token(value, "false") ||
-        sixel_aborttrace_match_token(value, "off")) {
+    if (strcmp(value, "0") == 0) {
         free(value);
         return 0;
-    }
-
-    if (sixel_aborttrace_match_token(value, "1") ||
-        sixel_aborttrace_match_token(value, "true") ||
-        sixel_aborttrace_match_token(value, "on") ||
-        sixel_aborttrace_match_token(value, "yes")) {
-        free(value);
-        return 1;
     }
 
     free(value);
@@ -379,10 +320,7 @@ sixel_aborttrace_debug_enabled(void)
     enabled = 0;
     value = sixel_aborttrace_getenv_dup("ABORTTRACE_DEBUG");
     if (value != NULL) {
-        if (sixel_aborttrace_match_token(value, "1") ||
-            sixel_aborttrace_match_token(value, "true") ||
-            sixel_aborttrace_match_token(value, "on") ||
-            sixel_aborttrace_match_token(value, "yes")) {
+        if (strcmp(value, "1") == 0) {
             enabled = 1;
         }
         free(value);

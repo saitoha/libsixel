@@ -38,6 +38,7 @@
 #include "encoder.h"
 #include "frame.h"
 #include "gpu-palette.h"
+#include "options.h"
 #include "planner.h"
 #include "pixelformat.h"
 #include "threading.h"
@@ -829,7 +830,6 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     int queue_depth;
     int dither_env_override;
     int pin_threads;
-    int pin_env_override;
     int ncolors;
     int gpu_encode_only;
 
@@ -867,20 +867,10 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
         planner->loader_multiframe = 0;
     }
 
-    pin_threads = 1;
-    pin_env_override = 0;
-
-    text = sixel_compat_getenv("SIXEL_DITHER_PIN_THREADS");
-    if (text != NULL && text[0] != '\0') {
-        errno = 0;
-        parsed = strtol(text, &endptr, 10);
-        if (endptr != text && errno != ERANGE) {
-            pin_env_override = 1;
-            pin_threads = (parsed != 0) ? 1 : 0;
-        }
-    }
+    pin_threads = sixel_option_resolve_boolean_environment(
+        "SIXEL_DITHER_PIN_THREADS",
+        1);
     planner->pipeline_pin_threads = pin_threads;
-    (void)pin_env_override;
 
     height = sixel_frame_get_height(frame);
     width = sixel_frame_get_width(frame);

@@ -37,6 +37,7 @@
 #include "lookup-fhedt-8bit.h"
 #include "lookup-fhedt-float32.h"
 #include "lookup-policy-fhedt.h"
+#include "options.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 
@@ -185,34 +186,6 @@ sixel_lookup_policy_fhedt_from_base_const(
 }
 
 static int
-sixel_lookup_policy_fhedt_parse_flag(char const *text, int default_value)
-{
-    long parsed;
-    char *endptr;
-
-    parsed = 0L;
-    endptr = NULL;
-    if (text == NULL || text[0] == '\0') {
-        return default_value;
-    }
-
-    errno = 0;
-    parsed = strtol(text, &endptr, 10);
-    if (errno == ERANGE || endptr == text || *endptr != '\0') {
-        return default_value;
-    }
-
-    if (parsed == 0L) {
-        return 0;
-    }
-    if (parsed == 1L) {
-        return 1;
-    }
-
-    return default_value;
-}
-
-static int
 sixel_lookup_policy_fhedt_env_resolution(void)
 {
     char const *env;
@@ -243,32 +216,32 @@ sixel_lookup_policy_fhedt_env_resolution(void)
 static int
 sixel_lookup_policy_fhedt_env_refine(void)
 {
-    return sixel_lookup_policy_fhedt_parse_flag(
-        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_REFINE"),
+    return sixel_option_resolve_boolean_environment(
+        "SIXEL_LOOKUP_FHEDT_REFINE",
         1);
 }
 
 static int
 sixel_lookup_policy_fhedt_env_shared(void)
 {
-    return sixel_lookup_policy_fhedt_parse_flag(
-        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_SHARED"),
+    return sixel_option_resolve_boolean_environment(
+        "SIXEL_LOOKUP_FHEDT_SHARED",
         1);
 }
 
 static int
 sixel_lookup_policy_fhedt_env_use_dist2(void)
 {
-    return sixel_lookup_policy_fhedt_parse_flag(
-        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_USE_DIST2"),
+    return sixel_option_resolve_boolean_environment(
+        "SIXEL_LOOKUP_FHEDT_USE_DIST2",
         0);
 }
 
 static int
 sixel_lookup_policy_fhedt_env_use_cache(void)
 {
-    return sixel_lookup_policy_fhedt_parse_flag(
-        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_USE_CACHE"),
+    return sixel_option_resolve_boolean_environment(
+        "SIXEL_LOOKUP_FHEDT_USE_CACHE",
         0);
 }
 

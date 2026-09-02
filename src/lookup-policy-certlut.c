@@ -35,6 +35,7 @@
 
 #include "compat_stub.h"
 #include "lookup-policy-certlut.h"
+#include "options.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 #include "threading.h"
@@ -240,20 +241,9 @@ sixel_lookup_policy_certlut_from_base_const(
 static int
 sixel_lookup_policy_certlut_parse_shared_default_off(void)
 {
-    char const *env;
-
-    env = sixel_compat_getenv("SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE");
-    if (env == NULL || env[0] == '\0') {
-        return 0;
-    }
-    if (env[0] == '0' && env[1] == '\0') {
-        return 0;
-    }
-    if (env[0] == '1' && env[1] == '\0') {
-        return 1;
-    }
-
-    return 0;
+    return sixel_option_resolve_boolean_environment(
+        "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE",
+        0);
 }
 
 int

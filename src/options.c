@@ -1581,6 +1581,9 @@ sixel_option_parse_typed_suboption_value(
     }
 
     switch (key_def->value_kind) {
+    case SIXEL_SUBOPTION_VALUE_BOOLEAN:
+        valid = sixel_option_parse_boolean_text(text, &value->int_value);
+        break;
     case SIXEL_SUBOPTION_VALUE_INT:
         errno = 0;
         parsed_int = strtol(text, &endptr, 10);
@@ -1697,6 +1700,46 @@ sixel_option_parse_typed_suboption_value(
         sixel_helper_set_additional_message(message);
     }
     return SIXEL_BAD_ARGUMENT;
+}
+
+int
+sixel_option_parse_boolean_text(char const *text, int *value)
+{
+    if (text == NULL || value == NULL) {
+        return 0;
+    }
+    if (text[0] == '0' && text[1] == '\0') {
+        *value = 0;
+        return 1;
+    }
+    if (text[0] == '1' && text[1] == '\0') {
+        *value = 1;
+        return 1;
+    }
+
+    return 0;
+}
+
+int
+sixel_option_resolve_boolean_environment(char const *name, int fallback)
+{
+    char const *text;
+    int value;
+
+    text = NULL;
+    value = fallback ? 1 : 0;
+    if (name == NULL || name[0] == '\0') {
+        return value;
+    }
+    text = sixel_compat_getenv(name);
+    if (text == NULL || text[0] == '\0') {
+        return value;
+    }
+    if (!sixel_option_parse_boolean_text(text, &value)) {
+        return fallback ? 1 : 0;
+    }
+
+    return value;
 }
 
 static int

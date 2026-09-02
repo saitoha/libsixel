@@ -393,7 +393,7 @@ cover_check_ladder(void)
 }
 
 /*
- * cover_grow=on buys anchors with new slots instead of merging for them, so
+ * cover_grow=1 buys anchors with new slots instead of merging for them, so
  * the palette ends up larger than requested.  It is opt-in for exactly that
  * reason: a caller who named a color count because that is all their terminal
  * has must not be handed extra registers.
@@ -415,7 +415,7 @@ cover_check_grow(unsigned char const *pixels, sixel_allocator_t *allocator)
     }
     if (merged != COVER_COLORS) {
         fprintf(stderr,
-                "cover_grow=off changed the palette size to %u\n", merged);
+                "cover_grow=0 changed the palette size to %u\n", merged);
         goto end;
     }
 
@@ -427,12 +427,12 @@ cover_check_grow(unsigned char const *pixels, sixel_allocator_t *allocator)
     }
     if (grown <= merged) {
         fprintf(stderr,
-                "cover_grow=on did not grow the palette (%u -> %u)\n",
+                "cover_grow=1 did not grow the palette (%u -> %u)\n",
                 merged, grown);
         goto end;
     }
     if (grown > COVER_COLORS + SIXEL_PALETTE_COVER_ANCHOR_MAX) {
-        fprintf(stderr, "cover_grow=on overshot: %u entries\n", grown);
+        fprintf(stderr, "cover_grow=1 overshot: %u entries\n", grown);
         goto end;
     }
     if (cover_count_reached(cover_corner_list, 8u, palette, grown) != 8u
@@ -445,8 +445,8 @@ cover_check_grow(unsigned char const *pixels, sixel_allocator_t *allocator)
      * Near the ceiling there is room to grow for only a few anchors, and the
      * rest still have to be funded by merging.  Growing a 250-color palette
      * once bought seven corners and then stopped, losing the faces and edges
-     * that merging alone would have placed -- cover_grow=on came out strictly
-     * worse than cover_grow=off, which is the opposite of what it promises.
+     * that merging alone would have placed -- cover_grow=1 came out strictly
+     * worse than cover_grow=0, which is the opposite of what it promises.
      */
     cover_set_override(1, SIXEL_PALETTE_COVER_EDGES, 1);
     if (!cover_build_palette_n(SIXEL_QUANTIZE_MODEL_MEDIANCUT,
@@ -461,7 +461,7 @@ cover_check_grow(unsigned char const *pixels, sixel_allocator_t *allocator)
             || cover_count_reached(cover_edge_list, 12u, palette, grown)
                 != 12u) {
         fprintf(stderr,
-                "near the ceiling cover_grow=on placed only %u corners, "
+                "near the ceiling cover_grow=1 placed only %u corners, "
                 "%u faces, %u edges; the anchors that did not fit have to "
                 "fall back to merging\n",
                 cover_count_reached(cover_corner_list, 8u, palette, grown),

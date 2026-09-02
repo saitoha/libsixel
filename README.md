@@ -979,8 +979,8 @@ steps.
                            'core,b' expands to 'coregraphics,builtin'.
                            libpng/libjpeg/libwebp/coregraphics/builtin
                            accept
-                           :orientation=on|off
-                           (or :Oon/:Ooff, default on).
+                           :orientation=0|1
+                           (or :O0/:O1, default 1).
                            libpng/libjpeg/libwebp/libtiff/builtin
                            accept
                            :cms_engine=none|auto|builtin|lcms2|colorsync
@@ -1099,8 +1099,7 @@ SIXEL_6DELTA_ERROR         set default 6delta kept-pixel error handling.
                            overrided by -Y(--6delta-error) option.
 SIXEL_LOADER_ORIENTATION   default EXIF orientation handling for
                            libjpeg/libpng/libwebp loaders.
-                           Accepts on/off (preferred) and 1/0 aliases.
-                           Defaults to on.
+                           Accepts only 0/1. Defaults to 1.
 SIXEL_LOADER_LIBJPEG_ORIENTATION
                            override libjpeg EXIF orientation handling.
                            Overrides SIXEL_LOADER_ORIENTATION.
@@ -1481,11 +1480,10 @@ terminate via `abort(3)` while no other handler claimed `SIGABRT`.  The feature
 helps debugging regression reports without interfering with sanitizers or
 fuzzers that already replace the handler.
 
-The logic is enabled by default.  Set `SIXEL_ABORT_TRACE=0` or the legacy
-`SIXEL_NO_ABORT_TRACE=1` to disable it.  `SIXEL_ABORT_TRACE=1` forces the
-handler to install when the signal is otherwise unhandled, while
-`SIXEL_ABORT_TRACE=auto` defers to the build configuration.  Both variables are
-checked at process startup so per-invocation overrides are straightforward.
+The logic is enabled by default. `SIXEL_ABORT_TRACE` accepts only `0` or `1`:
+set it to `0` to disable the handler or `1` to enable it. Unset, empty, and
+invalid values retain the enabled default. The variable is checked at process
+startup so per-invocation overrides are straightforward.
 
 ## The high-level conversion API
 

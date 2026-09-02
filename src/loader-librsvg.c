@@ -56,6 +56,7 @@
 #include "frame-private.h"
 #include "frame-factory.h"
 #include "loader-common.h"
+#include "options.h"
 #include "status.h"
 
 typedef struct sixel_loader_librsvg_component {
@@ -286,87 +287,9 @@ librsvg_destroy_cairo_surface(cairo_surface_t **surface)
 }
 
 static int
-librsvg_span_equals_nocase(char const *value,
-                           size_t begin,
-                           size_t end,
-                           char const *token)
-{
-    size_t index;
-    size_t token_length;
-
-    index = 0u;
-    token_length = 0u;
-    if (value == NULL || token == NULL || end < begin) {
-        return 0;
-    }
-    token_length = strlen(token);
-    if (end - begin != token_length) {
-        return 0;
-    }
-
-    for (index = 0u; index < token_length; ++index) {
-        if (tolower((unsigned char)value[begin + index]) !=
-                tolower((unsigned char)token[index])) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-/*
- * Treat common textual false values as disabled flags.
- */
-static int
-librsvg_span_is_falsey(char const *value, size_t begin, size_t end)
-{
-    if (value == NULL || end <= begin) {
-        return 0;
-    }
-    if (librsvg_span_equals_nocase(value, begin, end, "0") ||
-            librsvg_span_equals_nocase(value, begin, end, "off") ||
-            librsvg_span_equals_nocase(value, begin, end, "false") ||
-            librsvg_span_equals_nocase(value, begin, end, "no")) {
-        return 1;
-    }
-    return 0;
-}
-
-static int
 librsvg_env_is_enabled(char const *name)
 {
-    char const *value;
-    size_t begin;
-    size_t end;
-
-    value = NULL;
-    begin = 0u;
-    end = 0u;
-    if (name == NULL) {
-        return 0;
-    }
-
-    value = sixel_compat_getenv(name);
-    if (value == NULL) {
-        return 0;
-    }
-    while (value[begin] != '\0' &&
-           isspace((unsigned char)value[begin]) != 0) {
-        ++begin;
-    }
-    end = begin;
-    while (value[end] != '\0') {
-        ++end;
-    }
-    while (end > begin && isspace((unsigned char)value[end - 1u]) != 0) {
-        --end;
-    }
-    if (end <= begin) {
-        return 0;
-    }
-    if (librsvg_span_is_falsey(value, begin, end)) {
-        return 0;
-    }
-    return 1;
+    return sixel_option_resolve_boolean_environment(name, 0);
 }
 
 static int

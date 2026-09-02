@@ -21,7 +21,7 @@ output=$(
 cr=$(printf '\r')
 test "${output%"${cr}"}" != "${output}" && output=${output%"${cr}"}
 
-test "${output}" = "binning=auto binbits=6 mapping=uniform softdist=trilinear autoratio=32 feedback=off" || {
+test "${output}" = "binning=auto binbits=6 mapping=uniform softdist=trilinear autoratio=32 feedback=0" || {
     echo "not ok" 1 - "unexpected kmeans histogram defaults: ${output}"
     exit 0
 }

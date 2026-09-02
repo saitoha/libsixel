@@ -56,6 +56,7 @@
 #include "compat_stub.h"
 #include "fromhdr.h"
 #include "loader-common.h"
+#include "options.h"
 
 typedef struct sixel_builtin_hdr_profile_hint {
     int has_format;
@@ -888,16 +889,11 @@ sixel_builtin_hdr_parse_tonemap_mode(
         return 0;
     }
     if (text == NULL || text[0] == '\0' ||
-        sixel_builtin_hdr_ascii_case_equal(text, "none") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "off") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "disabled") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "0")) {
+        sixel_builtin_hdr_ascii_case_equal(text, "none")) {
         *out_mode = SIXEL_BUILTIN_HDR_TONEMAP_NONE;
         return 1;
     }
-    if (sixel_builtin_hdr_ascii_case_equal(text, "reinhard") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "on") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "1")) {
+    if (sixel_builtin_hdr_ascii_case_equal(text, "reinhard")) {
         *out_mode = SIXEL_BUILTIN_HDR_TONEMAP_REINHARD;
         return 1;
     }
@@ -991,32 +987,6 @@ sixel_builtin_hdr_init_profile_trace(
     trace->fallback_profile_used = 0;
     trace->fallback_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
     trace->profile_apply_failed = 0;
-}
-
-static int
-sixel_builtin_hdr_parse_use_header_exposure(
-    char const *text,
-    int *out_enabled)
-{
-    if (out_enabled == NULL) {
-        return 0;
-    }
-    if (text == NULL || text[0] == '\0' ||
-        sixel_builtin_hdr_ascii_case_equal(text, "1") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "on") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "true") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "yes")) {
-        *out_enabled = 1;
-        return 1;
-    }
-    if (sixel_builtin_hdr_ascii_case_equal(text, "0") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "off") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "false") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "no")) {
-        *out_enabled = 0;
-        return 1;
-    }
-    return 0;
 }
 
 static int
@@ -1319,7 +1289,6 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
                                           *profile_trace)
 {
     char const *tonemap_text;
-    char const *use_header_exposure_text;
     char const *fallback_label;
     char const *gamma_label;
     char const *primaries_label;
@@ -1352,7 +1321,6 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
     int channel;
 
     tonemap_text = NULL;
-    use_header_exposure_text = NULL;
     fallback_label = NULL;
     gamma_label = "srgb";
     primaries_label = "srgb";
@@ -1476,16 +1444,9 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
     }
     exposure_scale = env_exposure_scale;
 
-    use_header_exposure_text = sixel_compat_getenv(
-        "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE");
-    if (!sixel_builtin_hdr_parse_use_header_exposure(use_header_exposure_text,
-                                                     &use_header_exposure)) {
-        loader_trace_message(
-            "builtin HDR: unknown SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE='%s'; "
-            "using on",
-            use_header_exposure_text);
-        use_header_exposure = 1;
-    }
+    use_header_exposure = sixel_option_resolve_boolean_environment(
+        "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+        1);
     exposure_mode = use_header_exposure ? "inverse" : "disabled";
 
     if (use_header_exposure &&

@@ -23,8 +23,8 @@ nl='
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=palette_contract \
     -p 16 \
-    -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
-    -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
+    -Qkmeans:seed=1:restarts=1:feedback=0:merge=auto \
+    -Qkmeans:seed=1:restarts=1:feedback=0:merge=ward \
     "${input_ppm}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 0 || {
@@ -54,8 +54,8 @@ status=0
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=palette_contract \
     -p 16 \
-    -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
-    -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
+    -Qkmeans:seed=1:restarts=1:feedback=0:merge=ward \
+    -Qkmeans:seed=1:restarts=1:feedback=0:merge=auto \
     "${input_ppm}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 0 || {

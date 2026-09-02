@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: falsey force-rgb token keeps animation decode on animation path.
+# TAP test: an empty force-rgb value behaves like an unset variable.
 
 set -eux
 
@@ -18,8 +18,8 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossy-8x8-2frame-min.webp"
-out_default="${ARTIFACT_LOCAL_DIR}/webp-anim-lossy-default-falsey-force-rgb.six"
-out_falsey="${ARTIFACT_LOCAL_DIR}/webp-anim-lossy-falsey-force-rgb.six"
+out_default="${ARTIFACT_LOCAL_DIR}/webp-anim-lossy-default-empty-force-rgb.six"
+out_empty="${ARTIFACT_LOCAL_DIR}/webp-anim-lossy-empty-force-rgb.six"
 
 msg_default=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >"${out_default}") || {
@@ -29,30 +29,30 @@ msg_default=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     exit 0
 }
 
-msg_falsey=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=n \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >"${out_falsey}") || {
-    echo "not ok" 1 - "falsey-force-rgb libwebp animation decode failed"
+msg_empty=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE='' \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >"${out_empty}") || {
+    echo "not ok" 1 - "empty-force-rgb libwebp animation decode failed"
     printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg_falsey}" >&2
+    printf '%s\n' "${msg_empty}" >&2
     exit 0
 }
 
-case "${msg_falsey}" in
+case "${msg_empty}" in
     *"animation background source=none"*"finalize frame_no=0 "*"finalize frame_no=1 "*)
         ;;
     *)
-        echo "not ok" 1 - "falsey-force-rgb animation trace missing expected animation markers"
+        echo "not ok" 1 - "empty-force-rgb trace lacks animation markers"
         printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg_falsey}" >&2
+        printf '%s\n' "${msg_empty}" >&2
         exit 0
         ;;
 esac
 
-case "${msg_falsey}" in
+case "${msg_empty}" in
     *"static decode path="*)
-        echo "not ok" 1 - "falsey-force-rgb animation trace unexpectedly reported static decode path"
+        echo "not ok" 1 - "empty-force-rgb trace reported static path"
         printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg_falsey}" >&2
+        printf '%s\n' "${msg_empty}" >&2
         exit 0
         ;;
     *)
@@ -70,10 +70,10 @@ case "${msg_default}" in
         ;;
 esac
 
-cmp -s "${out_default}" "${out_falsey}" || {
-    echo "not ok" 1 - "falsey-force-rgb unexpectedly changed libwebp animation output"
+cmp -s "${out_default}" "${out_empty}" || {
+    echo "not ok" 1 - "empty-force-rgb changed libwebp animation output"
     exit 0
 }
 
-echo "ok" 1 - "falsey force-rgb keeps animation trace/output behavior unchanged"
+echo "ok" 1 - "empty force-rgb value behaves like an unset variable"
 exit 0

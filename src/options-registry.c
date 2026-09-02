@@ -91,6 +91,20 @@
         } \
     }
 
+#define SIXEL_REGISTRY_BOUND_BOOLEAN( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, target_, type_, \
+    field_) \
+    { \
+        (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
+        (legacy_), SIXEL_SUBOPTION_VALUE_BOOLEAN, NULL, 0u, NULL, 0u, 0.0, \
+        1.0, 1, 1, 1, 0, "boolean suboption must be 0 or 1.", NULL, \
+        { \
+            (target_), SIXEL_SUBOPTION_STORAGE_INT, \
+            offsetof(type_, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
+        } \
+    }
+
 #define SIXEL_REGISTRY_NUMBER( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, kind_, \
     minimum_, maximum_, has_minimum_, has_maximum_, allow_zero_, message_, \
@@ -202,6 +216,21 @@
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), (environment_choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(environment_choices_), 0.0, 0.0, 0, \
         0, 0, 0, NULL, NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
+            offsetof(sixel_encoder_t, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
+            offsetof(sixel_encoder_t, override_), \
+            SIXEL_SUBOPTION_OFFSET_NONE \
+        } \
+    }
+
+#define SIXEL_REGISTRY_ENCODER_BOOLEAN( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, field_, \
+    override_) \
+    { \
+        (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
+        (legacy_), SIXEL_SUBOPTION_VALUE_BOOLEAN, NULL, 0u, NULL, 0u, 0.0, \
+        1.0, 1, 1, 1, 0, "boolean suboption must be 0 or 1.", NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
             offsetof(sixel_encoder_t, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
@@ -582,11 +611,6 @@ static sixel_suboption_choice_t const g_stbn_source_environment_choices[] = {
     { "stbn-mask", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_MASK }
 };
 
-static sixel_suboption_choice_t const g_toggle_01_choices[] = {
-    { "0", 0 },
-    { "1", 1 }
-};
-
 static sixel_suboption_choice_t const g_diffusion_scan_choices[] = {
     { "auto", SIXEL_SCAN_AUTO },
     { "serpentine", SIXEL_SCAN_SERPENTINE },
@@ -641,11 +665,6 @@ static sixel_suboption_choice_t const g_kmeans_mapping_choices[] = {
 
 static sixel_suboption_choice_t const g_kmeans_softdist_choices[] = {
     { "trilinear", SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR }
-};
-
-static sixel_suboption_choice_t const g_kmeans_feedback_choices[] = {
-    { "off", SIXEL_PALETTE_KMEANS_FEEDBACK_OFF },
-    { "on", SIXEL_PALETTE_KMEANS_FEEDBACK_ON }
 };
 
 static sixel_suboption_choice_t const g_kmeans_prune_choices[] = {
@@ -709,13 +728,7 @@ static sixel_suboption_choice_t const g_palette_cover_choices[] = {
     { "faces", SIXEL_PALETTE_COVER_FACES },
     { "edges", SIXEL_PALETTE_COVER_EDGES },
     { "all", SIXEL_PALETTE_COVER_EDGES },
-    { "auto", SIXEL_PALETTE_COVER_AUTO },
-    { "on", SIXEL_PALETTE_COVER_AUTO }
-};
-
-static sixel_suboption_choice_t const g_palette_cover_grow_choices[] = {
-    { "off", 0 },
-    { "on", 1 }
+    { "auto", SIXEL_PALETTE_COVER_AUTO }
 };
 
 static sixel_suboption_choice_t const g_palette_cover_mode_choices[] = {
@@ -733,11 +746,6 @@ static sixel_suboption_choice_t const g_heckbert_profile_choices[] = {
     { "compat", SIXEL_HECKBERT_PROFILE_COMPAT },
     { "speed", SIXEL_HECKBERT_PROFILE_SPEED },
     { "quality", SIXEL_HECKBERT_PROFILE_QUALITY }
-};
-
-static sixel_suboption_choice_t const g_lookup_shared_choices[] = {
-    { "0", 0 },
-    { "1", 1 }
 };
 
 static sixel_suboption_choice_t const g_loader_cms_engine_choices[] = {
@@ -765,17 +773,6 @@ static sixel_suboption_choice_t const g_loader_bmp_environment_choices[] = {
     { "0", SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO },
     { "1", SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_WINDOWS },
     { "2", SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2 }
-};
-
-static sixel_suboption_choice_t const g_loader_orientation_choices[] = {
-    { "on", 1 },
-    { "off", 0 }
-};
-
-static sixel_suboption_choice_t const
-g_loader_orientation_environment_choices[] = {
-    { "1", 1 },
-    { "0", 0 }
 };
 
 /*
@@ -843,44 +840,44 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-d stbn:strength must be in range 0.0-2.0.",
         interframe_noise_strength_u8,
         interframe_noise_strength_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
         "motion_adapt", 'M', SIXEL_DITHER_STBN_MOTION_ADAPT_ENVVAR,
-        NULL, NULL, g_toggle_01_choices,
+        NULL, NULL,
         stbn_motion_adapt_enabled, stbn_motion_adapt_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
         "scene_cut_reset", 'C',
         SIXEL_DITHER_STBN_SCENE_CUT_RESET_ENVVAR,
-        NULL, NULL, g_toggle_01_choices,
+        NULL, NULL,
         stbn_scene_cut_reset_enabled, stbn_scene_cut_reset_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
         "scene_detect", 'E', SIXEL_DITHER_STBN_SCENE_DETECT_ENVVAR,
-        NULL, NULL, g_toggle_01_choices,
+        NULL, NULL,
         stbn_scene_detect_enabled, stbn_scene_detect_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
         "alpha_guard", 'A', SIXEL_DITHER_STBN_ALPHA_GUARD_ENVVAR,
-        NULL, NULL, g_toggle_01_choices,
+        NULL, NULL,
         stbn_alpha_guard_enabled, stbn_alpha_guard_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
         "perceptual_weight", 'P',
         SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT_ENVVAR,
-        NULL, NULL, g_toggle_01_choices,
+        NULL, NULL,
         stbn_perceptual_weight_enabled,
         stbn_perceptual_weight_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
         "fastpath", 'F', SIXEL_DITHER_STBN_FASTPATH_ENVVAR,
-        NULL, NULL, g_toggle_01_choices,
+        NULL, NULL,
         stbn_fastpath_enabled, stbn_fastpath_override),
     SIXEL_REGISTRY_ENCODER_FLOAT(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
@@ -948,10 +945,9 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "cover", 'C', "SIXEL_PALETTE_COVER", NULL, NULL,
         g_palette_cover_choices,
         quantize_model_cover, quantize_model_cover_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
         "cover_grow", 'V', "SIXEL_PALETTE_COVER_GROW", NULL, NULL,
-        g_palette_cover_grow_choices,
         quantize_model_cover_grow, quantize_model_cover_grow_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
@@ -1015,11 +1011,10 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q autoratio must be in range 1-1048576.",
         quantize_model_kmeans_autoratio,
         quantize_model_kmeans_autoratio_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "feedback", 'F', "SIXEL_PALETTE_KMEANS_FEEDBACK", NULL, NULL,
-        g_kmeans_feedback_choices,
         quantize_model_kmeans_feedback_mode,
         quantize_model_kmeans_feedback_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
@@ -1210,11 +1205,10 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q prune_mass must be in range 0.900-1.000.",
         quantize_model_kmedoids_prune_mass,
         quantize_model_kmedoids_prune_mass_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "auction", 'Q', "SIXEL_PALETTE_KMEDOIDS_AUCTION", NULL, NULL,
-        g_toggle_01_choices,
         quantize_model_kmedoids_auction,
         quantize_model_kmedoids_auction_override),
     SIXEL_REGISTRY_ENCODER_UINT(
@@ -1376,25 +1370,25 @@ static sixel_suboption_key_t const g_suboptions[] = {
         quantize_model_kcenter_swap_min_gain,
         quantize_model_kcenter_swap_min_gain_override),
 
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
         g_lookup_values + SIXEL_LOOKUP_BASE_5BIT,
         "shared_instance", 'S', "SIXEL_LOOKUP_5BIT_SHARED_INSTANCE",
-        NULL, NULL, g_lookup_shared_choices,
+        NULL, NULL,
         lut_policy_shared_instance,
         lut_policy_shared_instance_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
         g_lookup_values + SIXEL_LOOKUP_BASE_6BIT,
         "shared_instance", 'S', "SIXEL_LOOKUP_6BIT_SHARED_INSTANCE",
-        NULL, NULL, g_lookup_shared_choices,
+        NULL, NULL,
         lut_policy_shared_instance,
         lut_policy_shared_instance_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
         g_lookup_values + SIXEL_LOOKUP_BASE_CERTLUT,
         "shared_instance", 'S', "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE",
-        NULL, NULL, g_lookup_shared_choices,
+        NULL, NULL,
         lut_policy_shared_instance,
         lut_policy_shared_instance_override),
 
@@ -1408,12 +1402,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_SUBOPTION_TARGET_LOADER,
         sixel_loader_suboptions_t,
         libpng_cms_engine),
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_BOUND_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBPNG,
         "orientation", 'O', "SIXEL_LOADER_LIBPNG_ORIENTATION",
-        "SIXEL_LOADER_ORIENTATION", NULL, g_loader_orientation_choices,
-        g_loader_orientation_environment_choices,
+        "SIXEL_LOADER_ORIENTATION", NULL,
         SIXEL_SUBOPTION_TARGET_LOADER,
         sixel_loader_suboptions_t,
         libpng_enable_orientation),
@@ -1428,12 +1421,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_SUBOPTION_TARGET_LOADER,
         sixel_loader_suboptions_t,
         libjpeg_cms_engine),
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_BOUND_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBJPEG,
         "orientation", 'O', "SIXEL_LOADER_LIBJPEG_ORIENTATION",
-        "SIXEL_LOADER_ORIENTATION", NULL, g_loader_orientation_choices,
-        g_loader_orientation_environment_choices,
+        "SIXEL_LOADER_ORIENTATION", NULL,
         SIXEL_SUBOPTION_TARGET_LOADER,
         sixel_loader_suboptions_t,
         libjpeg_enable_orientation),
@@ -1448,23 +1440,21 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_SUBOPTION_TARGET_LOADER,
         sixel_loader_suboptions_t,
         libwebp_cms_engine),
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_BOUND_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBWEBP,
         "orientation", 'O', "SIXEL_LOADER_LIBWEBP_ORIENTATION",
-        "SIXEL_LOADER_ORIENTATION", NULL, g_loader_orientation_choices,
-        g_loader_orientation_environment_choices,
+        "SIXEL_LOADER_ORIENTATION", NULL,
         SIXEL_SUBOPTION_TARGET_LOADER,
         sixel_loader_suboptions_t,
         libwebp_enable_orientation),
 #endif
 #if HAVE_COREGRAPHICS
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_BOUND_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_COREGRAPHICS,
         "orientation", 'O', "SIXEL_LOADER_COREGRAPHICS_ORIENTATION",
-        "SIXEL_LOADER_ORIENTATION", NULL, g_loader_orientation_choices,
-        g_loader_orientation_environment_choices,
+        "SIXEL_LOADER_ORIENTATION", NULL,
         SIXEL_SUBOPTION_TARGET_LOADER,
         sixel_loader_suboptions_t,
         coregraphics_enable_orientation),
@@ -1489,12 +1479,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_SUBOPTION_TARGET_LOADER,
         sixel_loader_suboptions_t,
         builtin_cms_engine),
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_BOUND_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
         "orientation", 'O', "SIXEL_LOADER_BUILTIN_ORIENTATION",
-        "SIXEL_LOADER_ORIENTATION", NULL, g_loader_orientation_choices,
-        g_loader_orientation_environment_choices,
+        "SIXEL_LOADER_ORIENTATION", NULL,
         SIXEL_SUBOPTION_TARGET_LOADER,
         sixel_loader_suboptions_t,
         builtin_enable_orientation),
@@ -1729,6 +1718,14 @@ sixel_option_registry_validate(void)
                 }
                 if (key->environment_choice_count > 0u &&
                     key->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE) {
+                    return 0;
+                }
+                if (key->value_kind == SIXEL_SUBOPTION_VALUE_BOOLEAN &&
+                    (key->choices != NULL || key->choice_count != 0u ||
+                     key->environment_choices != NULL ||
+                     key->environment_choice_count != 0u ||
+                     key->binding.storage_kind !=
+                         SIXEL_SUBOPTION_STORAGE_INT)) {
                     return 0;
                 }
                 if (key->environment_clamp_maximum &&

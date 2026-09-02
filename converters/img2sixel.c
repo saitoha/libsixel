@@ -236,9 +236,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                       contains the previous.  the face centers\n"
         "                       matter more than the edge midpoints, which is\n"
         "                       why faces is the middle rung.\n"
-        "        :cover_grow=on|off  default off.  off funds each anchor by\n"
+        "        :cover_grow=0|1  default 0.  0 funds each anchor by\n"
         "                       merging the closest pair, so -p N still\n"
-        "                       yields N colors.  on appends the anchors\n"
+        "                       yields N colors.  1 appends the anchors\n"
         "                       instead, exceeding N by up to 26.\n"
         "        :cover_mode=soft|hard  default soft, which puts the same\n"
         "                       lattice on the extent of the colors actually\n"
@@ -275,9 +275,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "              trilinear -> trilinear kernel\n"
         "          :autoratio=RATIO (:RRATIO) auto mode threshold ratio "
         "(1-1048576, default 32).\n"
-        "          :feedback=MODE (:FMODE) residual histogram feedback:\n"
-        "              off -> disable feedback (default)\n"
-        "              on  -> enable feedback\n"
+        "          :feedback=0|1 (:F0 or :F1) residual histogram feedback;\n"
+        "              0 disables feedback (default), 1 enables it.\n"
         "          :prune=POLICY k-means pruning policy:\n"
         "              auto    -> choose Hamerly pruning (default)\n"
         "              none    -> disable pruning\n"
@@ -828,8 +827,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "-L LIST, --loaders=LIST\n"
         "    choose loader priority order LIST is a comma separated list of loader names (prefixes\n"
         "    accepted). libpng/libjpeg/libwebp/coregraphics/builtin support\n"
-        "                               :orientation=on|off (or "
-        ":Oon/:Ooff, default on).\n"
+        "                               :orientation=0|1 (or "
+        ":O0/:O1, default 1).\n"
         "                               libpng/libjpeg/libwebp/libtiff/builtin support\n"
         "                               :cms_engine=none|auto|builtin|lcms2|"
         "colorsync (or :Evalue,\n"
@@ -1041,13 +1040,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_ABORT_TRACE",
         "dump abort backtraces when img2sixel terminates abnormally.\n"
-        "Defaults to auto (enabled). Set to 0/false/off to disable explicit\n"
-        "traces; truthy values force them on."
-    },
-    {
-        "SIXEL_NO_ABORT_TRACE",
-        "legacy inverse toggle for abort tracing. Any non-zero/true value\n"
-        "suppresses dumps while 0/false/off keeps tracing enabled."
+        "Accepts only 0/1. Unset, empty, invalid, and 1 enable tracing;\n"
+        "0 disables it."
     },
     {
         "SIXEL_BGCOLOR",
@@ -1100,8 +1094,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_FLOAT32_DITHER",
-        "prefer the float32 quantization path. Any non-zero/true string\n"
-        "enables it while 0, off, false, or no keep the 8-bit pipeline."
+        "prefer the float32 quantization path. Accepts only 0/1.\n"
+        "1 enables it; unset, empty, invalid, and 0 keep the 8-bit path."
     },
     {
         "SIXEL_DEQUANTIZE_LSO_VARIANT",
@@ -1314,32 +1308,32 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_ORIENTATION",
         "default EXIF orientation handling for libjpeg/libpng/libwebp/\n"
         "builtin loaders.\n"
-        "Accepts on/off (preferred) and 1/0 aliases. Defaults to on."
+        "Accepts only 0/1. Defaults to 1."
     },
     {
         "SIXEL_LOADER_LIBJPEG_ORIENTATION",
         "override EXIF orientation handling for libjpeg loader only.\n"
-        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
+        "Accepts only 0/1. Overrides SIXEL_LOADER_ORIENTATION."
     },
     {
         "SIXEL_LOADER_LIBPNG_ORIENTATION",
         "override EXIF orientation handling for libpng loader only.\n"
-        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
+        "Accepts only 0/1. Overrides SIXEL_LOADER_ORIENTATION."
     },
     {
         "SIXEL_LOADER_LIBWEBP_ORIENTATION",
         "override EXIF orientation handling for libwebp loader only.\n"
-        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
+        "Accepts only 0/1. Overrides SIXEL_LOADER_ORIENTATION."
     },
     {
         "SIXEL_LOADER_BUILTIN_ORIENTATION",
         "override EXIF orientation handling for builtin loader only.\n"
-        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
+        "Accepts only 0/1. Overrides SIXEL_LOADER_ORIENTATION."
     },
     {
         "SIXEL_LOADER_COREGRAPHICS_ORIENTATION",
         "override orientation handling for coregraphics loader only.\n"
-        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
+        "Accepts only 0/1. Overrides SIXEL_LOADER_ORIENTATION."
     },
     {
         "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES",
@@ -1364,7 +1358,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
         "force lossy WebP inputs through the legacy RGB decode path instead\n"
         "of the default YUV float32 pipeline. Intended for tests and\n"
-        "regression debugging; values beginning with 1/y/t enable it."
+        "regression debugging; accepts only 0/1."
     },
     {
         "SIXEL_LOADER_CMS_RENDERING_INTENT",
@@ -1404,12 +1398,12 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES",
         "allow librsvg file-path decode so local relative external assets\n"
-        "can resolve. Unset/0/off/false/no keep byte-only mode."
+        "can resolve. Accepts only 0/1; 1 enables file-path mode."
     },
     {
         "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ",
         "allow librsvg to decode gzip-compressed SVG from stdin/pipe by\n"
-        "spooling input to a temporary .svgz file first."
+        "spooling input to a temporary .svgz file first. Accepts only 0/1."
     },
     {
         "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_OPEN",
@@ -1461,7 +1455,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
         "control whether builtin HDR applies Radiance EXPOSURE metadata.\n"
-        "Accepts 1/on/true/yes (default) or 0/off/false/no."
+        "Accepts only 0/1; unset, empty, or invalid uses the default 1."
     },
     {
         "SIXEL_LOADER_HDR_TONEMAP",
@@ -1525,12 +1519,12 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_COVER",
         "select palette coverage anchoring: off, corners, faces, edges,\n"
-        "all, auto, or on. The default is auto."
+        "all, or auto. The default is auto."
     },
     {
         "SIXEL_PALETTE_COVER_GROW",
         "allow coverage anchors to exceed the requested palette size.\n"
-        "Non-zero values enable growth; the default keeps the size fixed."
+        "Accepts only 0/1. The default 0 keeps the size fixed."
     },
     {
         "SIXEL_PALETTE_COVER_MODE",
@@ -1595,8 +1589,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_KMEANS_FEEDBACK",
-        "k-means residual histogram feedback switch: off or on\n"
-        "(default off)."
+        "k-means residual histogram feedback switch: 0 or 1\n"
+        "(default 0)."
     },
     {
         "SIXEL_PALETTE_KMEANS_PRUNE",
@@ -1857,8 +1851,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_DISABLE_TABLES",
         "disable palette expansion lookup tables and exercise the\n"
-        "shift-based fallback used for testing. Non-zero values skip table\n"
-        "initialisation."
+        "shift-based fallback used for testing. Accepts only 0/1; 1 skips\n"
+        "table initialisation."
     },
     {
         "SIXEL_DITHER_LOOKUP_POLICY",

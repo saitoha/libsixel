@@ -63,6 +63,7 @@
 #include "palette-kmeans-build.h"
 #include "palette-private.h"
 #include "palette.h"
+#include "options.h"
 #include "pixelformat.h"
 #include "status.h"
 #include "timer.h"
@@ -1009,12 +1010,10 @@ sixel_set_kmeans_feedback_mode_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmeans_feedback_mode
 sixel_get_kmeans_feedback_mode(void)
 {
-    char const *env_value;
     static int loaded = 0;
     static sixel_kmeans_feedback_mode cached
         = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
 
-    env_value = NULL;
     if (sixel_kmeans_feedback_mode_override_enabled) {
         return sixel_kmeans_feedback_mode_override_value;
     }
@@ -1022,15 +1021,10 @@ sixel_get_kmeans_feedback_mode(void)
         return cached;
     }
     loaded = 1;
-
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_FEEDBACK");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (sixel_compat_strcasecmp(env_value, "on") == 0) {
-            cached = SIXEL_PALETTE_KMEANS_FEEDBACK_ON;
-        } else if (sixel_compat_strcasecmp(env_value, "off") == 0) {
-            cached = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
-        }
-    }
+    cached = (sixel_kmeans_feedback_mode)
+        sixel_option_resolve_boolean_environment(
+            "SIXEL_PALETTE_KMEANS_FEEDBACK",
+            SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
 
     return cached;
 }

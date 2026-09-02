@@ -111,6 +111,13 @@ The \fBauto\fP and \fBheckbert\fP base values accept suboptions:
 .br
 \fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
 .br
+\fBcover\fP (short form \fBCSET\fP): \fBoff\fP, \fBcorners\fP,
+\fBfaces\fP, \fBedges\fP, \fBall\fP, or \fBauto\fP.
+.br
+\fBcover_grow\fP (short form \fBV0\fP or \fBV1\fP): 0 or 1.
+.br
+\fBcover_mode\fP (short form \fBWMODE\fP): \fBsoft\fP or \fBhard\fP.
+.br
 The \fBcenter\fP base value accepts suboptions using
 \fBcenter:key=value[:key=value...]\fP.
 .br
@@ -183,7 +190,7 @@ Supported k-means suboptions:
 .br
 \fBautoratio\fP (short form \fBRRATIO\fP): integer value in 1-1048576.
 .br
-\fBfeedback\fP (short form \fBFMODE\fP): \fBoff\fP or \fBon\fP.
+\fBfeedback\fP (short form \fBF0\fP or \fBF1\fP): 0 or 1.
 .br
 \fBprune\fP: \fBauto\fP, \fBnone\fP, \fBhamerly\fP, \fBelkan\fP, or
 \fByinyang\fP.
@@ -806,7 +813,7 @@ choose the loader priority order. \fILIST\fP is a comma separated
 sequence of loader names. Each entry may be abbreviated by a unique prefix,
 and a trailing "!" disables fallback loaders. The libpng, libjpeg, libwebp,
 coregraphics, and builtin loaders accept
-\fBorientation=on|off\fP (short form \fBOon\fP or \fBOoff\fP, default on).
+\fBorientation=0|1\fP (short form \fBO0\fP or \fBO1\fP, default 1).
 The libpng, libjpeg, libwebp, libtiff, and builtin loaders accept
 \fBcms_engine=none|auto|builtin|lcms2|colorsync\fP (short form \fBEvalue\fP,
 default none).
@@ -1066,14 +1073,8 @@ is helpful for testing the workflow inside disposable directories.
 .TP 5
 .B SIXEL_ABORT_TRACE
 .br
-dump abort backtraces when \fIimg2sixel\fP terminates abnormally. Defaults to
-auto (enabled). Set to "0"/"false"/"off" to disable explicit traces; any other
-non-empty value forces them on.
-.TP 5
-.B SIXEL_NO_ABORT_TRACE
-.br
-legacy inverse toggle for abort tracing. Any non-zero/true value suppresses
-dumps while "0"/"false"/"off" keeps tracing enabled.
+dump abort backtraces when \fIimg2sixel\fP terminates abnormally. Only 0 and 1
+are accepted. Unset, empty, invalid, and 1 enable tracing; 0 disables it.
 .TP 5
 .B SIXEL_BGCOLOR
 .br
@@ -1128,8 +1129,8 @@ overrided by -p(--colors) option.
 .TP 5
 .B SIXEL_FLOAT32_DITHER
 .br
-prefer the float32 quantization path. Any non-empty string other than 0, off,
-false, or no enables the high-precision pipeline.
+prefer the float32 quantization path. Only 0 and 1 are accepted. 1 enables the
+high-precision pipeline; unset, empty, invalid, and 0 keep the 8-bit pipeline.
 .br
 For SVG decoded via \fBlibrsvg\fP, the source raster remains cairo ARGB32
 (8-bit per channel); float32 improves downstream processing precision but does
@@ -1355,27 +1356,36 @@ overrided by \fB-Y\fP/\fB--6delta-error\fP.
 .B SIXEL_LOADER_ORIENTATION
 .br
 set the default EXIF orientation handling for libjpeg/libpng/libwebp/
-builtin loaders. Accepts "on"/"off" (preferred) and "1"/"0" aliases.
-defaults to on.
+builtin loaders. Accepts only "0" or "1" and defaults to "1".
 .TP 5
 .B SIXEL_LOADER_LIBJPEG_ORIENTATION
 .br
 override EXIF orientation handling for the libjpeg loader.
+Accepts only "0" or "1".
 overrides \fBSIXEL_LOADER_ORIENTATION\fP.
 .TP 5
 .B SIXEL_LOADER_LIBPNG_ORIENTATION
 .br
 override EXIF orientation handling for the libpng loader.
+Accepts only "0" or "1".
 overrides \fBSIXEL_LOADER_ORIENTATION\fP.
 .TP 5
 .B SIXEL_LOADER_LIBWEBP_ORIENTATION
 .br
 override EXIF orientation handling for the libwebp loader.
+Accepts only "0" or "1".
 overrides \fBSIXEL_LOADER_ORIENTATION\fP.
 .TP 5
 .B SIXEL_LOADER_BUILTIN_ORIENTATION
 .br
 override EXIF orientation handling for the builtin loader.
+Accepts only "0" or "1".
+overrides \fBSIXEL_LOADER_ORIENTATION\fP.
+.TP 5
+.B SIXEL_LOADER_COREGRAPHICS_ORIENTATION
+.br
+override orientation handling for the CoreGraphics loader.
+Accepts only "0" or "1".
 overrides \fBSIXEL_LOADER_ORIENTATION\fP.
 .TP 5
 .B SIXEL_LOADER_ANIMATION_START_FRAME_NO
@@ -1386,6 +1396,26 @@ negative values count from the end; \-1 selects the last frame.
 out-of-range indexes fail with an error.
 the index is applied only on the first playback loop, and later loops
 decode from frame 0.
+.TP 5
+.B SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE
+.br
+force lossy WebP input through the legacy RGB decode path. Accepts only
+"0" or "1"; unset, empty, invalid, and "0" keep the default YUV path.
+.TP 5
+.B SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES
+.br
+allow librsvg file-path decode so local relative resources can resolve.
+Accepts only "0" or "1"; "1" enables file-path decode.
+.TP 5
+.B SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ
+.br
+allow librsvg to spool gzip-compressed SVG input from stdin to a temporary
+file. Accepts only "0" or "1"; "1" enables spooling.
+.TP 5
+.B SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE
+.br
+control whether builtin HDR decode applies Radiance EXPOSURE metadata.
+Accepts only "0" or "1"; unset, empty, or invalid uses the default "1".
 .TP 5
 .B SIXEL_LOADER_CMS_ENGINE
 .br
@@ -1460,6 +1490,11 @@ default 1.81).
 run Lloyd refinement after the final merge stage. Accepts 0-30.
 Defaults to 3 iterations.
 .TP 5
+.B SIXEL_PALETTE_COVER_GROW
+.br
+allow coverage anchors to exceed the requested palette size. Accepts only
+0 or 1; the default 0 keeps the requested size fixed.
+.TP 5
 .B SIXEL_PALETTE_HECKBERT_PROFILE
 .br
 select the Heckbert preset: compat, speed, or quality.
@@ -1500,7 +1535,7 @@ k-means auto-binning density ratio threshold (1-1048576, default 32).
 .TP 5
 .B SIXEL_PALETTE_KMEANS_FEEDBACK
 .br
-k-means residual histogram feedback switch: off or on (default off).
+k-means residual histogram feedback switch: 0 or 1 (default 0).
 .TP 5
 .B SIXEL_PALETTE_KMEANS_PRUNE
 .br
@@ -1721,7 +1756,7 @@ emphasise L* weight during final merge distances independently of snap tuning
 .B SIXEL_PALETTE_DISABLE_TABLES
 .br
 disable palette expansion lookup tables and exercise the shift-based fallback
-used for testing. Non-zero values skip table initialisation.
+used for testing. Only 0 and 1 are accepted; 1 skips table initialisation.
 .TP 5
 .B SIXEL_PALETTE_SNAP_TARGET_POLICY
 .br

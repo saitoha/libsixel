@@ -24,13 +24,13 @@ short_output="${artifact_dir}/0090-loader-libwebp-orientation-short.six"
 env_output="${artifact_dir}/0090-loader-libwebp-orientation-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibwebp:Ooff!" "${input_image}" -o "${short_output}" || {
+    "-Llibwebp:O0!" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "libwebp:orientation short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_LIBWEBP_ORIENTATION=off" "-Llibwebp!" \
+    --env "SIXEL_LOADER_LIBWEBP_ORIENTATION=0" "-Llibwebp!" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "libwebp:orientation env conversion failed"
     exit 0

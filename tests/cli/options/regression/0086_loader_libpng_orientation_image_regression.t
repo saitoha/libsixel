@@ -24,13 +24,13 @@ short_output="${artifact_dir}/0086-loader-libpng-orientation-short.six"
 env_output="${artifact_dir}/0086-loader-libpng-orientation-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibpng:Ooff!" "${input_image}" -o "${short_output}" || {
+    "-Llibpng:O0!" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "libpng:orientation short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_LIBPNG_ORIENTATION=off" "-Llibpng!" \
+    --env "SIXEL_LOADER_LIBPNG_ORIENTATION=0" "-Llibpng!" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "libpng:orientation env conversion failed"
     exit 0

@@ -89,10 +89,10 @@ test_sixel_kmeans_feedback_mode_to_string(sixel_kmeans_feedback_mode mode)
 {
     switch (mode) {
     case SIXEL_PALETTE_KMEANS_FEEDBACK_ON:
-        return "on";
+        return "1";
     case SIXEL_PALETTE_KMEANS_FEEDBACK_OFF:
     default:
-        return "off";
+        return "0";
     }
 }
 

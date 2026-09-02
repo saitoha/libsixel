@@ -282,6 +282,12 @@ FILENAME == registry_file {
     next
 }
 FILENAME != registry_file {
+    environment_first = ""
+    environment_position = 0
+    environment_needle = ""
+    short_first = ""
+    short_position = 0
+    short_needle = ""
     regression_test[FILENAME] = 1
     key = test_key[FILENAME]
     if (key == "") {
@@ -293,11 +299,25 @@ FILENAME != registry_file {
     if (index($0, "cmp -s") > 0) {
         has_compare[FILENAME] = 1
     }
-    if (index($0, "--env \"" expected_environment[key] "=") > 0) {
-        has_environment[FILENAME] = 1
+    environment_needle = "--env \"" expected_environment[key] "="
+    environment_position = index($0, environment_needle)
+    if (environment_position > 0) {
+        environment_value_index = environment_position + \
+            length(environment_needle)
+        environment_first = substr($0, environment_value_index, 1)
+        if (environment_first != "" && environment_first != "\"") {
+            has_environment[FILENAME] = 1
+        }
     }
-    if (index($0, ":" expected_alias[key]) > 0) {
-        has_short[FILENAME] = 1
+    short_needle = ":" expected_alias[key]
+    short_position = index($0, short_needle)
+    if (short_position > 0) {
+        short_value_index = short_position + length(short_needle)
+        short_first = substr($0, short_value_index, 1)
+        if (short_first != "" && short_first != "\"" &&
+                short_first != "," && short_first != ":") {
+            has_short[FILENAME] = 1
+        }
     }
     if (expected_option[key] == "SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL" &&
             $0 ~ /^[[:space:]]+/ && index($0, "-p ") > 0) {

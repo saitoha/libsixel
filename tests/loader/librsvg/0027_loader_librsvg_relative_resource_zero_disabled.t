@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming falsey relative-resource opt-in keeps default blocking.
+# TAP test confirming value 0 keeps relative-resource loading disabled.
 
 set -eux
 
@@ -20,12 +20,12 @@ svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-relative-image.svg"
 esc="$(printf '\033')"
 sixel_output=$(
     set +xv
-    SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES='  false  '
+    SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=0
     export SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -L librsvg! "${svg_path}"
 ) || {
-    echo "not ok" 1 - "relative-resource falsey env conversion failed"
+    echo "not ok" 1 - "relative-resource value 0 conversion failed"
     exit 0
 }
 
@@ -33,10 +33,10 @@ case "${sixel_output}" in
     "${esc}P0;0q"*)
         ;;
     *)
-        echo "not ok" 1 - "falsey opt-in unexpectedly enabled relative resource"
+        echo "not ok" 1 - "value 0 unexpectedly enabled relative resource"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "falsey relative-resource opt-in keeps blocking behavior"
+echo "ok" 1 - "value 0 keeps relative-resource loading disabled"
 exit 0

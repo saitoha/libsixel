@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: prefixed force-rgb token keeps animation decode on animation path.
+# TAP test: force-rgb value 0 keeps animation decode on the animation path.
 
 set -eux
 
@@ -18,8 +18,8 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossy-8x8-2frame-min.webp"
-out_default="${ARTIFACT_LOCAL_DIR}/webp-anim-lossy-default-prefixed-force-rgb.six"
-out_prefixed="${ARTIFACT_LOCAL_DIR}/webp-anim-lossy-prefixed-force-rgb.six"
+out_default="${ARTIFACT_LOCAL_DIR}/webp-anim-lossy-default-zero-force-rgb.six"
+out_zero="${ARTIFACT_LOCAL_DIR}/webp-anim-lossy-zero-force-rgb.six"
 
 msg_default=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >"${out_default}") || {
@@ -29,30 +29,30 @@ msg_default=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     exit 0
 }
 
-msg_prefixed=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=' true' \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >"${out_prefixed}") || {
-    echo "not ok" 1 - "prefixed-force-rgb libwebp animation decode failed"
+msg_zero=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=0 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >"${out_zero}") || {
+    echo "not ok" 1 - "zero-force-rgb libwebp animation decode failed"
     printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg_prefixed}" >&2
+    printf '%s\n' "${msg_zero}" >&2
     exit 0
 }
 
-case "${msg_prefixed}" in
+case "${msg_zero}" in
     *"animation background source=none"*"finalize frame_no=0 "*"finalize frame_no=1 "*)
         ;;
     *)
-        echo "not ok" 1 - "prefixed-force-rgb animation trace missing expected animation markers"
+        echo "not ok" 1 - "zero-force-rgb trace lacks animation markers"
         printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg_prefixed}" >&2
+        printf '%s\n' "${msg_zero}" >&2
         exit 0
         ;;
 esac
 
-case "${msg_prefixed}" in
+case "${msg_zero}" in
     *"static decode path="*)
-        echo "not ok" 1 - "prefixed-force-rgb animation trace unexpectedly reported static decode path"
+        echo "not ok" 1 - "zero-force-rgb trace reported static path"
         printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg_prefixed}" >&2
+        printf '%s\n' "${msg_zero}" >&2
         exit 0
         ;;
     *)
@@ -70,10 +70,10 @@ case "${msg_default}" in
         ;;
 esac
 
-cmp -s "${out_default}" "${out_prefixed}" || {
-    echo "not ok" 1 - "prefixed-force-rgb unexpectedly changed libwebp animation output"
+cmp -s "${out_default}" "${out_zero}" || {
+    echo "not ok" 1 - "zero-force-rgb changed libwebp animation output"
     exit 0
 }
 
-echo "ok" 1 - "prefixed force-rgb token keeps animation trace/output behavior unchanged"
+echo "ok" 1 - "force-rgb value 0 keeps animation behavior unchanged"
 exit 0

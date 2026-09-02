@@ -23,13 +23,13 @@ nl='
 
 SIXEL_TRACE_TOPIC=webp_decode
 export SIXEL_TRACE_TOPIC
-SIXEL_LOADER_BUILTIN_ORIENTATION=off
+SIXEL_LOADER_BUILTIN_ORIENTATION=0
 export SIXEL_LOADER_BUILTIN_ORIENTATION
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -S -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin static XMP fixture decode failed with orientation=off"
+    echo "not ok" 1 - "builtin static XMP fixture decode failed with orientation=0"
     exit 0
 }
 

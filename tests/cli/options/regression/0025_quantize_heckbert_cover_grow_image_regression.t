@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0025-quantize-heckbert-cover_grow-short.six"
 env_output="${artifact_dir}/0025-quantize-heckbert-cover_grow-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qheckbert:Ccorners:Von" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qheckbert:Ccorners:V1" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "heckbert:cover_grow short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_COVER_GROW=on" -p 16 "-Qheckbert:Ccorners" \
+    --env "SIXEL_PALETTE_COVER_GROW=1" -p 16 "-Qheckbert:Ccorners" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "heckbert:cover_grow env conversion failed"
     exit 0

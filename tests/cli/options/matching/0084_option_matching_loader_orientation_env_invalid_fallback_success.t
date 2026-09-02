@@ -20,14 +20,14 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png"
 
 ref_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng:orientation=on! "${input_png}" 2>/dev/null) || {
-    echo "not ok" 1 - "orientation=on reference decode failed"
+    -Llibpng:orientation=1! "${input_png}" 2>/dev/null) || {
+    echo "not ok" 1 - "orientation=1 reference decode failed"
     exit 0
 }
 
 ref_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng:orientation=off! "${input_png}" 2>/dev/null) || {
-    echo "not ok" 1 - "orientation=off reference decode failed"
+    -Llibpng:orientation=0! "${input_png}" 2>/dev/null) || {
+    echo "not ok" 1 - "orientation=0 reference decode failed"
     exit 0
 }
 
@@ -44,7 +44,7 @@ test "${out_invalid_global}" = "${ref_on}" || {
 }
 
 out_invalid_per_loader=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_ORIENTATION=off" \
+    --env "SIXEL_LOADER_ORIENTATION=0" \
     --env "SIXEL_LOADER_LIBPNG_ORIENTATION=invalid-token" \
     -Llibpng! "${input_png}" 2>/dev/null) || {
     echo "not ok" 1 - "invalid per-loader orientation env decode failed"

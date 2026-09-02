@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming falsey tempfile failpoints do not block stdin .svgz decode.
+# TAP test confirming value 0 keeps tempfile failpoints disabled.
 
 set -eux
 
@@ -21,16 +21,16 @@ esc="$(printf '\033')"
 sixel_output=$(
     set +xv
     SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1
-    SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_OPEN='  false  '
-    SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_WRITE='  false  '
-    SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_CLOSE='  false  '
+    SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_OPEN=0
+    SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_WRITE=0
+    SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_CLOSE=0
     export SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ
     export SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_OPEN
     export SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_WRITE
     export SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_CLOSE
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! - <"${svgz_path}"
 ) || {
-    echo "not ok" 1 - "falsey tempfile failpoints unexpectedly blocked decode"
+    echo "not ok" 1 - "value 0 tempfile failpoints blocked decode"
     exit 0
 }
 
@@ -43,5 +43,5 @@ case "${sixel_output}" in
         ;;
 esac
 
-echo "ok" 1 - "falsey tempfile failpoints remain disabled"
+echo "ok" 1 - "value 0 keeps tempfile failpoints disabled"
 exit 0

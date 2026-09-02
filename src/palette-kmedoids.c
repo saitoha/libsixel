@@ -60,6 +60,7 @@
 #include "palette-common-snap.h"
 #include "palette-kmedoids.h"
 #include "palette-private.h"
+#include "options.h"
 #include "pixelformat.h"
 #include "status.h"
 #include "timer.h"
@@ -949,42 +950,6 @@ sixel_kmedoids_parse_env_double(char const *env_name,
     }
 
     return parsed;
-}
-
-static int
-sixel_kmedoids_parse_env_bool(char const *env_name,
-                              int fallback)
-{
-    char const *env_value;
-
-    env_value = NULL;
-    if (env_name == NULL || env_name[0] == '\0') {
-        return fallback ? 1 : 0;
-    }
-
-    env_value = sixel_compat_getenv(env_name);
-    if (env_value == NULL || env_value[0] == '\0') {
-        return fallback ? 1 : 0;
-    }
-
-    if (sixel_compat_strcasecmp(env_value, "1") == 0
-            || sixel_compat_strcasecmp(env_value, "true") == 0
-            || sixel_compat_strcasecmp(env_value, "yes") == 0
-            || sixel_compat_strcasecmp(env_value, "on") == 0
-            || sixel_compat_strcasecmp(env_value, "enable") == 0
-            || sixel_compat_strcasecmp(env_value, "enabled") == 0) {
-        return 1;
-    }
-    if (sixel_compat_strcasecmp(env_value, "0") == 0
-            || sixel_compat_strcasecmp(env_value, "false") == 0
-            || sixel_compat_strcasecmp(env_value, "no") == 0
-            || sixel_compat_strcasecmp(env_value, "off") == 0
-            || sixel_compat_strcasecmp(env_value, "disable") == 0
-            || sixel_compat_strcasecmp(env_value, "disabled") == 0) {
-        return 0;
-    }
-
-    return fallback ? 1 : 0;
 }
 
 static int
@@ -4044,7 +4009,7 @@ sixel_kmedoids_get_auction_from_env(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_bool(
+    cached = sixel_option_resolve_boolean_environment(
         "SIXEL_PALETTE_KMEDOIDS_AUCTION",
         0);
     return cached;

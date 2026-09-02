@@ -1478,7 +1478,7 @@ success:
             }
             /*
              * Whatever did not fit as a new entry is funded by merging, the
-             * same way cover_grow=off funds everything.
+             * same way cover_grow=0 funds everything.
              */
             sixel_palette_cover_place(storage->entries,
                                       ncolors,
@@ -1529,7 +1529,7 @@ success:
              * first few.  Merge for whatever is still missing: without this,
              * asking to grow a 250-color palette bought seven corners and lost
              * the faces and edges that merging alone would have placed, making
-             * cover_grow=on strictly worse than cover_grow=off.
+             * cover_grow=1 strictly worse than cover_grow=0.
              */
             (void)sixel_palette_cover_anchor_rgb888(storage->entries,
                                                     ncolors,

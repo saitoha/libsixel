@@ -36,6 +36,7 @@
 
 #include "compat_stub.h"
 #include "lookup-policy-6bit.h"
+#include "options.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 
@@ -122,20 +123,9 @@ sixel_lookup_policy_bit6_quant_make(unsigned int depth)
 static int
 sixel_lookup_policy_bit6_env_shared_default_on(void)
 {
-    char const *env;
-
-    env = sixel_compat_getenv("SIXEL_LOOKUP_6BIT_SHARED_INSTANCE");
-    if (env == NULL || env[0] == '\0') {
-        return 1;
-    }
-    if (env[0] == '0' && env[1] == '\0') {
-        return 0;
-    }
-    if (env[0] == '1' && env[1] == '\0') {
-        return 1;
-    }
-
-    return 1;
+    return sixel_option_resolve_boolean_environment(
+        "SIXEL_LOOKUP_6BIT_SHARED_INSTANCE",
+        1);
 }
 
 int

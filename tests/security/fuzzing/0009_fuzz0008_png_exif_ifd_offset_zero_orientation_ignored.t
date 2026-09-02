@@ -35,7 +35,7 @@ test -f "${input_png}" || {
     exit 0
 }
 
-SIXEL_LOADER_BUILTIN_ORIENTATION=on
+SIXEL_LOADER_BUILTIN_ORIENTATION=1
 export SIXEL_LOADER_BUILTIN_ORIENTATION
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o "${output_on}" "${input_png}" >/dev/null || {
@@ -43,7 +43,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-SIXEL_LOADER_BUILTIN_ORIENTATION=off
+SIXEL_LOADER_BUILTIN_ORIENTATION=0
 export SIXEL_LOADER_BUILTIN_ORIENTATION
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o "${output_off}" "${input_png}" >/dev/null || {

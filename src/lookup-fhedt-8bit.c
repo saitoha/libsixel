@@ -59,6 +59,7 @@
 #include "allocator.h"
 #include "compat_stub.h"
 #include "lookup-fhedt-8bit.h"
+#include "options.h"
 #include "timeline-logger.h"
 #include "threading.h"
 #include <6cells.h>
@@ -452,28 +453,32 @@ static int
 sixel_lookup_fhedt_pin_threads_enabled_8bit(void)
 {
     char const *env;
+    int enabled;
 
     env = sixel_lookup_fhedt_getenv_8bit("SIXEL_LOOKUP_FHEDT_PIN_THREADS",
                                    "SIXEL_FHEDT_PIN_THREADS");
-    if (env == NULL) {
+    enabled = 0;
+    if (!sixel_option_parse_boolean_text(env, &enabled)) {
         return 0;
     }
 
-    return env[0] != '0';
+    return enabled;
 }
 
 static int
 sixel_lookup_fhedt_first_touch_enabled_8bit(void)
 {
     char const *env;
+    int enabled;
 
     env = sixel_lookup_fhedt_getenv_8bit("SIXEL_LOOKUP_FHEDT_FIRST_TOUCH",
                                    "SIXEL_FHEDT_FIRST_TOUCH");
-    if (env == NULL) {
+    enabled = 0;
+    if (!sixel_option_parse_boolean_text(env, &enabled)) {
         return 0;
     }
 
-    return env[0] != '0';
+    return enabled;
 }
 
 static void sixel_lookup_fhedt_dispatch_tiles_8bit(int total_tiles,

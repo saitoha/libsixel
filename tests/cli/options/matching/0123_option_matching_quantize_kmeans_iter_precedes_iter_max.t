@@ -14,13 +14,13 @@ set -v
 
 set +x
 iter_only=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmeans:seed=1:restarts=1:feedback=off:iter=1 \
+    -Qkmeans:seed=1:restarts=1:feedback=0:iter=1 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm" | cksum)
 iter_and_max=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmeans:seed=1:restarts=1:feedback=off:iter=1:iter_max=100 \
+    -Qkmeans:seed=1:restarts=1:feedback=0:iter=1:iter_max=100 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm" | cksum)
 iter_more=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmeans:seed=1:restarts=1:feedback=off:iter=8 \
+    -Qkmeans:seed=1:restarts=1:feedback=0:iter=8 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm" | cksum)
 set -x
 

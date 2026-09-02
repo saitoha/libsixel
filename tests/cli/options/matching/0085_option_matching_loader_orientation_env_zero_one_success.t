@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying numeric orientation env aliases 1/0 are accepted.
+# TAP test verifying canonical orientation environment values 0/1 are applied.
 
 set -eux
 
@@ -20,14 +20,14 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png"
 
 ref_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng:orientation=on! "${input_png}" 2>/dev/null) || {
-    echo "not ok" 1 - "orientation=on reference decode failed"
+    -Llibpng:orientation=1! "${input_png}" 2>/dev/null) || {
+    echo "not ok" 1 - "orientation=1 reference decode failed"
     exit 0
 }
 
 ref_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng:orientation=off! "${input_png}" 2>/dev/null) || {
-    echo "not ok" 1 - "orientation=off reference decode failed"
+    -Llibpng:orientation=0! "${input_png}" 2>/dev/null) || {
+    echo "not ok" 1 - "orientation=0 reference decode failed"
     exit 0
 }
 
@@ -39,7 +39,7 @@ out_global_1=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 test "${out_global_1}" = "${ref_on}" || {
-    echo "not ok" 1 - "global orientation=1 did not match ON reference"
+    echo "not ok" 1 - "global orientation=1 did not match value 1"
     exit 0
 }
 
@@ -51,7 +51,7 @@ out_global_0=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 test "${out_global_0}" = "${ref_off}" || {
-    echo "not ok" 1 - "global orientation=0 did not match OFF reference"
+    echo "not ok" 1 - "global orientation=0 did not match value 0"
     exit 0
 }
 
@@ -64,7 +64,7 @@ out_per_loader_1=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 test "${out_per_loader_1}" = "${ref_on}" || {
-    echo "not ok" 1 - "per-loader orientation=1 did not override global OFF"
+    echo "not ok" 1 - "per-loader orientation=1 did not override global 0"
     exit 0
 }
 
@@ -77,9 +77,9 @@ out_per_loader_0=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 test "${out_per_loader_0}" = "${ref_off}" || {
-    echo "not ok" 1 - "per-loader orientation=0 did not override global ON"
+    echo "not ok" 1 - "per-loader orientation=0 did not override global 1"
     exit 0
 }
 
-echo "ok" 1 - "orientation env numeric aliases are accepted and respected"
+echo "ok" 1 - "canonical orientation environment values are applied"
 exit 0
