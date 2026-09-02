@@ -1689,6 +1689,25 @@ sixel_option_registry_suboption_at(
     return NULL;
 }
 
+sixel_suboption_key_t const *
+sixel_option_registry_suboption_by_environment(char const *name)
+{
+    size_t index;
+
+    index = 0u;
+    if (name == NULL || name[0] == '\0') {
+        return NULL;
+    }
+    while (index < SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
+        if (strcmp(g_suboptions[index].env_name, name) == 0) {
+            return g_suboptions + index;
+        }
+        ++index;
+    }
+
+    return NULL;
+}
+
 /*
  * Environment names are part of the registry contract.  Keep their syntax
  * independent of the host shell so a malformed row fails on every platform.

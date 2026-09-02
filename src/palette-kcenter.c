@@ -38,7 +38,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include <stdint.h>
 #if HAVE_LIMITS_H
 # include <limits.h>
@@ -57,6 +56,7 @@
 #include "palette-common-snap.h"
 #include "palette-kcenter.h"
 #include "palette-private.h"
+#include "options.h"
 #include "pixelformat.h"
 #include "status.h"
 #include "timer.h"
@@ -942,77 +942,39 @@ sixel_kcenter_rng_bounded(uint32_t *state,
 }
 
 static unsigned int
-sixel_kcenter_parse_env_uint(char const *name,
-                             unsigned int min_value,
-                             unsigned int max_value,
-                             unsigned int fallback,
-                             int allow_zero)
+sixel_kcenter_resolve_registered_uint(char const *name,
+                                      unsigned int fallback)
 {
-    char const *env;
-    unsigned long parsed;
-    char *endptr;
+    unsigned int value;
 
-    env = NULL;
-    parsed = 0ul;
-    endptr = NULL;
+    value = fallback;
 
     if (name == NULL) {
         return fallback;
     }
-
-    env = sixel_compat_getenv(name);
-    if (env == NULL || env[0] == '\0') {
-        return fallback;
+    if (sixel_option_resolve_registered_uint_environment(name, &value)) {
+        return value;
     }
 
-    errno = 0;
-    parsed = strtoul(env, &endptr, 10);
-    if (endptr == env || endptr == NULL || endptr[0] != '\0' || errno != 0) {
-        return fallback;
-    }
-    if (allow_zero && parsed == 0ul) {
-        return 0u;
-    }
-    if (parsed < (unsigned long)min_value
-            || parsed > (unsigned long)max_value) {
-        return fallback;
-    }
-    return (unsigned int)parsed;
+    return fallback;
 }
 
 static double
-sixel_kcenter_parse_env_double(char const *name,
-                               double min_value,
-                               double max_value,
-                               double fallback)
+sixel_kcenter_resolve_registered_double(char const *name,
+                                        double fallback)
 {
-    char const *env;
-    double parsed;
-    char *endptr;
+    double value;
 
-    env = NULL;
-    parsed = 0.0;
-    endptr = NULL;
+    value = fallback;
 
     if (name == NULL) {
         return fallback;
     }
-
-    env = sixel_compat_getenv(name);
-    if (env == NULL || env[0] == '\0') {
-        return fallback;
+    if (sixel_option_resolve_registered_double_environment(name, &value)) {
+        return value;
     }
 
-    errno = 0;
-    parsed = strtod(env, &endptr);
-    if (endptr == env || endptr == NULL || endptr[0] != '\0' || errno != 0) {
-        return fallback;
-    }
-    if (parsed != parsed || parsed < min_value || parsed > max_value) {
-        return fallback;
-    }
-
-    return parsed;
+    return fallback;
 }
 
 SIXEL_INTERNAL_API void
@@ -1030,10 +992,12 @@ sixel_set_kcenter_algo_override(int enabled,
 SIXEL_INTERNAL_API sixel_kcenter_algo_t
 sixel_get_kcenter_algo(void)
 {
-    char const *env_value;
     sixel_kcenter_algo_t parsed;
     static int cached = 0;
     static sixel_kcenter_algo_t cached_value = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
+    int value;
+
+    value = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
 
     if (sixel_kcenter_algo_override_enabled) {
         return sixel_kcenter_resolve_algo(sixel_kcenter_algo_override_value);
@@ -1044,17 +1008,10 @@ sixel_get_kcenter_algo(void)
     }
 
     parsed = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_ALGO");
-    if (env_value != NULL) {
-        if (strcmp(env_value, "fft") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_ALGO_FFT;
-        } else if (strcmp(env_value, "swap") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_ALGO_SWAP;
-        } else if (strcmp(env_value, "hybrid") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_ALGO_HYBRID;
-        } else {
-            parsed = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KCENTER_ALGO",
+            &value)) {
+        parsed = (sixel_kcenter_algo_t)value;
     }
     cached_value = sixel_kcenter_resolve_algo(parsed);
     cached = 1;
@@ -1077,8 +1034,10 @@ sixel_set_kcenter_profile_override(int enabled,
 SIXEL_INTERNAL_API sixel_kcenter_profile_t
 sixel_get_kcenter_profile(void)
 {
-    char const *env_value;
     sixel_kcenter_profile_t parsed;
+    int value;
+
+    value = SIXEL_PALETTE_KCENTER_PROFILE_LEGACY;
 
     if (sixel_kcenter_profile_override_enabled) {
         return sixel_kcenter_resolve_profile(
@@ -1086,15 +1045,10 @@ sixel_get_kcenter_profile(void)
     }
 
     parsed = SIXEL_PALETTE_KCENTER_PROFILE_LEGACY;
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_PROFILE");
-    if (env_value != NULL) {
-        if (strcmp(env_value, "speed") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_PROFILE_SPEED;
-        } else if (strcmp(env_value, "balance") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_PROFILE_BALANCE;
-        } else if (strcmp(env_value, "quality") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_PROFILE_QUALITY;
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KCENTER_PROFILE",
+            &value)) {
+        parsed = (sixel_kcenter_profile_t)value;
     }
     return sixel_kcenter_resolve_profile(parsed);
 }
@@ -1124,11 +1078,9 @@ sixel_get_kcenter_seed(void)
         return (uint32_t)value;
     }
 
-    value = sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_SEED",
-                                         0u,
-                                         UINT_MAX,
-                                         1u,
-                                         1);
+    value = sixel_kcenter_resolve_registered_uint(
+        "SIXEL_PALETTE_KCENTER_SEED",
+        1u);
     if (value == 0u) {
         value = 1u;
     }
@@ -1160,11 +1112,9 @@ sixel_get_kcenter_restarts(void)
         return sixel_kcenter_restarts_override_value;
     }
 
-    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_RESTARTS",
-                                        1u,
-                                        32u,
-                                        1u,
-                                        0);
+    return sixel_kcenter_resolve_registered_uint(
+        "SIXEL_PALETTE_KCENTER_RESTARTS",
+        1u);
 }
 
 SIXEL_INTERNAL_API void
@@ -1197,11 +1147,9 @@ sixel_get_kcenter_init_seeds(void)
 
     profile = sixel_get_kcenter_profile();
     fallback = sixel_kcenter_profile_default_init_seeds(profile);
-    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_INIT_SEEDS",
-                                        1u,
-                                        8u,
-                                        fallback,
-                                        0);
+    return sixel_kcenter_resolve_registered_uint(
+        "SIXEL_PALETTE_KCENTER_INIT_SEEDS",
+        fallback);
 }
 
 SIXEL_INTERNAL_API void
@@ -1229,11 +1177,9 @@ sixel_get_kcenter_iter(void)
         return sixel_kcenter_iter_override_value;
     }
 
-    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_ITER",
-                                        1u,
-                                        64u,
-                                        16u,
-                                        0);
+    return sixel_kcenter_resolve_registered_uint(
+        "SIXEL_PALETTE_KCENTER_ITER",
+        16u);
 }
 
 SIXEL_INTERNAL_API void
@@ -1261,11 +1207,9 @@ sixel_get_kcenter_histbits(void)
         return sixel_kcenter_histbits_override_value;
     }
 
-    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_HISTBITS",
-                                        3u,
-                                        6u,
-                                        5u,
-                                        0);
+    return sixel_kcenter_resolve_registered_uint(
+        "SIXEL_PALETTE_KCENTER_HISTBITS",
+        5u);
 }
 
 SIXEL_INTERNAL_API void
@@ -1296,11 +1240,9 @@ sixel_get_kcenter_point_budget(void)
         return sixel_kcenter_point_budget_override_value;
     }
 
-    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_POINT_BUDGET",
-                                        64u,
-                                        16384u,
-                                        0u,
-                                        1);
+    return sixel_kcenter_resolve_registered_uint(
+        "SIXEL_PALETTE_KCENTER_POINT_BUDGET",
+        0u);
 }
 
 SIXEL_INTERNAL_API void
@@ -1328,10 +1270,9 @@ sixel_get_kcenter_prune_mass(void)
         return sixel_kcenter_prune_mass_override_value;
     }
 
-    return sixel_kcenter_parse_env_double("SIXEL_PALETTE_KCENTER_PRUNE_MASS",
-                                          0.900,
-                                          1.000,
-                                          0.995);
+    return sixel_kcenter_resolve_registered_double(
+        "SIXEL_PALETTE_KCENTER_PRUNE_MASS",
+        0.995);
 }
 
 SIXEL_INTERNAL_API void
@@ -1351,25 +1292,22 @@ sixel_set_kcenter_auto_policy_override(
 SIXEL_INTERNAL_API sixel_kcenter_auto_policy_t
 sixel_get_kcenter_auto_policy(void)
 {
-    char const *env_value;
     sixel_kcenter_profile_t profile;
     sixel_kcenter_auto_policy_t parsed;
+    int value;
+
+    value = SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
 
     if (sixel_kcenter_auto_policy_override_enabled) {
         return sixel_kcenter_resolve_auto_policy(
             sixel_kcenter_auto_policy_override_value);
     }
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_AUTO_POLICY");
-    if (env_value != NULL) {
-        if (strcmp(env_value, "adaptive") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_AUTO_POLICY_ADAPTIVE;
-            return sixel_kcenter_resolve_auto_policy(parsed);
-        }
-        if (strcmp(env_value, "legacy") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
-            return sixel_kcenter_resolve_auto_policy(parsed);
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KCENTER_AUTO_POLICY",
+            &value)) {
+        parsed = (sixel_kcenter_auto_policy_t)value;
+        return sixel_kcenter_resolve_auto_policy(parsed);
     }
 
     profile = sixel_get_kcenter_profile();
@@ -1407,12 +1345,9 @@ sixel_get_kcenter_auto_fft_threshold(void)
 
     profile = sixel_get_kcenter_profile();
     fallback = sixel_kcenter_profile_default_auto_fft_threshold(profile);
-    return sixel_kcenter_parse_env_uint(
+    return sixel_kcenter_resolve_registered_uint(
         "SIXEL_PALETTE_KCENTER_AUTO_FFT_THRESHOLD",
-        256u,
-        65536u,
-        fallback,
-        0);
+        fallback);
 }
 
 SIXEL_INTERNAL_API void
@@ -1432,25 +1367,22 @@ sixel_set_kcenter_space_policy_override(
 SIXEL_INTERNAL_API sixel_kcenter_space_policy_t
 sixel_get_kcenter_space_policy(void)
 {
-    char const *env_value;
     sixel_kcenter_profile_t profile;
     sixel_kcenter_space_policy_t parsed;
+    int value;
+
+    value = SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY;
 
     if (sixel_kcenter_space_policy_override_enabled) {
         return sixel_kcenter_resolve_space_policy(
             sixel_kcenter_space_policy_override_value);
     }
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_SPACE_POLICY");
-    if (env_value != NULL) {
-        if (strcmp(env_value, "perceptual") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL;
-            return sixel_kcenter_resolve_space_policy(parsed);
-        }
-        if (strcmp(env_value, "legacy") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY;
-            return sixel_kcenter_resolve_space_policy(parsed);
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KCENTER_SPACE_POLICY",
+            &value)) {
+        parsed = (sixel_kcenter_space_policy_t)value;
+        return sixel_kcenter_resolve_space_policy(parsed);
     }
 
     profile = sixel_get_kcenter_profile();
@@ -1474,25 +1406,22 @@ sixel_set_kcenter_candidate_policy_override(
 SIXEL_INTERNAL_API sixel_kcenter_candidate_policy_t
 sixel_get_kcenter_candidate_policy(void)
 {
-    char const *env_value;
     sixel_kcenter_profile_t profile;
     sixel_kcenter_candidate_policy_t parsed;
+    int value;
+
+    value = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
 
     if (sixel_kcenter_candidate_policy_override_enabled) {
         return sixel_kcenter_resolve_candidate_policy(
             sixel_kcenter_candidate_policy_override_value);
     }
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY");
-    if (env_value != NULL) {
-        if (strcmp(env_value, "hybrid") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID;
-            return sixel_kcenter_resolve_candidate_policy(parsed);
-        }
-        if (strcmp(env_value, "legacy") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
-            return sixel_kcenter_resolve_candidate_policy(parsed);
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY",
+            &value)) {
+        parsed = (sixel_kcenter_candidate_policy_t)value;
+        return sixel_kcenter_resolve_candidate_policy(parsed);
     }
 
     profile = sixel_get_kcenter_profile();
@@ -1529,11 +1458,9 @@ sixel_get_kcenter_rare_keep(void)
 
     profile = sixel_get_kcenter_profile();
     fallback = sixel_kcenter_profile_default_rare_keep(profile);
-    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_RARE_KEEP",
-                                        1u,
-                                        2048u,
-                                        fallback,
-                                        1);
+    return sixel_kcenter_resolve_registered_uint(
+        "SIXEL_PALETTE_KCENTER_RARE_KEEP",
+        fallback);
 }
 
 SIXEL_INTERNAL_API void
@@ -1553,25 +1480,22 @@ sixel_set_kcenter_budget_policy_override(
 SIXEL_INTERNAL_API sixel_kcenter_budget_policy_t
 sixel_get_kcenter_budget_policy(void)
 {
-    char const *env_value;
     sixel_kcenter_profile_t profile;
     sixel_kcenter_budget_policy_t parsed;
+    int value;
+
+    value = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
 
     if (sixel_kcenter_budget_policy_override_enabled) {
         return sixel_kcenter_resolve_budget_policy(
             sixel_kcenter_budget_policy_override_value);
     }
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_BUDGET_POLICY");
-    if (env_value != NULL) {
-        if (strcmp(env_value, "adaptive") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE;
-            return sixel_kcenter_resolve_budget_policy(parsed);
-        }
-        if (strcmp(env_value, "legacy") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
-            return sixel_kcenter_resolve_budget_policy(parsed);
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KCENTER_BUDGET_POLICY",
+            &value)) {
+        parsed = (sixel_kcenter_budget_policy_t)value;
+        return sixel_kcenter_resolve_budget_policy(parsed);
     }
 
     profile = sixel_get_kcenter_profile();
@@ -1608,10 +1532,9 @@ sixel_get_kcenter_budget_scale(void)
 
     profile = sixel_get_kcenter_profile();
     fallback = sixel_kcenter_profile_default_budget_scale(profile);
-    return sixel_kcenter_parse_env_double("SIXEL_PALETTE_KCENTER_BUDGET_SCALE",
-                                          0.25,
-                                          4.00,
-                                          fallback);
+    return sixel_kcenter_resolve_registered_double(
+        "SIXEL_PALETTE_KCENTER_BUDGET_SCALE",
+        fallback);
 }
 
 SIXEL_INTERNAL_API void
@@ -1644,11 +1567,9 @@ sixel_get_kcenter_swap_topk(void)
 
     profile = sixel_get_kcenter_profile();
     fallback = sixel_kcenter_profile_default_swap_topk(profile);
-    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_SWAP_TOPK",
-                                        1u,
-                                        16u,
-                                        fallback,
-                                        0);
+    return sixel_kcenter_resolve_registered_uint(
+        "SIXEL_PALETTE_KCENTER_SWAP_TOPK",
+        fallback);
 }
 
 SIXEL_INTERNAL_API void
@@ -1668,25 +1589,22 @@ sixel_set_kcenter_swap_update_override(
 SIXEL_INTERNAL_API sixel_kcenter_swap_update_t
 sixel_get_kcenter_swap_update(void)
 {
-    char const *env_value;
     sixel_kcenter_profile_t profile;
     sixel_kcenter_swap_update_t parsed;
+    int value;
+
+    value = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
 
     if (sixel_kcenter_swap_update_override_enabled) {
         return sixel_kcenter_resolve_swap_update(
             sixel_kcenter_swap_update_override_value);
     }
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_SWAP_UPDATE");
-    if (env_value != NULL) {
-        if (strcmp(env_value, "incremental") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL;
-            return sixel_kcenter_resolve_swap_update(parsed);
-        }
-        if (strcmp(env_value, "full") == 0) {
-            parsed = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
-            return sixel_kcenter_resolve_swap_update(parsed);
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KCENTER_SWAP_UPDATE",
+            &value)) {
+        parsed = (sixel_kcenter_swap_update_t)value;
+        return sixel_kcenter_resolve_swap_update(parsed);
     }
 
     profile = sixel_get_kcenter_profile();
@@ -1721,11 +1639,9 @@ sixel_get_kcenter_swap_patience(void)
 
     profile = sixel_get_kcenter_profile();
     fallback = sixel_kcenter_profile_default_swap_patience(profile);
-    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_SWAP_PATIENCE",
-                                        1u,
-                                        8u,
-                                        fallback,
-                                        1);
+    return sixel_kcenter_resolve_registered_uint(
+        "SIXEL_PALETTE_KCENTER_SWAP_PATIENCE",
+        fallback);
 }
 
 SIXEL_INTERNAL_API void
@@ -1758,10 +1674,9 @@ sixel_get_kcenter_swap_min_gain(void)
 
     profile = sixel_get_kcenter_profile();
     fallback = sixel_kcenter_profile_default_swap_min_gain(profile);
-    return sixel_kcenter_parse_env_double("SIXEL_PALETTE_KCENTER_SWAP_MIN_GAIN",
-                                          0.0,
-                                          8.0,
-                                          fallback);
+    return sixel_kcenter_resolve_registered_double(
+        "SIXEL_PALETTE_KCENTER_SWAP_MIN_GAIN",
+        fallback);
 }
 
 SIXEL_INTERNAL_API int

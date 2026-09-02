@@ -38,9 +38,11 @@
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "allocator.h"
 #include "compat_stub.h"
+#include "options.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kmeans.h"
@@ -296,33 +298,29 @@ sixel_final_merge_load_env(void)
 {
     char const *env_value;
     char *endptr;
-    double parsed_factor;
-    double parsed_threshold;
     double parsed_component;
     double parsed_channel_factor;
     double candidate_r;
     double candidate_g;
     double candidate_b;
-    long parsed_iters;
-    long parsed_limit;
     int r_overridden;
     int g_overridden;
     int lock_acquired;
+    unsigned int registered_uint;
+    double registered_double;
 
     env_value = NULL;
     endptr = NULL;
-    parsed_factor = 0.0;
-    parsed_threshold = 0.0;
     parsed_component = 0.0;
     parsed_channel_factor = 1.0 / 3.0;
     candidate_r = env_lumin_factor_r;
     candidate_g = env_lumin_factor_g;
     candidate_b = env_lumin_factor_b;
-    parsed_iters = 0L;
-    parsed_limit = 0L;
     r_overridden = 0;
     g_overridden = 0;
     lock_acquired = 0;
+    registered_uint = 0u;
+    registered_double = 0.0;
     lock_acquired = sixel_final_merge_env_lock_acquire();
     if (env_final_merge_env_loaded) {
         sixel_final_merge_env_lock_release(lock_acquired);
@@ -330,68 +328,29 @@ sixel_final_merge_load_env(void)
     }
     env_final_merge_env_loaded = 1;
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_OVERSPLIT_FACTOR");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_factor = strtod(env_value, &endptr);
-        if (endptr != env_value && errno == 0) {
-            if (parsed_factor < 1.0) {
-                parsed_factor = 1.0;
-            }
-            if (parsed_factor > 3.0) {
-                parsed_factor = 3.0;
-            }
-            env_final_merge_target_factor = (float)parsed_factor;
-        }
+    if (sixel_option_resolve_registered_double_environment(
+            "SIXEL_PALETTE_OVERSPLIT_FACTOR",
+            &registered_double)) {
+        env_final_merge_target_factor = (float)registered_double;
     }
 
-    env_value = sixel_compat_getenv(
-        "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_iters = strtol(env_value, &endptr, 10);
-        if (endptr != env_value && errno == 0) {
-            if (parsed_iters < 0L) {
-                parsed_iters = 0L;
-            }
-            if (parsed_iters > 30L) {
-                parsed_iters = 30L;
-            }
-            env_final_merge_additional_lloyd
-                = (unsigned int)parsed_iters;
-            env_final_merge_additional_lloyd_overridden = 1;
-        }
+    if (sixel_option_resolve_registered_uint_environment(
+            "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
+            &registered_uint)) {
+        env_final_merge_additional_lloyd = registered_uint;
+        env_final_merge_additional_lloyd_overridden = 1;
     }
 
-    env_value = sixel_compat_getenv(
-        "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_limit = strtol(env_value, &endptr, 10);
-        if (endptr != env_value && errno == 0) {
-            if (parsed_limit < 1L) {
-                parsed_limit = 1L;
-            }
-            if (parsed_limit > 100L) {
-                parsed_limit = 100L;
-            }
-            env_kmeans_iter_max = (unsigned int)parsed_limit;
-        }
+    if (sixel_option_resolve_registered_uint_environment(
+            "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX",
+            &registered_uint)) {
+        env_kmeans_iter_max = registered_uint;
     }
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_THRESHOLD");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_threshold = strtod(env_value, &endptr);
-        if (endptr != env_value && errno == 0) {
-            if (parsed_threshold < 0.0) {
-                parsed_threshold = 0.0;
-            }
-            if (parsed_threshold > 0.5) {
-                parsed_threshold = 0.5;
-            }
-            env_kmeans_threshold = parsed_threshold;
-        }
+    if (sixel_option_resolve_registered_double_environment(
+            "SIXEL_PALETTE_KMEANS_THRESHOLD",
+            &registered_double)) {
+        env_kmeans_threshold = registered_double;
     }
 
     env_value = sixel_compat_getenv("SIXEL_PALETTE_LUMIN_FACTOR_R");

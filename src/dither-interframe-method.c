@@ -29,8 +29,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include "compat_stub.h"
 #include "dither-interframe-method.h"
+#include "options.h"
 
 static int
 sixel_interframe_is_supported_spatial_diffuse(int method_for_diffuse)
@@ -57,18 +57,15 @@ static int
 sixel_interframe_spatial_diffuse_from_env_named(char const *envvar,
                                                  int fallback)
 {
-    char const *value;
     int resolved;
 
-    value = NULL;
     resolved = SIXEL_INTERFRAME_SPATIAL_DIFFUSE_UNSET;
 
     if (envvar == NULL) {
         return fallback;
     }
 
-    value = sixel_compat_getenv(envvar);
-    resolved = sixel_interframe_spatial_diffuse_from_string(value);
+    (void)sixel_option_resolve_registered_int_environment(envvar, &resolved);
     if (!sixel_interframe_is_supported_spatial_diffuse(resolved)) {
         resolved = fallback;
     }
@@ -198,10 +195,16 @@ sixel_interframe_spatial_diffuse_from_dither_or_env_common(
 int
 sixel_interframe_strategy_token_from_env_common(void)
 {
-    char const *value;
+    int value;
 
-    value = sixel_compat_getenv(SIXEL_DITHER_STBN_SOURCE_ENVVAR);
-    return sixel_interframe_strategy_token_from_string(value);
+    value = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    if (sixel_option_resolve_registered_int_environment(
+            SIXEL_DITHER_STBN_SOURCE_ENVVAR,
+            &value)) {
+        return value;
+    }
+
+    return SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
 }
 
 int

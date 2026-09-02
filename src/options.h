@@ -178,6 +178,35 @@ sixel_option_parse_boolean_text(char const *text, int *value);
 int
 sixel_option_resolve_boolean_environment(char const *name, int fallback);
 
+/*
+ * Resolve registered environment variables through registry metadata.  The
+ * typed entry points reject a registry kind mismatch before exposing a value
+ * to lower-level code.
+ */
+int
+sixel_option_resolve_registered_int_environment(char const *name, int *value);
+
+int
+sixel_option_resolve_registered_uint_environment(
+    char const *name,
+    unsigned int *value);
+
+int
+sixel_option_resolve_registered_float_environment(
+    char const *name,
+    float *value);
+
+int
+sixel_option_resolve_registered_double_environment(
+    char const *name,
+    double *value);
+
+int
+sixel_option_resolve_registered_int_pair_environment(
+    char const *name,
+    int *first,
+    int *second);
+
 typedef struct sixel_dequantize_options {
     int method;
     int selective_blur_threshold;

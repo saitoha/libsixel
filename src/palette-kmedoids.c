@@ -41,7 +41,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include <stdint.h>
 #if HAVE_FLOAT_H
 # include <float.h>
@@ -879,77 +878,37 @@ sixel_kmedoids_clamp_uint(unsigned int value,
 }
 
 static unsigned int
-sixel_kmedoids_parse_env_uint(char const *env_name,
-                              unsigned int fallback,
-                              unsigned int minimum,
-                              unsigned int maximum,
-                              int allow_zero)
+sixel_kmedoids_resolve_registered_uint(char const *env_name,
+                                       unsigned int fallback)
 {
-    char const *env_value;
-    char *endptr;
-    unsigned long parsed;
+    unsigned int value;
 
-    env_value = NULL;
-    endptr = NULL;
-    parsed = 0ul;
+    value = fallback;
     if (env_name == NULL || env_name[0] == '\0') {
         return fallback;
     }
-
-    env_value = sixel_compat_getenv(env_name);
-    if (env_value == NULL || env_value[0] == '\0') {
-        return fallback;
+    if (sixel_option_resolve_registered_uint_environment(env_name, &value)) {
+        return value;
     }
 
-    errno = 0;
-    parsed = strtoul(env_value, &endptr, 10);
-    if (endptr == env_value || endptr == NULL || endptr[0] != '\0'
-            || errno != 0 || parsed > (unsigned long)UINT_MAX) {
-        return fallback;
-    }
-    if (allow_zero && parsed == 0ul) {
-        return 0u;
-    }
-    if (parsed == 0ul) {
-        return fallback;
-    }
-
-    return sixel_kmedoids_clamp_uint((unsigned int)parsed,
-                                     minimum,
-                                     maximum);
+    return fallback;
 }
 
 static double
-sixel_kmedoids_parse_env_double(char const *env_name,
-                                double fallback,
-                                double minimum,
-                                double maximum)
+sixel_kmedoids_resolve_registered_double(char const *env_name,
+                                         double fallback)
 {
-    char const *env_value;
-    char *endptr;
-    double parsed;
+    double value;
 
-    env_value = NULL;
-    endptr = NULL;
-    parsed = 0.0;
+    value = fallback;
     if (env_name == NULL || env_name[0] == '\0') {
         return fallback;
     }
-
-    env_value = sixel_compat_getenv(env_name);
-    if (env_value == NULL || env_value[0] == '\0') {
-        return fallback;
+    if (sixel_option_resolve_registered_double_environment(env_name, &value)) {
+        return value;
     }
 
-    errno = 0;
-    parsed = strtod(env_value, &endptr);
-    if (endptr == env_value || endptr == NULL || endptr[0] != '\0'
-            || errno != 0 || parsed != parsed
-            || parsed < minimum || parsed > maximum) {
-        return fallback;
-    }
-
-    return parsed;
+    return fallback;
 }
 
 static int
@@ -3414,11 +3373,11 @@ sixel_set_kmedoids_algo_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmedoids_algo_t
 sixel_get_kmedoids_algo(void)
 {
-    char const *env_value;
     static int loaded = 0;
     static sixel_kmedoids_algo_t cached = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
+    int value;
 
-    env_value = NULL;
+    value = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
     if (sixel_kmedoids_algo_override_enabled) {
         return sixel_kmedoids_algo_override_value;
     }
@@ -3427,19 +3386,10 @@ sixel_get_kmedoids_algo(void)
     }
     loaded = 1;
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEDOIDS_ALGO");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
-            cached = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
-        } else if (sixel_compat_strcasecmp(env_value, "pam") == 0) {
-            cached = SIXEL_PALETTE_KMEDOIDS_ALGO_PAM;
-        } else if (sixel_compat_strcasecmp(env_value, "sample") == 0) {
-            cached = SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA;
-        } else if (sixel_compat_strcasecmp(env_value, "random") == 0) {
-            cached = SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS;
-        } else if (sixel_compat_strcasecmp(env_value, "bandit") == 0) {
-            cached = SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM;
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KMEDOIDS_ALGO",
+            &value)) {
+        cached = (sixel_kmedoids_algo_t)value;
     }
 
     return cached;
@@ -3460,15 +3410,11 @@ sixel_set_kmedoids_seed_override(int enabled,
 SIXEL_INTERNAL_API uint32_t
 sixel_get_kmedoids_seed(void)
 {
-    char const *env_value;
-    char *endptr;
-    unsigned long long parsed;
     static int loaded = 0;
     static uint32_t cached = 1u;
+    unsigned int value;
 
-    env_value = NULL;
-    endptr = NULL;
-    parsed = 0u;
+    value = 1u;
     if (sixel_kmedoids_seed_override_enabled) {
         return sixel_kmedoids_seed_override_value;
     }
@@ -3477,14 +3423,10 @@ sixel_get_kmedoids_seed(void)
     }
     loaded = 1;
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEDOIDS_SEED");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed = strtoull(env_value, &endptr, 10);
-        if (endptr != env_value && endptr != NULL && endptr[0] == '\0'
-                && errno == 0 && parsed <= 0xffffffffULL) {
-            cached = (uint32_t)parsed;
-        }
+    if (sixel_option_resolve_registered_uint_environment(
+            "SIXEL_PALETTE_KMEDOIDS_SEED",
+            &value)) {
+        cached = (uint32_t)value;
     }
 
     return cached;
@@ -3518,11 +3460,9 @@ sixel_get_kmedoids_iter(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint("SIXEL_PALETTE_KMEDOIDS_ITER",
-                                           0u,
-                                           1u,
-                                           64u,
-                                           0);
+    cached = sixel_kmedoids_resolve_registered_uint(
+        "SIXEL_PALETTE_KMEDOIDS_ITER",
+        0u);
     return cached;
 }
 
@@ -3557,11 +3497,9 @@ sixel_get_kmedoids_sample(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint("SIXEL_PALETTE_KMEDOIDS_SAMPLE",
-                                           0u,
-                                           64u,
-                                           1048576u,
-                                           1);
+    cached = sixel_kmedoids_resolve_registered_uint(
+        "SIXEL_PALETTE_KMEDOIDS_SAMPLE",
+        0u);
     return cached;
 }
 
@@ -3593,12 +3531,9 @@ sixel_get_kmedoids_clara_trials(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS",
-        0u,
-        1u,
-        32u,
-        0);
+        0u);
     return cached;
 }
 
@@ -3633,12 +3568,9 @@ sixel_get_kmedoids_clara_sample(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_CLARA_SAMPLE",
-        0u,
-        64u,
-        1048576u,
-        1);
+        0u);
     return cached;
 }
 
@@ -3670,12 +3602,9 @@ sixel_get_kmedoids_clarans_local(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_CLARANS_LOCAL",
-        0u,
-        1u,
-        32u,
-        0);
+        0u);
     return cached;
 }
 
@@ -3710,12 +3639,9 @@ sixel_get_kmedoids_clarans_neighbors(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_CLARANS_NEIGHBORS",
-        0u,
-        1u,
-        5000000u,
-        1);
+        0u);
     return cached;
 }
 
@@ -3747,12 +3673,9 @@ sixel_get_kmedoids_bandit_iter(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_BANDIT_ITER",
-        0u,
-        1u,
-        64u,
-        0);
+        0u);
     return cached;
 }
 
@@ -3784,12 +3707,9 @@ sixel_get_kmedoids_bandit_candidates(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_BANDIT_CANDIDATES",
-        0u,
-        8u,
-        4096u,
-        0);
+        0u);
     return cached;
 }
 
@@ -3821,12 +3741,9 @@ sixel_get_kmedoids_bandit_batch(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH",
-        0u,
-        8u,
-        4096u,
-        0);
+        0u);
     return cached;
 }
 
@@ -3858,12 +3775,9 @@ sixel_get_kmedoids_histbits(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_HISTBITS",
-        5u,
-        3u,
-        6u,
-        0);
+        5u);
     return cached;
 }
 
@@ -3895,12 +3809,9 @@ sixel_get_kmedoids_point_budget(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_POINT_BUDGET",
-        0u,
-        64u,
-        16384u,
-        0);
+        0u);
     return cached;
 }
 
@@ -3935,12 +3846,9 @@ sixel_get_kmedoids_rare_keep(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_RARE_KEEP",
-        64u,
-        0u,
-        1024u,
-        1);
+        64u);
     return cached;
 }
 
@@ -3979,11 +3887,9 @@ sixel_get_kmedoids_prune_mass(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_double(
+    cached = sixel_kmedoids_resolve_registered_double(
         "SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS",
-        0.995,
-        0.900,
-        1.000);
+        0.995);
     return cached;
 }
 
@@ -4046,12 +3952,9 @@ sixel_kmedoids_get_auction_shortlist_from_env(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmedoids_parse_env_uint(
+    cached = sixel_kmedoids_resolve_registered_uint(
         "SIXEL_PALETTE_KMEDOIDS_AUCTION_SHORTLIST",
-        4u,
-        2u,
-        8u,
-        0);
+        4u);
     return cached;
 }
 

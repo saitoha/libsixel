@@ -1731,6 +1731,9 @@ sixel_option_resolve_boolean_environment(char const *name, int fallback)
     if (name == NULL || name[0] == '\0') {
         return value;
     }
+    if (sixel_option_resolve_registered_int_environment(name, &value)) {
+        return value != 0;
+    }
     text = sixel_compat_getenv(name);
     if (text == NULL || text[0] == '\0') {
         return value;
@@ -1740,6 +1743,130 @@ sixel_option_resolve_boolean_environment(char const *name, int fallback)
     }
 
     return value;
+}
+
+static int
+sixel_option_resolve_registered_environment_value(
+    char const *name,
+    sixel_suboption_value_kind_t expected_kind,
+    sixel_suboption_value_t *value)
+{
+    sixel_suboption_key_t const *key_def;
+
+    key_def = NULL;
+    if (name == NULL || value == NULL) {
+        return 0;
+    }
+    key_def = sixel_option_registry_suboption_by_environment(name);
+    if (key_def == NULL || key_def->value_kind != expected_kind) {
+        return 0;
+    }
+
+    return sixel_option_resolve_suboption_environment(key_def, value);
+}
+
+int
+sixel_option_resolve_registered_int_environment(char const *name, int *value)
+{
+    sixel_suboption_key_t const *key_def;
+    sixel_suboption_value_t parsed;
+
+    key_def = NULL;
+    memset(&parsed, 0, sizeof(parsed));
+    if (name == NULL || value == NULL) {
+        return 0;
+    }
+    key_def = sixel_option_registry_suboption_by_environment(name);
+    if (key_def == NULL ||
+        (key_def->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
+         key_def->value_kind != SIXEL_SUBOPTION_VALUE_BOOLEAN &&
+         key_def->value_kind != SIXEL_SUBOPTION_VALUE_INT &&
+         key_def->value_kind != SIXEL_SUBOPTION_VALUE_SCALED_U8)) {
+        return 0;
+    }
+    if (!sixel_option_resolve_suboption_environment(key_def, &parsed)) {
+        return 0;
+    }
+    *value = parsed.int_value;
+    return 1;
+}
+
+int
+sixel_option_resolve_registered_uint_environment(
+    char const *name,
+    unsigned int *value)
+{
+    sixel_suboption_value_t parsed;
+
+    memset(&parsed, 0, sizeof(parsed));
+    if (value == NULL ||
+        !sixel_option_resolve_registered_environment_value(
+            name,
+            SIXEL_SUBOPTION_VALUE_UINT,
+            &parsed)) {
+        return 0;
+    }
+    *value = parsed.uint_value;
+    return 1;
+}
+
+int
+sixel_option_resolve_registered_float_environment(
+    char const *name,
+    float *value)
+{
+    sixel_suboption_value_t parsed;
+
+    memset(&parsed, 0, sizeof(parsed));
+    if (value == NULL ||
+        !sixel_option_resolve_registered_environment_value(
+            name,
+            SIXEL_SUBOPTION_VALUE_FLOAT,
+            &parsed)) {
+        return 0;
+    }
+    *value = parsed.float_value;
+    return 1;
+}
+
+int
+sixel_option_resolve_registered_double_environment(
+    char const *name,
+    double *value)
+{
+    sixel_suboption_value_t parsed;
+
+    memset(&parsed, 0, sizeof(parsed));
+    if (value == NULL ||
+        !sixel_option_resolve_registered_environment_value(
+            name,
+            SIXEL_SUBOPTION_VALUE_DOUBLE,
+            &parsed)) {
+        return 0;
+    }
+    *value = parsed.double_value;
+    return 1;
+}
+
+int
+sixel_option_resolve_registered_int_pair_environment(
+    char const *name,
+    int *first,
+    int *second)
+{
+    sixel_suboption_value_t parsed;
+
+    memset(&parsed, 0, sizeof(parsed));
+    if (first == NULL || second == NULL ||
+        !sixel_option_resolve_registered_environment_value(
+            name,
+            SIXEL_SUBOPTION_VALUE_INT_PAIR,
+            &parsed)) {
+        return 0;
+    }
+    *first = parsed.int_pair.first;
+    *second = parsed.int_pair.second;
+    return 1;
 }
 
 static int

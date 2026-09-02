@@ -43,10 +43,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <errno.h>
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
 #if HAVE_MATH_H
 # include <math.h>
 #endif
@@ -356,14 +352,14 @@ sixel_get_kmeans_init_type(void)
 {
     sixel_kmeans_init_type parsed;
     sixel_kmeans_init_type resolved;
-    char const *env_value;
+    int value;
     static int init_loaded = 0;
     static sixel_kmeans_init_type cached_value
         = SIXEL_PALETTE_KMEANS_INIT_PCA;
 
     parsed = SIXEL_PALETTE_KMEANS_INIT_AUTO;
     resolved = SIXEL_PALETTE_KMEANS_INIT_PCA;
-    env_value = NULL;
+    value = SIXEL_PALETTE_KMEANS_INIT_AUTO;
     if (sixel_kmeans_init_type_override_enabled) {
         return sixel_kmeans_resolve_init_type(
             sixel_kmeans_init_type_override_value);
@@ -373,15 +369,10 @@ sixel_get_kmeans_init_type(void)
     }
     init_loaded = 1;
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_INITTYPE");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (sixel_compat_strcasecmp(env_value, "none") == 0) {
-            parsed = SIXEL_PALETTE_KMEANS_INIT_NONE;
-        } else if (sixel_compat_strcasecmp(env_value, "pca") == 0) {
-            parsed = SIXEL_PALETTE_KMEANS_INIT_PCA;
-        } else if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
-            parsed = SIXEL_PALETTE_KMEANS_INIT_AUTO;
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KMEANS_INITTYPE",
+            &value)) {
+        parsed = (sixel_kmeans_init_type)value;
     }
 
     resolved = sixel_kmeans_resolve_init_type(parsed);
@@ -422,12 +413,12 @@ sixel_set_kmeans_binning_mode_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmeans_binning_mode
 sixel_get_kmeans_binning_mode(void)
 {
-    char const *env_value;
+    int value;
     static int loaded = 0;
     static sixel_kmeans_binning_mode cached
         = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
 
-    env_value = NULL;
+    value = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
     if (sixel_kmeans_binning_mode_override_enabled) {
         return sixel_kmeans_binning_mode_override_value;
     }
@@ -436,17 +427,10 @@ sixel_get_kmeans_binning_mode(void)
     }
     loaded = 1;
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_BINNING");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (sixel_compat_strcasecmp(env_value, "none") == 0) {
-            cached = SIXEL_PALETTE_KMEANS_BINNING_NONE;
-        } else if (sixel_compat_strcasecmp(env_value, "hard") == 0) {
-            cached = SIXEL_PALETTE_KMEANS_BINNING_HARD;
-        } else if (sixel_compat_strcasecmp(env_value, "soft") == 0) {
-            cached = SIXEL_PALETTE_KMEANS_BINNING_SOFT;
-        } else if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
-            cached = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KMEANS_BINNING",
+            &value)) {
+        cached = (sixel_kmeans_binning_mode)value;
     }
 
     return cached;
@@ -467,15 +451,9 @@ sixel_set_kmeans_binbits_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_binbits(void)
 {
-    char const *env_value;
-    char *endptr;
-    long parsed;
     static int loaded = 0;
     static unsigned int cached = 6u;
 
-    env_value = NULL;
-    endptr = NULL;
-    parsed = 0L;
     if (sixel_kmeans_binbits_override_enabled) {
         if (sixel_kmeans_binbits_override_value < 4u) {
             return 4u;
@@ -490,21 +468,9 @@ sixel_get_kmeans_binbits(void)
     }
     loaded = 1;
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_BINBITS");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed = strtol(env_value, &endptr, 10);
-        if (endptr != env_value && endptr != NULL && endptr[0] == '\0'
-                && errno == 0) {
-            if (parsed < 4L) {
-                parsed = 4L;
-            }
-            if (parsed > 8L) {
-                parsed = 8L;
-            }
-            cached = (unsigned int)parsed;
-        }
-    }
+    (void)sixel_option_resolve_registered_uint_environment(
+            "SIXEL_PALETTE_KMEANS_BINBITS",
+            &cached);
 
     return cached;
 }
@@ -537,12 +503,12 @@ sixel_set_kmeans_mapping_mode_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmeans_mapping_mode
 sixel_get_kmeans_mapping_mode(void)
 {
-    char const *env_value;
+    int value;
     static int loaded = 0;
     static sixel_kmeans_mapping_mode cached
         = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
 
-    env_value = NULL;
+    value = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
     if (sixel_kmeans_mapping_mode_override_enabled) {
         return sixel_kmeans_mapping_mode_override_value;
     }
@@ -551,13 +517,10 @@ sixel_get_kmeans_mapping_mode(void)
     }
     loaded = 1;
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_MAPPING");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (sixel_compat_strcasecmp(env_value, "srgb") == 0) {
-            cached = SIXEL_PALETTE_KMEANS_MAPPING_SRGB;
-        } else if (sixel_compat_strcasecmp(env_value, "uniform") == 0) {
-            cached = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KMEANS_MAPPING",
+            &value)) {
+        cached = (sixel_kmeans_mapping_mode)value;
     }
 
     return cached;
@@ -590,12 +553,12 @@ sixel_set_kmeans_softdist_mode_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmeans_softdist_mode
 sixel_get_kmeans_softdist_mode(void)
 {
-    char const *env_value;
+    int value;
     static int loaded = 0;
     static sixel_kmeans_softdist_mode cached
         = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
 
-    env_value = NULL;
+    value = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
     if (sixel_kmeans_softdist_mode_override_enabled) {
         return sixel_kmeans_softdist_mode_override_value;
     }
@@ -604,11 +567,10 @@ sixel_get_kmeans_softdist_mode(void)
     }
     loaded = 1;
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_SOFTDIST");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (sixel_compat_strcasecmp(env_value, "trilinear") == 0) {
-            cached = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KMEANS_SOFTDIST",
+            &value)) {
+        cached = (sixel_kmeans_softdist_mode)value;
     }
 
     return cached;
@@ -629,15 +591,9 @@ sixel_set_kmeans_autoratio_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_autoratio(void)
 {
-    char const *env_value;
-    char *endptr;
-    long parsed;
     static int loaded = 0;
     static unsigned int cached = 32u;
 
-    env_value = NULL;
-    endptr = NULL;
-    parsed = 0L;
     if (sixel_kmeans_autoratio_override_enabled) {
         if (sixel_kmeans_autoratio_override_value < 1u) {
             return 1u;
@@ -649,41 +605,20 @@ sixel_get_kmeans_autoratio(void)
     }
     loaded = 1;
 
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_AUTORATIO");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed = strtol(env_value, &endptr, 10);
-        if (endptr != env_value && endptr != NULL && endptr[0] == '\0'
-                && errno == 0) {
-            if (parsed < 1L) {
-                parsed = 1L;
-            }
-            if (parsed > 1048576L) {
-                parsed = 1048576L;
-            }
-            cached = (unsigned int)parsed;
-        }
-    }
+    (void)sixel_option_resolve_registered_uint_environment(
+            "SIXEL_PALETTE_KMEANS_AUTORATIO",
+            &cached);
 
     return cached;
 }
 
 static unsigned int
-sixel_kmeans_parse_env_uint(char const *name,
-                            unsigned int minimum,
-                            unsigned int maximum,
-                            int allow_zero,
+sixel_kmeans_resolve_registered_uint(char const *name,
                             unsigned int fallback,
                             int *present_out)
 {
-    char const *env_value;
-    char *endptr;
-    unsigned long long parsed;
     unsigned int value;
 
-    env_value = NULL;
-    endptr = NULL;
-    parsed = 0u;
     value = fallback;
     if (present_out != NULL) {
         *present_out = 0;
@@ -691,39 +626,14 @@ sixel_kmeans_parse_env_uint(char const *name,
     if (name == NULL) {
         return value;
     }
-
-    env_value = sixel_compat_getenv(name);
-    if (env_value == NULL || env_value[0] == '\0') {
-        return value;
-    }
-
-    errno = 0;
-    parsed = strtoull(env_value, &endptr, 10);
-    if (endptr == env_value || endptr == NULL || endptr[0] != '\0'
-            || errno != 0) {
-        return value;
-    }
-    if (parsed > (unsigned long long)UINT_MAX) {
-        parsed = (unsigned long long)UINT_MAX;
-    }
-
-    if (allow_zero && parsed == 0u) {
+    if (sixel_option_resolve_registered_uint_environment(name, &value)) {
         if (present_out != NULL) {
             *present_out = 1;
         }
-        return 0u;
-    }
-    if (parsed < (unsigned long long)minimum) {
-        parsed = (unsigned long long)minimum;
-    }
-    if (parsed > (unsigned long long)maximum) {
-        parsed = (unsigned long long)maximum;
-    }
-    if (present_out != NULL) {
-        *present_out = 1;
+        return value;
     }
 
-    return (unsigned int)parsed;
+    return fallback;
 }
 
 void
@@ -757,12 +667,10 @@ sixel_get_kmeans_seed(void)
     }
     loaded = 1;
 
-    parsed = sixel_kmeans_parse_env_uint("SIXEL_PALETTE_KMEANS_SEED",
-                                         0u,
-                                         0xffffffffu,
-                                         1,
-                                         0u,
-                                         &present);
+    parsed = sixel_kmeans_resolve_registered_uint(
+        "SIXEL_PALETTE_KMEANS_SEED",
+        0u,
+        &present);
     cached = (uint32_t)parsed;
     cached_present = present;
     (void)cached_present;
@@ -785,12 +693,10 @@ sixel_get_kmeans_seed_enabled(void)
         return cached_present;
     }
     loaded = 1;
-    parsed = sixel_kmeans_parse_env_uint("SIXEL_PALETTE_KMEANS_SEED",
-                                         0u,
-                                         0xffffffffu,
-                                         1,
-                                         0u,
-                                         &cached_present);
+    parsed = sixel_kmeans_resolve_registered_uint(
+        "SIXEL_PALETTE_KMEANS_SEED",
+        0u,
+        &cached_present);
     (void)parsed;
 
     return cached_present;
@@ -827,12 +733,10 @@ sixel_get_kmeans_restarts(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmeans_parse_env_uint("SIXEL_PALETTE_KMEANS_RESTARTS",
-                                         1u,
-                                         32u,
-                                         0,
-                                         1u,
-                                         NULL);
+    cached = sixel_kmeans_resolve_registered_uint(
+        "SIXEL_PALETTE_KMEANS_RESTARTS",
+        1u,
+        NULL);
 
     return cached;
 }
@@ -869,12 +773,10 @@ sixel_get_kmeans_iter(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmeans_parse_env_uint("SIXEL_PALETTE_KMEANS_ITER",
-                                         1u,
-                                         100u,
-                                         0,
-                                         0u,
-                                         &cached_present);
+    cached = sixel_kmeans_resolve_registered_uint(
+        "SIXEL_PALETTE_KMEANS_ITER",
+        0u,
+        &cached_present);
 
     return cached;
 }
@@ -894,12 +796,10 @@ sixel_get_kmeans_iter_enabled(void)
         return cached_present;
     }
     loaded = 1;
-    parsed = sixel_kmeans_parse_env_uint("SIXEL_PALETTE_KMEANS_ITER",
-                                         1u,
-                                         100u,
-                                         0,
-                                         0u,
-                                         &cached_present);
+    parsed = sixel_kmeans_resolve_registered_uint(
+        "SIXEL_PALETTE_KMEANS_ITER",
+        0u,
+        &cached_present);
     (void)parsed;
 
     return cached_present;
@@ -933,12 +833,10 @@ sixel_get_kmeans_miniter(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmeans_parse_env_uint("SIXEL_PALETTE_KMEANS_MINITER",
-                                         0u,
-                                         100u,
-                                         1,
-                                         0u,
-                                         NULL);
+    cached = sixel_kmeans_resolve_registered_uint(
+        "SIXEL_PALETTE_KMEANS_MINITER",
+        0u,
+        NULL);
 
     return cached;
 }
@@ -971,11 +869,8 @@ sixel_get_kmeans_polish_iter(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmeans_parse_env_uint(
+    cached = sixel_kmeans_resolve_registered_uint(
         "SIXEL_PALETTE_KMEANS_POLISH_ITER",
-        0u,
-        16u,
-        1,
         0u,
         NULL);
 
@@ -1080,16 +975,16 @@ sixel_set_kmeans_prune_policy_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmeans_prune_policy
 sixel_get_kmeans_prune_policy(void)
 {
-    char const *env_value;
     static int loaded = 0;
     static sixel_kmeans_prune_policy cached
         = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
     sixel_kmeans_prune_policy parsed;
     sixel_kmeans_prune_policy resolved;
+    int value;
 
-    env_value = NULL;
     parsed = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
     resolved = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+    value = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
     if (sixel_kmeans_prune_policy_override_enabled) {
         return sixel_kmeans_resolve_prune_policy(
             sixel_kmeans_prune_policy_override_value);
@@ -1098,19 +993,10 @@ sixel_get_kmeans_prune_policy(void)
         return cached;
     }
     loaded = 1;
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_PRUNE");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (sixel_compat_strcasecmp(env_value, "none") == 0) {
-            parsed = SIXEL_PALETTE_KMEANS_PRUNE_NONE;
-        } else if (sixel_compat_strcasecmp(env_value, "hamerly") == 0) {
-            parsed = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
-        } else if (sixel_compat_strcasecmp(env_value, "elkan") == 0) {
-            parsed = SIXEL_PALETTE_KMEANS_PRUNE_ELKAN;
-        } else if (sixel_compat_strcasecmp(env_value, "yinyang") == 0) {
-            parsed = SIXEL_PALETTE_KMEANS_PRUNE_YINYANG;
-        } else if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
-            parsed = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
-        }
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_KMEANS_PRUNE",
+            &value)) {
+        parsed = (sixel_kmeans_prune_policy)value;
     }
     resolved = sixel_kmeans_resolve_prune_policy(parsed);
     cached = resolved;
@@ -1150,11 +1036,8 @@ sixel_get_kmeans_feedback_slots(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmeans_parse_env_uint(
+    cached = sixel_kmeans_resolve_registered_uint(
         "SIXEL_PALETTE_KMEANS_FEEDBACK_SLOTS",
-        1u,
-        16u,
-        0,
         1u,
         NULL);
 
@@ -1192,11 +1075,8 @@ sixel_get_kmeans_feedback_interval(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_kmeans_parse_env_uint(
+    cached = sixel_kmeans_resolve_registered_uint(
         "SIXEL_PALETTE_KMEANS_FEEDBACK_INTERVAL",
-        1u,
-        64u,
-        0,
         1u,
         NULL);
 

@@ -106,14 +106,8 @@ static float
 sixel_encoding_planner_resolve_bluenoise_gradient_factor(
     sixel_encoder_t const *encoder)
 {
-    char const *text;
-    char *endptr;
-    double parsed;
     float resolved;
 
-    text = NULL;
-    endptr = NULL;
-    parsed = 0.0;
     resolved = 0.0f;
 
     if (encoder == NULL) {
@@ -131,22 +125,11 @@ sixel_encoding_planner_resolve_bluenoise_gradient_factor(
         return 0.0f;
     }
 
-    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR");
-    if (text == NULL || text[0] == '\0') {
+    if (!sixel_option_resolve_registered_float_environment(
+            "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR",
+            &resolved)) {
         return 0.0f;
     }
-
-    errno = 0;
-    parsed = strtod(text, &endptr);
-    if (endptr == text
-            || endptr == NULL
-            || endptr[0] != '\0'
-            || errno != 0
-            || parsed <= 0.0) {
-        return 0.0f;
-    }
-
-    resolved = (float)parsed;
     if (resolved <= 0.0f) {
         return 0.0f;
     }

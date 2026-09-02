@@ -87,14 +87,16 @@ sixel_set_palette_cover_override(int enabled,
 SIXEL_INTERNAL_API int
 sixel_palette_cover_mode(void)
 {
-    char const *value;
+    int value;
 
+    value = SIXEL_PALETTE_COVER_MODE_SOFT;
     if (g_sixel_palette_cover_override_enabled != 0) {
         return g_sixel_palette_cover_override.mode;
     }
-    value = sixel_compat_getenv("SIXEL_PALETTE_COVER_MODE");
-    if (value != NULL && strcmp(value, "hard") == 0) {
-        return SIXEL_PALETTE_COVER_MODE_HARD;
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_COVER_MODE",
+            &value)) {
+        return value;
     }
 
     return SIXEL_PALETTE_COVER_MODE_SOFT;
@@ -103,8 +105,9 @@ sixel_palette_cover_mode(void)
 SIXEL_INTERNAL_API int
 sixel_palette_cover_policy(void)
 {
-    char const *value;
+    int value;
 
+    value = SIXEL_PALETTE_COVER_AUTO;
     if (g_sixel_palette_cover_override_enabled != 0) {
         return g_sixel_palette_cover_override.policy;
     }
@@ -112,21 +115,10 @@ sixel_palette_cover_policy(void)
      * The environment stays available for callers that build a palette
      * directly rather than through the encoder's option layer.
      */
-    value = sixel_compat_getenv("SIXEL_PALETTE_COVER");
-    if (value == NULL) {
-        return SIXEL_PALETTE_COVER_AUTO;
-    }
-    if (strcmp(value, "0") == 0 || strcmp(value, "off") == 0) {
-        return SIXEL_PALETTE_COVER_OFF;
-    }
-    if (strcmp(value, "corners") == 0) {
-        return SIXEL_PALETTE_COVER_CORNERS;
-    }
-    if (strcmp(value, "faces") == 0) {
-        return SIXEL_PALETTE_COVER_FACES;
-    }
-    if (strcmp(value, "edges") == 0) {
-        return SIXEL_PALETTE_COVER_EDGES;
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_PALETTE_COVER",
+            &value)) {
+        return value;
     }
 
     return SIXEL_PALETTE_COVER_AUTO;

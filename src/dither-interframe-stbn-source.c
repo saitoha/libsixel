@@ -29,10 +29,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <sys/stat.h>
 #include <string.h>
-#include "compat_stub.h"
 #include "dither-interframe-method.h"
 #include "dither-interframe-stbn-source-hash.h"
 #include "dither-interframe-stbn-source-mask.h"
@@ -40,57 +38,19 @@
 #include "options.h"
 
 static int
-sixel_interframe_parse_noise_strength_common(char const *text,
-                                             float *out_value)
-{
-    char *endptr;
-    double value;
-
-    endptr = NULL;
-    value = 0.0;
-    if (text == NULL || text[0] == '\0' || out_value == NULL) {
-        return 0;
-    }
-
-    errno = 0;
-    value = strtod(text, &endptr);
-    if (endptr == text || *endptr != '\0' || errno != 0) {
-        return 0;
-    }
-
-    *out_value = (float)value;
-    return 1;
-}
-
-static int
 sixel_interframe_noise_strength_u8_from_env_common(void)
 {
-    char const *text;
-    float strength;
-    double scaled;
-    int parsed;
+    int value;
 
-    text = NULL;
-    strength = SIXEL_INTERFRAME_NOISE_STRENGTH_DEFAULT;
-    scaled = 0.0;
-    parsed = 0;
-
-    text = sixel_compat_getenv(SIXEL_DITHER_STBN_STRENGTH_ENVVAR);
-    if (text != NULL) {
-        parsed = sixel_interframe_parse_noise_strength_common(text, &strength);
-        if (parsed == 0) {
-            strength = SIXEL_INTERFRAME_NOISE_STRENGTH_DEFAULT;
-        }
+    value = (int)(
+        SIXEL_INTERFRAME_NOISE_STRENGTH_DEFAULT * 255.0f + 0.5f);
+    if (sixel_option_resolve_registered_int_environment(
+            SIXEL_DITHER_STBN_STRENGTH_ENVVAR,
+            &value)) {
+        return value;
     }
 
-    if (strength < 0.0f) {
-        strength = 0.0f;
-    }
-    scaled = (double)strength * 255.0;
-    if (scaled > 255.0) {
-        scaled = 255.0;
-    }
-    return (int)(scaled + 0.5);
+    return value;
 }
 
 int

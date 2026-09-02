@@ -26,17 +26,16 @@
 #include "config.h"
 #endif
 
-#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #if HAVE_MATH_H
 # include <math.h>
 #endif  /* HAVE_MATH_H */
 
-#include "compat_stub.h"
 #include "dither-policy-bluenoise.h"
 #include "dither.h"
 #include "dither-common-pipeline.h"
+#include "options.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 #include "bluenoise_64x64.h"
@@ -80,101 +79,6 @@ typedef struct sixel_bluenoise_conf {
     int size;
 } sixel_bluenoise_conf_t;
 
-static int
-sixel_dither_bluenoise_parse_float_env(char const *text, float *out_value)
-{
-    char *endptr;
-    double value;
-
-    endptr = NULL;
-    value = 0.0;
-    if (text == NULL || out_value == NULL || text[0] == '\0') {
-        return 0;
-    }
-
-    value = strtod(text, &endptr);
-    if (endptr == text || *endptr != '\0') {
-        return 0;
-    }
-
-    *out_value = (float)value;
-    return 1;
-}
-
-static int
-sixel_dither_bluenoise_parse_int_env(char const *text, int *out_value)
-{
-    char *endptr;
-    long value;
-
-    endptr = NULL;
-    value = 0L;
-    if (text == NULL || out_value == NULL || text[0] == '\0') {
-        return 0;
-    }
-
-    value = strtol(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0') {
-        return 0;
-    }
-
-    *out_value = (int)value;
-    return 1;
-}
-
-static int
-sixel_dither_bluenoise_parse_phase_env(char const *text, int *out_x, int *out_y)
-{
-    char *endptr;
-    int x;
-    int y;
-
-    endptr = NULL;
-    x = 0;
-    y = 0;
-    if (text == NULL || out_x == NULL || out_y == NULL || text[0] == '\0') {
-        return 0;
-    }
-
-    x = (int)strtol(text, &endptr, 10);
-    if (endptr == text || endptr == NULL || *endptr != ',') {
-        return 0;
-    }
-
-    text = endptr + 1;
-    y = (int)strtol(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0') {
-        return 0;
-    }
-
-    *out_x = x;
-    *out_y = y;
-    return 1;
-}
-
-static int
-sixel_dither_bluenoise_channel_is_rgb(char const *text)
-{
-    char value0;
-    char value1;
-    char value2;
-    char value3;
-
-    value0 = '\0';
-    value1 = '\0';
-    value2 = '\0';
-    value3 = '\0';
-    if (text == NULL) {
-        return 0;
-    }
-
-    value0 = (char)tolower((unsigned char)text[0]);
-    value1 = (char)tolower((unsigned char)text[1]);
-    value2 = (char)tolower((unsigned char)text[2]);
-    value3 = text[3];
-    return value0 == 'r' && value1 == 'g' && value2 == 'b' && value3 == '\0';
-}
-
 static unsigned int
 sixel_bluenoise_hash32(unsigned int value)
 {
@@ -189,12 +93,10 @@ sixel_bluenoise_hash32(unsigned int value)
 static void
 sixel_bluenoise_conf_init(sixel_bluenoise_conf_t *conf)
 {
-    char const *text;
-    int value;
+    int seed;
     unsigned int hash;
 
-    text = NULL;
-    value = 0;
+    seed = 0;
     hash = 0U;
     if (conf == NULL) {
         return;
@@ -207,42 +109,37 @@ sixel_bluenoise_conf_init(sixel_bluenoise_conf_t *conf)
     conf->channel_rgb = 0;
     conf->size = SIXEL_BN_W;
 
-    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_STRENGTH");
-    if (text != NULL) {
-        (void)sixel_dither_bluenoise_parse_float_env(text, &conf->strength);
-    }
+    (void)sixel_option_resolve_registered_float_environment(
+            "SIXEL_DITHER_BLUENOISE_STRENGTH",
+            &conf->strength);
 
-    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR");
-    if (text != NULL) {
-        (void)sixel_dither_bluenoise_parse_float_env(text, &conf->gradient_factor);
+    if (sixel_option_resolve_registered_float_environment(
+            "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR",
+            &conf->gradient_factor)) {
         if (conf->gradient_factor < 0.0f) {
             conf->gradient_factor = 0.0f;
         }
     }
 
-    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_CHANNEL");
-    if (text != NULL) {
-        conf->channel_rgb = sixel_dither_bluenoise_channel_is_rgb(text);
-    }
+    (void)sixel_option_resolve_registered_int_environment(
+            "SIXEL_DITHER_BLUENOISE_CHANNEL",
+            &conf->channel_rgb);
 
-    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_SIZE");
-    if (text != NULL
-            && sixel_dither_bluenoise_parse_int_env(text, &value) != 0
-            && value == SIXEL_BN_W) {
-        conf->size = value;
-    }
+    (void)sixel_option_resolve_registered_int_environment(
+            "SIXEL_DITHER_BLUENOISE_SIZE",
+            &conf->size);
 
-    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_PHASE");
-    if (text != NULL
-            && sixel_dither_bluenoise_parse_phase_env(text,
-                                            &conf->phase_x,
-                                            &conf->phase_y) != 0) {
+    if (sixel_option_resolve_registered_int_pair_environment(
+            "SIXEL_DITHER_BLUENOISE_PHASE",
+            &conf->phase_x,
+            &conf->phase_y)) {
         return;
     }
 
-    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_SEED");
-    if (text != NULL && sixel_dither_bluenoise_parse_int_env(text, &value) != 0) {
-        hash = sixel_bluenoise_hash32((unsigned int)value);
+    if (sixel_option_resolve_registered_int_environment(
+            "SIXEL_DITHER_BLUENOISE_SEED",
+            &seed)) {
+        hash = sixel_bluenoise_hash32((unsigned int)seed);
         conf->phase_x = (int)(hash & 63U);
         conf->phase_y = (int)((hash >> 8) & 63U);
     }

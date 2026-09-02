@@ -31,17 +31,16 @@
 #if HAVE_STRING_H
 # include <string.h>
 #endif  /* HAVE_STRING_H */
-#include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #include <sixel.h>
 
-#include "compat_stub.h"
 #include "dither.h"
 #include "filter-gradient.h"
 #include "filter.h"
 #include "frame.h"
+#include "options.h"
 
 typedef struct sixel_filter_gradient_state {
     sixel_filter_gradient_config_t config;
@@ -87,14 +86,8 @@ sixel_filter_gradient_luma_from_rgb(unsigned char r,
 static float
 sixel_filter_gradient_resolve_factor(sixel_dither_t const *dither)
 {
-    char const *text;
-    char *endptr;
-    double parsed;
     float resolved;
 
-    text = NULL;
-    endptr = NULL;
-    parsed = 0.0;
     resolved = 0.0f;
 
     if (dither == NULL
@@ -108,22 +101,11 @@ sixel_filter_gradient_resolve_factor(sixel_dither_t const *dither)
         return 0.0f;
     }
 
-    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR");
-    if (text == NULL || text[0] == '\0') {
+    if (!sixel_option_resolve_registered_float_environment(
+            "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR",
+            &resolved)) {
         return 0.0f;
     }
-
-    errno = 0;
-    parsed = strtod(text, &endptr);
-    if (endptr == text
-            || endptr == NULL
-            || endptr[0] != '\0'
-            || errno != 0
-            || parsed <= 0.0) {
-        return 0.0f;
-    }
-
-    resolved = (float)parsed;
     if (resolved <= 0.0f) {
         return 0.0f;
     }

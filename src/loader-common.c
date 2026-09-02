@@ -62,6 +62,7 @@
 #include "compat_stub.h"
 #include "frame-private.h"
 #include "loader-common.h"
+#include "options.h"
 #include "timeline-logger.h"
 
 #if defined(__PCC__) || defined(__TINYC__)
@@ -244,9 +245,6 @@ loader_background_unlock(void)
 #undef SIXEL_LOADER_TLS_AVAILABLE
 #undef SIXEL_LOADER_NO_TLS_COMPILER
 
-#define SIXEL_ENV_WIC_ICO_MINSIZE "SIXEL_LOADER_WIC_ICO_MINSIZE"
-#define SIXEL_ENV_WIC_ICO_MINSIZE_LEGACY "SIXEL_LODER_WIC_ICO_MINSIZE"
-
 #define SIXEL_LOADER_TIMELINE_OPT_COLORSPACE (1u << 0)
 #define SIXEL_LOADER_TIMELINE_OPT_BACKGROUND (1u << 1)
 #define SIXEL_LOADER_TIMELINE_OPT_ICC        (1u << 2)
@@ -332,9 +330,9 @@ loader_timeline_log_event(char const *role, char const *event, int job_id)
 static void
 loader_wic_initialize_ico_minsize(void)
 {
-    char const *env_value;
-    char *endptr;
-    long parsed;
+    unsigned int value;
+
+    value = 0u;
 
     loader_background_lock();
     if (wic_ico_minsize_initialized) {
@@ -346,34 +344,14 @@ loader_wic_initialize_ico_minsize(void)
     wic_ico_minsize_default = 0;
     wic_ico_minsize = 0;
 
-    env_value = sixel_compat_getenv(SIXEL_ENV_WIC_ICO_MINSIZE);
-    if (env_value == NULL || env_value[0] == '\0') {
-        env_value = sixel_compat_getenv(SIXEL_ENV_WIC_ICO_MINSIZE_LEGACY);
-    }
-    if (env_value == NULL || env_value[0] == '\0') {
+    if (!sixel_option_resolve_registered_uint_environment(
+            "SIXEL_LOADER_WIC_ICO_MINSIZE",
+            &value)) {
         loader_background_unlock();
         return;
     }
 
-    errno = 0;
-    parsed = strtol(env_value, &endptr, 10);
-    if (errno != 0) {
-        loader_background_unlock();
-        return;
-    }
-    if (endptr == env_value || *endptr != '\0') {
-        loader_background_unlock();
-        return;
-    }
-    if (parsed <= 0) {
-        loader_background_unlock();
-        return;
-    }
-    if (parsed > (long)INT_MAX) {
-        parsed = (long)INT_MAX;
-    }
-
-    wic_ico_minsize_default = (int)parsed;
+    wic_ico_minsize_default = (int)value;
     wic_ico_minsize = wic_ico_minsize_default;
     loader_background_unlock();
 }

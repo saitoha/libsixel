@@ -45,6 +45,14 @@ sixel_option_registry_suboption_at(
     sixel_option_value_schema_t const *base_def,
     size_t index);
 
+/*
+ * Environment names are unique registry keys.  Lower-level library entry
+ * points use this lookup to preserve environment compatibility without
+ * duplicating getenv() and parsing logic in individual algorithms.
+ */
+sixel_suboption_key_t const *
+sixel_option_registry_suboption_by_environment(char const *name);
+
 int
 sixel_option_registry_validate(void);
 
