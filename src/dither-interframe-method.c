@@ -54,18 +54,24 @@ sixel_interframe_is_supported_spatial_diffuse(int method_for_diffuse)
 }
 
 static int
-sixel_interframe_spatial_diffuse_from_env_named(char const *envvar,
-                                                 int fallback)
+sixel_interframe_spatial_diffuse_from_registry(char const *base_name,
+                                               int fallback)
 {
     int resolved;
 
     resolved = SIXEL_INTERFRAME_SPATIAL_DIFFUSE_UNSET;
 
-    if (envvar == NULL) {
+    if (base_name == NULL) {
         return fallback;
     }
 
-    (void)sixel_option_resolve_registered_int_environment(envvar, &resolved);
+    (void)sixel_option_resolve_registered_int_binding(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        base_name,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            interframe_spatial_diffuse,
+            interframe_spatial_diffuse_override),
+        &resolved);
     if (!sixel_interframe_is_supported_spatial_diffuse(resolved)) {
         resolved = fallback;
     }
@@ -157,8 +163,8 @@ sixel_interframe_spatial_diffuse_from_string(char const *value)
 int
 sixel_interframe_spatial_diffuse_from_env_common(void)
 {
-    return sixel_interframe_spatial_diffuse_from_env_named(
-        SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR,
+    return sixel_interframe_spatial_diffuse_from_registry(
+        "interframe",
         SIXEL_DIFFUSE_FS);
 }
 
@@ -182,13 +188,13 @@ sixel_interframe_spatial_diffuse_from_dither_or_env_common(
     strategy_method = sixel_interframe_strategy_method_from_token(
         strategy_token);
     if (strategy_method == SIXEL_INTERFRAME_METHOD_STBN) {
-        return sixel_interframe_spatial_diffuse_from_env_named(
-            SIXEL_DITHER_STBN_DIFFUSION_ENVVAR,
+        return sixel_interframe_spatial_diffuse_from_registry(
+            "stbn",
             SIXEL_DIFFUSE_NONE);
     }
 
-    return sixel_interframe_spatial_diffuse_from_env_named(
-        SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR,
+    return sixel_interframe_spatial_diffuse_from_registry(
+        "interframe",
         SIXEL_DIFFUSE_FS);
 }
 
@@ -198,8 +204,12 @@ sixel_interframe_strategy_token_from_env_common(void)
     int value;
 
     value = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
-    if (sixel_option_resolve_registered_int_environment(
-            SIXEL_DITHER_STBN_SOURCE_ENVVAR,
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_DIFFUSION,
+            "stbn",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                interframe_strategy_token,
+                interframe_strategy_override),
             &value)) {
         return value;
     }

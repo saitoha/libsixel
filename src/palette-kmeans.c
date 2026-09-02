@@ -369,8 +369,12 @@ sixel_get_kmeans_init_type(void)
     }
     init_loaded = 1;
 
-    if (sixel_option_resolve_registered_int_environment(
-            "SIXEL_PALETTE_KMEANS_INITTYPE",
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_init_type,
+                quantize_model_kmeans_init_override),
             &value)) {
         parsed = (sixel_kmeans_init_type)value;
     }
@@ -427,8 +431,12 @@ sixel_get_kmeans_binning_mode(void)
     }
     loaded = 1;
 
-    if (sixel_option_resolve_registered_int_environment(
-            "SIXEL_PALETTE_KMEANS_BINNING",
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_binning_mode,
+                quantize_model_kmeans_binning_override),
             &value)) {
         cached = (sixel_kmeans_binning_mode)value;
     }
@@ -468,8 +476,12 @@ sixel_get_kmeans_binbits(void)
     }
     loaded = 1;
 
-    (void)sixel_option_resolve_registered_uint_environment(
-            "SIXEL_PALETTE_KMEANS_BINBITS",
+    (void)sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_binbits,
+                quantize_model_kmeans_binbits_override),
             &cached);
 
     return cached;
@@ -517,8 +529,12 @@ sixel_get_kmeans_mapping_mode(void)
     }
     loaded = 1;
 
-    if (sixel_option_resolve_registered_int_environment(
-            "SIXEL_PALETTE_KMEANS_MAPPING",
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_mapping_mode,
+                quantize_model_kmeans_mapping_override),
             &value)) {
         cached = (sixel_kmeans_mapping_mode)value;
     }
@@ -567,8 +583,12 @@ sixel_get_kmeans_softdist_mode(void)
     }
     loaded = 1;
 
-    if (sixel_option_resolve_registered_int_environment(
-            "SIXEL_PALETTE_KMEANS_SOFTDIST",
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_softdist_mode,
+                quantize_model_kmeans_softdist_override),
             &value)) {
         cached = (sixel_kmeans_softdist_mode)value;
     }
@@ -605,17 +625,22 @@ sixel_get_kmeans_autoratio(void)
     }
     loaded = 1;
 
-    (void)sixel_option_resolve_registered_uint_environment(
-            "SIXEL_PALETTE_KMEANS_AUTORATIO",
+    (void)sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_autoratio,
+                quantize_model_kmeans_autoratio_override),
             &cached);
 
     return cached;
 }
 
 static unsigned int
-sixel_kmeans_resolve_registered_uint(char const *name,
-                            unsigned int fallback,
-                            int *present_out)
+sixel_kmeans_resolve_registered_uint(
+    char const *binding_identifier,
+    unsigned int fallback,
+    int *present_out)
 {
     unsigned int value;
 
@@ -623,10 +648,14 @@ sixel_kmeans_resolve_registered_uint(char const *name,
     if (present_out != NULL) {
         *present_out = 0;
     }
-    if (name == NULL) {
+    if (binding_identifier == NULL) {
         return value;
     }
-    if (sixel_option_resolve_registered_uint_environment(name, &value)) {
+    if (sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            binding_identifier,
+            &value)) {
         if (present_out != NULL) {
             *present_out = 1;
         }
@@ -668,7 +697,9 @@ sixel_get_kmeans_seed(void)
     loaded = 1;
 
     parsed = sixel_kmeans_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEANS_SEED",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmeans_seed,
+            quantize_model_kmeans_seed_override),
         0u,
         &present);
     cached = (uint32_t)parsed;
@@ -694,7 +725,9 @@ sixel_get_kmeans_seed_enabled(void)
     }
     loaded = 1;
     parsed = sixel_kmeans_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEANS_SEED",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmeans_seed,
+            quantize_model_kmeans_seed_override),
         0u,
         &cached_present);
     (void)parsed;
@@ -734,7 +767,9 @@ sixel_get_kmeans_restarts(void)
     }
     loaded = 1;
     cached = sixel_kmeans_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEANS_RESTARTS",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmeans_restarts,
+            quantize_model_kmeans_restarts_override),
         1u,
         NULL);
 
@@ -774,7 +809,9 @@ sixel_get_kmeans_iter(void)
     }
     loaded = 1;
     cached = sixel_kmeans_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEANS_ITER",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmeans_iter,
+            quantize_model_kmeans_iter_override),
         0u,
         &cached_present);
 
@@ -797,7 +834,9 @@ sixel_get_kmeans_iter_enabled(void)
     }
     loaded = 1;
     parsed = sixel_kmeans_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEANS_ITER",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmeans_iter,
+            quantize_model_kmeans_iter_override),
         0u,
         &cached_present);
     (void)parsed;
@@ -834,7 +873,9 @@ sixel_get_kmeans_miniter(void)
     }
     loaded = 1;
     cached = sixel_kmeans_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEANS_MINITER",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmeans_miniter,
+            quantize_model_kmeans_miniter_override),
         0u,
         NULL);
 
@@ -870,7 +911,9 @@ sixel_get_kmeans_polish_iter(void)
     }
     loaded = 1;
     cached = sixel_kmeans_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEANS_POLISH_ITER",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmeans_polish_iter,
+            quantize_model_kmeans_polish_iter_override),
         0u,
         NULL);
 
@@ -917,8 +960,12 @@ sixel_get_kmeans_feedback_mode(void)
     }
     loaded = 1;
     cached = (sixel_kmeans_feedback_mode)
-        sixel_option_resolve_boolean_environment(
-            "SIXEL_PALETTE_KMEANS_FEEDBACK",
+        sixel_option_resolve_registered_boolean_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_feedback_mode,
+                quantize_model_kmeans_feedback_override),
             SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
 
     return cached;
@@ -993,8 +1040,12 @@ sixel_get_kmeans_prune_policy(void)
         return cached;
     }
     loaded = 1;
-    if (sixel_option_resolve_registered_int_environment(
-            "SIXEL_PALETTE_KMEANS_PRUNE",
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_prune_policy,
+                quantize_model_kmeans_prune_override),
             &value)) {
         parsed = (sixel_kmeans_prune_policy)value;
     }
@@ -1037,7 +1088,9 @@ sixel_get_kmeans_feedback_slots(void)
     }
     loaded = 1;
     cached = sixel_kmeans_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEANS_FEEDBACK_SLOTS",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmeans_feedback_slots,
+            quantize_model_kmeans_feedback_slots_override),
         1u,
         NULL);
 
@@ -1076,7 +1129,9 @@ sixel_get_kmeans_feedback_interval(void)
     }
     loaded = 1;
     cached = sixel_kmeans_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEANS_FEEDBACK_INTERVAL",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmeans_feedback_interval,
+            quantize_model_kmeans_feedback_interval_override),
         1u,
         NULL);
 

@@ -28,7 +28,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=cover_grow|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=cover_grow|stored=1|binding=quantize_model_cover_grow,quantize_model_cover_grow_override*}" != "${short_trace}" || {
     echo "not ok" 1 - "cover_grow short value was not stored"
     exit 0
 }
@@ -41,7 +41,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=cover_grow|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=cover_grow|stored=1|binding=quantize_model_cover_grow,quantize_model_cover_grow_override*}" != "${env_trace}" || {
     echo "not ok" 1 - "cover_grow environment value was not stored"
     exit 0
 }

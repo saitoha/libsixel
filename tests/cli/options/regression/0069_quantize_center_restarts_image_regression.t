@@ -2,6 +2,7 @@
 # Verify center:restarts preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|restarts
 # Registry binding: quantize_model_kcenter_restarts|quantize_model_kcenter_restarts_override
+# Environment range: parse-unsigned-long
 
 set -eux
 
@@ -28,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=restarts|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=restarts|stored=1|binding=quantize_model_kcenter_restarts,quantize_model_kcenter_restarts_override|value=2*}" != "${short_trace}" || {
     echo "not ok" 1 - "restarts short value was not stored"
     exit 0
 }
@@ -41,8 +42,21 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=restarts|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=restarts|stored=1|binding=quantize_model_kcenter_restarts,quantize_model_kcenter_restarts_override|value=2*}" != "${env_trace}" || {
     echo "not ok" 1 - "restarts environment value was not stored"
+    exit 0
+}
+
+width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KCENTER_RESTARTS=4294967296" \
+    -p 16 "-Qcenter" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "center:restarts width conversion failed"
+    exit 0
+}
+
+test "${width_trace#*LSXSUB1|*key=restarts|stored=1}" = "${width_trace}" || {
+    echo "not ok" 1 - "center restarts accepted an over-width value"
     exit 0
 }
 

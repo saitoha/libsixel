@@ -28,7 +28,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=prune_mass|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=prune_mass|stored=1|binding=quantize_model_kmedoids_prune_mass,quantize_model_kmedoids_prune_mass_override*}" != "${short_trace}" || {
     echo "not ok" 1 - "prune_mass short value was not stored"
     exit 0
 }
@@ -41,7 +41,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=prune_mass|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=prune_mass|stored=1|binding=quantize_model_kmedoids_prune_mass,quantize_model_kmedoids_prune_mass_override*}" != "${env_trace}" || {
     echo "not ok" 1 - "prune_mass environment value was not stored"
     exit 0
 }

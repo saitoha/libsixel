@@ -2,6 +2,7 @@
 # Verify kmeans:autoratio preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS|autoratio
 # Registry binding: quantize_model_kmeans_autoratio|quantize_model_kmeans_autoratio_override
+# Environment range: clamp-signed-uint
 
 set -eux
 
@@ -28,21 +29,34 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=autoratio|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=autoratio|stored=1|binding=quantize_model_kmeans_autoratio,quantize_model_kmeans_autoratio_override|value=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "autoratio short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_AUTORATIO=1" -p 16 "-Qkmeans:Bauto" \
+    --env "SIXEL_PALETTE_KMEANS_AUTORATIO=-1" -p 16 "-Qkmeans:Bauto" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "kmeans:autoratio env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=autoratio|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=autoratio|stored=1|binding=quantize_model_kmeans_autoratio,quantize_model_kmeans_autoratio_override|value=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "autoratio environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEANS_AUTORATIO=1048577" \
+    -p 16 "-Qkmeans:Bauto" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "kmeans:autoratio upper conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=autoratio|stored=1|binding=quantize_model_kmeans_autoratio,quantize_model_kmeans_autoratio_override|value=1048576*}" != "${range_trace}" || {
+    echo "not ok" 1 - "autoratio upper endpoint was not clamped"
     exit 0
 }
 

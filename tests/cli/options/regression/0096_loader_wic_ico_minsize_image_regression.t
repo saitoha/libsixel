@@ -31,26 +31,40 @@ env_output="${artifact_dir}/0096-loader-wic-ico_minsize-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Lwic:I30!" "${input_image}" 2>&1 >"${short_output}") || {
+    "-Lwic:I2147483647!" "${input_image}" \
+    2>&1 >"${short_output}") || {
     echo "not ok" 1 - "wic:ico_minsize short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=ico_minsize|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=ico_minsize|stored=1|binding=wic_ico_minsize|value=2147483647*}" != "${short_trace}" || {
     echo "not ok" 1 - "ico_minsize short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_WIC_ICO_MINSIZE=30" "-Lwic!" \
+    --env "SIXEL_LOADER_WIC_ICO_MINSIZE=2147483647" "-Lwic!" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "wic:ico_minsize env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=ico_minsize|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=ico_minsize|stored=1|binding=wic_ico_minsize|value=2147483647*}" != "${env_trace}" || {
     echo "not ok" 1 - "ico_minsize environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_LOADER_WIC_ICO_MINSIZE=2147483648" "-Lwic!" \
+    "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "wic:ico_minsize upper conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=ico_minsize|stored=1*}" = "${range_trace}" || {
+    echo "not ok" 1 - "ico_minsize accepted a value above INT_MAX"
     exit 0
 }
 

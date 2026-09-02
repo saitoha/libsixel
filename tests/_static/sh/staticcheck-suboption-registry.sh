@@ -53,6 +53,29 @@ function fail(message) {
     print "# " message
     failed = 1
 }
+function macro_is_approved(macro) {
+    return macro == "SIXEL_REGISTRY_DEQUANTIZE_CHOICE" ||
+        macro == "SIXEL_REGISTRY_DEQUANTIZE_UINT" ||
+        macro == "SIXEL_REGISTRY_ENCODER_BOOLEAN" ||
+        macro == "SIXEL_REGISTRY_ENCODER_CHOICE" ||
+        macro == "SIXEL_REGISTRY_ENCODER_CHOICE_ENV" ||
+        macro == "SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE" ||
+        macro == "SIXEL_REGISTRY_ENCODER_DOUBLE" ||
+        macro == "SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP" ||
+        macro == "SIXEL_REGISTRY_ENCODER_FLOAT" ||
+        macro == "SIXEL_REGISTRY_ENCODER_INT" ||
+        macro == "SIXEL_REGISTRY_ENCODER_INT_PAIR" ||
+        macro == "SIXEL_REGISTRY_ENCODER_MIRROR_CHOICE" ||
+        macro == "SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP" ||
+        macro == "SIXEL_REGISTRY_ENCODER_UINT" ||
+        macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE" ||
+        macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED" ||
+        macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED" ||
+        macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG" ||
+        macro == "SIXEL_REGISTRY_LOADER_BOOLEAN" ||
+        macro == "SIXEL_REGISTRY_LOADER_CHOICE_ENV" ||
+        macro == "SIXEL_REGISTRY_LOADER_UINT"
+}
 function inspect(row, fields, count, option_id, base, name, alias, env,
                  exact_key, shared_key, macro) {
     gsub(/[[:space:]]+/, " ", row)
@@ -80,8 +103,11 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
         fail(option_id ":" name " needs a non-empty environment variable")
     }
-    if (macro !~ /BOUND|ENCODER/) {
+    if (macro !~ /DEQUANTIZE|ENCODER|LOADER/) {
         fail(option_id ":" name " needs a typed target binding")
+    }
+    if (!macro_is_approved(macro)) {
+        fail(option_id ":" name " uses unapproved row macro " macro)
     }
     exact_key = option_id SUBSEP base SUBSEP alias
     if (seen_exact[exact_key]) {
@@ -108,6 +134,8 @@ BEGIN {
     failed = 0
     rows = 0
     raw_initializer = 0
+    unknown_initializer = 0
+    unknown_preprocessor = 0
 }
 /g_suboptions\[\][[:space:]]*=[[:space:]]*\{/ {
     in_registry = 1
@@ -134,12 +162,26 @@ in_registry && in_row && /\),[[:space:]]*$/ {
 in_registry && !in_row && /^[[:space:]]*\{/ {
     raw_initializer = 1
 }
+in_registry && !in_row && /^[[:space:]]*#/ &&
+        $0 !~ /^[[:space:]]*#[[:space:]]*(if|elif|else|endif)([[:space:]]|$)/ {
+    unknown_preprocessor = 1
+}
+in_registry && !in_row && /[^[:space:]]/ &&
+        $0 !~ /^[[:space:]]*#/ {
+    unknown_initializer = 1
+}
 END {
     if (in_row) {
         fail("unterminated suboption registry row")
     }
     if (raw_initializer) {
         fail("raw suboption initializer bypasses registry macros")
+    }
+    if (unknown_initializer) {
+        fail("unknown suboption initializer bypasses registry macros")
+    }
+    if (unknown_preprocessor) {
+        fail("unsupported preprocessor directive in suboption registry")
     }
     if (rows == 0) {
         fail("suboption registry has no rows")
@@ -259,6 +301,111 @@ END {
     exit 0
 }
 
+# Consumer selectors contain field tokens rather than copied environment
+# names.  Derive the accepted identifiers from the registry rows themselves
+# so this check does not become a second hand-maintained option table.
+awk -v registry_file="$registry_file" '
+function fail(message) {
+    print "# " message
+    failed = 1
+}
+function binding_from_registry(row, fields, count, macro, binding) {
+    gsub(/[[:space:]]+/, " ", row)
+    match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
+    macro = substr(row, RSTART, RLENGTH)
+    sub(/^.*SIXEL_REGISTRY_[A-Z0-9_]+\(/, "", row)
+    sub(/^[[:space:]]*/, "", row)
+    sub(/\),[[:space:]]*$/, "", row)
+    count = split(row, fields, /,[[:space:]]*/)
+    if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
+        binding = fields[count - 2] "," fields[count - 1] "," \
+            fields[count]
+    } else if (macro ~ /ENCODER_DIRECT_CHOICE|DEQUANTIZE_|LOADER_/) {
+        binding = fields[count]
+    } else if (macro ~ /ENCODER_/) {
+        binding = fields[count - 1] "," fields[count]
+    } else {
+        fail("registry row has no selector binding: " row)
+        return ""
+    }
+    gsub(/[[:space:]]+/, "", binding)
+    return binding
+}
+function inspect_selector(text, binding) {
+    sub(/^.*SIXEL_SUBOPTION_BINDING_ID_[123]\(/, "", text)
+    sub(/\).*$/, "", text)
+    binding = text
+    gsub(/[[:space:]]+/, "", binding)
+    if (binding == "" || !registry_binding[binding]) {
+        fail(selector_file ":" selector_line \
+             " selects no registry binding: " binding)
+    }
+}
+BEGIN {
+    in_registry = 0
+    in_row = 0
+    in_selector = 0
+    failed = 0
+}
+FILENAME == registry_file {
+    if ($0 ~ /g_suboptions\[\][[:space:]]*=[[:space:]]*\{/) {
+        in_registry = 1
+        next
+    }
+    if (in_registry && $0 ~ /^[[:space:]]*};/) {
+        in_registry = 0
+        next
+    }
+    if (in_registry && $0 ~ /SIXEL_REGISTRY_[A-Z0-9_]+\(/) {
+        in_row = 1
+        row = $0
+        next
+    }
+    if (in_registry && in_row) {
+        row = row " " $0
+    }
+    if (in_registry && in_row && $0 ~ /\),[[:space:]]*$/) {
+        binding = binding_from_registry(row)
+        if (binding != "") {
+            registry_binding[binding] = 1
+        }
+        in_row = 0
+        row = ""
+    }
+    next
+}
+in_selector {
+    selector = selector " " $0
+    if ($0 ~ /\)/) {
+        inspect_selector(selector)
+        in_selector = 0
+        selector = ""
+    }
+    next
+}
+/SIXEL_SUBOPTION_BINDING_ID_[123]\(/ {
+    in_selector = 1
+    selector = $0
+    selector_file = FILENAME
+    selector_line = FNR
+    if ($0 ~ /\)/) {
+        inspect_selector(selector)
+        in_selector = 0
+        selector = ""
+    }
+}
+END {
+    if (in_selector) {
+        fail(selector_file ":" selector_line \
+             " has an unterminated registry binding selector")
+    }
+    exit failed ? 1 : 0
+}
+' "$registry_file" "$src_root"/src/*.c || {
+    echo "not ok 1 - suboptions use one complete registry"
+    exit 0
+}
+
 regression_dir=$src_root/tests/cli/options/regression
 test -d "$regression_dir" || {
     echo "not ok 1 - suboptions use one complete registry"
@@ -272,7 +419,8 @@ function fail(message) {
     failed = 1
 }
 function inspect_registry(row, fields, count, option_id, name, alias,
-                          environment, key, macro, binding) {
+                          environment, key, macro, binding, range_policy,
+                          binding_value, binding_override) {
     gsub(/[[:space:]]+/, " ", row)
     match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
     macro = substr(row, RSTART, RLENGTH)
@@ -304,18 +452,66 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     expected_name[key] = name
     expected_alias[key] = alias
     expected_environment[key] = environment
-    if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
+    range_policy = ""
+    if (macro ~ /SCALED_U8_ENV_CLAMP|DOUBLE_ENV_CLAMP/) {
+        range_policy = "clamp-both"
+    } else if (macro ~ /UINT_ENV_CLAMP_SIGNED/) {
+        range_policy = "clamp-signed-uint"
+    } else if (macro ~ /UINT_ENV_CLAMP_UNSIGNED/) {
+        range_policy = "clamp-unsigned-uint"
+    } else if (macro ~ /UINT_ENV_CLAMP_POSITIVE/) {
+        range_policy = "clamp-positive-uint"
+    } else if (macro ~ /UINT_ENV_CLAMP_MAXIMUM/) {
+        range_policy = "clamp-maximum"
+    } else if (macro ~ /UINT_ENV_REJECT_UNSIGNED_LONG/) {
+        range_policy = "parse-unsigned-long"
+        if ((fields[8] + 0.0) == 0.0 || (fields[10] + 0) == 1) {
+            expected_unsigned_long_sign[key] = 1
+        }
+    }
+    expected_range_policy[key] = range_policy
+    if (option_id == "SIXEL_OPTION_SCHEMA_DIFFUSION" &&
+            ((fields[2] == "NULL" && name == "scan") ||
+             fields[2] ~ /SIXEL_DIFFUSION_BASE_SIERRA/ ||
+             fields[2] ~ /SIXEL_DIFFUSION_BASE_INTERFRAME/ ||
+             fields[2] ~ /SIXEL_DIFFUSION_BASE_STBN/)) {
+        expected_dither_contract[key] = 1
+    }
+    if (option_id == "SIXEL_OPTION_SCHEMA_LUT_POLICY" &&
+            name == "shared_instance") {
+        expected_lookup_contract[key] = 1
+    }
+    binding_value = ""
+    binding_override = ""
+    if (macro ~ /ENCODER_MIRROR_CHOICE/) {
         binding = fields[count - 2] "|" fields[count - 1] "|" fields[count]
+        binding_value = fields[count - 2]
+        binding_override = fields[count - 1]
+    } else if (macro ~ /ENCODER_INT_PAIR/) {
+        binding = fields[count - 2] "|" fields[count - 1] "|" fields[count]
+        binding_value = fields[count - 2]
+        binding_override = fields[count]
     } else if (macro ~ /ENCODER_DIRECT_CHOICE/) {
         binding = fields[count]
+        binding_value = fields[count]
     } else if (macro ~ /ENCODER_/) {
         binding = fields[count - 1] "|" fields[count]
-    } else if (macro ~ /BOUND_/) {
+        binding_value = fields[count - 1]
+        binding_override = fields[count]
+    } else if (macro ~ /DEQUANTIZE_|LOADER_/) {
         binding = fields[count]
     } else {
         fail(option_id ":" name " has no typed binding macro")
     }
+    if (binding_value ~ /_override$/) {
+        fail(option_id ":" name " binds a control field as its value")
+    }
+    if (binding_override != "" && binding_override !~ /_override$/) {
+        fail(option_id ":" name " binds a value field as its override")
+    }
     expected_binding[key] = binding
+    expected_trace_binding[key] = binding
+    gsub(/\|/, ",", expected_trace_binding[key])
     registry_rows += 1
 }
 BEGIN {
@@ -374,6 +570,36 @@ FILENAME == registry_file {
     test_binding[FILENAME] = binding
     next
 }
+/^# Dither contract: / {
+    dither_contract = $0
+    sub(/^# Dither contract: /, "", dither_contract)
+    gsub(/[[:space:]]+/, " ", dither_contract)
+    if (test_dither_contract[FILENAME] != "") {
+        fail(FILENAME " contains more than one dither contract marker")
+    }
+    test_dither_contract[FILENAME] = dither_contract
+    next
+}
+/^# Lookup contract: / {
+    lookup_contract = $0
+    sub(/^# Lookup contract: /, "", lookup_contract)
+    gsub(/[[:space:]]+/, " ", lookup_contract)
+    if (test_lookup_contract[FILENAME] != "") {
+        fail(FILENAME " contains more than one lookup contract marker")
+    }
+    test_lookup_contract[FILENAME] = lookup_contract
+    next
+}
+/^# Environment range: / {
+    range_policy = $0
+    sub(/^# Environment range: /, "", range_policy)
+    gsub(/[[:space:]]+/, " ", range_policy)
+    if (test_range_policy[FILENAME] != "") {
+        fail(FILENAME " contains more than one environment range marker")
+    }
+    test_range_policy[FILENAME] = range_policy
+    next
+}
 FILENAME != registry_file {
     environment_first = ""
     environment_position = 0
@@ -411,14 +637,50 @@ FILENAME != registry_file {
         contract_trace_count[FILENAME] += 1
     }
     if (index($0, "short_trace#*LSXSUB1|*key=" expected_name[key] \
-            "|stored=1*") > 0) {
+            "|stored=1|binding=" expected_trace_binding[key]) > 0) {
         has_short_contract[FILENAME] = 1
     }
     if (index($0, "env_trace#*LSXSUB1|*key=" expected_name[key] \
-            "|stored=1*") > 0) {
+            "|stored=1|binding=" expected_trace_binding[key]) > 0) {
         has_environment_contract[FILENAME] = 1
     }
-    if (index($0, "ARTIFACT_ROOT") > 0 || index($0, "mkdir ") > 0 ||
+    if (index($0, "short_trace#*LSXSUB1|*key=" expected_name[key] \
+            "|stored=1|binding=" expected_trace_binding[key] \
+            "|value=") > 0) {
+        has_short_value_contract[FILENAME] = 1
+    }
+    if (index($0, "env_trace#*LSXSUB1|*key=" expected_name[key] \
+            "|stored=1|binding=" expected_trace_binding[key] \
+            "|value=") > 0) {
+        has_environment_value_contract[FILENAME] = 1
+    }
+    if (test_dither_contract[FILENAME] != "" &&
+            index($0, "LSXDTH1|*" test_dither_contract[FILENAME] "*") > 0) {
+        has_dither_contract[FILENAME] = 1
+    }
+    if (test_lookup_contract[FILENAME] != "" &&
+            index($0, "LSXDTH1|*" test_lookup_contract[FILENAME] "*") > 0) {
+        has_lookup_contract[FILENAME] = 1
+    }
+    if (index($0, "range_trace#*LSXSUB1|*key=" expected_name[key] \
+            "|stored=1|binding=" expected_trace_binding[key] \
+            "|value=") > 0) {
+        has_range_value_contract[FILENAME] = 1
+    }
+    if (index($0, "range_trace#*LSXSUB1|*key=" expected_name[key] \
+            "|stored=1") > 0 && index($0, \
+            " = \"${range_trace}\"") > 0) {
+        has_range_reject_contract[FILENAME] = 1
+    }
+    if (index($0, "width_trace#*LSXSUB1|*key=" expected_name[key] \
+            "|stored=1") > 0 && index($0, \
+            " = \"${width_trace}\"") > 0) {
+        has_width_reject_contract[FILENAME] = 1
+    }
+    lazy_artifact_mkdir = index($0,
+        "mkdir -p \"${ARTIFACT_LOCAL_DIR}\"") > 0
+    if (index($0, "ARTIFACT_ROOT") > 0 ||
+            (index($0, "mkdir ") > 0 && !lazy_artifact_mkdir) ||
             index($0, "-o \"${short_output}\"") > 0 ||
             index($0, "-o \"${env_output}\"") > 0) {
         has_unsafe_artifact_handling[FILENAME] = 1
@@ -489,6 +751,47 @@ END {
                 !has_short_contract[file] ||
                 !has_environment_contract[file]) {
             fail(file " does not verify both typed registry assignments")
+        }
+        if (expected_range_policy[key] != "" &&
+                (!has_short_value_contract[file] ||
+                 !has_environment_value_contract[file])) {
+            fail(file " does not verify the environment clamp endpoint")
+        }
+        if (test_range_policy[file] != expected_range_policy[key]) {
+            fail(file " does not identify its exact environment range policy")
+        }
+        if (expected_range_policy[key] != "" &&
+                expected_range_policy[key] != "parse-unsigned-long" &&
+                !has_range_value_contract[file] &&
+                !has_range_reject_contract[file]) {
+            fail(file " does not verify the opposite environment endpoint")
+        }
+        if ((expected_range_policy[key] == "clamp-positive-uint" ||
+             expected_range_policy[key] == "parse-unsigned-long") &&
+                !has_width_reject_contract[file]) {
+            fail(file " does not verify unsigned-width rejection")
+        }
+        if (expected_unsigned_long_sign[key] &&
+                !has_range_value_contract[file]) {
+            fail(file " does not verify unsigned-long signed-zero parsing")
+        }
+        if (expected_dither_contract[key] &&
+                (test_dither_contract[file] == "" ||
+                 !has_dither_contract[file])) {
+            fail(file " does not verify its effective dither setting")
+        }
+        if (!expected_dither_contract[key] &&
+                test_dither_contract[file] != "") {
+            fail(file " has an unexpected dither contract marker")
+        }
+        if (expected_lookup_contract[key] &&
+                (test_lookup_contract[file] == "" ||
+                 !has_lookup_contract[file])) {
+            fail(file " does not verify its effective lookup setting")
+        }
+        if (!expected_lookup_contract[key] &&
+                test_lookup_contract[file] != "") {
+            fail(file " has an unexpected lookup contract marker")
         }
         if (!has_environment[file]) {
             fail(file " does not exercise the registered environment name")

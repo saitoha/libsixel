@@ -125,8 +125,12 @@ sixel_encoding_planner_resolve_bluenoise_gradient_factor(
         return 0.0f;
     }
 
-    if (!sixel_option_resolve_registered_float_environment(
-            "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR",
+    if (!sixel_option_resolve_registered_float_binding(
+            SIXEL_OPTION_SCHEMA_DIFFUSION,
+            "bluenoise",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                bluenoise_gradient_factor,
+                bluenoise_gradient_factor_override),
             &resolved)) {
         return 0.0f;
     }

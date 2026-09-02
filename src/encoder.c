@@ -616,6 +616,73 @@ sixel_encoder_dither_source_name(unsigned int source_id)
     return "hash";
 }
 
+static char const *
+sixel_encoder_dither_spatial_name(int method_for_diffuse)
+{
+    if (method_for_diffuse == SIXEL_DIFFUSE_NONE) {
+        return "none";
+    }
+    if (method_for_diffuse == SIXEL_DIFFUSE_ATKINSON) {
+        return "atkinson";
+    }
+
+    return "fs";
+}
+
+/* Keep the trace independent of numeric diffusion ABI values. */
+static char const *
+sixel_encoder_dither_diffuse_name(int method_for_diffuse)
+{
+    switch (method_for_diffuse) {
+    case SIXEL_DIFFUSE_AUTO:
+        return "auto";
+    case SIXEL_DIFFUSE_NONE:
+        return "none";
+    case SIXEL_DIFFUSE_ATKINSON:
+        return "atkinson";
+    case SIXEL_DIFFUSE_FS:
+        return "fs";
+    case SIXEL_DIFFUSE_JAJUNI:
+        return "jajuni";
+    case SIXEL_DIFFUSE_STUCKI:
+        return "stucki";
+    case SIXEL_DIFFUSE_BURKES:
+        return "burkes";
+    case SIXEL_DIFFUSE_A_DITHER:
+        return "a_dither";
+    case SIXEL_DIFFUSE_X_DITHER:
+        return "x_dither";
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+        return "bluenoise";
+    case SIXEL_DIFFUSE_LSO2:
+        return "lso2";
+    case SIXEL_DIFFUSE_INTERFRAME:
+        return "interframe";
+    case SIXEL_DIFFUSE_SIERRA1:
+        return "sierra1";
+    case SIXEL_DIFFUSE_SIERRA2:
+        return "sierra2";
+    case SIXEL_DIFFUSE_SIERRA3:
+        return "sierra3";
+    default:
+        return "unknown";
+    }
+}
+
+/* Report the effective scan order stored on the dither object. */
+static char const *
+sixel_encoder_dither_scan_name(int method_for_scan)
+{
+    if (method_for_scan == SIXEL_SCAN_RASTER) {
+        return "raster";
+    }
+    if (method_for_scan == SIXEL_SCAN_SERPENTINE) {
+        return "serpentine";
+    }
+
+    return "auto";
+}
+
 static void
 sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
                                    SIXELSTATUS status)
@@ -645,15 +712,45 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
         dither->interframe_strategy_token);
 
     fprintf(stderr,
-            "LSXDTH1|rc=%d|apply=%lu|consume=%lu|reset=%lu|"
-            "reset_boundary=%lu|reset_size=%lu|source=%s|codes=",
+            "LSXDTH1|rc=%d|diffuse=%s|scan=%s|shared=%d|"
+            "shared_override=%d|apply=%lu|consume=%lu|reset=%lu|"
+            "reset_boundary=%lu|reset_size=%lu|source=%s|"
+            "source_override=%d|spatial=%s|spatial_override=%d|"
+            "strength=%d|strength_override=%d|motion=%d|"
+            "motion_override=%d|scene_reset=%d|"
+            "scene_reset_override=%d|scene_detect=%d|"
+            "scene_detect_override=%d|alpha=%d|alpha_override=%d|"
+            "perceptual=%d|perceptual_override=%d|fastpath=%d|"
+            "fastpath_override=%d|codes=",
             status,
+            sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
+            sixel_encoder_dither_scan_name(dither->method_for_scan),
+            dither->lut_policy_shared_instance,
+            dither->lut_policy_shared_instance_override,
             dither->interframe_state.apply_count,
             dither->interframe_state.consume_count,
             dither->interframe_state.reset_count,
             dither->interframe_state.reset_frame_boundary_count,
             dither->interframe_state.reset_size_change_count,
-            sixel_encoder_dither_source_name(source_id));
+            sixel_encoder_dither_source_name(source_id),
+            dither->interframe_strategy_override,
+            sixel_encoder_dither_spatial_name(
+                dither->interframe_spatial_diffuse),
+            dither->interframe_spatial_diffuse_override,
+            dither->interframe_noise_strength_u8,
+            dither->interframe_noise_strength_override,
+            dither->stbn_motion_adapt_enabled,
+            dither->stbn_motion_adapt_override,
+            dither->stbn_scene_cut_reset_enabled,
+            dither->stbn_scene_cut_reset_override,
+            dither->stbn_scene_detect_enabled,
+            dither->stbn_scene_detect_override,
+            dither->stbn_alpha_guard_enabled,
+            dither->stbn_alpha_guard_override,
+            dither->stbn_perceptual_weight_enabled,
+            dither->stbn_perceptual_weight_override,
+            dither->stbn_fastpath_enabled,
+            dither->stbn_fastpath_override);
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }

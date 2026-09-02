@@ -90,7 +90,37 @@ typedef enum sixel_suboption_storage_kind {
     SIXEL_SUBOPTION_STORAGE_INT_PAIR
 } sixel_suboption_storage_kind_t;
 
+/* Environment ranges may preserve historical endpoint clamping. */
+typedef enum sixel_suboption_environment_range_policy {
+    SIXEL_SUBOPTION_ENV_RANGE_REJECT = 0,
+    SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM = 1 << 0,
+    SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM = 1 << 1,
+    SIXEL_SUBOPTION_ENV_RANGE_CLAMP_POSITIVE_MINIMUM = 1 << 2,
+    SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG = 1 << 3,
+    SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH = 1 << 4,
+    SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH = 1 << 5,
+    SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG = 1 << 6
+} sixel_suboption_environment_range_policy_t;
+
 #define SIXEL_SUBOPTION_OFFSET_NONE ((size_t)-1)
+
+/*
+ * A binding identifier is generated from field tokens, never copied as an
+ * environment string.  Lower-level consumers use it to select their registry
+ * row without duplicating registry-owned environment metadata.
+ */
+#define SIXEL_SUBOPTION_STRINGIZE_INNER(token_) #token_
+#define SIXEL_SUBOPTION_STRINGIZE(token_) \
+    SIXEL_SUBOPTION_STRINGIZE_INNER(token_)
+#define SIXEL_SUBOPTION_BINDING_ID_1(first_) \
+    SIXEL_SUBOPTION_STRINGIZE(first_)
+#define SIXEL_SUBOPTION_BINDING_ID_2(first_, second_) \
+    SIXEL_SUBOPTION_STRINGIZE(first_) "," \
+    SIXEL_SUBOPTION_STRINGIZE(second_)
+#define SIXEL_SUBOPTION_BINDING_ID_3(first_, second_, third_) \
+    SIXEL_SUBOPTION_STRINGIZE(first_) "," \
+    SIXEL_SUBOPTION_STRINGIZE(second_) "," \
+    SIXEL_SUBOPTION_STRINGIZE(third_)
 
 typedef struct sixel_suboption_binding {
     sixel_suboption_target_class_t target_class;
@@ -99,6 +129,8 @@ typedef struct sixel_suboption_binding {
     size_t second_value_offset;
     size_t override_offset;
     size_t mirror_offset;
+    /* Stable field tokens let each regression detect a wrong offset row. */
+    char const *identifier;
 } sixel_suboption_binding_t;
 
 /* Getopt characters are not unique across encoder and decoder contexts. */
@@ -150,7 +182,7 @@ typedef struct sixel_suboption_key {
     int has_minimum;
     int has_maximum;
     int allow_zero;
-    int environment_clamp_maximum;
+    sixel_suboption_environment_range_policy_t environment_range_policy;
     char const *invalid_value_message;
     char const *invalid_value_suffix;
     sixel_suboption_binding_t binding;
@@ -184,26 +216,45 @@ sixel_option_resolve_boolean_environment(char const *name, int fallback);
  * to lower-level code.
  */
 int
-sixel_option_resolve_registered_int_environment(char const *name, int *value);
+sixel_option_resolve_registered_boolean_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
+    int fallback);
 
 int
-sixel_option_resolve_registered_uint_environment(
-    char const *name,
+sixel_option_resolve_registered_int_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
+    int *value);
+
+int
+sixel_option_resolve_registered_uint_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
     unsigned int *value);
 
 int
-sixel_option_resolve_registered_float_environment(
-    char const *name,
+sixel_option_resolve_registered_float_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
     float *value);
 
 int
-sixel_option_resolve_registered_double_environment(
-    char const *name,
+sixel_option_resolve_registered_double_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
     double *value);
 
 int
-sixel_option_resolve_registered_int_pair_environment(
-    char const *name,
+sixel_option_resolve_registered_int_pair_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
     int *first,
     int *second);
 

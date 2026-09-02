@@ -44,8 +44,12 @@ sixel_interframe_noise_strength_u8_from_env_common(void)
 
     value = (int)(
         SIXEL_INTERFRAME_NOISE_STRENGTH_DEFAULT * 255.0f + 0.5f);
-    if (sixel_option_resolve_registered_int_environment(
-            SIXEL_DITHER_STBN_STRENGTH_ENVVAR,
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_DIFFUSION,
+            "stbn",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                interframe_noise_strength_u8,
+                interframe_noise_strength_override),
             &value)) {
         return value;
     }
@@ -219,45 +223,75 @@ sixel_interframe_stbn_prepare_state_default_common(
     if (dither != NULL && dither->stbn_motion_adapt_override != 0) {
         motion_adapt_enabled = dither->stbn_motion_adapt_enabled ? 1 : 0;
     } else {
-        motion_adapt_enabled = sixel_option_resolve_boolean_environment(
-            SIXEL_DITHER_STBN_MOTION_ADAPT_ENVVAR,
-            0);
+        motion_adapt_enabled =
+            sixel_option_resolve_registered_boolean_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION,
+                "stbn",
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    stbn_motion_adapt_enabled,
+                    stbn_motion_adapt_override),
+                0);
     }
     if (dither != NULL && dither->stbn_scene_cut_reset_override != 0) {
         scene_cut_reset_enabled = dither->stbn_scene_cut_reset_enabled ? 1 : 0;
     } else {
-        scene_cut_reset_enabled = sixel_option_resolve_boolean_environment(
-            SIXEL_DITHER_STBN_SCENE_CUT_RESET_ENVVAR,
-            0);
+        scene_cut_reset_enabled =
+            sixel_option_resolve_registered_boolean_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION,
+                "stbn",
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    stbn_scene_cut_reset_enabled,
+                    stbn_scene_cut_reset_override),
+                0);
     }
     if (dither != NULL && dither->stbn_scene_detect_override != 0) {
         scene_detect_enabled = dither->stbn_scene_detect_enabled ? 1 : 0;
     } else {
-        scene_detect_enabled = sixel_option_resolve_boolean_environment(
-            SIXEL_DITHER_STBN_SCENE_DETECT_ENVVAR,
-            0);
+        scene_detect_enabled =
+            sixel_option_resolve_registered_boolean_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION,
+                "stbn",
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    stbn_scene_detect_enabled,
+                    stbn_scene_detect_override),
+                0);
     }
     if (dither != NULL && dither->stbn_alpha_guard_override != 0) {
         alpha_guard_enabled = dither->stbn_alpha_guard_enabled ? 1 : 0;
     } else {
-        alpha_guard_enabled = sixel_option_resolve_boolean_environment(
-            SIXEL_DITHER_STBN_ALPHA_GUARD_ENVVAR,
-            0);
+        alpha_guard_enabled =
+            sixel_option_resolve_registered_boolean_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION,
+                "stbn",
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    stbn_alpha_guard_enabled,
+                    stbn_alpha_guard_override),
+                0);
     }
     if (dither != NULL && dither->stbn_perceptual_weight_override != 0) {
         perceptual_weight_enabled =
             dither->stbn_perceptual_weight_enabled ? 1 : 0;
     } else {
-        perceptual_weight_enabled = sixel_option_resolve_boolean_environment(
-            SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT_ENVVAR,
-            0);
+        perceptual_weight_enabled =
+            sixel_option_resolve_registered_boolean_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION,
+                "stbn",
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    stbn_perceptual_weight_enabled,
+                    stbn_perceptual_weight_override),
+                0);
     }
     if (dither != NULL && dither->stbn_fastpath_override != 0) {
         fastpath_enabled = dither->stbn_fastpath_enabled ? 1 : 0;
     } else {
-        fastpath_enabled = sixel_option_resolve_boolean_environment(
-            SIXEL_DITHER_STBN_FASTPATH_ENVVAR,
-            0);
+        fastpath_enabled =
+            sixel_option_resolve_registered_boolean_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION,
+                "stbn",
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    stbn_fastpath_enabled,
+                    stbn_fastpath_override),
+                0);
     }
     /*
      * Resolve interframe-noise strength once per state prepare so hot pixel

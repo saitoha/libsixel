@@ -2,6 +2,7 @@
 # Verify medoids:histbits preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS|histbits
 # Registry binding: quantize_model_kmedoids_histbits|quantize_model_kmedoids_histbits_override
+# Environment range: clamp-positive-uint
 
 set -eux
 
@@ -23,26 +24,52 @@ env_output="${artifact_dir}/0056-quantize-medoids-histbits-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qmedoids:H4" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 16 "-Qmedoids:H6" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "medoids:histbits short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=histbits|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=histbits|stored=1|binding=quantize_model_kmedoids_histbits,quantize_model_kmedoids_histbits_override|value=6*}" != "${short_trace}" || {
     echo "not ok" 1 - "histbits short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_HISTBITS=4" -p 16 "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_HISTBITS=7" -p 16 "-Qmedoids" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "medoids:histbits env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=histbits|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=histbits|stored=1|binding=quantize_model_kmedoids_histbits,quantize_model_kmedoids_histbits_override|value=6*}" != "${env_trace}" || {
     echo "not ok" 1 - "histbits environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEDOIDS_HISTBITS=0" \
+    -p 16 "-Qmedoids" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "medoids:histbits lower conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=histbits|stored=1}" = "${range_trace}" || {
+    echo "not ok" 1 - "medoids histbits accepted zero"
+    exit 0
+}
+
+width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEDOIDS_HISTBITS=4294967296" \
+    -p 16 "-Qmedoids" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "medoids:histbits width conversion failed"
+    exit 0
+}
+
+test "${width_trace#*LSXSUB1|*key=histbits|stored=1}" = "${width_trace}" || {
+    echo "not ok" 1 - "medoids histbits accepted an over-width value"
     exit 0
 }
 

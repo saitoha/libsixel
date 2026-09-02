@@ -2,6 +2,7 @@
 # Verify kmeans:seed preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS|seed
 # Registry binding: quantize_model_kmeans_seed|quantize_model_kmeans_seed_override
+# Environment range: clamp-unsigned-uint
 
 set -eux
 
@@ -23,26 +24,39 @@ env_output="${artifact_dir}/0037-quantize-kmeans-seed-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qkmeans:S2" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 16 "-Qkmeans:S4294967295" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "kmeans:seed short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=seed|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=seed|stored=1|binding=quantize_model_kmeans_seed,quantize_model_kmeans_seed_override|value=4294967295*}" != "${short_trace}" || {
     echo "not ok" 1 - "seed short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_SEED=2" -p 16 "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_SEED=-1" -p 16 "-Qkmeans" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "kmeans:seed env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=seed|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=seed|stored=1|binding=quantize_model_kmeans_seed,quantize_model_kmeans_seed_override|value=4294967295*}" != "${env_trace}" || {
     echo "not ok" 1 - "seed environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEANS_SEED=0" \
+    -p 16 "-Qkmeans" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "kmeans:seed lower conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=seed|stored=1|binding=quantize_model_kmeans_seed,quantize_model_kmeans_seed_override|value=0*}" != "${range_trace}" || {
+    echo "not ok" 1 - "seed lower endpoint was not stored"
     exit 0
 }
 

@@ -81,4 +81,3 @@ lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
 
 echo "ok" 1 - "PSB CMYK8 TySh weighted FillOpacity keeps deterministic trace and MS-SSIM ${lsqa_floor}"
 exit 0
-

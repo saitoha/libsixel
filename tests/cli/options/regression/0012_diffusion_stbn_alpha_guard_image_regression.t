@@ -2,6 +2,7 @@
 # Verify stbn:alpha_guard preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DIFFUSION|g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN|alpha_guard
 # Registry binding: stbn_alpha_guard_enabled|stbn_alpha_guard_override
+# Dither contract: alpha=1|alpha_override=1
 
 set -eux
 
@@ -21,7 +22,7 @@ artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0012-diffusion-stbn-alpha_guard-short-$$.six"
 env_output="${artifact_dir}/0012-diffusion-stbn-alpha_guard-env-$$.six"
 
-short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 -L builtin -ldisable -p 64 \
     -d "stbn:Smask:A1" "${input_image}" 2>&1 >"${short_output}") || {
@@ -29,8 +30,13 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=alpha_guard|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=alpha_guard|stored=1|binding=stbn_alpha_guard_enabled,stbn_alpha_guard_override*}" != "${short_trace}" || {
     echo "not ok" 1 - "alpha_guard short value was not stored"
+    exit 0
+}
+
+test "${short_trace#*LSXDTH1|*alpha=1|alpha_override=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "stbn alpha guard did not reach the dither"
     exit 0
 }
 
@@ -44,7 +50,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=alpha_guard|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=alpha_guard|stored=1|binding=stbn_alpha_guard_enabled,stbn_alpha_guard_override*}" != "${env_trace}" || {
     echo "not ok" 1 - "alpha_guard environment value was not stored"
     exit 0
 }

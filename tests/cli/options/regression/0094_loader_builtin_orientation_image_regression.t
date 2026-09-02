@@ -28,7 +28,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=orientation|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=orientation|stored=1|binding=builtin_enable_orientation*}" != "${short_trace}" || {
     echo "not ok" 1 - "orientation short value was not stored"
     exit 0
 }
@@ -41,7 +41,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=orientation|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=orientation|stored=1|binding=builtin_enable_orientation*}" != "${env_trace}" || {
     echo "not ok" 1 - "orientation environment value was not stored"
     exit 0
 }

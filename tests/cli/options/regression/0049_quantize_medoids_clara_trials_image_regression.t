@@ -2,6 +2,7 @@
 # Verify medoids:clara_trials preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS|clara_trials
 # Registry binding: quantize_model_kmedoids_clara_trials|quantize_model_kmedoids_clara_trials_override
+# Environment range: clamp-positive-uint
 
 set -eux
 
@@ -23,26 +24,52 @@ env_output="${artifact_dir}/0049-quantize-medoids-clara_trials-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qmedoids:Asample:T2" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 16 "-Qmedoids:Asample:T32" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "medoids:clara_trials short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=clara_trials|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=clara_trials|stored=1|binding=quantize_model_kmedoids_clara_trials,quantize_model_kmedoids_clara_trials_override|value=32*}" != "${short_trace}" || {
     echo "not ok" 1 - "clara_trials short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS=2" -p 16 "-Qmedoids:Asample" \
+    --env "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS=33" -p 16 "-Qmedoids:Asample" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "medoids:clara_trials env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=clara_trials|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=clara_trials|stored=1|binding=quantize_model_kmedoids_clara_trials,quantize_model_kmedoids_clara_trials_override|value=32*}" != "${env_trace}" || {
     echo "not ok" 1 - "clara_trials environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS=0" \
+    -p 16 "-Qmedoids:Asample" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "medoids:clara_trials lower conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=clara_trials|stored=1}" = "${range_trace}" || {
+    echo "not ok" 1 - "medoids clara_trials accepted zero"
+    exit 0
+}
+
+width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS=4294967296" \
+    -p 16 "-Qmedoids:Asample" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "medoids:clara_trials width conversion failed"
+    exit 0
+}
+
+test "${width_trace#*LSXSUB1|*key=clara_trials|stored=1}" = "${width_trace}" || {
+    echo "not ok" 1 - "medoids clara_trials accepted an over-width value"
     exit 0
 }
 

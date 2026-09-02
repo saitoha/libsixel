@@ -2,6 +2,7 @@
 # Verify heckbert:merge_oversplit preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|NULL|merge_oversplit
 # Registry binding: quantize_model_merge_oversplit|quantize_model_merge_oversplit_override
+# Environment range: clamp-both
 
 set -eux
 
@@ -23,26 +24,39 @@ env_output="${artifact_dir}/0022-quantize-heckbert-merge_oversplit-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qheckbert:Gward:O1.2" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 16 "-Qheckbert:Gward:O3" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "heckbert:merge_oversplit short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=merge_oversplit|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=merge_oversplit|stored=1|binding=quantize_model_merge_oversplit,quantize_model_merge_oversplit_override|value=3*}" != "${short_trace}" || {
     echo "not ok" 1 - "merge_oversplit short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2" -p 16 "-Qheckbert:Gward" \
+    --env "SIXEL_PALETTE_OVERSPLIT_FACTOR=4" -p 16 "-Qheckbert:Gward" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "heckbert:merge_oversplit env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=merge_oversplit|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=merge_oversplit|stored=1|binding=quantize_model_merge_oversplit,quantize_model_merge_oversplit_override|value=3*}" != "${env_trace}" || {
     echo "not ok" 1 - "merge_oversplit environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_OVERSPLIT_FACTOR=0" \
+    -p 16 "-Qheckbert:Gward" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "heckbert:merge_oversplit lower conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=merge_oversplit|stored=1|binding=quantize_model_merge_oversplit,quantize_model_merge_oversplit_override|value=1*}" != "${range_trace}" || {
+    echo "not ok" 1 - "merge_oversplit lower endpoint was not clamped"
     exit 0
 }
 

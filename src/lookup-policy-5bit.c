@@ -123,8 +123,12 @@ sixel_lookup_policy_bit5_quant_make(unsigned int depth)
 static int
 sixel_lookup_policy_bit5_env_shared_default_on(void)
 {
-    return sixel_option_resolve_boolean_environment(
-        "SIXEL_LOOKUP_5BIT_SHARED_INSTANCE",
+    return sixel_option_resolve_registered_boolean_binding(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        "5bit",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            lut_policy_shared_instance,
+            lut_policy_shared_instance_override),
         1);
 }
 

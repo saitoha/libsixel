@@ -2,6 +2,7 @@
 # Verify kmeans:iter_max preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS|iter_max
 # Registry binding: quantize_model_kmeans_iter_max|quantize_model_kmeans_iter_max_override
+# Environment range: clamp-signed-uint
 
 set -eux
 
@@ -23,26 +24,39 @@ env_output="${artifact_dir}/0040-quantize-kmeans-iter_max-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qkmeans:X2" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 16 "-Qkmeans:X1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "kmeans:iter_max short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=iter_max|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=iter_max|stored=1|binding=quantize_model_kmeans_iter_max,quantize_model_kmeans_iter_max_override|value=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "iter_max short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=2" -p 16 "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=-1" -p 16 "-Qkmeans" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "kmeans:iter_max env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=iter_max|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=iter_max|stored=1|binding=quantize_model_kmeans_iter_max,quantize_model_kmeans_iter_max_override|value=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "iter_max environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=101" \
+    -p 16 "-Qkmeans" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "kmeans:iter_max upper conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=iter_max|stored=1|binding=quantize_model_kmeans_iter_max,quantize_model_kmeans_iter_max_override|value=100*}" != "${range_trace}" || {
+    echo "not ok" 1 - "iter_max upper endpoint was not clamped"
     exit 0
 }
 

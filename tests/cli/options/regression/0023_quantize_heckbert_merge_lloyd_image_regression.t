@@ -2,6 +2,7 @@
 # Verify heckbert:merge_lloyd preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|NULL|merge_lloyd
 # Registry binding: quantize_model_merge_lloyd|quantize_model_merge_lloyd_override
+# Environment range: clamp-signed-uint
 
 set -eux
 
@@ -23,26 +24,39 @@ env_output="${artifact_dir}/0023-quantize-heckbert-merge_lloyd-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qheckbert:Gward:L2" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 16 "-Qheckbert:Gward:L0" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "heckbert:merge_lloyd short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=merge_lloyd|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=merge_lloyd|stored=1|binding=quantize_model_merge_lloyd,quantize_model_merge_lloyd_override|value=0*}" != "${short_trace}" || {
     echo "not ok" 1 - "merge_lloyd short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2" -p 16 "-Qheckbert:Gward" \
+    --env "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=-1" -p 16 "-Qheckbert:Gward" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "heckbert:merge_lloyd env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=merge_lloyd|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=merge_lloyd|stored=1|binding=quantize_model_merge_lloyd,quantize_model_merge_lloyd_override|value=0*}" != "${env_trace}" || {
     echo "not ok" 1 - "merge_lloyd environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=31" \
+    -p 16 "-Qheckbert:Gward" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "heckbert:merge_lloyd upper conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=merge_lloyd|stored=1|binding=quantize_model_merge_lloyd,quantize_model_merge_lloyd_override|value=30*}" != "${range_trace}" || {
+    echo "not ok" 1 - "merge_lloyd upper endpoint was not clamped"
     exit 0
 }
 

@@ -2,6 +2,7 @@
 # Verify stbn:source preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DIFFUSION|g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN|source
 # Registry binding: interframe_strategy_token|interframe_strategy_override
+# Dither contract: source=pmj|source_override=1
 
 set -eux
 
@@ -35,6 +36,11 @@ test "${effect_trace#*LSXDTH1|*consume=[1-9]*}" != "${effect_trace}" || {
     exit 0
 }
 
+test "${effect_trace#*LSXDTH1|*source=pmj|source_override=1*}" != "${effect_trace}" || {
+    echo "not ok" 1 - "stbn source did not reach the dither"
+    exit 0
+}
+
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 -L builtin -ldisable -p 80 \
@@ -43,7 +49,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=source|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=source|stored=1|binding=interframe_strategy_token,interframe_strategy_override*}" != "${short_trace}" || {
     echo "not ok" 1 - "source short value was not stored"
     exit 0
 }
@@ -58,7 +64,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=source|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=source|stored=1|binding=interframe_strategy_token,interframe_strategy_override*}" != "${env_trace}" || {
     echo "not ok" 1 - "source environment value was not stored"
     exit 0
 }

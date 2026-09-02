@@ -28,7 +28,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=threshold|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=threshold|stored=1|binding=selective_blur_threshold*}" != "${short_trace}" || {
     echo "not ok" 1 - "threshold short value was not stored"
     exit 0
 }
@@ -41,7 +41,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=threshold|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=threshold|stored=1|binding=selective_blur_threshold*}" != "${env_trace}" || {
     echo "not ok" 1 - "threshold environment value was not stored"
     exit 0
 }

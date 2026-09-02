@@ -2,6 +2,7 @@
 # Verify medoids:rare_keep preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS|rare_keep
 # Registry binding: quantize_model_kmedoids_rare_keep|quantize_model_kmedoids_rare_keep_override
+# Environment range: clamp-positive-uint
 
 set -eux
 
@@ -23,26 +24,52 @@ env_output="${artifact_dir}/0058-quantize-medoids-rare_keep-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qmedoids:R8" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 16 "-Qmedoids:R1024" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "medoids:rare_keep short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=rare_keep|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=rare_keep|stored=1|binding=quantize_model_kmedoids_rare_keep,quantize_model_kmedoids_rare_keep_override|value=1024*}" != "${short_trace}" || {
     echo "not ok" 1 - "rare_keep short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_RARE_KEEP=8" -p 16 "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_RARE_KEEP=1025" -p 16 "-Qmedoids" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "medoids:rare_keep env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=rare_keep|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=rare_keep|stored=1|binding=quantize_model_kmedoids_rare_keep,quantize_model_kmedoids_rare_keep_override|value=1024*}" != "${env_trace}" || {
     echo "not ok" 1 - "rare_keep environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEDOIDS_RARE_KEEP=0" \
+    -p 16 "-Qmedoids" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "medoids:rare_keep lower conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=rare_keep|stored=1|binding=quantize_model_kmedoids_rare_keep,quantize_model_kmedoids_rare_keep_override|value=0*}" != "${range_trace}" || {
+    echo "not ok" 1 - "medoids rare_keep rejected zero"
+    exit 0
+}
+
+width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEDOIDS_RARE_KEEP=4294967296" \
+    -p 16 "-Qmedoids" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "medoids:rare_keep width conversion failed"
+    exit 0
+}
+
+test "${width_trace#*LSXSUB1|*key=rare_keep|stored=1}" = "${width_trace}" || {
+    echo "not ok" 1 - "medoids rare_keep accepted an over-width value"
     exit 0
 }
 

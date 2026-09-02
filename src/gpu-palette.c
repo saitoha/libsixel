@@ -186,35 +186,60 @@ sixel_gpu_palette_bluenoise_conf_init(sixel_gpu_bluenoise_conf_t *conf)
     conf->channel_rgb = 0;
     conf->size = SIXEL_BN_W;
 
-    (void)sixel_option_resolve_registered_float_environment(
-            "SIXEL_DITHER_BLUENOISE_STRENGTH",
-            &conf->strength);
+    (void)sixel_option_resolve_registered_float_binding(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        "bluenoise",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            bluenoise_strength,
+            bluenoise_strength_override),
+        &conf->strength);
 
-    if (sixel_option_resolve_registered_float_environment(
-            "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR",
+    if (sixel_option_resolve_registered_float_binding(
+            SIXEL_OPTION_SCHEMA_DIFFUSION,
+            "bluenoise",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                bluenoise_gradient_factor,
+                bluenoise_gradient_factor_override),
             &conf->gradient_factor)) {
         if (conf->gradient_factor < 0.0f) {
             conf->gradient_factor = 0.0f;
         }
     }
 
-    (void)sixel_option_resolve_registered_int_environment(
-            "SIXEL_DITHER_BLUENOISE_CHANNEL",
-            &conf->channel_rgb);
+    (void)sixel_option_resolve_registered_int_binding(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        "bluenoise",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            bluenoise_channel_rgb,
+            bluenoise_channel_override),
+        &conf->channel_rgb);
 
-    (void)sixel_option_resolve_registered_int_environment(
-            "SIXEL_DITHER_BLUENOISE_SIZE",
-            &conf->size);
+    (void)sixel_option_resolve_registered_int_binding(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        "bluenoise",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            bluenoise_size,
+            bluenoise_size_override),
+        &conf->size);
 
-    if (sixel_option_resolve_registered_int_pair_environment(
-            "SIXEL_DITHER_BLUENOISE_PHASE",
+    if (sixel_option_resolve_registered_int_pair_binding(
+            SIXEL_OPTION_SCHEMA_DIFFUSION,
+            "bluenoise",
+            SIXEL_SUBOPTION_BINDING_ID_3(
+                bluenoise_phase_x,
+                bluenoise_phase_y,
+                bluenoise_phase_override),
             &conf->phase_x,
             &conf->phase_y)) {
         return;
     }
 
-    if (sixel_option_resolve_registered_int_environment(
-            "SIXEL_DITHER_BLUENOISE_SEED",
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_DIFFUSION,
+            "bluenoise",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                bluenoise_seed,
+                bluenoise_seed_override),
             &seed)) {
         hash = sixel_gpu_palette_hash32((unsigned int)seed);
         conf->phase_x = (int)(hash & 63U);

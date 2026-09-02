@@ -2,6 +2,7 @@
 # Verify kmeans:restarts preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS|restarts
 # Registry binding: quantize_model_kmeans_restarts|quantize_model_kmeans_restarts_override
+# Environment range: clamp-unsigned-uint
 
 set -eux
 
@@ -23,26 +24,39 @@ env_output="${artifact_dir}/0038-quantize-kmeans-restarts-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qkmeans:E2" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 16 "-Qkmeans:E32" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "kmeans:restarts short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=restarts|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=restarts|stored=1|binding=quantize_model_kmeans_restarts,quantize_model_kmeans_restarts_override|value=32*}" != "${short_trace}" || {
     echo "not ok" 1 - "restarts short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_RESTARTS=2" -p 16 "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_RESTARTS=-1" -p 16 "-Qkmeans" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "kmeans:restarts env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=restarts|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=restarts|stored=1|binding=quantize_model_kmeans_restarts,quantize_model_kmeans_restarts_override|value=32*}" != "${env_trace}" || {
     echo "not ok" 1 - "restarts environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEANS_RESTARTS=0" \
+    -p 16 "-Qkmeans" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "kmeans:restarts lower conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=restarts|stored=1|binding=quantize_model_kmeans_restarts,quantize_model_kmeans_restarts_override|value=1*}" != "${range_trace}" || {
+    echo "not ok" 1 - "restarts lower endpoint was not clamped"
     exit 0
 }
 

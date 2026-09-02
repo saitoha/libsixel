@@ -28,7 +28,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=phase|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=phase|stored=1|binding=bluenoise_phase_x,bluenoise_phase_y,bluenoise_phase_override*}" != "${short_trace}" || {
     echo "not ok" 1 - "phase short value was not stored"
     exit 0
 }
@@ -41,7 +41,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=phase|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=phase|stored=1|binding=bluenoise_phase_x,bluenoise_phase_y,bluenoise_phase_override*}" != "${env_trace}" || {
     echo "not ok" 1 - "phase environment value was not stored"
     exit 0
 }

@@ -28,7 +28,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=gradient_factor|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=gradient_factor|stored=1|binding=bluenoise_gradient_factor,bluenoise_gradient_factor_override*}" != "${short_trace}" || {
     echo "not ok" 1 - "gradient_factor short value was not stored"
     exit 0
 }
@@ -41,7 +41,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=gradient_factor|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=gradient_factor|stored=1|binding=bluenoise_gradient_factor,bluenoise_gradient_factor_override*}" != "${env_trace}" || {
     echo "not ok" 1 - "gradient_factor environment value was not stored"
     exit 0
 }

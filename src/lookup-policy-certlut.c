@@ -241,8 +241,12 @@ sixel_lookup_policy_certlut_from_base_const(
 static int
 sixel_lookup_policy_certlut_parse_shared_default_off(void)
 {
-    return sixel_option_resolve_boolean_environment(
-        "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE",
+    return sixel_option_resolve_registered_boolean_binding(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        "certlut",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            lut_policy_shared_instance,
+            lut_policy_shared_instance_override),
         0);
 }
 

@@ -2,6 +2,7 @@
 # Verify kmeans:threshold preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS|threshold
 # Registry binding: quantize_model_kmeans_threshold|quantize_model_kmeans_threshold_override
+# Environment range: clamp-both
 
 set -eux
 
@@ -23,26 +24,39 @@ env_output="${artifact_dir}/0029-quantize-kmeans-threshold-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qkmeans:T0.01" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 16 "-Qkmeans:T0.5" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "kmeans:threshold short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=threshold|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=threshold|stored=1|binding=quantize_model_kmeans_threshold,quantize_model_kmeans_threshold_override|value=0.5*}" != "${short_trace}" || {
     echo "not ok" 1 - "threshold short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_THRESHOLD=0.01" -p 16 "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_THRESHOLD=0.6" -p 16 "-Qkmeans" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "kmeans:threshold env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=threshold|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=threshold|stored=1|binding=quantize_model_kmeans_threshold,quantize_model_kmeans_threshold_override|value=0.5*}" != "${env_trace}" || {
     echo "not ok" 1 - "threshold environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEANS_THRESHOLD=-0.1" \
+    -p 16 "-Qkmeans" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "kmeans:threshold lower conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=threshold|stored=1|binding=quantize_model_kmeans_threshold,quantize_model_kmeans_threshold_override|value=0*}" != "${range_trace}" || {
+    echo "not ok" 1 - "threshold lower endpoint was not clamped"
     exit 0
 }
 

@@ -2,6 +2,7 @@
 # Verify certlut:shared_instance preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LUT_POLICY|g_lookup_values + SIXEL_LOOKUP_BASE_CERTLUT|shared_instance
 # Registry binding: lut_policy_shared_instance|lut_policy_shared_instance_override
+# Lookup contract: shared=1|shared_override=1
 
 set -eux
 
@@ -21,19 +22,24 @@ artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0084-lookup-certlut-shared_instance-short-$$.six"
 env_output="${artifact_dir}/0084-lookup-certlut-shared_instance-env-$$.six"
 
-short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=2 -p 16 "-~certlut:S1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "certlut:shared_instance short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=shared_instance|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=shared_instance|stored=1|binding=lut_policy_shared_instance,lut_policy_shared_instance_override*}" != "${short_trace}" || {
     echo "not ok" 1 - "shared_instance short value was not stored"
     exit 0
 }
 
-env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+test "${short_trace#*LSXDTH1|*shared=1|shared_override=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "certlut shared_instance did not reach the dither"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE=1" --threads=2 -p 16 "-~certlut" \
     "${input_image}" 2>&1 >"${env_output}") || {
@@ -41,8 +47,13 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=shared_instance|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=shared_instance|stored=1|binding=lut_policy_shared_instance,lut_policy_shared_instance_override*}" != "${env_trace}" || {
     echo "not ok" 1 - "shared_instance environment value was not stored"
+    exit 0
+}
+
+test "${env_trace#*LSXDTH1|*shared=1|shared_override=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "certlut environment shared_instance did not reach the dither"
     exit 0
 }
 

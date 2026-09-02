@@ -2,6 +2,7 @@
 # Verify center:seed preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|seed
 # Registry binding: quantize_model_kcenter_seed|quantize_model_kcenter_seed_override
+# Environment range: parse-unsigned-long
 
 set -eux
 
@@ -28,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=seed|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=seed|stored=1|binding=quantize_model_kcenter_seed,quantize_model_kcenter_seed_override|value=2*}" != "${short_trace}" || {
     echo "not ok" 1 - "seed short value was not stored"
     exit 0
 }
@@ -41,8 +42,34 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=seed|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=seed|stored=1|binding=quantize_model_kcenter_seed,quantize_model_kcenter_seed_override|value=2*}" != "${env_trace}" || {
     echo "not ok" 1 - "seed environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KCENTER_SEED=-0" \
+    -p 16 "-Qcenter:Aswap" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "center:seed signed-zero conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=seed|stored=1|binding=quantize_model_kcenter_seed,quantize_model_kcenter_seed_override|value=0*}" != "${range_trace}" || {
+    echo "not ok" 1 - "center seed did not preserve unsigned-long parsing"
+    exit 0
+}
+
+width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KCENTER_SEED=4294967296" \
+    -p 16 "-Qcenter:Aswap" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "center:seed width conversion failed"
+    exit 0
+}
+
+test "${width_trace#*LSXSUB1|*key=seed|stored=1}" = "${width_trace}" || {
+    echo "not ok" 1 - "center seed accepted an over-width value"
     exit 0
 }
 

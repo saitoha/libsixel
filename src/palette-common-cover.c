@@ -93,8 +93,12 @@ sixel_palette_cover_mode(void)
     if (g_sixel_palette_cover_override_enabled != 0) {
         return g_sixel_palette_cover_override.mode;
     }
-    if (sixel_option_resolve_registered_int_environment(
-            "SIXEL_PALETTE_COVER_MODE",
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            NULL,
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_cover_mode,
+                quantize_model_cover_mode_override),
             &value)) {
         return value;
     }
@@ -115,8 +119,12 @@ sixel_palette_cover_policy(void)
      * The environment stays available for callers that build a palette
      * directly rather than through the encoder's option layer.
      */
-    if (sixel_option_resolve_registered_int_environment(
-            "SIXEL_PALETTE_COVER",
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            NULL,
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_cover,
+                quantize_model_cover_override),
             &value)) {
         return value;
     }
@@ -131,8 +139,12 @@ sixel_palette_cover_grow_enabled(void)
         return g_sixel_palette_cover_override.grow;
     }
 
-    return sixel_option_resolve_boolean_environment(
-        "SIXEL_PALETTE_COVER_GROW",
+    return sixel_option_resolve_registered_boolean_binding(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_cover_grow,
+            quantize_model_cover_grow_override),
         0);
 }
 

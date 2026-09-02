@@ -344,8 +344,10 @@ loader_wic_initialize_ico_minsize(void)
     wic_ico_minsize_default = 0;
     wic_ico_minsize = 0;
 
-    if (!sixel_option_resolve_registered_uint_environment(
-            "SIXEL_LOADER_WIC_ICO_MINSIZE",
+    if (!sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_LOADERS,
+            "wic",
+            SIXEL_SUBOPTION_BINDING_ID_1(wic_ico_minsize),
             &value)) {
         loader_background_unlock();
         return;

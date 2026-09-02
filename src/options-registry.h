@@ -53,6 +53,12 @@ sixel_option_registry_suboption_at(
 sixel_suboption_key_t const *
 sixel_option_registry_suboption_by_environment(char const *name);
 
+sixel_suboption_key_t const *
+sixel_option_registry_suboption_by_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier);
+
 int
 sixel_option_registry_validate(void);
 

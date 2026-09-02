@@ -2,6 +2,7 @@
 # Verify medoids:sample preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS|sample
 # Registry binding: quantize_model_kmedoids_sample|quantize_model_kmedoids_sample_override
+# Environment range: clamp-positive-uint
 
 set -eux
 
@@ -23,26 +24,52 @@ env_output="${artifact_dir}/0048-quantize-medoids-sample-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 24 "-Qmedoids:Asample:M64" "${input_image}" 2>&1 >"${short_output}") || {
+    -p 24 "-Qmedoids:Asample:M1048576" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "medoids:sample short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=sample|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=sample|stored=1|binding=quantize_model_kmedoids_sample,quantize_model_kmedoids_sample_override|value=1048576*}" != "${short_trace}" || {
     echo "not ok" 1 - "sample short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_SAMPLE=64" -p 24 "-Qmedoids:Asample" \
+    --env "SIXEL_PALETTE_KMEDOIDS_SAMPLE=1048577" -p 24 "-Qmedoids:Asample" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "medoids:sample env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=sample|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=sample|stored=1|binding=quantize_model_kmedoids_sample,quantize_model_kmedoids_sample_override|value=1048576*}" != "${env_trace}" || {
     echo "not ok" 1 - "sample environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEDOIDS_SAMPLE=1" \
+    -p 24 "-Qmedoids:Asample" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "medoids:sample lower conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=sample|stored=1|binding=quantize_model_kmedoids_sample,quantize_model_kmedoids_sample_override|value=64*}" != "${range_trace}" || {
+    echo "not ok" 1 - "medoids sample lower endpoint was not clamped"
+    exit 0
+}
+
+width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEDOIDS_SAMPLE=4294967296" \
+    -p 24 "-Qmedoids:Asample" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "medoids:sample width conversion failed"
+    exit 0
+}
+
+test "${width_trace#*LSXSUB1|*key=sample|stored=1}" = "${width_trace}" || {
+    echo "not ok" 1 - "medoids sample accepted an over-width value"
     exit 0
 }
 

@@ -2,6 +2,7 @@
 # Verify sierra:variant preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DIFFUSION|g_diffusion_values + SIXEL_DIFFUSION_BASE_SIERRA|variant
 # Registry binding: method_for_diffuse
+# Dither contract: diffuse=sierra3
 
 set -eux
 
@@ -21,19 +22,24 @@ artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0004-diffusion-sierra-variant-short-$$.six"
 env_output="${artifact_dir}/0004-diffusion-sierra-variant-env-$$.six"
 
-short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d "sierra:V3" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "sierra:variant short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=variant|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=variant|stored=1|binding=method_for_diffuse*}" != "${short_trace}" || {
     echo "not ok" 1 - "variant short value was not stored"
     exit 0
 }
 
-env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+test "${short_trace#*LSXDTH1|*diffuse=sierra3*}" != "${short_trace}" || {
+    echo "not ok" 1 - "sierra variant did not reach the dither"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_SIERRA_VARIANT=3" -d "sierra" \
     "${input_image}" 2>&1 >"${env_output}") || {
@@ -41,8 +47,13 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=variant|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=variant|stored=1|binding=method_for_diffuse*}" != "${env_trace}" || {
     echo "not ok" 1 - "variant environment value was not stored"
+    exit 0
+}
+
+test "${env_trace#*LSXDTH1|*diffuse=sierra3*}" != "${env_trace}" || {
+    echo "not ok" 1 - "sierra environment variant did not reach the dither"
     exit 0
 }
 

@@ -878,16 +878,21 @@ sixel_kmedoids_clamp_uint(unsigned int value,
 }
 
 static unsigned int
-sixel_kmedoids_resolve_registered_uint(char const *env_name,
-                                       unsigned int fallback)
+sixel_kmedoids_resolve_registered_uint(
+    char const *binding_identifier,
+    unsigned int fallback)
 {
     unsigned int value;
 
     value = fallback;
-    if (env_name == NULL || env_name[0] == '\0') {
+    if (binding_identifier == NULL || binding_identifier[0] == '\0') {
         return fallback;
     }
-    if (sixel_option_resolve_registered_uint_environment(env_name, &value)) {
+    if (sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "medoids",
+            binding_identifier,
+            &value)) {
         return value;
     }
 
@@ -895,16 +900,21 @@ sixel_kmedoids_resolve_registered_uint(char const *env_name,
 }
 
 static double
-sixel_kmedoids_resolve_registered_double(char const *env_name,
-                                         double fallback)
+sixel_kmedoids_resolve_registered_double(
+    char const *binding_identifier,
+    double fallback)
 {
     double value;
 
     value = fallback;
-    if (env_name == NULL || env_name[0] == '\0') {
+    if (binding_identifier == NULL || binding_identifier[0] == '\0') {
         return fallback;
     }
-    if (sixel_option_resolve_registered_double_environment(env_name, &value)) {
+    if (sixel_option_resolve_registered_double_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "medoids",
+            binding_identifier,
+            &value)) {
         return value;
     }
 
@@ -3386,8 +3396,12 @@ sixel_get_kmedoids_algo(void)
     }
     loaded = 1;
 
-    if (sixel_option_resolve_registered_int_environment(
-            "SIXEL_PALETTE_KMEDOIDS_ALGO",
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "medoids",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmedoids_algo,
+                quantize_model_kmedoids_algo_override),
             &value)) {
         cached = (sixel_kmedoids_algo_t)value;
     }
@@ -3423,8 +3437,12 @@ sixel_get_kmedoids_seed(void)
     }
     loaded = 1;
 
-    if (sixel_option_resolve_registered_uint_environment(
-            "SIXEL_PALETTE_KMEDOIDS_SEED",
+    if (sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "medoids",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmedoids_seed,
+                quantize_model_kmedoids_seed_override),
             &value)) {
         cached = (uint32_t)value;
     }
@@ -3461,7 +3479,9 @@ sixel_get_kmedoids_iter(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_ITER",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_iter,
+            quantize_model_kmedoids_iter_override),
         0u);
     return cached;
 }
@@ -3498,7 +3518,9 @@ sixel_get_kmedoids_sample(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_SAMPLE",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_sample,
+            quantize_model_kmedoids_sample_override),
         0u);
     return cached;
 }
@@ -3532,7 +3554,9 @@ sixel_get_kmedoids_clara_trials(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_clara_trials,
+            quantize_model_kmedoids_clara_trials_override),
         0u);
     return cached;
 }
@@ -3569,7 +3593,9 @@ sixel_get_kmedoids_clara_sample(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_CLARA_SAMPLE",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_clara_sample,
+            quantize_model_kmedoids_clara_sample_override),
         0u);
     return cached;
 }
@@ -3603,7 +3629,9 @@ sixel_get_kmedoids_clarans_local(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_CLARANS_LOCAL",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_clarans_local,
+            quantize_model_kmedoids_clarans_local_override),
         0u);
     return cached;
 }
@@ -3640,7 +3668,9 @@ sixel_get_kmedoids_clarans_neighbors(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_CLARANS_NEIGHBORS",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_clarans_neighbors,
+            quantize_model_kmedoids_clarans_neighbors_override),
         0u);
     return cached;
 }
@@ -3674,7 +3704,9 @@ sixel_get_kmedoids_bandit_iter(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_BANDIT_ITER",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_bandit_iter,
+            quantize_model_kmedoids_bandit_iter_override),
         0u);
     return cached;
 }
@@ -3708,7 +3740,9 @@ sixel_get_kmedoids_bandit_candidates(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_BANDIT_CANDIDATES",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_bandit_candidates,
+            quantize_model_kmedoids_bandit_candidates_override),
         0u);
     return cached;
 }
@@ -3742,7 +3776,9 @@ sixel_get_kmedoids_bandit_batch(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_bandit_batch,
+            quantize_model_kmedoids_bandit_batch_override),
         0u);
     return cached;
 }
@@ -3776,7 +3812,9 @@ sixel_get_kmedoids_histbits(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_HISTBITS",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_histbits,
+            quantize_model_kmedoids_histbits_override),
         5u);
     return cached;
 }
@@ -3810,7 +3848,9 @@ sixel_get_kmedoids_point_budget(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_POINT_BUDGET",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_point_budget,
+            quantize_model_kmedoids_point_budget_override),
         0u);
     return cached;
 }
@@ -3847,7 +3887,9 @@ sixel_get_kmedoids_rare_keep(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_RARE_KEEP",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_rare_keep,
+            quantize_model_kmedoids_rare_keep_override),
         64u);
     return cached;
 }
@@ -3888,7 +3930,9 @@ sixel_get_kmedoids_prune_mass(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_double(
-        "SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_prune_mass,
+            quantize_model_kmedoids_prune_mass_override),
         0.995);
     return cached;
 }
@@ -3915,8 +3959,12 @@ sixel_kmedoids_get_auction_from_env(void)
         return cached;
     }
     loaded = 1;
-    cached = sixel_option_resolve_boolean_environment(
-        "SIXEL_PALETTE_KMEDOIDS_AUCTION",
+    cached = sixel_option_resolve_registered_boolean_binding(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+        "medoids",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_auction,
+            quantize_model_kmedoids_auction_override),
         0);
     return cached;
 }
@@ -3953,7 +4001,9 @@ sixel_kmedoids_get_auction_shortlist_from_env(void)
     }
     loaded = 1;
     cached = sixel_kmedoids_resolve_registered_uint(
-        "SIXEL_PALETTE_KMEDOIDS_AUCTION_SHORTLIST",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            quantize_model_kmedoids_auction_shortlist,
+            quantize_model_kmedoids_auction_shortlist_override),
         4u);
     return cached;
 }

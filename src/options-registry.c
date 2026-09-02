@@ -27,8 +27,21 @@
 #endif
 
 #include <sixel.h>
+#include <limits.h>
 #include <stddef.h>
 #include <string.h>
+
+#if defined(SIXEL_ENABLE_THREADS) && SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+     && !defined(WITH_WINPTHREAD)
+#  if !defined(WIN32_LEAN_AND_MEAN)
+#   define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+# else
+#  include <pthread.h>
+# endif
+#endif
 
 #include "cms.h"
 #include "dither-interframe-method.h"
@@ -45,20 +58,29 @@
     (sizeof(array_) / sizeof((array_)[0]))
 
 /*
- * Make a width mismatch in a binding a compile-time error.  C99 cannot
- * compare signedness portably, but checking the actual member width prevents
- * a registry typo from overwriting an adjacent structure member.
+ * Make an incompatible binding a compile-time error where the compiler can
+ * compare C types.  The portable fallback still rejects width mismatches;
+ * runtime registry validation additionally checks storage and range rules.
  */
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_REGISTRY_MEMBER_TYPE_MATCHES(type_, field_, value_type_) \
+    __builtin_types_compatible_p( \
+        __typeof__(((type_ *)0)->field_), value_type_)
+#else
+# define SIXEL_REGISTRY_MEMBER_TYPE_MATCHES(type_, field_, value_type_) \
+    (sizeof(((type_ *)0)->field_) == sizeof(value_type_))
+#endif
+
 #define SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, value_type_) \
     (offsetof(type_, field_) + \
-     0u * sizeof(char[sizeof(((type_ *)0)->field_) == \
-                     sizeof(value_type_) ? 1 : -1]))
+     0u * sizeof(char[SIXEL_REGISTRY_MEMBER_TYPE_MATCHES( \
+                         type_, field_, value_type_) ? 1 : -1]))
 
 #define SIXEL_REGISTRY_NO_BINDING \
     { \
         SIXEL_SUBOPTION_TARGET_NONE, SIXEL_SUBOPTION_STORAGE_INT, \
         SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
-        SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
+        SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, NULL \
     }
 
 #define SIXEL_REGISTRY_CHOICE( \
@@ -67,26 +89,28 @@
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
-        0, 0, NULL, NULL, SIXEL_REGISTRY_NO_BINDING \
+        0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
+        SIXEL_REGISTRY_NO_BINDING \
     }
 
-#define SIXEL_REGISTRY_BOUND_CHOICE( \
+#define SIXEL_REGISTRY_TYPED_CHOICE( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
     target_, type_, field_) \
     { \
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
-        0, 0, NULL, NULL, \
+        0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
         { \
             (target_), SIXEL_SUBOPTION_STORAGE_INT, \
             SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
-            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
+            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_1(field_) \
         } \
     }
 
-#define SIXEL_REGISTRY_BOUND_CHOICE_ENV( \
+#define SIXEL_REGISTRY_TYPED_CHOICE_ENV( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
     environment_choices_, target_, type_, field_) \
     { \
@@ -94,27 +118,30 @@
         (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), (environment_choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(environment_choices_), 0.0, 0.0, 0, \
-        0, 0, 0, NULL, NULL, \
+        0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
         { \
             (target_), SIXEL_SUBOPTION_STORAGE_INT, \
             SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
-            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
+            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_1(field_) \
         } \
     }
 
-#define SIXEL_REGISTRY_BOUND_BOOLEAN( \
+#define SIXEL_REGISTRY_TYPED_BOOLEAN( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, target_, type_, \
     field_) \
     { \
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), SIXEL_SUBOPTION_VALUE_BOOLEAN, NULL, 0u, NULL, 0u, 0.0, \
-        1.0, 1, 1, 1, 0, "boolean suboption must be 0 or 1.", NULL, \
+        1.0, 1, 1, 1, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        "boolean suboption must be 0 or 1.", NULL, \
         { \
             (target_), SIXEL_SUBOPTION_STORAGE_INT, \
             SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
-            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
+            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_1(field_) \
         } \
     }
 
@@ -125,8 +152,8 @@
     { \
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), (kind_), NULL, 0u, NULL, 0u, (minimum_), (maximum_), \
-        (has_minimum_), (has_maximum_), (allow_zero_), 0, (message_), \
-        (suffix_), \
+        (has_minimum_), (has_maximum_), (allow_zero_), \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, (message_), (suffix_), \
         SIXEL_REGISTRY_NO_BINDING \
     }
 
@@ -152,30 +179,75 @@
         SIXEL_SUBOPTION_VALUE_UINT, minimum_, maximum_, 1, 1, allow_zero_, \
         message_, suffix_)
 
-#define SIXEL_REGISTRY_BOUND_UINT_VALUE_MESSAGE( \
+#define SIXEL_REGISTRY_TYPED_UINT_VALUE_MESSAGE( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
-    maximum_, allow_zero_, environment_clamp_, message_, suffix_, target_, \
+    maximum_, allow_zero_, environment_range_, message_, suffix_, target_, \
     type_, field_) \
     { \
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), SIXEL_SUBOPTION_VALUE_UINT, NULL, 0u, NULL, 0u, \
         (minimum_), \
-        (maximum_), 1, 1, (allow_zero_), (environment_clamp_), (message_), \
+        (maximum_), 1, 1, (allow_zero_), (environment_range_), (message_), \
         (suffix_), \
         { \
             (target_), SIXEL_SUBOPTION_STORAGE_INT, \
             SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
-            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
+            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_1(field_) \
         } \
     }
 
-#define SIXEL_REGISTRY_BOUND_UINT( \
+#define SIXEL_REGISTRY_TYPED_UINT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
     maximum_, allow_zero_, message_, target_, type_, field_) \
-    SIXEL_REGISTRY_BOUND_UINT_VALUE_MESSAGE( \
+    SIXEL_REGISTRY_TYPED_UINT_VALUE_MESSAGE( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
-        maximum_, allow_zero_, 0, message_, NULL, target_, type_, field_)
+        maximum_, allow_zero_, SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
+        NULL, target_, type_, field_)
+
+/*
+ * Fix each non-encoder binding to its owning target and structure.  Registry
+ * rows therefore cannot pair a valid field offset with the wrong target
+ * class, even when both structures happen to use members of the same width.
+ */
+#define SIXEL_REGISTRY_DEQUANTIZE_CHOICE( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+    field_) \
+    SIXEL_REGISTRY_TYPED_CHOICE( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+        SIXEL_SUBOPTION_TARGET_DEQUANTIZE, sixel_dequantize_options_t, field_)
+
+#define SIXEL_REGISTRY_DEQUANTIZE_UINT( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, allow_zero_, message_, field_) \
+    SIXEL_REGISTRY_TYPED_UINT( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+        maximum_, allow_zero_, message_, SIXEL_SUBOPTION_TARGET_DEQUANTIZE, \
+        sixel_dequantize_options_t, field_)
+
+#define SIXEL_REGISTRY_LOADER_CHOICE_ENV( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+    environment_choices_, field_) \
+    SIXEL_REGISTRY_TYPED_CHOICE_ENV( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+        environment_choices_, SIXEL_SUBOPTION_TARGET_LOADER, \
+        sixel_loader_suboptions_t, field_)
+
+#define SIXEL_REGISTRY_LOADER_BOOLEAN( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, field_) \
+    SIXEL_REGISTRY_TYPED_BOOLEAN( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_TARGET_LOADER, sixel_loader_suboptions_t, field_)
+
+#define SIXEL_REGISTRY_LOADER_UINT( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, allow_zero_, message_, suffix_, field_) \
+    SIXEL_REGISTRY_TYPED_UINT_VALUE_MESSAGE( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+        maximum_, allow_zero_, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        message_, suffix_, \
+        SIXEL_SUBOPTION_TARGET_LOADER, sixel_loader_suboptions_t, field_)
 
 #define SIXEL_REGISTRY_FLOAT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_) \
@@ -212,13 +284,14 @@
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
-        0, 0, NULL, NULL, \
+        0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
-            SIXEL_SUBOPTION_OFFSET_NONE \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
         } \
     }
 
@@ -230,13 +303,14 @@
         (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), (environment_choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(environment_choices_), 0.0, 0.0, 0, \
-        0, 0, 0, NULL, NULL, \
+        0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
-            SIXEL_SUBOPTION_OFFSET_NONE \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
         } \
     }
 
@@ -246,13 +320,15 @@
     { \
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), SIXEL_SUBOPTION_VALUE_BOOLEAN, NULL, 0u, NULL, 0u, 0.0, \
-        1.0, 1, 1, 1, 0, "boolean suboption must be 0 or 1.", NULL, \
+        1.0, 1, 1, 1, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        "boolean suboption must be 0 or 1.", NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
-            SIXEL_SUBOPTION_OFFSET_NONE \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
         } \
     }
 
@@ -263,12 +339,13 @@
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
-        0, 0, NULL, NULL, \
+        0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
-            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
+            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_1(field_) \
         } \
     }
 
@@ -279,31 +356,34 @@
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
-        0, 0, NULL, NULL, \
+        0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
-            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, mirror_, int) \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, mirror_, int), \
+            SIXEL_SUBOPTION_BINDING_ID_3(field_, override_, mirror_) \
         } \
     }
 
 #define SIXEL_REGISTRY_ENCODER_NUMBER( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, kind_, \
-    minimum_, maximum_, has_minimum_, has_maximum_, allow_zero_, message_, \
-    storage_, value_type_, field_, second_, override_) \
+    minimum_, maximum_, has_minimum_, has_maximum_, allow_zero_, \
+    environment_range_, message_, storage_, value_type_, field_, second_, \
+    override_, binding_id_) \
     { \
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), (kind_), NULL, 0u, NULL, 0u, (minimum_), (maximum_), \
-        (has_minimum_), (has_maximum_), (allow_zero_), 0, (message_), NULL, \
+        (has_minimum_), (has_maximum_), (allow_zero_), \
+        (environment_range_), (message_), NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, (storage_), \
             SIXEL_REGISTRY_CHECKED_OFFSET( \
                 sixel_encoder_t, field_, value_type_), \
             (second_), \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
-            SIXEL_SUBOPTION_OFFSET_NONE \
+            SIXEL_SUBOPTION_OFFSET_NONE, (binding_id_) \
         } \
     }
 
@@ -313,35 +393,107 @@
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
         SIXEL_SUBOPTION_VALUE_UINT, minimum_, maximum_, 1, 1, allow_zero_, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
+        SIXEL_SUBOPTION_STORAGE_UINT, unsigned int, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
+
+#define SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, allow_zero_, message_, field_, override_) \
+    SIXEL_REGISTRY_ENCODER_NUMBER( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_VALUE_UINT, minimum_, maximum_, 1, 1, allow_zero_, \
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG, \
         message_, SIXEL_SUBOPTION_STORAGE_UINT, unsigned int, field_, \
-        SIXEL_SUBOPTION_OFFSET_NONE, override_)
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
+
+#define SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, allow_zero_, message_, field_, override_) \
+    SIXEL_REGISTRY_ENCODER_NUMBER( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_VALUE_UINT, minimum_, maximum_, 1, 1, allow_zero_, \
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH, \
+        message_, SIXEL_SUBOPTION_STORAGE_UINT, unsigned int, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
+
+#define SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, allow_zero_, message_, field_, override_) \
+    SIXEL_REGISTRY_ENCODER_NUMBER( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_VALUE_UINT, minimum_, maximum_, 1, 1, allow_zero_, \
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_POSITIVE_MINIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH | \
+            SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG, \
+        message_, SIXEL_SUBOPTION_STORAGE_UINT, unsigned int, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
+
+#define SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, allow_zero_, message_, field_, override_) \
+    SIXEL_REGISTRY_ENCODER_NUMBER( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_VALUE_UINT, minimum_, maximum_, 1, 1, allow_zero_, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH | \
+            SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG, \
+        message_, SIXEL_SUBOPTION_STORAGE_UINT, unsigned int, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
 
 #define SIXEL_REGISTRY_ENCODER_INT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_, \
     field_, override_) \
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
-        SIXEL_SUBOPTION_VALUE_INT, 0.0, 0.0, 0, 0, 0, message_, \
+        SIXEL_SUBOPTION_VALUE_INT, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
         SIXEL_SUBOPTION_STORAGE_INT, int, field_, \
-        SIXEL_SUBOPTION_OFFSET_NONE, override_)
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
 
 #define SIXEL_REGISTRY_ENCODER_FLOAT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_, \
     field_, override_) \
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
-        SIXEL_SUBOPTION_VALUE_FLOAT, 0.0, 0.0, 0, 0, 0, message_, \
+        SIXEL_SUBOPTION_VALUE_FLOAT, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
         SIXEL_SUBOPTION_STORAGE_FLOAT, float, field_, \
-        SIXEL_SUBOPTION_OFFSET_NONE, override_)
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
 
 #define SIXEL_REGISTRY_ENCODER_DOUBLE( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
     maximum_, message_, field_, override_) \
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
-        SIXEL_SUBOPTION_VALUE_DOUBLE, minimum_, maximum_, 1, 1, 0, message_, \
+        SIXEL_SUBOPTION_VALUE_DOUBLE, minimum_, maximum_, 1, 1, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
         SIXEL_SUBOPTION_STORAGE_DOUBLE, double, field_, \
-        SIXEL_SUBOPTION_OFFSET_NONE, override_)
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
+
+#define SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, message_, field_, override_) \
+    SIXEL_REGISTRY_ENCODER_NUMBER( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_VALUE_DOUBLE, minimum_, maximum_, 1, 1, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM, \
+        message_, SIXEL_SUBOPTION_STORAGE_DOUBLE, double, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
 
 #define SIXEL_REGISTRY_ENCODER_SCALED_U8( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
@@ -349,18 +501,33 @@
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
         SIXEL_SUBOPTION_VALUE_SCALED_U8, minimum_, maximum_, 1, 1, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
+        SIXEL_SUBOPTION_STORAGE_INT, int, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
+
+#define SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, message_, field_, override_) \
+    SIXEL_REGISTRY_ENCODER_NUMBER( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_VALUE_SCALED_U8, minimum_, maximum_, 1, 1, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM, \
         message_, SIXEL_SUBOPTION_STORAGE_INT, int, field_, \
-        SIXEL_SUBOPTION_OFFSET_NONE, override_)
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
 
 #define SIXEL_REGISTRY_ENCODER_INT_PAIR( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_, \
     field_, second_, override_) \
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
-        SIXEL_SUBOPTION_VALUE_INT_PAIR, 0.0, 0.0, 0, 0, 0, message_, \
+        SIXEL_SUBOPTION_VALUE_INT_PAIR, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
         SIXEL_SUBOPTION_STORAGE_INT_PAIR, int, field_, \
         SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, second_, int), \
-        override_)
+        override_, SIXEL_SUBOPTION_BINDING_ID_3(field_, second_, override_))
 
 enum {
     SIXEL_DEQUANTIZE_BASE_NONE = 0,
@@ -804,23 +971,19 @@ static sixel_suboption_choice_t const g_loader_bmp_environment_choices[] = {
  * into every quantizer or diffusion method.
  */
 static sixel_suboption_key_t const g_suboptions[] = {
-    SIXEL_REGISTRY_BOUND_CHOICE(
+    SIXEL_REGISTRY_DEQUANTIZE_CHOICE(
         SIXEL_OPTION_SCHEMA_DEQUANTIZE,
         g_dequantize_values + SIXEL_DEQUANTIZE_BASE_LSO_UNDITHER,
         "variant", 'V', "SIXEL_DEQUANTIZE_LSO_VARIANT", NULL, NULL,
         g_dequantize_lso_variant_choices,
-        SIXEL_SUBOPTION_TARGET_DEQUANTIZE,
-        sixel_dequantize_options_t,
         method),
-    SIXEL_REGISTRY_BOUND_UINT(
+    SIXEL_REGISTRY_DEQUANTIZE_UINT(
         SIXEL_OPTION_SCHEMA_DEQUANTIZE,
         g_dequantize_values + SIXEL_DEQUANTIZE_BASE_SELECTIVE_BLUR,
         "threshold", 'T',
         "SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD", NULL, NULL,
         0.0, 441.0, 0,
         "selective_blur threshold must be an integer in range 0..441.",
-        SIXEL_SUBOPTION_TARGET_DEQUANTIZE,
-        sixel_dequantize_options_t,
         selective_blur_threshold),
 
     SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
@@ -854,7 +1017,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         NULL, NULL, g_interframe_diffusion_choices,
         interframe_spatial_diffuse,
         interframe_spatial_diffuse_override),
-    SIXEL_REGISTRY_ENCODER_SCALED_U8(
+    SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
         "strength", 'T', "SIXEL_DITHER_STBN_STRENGTH",
@@ -947,18 +1110,18 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_quantize_merge_choices,
         quantize_model_merge_mode, quantize_model_merge_override,
         final_merge_mode),
-    SIXEL_REGISTRY_ENCODER_DOUBLE(
+    SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
         "merge_oversplit", 'O', "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         NULL, NULL, 1.0, 3.0,
         "-Q merge_oversplit must be in range 1.0-3.0.",
         quantize_model_merge_oversplit,
         quantize_model_merge_oversplit_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
         "merge_lloyd", 'L',
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
-        NULL, NULL, 1.0, 30.0, 1,
+        NULL, NULL, 0.0, 30.0, 0,
         "-Q merge_lloyd must be 0 or in range 1-30.",
         quantize_model_merge_lloyd,
         quantize_model_merge_lloyd_override),
@@ -990,7 +1153,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_kmeans_init_type_choices,
         quantize_model_kmeans_init_type,
         quantize_model_kmeans_init_override),
-    SIXEL_REGISTRY_ENCODER_DOUBLE(
+    SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "threshold", 'T', "SIXEL_PALETTE_KMEANS_THRESHOLD", NULL, NULL,
@@ -1004,7 +1167,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_kmeans_binning_choices,
         quantize_model_kmeans_binning_mode,
         quantize_model_kmeans_binning_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "binbits", 'N', "SIXEL_PALETTE_KMEANS_BINBITS", NULL, NULL,
@@ -1025,7 +1188,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_kmeans_softdist_choices,
         quantize_model_kmeans_softdist_mode,
         quantize_model_kmeans_softdist_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "autoratio", 'R', "SIXEL_PALETTE_KMEANS_AUTORATIO", NULL, NULL,
@@ -1046,7 +1209,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_kmeans_prune_choices,
         quantize_model_kmeans_prune_policy,
         quantize_model_kmeans_prune_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "seed", 'S', "SIXEL_PALETTE_KMEANS_SEED", NULL, NULL,
@@ -1054,21 +1217,21 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q seed must be in range 0-4294967295.",
         quantize_model_kmeans_seed,
         quantize_model_kmeans_seed_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "restarts", 'E', "SIXEL_PALETTE_KMEANS_RESTARTS", NULL, NULL,
         1.0, 32.0, 0, "-Q restarts must be in range 1-32.",
         quantize_model_kmeans_restarts,
         quantize_model_kmeans_restarts_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "iter", 'A', "SIXEL_PALETTE_KMEANS_ITER", NULL, NULL,
         1.0, 100.0, 0, "-Q iter must be in range 1-100.",
         quantize_model_kmeans_iter,
         quantize_model_kmeans_iter_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "iter_max", 'X', "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX",
@@ -1076,14 +1239,14 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q iter_max must be in range 1-100.",
         quantize_model_kmeans_iter_max,
         quantize_model_kmeans_iter_max_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "miniter", 'U', "SIXEL_PALETTE_KMEANS_MINITER", NULL, NULL,
         1.0, 100.0, 1, "-Q miniter must be 0 or in range 1-100.",
         quantize_model_kmeans_miniter,
         quantize_model_kmeans_miniter_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "polish_iter", 'H', "SIXEL_PALETTE_KMEANS_POLISH_ITER",
@@ -1091,7 +1254,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q polish_iter must be 0 or in range 1-16.",
         quantize_model_kmeans_polish_iter,
         quantize_model_kmeans_polish_iter_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "feedback_slots", 'K', "SIXEL_PALETTE_KMEANS_FEEDBACK_SLOTS",
@@ -1099,7 +1262,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q feedback_slots must be in range 1-16.",
         quantize_model_kmeans_feedback_slots,
         quantize_model_kmeans_feedback_slots_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
         "feedback_interval", 'J',
@@ -1124,14 +1287,14 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q seed must be in range 0-4294967295.",
         quantize_model_kmedoids_seed,
         quantize_model_kmedoids_seed_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "iter", 'I', "SIXEL_PALETTE_KMEDOIDS_ITER", NULL, NULL,
         1.0, 64.0, 0, "-Q iter must be in range 1-64.",
         quantize_model_kmedoids_iter,
         quantize_model_kmedoids_iter_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "sample", 'M', "SIXEL_PALETTE_KMEDOIDS_SAMPLE", NULL, NULL,
@@ -1139,7 +1302,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q sample must be 0 or in range 64-1048576.",
         quantize_model_kmedoids_sample,
         quantize_model_kmedoids_sample_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "clara_trials", 'T', "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS",
@@ -1147,7 +1310,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q clara_trials must be in range 1-32.",
         quantize_model_kmedoids_clara_trials,
         quantize_model_kmedoids_clara_trials_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "clara_sample", 'K', "SIXEL_PALETTE_KMEDOIDS_CLARA_SAMPLE",
@@ -1155,7 +1318,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q clara_sample must be 0 or in range 64-1048576.",
         quantize_model_kmedoids_clara_sample,
         quantize_model_kmedoids_clara_sample_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "clarans_local", 'J', "SIXEL_PALETTE_KMEDOIDS_CLARANS_LOCAL",
@@ -1163,7 +1326,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q clarans_local must be in range 1-32.",
         quantize_model_kmedoids_clarans_local,
         quantize_model_kmedoids_clarans_local_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "clarans_neighbors", 'N',
@@ -1172,7 +1335,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q clarans_neighbors must be 0 or in range 1-5000000.",
         quantize_model_kmedoids_clarans_neighbors,
         quantize_model_kmedoids_clarans_neighbors_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "bandit_iter", 'D', "SIXEL_PALETTE_KMEDOIDS_BANDIT_ITER",
@@ -1180,7 +1343,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q bandit_iter must be in range 1-64.",
         quantize_model_kmedoids_bandit_iter,
         quantize_model_kmedoids_bandit_iter_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "bandit_candidates", 'E',
@@ -1189,7 +1352,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q bandit_candidates must be in range 8-4096.",
         quantize_model_kmedoids_bandit_candidates,
         quantize_model_kmedoids_bandit_candidates_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "bandit_batch", 'X', "SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH",
@@ -1197,14 +1360,14 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q bandit_batch must be in range 8-4096.",
         quantize_model_kmedoids_bandit_batch,
         quantize_model_kmedoids_bandit_batch_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "histbits", 'H', "SIXEL_PALETTE_KMEDOIDS_HISTBITS", NULL, NULL,
         3.0, 6.0, 0, "-Q histbits must be in range 3-6.",
         quantize_model_kmedoids_histbits,
         quantize_model_kmedoids_histbits_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "point_budget", 'B', "SIXEL_PALETTE_KMEDOIDS_POINT_BUDGET",
@@ -1212,7 +1375,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q point_budget must be in range 64-16384.",
         quantize_model_kmedoids_point_budget,
         quantize_model_kmedoids_point_budget_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "rare_keep", 'R', "SIXEL_PALETTE_KMEDOIDS_RARE_KEEP", NULL, NULL,
@@ -1233,7 +1396,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "auction", 'Q', "SIXEL_PALETTE_KMEDOIDS_AUCTION", NULL, NULL,
         quantize_model_kmedoids_auction,
         quantize_model_kmedoids_auction_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS,
         "auction_shortlist", 'Y',
@@ -1256,7 +1419,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_kcenter_profile_choices,
         quantize_model_kcenter_profile,
         quantize_model_kcenter_profile_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "seed", 'S', "SIXEL_PALETTE_KCENTER_SEED", NULL, NULL,
@@ -1271,7 +1434,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         NULL, NULL, g_kcenter_auto_policy_choices,
         quantize_model_kcenter_auto_policy,
         quantize_model_kcenter_auto_policy_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "auto_fft_threshold", 'F',
@@ -1295,35 +1458,35 @@ static sixel_suboption_key_t const g_suboptions[] = {
         NULL, NULL, g_kcenter_candidate_policy_choices,
         quantize_model_kcenter_candidate_policy,
         quantize_model_kcenter_candidate_policy_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "restarts", 'X', "SIXEL_PALETTE_KCENTER_RESTARTS", NULL, NULL,
         1.0, 32.0, 0, "-Q restarts must be in range 1-32.",
         quantize_model_kcenter_restarts,
         quantize_model_kcenter_restarts_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "init_seeds", 'N', "SIXEL_PALETTE_KCENTER_INIT_SEEDS", NULL, NULL,
         1.0, 8.0, 0, "-Q init_seeds must be in range 1-8.",
         quantize_model_kcenter_init_seeds,
         quantize_model_kcenter_init_seeds_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "iter", 'I', "SIXEL_PALETTE_KCENTER_ITER", NULL, NULL,
         1.0, 64.0, 0, "-Q iter must be in range 1-64.",
         quantize_model_kcenter_iter,
         quantize_model_kcenter_iter_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "histbits", 'H', "SIXEL_PALETTE_KCENTER_HISTBITS", NULL, NULL,
         3.0, 6.0, 0, "-Q histbits must be in range 3-6.",
         quantize_model_kcenter_histbits,
         quantize_model_kcenter_histbits_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "point_budget", 'B', "SIXEL_PALETTE_KCENTER_POINT_BUDGET",
@@ -1331,7 +1494,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q point_budget must be 0 or in range 64-16384.",
         quantize_model_kcenter_point_budget,
         quantize_model_kcenter_point_budget_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "rare_keep", 'R', "SIXEL_PALETTE_KCENTER_RARE_KEEP", NULL, NULL,
@@ -1361,7 +1524,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-Q budget_scale must be in range 0.25-4.00.",
         quantize_model_kcenter_budget_scale,
         quantize_model_kcenter_budget_scale_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "swap_topk", 'K', "SIXEL_PALETTE_KCENTER_SWAP_TOPK", NULL, NULL,
@@ -1375,7 +1538,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         NULL, NULL, g_kcenter_swap_update_choices,
         quantize_model_kcenter_swap_update,
         quantize_model_kcenter_swap_update_override),
-    SIXEL_REGISTRY_ENCODER_UINT(
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER,
         "swap_patience", 'T', "SIXEL_PALETTE_KCENTER_SWAP_PATIENCE",
@@ -1415,119 +1578,95 @@ static sixel_suboption_key_t const g_suboptions[] = {
         lut_policy_shared_instance_override),
 
 #if HAVE_LIBPNG
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_LOADER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBPNG,
         "cms_engine", 'E', "SIXEL_LOADER_LIBPNG_CMS_ENGINE",
         "SIXEL_LOADER_CMS_ENGINE", NULL, g_loader_cms_engine_choices,
         g_loader_cms_environment_choices,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         libpng_cms_engine),
-    SIXEL_REGISTRY_BOUND_BOOLEAN(
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBPNG,
         "orientation", 'O', "SIXEL_LOADER_LIBPNG_ORIENTATION",
         "SIXEL_LOADER_ORIENTATION", NULL,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         libpng_enable_orientation),
 #endif
 #if HAVE_JPEG
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_LOADER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBJPEG,
         "cms_engine", 'E', "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
         "SIXEL_LOADER_CMS_ENGINE", NULL, g_loader_cms_engine_choices,
         g_loader_cms_environment_choices,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         libjpeg_cms_engine),
-    SIXEL_REGISTRY_BOUND_BOOLEAN(
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBJPEG,
         "orientation", 'O', "SIXEL_LOADER_LIBJPEG_ORIENTATION",
         "SIXEL_LOADER_ORIENTATION", NULL,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         libjpeg_enable_orientation),
 #endif
 #if HAVE_WEBP
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_LOADER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBWEBP,
         "cms_engine", 'E', "SIXEL_LOADER_LIBWEBP_CMS_ENGINE",
         "SIXEL_LOADER_CMS_ENGINE", NULL, g_loader_cms_engine_choices,
         g_loader_cms_environment_choices,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         libwebp_cms_engine),
-    SIXEL_REGISTRY_BOUND_BOOLEAN(
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBWEBP,
         "orientation", 'O', "SIXEL_LOADER_LIBWEBP_ORIENTATION",
         "SIXEL_LOADER_ORIENTATION", NULL,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         libwebp_enable_orientation),
 #endif
 #if HAVE_COREGRAPHICS
-    SIXEL_REGISTRY_BOUND_BOOLEAN(
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_COREGRAPHICS,
         "orientation", 'O', "SIXEL_LOADER_COREGRAPHICS_ORIENTATION",
         "SIXEL_LOADER_ORIENTATION", NULL,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         coregraphics_enable_orientation),
 #endif
 #if HAVE_LIBTIFF
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_LOADER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBTIFF,
         "cms_engine", 'E', "SIXEL_LOADER_LIBTIFF_CMS_ENGINE",
         "SIXEL_LOADER_CMS_ENGINE", NULL, g_loader_cms_engine_choices,
         g_loader_cms_environment_choices,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         libtiff_cms_engine),
 #endif
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_LOADER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
         "cms_engine", 'E', "SIXEL_LOADER_BUILTIN_CMS_ENGINE",
         "SIXEL_LOADER_CMS_ENGINE", NULL, g_loader_cms_engine_choices,
         g_loader_cms_environment_choices,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         builtin_cms_engine),
-    SIXEL_REGISTRY_BOUND_BOOLEAN(
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
         "orientation", 'O', "SIXEL_LOADER_BUILTIN_ORIENTATION",
         "SIXEL_LOADER_ORIENTATION", NULL,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         builtin_enable_orientation),
-    SIXEL_REGISTRY_BOUND_CHOICE_ENV(
+    SIXEL_REGISTRY_LOADER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
         "bmp_info40_mode", 'B', "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
         NULL, NULL, g_loader_bmp_info40_mode_choices,
         g_loader_bmp_environment_choices,
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         builtin_bmp_info40_mode),
 #if HAVE_WIC
-    SIXEL_REGISTRY_BOUND_UINT_VALUE_MESSAGE(
+    SIXEL_REGISTRY_LOADER_UINT(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_WIC,
         "ico_minsize", 'I', "SIXEL_LOADER_WIC_ICO_MINSIZE", NULL,
-        "SIXEL_LODER_WIC_ICO_MINSIZE", 1.0, 2147483647.0, 0, 1,
+        "SIXEL_LODER_WIC_ICO_MINSIZE", 1.0, 2147483647.0, 0,
         "invalid wic suboption value \"",
         "\" for key \"ico_minsize\"; expected a positive integer.",
-        SIXEL_SUBOPTION_TARGET_LOADER,
-        sixel_loader_suboptions_t,
         wic_ico_minsize),
 #endif
 };
@@ -1708,6 +1847,36 @@ sixel_option_registry_suboption_by_environment(char const *name)
     return NULL;
 }
 
+sixel_suboption_key_t const *
+sixel_option_registry_suboption_by_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier)
+{
+    sixel_suboption_key_t const *key;
+    size_t index;
+
+    key = NULL;
+    index = 0u;
+    if (binding_identifier == NULL || binding_identifier[0] == '\0') {
+        return NULL;
+    }
+    while (index < SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
+        key = g_suboptions + index;
+        if (key->option_id == option_id &&
+            key->binding.identifier != NULL &&
+            strcmp(key->binding.identifier, binding_identifier) == 0 &&
+            ((base_name == NULL && key->base_def == NULL) ||
+             (base_name != NULL && key->base_def != NULL &&
+              strcmp(key->base_def->name, base_name) == 0))) {
+            return key;
+        }
+        ++index;
+    }
+
+    return NULL;
+}
+
 /*
  * Environment names are part of the registry contract.  Keep their syntax
  * independent of the host shell so a malformed row fails on every platform.
@@ -1739,8 +1908,201 @@ sixel_option_registry_environment_name_is_valid(
     return 1;
 }
 
-int
-sixel_option_registry_validate(void)
+static int
+sixel_option_registry_binding_kind_is_valid(
+    sixel_suboption_key_t const *key)
+{
+    if (key == NULL) {
+        return 0;
+    }
+
+    switch (key->value_kind) {
+    case SIXEL_SUBOPTION_VALUE_CHOICE:
+    case SIXEL_SUBOPTION_VALUE_BOOLEAN:
+    case SIXEL_SUBOPTION_VALUE_INT:
+    case SIXEL_SUBOPTION_VALUE_SCALED_U8:
+        return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_INT;
+    case SIXEL_SUBOPTION_VALUE_UINT:
+        return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_UINT ||
+            key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_INT;
+    case SIXEL_SUBOPTION_VALUE_FLOAT:
+        return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_FLOAT;
+    case SIXEL_SUBOPTION_VALUE_DOUBLE:
+        return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_DOUBLE;
+    case SIXEL_SUBOPTION_VALUE_INT_PAIR:
+        return key->binding.storage_kind ==
+            SIXEL_SUBOPTION_STORAGE_INT_PAIR;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+static sixel_suboption_target_class_t
+sixel_option_registry_expected_target(
+    sixel_option_schema_id_t option_id)
+{
+    if (option_id == SIXEL_OPTION_SCHEMA_DEQUANTIZE) {
+        return SIXEL_SUBOPTION_TARGET_DEQUANTIZE;
+    }
+    if (option_id == SIXEL_OPTION_SCHEMA_LOADERS) {
+        return SIXEL_SUBOPTION_TARGET_LOADER;
+    }
+
+    return SIXEL_SUBOPTION_TARGET_ENCODER;
+}
+
+/* Every row must be reachable through one declared schema and base. */
+static int
+sixel_option_registry_owner_is_valid(sixel_suboption_key_t const *key)
+{
+    sixel_option_argument_schema_t const *schema;
+    size_t base_index;
+
+    schema = NULL;
+    base_index = 0u;
+    if (key == NULL) {
+        return 0;
+    }
+    schema = sixel_option_registry_get(key->option_id);
+    if (schema == NULL) {
+        return 0;
+    }
+    if (key->base_def == NULL) {
+        return schema->value_count > 0u;
+    }
+    while (base_index < schema->value_count) {
+        if (key->base_def == schema->values + base_index) {
+            return 1;
+        }
+        ++base_index;
+    }
+
+    return 0;
+}
+
+/* Value fields must never overlap control fields in any binding. */
+static int
+sixel_option_registry_binding_roles_conflict(
+    sixel_suboption_binding_t const *left,
+    sixel_suboption_binding_t const *right)
+{
+    size_t left_values[2];
+    size_t left_controls[2];
+    size_t right_values[2];
+    size_t right_controls[2];
+    size_t value_index;
+    size_t control_index;
+
+    left_values[0] = SIXEL_SUBOPTION_OFFSET_NONE;
+    left_values[1] = SIXEL_SUBOPTION_OFFSET_NONE;
+    left_controls[0] = SIXEL_SUBOPTION_OFFSET_NONE;
+    left_controls[1] = SIXEL_SUBOPTION_OFFSET_NONE;
+    right_values[0] = SIXEL_SUBOPTION_OFFSET_NONE;
+    right_values[1] = SIXEL_SUBOPTION_OFFSET_NONE;
+    right_controls[0] = SIXEL_SUBOPTION_OFFSET_NONE;
+    right_controls[1] = SIXEL_SUBOPTION_OFFSET_NONE;
+    value_index = 0u;
+    control_index = 0u;
+    if (left == NULL || right == NULL ||
+        left->target_class != right->target_class) {
+        return 0;
+    }
+
+    left_values[0] = left->value_offset;
+    left_values[1] = left->second_value_offset;
+    left_controls[0] = left->override_offset;
+    left_controls[1] = left->mirror_offset;
+    right_values[0] = right->value_offset;
+    right_values[1] = right->second_value_offset;
+    right_controls[0] = right->override_offset;
+    right_controls[1] = right->mirror_offset;
+
+    while (value_index < 2u) {
+        control_index = 0u;
+        while (control_index < 2u) {
+            if (left_values[value_index] != SIXEL_SUBOPTION_OFFSET_NONE &&
+                left_values[value_index] == right_controls[control_index]) {
+                return 1;
+            }
+            if (right_values[value_index] != SIXEL_SUBOPTION_OFFSET_NONE &&
+                right_values[value_index] == left_controls[control_index]) {
+                return 1;
+            }
+            ++control_index;
+        }
+        ++value_index;
+    }
+
+    return 0;
+}
+
+/* Distinct semantic rows may not claim the same value field. */
+static int
+sixel_option_registry_binding_values_conflict(
+    sixel_suboption_key_t const *left_key,
+    sixel_suboption_key_t const *right_key)
+{
+    sixel_suboption_binding_t const *left;
+    sixel_suboption_binding_t const *right;
+    size_t left_values[2];
+    size_t right_values[2];
+    size_t left_index;
+    size_t right_index;
+
+    left = NULL;
+    right = NULL;
+    left_values[0] = SIXEL_SUBOPTION_OFFSET_NONE;
+    left_values[1] = SIXEL_SUBOPTION_OFFSET_NONE;
+    right_values[0] = SIXEL_SUBOPTION_OFFSET_NONE;
+    right_values[1] = SIXEL_SUBOPTION_OFFSET_NONE;
+    left_index = 0u;
+    right_index = 0u;
+    if (left_key == NULL || right_key == NULL) {
+        return 0;
+    }
+    left = &left_key->binding;
+    right = &right_key->binding;
+    if (left->target_class != right->target_class) {
+        return 0;
+    }
+
+    /* Alternative bases may expose exactly the same semantic binding. */
+    if (left_key->option_id == right_key->option_id &&
+        left_key->name != NULL && right_key->name != NULL &&
+        strcmp(left_key->name, right_key->name) == 0 &&
+        left->identifier != NULL && right->identifier != NULL &&
+        strcmp(left->identifier, right->identifier) == 0 &&
+        left->storage_kind == right->storage_kind &&
+        left->value_offset == right->value_offset &&
+        left->second_value_offset == right->second_value_offset &&
+        left->override_offset == right->override_offset &&
+        left->mirror_offset == right->mirror_offset) {
+        return 0;
+    }
+
+    left_values[0] = left->value_offset;
+    left_values[1] = left->second_value_offset;
+    right_values[0] = right->value_offset;
+    right_values[1] = right->second_value_offset;
+    while (left_index < 2u) {
+        right_index = 0u;
+        while (right_index < 2u) {
+            if (left_values[left_index] != SIXEL_SUBOPTION_OFFSET_NONE &&
+                left_values[left_index] == right_values[right_index]) {
+                return 1;
+            }
+            ++right_index;
+        }
+        ++left_index;
+    }
+
+    return 0;
+}
+
+static int
+sixel_option_registry_validate_uncached(void)
 {
     size_t option_index;
     size_t base_index;
@@ -1769,7 +2131,8 @@ sixel_option_registry_validate(void)
     while (suboption_index <
            SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
         key = g_suboptions + suboption_index;
-        if (!sixel_option_registry_environment_name_is_valid(
+        if (!sixel_option_registry_owner_is_valid(key) ||
+            !sixel_option_registry_environment_name_is_valid(
                 key->env_name,
                 1) ||
             !sixel_option_registry_environment_name_is_valid(
@@ -1784,6 +2147,23 @@ sixel_option_registry_validate(void)
         while (previous_suboption_index < suboption_index) {
             previous = g_suboptions + previous_suboption_index;
             if (strcmp(previous->env_name, key->env_name) == 0) {
+                return 0;
+            }
+            ++previous_suboption_index;
+        }
+        if (sixel_option_registry_binding_roles_conflict(&key->binding,
+                                                         &key->binding)) {
+            return 0;
+        }
+        previous_suboption_index = 0u;
+        while (previous_suboption_index < suboption_index) {
+            previous = g_suboptions + previous_suboption_index;
+            if (sixel_option_registry_binding_roles_conflict(
+                    &key->binding,
+                    &previous->binding) ||
+                sixel_option_registry_binding_values_conflict(
+                    key,
+                    previous)) {
                 return 0;
             }
             ++previous_suboption_index;
@@ -1809,8 +2189,21 @@ sixel_option_registry_validate(void)
                     key->short_name < 'A' || key->short_name > 'Z' ||
                     key->binding.target_class ==
                         SIXEL_SUBOPTION_TARGET_NONE ||
+                    key->binding.target_class !=
+                        sixel_option_registry_expected_target(
+                            key->option_id) ||
                     key->binding.value_offset ==
-                        SIXEL_SUBOPTION_OFFSET_NONE) {
+                        SIXEL_SUBOPTION_OFFSET_NONE ||
+                    key->binding.identifier == NULL ||
+                    key->binding.identifier[0] == '\0' ||
+                    !sixel_option_registry_binding_kind_is_valid(key)) {
+                    return 0;
+                }
+                if (key->value_kind == SIXEL_SUBOPTION_VALUE_UINT &&
+                    key->binding.storage_kind ==
+                        SIXEL_SUBOPTION_STORAGE_INT &&
+                    (!key->has_maximum ||
+                     key->maximum > (double)INT_MAX)) {
                     return 0;
                 }
                 if ((key->environment_choices == NULL) !=
@@ -1829,9 +2222,68 @@ sixel_option_registry_validate(void)
                          SIXEL_SUBOPTION_STORAGE_INT)) {
                     return 0;
                 }
-                if (key->environment_clamp_maximum &&
-                    (key->value_kind != SIXEL_SUBOPTION_VALUE_UINT ||
-                     !key->has_maximum)) {
+                if ((key->environment_range_policy &
+                     ~(SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
+                       SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM |
+                       SIXEL_SUBOPTION_ENV_RANGE_CLAMP_POSITIVE_MINIMUM |
+                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
+                       SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
+                       SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
+                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG)) !=
+                    0) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) != 0 &&
+                    (key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_CLAMP_POSITIVE_MINIMUM) != 0) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     (SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
+                      SIXEL_SUBOPTION_ENV_RANGE_CLAMP_POSITIVE_MINIMUM)) !=
+                        0 &&
+                    !key->has_minimum) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_CLAMP_POSITIVE_MINIMUM) != 0 &&
+                    key->value_kind != SIXEL_SUBOPTION_VALUE_UINT) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     (SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
+                      SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
+                      SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
+                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG)) != 0 &&
+                    key->value_kind != SIXEL_SUBOPTION_VALUE_UINT) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG) != 0 &&
+                    (key->environment_range_policy &
+                     (SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
+                      SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
+                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG)) != 0) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG) != 0 &&
+                    (key->environment_range_policy &
+                     (SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
+                      SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH)) !=
+                        SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH) != 0 &&
+                    (key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH) != 0) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) != 0 &&
+                    !key->has_maximum) {
                     return 0;
                 }
                 if (key->binding.storage_kind ==
@@ -1861,6 +2313,78 @@ sixel_option_registry_validate(void)
     }
 
     return 1;
+}
+
+/*
+ * The registry is immutable, so validate its O(n squared) cross-row
+ * invariants exactly once.  Every consumer can then keep the runtime guard
+ * without multiplying initialization cost or introducing a data race.
+ */
+static int sixel_option_registry_validation_result = 0;
+
+#if defined(SIXEL_ENABLE_THREADS) && SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+     && !defined(WITH_WINPTHREAD)
+static INIT_ONCE sixel_option_registry_validation_once =
+    INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_option_registry_validate_once_cb(PINIT_ONCE once,
+                                       PVOID parameter,
+                                       PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    sixel_option_registry_validation_result =
+        sixel_option_registry_validate_uncached();
+    return TRUE;
+}
+# else
+static pthread_once_t sixel_option_registry_validation_once =
+    PTHREAD_ONCE_INIT;
+
+static void
+sixel_option_registry_validate_once_cb(void)
+{
+    sixel_option_registry_validation_result =
+        sixel_option_registry_validate_uncached();
+}
+# endif
+#else
+static int sixel_option_registry_validation_initialized = 0;
+#endif
+
+int
+sixel_option_registry_validate(void)
+{
+#if defined(SIXEL_ENABLE_THREADS) && SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+     && !defined(WITH_WINPTHREAD)
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(
+        &sixel_option_registry_validation_once,
+        sixel_option_registry_validate_once_cb,
+        NULL,
+        NULL);
+    return initialized && sixel_option_registry_validation_result;
+# else
+    int status;
+
+    status = pthread_once(&sixel_option_registry_validation_once,
+                          sixel_option_registry_validate_once_cb);
+    return status == 0 && sixel_option_registry_validation_result;
+# endif
+#else
+    if (!sixel_option_registry_validation_initialized) {
+        sixel_option_registry_validation_result =
+            sixel_option_registry_validate_uncached();
+        sixel_option_registry_validation_initialized = 1;
+    }
+    return sixel_option_registry_validation_result;
+#endif
 }
 
 /* emacs Local Variables:      */

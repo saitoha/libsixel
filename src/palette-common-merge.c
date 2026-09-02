@@ -328,27 +328,43 @@ sixel_final_merge_load_env(void)
     }
     env_final_merge_env_loaded = 1;
 
-    if (sixel_option_resolve_registered_double_environment(
-            "SIXEL_PALETTE_OVERSPLIT_FACTOR",
+    if (sixel_option_resolve_registered_double_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            NULL,
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_merge_oversplit,
+                quantize_model_merge_oversplit_override),
             &registered_double)) {
         env_final_merge_target_factor = (float)registered_double;
     }
 
-    if (sixel_option_resolve_registered_uint_environment(
-            "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
+    if (sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            NULL,
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_merge_lloyd,
+                quantize_model_merge_lloyd_override),
             &registered_uint)) {
         env_final_merge_additional_lloyd = registered_uint;
         env_final_merge_additional_lloyd_overridden = 1;
     }
 
-    if (sixel_option_resolve_registered_uint_environment(
-            "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX",
+    if (sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_iter_max,
+                quantize_model_kmeans_iter_max_override),
             &registered_uint)) {
         env_kmeans_iter_max = registered_uint;
     }
 
-    if (sixel_option_resolve_registered_double_environment(
-            "SIXEL_PALETTE_KMEANS_THRESHOLD",
+    if (sixel_option_resolve_registered_double_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_threshold,
+                quantize_model_kmeans_threshold_override),
             &registered_double)) {
         env_kmeans_threshold = registered_double;
     }

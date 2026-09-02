@@ -2,6 +2,8 @@
 # Verify stbn:strength preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DIFFUSION|g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN|strength
 # Registry binding: interframe_noise_strength_u8|interframe_noise_strength_override
+# Dither contract: strength=15|strength_override=1
+# Environment range: clamp-both
 
 set -eux
 
@@ -35,22 +37,27 @@ test "${effect_trace#*LSXDTH1|*consume=[1-9]*}" != "${effect_trace}" || {
     exit 0
 }
 
+test "${effect_trace#*LSXDTH1|*strength=15|strength_override=1*}" != "${effect_trace}" || {
+    echo "not ok" 1 - "stbn strength did not reach the dither"
+    exit 0
+}
+
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 -L builtin -ldisable -p 128 \
-    -d "stbn:Spmj:T0.06" "${input_image}" 2>&1 >"${short_output}") || {
+    -d "stbn:Spmj:T0" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "stbn:strength short conversion failed"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=strength|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=strength|stored=1|binding=interframe_noise_strength_u8,interframe_noise_strength_override|value=0*}" != "${short_trace}" || {
     echo "not ok" 1 - "strength short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_DITHER_STBN_STRENGTH=0.06" \
+    --env "SIXEL_DITHER_STBN_STRENGTH=-0.1" \
     --threads=1 -L builtin -ldisable -p 128 \
     -d "stbn:Spmj" \
     "${input_image}" 2>&1 >"${env_output}") || {
@@ -58,8 +65,22 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=strength|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=strength|stored=1|binding=interframe_noise_strength_u8,interframe_noise_strength_override|value=0*}" != "${env_trace}" || {
     echo "not ok" 1 - "strength environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_DITHER_STBN_STRENGTH=2.1" \
+    --threads=1 -L builtin -ldisable -p 128 -d "stbn:Spmj" \
+    "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "stbn:strength upper range conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=strength|stored=1|binding=interframe_noise_strength_u8,interframe_noise_strength_override|value=255*}" != "${range_trace}" || {
+    echo "not ok" 1 - "strength upper endpoint was not clamped"
     exit 0
 }
 

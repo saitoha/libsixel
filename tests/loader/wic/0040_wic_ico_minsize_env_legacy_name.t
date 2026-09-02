@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify legacy WIC ico_minsize env typo remains accepted.
+# Verify an empty canonical WIC env still permits the legacy spelling.
 
 set -eux
 
@@ -27,6 +27,7 @@ reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_ico_minsize_env_legacy.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_LOADER_WIC_ICO_MINSIZE= \
     --env SIXEL_LODER_WIC_ICO_MINSIZE=30 \
     -Lwic! \
     "${image_path}" >"${output_sixel}" || {

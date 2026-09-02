@@ -8,6 +8,7 @@ echo "1..1"
 src_root=$1
 source_file_h=$src_root/src/dither-interframe-method.h
 source_file_c=$src_root/src/dither-interframe-method.c
+registry_file=$src_root/src/options-registry.c
 interframe_tests_dir=$src_root/tests/processing/dither/interframe
 
 if test ! -d "$interframe_tests_dir"; then
@@ -105,63 +106,63 @@ cat > "$expected_8bit_mask_cli_tests" <<'EOF'
 0049_interframe_strategy_cli_stbn_mask_resets_across_size_change_builtin_mixed.t
 EOF
 
-if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing env var macro name" \
+    echo "# src/options-registry.c: missing stbn source environment name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_STBN_STRENGTH" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_STRENGTH" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing noise strength env macro" \
+    echo "# src/options-registry.c: missing stbn strength environment name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_STBN_MOTION_ADAPT" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_MOTION_ADAPT" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing stbn motion_adapt env macro" \
+    echo "# src/options-registry.c: missing stbn motion environment name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_STBN_SCENE_CUT_RESET" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_SCENE_CUT_RESET" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing stbn scene_cut_reset env macro" \
+    echo "# src/options-registry.c: missing stbn scene reset environment name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_STBN_SCENE_DETECT" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_SCENE_DETECT" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing stbn scene_detect env macro" \
+    echo "# src/options-registry.c: missing stbn scene detect environment name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_STBN_ALPHA_GUARD" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_ALPHA_GUARD" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing stbn alpha_guard env macro" \
+    echo "# src/options-registry.c: missing stbn alpha environment name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing stbn perceptual_weight env macro" \
+    echo "# src/options-registry.c: missing stbn perceptual environment name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_STBN_FASTPATH" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_FASTPATH" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing stbn fastpath env macro" \
+    echo "# src/options-registry.c: missing stbn fastpath environment name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_STBN_DIFFUSION" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_DIFFUSION" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing stbn diffusion env macro" \
+    echo "# src/options-registry.c: missing stbn diffusion environment name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_INTERFRAME_DIFFUSION" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_INTERFRAME_DIFFUSION" "$registry_file" \
         >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.h: missing interframe diffusion env macro" \
+    echo "# src/options-registry.c: missing interframe diffusion environment name" \
         >> "$missing"
     status=1
 fi

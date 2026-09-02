@@ -2,6 +2,7 @@
 # Verify kmeans:binbits preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS|binbits
 # Registry binding: quantize_model_kmeans_binbits|quantize_model_kmeans_binbits_override
+# Environment range: clamp-signed-uint
 
 set -eux
 
@@ -28,21 +29,34 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=binbits|stored=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=binbits|stored=1|binding=quantize_model_kmeans_binbits,quantize_model_kmeans_binbits_override|value=4*}" != "${short_trace}" || {
     echo "not ok" 1 - "binbits short value was not stored"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_BINBITS=4" -p 16 "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_BINBITS=-1" -p 16 "-Qkmeans" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "kmeans:binbits env conversion failed"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=binbits|stored=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=binbits|stored=1|binding=quantize_model_kmeans_binbits,quantize_model_kmeans_binbits_override|value=4*}" != "${env_trace}" || {
     echo "not ok" 1 - "binbits environment value was not stored"
+    exit 0
+}
+
+range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_PALETTE_KMEANS_BINBITS=9" \
+    -p 16 "-Qkmeans" "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "kmeans:binbits upper conversion failed"
+    exit 0
+}
+
+test "${range_trace#*LSXSUB1|*key=binbits|stored=1|binding=quantize_model_kmeans_binbits,quantize_model_kmeans_binbits_override|value=8*}" != "${range_trace}" || {
+    echo "not ok" 1 - "binbits upper endpoint was not clamped"
     exit 0
 }
 
