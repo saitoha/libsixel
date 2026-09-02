@@ -205,9 +205,9 @@ export test_dir
 export category_name
 export ARTIFACT_LOCAL_DIR
 
-# Create the per-test directory in the harness so TAP scripts can assume that
-# their isolated artifact location exists before the test starts.
-mkdir -p "$ARTIFACT_LOCAL_DIR" || exit 2
+# Export the per-test path without creating it. Tests that need artifacts
+# create the directory after their early skip checks; artifact-free and skipped
+# tests therefore perform no directory operation.
 
 if [ "$sixel_tap_openvms" = yes ]; then
   lso_cmp_real=$(command -v cmp 2>/dev/null || printf '')

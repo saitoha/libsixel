@@ -21,6 +21,8 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
 echo "1..1"
 set -v
 
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"

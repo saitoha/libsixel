@@ -1,7 +1,5 @@
 #!/bin/sh
 
-mkdir -p "$ARTIFACT_LOCAL_DIR"
-
 # Meson runs `sh -c SCRIPT ARG0 ARG1 ...` where ARG0 becomes `$0`.
 # Keep compatibility with both forms by preferring `$1` and falling back
 # to `$0` when no positional argument is supplied.

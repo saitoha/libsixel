@@ -1,9 +1,8 @@
 #!/bin/sh
-# Emit TAP for ARTIFACT_LOCAL_DIR directory bootstrap policy.
+# Emit TAP for test-owned ARTIFACT_LOCAL_DIR directory bootstrap policy.
 #
-# Artifact directories belong to the test harness, not individual TAP files.
-# Keeping directory creation in both runners avoids repeated filesystem setup
-# in tests and gives every test the same isolation contract.
+# Runners export an isolated path but do not create it. A TAP test that needs
+# artifacts creates its directory lazily after any early feature skips.
 
 set -eux
 
@@ -26,15 +25,38 @@ for runner in "$autotools_driver" "$meson_driver"; do
     awk '
 /mkdir[[:space:]]+-p/ && /ARTIFACT_LOCAL_DIR/ { found = 1 }
 END { exit found ? 0 : 1 }
-' "$runner" || {
-        echo "# runner does not create ARTIFACT_LOCAL_DIR: $runner"
+' "$runner" && {
+        echo "# runner creates ARTIFACT_LOCAL_DIR: $runner"
         failed=1
     }
 done
 
-if test "$failed" -ne 0; then
-    echo "not ok 1 - harness owns ARTIFACT_LOCAL_DIR creation"
-    exit 1
-fi
+awk '
+FNR == 1 {
+    if (seen && !created) {
+        print "# test does not create ARTIFACT_LOCAL_DIR lazily: " file
+        failed = 1
+    }
+    seen = 1
+    created = 0
+    file = FILENAME
+}
+/test -d "\$\{ARTIFACT_LOCAL_DIR\}" \|\| mkdir -p "\$\{ARTIFACT_LOCAL_DIR\}"/ {
+    created = 1
+}
+END {
+    if (seen && !created) {
+        print "# test does not create ARTIFACT_LOCAL_DIR lazily: " file
+        failed = 1
+    }
+    exit failed ? 1 : 0
+}
+' "$tests_root"/cli/options/regression/*.t || failed=1
 
-echo "ok 1 - harness owns ARTIFACT_LOCAL_DIR creation"
+test "$failed" -eq 0 || {
+    echo "not ok 1 - tests own lazy ARTIFACT_LOCAL_DIR creation"
+    exit 0
+}
+
+echo "ok 1 - tests own lazy ARTIFACT_LOCAL_DIR creation"
+exit 0

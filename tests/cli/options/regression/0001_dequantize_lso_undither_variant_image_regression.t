@@ -13,6 +13,8 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 echo "1..1"
 set -v
 
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+
 input_image="${TOP_SRCDIR}/images/map8.six"
 reference_image="${TOP_SRCDIR}/images/map8.six"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"

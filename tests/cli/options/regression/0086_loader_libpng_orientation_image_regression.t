@@ -17,6 +17,8 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_12x8.png"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"

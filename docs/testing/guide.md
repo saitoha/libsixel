@@ -84,14 +84,28 @@ and file operation as a cost.
 - Do not use Python in shell tests.
 - Current static policy rejects `grep`, `awk`, and `sed` in `tests/**/*.t`;
   use shell operations or a focused compiled helper.
-- Do not use `cp`, `mkdir`, or `rm` unless the test specifically observes that
-  file operation and no cheaper design exists.
+- Do not use `cp` or `rm` unless the test specifically observes that file
+  operation and no cheaper design exists. Do not create arbitrary directories.
 - Do not create a log file only to inspect stderr.
 - Capture only output that is part of the assertion.
 - Send irrelevant output to `/dev/null`.
 - Do not create an output file when its contents will not be verified.
 - Keep variables and temporary artifacts to the minimum needed for the single
   observation.
+
+### Artifact directory ownership
+
+The harness exports an isolated `ARTIFACT_LOCAL_DIR` path but does not create
+the directory. A test that needs output artifacts creates it exactly once,
+after early skip checks and after the TAP plan and `set -v`:
+
+```sh
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+```
+
+This is the narrow exception to the normal rule against directory operations.
+Tests that do not create artifacts must not create the directory, and a test
+that exits through an early feature skip must do so before this line.
 
 ### TAP purity
 
