@@ -26,6 +26,79 @@ in response to the update gap. Because it supplied later releases while the
 original repository was inactive, many distributions and users came to treat
 `libsixel/libsixel` as the practical successor and upstream.
 
+## Before libsixel: the modern terminal-emulator revival
+
+The modern use of SIXEL in terminal emulators did not begin with libsixel.
+KMIYA added both ReGIS and SIXEL to
+[RLogin 2.9.0](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L2002-L2005)
+on 2010-09-17. This was an important early implementation in a contemporary
+terminal emulator and provided a practical starting point for sustained SIXEL
+discussion and experimentation in the Japanese terminal-emulator community.
+
+Araki Ken's [mlterm](https://github.com/arakiken/mlterm) added
+[partial SIXEL support](https://github.com/arakiken/mlterm/blob/a1678d61f79f49ad018cc453f896a453add8c97f/ChangeLog#L16164-L16174)
+in April 2012. Its implementation soon addressed image cells, scrolling,
+alpha, and parser behavior instead of treating a SIXEL stream as an isolated
+file. By the time libsixel formed in 2014, RLogin and mlterm had already helped
+establish a community in which terminal implementations, encoders,
+multiplexers, and applications were developed together.
+
+## Experimental directions from the Japanese terminal community
+
+### Araki Ken's experiments around mlterm
+
+Araki Ken (`@arakiken`), the maintainer of mlterm, explored several techniques
+that materially changed the modern interpretation of SIXEL:
+
+1. **Palette redefinition for high color.** A stream can reuse its limited
+   color registers by redefining palette entries after painting has begun.
+   This makes colors in earlier bands depend on the terminal resolving palette
+   values at paint time rather than retaining only live palette indices. His
+   experimental 15-bit implementation entered libsixel in
+   [November 2014](https://github.com/saitoha/libsixel/commit/0382aef1afa5333ad2d69f4412900accca866ef2)
+   and became `img2sixel -I`, the high-color mode.
+2. **Image preloading with terminal macros.** DECDMAC can store SIXEL data in
+   the terminal before it is needed and the stored macro can then be invoked
+   without retransmitting the image body. libsixel adopted this work in its
+   2014 macro path and incorporated
+   [Araki Ken's optimization](https://github.com/saitoha/libsixel/commit/45bd1b2c9a6ad20b6681adb48ec3a2052d13a5b4).
+   In the current CLI, `img2sixel -n` defines and stores an image without
+   displaying it, while `-u` uses DECDMAC and DECINVM for animation rendering.
+3. **Scrolling images by using terminal margins.** Araki Ken's
+   [GNU Screen SIXEL branch](https://github.com/arakiken/screen/tree/sixel)
+   forwards the SIXEL stream rather than storing and reconstructing its
+   pixels. It combines the vertical scrolling margins set by DECSTBM with
+   DECLRMM and DECSLRM horizontal margins, then asks the terminal to scroll the
+   bounded region. Images can therefore move with the terminal contents
+   without Screen retransmitting the original SIXEL data. This did not make
+   Screen retain images for a later full redraw; it was specifically a
+   terminal-side scrolling technique.
+
+The first technique is now often discussed as libsixel's high-color mode. The
+DECDMAC preload and margin-scrolling techniques are less visible in accounts
+outside the Japanese-language community, but they are equally important
+examples of SIXEL being used as a stateful terminal protocol rather than only
+as an image encoding.
+
+### DRCS-SIXEL and Unicode Plane 16
+
+A related line of work made SIXEL images addressable as text. RLogin introduced
+a DRCS-SIXEL extension in which a SIXEL image embedded in DECDLD is divided
+into character-cell tiles and registered as dynamically redefinable glyphs.
+Separately, Hayaki Saito's [drcsterm](https://github.com/saitoha/drcsterm)
+proposed mapping code points in Unicode Plane 16 (`U+100000` through
+`U+10FFFF`) to ISO/IEC 2022 DRCS designations. Combining the two lets an
+application preload image tiles and subsequently draw them as Unicode
+characters.
+
+Araki Ken's
+[DRCS-SIXEL account](https://qiita.com/arakiken/items/626b02cd857d20c12fbc)
+documents the RLogin origin of the image-glyph extension, the Plane 16 mapping,
+and the later coordination that brought compatible behavior to mlterm and
+RLogin. This work remains much better known in the Japanese-language terminal
+community than elsewhere. Current libsixel preserves a practical connection
+to it through the experimental `img2sixel -@` (`--drcs`) output mode.
+
 ## KMIYA's `sixel`
 
 KMIYA's `sixel` was a compact C encoder and decoder distributed from
@@ -42,15 +115,15 @@ of libsixel. Current derived source files, including
 describe their relationship to the 2014-03-02 original version.
 
 The March 2014 import was a branch point, not the end of development in
-KMIYA's line. KMIYA was also the developer of the Windows terminal emulator
-[RLogin](https://github.com/kmiya-culti/RLogin), and the standalone `sixel`
-utility continued to change alongside RLogin's SIXEL implementation:
+KMIYA's line. Because KMIYA developed both RLogin and the standalone `sixel`
+utility, the latter continued to change alongside RLogin's SIXEL
+implementation:
 
 - The standalone
   [`v20141107-tc`](https://github.com/saitoha/sixel/tree/v20141107-tc)
   source introduced its true-color variant only months after libsixel
   branched. RLogin 2.17.2 accepted 0-255 RGB components, and its
-  [2.17.3 history](https://github.com/kmiya-culti/RLogin/blob/master/docs/history.html)
+  [2.17.3 history](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html)
   records SIXEL extensions for indexed selection and 24-bit color. The
   [`v20141206`](https://github.com/saitoha/sixel/tree/v20141206) standalone
   version then merged the true-color extension into KMIYA's main utility.
@@ -60,7 +133,7 @@ utility continued to change alongside RLogin's SIXEL implementation:
   form, including an alpha component and declared per-channel maxima. The
   corresponding RLogin 2.23.7 release extended DECGCI color resolution and
   transparency; RLogin's
-  [control-sequence reference](https://github.com/kmiya-culti/RLogin/blob/master/docs/ctrlcode.html)
+  [control-sequence reference](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/ctrlcode.html)
   documents both the 0-255 RGB and alpha extensions.
 
 The mirror commit that imports `v20180723` is dated 2025, but the version name
@@ -244,6 +317,10 @@ discussion and update the durable record where appropriate.
 
 ## Further reading
 
+- [RLogin development history](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html)
+- [mlterm development history](https://github.com/arakiken/mlterm/blob/a1678d61f79f49ad018cc453f896a453add8c97f/ChangeLog)
+- [Araki Ken's GNU Screen SIXEL branch](https://github.com/arakiken/screen/tree/sixel)
+- [Araki Ken's DRCS-SIXEL account](https://qiita.com/arakiken/items/626b02cd857d20c12fbc)
 - [KMIYA `sixel` source mirror](https://github.com/saitoha/sixel)
 - [`libsixel/libsixel` community fork](https://github.com/libsixel/libsixel)
 - [Community-fork announcement and rationale](https://github.com/saitoha/libsixel/issues/154)
