@@ -54,9 +54,9 @@ function fail(message) {
 function inspect(row, fields, count, option_id, base, name, alias, env,
                  exact_key, shared_key, macro) {
     gsub(/[[:space:]]+/, " ", row)
-    match(row, /SIXEL_REGISTRY_[A-Z_]+/)
+    match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
     macro = substr(row, RSTART, RLENGTH)
-    sub(/^.*SIXEL_REGISTRY_[A-Z_]+\(/, "", row)
+    sub(/^.*SIXEL_REGISTRY_[A-Z0-9_]+\(/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
     if (count < 7) {
@@ -115,7 +115,7 @@ in_registry && /^[[:space:]]*};/ {
     in_registry = 0
     next
 }
-in_registry && /SIXEL_REGISTRY_[A-Z_]+\(/ {
+in_registry && /SIXEL_REGISTRY_[A-Z0-9_]+\(/ {
     in_row = 1
     row = $0
     next
@@ -145,6 +145,143 @@ END {
     exit failed ? 1 : 0
 }
 ' "$registry_file" || {
+    echo "not ok 1 - suboptions use one complete registry"
+    exit 0
+}
+
+regression_dir=$src_root/tests/cli/options/regression
+test -d "$regression_dir" || {
+    echo "not ok 1 - suboptions use one complete registry"
+    echo "# missing per-suboption image regression tests"
+    exit 0
+}
+
+awk -v registry_file="$registry_file" '
+function fail(message) {
+    print "# " message
+    failed = 1
+}
+function inspect_registry(row, fields, count, name, alias, key) {
+    gsub(/[[:space:]]+/, " ", row)
+    sub(/^.*SIXEL_REGISTRY_[A-Z0-9_]+\(/, "", row)
+    sub(/^[[:space:]]*/, "", row)
+    sub(/\),[[:space:]]*$/, "", row)
+    count = split(row, fields, /,[[:space:]]*/)
+    if (count < 7) {
+        fail("malformed registry row in image coverage check: " row)
+        return
+    }
+    name = fields[3]
+    alias = fields[4]
+    gsub(/^"|"$/, "", name)
+    gsub(/^\047|\047$/, "", alias)
+    key = fields[1] "|" fields[2] "|" name
+    expected[key] = 1
+    expected_alias[key] = alias
+    registry_rows += 1
+}
+BEGIN {
+    in_registry = 0
+    in_row = 0
+    failed = 0
+    registry_rows = 0
+    test_rows = 0
+}
+FILENAME == registry_file {
+    if ($0 ~ /g_suboptions\[\][[:space:]]*=[[:space:]]*\{/) {
+        in_registry = 1
+        next
+    }
+    if (in_registry && $0 ~ /^[[:space:]]*};/) {
+        in_registry = 0
+        next
+    }
+    if (in_registry && $0 ~ /SIXEL_REGISTRY_[A-Z0-9_]+\(/) {
+        in_row = 1
+        row = $0
+        next
+    }
+    if (in_registry && in_row) {
+        row = row " " $0
+    }
+    if (in_registry && in_row && $0 ~ /\),[[:space:]]*$/) {
+        inspect_registry(row)
+        in_row = 0
+        row = ""
+    }
+    next
+}
+/^# Registry row: / {
+    key = $0
+    sub(/^# Registry row: /, "", key)
+    gsub(/[[:space:]]+/, " ", key)
+    if (test_key[FILENAME] != "") {
+        fail(FILENAME " contains more than one registry row marker")
+    }
+    if (covered[key]) {
+        fail("duplicate image regression coverage for " key)
+    }
+    test_key[FILENAME] = key
+    covered[key] = FILENAME
+    test_rows += 1
+    next
+}
+FILENAME != registry_file {
+    regression_test[FILENAME] = 1
+    key = test_key[FILENAME]
+    if (key == "") {
+        next
+    }
+    if (index($0, "LSQA_PATH") > 0) {
+        has_lsqa[FILENAME] = 1
+    }
+    if (index($0, "cmp -s") > 0) {
+        has_compare[FILENAME] = 1
+    }
+    if (index($0, "--env") > 0) {
+        has_environment[FILENAME] = 1
+    }
+    if (index($0, ":" expected_alias[key]) > 0) {
+        has_short[FILENAME] = 1
+    }
+}
+END {
+    for (file in regression_test) {
+        if (test_key[file] == "") {
+            fail(file " has no registry row marker")
+        }
+    }
+    for (key in expected) {
+        if (!covered[key]) {
+            fail("missing image regression test for " key)
+        }
+    }
+    for (key in covered) {
+        if (!expected[key]) {
+            fail("image regression test has stale registry row: " key)
+        }
+    }
+    for (file in test_key) {
+        if (!has_lsqa[file]) {
+            fail(file " does not validate decoded image quality")
+        }
+        if (!has_compare[file]) {
+            fail(file " does not compare short and environment output")
+        }
+        if (!has_environment[file]) {
+            fail(file " does not exercise the environment spelling")
+        }
+        if (!has_short[file]) {
+            fail(file " does not exercise the registered short name")
+        }
+    }
+    if (registry_rows != test_rows) {
+        fail("registry/image test count mismatch: " registry_rows "/" \
+             test_rows)
+    }
+    exit failed ? 1 : 0
+}
+' "$registry_file" "$regression_dir"/*.t || {
     echo "not ok 1 - suboptions use one complete registry"
     exit 0
 }
