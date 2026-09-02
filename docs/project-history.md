@@ -41,6 +41,43 @@ of libsixel. Current derived source files, including
 [`src/fromsixel.c`](../src/fromsixel.c), also retain explicit attribution and
 describe their relationship to the 2014-03-02 original version.
 
+The March 2014 import was a branch point, not the end of development in
+KMIYA's line. KMIYA was also the developer of the Windows terminal emulator
+[RLogin](https://github.com/kmiya-culti/RLogin), and the standalone `sixel`
+utility continued to change alongside RLogin's SIXEL implementation:
+
+- The standalone
+  [`v20141107-tc`](https://github.com/saitoha/sixel/tree/v20141107-tc)
+  source introduced its true-color variant only months after libsixel
+  branched. RLogin 2.17.2 accepted 0-255 RGB components, and its
+  [2.17.3 history](https://github.com/kmiya-culti/RLogin/blob/master/docs/history.html)
+  records SIXEL extensions for indexed selection and 24-bit color. The
+  [`v20141206`](https://github.com/saitoha/sixel/tree/v20141206) standalone
+  version then merged the true-color extension into KMIYA's main utility.
+- The later
+  [`v20180723`](https://github.com/saitoha/sixel/tree/v20180723) source merged
+  an RGBA extension. It added an 8-bit-per-channel RGB color space and an RGBA
+  form, including an alpha component and declared per-channel maxima. The
+  corresponding RLogin 2.23.7 release extended DECGCI color resolution and
+  transparency; RLogin's
+  [control-sequence reference](https://github.com/kmiya-culti/RLogin/blob/master/docs/ctrlcode.html)
+  documents both the 0-255 RGB and alpha extensions.
+
+The mirror commit that imports `v20180723` is dated 2025, but the version name
+and matching RLogin 2.23.7 history place that source development in 2018. The
+standalone releases should therefore be understood as a parallel, actively
+evolving KMIYA line rather than as frozen snapshots of the code from which
+libsixel branched.
+
+The two lines also came to emphasize different goals. KMIYA's true-color work
+expanded the standalone encoder's palette table from 256 to 1,024 entries and
+developed private extensions together with RLogin. libsixel concentrated on a
+portable library and CLI, color quantization, and compatibility across the
+wider terminal ecosystem; its generated palettes remain limited to 256 entries
+by [`SIXEL_PALETTE_MAX`](../include/sixel.h.in). It did not import most of the
+KMIYA/RLogin-specific extension series. This divergence should not be mistaken
+for inactivity in either line.
+
 ## Formation of libsixel
 
 The repository began with an initial commit on 2013-08-20. The recognizable
@@ -153,6 +190,17 @@ result was not a simple rename or fast-forward from the community fork. Work
 from the fork has been incorporated or reimplemented where appropriate, and
 the current repository still refers to `libsixel/libsixel` issues and commits
 when preserving that provenance.
+
+That reuse includes direct cherry-picks of security work from the community
+fork. In August 2025, the original line imported the fork's fixes for
+[CVE-2020-11721](https://github.com/saitoha/libsixel/commit/76b491d7c47a0718734a46c989a9674668177776),
+[CVE-2020-19668](https://github.com/saitoha/libsixel/commit/f39d6dafe8950bcb30848c3a996d4f67b4ba6dc6),
+and
+[CVE-2021-45340](https://github.com/saitoha/libsixel/commit/1c58a6ea708b6fa793ffb5a10798ccfea36e8eed).
+They retain their original authorship and patches while recording their later
+integration into `saitoha/libsixel`. Other fork work has been evaluated and
+integrated or reimplemented individually rather than by merging the two
+histories wholesale.
 
 The repository documented here is the resumed `saitoha/libsixel` development
 line. This statement identifies the source tree, not an exclusive claim to the
