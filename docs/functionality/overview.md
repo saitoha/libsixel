@@ -16,13 +16,29 @@ resource limits, and compatibility all belong to the core product contract.
 ### Encoding
 
 The encoder accepts decoded or caller-supplied pixels and produces SIXEL. The
-pipeline includes:
+normal fixed-palette path can be summarized as:
+
+```text
+loader -> normalized pixels -> palette construction -> palette application
+       -> indexed pixels and palette -> SIXEL encoding
+```
+
+The detailed [Encoding Pipeline](encoding-pipeline.md) explains the input and
+output contract of each stage and how these three controls cooperate:
+
+- [Palette Quantization](quantization.md), selected by `-Q`, determines which
+  palette colors are available;
+- [Dithering](dithering.md), selected by `-d`, determines how representation
+  error is distributed;
+- [Lookup Policy](lookup-policy.md), selected by `-~` or `--lookup-policy`,
+  determines how each color candidate is mapped to a palette index.
+
+The broader pipeline also includes:
 
 - image and frame normalization;
 - resizing and pixel-format conversion;
 - colorspace handling;
-- palette selection and color quantization;
-- color lookup and dithering;
+- palette selection, quantization, lookup, and dithering;
 - transparency and background handling;
 - animation and inter-frame policy;
 - SIXEL command generation and output buffering.

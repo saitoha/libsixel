@@ -22,6 +22,14 @@ are grouped by domain so each area can grow without overloading one document.
 
 - [Functional overview](functionality/overview.md) describes the product
   capabilities, major components, data flow, and architectural boundaries.
+- [Encoding pipeline](functionality/encoding-pipeline.md) connects loading,
+  palette construction, palette application, and SIXEL byte generation.
+- [Palette quantization](functionality/quantization.md) explains `-Q`, palette
+  solver objectives, and the boundary between palette generation and use.
+- [Dithering](functionality/dithering.md) explains `-d`, error shaping, scan
+  order, temporal behavior, and its interaction with lookup.
+- [Lookup policy](functionality/lookup-policy.md) defines libsixel's `-~` /
+  `--lookup-policy` concept and its correctness and performance tradeoffs.
 
 ## Command-line interface
 
