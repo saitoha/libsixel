@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0043-quantize-kmeans-feedback_slots-short.six"
 env_output="${artifact_dir}/0043-quantize-kmeans-feedback_slots-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:K1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:Fon:K2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:feedback_slots short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_FEEDBACK_SLOTS=1" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_FEEDBACK_SLOTS=2" -p 16 "-Qkmeans:Fon" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:feedback_slots env conversion failed"
     exit 0

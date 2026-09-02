@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0039-quantize-kmeans-iter-short.six"
 env_output="${artifact_dir}/0039-quantize-kmeans-iter-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:A1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:A2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:iter short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_ITER=1" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_ITER=2" -p 16 "-Qkmeans" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:iter env conversion failed"
     exit 0

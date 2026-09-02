@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0046-quantize-medoids-seed-short.six"
 env_output="${artifact_dir}/0046-quantize-medoids-seed-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qmedoids:S1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qmedoids:Arandom:S2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "medoids:seed short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_SEED=1" "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_SEED=2" -p 16 "-Qmedoids:Arandom" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "medoids:seed env conversion failed"
     exit 0

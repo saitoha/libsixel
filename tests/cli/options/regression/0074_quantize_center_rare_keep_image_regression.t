@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0074-quantize-center-rare_keep-short.six"
 env_output="${artifact_dir}/0074-quantize-center-rare_keep-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:R0" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:R8" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:rare_keep short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_RARE_KEEP=0" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_RARE_KEEP=8" -p 16 "-Qcenter" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:rare_keep env conversion failed"
     exit 0

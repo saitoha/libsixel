@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0060-quantize-medoids-auction-short.six"
 env_output="${artifact_dir}/0060-quantize-medoids-auction-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qmedoids:Q0" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qmedoids:Q1" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "medoids:auction short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_AUCTION=0" "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_AUCTION=1" -p 16 "-Qmedoids" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "medoids:auction env conversion failed"
     exit 0

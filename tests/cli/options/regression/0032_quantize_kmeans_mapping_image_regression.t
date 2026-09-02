@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0032-quantize-kmeans-mapping-short.six"
 env_output="${artifact_dir}/0032-quantize-kmeans-mapping-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:Muniform" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:Msrgb" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:mapping short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_MAPPING=uniform" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_MAPPING=srgb" -p 16 "-Qkmeans" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:mapping env conversion failed"
     exit 0

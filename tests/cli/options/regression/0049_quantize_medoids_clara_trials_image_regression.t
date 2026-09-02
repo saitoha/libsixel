@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0049-quantize-medoids-clara_trials-short.six"
 env_output="${artifact_dir}/0049-quantize-medoids-clara_trials-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qmedoids:T1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qmedoids:Asample:T2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "medoids:clara_trials short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS=1" "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS=2" -p 16 "-Qmedoids:Asample" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "medoids:clara_trials env conversion failed"
     exit 0

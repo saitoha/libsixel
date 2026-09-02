@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
@@ -20,13 +20,16 @@ short_output="${artifact_dir}/0008-diffusion-stbn-strength-short.six"
 env_output="${artifact_dir}/0008-diffusion-stbn-strength-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d "stbn:T0.055" "${input_image}" -o "${short_output}" || {
+    --threads=1 -L builtin -ldisable -p 128 \
+    -d "stbn:Spmj:T0.06" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "stbn:strength short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_DITHER_STBN_STRENGTH=0.055" -d "stbn" \
+    --env "SIXEL_DITHER_STBN_STRENGTH=0.06" \
+    --threads=1 -L builtin -ldisable -p 128 \
+    -d "stbn:Spmj" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "stbn:strength env conversion failed"
     exit 0

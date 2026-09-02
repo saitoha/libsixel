@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0053-quantize-medoids-bandit_iter-short.six"
 env_output="${artifact_dir}/0053-quantize-medoids-bandit_iter-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qmedoids:D1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qmedoids:Abandit:D2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "medoids:bandit_iter short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_BANDIT_ITER=1" "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_BANDIT_ITER=2" -p 16 "-Qmedoids:Abandit" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "medoids:bandit_iter env conversion failed"
     exit 0

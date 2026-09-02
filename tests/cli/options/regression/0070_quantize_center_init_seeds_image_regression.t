@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0070-quantize-center-init_seeds-short.six"
 env_output="${artifact_dir}/0070-quantize-center-init_seeds-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:N1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Aswap:N2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:init_seeds short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_INIT_SEEDS=1" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_INIT_SEEDS=2" -p 16 "-Qcenter:Aswap" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:init_seeds env conversion failed"
     exit 0

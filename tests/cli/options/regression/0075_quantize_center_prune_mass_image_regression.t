@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0075-quantize-center-prune_mass-short.six"
 env_output="${artifact_dir}/0075-quantize-center-prune_mass-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:U1.0" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:U0.95" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:prune_mass short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_PRUNE_MASS=1.0" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_PRUNE_MASS=0.95" -p 16 "-Qcenter" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:prune_mass env conversion failed"
     exit 0

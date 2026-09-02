@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0036-quantize-kmeans-prune-short.six"
 env_output="${artifact_dir}/0036-quantize-kmeans-prune-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:Pauto" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:Pelkan" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:prune short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_PRUNE=auto" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_PRUNE=elkan" -p 16 "-Qkmeans" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:prune env conversion failed"
     exit 0

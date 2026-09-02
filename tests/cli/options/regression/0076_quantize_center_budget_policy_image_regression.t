@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0076-quantize-center-budget_policy-short.six"
 env_output="${artifact_dir}/0076-quantize-center-budget_policy-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:Dlegacy" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Dadaptive" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:budget_policy short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_BUDGET_POLICY=legacy" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_BUDGET_POLICY=adaptive" -p 16 "-Qcenter" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:budget_policy env conversion failed"
     exit 0

@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0069-quantize-center-restarts-short.six"
 env_output="${artifact_dir}/0069-quantize-center-restarts-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:X1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:X2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:restarts short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_RESTARTS=1" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_RESTARTS=2" -p 16 "-Qcenter" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:restarts env conversion failed"
     exit 0

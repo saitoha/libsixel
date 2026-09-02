@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0023-quantize-heckbert-merge_lloyd-short.six"
 env_output="${artifact_dir}/0023-quantize-heckbert-merge_lloyd-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qheckbert:L2" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qheckbert:Gward:L2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "heckbert:merge_lloyd short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2" "-Qheckbert" \
+    --env "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2" -p 16 "-Qheckbert:Gward" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "heckbert:merge_lloyd env conversion failed"
     exit 0

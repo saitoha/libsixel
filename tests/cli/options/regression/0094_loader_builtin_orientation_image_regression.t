@@ -13,20 +13,20 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png"
+reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_12x8.png"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
 short_output="${artifact_dir}/0094-loader-builtin-orientation-short.six"
 env_output="${artifact_dir}/0094-loader-builtin-orientation-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Lbuiltin:Oon!" "${input_image}" -o "${short_output}" || {
+    "-Lbuiltin:Ooff!" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "builtin:orientation short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_BUILTIN_ORIENTATION=on" "-Lbuiltin!" \
+    --env "SIXEL_LOADER_BUILTIN_ORIENTATION=off" "-Lbuiltin!" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "builtin:orientation env conversion failed"
     exit 0

@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0084-lookup-certlut-shared_instance-short.six"
 env_output="${artifact_dir}/0084-lookup-certlut-shared_instance-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-~certlut:S1" "${input_image}" -o "${short_output}" || {
+    --threads=2 -p 16 "-~certlut:S1" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "certlut:shared_instance short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE=1" "-~certlut" \
+    --env "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE=1" --threads=2 -p 16 "-~certlut" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "certlut:shared_instance env conversion failed"
     exit 0

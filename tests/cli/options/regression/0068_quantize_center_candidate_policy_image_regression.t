@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0068-quantize-center-candidate_policy-short.six"
 env_output="${artifact_dir}/0068-quantize-center-candidate_policy-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:Zlegacy" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Zhybrid" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:candidate_policy short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY=legacy" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY=hybrid" -p 16 "-Qcenter" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:candidate_policy env conversion failed"
     exit 0

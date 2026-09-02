@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0042-quantize-kmeans-polish_iter-short.six"
 env_output="${artifact_dir}/0042-quantize-kmeans-polish_iter-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:H0" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:H1" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:polish_iter short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_POLISH_ITER=0" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_POLISH_ITER=1" -p 16 "-Qkmeans" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:polish_iter env conversion failed"
     exit 0

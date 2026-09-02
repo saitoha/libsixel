@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
@@ -20,13 +20,16 @@ short_output="${artifact_dir}/0005-diffusion-interframe-diffusion-short.six"
 env_output="${artifact_dir}/0005-diffusion-interframe-diffusion-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --threads=1 -L builtin -ldisable -p 64 \
     -d "interframe:Datkinson" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "interframe:diffusion short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_DITHER_INTERFRAME_DIFFUSION=atkinson" -d "interframe" \
+    --env "SIXEL_DITHER_INTERFRAME_DIFFUSION=atkinson" \
+    --threads=1 -L builtin -ldisable -p 64 \
+    -d "interframe" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "interframe:diffusion env conversion failed"
     exit 0

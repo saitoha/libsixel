@@ -16,21 +16,21 @@ test "${HAVE_JPEG-}" = 1 || {
 echo "1..1"
 set -v
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.jpg"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.jpg"
+input_image="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_mab_valid.jpg"
+reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/rgb_mab_valid_jpeg_builtin.six"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
 short_output="${artifact_dir}/0087-loader-libjpeg-cms_engine-short.six"
 env_output="${artifact_dir}/0087-loader-libjpeg-cms_engine-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibjpeg:Eauto!" "${input_image}" -o "${short_output}" || {
+    "-Llibjpeg:Ebuiltin!" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "libjpeg:cms_engine short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_LIBJPEG_CMS_ENGINE=auto" "-Llibjpeg!" \
+    --env "SIXEL_LOADER_LIBJPEG_CMS_ENGINE=builtin" "-Llibjpeg!" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "libjpeg:cms_engine env conversion failed"
     exit 0

@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0065-quantize-center-auto_policy-short.six"
 env_output="${artifact_dir}/0065-quantize-center-auto_policy-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:Qlegacy" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Aauto:Qadaptive" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:auto_policy short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_AUTO_POLICY=legacy" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_AUTO_POLICY=adaptive" -p 16 "-Qcenter:Aauto" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:auto_policy env conversion failed"
     exit 0

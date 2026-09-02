@@ -16,21 +16,21 @@ test "${HAVE_WEBP-}" = 1 || {
 echo "1..1"
 set -v
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.webp"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.webp"
+input_image="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_mab_valid.webp"
+reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/rgb_mab_valid_webp_builtin.six"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
 short_output="${artifact_dir}/0089-loader-libwebp-cms_engine-short.six"
 env_output="${artifact_dir}/0089-loader-libwebp-cms_engine-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibwebp:Eauto!" "${input_image}" -o "${short_output}" || {
+    "-Llibwebp:Ebuiltin!" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "libwebp:cms_engine short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=auto" "-Llibwebp!" \
+    --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=builtin" "-Llibwebp!" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "libwebp:cms_engine env conversion failed"
     exit 0

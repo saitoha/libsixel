@@ -12,21 +12,21 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.bmp"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.bmp"
+input_image="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-os2-huffman1d-2x2.bmp"
+reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-os2-huffman1d-2x2.bmp"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
 short_output="${artifact_dir}/0095-loader-builtin-bmp_info40_mode-short.six"
 env_output="${artifact_dir}/0095-loader-builtin-bmp_info40_mode-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Lbuiltin:Bwindows!" "${input_image}" -o "${short_output}" || {
+    "-Lbuiltin:Bos2!" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "builtin:bmp_info40_mode short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE=windows" "-Lbuiltin!" \
+    --env "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE=os2" "-Lbuiltin!" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "builtin:bmp_info40_mode env conversion failed"
     exit 0

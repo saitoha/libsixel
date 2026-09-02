@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0045-quantize-medoids-algo-short.six"
 env_output="${artifact_dir}/0045-quantize-medoids-algo-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qmedoids:Aauto" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qmedoids:Abandit" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "medoids:algo short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_ALGO=auto" "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_ALGO=bandit" -p 16 "-Qmedoids" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "medoids:algo env conversion failed"
     exit 0

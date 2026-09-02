@@ -17,20 +17,20 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png"
+reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_12x8.png"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
 short_output="${artifact_dir}/0091-loader-coregraphics-orientation-short.six"
 env_output="${artifact_dir}/0091-loader-coregraphics-orientation-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Lcoregraphics:Oon!" "${input_image}" -o "${short_output}" || {
+    "-Lcoregraphics:Ooff!" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "coregraphics:orientation short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_COREGRAPHICS_ORIENTATION=on" "-Lcoregraphics!" \
+    --env "SIXEL_LOADER_COREGRAPHICS_ORIENTATION=off" "-Lcoregraphics!" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "coregraphics:orientation env conversion failed"
     exit 0

@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0082-lookup-5bit-shared_instance-short.six"
 env_output="${artifact_dir}/0082-lookup-5bit-shared_instance-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-~5bit:S1" "${input_image}" -o "${short_output}" || {
+    --threads=2 -p 16 "-~5bit:S1" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "5bit:shared_instance short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOOKUP_5BIT_SHARED_INSTANCE=1" "-~5bit" \
+    --env "SIXEL_LOOKUP_5BIT_SHARED_INSTANCE=1" --threads=2 -p 16 "-~5bit" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "5bit:shared_instance env conversion failed"
     exit 0

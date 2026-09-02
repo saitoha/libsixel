@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0063-quantize-center-profile-short.six"
 env_output="${artifact_dir}/0063-quantize-center-profile-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:Plegacy" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Pquality" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:profile short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_PROFILE=legacy" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_PROFILE=quality" -p 16 "-Qcenter" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:profile env conversion failed"
     exit 0

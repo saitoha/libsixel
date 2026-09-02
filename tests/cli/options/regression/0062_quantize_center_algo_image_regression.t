@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0062-quantize-center-algo-short.six"
 env_output="${artifact_dir}/0062-quantize-center-algo-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:Aauto" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Ahybrid" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:algo short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_ALGO=auto" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_ALGO=hybrid" -p 16 "-Qcenter" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:algo env conversion failed"
     exit 0

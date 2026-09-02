@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0080-quantize-center-swap_patience-short.six"
 env_output="${artifact_dir}/0080-quantize-center-swap_patience-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:T0" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Aswap:T2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:swap_patience short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_SWAP_PATIENCE=0" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_SWAP_PATIENCE=2" -p 16 "-Qcenter:Aswap" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:swap_patience env conversion failed"
     exit 0

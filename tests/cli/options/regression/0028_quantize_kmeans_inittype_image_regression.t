@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0028-quantize-kmeans-inittype-short.six"
 env_output="${artifact_dir}/0028-quantize-kmeans-inittype-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:Iauto" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:Ipca" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:inittype short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_INITTYPE=auto" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_INITTYPE=pca" -p 16 "-Qkmeans" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:inittype env conversion failed"
     exit 0

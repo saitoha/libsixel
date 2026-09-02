@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0078-quantize-center-swap_topk-short.six"
 env_output="${artifact_dir}/0078-quantize-center-swap_topk-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:K1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Aswap:K2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:swap_topk short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_SWAP_TOPK=1" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_SWAP_TOPK=2" -p 16 "-Qcenter:Aswap" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:swap_topk env conversion failed"
     exit 0

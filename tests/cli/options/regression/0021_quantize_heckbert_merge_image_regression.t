@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0021-quantize-heckbert-merge-short.six"
 env_output="${artifact_dir}/0021-quantize-heckbert-merge-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qheckbert:Gward" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qheckbert:Gward" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "heckbert:merge short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_FINAL_MERGE=ward" "-Qheckbert" \
+    --env "SIXEL_PALETTE_FINAL_MERGE=ward" -p 16 "-Qheckbert" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "heckbert:merge env conversion failed"
     exit 0

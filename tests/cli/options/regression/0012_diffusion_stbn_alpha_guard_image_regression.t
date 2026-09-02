@@ -12,21 +12,24 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.png"
+reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.png"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
 short_output="${artifact_dir}/0012-diffusion-stbn-alpha_guard-short.six"
 env_output="${artifact_dir}/0012-diffusion-stbn-alpha_guard-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d "stbn:A0" "${input_image}" -o "${short_output}" || {
+    --threads=1 -L builtin -ldisable -p 64 \
+    -d "stbn:Smask:A1" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "stbn:alpha_guard short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_DITHER_STBN_ALPHA_GUARD=0" -d "stbn" \
+    --env "SIXEL_DITHER_STBN_ALPHA_GUARD=1" \
+    --threads=1 -L builtin -ldisable -p 64 \
+    -d "stbn:Smask" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "stbn:alpha_guard env conversion failed"
     exit 0

@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0034-quantize-kmeans-autoratio-short.six"
 env_output="${artifact_dir}/0034-quantize-kmeans-autoratio-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:R32" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:Bauto:R1" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:autoratio short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_AUTORATIO=32" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_AUTORATIO=1" -p 16 "-Qkmeans:Bauto" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:autoratio env conversion failed"
     exit 0

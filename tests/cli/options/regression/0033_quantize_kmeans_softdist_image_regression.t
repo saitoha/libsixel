@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0033-quantize-kmeans-softdist-short.six"
 env_output="${artifact_dir}/0033-quantize-kmeans-softdist-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:Dtrilinear" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:Bsoft:Dtrilinear" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:softdist short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_SOFTDIST=trilinear" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_SOFTDIST=trilinear" -p 16 "-Qkmeans:Bsoft" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:softdist env conversion failed"
     exit 0

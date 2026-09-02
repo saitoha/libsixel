@@ -16,21 +16,21 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
+input_image="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_mab_valid.png"
+reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/rgb_mab_valid_png_builtin.six"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
 short_output="${artifact_dir}/0085-loader-libpng-cms_engine-short.six"
 env_output="${artifact_dir}/0085-loader-libpng-cms_engine-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibpng:Eauto!" "${input_image}" -o "${short_output}" || {
+    "-Llibpng:Ebuiltin!" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "libpng:cms_engine short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_LIBPNG_CMS_ENGINE=auto" "-Llibpng!" \
+    --env "SIXEL_LOADER_LIBPNG_CMS_ENGINE=builtin" "-Llibpng!" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "libpng:cms_engine env conversion failed"
     exit 0

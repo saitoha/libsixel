@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0073-quantize-center-point_budget-short.six"
 env_output="${artifact_dir}/0073-quantize-center-point_budget-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:B64" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:B128" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:point_budget short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_POINT_BUDGET=64" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_POINT_BUDGET=128" -p 16 "-Qcenter" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:point_budget env conversion failed"
     exit 0

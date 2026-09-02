@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0026-quantize-heckbert-cover_mode-short.six"
 env_output="${artifact_dir}/0026-quantize-heckbert-cover_mode-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qheckbert:Wsoft" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qheckbert:Ccorners:Whard" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "heckbert:cover_mode short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_COVER_MODE=soft" "-Qheckbert" \
+    --env "SIXEL_PALETTE_COVER_MODE=hard" -p 16 "-Qheckbert:Ccorners" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "heckbert:cover_mode env conversion failed"
     exit 0

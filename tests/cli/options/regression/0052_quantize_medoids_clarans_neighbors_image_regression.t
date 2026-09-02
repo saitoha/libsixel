@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0052-quantize-medoids-clarans_neighbors-short.six"
 env_output="${artifact_dir}/0052-quantize-medoids-clarans_neighbors-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qmedoids:N0" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qmedoids:Arandom:N64" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "medoids:clarans_neighbors short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_CLARANS_NEIGHBORS=0" "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_CLARANS_NEIGHBORS=64" -p 16 "-Qmedoids:Arandom" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "medoids:clarans_neighbors env conversion failed"
     exit 0

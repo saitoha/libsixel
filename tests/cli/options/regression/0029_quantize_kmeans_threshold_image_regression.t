@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0029-quantize-kmeans-threshold-short.six"
 env_output="${artifact_dir}/0029-quantize-kmeans-threshold-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:T0.12" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:T0.01" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:threshold short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_THRESHOLD=0.12" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_THRESHOLD=0.01" -p 16 "-Qkmeans" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:threshold env conversion failed"
     exit 0

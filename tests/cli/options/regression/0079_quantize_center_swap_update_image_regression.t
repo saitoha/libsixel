@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0079-quantize-center-swap_update-short.six"
 env_output="${artifact_dir}/0079-quantize-center-swap_update-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:Mfull" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Aswap:Mincremental" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:swap_update short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_SWAP_UPDATE=full" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_SWAP_UPDATE=incremental" -p 16 "-Qcenter:Aswap" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:swap_update env conversion failed"
     exit 0

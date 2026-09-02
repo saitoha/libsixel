@@ -12,21 +12,21 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
 short_output="${artifact_dir}/0066-quantize-center-auto_fft_threshold-short.six"
 env_output="${artifact_dir}/0066-quantize-center-auto_fft_threshold-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:F256" "${input_image}" -o "${short_output}" || {
+    -p 64 "-Qcenter:Aauto:Qadaptive:F256" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:auto_fft_threshold short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_AUTO_FFT_THRESHOLD=256" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_AUTO_FFT_THRESHOLD=256" -p 64 "-Qcenter:Aauto:Qadaptive" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:auto_fft_threshold env conversion failed"
     exit 0

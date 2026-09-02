@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0022-quantize-heckbert-merge_oversplit-short.six"
 env_output="${artifact_dir}/0022-quantize-heckbert-merge_oversplit-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qheckbert:O1.2" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qheckbert:Gward:O1.2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "heckbert:merge_oversplit short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2" "-Qheckbert" \
+    --env "SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2" -p 16 "-Qheckbert:Gward" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "heckbert:merge_oversplit env conversion failed"
     exit 0

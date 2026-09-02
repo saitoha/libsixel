@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0040-quantize-kmeans-iter_max-short.six"
 env_output="${artifact_dir}/0040-quantize-kmeans-iter_max-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:X20" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:X2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:iter_max short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=20" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=2" -p 16 "-Qkmeans" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:iter_max env conversion failed"
     exit 0

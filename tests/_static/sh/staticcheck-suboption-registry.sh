@@ -8,6 +8,7 @@ set -v
 
 src_root=$1
 registry_file=$src_root/src/options-registry.c
+environment_header=$src_root/src/dither-interframe-method.h
 duplicates=
 dispatchers=
 
@@ -156,12 +157,20 @@ test -d "$regression_dir" || {
     exit 0
 }
 
-awk -v registry_file="$registry_file" '
+test -f "$environment_header" || {
+    echo "not ok 1 - suboptions use one complete registry"
+    echo "# missing src/dither-interframe-method.h"
+    exit 0
+}
+
+awk -v environment_header="$environment_header" \
+    -v registry_file="$registry_file" '
 function fail(message) {
     print "# " message
     failed = 1
 }
-function inspect_registry(row, fields, count, name, alias, key) {
+function inspect_registry(row, fields, count, option_id, name, alias,
+                          environment, key) {
     gsub(/[[:space:]]+/, " ", row)
     sub(/^.*SIXEL_REGISTRY_[A-Z0-9_]+\(/, "", row)
     sub(/^[[:space:]]*/, "", row)
@@ -171,13 +180,25 @@ function inspect_registry(row, fields, count, name, alias, key) {
         fail("malformed registry row in image coverage check: " row)
         return
     }
+    option_id = fields[1]
     name = fields[3]
     alias = fields[4]
+    environment = fields[5]
     gsub(/^"|"$/, "", name)
     gsub(/^\047|\047$/, "", alias)
+    if (environment ~ /^"[^"]*"$/) {
+        gsub(/^"|"$/, "", environment)
+    } else if (environment in environment_macro) {
+        environment = environment_macro[environment]
+    } else {
+        fail("unresolved environment name in image coverage check: " \
+             environment)
+    }
     key = fields[1] "|" fields[2] "|" name
     expected[key] = 1
+    expected_option[key] = option_id
     expected_alias[key] = alias
+    expected_environment[key] = environment
     registry_rows += 1
 }
 BEGIN {
@@ -186,6 +207,36 @@ BEGIN {
     failed = 0
     registry_rows = 0
     test_rows = 0
+    continued_macro = ""
+}
+FILENAME == environment_header {
+    if (continued_macro != "") {
+        value = $0
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+        if (value ~ /^"[^"]*"$/) {
+            gsub(/^"|"$/, "", value)
+            environment_macro[continued_macro] = value
+        }
+        continued_macro = ""
+        next
+    }
+    if ($0 !~ /^#[[:space:]]*define[[:space:]]+/) {
+        next
+    }
+    definition = $0
+    sub(/^#[[:space:]]*define[[:space:]]+/, "", definition)
+    macro = definition
+    sub(/[[:space:]].*$/, "", macro)
+    value = definition
+    sub(/^[^[:space:]]+[[:space:]]*/, "", value)
+    gsub(/[[:space:]]+$/, "", value)
+    if (substr(value, length(value), 1) == "\\") {
+        continued_macro = macro
+    } else if (value ~ /^"[^"]*"$/) {
+        gsub(/^"|"$/, "", value)
+        environment_macro[macro] = value
+    }
+    next
 }
 FILENAME == registry_file {
     if ($0 ~ /g_suboptions\[\][[:space:]]*=[[:space:]]*\{/) {
@@ -238,11 +289,20 @@ FILENAME != registry_file {
     if (index($0, "cmp -s") > 0) {
         has_compare[FILENAME] = 1
     }
-    if (index($0, "--env") > 0) {
+    if (expected_environment[key] == "" &&
+            index($0, "--env") > 0) {
+        has_environment[FILENAME] = 1
+    }
+    if (expected_environment[key] != "" &&
+            index($0, "--env \"" expected_environment[key] "=") > 0) {
         has_environment[FILENAME] = 1
     }
     if (index($0, ":" expected_alias[key]) > 0) {
         has_short[FILENAME] = 1
+    }
+    if (expected_option[key] == "SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL" &&
+            $0 ~ /^[[:space:]]+/ && index($0, "-p ") > 0) {
+        palette_limit_count[FILENAME] += 1
     }
 }
 END {
@@ -269,10 +329,15 @@ END {
             fail(file " does not compare short and environment output")
         }
         if (!has_environment[file]) {
-            fail(file " does not exercise the environment spelling")
+            fail(file " does not exercise the registered environment name")
         }
         if (!has_short[file]) {
             fail(file " does not exercise the registered short name")
+        }
+        key = test_key[file]
+        if (expected_option[key] == "SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL" &&
+                palette_limit_count[file] < 2) {
+            fail(file " does not force both quantization paths")
         }
     }
     if (registry_rows != test_rows) {
@@ -281,7 +346,7 @@ END {
     }
     exit failed ? 1 : 0
 }
-' "$registry_file" "$regression_dir"/*.t || {
+' "$environment_header" "$registry_file" "$regression_dir"/*.t || {
     echo "not ok 1 - suboptions use one complete registry"
     exit 0
 }

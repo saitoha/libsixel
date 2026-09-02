@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0067-quantize-center-space_policy-short.six"
 env_output="${artifact_dir}/0067-quantize-center-space_policy-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:Elegacy" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Aauto:Qadaptive:Eperceptual" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:space_policy short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_SPACE_POLICY=legacy" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_SPACE_POLICY=perceptual" -p 16 "-Qcenter:Aauto:Qadaptive" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:space_policy env conversion failed"
     exit 0

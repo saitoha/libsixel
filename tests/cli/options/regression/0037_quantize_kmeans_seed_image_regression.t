@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0037-quantize-kmeans-seed-short.six"
 env_output="${artifact_dir}/0037-quantize-kmeans-seed-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:S1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:S2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:seed short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_SEED=1" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_SEED=2" -p 16 "-Qkmeans" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:seed env conversion failed"
     exit 0

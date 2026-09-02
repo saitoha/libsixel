@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0077-quantize-center-budget_scale-short.six"
 env_output="${artifact_dir}/0077-quantize-center-budget_scale-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qcenter:Y1.0" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qcenter:Dadaptive:Y1.4" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "center:budget_scale short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KCENTER_BUDGET_SCALE=1.0" "-Qcenter" \
+    --env "SIXEL_PALETTE_KCENTER_BUDGET_SCALE=1.4" -p 16 "-Qcenter:Dadaptive" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "center:budget_scale env conversion failed"
     exit 0

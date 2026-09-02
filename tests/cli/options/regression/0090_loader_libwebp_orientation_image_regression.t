@@ -17,20 +17,20 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.webp"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.webp"
+reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_12x8.webp"
 artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
 test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
 short_output="${artifact_dir}/0090-loader-libwebp-orientation-short.six"
 env_output="${artifact_dir}/0090-loader-libwebp-orientation-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibwebp:Oon!" "${input_image}" -o "${short_output}" || {
+    "-Llibwebp:Ooff!" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "libwebp:orientation short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_LIBWEBP_ORIENTATION=on" "-Llibwebp!" \
+    --env "SIXEL_LOADER_LIBWEBP_ORIENTATION=off" "-Llibwebp!" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "libwebp:orientation env conversion failed"
     exit 0

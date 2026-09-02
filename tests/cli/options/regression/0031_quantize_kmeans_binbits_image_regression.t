@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0031-quantize-kmeans-binbits-short.six"
 env_output="${artifact_dir}/0031-quantize-kmeans-binbits-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qkmeans:N6" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qkmeans:N4" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "kmeans:binbits short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_BINBITS=6" "-Qkmeans" \
+    --env "SIXEL_PALETTE_KMEANS_BINBITS=4" -p 16 "-Qkmeans" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "kmeans:binbits env conversion failed"
     exit 0

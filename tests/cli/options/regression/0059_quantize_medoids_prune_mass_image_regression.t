@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0059-quantize-medoids-prune_mass-short.six"
 env_output="${artifact_dir}/0059-quantize-medoids-prune_mass-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qmedoids:U1.0" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qmedoids:U0.95" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "medoids:prune_mass short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS=1.0" "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS=0.95" -p 16 "-Qmedoids" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "medoids:prune_mass env conversion failed"
     exit 0

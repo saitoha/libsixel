@@ -20,13 +20,13 @@ short_output="${artifact_dir}/0047-quantize-medoids-iter-short.six"
 env_output="${artifact_dir}/0047-quantize-medoids-iter-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Qmedoids:I1" "${input_image}" -o "${short_output}" || {
+    -p 16 "-Qmedoids:Apam:I2" "${input_image}" -o "${short_output}" || {
     echo "not ok" 1 - "medoids:iter short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEDOIDS_ITER=1" "-Qmedoids" \
+    --env "SIXEL_PALETTE_KMEDOIDS_ITER=2" -p 16 "-Qmedoids:Apam" \
     "${input_image}" -o "${env_output}" || {
     echo "not ok" 1 - "medoids:iter env conversion failed"
     exit 0
