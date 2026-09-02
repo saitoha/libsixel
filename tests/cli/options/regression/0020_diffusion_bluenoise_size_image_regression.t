@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify bluenoise:size preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DIFFUSION|g_diffusion_values + SIXEL_DIFFUSION_BASE_BLUENOISE|size
+# Registry binding: bluenoise_size|bluenoise_size_override
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0020-diffusion-bluenoise-size-short.six"
-env_output="${artifact_dir}/0020-diffusion-bluenoise-size-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0020-diffusion-bluenoise-size-short-$$.six"
+env_output="${artifact_dir}/0020-diffusion-bluenoise-size-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d "bluenoise:Z64" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -d "bluenoise:Z64" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "bluenoise:size short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=size|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "size short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_BLUENOISE_SIZE=64" -d "bluenoise" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "bluenoise:size env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=size|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "size environment value was not stored"
     exit 0
 }
 

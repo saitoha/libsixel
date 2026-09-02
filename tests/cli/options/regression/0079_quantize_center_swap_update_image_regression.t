@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify center:swap_update preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|swap_update
+# Registry binding: quantize_model_kcenter_swap_update|quantize_model_kcenter_swap_update_override
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0079-quantize-center-swap_update-short.six"
-env_output="${artifact_dir}/0079-quantize-center-swap_update-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0079-quantize-center-swap_update-short-$$.six"
+env_output="${artifact_dir}/0079-quantize-center-swap_update-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:Aswap:Mincremental" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 "-Qcenter:Aswap:Mincremental" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:swap_update short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=swap_update|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "swap_update short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_SWAP_UPDATE=incremental" -p 16 "-Qcenter:Aswap" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:swap_update env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=swap_update|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "swap_update environment value was not stored"
     exit 0
 }
 

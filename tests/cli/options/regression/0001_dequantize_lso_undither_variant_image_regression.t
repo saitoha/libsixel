@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify lso_undither:variant preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DEQUANTIZE|g_dequantize_values + SIXEL_DEQUANTIZE_BASE_LSO_UNDITHER|variant
+# Registry binding: method
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/images/map8.six"
 reference_image="${TOP_SRCDIR}/images/map8.six"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0001-dequantize-lso_undither-variant-short.png"
-env_output="${artifact_dir}/0001-dequantize-lso_undither-variant-env.png"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0001-dequantize-lso_undither-variant-short-$$.png"
+env_output="${artifact_dir}/0001-dequantize-lso_undither-variant-env-$$.png"
 
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
-    "-dlso_undither:Vlight" <"${input_image}" >"${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
+    "-dlso_undither:Vlight" <"${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "lso_undither:variant short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
+test "${short_trace#*LSXSUB1|*key=variant|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "variant short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env "SIXEL_DEQUANTIZE_LSO_VARIANT=light" "-dlso_undither" \
-    <"${input_image}" >"${env_output}" || {
+    <"${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "lso_undither:variant env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=variant|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "variant environment value was not stored"
     exit 0
 }
 

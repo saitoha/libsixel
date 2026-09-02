@@ -44,6 +44,16 @@
 #define SIXEL_REGISTRY_ARRAY_LENGTH(array_) \
     (sizeof(array_) / sizeof((array_)[0]))
 
+/*
+ * Make a width mismatch in a binding a compile-time error.  C99 cannot
+ * compare signedness portably, but checking the actual member width prevents
+ * a registry typo from overwriting an adjacent structure member.
+ */
+#define SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, value_type_) \
+    (offsetof(type_, field_) + \
+     0u * sizeof(char[sizeof(((type_ *)0)->field_) == \
+                     sizeof(value_type_) ? 1 : -1]))
+
 #define SIXEL_REGISTRY_NO_BINDING \
     { \
         SIXEL_SUBOPTION_TARGET_NONE, SIXEL_SUBOPTION_STORAGE_INT, \
@@ -70,7 +80,8 @@
         0, 0, NULL, NULL, \
         { \
             (target_), SIXEL_SUBOPTION_STORAGE_INT, \
-            offsetof(type_, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
         } \
     }
@@ -86,7 +97,8 @@
         0, 0, 0, NULL, NULL, \
         { \
             (target_), SIXEL_SUBOPTION_STORAGE_INT, \
-            offsetof(type_, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
         } \
     }
@@ -100,7 +112,8 @@
         1.0, 1, 1, 1, 0, "boolean suboption must be 0 or 1.", NULL, \
         { \
             (target_), SIXEL_SUBOPTION_STORAGE_INT, \
-            offsetof(type_, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
         } \
     }
@@ -151,7 +164,8 @@
         (suffix_), \
         { \
             (target_), SIXEL_SUBOPTION_STORAGE_INT, \
-            offsetof(type_, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
         } \
     }
@@ -201,8 +215,9 @@
         0, 0, NULL, NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
-            offsetof(sixel_encoder_t, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
-            offsetof(sixel_encoder_t, override_), \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE \
         } \
     }
@@ -218,8 +233,9 @@
         0, 0, 0, NULL, NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
-            offsetof(sixel_encoder_t, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
-            offsetof(sixel_encoder_t, override_), \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE \
         } \
     }
@@ -233,8 +249,9 @@
         1.0, 1, 1, 1, 0, "boolean suboption must be 0 or 1.", NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
-            offsetof(sixel_encoder_t, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
-            offsetof(sixel_encoder_t, override_), \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE \
         } \
     }
@@ -249,7 +266,8 @@
         0, 0, NULL, NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
-            offsetof(sixel_encoder_t, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE \
         } \
     }
@@ -264,24 +282,27 @@
         0, 0, NULL, NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
-            offsetof(sixel_encoder_t, field_), SIXEL_SUBOPTION_OFFSET_NONE, \
-            offsetof(sixel_encoder_t, override_), \
-            offsetof(sixel_encoder_t, mirror_) \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, mirror_, int) \
         } \
     }
 
 #define SIXEL_REGISTRY_ENCODER_NUMBER( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, kind_, \
     minimum_, maximum_, has_minimum_, has_maximum_, allow_zero_, message_, \
-    storage_, field_, second_, override_) \
+    storage_, value_type_, field_, second_, override_) \
     { \
         (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
         (legacy_), (kind_), NULL, 0u, NULL, 0u, (minimum_), (maximum_), \
         (has_minimum_), (has_maximum_), (allow_zero_), 0, (message_), NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, (storage_), \
-            offsetof(sixel_encoder_t, field_), (second_), \
-            offsetof(sixel_encoder_t, override_), \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_encoder_t, field_, value_type_), \
+            (second_), \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE \
         } \
     }
@@ -292,7 +313,7 @@
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
         SIXEL_SUBOPTION_VALUE_UINT, minimum_, maximum_, 1, 1, allow_zero_, \
-        message_, SIXEL_SUBOPTION_STORAGE_UINT, field_, \
+        message_, SIXEL_SUBOPTION_STORAGE_UINT, unsigned int, field_, \
         SIXEL_SUBOPTION_OFFSET_NONE, override_)
 
 #define SIXEL_REGISTRY_ENCODER_INT( \
@@ -301,8 +322,8 @@
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
         SIXEL_SUBOPTION_VALUE_INT, 0.0, 0.0, 0, 0, 0, message_, \
-        SIXEL_SUBOPTION_STORAGE_INT, field_, SIXEL_SUBOPTION_OFFSET_NONE, \
-        override_)
+        SIXEL_SUBOPTION_STORAGE_INT, int, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_)
 
 #define SIXEL_REGISTRY_ENCODER_FLOAT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_, \
@@ -310,8 +331,8 @@
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
         SIXEL_SUBOPTION_VALUE_FLOAT, 0.0, 0.0, 0, 0, 0, message_, \
-        SIXEL_SUBOPTION_STORAGE_FLOAT, field_, SIXEL_SUBOPTION_OFFSET_NONE, \
-        override_)
+        SIXEL_SUBOPTION_STORAGE_FLOAT, float, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_)
 
 #define SIXEL_REGISTRY_ENCODER_DOUBLE( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
@@ -319,8 +340,8 @@
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
         SIXEL_SUBOPTION_VALUE_DOUBLE, minimum_, maximum_, 1, 1, 0, message_, \
-        SIXEL_SUBOPTION_STORAGE_DOUBLE, field_, SIXEL_SUBOPTION_OFFSET_NONE, \
-        override_)
+        SIXEL_SUBOPTION_STORAGE_DOUBLE, double, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_)
 
 #define SIXEL_REGISTRY_ENCODER_SCALED_U8( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
@@ -328,7 +349,7 @@
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
         SIXEL_SUBOPTION_VALUE_SCALED_U8, minimum_, maximum_, 1, 1, 0, \
-        message_, SIXEL_SUBOPTION_STORAGE_INT, field_, \
+        message_, SIXEL_SUBOPTION_STORAGE_INT, int, field_, \
         SIXEL_SUBOPTION_OFFSET_NONE, override_)
 
 #define SIXEL_REGISTRY_ENCODER_INT_PAIR( \
@@ -337,8 +358,9 @@
     SIXEL_REGISTRY_ENCODER_NUMBER( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
         SIXEL_SUBOPTION_VALUE_INT_PAIR, 0.0, 0.0, 0, 0, 0, message_, \
-        SIXEL_SUBOPTION_STORAGE_INT_PAIR, field_, \
-        offsetof(sixel_encoder_t, second_), override_)
+        SIXEL_SUBOPTION_STORAGE_INT_PAIR, int, field_, \
+        SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, second_, int), \
+        override_)
 
 enum {
     SIXEL_DEQUANTIZE_BASE_NONE = 0,
@@ -813,14 +835,14 @@ static sixel_suboption_key_t const g_suboptions[] = {
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_INTERFRAME,
-        "diffusion", 'D', SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR,
+        "diffusion", 'D', "SIXEL_DITHER_INTERFRAME_DIFFUSION",
         NULL, NULL, g_interframe_diffusion_choices,
         interframe_spatial_diffuse,
         interframe_spatial_diffuse_override),
     SIXEL_REGISTRY_ENCODER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "source", 'S', SIXEL_DITHER_STBN_SOURCE_ENVVAR,
+        "source", 'S', "SIXEL_DITHER_STBN_SOURCE",
         NULL, NULL, g_stbn_source_choices,
         g_stbn_source_environment_choices,
         interframe_strategy_token,
@@ -828,14 +850,14 @@ static sixel_suboption_key_t const g_suboptions[] = {
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "diffusion", 'D', SIXEL_DITHER_STBN_DIFFUSION_ENVVAR,
+        "diffusion", 'D', "SIXEL_DITHER_STBN_DIFFUSION",
         NULL, NULL, g_interframe_diffusion_choices,
         interframe_spatial_diffuse,
         interframe_spatial_diffuse_override),
     SIXEL_REGISTRY_ENCODER_SCALED_U8(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "strength", 'T', SIXEL_DITHER_STBN_STRENGTH_ENVVAR,
+        "strength", 'T', "SIXEL_DITHER_STBN_STRENGTH",
         NULL, NULL, 0.0, 2.0,
         "-d stbn:strength must be in range 0.0-2.0.",
         interframe_noise_strength_u8,
@@ -843,40 +865,40 @@ static sixel_suboption_key_t const g_suboptions[] = {
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "motion_adapt", 'M', SIXEL_DITHER_STBN_MOTION_ADAPT_ENVVAR,
+        "motion_adapt", 'M', "SIXEL_DITHER_STBN_MOTION_ADAPT",
         NULL, NULL,
         stbn_motion_adapt_enabled, stbn_motion_adapt_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
         "scene_cut_reset", 'C',
-        SIXEL_DITHER_STBN_SCENE_CUT_RESET_ENVVAR,
+        "SIXEL_DITHER_STBN_SCENE_CUT_RESET",
         NULL, NULL,
         stbn_scene_cut_reset_enabled, stbn_scene_cut_reset_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "scene_detect", 'E', SIXEL_DITHER_STBN_SCENE_DETECT_ENVVAR,
+        "scene_detect", 'E', "SIXEL_DITHER_STBN_SCENE_DETECT",
         NULL, NULL,
         stbn_scene_detect_enabled, stbn_scene_detect_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "alpha_guard", 'A', SIXEL_DITHER_STBN_ALPHA_GUARD_ENVVAR,
+        "alpha_guard", 'A', "SIXEL_DITHER_STBN_ALPHA_GUARD",
         NULL, NULL,
         stbn_alpha_guard_enabled, stbn_alpha_guard_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
         "perceptual_weight", 'P',
-        SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT_ENVVAR,
+        "SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT",
         NULL, NULL,
         stbn_perceptual_weight_enabled,
         stbn_perceptual_weight_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "fastpath", 'F', SIXEL_DITHER_STBN_FASTPATH_ENVVAR,
+        "fastpath", 'F', "SIXEL_DITHER_STBN_FASTPATH",
         NULL, NULL,
         stbn_fastpath_enabled, stbn_fastpath_override),
     SIXEL_REGISTRY_ENCODER_FLOAT(
@@ -1667,6 +1689,37 @@ sixel_option_registry_suboption_at(
     return NULL;
 }
 
+/*
+ * Environment names are part of the registry contract.  Keep their syntax
+ * independent of the host shell so a malformed row fails on every platform.
+ */
+static int
+sixel_option_registry_environment_name_is_valid(
+    char const *name,
+    int required)
+{
+    size_t index;
+
+    index = 0u;
+    if (name == NULL) {
+        return required == 0;
+    }
+    if (name[0] < 'A' || name[0] > 'Z') {
+        return 0;
+    }
+    index = 1u;
+    while (name[index] != '\0') {
+        if ((name[index] < 'A' || name[index] > 'Z') &&
+            (name[index] < '0' || name[index] > '9') &&
+            name[index] != '_') {
+            return 0;
+        }
+        ++index;
+    }
+
+    return 1;
+}
+
 int
 sixel_option_registry_validate(void)
 {
@@ -1675,6 +1728,8 @@ sixel_option_registry_validate(void)
     size_t key_index;
     size_t previous_index;
     size_t key_count;
+    size_t suboption_index;
+    size_t previous_suboption_index;
     sixel_option_argument_schema_t const *schema;
     sixel_option_value_schema_t const *base_def;
     sixel_suboption_key_t const *key;
@@ -1685,10 +1740,37 @@ sixel_option_registry_validate(void)
     key_index = 0u;
     previous_index = 0u;
     key_count = 0u;
+    suboption_index = 0u;
+    previous_suboption_index = 0u;
     schema = NULL;
     base_def = NULL;
     key = NULL;
     previous = NULL;
+
+    while (suboption_index <
+           SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
+        key = g_suboptions + suboption_index;
+        if (!sixel_option_registry_environment_name_is_valid(
+                key->env_name,
+                1) ||
+            !sixel_option_registry_environment_name_is_valid(
+                key->env_fallback_name,
+                0) ||
+            !sixel_option_registry_environment_name_is_valid(
+                key->env_legacy_name,
+                0)) {
+            return 0;
+        }
+        previous_suboption_index = 0u;
+        while (previous_suboption_index < suboption_index) {
+            previous = g_suboptions + previous_suboption_index;
+            if (strcmp(previous->env_name, key->env_name) == 0) {
+                return 0;
+            }
+            ++previous_suboption_index;
+        }
+        ++suboption_index;
+    }
 
     while (option_index < SIXEL_REGISTRY_ARRAY_LENGTH(g_options)) {
         schema = g_options + option_index;

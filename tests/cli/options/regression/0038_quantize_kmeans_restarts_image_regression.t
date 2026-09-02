@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify kmeans:restarts preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS|restarts
+# Registry binding: quantize_model_kmeans_restarts|quantize_model_kmeans_restarts_override
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0038-quantize-kmeans-restarts-short.six"
-env_output="${artifact_dir}/0038-quantize-kmeans-restarts-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0038-quantize-kmeans-restarts-short-$$.six"
+env_output="${artifact_dir}/0038-quantize-kmeans-restarts-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qkmeans:E2" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 "-Qkmeans:E2" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "kmeans:restarts short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=restarts|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "restarts short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEANS_RESTARTS=2" -p 16 "-Qkmeans" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "kmeans:restarts env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=restarts|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "restarts environment value was not stored"
     exit 0
 }
 

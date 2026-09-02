@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify medoids:auction preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS|auction
+# Registry binding: quantize_model_kmedoids_auction|quantize_model_kmedoids_auction_override
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0060-quantize-medoids-auction-short.six"
-env_output="${artifact_dir}/0060-quantize-medoids-auction-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0060-quantize-medoids-auction-short-$$.six"
+env_output="${artifact_dir}/0060-quantize-medoids-auction-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qmedoids:Q1" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 "-Qmedoids:Q1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "medoids:auction short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=auction|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "auction short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_AUCTION=1" -p 16 "-Qmedoids" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "medoids:auction env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=auction|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "auction environment value was not stored"
     exit 0
 }
 

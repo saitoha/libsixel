@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify stbn:perceptual_weight preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DIFFUSION|g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN|perceptual_weight
+# Registry binding: stbn_perceptual_weight_enabled|stbn_perceptual_weight_override
 
 set -eux
 
@@ -12,26 +13,51 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+animated_image="${TOP_SRCDIR}/tests/data/inputs/snake_motion_64_2frame.gif"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0013-diffusion-stbn-perceptual_weight-short.six"
-env_output="${artifact_dir}/0013-diffusion-stbn-perceptual_weight-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0013-diffusion-stbn-perceptual_weight-short-$$.six"
+env_output="${artifact_dir}/0013-diffusion-stbn-perceptual_weight-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+effect_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 -L builtin -ldisable -p 64 \
-    -d "stbn:Spmj:P1" "${input_image}" -o "${short_output}" || {
+    -d "stbn:Spmj:P1" "${animated_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "diffusion stbn perceptual weight animated conversion failed"
+    exit 0
+}
+
+test "${effect_trace#*LSXDTH1|*consume=[1-9]*}" != "${effect_trace}" || {
+    echo "not ok" 1 - "diffusion stbn perceptual weight did not consume a second frame"
+    exit 0
+}
+
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --threads=1 -L builtin -ldisable -p 64 \
+    -d "stbn:Spmj:P1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "stbn:perceptual_weight short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=perceptual_weight|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "perceptual_weight short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT=1" \
     --threads=1 -L builtin -ldisable -p 64 \
     -d "stbn:Spmj" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "stbn:perceptual_weight env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=perceptual_weight|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "perceptual_weight environment value was not stored"
     exit 0
 }
 

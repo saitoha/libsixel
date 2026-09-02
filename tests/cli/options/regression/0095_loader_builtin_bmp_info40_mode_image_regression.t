@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify builtin:bmp_info40_mode preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|g_loader_values + SIXEL_LOADER_INDEX_BUILTIN|bmp_info40_mode
+# Registry binding: builtin_bmp_info40_mode
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-os2-huffman1d-2x2.bmp"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-os2-huffman1d-2x2.bmp"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0095-loader-builtin-bmp_info40_mode-short.six"
-env_output="${artifact_dir}/0095-loader-builtin-bmp_info40_mode-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0095-loader-builtin-bmp_info40_mode-short-$$.six"
+env_output="${artifact_dir}/0095-loader-builtin-bmp_info40_mode-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Lbuiltin:Bos2!" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    "-Lbuiltin:Bos2!" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "builtin:bmp_info40_mode short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=bmp_info40_mode|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "bmp_info40_mode short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE=os2" "-Lbuiltin!" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "builtin:bmp_info40_mode env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=bmp_info40_mode|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "bmp_info40_mode environment value was not stored"
     exit 0
 }
 

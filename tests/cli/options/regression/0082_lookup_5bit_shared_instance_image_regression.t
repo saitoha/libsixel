@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify 5bit:shared_instance preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LUT_POLICY|g_lookup_values + SIXEL_LOOKUP_BASE_5BIT|shared_instance
+# Registry binding: lut_policy_shared_instance|lut_policy_shared_instance_override
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0082-lookup-5bit-shared_instance-short.six"
-env_output="${artifact_dir}/0082-lookup-5bit-shared_instance-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0082-lookup-5bit-shared_instance-short-$$.six"
+env_output="${artifact_dir}/0082-lookup-5bit-shared_instance-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=2 -p 16 "-~5bit:S1" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --threads=2 -p 16 "-~5bit:S1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "5bit:shared_instance short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=shared_instance|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "shared_instance short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOOKUP_5BIT_SHARED_INSTANCE=1" --threads=2 -p 16 "-~5bit" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "5bit:shared_instance env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=shared_instance|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "shared_instance environment value was not stored"
     exit 0
 }
 

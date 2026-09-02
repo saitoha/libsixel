@@ -1857,31 +1857,152 @@ sixel_option_store_suboption_value(
         } else {
             int_value = value->int_value;
         }
-        *(int *)(void *)(target + offset) = int_value;
+        memcpy(target + offset, &int_value, sizeof(int_value));
         break;
     case SIXEL_SUBOPTION_STORAGE_UINT:
-        *(unsigned int *)(void *)(target + offset) = value->uint_value;
+        memcpy(target + offset,
+               &value->uint_value,
+               sizeof(value->uint_value));
         break;
     case SIXEL_SUBOPTION_STORAGE_FLOAT:
-        *(float *)(void *)(target + offset) = value->float_value;
+        memcpy(target + offset,
+               &value->float_value,
+               sizeof(value->float_value));
         break;
     case SIXEL_SUBOPTION_STORAGE_DOUBLE:
-        *(double *)(void *)(target + offset) = value->double_value;
+        memcpy(target + offset,
+               &value->double_value,
+               sizeof(value->double_value));
         break;
     case SIXEL_SUBOPTION_STORAGE_INT_PAIR:
-        *(int *)(void *)(target + offset) = value->int_pair.first;
         if (key_def->binding.second_value_offset ==
             SIXEL_SUBOPTION_OFFSET_NONE) {
             return 0;
         }
-        *(int *)(void *)(target + key_def->binding.second_value_offset) =
-            value->int_pair.second;
+        memcpy(target + offset,
+               &value->int_pair.first,
+               sizeof(value->int_pair.first));
+        memcpy(target + key_def->binding.second_value_offset,
+               &value->int_pair.second,
+               sizeof(value->int_pair.second));
         break;
     default:
         return 0;
     }
 
     return 1;
+}
+
+/*
+ * Compare the typed assignment with the value stored through the registry
+ * binding.  The trace emitted from this check is intentionally generic: it
+ * lets every suboption regression verify the common application boundary
+ * without adding option-specific diagnostic code to individual algorithms.
+ */
+static int
+sixel_option_suboption_value_is_stored(
+    sixel_suboption_key_t const *key_def,
+    sixel_suboption_value_t const *value,
+    unsigned char const *target,
+    size_t offset)
+{
+    int int_value;
+    int stored_int;
+    unsigned int stored_uint;
+    float stored_float;
+    double stored_double;
+
+    int_value = 0;
+    stored_int = 0;
+    stored_uint = 0u;
+    stored_float = 0.0f;
+    stored_double = 0.0;
+    if (key_def == NULL || value == NULL || target == NULL ||
+        offset == SIXEL_SUBOPTION_OFFSET_NONE) {
+        return 0;
+    }
+
+    switch (key_def->binding.storage_kind) {
+    case SIXEL_SUBOPTION_STORAGE_INT:
+        if (key_def->value_kind == SIXEL_SUBOPTION_VALUE_UINT) {
+            int_value = (int)value->uint_value;
+        } else {
+            int_value = value->int_value;
+        }
+        memcpy(&stored_int, target + offset, sizeof(stored_int));
+        return stored_int == int_value;
+    case SIXEL_SUBOPTION_STORAGE_UINT:
+        memcpy(&stored_uint, target + offset, sizeof(stored_uint));
+        return stored_uint == value->uint_value;
+    case SIXEL_SUBOPTION_STORAGE_FLOAT:
+        memcpy(&stored_float, target + offset, sizeof(stored_float));
+        return stored_float == value->float_value;
+    case SIXEL_SUBOPTION_STORAGE_DOUBLE:
+        memcpy(&stored_double, target + offset, sizeof(stored_double));
+        return stored_double == value->double_value;
+    case SIXEL_SUBOPTION_STORAGE_INT_PAIR:
+        if (key_def->binding.second_value_offset ==
+            SIXEL_SUBOPTION_OFFSET_NONE) {
+            return 0;
+        }
+        memcpy(&stored_int, target + offset, sizeof(stored_int));
+        if (stored_int != value->int_pair.first) {
+            return 0;
+        }
+        memcpy(&stored_int,
+               target + key_def->binding.second_value_offset,
+               sizeof(stored_int));
+        return stored_int == value->int_pair.second;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+static void
+sixel_option_emit_suboption_contract(
+    sixel_suboption_key_t const *key_def,
+    sixel_suboption_value_t const *value,
+    unsigned char const *target)
+{
+    int stored;
+    int override_value;
+
+    stored = 0;
+    override_value = 0;
+    if (key_def == NULL || value == NULL || target == NULL ||
+        !sixel_trace_topic_is_enabled("suboption_contract")) {
+        return;
+    }
+
+    stored = sixel_option_suboption_value_is_stored(
+        key_def,
+        value,
+        target,
+        key_def->binding.value_offset);
+    if (stored != 0 &&
+        key_def->binding.override_offset != SIXEL_SUBOPTION_OFFSET_NONE) {
+        memcpy(&override_value,
+               target + key_def->binding.override_offset,
+               sizeof(override_value));
+        stored = override_value == 1;
+    }
+    if (stored != 0 &&
+        key_def->binding.mirror_offset != SIXEL_SUBOPTION_OFFSET_NONE) {
+        stored = sixel_option_suboption_value_is_stored(
+            key_def,
+            value,
+            target,
+            key_def->binding.mirror_offset);
+    }
+
+    fprintf(stderr,
+            "LSXSUB1|schema=%d|base=%s|key=%s|stored=%d\n",
+            (int)key_def->option_id,
+            key_def->base_def != NULL ? key_def->base_def->name : "*",
+            key_def->name,
+            stored);
 }
 
 int
@@ -1892,8 +2013,10 @@ sixel_option_apply_suboption_value(
     sixel_suboption_target_class_t target_class)
 {
     unsigned char *bytes;
+    int override_value;
 
     bytes = (unsigned char *)target;
+    override_value = 1;
     if (key_def == NULL || value == NULL || target == NULL ||
         key_def->binding.target_class != target_class ||
         target_class == SIXEL_SUBOPTION_TARGET_NONE) {
@@ -1907,7 +2030,9 @@ sixel_option_apply_suboption_value(
         return 0;
     }
     if (key_def->binding.override_offset != SIXEL_SUBOPTION_OFFSET_NONE) {
-        *(int *)(void *)(bytes + key_def->binding.override_offset) = 1;
+        memcpy(bytes + key_def->binding.override_offset,
+               &override_value,
+               sizeof(override_value));
     }
     if (key_def->binding.mirror_offset != SIXEL_SUBOPTION_OFFSET_NONE &&
         !sixel_option_store_suboption_value(
@@ -1917,6 +2042,8 @@ sixel_option_apply_suboption_value(
             key_def->binding.mirror_offset)) {
         return 0;
     }
+
+    sixel_option_emit_suboption_contract(key_def, value, bytes);
 
     return 1;
 }
@@ -1995,12 +2122,14 @@ sixel_option_reset_suboption_overrides(
     size_t key_count;
     sixel_suboption_key_t const *key_def;
     unsigned char *bytes;
+    int override_value;
 
     base_index = 0u;
     key_index = 0u;
     key_count = 0u;
     key_def = NULL;
     bytes = (unsigned char *)target;
+    override_value = 0;
     if (schema == NULL || target == NULL ||
         target_class == SIXEL_SUBOPTION_TARGET_NONE) {
         return;
@@ -2020,8 +2149,9 @@ sixel_option_reset_suboption_overrides(
                 key_def->binding.target_class == target_class &&
                 key_def->binding.override_offset !=
                     SIXEL_SUBOPTION_OFFSET_NONE) {
-                *(int *)(void *)(bytes + key_def->binding.override_offset) =
-                    0;
+                memcpy(bytes + key_def->binding.override_offset,
+                       &override_value,
+                       sizeof(override_value));
             }
             ++key_index;
         }

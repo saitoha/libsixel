@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify center:init_seeds preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|init_seeds
+# Registry binding: quantize_model_kcenter_init_seeds|quantize_model_kcenter_init_seeds_override
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0070-quantize-center-init_seeds-short.six"
-env_output="${artifact_dir}/0070-quantize-center-init_seeds-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0070-quantize-center-init_seeds-short-$$.six"
+env_output="${artifact_dir}/0070-quantize-center-init_seeds-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:Aswap:N2" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 "-Qcenter:Aswap:N2" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:init_seeds short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=init_seeds|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "init_seeds short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_INIT_SEEDS=2" -p 16 "-Qcenter:Aswap" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:init_seeds env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=init_seeds|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "init_seeds environment value was not stored"
     exit 0
 }
 

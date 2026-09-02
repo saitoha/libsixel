@@ -205,6 +205,10 @@ export test_dir
 export category_name
 export ARTIFACT_LOCAL_DIR
 
+# Create the per-test directory in the harness so TAP scripts can assume that
+# their isolated artifact location exists before the test starts.
+mkdir -p "$ARTIFACT_LOCAL_DIR" || exit 2
+
 if [ "$sixel_tap_openvms" = yes ]; then
   lso_cmp_real=$(command -v cmp 2>/dev/null || printf '')
   lso_cmp_wrapper_dir="${TOP_BUILDDIR}/tests/.lso-test-bin"

@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify center:space_policy preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_CENTER|space_policy
+# Registry binding: quantize_model_kcenter_space_policy|quantize_model_kcenter_space_policy_override
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0067-quantize-center-space_policy-short.six"
-env_output="${artifact_dir}/0067-quantize-center-space_policy-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0067-quantize-center-space_policy-short-$$.six"
+env_output="${artifact_dir}/0067-quantize-center-space_policy-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qcenter:Aauto:Qadaptive:Eperceptual" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 "-Qcenter:Aauto:Qadaptive:Eperceptual" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:space_policy short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=space_policy|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "space_policy short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_SPACE_POLICY=perceptual" -p 16 "-Qcenter:Aauto:Qadaptive" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:space_policy env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=space_policy|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "space_policy environment value was not stored"
     exit 0
 }
 

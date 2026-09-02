@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify libpng:orientation preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|g_loader_values + SIXEL_LOADER_INDEX_LIBPNG|orientation
+# Registry binding: libpng_enable_orientation
 
 set -eux
 
@@ -18,21 +19,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_12x8.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0086-loader-libpng-orientation-short.six"
-env_output="${artifact_dir}/0086-loader-libpng-orientation-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0086-loader-libpng-orientation-short-$$.six"
+env_output="${artifact_dir}/0086-loader-libpng-orientation-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibpng:O0!" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    "-Llibpng:O0!" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "libpng:orientation short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=orientation|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "orientation short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_LIBPNG_ORIENTATION=0" "-Llibpng!" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "libpng:orientation env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=orientation|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "orientation environment value was not stored"
     exit 0
 }
 

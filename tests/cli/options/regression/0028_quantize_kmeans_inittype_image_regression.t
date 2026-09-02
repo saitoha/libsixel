@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify kmeans:inittype preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS|inittype
+# Registry binding: quantize_model_kmeans_init_type|quantize_model_kmeans_init_override
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0028-quantize-kmeans-inittype-short.six"
-env_output="${artifact_dir}/0028-quantize-kmeans-inittype-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0028-quantize-kmeans-inittype-short-$$.six"
+env_output="${artifact_dir}/0028-quantize-kmeans-inittype-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qkmeans:Ipca" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 "-Qkmeans:Ipca" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "kmeans:inittype short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=inittype|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "inittype short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEANS_INITTYPE=pca" -p 16 "-Qkmeans" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "kmeans:inittype env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=inittype|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "inittype environment value was not stored"
     exit 0
 }
 

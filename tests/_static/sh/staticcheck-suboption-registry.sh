@@ -8,7 +8,8 @@ set -v
 
 src_root=$1
 registry_file=$src_root/src/options-registry.c
-environment_header=$src_root/src/dither-interframe-method.h
+help_file=$src_root/converters/img2sixel.c
+man_file=$src_root/converters/img2sixel.1
 duplicates=
 dispatchers=
 
@@ -76,8 +77,7 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     if (alias !~ /^\047[A-Z]\047$/) {
         fail(option_id ":" name " needs one uppercase short name")
     }
-    if (env !~ /^"[A-Z][A-Z0-9_]+"$/ &&
-            env !~ /^[A-Z][A-Z0-9_]*_ENVVAR$/) {
+    if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
         fail(option_id ":" name " needs a non-empty environment variable")
     }
     if (macro !~ /BOUND|ENCODER/) {
@@ -151,6 +151,114 @@ END {
     exit 0
 }
 
+test -f "$help_file" -a -f "$man_file" || {
+    echo "not ok 1 - suboptions use one complete registry"
+    echo "# img2sixel help or manual source is missing"
+    exit 0
+}
+
+# Both user-visible references must carry every long-to-short mapping.  The
+# compact tables use name=A, while loader prose uses "short form Avalue".
+awk -v registry_file="$registry_file" \
+    -v help_file="$help_file" \
+    -v man_file="$man_file" '
+function fail(message) {
+    print "# " message
+    failed = 1
+}
+function inspect(row, fields, count, name, alias, key) {
+    gsub(/[[:space:]]+/, " ", row)
+    sub(/^.*SIXEL_REGISTRY_[A-Z0-9_]+\(/, "", row)
+    sub(/\),[[:space:]]*$/, "", row)
+    count = split(row, fields, /,[[:space:]]*/)
+    name = fields[3]
+    alias = fields[4]
+    gsub(/^"|"$/, "", name)
+    gsub(/^\047|\047$/, "", alias)
+    key = name SUBSEP alias
+    expected[key] = 1
+    expected_name[key] = name
+    expected_alias[key] = alias
+}
+function mapping_is_documented(text, name, alias, offset, position,
+                               window, short_position, short_window) {
+    if (index(text, name "=" alias) > 0) {
+        return 1
+    }
+    offset = 1
+    while (offset <= length(text)) {
+        position = index(substr(text, offset), name)
+        if (position == 0) {
+            break
+        }
+        position += offset - 1
+        window = substr(text, position, 240)
+        if (index(window, ":" alias) > 0) {
+            return 1
+        }
+        short_position = index(window, "shortform")
+        if (short_position > 0) {
+            short_window = substr(window, short_position, 24)
+            if (index(short_window, alias) > 0) {
+                return 1
+            }
+        }
+        offset = position + length(name)
+    }
+    return 0
+}
+BEGIN {
+    in_registry = 0
+    in_row = 0
+    failed = 0
+}
+FILENAME == registry_file {
+    if ($0 ~ /g_suboptions\[\][[:space:]]*=[[:space:]]*\{/) {
+        in_registry = 1
+        next
+    }
+    if (in_registry && $0 ~ /^[[:space:]]*};/) {
+        in_registry = 0
+        next
+    }
+    if (in_registry && $0 ~ /SIXEL_REGISTRY_[A-Z0-9_]+\(/) {
+        in_row = 1
+        row = $0
+        next
+    }
+    if (in_registry && in_row) {
+        row = row " " $0
+    }
+    if (in_registry && in_row && $0 ~ /\),[[:space:]]*$/) {
+        inspect(row)
+        in_row = 0
+        row = ""
+    }
+    next
+}
+{
+    line = $0
+    gsub(/[^[:alnum:]_=:.|\/-]+/, "", line)
+    document[FILENAME] = document[FILENAME] line
+}
+END {
+    for (key in expected) {
+        name = expected_name[key]
+        alias = expected_alias[key]
+        if (!mapping_is_documented(document[help_file], name, alias)) {
+            fail("img2sixel -H omits " name "=" alias)
+        }
+        if (!mapping_is_documented(document[man_file], name, alias)) {
+            fail("img2sixel.1 omits " name "=" alias)
+        }
+    }
+    exit failed ? 1 : 0
+}
+' "$registry_file" "$help_file" "$man_file" || {
+    echo "not ok 1 - suboptions use one complete registry"
+    exit 0
+}
+
 regression_dir=$src_root/tests/cli/options/regression
 test -d "$regression_dir" || {
     echo "not ok 1 - suboptions use one complete registry"
@@ -158,21 +266,16 @@ test -d "$regression_dir" || {
     exit 0
 }
 
-test -f "$environment_header" || {
-    echo "not ok 1 - suboptions use one complete registry"
-    echo "# missing src/dither-interframe-method.h"
-    exit 0
-}
-
-awk -v environment_header="$environment_header" \
-    -v registry_file="$registry_file" '
+awk -v registry_file="$registry_file" '
 function fail(message) {
     print "# " message
     failed = 1
 }
 function inspect_registry(row, fields, count, option_id, name, alias,
-                          environment, key) {
+                          environment, key, macro, binding) {
     gsub(/[[:space:]]+/, " ", row)
+    match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
+    macro = substr(row, RSTART, RLENGTH)
     sub(/^.*SIXEL_REGISTRY_[A-Z0-9_]+\(/, "", row)
     sub(/^[[:space:]]*/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
@@ -187,22 +290,32 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     environment = fields[5]
     gsub(/^"|"$/, "", name)
     gsub(/^\047|\047$/, "", alias)
-    if (environment ~ /^"[A-Z][A-Z0-9_]+"$/) {
-        gsub(/^"|"$/, "", environment)
-    } else if (environment in environment_macro) {
-        environment = environment_macro[environment]
-    } else {
+    if (environment !~ /^"[A-Z][A-Z0-9_]+"$/) {
         fail("unresolved environment name in image coverage check: " \
              environment)
     }
+    gsub(/^"|"$/, "", environment)
     if (environment == "") {
         fail(option_id ":" name " resolved an empty environment name")
     }
     key = fields[1] "|" fields[2] "|" name
     expected[key] = 1
     expected_option[key] = option_id
+    expected_name[key] = name
     expected_alias[key] = alias
     expected_environment[key] = environment
+    if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
+        binding = fields[count - 2] "|" fields[count - 1] "|" fields[count]
+    } else if (macro ~ /ENCODER_DIRECT_CHOICE/) {
+        binding = fields[count]
+    } else if (macro ~ /ENCODER_/) {
+        binding = fields[count - 1] "|" fields[count]
+    } else if (macro ~ /BOUND_/) {
+        binding = fields[count]
+    } else {
+        fail(option_id ":" name " has no typed binding macro")
+    }
+    expected_binding[key] = binding
     registry_rows += 1
 }
 BEGIN {
@@ -211,36 +324,6 @@ BEGIN {
     failed = 0
     registry_rows = 0
     test_rows = 0
-    continued_macro = ""
-}
-FILENAME == environment_header {
-    if (continued_macro != "") {
-        value = $0
-        gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
-        if (value ~ /^"[^"]*"$/) {
-            gsub(/^"|"$/, "", value)
-            environment_macro[continued_macro] = value
-        }
-        continued_macro = ""
-        next
-    }
-    if ($0 !~ /^#[[:space:]]*define[[:space:]]+/) {
-        next
-    }
-    definition = $0
-    sub(/^#[[:space:]]*define[[:space:]]+/, "", definition)
-    macro = definition
-    sub(/[[:space:]].*$/, "", macro)
-    value = definition
-    sub(/^[^[:space:]]+[[:space:]]*/, "", value)
-    gsub(/[[:space:]]+$/, "", value)
-    if (substr(value, length(value), 1) == "\\") {
-        continued_macro = macro
-    } else if (value ~ /^"[^"]*"$/) {
-        gsub(/^"|"$/, "", value)
-        environment_macro[macro] = value
-    }
-    next
 }
 FILENAME == registry_file {
     if ($0 ~ /g_suboptions\[\][[:space:]]*=[[:space:]]*\{/) {
@@ -281,6 +364,16 @@ FILENAME == registry_file {
     test_rows += 1
     next
 }
+/^# Registry binding: / {
+    binding = $0
+    sub(/^# Registry binding: /, "", binding)
+    gsub(/[[:space:]]+/, " ", binding)
+    if (test_binding[FILENAME] != "") {
+        fail(FILENAME " contains more than one registry binding marker")
+    }
+    test_binding[FILENAME] = binding
+    next
+}
 FILENAME != registry_file {
     environment_first = ""
     environment_position = 0
@@ -298,6 +391,37 @@ FILENAME != registry_file {
     }
     if (index($0, "cmp -s") > 0) {
         has_compare[FILENAME] = 1
+    }
+    if (index($0, "artifact_dir=\"${ARTIFACT_LOCAL_DIR}\"") > 0) {
+        has_local_artifact_dir[FILENAME] = 1
+    }
+    if (index($0, "short-$$.") > 0) {
+        has_unique_short_output[FILENAME] = 1
+    }
+    if (index($0, "env-$$.") > 0) {
+        has_unique_environment_output[FILENAME] = 1
+    }
+    if (index($0, ">\"${short_output}\"") > 0) {
+        has_short_redirection[FILENAME] = 1
+    }
+    if (index($0, ">\"${env_output}\"") > 0) {
+        has_environment_redirection[FILENAME] = 1
+    }
+    if (index($0, "SIXEL_TRACE_TOPIC=suboption_contract") > 0) {
+        contract_trace_count[FILENAME] += 1
+    }
+    if (index($0, "short_trace#*LSXSUB1|*key=" expected_name[key] \
+            "|stored=1*") > 0) {
+        has_short_contract[FILENAME] = 1
+    }
+    if (index($0, "env_trace#*LSXSUB1|*key=" expected_name[key] \
+            "|stored=1*") > 0) {
+        has_environment_contract[FILENAME] = 1
+    }
+    if (index($0, "ARTIFACT_ROOT") > 0 || index($0, "mkdir ") > 0 ||
+            index($0, "-o \"${short_output}\"") > 0 ||
+            index($0, "-o \"${env_output}\"") > 0) {
+        has_unsafe_artifact_handling[FILENAME] = 1
     }
     environment_needle = "--env \"" expected_environment[key] "="
     environment_position = index($0, environment_needle)
@@ -341,11 +465,30 @@ END {
         }
     }
     for (file in test_key) {
+        key = test_key[file]
+        if (test_binding[file] != expected_binding[key]) {
+            fail(file " binding does not match registry field selection")
+        }
         if (!has_lsqa[file]) {
             fail(file " does not validate decoded image quality")
         }
         if (!has_compare[file]) {
             fail(file " does not compare short and environment output")
+        }
+        if (!has_local_artifact_dir[file] ||
+                !has_unique_short_output[file] ||
+                !has_unique_environment_output[file]) {
+            fail(file " does not isolate output in its local artifact dir")
+        }
+        if (!has_short_redirection[file] ||
+                !has_environment_redirection[file] ||
+                has_unsafe_artifact_handling[file]) {
+            fail(file " can reuse or collide with stale image output")
+        }
+        if (contract_trace_count[file] < 2 ||
+                !has_short_contract[file] ||
+                !has_environment_contract[file]) {
+            fail(file " does not verify both typed registry assignments")
         }
         if (!has_environment[file]) {
             fail(file " does not exercise the registered environment name")
@@ -353,7 +496,6 @@ END {
         if (!has_short[file]) {
             fail(file " does not exercise the registered short name")
         }
-        key = test_key[file]
         if (expected_option[key] == "SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL" &&
                 palette_limit_count[file] < 2) {
             fail(file " does not force both quantization paths")
@@ -365,7 +507,7 @@ END {
     }
     exit failed ? 1 : 0
 }
-' "$environment_header" "$registry_file" "$regression_dir"/*.t || {
+' "$registry_file" "$regression_dir"/*.t || {
     echo "not ok 1 - suboptions use one complete registry"
     exit 0
 }

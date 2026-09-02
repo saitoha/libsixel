@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify medoids:bandit_batch preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL|g_quantize_values + SIXEL_QUANTIZE_BASE_MEDOIDS|bandit_batch
+# Registry binding: quantize_model_kmedoids_bandit_batch|quantize_model_kmedoids_bandit_batch_override
 
 set -eux
 
@@ -14,21 +15,32 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-artifact_dir="${ARTIFACT_ROOT}/suboption-regression"
-test -d "${artifact_dir}" || mkdir -p "${artifact_dir}"
-short_output="${artifact_dir}/0055-quantize-medoids-bandit_batch-short.six"
-env_output="${artifact_dir}/0055-quantize-medoids-bandit_batch-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0055-quantize-medoids-bandit_batch-short-$$.six"
+env_output="${artifact_dir}/0055-quantize-medoids-bandit_batch-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qmedoids:Abandit:X16" "${input_image}" -o "${short_output}" || {
+short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 "-Qmedoids:Abandit:X16" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "medoids:bandit_batch short conversion failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+test "${short_trace#*LSXSUB1|*key=bandit_batch|stored=1*}" != "${short_trace}" || {
+    echo "not ok" 1 - "bandit_batch short value was not stored"
+    exit 0
+}
+
+env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH=16" -p 16 "-Qmedoids:Abandit" \
-    "${input_image}" -o "${env_output}" || {
+    "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "medoids:bandit_batch env conversion failed"
+    exit 0
+}
+
+test "${env_trace#*LSXSUB1|*key=bandit_batch|stored=1*}" != "${env_trace}" || {
+    echo "not ok" 1 - "bandit_batch environment value was not stored"
     exit 0
 }
 
