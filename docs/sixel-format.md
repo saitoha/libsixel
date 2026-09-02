@@ -143,10 +143,17 @@ Define and select a color register with:
 - `Pu=2` selects RGB coordinates: red, green, and blue are each `0..100`
   percent.
 
-The VT330 exposed four color-map entries and the VT340 exposed sixteen, even
-though the color-specifier syntax allowed register numbers through 255. Modern
-terminals often provide more registers, but applications must not confuse a
-format-level number range with a device's usable palette capacity.
+DEC defined `Pc` as a color-register number in the range `0..255`, providing a
+namespace of at most 256 registers. The VT330 implemented only four registers
+and the VT340 only sixteen. Register numbers above 255 are
+implementation-specific extensions. Applications must not confuse the DEC
+numbering range with a device's usable palette capacity.
+
+The 256-register namespace does not by itself limit a complete stream to 256
+distinct RGB definitions. A stream can redefine and reuse a register after
+painting has begun, as libsixel's high-color mode does. Whether earlier pixels
+retain their painted RGB values or change with the live register is a separate,
+device-specific rendering behavior.
 
 Color registers are state. Palette lifetime and whether a DCS receives private
 or shared registers vary among terminals. Portable output should define every
