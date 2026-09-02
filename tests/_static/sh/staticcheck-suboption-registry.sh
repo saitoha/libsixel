@@ -76,8 +76,9 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     if (alias !~ /^\047[A-Z]\047$/) {
         fail(option_id ":" name " needs one uppercase short name")
     }
-    if (env == "NULL" || env == "") {
-        fail(option_id ":" name " needs an environment variable")
+    if (env !~ /^"[A-Z][A-Z0-9_]+"$/ &&
+            env !~ /^[A-Z][A-Z0-9_]*_ENVVAR$/) {
+        fail(option_id ":" name " needs a non-empty environment variable")
     }
     if (macro !~ /BOUND|ENCODER/) {
         fail(option_id ":" name " needs a typed target binding")
@@ -186,13 +187,16 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     environment = fields[5]
     gsub(/^"|"$/, "", name)
     gsub(/^\047|\047$/, "", alias)
-    if (environment ~ /^"[^"]*"$/) {
+    if (environment ~ /^"[A-Z][A-Z0-9_]+"$/) {
         gsub(/^"|"$/, "", environment)
     } else if (environment in environment_macro) {
         environment = environment_macro[environment]
     } else {
         fail("unresolved environment name in image coverage check: " \
              environment)
+    }
+    if (environment == "") {
+        fail(option_id ":" name " resolved an empty environment name")
     }
     key = fields[1] "|" fields[2] "|" name
     expected[key] = 1
@@ -289,12 +293,7 @@ FILENAME != registry_file {
     if (index($0, "cmp -s") > 0) {
         has_compare[FILENAME] = 1
     }
-    if (expected_environment[key] == "" &&
-            index($0, "--env") > 0) {
-        has_environment[FILENAME] = 1
-    }
-    if (expected_environment[key] != "" &&
-            index($0, "--env \"" expected_environment[key] "=") > 0) {
+    if (index($0, "--env \"" expected_environment[key] "=") > 0) {
         has_environment[FILENAME] = 1
     }
     if (index($0, ":" expected_alias[key]) > 0) {
