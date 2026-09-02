@@ -1,4 +1,4 @@
-# Quality Measurement Policy
+# Image Quality Measurement Policy
 
 ## Scope
 

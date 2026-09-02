@@ -593,6 +593,10 @@ run_case_tap "staticcheck-actionlint" \
     "$src_root/tests/_static/sh/staticcheck-actionlint.sh" \
     "$src_root" "$actionlint_bin" || fail_and_exit $?
 
+run_case_tap "staticcheck-ci-support-matrix" \
+    "$src_root/tests/_static/sh/staticcheck-ci-support-matrix.sh" \
+    "$src_root" "$python_bin" || fail_and_exit $?
+
 if tool_is_available "$shellcheck_bin"; then
     run_case_plain "staticcheck-shellcheck" \
         env SIXEL_STATICCHECK_MODE=plain \

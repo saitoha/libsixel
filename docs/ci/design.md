@@ -6,11 +6,16 @@ libsixel CI protects portability, build-system parity, public interfaces, image
 semantics, memory safety, language bindings, distribution integrity, and
 malformed-input handling.
 
-The matrix is intentionally broad because the project crosses C compilers,
-ABIs, operating systems, optional image libraries, build systems, and language
+The project uses two complementary CI systems: GitHub Actions and the private
+CI operated on @saitoha's local desktop infrastructure. Their combined matrix
+is intentionally broad because the project crosses C compilers, ABIs,
+operating systems, optional image libraries, build systems, and language
 runtimes. A green result in one common Linux configuration is not sufficient.
 
-## Workflow responsibilities
+The generated [CI Support Matrix](support-matrix.md) lists the build
+configurations configured in both systems.
+
+## GitHub Actions workflow responsibilities
 
 ### Primary build and test
 
@@ -76,6 +81,75 @@ replays a bounded subset.
 
 Triage accelerates diagnosis; it does not replace the full source workflow or
 prove that a branch is green.
+
+## @saitoha local desktop CI
+
+The private local CI complements GitHub Actions with environments that are not
+available as practical GitHub-hosted runners. It includes OpenVMS 9.2-3 with
+GNV, Debian GNU/Hurd, the BSD family, Haiku, Solaris and illumos derivatives,
+Windows variants, Intel macOS, and Linux Docker toolchain/sanitizer variants.
+
+The local CI implementation and configuration files are versioned in the
+companion `libsixel-ci` source repository. Its relevant configuration is:
+
+- `srv/misc/jobs.tsv`: authoritative job catalog;
+- `srv/misc/runner-profiles.tsv`: backend, resource, and execution profile for
+  each runner class;
+- `srv/misc/resource-classes.tsv`: scheduler resource policy;
+- `srv/misc/workers.tsv`: dispatch workers and their capabilities;
+- `srv/misc/job-definition/`: build and test command flows;
+- `srv/setup/`: guest and toolchain provisioning, including OpenVMS and Debian
+  GNU/Hurd support.
+
+The local catalog is host-owned configuration, but it is not an unversioned
+live-server setting. Change it in the `libsixel-ci` source repository and deploy
+through that repository's commit-and-push workflow. Do not edit `/srv` runtime
+files directly.
+
+`docs/ci/local-jobs.tsv` is a normalized documentation snapshot of the job name
+and runner profile columns from the authoritative catalog. It is deliberately
+non-operative: the local scheduler continues to read the `libsixel-ci` catalog.
+
+## Maintained support inventory
+
+[CI Support Matrix](support-matrix.md) is generated rather than maintained
+as a hand-written list. The generator expands literal GitHub Actions matrix
+entries and combines them with the tracked normalized local-CI snapshot.
+
+After changing GitHub Actions configuration, regenerate the inventory with:
+
+```sh
+python3 tests/_static/python/generate_ci_support_matrix.py \
+    --root . \
+    --local-snapshot docs/ci/local-jobs.tsv \
+    --write docs/ci/support-matrix.md
+```
+
+After changing the authoritative local CI catalog, refresh both the snapshot
+and inventory with:
+
+```sh
+python3 tests/_static/python/generate_ci_support_matrix.py \
+    --root . \
+    --local-snapshot docs/ci/local-jobs.tsv \
+    --sync-local-catalog /path/to/libsixel-ci/srv/misc/jobs.tsv \
+    --write docs/ci/support-matrix.md
+```
+
+`make staticcheck` rejects drift between the GitHub Actions workflow matrices,
+the local snapshot, and the generated Markdown. In @saitoha's normal workspace,
+it also discovers the companion catalog and compares it with the snapshot. Set
+`LIBSIXEL_LOCAL_CI_JOBS` to its path when using another checkout layout.
+
+When adding, removing, or renaming a CI job:
+
+1. change the authoritative Actions workflow or local CI catalog and job
+   definition;
+2. regenerate the support inventory, refreshing the local snapshot when
+   applicable;
+3. review the generated list as part of the CI change;
+4. run `make staticcheck` before committing;
+5. verify the actual replacement job in the corresponding CI system.
 
 ## Matrix design principles
 
@@ -150,10 +224,11 @@ CI changes are production changes to the project's verification system.
    practical.
 4. Keep the fix limited to the failing surface; do not mix unrelated cleanup
    into a CI repair.
-5. Validate workflow syntax and repository policy with `make staticcheck`.
-6. Run `make check` when the workflow change can affect compilation, generated
+5. Regenerate the support inventory when a configured job changes.
+6. Validate workflow syntax and repository policy with `make staticcheck`.
+7. Run `make check` when the workflow change can affect compilation, generated
    inputs, tests, packaging, or runtime behavior.
-7. Push only the intended files and inspect the replacement run.
+8. Push only the intended files and inspect the replacement run.
 
 A queued or in-progress replacement run is not evidence that the branch is
 green.

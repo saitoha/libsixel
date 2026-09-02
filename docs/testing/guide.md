@@ -105,7 +105,8 @@ dependency is a skip only when that feature-disabled configuration is supported.
 
 ## Image-quality tests
 
-Follow [Quality Measurement Policy](quality-measurement.md). In particular:
+Follow [Quality Measurement Policy](../quality/measurement-policy.md). In
+particular:
 
 - use `images/snake.png` at approximately 16 by 16 pixels for ordinary `lsqa`
   tests;

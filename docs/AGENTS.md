@@ -7,28 +7,34 @@ These instructions apply to documentation under `docs/`. The repository-level
 
 ## Purpose of this directory
 
-`docs/` contains durable, project-wide engineering references. Each major topic
-has its own document so that its contract, rationale, and maintenance history
-can evolve independently.
+`docs/` contains durable, project-wide references that users and contributors
+should be able to discover from the repository. Keep the top level limited to
+the documentation index, documentation governance, and similarly important
+entry points. Put detailed material in a subject directory so that each area
+can grow into multiple documents without crowding the top level.
 
-Read the relevant document before changing its subject area:
+Start from the [documentation index](README.md). Read the relevant document
+before changing its subject area:
 
-- [Functional overview](functional-overview.md): capabilities, components,
-  data flow, and architectural boundaries.
-- [CLI design policy](cli-design.md): option design, compatibility, parsing,
+- [Functionality](functionality/overview.md): capabilities, components, data
+  flow, and architectural boundaries.
+- [CLI](cli/design-policy.md): option design, compatibility, parsing,
   diagnostics, and documentation synchronization.
-- [Quality measurement policy](quality-measurement.md): perceptual metrics,
-  fixtures, thresholds, baselines, and performance comparisons.
-- [Testing guide](testing.md): test organization, shell TAP rules,
+- [Quality](quality/measurement-policy.md): perceptual metrics, fixtures,
+  thresholds, baselines, and performance comparisons.
+- [Testing](testing/guide.md): test organization, shell TAP rules,
   registration, portability, and required checks.
-- [CI architecture and design](ci-design.md): workflow responsibilities,
-  matrix design, failure triage, and CI-change validation.
+- [CI](ci/design.md): workflow responsibilities, matrix design, failure
+  triage, and CI-change validation.
+- [CI support matrix](ci/support-matrix.md): generated GitHub Actions and
+  @saitoha local desktop CI build-configuration inventory.
 
 ## Documentation rules
 
 - Write documentation in English.
-- Keep one major concern per file. Link related documents instead of merging
-  their full contents into one large guide.
+- Keep one major concern per file and one broad subject per directory. Link
+  related documents instead of merging their full contents into one large
+  guide.
 - Describe current contracts and durable rationale, not a transcript of a
   single debugging session.
 - Link to owning code, test categories, or workflows when that makes a claim
@@ -41,6 +47,7 @@ Read the relevant document before changing its subject area:
 ## Adding a document
 
 Add a document only when the topic is durable and materially distinct from the
-existing references. Give it a stable subject-oriented name, add it to the
-index above, and add a repository-level link when contributors must discover it
-before working in that area.
+existing references. Give it a stable subject-oriented name, place it in the
+owning subject directory, and add it to `README.md` when users or contributors
+should discover it. Add a repository-level link only when contributors must
+read it before working in that area.

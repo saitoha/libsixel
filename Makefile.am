@@ -59,6 +59,15 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/install-emscripten-sidecar.sh \
 	build-aux/meson-test-with-failures.sh \
 	build-aux/resolve-test-tool-paths.sh.in \
+	docs/AGENTS.md \
+	docs/README.md \
+	docs/ci/design.md \
+	docs/ci/local-jobs.tsv \
+	docs/ci/support-matrix.md \
+	docs/cli/design-policy.md \
+	docs/functionality/overview.md \
+	docs/quality/measurement-policy.md \
+	docs/testing/guide.md \
 	openvms/gnv-ar.sh \
 	openvms/gnv-cc.sh \
 	openvms/gnv-rm.sh \

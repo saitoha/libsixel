@@ -1,4 +1,4 @@
-# CLI Design Policy
+# Command-Line Interface Design Policy
 
 ## Scope
 

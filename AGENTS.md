@@ -44,14 +44,15 @@ Important directories include:
 
 ## Documentation
 
-Use [docs/AGENTS.md](docs/AGENTS.md) as the index and maintenance policy for
-the engineering documentation. The principal references are:
+Use the [documentation index](docs/README.md) to find durable project
+references. [docs/AGENTS.md](docs/AGENTS.md) defines the maintenance policy for
+that documentation. The principal references are:
 
-- [Functional overview](docs/functional-overview.md)
-- [CLI design policy](docs/cli-design.md)
-- [Quality measurement policy](docs/quality-measurement.md)
-- [Testing guide](docs/testing.md)
-- [CI architecture and design](docs/ci-design.md)
+- [Functional overview](docs/functionality/overview.md)
+- [CLI design policy](docs/cli/design-policy.md)
+- [Quality measurement policy](docs/quality/measurement-policy.md)
+- [Testing guide](docs/testing/guide.md)
+- [CI architecture and design](docs/ci/design.md)
 
 Keep `docs/` focused on durable project-wide guidance. Issue investigations,
 one-off implementation notes, and task-specific reports belong outside the

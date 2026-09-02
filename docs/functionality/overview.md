@@ -71,14 +71,14 @@ The principal converters are:
 The command-line tools combine library functionality with CLI-specific policy,
 including option parsing, environment precedence, filesystem behavior,
 diagnostics, and process exit status. The detailed rules are in
-[CLI Design Policy](cli-design.md).
+[CLI Design Policy](../cli/design-policy.md).
 
 ### Quality assessment
 
 `lsqa` compares a reference image with an output image and reports perceptual
 and diagnostic metrics. It is used to detect visual regressions that byte-level
 tests cannot describe. Its use and threshold policy are defined in
-[Quality Measurement Policy](quality-measurement.md).
+[Quality Measurement Policy](../quality/measurement-policy.md).
 
 ### Integration surfaces
 
