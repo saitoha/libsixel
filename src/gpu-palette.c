@@ -288,7 +288,7 @@ sixel_gpu_palette_apply_bluenoise_overrides(
     }
 }
 
-static size_t
+SIXEL_INTERNAL_API size_t
 sixel_gpu_palette_auto_threshold(void)
 {
     char const *text;

@@ -144,6 +144,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0027_filter_gpu_6delta_disabled_reject.c \
 	processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
 	processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
+	processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
+	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 	processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -276,6 +278,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0027_filter_gpu_6delta_disabled_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OBJEXT) \
@@ -549,6 +553,8 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po \
 	processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
+	processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
@@ -1272,6 +1278,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_FILTER_GPU_6DELTA_DISABLED_REJECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
@@ -1425,6 +1433,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0027_filter_gpu_6delta_disabled_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -1782,6 +1792,24 @@ processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plan
 processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/$(am__dirstamp):
+	@$(MKDIR_P) processing/gpu-palette
+	@: >>processing/gpu-palette/$(am__dirstamp)
+processing/gpu-palette/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/gpu-palette/$(DEPDIR)
+	@: >>processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-dequant/$(am__dirstamp):
+	@$(MKDIR_P) processing/gpu-dequant
+	@: >>processing/gpu-dequant/$(am__dirstamp)
+processing/gpu-dequant/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/gpu-dequant/$(DEPDIR)
+	@: >>processing/gpu-dequant/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT):  \
+	processing/gpu-dequant/$(am__dirstamp) \
+	processing/gpu-dequant/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/$(am__dirstamp):
 	@$(MKDIR_P) processing/encoder-core
 	@: >>processing/encoder-core/$(am__dirstamp)
@@ -2264,6 +2292,8 @@ mostlyclean-compile:
 	-rm -f processing/encoder-core/*.$(OBJEXT)
 	-rm -f processing/filter/*.$(OBJEXT)
 	-rm -f processing/frame/*.$(OBJEXT)
+	-rm -f processing/gpu-dequant/*.$(OBJEXT)
+	-rm -f processing/gpu-palette/*.$(OBJEXT)
 	-rm -f processing/lookup/*.$(OBJEXT)
 	-rm -f processing/sixel-writer/*.$(OBJEXT)
 	-rm -f processing/threadpool/*.$(OBJEXT)
@@ -2389,6 +2419,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
@@ -2921,6 +2953,34 @@ processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallb
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c' object='processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj `if test -f 'processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; then $(CYGPATH_W) 'processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; fi`
+
+processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o: processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo -c -o processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o `test -f 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c' object='processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o `test -f 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
+
+processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.obj: processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo -c -o processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.obj `if test -f 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c'; then $(CYGPATH_W) 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c' object='processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.obj `if test -f 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c'; then $(CYGPATH_W) 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c'; fi`
+
+processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o: processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o -MD -MP -MF processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o `test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' object='processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o `test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
+
+processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.obj: processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.obj -MD -MP -MF processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.obj `if test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c'; then $(CYGPATH_W) 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' object='processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.obj `if test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c'; then $(CYGPATH_W) 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c'; fi`
 
 processing/encoder-core/test_runner-0001_encoder_core_factory.o: processing/encoder-core/0001_encoder_core_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0001_encoder_core_factory.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Tpo -c -o processing/encoder-core/test_runner-0001_encoder_core_factory.o `test -f 'processing/encoder-core/0001_encoder_core_factory.c' || echo '$(srcdir)/'`processing/encoder-core/0001_encoder_core_factory.c
@@ -4609,6 +4669,10 @@ distclean-generic:
 	-$(am__rm_f) processing/filter/$(am__dirstamp)
 	-$(am__rm_f) processing/frame/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/frame/$(am__dirstamp)
+	-$(am__rm_f) processing/gpu-dequant/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/gpu-dequant/$(am__dirstamp)
+	-$(am__rm_f) processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/gpu-palette/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/$(am__dirstamp)
 	-$(am__rm_f) processing/sixel-writer/$(DEPDIR)/$(am__dirstamp)
@@ -4746,6 +4810,8 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
+	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
+	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
@@ -4919,6 +4985,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
+	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
+	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po

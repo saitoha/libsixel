@@ -230,6 +230,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0027_FILTER_GPU_6DELTA_DISABLED_REJECT \
     -DBUILD_TEST_0028_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
     -DBUILD_TEST_0029_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
+    -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
+    -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
     -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
@@ -358,6 +360,8 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0027_filter_gpu_6delta_disabled_reject.c \
     processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
     processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
+    processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
+    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
     processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \

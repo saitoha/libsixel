@@ -57,6 +57,14 @@ typedef struct sixel_gpu_dequant_request {
     int similarity_bias;
 } sixel_gpu_dequant_request_t;
 
+/*
+ * Resolve the AUTO cutoff independently of backend availability.  Keeping
+ * this seam observable lets registry migrations preserve the historical
+ * strtoul() contract before GPU dispatch policy is changed.
+ */
+SIXEL_INTERNAL_API size_t
+sixel_gpu_dequant_auto_threshold(void);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_gpu_dequant_fast4_rgba(sixel_gpu_dequant_request_t const *request);
 

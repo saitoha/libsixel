@@ -50,7 +50,7 @@ sixel_gpu_dequant_policy_is_force(int policy)
     return policy == SIXEL_GPU_POLICY_FORCE;
 }
 
-static size_t
+SIXEL_INTERNAL_API size_t
 sixel_gpu_dequant_auto_threshold(void)
 {
     char const *text;
