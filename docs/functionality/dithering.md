@@ -178,6 +178,121 @@ quality characteristic needs spatial context. Follow the
 [Quality Measurement Policy](../quality/measurement-policy.md) for thresholds
 and shell TAP conventions.
 
+## Measured static-image quality and speed
+
+### Questions and scope
+
+The checked-in comparison asks how each concrete spatial `-d` method changes:
+
+1. spatially pooled decoded-image quality across palette sizes;
+2. mean per-pixel color error as a secondary diagnostic; and
+3. end-to-end single-image latency.
+
+MS-SSIM is the primary quality metric because dithering deliberately trades
+independent per-pixel error for spatially distributed error. Mean Delta E00 is
+retained as a reference value, but a lower mean Delta E00 does not establish a
+better dither pattern.
+
+The sweep covers `none`, `fs`, `atkinson`, `jajuni`, `stucki`, `burkes`, all
+three Sierra variants, `lso2`, `a_dither`, `x_dither`, and `bluenoise`.
+`auto` is excluded because it selects another method according to palette
+size. `interframe` and `stbn` require an animation sequence, frame cadence, and
+temporal metrics; treating their first static frame as a complete comparison
+would be misleading.
+
+Thirteen overlapping lines would make exact comparisons difficult. Each
+figure therefore uses shared-scale small multiples: one panel compares one
+method with the no-dither reference.
+
+### MS-SSIM: primary quality view
+
+![MS-SSIM for each spatial dither method compared with no dithering](dither-policies/measurements/dither-policy-ms-ssim.png)
+
+Higher is better. The values are stored with the Delta E00 reference values in
+[`dither-policy-quality.csv`](dither-policies/measurements/dither-policy-quality.csv).
+
+### Mean Delta E00: reference view
+
+![Mean Delta E00 for each spatial dither method compared with no dithering](dither-policies/measurements/dither-policy-delta-e00.png)
+
+Lower is better, but this spatially unpooled mean penalizes the local color
+changes used to shape error. Read it as a diagnostic alongside MS-SSIM, not as
+the primary dither ranking.
+
+### End-to-end speed
+
+![Median end-to-end runtime for each spatial dither method compared with no dithering](dither-policies/measurements/dither-policy-speed.png)
+
+Each point is the median of nine fresh processes after two warm-up rounds; the
+bars show the interquartile range. The complete samples and command templates
+are in
+[`dither-policy-speed.csv`](dither-policies/measurements/dither-policy-speed.csv).
+
+### Controlled protocol
+
+The input is [`images/snake.png`](../../images/snake.png), and the sweep uses
+`K = 8, 16, 32, 64, 128, 256`. Palette generation is controlled with seeded
+K-means, Ward final merging, and OKLab clustering. Palette application remains
+in gamma RGB. Direct `--lookup-policy=none` avoids adding an approximate lookup
+policy to the quality comparison. GPU assistance is disabled, and one worker
+avoids parallel-band seams and scan-history differences.
+
+Every spatial method uses explicit raster order so the figure compares kernels
+under one scan contract. This intentionally overrides `lso2`'s normal
+serpentine default. The positional-method strengths are pinned to their current
+defaults, and the blue-noise phase and channel mode are explicit. The command
+shape is:
+
+```text
+img2sixel \
+  --threads=1 --precision=8bit --quality=full \
+  --loaders=libpng! \
+  --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma \
+  --diffusion=METHOD:scan=raster \
+  --gpu-policy=off --lookup-policy=none -p K \
+  images/snake.png
+```
+
+The Sierra, positional, and blue-noise rows add their explicit variant or
+parameter tokens. The exact commands, source revision, executable hashes,
+input hash, build configuration, and timing protocol are recorded in
+[`dither-policy-run.json`](dither-policies/measurements/dither-policy-run.json).
+
+### Reproducing the curves
+
+Configure an Autotools build with libpng and the assessment tools, install
+Python Matplotlib, commit the implementation being measured, and run from a
+tracked-clean worktree:
+
+```sh
+PYTHON=.venv/bin/python tools/reproduce_dither_policy_measurements.sh
+```
+
+The Python override is only an example. The runner rebuilds `img2sixel` and
+`lsqa`, removes inherited `SIXEL_*` variables, generates all figures and CSVs,
+records provenance, and validates the complete Cartesian set of 13 methods and
+six palette sizes. `DITHER_POLICY_WARMUPS` and `DITHER_POLICY_RUNS` change the
+timing budget; a run with different values is a different protocol.
+
+Rerun the complete command after changes to dither kernels, scan order,
+palette application, quantization, loading, SIXEL decoding, `lsqa`, compiler
+optimization, or the measurement scripts. Review the CSV, plots, and written
+interpretation together.
+
+### Interpretation limits
+
+- One natural image does not characterize gradients, flat fills, edges, alpha
+  boundaries, or every spatial frequency. Do not choose a default from this
+  fixture alone.
+- MS-SSIM is spatially pooled but does not measure temporal stability, SIXEL
+  size, palette-index chatter, or band seams.
+- Mean Delta E00 hides worst-case pixels and the spatial spectrum of error.
+- The speed curve includes loading, palette generation, direct lookup, and
+  SIXEL encoding. It is not an isolated kernel microbenchmark.
+- The explicit raster sweep compares kernels, not their complete default
+  configurations. Scan order and positional strength need separate sweeps.
+- Animation methods require a multi-frame protocol and temporal metrics.
+
 ## Implementation and tests
 
 Policy selection and application are coordinated in

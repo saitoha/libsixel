@@ -585,6 +585,12 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/ci/support-matrix.md \
 	docs/cli/design-policy.md \
 	docs/functionality/dithering.md \
+	docs/functionality/dither-policies/measurements/dither-policy-delta-e00.png \
+	docs/functionality/dither-policies/measurements/dither-policy-ms-ssim.png \
+	docs/functionality/dither-policies/measurements/dither-policy-quality.csv \
+	docs/functionality/dither-policies/measurements/dither-policy-run.json \
+	docs/functionality/dither-policies/measurements/dither-policy-speed.csv \
+	docs/functionality/dither-policies/measurements/dither-policy-speed.png \
 	docs/functionality/encoding-pipeline.md \
 	docs/functionality/lookup-policy.md \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.csv \
@@ -622,14 +628,17 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	openvms/gnv-link-program.sh \
 	tools/fuzz-afl-runner.sh \
 	tools/fuzz-img2sixel-cli.sh \
+	tools/check_dither_policy_measurements.py \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \
 	tools/check_lookup_policy_measurements.py \
 	tools/plot_lookup_policy_acceleration.py \
+	tools/plot_dither_policy_measurements.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
 	tools/plot_quality_curve.py \
 	tools/reproduce_lookup_policy_acceleration.sh \
+	tools/reproduce_dither_policy_measurements.sh \
 	tools/reproduce_lookup_policy_measurements.sh
 
 
