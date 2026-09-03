@@ -845,7 +845,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               :hdr_tonemap=MODE (:Hvalue)\n"
         "                               selects none or reinhard;\n"
         "                               :hdr_header_exposure=0|1\n"
-        "                               (:U0/:U1) controls HDR metadata.\n"
+        "                               (:U0/:U1) controls HDR metadata;\n"
+        "                               :osc11_query=0|1 (:Q0/:Q1)\n"
+        "                               controls background probing.\n"
         "                               PNG-capable loaders support\n"
         "                               :trns_keycolor=0|1 (:K0/:K1).\n"
         "                               librsvg supports\n"
@@ -1095,7 +1097,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_OSC11_BG_QUERY",
         "enable OSC11 background color probing in loaders.\n"
-        "Only the exact value '1' enables probing. Defaults to off, but\n"
+        "Use 0 or 1. The -L suboption osc11_query (short form Qvalue)\n"
+        "overrides this setting. Defaults to off, but\n"
         "img2sixel sets it to '1' when the variable is unset.\n"
         "When OSC11 succeeds, background colorspace is forced to gamma."
     },

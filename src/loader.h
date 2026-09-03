@@ -88,7 +88,10 @@ sixel_loader_set_cancel_callback(
 typedef int (*sixel_loader_wait_predicate_t)(void *context);
 
 SIXEL_INTERNAL_API int
-sixel_loader_is_osc11_bg_query_enabled(char const *value);
+sixel_loader_should_query_osc11_bgcolor(int enabled,
+                                        int has_bgcolor,
+                                        int stdout_is_tty,
+                                        int stderr_is_tty);
 
 SIXEL_INTERNAL_API int
 sixel_loader_parse_osc11_bg_query_timeout_ms(char const *value);

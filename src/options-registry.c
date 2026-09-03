@@ -1869,6 +1869,10 @@ static sixel_suboption_key_t const g_suboptions[] = {
         hdr_use_header_exposure),
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "osc11_query", 'Q', "SIXEL_LOADER_OSC11_BG_QUERY", NULL, NULL,
+        osc11_bg_query),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "trns_keycolor", 'K', "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",
         NULL, NULL,
         png_trns_keycolor),

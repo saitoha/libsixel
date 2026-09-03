@@ -1141,7 +1141,9 @@ rgb:rrrr/gggg/bbbb
 .B SIXEL_LOADER_OSC11_BG_QUERY
 .br
 enable loader-side OSC11 background color query when no background color was
-provided. Only the exact value \(dq1\(dq enables probing. Default is off.
+provided. Use 0 or 1. The loader suboption
+\fB:osc11_query=0|1\fP (short form \fB:Q0\fP or \fB:Q1\fP) overrides this
+setting. Default is off.
 \fIimg2sixel\fP sets this variable to \(dq1\(dq only when it is unset.
 When probing succeeds, the loader treats the returned background as gamma.
 .TP 5

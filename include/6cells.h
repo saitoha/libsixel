@@ -1142,6 +1142,7 @@ typedef struct sixel_loader_suboptions {
     double hdr_exposure_ev;
     int hdr_tonemap_mode;
     int hdr_use_header_exposure;
+    int osc11_bg_query;
     int png_trns_keycolor;
     int librsvg_allow_relative_resources;
     int librsvg_allow_stdin_svgz;

@@ -39,24 +39,6 @@ wait_probe_predicate(void *context)
 }
 
 static int
-run_enable_flag_cases(void)
-{
-    if (!sixel_loader_is_osc11_bg_query_enabled("1")) {
-        fprintf(stderr, "expected only \"1\" to enable OSC11 query\n");
-        return 1;
-    }
-    if (sixel_loader_is_osc11_bg_query_enabled("01") ||
-            sixel_loader_is_osc11_bg_query_enabled("true") ||
-            sixel_loader_is_osc11_bg_query_enabled("") ||
-            sixel_loader_is_osc11_bg_query_enabled(NULL)) {
-        fprintf(stderr, "unexpected OSC11 query enable value accepted\n");
-        return 1;
-    }
-
-    return 0;
-}
-
-static int
 run_timeout_parse_cases(void)
 {
     if (sixel_loader_parse_osc11_bg_query_timeout_ms(NULL) != 50 ||
@@ -71,6 +53,24 @@ run_timeout_parse_cases(void)
     if (sixel_loader_parse_osc11_bg_query_timeout_ms("0") != 0 ||
             sixel_loader_parse_osc11_bg_query_timeout_ms("25") != 25) {
         fprintf(stderr, "timeout parser did not accept valid values\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_query_gate_cases(void)
+{
+    if (!sixel_loader_should_query_osc11_bgcolor(1, 0, 1, 0) ||
+            !sixel_loader_should_query_osc11_bgcolor(1, 0, 0, 1)) {
+        fprintf(stderr, "enabled query should use either tty stream\n");
+        return 1;
+    }
+    if (sixel_loader_should_query_osc11_bgcolor(0, 0, 1, 1) ||
+            sixel_loader_should_query_osc11_bgcolor(1, 1, 1, 1) ||
+            sixel_loader_should_query_osc11_bgcolor(1, 0, 0, 0)) {
+        fprintf(stderr, "disabled OSC11 query gate was accepted\n");
         return 1;
     }
 
@@ -128,7 +128,7 @@ test_loader_0052_loader_osc11_query_control(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    status = run_enable_flag_cases();
+    status = run_query_gate_cases();
     if (status != 0) {
         return EXIT_FAILURE;
     }

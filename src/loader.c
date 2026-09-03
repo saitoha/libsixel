@@ -118,7 +118,6 @@
 # define STDERR_FILENO 2
 #endif
 
-#define SIXEL_LOADER_OSC11_BG_QUERY_ENV "SIXEL_LOADER_OSC11_BG_QUERY"
 #define SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV \
     "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS"
 #define SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS 50
@@ -196,7 +195,7 @@ static void
 loader_osc11_bg_query_job_join(sixel_loader_osc11_bg_query_job_t *job);
 
 static int
-loader_can_query_osc11_bgcolor(sixel_loader_t const *loader);
+loader_can_query_osc11_bgcolor(sixel_loader_t const *loader, int enabled);
 
 SIXEL_INTERNAL_API void
 sixel_loader_component_ref(sixel_loader_component_t *component)
@@ -340,17 +339,19 @@ loader_strdup(char const *text, sixel_allocator_t *allocator)
 }
 
 int
-sixel_loader_is_osc11_bg_query_enabled(char const *value)
+sixel_loader_should_query_osc11_bgcolor(int enabled,
+                                        int has_bgcolor,
+                                        int stdout_is_tty,
+                                        int stderr_is_tty)
 {
-    if (value == NULL) {
+    if (enabled == 0 || has_bgcolor != 0) {
+        return 0;
+    }
+    if (stdout_is_tty == 0 && stderr_is_tty == 0) {
         return 0;
     }
 
-    if (strcmp(value, "1") == 0) {
-        return 1;
-    }
-
-    return 0;
+    return 1;
 }
 
 int
@@ -532,23 +533,33 @@ loader_osc11_bg_query_job_join(sixel_loader_osc11_bg_query_job_t *job)
 }
 
 static int
-loader_can_query_osc11_bgcolor(sixel_loader_t const *loader)
+loader_can_query_osc11_bgcolor(sixel_loader_t const *loader, int enabled)
 {
-    char const *env_value;
+    int stdout_is_tty;
+    int stderr_is_tty;
+    int should_query;
 
-    env_value = sixel_compat_getenv(SIXEL_LOADER_OSC11_BG_QUERY_ENV);
-    if (loader == NULL || loader->has_bgcolor != 0) {
+    if (loader == NULL) {
         return 0;
     }
-    if (!sixel_loader_is_osc11_bg_query_enabled(env_value)) {
-        return 0;
-    }
-    if (sixel_compat_isatty(STDOUT_FILENO) == 0 &&
-            sixel_compat_isatty(STDERR_FILENO) == 0) {
-        return 0;
-    }
+    stdout_is_tty = sixel_compat_isatty(STDOUT_FILENO);
+    stderr_is_tty = sixel_compat_isatty(STDERR_FILENO);
+    should_query = sixel_loader_should_query_osc11_bgcolor(
+        enabled,
+        loader->has_bgcolor,
+        stdout_is_tty,
+        stderr_is_tty);
+    sixel_trace_topic_message(
+        "loader",
+        "LSXOSC1|enabled=%d|has_bgcolor=%d|stdout_tty=%d|"
+        "stderr_tty=%d|query=%d",
+        enabled != 0,
+        loader->has_bgcolor != 0,
+        stdout_is_tty != 0,
+        stderr_is_tty != 0,
+        should_query);
 
-    return 1;
+    return should_query;
 }
 
 
@@ -1280,17 +1291,47 @@ sixel_loader_load_file(
     sixel_loader_manager_set_prefer_float32(manager,
                                             loader->prefer_float32);
 
+    /*
+     * Resolve request-local loader controls before launching OSC11.  The
+     * probe overlaps input loading, so resolving it after chunk creation
+     * would make command-line suboptions arrive too late.
+     */
+    order_override = loader->loader_order;
+    if (order_override == NULL) {
+        env_order = sixel_option_resolve_argument_environment(
+            SIXEL_OPTION_SCHEMA_LOADERS);
+        if (env_order != NULL) {
+            order_override = env_order;
+        }
+    }
+    if (order_override != NULL && order_override[0] != '\0') {
+        if (order_override == loader->loader_order) {
+            active_order_resolution = &loader->loader_order_resolution;
+        } else {
+            status = loader_manager_parse_loader_order(order_override,
+                                                       &order_resolution);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            active_order_resolution = &order_resolution;
+        }
+    }
+    loader_manager_resolve_loader_suboptions(active_order_resolution,
+                                             &active_suboptions);
+
     osc11_timeout_env = sixel_compat_getenv(
         SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV);
     osc11_timeout_ms = sixel_loader_parse_osc11_bg_query_timeout_ms(
         osc11_timeout_env);
 
     /*
-     * Launch OSC11 probing before sixel_chunk_create_from_source() so the terminal roundtrip
-     * overlaps with input loading. If thread creation is unavailable, fall
-     * back to synchronous probing and keep failures non-fatal.
+     * Launch OSC11 probing before sixel_chunk_create_from_source() so the
+     * terminal roundtrip overlaps with input loading. If thread creation is
+     * unavailable, fall back to synchronous probing and keep failures
+     * non-fatal.
      */
-    if (loader_can_query_osc11_bgcolor(loader) != 0) {
+    if (loader_can_query_osc11_bgcolor(
+            loader, active_suboptions.osc11_bg_query) != 0) {
         osc11_query_job.timeout_ms = osc11_timeout_ms;
         thread_status = sixel_thread_create(
             &osc11_query_job.thread,
@@ -1337,7 +1378,9 @@ sixel_loader_load_file(
                               "finish",
                               chunk_job_id);
 
-    if (sixel_chunk_get_size(pchunk) == 0 || (sixel_chunk_get_size(pchunk) == 1 && *sixel_chunk_get_buffer(pchunk) == '\n')) {
+    if (sixel_chunk_get_size(pchunk) == 0 ||
+            (sixel_chunk_get_size(pchunk) == 1 &&
+             *sixel_chunk_get_buffer(pchunk) == '\n')) {
         status = SIXEL_OK;
         goto end;
     }
@@ -1357,28 +1400,6 @@ sixel_loader_load_file(
     }
 
     status = SIXEL_FALSE;
-    order_override = loader->loader_order;
-    if (order_override == NULL) {
-        env_order = sixel_option_resolve_argument_environment(
-            SIXEL_OPTION_SCHEMA_LOADERS);
-        if (env_order != NULL) {
-            order_override = env_order;
-        }
-    }
-    if (order_override != NULL && order_override[0] != '\0') {
-        if (order_override == loader->loader_order) {
-            active_order_resolution = &loader->loader_order_resolution;
-        } else {
-            status = loader_manager_parse_loader_order(order_override,
-                                                       &order_resolution);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            active_order_resolution = &order_resolution;
-        }
-    }
-    loader_manager_resolve_loader_suboptions(active_order_resolution,
-                                             &active_suboptions);
     previous_active_suboptions =
         sixel_loader_activate_suboptions(&active_suboptions);
     suboptions_active = 1;

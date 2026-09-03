@@ -153,8 +153,7 @@ function argument_is_reviewed(file, argument) {
         return 1
     }
     if (file ~ /\/loader\.c$/ &&
-        (argument == "SIXEL_LOADER_OSC11_BG_QUERY_ENV" ||
-         argument == "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV")) {
+        argument == "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV") {
         return 1
     }
     if (file ~ /\/gpu-dequant\.c$/ &&
