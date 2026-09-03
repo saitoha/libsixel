@@ -64,13 +64,13 @@ libsixelquicklookcore_a_SOURCES = \
     $(top_srcdir)/src/timeline-writer.c \
     $(top_srcdir)/src/compat_stub.c \
     $(top_srcdir)/src/options-registry.c \
+    $(top_srcdir)/src/threading.c \
+    $(top_srcdir)/src/threading.h \
     $(top_srcdir)/src/path.c
 
 if SIXEL_ENABLE_THREADS
 libsixelquicklookcore_a_SOURCES += \
     $(top_srcdir)/src/decoder-parallel.c \
-    $(top_srcdir)/src/threading.c \
-    $(top_srcdir)/src/threading.h \
     $(top_srcdir)/src/threadpool.c \
     $(top_srcdir)/src/threadpool.h
 endif

@@ -57,13 +57,13 @@ srcs = files(
   '../src/timeline-writer.c',
   '../src/compat_stub.c',
   '../src/options-registry.c',
+  '../src/threading.c',
   '../src/path.c',
 )
 srcs += [sixcells_h]
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
   srcs += [
-    '../src/threading.c',
     '../src/threadpool.c',
     '../src/decoder-parallel.c',
   ]
