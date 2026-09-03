@@ -1778,9 +1778,9 @@ At `K = 256`, the result is:
 
 | Policy | `S0` median | `S1` median | `S1` change from `S0` |
 | --- | ---: | ---: | ---: |
-| `5bit` | 80.3 ms | 80.5 ms | +0.3% |
-| `6bit` | 80.6 ms | 80.4 ms | -0.2% |
-| `certlut` | 76.8 ms | 76.7 ms | -0.1% |
+| `5bit` | 82.9 ms | 82.0 ms | -1.1% |
+| `6bit` | 82.6 ms | 84.1 ms | +1.9% |
+| `certlut` | 77.9 ms | 78.8 ms | +1.1% |
 
 Across this fixture and palette-size sweep, the private and shared curves are
 mostly within each other's interquartile ranges. This run does not establish a
@@ -1810,14 +1810,14 @@ At `K = 256`, the result is:
 
 | Policy | CPU median | Metal median | CPU / Metal |
 | --- | ---: | ---: | ---: |
-| `none` | 141.9 ms | 96.8 ms | 1.47x |
-| `eytzinger` | 67.6 ms | 89.9 ms | 0.75x |
+| `none` | 141.5 ms | 98.2 ms | 1.44x |
+| `eytzinger` | 67.5 ms | 91.9 ms | 0.73x |
 
 On this 600-by-450, 270,000-pixel input, Metal `none` first overtakes CPU
 `none` near the high end of the measured palette range: at `K = 128` the
-medians are 98.9 and 96.3 ms, while at `K = 256` Metal is 31.8 percent faster.
+medians are 100.8 and 94.5 ms, while at `K = 256` Metal is 30.6 percent faster.
 For `eytzinger`, forced Metal is slower at every measured `K`; at `K = 256`
-it is 33.1 percent slower. Direct `none` retains an `O(P K)` palette scan whose
+it is 36.2 percent slower. Direct `none` retains an `O(P K)` palette scan whose
 larger `K` can amortize Metal setup and transfer costs. The CPU Eytzinger query
 already reduces lookup work enough that this one-shot 270,000-pixel run does
 not amortize those costs.
