@@ -798,7 +798,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     expected_range_policy[key] = range_policy
     if (option_id == "SIXEL_OPTION_SCHEMA_DIFFUSION" &&
             ((fields[2] == "NULL" &&
-              (name == "scan" || name == "band_overwrap")) ||
+              (name == "scan" || name == "band_overwrap" ||
+               name == "band_width")) ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_SIERRA/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_A_DITHER/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_INTERFRAME/ ||

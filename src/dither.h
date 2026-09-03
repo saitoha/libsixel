@@ -100,6 +100,8 @@ struct sixel_dither {
     int method_for_scan;            /* scan order for diffusing */
     int dither_parallel_band_overwrap_override; /* explicit overlap flag */
     unsigned int dither_parallel_band_overwrap; /* requested overlap */
+    int dither_parallel_band_width_override; /* explicit height flag */
+    unsigned int dither_parallel_band_width; /* requested band height */
     int interframe_strategy_override; /* CLI strategy override enable flag */
     int interframe_strategy_token;    /* parsed interframe strategy token */
     int interframe_spatial_diffuse_override; /* CLI spatial diffuse flag */

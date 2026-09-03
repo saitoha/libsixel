@@ -1923,6 +1923,8 @@ sixel_dither_new(
     (*ppdither)->method_for_scan = SIXEL_SCAN_AUTO;
     (*ppdither)->dither_parallel_band_overwrap_override = 0;
     (*ppdither)->dither_parallel_band_overwrap = 0u;
+    (*ppdither)->dither_parallel_band_width_override = 0;
+    (*ppdither)->dither_parallel_band_width = 0u;
     (*ppdither)->interframe_strategy_override = 0;
     (*ppdither)->interframe_strategy_token
         = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;

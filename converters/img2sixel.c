@@ -492,6 +492,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "      band_overwrap=LINES -> overlap adjacent parallel bands\n"
         "                              (default depends on palette size)\n"
         "      OLINES              -> short form of band_overwrap\n"
+        "      band_width=LINES    -> set the parallel dither band height\n"
+        "                              (rounded to a multiple of six)\n"
+        "      BLINES              -> short form of band_width\n"
         "    DIFFUSION is one of them:\n"
         "      auto       -> choose diffusion type automatically (default)\n"
         "        sub-option:\n"
@@ -581,7 +584,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          scan=SCANTYPE         -> auto, raster, or serpentine\n"
         "                                   (default raster)\n"
         "      compact suboption names (uppercase letter + value):\n"
-        "        all methods: scan=N, band_overwrap=O\n"
+        "        all methods: scan=N, band_overwrap=O, band_width=B\n"
         "        sierra: variant=V\n"
         "        a_dither: strength=T\n"
         "        interframe: diffusion=D\n"
@@ -1252,7 +1255,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_PARALLEL_BAND_WIDTH",
         "override the band height assigned to each dither worker.\n"
-        "Values are rounded to a multiple of six scanlines."
+        "Values are rounded to a multiple of six scanlines. The -d\n"
+        "suboption band_width (short form BVALUE) takes precedence."
     },
     {
         "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP",

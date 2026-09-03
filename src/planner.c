@@ -74,6 +74,10 @@ sixel_encoding_planner_resolve_band_overwrap(
     sixel_encoder_t const *encoder,
     unsigned int *value);
 static int
+sixel_encoding_planner_resolve_band_width(
+    sixel_encoder_t const *encoder,
+    unsigned int *value);
+static int
 sixel_encoding_planner_replan_palette_branch(sixel_encoding_planner_t *planner,
                                              sixel_encoder_t *encoder,
                                              sixel_frame_t *frame,
@@ -168,6 +172,29 @@ sixel_encoding_planner_resolve_band_overwrap(
         SIXEL_SUBOPTION_BINDING_ID_2(
             dither_parallel_band_overwrap,
             dither_parallel_band_overwrap_override),
+        value);
+}
+
+/* Resolve the request-local band height before the environment fallback. */
+static int
+sixel_encoding_planner_resolve_band_width(
+    sixel_encoder_t const *encoder,
+    unsigned int *value)
+{
+    if (encoder == NULL || value == NULL) {
+        return 0;
+    }
+    if (encoder->dither_parallel_band_width_override != 0) {
+        *value = encoder->dither_parallel_band_width;
+        return 1;
+    }
+
+    return sixel_option_resolve_registered_uint_binding(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            dither_parallel_band_width,
+            dither_parallel_band_width_override),
         value);
 }
 
@@ -851,6 +878,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     int gpu_encode_only;
     unsigned int configured_overlap;
     int has_configured_overlap;
+    unsigned int configured_band_height;
+    int has_configured_band_height;
 
     text = NULL;
     endptr = NULL;
@@ -870,6 +899,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     gpu_encode_only = 0;
     configured_overlap = 0u;
     has_configured_overlap = 0;
+    configured_band_height = 0u;
+    has_configured_band_height = 0;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
@@ -960,16 +991,12 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
             return;
         }
 
-        text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
-        if (text != NULL && text[0] != '\0') {
-            errno = 0;
-            parsed = strtol(text, &endptr, 10);
-            if (endptr != text && errno != ERANGE && parsed > 0) {
-                if (parsed > INT_MAX) {
-                    parsed = INT_MAX;
-                }
-                band_height = (int)parsed;
-            }
+        has_configured_band_height =
+            sixel_encoding_planner_resolve_band_width(
+                encoder,
+                &configured_band_height);
+        if (has_configured_band_height != 0) {
+            band_height = (int)configured_band_height;
         }
         if (band_height <= 0) {
             band_height = (height + dither_threads - 1) / dither_threads;
@@ -977,7 +1004,9 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
         if (band_height < 6) {
             band_height = 6;
         }
-        if ((band_height % 6) != 0) {
+        if (band_height > INT_MAX - 5) {
+            band_height = INT_MAX - (INT_MAX % 6);
+        } else if ((band_height % 6) != 0) {
             band_height = ((band_height + 5) / 6) * 6;
         }
 

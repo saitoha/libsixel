@@ -1271,6 +1271,13 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-d band_overwrap must be in range 0-2147483647.",
         dither_parallel_band_overwrap,
         dither_parallel_band_overwrap_override),
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_MAXIMUM_SIGNED(
+        SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
+        "band_width", 'B', "SIXEL_DITHER_PARALLEL_BAND_WIDTH",
+        NULL, NULL, 1.0, (double)INT_MAX, 0,
+        "-d band_width must be in range 1-2147483647.",
+        dither_parallel_band_width,
+        dither_parallel_band_width_override),
     SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_SIERRA,

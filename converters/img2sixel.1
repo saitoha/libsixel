@@ -354,6 +354,11 @@ common sub-option:
 .br
 \fBOLINES\fP -> short form of \fBband_overwrap\fP
 .br
+\fBband_width=LINES\fP -> set the parallel dither band height
+(rounded to a multiple of six)
+.br
+\fBBLINES\fP -> short form of \fBband_width\fP
+.br
 \fIDIFFUSION\fP is one of them:
 .br
 \fBauto\fP -> choose diffusion type automatically (default)
@@ -479,7 +484,8 @@ sub-option:
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 Compact diffusion suboption names use one uppercase letter plus the value:
-all methods scan=N, band_overwrap=O; sierra variant=V; a_dither strength=T;
+all methods scan=N, band_overwrap=O, band_width=B;
+sierra variant=V; a_dither strength=T;
 interframe diffusion=D;
 stbn source=S, diffusion=D, strength=T, motion_adapt=M,
 scene_cut_reset=C, scene_detect=E, alpha_guard=A, perceptual_weight=P,
@@ -1236,7 +1242,8 @@ positive integers.
 .B SIXEL_DITHER_PARALLEL_BAND_WIDTH
 .br
 override the band height assigned to each dither worker. Values are rounded to
-a multiple of six scanlines.
+a multiple of six scanlines. The \fB-d\fP suboption
+\fBband_width=LINES\fP (short form \fB:BLINES\fP) takes precedence.
 .TP 5
 .B SIXEL_DITHER_PARALLEL_BAND_OVERWRAP
 .br

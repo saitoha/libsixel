@@ -322,6 +322,8 @@ sixel_parallel_dither_configure(int height,
     int ncolors;
     unsigned int configured_overlap;
     int has_configured_overlap;
+    unsigned int configured_band_height;
+    int has_configured_band_height;
 
     if (config == NULL) {
         return;
@@ -336,6 +338,8 @@ sixel_parallel_dither_configure(int height,
     ncolors = 0;
     configured_overlap = 0u;
     has_configured_overlap = 0;
+    configured_band_height = 0u;
+    has_configured_band_height = 0;
 
     if (pipeline_threads <= 1 || height <= 0 || dither == NULL) {
         return;
@@ -391,22 +395,27 @@ sixel_parallel_dither_configure(int height,
     }
 
     /*
-     * Choose the band height from the environment when present. Otherwise
-     * split the image across the initial dither workers so each thread starts
-     * with a single band. The result is rounded to a six-line multiple to
-     * stay aligned with the encoder's natural cadence.
+     * Prefer the request-bound suboption, then its registered environment.
+     * Otherwise split the image across the initial dither workers so each
+     * thread starts with a single band. The result is rounded to a six-line
+     * multiple to stay aligned with the encoder's natural cadence.
      */
     band_height = 0;
-    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
-    if (text != NULL && text[0] != '\0') {
-        errno = 0;
-        parsed = strtol(text, &endptr, 10);
-        if (endptr != text && errno != ERANGE && parsed > 0) {
-            if (parsed > INT_MAX) {
-                parsed = INT_MAX;
-            }
-            band_height = (int)parsed;
-        }
+    if (dither->dither_parallel_band_width_override != 0) {
+        configured_band_height = dither->dither_parallel_band_width;
+        has_configured_band_height = 1;
+    } else {
+        has_configured_band_height =
+            sixel_option_resolve_registered_uint_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION,
+                NULL,
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    dither_parallel_band_width,
+                    dither_parallel_band_width_override),
+                &configured_band_height);
+    }
+    if (has_configured_band_height != 0) {
+        band_height = (int)configured_band_height;
     }
     if (band_height <= 0) {
         band_height = (height + dither_threads - 1) / dither_threads;
@@ -414,13 +423,15 @@ sixel_parallel_dither_configure(int height,
     if (band_height < 6) {
         band_height = 6;
     }
-    if ((band_height % 6) != 0) {
+    if (band_height > INT_MAX - 5) {
+        band_height = INT_MAX - (INT_MAX % 6);
+    } else if ((band_height % 6) != 0) {
         band_height = ((band_height + 5) / 6) * 6;
     }
 
     /*
      * Default overlap favors quality for small palettes and speed when
-     * colors are plentiful. The environment can override this policy.
+     * colors are plentiful. Registered controls can override this policy.
      */
     if (ncolors <= 32) {
         overlap = 6;
