@@ -35,6 +35,7 @@ METHODS: Tuple[Tuple[str, str], ...] = (
 PLOTS = (
     "dither-policy-ms-ssim.png",
     "dither-policy-delta-e00.png",
+    "dither-policy-size.png",
     "dither-policy-speed.png",
 )
 
@@ -79,6 +80,9 @@ def read_metadata(path: Path) -> Dict[str, object]:
         fail("measurement source revision is missing")
     if protocol.get("sixel_environment_removed") is not True:
         fail("measurement metadata does not confirm SIXEL_* isolation")
+    if protocol.get("size_measurement") != (
+            "quality-pass SIXEL stdout byte length"):
+        fail("measurement metadata has unexpected size source")
     if tuple(protocol.get("colors", [])) != COLORS:
         fail("measurement metadata has unexpected palette sizes")
     expected_methods = [
@@ -241,6 +245,70 @@ def validate_speed(path: Path, revision: str, expected_runs: int) -> None:
         )
 
 
+def validate_size(path: Path, revision: str) -> None:
+    """Validate encoded sizes and their normalization against no dithering."""
+    rows = read_csv(path)
+    actual: Set[Tuple[str, int]] = set()
+    sizes: Dict[Tuple[str, int], int] = {}
+    ratios: Dict[Tuple[str, int], float] = {}
+    for row in rows:
+        validate_command(row, path)
+        method = row.get("method", "")
+        try:
+            colors = int(row.get("colors", ""))
+            encoded_bytes = int(row.get("encoded_bytes", ""))
+            ratio = float(row.get("bytes_vs_none", ""))
+            tokens = shlex.split(row.get("command", ""))
+        except ValueError as exc:
+            raise ValueError(f"invalid size value in {path}") from exc
+        key = (method, colors)
+        if key in actual:
+            fail(f"duplicate size point in {path}: {key}")
+        actual.add(key)
+        sizes[key] = encoded_bytes
+        ratios[key] = ratio
+        if row.get("revision") != revision:
+            fail(f"size revision differs from metadata in {path}")
+        if encoded_bytes <= 0 or not math.isfinite(ratio) or ratio <= 0.0:
+            fail(f"invalid encoded size in {path}: {key}")
+        if "-o" in tokens:
+            fail(f"size command discards the encoded stream in {path}: {key}")
+    expected = {
+        (method, colors)
+        for method, _diffusion in METHODS
+        for colors in COLORS
+    }
+    if actual != expected:
+        fail(
+            f"size sweep mismatch in {path}: "
+            f"missing={sorted(expected - actual)}, "
+            f"extra={sorted(actual - expected)}"
+        )
+    for method, _diffusion in METHODS:
+        for colors in COLORS:
+            key = (method, colors)
+            expected_ratio = sizes[key] / sizes[("none", colors)]
+            if not math.isclose(
+                    ratios[key], expected_ratio, rel_tol=1e-12):
+                fail(f"size ratio differs from byte counts in {path}: {key}")
+
+
+def validate_quality_size_commands(directory: Path) -> None:
+    """Require quality and size rows to describe the same encode commands."""
+    quality_rows = read_csv(directory / "dither-policy-quality.csv")
+    size_rows = read_csv(directory / "dither-policy-size.csv")
+    quality_commands = {
+        (row["method"], int(row["colors"])): row["command"]
+        for row in quality_rows
+    }
+    size_commands = {
+        (row["method"], int(row["colors"])): row["command"]
+        for row in size_rows
+    }
+    if size_commands != quality_commands:
+        fail("quality and size rows do not describe identical encodes")
+
+
 def validate_plots(directory: Path) -> None:
     """Require each plot to exist and contain data."""
     for name in PLOTS:
@@ -263,13 +331,21 @@ def main() -> int:
         args.directory / "dither-policy-quality.csv",
         revision,
     )
+    validate_size(
+        args.directory / "dither-policy-size.csv",
+        revision,
+    )
+    validate_quality_size_commands(args.directory)
     validate_speed(
         args.directory / "dither-policy-speed.csv",
         revision,
         runs,
     )
     validate_plots(args.directory)
-    print("validated 78 quality and 78 speed points across 13 dither methods")
+    print(
+        "validated 78 quality, 78 size, and 78 speed points "
+        "across 13 dither methods"
+    )
     return 0
 
 

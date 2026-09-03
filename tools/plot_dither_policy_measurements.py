@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure and plot static-image dither quality and end-to-end speed."""
+"""Measure static-image dither quality, encoded size, and end-to-end speed."""
 
 from __future__ import annotations
 
@@ -118,8 +118,8 @@ def command_template(command: Sequence[str],
 def run_quality(command: Sequence[str],
                 lsqa: str,
                 input_image: Path,
-                command_env: Dict[str, str]) -> Dict[str, float]:
-    """Encode once and return the requested lsqa quality metrics."""
+                command_env: Dict[str, str]) -> Tuple[Dict[str, float], int]:
+    """Encode once and return quality metrics plus encoded byte size."""
     encoded = subprocess.run(
         list(command),
         stdout=subprocess.PIPE,
@@ -158,23 +158,30 @@ def run_quality(command: Sequence[str],
     if not isinstance(quality, dict):
         raise RuntimeError("lsqa JSON does not contain a quality object")
     try:
-        return {
-            "MS-SSIM": float(quality["MS-SSIM"]),
-            "Delta E00_mean": float(quality["Δ E00_mean"]),
-        }
+        return (
+            {
+                "MS-SSIM": float(quality["MS-SSIM"]),
+                "Delta E00_mean": float(quality["Δ E00_mean"]),
+            },
+            len(encoded.stdout),
+        )
     except (KeyError, TypeError, ValueError) as exc:
         raise RuntimeError("lsqa output lacks a required quality metric") from exc
 
 
-def measure_quality(img2sixel: str,
-                    lsqa: str,
-                    input_image: Path,
-                    input_label: str,
-                    revision: str,
-                    command_env: Dict[str, str]) -> List[Dict[str, object]]:
-    """Measure both quality metrics for every method and palette size."""
-    rows: List[Dict[str, object]] = []
+def measure_quality_and_size(
+        img2sixel: str,
+        lsqa: str,
+        input_image: Path,
+        input_label: str,
+        revision: str,
+        command_env: Dict[str, str],
+) -> Tuple[List[Dict[str, object]], List[Dict[str, object]]]:
+    """Measure quality and encoded size for each method and palette size."""
+    quality_rows: List[Dict[str, object]] = []
+    size_rows: List[Dict[str, object]] = []
     for colors in DEFAULT_COLORS:
+        color_size_rows: List[Dict[str, object]] = []
         for method, diffusion in DITHER_METHODS:
             command = make_command(
                 img2sixel,
@@ -183,8 +190,14 @@ def measure_quality(img2sixel: str,
                 diffusion,
                 False,
             )
-            metrics = run_quality(command, lsqa, input_image, command_env)
-            rows.append(
+            metrics, encoded_bytes = run_quality(
+                command,
+                lsqa,
+                input_image,
+                command_env,
+            )
+            template = command_template(command, img2sixel, input_image)
+            quality_rows.append(
                 {
                     "revision": revision,
                     "platform": platform.platform(),
@@ -194,14 +207,26 @@ def measure_quality(img2sixel: str,
                     "diffusion_option": diffusion,
                     "MS-SSIM": metrics["MS-SSIM"],
                     "Delta E00_mean": metrics["Delta E00_mean"],
-                    "command": command_template(
-                        command,
-                        img2sixel,
-                        input_image,
-                    ),
+                    "command": template,
                 }
             )
-    return rows
+            color_size_rows.append(
+                {
+                    "revision": revision,
+                    "platform": platform.platform(),
+                    "input": input_label,
+                    "colors": colors,
+                    "method": method,
+                    "diffusion_option": diffusion,
+                    "encoded_bytes": encoded_bytes,
+                    "command": template,
+                }
+            )
+        baseline = int(color_size_rows[0]["encoded_bytes"])
+        for row in color_size_rows:
+            row["bytes_vs_none"] = int(row["encoded_bytes"]) / baseline
+            size_rows.append(row)
+    return quality_rows, size_rows
 
 
 def measure_speed(img2sixel: str,
@@ -306,13 +331,14 @@ def configure_axis(axis: plt.Axes,
         axis.set_ylabel(ylabel)
 
 
-def plot_quality(path: Path,
-                 rows: Sequence[Dict[str, object]],
-                 metric: str,
-                 title: str,
-                 ylabel: str,
-                 higher_is_better: bool) -> None:
-    """Plot each method against no dithering in shared-scale facets."""
+def plot_metric(path: Path,
+                rows: Sequence[Dict[str, object]],
+                metric: str,
+                title: str,
+                ylabel: str,
+                higher_is_better: bool,
+                divisor: float = 1.0) -> None:
+    """Plot one metric for each method against no dithering."""
     figure, axes = plt.subplots(
         4,
         3,
@@ -322,14 +348,14 @@ def plot_quality(path: Path,
     )
     baseline_rows = rows_for_method(rows, "none")
     x_baseline = [int(row["colors"]) for row in baseline_rows]
-    y_baseline = [float(row[metric]) for row in baseline_rows]
+    y_baseline = [float(row[metric]) / divisor for row in baseline_rows]
     for index, (method, _diffusion) in enumerate(DITHER_METHODS[1:]):
         row_index = index // 3
         column_index = index % 3
         axis = axes[row_index][column_index]
         method_rows = rows_for_method(rows, method)
         x_method = [int(row["colors"]) for row in method_rows]
-        y_method = [float(row[metric]) for row in method_rows]
+        y_method = [float(row[metric]) / divisor for row in method_rows]
         axis.plot(
             x_baseline,
             y_baseline,
@@ -513,6 +539,7 @@ def write_metadata(path: Path,
             "speed_runs": runs,
             "method_order_rotated_each_round": True,
             "sixel_environment_removed": clean_sixel_environment,
+            "size_measurement": "quality-pass SIXEL stdout byte length",
             "excluded": {
                 "auto": "selector rather than a concrete method",
                 "interframe": "requires an animation protocol",
@@ -541,6 +568,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-quality-csv", type=Path, required=True)
     parser.add_argument("--output-ms-ssim-plot", type=Path, required=True)
     parser.add_argument("--output-delta-e00-plot", type=Path, required=True)
+    parser.add_argument("--output-size-csv", type=Path, required=True)
+    parser.add_argument("--output-size-plot", type=Path, required=True)
     parser.add_argument("--output-speed-csv", type=Path, required=True)
     parser.add_argument("--output-speed-plot", type=Path, required=True)
     parser.add_argument("--output-metadata", type=Path, required=True)
@@ -560,7 +589,7 @@ def main() -> int:
     img2sixel = resolve_img2sixel(args.img2sixel, source_root)
     lsqa = resolve_lsqa(args.lsqa, source_root)
     command_env = make_command_environment(args.clean_sixel_environment)
-    quality_rows = measure_quality(
+    quality_rows, size_rows = measure_quality_and_size(
         img2sixel,
         lsqa,
         input_image,
@@ -593,6 +622,21 @@ def main() -> int:
         ),
     )
     write_csv(
+        args.output_size_csv,
+        size_rows,
+        (
+            "revision",
+            "platform",
+            "input",
+            "colors",
+            "method",
+            "diffusion_option",
+            "encoded_bytes",
+            "bytes_vs_none",
+            "command",
+        ),
+    )
+    write_csv(
         args.output_speed_csv,
         speed_rows,
         (
@@ -612,7 +656,7 @@ def main() -> int:
             "command",
         ),
     )
-    plot_quality(
+    plot_metric(
         args.output_ms_ssim_plot,
         quality_rows,
         "MS-SSIM",
@@ -620,13 +664,22 @@ def main() -> int:
         "MS-SSIM",
         True,
     )
-    plot_quality(
+    plot_metric(
         args.output_delta_e00_plot,
         quality_rows,
         "Delta E00_mean",
         f"Dither-policy mean Delta E00 on {input_image.name}",
         "Mean Delta E00",
         False,
+    )
+    plot_metric(
+        args.output_size_plot,
+        size_rows,
+        "encoded_bytes",
+        f"Encoded SIXEL size by dither policy on {input_image.name}",
+        "Encoded SIXEL size (KiB)",
+        False,
+        1024.0,
     )
     plot_speed(
         args.output_speed_plot,

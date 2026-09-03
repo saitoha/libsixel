@@ -73,6 +73,8 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dither-policies/measurements/dither-policy-ms-ssim.png \
 	docs/functionality/dither-policies/measurements/dither-policy-quality.csv \
 	docs/functionality/dither-policies/measurements/dither-policy-run.json \
+	docs/functionality/dither-policies/measurements/dither-policy-size.csv \
+	docs/functionality/dither-policies/measurements/dither-policy-size.png \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.csv \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.png \
 	docs/functionality/encoding-pipeline.md \

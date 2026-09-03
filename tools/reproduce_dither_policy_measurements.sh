@@ -50,6 +50,8 @@ test -d "${output_dir}" || mkdir -p "${output_dir}"
     --output-quality-csv "${output_dir}/dither-policy-quality.csv" \
     --output-ms-ssim-plot "${output_dir}/dither-policy-ms-ssim.png" \
     --output-delta-e00-plot "${output_dir}/dither-policy-delta-e00.png" \
+    --output-size-csv "${output_dir}/dither-policy-size.csv" \
+    --output-size-plot "${output_dir}/dither-policy-size.png" \
     --output-speed-csv "${output_dir}/dither-policy-speed.csv" \
     --output-speed-plot "${output_dir}/dither-policy-speed.png" \
     --output-metadata "${output_dir}/dither-policy-run.json"
