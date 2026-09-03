@@ -834,6 +834,8 @@ All loaders accept \fBhdr_fallback_profile=linear-srgb|srgb\fP
 \fBhdr_exposure=EV\fP (short form \fBXvalue\fP) for finite EV stops.
 All loaders also accept \fBhdr_tonemap=none|reinhard\fP
 (short form \fBHvalue\fP) for builtin HDR tone mapping.
+\fBhdr_header_exposure=0|1\fP (short form \fBU0\fP or \fBU1\fP)
+controls application of Radiance EXPOSURE metadata.
 PNG-capable loaders accept \fBtrns_keycolor=0|1\fP
 (short form \fBK0\fP or \fBK1\fP, default 1).
 The librsvg loader accepts \fBrelative_resources=0|1\fP
@@ -1479,6 +1481,8 @@ Override with \fB-Lloader:hdr_tonemap=MODE\fP or short form
 .br
 control whether builtin HDR decode applies Radiance EXPOSURE metadata.
 Accepts only "0" or "1"; unset, empty, or invalid uses the default "1".
+Override with \fB-Lloader:hdr_header_exposure=0|1\fP or short form
+\fB-Lloader:U0\fP or \fB-Lloader:U1\fP.
 .TP 5
 .B SIXEL_LOADER_CMS_ENGINE
 .br

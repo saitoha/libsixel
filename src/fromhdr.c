@@ -1334,8 +1334,9 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
     }
     exposure_scale = env_exposure_scale;
 
-    use_header_exposure = sixel_option_resolve_boolean_environment(
-        "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+    use_header_exposure = loader_resolve_boolean_suboption(
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(hdr_use_header_exposure),
         1);
     exposure_mode = use_header_exposure ? "inverse" : "disabled";
 

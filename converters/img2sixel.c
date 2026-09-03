@@ -843,7 +843,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               srgb; :hdr_exposure=EV (:Xvalue)\n"
         "                               applies finite EV stops;\n"
         "                               :hdr_tonemap=MODE (:Hvalue)\n"
-        "                               selects none or reinhard.\n"
+        "                               selects none or reinhard;\n"
+        "                               :hdr_header_exposure=0|1\n"
+        "                               (:U0/:U1) controls HDR metadata.\n"
         "                               PNG-capable loaders support\n"
         "                               :trns_keycolor=0|1 (:K0/:K1).\n"
         "                               librsvg supports\n"
@@ -1493,7 +1495,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
         "control whether builtin HDR applies Radiance EXPOSURE metadata.\n"
-        "Accepts only 0/1; unset, empty, or invalid uses the default 1."
+        "Accepts only 0/1; unset, empty, or invalid uses the default 1.\n"
+        "Override with -Lloader:hdr_header_exposure=0|1 or :U0/:U1."
     },
     {
         "SIXEL_LOADER_HDR_TONEMAP",

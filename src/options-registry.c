@@ -1864,6 +1864,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         hdr_tonemap_mode),
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "hdr_header_exposure", 'U',
+        "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE", NULL, NULL,
+        hdr_use_header_exposure),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "trns_keycolor", 'K', "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",
         NULL, NULL,
         png_trns_keycolor),
