@@ -849,7 +849,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               :osc11_query=0|1 (:Q0/:Q1)\n"
         "                               controls background probing;\n"
         "                               :osc11_timeout=MILLISECONDS\n"
-        "                               (:Wvalue) controls its wait.\n"
+        "                               (:Wvalue) controls its wait;\n"
+        "                               :thumbnail_size=PIXELS (:Zvalue)\n"
+        "                               controls thumbnail resolution.\n"
         "                               PNG-capable loaders support\n"
         "                               :trns_keycolor=0|1 (:K0/:K1).\n"
         "                               librsvg supports\n"
@@ -1317,7 +1319,9 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_THUMBNAILER_HINT_SIZE",
         "adjust the thumbnail target size used by loader helpers. Accepts\n"
-        "positive integers; defaults to the built-in hint."
+        "positive integers. The -L suboption thumbnail_size (short form\n"
+        "Zvalue) overrides both this setting and resize-derived hints.\n"
+        "Defaults to the built-in hint."
     },
     {
         "SIXEL_LOADER_PRIORITY_LIST",

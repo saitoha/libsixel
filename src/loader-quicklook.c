@@ -178,8 +178,6 @@ loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
     image = NULL;
     result = 0;
 
-    loader_thumbnailer_initialize_size_hint();
-
     if (pchunk != NULL && sixel_chunk_get_source_path(pchunk) != NULL) {
         path = sixel_chunk_get_source_path(pchunk);
     } else if (filename != NULL) {
@@ -209,11 +207,7 @@ loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
     }
 
     hint = loader_thumbnailer_get_size_hint();
-    if (hint > 0) {
-        max_dimension = (CGFloat)hint;
-    } else {
-        max_dimension = (CGFloat)loader_thumbnailer_get_default_size_hint();
-    }
+    max_dimension = (CGFloat)hint;
     max_size.width = max_dimension;
     max_size.height = max_dimension;
 
@@ -314,8 +308,6 @@ load_with_quicklook(
         goto end;
     }
 
-    loader_thumbnailer_initialize_size_hint();
-
     status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -343,11 +335,7 @@ load_with_quicklook(
     }
 
     hint = loader_thumbnailer_get_size_hint();
-    if (hint > 0) {
-        max_dimension = (CGFloat)hint;
-    } else {
-        max_dimension = (CGFloat)loader_thumbnailer_get_default_size_hint();
-    }
+    max_dimension = (CGFloat)hint;
     max_size.width = max_dimension;
     max_size.height = max_dimension;
 

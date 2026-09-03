@@ -2874,8 +2874,6 @@ load_with_gnome_thumbnailer(
     (void)start_frame_no_set;
     (void)start_frame_no;
 
-    loader_thumbnailer_initialize_size_hint();
-
     status = SIXEL_FALSE;
     thumb_chunk = NULL;
     png_path = NULL;

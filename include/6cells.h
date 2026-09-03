@@ -1144,6 +1144,7 @@ typedef struct sixel_loader_suboptions {
     int hdr_use_header_exposure;
     int osc11_bg_query;
     int osc11_bg_query_timeout_ms;
+    int thumbnail_size_hint;
     int png_trns_keycolor;
     int librsvg_allow_relative_resources;
     int librsvg_allow_stdin_svgz;

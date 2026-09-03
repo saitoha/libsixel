@@ -215,6 +215,7 @@ loader_manager_init_loader_suboptions(
     suboptions->osc11_bg_query = 0;
     suboptions->osc11_bg_query_timeout_ms =
         SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
+    suboptions->thumbnail_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
     suboptions->png_trns_keycolor = 1;
     suboptions->librsvg_allow_relative_resources = 0;
     suboptions->librsvg_allow_stdin_svgz = 0;

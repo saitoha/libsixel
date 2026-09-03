@@ -131,6 +131,7 @@ struct sixel_loader {
     int loop_control;
     int finsecure;
     int prefer_float32;
+    int thumbnail_size_hint;
     int has_start_frame_no;
     int start_frame_no;
     int const *cancel_flag;
@@ -191,6 +192,11 @@ static int
 loader_can_query_osc11_bgcolor(sixel_loader_t const *loader,
                                int enabled,
                                int timeout_ms);
+
+static int
+loader_resolution_assigns_binding(
+    sixel_option_argument_list_resolution_t const *resolution,
+    char const *binding_identifier);
 
 SIXEL_INTERNAL_API void
 sixel_loader_component_ref(sixel_loader_component_t *component)
@@ -899,6 +905,7 @@ sixel_loader_new(
     loader->loop_control = SIXEL_LOOP_AUTO;
     loader->finsecure = 0;
     loader->prefer_float32 = 0;
+    loader->thumbnail_size_hint = 0;
     loader->has_start_frame_no = 0;
     loader->start_frame_no = INT_MIN;
     loader->cancel_flag = NULL;
@@ -1167,6 +1174,57 @@ sixel_loader_set_prefer_float32(sixel_loader_t *loader, int prefer_float32)
     loader->prefer_float32 = prefer_float32 != 0 ? 1 : 0;
 }
 
+SIXEL_INTERNAL_API void
+sixel_loader_set_thumbnail_size_hint(sixel_loader_t *loader, int size)
+{
+    if (loader == NULL) {
+        return;
+    }
+    loader->thumbnail_size_hint = size > 0 ? size : 0;
+}
+
+/*
+ * Distinguish an explicit loader-list assignment from environment defaults.
+ * A request-derived resize hint may replace the latter, but never an explicit
+ * thumbnail_size suboption.
+ */
+static int
+loader_resolution_assigns_binding(
+    sixel_option_argument_list_resolution_t const *resolution,
+    char const *binding_identifier)
+{
+    sixel_option_argument_resolution_t const *item;
+    sixel_suboption_key_t const *key_def;
+    size_t item_index;
+    size_t assignment_index;
+
+    item = NULL;
+    key_def = NULL;
+    item_index = 0u;
+    assignment_index = 0u;
+    if (resolution == NULL || binding_identifier == NULL) {
+        return 0;
+    }
+
+    while (item_index < resolution->item_count) {
+        item = &resolution->items[item_index].resolution;
+        assignment_index = 0u;
+        while (assignment_index < item->assignment_count) {
+            key_def = item->assignments[assignment_index].key_def;
+            if (key_def != NULL &&
+                key_def->binding.identifier != NULL &&
+                strcmp(key_def->binding.identifier,
+                       binding_identifier) == 0) {
+                return 1;
+            }
+            ++assignment_index;
+        }
+        ++item_index;
+    }
+
+    return 0;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_loader_load_file(
     sixel_loader_t         /* in */ *loader,
@@ -1194,6 +1252,7 @@ sixel_loader_load_file(
     int wait_result;
     int chunk_job_id;
     int suboptions_active;
+    int thumbnail_size_explicit;
 
     pchunk = NULL;
     factory = NULL;
@@ -1210,6 +1269,7 @@ sixel_loader_load_file(
     wait_result = 0;
     chunk_job_id = -1;
     suboptions_active = 0;
+    thumbnail_size_explicit = 0;
     sixel_option_init_argument_list_resolution(&order_resolution);
     loader_manager_init_loader_suboptions(&active_suboptions);
     loader_osc11_bg_query_job_init(&osc11_query_job);
@@ -1290,6 +1350,18 @@ sixel_loader_load_file(
     }
     loader_manager_resolve_loader_suboptions(active_order_resolution,
                                              &active_suboptions);
+    thumbnail_size_explicit = loader_resolution_assigns_binding(
+        active_order_resolution,
+        SIXEL_SUBOPTION_BINDING_ID_1(thumbnail_size_hint));
+    if (thumbnail_size_explicit == 0 && loader->thumbnail_size_hint > 0) {
+        active_suboptions.thumbnail_size_hint = loader->thumbnail_size_hint;
+    }
+    sixel_trace_topic_message(
+        "loader",
+        "LSXTHM1|size=%d|runtime_hint=%d|explicit=%d",
+        active_suboptions.thumbnail_size_hint,
+        loader->thumbnail_size_hint,
+        thumbnail_size_explicit);
 
     osc11_timeout_ms = active_suboptions.osc11_bg_query_timeout_ms;
 

@@ -314,6 +314,15 @@
         SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG, message_, suffix_, \
         SIXEL_SUBOPTION_TARGET_LOADER, sixel_loader_suboptions_t, field_)
 
+#define SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, allow_zero_, message_, suffix_, field_) \
+    SIXEL_REGISTRY_TYPED_UINT_VALUE_MESSAGE( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+        maximum_, allow_zero_, SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM, \
+        message_, suffix_, \
+        SIXEL_SUBOPTION_TARGET_LOADER, sixel_loader_suboptions_t, field_)
+
 #define SIXEL_REGISTRY_LOADER_DOUBLE( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
     maximum_, message_, field_) \
@@ -1889,6 +1898,13 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "\" for key \"osc11_timeout\"; expected milliseconds from 0 to "
         "2147483647.",
         osc11_bg_query_timeout_ms),
+    SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "thumbnail_size", 'Z', "SIXEL_THUMBNAILER_HINT_SIZE", NULL, NULL,
+        1.0, (double)INT_MAX, 0,
+        "invalid loader suboption value \"",
+        "\" for key \"thumbnail_size\"; expected a positive integer.",
+        thumbnail_size_hint),
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "trns_keycolor", 'K', "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",

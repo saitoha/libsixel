@@ -1352,7 +1352,9 @@ force SIMD selection. Accepts auto, none/scalar, sse2, avx, or neon.
 .B SIXEL_THUMBNAILER_HINT_SIZE
 .br
 adjust the thumbnail target size used by loader helpers. Accepts positive
-integers; defaults to the built-in hint.
+integers. The loader suboption \fB:thumbnail_size=PIXELS\fP (short form
+\fB:Zvalue\fP) overrides both this setting and resize-derived hints. Defaults
+to the built-in hint.
 .TP 5
 .B SIXEL_LOADER_PRIORITY_LIST
 .br

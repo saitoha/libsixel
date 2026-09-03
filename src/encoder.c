@@ -5502,12 +5502,13 @@ palette_cleanup:
     callback_context.gpu_policy = encoder->gpu_policy;
     callback_context.prefer_float32 = encoder->prefer_float32;
 
-    sixel_helper_set_thumbnail_size_hint(
-        sixel_encoder_thumbnail_hint(encoder));
     status = sixel_loader_new(&loader, encoder->allocator);
     if (SIXEL_FAILED(status)) {
         goto end_loader;
     }
+    sixel_loader_set_thumbnail_size_hint(
+        loader,
+        sixel_encoder_thumbnail_hint(encoder));
     prefer_loader_float32 = sixel_encoder_loader_prefers_float32(encoder);
     sixel_loader_set_prefer_float32(loader, prefer_loader_float32);
 
@@ -12287,14 +12288,13 @@ sixel_encoder_encode(
     }
 
 reload:
-
-    sixel_helper_set_thumbnail_size_hint(
-        sixel_encoder_thumbnail_hint(encoder));
-
     status = sixel_loader_new(&loader, encoder->allocator);
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }
+    sixel_loader_set_thumbnail_size_hint(
+        loader,
+        sixel_encoder_thumbnail_hint(encoder));
     prefer_loader_float32 = sixel_encoder_loader_prefers_float32(encoder);
     sixel_loader_set_prefer_float32(loader, prefer_loader_float32);
 

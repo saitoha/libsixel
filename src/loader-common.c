@@ -40,14 +40,8 @@
 #if HAVE_STDARG_H
 # include <stdarg.h>
 #endif
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
 #if HAVE_STDINT_H
 # include <stdint.h>
-#endif
-#if HAVE_ERRNO_H
-# include <errno.h>
 #endif
 
 /* Keep SIZE_MAX available even on strict C99 environments. */
@@ -88,9 +82,6 @@
 # define SIXEL_LOADER_TLS_AVAILABLE 0
 #endif
 
-static int thumbnailer_default_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
-static int thumbnailer_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
-static int thumbnailer_size_hint_initialized;
 static int wic_ico_minsize_default;
 static int wic_ico_minsize;
 static int wic_ico_minsize_initialized;
@@ -1488,90 +1479,18 @@ loader_frame_apply_orientation(sixel_frame_t *frame,
     return status;
 }
 
-void
-loader_thumbnailer_initialize_size_hint(void)
-{
-    char const *env_value;
-    char *endptr;
-    long parsed;
-
-    loader_background_lock();
-    if (thumbnailer_size_hint_initialized) {
-        loader_background_unlock();
-        return;
-    }
-
-    thumbnailer_size_hint_initialized = 1;
-    thumbnailer_default_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
-    thumbnailer_size_hint = thumbnailer_default_size_hint;
-
-    env_value = sixel_compat_getenv("SIXEL_THUMBNAILER_HINT_SIZE");
-    if (env_value == NULL || env_value[0] == '\0') {
-        loader_background_unlock();
-        return;
-    }
-
-    errno = 0;
-    parsed = strtol(env_value, &endptr, 10);
-    if (errno != 0) {
-        loader_background_unlock();
-        return;
-    }
-    if (endptr == env_value || *endptr != '\0') {
-        loader_background_unlock();
-        return;
-    }
-    if (parsed <= 0) {
-        loader_background_unlock();
-        return;
-    }
-    if (parsed > (long)INT_MAX) {
-        parsed = (long)INT_MAX;
-    }
-
-    thumbnailer_default_size_hint = (int)parsed;
-    thumbnailer_size_hint = thumbnailer_default_size_hint;
-    loader_background_unlock();
-}
-
 int
 loader_thumbnailer_get_size_hint(void)
 {
     int size_hint;
 
-    loader_thumbnailer_initialize_size_hint();
-    loader_background_lock();
-    size_hint = thumbnailer_size_hint;
-    loader_background_unlock();
+    size_hint = (int)loader_resolve_uint_suboption(
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(thumbnail_size_hint),
+        SIXEL_THUMBNAILER_DEFAULT_SIZE);
+    loader_trace_message("LSXTHM2|size=%d", size_hint);
 
     return size_hint;
-}
-
-int
-loader_thumbnailer_get_default_size_hint(void)
-{
-    int default_size_hint;
-
-    loader_thumbnailer_initialize_size_hint();
-    loader_background_lock();
-    default_size_hint = thumbnailer_default_size_hint;
-    loader_background_unlock();
-
-    return default_size_hint;
-}
-
-SIXEL_INTERNAL_API void
-sixel_helper_set_thumbnail_size_hint(int size)
-{
-    loader_thumbnailer_initialize_size_hint();
-
-    loader_background_lock();
-    if (size > 0) {
-        thumbnailer_size_hint = size;
-    } else {
-        thumbnailer_size_hint = thumbnailer_default_size_hint;
-    }
-    loader_background_unlock();
 }
 
 void

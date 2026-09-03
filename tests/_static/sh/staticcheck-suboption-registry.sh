@@ -390,6 +390,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_LOADER_CHOICE_ENV" ||
         macro == "SIXEL_REGISTRY_LOADER_DOUBLE" ||
         macro == "SIXEL_REGISTRY_LOADER_UINT" ||
+        macro == "SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM" ||
         macro == "SIXEL_REGISTRY_LOADER_UINT_ENV_REJECT_SIGNED" ||
         macro == \
             "SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM_DIGITS" ||

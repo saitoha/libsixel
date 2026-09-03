@@ -66,9 +66,6 @@ SIXEL_INTERNAL_API void
 sixel_loader_timeline_candidate_select_finish(sixel_loader_t *loader,
                                               SIXELSTATUS status);
 
-SIXEL_INTERNAL_API void
-sixel_helper_set_thumbnail_size_hint(int size);
-
 SIXEL_INTERNAL_API int
 sixel_loader_callback_is_canceled(void *data);
 
@@ -78,6 +75,9 @@ sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
 
 SIXEL_INTERNAL_API void
 sixel_loader_set_prefer_float32(sixel_loader_t *loader, int prefer_float32);
+
+SIXEL_INTERNAL_API void
+sixel_loader_set_thumbnail_size_hint(sixel_loader_t *loader, int size);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_set_cancel_callback(
