@@ -57,9 +57,9 @@
 
 #include "cpu.h"
 #include "allocator.h"
-#include "compat_stub.h"
 #include "loader-common.h"
 #include "lookup-fhedt-8bit.h"
+#include "lookup-policy-fhedt.h"
 #include "timeline-logger.h"
 #include "threading.h"
 #include <6cells.h>
@@ -482,25 +482,14 @@ sixel_lookup_fhedt_timeline_open_8bit(
     sixel_lookup_fhedt_timeline_8bit_t *timeline)
 {
 #if SIXEL_ENABLE_THREADS
-    char const *line_env;
-    long stride;
-
     if (timeline == NULL || timeline->initialized) {
         return;
     }
     timeline->logger = NULL;
     (void)sixel_timeline_logger_prepare_env(NULL, &timeline->logger);
-    timeline->log_lines = 0;
-    timeline->line_stride = 1;
-    line_env = sixel_compat_getenv("SIXEL_LOG_LINES");
-    if (line_env != NULL && line_env[0] != '\0') {
-        stride = strtol(line_env, NULL, 10);
-        if (stride < 1L) {
-            stride = 1L;
-        }
-        timeline->log_lines = 1;
-        timeline->line_stride = (int)stride;
-    }
+    sixel_lookup_policy_fhedt_resolve_timeline_lines(
+        &timeline->log_lines,
+        &timeline->line_stride);
     timeline->initialized = 1;
 #else
     (void)timeline;

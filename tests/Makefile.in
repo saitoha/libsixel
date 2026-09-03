@@ -160,6 +160,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/timeline/0002_timeline_parallel_encode_decode.c \
 	processing/timeline/0003_timeline_clock_origin.c \
 	processing/timeline/0004_timeline_log_path_environment_probe.c \
+	processing/timeline/0005_timeline_line_policy_environment.c \
 	processing/threadpool/0001_threadpool_service.c \
 	processing/threadpool/0002_thread_default_counts.c \
 	processing/scale/0001_parallel_factor_environment.c \
@@ -300,6 +301,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0002_timeline_parallel_encode_decode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0003_timeline_clock_origin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0004_timeline_log_path_environment_probe.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0005_timeline_line_policy_environment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0001_threadpool_service.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0002_thread_default_counts.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0001_parallel_factor_environment.$(OBJEXT) \
@@ -580,6 +582,7 @@ am__depfiles_remade =  \
 	processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0004_timeline_log_path_environment_probe.Po \
+	processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Po \
 	quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po \
 	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po \
 	quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po \
@@ -1311,6 +1314,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_TIMELINE_LOG_PATH_ENVIRONMENT_PROBE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_TIMELINE_LINE_POLICY_ENVIRONMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_THREADPOOL_SERVICE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PARALLEL_FACTOR_ENVIRONMENT \
@@ -1473,6 +1477,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0002_timeline_parallel_encode_decode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0003_timeline_clock_origin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0004_timeline_log_path_environment_probe.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0005_timeline_line_policy_environment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0001_threadpool_service.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0002_thread_default_counts.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0001_parallel_factor_environment.c \
@@ -1908,6 +1913,9 @@ processing/timeline/test_runner-0003_timeline_clock_origin.$(OBJEXT):  \
 	processing/timeline/$(am__dirstamp) \
 	processing/timeline/$(DEPDIR)/$(am__dirstamp)
 processing/timeline/test_runner-0004_timeline_log_path_environment_probe.$(OBJEXT):  \
+	processing/timeline/$(am__dirstamp) \
+	processing/timeline/$(DEPDIR)/$(am__dirstamp)
+processing/timeline/test_runner-0005_timeline_line_policy_environment.$(OBJEXT):  \
 	processing/timeline/$(am__dirstamp) \
 	processing/timeline/$(DEPDIR)/$(am__dirstamp)
 processing/threadpool/$(am__dirstamp):
@@ -2487,6 +2495,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0004_timeline_log_path_environment_probe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po@am__quote@ # am--include-marker
@@ -3236,6 +3245,20 @@ processing/timeline/test_runner-0004_timeline_log_path_environment_probe.obj: pr
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/timeline/0004_timeline_log_path_environment_probe.c' object='processing/timeline/test_runner-0004_timeline_log_path_environment_probe.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/timeline/test_runner-0004_timeline_log_path_environment_probe.obj `if test -f 'processing/timeline/0004_timeline_log_path_environment_probe.c'; then $(CYGPATH_W) 'processing/timeline/0004_timeline_log_path_environment_probe.c'; else $(CYGPATH_W) '$(srcdir)/processing/timeline/0004_timeline_log_path_environment_probe.c'; fi`
+
+processing/timeline/test_runner-0005_timeline_line_policy_environment.o: processing/timeline/0005_timeline_line_policy_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/timeline/test_runner-0005_timeline_line_policy_environment.o -MD -MP -MF processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Tpo -c -o processing/timeline/test_runner-0005_timeline_line_policy_environment.o `test -f 'processing/timeline/0005_timeline_line_policy_environment.c' || echo '$(srcdir)/'`processing/timeline/0005_timeline_line_policy_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Tpo processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/timeline/0005_timeline_line_policy_environment.c' object='processing/timeline/test_runner-0005_timeline_line_policy_environment.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/timeline/test_runner-0005_timeline_line_policy_environment.o `test -f 'processing/timeline/0005_timeline_line_policy_environment.c' || echo '$(srcdir)/'`processing/timeline/0005_timeline_line_policy_environment.c
+
+processing/timeline/test_runner-0005_timeline_line_policy_environment.obj: processing/timeline/0005_timeline_line_policy_environment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/timeline/test_runner-0005_timeline_line_policy_environment.obj -MD -MP -MF processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Tpo -c -o processing/timeline/test_runner-0005_timeline_line_policy_environment.obj `if test -f 'processing/timeline/0005_timeline_line_policy_environment.c'; then $(CYGPATH_W) 'processing/timeline/0005_timeline_line_policy_environment.c'; else $(CYGPATH_W) '$(srcdir)/processing/timeline/0005_timeline_line_policy_environment.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Tpo processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/timeline/0005_timeline_line_policy_environment.c' object='processing/timeline/test_runner-0005_timeline_line_policy_environment.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/timeline/test_runner-0005_timeline_line_policy_environment.obj `if test -f 'processing/timeline/0005_timeline_line_policy_environment.c'; then $(CYGPATH_W) 'processing/timeline/0005_timeline_line_policy_environment.c'; else $(CYGPATH_W) '$(srcdir)/processing/timeline/0005_timeline_line_policy_environment.c'; fi`
 
 processing/threadpool/test_runner-0001_threadpool_service.o: processing/threadpool/0001_threadpool_service.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/threadpool/test_runner-0001_threadpool_service.o -MD -MP -MF processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Tpo -c -o processing/threadpool/test_runner-0001_threadpool_service.o `test -f 'processing/threadpool/0001_threadpool_service.c' || echo '$(srcdir)/'`processing/threadpool/0001_threadpool_service.c
@@ -4970,6 +4993,7 @@ distclean: distclean-am
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0004_timeline_log_path_environment_probe.Po
+	-rm -f processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
@@ -5151,6 +5175,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0004_timeline_log_path_environment_probe.Po
+	-rm -f processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
