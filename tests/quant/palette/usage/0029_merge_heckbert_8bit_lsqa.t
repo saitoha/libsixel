@@ -22,7 +22,7 @@ SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
         SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=5 \
         SIXEL_PALETTE_KMEANS_THRESHOLD=0.1 \
         SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qheckbert:merge=ward -p 64 \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qheckbert -Fward -p 64 \
     -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel merge heckbert 8bit failed"
     exit 0

@@ -221,24 +221,29 @@ struct sixel_encoder {
     unsigned int quantize_model_kcenter_swap_patience;
     int quantize_model_kcenter_swap_min_gain_override;
     double quantize_model_kcenter_swap_min_gain;
-    int quantize_model_merge_override;
-    int quantize_model_merge_mode;
-    int quantize_model_merge_oversplit_override;
-    double quantize_model_merge_oversplit;
-    int quantize_model_merge_lloyd_override;
-    unsigned int quantize_model_merge_lloyd;
-    /*
-     * Gamut anchoring, reachable as -Q MODEL:cover=SET, :cover_grow=0|1
-     * and :cover_mode=hard.  It applies to whichever solver ran, so it is
-     * stored once rather than per model.
-     */
-    int quantize_model_cover_override;
-    int quantize_model_cover;
-    int quantize_model_cover_grow_override;
-    int quantize_model_cover_grow;
-    int quantize_model_cover_mode_override;
-    int quantize_model_cover_mode;
+    int merge_policy_override;
     int final_merge_mode;
+    int merge_policy_oversplit_override;
+    double merge_policy_oversplit;
+    int merge_policy_lloyd_override;
+    unsigned int merge_policy_lloyd;
+    int merge_policy_channel_factor_l_override;
+    double merge_policy_channel_factor_l;
+    /* Gamut anchoring applies after any quantizer, so it has its own axis. */
+    int cover_policy_override;
+    int cover_policy;
+    int cover_policy_grow_override;
+    int cover_policy_grow;
+    int cover_policy_mode_override;
+    int cover_policy_mode;
+    int cover_policy_snap_target_override;
+    int cover_policy_snap_target;
+    int cover_policy_snap_timing_override;
+    int cover_policy_snap_timing;
+    int cover_policy_snap_approach_rate_override;
+    double cover_policy_snap_approach_rate;
+    int cover_policy_snap_channel_factor_l_override;
+    double cover_policy_snap_channel_factor_l;
     int lut_policy;
     int lut_policy_override;
     int lut_policy_shared_instance_override;

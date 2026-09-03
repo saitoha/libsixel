@@ -19,7 +19,7 @@ set +x
 baseline_none_norm=$(
     set +xv
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Q "heckbert:merge=none" \
+        -Q heckbert -F none \
         -f norm \
         -p 16 \
         "${input_image}" | cksum
@@ -36,7 +36,7 @@ set +x
 profile_none_norm=$(
     set +xv
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Q "heckbert:profile=quality:merge=none" \
+        -Q "heckbert:profile=quality" -F none \
         -f norm \
         -p 16 \
         "${input_image}" | cksum

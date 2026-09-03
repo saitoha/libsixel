@@ -112,11 +112,16 @@ def make_command(img2sixel: str,
     if variant.shared_instance is None:
         # The current K-means path completes palette application internally,
         # outside the Metal PaletteApply dispatch measured here.
-        command.append("--quantize-model=heckbert:cover=off:merge=none")
+        command.extend((
+            "--quantize-model=heckbert",
+            "--cover-policy=off",
+            "--merge-policy=none",
+        ))
     else:
         command.extend(
             [
-                "--quantize-model=kmeans:merge=ward:seed=1",
+                "--quantize-model=kmeans:seed=1",
+                "--merge-policy=ward",
                 "-Xoklab",
                 "-Wgamma",
             ]
@@ -472,14 +477,17 @@ def write_metadata(path: Path,
                 "threads": shared_threads,
                 "policies": list(SHARED_POLICIES),
                 "values": [0, 1],
-                "quantize_model": "kmeans:merge=ward:seed=1",
+                "quantize_model": "kmeans:seed=1",
+                "merge_policy": "ward",
                 "output_equivalence": shared_equivalence,
             },
             "metal": {
                 "threads": 1,
                 "policies": list(METAL_POLICIES),
                 "cpu_gpu_policies": ["off", "force"],
-                "quantize_model": "heckbert:cover=off:merge=none",
+                "quantize_model": "heckbert",
+                "merge_policy": "none",
+                "cover_policy": "off",
                 "force_success_required": True,
                 "output_equivalence": metal_equivalence,
             },

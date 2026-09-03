@@ -1840,7 +1840,7 @@ GPU dispatch: palette size and CPU lookup policy matter too. The current
 
 The controlled K-means path used by the other speed figures currently
 completes palette application outside this Metal dispatch. The GPU comparison
-therefore uses `-Q heckbert:cover=off:merge=none` so it exercises PaletteApply.
+therefore uses `-Q heckbert -a off -F none` so it exercises PaletteApply.
 Each CPU/Metal pair uses the same policy and generated palette. Comparisons
 between the `none` and `eytzinger` pairs still include Heckbert's
 policy-dependent histogram resolution and must not be read as an isolated
@@ -1930,7 +1930,7 @@ The controlled K-means quality and speed comparisons use this normal CLI path:
 img2sixel \
   --threads=1 --precision=8bit --quality=full \
   --loaders=libpng! \
-  --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma \
+  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
   --diffusion=none --gpu-policy=off \
   --lookup-policy=POLICY -p K \
   images/snake.png
@@ -1942,7 +1942,7 @@ The Floyd--Steinberg control changes only the diffusion option:
 img2sixel \
   --threads=1 --precision=8bit --quality=full \
   --loaders=libpng! \
-  --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma \
+  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
   --diffusion=fs --gpu-policy=off \
   --lookup-policy=POLICY -p K \
   images/snake.png
@@ -1954,7 +1954,7 @@ The current Heckbert compatibility comparison instead uses:
 img2sixel \
   --threads=1 --precision=8bit --quality=full \
   --loaders=libpng! \
-  --quantize-model=heckbert:cover=off:merge=none \
+  --quantize-model=heckbert --cover-policy=off --merge-policy=none \
   --diffusion=none --gpu-policy=off \
   --lookup-policy=POLICY -p K \
   images/snake.png
@@ -1967,7 +1967,7 @@ pipeline threads, and explicit private or shared instances:
 img2sixel \
   --threads=8 --precision=8bit --quality=full \
   --loaders=libpng! \
-  --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma \
+  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
   --diffusion=none:band_overwrap=0 --gpu-policy=off \
   --lookup-policy=POLICY:shared_instance=0|1 -p K \
   images/snake.png
@@ -1979,7 +1979,7 @@ The Metal comparison uses one CPU thread and forces the GPU PaletteApply path:
 img2sixel \
   --threads=1 --precision=8bit --quality=full \
   --loaders=libpng! \
-  --quantize-model=heckbert:cover=off:merge=none \
+  --quantize-model=heckbert --cover-policy=off --merge-policy=none \
   --diffusion=none:band_overwrap=0 --gpu-policy=off|force \
   --lookup-policy=none|eytzinger -p K \
   images/snake.png

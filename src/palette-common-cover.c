@@ -35,6 +35,7 @@
 #include <sixel.h>
 
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "options.h"
 #include "palette-common-cover.h"
 
@@ -73,14 +74,61 @@ SIXEL_INTERNAL_API void
 sixel_set_palette_cover_override(int enabled,
                                  sixel_palette_cover_options_t const *options)
 {
+    char const *policy_name;
+    char const *mode_name;
+
+    policy_name = "auto";
+    mode_name = "soft";
     g_sixel_palette_cover_override_enabled =
         enabled != 0 && options != NULL ? 1 : 0;
     if (options != NULL) {
         g_sixel_palette_cover_override = *options;
     } else {
+        g_sixel_palette_cover_override.policy_override = 0;
         g_sixel_palette_cover_override.policy = SIXEL_PALETTE_COVER_AUTO;
+        g_sixel_palette_cover_override.grow_override = 0;
         g_sixel_palette_cover_override.grow = 0;
+        g_sixel_palette_cover_override.mode_override = 0;
         g_sixel_palette_cover_override.mode = SIXEL_PALETTE_COVER_MODE_HARD;
+        return;
+    }
+    switch (options->policy) {
+    case SIXEL_PALETTE_COVER_OFF:
+        policy_name = "off";
+        break;
+    case SIXEL_PALETTE_COVER_CORNERS:
+        policy_name = "corners";
+        break;
+    case SIXEL_PALETTE_COVER_FACES:
+        policy_name = "faces";
+        break;
+    case SIXEL_PALETTE_COVER_EDGES:
+        policy_name = "edges";
+        break;
+    case SIXEL_PALETTE_COVER_AUTO:
+    default:
+        break;
+    }
+    if (options->mode == SIXEL_PALETTE_COVER_MODE_HARD) {
+        mode_name = "hard";
+    }
+    if (options->policy_override) {
+        sixel_trace_topic_message(
+            "palette_contract",
+            "LSXCOV1|policy=%s",
+            policy_name);
+    }
+    if (options->grow_override) {
+        sixel_trace_topic_message(
+            "palette_contract",
+            "LSXCOV1|grow=%d",
+            options->grow != 0);
+    }
+    if (options->mode_override) {
+        sixel_trace_topic_message(
+            "palette_contract",
+            "LSXCOV1|mode=%s",
+            mode_name);
     }
 }
 
@@ -90,15 +138,16 @@ sixel_palette_cover_mode(void)
     int value;
 
     value = SIXEL_PALETTE_COVER_MODE_SOFT;
-    if (g_sixel_palette_cover_override_enabled != 0) {
+    if (g_sixel_palette_cover_override_enabled != 0 &&
+        g_sixel_palette_cover_override.mode_override) {
         return g_sixel_palette_cover_override.mode;
     }
     if (sixel_option_resolve_registered_int_binding(
-            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            SIXEL_OPTION_SCHEMA_COVER_POLICY,
             NULL,
             SIXEL_SUBOPTION_BINDING_ID_2(
-                quantize_model_cover_mode,
-                quantize_model_cover_mode_override),
+                cover_policy_mode,
+                cover_policy_mode_override),
             &value)) {
         return value;
     }
@@ -112,19 +161,17 @@ sixel_palette_cover_policy(void)
     int value;
 
     value = SIXEL_PALETTE_COVER_AUTO;
-    if (g_sixel_palette_cover_override_enabled != 0) {
+    if (g_sixel_palette_cover_override_enabled != 0 &&
+        g_sixel_palette_cover_override.policy_override) {
         return g_sixel_palette_cover_override.policy;
     }
     /*
      * The environment stays available for callers that build a palette
      * directly rather than through the encoder's option layer.
      */
-    if (sixel_option_resolve_registered_int_binding(
-            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
-            NULL,
-            SIXEL_SUBOPTION_BINDING_ID_2(
-                quantize_model_cover,
-                quantize_model_cover_override),
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_COVER_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
             &value)) {
         return value;
     }
@@ -135,16 +182,17 @@ sixel_palette_cover_policy(void)
 SIXEL_INTERNAL_API int
 sixel_palette_cover_grow_enabled(void)
 {
-    if (g_sixel_palette_cover_override_enabled != 0) {
+    if (g_sixel_palette_cover_override_enabled != 0 &&
+        g_sixel_palette_cover_override.grow_override) {
         return g_sixel_palette_cover_override.grow;
     }
 
     return sixel_option_resolve_registered_boolean_binding(
-        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+        SIXEL_OPTION_SCHEMA_COVER_POLICY,
         NULL,
         SIXEL_SUBOPTION_BINDING_ID_2(
-            quantize_model_cover_grow,
-            quantize_model_cover_grow_override),
+            cover_policy_grow,
+            cover_policy_grow_override),
         0);
 }
 

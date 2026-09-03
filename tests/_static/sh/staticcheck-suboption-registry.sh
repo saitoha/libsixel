@@ -384,6 +384,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_ENCODER_MULTI_CHOICE" ||
         macro == "SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP" ||
         macro == "SIXEL_REGISTRY_ENCODER_SIZE" ||
+        macro == "SIXEL_REGISTRY_ENCODER_POSITIVE_SIZE" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE" ||
         macro == \
@@ -823,6 +824,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         if ((fields[8] + 0.0) == 0.0 || (fields[10] + 0) == 1) {
             expected_unsigned_long_sign[key] = 1
         }
+    } else if (macro ~ /ENCODER_POSITIVE_SIZE/) {
+        range_policy = "parse-positive-size"
     } else if (macro ~ /ENCODER_SIZE|DECODER_SIZE/) {
         range_policy = "saturate-unsigned-long"
     }
@@ -841,6 +844,12 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     }
     if (option_id == "SIXEL_OPTION_SCHEMA_LUT_POLICY") {
         expected_lookup_contract[key] = 1
+    }
+    if (option_id == "SIXEL_OPTION_SCHEMA_MERGE_POLICY" ||
+            option_id == "SIXEL_OPTION_SCHEMA_COVER_POLICY" ||
+            (option_id == "SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL" &&
+             name == "sample_target")) {
+        expected_palette_contract[key] = 1
     }
     if (macro ~ /MULTI/) {
         expected_multi_base_contract[key] = 1
@@ -976,6 +985,16 @@ FILENAME == registry_file {
     test_gpu_contract[FILENAME] = gpu_contract
     next
 }
+/^# Palette contract: / {
+    palette_contract = $0
+    sub(/^# Palette contract: /, "", palette_contract)
+    gsub(/[[:space:]]+/, " ", palette_contract)
+    if (test_palette_contract[FILENAME] != "") {
+        fail(FILENAME " contains more than one palette contract marker")
+    }
+    test_palette_contract[FILENAME] = palette_contract
+    next
+}
 /^# Environment range: / {
     range_policy = $0
     sub(/^# Environment range: /, "", range_policy)
@@ -1054,6 +1073,13 @@ FILENAME != registry_file {
     if (test_gpu_contract[FILENAME] != "" &&
             index($0, "LSXGPU1|*" test_gpu_contract[FILENAME] "*") > 0) {
         has_gpu_contract[FILENAME] = 1
+    }
+    if (test_palette_contract[FILENAME] != "" &&
+            (index($0, "LSXMRG1|*" test_palette_contract[FILENAME] "*") > 0 ||
+             index($0, "LSXCOV1|*" test_palette_contract[FILENAME] "*") > 0 ||
+             index($0, "LSXSNP1|*" test_palette_contract[FILENAME] "*") > 0 ||
+             index($0, "LSXSMP1|*" test_palette_contract[FILENAME] "*") > 0)) {
+        has_palette_contract[FILENAME] = 1
     }
     if (index($0, "range_trace#*LSXSUB1|*key=" expected_name[key] \
             "|stored=1|binding=" expected_trace_binding[key] \
@@ -1160,6 +1186,7 @@ END {
             fail(file " does not verify the opposite environment endpoint")
         }
         if ((expected_range_policy[key] == "clamp-positive-uint" ||
+             expected_range_policy[key] == "parse-positive-size" ||
              expected_range_policy[key] == "parse-unsigned-long") &&
                 !has_width_reject_contract[file]) {
             fail(file " does not verify unsigned-width rejection")
@@ -1198,6 +1225,15 @@ END {
         if (!expected_gpu_contract[key] &&
                 test_gpu_contract[file] != "") {
             fail(file " has an unexpected GPU contract marker")
+        }
+        if (expected_palette_contract[key] &&
+                (test_palette_contract[file] == "" ||
+                 !has_palette_contract[file])) {
+            fail(file " does not verify its effective palette setting")
+        }
+        if (!expected_palette_contract[key] &&
+                test_palette_contract[file] != "") {
+            fail(file " has an unexpected palette contract marker")
         }
         if (!has_environment[file]) {
             fail(file " does not exercise the registered environment name")

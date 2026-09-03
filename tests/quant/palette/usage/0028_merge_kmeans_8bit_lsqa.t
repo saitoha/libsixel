@@ -22,7 +22,7 @@ SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
         SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=2 \
         SIXEL_PALETTE_KMEANS_THRESHOLD=0.1 \
         SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans:merge=ward \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans -Fward \
     -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel merge kmeans 8bit failed"
     exit 0

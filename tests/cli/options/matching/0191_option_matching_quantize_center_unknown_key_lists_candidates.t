@@ -28,15 +28,9 @@ test "${msg#*unknown suboption key*}" != "${msg}" || {
 valid_keys_line=${msg#*valid keys: }
 valid_keys_line=${valid_keys_line%%.*}
 
-test "${valid_keys_line#*algo*profile*seed*auto_policy*auto_fft_threshold*space_policy*candidate_policy*restarts*init_seeds*iter*histbits*point_budget*rare_keep*prune_mass*budget_policy*budget_scale*swap_topk*swap_update*swap_patience*swap_min_gain*}" \
+test "${valid_keys_line#*algo*profile*seed*auto_policy*auto_fft_threshold*space_policy*candidate_policy*restarts*init_seeds*iter*histbits*point_budget*rare_keep*prune_mass*budget_policy*budget_scale*swap_topk*swap_update*swap_patience*swap_min_gain*sample_target*}" \
     != "${valid_keys_line}" || {
     echo "not ok" 1 - "missing center key candidate list"
-    exit 0
-}
-
-test "${valid_keys_line#*merge*merge_oversplit*merge_lloyd*}" \
-    != "${valid_keys_line}" || {
-    echo "not ok" 1 - "missing center merge key candidate list"
     exit 0
 }
 

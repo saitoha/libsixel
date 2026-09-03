@@ -72,8 +72,11 @@ cover_set_override_mode(int enabled, int policy, int grow, int mode)
 {
     sixel_palette_cover_options_t options;
 
+    options.policy_override = enabled;
     options.policy = policy;
+    options.grow_override = enabled;
     options.grow = grow;
+    options.mode_override = enabled;
     options.mode = mode;
     sixel_set_palette_cover_override(enabled, &options);
 }
@@ -636,7 +639,7 @@ end:
 }
 
 /*
- * -Q MODEL:cover=on|off reaches the pass through this override, and has to win
+ * -a POLICY reaches the pass through this override, and has to win
  * over the environment: an explicit option is a stronger statement than an
  * inherited variable.
  */

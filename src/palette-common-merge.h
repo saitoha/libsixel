@@ -51,6 +51,10 @@ sixel_set_final_merge_lloyd_iterations_override(int enabled,
                                                 unsigned int iterations);
 
 void
+sixel_set_final_merge_channel_factor_override(int enabled,
+                                              double factor);
+
+void
 sixel_set_kmeans_iter_max_override(int enabled,
                                    unsigned int iter_max);
 

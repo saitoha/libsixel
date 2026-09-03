@@ -913,11 +913,6 @@ staticcheck_cases = [
       meson.project_build_root()],
   ],
   [
-    'staticcheck-quantize-merge-suboption-sync',
-    [meson.current_source_dir() / '_static/sh/staticcheck-quantize-merge-suboption-sync.sh',
-      meson.project_source_root()],
-  ],
-  [
     'staticcheck-binding-loader-setopt-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-binding-loader-setopt-sync.sh',
       meson.project_source_root()],

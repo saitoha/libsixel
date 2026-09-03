@@ -52,6 +52,34 @@ enum sixel_palette_snap_stage {
     SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED
 };
 
+enum sixel_palette_snap_policy {
+    SIXEL_PALETTE_SNAP_POLICY_NEAREST = 0,
+    SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE
+};
+
+enum sixel_palette_snap_timing_policy {
+    SIXEL_PALETTE_SNAP_TIMING_ONCE = 0,
+    SIXEL_PALETTE_SNAP_TIMING_POLISH,
+    SIXEL_PALETTE_SNAP_TIMING_MERGE,
+    SIXEL_PALETTE_SNAP_TIMING_RESOLVE,
+    SIXEL_PALETTE_SNAP_TIMING_ALL
+};
+
+typedef struct sixel_palette_snap_options {
+    int target_override;
+    int target;
+    int timing_override;
+    int timing;
+    int approach_rate_override;
+    double approach_rate;
+    int channel_factor_l_override;
+    double channel_factor_l;
+} sixel_palette_snap_options_t;
+
+void
+sixel_set_palette_snap_override(
+    sixel_palette_snap_options_t const *options);
+
 int
 sixel_palette_should_snap(enum sixel_palette_snap_stage stage);
 

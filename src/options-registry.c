@@ -57,6 +57,7 @@
 #include "lookup-policy.h"
 #include "options-registry.h"
 #include "palette-common-cover.h"
+#include "palette-common-snap.h"
 #include "palette-heckbert.h"
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
@@ -410,6 +411,26 @@
         (name_), (short_), (env_), (fallback_), (legacy_), \
         SIXEL_SUBOPTION_VALUE_SIZE, NULL, 0u, NULL, 0u, 0.0, 0.0, 0, 0, 1, \
         (environment_range_), (message_), NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_SIZE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_encoder_t, field_, size_t), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_encoder_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
+#define SIXEL_REGISTRY_ENCODER_POSITIVE_SIZE( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, message_, \
+    field_, override_) \
+    { \
+        (optflag_), (base_), SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, \
+        (name_), (short_), (env_), (fallback_), (legacy_), \
+        SIXEL_SUBOPTION_VALUE_SIZE, NULL, 0u, NULL, 0u, 1.0, 0.0, 1, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, (message_), NULL, \
         { \
             SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_SIZE, \
             SIXEL_REGISTRY_CHECKED_OFFSET( \
@@ -879,6 +900,35 @@ static sixel_option_value_schema_t const g_quantize_values[] = {
     }
 };
 
+static sixel_option_value_schema_t const g_merge_policy_values[] = {
+    { "auto", SIXEL_FINAL_MERGE_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "none", SIXEL_FINAL_MERGE_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "ward", SIXEL_FINAL_MERGE_WARD, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
+static sixel_option_value_schema_t const g_cover_policy_values[] = {
+    { "auto", SIXEL_PALETTE_COVER_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "off", SIXEL_PALETTE_COVER_OFF, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    {
+        "corners", SIXEL_PALETTE_COVER_CORNERS, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "faces", SIXEL_PALETTE_COVER_FACES, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "edges", SIXEL_PALETTE_COVER_EDGES, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "all", SIXEL_PALETTE_COVER_EDGES, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    { "0", SIXEL_PALETTE_COVER_OFF, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "1", SIXEL_PALETTE_COVER_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
 enum {
     SIXEL_LOOKUP_BASE_AUTO = 0,
     SIXEL_LOOKUP_BASE_5BIT,
@@ -1261,24 +1311,23 @@ static sixel_suboption_choice_t const g_kcenter_swap_update_choices[] = {
     { "incremental", SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL }
 };
 
-static sixel_suboption_choice_t const g_palette_cover_choices[] = {
-    { "off", SIXEL_PALETTE_COVER_OFF },
-    { "corners", SIXEL_PALETTE_COVER_CORNERS },
-    { "faces", SIXEL_PALETTE_COVER_FACES },
-    { "edges", SIXEL_PALETTE_COVER_EDGES },
-    { "all", SIXEL_PALETTE_COVER_EDGES },
-    { "auto", SIXEL_PALETTE_COVER_AUTO }
-};
-
 static sixel_suboption_choice_t const g_palette_cover_mode_choices[] = {
     { "hard", SIXEL_PALETTE_COVER_MODE_HARD },
     { "soft", SIXEL_PALETTE_COVER_MODE_SOFT }
 };
 
-static sixel_suboption_choice_t const g_quantize_merge_choices[] = {
-    { "auto", SIXEL_FINAL_MERGE_AUTO },
-    { "none", SIXEL_FINAL_MERGE_NONE },
-    { "ward", SIXEL_FINAL_MERGE_WARD }
+static sixel_suboption_choice_t const g_palette_snap_target_choices[] = {
+    { "auto", SIXEL_PALETTE_SNAP_POLICY_NEAREST },
+    { "nearest", SIXEL_PALETTE_SNAP_POLICY_NEAREST },
+    { "reversible", SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE }
+};
+
+static sixel_suboption_choice_t const g_palette_snap_timing_choices[] = {
+    { "once", SIXEL_PALETTE_SNAP_TIMING_ONCE },
+    { "polish", SIXEL_PALETTE_SNAP_TIMING_POLISH },
+    { "merge", SIXEL_PALETTE_SNAP_TIMING_MERGE },
+    { "resolve", SIXEL_PALETTE_SNAP_TIMING_RESOLVE },
+    { "all", SIXEL_PALETTE_SNAP_TIMING_ALL }
 };
 
 static sixel_suboption_choice_t const g_heckbert_profile_choices[] = {
@@ -1565,41 +1614,67 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_bluenoise_size_choices,
         bluenoise_size, bluenoise_size_override),
 
-    SIXEL_REGISTRY_ENCODER_MIRROR_CHOICE(
-        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
-        "merge", 'G', "SIXEL_PALETTE_FINAL_MERGE", NULL, NULL,
-        g_quantize_merge_choices,
-        quantize_model_merge_mode, quantize_model_merge_override,
-        final_merge_mode),
     SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
-        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
+        SIXEL_OPTION_SCHEMA_MERGE_POLICY, NULL,
         "merge_oversplit", 'O', "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         NULL, NULL, 1.0, 3.0,
-        "-Q merge_oversplit must be in range 1.0-3.0.",
-        quantize_model_merge_oversplit,
-        quantize_model_merge_oversplit_override),
+        "-F merge_oversplit must be in range 1.0-3.0.",
+        merge_policy_oversplit,
+        merge_policy_oversplit_override),
     SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED(
-        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
+        SIXEL_OPTION_SCHEMA_MERGE_POLICY, NULL,
         "merge_lloyd", 'L',
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         NULL, NULL, 0.0, 30.0, 0,
-        "-Q merge_lloyd must be 0 or in range 1-30.",
-        quantize_model_merge_lloyd,
-        quantize_model_merge_lloyd_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
-        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
-        "cover", 'C', "SIXEL_PALETTE_COVER", NULL, NULL,
-        g_palette_cover_choices,
-        quantize_model_cover, quantize_model_cover_override),
+        "-F merge_lloyd must be 0 or in range 1-30.",
+        merge_policy_lloyd,
+        merge_policy_lloyd_override),
+    SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
+        SIXEL_OPTION_SCHEMA_MERGE_POLICY, NULL,
+        "channel_l", 'C', "SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L",
+        NULL, "SIXEL_PALETTE_CHANNEL_FACTOR_L", 0.0, 1.0,
+        "-F channel_l must be in range 0.0-1.0.",
+        merge_policy_channel_factor_l,
+        merge_policy_channel_factor_l_override),
+
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
+        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
         "cover_grow", 'V', "SIXEL_PALETTE_COVER_GROW", NULL, NULL,
-        quantize_model_cover_grow, quantize_model_cover_grow_override),
+        cover_policy_grow, cover_policy_grow_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
-        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
+        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
         "cover_mode", 'W', "SIXEL_PALETTE_COVER_MODE", NULL, NULL,
         g_palette_cover_mode_choices,
-        quantize_model_cover_mode, quantize_model_cover_mode_override),
+        cover_policy_mode, cover_policy_mode_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
+        "snap_target", 'T', "SIXEL_PALETTE_SNAP_TARGET_POLICY", NULL, NULL,
+        g_palette_snap_target_choices,
+        cover_policy_snap_target, cover_policy_snap_target_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
+        "snap_timing", 'I', "SIXEL_PALETTE_SNAP_TIMING_POLICY", NULL, NULL,
+        g_palette_snap_timing_choices,
+        cover_policy_snap_timing, cover_policy_snap_timing_override),
+    SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
+        "snap_rate", 'A', "SIXEL_PALETTE_SNAP_APPROACH_RATE", NULL, NULL,
+        0.0, 1.0, "-a snap_rate must be in range 0.0-1.0.",
+        cover_policy_snap_approach_rate,
+        cover_policy_snap_approach_rate_override),
+    SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
+        "snap_channel_l", 'L', "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L",
+        NULL, NULL, 0.0, 1.0,
+        "-a snap_channel_l must be in range 0.0-1.0.",
+        cover_policy_snap_channel_factor_l,
+        cover_policy_snap_channel_factor_l_override),
+
+    SIXEL_REGISTRY_ENCODER_POSITIVE_SIZE(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
+        "sample_target", 'C', "SIXEL_PALETTE_SAMPLE_TARGET", NULL, NULL,
+        "-Q sample_target must be a positive integer.",
+        palette_sample_target, palette_sample_override),
     SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_HECKBERT,
@@ -2468,6 +2543,26 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_QUANTIZE_MODEL_AUTO,
         g_quantize_values,
         NULL),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_MERGE_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_MERGE_POLICY,
+        "merge-policy",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_FINAL_MERGE_AUTO,
+        g_merge_policy_values,
+        "SIXEL_PALETTE_FINAL_MERGE"),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_COVER_POLICY,
+        "cover-policy",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_PALETTE_COVER_AUTO,
+        g_cover_policy_values,
+        "SIXEL_PALETTE_COVER"),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
         SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,

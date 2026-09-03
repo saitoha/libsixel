@@ -33,7 +33,6 @@
 #include "config.h"
 #endif
 
-#include <errno.h>
 #include <float.h>
 #include <limits.h>
 #include <stdint.h>
@@ -41,7 +40,6 @@
 #include <string.h>
 
 #include "allocator.h"
-#include "compat_stub.h"
 #include "loader-common.h"
 #include "options.h"
 #include "palette-common-merge.h"
@@ -73,6 +71,9 @@ static SIXEL_TLS int sixel_final_merge_target_factor_override_enabled = 0;
 static SIXEL_TLS double sixel_final_merge_target_factor_override_value = 1.81;
 static SIXEL_TLS int sixel_final_merge_lloyd_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_final_merge_lloyd_override_value = 3u;
+static SIXEL_TLS int sixel_final_merge_channel_factor_override_enabled = 0;
+static SIXEL_TLS double sixel_final_merge_channel_factor_override_value
+    = 1.0 / 3.0;
 
 #undef SIXEL_TLS
 
@@ -294,16 +295,10 @@ sixel_resolve_final_merge_mode(int final_merge_mode)
 void
 sixel_final_merge_load_env(void)
 {
-    char const *env_value;
-    char *endptr;
-    double parsed_channel_factor;
     int lock_acquired;
     unsigned int registered_uint;
     double registered_double;
 
-    env_value = NULL;
-    endptr = NULL;
-    parsed_channel_factor = 1.0 / 3.0;
     lock_acquired = 0;
     registered_uint = 0u;
     registered_double = 0.0;
@@ -315,21 +310,21 @@ sixel_final_merge_load_env(void)
     env_final_merge_env_loaded = 1;
 
     if (sixel_option_resolve_registered_double_binding(
-            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            SIXEL_OPTION_SCHEMA_MERGE_POLICY,
             NULL,
             SIXEL_SUBOPTION_BINDING_ID_2(
-                quantize_model_merge_oversplit,
-                quantize_model_merge_oversplit_override),
+                merge_policy_oversplit,
+                merge_policy_oversplit_override),
             &registered_double)) {
         env_final_merge_target_factor = (float)registered_double;
     }
 
     if (sixel_option_resolve_registered_uint_binding(
-            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            SIXEL_OPTION_SCHEMA_MERGE_POLICY,
             NULL,
             SIXEL_SUBOPTION_BINDING_ID_2(
-                quantize_model_merge_lloyd,
-                quantize_model_merge_lloyd_override),
+                merge_policy_lloyd,
+                merge_policy_lloyd_override),
             &registered_uint)) {
         env_final_merge_additional_lloyd = registered_uint;
         env_final_merge_additional_lloyd_overridden = 1;
@@ -354,41 +349,31 @@ sixel_final_merge_load_env(void)
             &registered_double)) {
         env_kmeans_threshold = registered_double;
     }
+    if (sixel_option_resolve_registered_double_binding(
+            SIXEL_OPTION_SCHEMA_MERGE_POLICY,
+            NULL,
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                merge_policy_channel_factor_l,
+                merge_policy_channel_factor_l_override),
+            &registered_double)) {
+        env_final_merge_channel_factor_l = registered_double;
+    }
+    sixel_final_merge_env_lock_release(lock_acquired);
+}
 
-    /*
-     * Lab-family distances can emphasise lightness with
-     * SIXEL_PALETTE_CHANNEL_FACTOR_L.  Final-merge-specific overrides are
-     * taken from SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L so snap and merge can
-     * be tuned independently.
-     */
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_CHANNEL_FACTOR_L");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_channel_factor = strtod(env_value, &endptr);
-        if (endptr == env_value || errno != 0) {
-            parsed_channel_factor = 1.0 / 3.0;
-        }
+void
+sixel_set_final_merge_channel_factor_override(int enabled,
+                                              double factor)
+{
+    sixel_final_merge_channel_factor_override_enabled = enabled != 0;
+    sixel_final_merge_channel_factor_override_value = factor;
+    if (!enabled) {
+        return;
     }
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_channel_factor = strtod(env_value, &endptr);
-        if (endptr == env_value || errno != 0) {
-            parsed_channel_factor = 1.0 / 3.0;
-        }
-    }
-    if (parsed_channel_factor < 0.0) {
-        parsed_channel_factor = 0.0;
-    }
-    if (parsed_channel_factor > 1.0) {
-        parsed_channel_factor = 1.0;
-    }
-    env_final_merge_channel_factor_l = parsed_channel_factor;
     sixel_trace_topic_message(
         "palette_contract",
         "LSXMRG1|channel_l=%.17g",
-        env_final_merge_channel_factor_l);
-    sixel_final_merge_env_lock_release(lock_acquired);
+        factor);
 }
 
 /*
@@ -482,6 +467,12 @@ sixel_set_final_merge_target_factor_override(int enabled,
     sixel_final_merge_target_factor_override_enabled = enabled ? 1 : 0;
     sixel_final_merge_target_factor_override_value = factor;
     sixel_final_merge_override_lock_release(lock_acquired);
+    if (enabled) {
+        sixel_trace_topic_message(
+            "palette_contract",
+            "LSXMRG1|oversplit=%.17g",
+            factor);
+    }
 }
 
 void
@@ -494,6 +485,12 @@ sixel_set_final_merge_lloyd_iterations_override(int enabled,
     sixel_final_merge_lloyd_override_enabled = enabled ? 1 : 0;
     sixel_final_merge_lloyd_override_value = iterations;
     sixel_final_merge_override_lock_release(lock_acquired);
+    if (enabled) {
+        sixel_trace_topic_message(
+            "palette_contract",
+            "LSXMRG1|lloyd=%u",
+            iterations);
+    }
 }
 
 unsigned int
@@ -559,7 +556,9 @@ sixel_final_merge_distance_sq(sixel_final_merge_cluster_t const *lhs,
     }
     if (use_lab_weight && lab_family) {
         sixel_final_merge_load_env();
-        channel_factor = env_final_merge_channel_factor_l;
+        channel_factor = sixel_final_merge_channel_factor_override_enabled
+            ? sixel_final_merge_channel_factor_override_value
+            : env_final_merge_channel_factor_l;
         chroma_weight = 1.0 - channel_factor;
         distance = channel_factor * dr * dr
                    + chroma_weight * 0.5 * dg * dg

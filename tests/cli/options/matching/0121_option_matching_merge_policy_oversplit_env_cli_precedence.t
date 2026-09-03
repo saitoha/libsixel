@@ -22,7 +22,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qauto:merge_oversplit=1.2 \
+    -Fauto:merge_oversplit=1.2 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "cli-only merge_oversplit was rejected"
@@ -31,21 +31,21 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_OVERSPLIT_FACTOR=2.0" \
-    -Qauto:merge_oversplit=3.5 \
+    -Fauto:merge_oversplit=3.5 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
     echo "not ok" 1 - "invalid CLI merge_oversplit unexpectedly ignored"
     exit 0
 }
 
-test "${msg#*-Q merge_oversplit must be in range 1.0-3.0.*}" != "${msg}" || {
+test "${msg#*-F merge_oversplit must be in range 1.0-3.0.*}" != "${msg}" || {
     echo "not ok" 1 - "missing invalid CLI merge_oversplit diagnostic"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_OVERSPLIT_FACTOR=9.0" \
-    -Qauto:merge_oversplit=1.2 \
+    -Fauto:merge_oversplit=1.2 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "valid CLI merge_oversplit did not override invalid env"

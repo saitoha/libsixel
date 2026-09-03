@@ -39,23 +39,10 @@
 #include <string.h>
 
 #include "colorspace.h"
-#include "compat_stub.h"
 #include "loader-common.h"
+#include "options.h"
 #include "palette-common-snap.h"
 #include "pixelformat.h"
-
-enum sixel_palette_snap_policy {
-    SIXEL_PALETTE_SNAP_POLICY_NEAREST = 0,
-    SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE
-};
-
-enum sixel_palette_snap_timing_policy {
-    SIXEL_PALETTE_SNAP_TIMING_ONCE = 0,
-    SIXEL_PALETTE_SNAP_TIMING_POLISH,
-    SIXEL_PALETTE_SNAP_TIMING_MERGE,
-    SIXEL_PALETTE_SNAP_TIMING_RESOLVE,
-    SIXEL_PALETTE_SNAP_TIMING_ALL
-};
 
 static enum sixel_palette_snap_policy
 sixel_palette_get_snap_policy(void);
@@ -75,77 +62,39 @@ sixel_palette_snap_float_triplet(float *components,
                                  int pixelformat,
                                  enum sixel_palette_snap_stage stage);
 
-static enum sixel_palette_snap_policy snap_policy_cache
-    = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
-static int snap_policy_initialized = 0;
-static enum sixel_palette_snap_timing_policy snap_timing_cache
-    = SIXEL_PALETTE_SNAP_TIMING_ONCE;
-static int snap_timing_initialized = 0;
-static double snap_approach_cache = 1.0;
-static int snap_approach_initialized = 0;
-static double snap_channel_factor_cache = 0.85;
-static int snap_channel_factor_initialized = 0;
+#if defined(_MSC_VER)
+# define SIXEL_SNAP_TLS __declspec(thread)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !defined(__PCC__)
+# define SIXEL_SNAP_TLS _Thread_local
+#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
+# define SIXEL_SNAP_TLS __thread
+#else
+# define SIXEL_SNAP_TLS
+#endif
 
-static enum sixel_palette_snap_policy
-sixel_palette_get_snap_policy(void)
+static SIXEL_SNAP_TLS sixel_palette_snap_options_t g_snap_options;
+
+#undef SIXEL_SNAP_TLS
+
+void
+sixel_set_palette_snap_override(
+    sixel_palette_snap_options_t const *options)
 {
-    char const *policy;
-
-    /*
-     * SIXEL_PALETTE_SNAP_TARGET_POLICY controls whether we snap to the
-     * reversible fixed points or choose the nearest fixed point in the current
-     * colorspace.  The default "auto" is treated as "nearest".
-     */
-    if (snap_policy_initialized) {
-        return snap_policy_cache;
-    }
-
-    snap_policy_initialized = 1;
-    policy = sixel_compat_getenv("SIXEL_PALETTE_SNAP_TARGET_POLICY");
-    snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
-    if (policy != NULL && *policy != '\0' &&
-        sixel_compat_strcasecmp(policy, "reversible") == 0) {
-        snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE;
-    }
-    sixel_trace_topic_message(
-        "palette_contract",
-        "LSXSNP1|target=%s",
-        snap_policy_cache == SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE
-            ? "reversible"
-            : "nearest");
-
-    return snap_policy_cache;
-}
-
-static enum sixel_palette_snap_timing_policy
-sixel_palette_get_snap_timing(void)
-{
-    char const *policy;
+    char const *target_name;
     char const *timing_name;
 
+    target_name = "nearest";
     timing_name = "once";
-
-    if (snap_timing_initialized) {
-        return snap_timing_cache;
+    if (options == NULL) {
+        memset(&g_snap_options, 0, sizeof(g_snap_options));
+        return;
     }
-
-    snap_timing_initialized = 1;
-    policy = sixel_compat_getenv("SIXEL_PALETTE_SNAP_TIMING_POLICY");
-    snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ONCE;
-    if (policy != NULL &&
-        sixel_compat_strcasecmp(policy, "polish") == 0) {
-        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_POLISH;
-    } else if (policy != NULL &&
-               sixel_compat_strcasecmp(policy, "merge") == 0) {
-        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_MERGE;
-    } else if (policy != NULL &&
-               sixel_compat_strcasecmp(policy, "resolve") == 0) {
-        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_RESOLVE;
-    } else if (policy != NULL &&
-               sixel_compat_strcasecmp(policy, "all") == 0) {
-        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ALL;
+    g_snap_options = *options;
+    if (options->target == SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE) {
+        target_name = "reversible";
     }
-    switch (snap_timing_cache) {
+    switch (options->timing) {
     case SIXEL_PALETTE_SNAP_TIMING_POLISH:
         timing_name = "polish";
         break;
@@ -162,76 +111,106 @@ sixel_palette_get_snap_timing(void)
     default:
         break;
     }
-    sixel_trace_topic_message(
-        "palette_contract",
-        "LSXSNP1|timing=%s",
-        timing_name);
+    if (options->target_override) {
+        sixel_trace_topic_message(
+            "palette_contract",
+            "LSXSNP1|target=%s",
+            target_name);
+    }
+    if (options->timing_override) {
+        sixel_trace_topic_message(
+            "palette_contract",
+            "LSXSNP1|timing=%s",
+            timing_name);
+    }
+    if (options->approach_rate_override) {
+        sixel_trace_topic_message(
+            "palette_contract",
+            "LSXSNP1|approach=%.17g",
+            options->approach_rate);
+    }
+    if (options->channel_factor_l_override) {
+        sixel_trace_topic_message(
+            "palette_contract",
+            "LSXSNP1|channel_l=%.17g",
+            options->channel_factor_l);
+    }
+}
 
-    return snap_timing_cache;
+static enum sixel_palette_snap_policy
+sixel_palette_get_snap_policy(void)
+{
+    int value;
+
+    value = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
+    if (g_snap_options.target_override) {
+        return (enum sixel_palette_snap_policy)g_snap_options.target;
+    }
+    (void)sixel_option_resolve_registered_int_binding(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            cover_policy_snap_target,
+            cover_policy_snap_target_override),
+        &value);
+    return (enum sixel_palette_snap_policy)value;
+}
+
+static enum sixel_palette_snap_timing_policy
+sixel_palette_get_snap_timing(void)
+{
+    int value;
+
+    value = SIXEL_PALETTE_SNAP_TIMING_ONCE;
+    if (g_snap_options.timing_override) {
+        return (enum sixel_palette_snap_timing_policy)g_snap_options.timing;
+    }
+    (void)sixel_option_resolve_registered_int_binding(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            cover_policy_snap_timing,
+            cover_policy_snap_timing_override),
+        &value);
+    return (enum sixel_palette_snap_timing_policy)value;
 }
 
 static double
 sixel_palette_get_snap_approach_rate(void)
 {
-    char const *value;
-    double parsed;
+    double value;
 
-    if (snap_approach_initialized) {
-        return snap_approach_cache;
+    value = 1.0;
+    if (g_snap_options.approach_rate_override) {
+        return g_snap_options.approach_rate;
     }
-
-    snap_approach_initialized = 1;
-    value = sixel_compat_getenv("SIXEL_PALETTE_SNAP_APPROACH_RATE");
-    if (value == NULL || *value == '\0') {
-        snap_approach_cache = 1.0;
-    } else {
-        parsed = strtod(value, NULL);
-        if (parsed < 0.0) {
-            parsed = 0.0;
-        }
-        if (parsed > 1.0) {
-            parsed = 1.0;
-        }
-        snap_approach_cache = parsed;
-    }
-    sixel_trace_topic_message(
-        "palette_contract",
-        "LSXSNP1|approach=%.17g",
-        snap_approach_cache);
-
-    return snap_approach_cache;
+    (void)sixel_option_resolve_registered_double_binding(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            cover_policy_snap_approach_rate,
+            cover_policy_snap_approach_rate_override),
+        &value);
+    return value;
 }
 
 static double
 sixel_palette_get_snap_channel_factor(void)
 {
-    char const *value;
-    double parsed;
+    double value;
 
-    if (snap_channel_factor_initialized) {
-        return snap_channel_factor_cache;
+    value = 0.85;
+    if (g_snap_options.channel_factor_l_override) {
+        return g_snap_options.channel_factor_l;
     }
-
-    snap_channel_factor_initialized = 1;
-    value = sixel_compat_getenv("SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L");
-    if (value == NULL || *value == '\0') {
-        snap_channel_factor_cache = 0.85;
-    } else {
-        parsed = strtod(value, NULL);
-        if (parsed < 0.0) {
-            parsed = 0.0;
-        }
-        if (parsed > 1.0) {
-            parsed = 1.0;
-        }
-        snap_channel_factor_cache = parsed;
-    }
-    sixel_trace_topic_message(
-        "palette_contract",
-        "LSXSNP1|channel_l=%.17g",
-        snap_channel_factor_cache);
-
-    return snap_channel_factor_cache;
+    (void)sixel_option_resolve_registered_double_binding(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            cover_policy_snap_channel_factor_l,
+            cover_policy_snap_channel_factor_l_override),
+        &value);
+    return value;
 }
 
 int

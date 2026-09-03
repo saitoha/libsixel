@@ -39,7 +39,8 @@ test "${status}" -eq 0 || {
     exit 0
 }
 
-diag_line=${msg%%"${nl}"*}
+diag_line="LSXPAL1${msg#*LSXPAL1}"
+diag_line=${diag_line%%"${nl}"*}
 test "${diag_line#LSXPAL1*rc=0*}" != "${diag_line}" || {
     echo "not ok" 1 - "kmeans seed diagnostic header is malformed"
     exit 0

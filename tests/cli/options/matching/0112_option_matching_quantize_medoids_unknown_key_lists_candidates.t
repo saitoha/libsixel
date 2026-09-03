@@ -28,15 +28,9 @@ test "${msg#*unknown suboption key*}" != "${msg}" || {
 valid_keys_line=${msg#*valid keys: }
 valid_keys_line=${valid_keys_line%%.*}
 
-test "${valid_keys_line#*algo*seed*iter*sample*clara_trials*clara_sample*clarans_local*clarans_neighbors*bandit_iter*bandit_candidates*bandit_batch*histbits*point_budget*rare_keep*prune_mass*auction*auction_shortlist*}" \
+test "${valid_keys_line#*algo*seed*iter*sample*clara_trials*clara_sample*clarans_local*clarans_neighbors*bandit_iter*bandit_candidates*bandit_batch*histbits*point_budget*rare_keep*prune_mass*auction*auction_shortlist*sample_target*}" \
     != "${valid_keys_line}" || {
     echo "not ok" 1 - "missing medoids key candidate list"
-    exit 0
-}
-
-test "${valid_keys_line#*merge*merge_oversplit*merge_lloyd*}" \
-    != "${valid_keys_line}" || {
-    echo "not ok" 1 - "missing medoids merge key candidate list"
     exit 0
 }
 

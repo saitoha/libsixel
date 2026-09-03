@@ -100,7 +100,6 @@ def read_metadata(path: Path) -> Dict[str, object]:
     expected_controls = {
         "threads": 1,
         "precision": "8bit",
-        "quantize_model": "kmeans:merge=ward:seed=1",
         "clustering_colorspace": "oklab",
         "working_colorspace": "gamma",
         "lookup_policy": "none",
@@ -110,6 +109,15 @@ def read_metadata(path: Path) -> Dict[str, object]:
     for name, expected in expected_controls.items():
         if protocol.get(name) != expected:
             fail(f"measurement metadata has unexpected {name}")
+    legacy_quantize = protocol.get("quantize_model") == (
+        "kmeans:merge=ward:seed=1"
+    )
+    current_quantize = (
+        protocol.get("quantize_model") == "kmeans:seed=1"
+        and protocol.get("merge_policy") == "ward"
+    )
+    if not legacy_quantize and not current_quantize:
+        fail("measurement metadata has unexpected quantize/merge policy")
     for name in ("img2sixel", "lsqa"):
         record = programs.get(name)
         if not isinstance(record, dict):
@@ -142,7 +150,6 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
         "--precision=8bit",
         "--quality=full",
         "--loaders=libpng!",
-        "--quantize-model=kmeans:merge=ward:seed=1",
         "-Xoklab",
         "-Wgamma",
         f"--diffusion={diffusion}",
@@ -152,6 +159,13 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
     missing = sorted(required - set(tokens))
     if missing:
         fail(f"command controls missing in {path}: {missing}")
+    legacy_quantize = "--quantize-model=kmeans:merge=ward:seed=1" in tokens
+    current_quantize = (
+        "--quantize-model=kmeans:seed=1" in tokens
+        and "--merge-policy=ward" in tokens
+    )
+    if not legacy_quantize and not current_quantize:
+        fail(f"command quantize/merge controls missing in {path}")
     try:
         color_index = tokens.index("-p") + 1
         command_colors = int(tokens[color_index])

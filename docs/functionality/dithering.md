@@ -815,7 +815,7 @@ shape is:
 img2sixel \
   --threads=1 --precision=8bit --quality=full \
   --loaders=libpng! \
-  --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma \
+  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
   --diffusion=METHOD:scan=raster \
   --gpu-policy=off --lookup-policy=none -p K \
   images/snake.png

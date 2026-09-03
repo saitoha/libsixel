@@ -254,47 +254,26 @@ _quantizemodel() {
           ${base} == heckbert || ${base} == heckbert* ]]; then
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
-        prefix=${current%${segment}}
-        if [[ ${key} == merge ]]; then
-          compadd -- "${prefix}${key}=auto" \
-                     "${prefix}${key}=none" \
-                     "${prefix}${key}=ward"
-          return 0
-        elif [[ ${key} == merge_oversplit ]]; then
-          compadd -- "${prefix}${key}=1.2" \
-                     "${prefix}${key}=1.5" \
-                     "${prefix}${key}=1.8" \
-                     "${prefix}${key}=2.0"
-          return 0
-        elif [[ ${key} == merge_lloyd ]]; then
-          compadd -- "${prefix}${key}=0" \
-                     "${prefix}${key}=1" \
-                     "${prefix}${key}=3" \
-                     "${prefix}${key}=5" \
-                     "${prefix}${key}=8"
+        prefix=${current%"${segment}"}
+        if [[ ${key} == sample_target ]]; then
+          compadd -- "${prefix}${key}=64" \
+                     "${prefix}${key}=128" \
+                     "${prefix}${key}=256" \
+                     "${prefix}${key}=4096"
           return 0
         fi
       else
-        prefix=${current%${segment}}
-        compadd -- "${prefix}Gauto" \
-                   "${prefix}Gnone" \
-                   "${prefix}Gward" \
-                   "${prefix}merge=" \
-                   "${prefix}O1.2" \
-                   "${prefix}O1.5" \
-                   "${prefix}O2.0" \
-                   "${prefix}merge_oversplit=" \
-                   "${prefix}L0" \
-                   "${prefix}L1" \
-                   "${prefix}L3" \
-                   "${prefix}L5" \
-                   "${prefix}merge_lloyd="
+        prefix=${current%"${segment}"}
+        compadd -- "${prefix}C64" \
+                   "${prefix}C128" \
+                   "${prefix}C256" \
+                   "${prefix}sample_target="
         return 0
       fi
     elif [[ ${base} == k || ${base} == kmeans* ]]; then
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
-        prefix=${current%${segment}}
+        prefix=${current%"${segment}"}
         if [[ ${key} == inittype ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
@@ -393,27 +372,15 @@ _quantizemodel() {
                      "${prefix}${key}=elkan" \
                      "${prefix}${key}=yinyang"
           return 0
-        elif [[ ${key} == merge ]]; then
-          compadd -- "${prefix}${key}=auto" \
-                     "${prefix}${key}=none" \
-                     "${prefix}${key}=ward"
-          return 0
-        elif [[ ${key} == merge_oversplit ]]; then
-          compadd -- "${prefix}${key}=1.2" \
-                     "${prefix}${key}=1.5" \
-                     "${prefix}${key}=1.8" \
-                     "${prefix}${key}=2.0"
-          return 0
-        elif [[ ${key} == merge_lloyd ]]; then
-          compadd -- "${prefix}${key}=0" \
-                     "${prefix}${key}=1" \
-                     "${prefix}${key}=3" \
-                     "${prefix}${key}=5" \
-                     "${prefix}${key}=8"
+        elif [[ ${key} == sample_target ]]; then
+          compadd -- "${prefix}${key}=64" \
+                     "${prefix}${key}=128" \
+                     "${prefix}${key}=256" \
+                     "${prefix}${key}=4096"
           return 0
         fi
       else
-        prefix=${current%${segment}}
+        prefix=${current%"${segment}"}
         compadd -- "${prefix}Iauto" "${prefix}Inone" \
                    "${prefix}Ipca" "${prefix}inittype=" \
                    "${prefix}T0.120" "${prefix}threshold=" \
@@ -435,19 +402,10 @@ _quantizemodel() {
                    "${prefix}miniter=" "${prefix}polish_iter=" \
                    "${prefix}feedback_slots=" \
                    "${prefix}feedback_interval=" \
-                   "${prefix}Gauto" \
-                   "${prefix}Gnone" \
-                   "${prefix}Gward" \
-                   "${prefix}merge=" \
-                   "${prefix}O1.2" \
-                   "${prefix}O1.5" \
-                   "${prefix}O2.0" \
-                   "${prefix}merge_oversplit=" \
-                   "${prefix}L0" \
-                   "${prefix}L1" \
-                   "${prefix}L3" \
-                   "${prefix}L5" \
-                   "${prefix}merge_lloyd="
+                   "${prefix}C64" \
+                   "${prefix}C128" \
+                   "${prefix}C256" \
+                   "${prefix}sample_target="
         return 0
       fi
     elif [[ ${base} == medoids* ]]; then
@@ -542,23 +500,11 @@ _quantizemodel() {
                      "${prefix}${key}=256" \
                      "${prefix}${key}=512"
           return 0
-        elif [[ ${key} == merge ]]; then
-          compadd -- "${prefix}${key}=auto" \
-                     "${prefix}${key}=none" \
-                     "${prefix}${key}=ward"
-          return 0
-        elif [[ ${key} == merge_oversplit ]]; then
-          compadd -- "${prefix}${key}=1.2" \
-                     "${prefix}${key}=1.5" \
-                     "${prefix}${key}=1.8" \
-                     "${prefix}${key}=2.0"
-          return 0
-        elif [[ ${key} == merge_lloyd ]]; then
-          compadd -- "${prefix}${key}=0" \
-                     "${prefix}${key}=1" \
-                     "${prefix}${key}=3" \
-                     "${prefix}${key}=5" \
-                     "${prefix}${key}=8"
+        elif [[ ${key} == sample_target ]]; then
+          compadd -- "${prefix}${key}=64" \
+                     "${prefix}${key}=128" \
+                     "${prefix}${key}=256" \
+                     "${prefix}${key}=4096"
           return 0
         fi
       else
@@ -581,19 +527,10 @@ _quantizemodel() {
                    "${prefix}bandit_iter=" \
                    "${prefix}bandit_candidates=" \
                    "${prefix}bandit_batch=" \
-                   "${prefix}Gauto" \
-                   "${prefix}Gnone" \
-                   "${prefix}Gward" \
-                   "${prefix}merge=" \
-                   "${prefix}O1.2" \
-                   "${prefix}O1.5" \
-                   "${prefix}O2.0" \
-                   "${prefix}merge_oversplit=" \
-                   "${prefix}L0" \
-                   "${prefix}L1" \
-                   "${prefix}L3" \
-                   "${prefix}L5" \
-                   "${prefix}merge_lloyd="
+                   "${prefix}C64" \
+                   "${prefix}C128" \
+                   "${prefix}C256" \
+                   "${prefix}sample_target="
         return 0
       fi
     elif [[ ${base} == c || ${base} == center* ]]; then
@@ -727,23 +664,11 @@ _quantizemodel() {
                      "${prefix}${key}=0.10" \
                      "${prefix}${key}=0.25"
           return 0
-        elif [[ ${key} == merge ]]; then
-          compadd -- "${prefix}${key}=auto" \
-                     "${prefix}${key}=none" \
-                     "${prefix}${key}=ward"
-          return 0
-        elif [[ ${key} == merge_oversplit ]]; then
-          compadd -- "${prefix}${key}=1.2" \
-                     "${prefix}${key}=1.5" \
-                     "${prefix}${key}=1.8" \
-                     "${prefix}${key}=2.0"
-          return 0
-        elif [[ ${key} == merge_lloyd ]]; then
-          compadd -- "${prefix}${key}=0" \
-                     "${prefix}${key}=1" \
-                     "${prefix}${key}=3" \
-                     "${prefix}${key}=5" \
-                     "${prefix}${key}=8"
+        elif [[ ${key} == sample_target ]]; then
+          compadd -- "${prefix}${key}=64" \
+                     "${prefix}${key}=128" \
+                     "${prefix}${key}=256" \
+                     "${prefix}${key}=4096"
           return 0
         fi
       else
@@ -771,19 +696,10 @@ _quantizemodel() {
                    "${prefix}swap_update=" \
                    "${prefix}swap_patience=" \
                    "${prefix}swap_min_gain=" \
-                   "${prefix}Gauto" \
-                   "${prefix}Gnone" \
-                   "${prefix}Gward" \
-                   "${prefix}merge=" \
-                   "${prefix}O1.2" \
-                   "${prefix}O1.5" \
-                   "${prefix}O2.0" \
-                   "${prefix}merge_oversplit=" \
-                   "${prefix}L0" \
-                   "${prefix}L1" \
-                   "${prefix}L3" \
-                   "${prefix}L5" \
-                   "${prefix}merge_lloyd="
+                   "${prefix}C64" \
+                   "${prefix}C128" \
+                   "${prefix}C256" \
+                   "${prefix}sample_target="
         return 0
       fi
     fi
@@ -796,6 +712,124 @@ _quantizemodel() {
     'kmeans[k-means palette solver]' \
     'medoids[k-medoids palette solver]' \
     'center[discrete k-center palette solver]'
+}
+
+_mergepolicy() {
+  local current base segment key prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    base=${current%%:*}
+    segment=${current##*:}
+    if [[ ${base} == auto || ${base} == none || ${base} == ward ]]; then
+      if [[ ${segment} == *=* ]]; then
+        key=${segment%%=*}
+        prefix=${current%"${segment}"}
+        if [[ ${key} == merge_oversplit ]]; then
+          compadd -- "${prefix}${key}=1.2" \
+                     "${prefix}${key}=1.5" \
+                     "${prefix}${key}=1.8" \
+                     "${prefix}${key}=2.0"
+          return 0
+        elif [[ ${key} == merge_lloyd ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1" \
+                     "${prefix}${key}=3" \
+                     "${prefix}${key}=5" \
+                     "${prefix}${key}=8"
+          return 0
+        elif [[ ${key} == channel_l ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=0.25" \
+                     "${prefix}${key}=0.5" \
+                     "${prefix}${key}=0.75" \
+                     "${prefix}${key}=1"
+          return 0
+        fi
+      else
+        prefix=${current%"${segment}"}
+        compadd -- "${prefix}O1.2" \
+                   "${prefix}L0" \
+                   "${prefix}C0.5" \
+                   "${prefix}merge_oversplit=" \
+                   "${prefix}merge_lloyd=" \
+                   "${prefix}channel_l="
+        return 0
+      fi
+    fi
+  fi
+
+  _values \
+    'MERGEPOLICY' \
+    'auto[choose final palette merge automatically]' \
+    'none[disable final palette merge]' \
+    'ward[use Ward final palette merge]'
+}
+
+_coverpolicy() {
+  local current base segment key prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    base=${current%%:*}
+    segment=${current##*:}
+    if [[ ${base} == auto || ${base} == off || ${base} == corners || \
+          ${base} == faces || ${base} == edges || ${base} == all ]]; then
+      if [[ ${segment} == *=* ]]; then
+        key=${segment%%=*}
+        prefix=${current%"${segment}"}
+        if [[ ${key} == cover_grow ]]; then
+          compadd -- "${prefix}${key}=0" "${prefix}${key}=1"
+          return 0
+        elif [[ ${key} == cover_mode ]]; then
+          compadd -- "${prefix}${key}=soft" "${prefix}${key}=hard"
+          return 0
+        elif [[ ${key} == snap_target ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=nearest" \
+                     "${prefix}${key}=reversible"
+          return 0
+        elif [[ ${key} == snap_timing ]]; then
+          compadd -- "${prefix}${key}=once" \
+                     "${prefix}${key}=polish" \
+                     "${prefix}${key}=merge" \
+                     "${prefix}${key}=resolve" \
+                     "${prefix}${key}=all"
+          return 0
+        elif [[ ${key} == snap_rate || ${key} == snap_channel_l ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=0.25" \
+                     "${prefix}${key}=0.5" \
+                     "${prefix}${key}=0.75" \
+                     "${prefix}${key}=1"
+          return 0
+        fi
+      else
+        prefix=${current%"${segment}"}
+        compadd -- "${prefix}V0" "${prefix}V1" \
+                   "${prefix}Wsoft" "${prefix}Whard" \
+                   "${prefix}Tnearest" "${prefix}Treversible" \
+                   "${prefix}Ionce" "${prefix}Iall" \
+                   "${prefix}A0.5" "${prefix}L0.85" \
+                   "${prefix}cover_grow=" \
+                   "${prefix}cover_mode=" \
+                   "${prefix}snap_target=" \
+                   "${prefix}snap_timing=" \
+                   "${prefix}snap_rate=" \
+                   "${prefix}snap_channel_l="
+        return 0
+      fi
+    fi
+  fi
+
+  _values \
+    'COVERPOLICY' \
+    'auto[choose palette coverage automatically]' \
+    'off[disable palette coverage]' \
+    'corners[anchor color-cube corners]' \
+    'faces[anchor color-cube faces]' \
+    'edges[anchor color-cube edges]' \
+    'all[anchor corners, faces, and edges]'
 }
 
 
@@ -832,6 +866,8 @@ _arguments -S -s -A "-*" -S \
   {-6,--6reversible}'[snap the palette to SIXEL-reversible tones]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
+  {-F,--merge-policy=}'[choose final palette merge policy]':mergepolicy:_mergepolicy \
+  {-a,--cover-policy=}'[choose palette coverage policy]':coverpolicy:_coverpolicy \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \
   {-M,--mapfile-output=}'[export the computed palette; TYPE:PATH (TYPE:- for stdout) or .act/.pal/.gpl extensions choose the format]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \

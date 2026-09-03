@@ -474,10 +474,6 @@ run_case_tap "staticcheck-gd-optional-fallback-profile-sync" \
     "$src_root/tests/_static/sh/staticcheck-gd-optional-fallback-profile-sync.sh" \
     "$src_root" || fail_and_exit $?
 
-run_case_tap "staticcheck-quantize-merge-suboption-sync" \
-    "$src_root/tests/_static/sh/staticcheck-quantize-merge-suboption-sync.sh" \
-    "$src_root" || fail_and_exit $?
-
 run_case_tap "staticcheck-test-runner-dllexport" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-dllexport.sh" \
     "$src_root" || fail_and_exit $?

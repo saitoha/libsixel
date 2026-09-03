@@ -407,18 +407,12 @@ typedef int SIXELSTATUS;
                                                                 solver
                                                     center   -> discrete k-center
                                                                 solver
-                                                  auto/heckbert/kmeans/medoids/
-                                                  center
-                                                  share merge suboptions:
+                                                  all models share:
                                                     long forms use key=value;
                                                     short forms use Kvalue
-                                                    merge (or Gvalue):
-                                                      auto, none, ward
-                                                    merge_oversplit
-                                                      (or Ovalue):
-                                                      float in 1.0-3.0
-                                                    merge_lloyd (or Lvalue):
-                                                      0 or integer in 1-30
+                                                    sample_target
+                                                      (or Cvalue):
+                                                      positive integer
                                                   heckbert accepts profile:
                                                     profile:
                                                       compat, speed, quality
@@ -538,6 +532,51 @@ typedef int SIXELSTATUS;
                                                       0 or integer in 1-8
                                                     swap_min_gain:
                                                       float in 0.0-8.0
+                                                */
+#define SIXEL_OPTFLAG_MERGE_POLICY      ('F')  /*
+                                                  -F POLICY,
+                                                  --merge-policy=POLICY:
+                                                  configure final palette merge
+                                                  independently of -Q
+                                                  POLICY is one of:
+                                                    auto, none, ward
+                                                  suboptions:
+                                                    merge_oversplit
+                                                      (or Ovalue):
+                                                      float in 1.0-3.0
+                                                    merge_lloyd
+                                                      (or Lvalue):
+                                                      integer in 0-30
+                                                    channel_l
+                                                      (or Cvalue):
+                                                      float in 0.0-1.0
+                                                */
+#define SIXEL_OPTFLAG_COVER_POLICY      ('a')  /*
+                                                  -a POLICY,
+                                                  --cover-policy=POLICY:
+                                                  configure palette coverage
+                                                  independently of -Q
+                                                  POLICY is one of:
+                                                    auto, off, corners, faces,
+                                                    edges, all
+                                                  suboptions:
+                                                    cover_grow
+                                                      (or Vvalue): 0 or 1
+                                                    cover_mode
+                                                      (or Wvalue): soft, hard
+                                                    snap_target
+                                                      (or Tvalue): auto,
+                                                      nearest, reversible
+                                                    snap_timing
+                                                      (or Ivalue): once,
+                                                      polish, merge, resolve,
+                                                      all
+                                                    snap_rate
+                                                      (or Avalue):
+                                                      float in 0.0-1.0
+                                                    snap_channel_l
+                                                      (or Lvalue):
+                                                      float in 0.0-1.0
                                                 */
 #define SIXEL_OPTFLAG_CROP              ('c')  /* -c REGION, --crop=REGION:
                                                   crop source image to fit the

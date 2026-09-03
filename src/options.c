@@ -1301,6 +1301,46 @@ sixel_option_free_argument_resolution(
     sixel_option_reset_argument_resolution(resolution);
 }
 
+int
+sixel_option_resolve_registered_base_environment(
+    sixel_option_schema_id_t option_id,
+    unsigned int consumer_scope,
+    int *value)
+{
+    SIXELSTATUS status;
+    char const *text;
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
+
+    status = SIXEL_OK;
+    text = NULL;
+    schema = NULL;
+    memset(&resolution, 0, sizeof(resolution));
+    if (value == NULL) {
+        return 0;
+    }
+
+    schema = sixel_option_registry_get(option_id);
+    text = sixel_option_resolve_argument_environment(option_id);
+    if (schema == NULL || text == NULL || text[0] == '\0') {
+        return 0;
+    }
+    status = sixel_option_parse_argument_with_suboptions(
+        text,
+        schema,
+        consumer_scope,
+        &resolution,
+        NULL,
+        0u);
+    if (SIXEL_FAILED(status)) {
+        return 0;
+    }
+
+    *value = resolution.resolved_base_value;
+    sixel_option_free_argument_resolution(&resolution);
+    return 1;
+}
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument_with_options(
     char const *argument,
@@ -2033,6 +2073,14 @@ sixel_option_parse_typed_suboption_value(
             if (range_error != NULL) {
                 *range_error = 1;
             }
+            valid = 0;
+        }
+        if (valid && key_def->has_minimum &&
+            (double)parsed_uint < key_def->minimum) {
+            valid = 0;
+        }
+        if (valid && key_def->has_maximum &&
+            (double)parsed_uint > key_def->maximum) {
             valid = 0;
         }
         if (valid) {

@@ -43,9 +43,9 @@ test "${valid_keys_line#*seed*restarts*iter*iter_max*miniter*polish_iter*}" \
     exit 0
 }
 
-test "${valid_keys_line#*feedback_slots*feedback_interval*merge*merge_oversplit*merge_lloyd*}" \
+test "${valid_keys_line#*feedback_slots*feedback_interval*sample_target*}" \
     != "${valid_keys_line}" || {
-    echo "not ok" 1 - "missing merge keys in unknown key diagnostic"
+    echo "not ok" 1 - "missing common sampling key in unknown key diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0

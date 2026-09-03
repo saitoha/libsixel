@@ -254,7 +254,14 @@ def validate_acceleration_metadata(path: Path) -> Dict[str, object]:
         fail("acceleration metadata has unexpected shared-instance policies")
     if tuple(shared.get("values", [])) != (0, 1):
         fail("acceleration metadata must compare shared_instance=0 and 1")
-    if shared.get("quantize_model") != "kmeans:merge=ward:seed=1":
+    shared_legacy = shared.get("quantize_model") == (
+        "kmeans:merge=ward:seed=1"
+    )
+    shared_current = (
+        shared.get("quantize_model") == "kmeans:seed=1"
+        and shared.get("merge_policy") == "ward"
+    )
+    if not shared_legacy and not shared_current:
         fail("shared-instance measurement must use controlled K-means")
     if int(shared.get("threads", 0)) < 2:
         fail("shared-instance measurement must use multiple threads")
@@ -272,7 +279,15 @@ def validate_acceleration_metadata(path: Path) -> Dict[str, object]:
         fail("acceleration metadata has unexpected Metal policies")
     if tuple(metal.get("cpu_gpu_policies", [])) != ("off", "force"):
         fail("Metal measurement must compare gpu-policy=off and force")
-    if metal.get("quantize_model") != "heckbert:cover=off:merge=none":
+    metal_legacy = metal.get("quantize_model") == (
+        "heckbert:cover=off:merge=none"
+    )
+    metal_current = (
+        metal.get("quantize_model") == "heckbert"
+        and metal.get("cover_policy") == "off"
+        and metal.get("merge_policy") == "none"
+    )
+    if not metal_legacy and not metal_current:
         fail("Metal measurement must exercise the Heckbert PaletteApply path")
     if metal.get("force_success_required") is not True:
         fail("Metal measurement does not require a forced GPU path")
@@ -347,7 +362,14 @@ def validate_acceleration_speed_file(path: Path,
             )
             if row.get("gpu_policy") != "off":
                 fail(f"shared-instance run unexpectedly enables GPU in {path}")
-            if "--quantize-model=kmeans:merge=ward:seed=1" not in command:
+            legacy_quantize = (
+                "--quantize-model=kmeans:merge=ward:seed=1" in command
+            )
+            current_quantize = (
+                "--quantize-model=kmeans:seed=1" in command
+                and "--merge-policy=ward" in command
+            )
+            if not legacy_quantize and not current_quantize:
                 fail(f"shared-instance run does not use K-means in {path}")
         else:
             gpu_policy = row.get("gpu_policy", "")
@@ -357,8 +379,15 @@ def validate_acceleration_speed_file(path: Path,
                 fail(f"Metal run unexpectedly sets shared_instance in {path}")
             if f"--gpu-policy={gpu_policy}" not in command:
                 fail(f"Metal command/gpu-policy mismatch in {path}")
-            heckbert = "--quantize-model=heckbert:cover=off:merge=none"
-            if heckbert not in command:
+            legacy_heckbert = (
+                "--quantize-model=heckbert:cover=off:merge=none" in command
+            )
+            current_heckbert = (
+                "--quantize-model=heckbert" in command
+                and "--cover-policy=off" in command
+                and "--merge-policy=none" in command
+            )
+            if not legacy_heckbert and not current_heckbert:
                 fail(f"Metal run does not use the PaletteApply path in {path}")
         if key in actual:
             fail(f"duplicate acceleration point in {path}: {key}")

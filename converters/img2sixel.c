@@ -225,35 +225,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "    choose the palette solver.\n"
         "      long suboptions use key=value; uppercase short forms use "
         "Kvalue.\n"
-        "      every model accepts these, which anchor the palette to fixed\n"
-        "      points of the RGB cube.  Error diffusion cannot reach a color\n"
-        "      the palette does not enclose, so without them a small\n"
-        "      saturated area -- a scrub bar, a status light -- renders as a\n"
-        "      muted approximation, and under -Z it can flicker\n"
-        "      as the palette changes from frame to frame.\n"
-        "        :cover=SET     off, corners (8), faces (14), edges/all (26),\n"
-        "                       auto (default: by palette size).  each set\n"
-        "                       contains the previous.  the face centers\n"
-        "                       matter more than the edge midpoints, which is\n"
-        "                       why faces is the middle rung.\n"
-        "        :cover_grow=0|1  default 0.  0 funds each anchor by\n"
-        "                       merging the closest pair, so -p N still\n"
-        "                       yields N colors.  1 appends the anchors\n"
-        "                       instead, exceeding N by up to 26.\n"
-        "        :cover_mode=soft|hard  default soft, which puts the same\n"
-        "                       lattice on the extent of the colors actually\n"
-        "                       present instead of on the RGB cube, so a\n"
-        "                       frame that never reaches the boundary is left\n"
-        "                       alone.  hard uses the cube: it covers colors\n"
-        "                       this frame does not contain, at the price of\n"
-        "                       entries the image can only reach by emitting\n"
-        "                       isolated full-intensity pixels.\n"
+        "      every model accepts :sample_target=COUNT (:CCOUNT), which\n"
+        "      overrides automatic palette sampling with a positive count.\n"
         "      auto     -> choose quantize model automatically (default) auto maps to the heckbert\n"
         "      heckbert -> traditional Heckbert median-cut implementation. auto/heckbert\n"
         "      sub-option:\n"
-        "        :merge=MODE (:GMODE) auto, none, ward\n"
-        "        :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
-        "        :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
+        "        :profile=NAME (:PNAME) compat, speed, quality\n"
         "      kmeans   -> k-means clustering. sub-option:\n"
         "          :inittype=TYPE (:ITYPE) choose k-means seed mode:\n"
         "              auto -> choose seed mode automatically (default)\n"
@@ -293,12 +270,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :feedback_slots=COUNT relocate this many weak clusters per feedback step (1-16,\n"
         "          default 1).\n"
         "          :feedback_interval=COUNT run feedback every N iterations (1-64, default 1).\n"
-        "          :merge=MODE (:GMODE) auto, none, ward\n"
-        "          :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
-        "          :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
         "      compact suboption names (uppercase letter + value):\n"
-        "        all models: merge=G, merge_oversplit=O, merge_lloyd=L,\n"
-        "          cover=C, cover_grow=V, cover_mode=W\n"
+        "        all models: sample_target=C\n"
         "        heckbert: profile=P\n"
         "        kmeans: inittype=I, threshold=T, binning=B, binbits=N,\n"
         "          mapping=M, softdist=D, autoratio=R, feedback=F,\n"
@@ -347,9 +320,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :bandit_iter=COUNT BanditPAM iteration cap (1-64).\n"
         "          :bandit_candidates=COUNT Bandit candidate budget (8-4096).\n"
         "          :bandit_batch=COUNT Bandit mini-batch size (8-4096).\n"
-        "          :merge=MODE (:GMODE) auto, none, ward\n"
-        "          :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
-        "          :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
         "      center  -> discrete k-center clustering. sub-option:\n"
         "          :algo=NAME (:ANAME) choose center solver:\n"
         "              auto   -> choose fft/hybrid from quality and sample budget\n"
@@ -397,9 +367,41 @@ static cli_option_help_t const g_option_help_table[] = {
         "          swap iterations (0 or 1-8, default 0).\n"
         "          :swap_min_gain=VALUE minimum radius gain per accepted swap\n"
         "          (0.0-8.0, default 0.0).\n"
-        "          :merge=MODE (:GMODE) auto, none, ward\n"
-        "          :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
-        "          :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
+    },
+    {
+        'F',
+        "merge-policy",
+        "-F POLICY, --merge-policy=POLICY\n"
+        "    choose final palette merge independently of the quantizer:\n"
+        "      auto -> choose automatically (default)\n"
+        "      none -> skip the final merge\n"
+        "      ward -> use Ward-distance merging\n"
+        "    sub-option:\n"
+        "      :merge_oversplit=FACTOR (:OFACTOR), 1.0-3.0\n"
+        "      :merge_lloyd=COUNT (:LCOUNT), 0-30\n"
+        "      :channel_l=FACTOR (:CFACTOR), 0.0-1.0\n"
+        "    Environments: SIXEL_PALETTE_FINAL_MERGE,\n"
+        "    SIXEL_PALETTE_OVERSPLIT_FACTOR,\n"
+        "    SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT, and\n"
+        "    SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L.\n"
+    },
+    {
+        'a',
+        "cover-policy",
+        "-a POLICY, --cover-policy=POLICY\n"
+        "    anchor the palette after any quantizer. POLICY is one of:\n"
+        "      auto, off, corners, faces, edges, all\n"
+        "    Each set contains the previous one; auto selects by\n"
+        "    palette size.\n"
+        "    sub-option:\n"
+        "      :cover_grow=0|1 (:V0 or :V1)\n"
+        "      :cover_mode=soft|hard (:Wsoft or :Whard)\n"
+        "      :snap_target=auto|nearest|reversible (:Tvalue)\n"
+        "      :snap_timing=once|polish|merge|resolve|all (:Ivalue)\n"
+        "      :snap_rate=FACTOR (:AFACTOR), 0.0-1.0\n"
+        "      :snap_channel_l=FACTOR (:LFACTOR), 0.0-1.0\n"
+        "    The corresponding SIXEL_PALETTE_COVER_* and\n"
+        "    SIXEL_PALETTE_SNAP_* environments provide defaults.\n"
     },
     {
         'm',
@@ -1608,7 +1610,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_SAMPLE_TARGET",
         "request a specific sample count for palette estimation. Positive\n"
-        "integers override automatic sizing."
+        "integers override automatic sizing; -Q :sample_target takes\n"
+        "precedence."
     },
     {
         "SIXEL_PALETTE_COVER",
@@ -1628,7 +1631,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_FINAL_MERGE",
         "select the final palette merge: auto, none, or ward.\n"
-        "Overridden by the quantize-model merge suboption."
+        "Overridden by -F/--merge-policy."
     },
     {
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
@@ -2071,7 +2074,8 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:G:kil:T:t:ugvSn:PE:U:B:A:+:Z:Y:C:D@:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:kil:T:t:ugvSn:"
+    "PE:U:B:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
 static int
@@ -3094,6 +3098,8 @@ img2sixel_main(int argc, char *argv[])
         {"6reversible",           no_argument,        &long_opt, '6'},
         {"colors",                required_argument,  &long_opt, 'p'},
         {"quantize-model",        required_argument,  &long_opt, 'Q'},
+        {"merge-policy",          required_argument,  &long_opt, 'F'},
+        {"cover-policy",          required_argument,  &long_opt, 'a'},
         {"mapfile",               required_argument,  &long_opt, 'm'},
         {"mapfile-output",        required_argument,  &long_opt, 'M'},
         {"monochrome",            no_argument,        &long_opt, 'e'},

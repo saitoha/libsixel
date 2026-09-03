@@ -1,6 +1,5 @@
 #!/bin/sh
-# TAP test verifying repeated -Q merge suboptions follow argument-order
-# last-wins.
+# TAP test verifying repeated -F options follow argument-order last-wins.
 
 set -eux
 
@@ -23,8 +22,8 @@ nl='
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=palette_contract \
     -p 16 \
-    -Qkmeans:seed=1:restarts=1:feedback=0:merge=auto \
-    -Qkmeans:seed=1:restarts=1:feedback=0:merge=ward \
+    -Qkmeans:seed=1:restarts=1:feedback=0 \
+    -Fauto -Fward \
     "${input_ppm}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 0 || {
@@ -32,7 +31,8 @@ test "${status}" -eq 0 || {
     exit 0
 }
 
-diag_line=${msg%%"${nl}"*}
+diag_line="LSXPAL1${msg#*LSXPAL1}"
+diag_line=${diag_line%%"${nl}"*}
 case "${diag_line}" in
     LSXPAL1*rc=0*codes=*) ;;
     *)
@@ -54,8 +54,8 @@ status=0
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=palette_contract \
     -p 16 \
-    -Qkmeans:seed=1:restarts=1:feedback=0:merge=ward \
-    -Qkmeans:seed=1:restarts=1:feedback=0:merge=auto \
+    -Qkmeans:seed=1:restarts=1:feedback=0 \
+    -Fward -Fauto \
     "${input_ppm}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 0 || {
@@ -63,7 +63,8 @@ test "${status}" -eq 0 || {
     exit 0
 }
 
-diag_line=${msg%%"${nl}"*}
+diag_line="LSXPAL1${msg#*LSXPAL1}"
+diag_line=${diag_line%%"${nl}"*}
 case "${diag_line}" in
     LSXPAL1*rc=0*codes=*) ;;
     *)
@@ -81,5 +82,5 @@ test "${diag_line#*MERGE_AUTO}" != "${diag_line}" || {
     exit 0
 }
 
-echo "ok" 1 - "-Q merge suboptions use argument-order last-wins"
+echo "ok" 1 - "-F merge policy uses argument-order last-wins"
 exit 0

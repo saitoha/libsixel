@@ -19,7 +19,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_PALETTE_CHANNEL_FACTOR_L=0.25 \
     --env SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.75 \
-    -p 16 "-Qheckbert:Gward" -W oklab \
+    -p 16 -Qheckbert -Fward -W oklab \
     "${input_image}" 2>&1 >"${output_sixel}") || {
     echo "not ok 1 - merge channel factor conversion failed"
     exit 0

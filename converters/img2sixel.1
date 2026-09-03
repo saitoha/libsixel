@@ -108,22 +108,10 @@ select the palette solver. \fIMODEL\fP accepts \fBauto\fP,
 the historical Heckbert median\-cut behaviour.
 .br
 Long suboption keys use \fBkey=value\fP. Uppercase short keys use
-\fBKvalue\fP without an equals sign, for example \fBkmeans:Ipca:Gward\fP.
+\fBKvalue\fP without an equals sign, for example \fBkmeans:Ipca\fP.
 .br
-The \fBauto\fP and \fBheckbert\fP base values accept suboptions:
-.br
-\fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
-.br
-\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
-.br
-\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
-.br
-\fBcover\fP (short form \fBCSET\fP): \fBoff\fP, \fBcorners\fP,
-\fBfaces\fP, \fBedges\fP, \fBall\fP, or \fBauto\fP.
-.br
-\fBcover_grow\fP (short form \fBV0\fP or \fBV1\fP): 0 or 1.
-.br
-\fBcover_mode\fP (short form \fBWMODE\fP): \fBsoft\fP or \fBhard\fP.
+Every base accepts \fBsample_target\fP (short form \fBCCOUNT\fP), a
+positive palette sampling count.
 .br
 The \fBcenter\fP base value accepts suboptions using
 \fBcenter:key=value[:key=value...]\fP.
@@ -172,12 +160,6 @@ or \fBhybrid\fP.
 .br
 \fBswap_min_gain\fP: floating value in 0.0-8.0.
 .br
-\fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
-.br
-\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
-.br
-\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
-.br
 The \fBkmeans\fP base value accepts suboptions using
 \fBkmeans:key=value[:key=value...]\fP.
 .br
@@ -219,12 +201,6 @@ when both are specified.
 .br
 \fBfeedback_interval\fP: integer value in 1-64.
 .br
-\fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
-.br
-\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
-.br
-\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
-.br
 The \fBmedoids\fP base value accepts suboptions using
 \fBmedoids:key=value[:key=value...]\fP.
 .br
@@ -265,16 +241,9 @@ Supported k-medoids suboptions:
 .br
 \fBbandit_batch\fP: integer value in 8-4096.
 .br
-\fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
-.br
-\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
-.br
-\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
-.br
 Compact suboption names use one uppercase letter followed by the value:
 .br
-all models: merge=G, merge_oversplit=O, merge_lloyd=L, cover=C,
-cover_grow=V, cover_mode=W;
+all models: sample_target=C;
 .br
 heckbert: profile=P;
 .br
@@ -293,6 +262,48 @@ auto_fft_threshold=F, space_policy=E, candidate_policy=Z, restarts=X,
 init_seeds=N, iter=I, histbits=H, point_budget=B, rare_keep=R,
 prune_mass=U, budget_policy=D, budget_scale=Y, swap_topk=K,
 swap_update=M, swap_patience=T, swap_min_gain=J.
+.TP 5
+.B \-F \fIPOLICY\fP, \-\-merge\-policy=\fIPOLICY\fP
+configure final palette merging independently of the quantizer.
+\fIPOLICY\fP accepts \fBauto\fP, \fBnone\fP, or \fBward\fP.
+.br
+Supported suboptions:
+.br
+\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): 1.0-3.0.
+.br
+\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): integer value in 0-30.
+.br
+\fBchannel_l\fP (short form \fBCFACTOR\fP): floating value in 0.0-1.0.
+.br
+The corresponding environments are \fBSIXEL_PALETTE_FINAL_MERGE\fP,
+\fBSIXEL_PALETTE_OVERSPLIT_FACTOR\fP,
+\fBSIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT\fP, and
+\fBSIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L\fP.
+.TP 5
+.B \-a \fIPOLICY\fP, \-\-cover\-policy=\fIPOLICY\fP
+configure palette anchoring independently of the quantizer.
+\fIPOLICY\fP accepts \fBauto\fP, \fBoff\fP, \fBcorners\fP,
+\fBfaces\fP, \fBedges\fP, or \fBall\fP.
+.br
+Supported suboptions:
+.br
+\fBcover_grow\fP (short form \fBV0\fP or \fBV1\fP): 0 or 1.
+.br
+\fBcover_mode\fP (short form \fBWMODE\fP): \fBsoft\fP or \fBhard\fP.
+.br
+\fBsnap_target\fP (short form \fBTVALUE\fP): \fBauto\fP,
+\fBnearest\fP, or \fBreversible\fP.
+.br
+\fBsnap_timing\fP (short form \fBIVALUE\fP): \fBonce\fP,
+\fBpolish\fP, \fBmerge\fP, \fBresolve\fP, or \fBall\fP.
+.br
+\fBsnap_rate\fP (short form \fBAFACTOR\fP): floating value in 0.0-1.0.
+.br
+\fBsnap_channel_l\fP (short form \fBLFACTOR\fP): floating value in
+0.0-1.0.
+.br
+The corresponding \fBSIXEL_PALETTE_COVER_*\fP and
+\fBSIXEL_PALETTE_SNAP_*\fP environments provide defaults.
 .TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
 transform image colors to match this set of colors. Accepts image files
@@ -1649,12 +1660,13 @@ legacy alias for \fBSIXEL_LOADER_WIC_ICO_MINSIZE\fP.
 .B SIXEL_PALETTE_SAMPLE_TARGET
 .br
 request a specific sample count for palette estimation. Positive integers
-override automatic sizing.
+override automatic sizing. The \fB-Q :sample_target\fP suboption takes
+precedence.
 .TP 5
 .B SIXEL_PALETTE_FINAL_MERGE
 .br
 select the final palette merge: auto, none, or ward.
-The quantize-model merge suboption takes precedence.
+The \fB-F\fP or \fB--merge-policy\fP option takes precedence.
 .TP 5
 .B SIXEL_PALETTE_OVERSPLIT_FACTOR
 .br
@@ -1666,10 +1678,20 @@ default 1.81).
 run Lloyd refinement after the final merge stage. Accepts 0-30.
 Defaults to 3 iterations.
 .TP 5
+.B SIXEL_PALETTE_COVER
+.br
+select palette coverage anchoring: auto, off, corners, faces, edges, or all.
+The \fB-a\fP or \fB--cover-policy\fP option takes precedence.
+.TP 5
 .B SIXEL_PALETTE_COVER_GROW
 .br
 allow coverage anchors to exceed the requested palette size. Accepts only
 0 or 1; the default 0 keeps the requested size fixed.
+.TP 5
+.B SIXEL_PALETTE_COVER_MODE
+.br
+choose soft image-extent anchors or hard RGB-lattice anchors.
+Accepts soft or hard.
 .TP 5
 .B SIXEL_PALETTE_HECKBERT_PROFILE
 .br

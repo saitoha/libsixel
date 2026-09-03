@@ -106,6 +106,7 @@
 #include "palette-kmedoids.h"
 #include "palette-common-cover.h"
 #include "palette-common-merge.h"
+#include "palette-common-snap.h"
 #include "pixelformat.h"
 #include "clipboard.h"
 #include "compat_stub.h"
@@ -131,8 +132,6 @@
 #include "planner.h"
 #include "sixel_atomic.h"
 
-#define SIXEL_ENCODER_SAMPLE_TARGET_ENVVAR \
-    "SIXEL_PALETTE_SAMPLE_TARGET"
 #define SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR \
     "SIXEL_ANIMATION_HIDE_CURSOR"
 #define SIXEL_ENCODER_PSD_TRACE_ONLY_ENVVAR \
@@ -151,6 +150,15 @@ sixel_encoder_apply_gpu_policy_argument(sixel_encoder_t *encoder,
                                         char const *value,
                                         char *diagnostic,
                                         size_t diagnostic_size);
+static SIXELSTATUS
+sixel_encoder_apply_registered_policy_argument(
+    sixel_encoder_t *encoder,
+    sixel_option_schema_id_t option_id,
+    char const *value,
+    int *policy,
+    int *override,
+    char *diagnostic,
+    size_t diagnostic_size);
 
 #if defined(__EMSCRIPTEN__) && HAVE_MKSTEMP
 # define SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING 1
@@ -900,30 +908,28 @@ sixel_encoder_apply_heckbert_profile_defaults(sixel_encoder_t *encoder)
 
     /*
      * Explicit suboptions still win: only fill fields whose override flag is
-     * not set so `-Q ...:profile=...:merge=...` keeps the explicit merge
-     * choice, and `-f` keeps the explicit split-axis choice.
+     * not set so `-F` keeps the explicit merge choice, and `-f` keeps the
+     * explicit split-axis choice.
      */
     profile = encoder->quantize_model_heckbert_profile;
     switch (profile) {
     case SIXEL_HECKBERT_PROFILE_SPEED:
-        if (encoder->quantize_model_merge_override == 0) {
-            encoder->quantize_model_merge_mode = SIXEL_FINAL_MERGE_NONE;
+        if (encoder->merge_policy_override == 0) {
             encoder->final_merge_mode = SIXEL_FINAL_MERGE_NONE;
         }
-        if (encoder->quantize_model_merge_lloyd_override == 0) {
-            encoder->quantize_model_merge_lloyd = 3u;
+        if (encoder->merge_policy_lloyd_override == 0) {
+            encoder->merge_policy_lloyd = 3u;
         }
         if (encoder->method_for_largest_override == 0) {
             encoder->method_for_largest = SIXEL_LARGE_NORM;
         }
         break;
     case SIXEL_HECKBERT_PROFILE_QUALITY:
-        if (encoder->quantize_model_merge_override == 0) {
-            encoder->quantize_model_merge_mode = SIXEL_FINAL_MERGE_WARD;
+        if (encoder->merge_policy_override == 0) {
             encoder->final_merge_mode = SIXEL_FINAL_MERGE_WARD;
         }
-        if (encoder->quantize_model_merge_lloyd_override == 0) {
-            encoder->quantize_model_merge_lloyd = 2u;
+        if (encoder->merge_policy_lloyd_override == 0) {
+            encoder->merge_policy_lloyd = 2u;
         }
         if (encoder->method_for_largest_override == 0) {
             encoder->method_for_largest = SIXEL_LARGE_PCA;
@@ -931,12 +937,11 @@ sixel_encoder_apply_heckbert_profile_defaults(sixel_encoder_t *encoder)
         break;
     case SIXEL_HECKBERT_PROFILE_COMPAT:
     default:
-        if (encoder->quantize_model_merge_override == 0) {
-            encoder->quantize_model_merge_mode = SIXEL_FINAL_MERGE_AUTO;
+        if (encoder->merge_policy_override == 0) {
             encoder->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
         }
-        if (encoder->quantize_model_merge_lloyd_override == 0) {
-            encoder->quantize_model_merge_lloyd = 3u;
+        if (encoder->merge_policy_lloyd_override == 0) {
+            encoder->merge_policy_lloyd = 3u;
         }
         if (encoder->method_for_largest_override == 0) {
             encoder->method_for_largest = SIXEL_LARGE_AUTO;
@@ -973,8 +978,7 @@ sixel_encoder_emit_palette_contract(sixel_encoder_t const *encoder,
             "kseed_set=%d|kseed=%u|codes=",
             status,
             sixel_encoder_palette_model_name(encoder->quantize_model),
-            sixel_encoder_palette_merge_name(
-                encoder->quantize_model_merge_mode),
+            sixel_encoder_palette_merge_name(encoder->final_merge_mode),
             sixel_encoder_palette_lut_name(encoder->lut_policy),
             encoder->working_colorspace,
             encoder->clustering_colorspace,
@@ -991,9 +995,9 @@ sixel_encoder_emit_palette_contract(sixel_encoder_t const *encoder,
     } else {
         sixel_encoder_emit_contract_code(stderr, &first, "MODEL_AUTO");
     }
-    if (encoder->quantize_model_merge_mode == SIXEL_FINAL_MERGE_WARD) {
+    if (encoder->final_merge_mode == SIXEL_FINAL_MERGE_WARD) {
         sixel_encoder_emit_contract_code(stderr, &first, "MERGE_WARD");
-    } else if (encoder->quantize_model_merge_mode == SIXEL_FINAL_MERGE_NONE) {
+    } else if (encoder->final_merge_mode == SIXEL_FINAL_MERGE_NONE) {
         sixel_encoder_emit_contract_code(stderr, &first, "MERGE_NONE");
     } else {
         sixel_encoder_emit_contract_code(stderr, &first, "MERGE_AUTO");
@@ -1366,8 +1370,6 @@ static SIXELSTATUS sixel_encoder_apply_palette_filter(
     sixel_frame_t **frame_slot,
     int allow_cache,
     sixel_dither_t **dither_out);
-static int sixel_encoder_parse_sample_target(char const *text,
-                                             size_t *value_out);
 static void sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job);
 static SIXELSTATUS sixel_encoder_palette_job_launch(
     sixel_palette_async_job_t *job,
@@ -4230,36 +4232,6 @@ sixel_encoder_copy_quantized_frame_internal(
     sixel_frame_t **ppframe);
 
 
-static int
-sixel_encoder_parse_sample_target(char const *text, size_t *value_out)
-{
-    char *endptr;
-    unsigned long long parsed;
-
-    endptr = NULL;
-    parsed = 0ull;
-
-    if (text == NULL || value_out == NULL) {
-        return 0;
-    }
-
-    errno = 0;
-    parsed = strtoull(text, &endptr, 10);
-    if (errno == ERANGE || parsed == 0ull) {
-        return 0;
-    }
-    if (endptr == text || *endptr != '\0') {
-        return 0;
-    }
-
-    *value_out = (size_t)parsed;
-    if ((unsigned long long)(*value_out) != parsed) {
-        return 0;
-    }
-
-    return 1;
-}
-
 SIXEL_INTERNAL_API int
 sixel_encoder_should_hide_animation_cursor(
     int is_multiframe,
@@ -6169,11 +6141,11 @@ sixel_encoder_prepare_palette(
     }
     effective_final_merge_mode = encoder->final_merge_mode;
     effective_merge_oversplit_override
-        = encoder->quantize_model_merge_oversplit_override;
-    effective_merge_oversplit = encoder->quantize_model_merge_oversplit;
+        = encoder->merge_policy_oversplit_override;
+    effective_merge_oversplit = encoder->merge_policy_oversplit;
     effective_merge_lloyd_override
-        = encoder->quantize_model_merge_lloyd_override;
-    effective_merge_lloyd = encoder->quantize_model_merge_lloyd;
+        = encoder->merge_policy_lloyd_override;
+    effective_merge_lloyd = encoder->merge_policy_lloyd;
     effective_lut_policy = encoder->lut_policy;
     effective_lut_policy_override = encoder->lut_policy_override;
     if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
@@ -6197,7 +6169,7 @@ sixel_encoder_prepare_palette(
             && encoder->quantize_model_heckbert_profile
                 == SIXEL_HECKBERT_PROFILE_SPEED
             && effective_lut_policy_override == 0
-            && encoder->quantize_model_merge_override == 0
+            && encoder->merge_policy_override == 0
             && encoder->method_for_largest_override == 0
             && effective_lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
         /*
@@ -6347,6 +6319,9 @@ sixel_encoder_prepare_palette(
     sixel_set_final_merge_lloyd_iterations_override(
         effective_merge_lloyd_override,
         effective_merge_lloyd);
+    sixel_set_final_merge_channel_factor_override(
+        encoder->merge_policy_channel_factor_l_override,
+        encoder->merge_policy_channel_factor_l);
     sixel_set_kmedoids_algo_override(
         encoder->quantize_model_kmedoids_algo_override,
         (sixel_kmedoids_algo_t)encoder->quantize_model_kmedoids_algo);
@@ -6401,16 +6376,35 @@ sixel_encoder_prepare_palette(
     {
         sixel_palette_cover_options_t cover_options;
 
-        cover_options.policy = encoder->quantize_model_cover_override
-            ? encoder->quantize_model_cover
-            : SIXEL_PALETTE_COVER_AUTO;
-        cover_options.grow = encoder->quantize_model_cover_grow;
-        cover_options.mode = encoder->quantize_model_cover_mode;
+        cover_options.policy_override = encoder->cover_policy_override;
+        cover_options.policy = encoder->cover_policy;
+        cover_options.grow_override = encoder->cover_policy_grow_override;
+        cover_options.grow = encoder->cover_policy_grow;
+        cover_options.mode_override = encoder->cover_policy_mode_override;
+        cover_options.mode = encoder->cover_policy_mode;
         sixel_set_palette_cover_override(
-            encoder->quantize_model_cover_override
-                || encoder->quantize_model_cover_grow_override
-                || encoder->quantize_model_cover_mode_override,
+            cover_options.policy_override || cover_options.grow_override ||
+                cover_options.mode_override,
             &cover_options);
+    }
+    {
+        sixel_palette_snap_options_t snap_options;
+
+        snap_options.target_override =
+            encoder->cover_policy_snap_target_override;
+        snap_options.target = encoder->cover_policy_snap_target;
+        snap_options.timing_override =
+            encoder->cover_policy_snap_timing_override;
+        snap_options.timing = encoder->cover_policy_snap_timing;
+        snap_options.approach_rate_override =
+            encoder->cover_policy_snap_approach_rate_override;
+        snap_options.approach_rate =
+            encoder->cover_policy_snap_approach_rate;
+        snap_options.channel_factor_l_override =
+            encoder->cover_policy_snap_channel_factor_l_override;
+        snap_options.channel_factor_l =
+            encoder->cover_policy_snap_channel_factor_l;
+        sixel_set_palette_snap_override(&snap_options);
     }
     sixel_set_kcenter_algo_override(
         encoder->quantize_model_kcenter_algo_override,
@@ -6514,7 +6508,9 @@ sixel_encoder_prepare_palette(
     sixel_set_kmeans_feedback_interval_override(0, 1u);
     sixel_set_final_merge_target_factor_override(0, 1.81);
     sixel_set_final_merge_lloyd_iterations_override(0, 3u);
+    sixel_set_final_merge_channel_factor_override(0, 1.0 / 3.0);
     sixel_set_palette_cover_override(0, NULL);
+    sixel_set_palette_snap_override(NULL);
     sixel_set_kmedoids_algo_override(
         0,
         SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO);
@@ -7649,21 +7645,20 @@ sixel_encoder_new(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     char const *env_default_bgcolor = NULL;
-    char const *env_sample_target = NULL;
     int prefer_float32;
     int env_result;
-    size_t parsed_sample_target;
-    int has_sample_target;
+    int policy_value;
     sixel_suboption_value_t env_value;
     char const *gpu_policy_environment;
     sixel_option_argument_schema_t const *gpu_policy_schema;
+    sixel_option_argument_schema_t const *policy_schema;
     sixel_option_argument_resolution_t gpu_policy_resolution;
 
-    parsed_sample_target = 0u;
-    has_sample_target = 0;
+    policy_value = 0;
     memset(&env_value, 0, sizeof(env_value));
     gpu_policy_environment = NULL;
     gpu_policy_schema = NULL;
+    policy_schema = NULL;
     memset(&gpu_policy_resolution, 0, sizeof(gpu_policy_resolution));
 
     if (allocator == NULL) {
@@ -7872,19 +7867,30 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kcenter_swap_min_gain = 0.0;
     (*ppencoder)->quantize_model_kcenter_prune_mass_override = 0;
     (*ppencoder)->quantize_model_kcenter_prune_mass = 0.995;
-    (*ppencoder)->quantize_model_merge_override = 0;
-    (*ppencoder)->quantize_model_merge_mode = SIXEL_FINAL_MERGE_AUTO;
-    (*ppencoder)->quantize_model_merge_oversplit_override = 0;
-    (*ppencoder)->quantize_model_merge_oversplit = 1.81;
-    (*ppencoder)->quantize_model_merge_lloyd_override = 0;
-    (*ppencoder)->quantize_model_merge_lloyd = 3u;
-    (*ppencoder)->quantize_model_cover_override = 0;
-    (*ppencoder)->quantize_model_cover_grow_override = 0;
-    (*ppencoder)->quantize_model_cover_grow = 0;
-    (*ppencoder)->quantize_model_cover_mode_override = 0;
-    (*ppencoder)->quantize_model_cover_mode = SIXEL_PALETTE_COVER_MODE_SOFT;
-    (*ppencoder)->quantize_model_cover      = SIXEL_PALETTE_COVER_AUTO;
-    (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
+    (*ppencoder)->merge_policy_override = 0;
+    (*ppencoder)->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
+    (*ppencoder)->merge_policy_oversplit_override = 0;
+    (*ppencoder)->merge_policy_oversplit = 1.81;
+    (*ppencoder)->merge_policy_lloyd_override = 0;
+    (*ppencoder)->merge_policy_lloyd = 3u;
+    (*ppencoder)->merge_policy_channel_factor_l_override = 0;
+    (*ppencoder)->merge_policy_channel_factor_l = 1.0 / 3.0;
+    (*ppencoder)->cover_policy_override = 0;
+    (*ppencoder)->cover_policy_grow_override = 0;
+    (*ppencoder)->cover_policy_grow = 0;
+    (*ppencoder)->cover_policy_mode_override = 0;
+    (*ppencoder)->cover_policy_mode = SIXEL_PALETTE_COVER_MODE_SOFT;
+    (*ppencoder)->cover_policy = SIXEL_PALETTE_COVER_AUTO;
+    (*ppencoder)->cover_policy_snap_target_override = 0;
+    (*ppencoder)->cover_policy_snap_target =
+        SIXEL_PALETTE_SNAP_POLICY_NEAREST;
+    (*ppencoder)->cover_policy_snap_timing_override = 0;
+    (*ppencoder)->cover_policy_snap_timing =
+        SIXEL_PALETTE_SNAP_TIMING_ONCE;
+    (*ppencoder)->cover_policy_snap_approach_rate_override = 0;
+    (*ppencoder)->cover_policy_snap_approach_rate = 1.0;
+    (*ppencoder)->cover_policy_snap_channel_factor_l_override = 0;
+    (*ppencoder)->cover_policy_snap_channel_factor_l = 0.85;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->lut_policy_override   = 0;
     (*ppencoder)->lut_policy_shared_instance_override = 0;
@@ -8075,16 +8081,45 @@ sixel_encoder_new(
         (*ppencoder)->sixdelta_error_mode = env_value.int_value;
     }
 
-    env_sample_target = sixel_compat_getenv(
-        SIXEL_ENCODER_SAMPLE_TARGET_ENVVAR);
-    if (env_sample_target != NULL) {
-        has_sample_target = sixel_encoder_parse_sample_target(
-            env_sample_target,
-            &parsed_sample_target);
-        if (has_sample_target) {
-            (*ppencoder)->palette_sample_target = parsed_sample_target;
-            (*ppencoder)->palette_sample_override = 1;
-        }
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_MERGE_POLICY);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_MERGE_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &policy_value)) {
+        (*ppencoder)->merge_policy_override = 1;
+        (*ppencoder)->final_merge_mode = policy_value;
+    }
+
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_COVER_POLICY);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_COVER_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &policy_value)) {
+        (*ppencoder)->cover_policy = policy_value;
+        (*ppencoder)->cover_policy_override = 1;
     }
 
     env_default_bgcolor = sixel_option_resolve_argument_environment(
@@ -8800,6 +8835,60 @@ sixel_encoder_apply_quantize_resolution(
 
     sixel_encoder_apply_heckbert_profile_defaults(encoder);
     return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_apply_registered_policy_argument(
+    sixel_encoder_t *encoder,
+    sixel_option_schema_id_t option_id,
+    char const *value,
+    int *policy,
+    int *override,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
+
+    status = SIXEL_OK;
+    schema = sixel_option_registry_get(option_id);
+    memset(&resolution, 0, sizeof(resolution));
+    if (encoder == NULL || schema == NULL || policy == NULL ||
+        override == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        value,
+        schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        &resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    sixel_option_reset_suboption_overrides(
+        schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        encoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    sixel_option_apply_suboption_environment(
+        schema,
+        schema->values,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        encoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    *policy = resolution.resolved_base_value;
+    *override = 1;
+    status = sixel_encoder_apply_bound_suboptions(
+        encoder,
+        schema,
+        &resolution);
+    sixel_option_free_argument_resolution(&resolution);
+    return status;
 }
 
 static SIXELSTATUS
@@ -10271,6 +10360,32 @@ sixel_encoder_setopt(
         status = sixel_encoder_apply_quantize_resolution(
             encoder,
             q_resolution);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_MERGE_POLICY:  /* F */
+        status = sixel_encoder_apply_registered_policy_argument(
+            encoder,
+            SIXEL_OPTION_SCHEMA_MERGE_POLICY,
+            value,
+            &encoder->final_merge_mode,
+            &encoder->merge_policy_override,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_COVER_POLICY:  /* a */
+        status = sixel_encoder_apply_registered_policy_argument(
+            encoder,
+            SIXEL_OPTION_SCHEMA_COVER_POLICY,
+            value,
+            &encoder->cover_policy,
+            &encoder->cover_policy_override,
+            match_detail,
+            sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }

@@ -558,7 +558,6 @@ AM_LOG_FLAGS =
 	staticcheck-interframe-strategy-token-sync \
 	staticcheck-interframe-c-h-pair-sync \
 	staticcheck-interframe-no-compat-getenv-symbol \
-	staticcheck-quantize-merge-suboption-sync \
 	staticcheck-test-plan-single \
 	staticcheck-test-webp-serial-unique \
 	staticcheck-test-no-grep-awk \
@@ -621,7 +620,6 @@ staticcheck-lookup-suboption-shared-sync \
 staticcheck-interframe-strategy-token-sync \
 staticcheck-interframe-c-h-pair-sync \
 staticcheck-interframe-no-compat-getenv-symbol \
-staticcheck-quantize-merge-suboption-sync \
 staticcheck-test-plan-single \
 staticcheck-test-webp-serial-unique \
 staticcheck-test-no-grep-awk \
@@ -1099,16 +1097,6 @@ staticcheck-interframe-no-compat-getenv-symbol:
 		--trs-file staticcheck-interframe-no-compat-getenv-symbol.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh" \
-		"$(abs_top_srcdir)"
-
-staticcheck-quantize-merge-suboption-sync:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
-	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-quantize-merge-suboption-sync" \
-		--log-file staticcheck-quantize-merge-suboption-sync.log \
-		--trs-file staticcheck-quantize-merge-suboption-sync.trs \
-		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-quantize-merge-suboption-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-plan-single:
@@ -2145,7 +2133,6 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-interframe-strategy-token-sync.sh \
     _static/sh/staticcheck-interframe-c-h-pair-sync.sh \
     _static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh \
-    _static/sh/staticcheck-quantize-merge-suboption-sync.sh \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-webp-serial-unique.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \

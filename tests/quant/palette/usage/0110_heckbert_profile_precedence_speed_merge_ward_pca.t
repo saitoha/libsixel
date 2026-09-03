@@ -19,7 +19,7 @@ set +x
 baseline_ward_pca=$(
     set +xv
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Q "heckbert:merge=ward" \
+        -Q heckbert -F ward \
         -f pca \
         -p 16 \
         "${input_image}" | cksum
@@ -36,7 +36,7 @@ set +x
 profile_ward_pca=$(
     set +xv
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Q "heckbert:profile=speed:merge=ward" \
+        -Q "heckbert:profile=speed" -F ward \
         -f pca \
         -p 16 \
         "${input_image}" | cksum

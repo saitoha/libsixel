@@ -163,6 +163,8 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_DEQUANTIZE = 0,
     SIXEL_OPTION_SCHEMA_DIFFUSION,
     SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+    SIXEL_OPTION_SCHEMA_MERGE_POLICY,
+    SIXEL_OPTION_SCHEMA_COVER_POLICY,
     SIXEL_OPTION_SCHEMA_LUT_POLICY,
     SIXEL_OPTION_SCHEMA_LOADERS,
     SIXEL_OPTION_SCHEMA_PRECISION,
@@ -513,6 +515,12 @@ sixel_option_resolve_scalar_environment(
 char const *
 sixel_option_resolve_argument_environment(
     sixel_option_schema_id_t option_id);
+
+int
+sixel_option_resolve_registered_base_environment(
+    sixel_option_schema_id_t option_id,
+    unsigned int consumer_scope,
+    int *value);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_argument_with_suboptions(

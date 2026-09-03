@@ -22,7 +22,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qauto:merge_lloyd=0 \
+    -Fauto:merge_lloyd=0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "cli-only merge_lloyd=0 was rejected"
@@ -31,21 +31,21 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=4" \
-    -Qauto:merge_lloyd=31 \
+    -Fauto:merge_lloyd=31 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
     echo "not ok" 1 - "invalid CLI merge_lloyd unexpectedly ignored"
     exit 0
 }
 
-test "${msg#*-Q merge_lloyd must be 0 or in range 1-30.*}" != "${msg}" || {
+test "${msg#*-F merge_lloyd must be 0 or in range 1-30.*}" != "${msg}" || {
     echo "not ok" 1 - "missing invalid CLI merge_lloyd diagnostic"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=80" \
-    -Qauto:merge_lloyd=0 \
+    -Fauto:merge_lloyd=0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "valid CLI merge_lloyd did not override invalid env"

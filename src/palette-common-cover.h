@@ -122,8 +122,11 @@ extern "C" {
 
 /* Anchoring options, resolved from the override, then env, then defaults. */
 typedef struct sixel_palette_cover_options {
+    int policy_override;
     int policy;  /* SIXEL_PALETTE_COVER_*      */
+    int grow_override;
     int grow;    /* anchors may exceed -p N    */
+    int mode_override;
     int mode;    /* SIXEL_PALETTE_COVER_MODE_* */
 } sixel_palette_cover_options_t;
 
@@ -243,9 +246,9 @@ sixel_palette_cover_anchor_rgb888(
     int           /* in */      depth);
 
 /*
- * Override anchoring from the encoder so it can be driven as a quantize model
- * suboption.  Clearing the override (ENABLED zero) falls back to the
- * environment and then to the defaults.  OPTIONS may be NULL when clearing.
+ * Override anchoring from the encoder. Each field is independent; a field
+ * without its override flag falls back to the environment and then defaults.
+ * OPTIONS may be NULL when clearing.
  */
 SIXEL_INTERNAL_API void
 sixel_set_palette_cover_override(
