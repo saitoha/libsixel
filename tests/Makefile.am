@@ -31,7 +31,10 @@ XFAIL_TESTS = \
     loader/builtin/1318_loader_builtin_psd_psdtools_effects_stroke_composite_hardcase_lsqa.t
 
 SERIAL_TESTS = \
-    cli/aborttrace/0001_img2sixel_aborttrace.t
+    cli/aborttrace/0001_img2sixel_aborttrace.t \
+    cli/aborttrace/0002_aborttrace_zero_disables.t \
+    cli/aborttrace/0003_aborttrace_empty_enables.t \
+    cli/aborttrace/0004_aborttrace_invalid_enables.t
 
 COPY_TESTS = $(TESTS)
 check_PROGRAMS = test_runner
