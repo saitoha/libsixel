@@ -35,6 +35,7 @@
 #endif
 
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "lookup-policy-6bit.h"
 #include "options.h"
 #include "pixelformat.h"
@@ -159,6 +160,24 @@ sixel_lookup_policy_bit6_env_packing(void)
     }
 
     return SIXEL_LOOKUP_PACK_LINEAR;
+}
+
+/* Expose the effective packing mode without coupling tests to private state. */
+static void
+sixel_lookup_policy_bit6_trace_packing(int packing)
+{
+    char const *name;
+
+    name = "linear";
+    if (!sixel_trace_topic_is_enabled("lookup_contract")) {
+        return;
+    }
+    if (packing == SIXEL_LOOKUP_PACK_MORTON) {
+        name = "morton";
+    } else if (packing == SIXEL_LOOKUP_PACK_HILBERT) {
+        name = "hilbert";
+    }
+    fprintf(stderr, "LSXLUT1|policy=6bit|packing=%s\n", name);
 }
 
 static size_t
@@ -628,6 +647,7 @@ sixel_lookup_policy_bit6_configure_8bit(
     object->state_8bit.palette = request->palette;
     object->state_8bit.allocator = request->allocator;
     object->state_8bit.packing = sixel_lookup_policy_bit6_env_packing();
+    sixel_lookup_policy_bit6_trace_packing(object->state_8bit.packing);
     object->state_8bit.quant = sixel_lookup_policy_bit6_quant_make(
         (unsigned int)object->state_8bit.depth);
 

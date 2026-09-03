@@ -34,6 +34,7 @@
 #endif
 
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "lookup-fhedt-8bit.h"
 #include "lookup-fhedt-float32.h"
 #include "lookup-policy-fhedt.h"
@@ -245,6 +246,29 @@ sixel_lookup_policy_fhedt_env_use_cache(void)
         0);
 }
 
+/* Keep the environment contract observable before registry migration. */
+static void
+sixel_lookup_policy_fhedt_trace_settings(char const *precision,
+                                         int resolution,
+                                         int refine,
+                                         int shared_flag,
+                                         int use_dist2,
+                                         int use_cache)
+{
+    if (!sixel_trace_topic_is_enabled("lookup_contract")) {
+        return;
+    }
+    fprintf(stderr,
+            "LSXLUT1|policy=fhedt|precision=%s|resolution=%d|refine=%d|"
+            "shared=%d|dist2=%d|cache=%d\n",
+            precision,
+            resolution,
+            refine,
+            shared_flag,
+            use_dist2,
+            use_cache);
+}
+
 static SIXELSTATUS
 sixel_lookup_policy_fhedt_prepare_float_palette(
     sixel_lookup_policy_fhedt_float32_t *lut,
@@ -363,6 +387,12 @@ sixel_lookup_policy_fhedt_configure_8bit(
     shared_flag = sixel_lookup_policy_fhedt_env_shared();
     use_dist2 = sixel_lookup_policy_fhedt_env_use_dist2();
     use_cache = sixel_lookup_policy_fhedt_env_use_cache();
+    sixel_lookup_policy_fhedt_trace_settings("8bit",
+                                             resolution,
+                                             refine,
+                                             shared_flag,
+                                             use_dist2,
+                                             use_cache);
 
     signature = sixel_lookup_fhedt_8bit_signature(request->palette,
                                                   request->reqcolor,
@@ -475,6 +505,12 @@ sixel_lookup_policy_fhedt_configure_float32(
     shared_flag = sixel_lookup_policy_fhedt_env_shared();
     use_dist2 = sixel_lookup_policy_fhedt_env_use_dist2();
     use_cache = sixel_lookup_policy_fhedt_env_use_cache();
+    sixel_lookup_policy_fhedt_trace_settings("float32",
+                                             resolution,
+                                             refine,
+                                             shared_flag,
+                                             use_dist2,
+                                             use_cache);
 
     signature = sixel_lookup_fhedt_float32_signature(lut->palette,
                                                      lut->ncolors,

@@ -58,6 +58,7 @@
 #include "cpu.h"
 #include "allocator.h"
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "lookup-fhedt-8bit.h"
 #include "options.h"
 #include "timeline-logger.h"
@@ -1919,6 +1920,15 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
                                     resolution,
                                     &tile_xy,
                                     &tile_depth);
+    if (sixel_trace_topic_is_enabled("lookup_contract")) {
+        fprintf(stderr,
+                "LSXFHD1|precision=8bit|tile_xy=%d|tile_depth=%d|"
+                "first_touch=%d|pin_threads=%d\n",
+                tile_xy,
+                tile_depth,
+                first_touch,
+                pin_threads);
+    }
 
     total = (size_t)resolution * (size_t)resolution * (size_t)resolution;
     if (!shared->use_u16) {

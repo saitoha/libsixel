@@ -55,6 +55,7 @@
 #include "cpu.h"
 #include "allocator.h"
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "lookup-fhedt-float32.h"
 #include "options.h"
 #include "pixelformat.h"
@@ -1987,6 +1988,15 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
                                     resolution,
                                     &tile_xy,
                                     &tile_depth);
+    if (sixel_trace_topic_is_enabled("lookup_contract")) {
+        fprintf(stderr,
+                "LSXFHD1|precision=float32|tile_xy=%d|tile_depth=%d|"
+                "first_touch=%d|pin_threads=%d\n",
+                tile_xy,
+                tile_depth,
+                first_touch,
+                pin_threads);
+    }
 
     total = (size_t)resolution * (size_t)resolution * (size_t)resolution;
     if (!shared->use_u16) {
