@@ -1001,6 +1001,7 @@ _arguments -S -s -A "-*" -S \
   {-G,--gpu-policy=}'[choose palette-apply accelerator policy]':gpupolicy:_gpupolicy \
   {-j,--runtime-policy=}'[choose process runtime policy]':runtimepolicy:_runtimepolicy \
   {-x,--diagnostics=}'[choose diagnostic presentation]':diagnostics:_diagnosticspolicy \
+  {-J,--log-path=}'[write the shared JSON timeline log]':files:_files \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
   {-T,--start-frame=}'[set animation start frame index for loaders]' \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \

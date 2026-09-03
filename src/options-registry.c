@@ -2985,6 +2985,12 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_DIAGNOSTICS_MODE_HUMAN,
         g_diagnostics_values,
         "SIXEL_DIAG_MODE"),
+    SIXEL_REGISTRY_SCALAR_STRING(
+        SIXEL_OPTION_SCHEMA_LOG_PATH,
+        SIXEL_OPTION_SCOPE_ALL,
+        SIXEL_OPTFLAG_LOG_PATH,
+        "log-path",
+        "SIXEL_LOG_PATH"),
 };
 
 static int

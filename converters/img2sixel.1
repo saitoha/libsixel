@@ -107,6 +107,10 @@ img2sixel also accepts \fB:quiet=0|1\fP
 \fB:psd_trace=0|1\fP (\fB:D0|:D1\fP), and
 \fB:psd_header_only=0|1\fP (\fB:E0|:E1\fP).
 .TP 5
+.B \-J \fIPATH\fP, \-\-log\-path=\fIPATH\fP
+write the shared JSON timeline log to \fIPATH\fP. This option takes
+precedence over \fBSIXEL_LOG_PATH\fP.
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5
@@ -804,8 +808,10 @@ preserved.  Legacy SIXEL_FHEDT_PIN_THREADS remains accepted for compatibility.
 The matching sub-option is \fBpin_threads=0|1\fP
 (short form \fBP0|P1\fP).
 .br
-SIXEL_LOG_PATH writes a JSON timeline log consumed by tools/timeline.py
-when set; unset leaves logging disabled.
+SIXEL_LOG_PATH writes the shared JSON timeline log consumed by
+tools/timeline.py
+when set; unset leaves logging disabled. The \fB\-J/\-\-log\-path\fP option
+takes precedence.
 .br
 SIXEL_LOG_LINES controls per-line logging when
 SIXEL_LOG_PATH is set (0 disables line events, a positive integer logs
@@ -2127,7 +2133,8 @@ behaviour and defaults.
 .TP 5
 .B SIXEL_LOG_PATH
 .br
-write a JSON timeline for FHEDT or LUT builds when set.
+write the shared JSON timeline log when set. The
+\fB\-J/\-\-log\-path\fP option takes precedence.
 .TP 5
 .B SIXEL_LOG_LINES
 .br

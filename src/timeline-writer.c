@@ -50,7 +50,9 @@
 # include <pthread.h>
 #endif
 
+#include <sixel.h>
 #include "compat_stub.h"
+#include "options.h"
 #include "stdio_stub.h"
 #include "threading.h"
 #include "timeline-logger.h"
@@ -65,6 +67,10 @@ typedef struct sixel_timeline_writer_storage {
     int env_checked;
     int active;
     int clock_origin_ready;
+    int log_path_override;
+    int log_path_probe_checked;
+    int log_path_environment_enabled;
+    char *log_path;
     unsigned int next_session_id;
     double clock_origin;
 #if defined(_WIN32)
@@ -251,7 +257,7 @@ sixel_timeline_writer_reopen_locked(
 #endif
 
 static void
-sixel_timeline_writer_open_env_locked(
+sixel_timeline_writer_open_configured_locked(
     sixel_timeline_writer_storage_t *writer)
 {
     char const *path;
@@ -270,7 +276,12 @@ sixel_timeline_writer_open_env_locked(
     }
 #endif
     writer->env_checked = 1;
-    path = sixel_compat_getenv("SIXEL_LOG_PATH");
+    if (writer->log_path_override) {
+        path = writer->log_path;
+    } else {
+        path = sixel_option_resolve_argument_environment(
+            SIXEL_OPTION_SCHEMA_LOG_PATH);
+    }
     if (path == NULL || path[0] == '\0') {
         return;
     }
@@ -325,7 +336,7 @@ sixel_timeline_writer_create_logger(
     session_id = 0u;
     clock_origin = 0.0;
     sixel_timeline_writer_lock(storage);
-    sixel_timeline_writer_open_env_locked(storage);
+    sixel_timeline_writer_open_configured_locked(storage);
     if (storage->active == 0 || storage->file == NULL) {
         sixel_timeline_writer_unlock(storage);
         return SIXEL_OK;
@@ -365,7 +376,7 @@ sixel_timeline_writer_write(sixel_timeline_writer_t *writer,
     }
 
     sixel_timeline_writer_lock(storage);
-    sixel_timeline_writer_open_env_locked(storage);
+    sixel_timeline_writer_open_configured_locked(storage);
     if (storage->active == 0 || storage->file == NULL) {
         sixel_timeline_writer_unlock(storage);
         return SIXEL_OK;
@@ -398,7 +409,7 @@ sixel_timeline_writer_write(sixel_timeline_writer_t *writer,
     }
 
     sixel_timeline_writer_lock(storage);
-    sixel_timeline_writer_open_env_locked(storage);
+    sixel_timeline_writer_open_configured_locked(storage);
     if (storage->active != 0 && storage->file != NULL) {
         if (fwrite(line, 1u, (size_t)written, storage->file) !=
                 (size_t)written) {
@@ -451,6 +462,80 @@ sixel_timeline_writer_flush(sixel_timeline_writer_t *writer)
 #endif
     }
     sixel_timeline_writer_unlock(storage);
+}
+
+SIXELSTATUS
+sixel_timeline_writer_set_log_path(char const *path)
+{
+    sixel_timeline_writer_storage_t *writer;
+    SIXELSTATUS status;
+    char *path_copy;
+    char *old_path;
+    size_t path_length;
+
+    writer = &g_sixel_timeline_writer;
+    path_copy = NULL;
+    old_path = NULL;
+    path_length = 0u;
+    if (path == NULL || path[0] == '\0') {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    path_length = strlen(path) + 1u;
+    path_copy = (char *)malloc(path_length);
+    if (path_copy == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(path_copy, path, path_length);
+    status = sixel_timeline_writer_ensure_mutex();
+    if (SIXEL_FAILED(status)) {
+        free(path_copy);
+        return status;
+    }
+    sixel_timeline_writer_lock(writer);
+    if (writer->active != 0 || writer->file != NULL) {
+        sixel_timeline_writer_unlock(writer);
+        free(path_copy);
+        sixel_helper_set_additional_message(
+            "timeline log path cannot change after logging starts.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    old_path = writer->log_path;
+    writer->log_path = path_copy;
+    writer->log_path_override = 1;
+    writer->env_checked = 0;
+    sixel_timeline_writer_unlock(writer);
+    free(old_path);
+    return SIXEL_OK;
+}
+
+int
+sixel_timeline_writer_log_path_is_enabled(void)
+{
+    sixel_timeline_writer_storage_t *writer;
+    char const *path;
+    int enabled;
+
+    writer = &g_sixel_timeline_writer;
+    path = NULL;
+    enabled = 0;
+    if (SIXEL_FAILED(sixel_timeline_writer_ensure_mutex())) {
+        return 0;
+    }
+    sixel_timeline_writer_lock(writer);
+    if (writer->log_path_override) {
+        enabled = writer->log_path != NULL && writer->log_path[0] != '\0';
+    } else {
+        if (!writer->log_path_probe_checked) {
+            path = sixel_option_resolve_argument_environment(
+                SIXEL_OPTION_SCHEMA_LOG_PATH);
+            writer->log_path_environment_enabled =
+                path != NULL && path[0] != '\0';
+            writer->log_path_probe_checked = 1;
+        }
+        enabled = writer->log_path_environment_enabled;
+    }
+    sixel_timeline_writer_unlock(writer);
+    return enabled;
 }
 
 SIXELSTATUS

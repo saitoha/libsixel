@@ -214,6 +214,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             :trace_topic=LIST (:TLIST)\n"
     },
     {
+        'J',
+        "log-path",
+        "-J PATH, --log-path=PATH  write the shared JSON timeline\n"
+        "                           log to PATH. This overrides\n"
+        "                           SIXEL_LOG_PATH.\n"
+    },
+    {
         '%',
         "env",
         "-% KEY=VALUE, --env=KEY=VALUE\n"
@@ -242,7 +249,8 @@ sixel2png_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:G:j:x:%:DVH";
+static char const g_sixel2png_optstring[] =
+    "i:o:d:S:e:s:=:G:j:x:J:%:DVH";
 
 typedef struct sixel2png_parsed_option {
     int code;
@@ -254,7 +262,7 @@ typedef struct sixel2png_parsed_option {
 static int
 sixel2png_option_allows_leading_dash(int short_opt)
 {
-    if (short_opt == 'o' || short_opt == 'i') {
+    if (short_opt == 'o' || short_opt == 'i' || short_opt == 'J') {
         return 1;
     }
 
@@ -537,6 +545,7 @@ main(int argc, char *argv[])
         {"gpu-policy",       required_argument,  NULL, 'G'},
         {"runtime-policy",   required_argument,  NULL, 'j'},
         {"diagnostics",      required_argument,  NULL, 'x'},
+        {"log-path",         required_argument,  NULL, 'J'},
         {"env",              required_argument,  NULL, '%'},
         {"version",          no_argument,        NULL, 'V'},
         {"help",             no_argument,        NULL, 'H'},

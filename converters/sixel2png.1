@@ -134,6 +134,10 @@ Choose diagnostic presentation. MODE is \fBhuman\fP (default) or
 (\fB:C0|:C1\fP). \fB:trace_topic=LIST\fP
 (\fB:TLIST\fP) selects a comma-separated topic list.
 .TP 5
+.B \-J PATH, \-\-log\-path=PATH
+Write the shared JSON timeline log to PATH. This option takes precedence
+over \fBSIXEL_LOG_PATH\fP.
+.TP 5
 .B \-% KEY=VALUE, \--env=KEY=VALUE
 Set a process environment variable before decoding.
 This option can be repeated.
@@ -188,6 +192,11 @@ emit color sequences without relying on TTY detection. The
 enable topic-scoped debug traces using comma-separated tokens. The
 \fB\-x *:trace_topic=LIST\fP suboption (short form \fB:TLIST\fP) takes
 precedence.
+.TP 5
+.B SIXEL_LOG_PATH
+.br
+write the shared JSON timeline log when set. The
+\fB\-J/\-\-log\-path\fP option takes precedence.
 .TP 5
 .B SIXEL_THREADS
 .br

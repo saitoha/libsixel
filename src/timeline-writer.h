@@ -41,6 +41,12 @@ extern "C" {
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_timeline_writer_get_default(void **writer);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_timeline_writer_set_log_path(char const *path);
+
+SIXEL_INTERNAL_API int
+sixel_timeline_writer_log_path_is_enabled(void);
+
 #ifdef __cplusplus
 }
 #endif

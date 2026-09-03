@@ -174,6 +174,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_BGCOLOR,
     SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
     SIXEL_OPTION_SCHEMA_DIAGNOSTICS,
+    SIXEL_OPTION_SCHEMA_LOG_PATH,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
 
@@ -626,6 +627,13 @@ sixel_option_apply_runtime_policy_argument(
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_apply_diagnostics_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_option_apply_log_path_argument(
     char const *argument,
     unsigned int consumer_scope,
     char *diagnostic,

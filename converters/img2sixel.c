@@ -770,6 +770,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "      :psd_header_only=0|1 (:E0|:E1)\n"
     },
     {
+        'J',
+        "log-path",
+        "-J PATH, --log-path=PATH\n"
+        "    write the shared JSON timeline log to PATH.\n"
+        "    This overrides SIXEL_LOG_PATH.\n"
+    },
+    {
         'l',
         "loop-control",
         "-l LOOPMODE, --loop-control=LOOPMODE\n"
@@ -2097,7 +2104,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_LOG_PATH",
-        "write a JSON timeline for FHEDT or LUT builds when set."
+        "write the shared JSON timeline log when set. The\n"
+        "-J/--log-path option takes precedence."
     },
     {
         "SIXEL_LOG_LINES",
@@ -2119,7 +2127,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:kil:T:t:ugvSn:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:J:kil:T:t:ugvSn:"
     "PE:U:B:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
@@ -2132,7 +2140,7 @@ img2sixel_option_allows_leading_dash(int short_opt)
      * "-p"-prefixed names through -o when they want files that happen to
      * look like short options.
      */
-    if (short_opt == 'o') {
+    if (short_opt == 'o' || short_opt == 'J') {
         return 1;
     }
 
@@ -3141,6 +3149,7 @@ img2sixel_main(int argc, char *argv[])
         {"gpu-policy",            required_argument,  &long_opt, 'G'},
         {"runtime-policy",        required_argument,  &long_opt, 'j'},
         {"diagnostics",           required_argument,  &long_opt, 'x'},
+        {"log-path",              required_argument,  &long_opt, 'J'},
         {"palette-type",          required_argument,  &long_opt, 't'},
         {"insecure",              no_argument,        &long_opt, 'k'},
         {"invert",                no_argument,        &long_opt, 'i'},
@@ -3514,6 +3523,7 @@ unknown_option_error:
             "                 [-F mergepolicy] [-a coverpolicy]\n"
             "                 [-~ lookuppolicy] [-G gpupolicy]\n"
             "                 [-j runtimepolicy] [-x diagnostics]\n"
+            "                 [-J logpath]\n"
             "                 [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
             "                 [-E encodepolicy] [-L loaderlist] [-# cmsengine]\n"

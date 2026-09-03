@@ -2903,6 +2903,17 @@ sixel_decoder_setopt(
         }
         break;
 
+    case SIXEL_OPTFLAG_LOG_PATH:  /* J */
+        status = sixel_option_apply_log_path_argument(
+            value,
+            SIXEL_OPTION_SCOPE_DECODER,
+            NULL,
+            0u);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+
     case SIXEL_OPTFLAG_GPU_POLICY:  /* G */
         status = decoder_apply_gpu_policy_argument(
             decoder,

@@ -670,7 +670,7 @@ _img2sixel()
         _img2sixel_complete_cover_policy
         return 0
         ;;
-    -m|--mapfile|-M|--mapfile-output)
+    -m|--mapfile|-M|--mapfile-output|-J|--log-path)
         _img2sixel_filedir
         return 0
         ;;
@@ -958,6 +958,7 @@ _img2sixel()
                                    -G --gpu-policy \
                                    -j --runtime-policy \
                                    -x --diagnostics \
+                                   -J --log-path \
                                    -l --loop-control \
                                    -T --start-frame \
                                    -t --palette-type \

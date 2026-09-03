@@ -728,6 +728,10 @@ typedef int SIXELSTATUS;
                                                  --diagnostics=DIAGNOSTICS:
                                                  select diagnostic policy
                                                */
+#define SIXEL_OPTFLAG_LOG_PATH          ('J') /* -J PATH,
+                                                 --log-path=PATH:
+                                                 write a JSON timeline log
+                                               */
 #define SIXEL_OPTFLAG_CLUSTERING_COLORSPACE ('X')
     /* -X COLORSPACE */
     /* --clustering-colorspace=COLORSPACE */

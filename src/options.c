@@ -67,6 +67,7 @@
 #include "options-registry.h"
 #include "output.h"
 #include "threading.h"
+#include "timeline-writer.h"
 
 /*
  * The option helper entry points centralize prefix matching and
@@ -3178,6 +3179,30 @@ sixel_option_apply_diagnostics_argument(
     }
     sixel_option_free_argument_resolution(&resolution);
     return status;
+}
+
+SIXELSTATUS
+sixel_option_apply_log_path_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_suboption_value_t value;
+
+    memset(&value, 0, sizeof(value));
+    status = sixel_option_parse_scalar_argument(
+        SIXEL_OPTION_SCHEMA_LOG_PATH,
+        consumer_scope,
+        argument,
+        &value,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_timeline_writer_set_log_path(value.string_value);
 }
 
 static int

@@ -147,7 +147,7 @@ awk '
     in_func = 1
     saw_env_gate = 0
 }
-in_func && /sixel_timeline_logger_env_can_log[ \t]*\(/ {
+in_func && /sixel_timeline_writer_log_path_is_enabled[ \t]*\(/ {
     saw_env_gate = 1
 }
 in_func && /sixel_allocator_new[ \t]*\(/ {
