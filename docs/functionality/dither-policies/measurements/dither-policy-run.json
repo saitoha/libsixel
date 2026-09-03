@@ -1,0 +1,122 @@
+{
+  "build": {
+    "cc": "gcc",
+    "cflags": "-g -O2 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": ""
+  },
+  "generated_at_utc": "2026-09-03T11:17:57.366535+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.5"
+  },
+  "input": {
+    "path": "images/snake.png",
+    "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4"
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "a71c47eaa76453ad97571b45f4ad0dee6f4fd26fdc84392d4ed64238c9620ba7",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "d717c57be49cbf984495551f78d9c5868eaf38a99a256eb440929e2bee317aeb"
+    },
+    "lsqa": {
+      "launcher": "assessment/lsqa",
+      "launcher_sha256": "05b2ce263ba953d48d90fe468833f91e934545eec4c2d86380d17527ea7c0275",
+      "payload": "assessment/.libs/lsqa",
+      "payload_sha256": "7051c714a138ee6f80c80278f39f8594e0123aa384ed311f5599c37db20383dd"
+    }
+  },
+  "protocol": {
+    "clustering_colorspace": "oklab",
+    "colors": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "excluded": {
+      "auto": "selector rather than a concrete method",
+      "interframe": "requires an animation protocol",
+      "stbn": "requires an animation protocol"
+    },
+    "gpu_policy": "off",
+    "lookup_policy": "none",
+    "method_order_rotated_each_round": true,
+    "methods": [
+      {
+        "diffusion_option": "none:scan=raster",
+        "name": "none"
+      },
+      {
+        "diffusion_option": "fs:scan=raster",
+        "name": "fs"
+      },
+      {
+        "diffusion_option": "atkinson:scan=raster",
+        "name": "atkinson"
+      },
+      {
+        "diffusion_option": "jajuni:scan=raster",
+        "name": "jajuni"
+      },
+      {
+        "diffusion_option": "stucki:scan=raster",
+        "name": "stucki"
+      },
+      {
+        "diffusion_option": "burkes:scan=raster",
+        "name": "burkes"
+      },
+      {
+        "diffusion_option": "sierra:variant=1:scan=raster",
+        "name": "sierra1"
+      },
+      {
+        "diffusion_option": "sierra:variant=2:scan=raster",
+        "name": "sierra2"
+      },
+      {
+        "diffusion_option": "sierra:variant=3:scan=raster",
+        "name": "sierra3"
+      },
+      {
+        "diffusion_option": "lso2:scan=raster",
+        "name": "lso2"
+      },
+      {
+        "diffusion_option": "a_dither:strength=0.150:scan=raster",
+        "name": "a_dither"
+      },
+      {
+        "diffusion_option": "x_dither:strength=0.100:scan=raster",
+        "name": "x_dither"
+      },
+      {
+        "diffusion_option": "bluenoise:strength=0.055:gradient_factor=0:phase=0,0:channel=mono:size=64:scan=raster",
+        "name": "bluenoise"
+      }
+    ],
+    "precision": "8bit",
+    "quantize_model": "kmeans:merge=ward:seed=1",
+    "scan": "raster",
+    "sixel_environment_removed": true,
+    "speed_runs": 9,
+    "speed_warmups": 2,
+    "threads": 1,
+    "working_colorspace": "gamma"
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "453c72e0d702e84dfe01433e9ec7adf4f866dc65",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}

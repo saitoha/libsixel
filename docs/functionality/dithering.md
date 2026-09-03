@@ -228,14 +228,79 @@ bars show the interquartile range. The complete samples and command templates
 are in
 [`dither-policy-speed.csv`](dither-policies/measurements/dither-policy-speed.csv).
 
+### Observed tradeoffs
+
+The two ends of the measured palette-size range are summarized below. The CSV
+retains more digits; rounding here is for readability.
+
+| Method | MS-SSIM, `K=8` | Mean Delta E00, `K=8` | MS-SSIM, `K=256` | Mean Delta E00, `K=256` |
+| --- | ---: | ---: | ---: | ---: |
+| `none` | 0.913150 | 5.6738 | 0.991971 | 1.8678 |
+| `fs` | 0.897204 | 7.1647 | 0.992164 | 2.2585 |
+| `atkinson` | 0.929257 | 5.8992 | 0.993364 | 1.9438 |
+| `jajuni` | 0.872093 | 6.9085 | 0.991119 | 2.1324 |
+| `stucki` | 0.925509 | 5.9963 | 0.993065 | 1.9799 |
+| `burkes` | 0.888138 | 7.0569 | 0.991947 | 2.1804 |
+| `sierra1` | 0.892550 | 7.1820 | 0.991948 | 2.2728 |
+| `sierra2` | 0.926554 | 5.8479 | 0.993128 | 1.9200 |
+| `sierra3` | 0.873537 | 6.9359 | 0.991229 | 2.1432 |
+| `lso2` | 0.930382 | 5.9884 | 0.993466 | 2.0788 |
+| `a_dither` | 0.922113 | 5.7055 | 0.992143 | 2.2287 |
+| `x_dither` | 0.917181 | 5.6844 | 0.992511 | 2.0367 |
+| `bluenoise` | 0.915700 | 5.6777 | 0.992900 | 1.8844 |
+
+At `K=8`, `lso2`, Atkinson, Sierra-2, and Stucki improve MS-SSIM over
+`none` by 0.017232, 0.016107, 0.013404, and 0.012359 respectively. All three
+positional methods also improve it, though by smaller amounts. Floyd--
+Steinberg, Jarvis--Judice--Ninke, Burkes, Sierra-1, and Sierra-3 instead reduce
+MS-SSIM on this fixture at that palette size. The separation narrows as `K`
+grows, but Atkinson, Stucki, Sierra-2, `lso2`, and all three positional methods
+remain above `none` at every measured `K`. This consistency is a reason to
+test them on a broader fixture set, not enough evidence to change the default.
+
+Mean Delta E00 is higher than `none` for every dither in both endpoint rows.
+That result is expected rather than contradictory: direct lookup selects the
+nearest palette entry in its own lookup metric, while dithering may accept more
+local color error to make its spatial arrangement less objectionable. The
+blue-noise result at `K=256`, for example, moves mean Delta E00 from 1.8678 to
+1.8844 while moving MS-SSIM from 0.991971 to 0.992900.
+
+| Method | Median, `K=8` | Relative to `none` | Median, `K=256` | Relative to `none` |
+| --- | ---: | ---: | ---: | ---: |
+| `none` | 67.5 ms | 1.00x | 191.1 ms | 1.00x |
+| `fs` | 75.4 ms | 1.12x | 200.8 ms | 1.05x |
+| `atkinson` | 78.7 ms | 1.16x | 204.2 ms | 1.07x |
+| `jajuni` | 93.0 ms | 1.38x | 215.4 ms | 1.13x |
+| `stucki` | 92.7 ms | 1.37x | 216.2 ms | 1.13x |
+| `burkes` | 83.0 ms | 1.23x | 203.7 ms | 1.07x |
+| `sierra1` | 74.6 ms | 1.10x | 199.2 ms | 1.04x |
+| `sierra2` | 88.2 ms | 1.31x | 210.3 ms | 1.10x |
+| `sierra3` | 87.9 ms | 1.30x | 211.1 ms | 1.10x |
+| `lso2` | 84.5 ms | 1.25x | 207.0 ms | 1.08x |
+| `a_dither` | 68.8 ms | 1.02x | 193.3 ms | 1.01x |
+| `x_dither` | 70.0 ms | 1.04x | 194.4 ms | 1.02x |
+| `bluenoise` | 69.4 ms | 1.03x | 194.3 ms | 1.02x |
+
+The positional methods remain within four percent of `none` at both
+endpoints. Fixed-stencil and table-driven diffusion cost more: at `K=8` their
+measured slowdown ranges from 1.10x for Sierra-1 to 1.38x for
+Jarvis--Judice--Ninke. The relative gap shrinks at `K=256` because the
+controlled direct lookup is `Theta(P K)` and dominates more of the total as
+the palette grows. For example, `lso2` adds about 17.0 ms at `K=8` and
+15.9 ms at `K=256`, although its displayed ratio changes from 1.25x to 1.08x.
+The figure therefore measures user-visible end-to-end latency; it is not an
+isolated comparison of kernel arithmetic.
+
 ### Controlled protocol
 
-The input is [`images/snake.png`](../../images/snake.png), and the sweep uses
-`K = 8, 16, 32, 64, 128, 256`. Palette generation is controlled with seeded
-K-means, Ward final merging, and OKLab clustering. Palette application remains
-in gamma RGB. Direct `--lookup-policy=none` avoids adding an approximate lookup
-policy to the quality comparison. GPU assistance is disabled, and one worker
-avoids parallel-band seams and scan-history differences.
+The curves were measured on 2026-09-03 from a clean Autotools build of revision
+`453c72e0d` on Darwin 25.5.0 arm64. The input is
+[`images/snake.png`](../../images/snake.png), and the sweep uses `K = 8, 16,
+32, 64, 128, 256`. Palette generation is controlled with seeded K-means, Ward
+final merging, and OKLab clustering. Palette application remains in gamma RGB.
+Direct `--lookup-policy=none` avoids adding an approximate lookup policy to the
+quality comparison. GPU assistance is disabled, and one worker avoids
+parallel-band seams and scan-history differences.
 
 Every spatial method uses explicit raster order so the figure compares kernels
 under one scan contract. This intentionally overrides `lso2`'s normal
