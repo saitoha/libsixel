@@ -242,12 +242,16 @@ def validate_acceleration_metadata(path: Path) -> Dict[str, object]:
         fail("acceleration metadata has unexpected shared-instance policies")
     if tuple(shared.get("values", [])) != (0, 1):
         fail("acceleration metadata must compare shared_instance=0 and 1")
+    if shared.get("quantize_model") != "kmeans:merge=ward:seed=1":
+        fail("shared-instance measurement must use controlled K-means")
     if int(shared.get("threads", 0)) < 2:
         fail("shared-instance measurement must use multiple threads")
     if tuple(metal.get("policies", [])) != METAL_POLICIES:
         fail("acceleration metadata has unexpected Metal policies")
     if tuple(metal.get("cpu_gpu_policies", [])) != ("off", "force"):
         fail("Metal measurement must compare gpu-policy=off and force")
+    if metal.get("quantize_model") != "heckbert:cover=off:merge=none":
+        fail("Metal measurement must exercise the Heckbert PaletteApply path")
     if metal.get("force_success_required") is not True:
         fail("Metal measurement does not require a forced GPU path")
     equivalence = metal.get("output_equivalence")
@@ -321,6 +325,8 @@ def validate_acceleration_speed_file(path: Path,
             )
             if row.get("gpu_policy") != "off":
                 fail(f"shared-instance run unexpectedly enables GPU in {path}")
+            if "--quantize-model=kmeans:merge=ward:seed=1" not in command:
+                fail(f"shared-instance run does not use K-means in {path}")
         else:
             gpu_policy = row.get("gpu_policy", "")
             key = (policy, gpu_policy, color)
@@ -329,6 +335,9 @@ def validate_acceleration_speed_file(path: Path,
                 fail(f"Metal run unexpectedly sets shared_instance in {path}")
             if f"--gpu-policy={gpu_policy}" not in command:
                 fail(f"Metal command/gpu-policy mismatch in {path}")
+            heckbert = "--quantize-model=heckbert:cover=off:merge=none"
+            if heckbert not in command:
+                fail(f"Metal run does not use the PaletteApply path in {path}")
         if key in actual:
             fail(f"duplicate acceleration point in {path}: {key}")
         actual.add(key)

@@ -108,15 +108,28 @@ def make_command(img2sixel: str,
         "--precision=8bit",
         "--quality=full",
         "--loaders=libpng!",
-        "--quantize-model=kmeans:merge=ward:seed=1",
-        "-Xoklab",
-        "-Wgamma",
-        "--diffusion=none:band_overwrap=0",
-        f"--gpu-policy={variant.gpu_policy}",
-        f"--lookup-policy={lookup_policy}",
-        "-p",
-        str(colors),
     ]
+    if variant.shared_instance is None:
+        # The current K-means path completes palette application internally,
+        # outside the Metal PaletteApply dispatch measured here.
+        command.append("--quantize-model=heckbert:cover=off:merge=none")
+    else:
+        command.extend(
+            [
+                "--quantize-model=kmeans:merge=ward:seed=1",
+                "-Xoklab",
+                "-Wgamma",
+            ]
+        )
+    command.extend(
+        [
+            "--diffusion=none:band_overwrap=0",
+            f"--gpu-policy={variant.gpu_policy}",
+            f"--lookup-policy={lookup_policy}",
+            "-p",
+            str(colors),
+        ]
+    )
     if output is not None:
         command.extend(["-o", output])
     command.append(str(input_image))
@@ -410,11 +423,13 @@ def write_metadata(path: Path,
                 "threads": shared_threads,
                 "policies": list(SHARED_POLICIES),
                 "values": [0, 1],
+                "quantize_model": "kmeans:merge=ward:seed=1",
             },
             "metal": {
                 "threads": 1,
                 "policies": list(METAL_POLICIES),
                 "cpu_gpu_policies": ["off", "force"],
+                "quantize_model": "heckbert:cover=off:merge=none",
                 "force_success_required": True,
                 "output_equivalence": equivalence,
             },
@@ -506,7 +521,7 @@ def main() -> int:
         metal_rows,
         colors,
         metal_modes,
-        f"CPU and forced-Metal runtime on {input_image.name}",
+        f"CPU and forced-Metal Heckbert runtime on {input_image.name}",
         args.runs,
     )
     lsqa = resolve_metadata_program(
