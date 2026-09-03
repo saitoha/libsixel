@@ -1581,8 +1581,8 @@ above `none`. Calling the RGB666 loss merely "slight" would overstate what this
 single-image result supports.
 
 Among the accelerated policies at `K = 256`, `vptree` has the lowest measured
-mean Delta E00 at 2.746327 while taking 85.5 ms in the speed run. `fhedt` is
-faster at 79.5 ms, but its mean Delta E00 is 2.766032 and its mean chroma error
+mean Delta E00 at 2.746327 while taking 97.6 ms in the speed run. `fhedt` is
+faster at 89.7 ms, but its mean Delta E00 is 2.766032 and its mean chroma error
 is 2.053499 rather than `vptree`'s 2.011879. The differences are small enough
 that this is evidence of a favorable quality/speed balance on this fixture,
 not a universal ordering.
@@ -1633,7 +1633,7 @@ At `K = 256`, `5bit` reaches 0.973219 while `none` reaches 0.986088. The
 underlying values are in
 [`lookup-policy-ms-ssim.csv`](lookup-policies/measurements/lookup-policy-ms-ssim.csv).
 
-### High-palette-size detail
+### Controlled K-means high-palette-size detail
 
 ![Focused mean Delta E00 and mean absolute CIELAB chroma error for the controlled K-means comparison from K 128 through 256](lookup-policies/measurements/lookup-policy-kmeans-high-k.png)
 
@@ -1660,6 +1660,44 @@ without introducing the policy-dependent Heckbert histogram resolution.
 the separate speed figure shows that its runtime remains close to `fhedt` and
 `eytzinger`.
 
+### Palette-geometry sensitivity under Heckbert
+
+![Focused mean Delta E00 and mean absolute CIELAB chroma error for the Heckbert palette-geometry sensitivity comparison from K 128 through 256](lookup-policies/measurements/lookup-policy-heckbert-high-k.png)
+
+The focused source data are in
+[`lookup-policy-heckbert-high-k.csv`](lookup-policies/measurements/lookup-policy-heckbert-high-k.csv).
+At `K = 256`, the measured values are:
+
+| Policy | Mean Delta E00 | Mean absolute chroma error |
+| --- | ---: | ---: |
+| `none` | 2.447771 | 1.842988 |
+| `5bit` | 3.155706 | 2.269776 |
+| `6bit` | 2.596776 | 1.859324 |
+| `certlut` | 2.403138 | 1.749753 |
+| `eytzinger` | 3.032645 | 2.461793 |
+| `fhedt` | 2.475566 | 1.747344 |
+| `vptree` | 2.400774 | 1.748358 |
+| `rbc` | 2.402073 | 1.756719 |
+| `mahalanobis` | 2.402073 | 1.756719 |
+
+Palette quality and lookup indexability are separate properties. In a
+`K = 256` diagnostic, `eytzinger` and `vptree` emitted identical palette
+definitions within each quantizer, yet their output quality depended strongly
+on the palette geometry. Under controlled K-means their mean Delta E00 values
+are 2.749222 and 2.746327, a difference of 0.002895. Under Heckbert they are
+3.032645 and 2.400774, a difference of 0.631871. The Heckbert palette is not
+simply worse: with `vptree` it scores better than the K-means palette on this
+fixture.
+
+The 8-bit `eytzinger` policy projects colors with `r + g + b` and examines a
+fixed window of at most six palette entries on each side of the insertion
+position. A palette whose nearest-neighbor geometry is poorly preserved by
+that projection exposes the approximation. `vptree` instead uses metric
+branch-and-bound tests and retains its nearest-distance guarantee. This pair of
+figures therefore demonstrates why lookup policies should be evaluated with
+more than one palette geometry. It does not establish that either quantizer is
+generally easier or harder to search from this single image.
+
 ### End-to-end speed
 
 ![Median end-to-end runtime for each lookup policy](lookup-policies/measurements/lookup-policy-speed.png)
@@ -1673,15 +1711,15 @@ At `K = 256`, the result is:
 
 | Policy | Median time | Speedup over `none` |
 | --- | ---: | ---: |
-| `none` | 182.5 ms | 1.00x |
-| `5bit` | 132.4 ms | 1.38x |
-| `6bit` | 135.3 ms | 1.35x |
-| `certlut` | 111.1 ms | 1.64x |
-| `eytzinger` | 87.5 ms | 2.08x |
-| `fhedt` | 79.5 ms | 2.29x |
-| `vptree` | 85.5 ms | 2.13x |
-| `rbc` | 103.5 ms | 1.76x |
-| `mahalanobis` | 136.1 ms | 1.34x |
+| `none` | 223.6 ms | 1.00x |
+| `5bit` | 143.5 ms | 1.56x |
+| `6bit` | 147.2 ms | 1.52x |
+| `certlut` | 120.9 ms | 1.85x |
+| `eytzinger` | 95.2 ms | 2.35x |
+| `fhedt` | 89.7 ms | 2.49x |
+| `vptree` | 97.6 ms | 2.29x |
+| `rbc` | 115.2 ms | 1.94x |
+| `mahalanobis` | 145.1 ms | 1.54x |
 
 This confirms a real speed/accuracy tradeoff between `6bit` and `none` on the
 fixture. It does not show that `6bit` is the best current default: both the
@@ -1691,8 +1729,8 @@ initialization and cold-bucket costs, so their relative position changes with
 `K`, image size, cache reuse, and traversal order.
 
 The shallow `fhedt` curve is particularly informative. From `K = 16` through
-`K = 256`, its median rises from 72.4 ms to 79.5 ms, while `5bit` and `6bit`
-rise to 132.4 ms and 135.3 ms. This is consistent with `fhedt` paying for its
+`K = 256`, its median rises from 75.7 ms to 89.7 ms, while `5bit` and `6bit`
+rise to 143.5 ms and 147.2 ms. This is consistent with `fhedt` paying for its
 fixed-resolution grid and then applying it in constant time per pixel, whereas
 each previously unseen `5bit` or `6bit` bucket still scans `K` palette entries.
 The figure remains an end-to-end measurement, however, so it cannot assign
@@ -1703,7 +1741,7 @@ the entire difference to lookup without a component-level benchmark.
 The curves were measured on 2026-09-03 from a clean Autotools build of revision
 `31e211cd3` on Darwin 25.5.0 arm64. The input was
 [`images/snake.png`](../../images/snake.png). The broad curves use
-`K = 8, 16, 32, 64, 128, 256`; the focused curve uses steps of 16 from 128
+`K = 8, 16, 32, 64, 128, 256`; both focused curves use steps of 16 from 128
 through 256.
 
 The controlled K-means quality and speed comparisons use this normal CLI path:
@@ -1759,10 +1797,10 @@ same policy and `K` sweep. The speed script accepts `--img2sixel`, `--warmups`,
 and `--runs` for an out-of-tree executable or a different repetition budget.
 
 The quality wrapper regenerates the broad and focused controlled K-means
-comparisons and the broad current-Heckbert compatibility comparison. The CSV
-files store the full command template for every point. A rerun is comparable
-only when the revision, input, loader behavior, build options, metric
-implementation, and benchmark host are also recorded.
+comparisons and the broad and focused current-Heckbert compatibility
+comparisons. The CSV files store the full command template for every point. A
+rerun is comparable only when the revision, input, loader behavior, build
+options, metric implementation, and benchmark host are also recorded.
 
 ### Interpretation limits
 

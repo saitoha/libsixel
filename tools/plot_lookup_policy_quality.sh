@@ -88,3 +88,11 @@ plot_quality_curve \
     --output-csv "${output_dir}/lookup-policy-kmeans-high-k.csv" \
     --output-plot "${output_dir}/lookup-policy-kmeans-high-k.png" \
     --title "K-means lookup-policy color error, K=128–256, on ${input_name}"
+
+plot_quality_curve \
+    128,144,160,176,192,208,224,240,256 \
+    "${heckbert_common} -p {ncolors}" \
+    --metrics 'Δ E00_mean,Δ Chroma_mean' \
+    --output-csv "${output_dir}/lookup-policy-heckbert-high-k.csv" \
+    --output-plot "${output_dir}/lookup-policy-heckbert-high-k.png" \
+    --title "Heckbert palette-geometry sensitivity, K=128–256, on ${input_name}"
