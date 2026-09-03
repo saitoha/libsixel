@@ -1921,6 +1921,8 @@ sixel_dither_new(
     (*ppdither)->method_for_rep = SIXEL_REP_CENTER_BOX;
     (*ppdither)->method_for_diffuse = SIXEL_DIFFUSE_FS;
     (*ppdither)->method_for_scan = SIXEL_SCAN_AUTO;
+    (*ppdither)->dither_parallel_band_overwrap_override = 0;
+    (*ppdither)->dither_parallel_band_overwrap = 0u;
     (*ppdither)->interframe_strategy_override = 0;
     (*ppdither)->interframe_strategy_token
         = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
@@ -1978,6 +1980,8 @@ sixel_dither_new(
     (*ppdither)->pipeline_parallel_active = 0;
     (*ppdither)->pipeline_band_height = 0;
     (*ppdither)->pipeline_band_overlap = 0;
+    (*ppdither)->pipeline_last_band_height = 0;
+    (*ppdither)->pipeline_last_band_overlap = 0;
     (*ppdither)->pipeline_dither_threads = 0;
     (*ppdither)->pipeline_pin_threads = 1;
     (*ppdither)->pipeline_image_width = 0;

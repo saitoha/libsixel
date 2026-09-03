@@ -488,6 +488,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "diffusion",
         "-d DIFFUSION, --diffusion=DIFFUSION\n"
         "    choose diffusion method used with -p option (color reduction).\n"
+        "    common sub-option:\n"
+        "      band_overwrap=LINES -> overlap adjacent parallel bands\n"
+        "                              (default depends on palette size)\n"
+        "      OLINES              -> short form of band_overwrap\n"
         "    DIFFUSION is one of them:\n"
         "      auto       -> choose diffusion type automatically (default)\n"
         "        sub-option:\n"
@@ -577,7 +581,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "          scan=SCANTYPE         -> auto, raster, or serpentine\n"
         "                                   (default raster)\n"
         "      compact suboption names (uppercase letter + value):\n"
-        "        all methods: scan=N; sierra: variant=V\n"
+        "        all methods: scan=N, band_overwrap=O\n"
+        "        sierra: variant=V\n"
         "        a_dither: strength=T\n"
         "        interframe: diffusion=D\n"
         "        stbn: source=S, diffusion=D, strength=T, motion_adapt=M,\n"
@@ -1252,7 +1257,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP",
         "set overlap between adjacent dither bands to smooth seams. Accepts\n"
-        "non-negative integers."
+        "non-negative integers. The -d suboption band_overwrap (short form\n"
+        "OVALUE) takes precedence."
     },
     {
         "SIXEL_DITHER_BLUENOISE_STRENGTH",

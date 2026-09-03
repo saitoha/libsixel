@@ -381,6 +381,8 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE" ||
+        macro == \
+            "SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_MAXIMUM_SIGNED" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_UNSIGNED" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG" ||
@@ -795,7 +797,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     }
     expected_range_policy[key] = range_policy
     if (option_id == "SIXEL_OPTION_SCHEMA_DIFFUSION" &&
-            ((fields[2] == "NULL" && name == "scan") ||
+            ((fields[2] == "NULL" &&
+              (name == "scan" || name == "band_overwrap")) ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_SIERRA/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_A_DITHER/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_INTERFRAME/ ||

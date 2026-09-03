@@ -347,6 +347,13 @@ render animated GIF as a static image.
 .B \-d \fIDIFFUSION\fP, \-\-diffusion=\fIDIFFUSION\fP
 choose diffusion method used with color reduction.
 .br
+common sub-option:
+.br
+\fBband_overwrap=LINES\fP -> overlap adjacent parallel bands
+(default depends on palette size)
+.br
+\fBOLINES\fP -> short form of \fBband_overwrap\fP
+.br
 \fIDIFFUSION\fP is one of them:
 .br
 \fBauto\fP -> choose diffusion type automatically (default)
@@ -472,7 +479,7 @@ sub-option:
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 Compact diffusion suboption names use one uppercase letter plus the value:
-all methods scan=N; sierra variant=V; a_dither strength=T;
+all methods scan=N, band_overwrap=O; sierra variant=V; a_dither strength=T;
 interframe diffusion=D;
 stbn source=S, diffusion=D, strength=T, motion_adapt=M,
 scene_cut_reset=C, scene_detect=E, alpha_guard=A, perceptual_weight=P,
@@ -1234,7 +1241,8 @@ a multiple of six scanlines.
 .B SIXEL_DITHER_PARALLEL_BAND_OVERWRAP
 .br
 set overlap between adjacent dither bands to smooth seams. Accepts non-negative
-integers.
+integers. The \fB-dP suboption \fBband_overwrap=LINES\fP (short form
+\fB:OLINES\fP) takes precedence.
 .TP 5
 .B SIXEL_DITHER_STBN_SOURCE
 .br

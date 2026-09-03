@@ -98,6 +98,8 @@ struct sixel_dither {
     int method_for_rep;             /* method for choosing a color from the box */
     int method_for_diffuse;         /* method for diffusing */
     int method_for_scan;            /* scan order for diffusing */
+    int dither_parallel_band_overwrap_override; /* explicit overlap flag */
+    unsigned int dither_parallel_band_overwrap; /* requested overlap */
     int interframe_strategy_override; /* CLI strategy override enable flag */
     int interframe_strategy_token;    /* parsed interframe strategy token */
     int interframe_spatial_diffuse_override; /* CLI spatial diffuse flag */
@@ -165,6 +167,8 @@ struct sixel_dither {
     int pipeline_parallel_active;   /* enable overlapped dither bands */
     int pipeline_band_height;       /* band thickness for dither */
     int pipeline_band_overlap;      /* overlap rows for burn-in */
+    int pipeline_last_band_height;  /* last band height used by encoder */
+    int pipeline_last_band_overlap; /* last overlap used by encoder */
     int pipeline_dither_threads;    /* thread budget for dither */
     int pipeline_pin_threads;       /* pin palette/encode workers */
     int pipeline_image_width;       /* total image columns for masks */

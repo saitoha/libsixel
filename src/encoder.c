@@ -707,7 +707,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "scene_detect_override=%d|alpha=%d|alpha_override=%d|"
             "perceptual=%d|perceptual_override=%d|fastpath=%d|"
             "fastpath_override=%d|a_strength=%.9g|"
-            "a_strength_override=%d|codes=",
+            "a_strength_override=%d|band_height=%d|band_overlap=%d|"
+            "band_overwrap=%u|band_overwrap_override=%d|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -738,7 +739,11 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->stbn_fastpath_enabled,
             dither->stbn_fastpath_override,
             (double)dither->a_dither_strength,
-            dither->a_dither_strength_override);
+            dither->a_dither_strength_override,
+            dither->pipeline_last_band_height,
+            dither->pipeline_last_band_overlap,
+            dither->dither_parallel_band_overwrap,
+            dither->dither_parallel_band_overwrap_override);
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }
@@ -4665,6 +4670,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
     sixel_dither_set_diffusion_type(context->dither, method_for_diffuse);
+    context->dither->dither_parallel_band_overwrap_override =
+        context->encoder->dither_parallel_band_overwrap_override;
+    context->dither->dither_parallel_band_overwrap =
+        context->encoder->dither_parallel_band_overwrap;
     context->dither->interframe_strategy_override =
         context->encoder->interframe_strategy_override;
     context->dither->interframe_strategy_token =
@@ -7574,6 +7583,8 @@ sixel_encoder_new(
     (*ppencoder)->color_option          = SIXEL_COLOR_OPTION_DEFAULT;
     (*ppencoder)->builtin_palette       = 0;
     (*ppencoder)->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
+    (*ppencoder)->dither_parallel_band_overwrap_override = 0;
+    (*ppencoder)->dither_parallel_band_overwrap = 0u;
     (*ppencoder)->interframe_strategy_override = 0;
     (*ppencoder)->interframe_strategy_token
         = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
@@ -8543,6 +8554,7 @@ sixel_encoder_apply_diffusion_resolution(
      */
     encoder->method_for_diffuse = resolution->resolved_base_value;
     encoder->method_for_scan = SIXEL_SCAN_AUTO;
+    encoder->dither_parallel_band_overwrap = 0u;
     encoder->interframe_strategy_token =
         SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
     encoder->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;

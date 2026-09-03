@@ -561,6 +561,18 @@
         SIXEL_SUBOPTION_OFFSET_NONE, override_, \
         SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
 
+#define SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_MAXIMUM_SIGNED( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, allow_zero_, message_, field_, override_) \
+    SIXEL_REGISTRY_ENCODER_NUMBER( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_VALUE_UINT, minimum_, maximum_, 1, 1, allow_zero_, \
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG, \
+        message_, SIXEL_SUBOPTION_STORAGE_UINT, unsigned int, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
+
 #define SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
     maximum_, allow_zero_, message_, field_, override_) \
@@ -1252,6 +1264,13 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
         "scan", 'N', "SIXEL_DITHER_SCAN", NULL, NULL,
         g_diffusion_scan_choices, method_for_scan),
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_MAXIMUM_SIGNED(
+        SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
+        "band_overwrap", 'O', "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP",
+        NULL, NULL, 0.0, (double)INT_MAX, 1,
+        "-d band_overwrap must be in range 0-2147483647.",
+        dither_parallel_band_overwrap,
+        dither_parallel_band_overwrap_override),
     SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_SIERRA,

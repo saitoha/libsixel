@@ -70,6 +70,10 @@ static float
 sixel_encoding_planner_resolve_bluenoise_gradient_factor(
     sixel_encoder_t const *encoder);
 static int
+sixel_encoding_planner_resolve_band_overwrap(
+    sixel_encoder_t const *encoder,
+    unsigned int *value);
+static int
 sixel_encoding_planner_replan_palette_branch(sixel_encoding_planner_t *planner,
                                              sixel_encoder_t *encoder,
                                              sixel_frame_t *frame,
@@ -139,6 +143,32 @@ sixel_encoding_planner_resolve_bluenoise_gradient_factor(
     }
 
     return resolved;
+}
+
+/*
+ * Prefer the request-bound value and preserve the registered environment for
+ * callers that build an encoder without passing through CLI option parsing.
+ */
+static int
+sixel_encoding_planner_resolve_band_overwrap(
+    sixel_encoder_t const *encoder,
+    unsigned int *value)
+{
+    if (encoder == NULL || value == NULL) {
+        return 0;
+    }
+    if (encoder->dither_parallel_band_overwrap_override != 0) {
+        *value = encoder->dither_parallel_band_overwrap;
+        return 1;
+    }
+
+    return sixel_option_resolve_registered_uint_binding(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            dither_parallel_band_overwrap,
+            dither_parallel_band_overwrap_override),
+        value);
 }
 
 static void
@@ -819,6 +849,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     int pin_threads;
     int ncolors;
     int gpu_encode_only;
+    unsigned int configured_overlap;
+    int has_configured_overlap;
 
     text = NULL;
     endptr = NULL;
@@ -836,6 +868,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     dither_env_override = 0;
     ncolors = SIXEL_PALETTE_MAX;
     gpu_encode_only = 0;
+    configured_overlap = 0u;
+    has_configured_overlap = 0;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
@@ -951,21 +985,17 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
         if (ncolors <= 0 || ncolors > SIXEL_PALETTE_MAX) {
             ncolors = SIXEL_PALETTE_MAX;
         }
-        text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
         if (ncolors <= 32) {
             overlap = 6;
         } else {
             overlap = 0;
         }
-        if (text != NULL && text[0] != '\0') {
-            errno = 0;
-            parsed = strtol(text, &endptr, 10);
-            if (endptr != text && errno != ERANGE && parsed >= 0) {
-                if (parsed > INT_MAX) {
-                    parsed = INT_MAX;
-                }
-                overlap = (int)parsed;
-            }
+        has_configured_overlap =
+            sixel_encoding_planner_resolve_band_overwrap(
+                encoder,
+                &configured_overlap);
+        if (has_configured_overlap != 0) {
+            overlap = (int)configured_overlap;
         }
         if (overlap < 0) {
             overlap = 0;

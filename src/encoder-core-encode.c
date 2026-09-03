@@ -65,6 +65,7 @@
 #include "encoder-core-private.h"
 #include "output-factory.h"
 #include "dither.h"
+#include "options.h"
 #include "pixelformat.h"
 #include "timeline-logger.h"
 #include "threading.h"
@@ -306,9 +307,8 @@ sixel_timeline_logger_prepare_default(sixel_allocator_t *allocator,
 
 static void
 sixel_parallel_dither_configure(int height,
-                                int ncolors,
                                 int pipeline_threads,
-                                int pin_threads,
+                                sixel_dither_t const *dither,
                                 sixel_parallel_dither_config_t *config)
 {
     char const *text;
@@ -319,6 +319,9 @@ sixel_parallel_dither_configure(int height,
     int dither_threads;
     int encode_threads;
     int dither_env_override;
+    int ncolors;
+    unsigned int configured_overlap;
+    int has_configured_overlap;
 
     if (config == NULL) {
         return;
@@ -329,11 +332,16 @@ sixel_parallel_dither_configure(int height,
     config->overlap = 0;
     config->dither_threads = 0;
     config->encode_threads = pipeline_threads;
-    config->pin_threads = (pin_threads != 0) ? 1 : 0;
+    config->pin_threads = 0;
+    ncolors = 0;
+    configured_overlap = 0u;
+    has_configured_overlap = 0;
 
-    if (pipeline_threads <= 1 || height <= 0) {
+    if (pipeline_threads <= 1 || height <= 0 || dither == NULL) {
         return;
     }
+    config->pin_threads = dither->pipeline_pin_threads != 0 ? 1 : 0;
+    ncolors = dither->ncolors;
 
     dither_env_override = 0;
     dither_threads = (pipeline_threads * 7 + 9) / 10;
@@ -410,7 +418,6 @@ sixel_parallel_dither_configure(int height,
         band_height = ((band_height + 5) / 6) * 6;
     }
 
-    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
     /*
      * Default overlap favors quality for small palettes and speed when
      * colors are plentiful. The environment can override this policy.
@@ -420,15 +427,21 @@ sixel_parallel_dither_configure(int height,
     } else {
         overlap = 0;
     }
-    if (text != NULL && text[0] != '\0') {
-        errno = 0;
-        parsed = strtol(text, &endptr, 10);
-        if (endptr != text && errno != ERANGE && parsed >= 0) {
-            if (parsed > INT_MAX) {
-                parsed = INT_MAX;
-            }
-            overlap = (int)parsed;
-        }
+    if (dither->dither_parallel_band_overwrap_override != 0) {
+        configured_overlap = dither->dither_parallel_band_overwrap;
+        has_configured_overlap = 1;
+    } else {
+        has_configured_overlap =
+            sixel_option_resolve_registered_uint_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION,
+                NULL,
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    dither_parallel_band_overwrap,
+                    dither_parallel_band_overwrap_override),
+                &configured_overlap);
+    }
+    if (has_configured_overlap != 0) {
+        overlap = (int)configured_overlap;
     }
     if (overlap < 0) {
         overlap = 0;
@@ -4526,6 +4539,15 @@ sixel_encode_dither(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    /*
+     * Preserve the effective geometry for the post-encode contract trace.
+     * Palette application clears its temporary pipeline hints before the
+     * encoder emits that trace, so the live hint fields cannot carry this
+     * diagnostic state.
+     */
+    dither->pipeline_last_band_height = 0;
+    dither->pipeline_last_band_overlap = 0;
+
 #if SIXEL_ENABLE_THREADS
     serial_logger = NULL;
 #endif  /* SIXEL_ENABLE_THREADS */
@@ -4649,9 +4671,8 @@ sixel_encode_dither(
 
     if (pipeline_active) {
         sixel_parallel_dither_configure(height,
-                                        dither->ncolors,
                                         pipeline_threads,
-                                        dither->pipeline_pin_threads,
+                                        dither,
                                         &dither_parallel);
         if (dither_parallel.enabled) {
             if (sixel_gpu_palette_policy_claims_apply_stage(
@@ -4675,6 +4696,9 @@ sixel_encode_dither(
             dither->pipeline_parallel_active = 1;
             dither->pipeline_band_height = dither_parallel.band_height;
             dither->pipeline_band_overlap = dither_parallel.overlap;
+            dither->pipeline_last_band_height =
+                dither_parallel.band_height;
+            dither->pipeline_last_band_overlap = dither_parallel.overlap;
             dither->pipeline_dither_threads =
                 dither_parallel.dither_threads;
             pipeline_threads = dither_parallel.encode_threads;
