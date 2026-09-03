@@ -427,7 +427,8 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_INT" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING" ||
-        macro == "SIXEL_REGISTRY_CLIPBOARD_STRING"
+        macro == "SIXEL_REGISTRY_CLIPBOARD_STRING" ||
+        macro == "SIXEL_REGISTRY_COMPLETION_STRING"
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
                  exact_key, shared_key, macro) {
@@ -456,7 +457,7 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
         fail(option_id ":" name " needs a non-empty environment variable")
     }
-    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER|RUNTIME|DIAGNOSTICS|CLIPBOARD/) {
+    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER|RUNTIME|DIAGNOSTICS|CLIPBOARD|COMPLETION/) {
         fail(option_id ":" name " needs a typed target binding")
     }
     if (!macro_is_approved(macro)) {
@@ -597,6 +598,9 @@ function inspect(row, fields, count, name, alias, key, macro, scope) {
     if (macro == "SIXEL_REGISTRY_CLIPBOARD_STRING") {
         scope = "SIXEL_OPTION_SCOPE_ALL"
     }
+    if (macro == "SIXEL_REGISTRY_COMPLETION_STRING") {
+        scope = "SIXEL_OPTION_SCOPE_IMG2SIXEL"
+    }
     if (scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
         expected_help[key] = help_file
         expected_man[key] = man_file
@@ -719,7 +723,7 @@ function binding_from_registry(row, fields, count, macro, binding) {
     sub(/^[[:space:]]*/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
-    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR|RUNTIME_|DIAGNOSTICS_|CLIPBOARD_/) {
+    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR|RUNTIME_|DIAGNOSTICS_|CLIPBOARD_|COMPLETION_/) {
         binding = fields[count - 1] "," fields[count]
     } else if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
         binding = fields[count - 2] "," fields[count - 1] "," \
@@ -953,6 +957,10 @@ function inspect_registry(row, fields, count, option_id, name, alias,
             name == "directory") {
         expected_clipboard_contract[key] = "backend=file|directory=1"
     }
+    if (option_id == "SIXEL_OPTION_SCHEMA_COMPLETION_POLICY") {
+        expected_completion_contract[key] = \
+            "key=" name "|configured=1|used=1"
+    }
     binding_value = ""
     binding_override = ""
     if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR/) {
@@ -976,7 +984,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         binding_override = fields[count]
     } else if (macro ~ /DEQUANTIZE_|LOADER_/) {
         binding = fields[count]
-    } else if (macro ~ /RUNTIME_|DIAGNOSTICS_|CLIPBOARD_/) {
+    } else if (macro ~ /RUNTIME_|DIAGNOSTICS_|CLIPBOARD_|COMPLETION_/) {
         binding = fields[count - 1] "|" fields[count]
         binding_value = fields[count - 1]
         binding_override = fields[count]
@@ -1130,6 +1138,16 @@ FILENAME == registry_file {
     test_clipboard_contract[FILENAME] = clipboard_contract
     next
 }
+/^# Completion contract: / {
+    completion_contract = $0
+    sub(/^# Completion contract: /, "", completion_contract)
+    gsub(/[[:space:]]+/, " ", completion_contract)
+    if (test_completion_contract[FILENAME] != "") {
+        fail(FILENAME " contains more than one completion contract marker")
+    }
+    test_completion_contract[FILENAME] = completion_contract
+    next
+}
 /^# Environment range: / {
     range_policy = $0
     sub(/^# Environment range: /, "", range_policy)
@@ -1184,6 +1202,14 @@ FILENAME != registry_file {
     if (index($0, "env_trace#*LSXSUB1|*key=" expected_name[key] \
             "|stored=1|binding=" expected_trace_binding[key]) > 0) {
         has_environment_contract[FILENAME] = 1
+    }
+    if (index($0, "short_trace#*LSXCMP1|*key=" expected_name[key] \
+            "|configured=1|override=1|used=1*") > 0) {
+        has_short_completion_contract[FILENAME] = 1
+    }
+    if (index($0, "env_trace#*LSXCMP1|*key=" expected_name[key] \
+            "|configured=1|override=0|used=1*") > 0) {
+        has_environment_completion_contract[FILENAME] = 1
     }
     if (index($0, "short_trace#*LSXSUB1|*key=" expected_name[key] \
             "|stored=1|binding=" expected_trace_binding[key] \
@@ -1287,29 +1313,49 @@ END {
     }
     for (file in test_key) {
         key = test_key[file]
+        is_completion = expected_option[key] == \
+            "SIXEL_OPTION_SCHEMA_COMPLETION_POLICY"
         if (test_binding[file] != expected_binding[key]) {
             fail(file " binding does not match registry field selection")
         }
-        if (!has_lsqa[file]) {
+        if (!is_completion && !has_lsqa[file]) {
             fail(file " does not validate decoded image quality")
         }
-        if (!has_compare[file]) {
+        if (!is_completion && !has_compare[file]) {
             fail(file " does not compare short and environment output")
         }
-        if (!has_local_artifact_dir[file] ||
+        if (!is_completion && (!has_local_artifact_dir[file] ||
                 !has_unique_short_output[file] ||
-                !has_unique_environment_output[file]) {
+                !has_unique_environment_output[file])) {
             fail(file " does not isolate output in its local artifact dir")
         }
-        if (!has_short_redirection[file] ||
+        if (!is_completion && (!has_short_redirection[file] ||
                 !has_environment_redirection[file] ||
-                has_unsafe_artifact_handling[file]) {
+                has_unsafe_artifact_handling[file])) {
             fail(file " can reuse or collide with stale image output")
         }
-        if (contract_trace_count[file] < 2 ||
+        if (!is_completion && (contract_trace_count[file] < 2 ||
                 !has_short_contract[file] ||
-                !has_environment_contract[file]) {
+                !has_environment_contract[file])) {
             fail(file " does not verify both typed registry assignments")
+        }
+        if (is_completion &&
+                (contract_trace_count[file] < 2 ||
+                 !has_short_contract[file])) {
+            fail(file " does not verify its typed CLI registry assignment")
+        }
+        if (is_completion &&
+                test_completion_contract[file] != \
+                    expected_completion_contract[key]) {
+            fail(file " does not identify its completion consumer setting")
+        }
+        if (is_completion &&
+                (!has_short_completion_contract[file] ||
+                 !has_environment_completion_contract[file])) {
+            fail(file " does not verify both completion consumer paths")
+        }
+        if (!is_completion && test_completion_contract[file] != "") {
+            fail(file " has an unexpected completion contract marker")
         }
         if (expected_range_policy[key] != "" &&
                 (!has_short_value_contract[file] ||

@@ -96,6 +96,17 @@ SIXEL_INTERNAL_API int sixel_diagnostics_mode_is_code(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_quiet_is_enabled(void);
 SIXEL_INTERNAL_API int
 sixel_option_encoder_environment_is_present(int optflag);
+SIXEL_INTERNAL_API struct sixel_completion_policy_options *
+sixel_completion_policy_new(void);
+SIXEL_INTERNAL_API void
+sixel_completion_policy_free(
+    struct sixel_completion_policy_options *options);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_option_apply_completion_policy_argument(
+    struct sixel_completion_policy_options *options,
+    char const *argument,
+    char *diagnostic,
+    size_t diagnostic_size);
 
 #if !defined(LIBSIXEL_OPTIONS_H)
 /*
@@ -799,6 +810,18 @@ static cli_option_help_t const g_option_help_table[] = {
         "    this option nor SIXEL_ANIMATION_HIDE_CURSOR is configured.\n"
     },
     {
+        'K',
+        "completion-policy",
+        "-K auto[:KEY=PATH], --completion-policy=auto[:KEY=PATH]\n"
+        "    select completion source and install paths. Sub-options:\n"
+        "      :bash_path=PATH (:BPATH)\n"
+        "      :zsh_path=PATH (:ZPATH)\n"
+        "      :directory=PATH (:DPATH)\n"
+        "      :home=PATH (:HPATH)\n"
+        "    CLI settings override the corresponding IMG2SIXEL_COMPLETION_*\n"
+        "    environment variables.\n"
+    },
+    {
         'l',
         "loop-control",
         "-l LOOPMODE, --loop-control=LOOPMODE\n"
@@ -1166,22 +1189,26 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "IMG2SIXEL_COMPLETION_BASH",
         "override the bash completion source path. When set, completion\n"
-        "commands load this file before packaged defaults."
+        "commands load this file before packaged defaults. The\n"
+        "-K auto:bash_path=PATH suboption takes precedence."
     },
     {
         "IMG2SIXEL_COMPLETION_ZSH",
         "override the zsh completion source path. Shares priority rules with\n"
-        "the bash override."
+        "the bash override. The -K auto:zsh_path=PATH suboption takes\n"
+        "precedence."
     },
     {
         "IMG2SIXEL_COMPLETION_DIR",
         "provide a directory containing bash/img2sixel and zsh/_img2sixel\n"
-        "entries. Consulted after shell-specific overrides."
+        "entries. Consulted after shell-specific overrides. The\n"
+        "-K auto:directory=PATH suboption takes precedence."
     },
     {
         "IMG2SIXEL_COMPLETION_HOME",
         "fake the home directory during completion install/remove steps to\n"
-        "test workflows in sandboxed locations."
+        "test workflows in sandboxed locations. The -K auto:home=PATH\n"
+        "suboption takes precedence."
     },
     {
         "IMG2SIXEL_BASH_VERSION_OVERRIDE",
@@ -2156,7 +2183,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:J:y:z:kil:T:t:ugvSn:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:J:y:z:K:kil:T:t:ugvSn:"
     "PE:U:B:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
@@ -3141,6 +3168,7 @@ img2sixel_main(int argc, char *argv[])
     int n;
     int exit_code;
     sixel_encoder_t *encoder = NULL;
+    struct sixel_completion_policy_options *completion_policy;
     int completion_cli_result;
     int completion_exit_status;
 #if HAVE_GETOPT_LONG
@@ -3181,6 +3209,7 @@ img2sixel_main(int argc, char *argv[])
         {"log-path",              required_argument,  &long_opt, 'J'},
         {"clipboard-policy",      required_argument,  &long_opt, 'y'},
         {"terminal-policy",       required_argument,  &long_opt, 'z'},
+        {"completion-policy",     required_argument,  &long_opt, 'K'},
         {"palette-type",          required_argument,  &long_opt, 't'},
         {"insecure",              no_argument,        &long_opt, 'k'},
         {"invert",                no_argument,        &long_opt, 'i'},
@@ -3232,6 +3261,7 @@ img2sixel_main(int argc, char *argv[])
     n = 0;
     completion_cli_result = 0;
     completion_exit_status = 0;
+    completion_policy = NULL;
 #if HAVE_GETOPT_LONG
     long_opt = 0;
     option_index = 0;
@@ -3346,6 +3376,30 @@ img2sixel_main(int argc, char *argv[])
                 goto error;
             }
             break;
+        case 'K':
+            if (completion_policy == NULL) {
+                completion_policy = sixel_completion_policy_new();
+                if (completion_policy == NULL) {
+                    option_parse_failed = 1;
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto error;
+                }
+            }
+            detail_buffer[0] = '\0';
+            status = sixel_option_apply_completion_policy_argument(
+                completion_policy,
+                parsed_options[parsed_index].argument,
+                detail_buffer,
+                sizeof(detail_buffer));
+            if (SIXEL_FAILED(status)) {
+                img2sixel_report_invalid_argument(
+                    'K',
+                    parsed_options[parsed_index].argument,
+                    detail_buffer[0] != '\0' ? detail_buffer : NULL);
+                option_parse_failed = 1;
+                goto error;
+            }
+            break;
         case 'V':
             show_version();
             status = SIXEL_OK;
@@ -3426,6 +3480,7 @@ img2sixel_main(int argc, char *argv[])
         case 'H':
         case '%':
         case '#':
+        case 'K':
             break;
         case '?':
             img2sixel_handle_getopt_error(
@@ -3442,6 +3497,7 @@ img2sixel_main(int argc, char *argv[])
                 img2sixel_handle_completion_option(n,
                                                    parsed_options[
                                                        parsed_index].argument,
+                                                   completion_policy,
                                                    &completion_exit_status);
             if (completion_cli_result <= 0) {
                 status = SIXEL_FALSE;
@@ -3555,7 +3611,7 @@ unknown_option_error:
             "                 [-F mergepolicy] [-a coverpolicy]\n"
             "                 [-~ lookuppolicy] [-G gpupolicy]\n"
             "                 [-j runtimepolicy] [-x diagnostics]\n"
-            "                 [-J logpath]\n"
+            "                 [-J logpath] [-K completionpolicy]\n"
             "                 [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
             "                 [-E encodepolicy] [-L loaderlist] [-# cmsengine]\n"
@@ -3580,6 +3636,7 @@ end:
         free(parsed_options);
         parsed_options = NULL;
     }
+    sixel_completion_policy_free(completion_policy);
     exit_code = img2sixel_exit_code(status);
     img2sixel_trace_topic_message("lifecycle",
                                  "main return: exit_code=%d",

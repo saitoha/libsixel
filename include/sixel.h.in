@@ -740,6 +740,10 @@ typedef int SIXELSTATUS;
                                                  --terminal-policy=0|1:
                                                  control terminal behavior
                                                */
+#define SIXEL_OPTFLAG_COMPLETION_POLICY ('K') /* -K POLICY,
+                                                 --completion-policy=POLICY:
+                                                 select completion paths
+                                               */
 #define SIXEL_OPTFLAG_CLUSTERING_COLORSPACE ('X')
     /* -X COLORSPACE */
     /* --clustering-colorspace=COLORSPACE */

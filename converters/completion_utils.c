@@ -184,6 +184,26 @@ void img2sixel_trace_topic_message(const char *topic,
                                    const char *format, ...);
 SIXEL_INTERNAL_API int
 sixel_diagnostics_trace_topic_is_enabled(char const *topic);
+SIXEL_INTERNAL_API int
+sixel_completion_policy_resolve_bash_path(
+    struct sixel_completion_policy_options const *options,
+    char const **path,
+    int *overridden);
+SIXEL_INTERNAL_API int
+sixel_completion_policy_resolve_zsh_path(
+    struct sixel_completion_policy_options const *options,
+    char const **path,
+    int *overridden);
+SIXEL_INTERNAL_API int
+sixel_completion_policy_resolve_directory(
+    struct sixel_completion_policy_options const *options,
+    char const **path,
+    int *overridden);
+SIXEL_INTERNAL_API int
+sixel_completion_policy_resolve_home(
+    struct sixel_completion_policy_options const *options,
+    char const **path,
+    int *overridden);
 
 /* ------------------------------------------------------------------------ */
 /* helpers for platform abstractions */
@@ -1057,6 +1077,38 @@ img2sixel_join_path(const char *base, const char *suffix, char **out)
 }
 
 static int
+img2sixel_read_if_exists(const char *path, char **out, size_t *len)
+{
+    if (path == NULL || img2sixel_compat_access(path, R_OK) != 0) {
+        return -1;
+    }
+    return read_entire_file(path, out, len);
+}
+
+static int
+img2sixel_try_pkgdatadir(const char *suffix, char **out, size_t *len)
+{
+#if defined(PKGDATADIR)
+    char *candidate;
+    int ret;
+
+    candidate = NULL;
+    ret = -1;
+    if (img2sixel_join_path(PKGDATADIR, suffix, &candidate) != 0) {
+        return -1;
+    }
+    ret = img2sixel_read_if_exists(candidate, out, len);
+    free(candidate);
+    return ret;
+#else
+    (void)suffix;
+    (void)out;
+    (void)len;
+    return -1;
+#endif
+}
+
+static int
 img2sixel_try_embed(const char *shell, char **out, size_t *len)
 {
 #if defined(IMG2SIXEL_HAVE_COMPLETION_EMBED)
@@ -1094,9 +1146,54 @@ img2sixel_try_embed(const char *shell, char **out, size_t *len)
 #endif
 }
 
-int
-get_completion_text(const char *shell, char **out, size_t *len)
+static int
+img2sixel_try_completion_path(
+    char const *key,
+    char const *path,
+    int overridden,
+    char **out,
+    size_t *len)
 {
+    int used;
+
+    used = 0;
+    if (path != NULL && path[0] != '\0' &&
+        img2sixel_read_if_exists(path, out, len) == 0) {
+        used = 1;
+    }
+    img2sixel_trace_topic_message(
+        "completion_contract",
+        "LSXCMP1|key=%s|configured=1|override=%d|used=%d",
+        key,
+        overridden,
+        used);
+    return used;
+}
+
+int
+get_completion_text(
+    const char *shell,
+    struct sixel_completion_policy_options const *policy,
+    char **out,
+    size_t *len)
+{
+    char const *configured_path;
+    char const *directory;
+    char const *suffix;
+    char const *key;
+    char *directory_path;
+    int overridden;
+    int directory_overridden;
+    int configured;
+
+    configured_path = NULL;
+    directory = NULL;
+    suffix = NULL;
+    key = NULL;
+    directory_path = NULL;
+    overridden = 0;
+    directory_overridden = 0;
+    configured = 0;
     if (shell == NULL || out == NULL || len == NULL) {
         errno = EINVAL;
         return -1;
@@ -1104,6 +1201,75 @@ get_completion_text(const char *shell, char **out, size_t *len)
 
     *out = NULL;
     *len = 0;
+
+    if (strcmp(shell, "bash") == 0) {
+        configured = sixel_completion_policy_resolve_bash_path(
+            policy,
+            &configured_path,
+            &overridden);
+        suffix = "/bash/img2sixel";
+        key = "bash_path";
+    } else if (strcmp(shell, "zsh") == 0) {
+        configured = sixel_completion_policy_resolve_zsh_path(
+            policy,
+            &configured_path,
+            &overridden);
+        suffix = "/zsh/_img2sixel";
+        key = "zsh_path";
+    } else {
+        errno = EINVAL;
+        return -1;
+    }
+    if (configured && img2sixel_try_completion_path(
+            key,
+            configured_path,
+            overridden,
+            out,
+            len)) {
+        return 0;
+    }
+
+    configured = sixel_completion_policy_resolve_directory(
+        policy,
+        &directory,
+        &directory_overridden);
+    if (configured && img2sixel_join_path(
+            directory,
+            suffix,
+            &directory_path) == 0) {
+        if (img2sixel_try_completion_path(
+                "directory",
+                directory_path,
+                directory_overridden,
+                out,
+                len)) {
+            free(directory_path);
+            return 0;
+        }
+        free(directory_path);
+    }
+
+    if (strcmp(shell, "bash") == 0) {
+        if (img2sixel_try_pkgdatadir(
+                "/converters/shell-completion/bash/img2sixel",
+                out,
+                len) == 0 ||
+            img2sixel_try_pkgdatadir(
+                "/bash-completion/completions/img2sixel",
+                out,
+                len) == 0) {
+            return 0;
+        }
+    } else if (img2sixel_try_pkgdatadir(
+                   "/converters/shell-completion/zsh/_img2sixel",
+                   out,
+                   len) == 0 ||
+               img2sixel_try_pkgdatadir(
+                   "/zsh/site-functions/_img2sixel",
+                   out,
+                   len) == 0) {
+        return 0;
+    }
 
     if (img2sixel_try_embed(shell, out, len) == 0) {
         return 0;
@@ -1114,14 +1280,28 @@ get_completion_text(const char *shell, char **out, size_t *len)
 }
 
 static const char *
-img2sixel_completion_home(void)
+img2sixel_completion_home(
+    struct sixel_completion_policy_options const *policy)
 {
     const char *home;
+    int overridden;
 
-    home = img2sixel_compat_getenv("IMG2SIXEL_COMPLETION_HOME");
-    if (home != NULL && home[0] != '\0') {
+    home = NULL;
+    overridden = 0;
+    if (sixel_completion_policy_resolve_home(
+            policy,
+            &home,
+            &overridden)) {
+        img2sixel_trace_topic_message(
+            "completion_contract",
+            "LSXCMP1|key=home|configured=1|override=%d|used=1",
+            overridden);
         return home;
     }
+
+    img2sixel_trace_topic_message(
+        "completion_contract",
+        "LSXCMP1|key=home|configured=0|override=0|used=0");
 
     home = img2sixel_compat_getenv("HOME");
     if (home == NULL || home[0] == '\0') {
@@ -1371,7 +1551,9 @@ img2sixel_write_all_stdout(const char *buf, size_t len)
 }
 
 static int
-img2sixel_handle_install(int mask)
+img2sixel_handle_install(
+    int mask,
+    struct sixel_completion_policy_options const *policy)
 {
     const char *home;
     char *target_path;
@@ -1382,14 +1564,14 @@ img2sixel_handle_install(int mask)
     size_t len;
     int prefer_legacy;
 
-    home = img2sixel_completion_home();
+    home = img2sixel_completion_home(policy);
     if (home == NULL) {
         fprintf(stderr, "HOME is not set; cannot install completions\n");
         return -1;
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_BASH) != 0) {
-        if (get_completion_text("bash", &buf, &len) != 0) {
+        if (get_completion_text("bash", policy, &buf, &len) != 0) {
             img2sixel_log_errno("failed to load bash completion data");
             return -1;
         }
@@ -1457,7 +1639,7 @@ img2sixel_handle_install(int mask)
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
-        if (get_completion_text("zsh", &buf, &len) != 0) {
+        if (get_completion_text("zsh", policy, &buf, &len) != 0) {
             img2sixel_log_errno("failed to load zsh completion data");
             return -1;
         }
@@ -1500,7 +1682,9 @@ img2sixel_handle_install(int mask)
 #pragma GCC diagnostic ignored "-Wanalyzer-out-of-bounds"
 #endif
 static int
-img2sixel_handle_show(int mask)
+img2sixel_handle_show(
+    int mask,
+    struct sixel_completion_policy_options const *policy)
 {
     char *buf;
     size_t len;
@@ -1512,7 +1696,7 @@ img2sixel_handle_show(int mask)
         && (mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
         buf = NULL;
         len = 0u;
-        if (get_completion_text("bash", &buf, &len) != 0) {
+        if (get_completion_text("bash", policy, &buf, &len) != 0) {
             img2sixel_log_errno("failed to load bash completion data");
             return -1;
         }
@@ -1533,7 +1717,7 @@ img2sixel_handle_show(int mask)
 
         buf = NULL;
         len = 0u;
-        if (get_completion_text("zsh", &buf, &len) != 0) {
+        if (get_completion_text("zsh", policy, &buf, &len) != 0) {
             img2sixel_log_errno("failed to load zsh completion data");
             return -1;
         }
@@ -1558,7 +1742,7 @@ img2sixel_handle_show(int mask)
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_BASH) != 0) {
         buf = NULL;
         len = 0u;
-        if (get_completion_text("bash", &buf, &len) != 0) {
+        if (get_completion_text("bash", policy, &buf, &len) != 0) {
             img2sixel_log_errno("failed to load bash completion data");
             return -1;
         }
@@ -1580,7 +1764,7 @@ img2sixel_handle_show(int mask)
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
         buf = NULL;
         len = 0u;
-        if (get_completion_text("zsh", &buf, &len) != 0) {
+        if (get_completion_text("zsh", policy, &buf, &len) != 0) {
             img2sixel_log_errno("failed to load zsh completion data");
             return -1;
         }
@@ -1624,13 +1808,15 @@ img2sixel_unlink_result(const char *path)
 }
 
 static int
-img2sixel_handle_uninstall(int mask)
+img2sixel_handle_uninstall(
+    int mask,
+    struct sixel_completion_policy_options const *policy)
 {
     const char *home;
     char *path;
     int ret;
 
-    home = img2sixel_completion_home();
+    home = img2sixel_completion_home(policy);
     if (home == NULL) {
         fprintf(stderr, "HOME is not set; cannot uninstall completions\n");
         return -1;
@@ -1825,8 +2011,11 @@ img2sixel_parse_completion(int argc, char **argv, int *mask,
 }
 
 int
-img2sixel_handle_completion_option(int option, const char *value,
-                                   int *exit_code)
+img2sixel_handle_completion_option(
+    int option,
+    const char *value,
+    struct sixel_completion_policy_options const *policy,
+    int *exit_code)
 {
     int mask;
 
@@ -1871,17 +2060,17 @@ img2sixel_handle_completion_option(int option, const char *value,
     }
 
     if (option == '1') {
-        if (img2sixel_handle_show(mask) != 0) {
+        if (img2sixel_handle_show(mask, policy) != 0) {
             *exit_code = EXIT_FAILURE;
             return -1;
         }
     } else if (option == '2') {
-        if (img2sixel_handle_install(mask) != 0) {
+        if (img2sixel_handle_install(mask, policy) != 0) {
             *exit_code = EXIT_FAILURE;
             return -1;
         }
     } else if (option == '3') {
-        if (img2sixel_handle_uninstall(mask) != 0) {
+        if (img2sixel_handle_uninstall(mask, policy) != 0) {
             *exit_code = EXIT_FAILURE;
             return -1;
         }
@@ -1895,7 +2084,11 @@ img2sixel_handle_completion_option(int option, const char *value,
 }
 
 int
-img2sixel_handle_completion_cli(int argc, char **argv, int *exit_code)
+img2sixel_handle_completion_cli(
+    int argc,
+    char **argv,
+    struct sixel_completion_policy_options const *policy,
+    int *exit_code)
 {
     const char *action;
     int mask;
@@ -1918,7 +2111,7 @@ img2sixel_handle_completion_cli(int argc, char **argv, int *exit_code)
     }
 
     if (strncmp(action, "show", 5) == 0) {
-        if (img2sixel_handle_show(mask) != 0) {
+        if (img2sixel_handle_show(mask, policy) != 0) {
             *exit_code = EXIT_FAILURE;
             return -1;
         }
@@ -1927,7 +2120,7 @@ img2sixel_handle_completion_cli(int argc, char **argv, int *exit_code)
     }
 
     if (strncmp(action, "install", 8) == 0) {
-        if (img2sixel_handle_install(mask) != 0) {
+        if (img2sixel_handle_install(mask, policy) != 0) {
             *exit_code = EXIT_FAILURE;
             return -1;
         }
@@ -1936,7 +2129,7 @@ img2sixel_handle_completion_cli(int argc, char **argv, int *exit_code)
     }
 
     if (strncmp(action, "uninstall", 10) == 0) {
-        if (img2sixel_handle_uninstall(mask) != 0) {
+        if (img2sixel_handle_uninstall(mask, policy) != 0) {
             *exit_code = EXIT_FAILURE;
             return -1;
         }

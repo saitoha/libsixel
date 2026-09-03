@@ -9,6 +9,7 @@ _img2sixel()
     local opt_threads opt_short_threads
     local opt_precision opt_short_precision
     local opt_cms_engine opt_short_cms_engine
+    local opt_completion_policy opt_short_completion_policy
     local loader_prefix loader_cur
 
     COMPREPLY=()
@@ -50,6 +51,8 @@ _img2sixel()
     opt_short_precision="-."
     opt_cms_engine="--cms-engine"
     opt_short_cms_engine="-#"
+    opt_completion_policy="--completion-policy"
+    opt_short_completion_policy="-K"
 
     if declare -F _init_completion >/dev/null 2>&1; then
         _init_completion -n '=' || return
@@ -106,6 +109,12 @@ _img2sixel()
         cur=${cur#*=}
     elif [[ $cur == ${opt_short_cms_engine}=* ]]; then
         prev=${opt_short_cms_engine}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_completion_policy}=* ]]; then
+        prev=${opt_completion_policy}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_short_completion_policy}=* ]]; then
+        prev=${opt_short_completion_policy}
         cur=${cur#*=}
     fi
 
@@ -655,6 +664,23 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'system file' -- "${base}" ) )
     }
 
+    _img2sixel_complete_completion_policy()
+    {
+        local base item prefix candidate
+
+        base="${cur%%:*}"
+        item="${cur##*:}"
+        if [[ ${cur} == *:* ]]; then
+            prefix="${cur%"${item}"}"
+            for candidate in B Z D H bash_path= zsh_path= directory= home=; do
+                [[ ${candidate} == ${item}* ]] || continue
+                COMPREPLY+=("${prefix}${candidate}")
+            done
+            return 0
+        fi
+        COMPREPLY=( $( compgen -W 'auto' -- "${base}" ) )
+    }
+
     case "$prev" in
     -1|--show-completion|-2|--install-completion|-3|--uninstall-completion)
         COMPREPLY=( $( compgen -W 'all bash zsh' -- "$cur" ) )
@@ -832,6 +858,10 @@ _img2sixel()
         COMPREPLY=( $( compgen -W '0 1' -- "$cur" ) )
         return 0
         ;;
+    -K|--completion-policy)
+        _img2sixel_complete_completion_policy
+        return 0
+        ;;
     -l|--loop-control)
         COMPREPLY=( $( compgen -W 'auto \
                                    force \
@@ -990,6 +1020,7 @@ _img2sixel()
                                    -J --log-path \
                                    -y --clipboard-policy \
                                    -z --terminal-policy \
+                                   -K --completion-policy \
                                    -l --loop-control \
                                    -T --start-frame \
                                    -t --palette-type \

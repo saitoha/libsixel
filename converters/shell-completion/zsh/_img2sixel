@@ -980,6 +980,26 @@ _terminalpolicy() {
 }
 
 
+_completionpolicy() {
+  local current segment prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    segment=${current##*:}
+    prefix=${current%"${segment}"}
+    compadd -- \
+      "${prefix}B" "${prefix}Z" "${prefix}D" "${prefix}H" \
+      "${prefix}bash_path=" "${prefix}zsh_path=" \
+      "${prefix}directory=" "${prefix}home="
+    return 0
+  fi
+
+  _values \
+    'COMPLETIONPOLICY' \
+    'auto[use configured paths before packaged and embedded sources]'
+}
+
+
 _completiontarget() {
   _values \
     'TARGET' \
@@ -1041,6 +1061,7 @@ _arguments -S -s -A "-*" -S \
   {-J,--log-path=}'[write the shared JSON timeline log]':files:_files \
   {-y,--clipboard-policy=}'[choose clipboard backend]':clipboard:_clipboardpolicy \
   {-z,--terminal-policy=}'[control animated cursor hiding]':terminalpolicy:_terminalpolicy \
+  {-K,--completion-policy=}'[choose completion source and install paths]':completionpolicy:_completionpolicy \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
   {-T,--start-frame=}'[set animation start frame index for loaders]' \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \

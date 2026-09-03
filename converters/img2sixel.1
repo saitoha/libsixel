@@ -1136,6 +1136,23 @@ linear  -> linear RGB output
 .br
 smpte-c -> SMPTE-C gamma encoded output
 .TP 5
+.B \-K \fIauto[:KEY=PATH]\fP, \-\-completion\-policy=\fIauto[:KEY=PATH]\fP
+select completion source and install paths.
+.br
+The shell-specific source sub-options are
+\fBbash_path=PATH\fP (short form \fBBPATH\fP) and
+\fBzsh_path=PATH\fP (short form \fBZPATH\fP).
+.br
+The shared source directory sub-option is
+\fBdirectory=PATH\fP (short form \fBDPATH\fP). It must contain
+\fBbash/img2sixel\fP and \fBzsh/_img2sixel\fP.
+.br
+The install and removal root sub-option is
+\fBhome=PATH\fP (short form \fBHPATH\fP).
+.br
+CLI sub-options override the corresponding
+\fIIMG2SIXEL_COMPLETION_*\fP environment variables.
+.TP 5
 .B \-1 \fITARGET\fP, \-\-show\-completion=\fITARGET\fP
 print the requested completion script to standard output.
 .br
@@ -1277,22 +1294,30 @@ Set to "1" to enable or "0" to disable it. The
 .br
 override the bash completion source path. When set, the completion commands
 load content from the referenced file before consulting packaged defaults.
+The \fB\-K auto:bash_path=PATH\fP suboption (short form \fB:BPATH\fP)
+takes precedence.
 .TP 5
 .B IMG2SIXEL_COMPLETION_ZSH
 .br
 override the zsh completion source path. Shares the same priority rules as the
 bash override.
+The \fB\-K auto:zsh_path=PATH\fP suboption (short form \fB:ZPATH\fP)
+takes precedence.
 .TP 5
 .B IMG2SIXEL_COMPLETION_DIR
 .br
 provide a directory that contains \fBbash/img2sixel\fP and \fBzsh/_img2sixel\fP
 entries. The hybrid lookup checks this directory after the shell specific
 override variables.
+The \fB\-K auto:directory=PATH\fP suboption (short form \fB:DPATH\fP)
+takes precedence.
 .TP 5
 .B IMG2SIXEL_COMPLETION_HOME
 .br
 fake the home directory used during completion installation and removal. This
 is helpful for testing the workflow inside disposable directories.
+The \fB\-K auto:home=PATH\fP suboption (short form \fB:HPATH\fP)
+takes precedence.
 .TP 5
 .B SIXEL_ABORT_TRACE
 .br
