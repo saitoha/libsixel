@@ -67,7 +67,9 @@ typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_FLOAT,
     SIXEL_SUBOPTION_VALUE_DOUBLE,
     SIXEL_SUBOPTION_VALUE_INT_PAIR,
-    SIXEL_SUBOPTION_VALUE_SCALED_U8
+    SIXEL_SUBOPTION_VALUE_SCALED_U8,
+    SIXEL_SUBOPTION_VALUE_STRING,
+    SIXEL_SUBOPTION_VALUE_STRUCTURED
 } sixel_suboption_value_kind_t;
 
 typedef struct sixel_suboption_choice {
@@ -139,8 +141,41 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_DIFFUSION,
     SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
     SIXEL_OPTION_SCHEMA_LUT_POLICY,
-    SIXEL_OPTION_SCHEMA_LOADERS
+    SIXEL_OPTION_SCHEMA_LOADERS,
+    SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
+
+/*
+ * Option scopes keep short-name reuse explicit.  Encoder and decoder options
+ * may share a character only when their library and converter scopes do not
+ * overlap.
+ */
+typedef enum sixel_option_scope {
+    SIXEL_OPTION_SCOPE_ENCODER = 1 << 0,
+    SIXEL_OPTION_SCOPE_DECODER = 1 << 1,
+    SIXEL_OPTION_SCOPE_IMG2SIXEL = 1 << 2,
+    SIXEL_OPTION_SCOPE_SIXEL2PNG = 1 << 3
+} sixel_option_scope_t;
+
+#define SIXEL_OPTION_SCOPE_ALL \
+    (SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_DECODER | \
+     SIXEL_OPTION_SCOPE_IMG2SIXEL | SIXEL_OPTION_SCOPE_SIXEL2PNG)
+
+/* Structured arguments either select one base or an ordered base list. */
+typedef enum sixel_option_argument_form {
+    SIXEL_OPTION_ARGUMENT_SINGLE = 0,
+    SIXEL_OPTION_ARGUMENT_LIST
+} sixel_option_argument_form_t;
+
+/*
+ * Fixed defaults live in the registry.  Owner defaults describe options such
+ * as loader order whose default is a runtime-discovered ordered list rather
+ * than one base value.
+ */
+typedef enum sixel_option_default_policy {
+    SIXEL_OPTION_DEFAULT_FIXED = 0,
+    SIXEL_OPTION_DEFAULT_OWNER
+} sixel_option_default_policy_t;
 
 /*
  * Base policies describe initialization which cannot be represented by a
@@ -193,6 +228,7 @@ typedef union sixel_suboption_value {
     unsigned int uint_value;
     float float_value;
     double double_value;
+    char const *string_value;
     struct {
         int first;
         int second;
@@ -265,8 +301,27 @@ typedef struct sixel_dequantize_options {
 
 typedef struct sixel_option_argument_schema {
     sixel_option_schema_id_t option_id;
+    unsigned int scope;
     int optflag;
+    /* Canonical long name without leading dashes. */
     char const *option_name;
+    sixel_option_argument_form_t argument_form;
+    sixel_suboption_value_kind_t value_kind;
+    char const *env_name;
+    char const *env_fallback_name;
+    char const *env_legacy_name;
+    sixel_suboption_choice_t const *environment_choices;
+    size_t environment_choice_count;
+    double minimum;
+    double maximum;
+    int has_minimum;
+    int has_maximum;
+    int allow_zero;
+    sixel_suboption_environment_range_policy_t environment_range_policy;
+    char const *invalid_value_message;
+    char const *invalid_value_suffix;
+    sixel_option_default_policy_t default_policy;
+    sixel_suboption_value_t default_value;
     sixel_option_value_schema_t const *values;
     size_t value_count;
 } sixel_option_argument_schema_t;

@@ -10,6 +10,9 @@ src_root=$1
 registry_file=$src_root/src/options-registry.c
 help_file=$src_root/converters/img2sixel.c
 man_file=$src_root/converters/img2sixel.1
+decoder_help_file=$src_root/converters/sixel2png.c
+decoder_man_file=$src_root/converters/sixel2png.1
+public_header=$src_root/include/sixel.h.in
 duplicates=
 dispatchers=
 
@@ -45,6 +48,248 @@ test -z "$dispatchers" || {
     echo "not ok 1 - suboptions use one complete registry"
     echo "# suboption application dispatch exists outside src/options.c"
     printf '%s\n' "$dispatchers" | sed 's/^/# /'
+    exit 0
+}
+
+# Top-level schemas own their scope, short/long spelling, argument shape, and
+# default policy.  Keep this closed macro table even while getopt remains a
+# separately checked compatibility surface.
+awk '
+function fail(message) {
+    print "# " message
+    failed = 1
+}
+function inspect(row, fields, count, option_id, scope, optflag, name,
+                 form, default_policy, values, field_index) {
+    gsub(/[[:space:]]+/, " ", row)
+    sub(/^.*SIXEL_REGISTRY_OPTION_SCHEMA\(/, "", row)
+    sub(/\),[[:space:]]*$/, "", row)
+    count = split(row, fields, /,[[:space:]]*/)
+    if (count != 8) {
+        fail("malformed top-level option schema: " row)
+        return
+    }
+    for (field_index = 1; field_index <= count; ++field_index) {
+        sub(/^[[:space:]]*/, "", fields[field_index])
+        sub(/[[:space:]]*$/, "", fields[field_index])
+    }
+    option_id = fields[1]
+    scope = fields[2]
+    optflag = fields[3]
+    name = fields[4]
+    form = fields[5]
+    default_policy = fields[6]
+    values = fields[8]
+    if (option_id !~ /^SIXEL_OPTION_SCHEMA_[A-Z0-9_]+$/) {
+        fail("top-level schema has an invalid id: " option_id)
+    }
+    if (scope !~ /^SIXEL_OPTION_SCOPE_[A-Z0-9_]+([[:space:]]*\|[[:space:]]*SIXEL_OPTION_SCOPE_[A-Z0-9_]+)*$/) {
+        fail(option_id " has an invalid scope: " scope)
+    }
+    if (optflag !~ /^SIXEL_OPTFLAG_[A-Z0-9_]+$/) {
+        fail(option_id " has no registered short option")
+    }
+    if (name !~ /^"[a-z0-9][a-z0-9-]*"$/ || name ~ /-"$/) {
+        fail(option_id " has a noncanonical long option name: " name)
+    }
+    if (form !~ /^SIXEL_OPTION_ARGUMENT_(SINGLE|LIST)$/) {
+        fail(option_id " has an invalid argument form: " form)
+    }
+    if (default_policy !~ /^SIXEL_OPTION_DEFAULT_(FIXED|OWNER)$/) {
+        fail(option_id " has no explicit default policy")
+    }
+    if (fields[7] == "") {
+        fail(option_id " has no explicit default value")
+    }
+    if (values !~ /^g_[a-z0-9_]+_values$/) {
+        fail(option_id " has no registered value table: " values)
+    }
+    if (seen_id[option_id]) {
+        fail("duplicate top-level schema id: " option_id)
+    }
+    seen_id[option_id] = 1
+    rows += 1
+}
+BEGIN {
+    in_registry = 0
+    in_row = 0
+    failed = 0
+    rows = 0
+    raw_initializer = 0
+    unknown_initializer = 0
+    unknown_preprocessor = 0
+}
+/g_options\[\][[:space:]]*=[[:space:]]*\{/ {
+    in_registry = 1
+    next
+}
+in_registry && /^[[:space:]]*};/ {
+    in_registry = 0
+    next
+}
+in_registry && /SIXEL_REGISTRY_OPTION_SCHEMA\(/ {
+    in_row = 1
+    row = $0
+    next
+}
+in_registry && in_row {
+    row = row " " $0
+}
+in_registry && in_row && /\),[[:space:]]*$/ {
+    inspect(row)
+    in_row = 0
+    row = ""
+    next
+}
+in_registry && !in_row && /^[[:space:]]*\{/ {
+    raw_initializer = 1
+}
+in_registry && !in_row && /^[[:space:]]*#/ &&
+        $0 !~ /^[[:space:]]*#[[:space:]]*(if|elif|else|endif)([[:space:]]|$)/ {
+    unknown_preprocessor = 1
+}
+in_registry && !in_row && /[^[:space:]]/ &&
+        $0 !~ /^[[:space:]]*#/ {
+    unknown_initializer = 1
+}
+END {
+    if (in_row) {
+        fail("unterminated top-level option schema")
+    }
+    if (raw_initializer || unknown_initializer || unknown_preprocessor) {
+        fail("top-level option schema bypasses approved registry macros")
+    }
+    if (rows == 0) {
+        fail("top-level option registry has no rows")
+    }
+    exit failed ? 1 : 0
+}
+' "$registry_file" || {
+    echo "not ok 1 - suboptions use one complete registry"
+    exit 0
+}
+
+test -f "$public_header" -a -f "$help_file" -a -f "$man_file" \
+    -a -f "$decoder_help_file" -a -f "$decoder_man_file" || {
+    echo "not ok 1 - suboptions use one complete registry"
+    echo "# option compatibility surface is incomplete"
+    exit 0
+}
+
+# Until getopt tables are generated, require every structured registry option
+# to retain the same short/long pair in converter parsing, help, and manuals.
+awk -v registry_file="$registry_file" \
+    -v header_file="$public_header" \
+    -v encoder_file="$help_file" \
+    -v encoder_man="$man_file" \
+    -v decoder_file="$decoder_help_file" \
+    -v decoder_man="$decoder_man_file" '
+function fail(message) {
+    print "# " message
+    failed = 1
+}
+function trim(text) {
+    sub(/^[[:space:]]*/, "", text)
+    sub(/[[:space:]]*$/, "", text)
+    return text
+}
+function inspect(row, fields, count, option_id, scope, optflag, name,
+                 short_name, source_file, manual_file, getopt_needle,
+                 help_needle) {
+    gsub(/[[:space:]]+/, " ", row)
+    sub(/^.*SIXEL_REGISTRY_OPTION_SCHEMA\(/, "", row)
+    sub(/\),[[:space:]]*$/, "", row)
+    count = split(row, fields, /,[[:space:]]*/)
+    option_id = trim(fields[1])
+    scope = trim(fields[2])
+    optflag = trim(fields[3])
+    name = trim(fields[4])
+    gsub(/^"|"$/, "", name)
+    short_name = option_short[optflag]
+    if (short_name == "") {
+        fail(option_id " has an unresolved short option " optflag)
+        return
+    }
+    source_file = ""
+    manual_file = ""
+    if (scope ~ /SIXEL_OPTION_SCOPE_IMG2SIXEL/) {
+        source_file = encoder_file
+        manual_file = encoder_man
+    } else if (scope ~ /SIXEL_OPTION_SCOPE_SIXEL2PNG/) {
+        source_file = decoder_file
+        manual_file = decoder_man
+    } else {
+        fail(option_id " has no converter scope")
+        return
+    }
+    getopt_needle = "{\"" name "\",required_argument"
+    help_needle = "{\047" short_name "\047,\"" name "\""
+    if (index(source[source_file], getopt_needle) == 0) {
+        fail(source_file " getopt table omits --" name)
+    }
+    if (index(source[source_file], help_needle) == 0) {
+        fail(source_file " help omits -" short_name "/--" name)
+    }
+    if (index(manual[manual_file], "-" short_name) == 0 ||
+        index(manual[manual_file], "--" name) == 0) {
+        fail(manual_file " omits -" short_name "/--" name)
+    }
+}
+BEGIN {
+    failed = 0
+    in_registry = 0
+    in_row = 0
+}
+FILENAME == header_file {
+    if ($0 ~ /^#define[[:space:]]+SIXEL_OPTFLAG_[A-Z0-9_]+/ &&
+        match($0, /\(\047.\047\)/)) {
+        split($0, header_fields, /[[:space:]]+/)
+        option_short[header_fields[2]] = substr($0, RSTART + 2, 1)
+    }
+    next
+}
+FILENAME == registry_file {
+    if ($0 ~ /g_options\[\][[:space:]]*=[[:space:]]*\{/) {
+        in_registry = 1
+        next
+    }
+    if (in_registry && $0 ~ /^[[:space:]]*};/) {
+        in_registry = 0
+        next
+    }
+    if (in_registry && $0 ~ /SIXEL_REGISTRY_OPTION_SCHEMA\(/) {
+        in_row = 1
+        row = $0
+        next
+    }
+    if (in_registry && in_row) {
+        row = row " " $0
+    }
+    if (in_registry && in_row && $0 ~ /\),[[:space:]]*$/) {
+        inspect(row)
+        in_row = 0
+        row = ""
+    }
+    next
+}
+FILENAME == encoder_file || FILENAME == decoder_file {
+    line = $0
+    gsub(/[[:space:]]+/, "", line)
+    source[FILENAME] = source[FILENAME] line
+    next
+}
+FILENAME == encoder_man || FILENAME == decoder_man {
+    line = $0
+    gsub(/\\/, "", line)
+    gsub(/[[:space:]]+/, "", line)
+    manual[FILENAME] = manual[FILENAME] line
+}
+END {
+    exit failed ? 1 : 0
+}
+' "$public_header" "$help_file" "$man_file" \
+    "$decoder_help_file" "$decoder_man_file" "$registry_file" || {
+    echo "not ok 1 - suboptions use one complete registry"
     exit 0
 }
 

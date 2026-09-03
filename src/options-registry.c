@@ -1671,42 +1671,63 @@ static sixel_suboption_key_t const g_suboptions[] = {
 #endif
 };
 
+#define SIXEL_REGISTRY_OPTION_SCHEMA( \
+    option_id_, scope_, optflag_, name_, form_, default_policy_, \
+    default_value_, values_) \
+    { \
+        (option_id_), (scope_), (optflag_), (name_), (form_), \
+        SIXEL_SUBOPTION_VALUE_STRUCTURED, NULL, NULL, NULL, NULL, 0u, \
+        0.0, 0.0, 0, 0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
+        (default_policy_), { (default_value_) }, (values_), \
+        SIXEL_REGISTRY_ARRAY_LENGTH(values_) \
+    }
+
 static sixel_option_argument_schema_t const g_options[] = {
-    {
+    SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_DEQUANTIZE,
+        SIXEL_OPTION_SCOPE_DECODER | SIXEL_OPTION_SCOPE_SIXEL2PNG,
         SIXEL_OPTFLAG_DEQUANTIZE,
         "dequantize",
-        g_dequantize_values,
-        SIXEL_REGISTRY_ARRAY_LENGTH(g_dequantize_values)
-    },
-    {
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_DEQUANTIZE_NONE,
+        g_dequantize_values),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
         SIXEL_OPTFLAG_DIFFUSION,
-        "--diffusion",
-        g_diffusion_values,
-        SIXEL_REGISTRY_ARRAY_LENGTH(g_diffusion_values)
-    },
-    {
+        "diffusion",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_DIFFUSE_AUTO,
+        g_diffusion_values),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
         SIXEL_OPTFLAG_QUANTIZE_MODEL,
-        "--quantize-model",
-        g_quantize_values,
-        SIXEL_REGISTRY_ARRAY_LENGTH(g_quantize_values)
-    },
-    {
+        "quantize-model",
+        SIXEL_OPTION_ARGUMENT_LIST,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_QUANTIZE_MODEL_AUTO,
+        g_quantize_values),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
         SIXEL_OPTFLAG_LUT_POLICY,
-        "--lookup-policy",
-        g_lookup_values,
-        SIXEL_REGISTRY_ARRAY_LENGTH(g_lookup_values)
-    },
-    {
+        "lookup-policy",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_LUT_POLICY_AUTO,
+        g_lookup_values),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_LOADERS,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
         SIXEL_OPTFLAG_LOADERS,
-        "--loaders",
-        g_loader_values,
-        SIXEL_REGISTRY_ARRAY_LENGTH(g_loader_values)
-    }
+        "loaders",
+        SIXEL_OPTION_ARGUMENT_LIST,
+        SIXEL_OPTION_DEFAULT_OWNER,
+        0,
+        g_loader_values),
 };
 
 static int
@@ -1908,6 +1929,49 @@ sixel_option_registry_environment_name_is_valid(
     return 1;
 }
 
+/* Long option names are stored canonically without leading dashes. */
+static int
+sixel_option_registry_option_name_is_valid(char const *name)
+{
+    size_t index;
+
+    index = 0u;
+    if (name == NULL || name[0] == '\0' || name[0] == '-') {
+        return 0;
+    }
+    while (name[index] != '\0') {
+        if ((name[index] < 'a' || name[index] > 'z') &&
+            (name[index] < '0' || name[index] > '9') &&
+            name[index] != '-') {
+            return 0;
+        }
+        ++index;
+    }
+    return name[index - 1u] != '-';
+}
+
+/* Base values additionally preserve established underscore spellings. */
+static int
+sixel_option_registry_value_name_is_valid(char const *name)
+{
+    size_t index;
+
+    index = 0u;
+    if (name == NULL || name[0] == '\0' || name[0] == '-' ||
+        name[0] == '_') {
+        return 0;
+    }
+    while (name[index] != '\0') {
+        if ((name[index] < 'a' || name[index] > 'z') &&
+            (name[index] < '0' || name[index] > '9') &&
+            name[index] != '-' && name[index] != '_') {
+            return 0;
+        }
+        ++index;
+    }
+    return name[index - 1u] != '-' && name[index - 1u] != '_';
+}
+
 static int
 sixel_option_registry_binding_kind_is_valid(
     sixel_suboption_key_t const *key)
@@ -2105,28 +2169,43 @@ static int
 sixel_option_registry_validate_uncached(void)
 {
     size_t option_index;
+    size_t previous_option_index;
     size_t base_index;
+    size_t previous_base_index;
     size_t key_index;
     size_t previous_index;
     size_t key_count;
     size_t suboption_index;
     size_t previous_suboption_index;
     sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_schema_t const *previous_schema;
     sixel_option_value_schema_t const *base_def;
+    sixel_option_value_schema_t const *previous_base_def;
     sixel_suboption_key_t const *key;
     sixel_suboption_key_t const *previous;
+    int default_found;
 
     option_index = 0u;
+    previous_option_index = 0u;
     base_index = 0u;
+    previous_base_index = 0u;
     key_index = 0u;
     previous_index = 0u;
     key_count = 0u;
     suboption_index = 0u;
     previous_suboption_index = 0u;
     schema = NULL;
+    previous_schema = NULL;
     base_def = NULL;
+    previous_base_def = NULL;
     key = NULL;
     previous = NULL;
+    default_found = 0;
+
+    if (SIXEL_REGISTRY_ARRAY_LENGTH(g_options) !=
+        (size_t)SIXEL_OPTION_SCHEMA_COUNT) {
+        return 0;
+    }
 
     while (suboption_index <
            SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
@@ -2173,9 +2252,69 @@ sixel_option_registry_validate_uncached(void)
 
     while (option_index < SIXEL_REGISTRY_ARRAY_LENGTH(g_options)) {
         schema = g_options + option_index;
+        if ((unsigned int)schema->option_id >=
+                (unsigned int)SIXEL_OPTION_SCHEMA_COUNT ||
+            (size_t)schema->option_id != option_index ||
+            schema->scope == 0u ||
+            (schema->scope & ~SIXEL_OPTION_SCOPE_ALL) != 0u ||
+            schema->optflag <= 0 || schema->optflag > UCHAR_MAX ||
+            !sixel_option_registry_option_name_is_valid(
+                schema->option_name) ||
+            (schema->argument_form != SIXEL_OPTION_ARGUMENT_SINGLE &&
+             schema->argument_form != SIXEL_OPTION_ARGUMENT_LIST) ||
+            schema->value_kind != SIXEL_SUBOPTION_VALUE_STRUCTURED ||
+            schema->env_name != NULL ||
+            schema->env_fallback_name != NULL ||
+            schema->env_legacy_name != NULL ||
+            schema->environment_choices != NULL ||
+            schema->environment_choice_count != 0u ||
+            schema->has_minimum || schema->has_maximum ||
+            schema->allow_zero ||
+            schema->environment_range_policy !=
+                SIXEL_SUBOPTION_ENV_RANGE_REJECT ||
+            schema->invalid_value_message != NULL ||
+            schema->invalid_value_suffix != NULL ||
+            (schema->default_policy != SIXEL_OPTION_DEFAULT_FIXED &&
+             schema->default_policy != SIXEL_OPTION_DEFAULT_OWNER) ||
+            schema->values == NULL || schema->value_count == 0u ||
+            (schema->default_policy == SIXEL_OPTION_DEFAULT_OWNER &&
+             schema->default_value.int_value != 0)) {
+            return 0;
+        }
+        previous_option_index = 0u;
+        while (previous_option_index < option_index) {
+            previous_schema = g_options + previous_option_index;
+            if (previous_schema->option_id == schema->option_id ||
+                ((previous_schema->scope & schema->scope) != 0u &&
+                 (previous_schema->optflag == schema->optflag ||
+                  strcmp(previous_schema->option_name,
+                         schema->option_name) == 0))) {
+                return 0;
+            }
+            ++previous_option_index;
+        }
+        default_found = 0;
         base_index = 0u;
         while (base_index < schema->value_count) {
             base_def = schema->values + base_index;
+            if (!sixel_option_registry_value_name_is_valid(
+                    base_def->name)) {
+                return 0;
+            }
+            previous_base_index = 0u;
+            while (previous_base_index < base_index) {
+                previous_base_def =
+                    schema->values + previous_base_index;
+                if (strcmp(previous_base_def->name,
+                           base_def->name) == 0) {
+                    return 0;
+                }
+                ++previous_base_index;
+            }
+            if (schema->default_policy == SIXEL_OPTION_DEFAULT_FIXED &&
+                base_def->value == schema->default_value.int_value) {
+                default_found = 1;
+            }
             key_count = sixel_option_registry_suboption_count(schema,
                                                                base_def);
             key_index = 0u;
@@ -2308,6 +2447,10 @@ sixel_option_registry_validate_uncached(void)
                 ++key_index;
             }
             ++base_index;
+        }
+        if (schema->default_policy == SIXEL_OPTION_DEFAULT_FIXED &&
+            !default_found) {
+            return 0;
         }
         ++option_index;
     }
