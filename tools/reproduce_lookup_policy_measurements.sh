@@ -35,7 +35,7 @@ export PATH LC_ALL TZ
 cd "${TOP_SRCDIR}"
 
 test -d "${output_dir}" || mkdir -p "${output_dir}"
-"${MAKE}" -C "${BUILD_DIR}" converters/img2sixel assessment/lsqa
+"${MAKE}" -C "${BUILD_DIR}" all
 
 IMG2SIXEL_PATH=${IMG2SIXEL_PATH} \
 LSQA_PATH=${LSQA_PATH} \
