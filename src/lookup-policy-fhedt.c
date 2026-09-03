@@ -26,14 +26,9 @@
 #include "config.h"
 #endif
 
-#include <errno.h>
-#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#if HAVE_MATH_H
-# include <math.h>
-#endif
 
-#include "compat_stub.h"
 #include "loader-common.h"
 #include "lookup-fhedt-8bit.h"
 #include "lookup-fhedt-float32.h"
@@ -186,64 +181,128 @@ sixel_lookup_policy_fhedt_from_base_const(
     return (sixel_lookup_policy_fhedt_object_t const *)(void const *)policy;
 }
 
-static int
-sixel_lookup_policy_fhedt_env_resolution(void)
-{
-    char const *env;
-    long parsed;
-    char *endptr;
+typedef struct sixel_lookup_policy_fhedt_settings {
+    int resolution;
+    int refine;
+    int shared;
+    int use_dist2;
+    int use_cache;
+    unsigned int tile_xy;
+    unsigned int tile_depth;
+    int first_touch;
+    int pin_threads;
+} sixel_lookup_policy_fhedt_settings_t;
 
-    env = NULL;
-    parsed = 0L;
-    endptr = NULL;
-    env = sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_RESOLUTION");
-    if (env == NULL || env[0] == '\0') {
-        return 64;
+/*
+ * CLI values arrive in the request.  Direct component users leave override
+ * flags clear and retain the same registry-backed environment behavior.
+ */
+static void
+sixel_lookup_policy_fhedt_resolve_settings(
+    sixel_lookup_policy_prepare_request_t const *request,
+    sixel_lookup_policy_fhedt_settings_t *settings)
+{
+    if (request == NULL || settings == NULL) {
+        return;
     }
 
-    errno = 0;
-    parsed = strtol(env, &endptr, 10);
-    if (errno == ERANGE || endptr == env || *endptr != '\0') {
-        return 64;
+    settings->resolution = 64;
+    settings->refine = 1;
+    settings->shared = 1;
+    settings->use_dist2 = 0;
+    settings->use_cache = 0;
+    settings->tile_xy = 0u;
+    settings->tile_depth = 0u;
+    settings->first_touch = 0;
+    settings->pin_threads = 0;
+
+    if (request->fhedt_resolution_override != 0) {
+        settings->resolution = request->fhedt_resolution;
+    } else {
+        (void)sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_resolution,
+                lut_policy_fhedt_resolution_override),
+            &settings->resolution);
     }
-
-    if (parsed == 64L || parsed == 128L || parsed == 256L) {
-        return (int)parsed;
+    settings->refine = request->fhedt_refine_override != 0
+        ? request->fhedt_refine
+        : sixel_option_resolve_registered_boolean_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_refine,
+                lut_policy_fhedt_refine_override),
+            1);
+    settings->shared = request->fhedt_shared_override != 0
+        ? request->fhedt_shared
+        : sixel_option_resolve_registered_boolean_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_shared,
+                lut_policy_fhedt_shared_override),
+            1);
+    settings->use_dist2 = request->fhedt_use_dist2_override != 0
+        ? request->fhedt_use_dist2
+        : sixel_option_resolve_registered_boolean_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_use_dist2,
+                lut_policy_fhedt_use_dist2_override),
+            0);
+    settings->use_cache = request->fhedt_use_cache_override != 0
+        ? request->fhedt_use_cache
+        : sixel_option_resolve_registered_boolean_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_use_cache,
+                lut_policy_fhedt_use_cache_override),
+            0);
+    if (request->fhedt_tile_xy_override != 0) {
+        settings->tile_xy = request->fhedt_tile_xy;
+    } else {
+        (void)sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_tile_xy,
+                lut_policy_fhedt_tile_xy_override),
+            &settings->tile_xy);
     }
-
-    return 64;
-}
-
-static int
-sixel_lookup_policy_fhedt_env_refine(void)
-{
-    return sixel_option_resolve_boolean_environment(
-        "SIXEL_LOOKUP_FHEDT_REFINE",
-        1);
-}
-
-static int
-sixel_lookup_policy_fhedt_env_shared(void)
-{
-    return sixel_option_resolve_boolean_environment(
-        "SIXEL_LOOKUP_FHEDT_SHARED",
-        1);
-}
-
-static int
-sixel_lookup_policy_fhedt_env_use_dist2(void)
-{
-    return sixel_option_resolve_boolean_environment(
-        "SIXEL_LOOKUP_FHEDT_USE_DIST2",
-        0);
-}
-
-static int
-sixel_lookup_policy_fhedt_env_use_cache(void)
-{
-    return sixel_option_resolve_boolean_environment(
-        "SIXEL_LOOKUP_FHEDT_USE_CACHE",
-        0);
+    if (request->fhedt_tile_depth_override != 0) {
+        settings->tile_depth = request->fhedt_tile_depth;
+    } else {
+        (void)sixel_option_resolve_registered_uint_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_tile_depth,
+                lut_policy_fhedt_tile_depth_override),
+            &settings->tile_depth);
+    }
+    settings->first_touch = request->fhedt_first_touch_override != 0
+        ? request->fhedt_first_touch
+        : sixel_option_resolve_registered_boolean_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_first_touch,
+                lut_policy_fhedt_first_touch_override),
+            0);
+    settings->pin_threads = request->fhedt_pin_threads_override != 0
+        ? request->fhedt_pin_threads
+        : sixel_option_resolve_registered_boolean_binding(
+            SIXEL_OPTION_SCHEMA_LUT_POLICY,
+            "fhedt",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                lut_policy_fhedt_pin_threads,
+                lut_policy_fhedt_pin_threads_override),
+            0);
 }
 
 /* Keep the environment contract observable before registry migration. */
@@ -353,6 +412,7 @@ sixel_lookup_policy_fhedt_configure_8bit(
     int shared_flag;
     int use_dist2;
     int use_cache;
+    sixel_lookup_policy_fhedt_settings_t settings;
     uint32_t signature;
 
     status = SIXEL_FALSE;
@@ -361,6 +421,7 @@ sixel_lookup_policy_fhedt_configure_8bit(
     shared_flag = 0;
     use_dist2 = 0;
     use_cache = 0;
+    memset(&settings, 0, sizeof(settings));
     signature = 0U;
 
     if (lut == NULL || request == NULL || request->palette == NULL) {
@@ -382,11 +443,12 @@ sixel_lookup_policy_fhedt_configure_8bit(
         }
     }
 
-    resolution = sixel_lookup_policy_fhedt_env_resolution();
-    refine = sixel_lookup_policy_fhedt_env_refine();
-    shared_flag = sixel_lookup_policy_fhedt_env_shared();
-    use_dist2 = sixel_lookup_policy_fhedt_env_use_dist2();
-    use_cache = sixel_lookup_policy_fhedt_env_use_cache();
+    sixel_lookup_policy_fhedt_resolve_settings(request, &settings);
+    resolution = settings.resolution;
+    refine = settings.refine;
+    shared_flag = settings.shared;
+    use_dist2 = settings.use_dist2;
+    use_cache = settings.use_cache;
     sixel_lookup_policy_fhedt_trace_settings("8bit",
                                              resolution,
                                              refine,
@@ -410,6 +472,10 @@ sixel_lookup_policy_fhedt_configure_8bit(
                                                use_dist2,
                                                use_cache,
                                                shared_flag,
+                                               settings.tile_xy,
+                                               settings.tile_depth,
+                                               settings.first_touch,
+                                               settings.pin_threads,
                                                1,
                                                1,
                                                1,
@@ -442,6 +508,7 @@ sixel_lookup_policy_fhedt_configure_float32(
     int shared_flag;
     int use_dist2;
     int use_cache;
+    sixel_lookup_policy_fhedt_settings_t settings;
     uint32_t signature;
 
     status = SIXEL_FALSE;
@@ -456,6 +523,7 @@ sixel_lookup_policy_fhedt_configure_float32(
     shared_flag = 0;
     use_dist2 = 0;
     use_cache = 0;
+    memset(&settings, 0, sizeof(settings));
     signature = 0U;
 
     if (lut == NULL || request == NULL || request->palette == NULL) {
@@ -500,11 +568,12 @@ sixel_lookup_policy_fhedt_configure_float32(
         }
     }
 
-    resolution = sixel_lookup_policy_fhedt_env_resolution();
-    refine = sixel_lookup_policy_fhedt_env_refine();
-    shared_flag = sixel_lookup_policy_fhedt_env_shared();
-    use_dist2 = sixel_lookup_policy_fhedt_env_use_dist2();
-    use_cache = sixel_lookup_policy_fhedt_env_use_cache();
+    sixel_lookup_policy_fhedt_resolve_settings(request, &settings);
+    resolution = settings.resolution;
+    refine = settings.refine;
+    shared_flag = settings.shared;
+    use_dist2 = settings.use_dist2;
+    use_cache = settings.use_cache;
     sixel_lookup_policy_fhedt_trace_settings("float32",
                                              resolution,
                                              refine,
@@ -529,6 +598,10 @@ sixel_lookup_policy_fhedt_configure_float32(
                                                   use_dist2,
                                                   use_cache,
                                                   shared_flag,
+                                                  settings.tile_xy,
+                                                  settings.tile_depth,
+                                                  settings.first_touch,
+                                                  settings.pin_threads,
                                                   lut->weights[0],
                                                   lut->weights[1],
                                                   lut->weights[2],

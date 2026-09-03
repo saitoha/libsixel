@@ -371,6 +371,8 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_DECODER_SIZE" ||
         macro == "SIXEL_REGISTRY_ENCODER_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_ENCODER_CHOICE" ||
+        macro == \
+            "SIXEL_REGISTRY_ENCODER_CHOICE_ENV_PARSE_SIGNED_LONG" ||
         macro == "SIXEL_REGISTRY_ENCODER_CHOICE_ENV" ||
         macro == "SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE" ||
         macro == "SIXEL_REGISTRY_ENCODER_DOUBLE" ||
@@ -793,7 +795,9 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     expected_alias[key] = alias
     expected_environment[key] = environment
     range_policy = ""
-    if (macro ~ /SCALED_U8_ENV_CLAMP|DOUBLE_ENV_CLAMP/) {
+    if (macro ~ /CHOICE_ENV_PARSE_SIGNED_LONG/) {
+        range_policy = "parse-signed-choice"
+    } else if (macro ~ /SCALED_U8_ENV_CLAMP|DOUBLE_ENV_CLAMP/) {
         range_policy = "clamp-both"
     } else if (macro ~ /UINT_ENV_CLAMP_SIGNED/) {
         range_policy = "clamp-signed-uint"
@@ -826,8 +830,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
              fields[2] ~ /SIXEL_DIFFUSION_BASE_STBN/)) {
         expected_dither_contract[key] = 1
     }
-    if (option_id == "SIXEL_OPTION_SCHEMA_LUT_POLICY" &&
-            name == "shared_instance") {
+    if (option_id == "SIXEL_OPTION_SCHEMA_LUT_POLICY") {
         expected_lookup_contract[key] = 1
     }
     if (option_id == "SIXEL_OPTION_SCHEMA_GPU_POLICY" &&
@@ -1030,7 +1033,9 @@ FILENAME != registry_file {
         has_dither_contract[FILENAME] = 1
     }
     if (test_lookup_contract[FILENAME] != "" &&
-            index($0, "LSXDTH1|*" test_lookup_contract[FILENAME] "*") > 0) {
+            (index($0, "LSXDTH1|*" test_lookup_contract[FILENAME] "*") > 0 ||
+             index($0, "LSXLUT1|*" test_lookup_contract[FILENAME] "*") > 0 ||
+             index($0, "LSXFHD1|*" test_lookup_contract[FILENAME] "*") > 0)) {
         has_lookup_contract[FILENAME] = 1
     }
     if (test_gpu_contract[FILENAME] != "" &&

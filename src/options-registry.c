@@ -488,6 +488,26 @@
         }, NULL \
     }
 
+/* Preserve legacy strtol() syntax while restricting the numeric choices. */
+#define SIXEL_REGISTRY_ENCODER_CHOICE_ENV_PARSE_SIGNED_LONG( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+    field_, override_) \
+    { \
+        (optflag_), (base_), SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, \
+        (name_), (short_), (env_), (fallback_), \
+        (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
+        SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
+        0, SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG, NULL, NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL \
+    }
+
 #define SIXEL_REGISTRY_ENCODER_CHOICE_ENV( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
     environment_choices_, field_, override_) \
@@ -1243,6 +1263,12 @@ static sixel_suboption_choice_t const g_loader_cms_engine_choices[] = {
     { "colorsync", SIXEL_CMS_ENGINE_COLORSYNC }
 };
 
+static sixel_suboption_choice_t const g_fhedt_resolution_choices[] = {
+    { "64", 64 },
+    { "128", 128 },
+    { "256", 256 }
+};
+
 static sixel_suboption_choice_t const g_loader_cms_environment_choices[] = {
     { "off", SIXEL_CMS_ENGINE_NONE },
     { "disabled", SIXEL_CMS_ENGINE_NONE },
@@ -1979,6 +2005,67 @@ static sixel_suboption_key_t const g_suboptions[] = {
         NULL, NULL,
         lut_policy_shared_instance,
         lut_policy_shared_instance_override),
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "first_touch", 'O', "SIXEL_LOOKUP_FHEDT_FIRST_TOUCH",
+        NULL, "SIXEL_FHEDT_FIRST_TOUCH",
+        lut_policy_fhedt_first_touch,
+        lut_policy_fhedt_first_touch_override),
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "pin_threads", 'P', "SIXEL_LOOKUP_FHEDT_PIN_THREADS",
+        NULL, "SIXEL_FHEDT_PIN_THREADS",
+        lut_policy_fhedt_pin_threads,
+        lut_policy_fhedt_pin_threads_override),
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "refine", 'F', "SIXEL_LOOKUP_FHEDT_REFINE", NULL, NULL,
+        lut_policy_fhedt_refine,
+        lut_policy_fhedt_refine_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE_ENV_PARSE_SIGNED_LONG(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "resolution", 'R', "SIXEL_LOOKUP_FHEDT_RESOLUTION", NULL, NULL,
+        g_fhedt_resolution_choices,
+        lut_policy_fhedt_resolution,
+        lut_policy_fhedt_resolution_override),
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "shared", 'S', "SIXEL_LOOKUP_FHEDT_SHARED", NULL, NULL,
+        lut_policy_fhedt_shared,
+        lut_policy_fhedt_shared_override),
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "tile_depth", 'T', "SIXEL_LOOKUP_FHEDT_TILE_DEPTH",
+        NULL, "SIXEL_FHEDT_TILE_DEPTH", 1.0, 1024.0, 0,
+        "FHEDT tile_depth must be an integer in range 1-1024.",
+        lut_policy_fhedt_tile_depth,
+        lut_policy_fhedt_tile_depth_override),
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "tile_xy", 'X', "SIXEL_LOOKUP_FHEDT_TILE_XY",
+        NULL, "SIXEL_FHEDT_TILE_XY", 1.0, 1024.0, 0,
+        "FHEDT tile_xy must be an integer in range 1-1024.",
+        lut_policy_fhedt_tile_xy,
+        lut_policy_fhedt_tile_xy_override),
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "cache", 'C', "SIXEL_LOOKUP_FHEDT_USE_CACHE", NULL, NULL,
+        lut_policy_fhedt_use_cache,
+        lut_policy_fhedt_use_cache_override),
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
+        "dist2", 'D', "SIXEL_LOOKUP_FHEDT_USE_DIST2", NULL, NULL,
+        lut_policy_fhedt_use_dist2,
+        lut_policy_fhedt_use_dist2_override),
 
     SIXEL_REGISTRY_LOADER_CHOICE(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
@@ -3401,7 +3488,10 @@ sixel_option_registry_validate_uncached(void)
                       SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG |
                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY)) != 0 &&
-                    key->value_kind != SIXEL_SUBOPTION_VALUE_UINT) {
+                    key->value_kind != SIXEL_SUBOPTION_VALUE_UINT &&
+                    !((key->environment_range_policy &
+                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG) != 0 &&
+                      key->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE)) {
                     return 0;
                 }
                 if ((key->environment_range_policy &

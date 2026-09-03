@@ -2465,10 +2465,14 @@ sixel_option_parse_environment_value(
     sixel_suboption_value_t *value)
 {
     size_t index;
+    char *endptr;
+    long parsed_int;
     int matched;
     int range_error;
 
     index = 0u;
+    endptr = NULL;
+    parsed_int = 0L;
     matched = 0;
     range_error = 0;
     if (key_def == NULL || environment_name == NULL || text == NULL ||
@@ -2497,6 +2501,25 @@ sixel_option_parse_environment_value(
         return range_error
             ? SIXEL_OPTION_ENVIRONMENT_RANGE
             : SIXEL_OPTION_ENVIRONMENT_INVALID;
+    }
+
+    if ((key_def->environment_range_policy &
+         SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG) != 0) {
+        errno = 0;
+        parsed_int = strtol(text, &endptr, 10);
+        if (endptr == text || endptr == NULL || endptr[0] != '\0' ||
+            errno == ERANGE || parsed_int < (long)INT_MIN ||
+            parsed_int > (long)INT_MAX) {
+            return SIXEL_OPTION_ENVIRONMENT_INVALID;
+        }
+        while (index < key_def->choice_count) {
+            if (key_def->choices[index].value == (int)parsed_int) {
+                value->int_value = (int)parsed_int;
+                return SIXEL_OPTION_ENVIRONMENT_MATCH;
+            }
+            ++index;
+        }
+        return SIXEL_OPTION_ENVIRONMENT_INVALID;
     }
 
     while (index < key_def->environment_choice_count) {

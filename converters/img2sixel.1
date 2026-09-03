@@ -651,6 +651,26 @@ eytzinger -> implicit binary tree lookup with a small neighbour scan.
 fhedt    -> Voronoi grid built via a 3-pass 3D EDT with optional
            boundary refinement at cell corners.
 .br
+           sub-options:
+.br
+             resolution=64|128|256, short form Rvalue
+.br
+             refine=0|1, short form F0 or F1
+.br
+             shared=0|1, short form S0 or S1
+.br
+             dist2=0|1, short form D0 or D1
+.br
+             cache=0|1, short form C0 or C1
+.br
+             tile_xy=1..1024, short form Xvalue
+.br
+             tile_depth=1..1024, short form Tvalue
+.br
+             first_touch=0|1, short form O0 or O1
+.br
+             pin_threads=0|1, short form P0 or P1
+.br
 vptree  -> VP-tree lookup built from palette entries with safe-distance
            pruning.
 .br
@@ -667,7 +687,8 @@ The \fInone\fP policy skips the lookup caches entirely so each pixel
 comparison scans the palette directly.  This mirrors the behaviour that
 `-q full` previously forced implicitly.
 .PP
-The \fIfhedt\fP grid honours the following environment variables:
+The \fIfhedt\fP grid honours the following environment variables.  A matching
+command-line sub-option takes precedence:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, eytzinger,
 fhedt, vptree, rbc, or mahalanobis; default certlut)
@@ -677,19 +698,29 @@ packing for 5bit/6bit lookups; other policies ignore it.
 .br
 SIXEL_LOOKUP_FHEDT_RESOLUTION (64, 128, or 256; default 64)
 .br
+The matching sub-option is \fBresolution=VALUE\fP (short form \fBRVALUE\fP).
+.br
 SIXEL_LOOKUP_FHEDT_REFINE (0 or 1; default 1) enables corner refinement
 for boundary cells.
+.br
+The matching sub-option is \fBrefine=0|1\fP (short form \fBF0|F1\fP).
 .br
 SIXEL_LOOKUP_FHEDT_USE_DIST2 (0 or 1; default 0 because recent measurements did
 not show a consistent win) keeps per-voxel EDT distances so boundary voxels can
 skip refinement when the center is already safely inside the Voronoi region.
 .br
+The matching sub-option is \fBdist2=0|1\fP (short form \fBD0|D1\fP).
+.br
 SIXEL_LOOKUP_FHEDT_USE_CACHE (0 or 1; default 0 because the measured gain was
 negligible; enable explicitly to re-evaluate) enables a small per-thread cache
 keyed by voxel coordinates to speed up repeated lookups.
 .br
+The matching sub-option is \fBcache=0|1\fP (short form \fBC0|C1\fP).
+.br
 SIXEL_LOOKUP_FHEDT_SHARED (0 or 1; default 1) builds the grid once
 before worker threads run and shares it read-only.
+.br
+The matching sub-option is \fBshared=0|1\fP (short form \fBS0|S1\fP).
 .br
 SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE (0 or 1; default 0) toggles whether
 CERTLUT caches are shared across worker threads or rebuilt per worker
@@ -710,18 +741,28 @@ diverse palettes and grows them when the palette is biased to reduce
 scheduling overhead.  Legacy SIXEL_FHEDT_TILE_XY remains accepted for
 compatibility.
 .br
+The matching sub-option is \fBtile_xy=VALUE\fP (short form \fBXVALUE\fP).
+.br
 SIXEL_LOOKUP_FHEDT_TILE_DEPTH (adaptive default; same clamping as
 SIXEL_LOOKUP_FHEDT_TILE_XY) sets the tile depth for the EDT passes and follows
 the same adaptive policy.  Legacy SIXEL_FHEDT_TILE_DEPTH remains accepted for
 compatibility.
 .br
+The matching sub-option is \fBtile_depth=VALUE\fP (short form \fBTVALUE\fP).
+.br
 SIXEL_LOOKUP_FHEDT_FIRST_TOUCH (0 or 1; default 0) zeroes FHEDT tiles in
 parallel before the EDT to let NUMA systems place pages on the worker that will
 use them.  Legacy SIXEL_FHEDT_FIRST_TOUCH remains accepted for compatibility.
 .br
+The matching sub-option is \fBfirst_touch=0|1\fP
+(short form \fBO0|O1\fP).
+.br
 SIXEL_LOOKUP_FHEDT_PIN_THREADS (0 or 1; default 0) pins FHEDT worker threads
 once at startup to reduce migration; errors are ignored so portability is
 preserved.  Legacy SIXEL_FHEDT_PIN_THREADS remains accepted for compatibility.
+.br
+The matching sub-option is \fBpin_threads=0|1\fP
+(short form \fBP0|P1\fP).
 .br
 SIXEL_LOG_PATH writes a JSON timeline log consumed by tools/timeline.py
 when set; unset leaves logging disabled.

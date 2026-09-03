@@ -581,6 +581,7 @@ sixel_dither_prepare_lookup_policy(
     int foptimize,
     int lut_policy,
     int shared_instance_enabled,
+    sixel_dither_t const *dither,
     int pixelformat,
     int parallel_dither_active,
     sixel_lookup_policy_interface_t *reuse_policy,
@@ -615,6 +616,35 @@ sixel_dither_prepare_lookup_policy(
     request.pixelformat = pixelformat;
     request.parallel_dither_active = parallel_dither_active;
     request.shared_instance_enabled = (shared_instance_enabled != 0) ? 1 : 0;
+    if (dither != NULL) {
+        request.fhedt_resolution = dither->lut_policy_fhedt_resolution;
+        request.fhedt_resolution_override =
+            dither->lut_policy_fhedt_resolution_override;
+        request.fhedt_refine = dither->lut_policy_fhedt_refine;
+        request.fhedt_refine_override =
+            dither->lut_policy_fhedt_refine_override;
+        request.fhedt_shared = dither->lut_policy_fhedt_shared;
+        request.fhedt_shared_override =
+            dither->lut_policy_fhedt_shared_override;
+        request.fhedt_use_dist2 = dither->lut_policy_fhedt_use_dist2;
+        request.fhedt_use_dist2_override =
+            dither->lut_policy_fhedt_use_dist2_override;
+        request.fhedt_use_cache = dither->lut_policy_fhedt_use_cache;
+        request.fhedt_use_cache_override =
+            dither->lut_policy_fhedt_use_cache_override;
+        request.fhedt_tile_xy = dither->lut_policy_fhedt_tile_xy;
+        request.fhedt_tile_xy_override =
+            dither->lut_policy_fhedt_tile_xy_override;
+        request.fhedt_tile_depth = dither->lut_policy_fhedt_tile_depth;
+        request.fhedt_tile_depth_override =
+            dither->lut_policy_fhedt_tile_depth_override;
+        request.fhedt_first_touch = dither->lut_policy_fhedt_first_touch;
+        request.fhedt_first_touch_override =
+            dither->lut_policy_fhedt_first_touch_override;
+        request.fhedt_pin_threads = dither->lut_policy_fhedt_pin_threads;
+        request.fhedt_pin_threads_override =
+            dither->lut_policy_fhedt_pin_threads_override;
+    }
     request.reuse_policy = reuse_policy;
     request.reuse_policy_slot = reuse_policy_slot;
     request.allocator = allocator;
@@ -920,6 +950,7 @@ sixel_dither_parallel_worker(sixel_thread_pool_job_t job,
         (plan->dither != NULL) ? plan->dither->optimized : 0,
         plan->lut_policy,
         plan->lookup_shared_instance_enabled,
+        plan->dither,
         plan->pixelformat,
         1,
         reuse_policy,
@@ -1258,6 +1289,7 @@ sixel_dither_resolve_indexes(
         foptimize,
         lut_policy,
         shared_lut,
+        dither,
         pixelformat,
         0,
         dither->lookup_policy,
@@ -1973,6 +2005,24 @@ sixel_dither_new(
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_shared_instance_override = 0;
     (*ppdither)->lut_policy_shared_instance = 0;
+    (*ppdither)->lut_policy_fhedt_resolution_override = 0;
+    (*ppdither)->lut_policy_fhedt_resolution = 64;
+    (*ppdither)->lut_policy_fhedt_refine_override = 0;
+    (*ppdither)->lut_policy_fhedt_refine = 1;
+    (*ppdither)->lut_policy_fhedt_shared_override = 0;
+    (*ppdither)->lut_policy_fhedt_shared = 1;
+    (*ppdither)->lut_policy_fhedt_use_dist2_override = 0;
+    (*ppdither)->lut_policy_fhedt_use_dist2 = 0;
+    (*ppdither)->lut_policy_fhedt_use_cache_override = 0;
+    (*ppdither)->lut_policy_fhedt_use_cache = 0;
+    (*ppdither)->lut_policy_fhedt_tile_xy_override = 0;
+    (*ppdither)->lut_policy_fhedt_tile_xy = 0u;
+    (*ppdither)->lut_policy_fhedt_tile_depth_override = 0;
+    (*ppdither)->lut_policy_fhedt_tile_depth = 0u;
+    (*ppdither)->lut_policy_fhedt_first_touch_override = 0;
+    (*ppdither)->lut_policy_fhedt_first_touch = 0;
+    (*ppdither)->lut_policy_fhedt_pin_threads_override = 0;
+    (*ppdither)->lut_policy_fhedt_pin_threads = 0;
     (*ppdither)->gpu_policy = SIXEL_GPU_POLICY_OFF;
     (*ppdither)->gpu_palette_threshold =
         (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
@@ -4260,6 +4310,7 @@ sixel_dither_apply_palette_with_mode(
             dither->optimized,
             dither->lut_policy,
             shared_lut,
+            dither,
             pipeline_pixelformat,
             parallel_active,
             dither->lookup_policy,

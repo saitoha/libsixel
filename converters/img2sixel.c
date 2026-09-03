@@ -705,10 +705,20 @@ static cli_option_help_t const g_option_help_table[] = {
         "          1 -> share one lookup state across workers\n"
         "      eytzinger -> implicit binary tree lookup with local neighbour scan (default)\n"
         "      fhedt      -> Voronoi grid built via 3D EDT with optional boundary refinement\n"
+        "        sub-option:\n"
+        "          :resolution=64|128|256 (:Rvalue)\n"
+        "          :refine=0|1 (:F0 or :F1)\n"
+        "          :shared=0|1 (:S0 or :S1)\n"
+        "          :dist2=0|1 (:D0 or :D1)\n"
+        "          :cache=0|1 (:C0 or :C1)\n"
+        "          :tile_xy=1..1024 (:Xvalue)\n"
+        "          :tile_depth=1..1024 (:Tvalue)\n"
+        "          :first_touch=0|1 (:O0 or :O1)\n"
+        "          :pin_threads=0|1 (:P0 or :P1)\n"
         "      vptree    -> VP-tree lookup built from palette entries\n"
         "      rbc       -> Random Ball Cover cluster pruning\n"
         "      mahalanobis -> RBC clusters with Mahalanobis lower bounds\n"
-        "    CLI shared_instance overrides SIXEL_LOOKUP_*_SHARED_INSTANCE.\n"
+        "    CLI sub-options override their SIXEL_LOOKUP_* environments.\n"
     },
     {
         'G',

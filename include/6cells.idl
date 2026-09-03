@@ -473,6 +473,9 @@ coclass palette_component {
  *   disable non-thread-safe cache paths without relying on global state.
  * - request.shared_instance_enabled stores the effective shared-instance
  *   preference resolved by the caller (CLI override or environment default).
+ * - FHEDT option pairs carry both a value and an override flag.  A zero
+ *   override lets direct component users retain registry-backed environment
+ *   defaults without teaching the backend about environment variable names.
  * - Implementations may choose to ignore reuse hints.
  */
 interface lookup_policy;
@@ -495,6 +498,24 @@ struct lookup_policy_prepare_request {
     int pixelformat;
     int parallel_dither_active;
     int shared_instance_enabled;
+    int fhedt_resolution;
+    int fhedt_resolution_override;
+    int fhedt_refine;
+    int fhedt_refine_override;
+    int fhedt_shared;
+    int fhedt_shared_override;
+    int fhedt_use_dist2;
+    int fhedt_use_dist2_override;
+    int fhedt_use_cache;
+    int fhedt_use_cache_override;
+    unsigned int fhedt_tile_xy;
+    int fhedt_tile_xy_override;
+    unsigned int fhedt_tile_depth;
+    int fhedt_tile_depth_override;
+    int fhedt_first_touch;
+    int fhedt_first_touch_override;
+    int fhedt_pin_threads;
+    int fhedt_pin_threads_override;
     lookup_policy *reuse_policy;
     lookup_policy **reuse_policy_slot;
     allocator *allocator;

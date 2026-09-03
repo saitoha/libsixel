@@ -171,6 +171,30 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     prepare_request.shared_instance_enabled =
         sixel_filter_lookup_default_shared_instance_enabled(
             config->lut_policy);
+    prepare_request.fhedt_resolution = config->fhedt_resolution;
+    prepare_request.fhedt_resolution_override =
+        config->fhedt_resolution_override;
+    prepare_request.fhedt_refine = config->fhedt_refine;
+    prepare_request.fhedt_refine_override = config->fhedt_refine_override;
+    prepare_request.fhedt_shared = config->fhedt_shared;
+    prepare_request.fhedt_shared_override = config->fhedt_shared_override;
+    prepare_request.fhedt_use_dist2 = config->fhedt_use_dist2;
+    prepare_request.fhedt_use_dist2_override =
+        config->fhedt_use_dist2_override;
+    prepare_request.fhedt_use_cache = config->fhedt_use_cache;
+    prepare_request.fhedt_use_cache_override =
+        config->fhedt_use_cache_override;
+    prepare_request.fhedt_tile_xy = config->fhedt_tile_xy;
+    prepare_request.fhedt_tile_xy_override = config->fhedt_tile_xy_override;
+    prepare_request.fhedt_tile_depth = config->fhedt_tile_depth;
+    prepare_request.fhedt_tile_depth_override =
+        config->fhedt_tile_depth_override;
+    prepare_request.fhedt_first_touch = config->fhedt_first_touch;
+    prepare_request.fhedt_first_touch_override =
+        config->fhedt_first_touch_override;
+    prepare_request.fhedt_pin_threads = config->fhedt_pin_threads;
+    prepare_request.fhedt_pin_threads_override =
+        config->fhedt_pin_threads_override;
     prepare_request.reuse_policy = config->reuse_policy;
     prepare_request.reuse_policy_slot = NULL;
     prepare_request.allocator = allocator;

@@ -57,7 +57,6 @@
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "lookup-fhedt-float32.h"
-#include "options.h"
 #include "pixelformat.h"
 #include "timeline-logger.h"
 #include "threading.h"
@@ -314,61 +313,13 @@ sixel_lookup_fhedt_validate_resolution_float32(int resolution)
     return pow2 == resolution;
 }
 
-/*
- * Prefer the new SIXEL_LOOKUP_* knobs while still honoring the previous
- * SIXEL_FHEDT_* names for compatibility.
- */
-static char const *
-sixel_lookup_fhedt_getenv_float32(char const *primary, char const *legacy)
-{
-    char const *value;
-
-    value = sixel_compat_getenv(primary);
-    if (value != NULL && value[0] != '\0') {
-        return value;
-    }
-
-    value = sixel_compat_getenv(legacy);
-    if (value != NULL && value[0] != '\0') {
-        return value;
-    }
-
-    return NULL;
-}
-
-/*
- * Accept tile dimensions from the environment so profiling runs can adjust
- * cache locality without recompiling. Values outside [1, resolution] fall
- * back to the default 8x8x8 layout.
- */
-static int
-sixel_lookup_fhedt_parse_positive_float32(char const *env_name,
-                                 char const *legacy_name,
-                                 int fallback)
-{
-    char const *env;
-    char *endptr;
-    long value;
-
-    env = sixel_lookup_fhedt_getenv_float32(env_name, legacy_name);
-    if (env == NULL) {
-        return fallback;
-    }
-
-    errno = 0;
-    value = strtol(env, &endptr, 10);
-    if (errno != 0 || endptr == env || value < 1 || value > 1024) {
-        return fallback;
-    }
-
-    return (int)value;
-}
-
 static void
 sixel_lookup_fhedt_resolve_tiles_float32(float const *palette,
                                 int ncolors,
                                 int depth,
                                 int res,
+                                unsigned int requested_xy,
+                                unsigned int requested_depth,
                                 int *tile_xy,
                                 int *tile_depth)
 {
@@ -383,14 +334,10 @@ sixel_lookup_fhedt_resolve_tiles_float32(float const *palette,
                                            &default_xy,
                                            &default_depth);
 
-    resolved_xy = sixel_lookup_fhedt_parse_positive_float32(
-        "SIXEL_LOOKUP_FHEDT_TILE_XY",
-        "SIXEL_FHEDT_TILE_XY",
-        default_xy);
-    resolved_depth = sixel_lookup_fhedt_parse_positive_float32(
-        "SIXEL_LOOKUP_FHEDT_TILE_DEPTH",
-        "SIXEL_FHEDT_TILE_DEPTH",
-        default_depth);
+    resolved_xy = requested_xy > 0u ? (int)requested_xy : default_xy;
+    resolved_depth = requested_depth > 0u
+        ? (int)requested_depth
+        : default_depth;
     if (resolved_xy > res) {
         resolved_xy = res;
     }
@@ -462,38 +409,6 @@ sixel_lookup_fhedt_resolve_threads_float32(void)
 #else
     return 1;
 #endif  /* SIXEL_ENABLE_THREADS */
-}
-
-static int
-sixel_lookup_fhedt_pin_threads_enabled_float32(void)
-{
-    char const *env;
-    int enabled;
-
-    env = sixel_lookup_fhedt_getenv_float32("SIXEL_LOOKUP_FHEDT_PIN_THREADS",
-                                   "SIXEL_FHEDT_PIN_THREADS");
-    enabled = 0;
-    if (!sixel_option_parse_boolean_text(env, &enabled)) {
-        return 0;
-    }
-
-    return enabled;
-}
-
-static int
-sixel_lookup_fhedt_first_touch_enabled_float32(void)
-{
-    char const *env;
-    int enabled;
-
-    env = sixel_lookup_fhedt_getenv_float32("SIXEL_LOOKUP_FHEDT_FIRST_TOUCH",
-                                   "SIXEL_FHEDT_FIRST_TOUCH");
-    enabled = 0;
-    if (!sixel_option_parse_boolean_text(env, &enabled)) {
-        return 0;
-    }
-
-    return enabled;
 }
 
 static void sixel_lookup_fhedt_dispatch_tiles_float32(int total_tiles,
@@ -1912,9 +1827,13 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
                                 float const *palette,
                                 int ncolors,
                                 int resolution,
-                                int refine,
-                                int use_dist2,
-                                float wcomp1,
+                            int refine,
+                            int use_dist2,
+                            unsigned int requested_tile_xy,
+                            unsigned int requested_tile_depth,
+                            int first_touch,
+                            int pin_threads,
+                            float wcomp1,
                                 float wcomp2,
                                 float wcomp3,
                                 int depth,
@@ -1927,8 +1846,6 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
     size_t palette_size;
     size_t offset;
     int threads;
-    int pin_threads;
-    int first_touch;
     int tile_xy;
     int tile_depth;
     sixel_lookup_fhedt_timeline_float32_t timeline;
@@ -1980,12 +1897,12 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
     sixel_lookup_fhedt_quantize_palette_float32(palette, shared);
 
     threads = sixel_lookup_fhedt_resolve_threads_float32();
-    pin_threads = sixel_lookup_fhedt_pin_threads_enabled_float32();
-    first_touch = sixel_lookup_fhedt_first_touch_enabled_float32();
     sixel_lookup_fhedt_resolve_tiles_float32(palette,
                                     ncolors,
                                     depth,
                                     resolution,
+                                    requested_tile_xy,
+                                    requested_tile_depth,
                                     &tile_xy,
                                     &tile_depth);
     if (sixel_trace_topic_is_enabled("lookup_contract")) {
@@ -2175,6 +2092,10 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
                                     int use_dist2,
                                     int use_cache,
                                     int shared_flag,
+                                    unsigned int tile_xy,
+                                    unsigned int tile_depth,
+                                    int first_touch,
+                                    int pin_threads,
                                     float wcomp1,
                                     float wcomp2,
                                     float wcomp3,
@@ -2205,6 +2126,10 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
                                              resolution,
                                              refine,
                                              use_dist2,
+                                             tile_xy,
+                                             tile_depth,
+                                             first_touch,
+                                             pin_threads,
                                              wcomp1,
                                              wcomp2,
                                              wcomp3,

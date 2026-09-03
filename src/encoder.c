@@ -4037,14 +4037,61 @@ typedef struct sixel_callback_context_for_mapfile {
     int reqcolors;
     sixel_dither_t *dither;
     sixel_allocator_t *allocator;
+    sixel_encoder_t const *encoder;
     int working_colorspace;
-    int lut_policy;
-    int lut_policy_shared_instance_override;
-    int lut_policy_shared_instance;
     int gpu_policy;
     size_t gpu_palette_threshold;
     int prefer_float32;
 } sixel_callback_context_for_mapfile_t;
+
+/* Copy the registry-owned lookup request without re-reading its environment. */
+static void
+sixel_encoder_copy_lookup_options(sixel_encoder_t const *encoder,
+                                  sixel_dither_t *dither)
+{
+    if (encoder == NULL || dither == NULL) {
+        return;
+    }
+
+    sixel_dither_set_lut_policy(dither, encoder->lut_policy);
+    dither->lut_policy_shared_instance_override =
+        encoder->lut_policy_shared_instance_override;
+    dither->lut_policy_shared_instance =
+        encoder->lut_policy_shared_instance;
+    dither->lut_policy_fhedt_resolution_override =
+        encoder->lut_policy_fhedt_resolution_override;
+    dither->lut_policy_fhedt_resolution =
+        encoder->lut_policy_fhedt_resolution;
+    dither->lut_policy_fhedt_refine_override =
+        encoder->lut_policy_fhedt_refine_override;
+    dither->lut_policy_fhedt_refine = encoder->lut_policy_fhedt_refine;
+    dither->lut_policy_fhedt_shared_override =
+        encoder->lut_policy_fhedt_shared_override;
+    dither->lut_policy_fhedt_shared = encoder->lut_policy_fhedt_shared;
+    dither->lut_policy_fhedt_use_dist2_override =
+        encoder->lut_policy_fhedt_use_dist2_override;
+    dither->lut_policy_fhedt_use_dist2 =
+        encoder->lut_policy_fhedt_use_dist2;
+    dither->lut_policy_fhedt_use_cache_override =
+        encoder->lut_policy_fhedt_use_cache_override;
+    dither->lut_policy_fhedt_use_cache =
+        encoder->lut_policy_fhedt_use_cache;
+    dither->lut_policy_fhedt_tile_xy_override =
+        encoder->lut_policy_fhedt_tile_xy_override;
+    dither->lut_policy_fhedt_tile_xy = encoder->lut_policy_fhedt_tile_xy;
+    dither->lut_policy_fhedt_tile_depth_override =
+        encoder->lut_policy_fhedt_tile_depth_override;
+    dither->lut_policy_fhedt_tile_depth =
+        encoder->lut_policy_fhedt_tile_depth;
+    dither->lut_policy_fhedt_first_touch_override =
+        encoder->lut_policy_fhedt_first_touch_override;
+    dither->lut_policy_fhedt_first_touch =
+        encoder->lut_policy_fhedt_first_touch;
+    dither->lut_policy_fhedt_pin_threads_override =
+        encoder->lut_policy_fhedt_pin_threads_override;
+    dither->lut_policy_fhedt_pin_threads =
+        encoder->lut_policy_fhedt_pin_threads;
+}
 
 
 /* callback function for sixel_helper_load_image_file() */
@@ -4086,12 +4133,8 @@ load_image_callback_for_palette(
             goto end;
         }
 
-        sixel_dither_set_lut_policy(callback_context->dither,
-                                    callback_context->lut_policy);
-        callback_context->dither->lut_policy_shared_instance_override =
-            callback_context->lut_policy_shared_instance_override;
-        callback_context->dither->lut_policy_shared_instance =
-            callback_context->lut_policy_shared_instance;
+        sixel_encoder_copy_lookup_options(callback_context->encoder,
+                                          callback_context->dither);
         callback_context->dither->gpu_policy = callback_context->gpu_policy;
         callback_context->dither->gpu_palette_threshold =
             callback_context->gpu_palette_threshold;
@@ -4137,12 +4180,8 @@ load_image_callback_for_palette(
             goto end;
         }
 
-        sixel_dither_set_lut_policy(callback_context->dither,
-                                    callback_context->lut_policy);
-        callback_context->dither->lut_policy_shared_instance_override =
-            callback_context->lut_policy_shared_instance_override;
-        callback_context->dither->lut_policy_shared_instance =
-            callback_context->lut_policy_shared_instance;
+        sixel_encoder_copy_lookup_options(callback_context->encoder,
+                                          callback_context->dither);
         callback_context->dither->gpu_policy = callback_context->gpu_policy;
         callback_context->dither->gpu_palette_threshold =
             callback_context->gpu_palette_threshold;
@@ -4780,10 +4819,7 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     context->dither->bluenoise_size_override =
         context->encoder->bluenoise_size_override;
     context->dither->bluenoise_size = context->encoder->bluenoise_size;
-    context->dither->lut_policy_shared_instance_override =
-        context->encoder->lut_policy_shared_instance_override;
-    context->dither->lut_policy_shared_instance =
-        context->encoder->lut_policy_shared_instance;
+    sixel_encoder_copy_lookup_options(context->encoder, context->dither);
     context->dither->gpu_policy = context->encoder->gpu_policy;
     context->dither->gpu_palette_threshold =
         context->encoder->gpu_palette_threshold;
@@ -5556,12 +5592,8 @@ palette_cleanup:
     callback_context.reqcolors = encoder->reqcolors;
     callback_context.dither = NULL;
     callback_context.allocator = encoder->allocator;
+    callback_context.encoder = encoder;
     callback_context.working_colorspace = encoder->working_colorspace;
-    callback_context.lut_policy = encoder->lut_policy;
-    callback_context.lut_policy_shared_instance_override =
-        encoder->lut_policy_shared_instance_override;
-    callback_context.lut_policy_shared_instance =
-        encoder->lut_policy_shared_instance;
     callback_context.gpu_policy = encoder->gpu_policy;
     callback_context.gpu_palette_threshold =
         encoder->gpu_palette_threshold;
@@ -6229,11 +6261,8 @@ sixel_encoder_prepare_palette(
         }
     }
 
+    sixel_encoder_copy_lookup_options(encoder, *dither);
     sixel_dither_set_lut_policy(*dither, effective_lut_policy);
-    (*dither)->lut_policy_shared_instance_override =
-        encoder->lut_policy_shared_instance_override;
-    (*dither)->lut_policy_shared_instance =
-        encoder->lut_policy_shared_instance;
     (*dither)->gpu_policy = encoder->gpu_policy;
     (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
     sixel_dither_set_sixel_reversible(*dither,
@@ -6576,11 +6605,7 @@ end:
         cluster_frame = NULL;
     }
     if (SIXEL_SUCCEEDED(status) && dither != NULL && *dither != NULL) {
-        sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
-        (*dither)->lut_policy_shared_instance_override =
-            encoder->lut_policy_shared_instance_override;
-        (*dither)->lut_policy_shared_instance =
-            encoder->lut_policy_shared_instance;
+        sixel_encoder_copy_lookup_options(encoder, *dither);
         (*dither)->gpu_policy = encoder->gpu_policy;
         (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
         /* pass down the user's demand for an exact palette size */
@@ -6741,6 +6766,33 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.float_depth = float32_view.depth;
     lookup_config.ncolors = (int)entries_view.entry_count;
     lookup_config.lut_policy = policy;
+    lookup_config.fhedt_resolution = dither->lut_policy_fhedt_resolution;
+    lookup_config.fhedt_resolution_override =
+        dither->lut_policy_fhedt_resolution_override;
+    lookup_config.fhedt_refine = dither->lut_policy_fhedt_refine;
+    lookup_config.fhedt_refine_override =
+        dither->lut_policy_fhedt_refine_override;
+    lookup_config.fhedt_shared = dither->lut_policy_fhedt_shared;
+    lookup_config.fhedt_shared_override =
+        dither->lut_policy_fhedt_shared_override;
+    lookup_config.fhedt_use_dist2 = dither->lut_policy_fhedt_use_dist2;
+    lookup_config.fhedt_use_dist2_override =
+        dither->lut_policy_fhedt_use_dist2_override;
+    lookup_config.fhedt_use_cache = dither->lut_policy_fhedt_use_cache;
+    lookup_config.fhedt_use_cache_override =
+        dither->lut_policy_fhedt_use_cache_override;
+    lookup_config.fhedt_tile_xy = dither->lut_policy_fhedt_tile_xy;
+    lookup_config.fhedt_tile_xy_override =
+        dither->lut_policy_fhedt_tile_xy_override;
+    lookup_config.fhedt_tile_depth = dither->lut_policy_fhedt_tile_depth;
+    lookup_config.fhedt_tile_depth_override =
+        dither->lut_policy_fhedt_tile_depth_override;
+    lookup_config.fhedt_first_touch = dither->lut_policy_fhedt_first_touch;
+    lookup_config.fhedt_first_touch_override =
+        dither->lut_policy_fhedt_first_touch_override;
+    lookup_config.fhedt_pin_threads = dither->lut_policy_fhedt_pin_threads;
+    lookup_config.fhedt_pin_threads_override =
+        dither->lut_policy_fhedt_pin_threads_override;
     lookup_config.pixelformat = dither->pixelformat;
     lookup_config.reuse_policy = dither->lookup_policy;
 
@@ -7830,6 +7882,24 @@ sixel_encoder_new(
     (*ppencoder)->lut_policy_override   = 0;
     (*ppencoder)->lut_policy_shared_instance_override = 0;
     (*ppencoder)->lut_policy_shared_instance = 0;
+    (*ppencoder)->lut_policy_fhedt_resolution_override = 0;
+    (*ppencoder)->lut_policy_fhedt_resolution = 64;
+    (*ppencoder)->lut_policy_fhedt_refine_override = 0;
+    (*ppencoder)->lut_policy_fhedt_refine = 1;
+    (*ppencoder)->lut_policy_fhedt_shared_override = 0;
+    (*ppencoder)->lut_policy_fhedt_shared = 1;
+    (*ppencoder)->lut_policy_fhedt_use_dist2_override = 0;
+    (*ppencoder)->lut_policy_fhedt_use_dist2 = 0;
+    (*ppencoder)->lut_policy_fhedt_use_cache_override = 0;
+    (*ppencoder)->lut_policy_fhedt_use_cache = 0;
+    (*ppencoder)->lut_policy_fhedt_tile_xy_override = 0;
+    (*ppencoder)->lut_policy_fhedt_tile_xy = 0u;
+    (*ppencoder)->lut_policy_fhedt_tile_depth_override = 0;
+    (*ppencoder)->lut_policy_fhedt_tile_depth = 0u;
+    (*ppencoder)->lut_policy_fhedt_first_touch_override = 0;
+    (*ppencoder)->lut_policy_fhedt_first_touch = 0;
+    (*ppencoder)->lut_policy_fhedt_pin_threads_override = 0;
+    (*ppencoder)->lut_policy_fhedt_pin_threads = 0;
     (*ppencoder)->gpu_policy            = SIXEL_GPU_POLICY_OFF;
     (*ppencoder)->gpu_palette_threshold_override = 0;
     (*ppencoder)->gpu_palette_threshold =
@@ -8758,6 +8828,15 @@ sixel_encoder_apply_lut_policy_argument(
     encoder->lut_policy = resolution.resolved_base_value;
     encoder->lut_policy_override = 1;
     encoder->lut_policy_shared_instance = 0;
+    encoder->lut_policy_fhedt_resolution = 64;
+    encoder->lut_policy_fhedt_refine = 1;
+    encoder->lut_policy_fhedt_shared = 1;
+    encoder->lut_policy_fhedt_use_dist2 = 0;
+    encoder->lut_policy_fhedt_use_cache = 0;
+    encoder->lut_policy_fhedt_tile_xy = 0u;
+    encoder->lut_policy_fhedt_tile_depth = 0u;
+    encoder->lut_policy_fhedt_first_touch = 0;
+    encoder->lut_policy_fhedt_pin_threads = 0;
     sixel_option_reset_suboption_overrides(
         schema,
         SIXEL_OPTION_SCOPE_ENCODER,
@@ -8773,14 +8852,9 @@ sixel_encoder_apply_lut_policy_argument(
     }
 
     if (encoder->dither_cache != NULL) {
-        sixel_dither_set_lut_policy(encoder->dither_cache,
-                                    encoder->lut_policy);
-        ((sixel_dither_t *)encoder->dither_cache)
-            ->lut_policy_shared_instance_override
-            = encoder->lut_policy_shared_instance_override;
-        ((sixel_dither_t *)encoder->dither_cache)
-            ->lut_policy_shared_instance
-            = encoder->lut_policy_shared_instance;
+        sixel_encoder_copy_lookup_options(
+            encoder,
+            (sixel_dither_t *)encoder->dither_cache);
     }
 
     return SIXEL_OK;

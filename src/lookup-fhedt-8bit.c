@@ -60,7 +60,6 @@
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "lookup-fhedt-8bit.h"
-#include "options.h"
 #include "timeline-logger.h"
 #include "threading.h"
 #include <6cells.h>
@@ -263,61 +262,13 @@ sixel_lookup_fhedt_validate_resolution_8bit(int resolution)
     return pow2 == resolution;
 }
 
-/*
- * Prefer the new SIXEL_LOOKUP_* knobs while still honoring the previous
- * SIXEL_FHEDT_* names for compatibility.
- */
-static char const *
-sixel_lookup_fhedt_getenv_8bit(char const *primary, char const *legacy)
-{
-    char const *value;
-
-    value = sixel_compat_getenv(primary);
-    if (value != NULL && value[0] != '\0') {
-        return value;
-    }
-
-    value = sixel_compat_getenv(legacy);
-    if (value != NULL && value[0] != '\0') {
-        return value;
-    }
-
-    return NULL;
-}
-
-/*
- * Accept tile dimensions from the environment so profiling runs can adjust
- * cache locality without recompiling. Values outside [1, resolution] fall
- * back to the default 8x8x8 layout.
- */
-static int
-sixel_lookup_fhedt_parse_positive_8bit(char const *env_name,
-                                 char const *legacy_name,
-                                 int fallback)
-{
-    char const *env;
-    char *endptr;
-    long value;
-
-    env = sixel_lookup_fhedt_getenv_8bit(env_name, legacy_name);
-    if (env == NULL) {
-        return fallback;
-    }
-
-    errno = 0;
-    value = strtol(env, &endptr, 10);
-    if (errno != 0 || endptr == env || value < 1 || value > 1024) {
-        return fallback;
-    }
-
-    return (int)value;
-}
-
 static void
 sixel_lookup_fhedt_resolve_tiles_8bit(unsigned char const *palette,
                                 int ncolors,
                                 int depth,
                                 int res,
+                                unsigned int requested_xy,
+                                unsigned int requested_depth,
                                 int *tile_xy,
                                 int *tile_depth)
 {
@@ -332,14 +283,10 @@ sixel_lookup_fhedt_resolve_tiles_8bit(unsigned char const *palette,
                                            &default_xy,
                                            &default_depth);
 
-    resolved_xy = sixel_lookup_fhedt_parse_positive_8bit(
-        "SIXEL_LOOKUP_FHEDT_TILE_XY",
-        "SIXEL_FHEDT_TILE_XY",
-        default_xy);
-    resolved_depth = sixel_lookup_fhedt_parse_positive_8bit(
-        "SIXEL_LOOKUP_FHEDT_TILE_DEPTH",
-        "SIXEL_FHEDT_TILE_DEPTH",
-        default_depth);
+    resolved_xy = requested_xy > 0u ? (int)requested_xy : default_xy;
+    resolved_depth = requested_depth > 0u
+        ? (int)requested_depth
+        : default_depth;
     if (resolved_xy > res) {
         resolved_xy = res;
     }
@@ -448,38 +395,6 @@ sixel_lookup_fhedt_resolve_threads_8bit(void)
 #else
     return 1;
 #endif  /* SIXEL_ENABLE_THREADS */
-}
-
-static int
-sixel_lookup_fhedt_pin_threads_enabled_8bit(void)
-{
-    char const *env;
-    int enabled;
-
-    env = sixel_lookup_fhedt_getenv_8bit("SIXEL_LOOKUP_FHEDT_PIN_THREADS",
-                                   "SIXEL_FHEDT_PIN_THREADS");
-    enabled = 0;
-    if (!sixel_option_parse_boolean_text(env, &enabled)) {
-        return 0;
-    }
-
-    return enabled;
-}
-
-static int
-sixel_lookup_fhedt_first_touch_enabled_8bit(void)
-{
-    char const *env;
-    int enabled;
-
-    env = sixel_lookup_fhedt_getenv_8bit("SIXEL_LOOKUP_FHEDT_FIRST_TOUCH",
-                                   "SIXEL_FHEDT_FIRST_TOUCH");
-    enabled = 0;
-    if (!sixel_option_parse_boolean_text(env, &enabled)) {
-        return 0;
-    }
-
-    return enabled;
 }
 
 static void sixel_lookup_fhedt_dispatch_tiles_8bit(int total_tiles,
@@ -1853,6 +1768,10 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
                         int resolution,
                         int refine,
                         int use_dist2,
+                        unsigned int requested_tile_xy,
+                        unsigned int requested_tile_depth,
+                        int first_touch,
+                        int pin_threads,
                         int wcomp1,
                         int wcomp2,
                         int wcomp3,
@@ -1865,8 +1784,6 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
     size_t palette_size;
     size_t offset;
     int threads;
-    int pin_threads;
-    int first_touch;
     int tile_xy;
     int tile_depth;
     sixel_lookup_fhedt_timeline_8bit_t timeline;
@@ -1912,12 +1829,12 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
     sixel_lookup_fhedt_quantize_palette_8bit(palette, shared);
 
     threads = sixel_lookup_fhedt_resolve_threads_8bit();
-    pin_threads = sixel_lookup_fhedt_pin_threads_enabled_8bit();
-    first_touch = sixel_lookup_fhedt_first_touch_enabled_8bit();
     sixel_lookup_fhedt_resolve_tiles_8bit(palette,
                                     ncolors,
                                     depth,
                                     resolution,
+                                    requested_tile_xy,
+                                    requested_tile_depth,
                                     &tile_xy,
                                     &tile_depth);
     if (sixel_trace_topic_is_enabled("lookup_contract")) {
@@ -2106,6 +2023,10 @@ sixel_lookup_fhedt_8bit_configure(sixel_lookup_fhedt_8bit_t *fhedt,
                                  int use_dist2,
                                  int use_cache,
                                  int shared_flag,
+                                 unsigned int tile_xy,
+                                 unsigned int tile_depth,
+                                 int first_touch,
+                                 int pin_threads,
                                  int wcomp1,
                                  int wcomp2,
                                  int wcomp3,
@@ -2139,6 +2060,10 @@ sixel_lookup_fhedt_8bit_configure(sixel_lookup_fhedt_8bit_t *fhedt,
                                      resolution,
                                      refine,
                                      use_dist2,
+                                     tile_xy,
+                                     tile_depth,
+                                     first_touch,
+                                     pin_threads,
                                      wcomp1,
                                      wcomp2,
                                      wcomp3,

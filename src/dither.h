@@ -160,6 +160,24 @@ struct sixel_dither {
     int lut_policy;                 /* histogram LUT policy */
     int lut_policy_shared_instance_override; /* CLI shared override flag */
     int lut_policy_shared_instance; /* parsed shared instance setting */
+    int lut_policy_fhedt_resolution_override;
+    int lut_policy_fhedt_resolution;
+    int lut_policy_fhedt_refine_override;
+    int lut_policy_fhedt_refine;
+    int lut_policy_fhedt_shared_override;
+    int lut_policy_fhedt_shared;
+    int lut_policy_fhedt_use_dist2_override;
+    int lut_policy_fhedt_use_dist2;
+    int lut_policy_fhedt_use_cache_override;
+    int lut_policy_fhedt_use_cache;
+    int lut_policy_fhedt_tile_xy_override;
+    unsigned int lut_policy_fhedt_tile_xy;
+    int lut_policy_fhedt_tile_depth_override;
+    unsigned int lut_policy_fhedt_tile_depth;
+    int lut_policy_fhedt_first_touch_override;
+    int lut_policy_fhedt_first_touch;
+    int lut_policy_fhedt_pin_threads_override;
+    int lut_policy_fhedt_pin_threads;
     int gpu_policy;                 /* palette-apply accelerator policy */
     size_t gpu_palette_threshold;   /* AUTO policy pixel threshold */
     sixel_lookup_policy_interface_t *lookup_policy; /* prepared lookup cache */
