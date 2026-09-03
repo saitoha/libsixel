@@ -48,6 +48,7 @@
 
 #include "cpu.h"
 #include "compat_stub.h"
+#include "loader-common.h"
 
 /*
  * The SIMD cache is read on hot paths, so keep the fast path lock-free.
@@ -248,6 +249,12 @@ sixel_cpu_simd_level(void)
     env_cap = sixel_cpu_env_cap();
     native = sixel_cpu_detect_native();
     resolved = (int)sixel_cpu_min(env_cap, native);
+    sixel_trace_topic_message(
+        "runtime_contract",
+        "LSXRT1|simd_cap=%d|native=%d|effective=%d",
+        (int)env_cap,
+        (int)native,
+        resolved);
     expected = -1;
     if (SIXEL_CPU_CACHE_CAS(&expected, resolved)) {
         return resolved;

@@ -1856,6 +1856,10 @@ sixel_colorspace_parallel_min_pixels(void)
     text = sixel_compat_getenv("SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS");
     if (text == NULL || text[0] == '\0') {
         initialized = 1;
+        sixel_trace_topic_message(
+            "runtime_contract",
+            "LSXRT1|colorspace_min=%zu",
+            threshold);
         return threshold;
     }
 
@@ -1873,6 +1877,10 @@ sixel_colorspace_parallel_min_pixels(void)
     }
 
     initialized = 1;
+    sixel_trace_topic_message(
+        "runtime_contract",
+        "LSXRT1|colorspace_min=%zu",
+        threshold);
     return threshold;
 }
 

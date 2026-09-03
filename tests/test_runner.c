@@ -141,6 +141,8 @@ int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
 int test_timeline_0003_timeline_clock_origin(int argc, char **argv);
 int test_threadpool_0001_threadpool_service(int argc, char **argv);
 int test_threadpool_0002_thread_default_counts(int argc, char **argv);
+int test_scale_0001_parallel_factor_environment(int argc, char **argv);
+int test_scale_0002_parallel_min_bytes_environment(int argc, char **argv);
 int test_decoder_0001_decoder_parallel_split_after_newline(int argc,
                                                            char **argv);
 int test_decoder_0002_decoder_ormode_raw_overlay(int argc, char **argv);
@@ -175,6 +177,8 @@ int test_decoder_0020_decoder_pixels_body_api(int argc, char **argv);
 int test_decoder_0021_decoder_selective_blur_threshold(int argc, char **argv);
 int test_decoder_0022_decoder_ormode_dequantize_opaque(int argc, char **argv);
 int test_decoder_0023_decoder_high_color_dequantize_bypass(int argc, char **argv);
+int
+test_decoder_0024_decoder_parallel_skew_environment(int argc, char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 int test_lookup_0012_packing_registry_direct(int argc, char **argv);
@@ -380,6 +384,10 @@ static test_entry_t const test_entries[] = {
       test_threadpool_0001_threadpool_service },
     { "threadpool/0002_thread_default_counts",
       test_threadpool_0002_thread_default_counts },
+    { "scale/0001_parallel_factor_environment",
+      test_scale_0001_parallel_factor_environment },
+    { "scale/0002_parallel_min_bytes_environment",
+      test_scale_0002_parallel_min_bytes_environment },
     { "decoder/0001_decoder_parallel_split_after_newline",
       test_decoder_0001_decoder_parallel_split_after_newline },
     { "decoder/0002_decoder_ormode_raw_overlay",
@@ -426,6 +434,8 @@ static test_entry_t const test_entries[] = {
       test_decoder_0022_decoder_ormode_dequantize_opaque },
     { "decoder/0023_decoder_high_color_dequantize_bypass",
       test_decoder_0023_decoder_high_color_dequantize_bypass },
+    { "decoder/0024_decoder_parallel_skew_environment",
+      test_decoder_0024_decoder_parallel_skew_environment },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },

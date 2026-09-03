@@ -1051,8 +1051,8 @@ scale_parallel_should_log(scale_parallel_context_t const *ctx, int index)
  * eager behavior while permitting deployments to defer threading on tiny
  * inputs.
  */
-static size_t
-scale_parallel_min_bytes(void)
+size_t
+sixel_scale_parallel_min_bytes(void)
 {
     static int initialized = 0;
     static size_t threshold = 0;
@@ -1081,7 +1081,6 @@ scale_parallel_min_bytes(void)
     } else {
         threshold = (size_t)parsed;
     }
-
     return threshold;
 }
 
@@ -1091,8 +1090,8 @@ scale_parallel_min_bytes(void)
  * queueing overhead. Otherwise derive a span from rows/threads and clamp to
  * [1, rows]. The value is cached after the first lookup.
  */
-static int
-scale_parallel_band_span(int rows, int threads)
+int
+sixel_scale_parallel_band_span(int rows, int threads)
 {
     static int initialized = 0;
     static int env_span = 0;
@@ -1130,7 +1129,6 @@ scale_parallel_band_span(int rows, int threads)
     if (span > rows) {
         span = rows;
     }
-
     return span;
 }
 
@@ -1310,7 +1308,7 @@ scale_with_resampling_parallel(
     int vertical_span;
 
     image_bytes = (size_t)srcw * (size_t)srch * (size_t)depth;
-    if (image_bytes < scale_parallel_min_bytes()) {
+    if (image_bytes < sixel_scale_parallel_min_bytes()) {
         if (logger != NULL) {
             sixel_timeline_logger_logf(logger,
                               "controller",
@@ -1360,8 +1358,8 @@ scale_with_resampling_parallel(
      * deployments can pin a consistent span; otherwise derive a default from
      * rows per thread.
      */
-    horizontal_span = scale_parallel_band_span(srch, threads);
-    vertical_span = scale_parallel_band_span(dsth, threads);
+    horizontal_span = sixel_scale_parallel_band_span(srch, threads);
+    vertical_span = sixel_scale_parallel_band_span(dsth, threads);
 
     queue_depth = threads * 3;
     if (queue_depth > srch) {

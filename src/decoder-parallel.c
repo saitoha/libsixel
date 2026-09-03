@@ -226,7 +226,7 @@ sixel_decoder_parallel_fill_spans(int payload_len,
                                   int threads,
                                   int *spans);
 
-static int
+int
 sixel_decoder_parallel_skew_percent(void)
 {
     char const *text;
@@ -254,7 +254,6 @@ sixel_decoder_parallel_skew_percent(void)
     } else if (value > 20) {
         value = 20;
     }
-
     return (int)value;
 }
 

@@ -55,6 +55,8 @@ SIXEL_INTERNAL_API int
 sixel_decoder_parallel_resolve_threads(void);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_override_threads(char const *text);
+SIXEL_INTERNAL_API int
+sixel_decoder_parallel_skew_percent(void);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_request_start(int direct_mode,
                                      int ormode,

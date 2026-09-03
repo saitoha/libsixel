@@ -42,6 +42,11 @@ sixel_helper_scale_image_float32(
     int               /* in */  method_for_resampling,
     sixel_allocator_t /* in */  *allocator);
 
+SIXEL_INTERNAL_API size_t
+sixel_scale_parallel_min_bytes(void);
+SIXEL_INTERNAL_API int
+sixel_scale_parallel_band_span(int rows, int threads);
+
 
 #ifdef __cplusplus
 }

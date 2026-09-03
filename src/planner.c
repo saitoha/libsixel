@@ -38,6 +38,7 @@
 #include "encoder.h"
 #include "frame.h"
 #include "gpu-palette.h"
+#include "loader-common.h"
 #include "options.h"
 #include "planner.h"
 #include "pixelformat.h"
@@ -724,6 +725,10 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     } else if (encoder->working_colorspace != source_colorspace) {
         resize_mode = SIXEL_PLANNER_RESIZE_MODE_LINEAR32;
     }
+    sixel_trace_topic_message(
+        "runtime_contract",
+        "LSXRT1|resize_precision=%d",
+        resize_mode);
 
     if (resize_mode == SIXEL_PLANNER_RESIZE_MODE_FLOAT_WORK) {
         prefer_float32_effective = 1;

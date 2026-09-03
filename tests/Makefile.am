@@ -246,6 +246,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
     -DBUILD_TEST_0001_THREADPOOL_SERVICE \
     -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
+    -DBUILD_TEST_0001_PARALLEL_FACTOR_ENVIRONMENT \
+    -DBUILD_TEST_0002_PARALLEL_MIN_BYTES_ENVIRONMENT \
     -DBUILD_TEST_0001_DECODER_PARALLEL_SPLIT_AFTER_NEWLINE \
     -DBUILD_TEST_0002_DECODER_ORMODE_RAW_OVERLAY \
     -DBUILD_TEST_0003_DECODER_ORMODE_WIDE_OVERLAY \
@@ -269,6 +271,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0021_DECODER_SELECTIVE_BLUR_THRESHOLD \
     -DBUILD_TEST_0022_DECODER_ORMODE_DEQUANTIZE_OPAQUE \
     -DBUILD_TEST_0023_DECODER_HIGH_COLOR_DEQUANTIZE_BYPASS \
+    -DBUILD_TEST_0024_DECODER_PARALLEL_SKEW_ENVIRONMENT \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0012_LOOKUP_PACKING_REGISTRY_DIRECT \
     -DBUILD_TEST_0001_DITHER_POLICY \
@@ -379,6 +382,8 @@ test_runner_SOURCES = test_runner.c \
     processing/timeline/0003_timeline_clock_origin.c \
     processing/threadpool/0001_threadpool_service.c \
     processing/threadpool/0002_thread_default_counts.c \
+    processing/scale/0001_parallel_factor_environment.c \
+    processing/scale/0002_parallel_min_bytes_environment.c \
     processing/decoder/0001_decoder_parallel_split_after_newline.c \
     processing/decoder/0002_decoder_ormode_raw_overlay.c \
     processing/decoder/0003_decoder_ormode_wide_overlay.c \
@@ -402,6 +407,7 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0021_decoder_selective_blur_threshold.c \
     processing/decoder/0022_decoder_ormode_dequantize_opaque.c \
     processing/decoder/0023_decoder_high_color_dequantize_bypass.c \
+    processing/decoder/0024_decoder_parallel_skew_environment.c \
     processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
     processing/lookup/0012_lookup_packing_registry_direct.c \
