@@ -359,6 +359,10 @@ common sub-option:
 .br
 \fBBLINES\fP -> short form of \fBband_width\fP
 .br
+\fBthreads_max=COUNT\fP -> cap parallel dither workers
+.br
+\fBJCOUNT\fP -> short form of \fBthreads_max\fP
+.br
 \fIDIFFUSION\fP is one of them:
 .br
 \fBauto\fP -> choose diffusion type automatically (default)
@@ -484,7 +488,7 @@ sub-option:
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 Compact diffusion suboption names use one uppercase letter plus the value:
-all methods scan=N, band_overwrap=O, band_width=B;
+all methods scan=N, band_overwrap=O, band_width=B, threads_max=J;
 sierra variant=V; a_dither strength=T;
 interframe diffusion=D;
 stbn source=S, diffusion=D, strength=T, motion_adapt=M,
@@ -1237,7 +1241,8 @@ pin pipeline worker threads to their initial CPUs (0 or 1; default 1).
 .B SIXEL_DITHER_PARALLEL_THREADS_MAX
 .br
 cap the number of dither workers when band parallelism is active. Accepts
-positive integers.
+positive integers. The \fB-d\fP suboption \fBthreads_max=COUNT\fP
+(short form \fB:JCOUNT\fP) takes precedence.
 .TP 5
 .B SIXEL_DITHER_PARALLEL_BAND_WIDTH
 .br

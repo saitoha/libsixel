@@ -495,6 +495,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      band_width=LINES    -> set the parallel dither band height\n"
         "                              (rounded to a multiple of six)\n"
         "      BLINES              -> short form of band_width\n"
+        "      threads_max=COUNT   -> cap parallel dither workers\n"
+        "      JCOUNT              -> short form of threads_max\n"
         "    DIFFUSION is one of them:\n"
         "      auto       -> choose diffusion type automatically (default)\n"
         "        sub-option:\n"
@@ -584,7 +586,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "          scan=SCANTYPE         -> auto, raster, or serpentine\n"
         "                                   (default raster)\n"
         "      compact suboption names (uppercase letter + value):\n"
-        "        all methods: scan=N, band_overwrap=O, band_width=B\n"
+        "        all methods: scan=N, band_overwrap=O, band_width=B,\n"
+        "                     threads_max=J\n"
         "        sierra: variant=V\n"
         "        a_dither: strength=T\n"
         "        interframe: diffusion=D\n"
@@ -1250,7 +1253,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_PARALLEL_THREADS_MAX",
         "cap the number of dither workers when band parallelism is active.\n"
-        "Accepts positive integers."
+        "Accepts positive integers. The -d suboption threads_max (short\n"
+        "form JVALUE) takes precedence."
     },
     {
         "SIXEL_DITHER_PARALLEL_BAND_WIDTH",

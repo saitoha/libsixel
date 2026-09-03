@@ -78,6 +78,10 @@ sixel_encoding_planner_resolve_band_width(
     sixel_encoder_t const *encoder,
     unsigned int *value);
 static int
+sixel_encoding_planner_resolve_threads_max(
+    sixel_encoder_t const *encoder,
+    unsigned int *value);
+static int
 sixel_encoding_planner_replan_palette_branch(sixel_encoding_planner_t *planner,
                                              sixel_encoder_t *encoder,
                                              sixel_frame_t *frame,
@@ -195,6 +199,29 @@ sixel_encoding_planner_resolve_band_width(
         SIXEL_SUBOPTION_BINDING_ID_2(
             dither_parallel_band_width,
             dither_parallel_band_width_override),
+        value);
+}
+
+/* Resolve the request-local dither worker cap before the environment. */
+static int
+sixel_encoding_planner_resolve_threads_max(
+    sixel_encoder_t const *encoder,
+    unsigned int *value)
+{
+    if (encoder == NULL || value == NULL) {
+        return 0;
+    }
+    if (encoder->dither_parallel_threads_max_override != 0) {
+        *value = encoder->dither_parallel_threads_max;
+        return 1;
+    }
+
+    return sixel_option_resolve_registered_uint_binding(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            dither_parallel_threads_max,
+            dither_parallel_threads_max_override),
         value);
 }
 
@@ -859,9 +886,6 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
                                      sixel_encoder_t *encoder,
                                      sixel_frame_t *frame)
 {
-    char const *text;
-    char *endptr;
-    long parsed;
     size_t pixel_count;
     int width;
     int height;
@@ -880,10 +904,9 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     int has_configured_overlap;
     unsigned int configured_band_height;
     int has_configured_band_height;
+    unsigned int configured_threads_max;
+    int has_configured_threads_max;
 
-    text = NULL;
-    endptr = NULL;
-    parsed = 0;
     pixel_count = 0U;
     width = 0;
     height = 0;
@@ -901,6 +924,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     has_configured_overlap = 0;
     configured_band_height = 0u;
     has_configured_band_height = 0;
+    configured_threads_max = 0u;
+    has_configured_threads_max = 0;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
@@ -942,17 +967,13 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     }
 
     dither_threads = (threads * 7 + 9) / 10;
-    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_THREADS_MAX");
-    if (text != NULL && text[0] != '\0') {
-        errno = 0;
-        parsed = strtol(text, &endptr, 10);
-        if (endptr != text && errno != ERANGE && parsed > 0) {
-            if (parsed > INT_MAX) {
-                parsed = INT_MAX;
-            }
-            dither_threads = (int)parsed;
-            dither_env_override = 1;
-        }
+    has_configured_threads_max =
+        sixel_encoding_planner_resolve_threads_max(
+            encoder,
+            &configured_threads_max);
+    if (has_configured_threads_max != 0) {
+        dither_threads = (int)configured_threads_max;
+        dither_env_override = 1;
     }
     if (dither_threads < 1) {
         dither_threads = 1;

@@ -1278,6 +1278,13 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-d band_width must be in range 1-2147483647.",
         dither_parallel_band_width,
         dither_parallel_band_width_override),
+    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_MAXIMUM_SIGNED(
+        SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
+        "threads_max", 'J', "SIXEL_DITHER_PARALLEL_THREADS_MAX",
+        NULL, NULL, 1.0, (double)INT_MAX, 0,
+        "-d threads_max must be in range 1-2147483647.",
+        dither_parallel_threads_max,
+        dither_parallel_threads_max_override),
     SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_SIERRA,

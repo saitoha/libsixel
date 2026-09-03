@@ -311,9 +311,6 @@ sixel_parallel_dither_configure(int height,
                                 sixel_dither_t const *dither,
                                 sixel_parallel_dither_config_t *config)
 {
-    char const *text;
-    long parsed;
-    char *endptr;
     int band_height;
     int overlap;
     int dither_threads;
@@ -324,6 +321,8 @@ sixel_parallel_dither_configure(int height,
     int has_configured_overlap;
     unsigned int configured_band_height;
     int has_configured_band_height;
+    unsigned int configured_threads_max;
+    int has_configured_threads_max;
 
     if (config == NULL) {
         return;
@@ -340,6 +339,8 @@ sixel_parallel_dither_configure(int height,
     has_configured_overlap = 0;
     configured_band_height = 0u;
     has_configured_band_height = 0;
+    configured_threads_max = 0u;
+    has_configured_threads_max = 0;
 
     if (pipeline_threads <= 1 || height <= 0 || dither == NULL) {
         return;
@@ -349,17 +350,22 @@ sixel_parallel_dither_configure(int height,
 
     dither_env_override = 0;
     dither_threads = (pipeline_threads * 7 + 9) / 10;
-    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_THREADS_MAX");
-    if (text != NULL && text[0] != '\0') {
-        errno = 0;
-        parsed = strtol(text, &endptr, 10);
-        if (endptr != text && errno != ERANGE && parsed > 0) {
-            if (parsed > INT_MAX) {
-                parsed = INT_MAX;
-            }
-            dither_threads = (int)parsed;
-            dither_env_override = 1;
-        }
+    if (dither->dither_parallel_threads_max_override != 0) {
+        configured_threads_max = dither->dither_parallel_threads_max;
+        has_configured_threads_max = 1;
+    } else {
+        has_configured_threads_max =
+            sixel_option_resolve_registered_uint_binding(
+                SIXEL_OPTION_SCHEMA_DIFFUSION,
+                NULL,
+                SIXEL_SUBOPTION_BINDING_ID_2(
+                    dither_parallel_threads_max,
+                    dither_parallel_threads_max_override),
+                &configured_threads_max);
+    }
+    if (has_configured_threads_max != 0) {
+        dither_threads = (int)configured_threads_max;
+        dither_env_override = 1;
     }
     if (dither_threads < 1) {
         dither_threads = 1;
@@ -4558,6 +4564,8 @@ sixel_encode_dither(
      */
     dither->pipeline_last_band_height = 0;
     dither->pipeline_last_band_overlap = 0;
+    dither->pipeline_last_dither_threads = 0;
+    dither->pipeline_last_encode_threads = 0;
 
 #if SIXEL_ENABLE_THREADS
     serial_logger = NULL;
@@ -4710,6 +4718,10 @@ sixel_encode_dither(
             dither->pipeline_last_band_height =
                 dither_parallel.band_height;
             dither->pipeline_last_band_overlap = dither_parallel.overlap;
+            dither->pipeline_last_dither_threads =
+                dither_parallel.dither_threads;
+            dither->pipeline_last_encode_threads =
+                dither_parallel.encode_threads;
             dither->pipeline_dither_threads =
                 dither_parallel.dither_threads;
             pipeline_threads = dither_parallel.encode_threads;
@@ -4723,6 +4735,8 @@ sixel_encode_dither(
              */
             pipeline_active = 0;
             dither->pipeline_parallel_active = 0;
+            dither->pipeline_last_dither_threads = 0;
+            dither->pipeline_last_encode_threads = 0;
             if (paletted_pixels == NULL) {
                 paletted_pixels = sixel_dither_apply_palette(dither, pixels,
                                                              width, height);

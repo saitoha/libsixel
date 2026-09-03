@@ -67,6 +67,8 @@ struct sixel_encoder {
     unsigned int dither_parallel_band_overwrap;
     int dither_parallel_band_width_override;
     unsigned int dither_parallel_band_width;
+    int dither_parallel_threads_max_override;
+    unsigned int dither_parallel_threads_max;
     int interframe_strategy_override;
     int interframe_strategy_token;
     int interframe_spatial_diffuse_override;

@@ -102,6 +102,8 @@ struct sixel_dither {
     unsigned int dither_parallel_band_overwrap; /* requested overlap */
     int dither_parallel_band_width_override; /* explicit height flag */
     unsigned int dither_parallel_band_width; /* requested band height */
+    int dither_parallel_threads_max_override; /* explicit thread cap flag */
+    unsigned int dither_parallel_threads_max; /* requested thread cap */
     int interframe_strategy_override; /* CLI strategy override enable flag */
     int interframe_strategy_token;    /* parsed interframe strategy token */
     int interframe_spatial_diffuse_override; /* CLI spatial diffuse flag */
@@ -171,6 +173,8 @@ struct sixel_dither {
     int pipeline_band_overlap;      /* overlap rows for burn-in */
     int pipeline_last_band_height;  /* last band height used by encoder */
     int pipeline_last_band_overlap; /* last overlap used by encoder */
+    int pipeline_last_dither_threads; /* last dither worker count */
+    int pipeline_last_encode_threads; /* last encode worker count */
     int pipeline_dither_threads;    /* thread budget for dither */
     int pipeline_pin_threads;       /* pin palette/encode workers */
     int pipeline_image_width;       /* total image columns for masks */
