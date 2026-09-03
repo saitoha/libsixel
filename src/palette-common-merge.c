@@ -42,6 +42,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "options.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
@@ -383,6 +384,10 @@ sixel_final_merge_load_env(void)
         parsed_channel_factor = 1.0;
     }
     env_final_merge_channel_factor_l = parsed_channel_factor;
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXMRG1|channel_l=%.17g",
+        env_final_merge_channel_factor_l);
     sixel_final_merge_env_lock_release(lock_acquired);
 }
 

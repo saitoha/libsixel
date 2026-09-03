@@ -40,6 +40,7 @@
 
 #include "colorspace.h"
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "palette-common-snap.h"
 #include "pixelformat.h"
 
@@ -101,17 +102,17 @@ sixel_palette_get_snap_policy(void)
 
     snap_policy_initialized = 1;
     policy = sixel_compat_getenv("SIXEL_PALETTE_SNAP_TARGET_POLICY");
-    if (policy == NULL || *policy == '\0') {
-        snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
-        return snap_policy_cache;
-    }
-
-    if (sixel_compat_strcasecmp(policy, "reversible") == 0) {
-        snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE;
-        return snap_policy_cache;
-    }
-
     snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
+    if (policy != NULL && *policy != '\0' &&
+        sixel_compat_strcasecmp(policy, "reversible") == 0) {
+        snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE;
+    }
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXSNP1|target=%s",
+        snap_policy_cache == SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE
+            ? "reversible"
+            : "nearest");
 
     return snap_policy_cache;
 }
@@ -120,6 +121,9 @@ static enum sixel_palette_snap_timing_policy
 sixel_palette_get_snap_timing(void)
 {
     char const *policy;
+    char const *timing_name;
+
+    timing_name = "once";
 
     if (snap_timing_initialized) {
         return snap_timing_cache;
@@ -127,33 +131,41 @@ sixel_palette_get_snap_timing(void)
 
     snap_timing_initialized = 1;
     policy = sixel_compat_getenv("SIXEL_PALETTE_SNAP_TIMING_POLICY");
-    if (policy == NULL || *policy == '\0') {
-        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ONCE;
-
-        return snap_timing_cache;
-    }
-    if (sixel_compat_strcasecmp(policy, "polish") == 0) {
-        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_POLISH;
-
-        return snap_timing_cache;
-    }
-    if (sixel_compat_strcasecmp(policy, "merge") == 0) {
-        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_MERGE;
-
-        return snap_timing_cache;
-    }
-    if (sixel_compat_strcasecmp(policy, "resolve") == 0) {
-        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_RESOLVE;
-
-        return snap_timing_cache;
-    }
-    if (sixel_compat_strcasecmp(policy, "all") == 0) {
-        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ALL;
-
-        return snap_timing_cache;
-    }
-
     snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ONCE;
+    if (policy != NULL &&
+        sixel_compat_strcasecmp(policy, "polish") == 0) {
+        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_POLISH;
+    } else if (policy != NULL &&
+               sixel_compat_strcasecmp(policy, "merge") == 0) {
+        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_MERGE;
+    } else if (policy != NULL &&
+               sixel_compat_strcasecmp(policy, "resolve") == 0) {
+        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_RESOLVE;
+    } else if (policy != NULL &&
+               sixel_compat_strcasecmp(policy, "all") == 0) {
+        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ALL;
+    }
+    switch (snap_timing_cache) {
+    case SIXEL_PALETTE_SNAP_TIMING_POLISH:
+        timing_name = "polish";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_MERGE:
+        timing_name = "merge";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_RESOLVE:
+        timing_name = "resolve";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_ALL:
+        timing_name = "all";
+        break;
+    case SIXEL_PALETTE_SNAP_TIMING_ONCE:
+    default:
+        break;
+    }
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXSNP1|timing=%s",
+        timing_name);
 
     return snap_timing_cache;
 }
@@ -172,18 +184,20 @@ sixel_palette_get_snap_approach_rate(void)
     value = sixel_compat_getenv("SIXEL_PALETTE_SNAP_APPROACH_RATE");
     if (value == NULL || *value == '\0') {
         snap_approach_cache = 1.0;
-
-        return snap_approach_cache;
+    } else {
+        parsed = strtod(value, NULL);
+        if (parsed < 0.0) {
+            parsed = 0.0;
+        }
+        if (parsed > 1.0) {
+            parsed = 1.0;
+        }
+        snap_approach_cache = parsed;
     }
-
-    parsed = strtod(value, NULL);
-    if (parsed < 0.0) {
-        parsed = 0.0;
-    }
-    if (parsed > 1.0) {
-        parsed = 1.0;
-    }
-    snap_approach_cache = parsed;
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXSNP1|approach=%.17g",
+        snap_approach_cache);
 
     return snap_approach_cache;
 }
@@ -202,19 +216,20 @@ sixel_palette_get_snap_channel_factor(void)
     value = sixel_compat_getenv("SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L");
     if (value == NULL || *value == '\0') {
         snap_channel_factor_cache = 0.85;
-
-        return snap_channel_factor_cache;
+    } else {
+        parsed = strtod(value, NULL);
+        if (parsed < 0.0) {
+            parsed = 0.0;
+        }
+        if (parsed > 1.0) {
+            parsed = 1.0;
+        }
+        snap_channel_factor_cache = parsed;
     }
-
-    parsed = strtod(value, NULL);
-    if (parsed < 0.0) {
-        parsed = 0.0;
-    }
-    if (parsed > 1.0) {
-        parsed = 1.0;
-    }
-
-    snap_channel_factor_cache = parsed;
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXSNP1|channel_l=%.17g",
+        snap_channel_factor_cache);
 
     return snap_channel_factor_cache;
 }

@@ -37,6 +37,7 @@
 #include "filter.h"
 #include "frame-factory.h"
 #include "frame.h"
+#include "loader-common.h"
 #include "pixelformat.h"
 
 typedef struct sixel_filter_sample_state {
@@ -118,6 +119,12 @@ sixel_filter_sample_select_stride(
     while (stride < total && total / (stride * stride) > target) {
         ++stride;
     }
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXSMP1|override=%d|target=%zu|stride=%zu",
+        config != NULL ? config->palette_sample_override : 0,
+        target,
+        stride);
 
     return stride;
 }
