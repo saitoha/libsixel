@@ -128,7 +128,8 @@ function argument_is_reviewed(file, argument) {
     if (file ~ /\/options-registry\.c$/ &&
         (argument == "schema->env_name" ||
          argument == "schema->env_fallback_name" ||
-         argument == "schema->env_legacy_name")) {
+         argument == "schema->env_legacy_name" ||
+         argument == "key->env_name")) {
         return 1
     }
     if (file ~ /\/lookup-fhedt-(8bit|float32)\.c$/ &&

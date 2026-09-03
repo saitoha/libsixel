@@ -101,7 +101,8 @@ typedef enum sixel_suboption_target_class {
     SIXEL_SUBOPTION_TARGET_ENCODER,
     SIXEL_SUBOPTION_TARGET_DECODER,
     SIXEL_SUBOPTION_TARGET_LOADER,
-    SIXEL_SUBOPTION_TARGET_DEQUANTIZE
+    SIXEL_SUBOPTION_TARGET_DEQUANTIZE,
+    SIXEL_SUBOPTION_TARGET_RUNTIME
 } sixel_suboption_target_class_t;
 
 typedef enum sixel_suboption_storage_kind {
@@ -124,7 +125,9 @@ typedef enum sixel_suboption_environment_range_policy {
     SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH = 1 << 5,
     SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG = 1 << 6,
     SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY = 1 << 7,
-    SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG = 1 << 8
+    SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG = 1 << 8,
+    SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH = 1 << 9,
+    SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX = 1 << 10
 } sixel_suboption_environment_range_policy_t;
 
 #define SIXEL_SUBOPTION_OFFSET_NONE ((size_t)-1)
@@ -176,6 +179,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
     SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
     SIXEL_OPTION_SCHEMA_BGCOLOR,
+    SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
 
@@ -385,6 +389,27 @@ typedef struct sixel_dequantize_options {
     int selective_blur_threshold;
 } sixel_dequantize_options_t;
 
+typedef struct sixel_runtime_policy_options {
+    int simd_level;
+    int simd_level_override;
+    size_t colorspace_parallel_min_pixels;
+    int colorspace_parallel_min_pixels_override;
+    unsigned int parallel_factor;
+    int parallel_factor_override;
+    int parallel_skew;
+    int parallel_skew_override;
+    int resize_precision;
+    int resize_precision_override;
+    size_t scale_parallel_min_bytes;
+    int scale_parallel_min_bytes_override;
+} sixel_runtime_policy_options_t;
+
+typedef enum sixel_runtime_resize_precision {
+    SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE = 1,
+    SIXEL_RUNTIME_RESIZE_PRECISION_LINEAR32,
+    SIXEL_RUNTIME_RESIZE_PRECISION_FLOAT_WORK
+} sixel_runtime_resize_precision_t;
+
 typedef struct sixel_option_argument_schema {
     sixel_option_schema_id_t option_id;
     unsigned int scope;
@@ -568,6 +593,13 @@ sixel_option_reset_suboption_overrides(
     unsigned int consumer_scope,
     void *target,
     sixel_suboption_target_class_t target_class);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_option_apply_runtime_policy_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument(

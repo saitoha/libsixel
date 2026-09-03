@@ -72,6 +72,12 @@ sixel_option_registry_suboption_by_binding(
     char const *base_name,
     char const *binding_identifier);
 
+SIXEL_INTERNAL_API sixel_option_environment_result_t
+sixel_option_registry_resolve_runtime_binding(
+    char const *binding_identifier,
+    sixel_suboption_value_kind_t expected_kind,
+    sixel_suboption_value_t *value);
+
 SIXEL_INTERNAL_API int
 sixel_option_registry_validate(void);
 

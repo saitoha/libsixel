@@ -229,32 +229,12 @@ sixel_decoder_parallel_fill_spans(int payload_len,
 int
 sixel_decoder_parallel_skew_percent(void)
 {
-    char const *text;
-    char *endptr;
-    long value;
-
     /*
      * SIXEL_PARALLEL_SKEW lets operators bias span lengths by +/-20% so the
      * trailing workers take slightly more work.  The default keeps spans
      * balanced.
      */
-    text = sixel_compat_getenv("SIXEL_PARALLEL_SKEW");
-    if (text == NULL || text[0] == '\0') {
-        return 0;
-    }
-
-    errno = 0;
-    value = strtol(text, &endptr, 10);
-    if (errno != 0 || endptr == text || *endptr != '\0') {
-        return 0;
-    }
-
-    if (value < -20) {
-        value = -20;
-    } else if (value > 20) {
-        value = 20;
-    }
-    return (int)value;
+    return sixel_runtime_policy_parallel_skew(0);
 }
 
 static void

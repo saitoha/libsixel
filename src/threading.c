@@ -91,6 +91,7 @@
 #include "compat_stub.h"
 #include "threading.h"
 #include "options.h"
+#include "options-registry.h"
 
 /*
  * Backend selection is performed here so the header remains lightweight.
@@ -720,6 +721,8 @@ static sixel_thread_config_state_t g_thread_config = {
     0
 };
 
+static sixel_runtime_policy_options_t g_runtime_policy;
+
 #if SIXEL_ENABLE_THREADS
 static sixel_mutex_t g_thread_config_mutex;
 static int g_thread_config_mutex_ready;
@@ -889,6 +892,167 @@ sixel_set_threads(int threads)
 #endif
     g_thread_config.override_active = 1;
     sixel_thread_config_unlock();
+}
+
+void
+sixel_runtime_policy_load(sixel_runtime_policy_options_t *options)
+{
+    if (options == NULL) {
+        return;
+    }
+    sixel_thread_config_lock();
+    *options = g_runtime_policy;
+    sixel_thread_config_unlock();
+}
+
+void
+sixel_runtime_policy_store(sixel_runtime_policy_options_t const *options)
+{
+    if (options == NULL) {
+        return;
+    }
+    sixel_thread_config_lock();
+    g_runtime_policy = *options;
+    sixel_thread_config_unlock();
+}
+
+int
+sixel_runtime_policy_simd_level(int fallback)
+{
+    sixel_runtime_policy_options_t options;
+    sixel_suboption_value_t parsed;
+    int value;
+
+    memset(&options, 0, sizeof(options));
+    memset(&parsed, 0, sizeof(parsed));
+    value = fallback;
+    sixel_runtime_policy_load(&options);
+    if (options.simd_level_override) {
+        return options.simd_level;
+    }
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
+            &parsed,
+            NULL,
+            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        value = parsed.int_value;
+    }
+    return value;
+}
+
+size_t
+sixel_runtime_policy_colorspace_min_pixels(size_t fallback)
+{
+    sixel_runtime_policy_options_t options;
+    sixel_suboption_value_t value;
+
+    memset(&options, 0, sizeof(options));
+    memset(&value, 0, sizeof(value));
+    sixel_runtime_policy_load(&options);
+    if (options.colorspace_parallel_min_pixels_override) {
+        return options.colorspace_parallel_min_pixels;
+    }
+    if (sixel_option_registry_resolve_runtime_binding(
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                colorspace_parallel_min_pixels,
+                colorspace_parallel_min_pixels_override),
+            SIXEL_SUBOPTION_VALUE_SIZE,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.size_value;
+    }
+    return fallback;
+}
+
+unsigned int
+sixel_runtime_policy_parallel_factor(unsigned int fallback)
+{
+    sixel_runtime_policy_options_t options;
+    sixel_suboption_value_t value;
+
+    memset(&options, 0, sizeof(options));
+    memset(&value, 0, sizeof(value));
+    sixel_runtime_policy_load(&options);
+    if (options.parallel_factor_override) {
+        return options.parallel_factor;
+    }
+    if (sixel_option_registry_resolve_runtime_binding(
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                parallel_factor,
+                parallel_factor_override),
+            SIXEL_SUBOPTION_VALUE_UINT,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.uint_value;
+    }
+    return fallback;
+}
+
+int
+sixel_runtime_policy_parallel_skew(int fallback)
+{
+    sixel_runtime_policy_options_t options;
+    sixel_suboption_value_t value;
+
+    memset(&options, 0, sizeof(options));
+    memset(&value, 0, sizeof(value));
+    sixel_runtime_policy_load(&options);
+    if (options.parallel_skew_override) {
+        return options.parallel_skew;
+    }
+    if (sixel_option_registry_resolve_runtime_binding(
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                parallel_skew,
+                parallel_skew_override),
+            SIXEL_SUBOPTION_VALUE_INT,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.int_value;
+    }
+    return fallback;
+}
+
+int
+sixel_runtime_policy_resize_precision(int fallback)
+{
+    sixel_runtime_policy_options_t options;
+    sixel_suboption_value_t value;
+
+    memset(&options, 0, sizeof(options));
+    memset(&value, 0, sizeof(value));
+    sixel_runtime_policy_load(&options);
+    if (options.resize_precision_override) {
+        return options.resize_precision;
+    }
+    if (sixel_option_registry_resolve_runtime_binding(
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                resize_precision,
+                resize_precision_override),
+            SIXEL_SUBOPTION_VALUE_CHOICE,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.int_value;
+    }
+    return fallback;
+}
+
+size_t
+sixel_runtime_policy_scale_min_bytes(size_t fallback)
+{
+    sixel_runtime_policy_options_t options;
+    sixel_suboption_value_t value;
+
+    memset(&options, 0, sizeof(options));
+    memset(&value, 0, sizeof(value));
+    sixel_runtime_policy_load(&options);
+    if (options.scale_parallel_min_bytes_override) {
+        return options.scale_parallel_min_bytes;
+    }
+    if (sixel_option_registry_resolve_runtime_binding(
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                scale_parallel_min_bytes,
+                scale_parallel_min_bytes_override),
+            SIXEL_SUBOPTION_VALUE_SIZE,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.size_value;
+    }
+    return fallback;
 }
 
 /* emacs Local Variables:      */

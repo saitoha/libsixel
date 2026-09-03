@@ -118,6 +118,13 @@ Choose the decoder accelerator policy.  \fBoff\fP keeps the CPU path,
 The decoder suboption \fB:dequant_threshold=PIXELS\fP, with short form
 \fB:DPIXELS\fP, sets the minimum image size used by \fBauto\fP.
 .TP 5
+.B \-j POLICY[:KEY=VALUE], \-\-runtime\-policy=POLICY[:KEY=VALUE]
+Choose process-wide runtime tuning. POLICY is \fBauto\fP,
+\fBnone/scalar\fP, \fBsse2\fP, \fBavx\fP, or \fBneon\fP and limits the SIMD
+implementation selected at runtime.
+The decoder suboption \fB:parallel_skew=-20..20\fP, with short form
+\fB:KVALUE\fP, biases decoder worker spans.
+.TP 5
 .B \-% KEY=VALUE, \--env=KEY=VALUE
 Set a process environment variable before decoding.
 This option can be repeated.
@@ -158,6 +165,17 @@ opt in explicitly.
 Override the decoder worker count using the same syntax as the
 \-=/\-\-threads option.  Accepts positive integers or "auto" to match the
 hardware thread count. Empty or unset values make sixel2png use "auto".
+.TP 5
+.B SIXEL_SIMD_LEVEL
+.br
+Limit SIMD selection to auto, none/scalar, sse2, avx, or neon.
+The \fB\-j\fP runtime policy base takes precedence.
+.TP 5
+.B SIXEL_PARALLEL_SKEW
+.br
+Bias parallel decode spans by -20 through 20 percent. Defaults to 0.
+The \fB\-j *:parallel_skew=VALUE\fP suboption
+(short form \fB:KVALUE\fP) takes precedence.
 .TP 5
 .B SIXEL_DEQUANTIZE_LSO_VARIANT
 .br

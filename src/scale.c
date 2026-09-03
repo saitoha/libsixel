@@ -1056,31 +1056,13 @@ sixel_scale_parallel_min_bytes(void)
 {
     static int initialized = 0;
     static size_t threshold = 0;
-    char const *text;
-    char *endptr;
-    unsigned long long parsed;
 
     if (initialized) {
         return threshold;
     }
 
     initialized = 1;
-    text = sixel_compat_getenv("SIXEL_SCALE_PARALLEL_MIN_BYTES");
-    if (text == NULL || text[0] == '\0') {
-        return threshold;
-    }
-
-    errno = 0;
-    parsed = strtoull(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
-        return threshold;
-    }
-
-    if (parsed > (unsigned long long)SIZE_MAX) {
-        threshold = SIZE_MAX;
-    } else {
-        threshold = (size_t)parsed;
-    }
+    threshold = sixel_runtime_policy_scale_min_bytes(threshold);
     return threshold;
 }
 
@@ -1095,9 +1077,6 @@ sixel_scale_parallel_band_span(int rows, int threads)
 {
     static int initialized = 0;
     static int env_span = 0;
-    char const *text;
-    char *endptr;
-    long parsed;
     int span;
 
     if (rows <= 0) {
@@ -1106,15 +1085,7 @@ sixel_scale_parallel_band_span(int rows, int threads)
 
     if (!initialized) {
         initialized = 1;
-        text = sixel_compat_getenv("SIXEL_PARALLEL_FACTOR");
-        if (text != NULL && text[0] != '\0') {
-            errno = 0;
-            parsed = strtol(text, &endptr, 10);
-            if (endptr != text && *endptr == '\0' && errno != ERANGE &&
-                parsed > 0 && parsed <= INT_MAX) {
-                env_span = (int)parsed;
-            }
-        }
+        env_span = (int)sixel_runtime_policy_parallel_factor(0u);
     }
 
     if (env_span > 0) {

@@ -49,6 +49,7 @@
 #include "cpu.h"
 #include "compat_stub.h"
 #include "loader-common.h"
+#include "threading.h"
 
 /*
  * The SIMD cache is read on hot paths, so keep the fast path lock-free.
@@ -89,29 +90,14 @@ static int simd_cached = -1;
 static enum sixel_simd_level
 sixel_cpu_env_cap(void)
 {
-    char const *env;
+    return (enum sixel_simd_level)sixel_runtime_policy_simd_level(
+        SIXEL_SIMD_LEVEL_NEON);
+}
 
-    env = sixel_compat_getenv("SIXEL_SIMD_LEVEL");
-    if (env == NULL || env[0] == '\0') {
-        return SIXEL_SIMD_LEVEL_NEON;
-    }
-    if (sixel_compat_strcasecmp(env, "auto") == 0) {
-        return SIXEL_SIMD_LEVEL_NEON;
-    }
-    if (sixel_compat_strcasecmp(env, "none") == 0 ||
-        sixel_compat_strcasecmp(env, "scalar") == 0) {
-        return SIXEL_SIMD_LEVEL_SCALAR;
-    }
-    if (sixel_compat_strcasecmp(env, "sse2") == 0) {
-        return SIXEL_SIMD_LEVEL_SSE2;
-    }
-    if (sixel_compat_strcasecmp(env, "avx") == 0) {
-        return SIXEL_SIMD_LEVEL_AVX;
-    }
-    if (sixel_compat_strcasecmp(env, "neon") == 0) {
-        return SIXEL_SIMD_LEVEL_NEON;
-    }
-    return SIXEL_SIMD_LEVEL_NEON;
+void
+sixel_cpu_reset_simd_cache(void)
+{
+    SIXEL_CPU_CACHE_STORE(-1);
 }
 
 static enum sixel_simd_level

@@ -644,16 +644,12 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     size_t scale_pixels;
     size_t scale_bytes;
     size_t scale_limit;
-    char const *resize_mode_env;
-    char *resize_endptr;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
     }
 
     resize_mode = SIXEL_PLANNER_RESIZE_MODE_PRESERVE;
-    resize_mode_env = NULL;
-    resize_endptr = NULL;
     colorspace_after_scale = 0;
     colorspace_before_scale = 0;
     prefer_float32_effective = prefer_float32;
@@ -705,26 +701,12 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     scale_depth = 0;
     scale_limit = SIXEL_ALLOCATE_BYTES_MAX / 2U;
 
-    resize_mode_env = sixel_compat_getenv(
-        "SIXEL_PLANNER_RESIZE_PRECISION_MODE");
-    if (resize_mode_env != NULL && resize_mode_env[0] != '\0') {
-        errno = 0;
-        resize_mode = (int)strtol(resize_mode_env,
-                                  &resize_endptr,
-                                  10);
-        if (errno != ERANGE && resize_endptr != resize_mode_env) {
-            if (resize_mode < SIXEL_PLANNER_RESIZE_MODE_PRESERVE
-                || resize_mode > SIXEL_PLANNER_RESIZE_MODE_FLOAT_WORK) {
-                resize_mode = SIXEL_PLANNER_RESIZE_MODE_PRESERVE;
-            }
-        } else {
-            resize_mode = SIXEL_PLANNER_RESIZE_MODE_PRESERVE;
-        }
-    } else if (prefer_float32 != 0) {
+    if (prefer_float32 != 0) {
         resize_mode = SIXEL_PLANNER_RESIZE_MODE_FLOAT_WORK;
     } else if (encoder->working_colorspace != source_colorspace) {
         resize_mode = SIXEL_PLANNER_RESIZE_MODE_LINEAR32;
     }
+    resize_mode = sixel_runtime_policy_resize_precision(resize_mode);
     sixel_trace_topic_message(
         "runtime_contract",
         "LSXRT1|resize_precision=%d",

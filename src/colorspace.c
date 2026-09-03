@@ -1845,37 +1845,12 @@ sixel_colorspace_parallel_min_pixels(void)
 {
     static size_t threshold = 65537;
     static int initialized = 0;
-    char const *text;
-    char *endptr;
-    unsigned long long parsed;
 
     if (initialized != 0) {
         return threshold;
     }
 
-    text = sixel_compat_getenv("SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS");
-    if (text == NULL || text[0] == '\0') {
-        initialized = 1;
-        sixel_trace_topic_message(
-            "runtime_contract",
-            "LSXRT1|colorspace_min=%zu",
-            threshold);
-        return threshold;
-    }
-
-    errno = 0;
-    parsed = strtoull(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
-        initialized = 1;
-        return threshold;
-    }
-
-    if (parsed > (unsigned long long)SIZE_MAX) {
-        threshold = SIZE_MAX;
-    } else {
-        threshold = (size_t)parsed;
-    }
-
+    threshold = sixel_runtime_policy_colorspace_min_pixels(threshold);
     initialized = 1;
     sixel_trace_topic_message(
         "runtime_contract",

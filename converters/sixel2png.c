@@ -192,6 +192,16 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             (:DPIXELS) sets the auto cutoff\n"
     },
     {
+        'j',
+        "runtime-policy",
+        "-j POLICY[:KEY=VALUE], --runtime-policy=POLICY[:KEY=VALUE]\n"
+        "                           select the SIMD ceiling: auto,\n"
+        "                           none/scalar, sse2, avx, or neon.\n"
+        "                           decoder sub-option:\n"
+        "                             :parallel_skew=-20..20\n"
+        "                             (:KVALUE) biases worker spans\n"
+    },
+    {
         '%',
         "env",
         "-% KEY=VALUE, --env=KEY=VALUE\n"
@@ -220,7 +230,7 @@ sixel2png_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:G:%:DVH";
+static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:G:j:%:DVH";
 
 typedef struct sixel2png_parsed_option {
     int code;
@@ -513,6 +523,7 @@ main(int argc, char *argv[])
         {"direct",           no_argument,        NULL, 'D'},
         {"threads",          required_argument,  NULL, '='},
         {"gpu-policy",       required_argument,  NULL, 'G'},
+        {"runtime-policy",   required_argument,  NULL, 'j'},
         {"env",              required_argument,  NULL, '%'},
         {"version",          no_argument,        NULL, 'V'},
         {"help",             no_argument,        NULL, 'H'},

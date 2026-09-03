@@ -34,6 +34,8 @@ extern "C" {
 
 typedef int (*sixel_thread_fn)(void *arg);
 
+struct sixel_runtime_policy_options;
+
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
     && !defined(WITH_WINPTHREAD)
 #include <windows.h>
@@ -99,6 +101,20 @@ SIXEL_INTERNAL_API int sixel_get_hw_threads(void);
 SIXEL_INTERNAL_API int sixel_threads_normalize(int requested);
 SIXEL_INTERNAL_API void sixel_set_threads(int threads);
 SIXEL_INTERNAL_API int sixel_threads_resolve(void);
+
+SIXEL_INTERNAL_API void sixel_runtime_policy_load(
+    struct sixel_runtime_policy_options *options);
+SIXEL_INTERNAL_API void sixel_runtime_policy_store(
+    struct sixel_runtime_policy_options const *options);
+SIXEL_INTERNAL_API int sixel_runtime_policy_simd_level(int fallback);
+SIXEL_INTERNAL_API size_t sixel_runtime_policy_colorspace_min_pixels(
+    size_t fallback);
+SIXEL_INTERNAL_API unsigned int sixel_runtime_policy_parallel_factor(
+    unsigned int fallback);
+SIXEL_INTERNAL_API int sixel_runtime_policy_parallel_skew(int fallback);
+SIXEL_INTERNAL_API int sixel_runtime_policy_resize_precision(int fallback);
+SIXEL_INTERNAL_API size_t sixel_runtime_policy_scale_min_bytes(
+    size_t fallback);
 
 #ifdef __cplusplus
 }

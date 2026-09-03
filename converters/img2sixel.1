@@ -84,6 +84,16 @@ sufficiently large images, and \fBforce\fP requires GPU acceleration.
 The encoder suboption \fB:palette_threshold=PIXELS\fP, with short form
 \fB:PPIXELS\fP, sets the minimum image size used by \fBauto\fP.
 .TP 5
+.B \-j \fIPOLICY[:KEY=VALUE]\fP, \-\-runtime\-policy=\fIPOLICY[:KEY=VALUE]\fP
+choose process-wide runtime tuning.  \fIPOLICY\fP is \fBauto\fP,
+\fBnone/scalar\fP, \fBsse2\fP, \fBavx\fP, or \fBneon\fP and limits the SIMD
+implementation selected at runtime.
+Encoder suboptions are \fB:colorspace_min=PIXELS\fP
+(short form \fB:CPIXELS\fP), \fB:parallel_factor=ROWS\fP
+(\fB:FROWS\fP), \fB:resize_precision=preserve|linear|float\fP
+(\fB:Rvalue\fP), and \fB:scale_min_bytes=BYTES\fP
+(\fB:BBYTES\fP).
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5
@@ -1294,6 +1304,8 @@ force the resize precision planner. Accepts 1 (preserve integer buffers), 2
 (linear float workspace), or 3 (float32 working colorspace). Defaults follow
 the precision and working-colorspace choices described under
 \fB\-\.\fP/\fB\-\-precision\fP and \fB\-W\fP/\fB\-\-working\-colorspace\fP.
+Overridden by \fB\-j *:resize_precision=VALUE\fP
+(short form \fB:RVALUE\fP).
 .TP 5
 .B SIXEL_THREADS
 .br
@@ -1428,26 +1440,33 @@ other values fall back to 64.
 .B SIXEL_SCALE_PARALLEL_MIN_BYTES
 .br
 delay parallel resize until the frame exceeds this byte threshold. Default 0
-keeps eager threading.
+keeps eager threading. Overridden by \fB\-j *:scale_min_bytes=BYTES\fP
+(short form \fB:BBYTES\fP).
 .TP 5
 .B SIXEL_PARALLEL_FACTOR
 .br
 override the row span assigned to each resize worker. Accepts positive
-integers.
+integers. Overridden by \fB\-j *:parallel_factor=ROWS\fP
+(short form \fB:FROWS\fP).
 .TP 5
 .B SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
 .br
 defer RGBFLOAT32 colorspace fan-out until the frame reaches this pixel
 count. Defaults to 65537 pixels to avoid eager splitting on small images.
+Overridden by \fB\-j *:colorspace_min=PIXELS\fP
+(short form \fB:CPIXELS\fP).
 .TP 5
 .B SIXEL_PARALLEL_SKEW
 .br
 bias parallel decode spans by +/-20%% so trailing workers take a larger share.
-Defaults to 0 (balanced).
+Defaults to 0 (balanced). Overridden by
+\fBsixel2png \-j *:parallel_skew=VALUE\fP
+(short form \fB:KVALUE\fP).
 .TP 5
 .B SIXEL_SIMD_LEVEL
 .br
 force SIMD selection. Accepts auto, none/scalar, sse2, avx, or neon.
+Overridden by the \fB\-j\fP runtime policy base.
 .TP 5
 .B SIXEL_THUMBNAILER_HINT_SIZE
 .br

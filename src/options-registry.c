@@ -49,6 +49,7 @@
 
 #include "cms.h"
 #include "compat_stub.h"
+#include "cpu.h"
 #include "dither-interframe-method.h"
 #include "decoder.h"
 #include "encoder.h"
@@ -66,6 +67,10 @@
 #define SIXEL_REGISTRY_ARRAY_LENGTH(array_) \
     (sizeof(array_) / sizeof((array_)[0]))
 #define SIXEL_REGISTRY_BASE_BIT(index_) (1ULL << (unsigned int)(index_))
+
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
+#endif
 
 #define SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE \
     SIXEL_OPTION_SCOPE_ENCODER_FAMILY
@@ -459,6 +464,74 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_REGISTRY_CHECKED_OFFSET( \
                 sixel_decoder_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
+/* Runtime policy is process-wide, while each row keeps consumer visibility. */
+#define SIXEL_REGISTRY_RUNTIME_NUMBER( \
+    optflag_, base_, name_, short_, env_, kind_, minimum_, maximum_, \
+    has_minimum_, has_maximum_, range_, message_, scope_, storage_, \
+    value_type_, field_, override_) \
+    { \
+        (optflag_), (base_), (scope_), (name_), (short_), (env_), NULL, \
+        NULL, \
+        (kind_), NULL, 0u, NULL, 0u, (minimum_), (maximum_), \
+        (has_minimum_), (has_maximum_), 0, (range_), (message_), NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_RUNTIME, (storage_), \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_runtime_policy_options_t, field_, value_type_), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_runtime_policy_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
+#define SIXEL_REGISTRY_RUNTIME_SIZE( \
+    optflag_, base_, name_, short_, env_, range_, message_, scope_, field_, \
+    override_) \
+    SIXEL_REGISTRY_RUNTIME_NUMBER( \
+        optflag_, base_, name_, short_, env_, \
+        SIXEL_SUBOPTION_VALUE_SIZE, 0.0, 0.0, 0, 0, range_, message_, \
+        scope_, SIXEL_SUBOPTION_STORAGE_SIZE, size_t, field_, override_)
+
+#define SIXEL_REGISTRY_RUNTIME_UINT( \
+    optflag_, base_, name_, short_, env_, minimum_, maximum_, range_, \
+    message_, scope_, field_, override_) \
+    SIXEL_REGISTRY_RUNTIME_NUMBER( \
+        optflag_, base_, name_, short_, env_, \
+        SIXEL_SUBOPTION_VALUE_UINT, minimum_, maximum_, 1, 1, range_, \
+        message_, scope_, SIXEL_SUBOPTION_STORAGE_UINT, unsigned int, \
+        field_, override_)
+
+#define SIXEL_REGISTRY_RUNTIME_INT( \
+    optflag_, base_, name_, short_, env_, minimum_, maximum_, range_, \
+    message_, scope_, field_, override_) \
+    SIXEL_REGISTRY_RUNTIME_NUMBER( \
+        optflag_, base_, name_, short_, env_, \
+        SIXEL_SUBOPTION_VALUE_INT, minimum_, maximum_, 1, 1, range_, \
+        message_, scope_, SIXEL_SUBOPTION_STORAGE_INT, int, field_, \
+        override_)
+
+#define SIXEL_REGISTRY_RUNTIME_CHOICE( \
+    optflag_, base_, name_, short_, env_, choices_, range_, scope_, field_, \
+    override_) \
+    { \
+        (optflag_), (base_), (scope_), (name_), \
+        (short_), (env_), NULL, NULL, SIXEL_SUBOPTION_VALUE_CHOICE, \
+        (choices_), SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, \
+        0.0, 0.0, 0, 0, 0, (range_), NULL, NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_RUNTIME, SIXEL_SUBOPTION_STORAGE_INT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_runtime_policy_options_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_runtime_policy_options_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
         }, NULL, 0ULL \
@@ -1119,6 +1192,24 @@ static sixel_option_value_schema_t const g_gpu_policy_values[] = {
     { "force", SIXEL_GPU_POLICY_FORCE, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
 };
 
+static sixel_option_value_schema_t const g_runtime_policy_values[] = {
+    { "auto", SIXEL_SIMD_LEVEL_NEON, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    {
+        "scalar", SIXEL_SIMD_LEVEL_SCALAR, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    { "none", SIXEL_SIMD_LEVEL_SCALAR, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "sse2", SIXEL_SIMD_LEVEL_SSE2, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "avx", SIXEL_SIMD_LEVEL_AVX, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "neon", SIXEL_SIMD_LEVEL_NEON, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
+static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
+    { "preserve", SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE },
+    { "linear", SIXEL_RUNTIME_RESIZE_PRECISION_LINEAR32 },
+    { "float", SIXEL_RUNTIME_RESIZE_PRECISION_FLOAT_WORK }
+};
+
 static sixel_option_value_schema_t const g_transparent_policy_values[] = {
     {
         "composite", SIXEL_TRANSPARENT_POLICY_COMPOSITE, 0u,
@@ -1427,6 +1518,49 @@ static sixel_suboption_choice_t const g_loader_hdr_tonemap_choices[] = {
  * into every quantizer or diffusion method.
  */
 static sixel_suboption_key_t const g_suboptions[] = {
+    SIXEL_REGISTRY_RUNTIME_SIZE(
+        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
+        "colorspace_min", 'C',
+        "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS",
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH,
+        "runtime colorspace_min must be an unsigned integer.",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        colorspace_parallel_min_pixels,
+        colorspace_parallel_min_pixels_override),
+    SIXEL_REGISTRY_RUNTIME_UINT(
+        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
+        "parallel_factor", 'F', "SIXEL_PARALLEL_FACTOR",
+        1.0, (double)INT_MAX,
+        SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG,
+        "runtime parallel_factor must be a positive integer.",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        parallel_factor, parallel_factor_override),
+    SIXEL_REGISTRY_RUNTIME_INT(
+        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
+        "parallel_skew", 'K', "SIXEL_PARALLEL_SKEW",
+        -20.0, 20.0,
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
+            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM,
+        "runtime parallel_skew must be in range -20..20.",
+        SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE,
+        parallel_skew, parallel_skew_override),
+    SIXEL_REGISTRY_RUNTIME_CHOICE(
+        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
+        "resize_precision", 'R',
+        "SIXEL_PLANNER_RESIZE_PRECISION_MODE",
+        g_runtime_resize_choices,
+        SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX,
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        resize_precision, resize_precision_override),
+    SIXEL_REGISTRY_RUNTIME_SIZE(
+        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
+        "scale_min_bytes", 'B', "SIXEL_SCALE_PARALLEL_MIN_BYTES",
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH,
+        "runtime scale_min_bytes must be an unsigned integer.",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        scale_parallel_min_bytes,
+        scale_parallel_min_bytes_override),
+
     SIXEL_REGISTRY_ENCODER_SIZE(
         SIXEL_OPTION_SCHEMA_GPU_POLICY, NULL,
         "palette_threshold", 'P', "SIXEL_GPU_PALETTE_THRESHOLD",
@@ -2424,6 +2558,19 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_REGISTRY_ARRAY_LENGTH(values_) \
     }
 
+#define SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA( \
+    option_id_, scope_, optflag_, name_, default_value_, values_, env_) \
+    { \
+        (option_id_), (scope_), (optflag_), (name_), \
+        SIXEL_OPTION_ARGUMENT_SINGLE, SIXEL_SUBOPTION_VALUE_STRUCTURED, \
+        SIXEL_OPTION_MATCH_PREFIX, \
+        SIXEL_OPTION_MATCH_PREFIX | SIXEL_OPTION_MATCH_CASE_INSENSITIVE, \
+        (env_), NULL, NULL, NULL, 0u, 0.0, 0.0, 0, 0, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, NULL, NULL, NULL, \
+        NULL, NULL, SIXEL_OPTION_DEFAULT_FIXED, { (default_value_) }, \
+        (values_), SIXEL_REGISTRY_ARRAY_LENGTH(values_) \
+    }
+
 #define SIXEL_REGISTRY_SCALAR_SCHEMA( \
     option_id_, scope_, optflag_, name_, kind_, argument_flags_, \
     environment_flags_, env_, environment_choices_, \
@@ -2713,6 +2860,14 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTFLAG_BGCOLOR,
         "bgcolor",
         "SIXEL_BGCOLOR"),
+    SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
+        SIXEL_OPTION_SCOPE_ALL,
+        SIXEL_OPTFLAG_RUNTIME_POLICY,
+        "runtime-policy",
+        SIXEL_SIMD_LEVEL_NEON,
+        g_runtime_policy_values,
+        "SIXEL_SIMD_LEVEL"),
 };
 
 static int
@@ -3025,6 +3180,120 @@ sixel_option_registry_suboption_by_binding(
 }
 
 /*
+ * Process-wide runtime consumers are also linked into the Quick Look core,
+ * which deliberately excludes the CLI parser.  Resolve their registered
+ * environment values here so environment spelling and validation never leak
+ * back into individual consumers.
+ */
+SIXEL_INTERNAL_API sixel_option_environment_result_t
+sixel_option_registry_resolve_runtime_binding(
+    char const *binding_identifier,
+    sixel_suboption_value_kind_t expected_kind,
+    sixel_suboption_value_t *value)
+{
+    sixel_suboption_key_t const *key;
+    char const *text;
+    char *endptr;
+    unsigned long long parsed_uint;
+    long parsed_int;
+    size_t index;
+
+    key = NULL;
+    text = NULL;
+    endptr = NULL;
+    parsed_uint = 0ULL;
+    parsed_int = 0L;
+    index = 0u;
+    if (binding_identifier == NULL || value == NULL ||
+        !sixel_option_registry_validate()) {
+        return SIXEL_OPTION_ENVIRONMENT_INVALID;
+    }
+    key = sixel_option_registry_suboption_by_binding(
+        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
+        NULL,
+        binding_identifier);
+    if (key == NULL || key->value_kind != expected_kind ||
+        key->env_name == NULL) {
+        return SIXEL_OPTION_ENVIRONMENT_INVALID;
+    }
+    text = sixel_compat_getenv(key->env_name);
+    if (text == NULL || text[0] == '\0') {
+        return SIXEL_OPTION_ENVIRONMENT_UNSET;
+    }
+
+    if (expected_kind == SIXEL_SUBOPTION_VALUE_SIZE) {
+        errno = 0;
+        parsed_uint = strtoull(text, &endptr, 10);
+        if (endptr == text || endptr == NULL || endptr[0] != '\0' ||
+            errno == ERANGE) {
+            return SIXEL_OPTION_ENVIRONMENT_INVALID;
+        }
+        if (parsed_uint > (unsigned long long)SIZE_MAX) {
+            if ((key->environment_range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH) == 0) {
+                return SIXEL_OPTION_ENVIRONMENT_RANGE;
+            }
+            parsed_uint = (unsigned long long)SIZE_MAX;
+        }
+        value->size_value = (size_t)parsed_uint;
+        return SIXEL_OPTION_ENVIRONMENT_MATCH;
+    }
+
+    errno = 0;
+    parsed_int = strtol(text, &endptr, 10);
+    if (endptr == text || endptr == NULL || errno == ERANGE ||
+        parsed_int < (long)INT_MIN || parsed_int > (long)INT_MAX) {
+        return SIXEL_OPTION_ENVIRONMENT_INVALID;
+    }
+    if (expected_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
+        endptr[0] != '\0') {
+        return SIXEL_OPTION_ENVIRONMENT_INVALID;
+    }
+
+    if (expected_kind == SIXEL_SUBOPTION_VALUE_UINT) {
+        if (parsed_int < 0L ||
+            (key->has_minimum && (double)parsed_int < key->minimum) ||
+            (key->has_maximum && (double)parsed_int > key->maximum)) {
+            return SIXEL_OPTION_ENVIRONMENT_RANGE;
+        }
+        value->uint_value = (unsigned int)parsed_int;
+        return SIXEL_OPTION_ENVIRONMENT_MATCH;
+    }
+    if (expected_kind == SIXEL_SUBOPTION_VALUE_INT) {
+        if (key->has_minimum && (double)parsed_int < key->minimum) {
+            if ((key->environment_range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) == 0) {
+                return SIXEL_OPTION_ENVIRONMENT_RANGE;
+            }
+            parsed_int = (long)key->minimum;
+        }
+        if (key->has_maximum && (double)parsed_int > key->maximum) {
+            if ((key->environment_range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) == 0) {
+                return SIXEL_OPTION_ENVIRONMENT_RANGE;
+            }
+            parsed_int = (long)key->maximum;
+        }
+        value->int_value = (int)parsed_int;
+        return SIXEL_OPTION_ENVIRONMENT_MATCH;
+    }
+    if (expected_kind == SIXEL_SUBOPTION_VALUE_CHOICE &&
+        (key->environment_range_policy &
+         SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX) != 0) {
+        while (index < key->choice_count) {
+            if (key->choices[index].value == (int)parsed_int) {
+                value->int_value = (int)parsed_int;
+                return SIXEL_OPTION_ENVIRONMENT_MATCH;
+            }
+            ++index;
+        }
+        return SIXEL_OPTION_ENVIRONMENT_INVALID;
+    }
+
+    return SIXEL_OPTION_ENVIRONMENT_INVALID;
+}
+
+/*
  * Environment names are part of the registry contract.  Keep their syntax
  * independent of the host shell so a malformed row fails on every platform.
  */
@@ -3160,6 +3429,9 @@ sixel_option_registry_binding_scope_is_valid(
     case SIXEL_SUBOPTION_TARGET_DECODER:
     case SIXEL_SUBOPTION_TARGET_DEQUANTIZE:
         allowed_scope = SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE;
+        break;
+    case SIXEL_SUBOPTION_TARGET_RUNTIME:
+        allowed_scope = SIXEL_OPTION_SCOPE_ALL;
         break;
     default:
         return 0;
@@ -3532,7 +3804,9 @@ sixel_option_registry_validate_uncached(void)
                SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
                SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
                SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
-              SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG)) != 0 ||
+               SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG |
+               SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH |
+               SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX)) != 0 ||
             ((schema->environment_range_policy &
               SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) != 0 &&
              !schema->environment_has_minimum) ||
@@ -3703,7 +3977,9 @@ sixel_option_registry_validate_uncached(void)
                        SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
                        SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG |
                        SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY |
-                       SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG)) !=
+                       SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG |
+                       SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH |
+                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX)) !=
                     0) {
                     return 0;
                 }
@@ -3730,15 +4006,20 @@ sixel_option_registry_validate_uncached(void)
                       SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
                       SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG |
-                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY)) != 0 &&
+                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY |
+                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX)) !=
+                        0 &&
                     key->value_kind != SIXEL_SUBOPTION_VALUE_UINT &&
                     !((key->environment_range_policy &
-                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG) != 0 &&
+                       (SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
+                        SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX)) !=
+                          0 &&
                       key->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE)) {
                     return 0;
                 }
                 if ((key->environment_range_policy &
-                     SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG) != 0 &&
+                     (SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG |
+                      SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH)) != 0 &&
                     key->value_kind != SIXEL_SUBOPTION_VALUE_SIZE) {
                     return 0;
                 }
@@ -3750,6 +4031,20 @@ sixel_option_registry_validate_uncached(void)
                       SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG |
                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY)) != 0) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH) != 0 &&
+                    (key->environment_range_policy &
+                     ~SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH) != 0) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX) !=
+                        0 &&
+                    (key->environment_range_policy &
+                     ~SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX) !=
+                        0) {
                     return 0;
                 }
                 if ((key->environment_range_policy &

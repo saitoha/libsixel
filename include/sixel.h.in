@@ -720,6 +720,10 @@ typedef int SIXELSTATUS;
                                                             available and large
                                                    force -> require GPU path
                                                */
+#define SIXEL_OPTFLAG_RUNTIME_POLICY    ('j') /* -j RUNTIMEPOLICY,
+                                                 --runtime-policy=POLICY:
+                                                 select process runtime tuning
+                                               */
 #define SIXEL_OPTFLAG_CLUSTERING_COLORSPACE ('X')
     /* -X COLORSPACE */
     /* --clustering-colorspace=COLORSPACE */

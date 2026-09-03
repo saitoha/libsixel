@@ -649,6 +649,9 @@ SIXEL_OPTFLAG_GPU_POLICY        = 'G'  # -G GPUPOLICY,
                                       #          auto  -> probe GPU above the
                                       #                   internal threshold
                                       #          force -> require GPU path
+SIXEL_OPTFLAG_RUNTIME_POLICY    = 'j'  # -j RUNTIMEPOLICY,
+                                      #   --runtime-policy=POLICY:
+                                      #        choose process runtime tuning
 SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X'  # -X COLORSPACE, --clustering-colorspace=COLORSPACE:
                                           #        select palette clustering space.
                                           #        ignored with fixed palette options (-b, -m, -e).

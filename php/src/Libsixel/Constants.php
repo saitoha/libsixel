@@ -174,6 +174,7 @@ final class Constants
     public const SIXEL_OPTFLAG_ENCODE_POLICY = 'E';
     public const SIXEL_OPTFLAG_LUT_POLICY = '~';
     public const SIXEL_OPTFLAG_GPU_POLICY = 'G';
+    public const SIXEL_OPTFLAG_RUNTIME_POLICY = 'j';
     public const SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X';
     public const SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W';
     public const SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U';

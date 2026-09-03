@@ -61,10 +61,12 @@
 
 #include <sixel.h>
 #include "compat_stub.h"
+#include "cpu.h"
 #include "loader-common.h"
 #include "options.h"
 #include "options-registry.h"
 #include "output.h"
+#include "threading.h"
 
 /*
  * The option helper entry points centralize prefix matching and
@@ -2070,10 +2072,15 @@ sixel_option_parse_typed_suboption_value(
             valid = 0;
         } else if (valid &&
                    parsed_uint > (unsigned long long)SIZE_MAX) {
-            if (range_error != NULL) {
-                *range_error = 1;
+            if ((range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH) != 0) {
+                parsed_uint = (unsigned long long)SIZE_MAX;
+            } else {
+                if (range_error != NULL) {
+                    *range_error = 1;
+                }
+                valid = 0;
             }
-            valid = 0;
         }
         if (valid && key_def->has_minimum &&
             (double)parsed_uint < key_def->minimum) {
@@ -2552,10 +2559,14 @@ sixel_option_parse_environment_value(
     }
 
     if ((key_def->environment_range_policy &
-         SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG) != 0) {
+         (SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
+          SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX)) != 0) {
         errno = 0;
         parsed_int = strtol(text, &endptr, 10);
-        if (endptr == text || endptr == NULL || endptr[0] != '\0' ||
+        if (endptr == text || endptr == NULL ||
+            (((key_def->environment_range_policy &
+               SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX) == 0) &&
+             endptr[0] != '\0') ||
             errno == ERANGE || parsed_int < (long)INT_MIN ||
             parsed_int > (long)INT_MAX) {
             return SIXEL_OPTION_ENVIRONMENT_INVALID;
@@ -3100,6 +3111,66 @@ sixel_option_reset_suboption_overrides(
         }
         ++base_index;
     }
+}
+
+SIXELSTATUS
+sixel_option_apply_runtime_policy_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
+    sixel_runtime_policy_options_t options;
+
+    status = SIXEL_OK;
+    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_RUNTIME_POLICY);
+    memset(&resolution, 0, sizeof(resolution));
+    memset(&options, 0, sizeof(options));
+    if (schema == NULL || argument == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        argument,
+        schema,
+        consumer_scope,
+        &resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    sixel_runtime_policy_load(&options);
+    sixel_option_reset_suboption_overrides(
+        schema,
+        consumer_scope,
+        &options,
+        SIXEL_SUBOPTION_TARGET_RUNTIME);
+    sixel_option_apply_suboption_environment(
+        schema,
+        resolution.base_def,
+        consumer_scope,
+        &options,
+        SIXEL_SUBOPTION_TARGET_RUNTIME);
+    options.simd_level = resolution.resolved_base_value;
+    options.simd_level_override = 1;
+    if (!sixel_option_apply_suboption_assignments(
+            &resolution,
+            &options,
+            SIXEL_SUBOPTION_TARGET_RUNTIME)) {
+        sixel_helper_set_additional_message(
+            "failed to apply runtime policy suboptions.");
+        status = SIXEL_BAD_ARGUMENT;
+    } else {
+        sixel_runtime_policy_store(&options);
+        sixel_cpu_reset_simd_cache();
+    }
+    sixel_option_free_argument_resolution(&resolution);
+    return status;
 }
 
 static int

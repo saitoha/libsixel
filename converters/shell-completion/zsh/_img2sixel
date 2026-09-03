@@ -832,6 +832,66 @@ _coverpolicy() {
     'all[anchor corners, faces, and edges]'
 }
 
+_runtimepolicy() {
+  local current base segment key prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    base=${current%%:*}
+    segment=${current##*:}
+    if [[ ${base} == auto || ${base} == scalar || ${base} == none || \
+          ${base} == sse2 || ${base} == avx || ${base} == neon ]]; then
+      if [[ ${segment} == *=* ]]; then
+        key=${segment%%=*}
+        prefix=${current%"${segment}"}
+        if [[ ${key} == colorspace_min ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=256" \
+                     "${prefix}${key}=65537"
+          return 0
+        elif [[ ${key} == parallel_factor ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=2" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8"
+          return 0
+        elif [[ ${key} == resize_precision ]]; then
+          compadd -- "${prefix}${key}=preserve" \
+                     "${prefix}${key}=linear" \
+                     "${prefix}${key}=float"
+          return 0
+        elif [[ ${key} == scale_min_bytes ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1024" \
+                     "${prefix}${key}=65536"
+          return 0
+        fi
+      else
+        prefix=${current%"${segment}"}
+        compadd -- "${prefix}C0" "${prefix}C65537" \
+                   "${prefix}F1" "${prefix}F2" \
+                   "${prefix}Rpreserve" "${prefix}Rlinear" \
+                   "${prefix}Rfloat" "${prefix}B0" \
+                   "${prefix}B65536" \
+                   "${prefix}colorspace_min=" \
+                   "${prefix}parallel_factor=" \
+                   "${prefix}resize_precision=" \
+                   "${prefix}scale_min_bytes="
+        return 0
+      fi
+    fi
+  fi
+
+  _values \
+    'RUNTIMEPOLICY' \
+    'auto[select the highest supported SIMD implementation]' \
+    'scalar[disable SIMD implementations]' \
+    'none[alias for scalar]' \
+    'sse2[limit SIMD selection to SSE2]' \
+    'avx[limit SIMD selection to AVX]' \
+    'neon[limit SIMD selection to NEON]'
+}
+
 
 _completiontarget() {
   _values \
@@ -889,6 +949,7 @@ _arguments -S -s -A "-*" -S \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
   {-~,--lookup-policy=}'[choose histogram lookup width and backend]':lookuppolicy:_lookuppolicy \
   {-G,--gpu-policy=}'[choose palette-apply accelerator policy]':gpupolicy:_gpupolicy \
+  {-j,--runtime-policy=}'[choose process runtime policy]':runtimepolicy:_runtimepolicy \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
   {-T,--start-frame=}'[set animation start frame index for loaders]' \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \

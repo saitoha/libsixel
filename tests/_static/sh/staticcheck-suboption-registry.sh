@@ -61,6 +61,7 @@ function fail(message) {
 }
 function macro_is_approved(macro) {
     return macro == "SIXEL_REGISTRY_OPTION_SCHEMA" ||
+        macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA" ||
         macro == "SIXEL_REGISTRY_SCALAR_CHOICE" ||
         macro == "SIXEL_REGISTRY_SCALAR_CHOICE_ENV" ||
         macro == "SIXEL_REGISTRY_SCALAR_INT" ||
@@ -69,6 +70,7 @@ function macro_is_approved(macro) {
 }
 function expected_field_count(macro) {
     if (macro == "SIXEL_REGISTRY_OPTION_SCHEMA") return 9
+    if (macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA") return 7
     if (macro == "SIXEL_REGISTRY_SCALAR_CHOICE") return 10
     if (macro == "SIXEL_REGISTRY_SCALAR_CHOICE_ENV") return 11
     if (macro == "SIXEL_REGISTRY_SCALAR_INT") return 22
@@ -141,7 +143,12 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
     if (name !~ /^"[a-z0-9][a-z0-9-]*"$/ || name ~ /-"$/) {
         fail(option_id " has a noncanonical long option name: " name)
     }
-    if (macro == "SIXEL_REGISTRY_OPTION_SCHEMA") {
+    if (macro == "SIXEL_REGISTRY_OPTION_SCHEMA" ||
+        macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA") {
+        if (macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA") {
+            default_policy = "SIXEL_OPTION_DEFAULT_FIXED"
+            values = fields[6]
+        } else {
         form = fields[5]
         default_policy = fields[6]
         values = fields[8]
@@ -153,6 +160,7 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
         }
         if (fields[7] == "") {
             fail(option_id " has no explicit default value")
+        }
         }
         if (values !~ /^g_[a-z0-9_]+_values$/) {
             fail(option_id " has no registered value table: " values)
@@ -188,7 +196,8 @@ in_registry && /^[[:space:]]*};/ {
     in_registry = 0
     next
 }
-in_registry && /SIXEL_REGISTRY_(OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/ {
+in_registry && \
+        /SIXEL_REGISTRY_(OPTION_SCHEMA|RUNTIME_OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/ {
     in_row = 1
     row = $0
     next
@@ -324,7 +333,7 @@ FILENAME == registry_file {
         next
     }
     if (in_registry &&
-        $0 ~ /SIXEL_REGISTRY_(OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/) {
+        $0 ~ /SIXEL_REGISTRY_(OPTION_SCHEMA|RUNTIME_OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/) {
         in_row = 1
         row = $0
         next
@@ -402,7 +411,11 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_LOADER_UINT_ENV_REJECT_SIGNED" ||
         macro == \
             "SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM_DIGITS" ||
-        macro == "SIXEL_REGISTRY_LOADER_SIZE_ENV_ERROR"
+        macro == "SIXEL_REGISTRY_LOADER_SIZE_ENV_ERROR" ||
+        macro == "SIXEL_REGISTRY_RUNTIME_SIZE" ||
+        macro == "SIXEL_REGISTRY_RUNTIME_UINT" ||
+        macro == "SIXEL_REGISTRY_RUNTIME_INT" ||
+        macro == "SIXEL_REGISTRY_RUNTIME_CHOICE"
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
                  exact_key, shared_key, macro) {
@@ -431,7 +444,7 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
         fail(option_id ":" name " needs a non-empty environment variable")
     }
-    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER/) {
+    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER|RUNTIME/) {
         fail(option_id ":" name " needs a typed target binding")
     }
     if (!macro_is_approved(macro)) {
@@ -546,7 +559,7 @@ function fail(message) {
     print "# " message
     failed = 1
 }
-function inspect(row, fields, count, name, alias, key, macro) {
+function inspect(row, fields, count, name, alias, key, macro, scope) {
     gsub(/[[:space:]]+/, " ", row)
     match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
     macro = substr(row, RSTART, RLENGTH)
@@ -561,7 +574,13 @@ function inspect(row, fields, count, name, alias, key, macro) {
     expected[key] = 1
     expected_name[key] = name
     expected_alias[key] = alias
-    if (macro ~ /DEQUANTIZE|DECODER/) {
+    scope = ""
+    if (macro == "SIXEL_REGISTRY_RUNTIME_SIZE") scope = fields[8]
+    if (macro == "SIXEL_REGISTRY_RUNTIME_UINT" ||
+        macro == "SIXEL_REGISTRY_RUNTIME_INT") scope = fields[10]
+    if (macro == "SIXEL_REGISTRY_RUNTIME_CHOICE") scope = fields[8]
+    if (macro ~ /DEQUANTIZE|DECODER/ ||
+        scope ~ /SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE/) {
         expected_help[key] = decoder_help_file
         expected_man[key] = decoder_man_file
     } else {
@@ -667,7 +686,7 @@ function binding_from_registry(row, fields, count, macro, binding) {
     sub(/^[[:space:]]*/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
-    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR/) {
+    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR|RUNTIME_/) {
         binding = fields[count - 1] "," fields[count]
     } else if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
         binding = fields[count - 2] "," fields[count - 1] "," \
@@ -807,6 +826,14 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     range_policy = ""
     if (macro ~ /CHOICE_ENV_PARSE_SIGNED_LONG/) {
         range_policy = "parse-signed-choice"
+    } else if (macro == "SIXEL_REGISTRY_RUNTIME_CHOICE") {
+        range_policy = "parse-signed-choice-prefix"
+    } else if (macro == "SIXEL_REGISTRY_RUNTIME_SIZE") {
+        range_policy = "clamp-size-width"
+    } else if (macro == "SIXEL_REGISTRY_RUNTIME_UINT") {
+        range_policy = "parse-signed-long"
+    } else if (macro == "SIXEL_REGISTRY_RUNTIME_INT") {
+        range_policy = "clamp-both"
     } else if (macro ~ /SCALED_U8_ENV_CLAMP|DOUBLE_ENV_CLAMP/) {
         range_policy = "clamp-both"
     } else if (macro ~ /UINT_ENV_CLAMP_SIGNED/) {
@@ -862,6 +889,22 @@ function inspect_registry(row, fields, count, option_id, name, alias,
             name == "dequant_threshold") {
         expected_gpu_contract[key] = 1
     }
+    if (option_id == "SIXEL_OPTION_SCHEMA_RUNTIME_POLICY") {
+        if (name == "colorspace_min") {
+            expected_runtime_contract[key] = "trace=colorspace_min=257"
+        } else if (name == "parallel_factor") {
+            expected_runtime_contract[key] = \
+                "runner=scale/0001_parallel_factor_environment|mode=cli"
+        } else if (name == "parallel_skew") {
+            expected_runtime_contract[key] = \
+                "runner=decoder/0024_decoder_parallel_skew_environment|mode=cli"
+        } else if (name == "resize_precision") {
+            expected_runtime_contract[key] = "trace=resize_precision=3"
+        } else if (name == "scale_min_bytes") {
+            expected_runtime_contract[key] = \
+                "runner=scale/0002_parallel_min_bytes_environment|mode=cli,negative"
+        }
+    }
     binding_value = ""
     binding_override = ""
     if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR/) {
@@ -885,6 +928,10 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         binding_override = fields[count]
     } else if (macro ~ /DEQUANTIZE_|LOADER_/) {
         binding = fields[count]
+    } else if (macro ~ /RUNTIME_/) {
+        binding = fields[count - 1] "|" fields[count]
+        binding_value = fields[count - 1]
+        binding_override = fields[count]
     } else {
         fail(option_id ":" name " has no typed binding macro")
     }
@@ -995,6 +1042,16 @@ FILENAME == registry_file {
     test_palette_contract[FILENAME] = palette_contract
     next
 }
+/^# Runtime contract: / {
+    runtime_contract = $0
+    sub(/^# Runtime contract: /, "", runtime_contract)
+    gsub(/[[:space:]]+/, " ", runtime_contract)
+    if (test_runtime_contract[FILENAME] != "") {
+        fail(FILENAME " contains more than one runtime contract marker")
+    }
+    test_runtime_contract[FILENAME] = runtime_contract
+    next
+}
 /^# Environment range: / {
     range_policy = $0
     sub(/^# Environment range: /, "", range_policy)
@@ -1013,6 +1070,7 @@ FILENAME != registry_file {
     short_position = 0
     short_needle = ""
     regression_test[FILENAME] = 1
+    test_source[FILENAME] = test_source[FILENAME] " " $0
     key = test_key[FILENAME]
     if (key == "") {
         next
@@ -1234,6 +1292,37 @@ END {
         if (!expected_palette_contract[key] &&
                 test_palette_contract[file] != "") {
             fail(file " has an unexpected palette contract marker")
+        }
+        if (expected_runtime_contract[key] != "" &&
+                test_runtime_contract[file] != \
+                    expected_runtime_contract[key]) {
+            fail(file " does not identify its effective runtime setting")
+        }
+        if (expected_runtime_contract[key] ~ /^trace=/) {
+            runtime_trace = expected_runtime_contract[key]
+            sub(/^trace=/, "", runtime_trace)
+            if (index(test_source[file],
+                      "LSXRT1|" runtime_trace "*") == 0) {
+                fail(file " does not verify its runtime trace")
+            }
+        }
+        if (expected_runtime_contract[key] ~ /^runner=/) {
+            runtime_runner = expected_runtime_contract[key]
+            sub(/^runner=/, "", runtime_runner)
+            sub(/\|mode=.*$/, "", runtime_runner)
+            if (index(test_source[file], "TEST_RUNNER_PATH") == 0 ||
+                    index(test_source[file], runtime_runner) == 0 ||
+                    index(test_source[file], " cli") == 0) {
+                fail(file " does not verify its runtime consumer")
+            }
+            if (expected_runtime_contract[key] ~ /,negative$/ &&
+                    index(test_source[file], " negative") == 0) {
+                fail(file " does not verify signed unsigned parsing")
+            }
+        }
+        if (expected_runtime_contract[key] == "" &&
+                test_runtime_contract[file] != "") {
+            fail(file " has an unexpected runtime contract marker")
         }
         if (!has_environment[file]) {
             fail(file " does not exercise the registered environment name")

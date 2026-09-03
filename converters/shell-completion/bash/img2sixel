@@ -560,6 +560,43 @@ _img2sixel()
             -- "${base}" ) )
     }
 
+    _img2sixel_complete_runtime_policy()
+    {
+        local base item key value prefix candidate candidates
+
+        base="${cur%%:*}"
+        item="${cur##*:}"
+        if [[ ${cur} == *:* && ${item} == *=* ]]; then
+            key="${item%%=*}"
+            value="${item#*=}"
+            prefix="${cur%"${value}"}"
+            case "${key}" in
+            colorspace_min) candidates='0 256 65537' ;;
+            parallel_factor) candidates='1 2 4 8' ;;
+            resize_precision) candidates='preserve linear float' ;;
+            scale_min_bytes) candidates='0 1024 65536' ;;
+            *) candidates='' ;;
+            esac
+            for candidate in ${candidates}; do
+                [[ ${candidate} == ${value}* ]] || continue
+                COMPREPLY+=("${prefix}${candidate}")
+            done
+            return 0
+        fi
+        if [[ ${cur} == *:* ]]; then
+            prefix="${cur%"${item}"}"
+            for candidate in C0 C65537 F1 F2 Rpreserve Rlinear Rfloat \
+                B0 B65536 colorspace_min= parallel_factor= \
+                resize_precision= scale_min_bytes=; do
+                [[ ${candidate} == ${item}* ]] || continue
+                COMPREPLY+=("${prefix}${candidate}")
+            done
+            return 0
+        fi
+        COMPREPLY=( $( compgen -W 'auto scalar none sse2 avx neon' \
+            -- "${base}" ) )
+    }
+
     case "$prev" in
     -1|--show-completion|-2|--install-completion|-3|--uninstall-completion)
         COMPREPLY=( $( compgen -W 'all bash zsh' -- "$cur" ) )
@@ -721,6 +758,10 @@ _img2sixel()
                                    force' -- "$cur" ) )
         return 0
         ;;
+    -j|--runtime-policy)
+        _img2sixel_complete_runtime_policy
+        return 0
+        ;;
     -l|--loop-control)
         COMPREPLY=( $( compgen -W 'auto \
                                    force \
@@ -874,6 +915,7 @@ _img2sixel()
                                    -q --quality \
                                    -~ --lookup-policy \
                                    -G --gpu-policy \
+                                   -j --runtime-policy \
                                    -l --loop-control \
                                    -T --start-frame \
                                    -t --palette-type \

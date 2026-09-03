@@ -739,6 +739,18 @@ static cli_option_help_t const g_option_help_table[] = {
         "    --lookup-policy=eytzinger palette apply\n"
     },
     {
+        'j',
+        "runtime-policy",
+        "-j POLICY[:KEY=VALUE], --runtime-policy=POLICY[:KEY=VALUE]\n"
+        "    select the SIMD ceiling: auto, none/scalar, sse2, avx, or\n"
+        "    neon.\n"
+        "    encoder sub-options:\n"
+        "      :colorspace_min=PIXELS (:CPIXELS)\n"
+        "      :parallel_factor=ROWS (:FROWS)\n"
+        "      :resize_precision=preserve|linear|float (:RVALUE)\n"
+        "      :scale_min_bytes=BYTES (:BBYTES)\n"
+    },
+    {
         'l',
         "loop-control",
         "-l LOOPMODE, --loop-control=LOOPMODE\n"
@@ -1259,7 +1271,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "force the resize precision planner. Accepts 1 (preserve integer\n"
         "buffers), 2 (linear float workspace), or 3 (float32 working\n"
         "colorspace). Defaults follow precision and working-colorspace\n"
-        "choices."
+        "choices. Overridden by -j *:resize_precision=VALUE (:RVALUE)."
     },
     {
         "SIXEL_THREADS",
@@ -1336,28 +1348,32 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_SCALE_PARALLEL_MIN_BYTES",
         "delay parallel resize until the frame exceeds this byte threshold.\n"
-        "Default 0 keeps eager threading."
+        "Default 0 keeps eager threading. Overridden by\n"
+        "-j *:scale_min_bytes=BYTES (:BBYTES)."
     },
     {
         "SIXEL_PARALLEL_FACTOR",
         "override the row span assigned to each resize worker. Accepts\n"
-        "positive integers."
+        "positive integers. Overridden by\n"
+        "-j *:parallel_factor=ROWS (:FROWS)."
     },
     {
         "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS",
         "Defer RGBFLOAT32 colorspace fan-out until the frame reaches this\n"
         "pixel count. Defaults to 65537 so tiny frames stay\n"
-        "single-threaded unless overridden."
+        "single-threaded unless overridden. Overridden by\n"
+        "-j *:colorspace_min=PIXELS (:CPIXELS)."
     },
     {
         "SIXEL_PARALLEL_SKEW",
         "bias parallel decode spans by +/-20 percent so trailing workers\n"
-        "take a larger share. Defaults to 0 (balanced)."
+        "take a larger share. Defaults to 0 (balanced). Overridden by\n"
+        "sixel2png -j *:parallel_skew=VALUE (:KVALUE)."
     },
     {
         "SIXEL_SIMD_LEVEL",
         "force SIMD selection. Accepts auto, none/scalar, sse2, avx, or\n"
-        "neon."
+        "neon. Overridden by the -j runtime policy base."
     },
     {
         "SIXEL_THUMBNAILER_HINT_SIZE",
@@ -2074,7 +2090,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:kil:T:t:ugvSn:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:kil:T:t:ugvSn:"
     "PE:U:B:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
@@ -3115,6 +3131,7 @@ img2sixel_main(int argc, char *argv[])
         {"quality",               required_argument,  &long_opt, 'q'},
         {"lookup-policy",         required_argument,  &long_opt, '~'},
         {"gpu-policy",            required_argument,  &long_opt, 'G'},
+        {"runtime-policy",        required_argument,  &long_opt, 'j'},
         {"palette-type",          required_argument,  &long_opt, 't'},
         {"insecure",              no_argument,        &long_opt, 'k'},
         {"invert",                no_argument,        &long_opt, 'i'},

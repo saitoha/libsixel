@@ -130,6 +130,7 @@ module Libsixel
     SIXEL_OPTFLAG_6REVERSIBLE = '6' unless const_defined?(:SIXEL_OPTFLAG_6REVERSIBLE)
     SIXEL_OPTFLAG_LUT_POLICY = '~' unless const_defined?(:SIXEL_OPTFLAG_LUT_POLICY)
     SIXEL_OPTFLAG_GPU_POLICY = 'G' unless const_defined?(:SIXEL_OPTFLAG_GPU_POLICY)
+    SIXEL_OPTFLAG_RUNTIME_POLICY = 'j' unless const_defined?(:SIXEL_OPTFLAG_RUNTIME_POLICY)
     SIXEL_GPU_POLICY_OFF = 0 unless const_defined?(:SIXEL_GPU_POLICY_OFF)
     SIXEL_GPU_POLICY_AUTO = 1 unless const_defined?(:SIXEL_GPU_POLICY_AUTO)
     SIXEL_GPU_POLICY_FORCE = 2 unless const_defined?(:SIXEL_GPU_POLICY_FORCE)
