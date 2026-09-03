@@ -27,70 +27,324 @@ palette index to every pixel; dithering and lookup perform that later step.
 suboptions. `-p COLORS` sets the requested palette size and normally defaults
 to 256 colors.
 
-The base models are:
+All models accept `sample_target=COUNT`. Sampling happens before the selected
+solver is called, so `COUNT` changes the population being optimized rather
+than merely limiting work inside the solver. In the notation below, `N` is the
+number of pixels after that sampling step and `S` is the number of weighted
+samples or occupied histogram bins retained by model-specific preprocessing.
 
-| Model | Primary objective and behavior |
-| --- | --- |
-| `auto` | Preserves the historical Heckbert median-cut selection |
-| `heckbert` | Recursively splits color boxes and chooses representatives |
-| `kmeans` | Places centroids to reduce weighted squared assignment error |
-| `medoids` | Restricts centers to observed samples and reduces assignment cost |
-| `center` | Restricts centers to samples and minimizes the maximum assignment radius |
+Let `x[i]` be a retained color sample with non-negative weight `w[i]`, and let
+`C` contain at most `K` palette colors. Colors are three-dimensional in the
+space selected with `-X`. The norm below is Euclidean in that space. Changing
+the colorspace, channel normalization, histogram precision, or candidate
+collector changes the geometry or data set before optimization begins.
 
-Model-specific initialization, sampling, iteration, merge, cover, and polishing
-settings change how a solver reaches or repairs its result. They remain part of
-palette construction even when their names refer to assignment or lookup
-inside the solver.
+The five base models are described separately below. Their objectives are not
+interchangeable: a model that minimizes average squared error need not best
+preserve an isolated color, while a model that protects the worst represented
+color may spend palette capacity where it changes the image-wide average very
+little.
 
-## Mathematical objectives
-
-Let the solver receive color samples `x[i]` with non-negative weights `w[i]`
-and produce at most `K` palette colors `c[j]`. Color is three-dimensional in
-the selected clustering space. The distance written below is Euclidean in
-that space; channel normalization and a nonlinear colorspace change the
-geometry before the solver sees it.
-
-K-means minimizes a weighted sum of squared errors:
+## `auto`: compatibility selection
 
 ```text
-SSE(C) = sum_i w[i] * min_j ||x[i] - c[j]||^2
+-Q auto
 ```
 
-Lloyd iteration alternates between assigning every sample to its nearest
-center and replacing each center by the weighted mean of its assigned
-samples. The objective cannot increase in exact arithmetic, but the method
-finds a local optimum rather than a guaranteed global optimum. Restarts and
-initialization policy exist because the result depends on the initial centers.
-Hamerly, Elkan, and Yinyang pruning use triangle-inequality bounds to avoid
-some distance evaluations; they do not change the objective.
+Despite its name, `auto` is not currently an image-dependent solver selector.
+It dispatches to the historical Heckbert median-cut path. It therefore exists
+as a stable default and compatibility spelling, not as a promise that
+libsixel will compare all quantizers and choose the fastest or highest-quality
+one for each image.
 
-K-medoids uses the same nearest-center assignment form but requires every
-`c[j]` to be one of the observed samples. This makes centers robust and
-directly representable, but turns an inexpensive mean update into a discrete
-swap search. The `pam`, `sample`, `random`, and `bandit` algorithms are,
-respectively, FastPAM-style exhaustive swaps, CLARA sampling, CLARANS random
-neighbor search, and a budgeted BanditPAM-style candidate search.
-
-K-center instead minimizes the worst represented distance:
+Only the common `sample_target` suboption belongs to `auto`. A Heckbert preset
+must be requested explicitly, for example:
 
 ```text
-radius(C) = max_i min_j ||x[i] - c[j]||
+-Q heckbert:profile=quality
 ```
 
-The `fft` spelling means farthest-first traversal, not a Fourier transform.
-Starting from one sample, it repeatedly selects the sample farthest from its
-nearest existing center. In a metric space this greedy construction is a
-two-approximation for the discrete k-center radius. `swap` searches local
-center replacements, while `hybrid` starts with farthest-first centers and
-then applies guarded swaps. libsixel uses weighted SSE as a tie-breaker only
-after preserving the radius objective.
+If a newer explicitly selected solver cannot complete, the palette dispatcher
+also falls back to Heckbert. Callers that need to distinguish a requested
+model from a fallback should record palette-build telemetry rather than infer
+the solver only from the command line.
 
-Heckbert median cut is a partition heuristic rather than an optimizer for one
-of those objectives. It builds a color histogram, repeatedly divides a box at
-a weighted median along a selected axis or PCA direction, and represents each
-leaf by a population-weighted color. Balanced division allocates palette
-capacity across occupied color-space regions without performing repeated
-global nearest-center assignment.
+The time and space order of `auto` are consequently those of the
+[`heckbert`](#heckbert-recursive-median-cut) chapter below. The important
+semantic distinction is that `auto` reserves future selection policy while
+`heckbert` names the algorithm directly.
+
+## `heckbert`: recursive median cut
+
+```text
+-Q heckbert[:profile=compat|speed|quality]
+```
+
+Heckbert quantization is a top-down partitioning heuristic. The implementation
+first accumulates a finite color histogram. One box initially covers all
+occupied cells. Until enough leaves exist, it chooses a box, chooses a split
+direction, and divides the box near its weighted median:
+
+```text
+occupied histogram cells
+          |
+          v
+       one box
+          |
+   split at weighted median
+       /          \
+  left box     right box
+       \          /
+        repeat to K leaves
+               |
+               v
+    one representative per leaf
+```
+
+The traditional split direction is a channel with a large range. libsixel can
+also choose a luminance-oriented direction or estimate a principal component
+from the weighted covariance matrix. The representative of a leaf may be its
+geometric center, weighted average, or histogram-derived value. These choices
+control the partition and representative; they do not turn median cut into an
+optimizer for the K-means or K-center objectives.
+
+The `compat`, `speed`, and `quality` profiles are bundles of solver defaults.
+`compat` preserves the established median-cut behavior. `speed` favors less
+expensive splitting and final processing. `quality` uses PCA-oriented
+splitting and may create more than `K` intermediate leaves before Ward merging
+them. Explicit split, representative, and final-merge options override the
+corresponding profile defaults.
+
+If splits remain reasonably balanced, each occupied histogram cell
+participates in approximately `log K` partition levels, giving usual
+`O(S log K)` splitting work. Repeatedly peeling off a very small box can reach
+`O(S K)`. Histogram clearing and ingestion add `Theta(N + B)`, where `B` is the
+number of addressable histogram cells. PCA selection is normally linear per
+box, but a fallback may sort, so the balanced bound is not a hard bound for
+every path.
+
+Median cut is deterministic for fixed inputs and settings, but it has no
+general guarantee of minimizing squared error or maximum radius. Its appeal is
+bounded work, balanced coverage of occupied regions, and compatibility with
+the quantizer descended from Netpbm. The original algorithm and design tradeoff
+are described by Heckbert in
+[Color Image Quantization for Frame Buffer Display](https://publications.ri.cmu.edu/color-image-quantization-for-frame-buffer-display).
+
+## `kmeans`: centroid optimization
+
+```text
+-Q kmeans[:key=value...]
+```
+
+K-means minimizes weighted within-cluster squared error:
+
+```text
+SSE(C) = sum_i w[i] * min_c-in-C ||x[i] - c||^2
+```
+
+Lloyd iteration alternates between two steps:
+
+1. assign each sample to its nearest centroid;
+2. replace each centroid by the weighted mean of its assigned samples.
+
+For a fixed data set and exact assignments, each step cannot increase `SSE`.
+Iteration nevertheless reaches only a local optimum; finding the globally
+best K-means partition is not what the implementation promises. Initialization
+and independent restarts therefore matter even when all other options are
+fixed. Lloyd's original formulation is documented in
+[Least Squares Quantization in PCM](https://doi.org/10.1109/TIT.1982.1056489).
+
+The current `inittype=auto` resolves to `none`, meaning that it does not use the
+PCA-specific seed path. The resulting legacy initializer is still structured:
+it selects the first sample by weight and later samples in proportion to their
+weighted squared distance from the nearest chosen center. This is the idea
+usually called D-squared or k-means++ seeding, introduced in
+[k-means++: The Advantages of Careful Seeding](https://theory.stanford.edu/~sergei/papers/kMeansPP-soda.pdf).
+`inittype=pca` projects samples onto the dominant weighted covariance axis,
+sorts them, and initializes centers from equal-weight intervals on that axis;
+it falls back to the legacy initializer if PCA seeding cannot complete.
+
+`binning=hard` replaces colors by individual histogram cells.
+`binning=soft` distributes a color over as many as eight neighboring cells with
+trilinear weights. `binning=auto` selects between those paths from the retained
+sample-to-palette-size ratio. `binbits` controls histogram resolution and
+`mapping=uniform|srgb` controls how coordinates address that histogram; neither
+option replaces `-X`, which defines the clustering colorspace. Binning changes
+the weighted data set and can therefore change the optimum. It is an
+approximation/preconditioning choice, not merely an acceleration of the same
+Lloyd iterations.
+
+The pruning policies skip distance calculations by maintaining bounds:
+
+- `none` performs the direct assignment search;
+- `hamerly` keeps one upper and one lower bound per sample;
+- `elkan` keeps bounds against individual centers;
+- `yinyang` groups centers and keeps group lower bounds;
+- `auto` currently resolves to `hamerly`.
+
+These policies are intended to preserve the exact nearest-center assignments
+for the same samples and center state, apart from normal floating-point and tie
+effects. They change how much work is needed, not the K-means loss being
+optimized. The implementation ideas are described in
+[Elkan's triangle-inequality method](https://cdn.aaai.org/ICML/2003/ICML03-022.pdf),
+[Hamerly's single-bound method](https://doi.org/10.1137/1.9781611972801.12),
+and [Yinyang K-Means](https://proceedings.mlr.press/v37/ding15.html).
+
+`threshold`, `iter`, `iter_max`, `miniter`, and `polish_iter` bound or stop
+refinement. `feedback` may relocate weak clusters using residual histogram
+error, so enabling it can lead to a different local solution rather than just
+reaching the same solution faster. Pin `seed`, `restarts`, sampling, binning,
+feedback, stopping, and pruning settings for reproducible comparisons.
+
+One restart has worst-case assignment and bound-maintenance work
+`O(I * (S K + K^2))`; `A` restarts multiply it by `A`. D-squared seeding costs
+`O(S K)`. PCA seeding adds covariance work and an `O(S log S)` projection sort.
+Plain and Hamerly assignment need `O(S + K)` auxiliary storage, while
+per-center bounds can require up to `O(S K + K^2)`. Bound pruning can save most
+distance calculations on well-separated data, but its worst case remains a
+full sample-center scan.
+
+## `medoids`: sample-anchored clustering
+
+```text
+-Q medoids[:algo=auto|pam|sample|random|bandit][:key=value...]
+```
+
+K-medoids minimizes a nearest-center cost while requiring each center to be a
+retained sample:
+
+```text
+cost(M) = sum_i w[i] * min_m-in-M ||x[i] - m||^2
+M is a subset of the retained samples, and |M| <= K
+```
+
+The sample constraint makes a raw medoid palette directly representative of
+observed colors and less sensitive to a distant sample than a mean can be. It
+also replaces the inexpensive K-means mean update with a discrete search over
+possible sample swaps. The constraint describes the solver output before
+optional final merging: Ward merging may replace medoids by weighted means.
+
+The `algo` values select distinct search strategies within one policy:
+
+### `pam`: exhaustive swap evaluation
+
+`pam` uses a FastPAM-style organization of Partitioning Around Medoids. It
+maintains nearest and second-nearest assignments so that many proposed swaps
+can reuse work. It still examines the discrete swap neighborhood broadly and
+therefore has quadratic dependence on `S`: approximately
+`O(I * (S^2 + S K))` for `I` search iterations. A dense `S`-by-`S` distance
+cache may be used for small and medium problems.
+
+### `sample`: CLARA subsampling
+
+`sample` runs PAM on several samples of size `M`, then scores the resulting
+medoids against all `S` points. With `A` trials its controlling order is
+`O(A * (I M^2 + S K))`. It reduces the quadratic term by accepting the risk
+that a useful medoid never appears in a sampled subset.
+
+### `random`: CLARANS neighborhood search
+
+`random` first obtains a sampled candidate solution, then probes randomized
+medoid/non-medoid replacements. With `A` local searches and `C` neighbor
+probes, cached assignment evaluation is approximately `O(A C S + S K)`.
+Unlike exhaustive PAM, a finite random-neighbor budget does not establish that
+no improving unexamined swap remains. The strategy originates in
+[CLARANS](https://doi.org/10.1109/TKDE.2002.1033770).
+
+### `bandit`: progressive candidate pruning
+
+`bandit` first obtains a sampled candidate solution, then evaluates promising
+swaps on progressively larger point batches. Confidence bounds discard
+candidates that appear unable to beat the current best. Its work is therefore
+data- and budget-dependent. Helpful pruning can avoid most candidate-point
+pairs; unhelpful confidence separation can approach PAM-class work.
+
+libsixel uses a bounded engineering adaptation, so theoretical guarantees of
+the research algorithm must not be transferred to it without checking the
+implementation's candidate and batch limits. The source of the idea is
+[BanditPAM](https://proceedings.neurips.cc/paper/2020/hash/73b817090081cef1bca77232f4532c5d-Abstract.html).
+
+`algo=auto` estimates the work of PAM, CLARA, and the bandit path from `S`,
+`K`, iteration limits, trials, and candidate budgets, then selects the lowest
+estimated cost. It is therefore a real size-and-budget-dependent selector,
+unlike the top-level `-Q auto` compatibility alias.
+
+`histbits`, `point_budget`, `sample`, `prune_mass`, and `rare_keep` construct
+or reduce the candidate set before medoid search. They can remove possible
+medoids and thus approximate the problem on the original pixels. `seed` fixes
+randomized choices. The optional `auction` phase performs capacity-aware
+reassignment after solver selection; it can change cluster weights and later
+merge behavior, but it does not turn the medoid search into a different
+continuous-center objective. FastPAM and the practical relationship among PAM
+and CLARA are discussed in
+[Faster k-Medoids Clustering](https://arxiv.org/abs/1810.05691).
+
+## `center`: worst-case radius control
+
+```text
+-Q center[:algo=auto|fft|swap|hybrid][:key=value...]
+```
+
+Discrete K-center minimizes the largest nearest-center distance:
+
+```text
+radius(C) = max_i min_c-in-C ||x[i] - c||
+C is a subset of the retained samples, and |C| <= K
+```
+
+Unlike K-means and K-medoids, this objective does not sum over pixels. A rare
+color can therefore control the result even when improving it has little
+effect on mean error. Sample weights are still useful for candidate collection
+and tie-breaking, but multiplying a point's frequency does not directly
+change a maximum-distance objective.
+
+The `algo` values are:
+
+### `fft`: farthest-first traversal
+
+Here `fft` means *farthest-first traversal*, not a Fourier transform. Starting
+with one retained sample, it repeatedly chooses the sample whose distance to
+its nearest chosen center is largest. Updating the nearest-distance cache for
+each new center costs `Theta(S K)` time and `Theta(S + K)` extra space.
+
+For metric distances and the discrete K-center problem, farthest-first gives a
+radius no worse than twice the optimum on the same retained candidate set. The
+classic result is due to Gonzalez,
+[Clustering to Minimize the Maximum Intercluster Distance](https://doi.org/10.1016/0304-3975(85)90224-5).
+Histogram reduction and candidate pruning mean this guarantee does not
+automatically extend to every original input pixel.
+
+### `swap`: local replacement search
+
+`swap` starts from seeded sample centers and tests replacements, concentrating
+on candidates associated with the current farthest errors. Nearest and
+second-nearest caches make a tested replacement linear in `S`, so examining
+`C` candidates for `I` iterations costs `O(I C S)` after initialization. It is
+a local search and carries no guarantee of the global optimum.
+
+### `hybrid`: guaranteed seed, local repair
+
+`hybrid` begins with farthest-first centers and then applies guarded swaps. It
+retains the strong starting radius while allowing local improvement. libsixel
+compares solutions lexicographically: radius is primary and weighted squared
+error is a tie-breaker. Optional SSE polishing is accepted only when it does
+not worsen the protected radius.
+
+`algo=auto` chooses between the farthest-first and hybrid paths using the
+selected profile, retained point count, quality setting, budget threshold, and
+colorspace policy. `legacy`, `speed`, `balance`, and `quality` profiles bundle
+candidate collection, point budgets, initialization trials, swap limits, and
+stopping patience. Explicit suboptions override their corresponding preset
+values.
+
+`candidate_policy`, `histbits`, `point_budget`, `prune_mass`, and `rare_keep`
+define which points the solver can select. They are approximation controls:
+protecting radius on a reduced candidate set is not the same promise as
+protecting it on every decoded pixel. Multiple `restarts` and `init_seeds`
+multiply work but can improve seeded or local-search results. As with medoids,
+Ward final merging can move centers away from observed samples and alter the
+solver's objective; use `-F none` when measuring the unmodified K-center
+result.
 
 ## GD and Netpbm lineage
 
@@ -193,17 +447,68 @@ generally logarithmic algorithm. Likewise, the word "squared" in the K-means
 objective describes the loss function; it does not by itself imply quadratic
 running time.
 
-## Relationship to colorspaces and precision
+## Common controls and post-processing
 
-Distance has meaning only in a particular representation. Clustering
-colorspace and arithmetic precision can therefore alter the palette produced
-from the same decoded pixels. Output palette conversion is a later concern and
-must not be confused with the space in which the solver compares samples.
+The selected model is only one part of palette construction:
+
+- `-X` selects the clustering colorspace and therefore changes the distance
+  geometry used by K-means, K-medoids, and K-center;
+- arithmetic precision, histogram bits, sampling, and candidate policies can
+  change the population presented to a solver;
+- `-F` independently selects final palette merging and may merge an oversplit
+  intermediate palette;
+- `-a` independently adds a palette-cover repair after the solver; and
+- `-W`, `-d`, and `--lookup-policy` belong to later palette application and do
+  not change the solver's mathematical objective.
+
+Ward merging and cover repair are valuable production stages, but they can
+move or add palette entries after the named `-Q` algorithm finishes. A palette
+cannot therefore be attributed solely to K-means, medoids, or K-center unless
+those stages are either disabled or reported. Output conversion is also a
+later concern and must not be confused with the space in which samples were
+clustered.
 
 Tests for a quantizer change should state the colorspace, precision, palette
-size, seed, and other non-default inputs that make the result reproducible.
-When exact palette bytes are not the contract, assess the decoded result with
-the [Quality Measurement Policy](../quality/measurement-policy.md).
+size, seed, sampling, histogram/candidate settings, merge policy, cover policy,
+and other non-default inputs needed to reproduce the result. When exact
+palette bytes are not the contract, assess the decoded result with the
+[Quality Measurement Policy](../quality/measurement-policy.md).
+
+## Comparing quantize models
+
+A useful comparison contains two distinct experiments:
+
+1. compare the complete documented defaults, because that is the behavior a
+   user receives from a short `-Q MODEL` command;
+2. compare the solver cores with common preprocessing and post-processing,
+   because preset, merge, or cover differences can otherwise be mistaken for
+   differences in the mathematical model.
+
+For the second experiment, pin the input and its hash, `K`, `sample_target`,
+precision, `-X`, seed, restart/iteration budgets, histogram or candidate
+budgets, `-F none`, and `-a off`. Apply every resulting palette with the same
+`-W`, `-d none`, exact `--lookup-policy=none`, thread count, and GPU policy.
+Record the executable revision and build configuration. Randomized models need
+multiple seeds; timing needs warm-up runs and repeated samples.
+
+No single quality metric is aligned with all four algorithms:
+
+- MSE in the clustering space directly reflects the K-means squared-error
+  objective, but may be hard to interpret perceptually;
+- mean Delta E00 reports average perceptual color error, while high percentiles
+  and the maximum expose rare colors hidden by an average;
+- the maximum nearest-color distance is the direct K-center diagnostic;
+- MS-SSIM measures spatially pooled decoded-image structure rather than the
+  solver's pointwise objective; and
+- encoded SIXEL size is a downstream result of palette assignment and run
+  structure, not a palette-quality metric.
+
+Report palette-build time separately from end-to-end time. K-means pruning,
+medoid sampling, and K-center candidate reduction can trade preparation work
+against solver work, while palette application can dominate at large image
+sizes. A result from one natural image or one `K` is evidence for that fixture,
+not a general ranking; include gradients, broad-gamut colors, flat artwork,
+rare saturated colors, and several palette sizes before proposing a default.
 
 ## Bypassing construction
 
