@@ -1859,9 +1859,42 @@ sixel_option_parse_typed_suboption_value(
     case SIXEL_SUBOPTION_VALUE_INT:
         errno = 0;
         parsed_int = strtol(text, &endptr, 10);
-        valid = endptr != text && endptr != NULL && endptr[0] == '\0' &&
-            errno != ERANGE && parsed_int >= (long)INT_MIN &&
-            parsed_int <= (long)INT_MAX;
+        valid = endptr != text && endptr != NULL &&
+            (endptr[0] == '\0' ||
+             (environment_syntax &&
+              (range_policy &
+               SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX) != 0));
+        if (valid && errno == ERANGE) {
+            if (parsed_int == LONG_MIN && key_def->has_minimum &&
+                (range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) != 0) {
+                parsed_int = (long)key_def->minimum;
+            } else if (parsed_int == LONG_MAX && key_def->has_maximum &&
+                       (range_policy &
+                        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) != 0) {
+                parsed_int = (long)key_def->maximum;
+            } else {
+                valid = 0;
+            }
+        }
+        if (valid && parsed_int < (long)INT_MIN) {
+            if (key_def->has_minimum &&
+                (range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) != 0) {
+                parsed_int = (long)key_def->minimum;
+            } else {
+                valid = 0;
+            }
+        }
+        if (valid && parsed_int > (long)INT_MAX) {
+            if (key_def->has_maximum &&
+                (range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) != 0) {
+                parsed_int = (long)key_def->maximum;
+            } else {
+                valid = 0;
+            }
+        }
         if (valid && key_def->has_minimum &&
             (double)parsed_int < key_def->minimum &&
             (range_policy &

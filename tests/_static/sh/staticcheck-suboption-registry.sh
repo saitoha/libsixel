@@ -421,6 +421,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_RUNTIME_INT" ||
         macro == "SIXEL_REGISTRY_RUNTIME_CHOICE" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||
+        macro == "SIXEL_REGISTRY_DIAGNOSTICS_INT" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING"
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
@@ -586,6 +587,7 @@ function inspect(row, fields, count, name, alias, key, macro, scope) {
         macro == "SIXEL_REGISTRY_RUNTIME_INT") scope = fields[10]
     if (macro == "SIXEL_REGISTRY_RUNTIME_CHOICE") scope = fields[8]
     if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||
+        macro == "SIXEL_REGISTRY_DIAGNOSTICS_INT" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING") scope = fields[6]
     if (macro ~ /DEQUANTIZE|DECODER/ ||
         scope ~ /SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE/) {
@@ -842,6 +844,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         range_policy = "parse-signed-long"
     } else if (macro == "SIXEL_REGISTRY_RUNTIME_INT") {
         range_policy = "clamp-both"
+    } else if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_INT") {
+        range_policy = "clamp-both"
     } else if (macro ~ /SCALED_U8_ENV_CLAMP|DOUBLE_ENV_CLAMP/) {
         range_policy = "clamp-both"
     } else if (macro ~ /UINT_ENV_CLAMP_SIGNED/) {
@@ -912,6 +916,11 @@ function inspect_registry(row, fields, count, option_id, name, alias,
             expected_runtime_contract[key] = \
                 "runner=scale/0002_parallel_min_bytes_environment|mode=cli,negative"
         }
+    }
+    if (option_id == "SIXEL_OPTION_SCHEMA_DIAGNOSTICS" &&
+            name == "log_lines") {
+        expected_timeline_contract[key] = \
+            "line_events=1|line_stride=3"
     }
     binding_value = ""
     binding_override = ""
@@ -1058,6 +1067,16 @@ FILENAME == registry_file {
         fail(FILENAME " contains more than one runtime contract marker")
     }
     test_runtime_contract[FILENAME] = runtime_contract
+    next
+}
+/^# Timeline contract: / {
+    timeline_contract = $0
+    sub(/^# Timeline contract: /, "", timeline_contract)
+    gsub(/[[:space:]]+/, " ", timeline_contract)
+    if (test_timeline_contract[FILENAME] != "") {
+        fail(FILENAME " contains more than one timeline contract marker")
+    }
+    test_timeline_contract[FILENAME] = timeline_contract
     next
 }
 /^# Environment range: / {
@@ -1331,6 +1350,19 @@ END {
         if (expected_runtime_contract[key] == "" &&
                 test_runtime_contract[file] != "") {
             fail(file " has an unexpected runtime contract marker")
+        }
+        if (expected_timeline_contract[key] != "" &&
+                test_timeline_contract[file] != expected_timeline_contract[key]) {
+            fail(file " does not identify its effective timeline setting")
+        }
+        if (expected_timeline_contract[key] != "" &&
+                index(test_source[file],
+                      "LSXTLN1|*" expected_timeline_contract[key] "*") == 0) {
+            fail(file " does not verify its timeline trace")
+        }
+        if (expected_timeline_contract[key] == "" &&
+                test_timeline_contract[file] != "") {
+            fail(file " has an unexpected timeline contract marker")
         }
         if (!has_environment[file]) {
             fail(file " does not exercise the registered environment name")

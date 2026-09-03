@@ -27,10 +27,8 @@
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-#include "compat_stub.h"
 #include "loader-common.h"
 #include "lookup-fhedt-8bit.h"
 #include "lookup-fhedt-float32.h"
@@ -56,26 +54,16 @@ enum { SIXEL_LOOKUP_POLICY_FHEDT_FLOAT_COMPONENTS = 3 };
 void
 sixel_lookup_policy_fhedt_resolve_timeline_lines(int *enabled, int *stride)
 {
-    char const *text;
-    long parsed;
-
-    text = NULL;
-    parsed = 1L;
     if (enabled == NULL || stride == NULL) {
         return;
     }
-    *enabled = 0;
-    *stride = 1;
-    text = sixel_compat_getenv("SIXEL_LOG_LINES");
-    if (text == NULL || text[0] == '\0') {
-        return;
+    sixel_diagnostics_timeline_line_policy(enabled, stride);
+    if (sixel_trace_topic_is_enabled("timeline_contract")) {
+        fprintf(stderr,
+                "LSXTLN1|line_events=%d|line_stride=%d\n",
+                *enabled,
+                *stride);
     }
-    parsed = strtol(text, NULL, 10);
-    if (parsed < 1L) {
-        parsed = 1L;
-    }
-    *enabled = 1;
-    *stride = (int)parsed;
 }
 
 typedef struct sixel_lookup_policy_fhedt_8bit {

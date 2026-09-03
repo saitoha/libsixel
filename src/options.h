@@ -424,6 +424,8 @@ typedef struct sixel_diagnostics_policy_options {
     int psd_trace_override;
     int psd_header_only;
     int psd_header_only_override;
+    int log_lines;
+    int log_lines_override;
     char const *trace_topic;
     int trace_topic_override;
     int cli_suggestion_defaults;
@@ -650,6 +652,8 @@ SIXEL_INTERNAL_API int sixel_diagnostics_psd_trace_is_enabled(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_psd_header_only_is_enabled(void);
 SIXEL_INTERNAL_API int
 sixel_diagnostics_trace_topic_is_enabled(char const *topic);
+SIXEL_INTERNAL_API void
+sixel_diagnostics_timeline_line_policy(int *enabled, int *stride);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument(

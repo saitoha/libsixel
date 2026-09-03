@@ -577,6 +577,26 @@
         }, NULL, 0ULL \
     }
 
+#define SIXEL_REGISTRY_DIAGNOSTICS_INT( \
+    optflag_, base_, name_, short_, env_, scope_, minimum_, maximum_, \
+    range_, message_, field_, override_) \
+    { \
+        (optflag_), (base_), (scope_), (name_), (short_), (env_), NULL, \
+        NULL, SIXEL_SUBOPTION_VALUE_INT, NULL, 0u, NULL, 0u, \
+        (minimum_), (maximum_), 1, 1, 0, (range_), (message_), NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_DIAGNOSTICS, \
+            SIXEL_SUBOPTION_STORAGE_INT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_diagnostics_policy_options_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_diagnostics_policy_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
 #define SIXEL_REGISTRY_FLOAT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_) \
     SIXEL_REGISTRY_NUMBER( \
@@ -1614,6 +1634,16 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "psd_header_only", 'E', "SIXEL_PSD_TRACE_HEADER_ONLY",
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
         psd_header_only, psd_header_only_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_INT(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "log_lines", 'N', "SIXEL_LOG_LINES",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        1.0, (double)INT_MAX,
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
+            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM |
+            SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX,
+        "diagnostics log_lines must be in range 1..2147483647.",
+        log_lines, log_lines_override),
 
     SIXEL_REGISTRY_RUNTIME_SIZE(
         SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
@@ -3382,12 +3412,48 @@ sixel_option_registry_resolve_process_binding(
 
     errno = 0;
     parsed_int = strtol(text, &endptr, 10);
-    if (endptr == text || endptr == NULL || errno == ERANGE ||
-        parsed_int < (long)INT_MIN || parsed_int > (long)INT_MAX) {
+    if (endptr == text || endptr == NULL) {
         return SIXEL_OPTION_ENVIRONMENT_INVALID;
     }
-    if (expected_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
-        endptr[0] != '\0') {
+    if (expected_kind == SIXEL_SUBOPTION_VALUE_INT) {
+        if (endptr[0] != '\0' &&
+            (key->environment_range_policy &
+             SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX) == 0) {
+            return SIXEL_OPTION_ENVIRONMENT_INVALID;
+        }
+        if (errno == ERANGE) {
+            if (parsed_int == LONG_MIN && key->has_minimum &&
+                (key->environment_range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) != 0) {
+                parsed_int = (long)key->minimum;
+            } else if (parsed_int == LONG_MAX && key->has_maximum &&
+                       (key->environment_range_policy &
+                        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) != 0) {
+                parsed_int = (long)key->maximum;
+            } else {
+                return SIXEL_OPTION_ENVIRONMENT_INVALID;
+            }
+        }
+        if (parsed_int < (long)INT_MIN) {
+            if (!key->has_minimum ||
+                (key->environment_range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) == 0) {
+                return SIXEL_OPTION_ENVIRONMENT_INVALID;
+            }
+            parsed_int = (long)key->minimum;
+        }
+        if (parsed_int > (long)INT_MAX) {
+            if (!key->has_maximum ||
+                (key->environment_range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) == 0) {
+                return SIXEL_OPTION_ENVIRONMENT_INVALID;
+            }
+            parsed_int = (long)key->maximum;
+        }
+    } else if (errno == ERANGE || parsed_int < (long)INT_MIN ||
+               parsed_int > (long)INT_MAX ||
+               (expected_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
+                endptr[0] != '\0')) {
         return SIXEL_OPTION_ENVIRONMENT_INVALID;
     }
 
@@ -3641,6 +3707,41 @@ sixel_diagnostics_trace_topic_is_enabled(char const *topic)
         return 0;
     }
     return sixel_diagnostics_topic_list_contains(value.string_value, topic);
+}
+
+SIXEL_INTERNAL_API void
+sixel_diagnostics_timeline_line_policy(int *enabled, int *stride)
+{
+    sixel_diagnostics_policy_options_t options;
+    sixel_suboption_value_t value;
+    sixel_option_environment_result_t result;
+
+    memset(&options, 0, sizeof(options));
+    memset(&value, 0, sizeof(value));
+    result = SIXEL_OPTION_ENVIRONMENT_INVALID;
+    if (enabled == NULL || stride == NULL) {
+        return;
+    }
+    *enabled = 0;
+    *stride = 1;
+    sixel_diagnostics_policy_load(&options);
+    if (options.log_lines_override) {
+        *enabled = 1;
+        *stride = options.log_lines;
+        return;
+    }
+    result = sixel_option_registry_resolve_process_binding(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS,
+        SIXEL_SUBOPTION_BINDING_ID_2(log_lines, log_lines_override),
+        SIXEL_SUBOPTION_VALUE_INT,
+        &value);
+    if (result == SIXEL_OPTION_ENVIRONMENT_UNSET) {
+        return;
+    }
+    *enabled = 1;
+    if (result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        *stride = value.int_value;
+    }
 }
 
 /*
@@ -4379,7 +4480,8 @@ sixel_option_registry_validate_uncached(void)
                        (SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
                         SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX)) !=
                           0 &&
-                      key->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE)) {
+                      (key->value_kind == SIXEL_SUBOPTION_VALUE_INT ||
+                       key->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE))) {
                     return 0;
                 }
                 if ((key->environment_range_policy &
@@ -4408,8 +4510,9 @@ sixel_option_registry_validate_uncached(void)
                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX) !=
                         0 &&
                     (key->environment_range_policy &
-                     ~SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX) !=
-                        0) {
+                     ~(SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX |
+                       SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
+                       SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM)) != 0) {
                     return 0;
                 }
                 if ((key->environment_range_policy &

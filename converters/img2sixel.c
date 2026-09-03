@@ -768,6 +768,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      :handoff_trace=0|1 (:H0|:H1)\n"
         "      :psd_trace=0|1 (:D0|:D1)\n"
         "      :psd_header_only=0|1 (:E0|:E1)\n"
+        "      :log_lines=1..2147483647 (:NVALUE)\n"
     },
     {
         'J',
@@ -2109,7 +2110,9 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_LOG_LINES",
-        "log every Nth line in the timeline; 0 disables line events."
+        "enable timeline line events and log every Nth line. Values below\n"
+        "1 and legacy invalid tokens select every line. The\n"
+        "-x *:log_lines=VALUE suboption takes precedence."
     }
 };
 
