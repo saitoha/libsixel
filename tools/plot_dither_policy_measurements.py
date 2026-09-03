@@ -354,8 +354,15 @@ def plot_quality(path: Path,
         configure_axis(axis, row_index, column_index, ylabel)
     direction = "higher is better" if higher_is_better else "lower is better"
     handles, labels = axes[0][0].get_legend_handles_labels()
-    figure.legend(handles, labels, loc="upper center", ncol=2, frameon=False)
-    figure.suptitle(title, y=0.985)
+    figure.suptitle(title, y=0.995)
+    figure.legend(
+        handles,
+        labels,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.972),
+        ncol=2,
+        frameon=False,
+    )
     figure.text(
         0.99,
         0.008,
@@ -365,7 +372,7 @@ def plot_quality(path: Path,
         fontsize=8,
         color="#555555",
     )
-    figure.tight_layout(rect=(0.0, 0.025, 1.0, 0.955))
+    figure.tight_layout(rect=(0.0, 0.025, 1.0, 0.925))
     path.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(path, dpi=160)
     plt.close(figure)
@@ -424,10 +431,17 @@ def plot_speed(path: Path,
             "Median elapsed time (ms)",
         )
     handles, labels = axes[0][0].get_legend_handles_labels()
-    figure.legend(handles, labels, loc="upper center", ncol=2, frameon=False)
     figure.suptitle(
         f"End-to-end dither-policy runtime on {input_name}",
-        y=0.985,
+        y=0.995,
+    )
+    figure.legend(
+        handles,
+        labels,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.972),
+        ncol=2,
+        frameon=False,
     )
     figure.text(
         0.99,
@@ -438,7 +452,7 @@ def plot_speed(path: Path,
         fontsize=8,
         color="#555555",
     )
-    figure.tight_layout(rect=(0.0, 0.025, 1.0, 0.955))
+    figure.tight_layout(rect=(0.0, 0.025, 1.0, 0.925))
     path.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(path, dpi=160)
     plt.close(figure)
