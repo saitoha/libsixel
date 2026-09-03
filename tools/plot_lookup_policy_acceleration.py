@@ -348,6 +348,37 @@ def verify_metal_outputs(img2sixel: str,
     return records
 
 
+def verify_shared_outputs(img2sixel: str,
+                          input_image: Path,
+                          colors: int,
+                          threads: int,
+                          command_env: Dict[str, str]) -> Dict[str, object]:
+    """Require byte-identical private and shared lookup results."""
+    records: Dict[str, object] = {}
+    for policy in SHARED_POLICIES:
+        private = Variant(f"{policy} S0", policy, threads, "off", 0)
+        shared = Variant(f"{policy} S1", policy, threads, "off", 1)
+        private_bytes = run_for_bytes(
+            make_command(img2sixel, input_image, colors, private, None),
+            command_env,
+        )
+        shared_bytes = run_for_bytes(
+            make_command(img2sixel, input_image, colors, shared, None),
+            command_env,
+        )
+        if private_bytes != shared_bytes:
+            raise RuntimeError(
+                f"Private and shared output differ for {policy} at K={colors}."
+            )
+        records[policy] = {
+            "colors": colors,
+            "byte_identical": True,
+            "output_size": len(private_bytes),
+            "sha256": hashlib.sha256(private_bytes).hexdigest(),
+        }
+    return records
+
+
 def metal_device_record() -> Dict[str, object]:
     """Record the macOS display inventory used for Metal identification."""
     command = ["/usr/sbin/system_profiler", "SPDisplaysDataType", "-json"]
@@ -385,7 +416,8 @@ def write_metadata(path: Path,
                    revision: str,
                    source_state: str,
                    clean_sixel_environment: bool,
-                   equivalence: Dict[str, object]) -> None:
+                   shared_equivalence: Dict[str, object],
+                   metal_equivalence: Dict[str, object]) -> None:
     """Write provenance for both acceleration comparisons."""
     programs = {"img2sixel": program_record(img2sixel, source_root)}
     if lsqa is not None:
@@ -424,6 +456,7 @@ def write_metadata(path: Path,
                 "policies": list(SHARED_POLICIES),
                 "values": [0, 1],
                 "quantize_model": "kmeans:merge=ward:seed=1",
+                "output_equivalence": shared_equivalence,
             },
             "metal": {
                 "threads": 1,
@@ -431,7 +464,7 @@ def write_metadata(path: Path,
                 "cpu_gpu_policies": ["off", "force"],
                 "quantize_model": "heckbert:cover=off:merge=none",
                 "force_success_required": True,
-                "output_equivalence": equivalence,
+                "output_equivalence": metal_equivalence,
             },
         },
     }
@@ -501,7 +534,14 @@ def main() -> int:
         args.revision,
         command_env,
     )
-    equivalence = verify_metal_outputs(
+    shared_equivalence = verify_shared_outputs(
+        img2sixel,
+        input_image,
+        max(colors),
+        args.shared_threads,
+        command_env,
+    )
+    metal_equivalence = verify_metal_outputs(
         img2sixel, input_image, max(colors), command_env
     )
 
@@ -542,7 +582,8 @@ def main() -> int:
         args.revision,
         args.source_state,
         args.clean_sixel_environment,
-        equivalence,
+        shared_equivalence,
+        metal_equivalence,
     )
     return 0
 

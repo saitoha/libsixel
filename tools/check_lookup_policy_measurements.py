@@ -246,6 +246,16 @@ def validate_acceleration_metadata(path: Path) -> Dict[str, object]:
         fail("shared-instance measurement must use controlled K-means")
     if int(shared.get("threads", 0)) < 2:
         fail("shared-instance measurement must use multiple threads")
+    shared_equivalence = shared.get("output_equivalence")
+    if not isinstance(shared_equivalence, dict):
+        fail("shared-instance metadata lacks output-equivalence records")
+    for policy in SHARED_POLICIES:
+        record = shared_equivalence.get(policy)
+        if not isinstance(record, dict) or record.get("byte_identical") is not True:
+            fail(f"shared-instance output equivalence is absent for {policy}")
+        digest = record.get("sha256")
+        if not isinstance(digest, str) or len(digest) != 64:
+            fail(f"invalid shared-instance output digest for {policy}")
     if tuple(metal.get("policies", [])) != METAL_POLICIES:
         fail("acceleration metadata has unexpected Metal policies")
     if tuple(metal.get("cpu_gpu_policies", [])) != ("off", "force"):
