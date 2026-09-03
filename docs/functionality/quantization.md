@@ -97,11 +97,14 @@ global nearest-center assignment.
 kmiya's original `sixel` encoder used GD for image handling and quantization.
 libsixel removed that dependency on 2014-03-20 in
 [`b25e179b9`](https://github.com/saitoha/libsixel/commit/b25e179b9878ac8c4ddf675e44f57b86710500b4).
-Four days later it imported the median-cut implementation from Netpbm's
-`pnmquant.c` in
+Four days later it imported Netpbm's median-cut implementation in
 [`80d5636cc`](https://github.com/saitoha/libsixel/commit/80d5636ccffcbd6387b524d2626388174cd4122e).
-Netpbm was therefore not just a convenient comparison: it supplied much of
-the practical foundation for libsixel's independent quantization path.
+The commit subject names `pnmquant.c`, while the imported source header
+specifically attributes the implementation to `pnmcolormap.c`. Netpbm was
+therefore not just a convenient comparison: it supplied the median-cut
+foundation for libsixel's independent quantization path. This attribution does
+not establish that libsixel imported Netpbm's separate palette-application
+loop.
 
 Modern Netpbm separates the old operation into
 [`pnmcolormap`](https://netpbm.sourceforge.net/doc/pnmcolormap.html), which
@@ -109,10 +112,16 @@ constructs a palette with Heckbert median cut, and
 [`pnmremap`](https://netpbm.sourceforge.net/doc/pnmremap.html), which maps the
 source image to a supplied palette. The
 [`pnmquant`](https://netpbm.sourceforge.net/doc/pnmquant.html) command composes
-those two stages. This is a useful conceptual reference for libsixel's own
-separation between palette construction and palette application, although the
-current libsixel implementation has diverged substantially in data structures,
-colorspaces, model choices, and lookup backends.
+those two stages. The
+[`pnmquant` source at SVN r4306](https://sourceforge.net/p/netpbm/code/4306/tree/trunk/editor/pnmquant#l267)
+shows those two program invocations, and the
+[`pnmcolormap` source at SVN r4859](https://sourceforge.net/p/netpbm/code/4859/tree/trunk/other/pnmcolormap.c#l364)
+identifies its generator as Heckbert median cut. This is a useful conceptual
+reference for libsixel's own separation between palette construction and
+palette application, although the current libsixel implementation has diverged
+substantially in data structures, colorspaces, model choices, and lookup
+backends. Netpbm's actual remapping search, including its exact-tuple cache and
+full palette scan on a miss, is analyzed in [Lookup Policy](lookup-policy.md).
 
 The historical RGB555 implementation also used the same five-bit address for
 the median-cut histogram and for lazy palette application. That coupling made

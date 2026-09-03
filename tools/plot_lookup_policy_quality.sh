@@ -14,25 +14,31 @@ input_name=${input_image##*/}
 
 mkdir -p "${output_dir}"
 
-common='{img2sixel} --threads=1 --precision=8bit --quality=full --quantize-model=heckbert:cover=off:merge=none --diffusion=none'
+legacy_common='{img2sixel} --threads=1 --precision=8bit --quality=full --quantize-model=heckbert:cover=off:merge=none --diffusion=none'
+palette_command='{img2sixel} --threads=1 --precision=8bit --quality=full -Qkmeans:Gw -Xoklab -Wgamma --diffusion=none --lookup-policy=none -p {ncolors} -M gpl:- -o /dev/null {input}'
+fixed_common="${palette_command} | {img2sixel} --threads=1 --precision=8bit --quality=full -m gpl:- -Wgamma --diffusion=none"
+working_common='{img2sixel} --threads=1 --precision=8bit --quality=full -Qkmeans:Gw -Xoklab --diffusion=none --lookup-policy=none -p {ncolors}'
 
 plot_quality_curve()
 {
+    policy_colors=$1
+    policy_common=$2
+    shift 2
     "${PYTHON}" "${TOP_SRCDIR}/tools/plot_quality_curve.py" \
         "${input_image}" \
-        --colors 8,16,32,64,128,256 \
+        --colors "${policy_colors}" \
         --jobs 1 \
-        --command1 "${common} --lookup-policy=none -p {ncolors}" \
+        --command1 "${policy_common} --lookup-policy=none {input}" \
         --label1 none \
-        --command2 "${common} --lookup-policy=5bit -p {ncolors}" \
+        --command2 "${policy_common} --lookup-policy=5bit {input}" \
         --label2 5bit \
-        --command3 "${common} --lookup-policy=6bit -p {ncolors}" \
+        --command3 "${policy_common} --lookup-policy=6bit {input}" \
         --label3 6bit \
-        --command4 "${common} --lookup-policy=certlut -p {ncolors}" \
+        --command4 "${policy_common} --lookup-policy=certlut {input}" \
         --label4 certlut \
-        --command5 "${common} --lookup-policy=eytzinger -p {ncolors}" \
+        --command5 "${policy_common} --lookup-policy=eytzinger {input}" \
         --label5 eytzinger \
-        --command6 "${common} --lookup-policy=vptree -p {ncolors}" \
+        --command6 "${policy_common} --lookup-policy=vptree {input}" \
         --label6 vptree \
         --img2sixel "${IMG2SIXEL_PATH}" \
         --lsqa "${LSQA_PATH}" \
@@ -40,13 +46,56 @@ plot_quality_curve()
 }
 
 plot_quality_curve \
+    8,16,32,64,128,256 \
+    "${legacy_common} -p {ncolors}" \
     --metrics 'Δ E00_mean,Δ Chroma_mean' \
     --output-csv "${output_dir}/lookup-policy-color-error.csv" \
     --output-plot "${output_dir}/lookup-policy-color-error.png" \
-    --title "Legacy five-bit binning raises high-K color error on ${input_name}"
+    --title "Heckbert-coupled lookup-policy color error on ${input_name}"
 
 plot_quality_curve \
+    8,16,32,64,128,256 \
+    "${legacy_common} -p {ncolors}" \
     --metrics MS-SSIM \
     --output-csv "${output_dir}/lookup-policy-ms-ssim.csv" \
     --output-plot "${output_dir}/lookup-policy-ms-ssim.png" \
-    --title "Perceptual effect of legacy five-bit binning on ${input_name}"
+    --title "Heckbert-coupled lookup-policy MS-SSIM on ${input_name}"
+
+plot_quality_curve \
+    8,16,32,64,128,256 \
+    "${fixed_common}" \
+    --metrics 'Δ E00_mean,Δ Chroma_mean' \
+    --output-csv "${output_dir}/lookup-policy-fixed-palette-color-error.csv" \
+    --output-plot "${output_dir}/lookup-policy-fixed-palette-color-error.png" \
+    --title "Fixed-palette lookup-policy color error on ${input_name}"
+
+plot_quality_curve \
+    8,16,32,64,128,256 \
+    "${fixed_common}" \
+    --metrics MS-SSIM \
+    --output-csv "${output_dir}/lookup-policy-fixed-palette-ms-ssim.csv" \
+    --output-plot "${output_dir}/lookup-policy-fixed-palette-ms-ssim.png" \
+    --title "Fixed-palette lookup-policy MS-SSIM on ${input_name}"
+
+plot_quality_curve \
+    128,144,160,176,192,208,224,240,256 \
+    "${legacy_common} -p {ncolors}" \
+    --metrics 'Δ E00_mean,Δ Chroma_mean' \
+    --output-csv "${output_dir}/lookup-policy-heckbert-high-k.csv" \
+    --output-plot "${output_dir}/lookup-policy-heckbert-high-k.png" \
+    --title "Heckbert-coupled lookup-policy color error, K=128–256, on ${input_name}"
+
+"${PYTHON}" "${TOP_SRCDIR}/tools/plot_quality_curve.py" \
+    "${input_image}" \
+    --colors 8,16,32,64,128,256 \
+    --jobs 1 \
+    --command1 "${working_common} -Wgamma {input}" \
+    --label1=-Wgamma \
+    --command2 "${working_common} -Woklab {input}" \
+    --label2=-Woklab \
+    --img2sixel "${IMG2SIXEL_PATH}" \
+    --lsqa "${LSQA_PATH}" \
+    --metrics 'Δ E00_mean,Δ Chroma_mean,MS-SSIM' \
+    --output-csv "${output_dir}/working-colorspace-comparison.csv" \
+    --output-plot "${output_dir}/working-colorspace-comparison.png" \
+    --title "Working-colorspace comparison with OKLab K-means on ${input_name}"

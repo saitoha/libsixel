@@ -137,8 +137,11 @@ make this speed, memory, and quality tradeoff explicit. Later policies also
 address float colorspaces, parallelism, and different preparation/query costs;
 they are not merely cosmetic renamings of the old cache.
 
-The [measured quality comparison](quality-comparison.md) plots the current
-end-to-end effect with Delta E and chroma error over multiple palette sizes.
+The [measured quality comparison](quality-comparison.md) separates the current
+end-to-end Heckbert coupling from a controlled experiment in which every
+lookup policy applies the same OKLab K-means palette. On the checked fixture,
+the fixed-palette outputs have identical measured quality, while the coupled
+Heckbert curves retain a large high-`K` gap.
 
 The implementation is
 [`lookup-policy-5bit.c`](../../../src/lookup-policy-5bit.c). CLI and environment

@@ -84,8 +84,16 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/lookup-policies/quality-comparison.md \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-fixed-palette-color-error.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-fixed-palette-color-error.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-fixed-palette-ms-ssim.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-fixed-palette-ms-ssim.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-heckbert-high-k.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-heckbert-high-k.png \
 	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.png \
+	docs/functionality/lookup-policies/measurements/working-colorspace-comparison.csv \
+	docs/functionality/lookup-policies/measurements/working-colorspace-comparison.png \
 	docs/functionality/overview.md \
 	docs/functionality/quantization.md \
 	docs/quality/measurement-policy.md \

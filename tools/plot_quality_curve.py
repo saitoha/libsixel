@@ -39,6 +39,12 @@ METRIC_ALIASES = {
     "SSIM": "MS-SSIM",
 }
 
+METRIC_LABELS = {
+    "MS-SSIM": "MS-SSIM",
+    "Δ E00_mean": "Mean ΔE00",
+    "Δ Chroma_mean": "Mean |ΔC*ab|",
+}
+
 DEFAULT_COMMAND_TEMPLATE = "{img2sixel} -p {ncolors}"
 
 # The Okabe-Ito palette remains distinguishable under the common red-green
@@ -574,7 +580,7 @@ def plot_metrics(path: Path,
                 label=label,
             )
 
-        axis.set_ylabel(metric)
+        axis.set_ylabel(METRIC_LABELS.get(metric, metric))
         axis.grid(True, alpha=0.25)
         if use_log2:
             axis.set_xscale("log", base=2)
@@ -585,7 +591,7 @@ def plot_metrics(path: Path,
         if handles:
             axis.legend(loc="best", fontsize=8)
 
-    axes[-1].set_xlabel("Number of Colors")
+    axes[-1].set_xlabel("Palette Size K")
     if title:
         figure.suptitle(title)
         figure.tight_layout(rect=[0.0, 0.0, 1.0, 0.97])

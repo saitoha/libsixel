@@ -205,7 +205,71 @@ palette builder and remapper is historically important to libsixel.
 | `go-sixel` | Eager RGB555 table built by scanning the palette at each cell center | Similar address space to `5bit`, but eager and center-representative rather than lazy and first-query-representative |
 | `libsixel/libsixel` fork | Lazy RGB555 hash/LUT in its current `quant.c` | Shares the historical 5-bit bucket design lineage |
 | `libimagequant` / pngquant | VP-tree palette remapping with a previous-result hint | Not a SIXEL encoder, but a direct influence on libsixel's VP-tree safe cache |
-| Netpbm `pnmquant` | `pnmcolormap` builds a Heckbert median-cut palette; `pnmremap` maps pixels to the closest palette color | A major historical quantization reference and a useful direct-remapping baseline |
+| Netpbm `pnmquant` / `pnmremap` | Exact-tuple hash memoization; each cache miss exhaustively scans all `K` palette entries with squared Cartesian distance | Like `none` on a cold 8-bit RGB tuple, but repeated identical tuples are cached without merging neighboring colors |
+
+### Netpbm `pnmquant` and `pnmremap`
+
+The phrase "closest color" hides the important part of the implementation.
+The [`pnmquant` wrapper at Netpbm SVN r4306](https://sourceforge.net/p/netpbm/code/4306/tree/trunk/editor/pnmquant#l267)
+runs `pnmcolormap` to construct a palette and then
+[`pnmremap` to apply it](https://sourceforge.net/p/netpbm/code/4306/tree/trunk/editor/pnmquant#l316).
+The remapper does not use a kd-tree, VP-tree, palette LUT, projection, or
+branch-and-bound pruning. Its lookup path at SVN r4732 is:
+
+```text
+normalized tuple x
+        |
+        v
+exact tuple hash ---- hit ----> cached palette index
+        |
+       miss
+        v
+scan palette entries 0 ... K - 1
+        |
+        v
+cache the complete tuple x and its selected index
+```
+
+On a cache miss,
+[`searchColormapClose`](https://sourceforge.net/p/netpbm/code/4732/tree/trunk/editor/pnmremap.c#l660)
+computes
+
+```text
+                         D - 1
+d_q(x, c_i) =             sum  floor((x_j - c_i,j)^2 / q)
+                          j=0
+```
+
+for every palette entry `i`. Here `D` is tuple depth and `q` is the
+`distanceDivider` selected to prevent `unsigned int` overflow. The loop keeps
+the first palette entry on a tie because it replaces the best index only for a
+strictly smaller distance. A cold lookup is therefore `Theta(K D)`, or
+`Theta(K)` for fixed-depth RGB.
+
+[`lookupThroughHash`](https://sourceforge.net/p/netpbm/code/4732/tree/trunk/editor/pnmremap.c#l757)
+first probes an exact-tuple hash and inserts the result after a miss. The
+[hash implementation at SVN r5304](https://sourceforge.net/p/netpbm/code/5304/tree/trunk/lib/libpammap.c#l28)
+has 20,023 chained buckets. It computes a bucket from at most the first three
+planes, but
+[compares the complete tuple before declaring a hit](https://sourceforge.net/p/netpbm/code/5304/tree/trunk/lib/libpammap.c#l157).
+It is therefore exact memoization, not a reduced-bit approximation like
+libsixel's `5bit` and `6bit` policies. For `U` distinct lookup tuples, expected
+cache-hit time is `O(1)` subject to hash-chain length, worst-case hit time is
+`O(U)`, and additional space is `O(20023 + U D)`. Insertions continue until an
+allocation fails; 20,023 is the bucket count rather than an entry limit.
+
+For an ordinary 8-bit RGB image, `maxval = 255`, `D = 3`, and `q = 1`, so the
+full scan preserves the exact minimum of squared Cartesian RGB distance and
+the hash preserves that result for the identical tuple. For sufficiently high
+`maxval` or depth,
+[`createColormapFinder` raises `q`](https://sourceforge.net/p/netpbm/code/4732/tree/trunk/editor/pnmremap.c#l621).
+Integer division is applied to each plane before summation, so candidates can
+collapse to a tie and the selected entry need not minimize the unscaled
+distance; the Netpbm source explicitly calls this case approximate. When
+Floyd--Steinberg dithering is enabled, the key is the normalized,
+dither-adjusted tuple, so equal source pixels need not produce hash hits after
+different propagated errors. Neither dithering nor the hash changes the cold
+lookup strategy: it remains an exhaustive palette scan.
 
 The current `a-sixel` source constructs a
 [`KdTreeBucketer` for all non-`Bit` palette builders](https://github.com/Jesterhearts/a-sixel/blob/e2ffc9aa674aeb00779d2b8d5a5bd7ddb4615022/src/lib.rs#L285-L296)
@@ -229,18 +293,12 @@ packing its bucket coordinates.
 
 The VP-tree chapter gives the exact libimagequant source links used to trace
 the previous-result optimization. These implementation comparisons are pinned
-to source commits so later algorithm changes do not silently rewrite the
-meaning of this document.
-
-Modern Netpbm documents [`pnmquant` as a composition of `pnmcolormap` and
-`pnmremap`](https://netpbm.sourceforge.net/doc/pnmquant.html).
-[`pnmcolormap`](https://netpbm.sourceforge.net/doc/pnmcolormap.html) uses
-Heckbert median cut to construct the palette, while
-[`pnmremap`](https://netpbm.sourceforge.net/doc/pnmremap.html) applies the
-palette by choosing a closest color in its default mode. That explicit split
-closely matches libsixel's conceptual palette-construction and
-palette-application boundary, even though libsixel's code and metrics have
-continued to evolve.
+to source commits or SVN revisions so later algorithm changes do not silently
+rewrite the meaning of this document. The Netpbm
+[`pnmquant`](https://netpbm.sourceforge.net/doc/pnmquant.html),
+[`pnmcolormap`](https://netpbm.sourceforge.net/doc/pnmcolormap.html), and
+[`pnmremap`](https://netpbm.sourceforge.net/doc/pnmremap.html) manuals remain
+useful for command behavior; the algorithmic claims above come from source.
 
 ## Quality and performance
 
