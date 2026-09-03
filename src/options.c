@@ -2400,7 +2400,7 @@ sixel_option_apply_suboption_environment(
     count = 0u;
     key_def = NULL;
     memset(&value, 0, sizeof(value));
-    if (schema == NULL || base_def == NULL || target == NULL ||
+    if (schema == NULL || target == NULL ||
         !sixel_option_registry_validate()) {
         return;
     }
