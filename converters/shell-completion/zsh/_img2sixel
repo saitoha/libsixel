@@ -951,6 +951,26 @@ _diagnosticspolicy() {
     'code[emit stable machine-readable diagnostics]'
 }
 
+_clipboardpolicy() {
+  local current base segment prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    base=${current%%:*}
+    segment=${current##*:}
+    if [[ ${base} == file ]]; then
+      prefix=${current%"${segment}"}
+      compadd -- "${prefix}D" "${prefix}directory="
+      return 0
+    fi
+  fi
+
+  _values \
+    'CLIPBOARDPOLICY' \
+    'system[use the desktop clipboard]' \
+    'file[use the file-backed clipboard]'
+}
+
 
 _completiontarget() {
   _values \
@@ -1011,6 +1031,7 @@ _arguments -S -s -A "-*" -S \
   {-j,--runtime-policy=}'[choose process runtime policy]':runtimepolicy:_runtimepolicy \
   {-x,--diagnostics=}'[choose diagnostic presentation]':diagnostics:_diagnosticspolicy \
   {-J,--log-path=}'[write the shared JSON timeline log]':files:_files \
+  {-y,--clipboard-policy=}'[choose clipboard backend]':clipboard:_clipboardpolicy \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
   {-T,--start-frame=}'[set animation start frame index for loaders]' \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \

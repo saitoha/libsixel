@@ -161,11 +161,6 @@ function argument_is_reviewed(file, argument) {
         argument == "SIXEL_GPU_PALETTE_THRESHOLD_ENVVAR") {
         return 1
     }
-    if (file ~ /\/clipboard\.c$/ &&
-        (argument == "CLIPBOARD_FILE_BACKEND_ENV" ||
-         argument == "CLIPBOARD_FILE_DIR_ENV")) {
-        return 1
-    }
     return 0
 }
 function inspect_call(file, line_number, text, compact, argument) {

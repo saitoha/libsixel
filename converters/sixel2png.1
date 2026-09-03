@@ -139,6 +139,11 @@ Choose diagnostic presentation. MODE is \fBhuman\fP (default) or
 Write the shared JSON timeline log to PATH. This option takes precedence
 over \fBSIXEL_LOG_PATH\fP.
 .TP 5
+.B \-y POLICY[:KEY=VALUE], \-\-clipboard\-policy=POLICY[:KEY=VALUE]
+Choose \fBsystem\fP (default) for the desktop clipboard or \fBfile\fP for
+the file backend. The file backend accepts \fB:directory=PATH\fP
+(short form \fB:DPATH\fP).
+.TP 5
 .B \-% KEY=VALUE, \--env=KEY=VALUE
 Set a process environment variable before decoding.
 This option can be repeated.
@@ -187,6 +192,18 @@ precedence.
 force ANSI colorized diagnostics from status markup output. Set to "1" to
 emit color sequences without relying on TTY detection. The
 \fB\-x *:force_colors=0|1\fP suboption takes precedence.
+.TP 5
+.B SIXEL_CLIPBOARD_BACKEND
+.br
+choose \fBsystem\fP (default) for the desktop clipboard or \fBfile\fP for
+the file-backed test backend. The legacy value \fBfake\fP remains accepted.
+The \fB\-y/\-\-clipboard\-policy\fP option takes precedence.
+.TP 5
+.B SIXEL_CLIPBOARD_FILE_DIR
+.br
+choose the directory used by the file clipboard backend. The
+\fB\-y file:directory=PATH\fP suboption (short form \fB:DPATH\fP) takes
+precedence.
 .TP 5
 .B SIXEL_TRACE_TOPIC
 .br

@@ -36,6 +36,7 @@ typedef int (*sixel_thread_fn)(void *arg);
 
 struct sixel_runtime_policy_options;
 struct sixel_diagnostics_policy_options;
+struct sixel_clipboard_policy_options;
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
     && !defined(WITH_WINPTHREAD)
@@ -120,6 +121,14 @@ SIXEL_INTERNAL_API void sixel_diagnostics_policy_load(
     struct sixel_diagnostics_policy_options *options);
 SIXEL_INTERNAL_API int sixel_diagnostics_policy_store(
     struct sixel_diagnostics_policy_options const *options);
+SIXEL_INTERNAL_API void sixel_clipboard_policy_load(
+    struct sixel_clipboard_policy_options *options);
+SIXEL_INTERNAL_API int sixel_clipboard_policy_store(
+    struct sixel_clipboard_policy_options const *options);
+SIXEL_INTERNAL_API int sixel_clipboard_policy_copy_directory_override(
+    char *buffer,
+    size_t buffer_size,
+    int *configured);
 SIXEL_INTERNAL_API int sixel_diagnostics_topic_list_contains(
     char const *topics,
     char const *topic);

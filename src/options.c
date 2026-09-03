@@ -948,6 +948,44 @@ sixel_option_report_unknown_suboption_value(
     sixel_helper_set_additional_message(buffer);
 }
 
+/* Keep a Windows drive separator inside a suboption string value. */
+static char *
+sixel_option_find_suboption_entry_end(char *entry)
+{
+    char *separator;
+    char *equal_pos;
+    int drive_separator;
+
+    separator = NULL;
+    equal_pos = NULL;
+    drive_separator = 0;
+    if (entry == NULL) {
+        return NULL;
+    }
+    equal_pos = strchr(entry, '=');
+    separator = strchr(entry, ':');
+    while (separator != NULL) {
+        drive_separator = 0;
+        if (separator[1] == '/' || separator[1] == '\\') {
+            if (equal_pos != NULL && equal_pos < separator &&
+                separator == equal_pos + 2 &&
+                isalpha((unsigned char)equal_pos[1])) {
+                drive_separator = 1;
+            } else if ((equal_pos == NULL || equal_pos > separator) &&
+                       separator == entry + 2 &&
+                       isalpha((unsigned char)entry[1])) {
+                drive_separator = 1;
+            }
+        }
+        if (!drive_separator) {
+            return separator;
+        }
+        separator = strchr(separator + 1, ':');
+    }
+
+    return NULL;
+}
+
 SIXELSTATUS
 sixel_option_parse_argument_with_suboptions(
     char const *argument,
@@ -1061,7 +1099,7 @@ sixel_option_parse_argument_with_suboptions(
         consumer_scope);
 
     while (cursor != NULL && *cursor != '\0') {
-        entry_end = strchr(cursor, ':');
+        entry_end = sixel_option_find_suboption_entry_end(cursor);
         if (entry_end != NULL) {
             *entry_end = '\0';
         }
@@ -2404,6 +2442,29 @@ sixel_option_resolve_registered_double_binding(
 }
 
 int
+sixel_option_resolve_registered_string_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
+    char const **value)
+{
+    sixel_suboption_value_t parsed;
+
+    memset(&parsed, 0, sizeof(parsed));
+    if (value == NULL ||
+        !sixel_option_resolve_registered_binding_value(
+            option_id,
+            base_name,
+            binding_identifier,
+            SIXEL_SUBOPTION_VALUE_STRING,
+            &parsed)) {
+        return 0;
+    }
+    *value = parsed.string_value;
+    return 1;
+}
+
+int
 sixel_option_resolve_registered_int_pair_binding(
     sixel_option_schema_id_t option_id,
     char const *base_name,
@@ -3236,6 +3297,127 @@ sixel_option_apply_log_path_argument(
         return status;
     }
     return sixel_timeline_writer_set_log_path(value.string_value);
+}
+
+SIXELSTATUS
+sixel_option_apply_clipboard_policy_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
+    sixel_clipboard_policy_options_t options;
+
+    status = SIXEL_OK;
+    schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY);
+    memset(&resolution, 0, sizeof(resolution));
+    memset(&options, 0, sizeof(options));
+    if (schema == NULL || argument == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        argument,
+        schema,
+        consumer_scope,
+        &resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    sixel_clipboard_policy_load(&options);
+    sixel_option_reset_suboption_overrides(
+        schema,
+        consumer_scope,
+        &options,
+        SIXEL_SUBOPTION_TARGET_CLIPBOARD);
+    sixel_option_apply_suboption_environment(
+        schema,
+        resolution.base_def,
+        consumer_scope,
+        &options,
+        SIXEL_SUBOPTION_TARGET_CLIPBOARD);
+    options.backend = resolution.resolved_base_value;
+    options.backend_override = 1;
+    if (!sixel_option_apply_suboption_assignments(
+            &resolution,
+            &options,
+            SIXEL_SUBOPTION_TARGET_CLIPBOARD)) {
+        sixel_helper_set_additional_message(
+            "failed to apply clipboard policy suboptions.");
+        status = SIXEL_BAD_ARGUMENT;
+    } else if (!sixel_clipboard_policy_store(&options)) {
+        sixel_helper_set_additional_message(
+            "failed to store clipboard policy strings.");
+        status = SIXEL_BAD_ALLOCATION;
+    }
+    sixel_option_free_argument_resolution(&resolution);
+    return status;
+}
+
+int
+sixel_clipboard_policy_backend(void)
+{
+    sixel_clipboard_policy_options_t options;
+    sixel_suboption_value_t value;
+
+    memset(&options, 0, sizeof(options));
+    memset(&value, 0, sizeof(value));
+    sixel_clipboard_policy_load(&options);
+    if (options.backend_override) {
+        return options.backend;
+    }
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY,
+            &value,
+            NULL,
+            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.int_value;
+    }
+    return SIXEL_CLIPBOARD_BACKEND_SYSTEM;
+}
+
+int
+sixel_clipboard_policy_copy_directory(char *buffer, size_t buffer_size)
+{
+    char const *directory;
+    size_t length;
+    int configured;
+
+    directory = NULL;
+    length = 0u;
+    configured = 0;
+    if (buffer == NULL || buffer_size == 0u ||
+        !sixel_clipboard_policy_copy_directory_override(
+            buffer,
+            buffer_size,
+            &configured)) {
+        return -1;
+    }
+    if (configured) {
+        return 1;
+    }
+    if (!sixel_option_resolve_registered_string_binding(
+            SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY,
+            "file",
+            SIXEL_SUBOPTION_BINDING_ID_2(directory, directory_override),
+            &directory)) {
+        buffer[0] = '\0';
+        return 0;
+    }
+    length = strlen(directory) + 1u;
+    if (length > buffer_size) {
+        buffer[0] = '\0';
+        return -1;
+    }
+    memcpy(buffer, directory, length);
+    return 1;
 }
 
 static int

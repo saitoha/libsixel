@@ -732,6 +732,10 @@ typedef int SIXELSTATUS;
                                                  --log-path=PATH:
                                                  write a JSON timeline log
                                                */
+#define SIXEL_OPTFLAG_CLIPBOARD_POLICY  ('y') /* -y POLICY,
+                                                 --clipboard-policy=POLICY:
+                                                 select clipboard backend
+                                               */
 #define SIXEL_OPTFLAG_CLUSTERING_COLORSPACE ('X')
     /* -X COLORSPACE */
     /* --clustering-colorspace=COLORSPACE */

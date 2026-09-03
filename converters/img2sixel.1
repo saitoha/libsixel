@@ -113,6 +113,12 @@ img2sixel also accepts \fB:quiet=0|1\fP
 write the shared JSON timeline log to \fIPATH\fP. This option takes
 precedence over \fBSIXEL_LOG_PATH\fP.
 .TP 5
+.B \-y \fIPOLICY[:KEY=VALUE]\fP, \-\-clipboard\-policy=\fIPOLICY[:KEY=VALUE]\fP
+choose the clipboard backend. \fIPOLICY\fP is \fBsystem\fP (default) or
+\fBfile\fP. The file backend accepts \fB:directory=PATH\fP
+(short form \fB:DPATH\fP). CLI values take precedence over
+\fBSIXEL_CLIPBOARD_BACKEND\fP and \fBSIXEL_CLIPBOARD_FILE_DIR\fP.
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5
@@ -1225,6 +1231,18 @@ precedence.
 force ANSI colorized diagnostics from status markup output. Set to "1" to
 emit color sequences without relying on TTY detection. The
 \fB\-x *:force_colors=0|1\fP suboption takes precedence.
+.TP 5
+.B SIXEL_CLIPBOARD_BACKEND
+.br
+choose \fBsystem\fP (default) for the desktop clipboard or \fBfile\fP for
+the file-backed test backend. The legacy value \fBfake\fP remains accepted.
+The \fB\-y/\-\-clipboard\-policy\fP option takes precedence.
+.TP 5
+.B SIXEL_CLIPBOARD_FILE_DIR
+.br
+choose the directory used by the file clipboard backend. The
+\fB\-y file:directory=PATH\fP suboption (short form \fB:DPATH\fP) takes
+precedence.
 .TP 5
 .B SIXEL_TRACE_TOPIC
 .br

@@ -597,6 +597,26 @@
         }, NULL, 0ULL \
     }
 
+#define SIXEL_REGISTRY_CLIPBOARD_STRING( \
+    optflag_, base_, name_, short_, env_, field_, override_) \
+    { \
+        (optflag_), (base_), SIXEL_OPTION_SCOPE_ALL, (name_), (short_), \
+        (env_), NULL, NULL, SIXEL_SUBOPTION_VALUE_STRING, NULL, 0u, NULL, \
+        0u, 0.0, 0.0, 0, 0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        "string suboption must not be empty.", NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_CLIPBOARD, \
+            SIXEL_SUBOPTION_STORAGE_STRING, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_clipboard_policy_options_t, field_, char const *), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_clipboard_policy_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
 #define SIXEL_REGISTRY_FLOAT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_) \
     SIXEL_REGISTRY_NUMBER( \
@@ -1275,6 +1295,29 @@ static sixel_option_value_schema_t const g_diagnostics_values[] = {
     }
 };
 
+enum {
+    SIXEL_CLIPBOARD_BASE_SYSTEM = 0,
+    SIXEL_CLIPBOARD_BASE_FILE
+};
+
+static sixel_option_value_schema_t const g_clipboard_policy_values[] = {
+    {
+        "system", SIXEL_CLIPBOARD_BACKEND_SYSTEM, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "file", SIXEL_CLIPBOARD_BACKEND_FILE, 1u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    }
+};
+
+static sixel_suboption_choice_t const
+g_clipboard_policy_environment_choices[] = {
+    { "system", SIXEL_CLIPBOARD_BACKEND_SYSTEM },
+    { "file", SIXEL_CLIPBOARD_BACKEND_FILE },
+    { "fake", SIXEL_CLIPBOARD_BACKEND_FILE }
+};
+
 static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
     { "preserve", SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE },
     { "linear", SIXEL_RUNTIME_RESIZE_PRECISION_LINEAR32 },
@@ -1639,6 +1682,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "abort_trace", 'A', "SIXEL_ABORT_TRACE",
         SIXEL_OPTION_SCOPE_ALL,
         abort_trace, abort_trace_override),
+    SIXEL_REGISTRY_CLIPBOARD_STRING(
+        SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY,
+        g_clipboard_policy_values + SIXEL_CLIPBOARD_BASE_FILE,
+        "directory", 'D', "SIXEL_CLIPBOARD_FILE_DIR",
+        directory, directory_override),
     SIXEL_REGISTRY_DIAGNOSTICS_INT(
         SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
         "log_lines", 'N', "SIXEL_LOG_LINES",
@@ -2715,6 +2763,22 @@ static sixel_suboption_key_t const g_suboptions[] = {
         (values_), SIXEL_REGISTRY_ARRAY_LENGTH(values_) \
     }
 
+#define SIXEL_REGISTRY_CLIPBOARD_OPTION_SCHEMA( \
+    option_id_, scope_, optflag_, name_, default_value_, values_, env_, \
+    env_choices_) \
+    { \
+        (option_id_), (scope_), (optflag_), (name_), \
+        SIXEL_OPTION_ARGUMENT_SINGLE, SIXEL_SUBOPTION_VALUE_STRUCTURED, \
+        SIXEL_OPTION_MATCH_PREFIX, \
+        SIXEL_OPTION_MATCH_EXACT | SIXEL_OPTION_MATCH_CASE_INSENSITIVE, \
+        (env_), NULL, NULL, (env_choices_), \
+        SIXEL_REGISTRY_ARRAY_LENGTH(env_choices_), \
+        0.0, 0.0, 0, 0, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, NULL, NULL, NULL, \
+        NULL, NULL, SIXEL_OPTION_DEFAULT_FIXED, { (default_value_) }, \
+        (values_), SIXEL_REGISTRY_ARRAY_LENGTH(values_) \
+    }
+
 #define SIXEL_REGISTRY_SCALAR_SCHEMA( \
     option_id_, scope_, optflag_, name_, kind_, argument_flags_, \
     environment_flags_, env_, environment_choices_, \
@@ -3026,6 +3090,15 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTFLAG_LOG_PATH,
         "log-path",
         "SIXEL_LOG_PATH"),
+    SIXEL_REGISTRY_CLIPBOARD_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY,
+        SIXEL_OPTION_SCOPE_ALL,
+        SIXEL_OPTFLAG_CLIPBOARD_POLICY,
+        "clipboard-policy",
+        SIXEL_CLIPBOARD_BACKEND_SYSTEM,
+        g_clipboard_policy_values,
+        "SIXEL_CLIPBOARD_BACKEND",
+        g_clipboard_policy_environment_choices),
 };
 
 static int
@@ -3904,6 +3977,7 @@ sixel_option_registry_binding_scope_is_valid(
         break;
     case SIXEL_SUBOPTION_TARGET_RUNTIME:
     case SIXEL_SUBOPTION_TARGET_DIAGNOSTICS:
+    case SIXEL_SUBOPTION_TARGET_CLIPBOARD:
         allowed_scope = SIXEL_OPTION_SCOPE_ALL;
         break;
     default:
@@ -4099,6 +4173,7 @@ sixel_option_registry_validate_uncached(void)
     sixel_suboption_key_t const *key;
     sixel_suboption_key_t const *previous;
     int default_found;
+    int environment_choice_value_found;
 
     option_index = 0u;
     previous_option_index = 0u;
@@ -4119,6 +4194,7 @@ sixel_option_registry_validate_uncached(void)
     key = NULL;
     previous = NULL;
     default_found = 0;
+    environment_choice_value_found = 0;
 
     if (SIXEL_REGISTRY_ARRAY_LENGTH(g_options) !=
         (size_t)SIXEL_OPTION_SCHEMA_COUNT) {
@@ -4204,8 +4280,6 @@ sixel_option_registry_validate_uncached(void)
         }
         if (schema->value_kind == SIXEL_SUBOPTION_VALUE_STRUCTURED) {
             if (schema->values == NULL || schema->value_count == 0u ||
-                schema->environment_choices != NULL ||
-                schema->environment_choice_count != 0u ||
                 schema->has_minimum || schema->has_maximum ||
                 schema->environment_has_minimum ||
                 schema->environment_has_maximum ||
@@ -4254,12 +4328,6 @@ sixel_option_registry_validate_uncached(void)
                     schema->environment_maximum)) {
                 return 0;
             }
-            if ((schema->environment_choices == NULL) !=
-                (schema->environment_choice_count == 0u) ||
-                (schema->environment_choice_count > 0u &&
-                 schema->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE)) {
-                return 0;
-            }
             if (schema->value_kind == SIXEL_SUBOPTION_VALUE_STRING &&
                 (schema->values != NULL || schema->has_minimum ||
                  schema->has_maximum ||
@@ -4269,6 +4337,45 @@ sixel_option_registry_validate_uncached(void)
                     SIXEL_SUBOPTION_ENV_RANGE_REJECT)) {
                 return 0;
             }
+        }
+        if ((schema->environment_choices == NULL) !=
+                (schema->environment_choice_count == 0u) ||
+            (schema->environment_choice_count > 0u &&
+             schema->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
+             schema->value_kind != SIXEL_SUBOPTION_VALUE_STRUCTURED)) {
+            return 0;
+        }
+        choice_index = 0u;
+        while (choice_index < schema->environment_choice_count) {
+            if (!sixel_option_registry_value_name_is_valid(
+                    schema->environment_choices[choice_index].name)) {
+                return 0;
+            }
+            environment_choice_value_found = 0;
+            base_index = 0u;
+            while (base_index < schema->value_count) {
+                if (schema->environment_choices[choice_index].value ==
+                    schema->values[base_index].value) {
+                    environment_choice_value_found = 1;
+                    break;
+                }
+                ++base_index;
+            }
+            if (!environment_choice_value_found) {
+                return 0;
+            }
+            previous_choice_index = 0u;
+            while (previous_choice_index < choice_index) {
+                if (strcmp(
+                        schema->environment_choices[
+                            previous_choice_index].name,
+                        schema->environment_choices[choice_index].name) ==
+                    0) {
+                    return 0;
+                }
+                ++previous_choice_index;
+            }
+            ++choice_index;
         }
         if ((schema->environment_range_policy &
              ~(SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |

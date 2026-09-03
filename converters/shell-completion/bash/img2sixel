@@ -638,6 +638,23 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'human code' -- "${base}" ) )
     }
 
+    _img2sixel_complete_clipboard_policy()
+    {
+        local base item prefix candidate
+
+        base="${cur%%:*}"
+        item="${cur##*:}"
+        if [[ ${cur} == *:* ]]; then
+            prefix="${cur%"${item}"}"
+            for candidate in D directory=; do
+                [[ ${candidate} == ${item}* ]] || continue
+                COMPREPLY+=("${prefix}${candidate}")
+            done
+            return 0
+        fi
+        COMPREPLY=( $( compgen -W 'system file' -- "${base}" ) )
+    }
+
     case "$prev" in
     -1|--show-completion|-2|--install-completion|-3|--uninstall-completion)
         COMPREPLY=( $( compgen -W 'all bash zsh' -- "$cur" ) )
@@ -807,6 +824,10 @@ _img2sixel()
         _img2sixel_complete_diagnostics
         return 0
         ;;
+    -y|--clipboard-policy)
+        _img2sixel_complete_clipboard_policy
+        return 0
+        ;;
     -l|--loop-control)
         COMPREPLY=( $( compgen -W 'auto \
                                    force \
@@ -963,6 +984,7 @@ _img2sixel()
                                    -j --runtime-policy \
                                    -x --diagnostics \
                                    -J --log-path \
+                                   -y --clipboard-policy \
                                    -l --loop-control \
                                    -T --start-frame \
                                    -t --palette-type \

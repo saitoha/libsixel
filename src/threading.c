@@ -723,6 +723,7 @@ static sixel_thread_config_state_t g_thread_config = {
 
 static sixel_runtime_policy_options_t g_runtime_policy;
 static sixel_diagnostics_policy_options_t g_diagnostics_policy;
+static sixel_clipboard_policy_options_t g_clipboard_policy;
 
 #if SIXEL_ENABLE_THREADS
 static sixel_mutex_t g_thread_config_mutex;
@@ -931,7 +932,7 @@ sixel_diagnostics_policy_load(
 }
 
 static char *
-sixel_diagnostics_policy_duplicate_string(char const *text)
+sixel_process_policy_duplicate_string(char const *text)
 {
     char *copy;
     size_t length;
@@ -963,7 +964,7 @@ sixel_diagnostics_policy_store(
         return 0;
     }
     if (options->trace_topic_override) {
-        trace_topic_copy = sixel_diagnostics_policy_duplicate_string(
+        trace_topic_copy = sixel_process_policy_duplicate_string(
             options->trace_topic);
         if (trace_topic_copy == NULL) {
             return 0;
@@ -975,6 +976,79 @@ sixel_diagnostics_policy_store(
     g_diagnostics_policy.trace_topic = trace_topic_copy;
     sixel_thread_config_unlock();
     free(old_trace_topic);
+    return 1;
+}
+
+void
+sixel_clipboard_policy_load(sixel_clipboard_policy_options_t *options)
+{
+    if (options == NULL) {
+        return;
+    }
+    sixel_thread_config_lock();
+    *options = g_clipboard_policy;
+    options->directory = NULL;
+    sixel_thread_config_unlock();
+}
+
+int
+sixel_clipboard_policy_store(
+    sixel_clipboard_policy_options_t const *options)
+{
+    char *directory_copy;
+    char *old_directory;
+
+    directory_copy = NULL;
+    old_directory = NULL;
+    if (options == NULL) {
+        return 0;
+    }
+    if (options->directory_override) {
+        directory_copy = sixel_process_policy_duplicate_string(
+            options->directory);
+        if (directory_copy == NULL) {
+            return 0;
+        }
+    }
+    sixel_thread_config_lock();
+    old_directory = (char *)g_clipboard_policy.directory;
+    g_clipboard_policy = *options;
+    g_clipboard_policy.directory = directory_copy;
+    sixel_thread_config_unlock();
+    free(old_directory);
+    return 1;
+}
+
+int
+sixel_clipboard_policy_copy_directory_override(char *buffer,
+                                                size_t buffer_size,
+                                                int *configured)
+{
+    size_t length;
+
+    length = 0u;
+    if (buffer == NULL || buffer_size == 0u || configured == NULL) {
+        return 0;
+    }
+    buffer[0] = '\0';
+    *configured = 0;
+    sixel_thread_config_lock();
+    *configured = g_clipboard_policy.directory_override != 0;
+    if (!*configured) {
+        sixel_thread_config_unlock();
+        return 1;
+    }
+    if (g_clipboard_policy.directory == NULL) {
+        sixel_thread_config_unlock();
+        return 0;
+    }
+    length = strlen(g_clipboard_policy.directory) + 1u;
+    if (length > buffer_size) {
+        sixel_thread_config_unlock();
+        return 0;
+    }
+    memcpy(buffer, g_clipboard_policy.directory, length);
+    sixel_thread_config_unlock();
     return 1;
 }
 

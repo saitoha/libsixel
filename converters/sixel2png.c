@@ -222,6 +222,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           SIXEL_LOG_PATH.\n"
     },
     {
+        'y',
+        "clipboard-policy",
+        "-y POLICY[:KEY=VALUE], --clipboard-policy=POLICY[:KEY=VALUE]\n"
+        "                           select system (default) or file.\n"
+        "                           file sub-option:\n"
+        "                             :directory=PATH (:DPATH)\n"
+    },
+    {
         '%',
         "env",
         "-% KEY=VALUE, --env=KEY=VALUE\n"
@@ -251,7 +259,7 @@ sixel2png_option_help_count(void)
 }
 
 static char const g_sixel2png_optstring[] =
-    "i:o:d:S:e:s:=:G:j:x:J:%:DVH";
+    "i:o:d:S:e:s:=:G:j:x:J:y:%:DVH";
 
 typedef struct sixel2png_parsed_option {
     int code;
@@ -546,6 +554,7 @@ main(int argc, char *argv[])
         {"runtime-policy",   required_argument,  NULL, 'j'},
         {"diagnostics",      required_argument,  NULL, 'x'},
         {"log-path",         required_argument,  NULL, 'J'},
+        {"clipboard-policy", required_argument,  NULL, 'y'},
         {"env",              required_argument,  NULL, '%'},
         {"version",          no_argument,        NULL, 'V'},
         {"help",             no_argument,        NULL, 'H'},

@@ -63,6 +63,7 @@ function macro_is_approved(macro) {
     return macro == "SIXEL_REGISTRY_OPTION_SCHEMA" ||
         macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA" ||
+        macro == "SIXEL_REGISTRY_CLIPBOARD_OPTION_SCHEMA" ||
         macro == "SIXEL_REGISTRY_SCALAR_CHOICE" ||
         macro == "SIXEL_REGISTRY_SCALAR_CHOICE_ENV" ||
         macro == "SIXEL_REGISTRY_SCALAR_INT" ||
@@ -73,6 +74,7 @@ function expected_field_count(macro) {
     if (macro == "SIXEL_REGISTRY_OPTION_SCHEMA") return 9
     if (macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA") return 7
     if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA") return 7
+    if (macro == "SIXEL_REGISTRY_CLIPBOARD_OPTION_SCHEMA") return 8
     if (macro == "SIXEL_REGISTRY_SCALAR_CHOICE") return 10
     if (macro == "SIXEL_REGISTRY_SCALAR_CHOICE_ENV") return 11
     if (macro == "SIXEL_REGISTRY_SCALAR_INT") return 22
@@ -147,9 +149,11 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
     }
     if (macro == "SIXEL_REGISTRY_OPTION_SCHEMA" ||
         macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA" ||
-        macro == "SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA") {
+        macro == "SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA" ||
+        macro == "SIXEL_REGISTRY_CLIPBOARD_OPTION_SCHEMA") {
         if (macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA" ||
-            macro == "SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA") {
+            macro == "SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA" ||
+            macro == "SIXEL_REGISTRY_CLIPBOARD_OPTION_SCHEMA") {
             default_policy = "SIXEL_OPTION_DEFAULT_FIXED"
             values = fields[6]
         } else {
@@ -201,7 +205,7 @@ in_registry && /^[[:space:]]*};/ {
     next
 }
 in_registry && \
-        /SIXEL_REGISTRY_(OPTION_SCHEMA|RUNTIME_OPTION_SCHEMA|DIAGNOSTICS_OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/ {
+        /SIXEL_REGISTRY_(OPTION_SCHEMA|RUNTIME_OPTION_SCHEMA|DIAGNOSTICS_OPTION_SCHEMA|CLIPBOARD_OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/ {
     in_row = 1
     row = $0
     next
@@ -337,7 +341,7 @@ FILENAME == registry_file {
         next
     }
     if (in_registry &&
-        $0 ~ /SIXEL_REGISTRY_(OPTION_SCHEMA|RUNTIME_OPTION_SCHEMA|DIAGNOSTICS_OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/) {
+        $0 ~ /SIXEL_REGISTRY_(OPTION_SCHEMA|RUNTIME_OPTION_SCHEMA|DIAGNOSTICS_OPTION_SCHEMA|CLIPBOARD_OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/) {
         in_row = 1
         row = $0
         next
@@ -422,7 +426,8 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_RUNTIME_CHOICE" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_INT" ||
-        macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING"
+        macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING" ||
+        macro == "SIXEL_REGISTRY_CLIPBOARD_STRING"
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
                  exact_key, shared_key, macro) {
@@ -451,7 +456,7 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
         fail(option_id ":" name " needs a non-empty environment variable")
     }
-    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER|RUNTIME|DIAGNOSTICS/) {
+    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER|RUNTIME|DIAGNOSTICS|CLIPBOARD/) {
         fail(option_id ":" name " needs a typed target binding")
     }
     if (!macro_is_approved(macro)) {
@@ -589,6 +594,9 @@ function inspect(row, fields, count, name, alias, key, macro, scope) {
     if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_INT" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING") scope = fields[6]
+    if (macro == "SIXEL_REGISTRY_CLIPBOARD_STRING") {
+        scope = "SIXEL_OPTION_SCOPE_ALL"
+    }
     if (scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
         expected_help[key] = help_file
         expected_man[key] = man_file
@@ -711,7 +719,7 @@ function binding_from_registry(row, fields, count, macro, binding) {
     sub(/^[[:space:]]*/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
-    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR|RUNTIME_|DIAGNOSTICS_/) {
+    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR|RUNTIME_|DIAGNOSTICS_|CLIPBOARD_/) {
         binding = fields[count - 1] "," fields[count]
     } else if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
         binding = fields[count - 2] "," fields[count - 1] "," \
@@ -941,6 +949,10 @@ function inspect_registry(row, fields, count, option_id, name, alias,
             name == "abort_trace") {
         expected_abort_contract[key] = "enabled=0|installed=0"
     }
+    if (option_id == "SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY" &&
+            name == "directory") {
+        expected_clipboard_contract[key] = "backend=file|directory=1"
+    }
     binding_value = ""
     binding_override = ""
     if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR/) {
@@ -964,7 +976,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         binding_override = fields[count]
     } else if (macro ~ /DEQUANTIZE_|LOADER_/) {
         binding = fields[count]
-    } else if (macro ~ /RUNTIME_|DIAGNOSTICS_/) {
+    } else if (macro ~ /RUNTIME_|DIAGNOSTICS_|CLIPBOARD_/) {
         binding = fields[count - 1] "|" fields[count]
         binding_value = fields[count - 1]
         binding_override = fields[count]
@@ -1108,6 +1120,16 @@ FILENAME == registry_file {
     test_abort_contract[FILENAME] = abort_contract
     next
 }
+/^# Clipboard contract: / {
+    clipboard_contract = $0
+    sub(/^# Clipboard contract: /, "", clipboard_contract)
+    gsub(/[[:space:]]+/, " ", clipboard_contract)
+    if (test_clipboard_contract[FILENAME] != "") {
+        fail(FILENAME " contains more than one clipboard contract marker")
+    }
+    test_clipboard_contract[FILENAME] = clipboard_contract
+    next
+}
 /^# Environment range: / {
     range_policy = $0
     sub(/^# Environment range: /, "", range_policy)
@@ -1212,8 +1234,12 @@ FILENAME != registry_file {
     }
     lazy_artifact_mkdir = index($0,
         "mkdir -p \"${ARTIFACT_LOCAL_DIR}\"") > 0
+    clipboard_output_mkdir = expected_option[key] == \
+        "SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY" && index($0, \
+        "mkdir -p \"${short_dir}\" \"${env_dir}\"") > 0
     if (index($0, "ARTIFACT_ROOT") > 0 ||
-            (index($0, "mkdir ") > 0 && !lazy_artifact_mkdir) ||
+            (index($0, "mkdir ") > 0 && !lazy_artifact_mkdir &&
+             !clipboard_output_mkdir) ||
             index($0, "-o \"${short_output}\"") > 0 ||
             index($0, "-o \"${env_output}\"") > 0) {
         has_unsafe_artifact_handling[FILENAME] = 1
@@ -1405,6 +1431,19 @@ END {
         if (expected_abort_contract[key] == "" &&
                 test_abort_contract[file] != "") {
             fail(file " has an unexpected abort trace contract marker")
+        }
+        if (expected_clipboard_contract[key] != "" &&
+                test_clipboard_contract[file] != expected_clipboard_contract[key]) {
+            fail(file " does not identify its effective clipboard setting")
+        }
+        if (expected_clipboard_contract[key] != "" &&
+                index(test_source[file],
+                      "LSXCLP1|*" expected_clipboard_contract[key] "*") == 0) {
+            fail(file " does not verify its clipboard consumer")
+        }
+        if (expected_clipboard_contract[key] == "" &&
+                test_clipboard_contract[file] != "") {
+            fail(file " has an unexpected clipboard contract marker")
         }
         if (!has_environment[file]) {
             fail(file " does not exercise the registered environment name")

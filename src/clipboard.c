@@ -61,6 +61,7 @@ int pclose(FILE *stream);
 
 #include "clipboard.h"
 #include "allocator.h"
+#include "options.h"
 
 static int
 clipboard_parse_format(char const *spec,
@@ -123,9 +124,23 @@ sixel_clipboard_parse_spec(char const *spec,
     return clipboard_parse_format(spec, out);
 }
 
-#define CLIPBOARD_FILE_BACKEND_ENV "SIXEL_CLIPBOARD_BACKEND"
-#define CLIPBOARD_FILE_DIR_ENV "SIXEL_CLIPBOARD_FILE_DIR"
 #define CLIPBOARD_FILE_PATH_LIMIT 4096u
+
+static void
+clipboard_trace_policy(int backend, int directory_configured)
+{
+    char const *backend_name;
+
+    backend_name = backend == SIXEL_CLIPBOARD_BACKEND_FILE
+        ? "file"
+        : "system";
+    if (sixel_diagnostics_trace_topic_is_enabled("clipboard_contract")) {
+        fprintf(stderr,
+                "LSXCLP1|backend=%s|directory=%d\n",
+                backend_name,
+                directory_configured);
+    }
+}
 
 static int
 clipboard_case_equals(char const *lhs,
@@ -157,19 +172,11 @@ clipboard_case_equals(char const *lhs,
 static int
 clipboard_file_backend_is_active(void)
 {
-    char const *backend;
+    int backend;
 
-    backend = sixel_compat_getenv(CLIPBOARD_FILE_BACKEND_ENV);
-    if (backend == NULL || backend[0] == '\0') {
-        return 0;
-    }
-
-    if (clipboard_case_equals(backend, "file")
-            || clipboard_case_equals(backend, "fake")) {
-        return 1;
-    }
-
-    return 0;
+    backend = sixel_clipboard_policy_backend();
+    clipboard_trace_policy(backend, -1);
+    return backend == SIXEL_CLIPBOARD_BACKEND_FILE;
 }
 
 static int
@@ -192,15 +199,17 @@ clipboard_file_backend_resolve_path(char const *format,
                                     char *path,
                                     size_t path_size)
 {
-    char const *directory;
+    char directory[CLIPBOARD_FILE_PATH_LIMIT];
     char const *slot;
     size_t directory_len;
     int written;
+    int directory_result;
 
-    directory = NULL;
+    directory[0] = '\0';
     slot = NULL;
     directory_len = 0u;
     written = 0;
+    directory_result = 0;
 
     if (path == NULL || path_size == 0u) {
         sixel_helper_set_additional_message(
@@ -210,8 +219,17 @@ clipboard_file_backend_resolve_path(char const *format,
 
     path[0] = '\0';
 
-    directory = sixel_compat_getenv(CLIPBOARD_FILE_DIR_ENV);
-    if (directory == NULL || directory[0] == '\0') {
+    directory_result = sixel_clipboard_policy_copy_directory(
+        directory,
+        sizeof(directory));
+    clipboard_trace_policy(SIXEL_CLIPBOARD_BACKEND_FILE,
+                           directory_result == 1 ? 1 : 0);
+    if (directory_result < 0) {
+        sixel_helper_set_additional_message(
+            "clipboard: fake backend path is too long.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (directory_result == 0) {
         sixel_helper_set_additional_message(
             "clipboard: fake backend requires SIXEL_CLIPBOARD_FILE_DIR.");
         return SIXEL_BAD_CLIPBOARD;
@@ -442,14 +460,16 @@ clipboard_file_backend_write(char const *format,
 static int
 clipboard_file_backend_is_available(void)
 {
-    char const *directory;
+    char directory[CLIPBOARD_FILE_PATH_LIMIT];
+    int directory_result;
 
-    directory = sixel_compat_getenv(CLIPBOARD_FILE_DIR_ENV);
-    if (directory == NULL || directory[0] == '\0') {
-        return 0;
-    }
-
-    return 1;
+    directory[0] = '\0';
+    directory_result = sixel_clipboard_policy_copy_directory(
+        directory,
+        sizeof(directory));
+    clipboard_trace_policy(SIXEL_CLIPBOARD_BACKEND_FILE,
+                           directory_result == 1 ? 1 : 0);
+    return directory_result == 1;
 }
 
 #if defined(HAVE_CLIPBOARD_MACOS)

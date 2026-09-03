@@ -94,7 +94,8 @@ typedef enum sixel_suboption_target_class {
     SIXEL_SUBOPTION_TARGET_LOADER,
     SIXEL_SUBOPTION_TARGET_DEQUANTIZE,
     SIXEL_SUBOPTION_TARGET_RUNTIME,
-    SIXEL_SUBOPTION_TARGET_DIAGNOSTICS
+    SIXEL_SUBOPTION_TARGET_DIAGNOSTICS,
+    SIXEL_SUBOPTION_TARGET_CLIPBOARD
 } sixel_suboption_target_class_t;
 
 typedef enum sixel_suboption_storage_kind {
@@ -175,6 +176,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
     SIXEL_OPTION_SCHEMA_DIAGNOSTICS,
     SIXEL_OPTION_SCHEMA_LOG_PATH,
+    SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
 
@@ -372,6 +374,13 @@ sixel_option_resolve_registered_double_binding(
     double *value);
 
 int
+sixel_option_resolve_registered_string_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
+    char const **value);
+
+int
 sixel_option_resolve_registered_int_pair_binding(
     sixel_option_schema_id_t option_id,
     char const *base_name,
@@ -437,6 +446,18 @@ typedef enum sixel_diagnostics_mode {
     SIXEL_DIAGNOSTICS_MODE_HUMAN = 0,
     SIXEL_DIAGNOSTICS_MODE_CODE
 } sixel_diagnostics_mode_t;
+
+typedef struct sixel_clipboard_policy_options {
+    int backend;
+    int backend_override;
+    char const *directory;
+    int directory_override;
+} sixel_clipboard_policy_options_t;
+
+typedef enum sixel_clipboard_backend {
+    SIXEL_CLIPBOARD_BACKEND_SYSTEM = 0,
+    SIXEL_CLIPBOARD_BACKEND_FILE
+} sixel_clipboard_backend_t;
 
 typedef struct sixel_option_argument_schema {
     sixel_option_schema_id_t option_id;
@@ -642,6 +663,18 @@ sixel_option_apply_log_path_argument(
     unsigned int consumer_scope,
     char *diagnostic,
     size_t diagnostic_size);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_option_apply_clipboard_policy_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+SIXEL_INTERNAL_API int sixel_clipboard_policy_backend(void);
+SIXEL_INTERNAL_API int sixel_clipboard_policy_copy_directory(
+    char *buffer,
+    size_t buffer_size);
 
 SIXEL_INTERNAL_API int sixel_diagnostics_mode_is_code(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_quiet_is_enabled(void);

@@ -779,6 +779,16 @@ static cli_option_help_t const g_option_help_table[] = {
         "    This overrides SIXEL_LOG_PATH.\n"
     },
     {
+        'y',
+        "clipboard-policy",
+        "-y POLICY[:KEY=VALUE], --clipboard-policy=POLICY[:KEY=VALUE]\n"
+        "    select the clipboard backend: system (default) or file.\n"
+        "    file sub-option:\n"
+        "      :directory=PATH (:DPATH)\n"
+        "    CLI settings override SIXEL_CLIPBOARD_BACKEND and\n"
+        "    SIXEL_CLIPBOARD_FILE_DIR.\n"
+    },
+    {
         'l',
         "loop-control",
         "-l LOOPMODE, --loop-control=LOOPMODE\n"
@@ -1132,13 +1142,16 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_CLIPBOARD_BACKEND",
         "select clipboard backend. Set to 'system' (default) to use the\n"
-        "desktop clipboard or 'file' to use a file-backed fake clipboard."
+        "desktop clipboard or 'file' to use a file-backed fake clipboard.\n"
+        "The legacy spelling 'fake' remains accepted. The\n"
+        "-y/--clipboard-policy option takes precedence."
     },
     {
         "SIXEL_CLIPBOARD_FILE_DIR",
         "directory used by the fake clipboard backend when\n"
         "SIXEL_CLIPBOARD_BACKEND=file. The backend stores image/text payloads\n"
-        "as files under this path."
+        "as files under this path. The -y file:directory=PATH suboption\n"
+        "takes precedence."
     },
     {
         "IMG2SIXEL_COMPLETION_BASH",
@@ -2132,7 +2145,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:J:kil:T:t:ugvSn:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:J:y:kil:T:t:ugvSn:"
     "PE:U:B:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
@@ -3155,6 +3168,7 @@ img2sixel_main(int argc, char *argv[])
         {"runtime-policy",        required_argument,  &long_opt, 'j'},
         {"diagnostics",           required_argument,  &long_opt, 'x'},
         {"log-path",              required_argument,  &long_opt, 'J'},
+        {"clipboard-policy",      required_argument,  &long_opt, 'y'},
         {"palette-type",          required_argument,  &long_opt, 't'},
         {"insecure",              no_argument,        &long_opt, 'k'},
         {"invert",                no_argument,        &long_opt, 'i'},
