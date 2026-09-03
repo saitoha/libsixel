@@ -1927,6 +1927,8 @@ sixel_dither_new(
     (*ppdither)->dither_parallel_band_width = 0u;
     (*ppdither)->dither_parallel_threads_max_override = 0;
     (*ppdither)->dither_parallel_threads_max = 0u;
+    (*ppdither)->dither_pin_threads_override = 0;
+    (*ppdither)->dither_pin_threads = 1;
     (*ppdither)->interframe_strategy_override = 0;
     (*ppdither)->interframe_strategy_token
         = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;

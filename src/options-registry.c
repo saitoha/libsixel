@@ -1285,6 +1285,10 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-d threads_max must be in range 1-2147483647.",
         dither_parallel_threads_max,
         dither_parallel_threads_max_override),
+    SIXEL_REGISTRY_ENCODER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
+        "pin_threads", 'I', "SIXEL_DITHER_PIN_THREADS", NULL, NULL,
+        dither_pin_threads, dither_pin_threads_override),
     SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_SIERRA,

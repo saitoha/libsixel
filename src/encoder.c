@@ -711,7 +711,7 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "band_overwrap=%u|band_overwrap_override=%d|"
             "band_width=%u|band_width_override=%d|dither_threads=%d|"
             "encode_threads=%d|threads_max=%u|threads_max_override=%d|"
-            "pin_threads=%d|codes=",
+            "pin_threads=%d|pin_threads_override=%d|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -753,7 +753,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->pipeline_last_encode_threads,
             dither->dither_parallel_threads_max,
             dither->dither_parallel_threads_max_override,
-            dither->pipeline_pin_threads);
+            dither->pipeline_pin_threads,
+            dither->dither_pin_threads_override);
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }
@@ -4692,6 +4693,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->dither_parallel_threads_max_override;
     context->dither->dither_parallel_threads_max =
         context->encoder->dither_parallel_threads_max;
+    context->dither->dither_pin_threads_override =
+        context->encoder->dither_pin_threads_override;
+    context->dither->dither_pin_threads =
+        context->encoder->dither_pin_threads;
     context->dither->interframe_strategy_override =
         context->encoder->interframe_strategy_override;
     context->dither->interframe_strategy_token =
@@ -7607,6 +7612,8 @@ sixel_encoder_new(
     (*ppencoder)->dither_parallel_band_width = 0u;
     (*ppencoder)->dither_parallel_threads_max_override = 0;
     (*ppencoder)->dither_parallel_threads_max = 0u;
+    (*ppencoder)->dither_pin_threads_override = 0;
+    (*ppencoder)->dither_pin_threads = 1;
     (*ppencoder)->interframe_strategy_override = 0;
     (*ppencoder)->interframe_strategy_token
         = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
@@ -8579,6 +8586,7 @@ sixel_encoder_apply_diffusion_resolution(
     encoder->dither_parallel_band_overwrap = 0u;
     encoder->dither_parallel_band_width = 0u;
     encoder->dither_parallel_threads_max = 0u;
+    encoder->dither_pin_threads = 1;
     encoder->interframe_strategy_token =
         SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
     encoder->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;

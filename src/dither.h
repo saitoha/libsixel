@@ -104,6 +104,8 @@ struct sixel_dither {
     unsigned int dither_parallel_band_width; /* requested band height */
     int dither_parallel_threads_max_override; /* explicit thread cap flag */
     unsigned int dither_parallel_threads_max; /* requested thread cap */
+    int dither_pin_threads_override; /* explicit affinity flag */
+    int dither_pin_threads;          /* requested affinity policy */
     int interframe_strategy_override; /* CLI strategy override enable flag */
     int interframe_strategy_token;    /* parsed interframe strategy token */
     int interframe_spatial_diffuse_override; /* CLI spatial diffuse flag */

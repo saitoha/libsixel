@@ -799,7 +799,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     if (option_id == "SIXEL_OPTION_SCHEMA_DIFFUSION" &&
             ((fields[2] == "NULL" &&
               (name == "scan" || name == "band_overwrap" ||
-               name == "band_width" || name == "threads_max")) ||
+               name == "band_width" || name == "threads_max" ||
+               name == "pin_threads")) ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_SIERRA/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_A_DITHER/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_INTERFRAME/ ||

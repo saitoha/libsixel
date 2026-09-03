@@ -82,6 +82,9 @@ sixel_encoding_planner_resolve_threads_max(
     sixel_encoder_t const *encoder,
     unsigned int *value);
 static int
+sixel_encoding_planner_resolve_pin_threads(
+    sixel_encoder_t const *encoder);
+static int
 sixel_encoding_planner_replan_palette_branch(sixel_encoding_planner_t *planner,
                                              sixel_encoder_t *encoder,
                                              sixel_frame_t *frame,
@@ -223,6 +226,27 @@ sixel_encoding_planner_resolve_threads_max(
             dither_parallel_threads_max,
             dither_parallel_threads_max_override),
         value);
+}
+
+/* Resolve request-local affinity before the registered environment. */
+static int
+sixel_encoding_planner_resolve_pin_threads(
+    sixel_encoder_t const *encoder)
+{
+    if (encoder == NULL) {
+        return 1;
+    }
+    if (encoder->dither_pin_threads_override != 0) {
+        return encoder->dither_pin_threads != 0;
+    }
+
+    return sixel_option_resolve_registered_boolean_binding(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            dither_pin_threads,
+            dither_pin_threads_override),
+        1);
 }
 
 static void
@@ -944,9 +968,7 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
         planner->loader_multiframe = 0;
     }
 
-    pin_threads = sixel_option_resolve_boolean_environment(
-        "SIXEL_DITHER_PIN_THREADS",
-        1);
+    pin_threads = sixel_encoding_planner_resolve_pin_threads(encoder);
     planner->pipeline_pin_threads = pin_threads;
 
     height = sixel_frame_get_height(frame);

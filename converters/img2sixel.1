@@ -363,6 +363,10 @@ common sub-option:
 .br
 \fBJCOUNT\fP -> short form of \fBthreads_max\fP
 .br
+\fBpin_threads=0|1\fP -> disable or enable worker affinity
+.br
+\fBI0|I1\fP -> short form of \fBpin_threads\fP
+.br
 \fIDIFFUSION\fP is one of them:
 .br
 \fBauto\fP -> choose diffusion type automatically (default)
@@ -488,7 +492,8 @@ sub-option:
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 Compact diffusion suboption names use one uppercase letter plus the value:
-all methods scan=N, band_overwrap=O, band_width=B, threads_max=J;
+all methods scan=N, band_overwrap=O, band_width=B, threads_max=J,
+pin_threads=I;
 sierra variant=V; a_dither strength=T;
 interframe diffusion=D;
 stbn source=S, diffusion=D, strength=T, motion_adapt=M,
@@ -1237,6 +1242,8 @@ hardware thread count. Empty or unset values make \fBimg2sixel\fP use
 .B SIXEL_DITHER_PIN_THREADS
 .br
 pin pipeline worker threads to their initial CPUs (0 or 1; default 1).
+The \fB-d\fP suboption \fBpin_threads=0|1\fP
+(short form \fB:I0\fP or \fB:I1\fP) takes precedence.
 .TP 5
 .B SIXEL_DITHER_PARALLEL_THREADS_MAX
 .br
