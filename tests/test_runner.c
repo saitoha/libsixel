@@ -280,6 +280,8 @@ int test_loader_0059_loader_gd_pixelpolicy_detail(int argc, char **argv);
 int test_loader_0060_loader_builtin_webp_anim_policy_limits_plan(int argc,
                                                                   char **argv);
 int test_loader_0061_loader_tty_cpr_parser(int argc, char **argv);
+int test_loader_0062_loader_animation_hide_cursor_environment(int argc,
+                                                               char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -574,6 +576,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0060_loader_builtin_webp_anim_policy_limits_plan },
     { "loader/0061_loader_tty_cpr_parser",
       test_loader_0061_loader_tty_cpr_parser },
+    { "loader/0062_loader_animation_hide_cursor_environment",
+      test_loader_0062_loader_animation_hide_cursor_environment },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",

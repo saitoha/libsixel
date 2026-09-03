@@ -449,6 +449,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0058_loader_gd_status_policy.c \
     loader/0059_loader_gd_pixelpolicy_detail.c \
     loader/0061_loader_tty_cpr_parser.c \
+    loader/0062_loader_animation_hide_cursor_environment.c \
     loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
     loader/chunk_test_common.h \
     loader/pixelformat_test_common.h \
