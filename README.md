@@ -1057,8 +1057,9 @@ SIXEL_ANIMATION_HIDE_CURSOR
                            (`ESC[?25l`) while animated frames are
                            emitted to tty output. Only the exact
                            value "1" enables it. Default is off.
-                           img2sixel sets it to "1" only when the
-                           variable is unset.
+                           img2sixel enables it only when the
+                           variable is unset. -z/--terminal-policy
+                           takes precedence.
 SIXEL_THREADS              override encoder thread count.
                            Accepts positive integers or the word
                            'auto' to match the hardware thread

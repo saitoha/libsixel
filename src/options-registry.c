@@ -1318,6 +1318,11 @@ g_clipboard_policy_environment_choices[] = {
     { "fake", SIXEL_CLIPBOARD_BACKEND_FILE }
 };
 
+static sixel_option_value_schema_t const g_terminal_policy_values[] = {
+    { "0", 0, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "1", 1, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
 static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
     { "preserve", SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE },
     { "linear", SIXEL_RUNTIME_RESIZE_PRECISION_LINEAR32 },
@@ -3099,6 +3104,17 @@ static sixel_option_argument_schema_t const g_options[] = {
         g_clipboard_policy_values,
         "SIXEL_CLIPBOARD_BACKEND",
         g_clipboard_policy_environment_choices),
+    SIXEL_REGISTRY_SCALAR_CHOICE(
+        SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_TERMINAL_POLICY,
+        "terminal-policy",
+        SIXEL_OPTION_MATCH_EXACT,
+        SIXEL_OPTION_MATCH_EXACT,
+        "SIXEL_ANIMATION_HIDE_CURSOR",
+        "terminal policy must be 0 or 1.",
+        0,
+        g_terminal_policy_values),
 };
 
 static int
@@ -5126,6 +5142,49 @@ sixel_option_resolve_argument_environment(
         }
     }
     return NULL;
+}
+
+int
+sixel_option_argument_environment_is_present(
+    sixel_option_schema_id_t option_id)
+{
+    sixel_option_argument_schema_t const *schema;
+
+    schema = sixel_option_registry_get(option_id);
+    if (schema == NULL || !sixel_option_registry_validate()) {
+        return 0;
+    }
+    if (schema->env_name != NULL &&
+        sixel_compat_getenv(schema->env_name) != NULL) {
+        return 1;
+    }
+    if (schema->env_fallback_name != NULL &&
+        sixel_compat_getenv(schema->env_fallback_name) != NULL) {
+        return 1;
+    }
+    if (schema->env_legacy_name != NULL &&
+        sixel_compat_getenv(schema->env_legacy_name) != NULL) {
+        return 1;
+    }
+    return 0;
+}
+
+int
+sixel_option_encoder_environment_is_present(int optflag)
+{
+    size_t index;
+
+    index = 0u;
+    while (index < SIXEL_REGISTRY_ARRAY_LENGTH(g_options)) {
+        if (g_options[index].optflag == optflag &&
+            (g_options[index].scope &
+             SIXEL_OPTION_SCOPE_ENCODER_FAMILY) != 0u) {
+            return sixel_option_argument_environment_is_present(
+                g_options[index].option_id);
+        }
+        ++index;
+    }
+    return 0;
 }
 
 int

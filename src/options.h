@@ -177,6 +177,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_DIAGNOSTICS,
     SIXEL_OPTION_SCHEMA_LOG_PATH,
     SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY,
+    SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
 
@@ -579,12 +580,19 @@ sixel_option_parse_scalar_argument(
     char *diagnostic,
     size_t diagnostic_size);
 
-int
+SIXEL_INTERNAL_API int
 sixel_option_resolve_scalar_environment(
     sixel_option_schema_id_t option_id,
     sixel_suboption_value_t *value,
     char *diagnostic,
     size_t diagnostic_size);
+
+SIXEL_INTERNAL_API int
+sixel_option_argument_environment_is_present(
+    sixel_option_schema_id_t option_id);
+
+SIXEL_INTERNAL_API int
+sixel_option_encoder_environment_is_present(int optflag);
 
 char const *
 sixel_option_resolve_argument_environment(

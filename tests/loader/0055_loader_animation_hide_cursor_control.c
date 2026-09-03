@@ -26,34 +26,16 @@
 #include "src/tty.h"
 
 static int
-run_animation_hide_cursor_enable_flag_cases(void)
-{
-    if (!sixel_tty_is_animation_hide_cursor_enabled("1")) {
-        fprintf(stderr, "expected only \"1\" to enable cursor hide\n");
-        return 1;
-    }
-    if (sixel_tty_is_animation_hide_cursor_enabled("01") ||
-            sixel_tty_is_animation_hide_cursor_enabled("true") ||
-            sixel_tty_is_animation_hide_cursor_enabled("") ||
-            sixel_tty_is_animation_hide_cursor_enabled(NULL)) {
-        fprintf(stderr, "unexpected cursor hide value accepted\n");
-        return 1;
-    }
-
-    return 0;
-}
-
-static int
 run_output_condition_cases(void)
 {
-    if (!sixel_encoder_should_hide_animation_cursor(1, 0, 1, "1")) {
+    if (!sixel_encoder_should_hide_animation_cursor(1, 0, 1, 1)) {
         fprintf(stderr, "expected hide condition for tty animation output\n");
         return 1;
     }
-    if (sixel_encoder_should_hide_animation_cursor(0, 0, 1, "1") ||
-            sixel_encoder_should_hide_animation_cursor(1, 1, 1, "1") ||
-            sixel_encoder_should_hide_animation_cursor(1, 0, 0, "1") ||
-            sixel_encoder_should_hide_animation_cursor(1, 0, 1, "true")) {
+    if (sixel_encoder_should_hide_animation_cursor(0, 0, 1, 1) ||
+            sixel_encoder_should_hide_animation_cursor(1, 1, 1, 1) ||
+            sixel_encoder_should_hide_animation_cursor(1, 0, 0, 1) ||
+            sixel_encoder_should_hide_animation_cursor(1, 0, 1, 0)) {
         fprintf(stderr, "unexpected hide condition accepted\n");
         return 1;
     }
@@ -125,11 +107,6 @@ test_loader_0055_loader_animation_hide_cursor_control(int argc, char **argv)
 
     (void)argc;
     (void)argv;
-
-    status = run_animation_hide_cursor_enable_flag_cases();
-    if (status != 0) {
-        return EXIT_FAILURE;
-    }
 
     status = run_output_condition_cases();
     if (status != 0) {

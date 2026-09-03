@@ -36,7 +36,7 @@ SIXEL_INTERNAL_API int
 sixel_encoder_should_hide_animation_cursor(int is_multiframe,
                                            int fstatic,
                                            int outfd_is_tty,
-                                           char const *env_value);
+                                           int enabled);
 
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
@@ -281,6 +281,8 @@ struct sixel_encoder {
     int fdrcs;
     int fignore_delay;
     int fstatic;
+    int animation_hide_cursor;
+    int animation_hide_cursor_override;
     int cell_width;
     int cell_height;
     int pixelwidth;

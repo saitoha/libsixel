@@ -94,6 +94,8 @@ int img2sixel_trace_topic_is_enabled(char const *topic);
 void img2sixel_trace_topic_message(const char *topic, const char *format, ...);
 SIXEL_INTERNAL_API int sixel_diagnostics_mode_is_code(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_quiet_is_enabled(void);
+SIXEL_INTERNAL_API int
+sixel_option_encoder_environment_is_present(int optflag);
 
 #if !defined(LIBSIXEL_OPTIONS_H)
 /*
@@ -789,6 +791,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "    SIXEL_CLIPBOARD_FILE_DIR.\n"
     },
     {
+        'z',
+        "terminal-policy",
+        "-z 0|1, --terminal-policy=0|1\n"
+        "    hide the terminal cursor during animated TTY output when set\n"
+        "    to 1. The library default is 0; img2sixel uses 1 when neither\n"
+        "    this option nor SIXEL_ANIMATION_HIDE_CURSOR is configured.\n"
+    },
+    {
         'l',
         "loop-control",
         "-l LOOPMODE, --loop-control=LOOPMODE\n"
@@ -1218,7 +1228,8 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_ANIMATION_HIDE_CURSOR",
         "hide terminal cursor with DECTCEM during animated TTY output.\n"
         "Only the exact value '1' enables this behavior. Defaults to off,\n"
-        "but img2sixel sets it to '1' when the variable is unset."
+        "but img2sixel enables it when the variable is unset. The\n"
+        "-z/--terminal-policy option takes precedence."
     },
     {
         "SIXEL_COLORS",
@@ -2145,7 +2156,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:J:y:kil:T:t:ugvSn:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:J:y:z:kil:T:t:ugvSn:"
     "PE:U:B:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
@@ -3169,6 +3180,7 @@ img2sixel_main(int argc, char *argv[])
         {"diagnostics",           required_argument,  &long_opt, 'x'},
         {"log-path",              required_argument,  &long_opt, 'J'},
         {"clipboard-policy",      required_argument,  &long_opt, 'y'},
+        {"terminal-policy",       required_argument,  &long_opt, 'z'},
         {"palette-type",          required_argument,  &long_opt, 't'},
         {"insecure",              no_argument,        &long_opt, 'k'},
         {"invert",                no_argument,        &long_opt, 'i'},
@@ -3383,24 +3395,25 @@ img2sixel_main(int argc, char *argv[])
         }
     }
 
-    /*
-     * Enable DECTCEM cursor hide for animated tty output only when the user
-     * did not configure the variable.
-     */
-    if (img2sixel_compat_getenv("SIXEL_ANIMATION_HIDE_CURSOR") == NULL) {
-        if (img2sixel_compat_setenv("SIXEL_ANIMATION_HIDE_CURSOR",
-                                    "1") != 0) {
-            sixel_helper_set_additional_message(
-                "failed to set environment variable "
-                "'SIXEL_ANIMATION_HIDE_CURSOR'.");
-            status = SIXEL_RUNTIME_ERROR;
-            goto error;
-        }
-    }
-
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
+    }
+
+    /*
+     * Keep the interactive frontend default distinct from the library
+     * default. Empty and invalid user values still count as configured and
+     * therefore preserve the historical disabled behavior.
+     */
+    if (!sixel_option_encoder_environment_is_present(
+            SIXEL_OPTFLAG_TERMINAL_POLICY)) {
+        status = sixel_encoder_setopt(
+            encoder,
+            SIXEL_OPTFLAG_TERMINAL_POLICY,
+            "1");
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
     }
 
     sixel_option_apply_cli_suggestion_defaults();

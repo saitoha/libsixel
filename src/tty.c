@@ -968,20 +968,6 @@ sixel_tty_unregister_cbreak_fd(int fd)
     }
 }
 
-SIXEL_INTERNAL_API int
-sixel_tty_is_animation_hide_cursor_enabled(char const *value)
-{
-    if (value == NULL) {
-        return 0;
-    }
-
-    if (strcmp(value, "1") == 0) {
-        return 1;
-    }
-
-    return 0;
-}
-
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_tty_hide_cursor(int fd)
 {

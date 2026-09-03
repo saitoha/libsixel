@@ -13,18 +13,33 @@
 
 #include "src/compat_stub.h"
 #include "src/encoder.h"
+#include "src/options.h"
 
 static int
 animation_hide_cursor_environment_matches(char const *text,
                                           int expected)
 {
-    char const *actual;
+    int result;
+    int enabled;
+    sixel_suboption_value_t value;
 
     if (sixel_compat_setenv("SIXEL_ANIMATION_HIDE_CURSOR", text) != 0) {
         return 0;
     }
-    actual = sixel_compat_getenv("SIXEL_ANIMATION_HIDE_CURSOR");
-    return sixel_encoder_should_hide_animation_cursor(1, 0, 1, actual)
+    if (!sixel_option_argument_environment_is_present(
+            SIXEL_OPTION_SCHEMA_TERMINAL_POLICY)) {
+        return 0;
+    }
+    value.int_value = 0;
+    result = sixel_option_resolve_scalar_environment(
+        SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
+        &value,
+        NULL,
+        0u);
+    enabled = result == SIXEL_OPTION_ENVIRONMENT_MATCH
+        ? value.int_value
+        : 0;
+    return sixel_encoder_should_hide_animation_cursor(1, 0, 1, enabled)
         == expected;
 }
 

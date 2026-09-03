@@ -119,6 +119,11 @@ choose the clipboard backend. \fIPOLICY\fP is \fBsystem\fP (default) or
 (short form \fB:DPATH\fP). CLI values take precedence over
 \fBSIXEL_CLIPBOARD_BACKEND\fP and \fBSIXEL_CLIPBOARD_FILE_DIR\fP.
 .TP 5
+.B \-z \fI0|1\fP, \-\-terminal\-policy=\fI0|1\fP
+control whether animated tty output hides the terminal cursor with DECTCEM.
+The library default is \fB0\fP. \fIimg2sixel\fP uses \fB1\fP when neither
+this option nor \fBSIXEL_ANIMATION_HIDE_CURSOR\fP is configured.
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5
@@ -1341,8 +1346,9 @@ setting. Defaults to 50. Invalid values fall back to 50.
 .br
 hide the terminal cursor with DECTCEM (\fBESC[?25l\fP) while animated frames
 are emitted to a tty output. Only the exact value \(dq1\(dq enables this
-behavior. Default is off. \fIimg2sixel\fP sets this variable to \(dq1\(dq
-only when it is unset.
+behavior. Default is off. \fIimg2sixel\fP enables the policy only when this
+variable is unset. The \fB\-z/\-\-terminal\-policy\fP option takes
+precedence.
 .TP 5
 .B SIXEL_COLORS
 .br

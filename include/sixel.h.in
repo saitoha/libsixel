@@ -736,6 +736,10 @@ typedef int SIXELSTATUS;
                                                  --clipboard-policy=POLICY:
                                                  select clipboard backend
                                                */
+#define SIXEL_OPTFLAG_TERMINAL_POLICY   ('z') /* -z 0|1,
+                                                 --terminal-policy=0|1:
+                                                 control terminal behavior
+                                               */
 #define SIXEL_OPTFLAG_CLUSTERING_COLORSPACE ('X')
     /* -X COLORSPACE */
     /* --clustering-colorspace=COLORSPACE */

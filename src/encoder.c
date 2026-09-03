@@ -132,8 +132,6 @@
 #include "planner.h"
 #include "sixel_atomic.h"
 
-#define SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR \
-    "SIXEL_ANIMATION_HIDE_CURSOR"
 #define SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR \
     "LSO_TEST_SIGINT_NOTIFY_PID"
 #define SIXEL_ENCODER_SIGINT_SYNC_EVENT_ENVVAR \
@@ -4202,7 +4200,7 @@ sixel_encoder_should_hide_animation_cursor(
     int is_multiframe,
     int fstatic,
     int outfd_is_tty,
-    char const *env_value)
+    int enabled)
 {
     if (is_multiframe == 0) {
         return 0;
@@ -4213,11 +4211,33 @@ sixel_encoder_should_hide_animation_cursor(
     if (outfd_is_tty == 0) {
         return 0;
     }
-    if (!sixel_tty_is_animation_hide_cursor_enabled(env_value)) {
+    if (enabled == 0) {
         return 0;
     }
 
     return 1;
+}
+
+static int
+sixel_encoder_animation_hide_cursor_enabled(sixel_encoder_t const *encoder)
+{
+    sixel_suboption_value_t value;
+
+    memset(&value, 0, sizeof(value));
+    if (encoder == NULL) {
+        return 0;
+    }
+    if (encoder->animation_hide_cursor_override != 0) {
+        return encoder->animation_hide_cursor != 0;
+    }
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
+            &value,
+            NULL,
+            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.int_value != 0;
+    }
+    return 0;
 }
 
 
@@ -4874,7 +4894,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     int nwrite;
     int outfd_is_tty;
     int should_hide_cursor;
-    char const *hide_cursor_env;
+    int hide_cursor_enabled;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -4884,7 +4904,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     height = 0;
     outfd_is_tty = 0;
     should_hide_cursor = 0;
-    hide_cursor_env = NULL;
+    hide_cursor_enabled = 0;
 
     if (context->output) {
         context->fn_write = sixel_encoder_core_write_callback;
@@ -4956,13 +4976,23 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
 
     if (context->multiframe != 0 && !context->encoder->fstatic) {
         outfd_is_tty = sixel_compat_isatty(context->encoder->outfd);
-        hide_cursor_env = sixel_compat_getenv(
-            SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR);
+        hide_cursor_enabled =
+            sixel_encoder_animation_hide_cursor_enabled(context->encoder);
         should_hide_cursor = sixel_encoder_should_hide_animation_cursor(
             context->multiframe,
             context->encoder->fstatic,
             outfd_is_tty,
-            hide_cursor_env);
+            hide_cursor_enabled);
+        sixel_trace_topic_message(
+            "terminal_contract",
+            "LSXTTY1|hide_cursor=%d|override=%d|multiframe=%d|"
+            "static=%d|tty=%d|hide=%d",
+            hide_cursor_enabled,
+            context->encoder->animation_hide_cursor_override != 0,
+            context->multiframe != 0,
+            context->encoder->fstatic != 0,
+            outfd_is_tty != 0,
+            should_hide_cursor != 0);
         if (should_hide_cursor != 0) {
             (void)sixel_tty_begin_animation_input_guard();
             (void)sixel_tty_hide_cursor(context->encoder->outfd);
@@ -7895,6 +7925,8 @@ sixel_encoder_new(
     (*ppencoder)->fdrcs                 = 0;
     (*ppencoder)->fignore_delay         = 0;
     (*ppencoder)->fstatic               = 0;
+    (*ppencoder)->animation_hide_cursor = 0;
+    (*ppencoder)->animation_hide_cursor_override = 0;
     (*ppencoder)->cell_width            = 0;
     (*ppencoder)->cell_height           = 0;
     (*ppencoder)->pixelwidth            = (-1);
@@ -10245,6 +10277,20 @@ sixel_encoder_setopt(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        break;
+    case SIXEL_OPTFLAG_TERMINAL_POLICY:  /* z */
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            value,
+            &scalar_value,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        encoder->animation_hide_cursor = scalar_value.int_value;
+        encoder->animation_hide_cursor_override = 1;
         break;
     case SIXEL_OPTFLAG_COLORS:  /* p */
         status = sixel_encoder_apply_colors_option(encoder, value);

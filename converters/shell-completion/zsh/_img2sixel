@@ -972,6 +972,14 @@ _clipboardpolicy() {
 }
 
 
+_terminalpolicy() {
+  _values \
+    'TERMINALPOLICY' \
+    '0[leave the terminal cursor visible]' \
+    '1[hide the cursor during animated tty output]'
+}
+
+
 _completiontarget() {
   _values \
     'TARGET' \
@@ -1032,6 +1040,7 @@ _arguments -S -s -A "-*" -S \
   {-x,--diagnostics=}'[choose diagnostic presentation]':diagnostics:_diagnosticspolicy \
   {-J,--log-path=}'[write the shared JSON timeline log]':files:_files \
   {-y,--clipboard-policy=}'[choose clipboard backend]':clipboard:_clipboardpolicy \
+  {-z,--terminal-policy=}'[control animated cursor hiding]':terminalpolicy:_terminalpolicy \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
   {-T,--start-frame=}'[set animation start frame index for loaders]' \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \

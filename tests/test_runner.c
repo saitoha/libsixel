@@ -207,6 +207,7 @@ int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
 int test_cli_0031_cli_guard_missing_argument(int argc, char **argv);
 int test_cli_0032_cli_gpu_policy_option(int argc, char **argv);
 int test_cli_0033_consumer_scope(int argc, char **argv);
+int test_cli_0034_cli_terminal_policy_option(int argc, char **argv);
 int test_security_0001_issue222_encoder_encode_bytes_packed_g1(int argc,
                                                                 char **argv);
 
@@ -480,6 +481,8 @@ static test_entry_t const test_entries[] = {
       test_cli_0032_cli_gpu_policy_option },
     { "cli/0033_cli_suboption_consumer_scope",
       test_cli_0033_consumer_scope },
+    { "cli/0034_cli_terminal_policy_option",
+      test_cli_0034_cli_terminal_policy_option },
     { "loader/0008_loader_coregraphics_pixelformat",
       test_loader_0008_loader_coregraphics_pixelformat },
     { "loader/0009_loader_wic_pixelformat",

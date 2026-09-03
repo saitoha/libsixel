@@ -828,6 +828,10 @@ _img2sixel()
         _img2sixel_complete_clipboard_policy
         return 0
         ;;
+    -z|--terminal-policy)
+        COMPREPLY=( $( compgen -W '0 1' -- "$cur" ) )
+        return 0
+        ;;
     -l|--loop-control)
         COMPREPLY=( $( compgen -W 'auto \
                                    force \
@@ -985,6 +989,7 @@ _img2sixel()
                                    -x --diagnostics \
                                    -J --log-path \
                                    -y --clipboard-policy \
+                                   -z --terminal-policy \
                                    -l --loop-control \
                                    -T --start-frame \
                                    -t --palette-type \
