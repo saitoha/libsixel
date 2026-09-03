@@ -223,6 +223,9 @@ loader_manager_init_loader_suboptions(
     suboptions->libwebp_max_output_frames =
         (int)SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES_DEFAULT;
     suboptions->coregraphics_enable_orientation = 1;
+    suboptions->coregraphics_cache_max_bytes =
+        SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES_DEFAULT;
+    suboptions->coregraphics_cache_max_bytes_override = 0;
     suboptions->libtiff_enable_cms = 0;
     suboptions->libtiff_cms_engine = SIXEL_CMS_ENGINE_NONE;
     suboptions->builtin_enable_cms = 0;

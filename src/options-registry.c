@@ -281,6 +281,26 @@
         (trace_topic_) \
     }
 
+#define SIXEL_REGISTRY_LOADER_SIZE_ENV_ERROR( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, message_, \
+    suffix_, field_, override_) \
+    { \
+        (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
+        (legacy_), SIXEL_SUBOPTION_VALUE_SIZE, NULL, 0u, NULL, 0u, \
+        0.0, 0.0, 0, 0, 1, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        (message_), (suffix_), \
+        { \
+            SIXEL_SUBOPTION_TARGET_LOADER, SIXEL_SUBOPTION_STORAGE_SIZE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_loader_suboptions_t, field_, size_t), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_loader_suboptions_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL \
+    }
+
 #define SIXEL_REGISTRY_FLOAT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_) \
     SIXEL_REGISTRY_NUMBER( \
@@ -1787,6 +1807,15 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "orientation", 'O', "SIXEL_LOADER_COREGRAPHICS_ORIENTATION",
         "SIXEL_LOADER_ORIENTATION", NULL,
         coregraphics_enable_orientation),
+    SIXEL_REGISTRY_LOADER_SIZE_ENV_ERROR(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_COREGRAPHICS,
+        "cache_max_bytes", 'M',
+        "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES", NULL, NULL,
+        "invalid coregraphics suboption value \"",
+        "\" for key \"cache_max_bytes\"; expected a byte count.",
+        coregraphics_cache_max_bytes,
+        coregraphics_cache_max_bytes_override),
 #endif
 #if HAVE_LIBTIFF
     SIXEL_REGISTRY_LOADER_CHOICE_ENV(
@@ -2433,6 +2462,8 @@ sixel_option_registry_binding_kind_is_valid(
     case SIXEL_SUBOPTION_VALUE_UINT:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_UINT ||
             key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_INT;
+    case SIXEL_SUBOPTION_VALUE_SIZE:
+        return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_SIZE;
     case SIXEL_SUBOPTION_VALUE_FLOAT:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_FLOAT;
     case SIXEL_SUBOPTION_VALUE_DOUBLE:

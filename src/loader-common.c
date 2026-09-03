@@ -372,6 +372,75 @@ loader_resolve_uint_suboption(
     return (unsigned int)stored;
 }
 
+SIXELSTATUS
+loader_resolve_size_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    size_t fallback,
+    size_t *value,
+    int *environment_out_of_range)
+{
+    sixel_loader_suboptions_t const *suboptions;
+    sixel_suboption_key_t const *key_def;
+    sixel_option_environment_result_t result;
+    int overridden;
+
+    suboptions = sixel_loader_active_suboptions();
+    key_def = NULL;
+    result = SIXEL_OPTION_ENVIRONMENT_UNSET;
+    overridden = 0;
+    if (value == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *value = fallback;
+    if (environment_out_of_range != NULL) {
+        *environment_out_of_range = 0;
+    }
+    key_def = sixel_option_registry_suboption_by_binding(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        base_name,
+        binding_identifier);
+    if (key_def == NULL ||
+        key_def->value_kind != SIXEL_SUBOPTION_VALUE_SIZE ||
+        key_def->binding.target_class != SIXEL_SUBOPTION_TARGET_LOADER ||
+        key_def->binding.storage_kind != SIXEL_SUBOPTION_STORAGE_SIZE ||
+        key_def->binding.value_offset == SIXEL_SUBOPTION_OFFSET_NONE) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (suboptions != NULL) {
+        memcpy(value,
+               (unsigned char const *)suboptions +
+                   key_def->binding.value_offset,
+               sizeof(*value));
+        if (key_def->binding.override_offset !=
+            SIXEL_SUBOPTION_OFFSET_NONE) {
+            memcpy(&overridden,
+                   (unsigned char const *)suboptions +
+                       key_def->binding.override_offset,
+                   sizeof(overridden));
+        }
+        if (overridden != 0) {
+            return SIXEL_OK;
+        }
+    }
+
+    result = sixel_option_resolve_registered_size_binding(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        base_name,
+        binding_identifier,
+        value);
+    if (environment_out_of_range != NULL &&
+        result == SIXEL_OPTION_ENVIRONMENT_RANGE) {
+        *environment_out_of_range = 1;
+    }
+    if (result == SIXEL_OPTION_ENVIRONMENT_MATCH ||
+        result == SIXEL_OPTION_ENVIRONMENT_UNSET) {
+        return SIXEL_OK;
+    }
+    return SIXEL_BAD_INPUT;
+}
+
 int
 loader_png_trns_keycolor_mode(void)
 {

@@ -36,9 +36,6 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
-#if HAVE_ERRNO_H
-# include <errno.h>
-#endif
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -105,7 +102,7 @@
 
 #define COREGRAPHICS_SRGB_ENCODE_LUT_SIZE 4096u
 #define COREGRAPHICS_FRAME_CACHE_MAX_BYTES_DEFAULT \
-    (64u * 1024u * 1024u)
+    SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES_DEFAULT
 
 typedef struct sixel_loader_coregraphics_component {
     sixel_loader_component_t base;
@@ -2042,48 +2039,35 @@ coregraphics_parse_frame_cache_max_bytes(size_t *max_bytes,
                                          int *cache_enabled)
 {
     SIXELSTATUS status;
-    char const *env_value;
-    char *endptr;
-    unsigned long long parsed;
+    int environment_out_of_range;
 
     status = SIXEL_OK;
-    env_value = NULL;
-    endptr = NULL;
-    parsed = 0ull;
+    environment_out_of_range = 0;
     if (max_bytes == NULL || cache_enabled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    *max_bytes = COREGRAPHICS_FRAME_CACHE_MAX_BYTES_DEFAULT;
-    *cache_enabled = 1;
-    env_value = sixel_compat_getenv(
-        "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES");
-    if (env_value == NULL || env_value[0] == '\0') {
+    status = loader_resolve_size_suboption(
+        "coregraphics",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            coregraphics_cache_max_bytes,
+            coregraphics_cache_max_bytes_override),
+        COREGRAPHICS_FRAME_CACHE_MAX_BYTES_DEFAULT,
+        max_bytes,
+        &environment_out_of_range);
+    if (SIXEL_FAILED(status)) {
+        if (environment_out_of_range) {
+            sixel_helper_set_additional_message(
+                "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES "
+                "is out of range.");
+        } else {
+            sixel_helper_set_additional_message(
+                "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES "
+                "must be a non-negative integer.");
+        }
         goto end;
     }
-
-    errno = 0;
-    parsed = strtoull(env_value, &endptr, 10);
-    if (errno == ERANGE || endptr == env_value || *endptr != '\0') {
-        sixel_helper_set_additional_message(
-            "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES "
-            "must be a non-negative integer.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    if (parsed == 0ull) {
-        *max_bytes = 0u;
-        *cache_enabled = 0;
-        goto end;
-    }
-    if (parsed > (unsigned long long)SIZE_MAX) {
-        sixel_helper_set_additional_message(
-            "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES is out of range.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-
-    *max_bytes = (size_t)parsed;
+    *cache_enabled = *max_bytes != 0u;
 
 end:
     return status;

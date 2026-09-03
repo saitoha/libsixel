@@ -1155,6 +1155,8 @@ typedef struct sixel_loader_suboptions {
     int libwebp_enable_orientation;
     int libwebp_max_output_frames;
     int coregraphics_enable_orientation;
+    size_t coregraphics_cache_max_bytes;
+    int coregraphics_cache_max_bytes_override;
     int libtiff_enable_cms;
     int libtiff_cms_engine;
     int builtin_enable_cms;

@@ -389,7 +389,8 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_LOADER_CHOICE_ENV" ||
         macro == "SIXEL_REGISTRY_LOADER_UINT" ||
         macro == \
-            "SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM_DIGITS"
+            "SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM_DIGITS" ||
+        macro == "SIXEL_REGISTRY_LOADER_SIZE_ENV_ERROR"
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
                  exact_key, shared_key, macro) {
@@ -632,7 +633,9 @@ function binding_from_registry(row, fields, count, macro, binding) {
     sub(/^[[:space:]]*/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
-    if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
+    if (macro ~ /LOADER_SIZE_ENV_ERROR/) {
+        binding = fields[count - 1] "," fields[count]
+    } else if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
         binding = fields[count - 2] "," fields[count - 1] "," \
             fields[count]
     } else if (macro ~ /ENCODER_DIRECT_CHOICE|DEQUANTIZE_|LOADER_/) {
@@ -798,7 +801,11 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     }
     binding_value = ""
     binding_override = ""
-    if (macro ~ /ENCODER_MIRROR_CHOICE/) {
+    if (macro ~ /LOADER_SIZE_ENV_ERROR/) {
+        binding = fields[count - 1] "|" fields[count]
+        binding_value = fields[count - 1]
+        binding_override = fields[count]
+    } else if (macro ~ /ENCODER_MIRROR_CHOICE/) {
         binding = fields[count - 2] "|" fields[count - 1] "|" fields[count]
         binding_value = fields[count - 2]
         binding_override = fields[count - 1]

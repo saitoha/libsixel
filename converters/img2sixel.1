@@ -829,6 +829,8 @@ The librsvg loader accepts \fBrelative_resources=0|1\fP
 (short form \fBS0\fP or \fBS1\fP). Both default to 0.
 The libwebp loader accepts \fBmax_output_frames=COUNT\fP
 (short form \fBMCOUNT\fP) to cap emitted animation frames.
+The CoreGraphics loader accepts \fBcache_max_bytes=BYTES\fP
+(short form \fBMBYTES\fP) to cap its frame replay cache; 0 disables it.
 The builtin loader accepts the PAM policies
 \fBpam_duplicate_keys=0|1\fP (short form \fBD0\fP or \fBD1\fP),
 \fBpam_endhdr_tokens=0|1\fP (short form \fBG0\fP or \fBG1\fP), and
@@ -1408,6 +1410,13 @@ overrides \fBSIXEL_LOADER_ORIENTATION\fP.
 override orientation handling for the CoreGraphics loader.
 Accepts only "0" or "1".
 overrides \fBSIXEL_LOADER_ORIENTATION\fP.
+.TP 5
+.B SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES
+.br
+set the CoreGraphics frame replay cache cap in bytes. The default is
+67108864 bytes; 0 disables the cache. Override with
+\fB-Lcoregraphics:cache_max_bytes=BYTES\fP or its short form
+\fB-Lcoregraphics:MBYTES\fP.
 .TP 5
 .B SIXEL_LOADER_ANIMATION_START_FRAME_NO
 .br

@@ -70,6 +70,7 @@ typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_BOOLEAN,
     SIXEL_SUBOPTION_VALUE_INT,
     SIXEL_SUBOPTION_VALUE_UINT,
+    SIXEL_SUBOPTION_VALUE_SIZE,
     SIXEL_SUBOPTION_VALUE_FLOAT,
     SIXEL_SUBOPTION_VALUE_DOUBLE,
     SIXEL_SUBOPTION_VALUE_INT_PAIR,
@@ -93,6 +94,7 @@ typedef enum sixel_suboption_target_class {
 typedef enum sixel_suboption_storage_kind {
     SIXEL_SUBOPTION_STORAGE_INT = 0,
     SIXEL_SUBOPTION_STORAGE_UINT,
+    SIXEL_SUBOPTION_STORAGE_SIZE,
     SIXEL_SUBOPTION_STORAGE_FLOAT,
     SIXEL_SUBOPTION_STORAGE_DOUBLE,
     SIXEL_SUBOPTION_STORAGE_INT_PAIR
@@ -201,6 +203,7 @@ typedef enum sixel_option_match_flag {
 } sixel_option_match_flag_t;
 
 typedef enum sixel_option_environment_result {
+    SIXEL_OPTION_ENVIRONMENT_RANGE = -2,
     SIXEL_OPTION_ENVIRONMENT_INVALID = -1,
     SIXEL_OPTION_ENVIRONMENT_UNSET = 0,
     SIXEL_OPTION_ENVIRONMENT_MATCH = 1
@@ -259,6 +262,7 @@ typedef struct sixel_suboption_key {
 typedef union sixel_suboption_value {
     int int_value;
     unsigned int uint_value;
+    size_t size_value;
     float float_value;
     double double_value;
     char const *string_value;
@@ -304,6 +308,13 @@ sixel_option_resolve_registered_uint_binding(
     char const *base_name,
     char const *binding_identifier,
     unsigned int *value);
+
+sixel_option_environment_result_t
+sixel_option_resolve_registered_size_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
+    size_t *value);
 
 int
 sixel_option_resolve_registered_float_binding(
@@ -473,6 +484,11 @@ sixel_option_parse_argument_with_suboptions(
 
 int
 sixel_option_resolve_suboption_environment(
+    sixel_suboption_key_t const *key_def,
+    sixel_suboption_value_t *value);
+
+sixel_option_environment_result_t
+sixel_option_resolve_suboption_environment_result(
     sixel_suboption_key_t const *key_def,
     sixel_suboption_value_t *value);
 

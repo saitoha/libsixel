@@ -37,6 +37,8 @@
 
 #define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
 #define SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES_DEFAULT 262144u
+#define SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES_DEFAULT \
+    ((size_t)(64u * 1024u * 1024u))
 
 typedef struct sixel_loader_timeline_callback_state {
     unsigned int magic;
@@ -115,6 +117,14 @@ unsigned int loader_resolve_uint_suboption(
     char const *base_name,
     char const *binding_identifier,
     unsigned int fallback);
+
+/* Resolve a loader size and report an invalid registered environment. */
+SIXELSTATUS loader_resolve_size_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    size_t fallback,
+    size_t *value,
+    int *environment_out_of_range);
 
 /* Return the shared builtin/libpng PNG transparency compatibility mode. */
 int loader_png_trns_keycolor_mode(void);
