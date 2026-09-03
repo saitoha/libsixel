@@ -193,15 +193,16 @@ loader_manager_init_loader_suboptions(
     sixel_loader_suboptions_t *suboptions)
 {
     sixel_option_argument_schema_t const *schema;
-    size_t base_index;
 
     schema = NULL;
-    base_index = 0u;
     if (suboptions == NULL) {
         return;
     }
 
     memset(suboptions, 0, sizeof(*suboptions));
+    suboptions->background_policy =
+        SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
+    suboptions->background_colorspace = SIXEL_COLORSPACE_GAMMA;
     suboptions->libjpeg_enable_cms = 0;
     suboptions->libjpeg_cms_engine = SIXEL_CMS_ENGINE_NONE;
     suboptions->libjpeg_enable_orientation = 1;
@@ -225,14 +226,12 @@ loader_manager_init_loader_suboptions(
     if (schema == NULL) {
         return;
     }
-    while (base_index < schema->value_count) {
-        sixel_option_apply_suboption_environment(
-            schema,
-            schema->values + base_index,
-            suboptions,
-            SIXEL_SUBOPTION_TARGET_LOADER);
-        ++base_index;
-    }
+    /* A NULL base applies every common and backend row exactly once. */
+    sixel_option_apply_suboption_environment(
+        schema,
+        NULL,
+        suboptions,
+        SIXEL_SUBOPTION_TARGET_LOADER);
 }
 
 void

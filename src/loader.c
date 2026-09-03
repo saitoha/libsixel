@@ -1200,6 +1200,7 @@ sixel_loader_load_file(
     sixel_loader_callback_state_t callback_state;
     sixel_option_argument_list_resolution_t order_resolution;
     sixel_loader_suboptions_t active_suboptions;
+    sixel_loader_suboptions_t const *previous_active_suboptions;
     sixel_loader_manager_build_request_t build_request;
     sixel_loader_osc11_bg_query_job_t osc11_query_job;
     char const *osc11_timeout_env;
@@ -1208,6 +1209,7 @@ sixel_loader_load_file(
     int thread_status;
     int wait_result;
     int chunk_job_id;
+    int suboptions_active;
 
     pchunk = NULL;
     factory = NULL;
@@ -1217,12 +1219,14 @@ sixel_loader_load_file(
     env_order = NULL;
     chunk_source_path = NULL;
     active_order_resolution = NULL;
+    previous_active_suboptions = NULL;
     osc11_timeout_env = NULL;
     osc11_timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
     osc11_bgcolor_applied = 0;
     thread_status = SIXEL_FALSE;
     wait_result = 0;
     chunk_job_id = -1;
+    suboptions_active = 0;
     sixel_option_init_argument_list_resolution(&order_resolution);
     loader_manager_init_loader_suboptions(&active_suboptions);
     loader_osc11_bg_query_job_init(&osc11_query_job);
@@ -1375,6 +1379,9 @@ sixel_loader_load_file(
     }
     loader_manager_resolve_loader_suboptions(active_order_resolution,
                                              &active_suboptions);
+    previous_active_suboptions =
+        sixel_loader_activate_suboptions(&active_suboptions);
+    suboptions_active = 1;
     /*
      * Resolve OSC11 before build_chain so component options are finalized
      * once during chain construction.
@@ -1475,6 +1482,9 @@ sixel_loader_load_file(
     }
 
 end:
+    if (suboptions_active != 0) {
+        sixel_loader_restore_suboptions(previous_active_suboptions);
+    }
     if (osc11_bgcolor_applied != 0) {
         sixel_helper_set_loader_background_colorspace(-1);
     }

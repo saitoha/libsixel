@@ -651,6 +651,8 @@ typedef loader_component_vtbl sixel_loader_vtbl_t;
 interface loader_manager;
 
 struct loader_suboptions {
+    int background_policy;
+    int background_colorspace;
     int wic_ico_minsize;
     int libjpeg_enable_cms;
     int libjpeg_cms_engine;

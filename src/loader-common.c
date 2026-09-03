@@ -111,6 +111,8 @@ static int loader_background_policy_value =
  */
 static SIXEL_LOADER_TLS int loader_background_colorspace_override = -1;
 static SIXEL_LOADER_TLS int loader_transparent_policy_override = -1;
+static SIXEL_LOADER_TLS sixel_loader_suboptions_t const
+    *loader_active_suboptions;
 static int loader_cms_target_initialized;
 static int loader_cms_prefer_8bit_flag;
 static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
@@ -249,6 +251,30 @@ loader_background_unlock(void)
 #define SIXEL_LOADER_TIMELINE_OPT_BACKGROUND (1u << 1)
 #define SIXEL_LOADER_TIMELINE_OPT_ICC        (1u << 2)
 #define SIXEL_LOADER_TIMELINE_CB_MAGIC       0x534c544dU
+
+sixel_loader_suboptions_t const *
+sixel_loader_activate_suboptions(
+    sixel_loader_suboptions_t const *suboptions)
+{
+    sixel_loader_suboptions_t const *previous;
+
+    previous = loader_active_suboptions;
+    loader_active_suboptions = suboptions;
+    return previous;
+}
+
+void
+sixel_loader_restore_suboptions(
+    sixel_loader_suboptions_t const *suboptions)
+{
+    loader_active_suboptions = suboptions;
+}
+
+sixel_loader_suboptions_t const *
+sixel_loader_active_suboptions(void)
+{
+    return loader_active_suboptions;
+}
 
 static unsigned int
 loader_timeline_optional_bit(char const *role)
@@ -463,8 +489,9 @@ sixel_helper_set_loader_transparent_policy(int policy)
 static void
 loader_background_initialize_colorspace(void)
 {
-    char const *env_value;
+    int value;
 
+    value = SIXEL_COLORSPACE_GAMMA;
     loader_background_lock();
     if (loader_background_colorspace_initialized) {
         loader_background_unlock();
@@ -474,16 +501,12 @@ loader_background_initialize_colorspace(void)
     loader_background_colorspace_initialized = 1;
     loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
 
-    env_value = sixel_compat_getenv("SIXEL_LOADER_BACKGROUND_COLORSPACE");
-    if (env_value == NULL || env_value[0] == '\0') {
-        loader_background_unlock();
-        return;
-    }
-
-    if (strcmp(env_value, "linear") == 0) {
-        loader_background_colorspace_value = SIXEL_COLORSPACE_LINEAR;
-    } else if (strcmp(env_value, "gamma") == 0) {
-        loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_LOADERS,
+            NULL,
+            SIXEL_SUBOPTION_BINDING_ID_1(background_colorspace),
+            &value)) {
+        loader_background_colorspace_value = value;
     }
     loader_background_unlock();
 }
@@ -518,8 +541,9 @@ loader_initialize_transparent_policy(void)
 static void
 loader_initialize_background_policy(void)
 {
-    char const *env_value;
+    int value;
 
+    value = SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
     loader_background_lock();
     if (loader_background_policy_initialized) {
         loader_background_unlock();
@@ -527,15 +551,12 @@ loader_initialize_background_policy(void)
     }
     loader_background_policy_initialized = 1;
     loader_background_policy_value = SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
-    env_value = sixel_compat_getenv("SIXEL_BACKGROUND_POLICY");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (strcmp(env_value, "file_first") == 0) {
-            loader_background_policy_value =
-                SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
-        } else if (strcmp(env_value, "explicit_first") == 0) {
-            loader_background_policy_value =
-                SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST;
-        }
+    if (sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_LOADERS,
+            NULL,
+            SIXEL_SUBOPTION_BINDING_ID_1(background_policy),
+            &value)) {
+        loader_background_policy_value = value;
     }
     loader_background_unlock();
 }
@@ -543,8 +564,10 @@ loader_initialize_background_policy(void)
 SIXEL_INTERNAL_API int
 loader_background_colorspace(void)
 {
+    sixel_loader_suboptions_t const *suboptions;
     int override_value;
 
+    suboptions = sixel_loader_active_suboptions();
     loader_background_lock();
     override_value = loader_background_colorspace_override;
     if (override_value == SIXEL_COLORSPACE_GAMMA ||
@@ -553,6 +576,10 @@ loader_background_colorspace(void)
         return override_value;
     }
     loader_background_unlock();
+
+    if (suboptions != NULL) {
+        return suboptions->background_colorspace;
+    }
 
     loader_background_initialize_colorspace();
 
@@ -590,7 +617,13 @@ loader_transparent_policy(void)
 SIXEL_INTERNAL_API int
 loader_background_policy(void)
 {
+    sixel_loader_suboptions_t const *suboptions;
     int policy;
+
+    suboptions = sixel_loader_active_suboptions();
+    if (suboptions != NULL) {
+        return suboptions->background_policy;
+    }
 
     loader_initialize_background_policy();
     loader_background_lock();

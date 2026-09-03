@@ -91,6 +91,18 @@ typedef struct sixel_loader_timeline_callback_state {
 #define SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST     0
 #define SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST 1
 
+/*
+ * Install the immutable options for one synchronous loader invocation.
+ * Returning the previous pointer keeps nested loads balanced without copying
+ * the option structure or exposing process-global mutable configuration.
+ */
+sixel_loader_suboptions_t const *
+sixel_loader_activate_suboptions(
+    sixel_loader_suboptions_t const *suboptions);
+void sixel_loader_restore_suboptions(
+    sixel_loader_suboptions_t const *suboptions);
+sixel_loader_suboptions_t const *sixel_loader_active_suboptions(void);
+
 void loader_thumbnailer_initialize_size_hint(void);
 int loader_thumbnailer_get_size_hint(void);
 int loader_thumbnailer_get_default_size_hint(void);

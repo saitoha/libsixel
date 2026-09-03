@@ -819,6 +819,9 @@ sequence of loader names. Each entry may be abbreviated by a unique prefix,
 and a trailing "!" disables fallback loaders. The libpng, libjpeg, libwebp,
 coregraphics, and builtin loaders accept
 \fBorientation=0|1\fP (short form \fBO0\fP or \fBO1\fP, default 1).
+All loaders accept \fBbackground_policy=file_first|explicit_first\fP
+(short form \fBPvalue\fP) and
+\fBbackground_colorspace=gamma|linear\fP (short form \fBCvalue\fP).
 The libpng, libjpeg, libwebp, libtiff, and builtin loaders accept
 \fBcms_engine=none|auto|builtin|lcms2|colorsync\fP (short form \fBEvalue\fP,
 default none).

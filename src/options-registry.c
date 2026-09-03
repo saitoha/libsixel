@@ -238,6 +238,13 @@
         environment_choices_, SIXEL_SUBOPTION_TARGET_LOADER, \
         sixel_loader_suboptions_t, field_)
 
+#define SIXEL_REGISTRY_LOADER_CHOICE( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+    field_) \
+    SIXEL_REGISTRY_TYPED_CHOICE( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+        SIXEL_SUBOPTION_TARGET_LOADER, sixel_loader_suboptions_t, field_)
+
 #define SIXEL_REGISTRY_LOADER_BOOLEAN( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, field_) \
     SIXEL_REGISTRY_TYPED_BOOLEAN( \
@@ -1056,6 +1063,17 @@ static sixel_suboption_choice_t const g_loader_bmp_environment_choices[] = {
     { "2", SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2 }
 };
 
+static sixel_suboption_choice_t const g_loader_background_policy_choices[] = {
+    { "file_first", SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST },
+    { "explicit_first", SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST }
+};
+
+static sixel_suboption_choice_t const
+g_loader_background_colorspace_choices[] = {
+    { "gamma", SIXEL_COLORSPACE_GAMMA },
+    { "linear", SIXEL_COLORSPACE_LINEAR }
+};
+
 /*
  * This is the sole authoritative suboption registry.  A NULL base pointer
  * means that the row is shared by every base value of the owning option.
@@ -1669,6 +1687,18 @@ static sixel_suboption_key_t const g_suboptions[] = {
         lut_policy_shared_instance,
         lut_policy_shared_instance_override),
 
+    SIXEL_REGISTRY_LOADER_CHOICE(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "background_policy", 'P', "SIXEL_BACKGROUND_POLICY", NULL, NULL,
+        g_loader_background_policy_choices,
+        background_policy),
+    SIXEL_REGISTRY_LOADER_CHOICE(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "background_colorspace", 'C',
+        "SIXEL_LOADER_BACKGROUND_COLORSPACE", NULL, NULL,
+        g_loader_background_colorspace_choices,
+        background_colorspace),
+
 #if HAVE_LIBPNG
     SIXEL_REGISTRY_LOADER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_LOADERS,
@@ -2055,13 +2085,14 @@ sixel_option_registry_key_applies(
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def)
 {
-    if (key == NULL || schema == NULL || base_def == NULL) {
+    if (key == NULL || schema == NULL) {
         return 0;
     }
     if (key->option_id != schema->option_id) {
         return 0;
     }
-    return key->base_def == NULL || key->base_def == base_def;
+    return base_def == NULL || key->base_def == NULL ||
+        key->base_def == base_def;
 }
 
 sixel_option_argument_schema_t const *
@@ -2122,7 +2153,21 @@ sixel_option_registry_suboption_at(
     common_offset = 0u;
     request_common = 0;
 
-    if (schema == NULL || base_def == NULL) {
+    if (schema == NULL) {
+        return NULL;
+    }
+
+    /* A NULL base enumerates every row once for environment initialization. */
+    if (base_def == NULL) {
+        while (index < SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
+            if (g_suboptions[index].option_id == schema->option_id) {
+                if (matched_index == requested_index) {
+                    return g_suboptions + index;
+                }
+                ++matched_index;
+            }
+            ++index;
+        }
         return NULL;
     }
 
