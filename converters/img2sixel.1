@@ -824,7 +824,11 @@ All loaders accept \fBbackground_policy=file_first|explicit_first\fP
 \fBbackground_colorspace=gamma|linear\fP (short form \fBCvalue\fP),
 \fBcms_target=gamma|linear|cielab|oklab|din99d\fP
 (short form \fBTvalue\fP), and \fBprefer_8bit=0|1\fP
-(short form \fBV0\fP or \fBV1\fP).
+(short form \fBV0\fP or \fBV1\fP), and
+\fBcms_intent=INTENT[+INTENT][!]\fP (short form \fBRvalue\fP).
+The plus sign separates the ordered intents inside one loader entry; the
+inner trailing "!" disables fallback intents. When this is the final
+suboption, append a second "!" to also disable fallback loaders.
 PNG-capable loaders accept \fBtrns_keycolor=0|1\fP
 (short form \fBK0\fP or \fBK1\fP, default 1).
 The librsvg loader accepts \fBrelative_resources=0|1\fP
@@ -1484,10 +1488,13 @@ overrides \fBSIXEL_LOADER_CMS_ENGINE\fP.
 .TP 5
 .B SIXEL_LOADER_CMS_RENDERING_INTENT
 .br
-override the lcms2 rendering-intent fallback order used by PNG loader CMS
-conversion. Accepts comma-separated values from "perceptual",
+set the loader CMS rendering-intent fallback order. Accepts comma-separated
+values from "perceptual",
 "relative" ("relative_colorimetric"), "saturation", and "absolute"
 ("absolute_colorimetric"). Append "!" to disable default fallback intents.
+Override with \fB-Lloader:cms_intent=INTENT[+INTENT][!]\fP or short form
+\fB-Lloader:Rvalue\fP. When cms_intent is the final suboption, append a
+second "!" to also disable fallback loaders.
 .TP 5
 .B SIXEL_LOADER_CMS_TARGET_COLORSPACE
 .br

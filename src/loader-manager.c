@@ -205,6 +205,7 @@ loader_manager_init_loader_suboptions(
     suboptions->background_colorspace = SIXEL_COLORSPACE_GAMMA;
     suboptions->cms_target_colorspace = SIXEL_COLORSPACE_LINEAR;
     suboptions->cms_prefer_8bit = 0;
+    suboptions->cms_rendering_intent_order = 0u;
     suboptions->png_trns_keycolor = 1;
     suboptions->librsvg_allow_relative_resources = 0;
     suboptions->librsvg_allow_stdin_svgz = 0;

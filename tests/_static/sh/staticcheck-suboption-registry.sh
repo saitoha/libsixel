@@ -386,6 +386,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_REJECT_UNSIGNED_LONG" ||
         macro == "SIXEL_REGISTRY_LOADER_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_LOADER_CHOICE" ||
+        macro == "SIXEL_REGISTRY_LOADER_CHOICE_LIST" ||
         macro == "SIXEL_REGISTRY_LOADER_CHOICE_ENV" ||
         macro == "SIXEL_REGISTRY_LOADER_UINT" ||
         macro == \

@@ -47,6 +47,14 @@ typedef enum sixel_cms_engine {
     SIXEL_CMS_ENGINE_COLORSYNC = 4
 } sixel_cms_engine_t;
 
+/* Stable values let the generic ordered-choice registry store CMS intent. */
+typedef enum sixel_cms_rendering_intent {
+    SIXEL_CMS_INTENT_PERCEPTUAL = 0,
+    SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC = 1,
+    SIXEL_CMS_INTENT_SATURATION = 2,
+    SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC = 3
+} sixel_cms_rendering_intent_t;
+
 typedef enum sixel_cms_color_space {
     SIXEL_CMS_COLORSPACE_UNKNOWN = 0,
     SIXEL_CMS_COLORSPACE_RGB,

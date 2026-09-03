@@ -617,6 +617,48 @@ loader_wic_get_ico_minsize(void)
     return value;
 }
 
+unsigned int
+loader_resolve_choice_list_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    unsigned int fallback)
+{
+    sixel_loader_suboptions_t const *suboptions;
+    sixel_suboption_key_t const *key_def;
+    unsigned int value;
+
+    suboptions = sixel_loader_active_suboptions();
+    key_def = NULL;
+    value = fallback;
+    if (suboptions == NULL) {
+        if (sixel_option_resolve_registered_choice_list_binding(
+                SIXEL_OPTION_SCHEMA_LOADERS,
+                base_name,
+                binding_identifier,
+                &value)) {
+            return value;
+        }
+        return fallback;
+    }
+
+    key_def = sixel_option_registry_suboption_by_binding(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        base_name,
+        binding_identifier);
+    if (key_def == NULL ||
+        key_def->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE_LIST ||
+        key_def->binding.target_class != SIXEL_SUBOPTION_TARGET_LOADER ||
+        key_def->binding.storage_kind != SIXEL_SUBOPTION_STORAGE_UINT ||
+        key_def->binding.value_offset == SIXEL_SUBOPTION_OFFSET_NONE) {
+        return value;
+    }
+    memcpy(&value,
+           (unsigned char const *)suboptions +
+               key_def->binding.value_offset,
+           sizeof(value));
+    return value;
+}
+
 void
 sixel_helper_set_wic_ico_minsize(int size)
 {
@@ -860,6 +902,15 @@ loader_cms_prefer_8bit(void)
         NULL,
         SIXEL_SUBOPTION_BINDING_ID_1(cms_prefer_8bit),
         0);
+}
+
+unsigned int
+loader_cms_rendering_intent_order(void)
+{
+    return loader_resolve_choice_list_suboption(
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(cms_rendering_intent_order),
+        0u);
 }
 
 SIXEL_INTERNAL_API int

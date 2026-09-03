@@ -834,7 +834,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               and :background_colorspace=SPACE "
         "(:Cvalue),\n"
         "                               :cms_target=SPACE (:Tvalue), and\n"
-        "                               :prefer_8bit=0|1 (:V0/:V1).\n"
+        "                               :prefer_8bit=0|1 (:V0/:V1), and\n"
+        "                               :cms_intent=INTENT[+INTENT][!]\n"
+        "                               (:Rvalue); when final, use !! to\n"
+        "                               also disable loader fallbacks.\n"
         "                               PNG-capable loaders support\n"
         "                               :trns_keycolor=0|1 (:K0/:K1).\n"
         "                               librsvg supports\n"
@@ -1386,11 +1389,14 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_LOADER_CMS_RENDERING_INTENT",
-        "override the lcms2 rendering-intent fallback order used by PNG\n"
-        "loader CMS conversion. Accepts comma-separated values from\n"
+        "set the loader CMS rendering-intent fallback order. Accepts\n"
+        "comma-separated values from\n"
         "`perceptual`, `relative` (`relative_colorimetric`),\n"
         "`saturation`, and `absolute` (`absolute_colorimetric`).\n"
-        "Append `!` to disable default fallback intents."
+        "Append `!` to disable default fallback intents. Override with\n"
+        "-Lloader:cms_intent=INTENT[+INTENT][!] or :Rvalue. If cms_intent\n"
+        "is the final suboption, append a second `!` to also disable loader\n"
+        "fallbacks."
     },
     {
         "SIXEL_LOADER_CMS_ENGINE",

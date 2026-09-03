@@ -67,6 +67,7 @@ typedef enum sixel_option_precision_mode {
 /* The registry owns both syntax and typed value validation. */
 typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_CHOICE = 0,
+    SIXEL_SUBOPTION_VALUE_CHOICE_LIST,
     SIXEL_SUBOPTION_VALUE_BOOLEAN,
     SIXEL_SUBOPTION_VALUE_INT,
     SIXEL_SUBOPTION_VALUE_UINT,
@@ -78,6 +79,17 @@ typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_STRING,
     SIXEL_SUBOPTION_VALUE_STRUCTURED
 } sixel_suboption_value_kind_t;
+
+/*
+ * Ordered choice lists use one unsigned value so parsed request state owns no
+ * borrowed strings.  Four four-bit values leave room for a count and the
+ * trailing-exclusive marker while keeping the storage ABI plain C99.
+ */
+#define SIXEL_SUBOPTION_CHOICE_LIST_MAX 4u
+#define SIXEL_SUBOPTION_CHOICE_LIST_VALUE_MASK 0x0fu
+#define SIXEL_SUBOPTION_CHOICE_LIST_COUNT_SHIFT 16u
+#define SIXEL_SUBOPTION_CHOICE_LIST_COUNT_MASK 0x07u
+#define SIXEL_SUBOPTION_CHOICE_LIST_EXCLUSIVE (1u << 19)
 
 typedef struct sixel_suboption_choice {
     char const *name;
@@ -308,6 +320,24 @@ sixel_option_resolve_registered_uint_binding(
     char const *base_name,
     char const *binding_identifier,
     unsigned int *value);
+
+int
+sixel_option_resolve_registered_choice_list_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
+    unsigned int *value);
+
+size_t
+sixel_option_choice_list_count(unsigned int value);
+
+int
+sixel_option_choice_list_value_at(unsigned int value,
+                                  size_t index,
+                                  int *choice_value);
+
+int
+sixel_option_choice_list_is_exclusive(unsigned int value);
 
 sixel_option_environment_result_t
 sixel_option_resolve_registered_size_binding(

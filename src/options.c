@@ -231,11 +231,198 @@ sixel_option_append_suboption_assignment(
     sixel_suboption_value_t const *value);
 
 static SIXELSTATUS
+sixel_option_parse_choice_list(
+    sixel_suboption_key_t const *key_def,
+    char const *text,
+    sixel_suboption_value_t *value,
+    int environment_syntax)
+{
+    char const *cursor;
+    char const *end;
+    char const *token_start;
+    char const *token_end;
+    char const *separator;
+    char delimiter;
+    size_t count;
+    size_t choice_index;
+    size_t stored_index;
+    size_t token_length;
+    size_t name_length;
+    unsigned int packed;
+    unsigned int stored;
+    int candidate;
+    int candidate_set;
+    int ambiguous;
+    int exclusive;
+
+    cursor = text;
+    end = NULL;
+    token_start = NULL;
+    token_end = NULL;
+    separator = NULL;
+    delimiter = environment_syntax ? ',' : '+';
+    count = 0u;
+    choice_index = 0u;
+    stored_index = 0u;
+    token_length = 0u;
+    name_length = 0u;
+    packed = 0u;
+    stored = 0u;
+    candidate = 0;
+    candidate_set = 0;
+    ambiguous = 0;
+    exclusive = 0;
+    if (key_def == NULL || text == NULL || value == NULL ||
+        key_def->choices == NULL || key_def->choice_count == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    while (*cursor != '\0' && isspace((unsigned char)*cursor)) {
+        ++cursor;
+    }
+    end = text + strlen(text);
+    while (end > cursor && isspace((unsigned char)end[-1])) {
+        --end;
+    }
+    if (end == cursor) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (end[-1] == '!') {
+        exclusive = 1;
+        --end;
+        while (end > cursor && isspace((unsigned char)end[-1])) {
+            --end;
+        }
+    }
+    if (end == cursor) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    while (cursor < end) {
+        token_start = cursor;
+        separator = cursor;
+        while (separator < end && *separator != delimiter) {
+            ++separator;
+        }
+        token_end = separator;
+        while (token_start < token_end &&
+               isspace((unsigned char)*token_start)) {
+            ++token_start;
+        }
+        while (token_end > token_start &&
+               isspace((unsigned char)token_end[-1])) {
+            --token_end;
+        }
+        if (token_start == token_end) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+
+        token_length = (size_t)(token_end - token_start);
+        candidate = 0;
+        candidate_set = 0;
+        ambiguous = 0;
+        choice_index = 0u;
+        while (choice_index < key_def->choice_count) {
+            name_length = strlen(key_def->choices[choice_index].name);
+            if (name_length >= token_length &&
+                memcmp(key_def->choices[choice_index].name,
+                       token_start,
+                       token_length) == 0 &&
+                (environment_syntax == 0 ||
+                 name_length == token_length)) {
+                if (name_length == token_length) {
+                    candidate = key_def->choices[choice_index].value;
+                    candidate_set = 1;
+                    ambiguous = 0;
+                    break;
+                }
+                if (!candidate_set) {
+                    candidate = key_def->choices[choice_index].value;
+                    candidate_set = 1;
+                } else if (candidate !=
+                           key_def->choices[choice_index].value) {
+                    ambiguous = 1;
+                }
+            }
+            ++choice_index;
+        }
+        if (!candidate_set || ambiguous || candidate < 0 ||
+            candidate > (int)SIXEL_SUBOPTION_CHOICE_LIST_VALUE_MASK) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        stored_index = 0u;
+        while (stored_index < count) {
+            stored = (packed >> (stored_index * 4u)) &
+                SIXEL_SUBOPTION_CHOICE_LIST_VALUE_MASK;
+            if (stored == (unsigned int)candidate) {
+                break;
+            }
+            ++stored_index;
+        }
+        if (stored_index == count) {
+            if (count >= SIXEL_SUBOPTION_CHOICE_LIST_MAX) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            packed |= (unsigned int)candidate << (count * 4u);
+            ++count;
+        }
+
+        if (separator == end) {
+            cursor = end;
+        } else {
+            cursor = separator + 1;
+            if (cursor == end && !environment_syntax) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+        }
+    }
+    if (count == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    packed |= (unsigned int)count <<
+        SIXEL_SUBOPTION_CHOICE_LIST_COUNT_SHIFT;
+    if (exclusive) {
+        packed |= SIXEL_SUBOPTION_CHOICE_LIST_EXCLUSIVE;
+    }
+    value->uint_value = packed;
+    return SIXEL_OK;
+}
+
+size_t
+sixel_option_choice_list_count(unsigned int value)
+{
+    return (size_t)((value >> SIXEL_SUBOPTION_CHOICE_LIST_COUNT_SHIFT) &
+                    SIXEL_SUBOPTION_CHOICE_LIST_COUNT_MASK);
+}
+
+int
+sixel_option_choice_list_value_at(unsigned int value,
+                                  size_t index,
+                                  int *choice_value)
+{
+    if (choice_value == NULL ||
+        index >= sixel_option_choice_list_count(value)) {
+        return 0;
+    }
+    *choice_value = (int)((value >> (index * 4u)) &
+        SIXEL_SUBOPTION_CHOICE_LIST_VALUE_MASK);
+    return 1;
+}
+
+int
+sixel_option_choice_list_is_exclusive(unsigned int value)
+{
+    return (value & SIXEL_SUBOPTION_CHOICE_LIST_EXCLUSIVE) != 0u;
+}
+
+static SIXELSTATUS
 sixel_option_parse_typed_suboption_value(
     sixel_suboption_key_t const *key_def,
     char const *text,
     sixel_suboption_value_t *value,
     sixel_suboption_environment_range_policy_t range_policy,
+    int environment_syntax,
     int report_error,
     int *range_error);
 
@@ -1037,11 +1224,12 @@ sixel_option_parse_argument_with_suboptions(
         } else {
             status = sixel_option_parse_typed_suboption_value(
                 key_def,
-                value_text,
-                &typed_value,
-                SIXEL_SUBOPTION_ENV_RANGE_REJECT,
-                1,
-                NULL);
+            value_text,
+            &typed_value,
+            SIXEL_SUBOPTION_ENV_RANGE_REJECT,
+            0,
+            1,
+            NULL);
             if (SIXEL_FAILED(status)) {
                 goto cleanup;
             }
@@ -1178,6 +1366,67 @@ sixel_option_parse_dequantize_argument(
         diagnostic_size);
 }
 
+static int
+sixel_option_argument_final_bang_is_choice_list(
+    char const *argument,
+    char const *argument_end,
+    sixel_option_argument_schema_t const *schema)
+{
+    char const *item_start;
+    char const *cursor;
+    char *item;
+    size_t length;
+    SIXELSTATUS status;
+    sixel_option_argument_resolution_t resolution;
+    sixel_suboption_key_t const *key_def;
+    int result;
+
+    item_start = argument;
+    cursor = argument;
+    item = NULL;
+    length = 0u;
+    status = SIXEL_BAD_ARGUMENT;
+    memset(&resolution, 0, sizeof(resolution));
+    key_def = NULL;
+    result = 0;
+    if (argument == NULL || argument_end == NULL || schema == NULL ||
+        argument_end <= argument) {
+        return 0;
+    }
+    while (cursor < argument_end) {
+        if (*cursor == ',') {
+            item_start = cursor + 1;
+        }
+        ++cursor;
+    }
+    while (item_start < argument_end &&
+           isspace((unsigned char)*item_start)) {
+        ++item_start;
+    }
+    length = (size_t)(argument_end - item_start);
+    item = (char *)malloc(length + 1u);
+    if (item == NULL) {
+        return 0;
+    }
+    memcpy(item, item_start, length);
+    item[length] = '\0';
+    status = sixel_option_parse_argument_with_suboptions(
+        item,
+        schema,
+        &resolution,
+        NULL,
+        0u);
+    if (SIXEL_SUCCEEDED(status) && resolution.assignment_count > 0u) {
+        key_def = resolution.assignments[
+            resolution.assignment_count - 1u].key_def;
+        result = key_def != NULL &&
+            key_def->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE_LIST;
+    }
+    sixel_option_free_argument_resolution(&resolution);
+    free(item);
+    return result;
+}
+
 SIXELSTATUS
 sixel_option_parse_argument_list_with_suboptions(
     char const *argument,
@@ -1230,7 +1479,12 @@ sixel_option_parse_argument_list_with_suboptions(
            isspace((unsigned char)argument_end[-1])) {
         --argument_end;
     }
-    if (argument_end > argument && argument_end[-1] == '!') {
+    if (argument_end > argument && argument_end[-1] == '!' &&
+        ((argument_end - argument >= 2 && argument_end[-2] == '!') ||
+         !sixel_option_argument_final_bang_is_choice_list(
+             argument,
+             argument_end - 1,
+             schema))) {
         has_trailing_bang = 1;
         --argument_end;
         while (argument_end > argument &&
@@ -1243,14 +1497,6 @@ sixel_option_parse_argument_list_with_suboptions(
         sixel_helper_set_additional_message(
             "option argument list requires at least one item.");
         return SIXEL_BAD_ARGUMENT;
-    }
-
-    for (cursor = argument; cursor < argument_end; ++cursor) {
-        if (*cursor == '!') {
-            sixel_helper_set_additional_message(
-                "option argument list only accepts a trailing '!'.");
-            return SIXEL_BAD_ARGUMENT;
-        }
     }
 
     cursor = argument;
@@ -1558,7 +1804,8 @@ sixel_option_reset_argument_resolution(
 /*
  * Parse every non-enumerated suboption value through metadata in the
  * registry.  Callers may suppress diagnostics when probing environment
- * defaults, but the accepted syntax and range remain identical.
+ * defaults.  Ordered choice lists retain their comma-separated environment
+ * grammar while using plus signs inside structured CLI arguments.
  */
 static SIXELSTATUS
 sixel_option_parse_typed_suboption_value(
@@ -1566,6 +1813,7 @@ sixel_option_parse_typed_suboption_value(
     char const *text,
     sixel_suboption_value_t *value,
     sixel_suboption_environment_range_policy_t range_policy,
+    int environment_syntax,
     int report_error,
     int *range_error)
 {
@@ -1600,6 +1848,13 @@ sixel_option_parse_typed_suboption_value(
     }
 
     switch (key_def->value_kind) {
+    case SIXEL_SUBOPTION_VALUE_CHOICE_LIST:
+        valid = SIXEL_SUCCEEDED(sixel_option_parse_choice_list(
+            key_def,
+            text,
+            value,
+            environment_syntax));
+        break;
     case SIXEL_SUBOPTION_VALUE_BOOLEAN:
         valid = sixel_option_parse_boolean_text(text, &value->int_value);
         break;
@@ -1988,6 +2243,29 @@ sixel_option_resolve_registered_uint_binding(
     return 1;
 }
 
+int
+sixel_option_resolve_registered_choice_list_binding(
+    sixel_option_schema_id_t option_id,
+    char const *base_name,
+    char const *binding_identifier,
+    unsigned int *value)
+{
+    sixel_suboption_value_t parsed;
+
+    memset(&parsed, 0, sizeof(parsed));
+    if (value == NULL ||
+        !sixel_option_resolve_registered_binding_value(
+            option_id,
+            base_name,
+            binding_identifier,
+            SIXEL_SUBOPTION_VALUE_CHOICE_LIST,
+            &parsed)) {
+        return 0;
+    }
+    *value = parsed.uint_value;
+    return 1;
+}
+
 sixel_option_environment_result_t
 sixel_option_resolve_registered_size_binding(
     sixel_option_schema_id_t option_id,
@@ -2166,6 +2444,7 @@ sixel_option_parse_environment_value(
             text,
             value,
             key_def->environment_range_policy,
+            1,
             0,
             &range_error));
         sixel_option_trace_environment_value(
@@ -2429,6 +2708,15 @@ sixel_option_emit_suboption_value(
     sixel_suboption_key_t const *key_def,
     sixel_suboption_value_t const *value)
 {
+    size_t count;
+    size_t index;
+    size_t choice_index;
+    int choice_value;
+
+    count = 0u;
+    index = 0u;
+    choice_index = 0u;
+    choice_value = 0;
     if (key_def == NULL || value == NULL) {
         return;
     }
@@ -2442,6 +2730,34 @@ sixel_option_emit_suboption_value(
         break;
     case SIXEL_SUBOPTION_VALUE_UINT:
         fprintf(stderr, "%u", value->uint_value);
+        break;
+    case SIXEL_SUBOPTION_VALUE_CHOICE_LIST:
+        count = sixel_option_choice_list_count(value->uint_value);
+        while (index < count) {
+            if (index > 0u) {
+                fputc('+', stderr);
+            }
+            if (!sixel_option_choice_list_value_at(value->uint_value,
+                                                   index,
+                                                   &choice_value)) {
+                fputs("invalid", stderr);
+                break;
+            }
+            choice_index = 0u;
+            while (choice_index < key_def->choice_count &&
+                   key_def->choices[choice_index].value != choice_value) {
+                ++choice_index;
+            }
+            if (choice_index < key_def->choice_count) {
+                fputs(key_def->choices[choice_index].name, stderr);
+            } else {
+                fprintf(stderr, "%d", choice_value);
+            }
+            ++index;
+        }
+        if (sixel_option_choice_list_is_exclusive(value->uint_value)) {
+            fputc('!', stderr);
+        }
         break;
     case SIXEL_SUBOPTION_VALUE_SIZE:
         fprintf(stderr, "%zu", value->size_value);

@@ -132,6 +132,24 @@
         }, NULL \
     }
 
+#define SIXEL_REGISTRY_TYPED_CHOICE_LIST( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+    target_, type_, field_) \
+    { \
+        (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
+        (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE_LIST, (choices_), \
+        SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
+        0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        "ordered choice list contains an invalid value.", NULL, \
+        { \
+            (target_), SIXEL_SUBOPTION_STORAGE_UINT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, unsigned int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_1(field_) \
+        }, NULL \
+    }
+
 #define SIXEL_REGISTRY_TYPED_BOOLEAN( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, target_, type_, \
     field_) \
@@ -242,6 +260,13 @@
     optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
     field_) \
     SIXEL_REGISTRY_TYPED_CHOICE( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+        SIXEL_SUBOPTION_TARGET_LOADER, sixel_loader_suboptions_t, field_)
+
+#define SIXEL_REGISTRY_LOADER_CHOICE_LIST( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
+    field_) \
+    SIXEL_REGISTRY_TYPED_CHOICE_LIST( \
         optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
         SIXEL_SUBOPTION_TARGET_LOADER, sixel_loader_suboptions_t, field_)
 
@@ -1124,6 +1149,15 @@ g_loader_cms_target_colorspace_choices[] = {
     { "din99d", SIXEL_COLORSPACE_DIN99D }
 };
 
+static sixel_suboption_choice_t const g_loader_cms_intent_choices[] = {
+    { "perceptual", SIXEL_CMS_INTENT_PERCEPTUAL },
+    { "relative", SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC },
+    { "relative_colorimetric", SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC },
+    { "saturation", SIXEL_CMS_INTENT_SATURATION },
+    { "absolute", SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC },
+    { "absolute_colorimetric", SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC }
+};
+
 /*
  * This is the sole authoritative suboption registry.  A NULL base pointer
  * means that the row is shared by every base value of the owning option.
@@ -1757,6 +1791,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "prefer_8bit", 'V', "SIXEL_LOADER_PREFER_8BIT", NULL, NULL,
         cms_prefer_8bit),
+    SIXEL_REGISTRY_LOADER_CHOICE_LIST(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "cms_intent", 'R', "SIXEL_LOADER_CMS_RENDERING_INTENT", NULL,
+        "SIXEL_CMS_RENDERING_INTENT", g_loader_cms_intent_choices,
+        cms_rendering_intent_order),
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "trns_keycolor", 'K', "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",
@@ -2477,6 +2516,8 @@ sixel_option_registry_binding_kind_is_valid(
     case SIXEL_SUBOPTION_VALUE_INT:
     case SIXEL_SUBOPTION_VALUE_SCALED_U8:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_INT;
+    case SIXEL_SUBOPTION_VALUE_CHOICE_LIST:
+        return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_UINT;
     case SIXEL_SUBOPTION_VALUE_UINT:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_UINT ||
             key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_INT;
@@ -2670,6 +2711,9 @@ sixel_option_registry_validate_uncached(void)
     size_t key_count;
     size_t suboption_index;
     size_t previous_suboption_index;
+    size_t choice_index;
+    size_t previous_choice_index;
+    size_t unique_choice_count;
     sixel_option_argument_schema_t const *schema;
     sixel_option_argument_schema_t const *previous_schema;
     sixel_option_value_schema_t const *base_def;
@@ -2687,6 +2731,9 @@ sixel_option_registry_validate_uncached(void)
     key_count = 0u;
     suboption_index = 0u;
     previous_suboption_index = 0u;
+    choice_index = 0u;
+    previous_choice_index = 0u;
+    unique_choice_count = 0u;
     schema = NULL;
     previous_schema = NULL;
     base_def = NULL;
@@ -2960,6 +3007,51 @@ sixel_option_registry_validate_uncached(void)
                 if (key->environment_choice_count > 0u &&
                     key->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE) {
                     return 0;
+                }
+                if (key->value_kind ==
+                        SIXEL_SUBOPTION_VALUE_CHOICE_LIST) {
+                    if (key->choices == NULL || key->choice_count == 0u ||
+                        key->environment_choices != NULL ||
+                        key->environment_choice_count != 0u ||
+                        key->has_minimum || key->has_maximum ||
+                        key->allow_zero ||
+                        key->environment_range_policy !=
+                            SIXEL_SUBOPTION_ENV_RANGE_REJECT) {
+                        return 0;
+                    }
+                    unique_choice_count = 0u;
+                    choice_index = 0u;
+                    while (choice_index < key->choice_count) {
+                        if (!sixel_option_registry_value_name_is_valid(
+                                key->choices[choice_index].name) ||
+                            key->choices[choice_index].value < 0 ||
+                            key->choices[choice_index].value >
+                                (int)
+                                SIXEL_SUBOPTION_CHOICE_LIST_VALUE_MASK) {
+                            return 0;
+                        }
+                        previous_choice_index = 0u;
+                        while (previous_choice_index < choice_index) {
+                            if (strcmp(
+                                    key->choices[previous_choice_index].name,
+                                    key->choices[choice_index].name) == 0) {
+                                return 0;
+                            }
+                            if (key->choices[previous_choice_index].value ==
+                                key->choices[choice_index].value) {
+                                break;
+                            }
+                            ++previous_choice_index;
+                        }
+                        if (previous_choice_index == choice_index) {
+                            ++unique_choice_count;
+                        }
+                        ++choice_index;
+                    }
+                    if (unique_choice_count >
+                        SIXEL_SUBOPTION_CHOICE_LIST_MAX) {
+                        return 0;
+                    }
                 }
                 if (key->value_kind == SIXEL_SUBOPTION_VALUE_BOOLEAN &&
                     (key->choices != NULL || key->choice_count != 0u ||

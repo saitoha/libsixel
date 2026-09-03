@@ -124,6 +124,12 @@ unsigned int loader_resolve_uint_suboption(
     char const *binding_identifier,
     unsigned int fallback);
 
+/* Resolve a loader ordered choice list from request state or its registry. */
+unsigned int loader_resolve_choice_list_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    unsigned int fallback);
+
 /* Resolve a loader size and report an invalid registered environment. */
 SIXELSTATUS loader_resolve_size_suboption(
     char const *base_name,
@@ -156,6 +162,7 @@ sixel_helper_set_loader_transparent_policy(int policy);
 SIXEL_INTERNAL_API int
 loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);
+unsigned int loader_cms_rendering_intent_order(void);
 SIXEL_INTERNAL_API int
 loader_cms_target_colorspace(void);
 int loader_transparent_policy(void);
