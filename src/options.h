@@ -103,7 +103,8 @@ typedef enum sixel_suboption_storage_kind {
     SIXEL_SUBOPTION_STORAGE_SIZE,
     SIXEL_SUBOPTION_STORAGE_FLOAT,
     SIXEL_SUBOPTION_STORAGE_DOUBLE,
-    SIXEL_SUBOPTION_STORAGE_INT_PAIR
+    SIXEL_SUBOPTION_STORAGE_INT_PAIR,
+    SIXEL_SUBOPTION_STORAGE_STRING
 } sixel_suboption_storage_kind_t;
 
 /* Environment ranges may preserve historical endpoint clamping. */
@@ -422,6 +423,8 @@ typedef struct sixel_diagnostics_policy_options {
     int psd_trace_override;
     int psd_header_only;
     int psd_header_only_override;
+    char const *trace_topic;
+    int trace_topic_override;
     int cli_suggestion_defaults;
 } sixel_diagnostics_policy_options_t;
 
@@ -637,6 +640,8 @@ SIXEL_INTERNAL_API int sixel_diagnostics_force_colors_is_enabled(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_handoff_trace_is_enabled(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_psd_trace_is_enabled(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_psd_header_only_is_enabled(void);
+SIXEL_INTERNAL_API int
+sixel_diagnostics_trace_topic_is_enabled(char const *topic);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument(

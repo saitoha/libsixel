@@ -420,7 +420,8 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_RUNTIME_UINT" ||
         macro == "SIXEL_REGISTRY_RUNTIME_INT" ||
         macro == "SIXEL_REGISTRY_RUNTIME_CHOICE" ||
-        macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN"
+        macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||
+        macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING"
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
                  exact_key, shared_key, macro) {
@@ -584,7 +585,8 @@ function inspect(row, fields, count, name, alias, key, macro, scope) {
     if (macro == "SIXEL_REGISTRY_RUNTIME_UINT" ||
         macro == "SIXEL_REGISTRY_RUNTIME_INT") scope = fields[10]
     if (macro == "SIXEL_REGISTRY_RUNTIME_CHOICE") scope = fields[8]
-    if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN") scope = fields[6]
+    if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||
+        macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING") scope = fields[6]
     if (macro ~ /DEQUANTIZE|DECODER/ ||
         scope ~ /SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE/) {
         expected_help[key] = decoder_help_file

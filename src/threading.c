@@ -926,19 +926,122 @@ sixel_diagnostics_policy_load(
     }
     sixel_thread_config_lock();
     *options = g_diagnostics_policy;
+    options->trace_topic = NULL;
     sixel_thread_config_unlock();
 }
 
-void
+static char *
+sixel_diagnostics_policy_duplicate_string(char const *text)
+{
+    char *copy;
+    size_t length;
+
+    copy = NULL;
+    length = 0u;
+    if (text == NULL || text[0] == '\0') {
+        return NULL;
+    }
+    length = strlen(text) + 1u;
+    copy = (char *)malloc(length);
+    if (copy == NULL) {
+        return NULL;
+    }
+    memcpy(copy, text, length);
+    return copy;
+}
+
+int
 sixel_diagnostics_policy_store(
     sixel_diagnostics_policy_options_t const *options)
 {
+    char *trace_topic_copy;
+    char *old_trace_topic;
+
+    trace_topic_copy = NULL;
+    old_trace_topic = NULL;
     if (options == NULL) {
-        return;
+        return 0;
+    }
+    if (options->trace_topic_override) {
+        trace_topic_copy = sixel_diagnostics_policy_duplicate_string(
+            options->trace_topic);
+        if (trace_topic_copy == NULL) {
+            return 0;
+        }
     }
     sixel_thread_config_lock();
+    old_trace_topic = (char *)g_diagnostics_policy.trace_topic;
     g_diagnostics_policy = *options;
+    g_diagnostics_policy.trace_topic = trace_topic_copy;
     sixel_thread_config_unlock();
+    free(old_trace_topic);
+    return 1;
+}
+
+int
+sixel_diagnostics_topic_list_contains(char const *topics,
+                                      char const *topic)
+{
+    char const *cursor;
+    char const *token_end;
+    size_t topic_length;
+    size_t token_length;
+
+    cursor = NULL;
+    token_end = NULL;
+    topic_length = 0u;
+    token_length = 0u;
+    if (topics == NULL || topics[0] == '\0' ||
+        topic == NULL || topic[0] == '\0') {
+        return 0;
+    }
+    topic_length = strlen(topic);
+    cursor = topics;
+    while (*cursor != '\0') {
+        while (*cursor != '\0' &&
+               (*cursor == ' ' || *cursor == '\t' || *cursor == ',' ||
+                *cursor == ':' || *cursor == ';')) {
+            ++cursor;
+        }
+        if (*cursor == '\0') {
+            break;
+        }
+        token_end = cursor;
+        while (*token_end != '\0' &&
+               *token_end != ' ' && *token_end != '\t' &&
+               *token_end != ',' && *token_end != ':' &&
+               *token_end != ';') {
+            ++token_end;
+        }
+        token_length = (size_t)(token_end - cursor);
+        if (token_length == topic_length &&
+            strncmp(cursor, topic, token_length) == 0) {
+            return 1;
+        }
+        cursor = token_end;
+    }
+    return 0;
+}
+
+int
+sixel_diagnostics_policy_trace_topic_is_enabled(char const *topic,
+                                                int *configured)
+{
+    int enabled;
+
+    enabled = 0;
+    if (configured == NULL) {
+        return 0;
+    }
+    sixel_thread_config_lock();
+    *configured = g_diagnostics_policy.trace_topic_override != 0;
+    if (*configured) {
+        enabled = sixel_diagnostics_topic_list_contains(
+            g_diagnostics_policy.trace_topic,
+            topic);
+    }
+    sixel_thread_config_unlock();
+    return enabled;
 }
 
 void

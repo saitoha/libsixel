@@ -1519,61 +1519,7 @@ loader_trace_message(char const *format, ...)
 int
 sixel_trace_topic_is_enabled(char const *topic)
 {
-    char const *topics;
-    char const *cursor;
-    char const *token_end;
-    size_t topic_length;
-    size_t token_length;
-
-    topics = NULL;
-    cursor = NULL;
-    token_end = NULL;
-    topic_length = 0u;
-    token_length = 0u;
-
-    if (topic == NULL || topic[0] == '\0') {
-        return 0;
-    }
-
-    topic_length = strlen(topic);
-    if (topic_length == 0u) {
-        return 0;
-    }
-
-    topics = sixel_compat_getenv("SIXEL_TRACE_TOPIC");
-    if (topics == NULL || topics[0] == '\0') {
-        return 0;
-    }
-
-    cursor = topics;
-    while (*cursor != '\0') {
-        while (*cursor != '\0' &&
-               (*cursor == ' ' || *cursor == '\t' || *cursor == ',' ||
-                *cursor == ':' || *cursor == ';')) {
-            ++cursor;
-        }
-        if (*cursor == '\0') {
-            break;
-        }
-
-        token_end = cursor;
-        while (*token_end != '\0' &&
-               *token_end != ' ' && *token_end != '\t' &&
-               *token_end != ',' && *token_end != ':' &&
-               *token_end != ';') {
-            ++token_end;
-        }
-
-        token_length = (size_t)(token_end - cursor);
-        if (token_length == topic_length &&
-                strncmp(cursor, topic, token_length) == 0) {
-            return 1;
-        }
-
-        cursor = token_end;
-    }
-
-    return 0;
+    return sixel_diagnostics_trace_topic_is_enabled(topic);
 }
 
 /* Emit topic-scoped diagnostics selected through SIXEL_TRACE_TOPIC. */

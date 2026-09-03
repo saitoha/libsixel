@@ -625,7 +625,7 @@ _img2sixel()
                 H0 H1 D0 D1 E0 E1 \
                 quiet= prefix_suggestions= fuzzy_suggestions= \
                 path_suggestions= force_colors= handoff_trace= \
-                psd_trace= psd_header_only=; do
+                psd_trace= psd_header_only= trace_topic= T; do
                 [[ ${candidate} == ${item}* ]] || continue
                 COMPREPLY+=("${prefix}${candidate}")
             done

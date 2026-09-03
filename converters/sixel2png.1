@@ -131,7 +131,8 @@ Choose diagnostic presentation. MODE is \fBhuman\fP (default) or
 (\fB:P0|:P1\fP), \fB:fuzzy_suggestions=0|1\fP
 (\fB:F0|:F1\fP), \fB:path_suggestions=0|1\fP
 (\fB:S0|:S1\fP), and \fB:force_colors=0|1\fP
-(\fB:C0|:C1\fP).
+(\fB:C0|:C1\fP). \fB:trace_topic=LIST\fP
+(\fB:TLIST\fP) selects a comma-separated topic list.
 .TP 5
 .B \-% KEY=VALUE, \--env=KEY=VALUE
 Set a process environment variable before decoding.
@@ -181,6 +182,12 @@ precedence.
 force ANSI colorized diagnostics from status markup output. Set to "1" to
 emit color sequences without relying on TTY detection. The
 \fB\-x *:force_colors=0|1\fP suboption takes precedence.
+.TP 5
+.B SIXEL_TRACE_TOPIC
+.br
+enable topic-scoped debug traces using comma-separated tokens. The
+\fB\-x *:trace_topic=LIST\fP suboption (short form \fB:TLIST\fP) takes
+precedence.
 .TP 5
 .B SIXEL_THREADS
 .br

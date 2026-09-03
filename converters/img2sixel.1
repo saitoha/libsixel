@@ -100,7 +100,9 @@ choose diagnostic presentation.  \fIMODE\fP is \fBhuman\fP (default) or
 (\fB:P0|:P1\fP), \fB:fuzzy_suggestions=0|1\fP
 (\fB:F0|:F1\fP), \fB:path_suggestions=0|1\fP
 (\fB:S0|:S1\fP), and \fB:force_colors=0|1\fP
-(\fB:C0|:C1\fP).  img2sixel also accepts \fB:quiet=0|1\fP
+(\fB:C0|:C1\fP).  \fB:trace_topic=LIST\fP
+(\fB:TLIST\fP) selects a comma-separated topic list.
+img2sixel also accepts \fB:quiet=0|1\fP
 (\fB:Q0|:Q1\fP), \fB:handoff_trace=0|1\fP (\fB:H0|:H1\fP),
 \fB:psd_trace=0|1\fP (\fB:D0|:D1\fP), and
 \fB:psd_header_only=0|1\fP (\fB:E0|:E1\fP).
@@ -1213,6 +1215,12 @@ precedence.
 force ANSI colorized diagnostics from status markup output. Set to "1" to
 emit color sequences without relying on TTY detection. The
 \fB\-x *:force_colors=0|1\fP suboption takes precedence.
+.TP 5
+.B SIXEL_TRACE_TOPIC
+.br
+enable topic-scoped debug traces using comma-separated tokens. The
+\fB\-x *:trace_topic=LIST\fP suboption (short form \fB:TLIST\fP) takes
+precedence.
 .TP 5
 .B SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL
 .br

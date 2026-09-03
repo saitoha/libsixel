@@ -557,6 +557,26 @@
         }, NULL, 0ULL \
     }
 
+#define SIXEL_REGISTRY_DIAGNOSTICS_STRING( \
+    optflag_, base_, name_, short_, env_, scope_, field_, override_) \
+    { \
+        (optflag_), (base_), (scope_), (name_), (short_), (env_), NULL, \
+        NULL, SIXEL_SUBOPTION_VALUE_STRING, NULL, 0u, NULL, 0u, \
+        0.0, 0.0, 0, 0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        "string suboption must not be empty.", NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_DIAGNOSTICS, \
+            SIXEL_SUBOPTION_STORAGE_STRING, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_diagnostics_policy_options_t, field_, char const *), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_diagnostics_policy_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
 #define SIXEL_REGISTRY_FLOAT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_) \
     SIXEL_REGISTRY_NUMBER( \
@@ -1574,6 +1594,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "force_colors", 'C', "SIXEL_STATUS_FORCE_COLORS",
         SIXEL_OPTION_SCOPE_ALL,
         force_colors, force_colors_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_STRING(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "trace_topic", 'T', "SIXEL_TRACE_TOPIC",
+        SIXEL_OPTION_SCOPE_ALL,
+        trace_topic, trace_topic_override),
     SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
         "handoff_trace", 'H', "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL",
@@ -3326,6 +3351,11 @@ sixel_option_registry_resolve_process_binding(
         return SIXEL_OPTION_ENVIRONMENT_INVALID;
     }
 
+    if (expected_kind == SIXEL_SUBOPTION_VALUE_STRING) {
+        value->string_value = text;
+        return SIXEL_OPTION_ENVIRONMENT_MATCH;
+    }
+
     if (expected_kind == SIXEL_SUBOPTION_VALUE_SIZE) {
         errno = 0;
         parsed_uint = strtoull(text, &endptr, 10);
@@ -3580,6 +3610,33 @@ sixel_diagnostics_psd_header_only_is_enabled(void)
         0);
 }
 
+SIXEL_INTERNAL_API int
+sixel_diagnostics_trace_topic_is_enabled(char const *topic)
+{
+    sixel_suboption_value_t value;
+    int configured;
+    int enabled;
+
+    memset(&value, 0, sizeof(value));
+    configured = 0;
+    enabled = sixel_diagnostics_policy_trace_topic_is_enabled(
+        topic,
+        &configured);
+    if (configured) {
+        return enabled;
+    }
+    if (sixel_option_registry_resolve_process_binding(
+            SIXEL_OPTION_SCHEMA_DIAGNOSTICS,
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                trace_topic,
+                trace_topic_override),
+            SIXEL_SUBOPTION_VALUE_STRING,
+            &value) != SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return 0;
+    }
+    return sixel_diagnostics_topic_list_contains(value.string_value, topic);
+}
+
 /*
  * Environment names are part of the registry contract.  Keep their syntax
  * independent of the host shell so a malformed row fails on every platform.
@@ -3682,6 +3739,8 @@ sixel_option_registry_binding_kind_is_valid(
     case SIXEL_SUBOPTION_VALUE_INT_PAIR:
         return key->binding.storage_kind ==
             SIXEL_SUBOPTION_STORAGE_INT_PAIR;
+    case SIXEL_SUBOPTION_VALUE_STRING:
+        return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_STRING;
     default:
         break;
     }
@@ -4253,7 +4312,19 @@ sixel_option_registry_validate_uncached(void)
                      key->environment_choices != NULL ||
                      key->environment_choice_count != 0u ||
                      key->binding.storage_kind !=
-                         SIXEL_SUBOPTION_STORAGE_INT)) {
+                        SIXEL_SUBOPTION_STORAGE_INT)) {
+                    return 0;
+                }
+                if (key->value_kind == SIXEL_SUBOPTION_VALUE_STRING &&
+                    (key->choices != NULL || key->choice_count != 0u ||
+                     key->environment_choices != NULL ||
+                     key->environment_choice_count != 0u ||
+                     key->has_minimum || key->has_maximum ||
+                     key->allow_zero ||
+                     key->environment_range_policy !=
+                        SIXEL_SUBOPTION_ENV_RANGE_REJECT ||
+                     key->binding.storage_kind !=
+                        SIXEL_SUBOPTION_STORAGE_STRING)) {
                     return 0;
                 }
                 if ((key->environment_range_policy &

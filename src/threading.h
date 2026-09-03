@@ -118,8 +118,14 @@ SIXEL_INTERNAL_API size_t sixel_runtime_policy_scale_min_bytes(
     size_t fallback);
 SIXEL_INTERNAL_API void sixel_diagnostics_policy_load(
     struct sixel_diagnostics_policy_options *options);
-SIXEL_INTERNAL_API void sixel_diagnostics_policy_store(
+SIXEL_INTERNAL_API int sixel_diagnostics_policy_store(
     struct sixel_diagnostics_policy_options const *options);
+SIXEL_INTERNAL_API int sixel_diagnostics_topic_list_contains(
+    char const *topics,
+    char const *topic);
+SIXEL_INTERNAL_API int sixel_diagnostics_policy_trace_topic_is_enabled(
+    char const *topic,
+    int *configured);
 SIXEL_INTERNAL_API void
 sixel_diagnostics_policy_enable_cli_suggestion_defaults(void);
 

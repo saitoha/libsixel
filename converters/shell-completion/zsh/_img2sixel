@@ -928,7 +928,9 @@ _diagnosticspolicy() {
                    "${prefix}force_colors=" \
                    "${prefix}handoff_trace=" \
                    "${prefix}psd_trace=" \
-                   "${prefix}psd_header_only="
+                   "${prefix}psd_header_only=" \
+                   "${prefix}trace_topic=" \
+                   "${prefix}T"
         return 0
       fi
     fi

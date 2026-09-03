@@ -211,6 +211,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             :fuzzy_suggestions=0|1 (:F0|:F1)\n"
         "                             :path_suggestions=0|1 (:S0|:S1)\n"
         "                             :force_colors=0|1 (:C0|:C1)\n"
+        "                             :trace_topic=LIST (:TLIST)\n"
     },
     {
         '%',

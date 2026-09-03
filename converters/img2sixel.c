@@ -764,6 +764,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      :fuzzy_suggestions=0|1 (:F0|:F1)\n"
         "      :path_suggestions=0|1 (:S0|:S1)\n"
         "      :force_colors=0|1 (:C0|:C1)\n"
+        "      :trace_topic=LIST (:TLIST; comma-separated)\n"
         "      :handoff_trace=0|1 (:H0|:H1)\n"
         "      :psd_trace=0|1 (:D0|:D1)\n"
         "      :psd_header_only=0|1 (:E0|:E1)\n"
@@ -1079,7 +1080,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_TRACE_TOPIC",
         "enable topic-scoped debug traces using comma-separated tokens.\n"
-        "Example: 'path,suggestion' narrows diagnostics to those topics."
+        "Example: 'path,suggestion' narrows diagnostics to those topics.\n"
+        "The -x *:trace_topic=LIST value takes precedence."
     },
     {
         "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL",

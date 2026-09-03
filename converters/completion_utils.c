@@ -28,6 +28,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include <sixel.h>
 #include "completion_utils.h"
 #include "compat.h"
 #include "path.h"
@@ -181,6 +182,8 @@ static void img2sixel_log_errno_impl(int saved_errno, const char *fmt, ...);
 int img2sixel_trace_topic_is_enabled(const char *topic);
 void img2sixel_trace_topic_message(const char *topic,
                                    const char *format, ...);
+SIXEL_INTERNAL_API int
+sixel_diagnostics_trace_topic_is_enabled(char const *topic);
 
 /* ------------------------------------------------------------------------ */
 /* helpers for platform abstractions */
@@ -194,61 +197,7 @@ void img2sixel_trace_topic_message(const char *topic,
 int
 img2sixel_trace_topic_is_enabled(const char *topic)
 {
-    const char *topics;
-    const char *cursor;
-    const char *token_end;
-    size_t topic_length;
-    size_t token_length;
-
-    topics = NULL;
-    cursor = NULL;
-    token_end = NULL;
-    topic_length = 0u;
-    token_length = 0u;
-
-    if (topic == NULL || topic[0] == '\0') {
-        return 0;
-    }
-
-    topic_length = strlen(topic);
-    if (topic_length == 0u) {
-        return 0;
-    }
-
-    topics = img2sixel_compat_getenv("SIXEL_TRACE_TOPIC");
-    if (topics == NULL || topics[0] == '\0') {
-        return 0;
-    }
-
-    cursor = topics;
-    while (*cursor != '\0') {
-        while (*cursor != '\0' &&
-               (*cursor == ' ' || *cursor == '\t' || *cursor == ',' ||
-                *cursor == ':' || *cursor == ';')) {
-            ++cursor;
-        }
-        if (*cursor == '\0') {
-            break;
-        }
-
-        token_end = cursor;
-        while (*token_end != '\0' &&
-               *token_end != ' ' && *token_end != '\t' &&
-               *token_end != ',' && *token_end != ':' &&
-               *token_end != ';') {
-            ++token_end;
-        }
-
-        token_length = (size_t)(token_end - cursor);
-        if (token_length == topic_length &&
-                strncmp(cursor, topic, token_length) == 0) {
-            return 1;
-        }
-
-        cursor = token_end;
-    }
-
-    return 0;
+    return sixel_diagnostics_trace_topic_is_enabled(topic);
 }
 
 void

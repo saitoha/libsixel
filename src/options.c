@@ -2080,6 +2080,10 @@ sixel_option_parse_typed_suboption_value(
             value->int_pair.second = (int)parsed_int;
         }
         break;
+    case SIXEL_SUBOPTION_VALUE_STRING:
+        value->string_value = text;
+        valid = 1;
+        break;
     case SIXEL_SUBOPTION_VALUE_CHOICE:
     default:
         return SIXEL_BAD_ARGUMENT;
@@ -2669,6 +2673,11 @@ sixel_option_store_suboption_value(
                &value->int_pair.second,
                sizeof(value->int_pair.second));
         break;
+    case SIXEL_SUBOPTION_STORAGE_STRING:
+        memcpy(target + offset,
+               &value->string_value,
+               sizeof(value->string_value));
+        break;
     default:
         return 0;
     }
@@ -2695,6 +2704,7 @@ sixel_option_suboption_value_is_stored(
     size_t stored_size;
     float stored_float;
     double stored_double;
+    char const *stored_string;
 
     int_value = 0;
     stored_int = 0;
@@ -2702,6 +2712,7 @@ sixel_option_suboption_value_is_stored(
     stored_size = 0u;
     stored_float = 0.0f;
     stored_double = 0.0;
+    stored_string = NULL;
     if (key_def == NULL || value == NULL || target == NULL ||
         offset == SIXEL_SUBOPTION_OFFSET_NONE) {
         return 0;
@@ -2741,6 +2752,12 @@ sixel_option_suboption_value_is_stored(
                target + key_def->binding.second_value_offset,
                sizeof(stored_int));
         return stored_int == value->int_pair.second;
+    case SIXEL_SUBOPTION_STORAGE_STRING:
+        memcpy(&stored_string,
+               target + offset,
+               sizeof(stored_string));
+        return stored_string != NULL && value->string_value != NULL &&
+            strcmp(stored_string, value->string_value) == 0;
     default:
         break;
     }
@@ -2818,6 +2835,10 @@ sixel_option_emit_suboption_value(
                 "%d,%d",
                 value->int_pair.first,
                 value->int_pair.second);
+        break;
+    case SIXEL_SUBOPTION_VALUE_STRING:
+        fputs(value->string_value != NULL ? value->string_value : "",
+              stderr);
         break;
     default:
         break;
@@ -3150,8 +3171,10 @@ sixel_option_apply_diagnostics_argument(
         sixel_helper_set_additional_message(
             "failed to apply diagnostics suboptions.");
         status = SIXEL_BAD_ARGUMENT;
-    } else {
-        sixel_diagnostics_policy_store(&options);
+    } else if (!sixel_diagnostics_policy_store(&options)) {
+        sixel_helper_set_additional_message(
+            "failed to store diagnostics policy strings.");
+        status = SIXEL_BAD_ALLOCATION;
     }
     sixel_option_free_argument_resolution(&resolution);
     return status;
@@ -3189,6 +3212,10 @@ sixel_option_append_suboption_assignment(
             free(resolution->assignments[index].resolved_value_text);
             resolution->assignments[index].resolved_value_text = value_copy;
             resolution->assignments[index].value = *value;
+            if (key_def->value_kind == SIXEL_SUBOPTION_VALUE_STRING) {
+                resolution->assignments[index].value.string_value =
+                    value_copy;
+            }
             return 1;
         }
         ++index;
@@ -3217,6 +3244,10 @@ sixel_option_append_suboption_assignment(
     resolution->assignments[resolution->assignment_count].resolved_value_text =
         value_copy;
     resolution->assignments[resolution->assignment_count].value = *value;
+    if (key_def->value_kind == SIXEL_SUBOPTION_VALUE_STRING) {
+        resolution->assignments[
+            resolution->assignment_count].value.string_value = value_copy;
+    }
     resolution->assignment_count += 1u;
 
     return 1;
