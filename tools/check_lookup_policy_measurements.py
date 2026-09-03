@@ -36,6 +36,15 @@ QUALITY_FILES = {
 PLOT_FILES = tuple(name.replace(".csv", ".png") for name in QUALITY_FILES)
 PLOT_FILES += ("lookup-policy-speed.png",)
 POLICY_PATTERN = re.compile(r"--lookup-policy=([^ ]+)")
+ACCELERATION_FILES = (
+    "lookup-policy-shared-speed.csv",
+    "lookup-policy-metal-speed.csv",
+    "lookup-policy-shared-speed.png",
+    "lookup-policy-metal-speed.png",
+    "lookup-policy-acceleration-run.json",
+)
+SHARED_POLICIES = ("5bit", "6bit", "certlut")
+METAL_POLICIES = ("none", "eytzinger")
 
 
 def fail(message: str) -> None:
@@ -205,9 +214,160 @@ def validate_plots(directory: Path) -> None:
             fail(f"missing or empty plot: {path}")
 
 
+def validate_acceleration_metadata(path: Path) -> Dict[str, object]:
+    """Read and validate the shared-instance and Metal run manifest."""
+    if not path.is_file():
+        fail(f"missing acceleration metadata: {path}")
+    with path.open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if not isinstance(payload, dict) or payload.get("schema_version") != 1:
+        fail(f"unsupported acceleration metadata schema: {path}")
+    source = payload.get("source")
+    protocol = payload.get("protocol")
+    if not isinstance(source, dict) or not isinstance(protocol, dict):
+        fail(f"incomplete acceleration metadata: {path}")
+    if source.get("tracked_worktree_state_at_start") != "clean":
+        fail("acceleration measurements must originate from a clean worktree")
+    if protocol.get("sixel_environment_removed") is not True:
+        fail("acceleration metadata does not confirm SIXEL_* isolation")
+    colors = tuple(int(value) for value in protocol.get("colors", []))
+    if colors != BROAD_COLORS:
+        fail(f"acceleration colors differ from protocol: {colors}")
+
+    shared = protocol.get("shared_instance")
+    metal = protocol.get("metal")
+    if not isinstance(shared, dict) or not isinstance(metal, dict):
+        fail("acceleration metadata lacks shared-instance or Metal protocol")
+    if tuple(shared.get("policies", [])) != SHARED_POLICIES:
+        fail("acceleration metadata has unexpected shared-instance policies")
+    if tuple(shared.get("values", [])) != (0, 1):
+        fail("acceleration metadata must compare shared_instance=0 and 1")
+    if int(shared.get("threads", 0)) < 2:
+        fail("shared-instance measurement must use multiple threads")
+    if tuple(metal.get("policies", [])) != METAL_POLICIES:
+        fail("acceleration metadata has unexpected Metal policies")
+    if tuple(metal.get("cpu_gpu_policies", [])) != ("off", "force"):
+        fail("Metal measurement must compare gpu-policy=off and force")
+    if metal.get("force_success_required") is not True:
+        fail("Metal measurement does not require a forced GPU path")
+    equivalence = metal.get("output_equivalence")
+    if not isinstance(equivalence, dict):
+        fail("Metal metadata lacks output-equivalence records")
+    for policy in METAL_POLICIES:
+        record = equivalence.get(policy)
+        if not isinstance(record, dict) or record.get("byte_identical") is not True:
+            fail(f"Metal output equivalence is not established for {policy}")
+        digest = record.get("sha256")
+        if not isinstance(digest, str) or len(digest) != 64:
+            fail(f"invalid Metal output digest for {policy}")
+    return payload
+
+
+def validate_acceleration_speed_file(path: Path,
+                                     metadata: Dict[str, object],
+                                     comparison: str) -> None:
+    """Validate one focused acceleration speed matrix."""
+    rows = read_csv(path)
+    source = metadata["source"]
+    protocol = metadata["protocol"]
+    revision = str(source.get("revision", ""))
+    if not revision or revision == "unknown":
+        fail("acceleration metadata source revision is missing")
+
+    if comparison == "shared_instance":
+        shared = protocol["shared_instance"]
+        threads = int(shared["threads"])
+        expected = {
+            (policy, shared_value, color)
+            for policy in SHARED_POLICIES
+            for shared_value in (0, 1)
+            for color in BROAD_COLORS
+        }
+    else:
+        threads = 1
+        expected = {
+            (policy, gpu_policy, color)
+            for policy in METAL_POLICIES
+            for gpu_policy in ("off", "force")
+            for color in BROAD_COLORS
+        }
+
+    actual = set()
+    for row in rows:
+        if row.get("comparison") != comparison:
+            fail(f"unexpected comparison in {path}: {row.get('comparison')}")
+        try:
+            color = int(row.get("colors", ""))
+            row_threads = int(row.get("threads", ""))
+            median = float(row.get("median_seconds", ""))
+        except ValueError as exc:
+            raise ValueError(f"invalid acceleration value in {path}") from exc
+        if row.get("revision") != revision:
+            fail(f"acceleration revision differs from metadata in {path}")
+        if row_threads != threads:
+            fail(f"unexpected thread count in {path}: {row_threads}")
+        if median <= 0.0 or not math.isfinite(median):
+            fail(f"invalid acceleration median in {path}")
+        policy = row.get("policy", "")
+        command = row.get("command", "")
+        if comparison == "shared_instance":
+            try:
+                shared_value = int(row.get("shared_instance", ""))
+            except ValueError as exc:
+                raise ValueError(f"invalid shared_instance in {path}") from exc
+            key = (policy, shared_value, color)
+            expected_option = (
+                f"--lookup-policy={policy}:shared_instance={shared_value}"
+            )
+            if row.get("gpu_policy") != "off":
+                fail(f"shared-instance run unexpectedly enables GPU in {path}")
+        else:
+            gpu_policy = row.get("gpu_policy", "")
+            key = (policy, gpu_policy, color)
+            expected_option = f"--lookup-policy={policy}"
+            if row.get("shared_instance") != "":
+                fail(f"Metal run unexpectedly sets shared_instance in {path}")
+            if f"--gpu-policy={gpu_policy}" not in command:
+                fail(f"Metal command/gpu-policy mismatch in {path}")
+        if key in actual:
+            fail(f"duplicate acceleration point in {path}: {key}")
+        actual.add(key)
+        if expected_option not in command:
+            fail(f"acceleration command/policy mismatch in {path}: {key}")
+    if actual != expected:
+        missing = sorted(expected - actual)
+        extra = sorted(actual - expected)
+        fail(f"acceleration sweep mismatch in {path}: missing={missing}, extra={extra}")
+
+
+def validate_acceleration(directory: Path) -> None:
+    """Validate all focused shared-instance and Metal artifacts."""
+    metadata = validate_acceleration_metadata(
+        directory / "lookup-policy-acceleration-run.json"
+    )
+    validate_acceleration_speed_file(
+        directory / "lookup-policy-shared-speed.csv",
+        metadata,
+        "shared_instance",
+    )
+    validate_acceleration_speed_file(
+        directory / "lookup-policy-metal-speed.csv",
+        metadata,
+        "metal",
+    )
+    for name in (
+        "lookup-policy-shared-speed.png",
+        "lookup-policy-metal-speed.png",
+    ):
+        path = directory / name
+        if not path.is_file() or path.stat().st_size == 0:
+            fail(f"missing or empty acceleration plot: {path}")
+
+
 def main() -> int:
     """Validate one complete generated measurement directory."""
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--require-acceleration", action="store_true")
     parser.add_argument("directory", type=Path)
     args = parser.parse_args()
     directory = args.directory
@@ -217,9 +377,16 @@ def main() -> int:
         validate_quality_file(directory / name, colors)
     validate_speed_file(directory / "lookup-policy-speed.csv", metadata)
     validate_plots(directory)
+    acceleration_present = any(
+        (directory / name).exists() for name in ACCELERATION_FILES
+    )
+    if args.require_acceleration or acceleration_present:
+        validate_acceleration(directory)
     print(
         "validated 378 quality points and 54 speed points across 9 policies"
     )
+    if args.require_acceleration or acceleration_present:
+        print("validated 36 shared-instance and 24 Metal speed points")
     return 0
 
 

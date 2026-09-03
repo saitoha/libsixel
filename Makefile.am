@@ -97,9 +97,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \
 	tools/check_lookup_policy_measurements.py \
+	tools/plot_lookup_policy_acceleration.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
 	tools/plot_quality_curve.py \
+	tools/reproduce_lookup_policy_acceleration.sh \
 	tools/reproduce_lookup_policy_measurements.sh
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.
