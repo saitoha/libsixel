@@ -1680,6 +1680,30 @@ At `K = 256`, the measured values are:
 | `rbc` | 2.402073 | 1.756719 |
 | `mahalanobis` | 2.402073 | 1.756719 |
 
+#### Why some Heckbert configurations beat `none`
+
+Several non-`none` configurations score better than `none` in this end-to-end
+Heckbert measurement. At `K = 256`, `vptree`, `rbc`, `mahalanobis`, and
+`certlut` report mean Delta E00 values from 2.400774 to 2.403138, below
+`none` at 2.447771. For mean chroma error, `fhedt`, `vptree`, `certlut`, `rbc`,
+and `mahalanobis` are also below `none`.
+
+This result does not mean that a non-`none` lookup is more exact than an
+exhaustive scan over the same palette. In the current Heckbert compatibility
+path, `none` constructs its palette from a `256^3` histogram, whereas these
+listed policy configurations use a `64^3` histogram. Their palettes have
+already diverged before lookup begins. In addition, `none` minimizes squared
+distance in stored gamma-RGB coordinates, while the plotted metrics are Delta
+E00 and CIELAB chroma error. Exactness for the lookup metric therefore does not
+guarantee the lowest value for either plotted perceptual metric.
+
+The important observation is that finer histogram resolution plus exhaustive
+RGB lookup does not monotonically improve end-to-end perceptual error. The
+coarser histogram may act as a useful regularizer for this fixture by changing
+Heckbert's splits and representative colors, but this graph does not isolate
+or prove that mechanism. A fixed-palette component benchmark is required to
+compare lookup error independently of palette construction.
+
 Palette quality and lookup indexability are separate properties. In a
 `K = 256` diagnostic, `eytzinger` and `vptree` emitted identical palette
 definitions within each quantizer, yet their output quality depended strongly
