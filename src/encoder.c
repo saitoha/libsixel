@@ -711,7 +711,7 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "band_overwrap=%u|band_overwrap_override=%d|"
             "band_width=%u|band_width_override=%d|dither_threads=%d|"
             "encode_threads=%d|threads_max=%u|threads_max_override=%d|"
-            "codes=",
+            "pin_threads=%d|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -752,7 +752,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->pipeline_last_dither_threads,
             dither->pipeline_last_encode_threads,
             dither->dither_parallel_threads_max,
-            dither->dither_parallel_threads_max_override);
+            dither->dither_parallel_threads_max_override,
+            dither->pipeline_pin_threads);
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }
