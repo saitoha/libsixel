@@ -107,7 +107,8 @@ typedef enum sixel_suboption_environment_range_policy {
     SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG = 1 << 3,
     SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH = 1 << 4,
     SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH = 1 << 5,
-    SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG = 1 << 6
+    SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG = 1 << 6,
+    SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY = 1 << 7
 } sixel_suboption_environment_range_policy_t;
 
 #define SIXEL_SUBOPTION_OFFSET_NONE ((size_t)-1)
@@ -251,6 +252,8 @@ typedef struct sixel_suboption_key {
     char const *invalid_value_message;
     char const *invalid_value_suffix;
     sixel_suboption_binding_t binding;
+    /* Optional topic preserves backend diagnostics during central parsing. */
+    char const *environment_trace_topic;
 } sixel_suboption_key_t;
 
 typedef union sixel_suboption_value {

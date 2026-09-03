@@ -36,6 +36,7 @@
 #include "timeline-logger.h"
 
 #define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
+#define SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES_DEFAULT 262144u
 
 typedef struct sixel_loader_timeline_callback_state {
     unsigned int magic;
@@ -108,6 +109,12 @@ int loader_resolve_boolean_suboption(
     char const *base_name,
     char const *binding_identifier,
     int fallback);
+
+/* Resolve one loader unsigned value from request state or its registry row. */
+unsigned int loader_resolve_uint_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    unsigned int fallback);
 
 /* Return the shared builtin/libpng PNG transparency compatibility mode. */
 int loader_png_trns_keycolor_mode(void);

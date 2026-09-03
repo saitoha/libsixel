@@ -241,8 +241,17 @@ sixel_option_parse_typed_suboption_value(
 static int
 sixel_option_parse_environment_value(
     sixel_suboption_key_t const *key_def,
+    char const *environment_name,
     char const *text,
     sixel_suboption_value_t *value);
+
+static void
+sixel_option_trace_environment_value(
+    sixel_suboption_key_t const *key_def,
+    char const *environment_name,
+    char const *text,
+    sixel_suboption_value_t const *value,
+    int matched);
 
 static sixel_option_choice_result_t
 sixel_option_match_suboption_key(
@@ -1562,6 +1571,7 @@ sixel_option_parse_typed_suboption_value(
     long parsed_int;
     unsigned long parsed_ulong;
     unsigned long long parsed_uint;
+    char const *digit;
     double parsed_double;
     double scaled;
     char message[256];
@@ -1572,6 +1582,7 @@ sixel_option_parse_typed_suboption_value(
     parsed_int = 0L;
     parsed_ulong = 0UL;
     parsed_uint = 0ULL;
+    digit = NULL;
     parsed_double = 0.0;
     scaled = 0.0;
     message[0] = '\0';
@@ -1639,6 +1650,21 @@ sixel_option_parse_typed_suboption_value(
                 parsed_uint = (unsigned long long)parsed_int;
             }
         } else {
+            valid = 1;
+            if ((range_policy &
+                 SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY) != 0) {
+                digit = text;
+                while (*digit != '\0') {
+                    if (*digit < '0' || *digit > '9') {
+                        valid = 0;
+                        break;
+                    }
+                    ++digit;
+                }
+            }
+            if (!valid) {
+                break;
+            }
             errno = 0;
             if ((range_policy &
                  SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG) != 0) {
@@ -2009,27 +2035,84 @@ sixel_option_resolve_registered_int_pair_binding(
     return 1;
 }
 
+static void
+sixel_option_trace_environment_value(
+    sixel_suboption_key_t const *key_def,
+    char const *environment_name,
+    char const *text,
+    sixel_suboption_value_t const *value,
+    int matched)
+{
+    char *endptr;
+    unsigned long long parsed;
+
+    endptr = NULL;
+    parsed = 0ULL;
+    if (key_def == NULL || environment_name == NULL || text == NULL ||
+        value == NULL ||
+        key_def->environment_trace_topic == NULL) {
+        return;
+    }
+    if (!matched) {
+        sixel_trace_topic_message(
+            key_def->environment_trace_topic,
+            "ignore invalid %s=%s",
+            environment_name,
+            text);
+        return;
+    }
+    if (key_def->value_kind != SIXEL_SUBOPTION_VALUE_UINT ||
+        !key_def->has_maximum ||
+        (key_def->environment_range_policy &
+         SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) == 0) {
+        return;
+    }
+
+    errno = 0;
+    parsed = strtoull(text, &endptr, 10);
+    if (errno == 0 && endptr != text && endptr != NULL &&
+        endptr[0] == '\0' &&
+        (double)parsed > key_def->maximum) {
+        sixel_trace_topic_message(
+            key_def->environment_trace_topic,
+            "clamp %s=%s to %u",
+            environment_name,
+            text,
+            value->uint_value);
+    }
+}
+
 static int
 sixel_option_parse_environment_value(
     sixel_suboption_key_t const *key_def,
+    char const *environment_name,
     char const *text,
     sixel_suboption_value_t *value)
 {
     size_t index;
+    int matched;
 
     index = 0u;
-    if (key_def == NULL || text == NULL || text[0] == '\0' ||
-        value == NULL) {
+    matched = 0;
+    if (key_def == NULL || environment_name == NULL || text == NULL ||
+        text[0] == '\0' || value == NULL) {
         return 0;
     }
 
     if (key_def->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE) {
-        return SIXEL_SUCCEEDED(sixel_option_parse_typed_suboption_value(
+        matched = SIXEL_SUCCEEDED(sixel_option_parse_typed_suboption_value(
             key_def,
             text,
             value,
             key_def->environment_range_policy,
             0));
+        sixel_option_trace_environment_value(
+            key_def,
+            environment_name,
+            text,
+            value,
+            matched);
+        return matched;
     }
 
     while (index < key_def->environment_choice_count) {
@@ -2081,14 +2164,22 @@ sixel_option_resolve_suboption_environment(
     text = sixel_compat_getenv(key_def->env_name);
     primary_present = text != NULL && text[0] != '\0';
     if (primary_present &&
-        sixel_option_parse_environment_value(key_def, text, value)) {
+        sixel_option_parse_environment_value(
+            key_def,
+            key_def->env_name,
+            text,
+            value)) {
         return 1;
     }
 
     if (key_def->env_fallback_name != NULL) {
         text = sixel_compat_getenv(key_def->env_fallback_name);
         if (text != NULL && text[0] != '\0' &&
-            sixel_option_parse_environment_value(key_def, text, value)) {
+            sixel_option_parse_environment_value(
+                key_def,
+                key_def->env_fallback_name,
+                text,
+                value)) {
             return 1;
         }
     }
@@ -2100,7 +2191,11 @@ sixel_option_resolve_suboption_environment(
     if (text == NULL || text[0] == '\0') {
         return 0;
     }
-    return sixel_option_parse_environment_value(key_def, text, value);
+    return sixel_option_parse_environment_value(
+        key_def,
+        key_def->env_legacy_name,
+        text,
+        value);
 }
 
 static int

@@ -220,6 +220,8 @@ loader_manager_init_loader_suboptions(
     suboptions->libwebp_enable_cms = 0;
     suboptions->libwebp_cms_engine = SIXEL_CMS_ENGINE_NONE;
     suboptions->libwebp_enable_orientation = 1;
+    suboptions->libwebp_max_output_frames =
+        (int)SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES_DEFAULT;
     suboptions->coregraphics_enable_orientation = 1;
     suboptions->libtiff_enable_cms = 0;
     suboptions->libtiff_cms_engine = SIXEL_CMS_ENGINE_NONE;

@@ -316,6 +316,62 @@ loader_resolve_boolean_suboption(
     return value != 0;
 }
 
+unsigned int
+loader_resolve_uint_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    unsigned int fallback)
+{
+    sixel_loader_suboptions_t const *suboptions;
+    sixel_suboption_key_t const *key_def;
+    unsigned int value;
+    int stored;
+
+    suboptions = sixel_loader_active_suboptions();
+    key_def = NULL;
+    value = fallback;
+    stored = 0;
+    if (suboptions == NULL) {
+        if (sixel_option_resolve_registered_uint_binding(
+                SIXEL_OPTION_SCHEMA_LOADERS,
+                base_name,
+                binding_identifier,
+                &value)) {
+            return value;
+        }
+        return fallback;
+    }
+
+    key_def = sixel_option_registry_suboption_by_binding(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        base_name,
+        binding_identifier);
+    if (key_def == NULL ||
+        key_def->value_kind != SIXEL_SUBOPTION_VALUE_UINT ||
+        key_def->binding.target_class != SIXEL_SUBOPTION_TARGET_LOADER ||
+        key_def->binding.value_offset == SIXEL_SUBOPTION_OFFSET_NONE) {
+        return value;
+    }
+    if (key_def->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_UINT) {
+        memcpy(&value,
+               (unsigned char const *)suboptions +
+                   key_def->binding.value_offset,
+               sizeof(value));
+        return value;
+    }
+    if (key_def->binding.storage_kind != SIXEL_SUBOPTION_STORAGE_INT) {
+        return value;
+    }
+    memcpy(&stored,
+           (unsigned char const *)suboptions +
+               key_def->binding.value_offset,
+           sizeof(stored));
+    if (stored < 0) {
+        return value;
+    }
+    return (unsigned int)stored;
+}
+
 int
 loader_png_trns_keycolor_mode(void)
 {

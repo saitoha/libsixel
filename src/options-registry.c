@@ -94,7 +94,7 @@
         (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
         0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
-        SIXEL_REGISTRY_NO_BINDING \
+        SIXEL_REGISTRY_NO_BINDING, NULL \
     }
 
 #define SIXEL_REGISTRY_TYPED_CHOICE( \
@@ -111,7 +111,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_TYPED_CHOICE_ENV( \
@@ -129,7 +129,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_TYPED_BOOLEAN( \
@@ -146,7 +146,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_NUMBER( \
@@ -158,7 +158,7 @@
         (legacy_), (kind_), NULL, 0u, NULL, 0u, (minimum_), (maximum_), \
         (has_minimum_), (has_maximum_), (allow_zero_), \
         SIXEL_SUBOPTION_ENV_RANGE_REJECT, (message_), (suffix_), \
-        SIXEL_REGISTRY_NO_BINDING \
+        SIXEL_REGISTRY_NO_BINDING, NULL \
     }
 
 #define SIXEL_REGISTRY_INT( \
@@ -199,7 +199,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_TYPED_UINT( \
@@ -260,6 +260,27 @@
         message_, suffix_, \
         SIXEL_SUBOPTION_TARGET_LOADER, sixel_loader_suboptions_t, field_)
 
+#define SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM_DIGITS( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, allow_zero_, message_, suffix_, trace_topic_, field_) \
+    { \
+        (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
+        (legacy_), SIXEL_SUBOPTION_VALUE_UINT, NULL, 0u, NULL, 0u, \
+        (minimum_), (maximum_), 1, 1, (allow_zero_), \
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM | \
+            SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY, \
+        (message_), (suffix_), \
+        { \
+            SIXEL_SUBOPTION_TARGET_LOADER, SIXEL_SUBOPTION_STORAGE_INT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_loader_suboptions_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_1(field_) \
+        }, \
+        (trace_topic_) \
+    }
+
 #define SIXEL_REGISTRY_FLOAT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_) \
     SIXEL_REGISTRY_NUMBER( \
@@ -303,7 +324,7 @@
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_CHOICE_ENV( \
@@ -322,7 +343,7 @@
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_BOOLEAN( \
@@ -340,7 +361,7 @@
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE( \
@@ -357,7 +378,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_MIRROR_CHOICE( \
@@ -375,7 +396,7 @@
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, mirror_, int), \
             SIXEL_SUBOPTION_BINDING_ID_3(field_, override_, mirror_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_NUMBER( \
@@ -395,7 +416,7 @@
             (second_), \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, (binding_id_) \
-        } \
+        }, NULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_UINT( \
@@ -1748,6 +1769,16 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "orientation", 'O', "SIXEL_LOADER_LIBWEBP_ORIENTATION",
         "SIXEL_LOADER_ORIENTATION", NULL,
         libwebp_enable_orientation),
+    SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM_DIGITS(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_LIBWEBP,
+        "max_output_frames", 'M',
+        "SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES", NULL, NULL,
+        1.0, (double)SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES_DEFAULT, 0,
+        "invalid libwebp suboption value \"",
+        "\" for key \"max_output_frames\"; expected a positive integer.",
+        "webp_decode",
+        libwebp_max_output_frames),
 #endif
 #if HAVE_COREGRAPHICS
     SIXEL_REGISTRY_LOADER_BOOLEAN(
@@ -2896,7 +2927,8 @@ sixel_option_registry_validate_uncached(void)
                        SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
                        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
                        SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
-                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG)) !=
+                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG |
+                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY)) !=
                     0) {
                     return 0;
                 }
@@ -2922,7 +2954,8 @@ sixel_option_registry_validate_uncached(void)
                      (SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
                       SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
                       SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
-                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG)) != 0 &&
+                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG |
+                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY)) != 0 &&
                     key->value_kind != SIXEL_SUBOPTION_VALUE_UINT) {
                     return 0;
                 }
@@ -2940,6 +2973,13 @@ sixel_option_registry_validate_uncached(void)
                      (SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
                       SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH)) !=
                         SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH) {
+                    return 0;
+                }
+                if ((key->environment_range_policy &
+                     SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY) != 0 &&
+                    (key->environment_range_policy &
+                     (SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
+                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG)) != 0) {
                     return 0;
                 }
                 if ((key->environment_range_policy &

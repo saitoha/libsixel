@@ -35,9 +35,6 @@
 #if HAVE_STRING_H
 # include <string.h>
 #endif
-#if HAVE_ERRNO_H
-# include <errno.h>
-#endif
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
@@ -111,7 +108,8 @@ typedef struct webp_animation_decode_control {
 #undef WEBP_MAX_ANIMATION_FRAMES
 #define WEBP_MAX_ANIMATION_FRAMES 1024
 #endif
-#define WEBP_MAX_OUTPUT_FRAMES    ((size_t)262144u)
+#define WEBP_MAX_OUTPUT_FRAMES \
+    ((size_t)SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES_DEFAULT)
 #define WEBP_MAX_ICC_PROFILE_BYTES ((size_t)1048576u)
 #define WEBP_FRAME_CACHE_MAX_BYTES_DEFAULT \
     ((size_t)(64u * 1024u * 1024u))
@@ -2120,46 +2118,10 @@ webp_maybe_resolve_animation_start_frame_no(int start_frame_no_set,
 static size_t
 webp_resolve_max_output_frames(void)
 {
-    char const *env_value;
-    char *endptr;
-    unsigned long long parsed;
-
-    env_value = NULL;
-    endptr = NULL;
-    parsed = 0ULL;
-
-    env_value = sixel_compat_getenv("SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES");
-    if (env_value == NULL || env_value[0] == '\0') {
-        return WEBP_MAX_OUTPUT_FRAMES;
-    }
-    if (env_value[0] < '0' || env_value[0] > '9') {
-        sixel_trace_topic_message(
-            "webp_decode",
-            "ignore invalid SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=%s",
-            env_value);
-        return WEBP_MAX_OUTPUT_FRAMES;
-    }
-
-    errno = 0;
-    parsed = strtoull(env_value, &endptr, 10);
-    if (errno != 0 || endptr == env_value || *endptr != '\0' || parsed == 0ULL) {
-        sixel_trace_topic_message(
-            "webp_decode",
-            "ignore invalid SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=%s",
-            env_value);
-        return WEBP_MAX_OUTPUT_FRAMES;
-    }
-
-    if (parsed > (unsigned long long)WEBP_MAX_OUTPUT_FRAMES) {
-        sixel_trace_topic_message(
-            "webp_decode",
-            "clamp SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=%s to %zu",
-            env_value,
-            WEBP_MAX_OUTPUT_FRAMES);
-        return WEBP_MAX_OUTPUT_FRAMES;
-    }
-
-    return (size_t)parsed;
+    return (size_t)loader_resolve_uint_suboption(
+        "libwebp",
+        SIXEL_SUBOPTION_BINDING_ID_1(libwebp_max_output_frames),
+        SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES_DEFAULT);
 }
 
 static int

@@ -387,7 +387,9 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_LOADER_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_LOADER_CHOICE" ||
         macro == "SIXEL_REGISTRY_LOADER_CHOICE_ENV" ||
-        macro == "SIXEL_REGISTRY_LOADER_UINT"
+        macro == "SIXEL_REGISTRY_LOADER_UINT" ||
+        macro == \
+            "SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM_DIGITS"
 }
 function inspect(row, fields, count, option_id, base, name, alias, env,
                  exact_key, shared_key, macro) {
