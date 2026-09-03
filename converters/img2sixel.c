@@ -764,6 +764,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "      :fuzzy_suggestions=0|1 (:F0|:F1)\n"
         "      :path_suggestions=0|1 (:S0|:S1)\n"
         "      :force_colors=0|1 (:C0|:C1)\n"
+        "      :handoff_trace=0|1 (:H0|:H1)\n"
+        "      :psd_trace=0|1 (:D0|:D1)\n"
+        "      :psd_header_only=0|1 (:E0|:E1)\n"
     },
     {
         'l',
@@ -1081,18 +1084,21 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL",
         "emit minimal encode_handoff trace events for test contracts.\n"
-        "Only the exact value '1' enables it."
+        "Set to '1' to enable or '0' to disable it.\n"
+        "The -x *:handoff_trace value takes precedence."
     },
     {
         "SIXEL_PSD_TRACE_ONLY",
         "enable PSD/PSB trace-only diagnostics shortcut.\n"
-        "Only the exact value '1' enables it, and only when\n"
-        "SIXEL_TRACE_TOPIC includes 'psd_decode'."
+        "Set to '1' to enable or '0' to disable it, and only when\n"
+        "SIXEL_TRACE_TOPIC includes 'psd_decode'.\n"
+        "The -x *:psd_trace value takes precedence."
     },
     {
         "SIXEL_PSD_TRACE_HEADER_ONLY",
         "suppress verbose PSD trace lines while keeping LSXPSD1 header.\n"
-        "Only the exact value '1' enables it."
+        "Set to '1' to enable or '0' to disable it.\n"
+        "The -x *:psd_header_only value takes precedence."
     },
     {
         "SIXEL_DIAG_MODE",

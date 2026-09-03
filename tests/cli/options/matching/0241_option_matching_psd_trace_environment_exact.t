@@ -12,6 +12,14 @@ echo "1..1"
 set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_layers_minimal_type_layer.psd"
+cli_trace_only_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_TRACE_TOPIC=psd_decode \
+    --env SIXEL_PSD_TRACE_ONLY=0 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
+    "-xhuman:D1" "${input_psd}" 2>/dev/null) || {
+    echo "not ok" 1 - "PSD CLI trace-only conversion failed"
+    exit 0
+}
 trace_only_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
@@ -29,6 +37,10 @@ invalid_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
+test -z "${cli_trace_only_output}" || {
+    echo "not ok" 1 - "PSD CLI trace-only mode emitted image output"
+    exit 0
+}
 test -z "${trace_only_output}" || {
     echo "not ok" 1 - "PSD trace-only mode emitted image output"
     exit 0

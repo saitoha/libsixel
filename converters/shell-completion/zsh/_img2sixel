@@ -905,7 +905,9 @@ _diagnosticspolicy() {
         prefix=${current%"${segment}"}
         if [[ ${key} == quiet || ${key} == prefix_suggestions || \
               ${key} == fuzzy_suggestions || \
-              ${key} == path_suggestions || ${key} == force_colors ]]; then
+              ${key} == path_suggestions || ${key} == force_colors || \
+              ${key} == handoff_trace || ${key} == psd_trace || \
+              ${key} == psd_header_only ]]; then
           compadd -- "${prefix}${key}=0" "${prefix}${key}=1"
           return 0
         fi
@@ -916,11 +918,17 @@ _diagnosticspolicy() {
                    "${prefix}F0" "${prefix}F1" \
                    "${prefix}S0" "${prefix}S1" \
                    "${prefix}C0" "${prefix}C1" \
+                   "${prefix}H0" "${prefix}H1" \
+                   "${prefix}D0" "${prefix}D1" \
+                   "${prefix}E0" "${prefix}E1" \
                    "${prefix}quiet=" \
                    "${prefix}prefix_suggestions=" \
                    "${prefix}fuzzy_suggestions=" \
                    "${prefix}path_suggestions=" \
-                   "${prefix}force_colors="
+                   "${prefix}force_colors=" \
+                   "${prefix}handoff_trace=" \
+                   "${prefix}psd_trace=" \
+                   "${prefix}psd_header_only="
         return 0
       fi
     fi

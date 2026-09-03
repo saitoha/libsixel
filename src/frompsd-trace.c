@@ -36,6 +36,7 @@
 #include "compat_stub.h"
 #include "frompsd-internal.h"
 #include "loader-common.h"
+#include "options.h"
 
 #if defined(_MSC_VER)
 # define SIXEL_PSD_TRACE_TLS __declspec(thread)
@@ -108,17 +109,7 @@ sixel_builtin_psd_trace_mul_low64(uint64_t left, uint64_t right)
 static int
 sixel_builtin_psd_trace_header_only_enabled(void)
 {
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_PSD_TRACE_HEADER_ONLY");
-    if (value == NULL) {
-        return 0;
-    }
-    if (value[0] == '1' && value[1] == '\0') {
-        return 1;
-    }
-
-    return 0;
+    return sixel_diagnostics_psd_header_only_is_enabled();
 }
 
 void

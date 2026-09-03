@@ -1574,6 +1574,21 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "force_colors", 'C', "SIXEL_STATUS_FORCE_COLORS",
         SIXEL_OPTION_SCOPE_ALL,
         force_colors, force_colors_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "handoff_trace", 'H', "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        handoff_trace, handoff_trace_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "psd_trace", 'D', "SIXEL_PSD_TRACE_ONLY",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        psd_trace, psd_trace_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "psd_header_only", 'E', "SIXEL_PSD_TRACE_HEADER_ONLY",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        psd_header_only, psd_header_only_override),
 
     SIXEL_REGISTRY_RUNTIME_SIZE(
         SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
@@ -3516,6 +3531,52 @@ sixel_diagnostics_force_colors_is_enabled(void)
         SIXEL_SUBOPTION_BINDING_ID_2(force_colors, force_colors_override),
         options.force_colors,
         options.force_colors_override,
+        0);
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_handoff_trace_is_enabled(void)
+{
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    return sixel_diagnostics_boolean_value(
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            handoff_trace,
+            handoff_trace_override),
+        options.handoff_trace,
+        options.handoff_trace_override,
+        0);
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_psd_trace_is_enabled(void)
+{
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    return sixel_diagnostics_boolean_value(
+        SIXEL_SUBOPTION_BINDING_ID_2(psd_trace, psd_trace_override),
+        options.psd_trace,
+        options.psd_trace_override,
+        0);
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_psd_header_only_is_enabled(void)
+{
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    return sixel_diagnostics_boolean_value(
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            psd_header_only,
+            psd_header_only_override),
+        options.psd_header_only,
+        options.psd_header_only_override,
         0);
 }
 

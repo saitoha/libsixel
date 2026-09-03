@@ -134,8 +134,6 @@
 
 #define SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR \
     "SIXEL_ANIMATION_HIDE_CURSOR"
-#define SIXEL_ENCODER_PSD_TRACE_ONLY_ENVVAR \
-    "SIXEL_PSD_TRACE_ONLY"
 #define SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR \
     "LSO_TEST_SIGINT_NOTIFY_PID"
 #define SIXEL_ENCODER_SIGINT_SYNC_EVENT_ENVVAR \
@@ -534,34 +532,12 @@ sixel_encoder_should_force_auto_lut_for_psd(
 }
 
 static int
-sixel_encoder_envvar_is_enabled(char const *envvar)
-{
-    char const *value;
-
-    value = NULL;
-    if (envvar == NULL) {
-        return 0;
-    }
-
-    value = sixel_compat_getenv(envvar);
-    if (value == NULL) {
-        return 0;
-    }
-    if (value[0] == '1' && value[1] == '\0') {
-        return 1;
-    }
-
-    return 0;
-}
-
-static int
 sixel_encoder_should_use_psd_trace_only(char const *path)
 {
     if (path == NULL) {
         return 0;
     }
-    if (!sixel_encoder_envvar_is_enabled(
-            SIXEL_ENCODER_PSD_TRACE_ONLY_ENVVAR)) {
+    if (!sixel_diagnostics_psd_trace_is_enabled()) {
         return 0;
     }
     if (!sixel_trace_topic_is_enabled("psd_decode")) {
@@ -1148,18 +1124,7 @@ sixel_encoder_handoff_trace_event_name(
 static int
 sixel_encoder_handoff_trace_minimal_enabled(void)
 {
-    char const *value;
-    int enabled;
-
-    value = NULL;
-    enabled = 0;
-
-    value = sixel_compat_getenv("SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL");
-    if (value != NULL && strcmp(value, "1") == 0) {
-        enabled = 1;
-    }
-
-    return enabled;
+    return sixel_diagnostics_handoff_trace_is_enabled();
 }
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
