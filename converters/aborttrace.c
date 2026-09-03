@@ -34,6 +34,24 @@
 
 #include "aborttrace.h"
 
+#if HAVE_STDIO_H
+# include <stdio.h>
+#endif  /* HAVE_STDIO_H */
+
+int sixel_diagnostics_abort_trace_is_enabled(void);
+int sixel_diagnostics_trace_topic_is_enabled(char const *topic);
+
+static void
+sixel_aborttrace_trace_policy(int enabled, int installed)
+{
+    if (sixel_diagnostics_trace_topic_is_enabled("aborttrace_contract")) {
+        fprintf(stderr,
+                "LSXABT1|enabled=%d|installed=%d\n",
+                enabled,
+                installed);
+    }
+}
+
 #if defined(SIXEL_ENABLE_ABORT_TRACE)
 
 #include <stdlib.h>
@@ -53,9 +71,6 @@
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif  /* HAVE_STDINT_H */
-#if HAVE_STDIO_H
-# include <stdio.h>
-#endif  /* HAVE_STDIO_H */
 #if HAVE_STRING_H
 # include <string.h>
 #endif  /* HAVE_STRING_H */
@@ -105,7 +120,7 @@ void backtrace_symbols_fd(void *const *buffer, int size, int fd);
 
 /*
  * Keep aborttrace independent from private src/ headers by declaring the
- * emergency tty restore hook locally.
+ * diagnostics and emergency tty hooks locally.
  */
 void sixel_tty_restore_cbreak_for_abort(void);
 
@@ -288,26 +303,6 @@ sixel_aborttrace_getenv_dup(char const *name)
     memcpy(copy, value, len + 1u);
     return copy;
 #endif
-}
-
-static int
-sixel_aborttrace_env_enabled(void)
-{
-    char *value;
-
-    value = sixel_aborttrace_getenv_dup("SIXEL_ABORT_TRACE");
-    if (value == NULL || value[0] == '\0') {
-        free(value);
-        return 1;
-    }
-
-    if (strcmp(value, "0") == 0) {
-        free(value);
-        return 0;
-    }
-
-    free(value);
-    return 1;
 }
 
 static int
@@ -586,9 +581,12 @@ void
 sixel_aborttrace_install_if_unhandled(void)
 {
     int debug_enabled;
+    int policy_enabled;
 
     debug_enabled = sixel_aborttrace_debug_enabled();
+    policy_enabled = sixel_diagnostics_abort_trace_is_enabled();
     if (g_aborttrace_installed != 0) {
+        sixel_aborttrace_trace_policy(policy_enabled, 1);
         if (debug_enabled != 0) {
             fprintf(stderr,
                     "libsixel: abort trace already installed\n");
@@ -596,15 +594,17 @@ sixel_aborttrace_install_if_unhandled(void)
         return;
     }
 
-    if (!sixel_aborttrace_env_enabled()) {
+    if (policy_enabled == 0) {
+        sixel_aborttrace_trace_policy(0, 0);
         if (debug_enabled != 0) {
             fprintf(stderr,
-                    "libsixel: abort trace disabled by environment\n");
+                    "libsixel: abort trace disabled by diagnostics policy\n");
         }
         return;
     }
 
     if (!sixel_aborttrace_sigabrt_is_default()) {
+        sixel_aborttrace_trace_policy(1, 0);
         if (debug_enabled != 0) {
             fprintf(stderr,
                     "libsixel: abort trace skipped (SIGABRT handled)\n");
@@ -613,6 +613,9 @@ sixel_aborttrace_install_if_unhandled(void)
     }
 
     sixel_aborttrace_install_platform();
+    sixel_aborttrace_trace_policy(
+        1,
+        g_aborttrace_installed != 0 ? 1 : 0);
     if ((debug_enabled != 0) && (g_aborttrace_installed != 0)) {
         fprintf(stderr,
                 "libsixel: abort trace installed\n");
@@ -623,7 +626,10 @@ sixel_aborttrace_install_if_unhandled(void)
 void
 sixel_aborttrace_install_if_unhandled(void)
 {
-    /* Abort tracing disabled at configure time. */
+    int policy_enabled;
+
+    policy_enabled = sixel_diagnostics_abort_trace_is_enabled();
+    sixel_aborttrace_trace_policy(policy_enabled, 0);
 }
 #endif
 

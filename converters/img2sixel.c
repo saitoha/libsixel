@@ -768,6 +768,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      :handoff_trace=0|1 (:H0|:H1)\n"
         "      :psd_trace=0|1 (:D0|:D1)\n"
         "      :psd_header_only=0|1 (:E0|:E1)\n"
+        "      :abort_trace=0|1 (:A0|:A1)\n"
         "      :log_lines=1..2147483647 (:NVALUE)\n"
     },
     {
@@ -1167,8 +1168,9 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_ABORT_TRACE",
         "dump abort backtraces when img2sixel terminates abnormally.\n"
-        "Accepts only 0/1. Unset, empty, invalid, and 1 enable tracing;\n"
-        "0 disables it."
+        "Use 0 to disable or 1 to enable it. Unset, empty, or invalid\n"
+        "values keep the enabled default. The -x *:abort_trace=0|1\n"
+        "suboption takes precedence."
     },
     {
         "SIXEL_BGCOLOR",
@@ -3222,7 +3224,6 @@ img2sixel_main(int argc, char *argv[])
     current_option.token = NULL;
 
     sixel_tty_init_output_device(STDERR_FILENO);
-    sixel_aborttrace_install_if_unhandled();
 
     optstring = g_img2sixel_optstring;
 
@@ -3450,6 +3451,7 @@ img2sixel_main(int argc, char *argv[])
         }
     }
     optind = parse_terminal_optind;
+    sixel_aborttrace_install_if_unhandled();
 
     /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
 #if HAVE_SIGNAL

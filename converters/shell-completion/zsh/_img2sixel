@@ -907,7 +907,7 @@ _diagnosticspolicy() {
               ${key} == fuzzy_suggestions || \
               ${key} == path_suggestions || ${key} == force_colors || \
               ${key} == handoff_trace || ${key} == psd_trace || \
-              ${key} == psd_header_only ]]; then
+              ${key} == psd_header_only || ${key} == abort_trace ]]; then
           compadd -- "${prefix}${key}=0" "${prefix}${key}=1"
           return 0
         fi
@@ -926,6 +926,7 @@ _diagnosticspolicy() {
                    "${prefix}H0" "${prefix}H1" \
                    "${prefix}D0" "${prefix}D1" \
                    "${prefix}E0" "${prefix}E1" \
+                   "${prefix}A0" "${prefix}A1" \
                    "${prefix}N" \
                    "${prefix}quiet=" \
                    "${prefix}prefix_suggestions=" \
@@ -935,6 +936,7 @@ _diagnosticspolicy() {
                    "${prefix}handoff_trace=" \
                    "${prefix}psd_trace=" \
                    "${prefix}psd_header_only=" \
+                   "${prefix}abort_trace=" \
                    "${prefix}log_lines=" \
                    "${prefix}trace_topic=" \
                    "${prefix}T"

@@ -105,7 +105,8 @@ choose diagnostic presentation.  \fIMODE\fP is \fBhuman\fP (default) or
 img2sixel also accepts \fB:quiet=0|1\fP
 (\fB:Q0|:Q1\fP), \fB:handoff_trace=0|1\fP (\fB:H0|:H1\fP),
 \fB:psd_trace=0|1\fP (\fB:D0|:D1\fP), and
-\fB:psd_header_only=0|1\fP (\fB:E0|:E1\fP). Timeline line sampling uses
+\fB:psd_header_only=0|1\fP (\fB:E0|:E1\fP). Abort tracing uses
+\fB:abort_trace=0|1\fP (\fB:A0|:A1\fP). Timeline line sampling uses
 \fB:log_lines=1..2147483647\fP (short form \fB:NVALUE\fP).
 .TP 5
 .B \-J \fIPATH\fP, \-\-log\-path=\fIPATH\fP
@@ -1272,8 +1273,10 @@ is helpful for testing the workflow inside disposable directories.
 .TP 5
 .B SIXEL_ABORT_TRACE
 .br
-dump abort backtraces when \fIimg2sixel\fP terminates abnormally. Only 0 and 1
-are accepted. Unset, empty, invalid, and 1 enable tracing; 0 disables it.
+dump abort backtraces when \fIimg2sixel\fP terminates abnormally. Set to "0" to
+disable or "1" to enable tracing. Unset, empty, or invalid values preserve the
+enabled default. The \fB\-x *:abort_trace=0|1\fP suboption (short form
+\fB:A0|:A1\fP) takes precedence.
 .TP 5
 .B SIXEL_BGCOLOR
 .br

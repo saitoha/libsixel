@@ -1634,6 +1634,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "psd_header_only", 'E', "SIXEL_PSD_TRACE_HEADER_ONLY",
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
         psd_header_only, psd_header_only_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "abort_trace", 'A', "SIXEL_ABORT_TRACE",
+        SIXEL_OPTION_SCOPE_ALL,
+        abort_trace, abort_trace_override),
     SIXEL_REGISTRY_DIAGNOSTICS_INT(
         SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
         "log_lines", 'N', "SIXEL_LOG_LINES",
@@ -3680,6 +3685,20 @@ sixel_diagnostics_psd_header_only_is_enabled(void)
         options.psd_header_only,
         options.psd_header_only_override,
         0);
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_abort_trace_is_enabled(void)
+{
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    return sixel_diagnostics_boolean_value(
+        SIXEL_SUBOPTION_BINDING_ID_2(abort_trace, abort_trace_override),
+        options.abort_trace,
+        options.abort_trace_override,
+        1);
 }
 
 SIXEL_INTERNAL_API int

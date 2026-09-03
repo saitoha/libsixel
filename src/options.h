@@ -424,6 +424,8 @@ typedef struct sixel_diagnostics_policy_options {
     int psd_trace_override;
     int psd_header_only;
     int psd_header_only_override;
+    int abort_trace;
+    int abort_trace_override;
     int log_lines;
     int log_lines_override;
     char const *trace_topic;
@@ -650,6 +652,7 @@ SIXEL_INTERNAL_API int sixel_diagnostics_force_colors_is_enabled(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_handoff_trace_is_enabled(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_psd_trace_is_enabled(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_psd_header_only_is_enabled(void);
+SIXEL_INTERNAL_API int sixel_diagnostics_abort_trace_is_enabled(void);
 SIXEL_INTERNAL_API int
 sixel_diagnostics_trace_topic_is_enabled(char const *topic);
 SIXEL_INTERNAL_API void

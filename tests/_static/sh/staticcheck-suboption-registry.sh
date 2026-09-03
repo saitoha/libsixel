@@ -589,7 +589,12 @@ function inspect(row, fields, count, name, alias, key, macro, scope) {
     if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_INT" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_STRING") scope = fields[6]
-    if (macro ~ /DEQUANTIZE|DECODER/ ||
+    if (scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
+        expected_help[key] = help_file
+        expected_man[key] = man_file
+        expected_second_help[key] = decoder_help_file
+        expected_second_man[key] = decoder_man_file
+    } else if (macro ~ /DEQUANTIZE|DECODER/ ||
         scope ~ /SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE/) {
         expected_help[key] = decoder_help_file
         expected_man[key] = decoder_man_file
@@ -670,6 +675,16 @@ END {
         if (!mapping_is_documented(document[expected_man[key]],
                                    name, alias)) {
             fail(expected_man[key] " omits " name "=" alias)
+        }
+        if (expected_second_help[key] != "" &&
+                !mapping_is_documented(document[expected_second_help[key]],
+                                       name, alias)) {
+            fail(expected_second_help[key] " omits " name "=" alias)
+        }
+        if (expected_second_man[key] != "" &&
+                !mapping_is_documented(document[expected_second_man[key]],
+                                       name, alias)) {
+            fail(expected_second_man[key] " omits " name "=" alias)
         }
     }
     exit failed ? 1 : 0
@@ -922,6 +937,10 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         expected_timeline_contract[key] = \
             "line_events=1|line_stride=3"
     }
+    if (option_id == "SIXEL_OPTION_SCHEMA_DIAGNOSTICS" &&
+            name == "abort_trace") {
+        expected_abort_contract[key] = "enabled=0|installed=0"
+    }
     binding_value = ""
     binding_override = ""
     if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR/) {
@@ -1077,6 +1096,16 @@ FILENAME == registry_file {
         fail(FILENAME " contains more than one timeline contract marker")
     }
     test_timeline_contract[FILENAME] = timeline_contract
+    next
+}
+/^# Abort trace contract: / {
+    abort_contract = $0
+    sub(/^# Abort trace contract: /, "", abort_contract)
+    gsub(/[[:space:]]+/, " ", abort_contract)
+    if (test_abort_contract[FILENAME] != "") {
+        fail(FILENAME " contains more than one abort trace contract marker")
+    }
+    test_abort_contract[FILENAME] = abort_contract
     next
 }
 /^# Environment range: / {
@@ -1363,6 +1392,19 @@ END {
         if (expected_timeline_contract[key] == "" &&
                 test_timeline_contract[file] != "") {
             fail(file " has an unexpected timeline contract marker")
+        }
+        if (expected_abort_contract[key] != "" &&
+                test_abort_contract[file] != expected_abort_contract[key]) {
+            fail(file " does not identify its effective abort trace setting")
+        }
+        if (expected_abort_contract[key] != "" &&
+                index(test_source[file],
+                      "LSXABT1|*" expected_abort_contract[key] "*") == 0) {
+            fail(file " does not verify its abort trace consumer")
+        }
+        if (expected_abort_contract[key] == "" &&
+                test_abort_contract[file] != "") {
+            fail(file " has an unexpected abort trace contract marker")
         }
         if (!has_environment[file]) {
             fail(file " does not exercise the registered environment name")

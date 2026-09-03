@@ -132,7 +132,8 @@ Choose diagnostic presentation. MODE is \fBhuman\fP (default) or
 (\fB:F0|:F1\fP), \fB:path_suggestions=0|1\fP
 (\fB:S0|:S1\fP), and \fB:force_colors=0|1\fP
 (\fB:C0|:C1\fP). \fB:trace_topic=LIST\fP
-(\fB:TLIST\fP) selects a comma-separated topic list.
+(\fB:TLIST\fP) selects a comma-separated topic list. Abort tracing uses
+\fB:abort_trace=0|1\fP (\fB:A0|:A1\fP).
 .TP 5
 .B \-J PATH, \-\-log\-path=PATH
 Write the shared JSON timeline log to PATH. This option takes precedence
@@ -192,6 +193,13 @@ emit color sequences without relying on TTY detection. The
 enable topic-scoped debug traces using comma-separated tokens. The
 \fB\-x *:trace_topic=LIST\fP suboption (short form \fB:TLIST\fP) takes
 precedence.
+.TP 5
+.B SIXEL_ABORT_TRACE
+.br
+dump abort backtraces when \fIsixel2png\fP terminates abnormally. Set to "0" to
+disable or "1" to enable tracing. Unset, empty, or invalid values preserve the
+enabled default. The \fB\-x *:abort_trace=0|1\fP suboption (short form
+\fB:A0|:A1\fP) takes precedence.
 .TP 5
 .B SIXEL_LOG_PATH
 .br

@@ -212,6 +212,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             :path_suggestions=0|1 (:S0|:S1)\n"
         "                             :force_colors=0|1 (:C0|:C1)\n"
         "                             :trace_topic=LIST (:TLIST)\n"
+        "                             :abort_trace=0|1 (:A0|:A1)\n"
     },
     {
         'J',
@@ -525,7 +526,6 @@ main(int argc, char *argv[])
     current_option.token = NULL;
 
     sixel_tty_init_output_device(STDERR_FILENO);
-    sixel_aborttrace_install_if_unhandled();
 
 #if HAVE_GETOPT_LONG
     /*
@@ -698,6 +698,7 @@ main(int argc, char *argv[])
         }
     }
     optind = parse_terminal_optind;
+    sixel_aborttrace_install_if_unhandled();
 
     if (optind < argc) {
         char const *argument;
