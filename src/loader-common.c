@@ -357,6 +357,48 @@ loader_resolve_int_suboption(
     return value;
 }
 
+double
+loader_resolve_double_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    double fallback)
+{
+    sixel_loader_suboptions_t const *suboptions;
+    sixel_suboption_key_t const *key_def;
+    double value;
+
+    suboptions = sixel_loader_active_suboptions();
+    key_def = NULL;
+    value = fallback;
+    if (suboptions == NULL) {
+        if (sixel_option_resolve_registered_double_binding(
+                SIXEL_OPTION_SCHEMA_LOADERS,
+                base_name,
+                binding_identifier,
+                &value)) {
+            return value;
+        }
+        return fallback;
+    }
+
+    key_def = sixel_option_registry_suboption_by_binding(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        base_name,
+        binding_identifier);
+    if (key_def == NULL ||
+        key_def->value_kind != SIXEL_SUBOPTION_VALUE_DOUBLE ||
+        key_def->binding.target_class != SIXEL_SUBOPTION_TARGET_LOADER ||
+        key_def->binding.storage_kind != SIXEL_SUBOPTION_STORAGE_DOUBLE ||
+        key_def->binding.value_offset == SIXEL_SUBOPTION_OFFSET_NONE) {
+        return value;
+    }
+    memcpy(&value,
+           (unsigned char const *)suboptions +
+               key_def->binding.value_offset,
+           sizeof(value));
+    return value;
+}
+
 unsigned int
 loader_resolve_uint_suboption(
     char const *base_name,

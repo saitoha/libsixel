@@ -951,38 +951,6 @@ sixel_builtin_hdr_init_profile_trace(
     trace->profile_apply_failed = 0;
 }
 
-static int
-sixel_builtin_hdr_parse_double_env(
-    char const *env_name,
-    double *out_value)
-{
-    char const *env_text;
-    char *endptr;
-    double value;
-
-    env_text = NULL;
-    endptr = NULL;
-    value = 0.0;
-    if (env_name == NULL || out_value == NULL) {
-        return 0;
-    }
-
-    env_text = sixel_compat_getenv(env_name);
-    if (env_text == NULL || env_text[0] == '\0') {
-        *out_value = 0.0;
-        return 1;
-    }
-
-    value = strtod(env_text, &endptr);
-    if (endptr == env_text || endptr == NULL || endptr[0] != '\0' ||
-        !isfinite(value)) {
-        return 0;
-    }
-
-    *out_value = value;
-    return 1;
-}
-
 static double
 sixel_builtin_abs_double(double value)
 {
@@ -1383,12 +1351,10 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
         tonemap_mode = SIXEL_BUILTIN_HDR_TONEMAP_NONE;
     }
 
-    if (!sixel_builtin_hdr_parse_double_env("SIXEL_LOADER_HDR_EXPOSURE_EV",
-                                            &exposure_ev)) {
-        loader_trace_message(
-            "builtin HDR: invalid SIXEL_LOADER_HDR_EXPOSURE_EV; using 0");
-        exposure_ev = 0.0;
-    }
+    exposure_ev = loader_resolve_double_suboption(
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(hdr_exposure_ev),
+        0.0);
 
     env_exposure_scale = pow(2.0, exposure_ev);
     if (!isfinite(env_exposure_scale) || env_exposure_scale <= 0.0) {

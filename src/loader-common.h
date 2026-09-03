@@ -118,6 +118,12 @@ int loader_resolve_int_suboption(
     char const *binding_identifier,
     int fallback);
 
+/* Resolve one loader double from active request state or its registry row. */
+double loader_resolve_double_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    double fallback);
+
 /* Resolve one loader unsigned value from request state or its registry row. */
 unsigned int loader_resolve_uint_suboption(
     char const *base_name,

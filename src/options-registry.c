@@ -29,6 +29,7 @@
 #include <sixel.h>
 #include <ctype.h>
 #include <errno.h>
+#include <float.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -229,6 +230,23 @@
         maximum_, allow_zero_, SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
         NULL, target_, type_, field_)
 
+#define SIXEL_REGISTRY_TYPED_DOUBLE( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, message_, target_, type_, field_) \
+    { \
+        (optflag_), (base_), (name_), (short_), (env_), (fallback_), \
+        (legacy_), SIXEL_SUBOPTION_VALUE_DOUBLE, NULL, 0u, NULL, 0u, \
+        (minimum_), (maximum_), 1, 1, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, (message_), NULL, \
+        { \
+            (target_), SIXEL_SUBOPTION_STORAGE_DOUBLE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(type_, field_, double), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_1(field_) \
+        }, NULL \
+    }
+
 /*
  * Fix each non-encoder binding to its owning target and structure.  Registry
  * rows therefore cannot pair a valid field offset with the wrong target
@@ -285,6 +303,14 @@
         maximum_, allow_zero_, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
         message_, suffix_, \
         SIXEL_SUBOPTION_TARGET_LOADER, sixel_loader_suboptions_t, field_)
+
+#define SIXEL_REGISTRY_LOADER_DOUBLE( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, message_, field_) \
+    SIXEL_REGISTRY_TYPED_DOUBLE( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+        maximum_, message_, SIXEL_SUBOPTION_TARGET_LOADER, \
+        sixel_loader_suboptions_t, field_)
 
 #define SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM_DIGITS( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
@@ -1820,6 +1846,12 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "SIXEL_LOADER_HDR_FALLBACK_PROFILE", NULL, NULL,
         g_loader_hdr_fallback_choices, g_loader_hdr_fallback_env_choices,
         hdr_fallback_profile),
+    SIXEL_REGISTRY_LOADER_DOUBLE(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "hdr_exposure", 'X', "SIXEL_LOADER_HDR_EXPOSURE_EV", NULL, NULL,
+        -DBL_MAX, DBL_MAX,
+        "HDR exposure must be a finite number.",
+        hdr_exposure_ev),
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "trns_keycolor", 'K', "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",

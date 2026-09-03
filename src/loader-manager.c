@@ -209,6 +209,7 @@ loader_manager_init_loader_suboptions(
     suboptions->cms_rendering_intent_order = 0u;
     suboptions->hdr_fallback_profile =
         SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
+    suboptions->hdr_exposure_ev = 0.0;
     suboptions->png_trns_keycolor = 1;
     suboptions->librsvg_allow_relative_resources = 0;
     suboptions->librsvg_allow_stdin_svgz = 0;

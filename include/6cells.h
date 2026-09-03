@@ -1139,6 +1139,7 @@ typedef struct sixel_loader_suboptions {
     int cms_prefer_8bit;
     unsigned int cms_rendering_intent_order;
     int hdr_fallback_profile;
+    double hdr_exposure_ev;
     int png_trns_keycolor;
     int librsvg_allow_relative_resources;
     int librsvg_allow_stdin_svgz;

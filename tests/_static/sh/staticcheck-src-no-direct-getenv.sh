@@ -131,9 +131,6 @@ function argument_is_reviewed(file, argument) {
          argument == "schema->env_legacy_name")) {
         return 1
     }
-    if (file ~ /\/fromhdr\.c$/ && argument == "env_name") {
-        return 1
-    }
     if (file ~ /\/lookup-fhedt-(8bit|float32)\.c$/ &&
         (argument == "primary" || argument == "legacy")) {
         return 1

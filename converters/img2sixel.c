@@ -840,7 +840,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               also disable loader fallbacks.\n"
         "                               :hdr_fallback_profile=PROFILE\n"
         "                               (:Fvalue) selects linear-srgb or\n"
-        "                               srgb.\n"
+        "                               srgb; :hdr_exposure=EV (:Xvalue)\n"
+        "                               applies finite EV stops.\n"
         "                               PNG-capable loaders support\n"
         "                               :trns_keycolor=0|1 (:K0/:K1).\n"
         "                               librsvg supports\n"
@@ -1484,7 +1485,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_HDR_EXPOSURE_EV",
         "apply HDR exposure in EV stops on builtin HDR decode path before\n"
-        "quantization. Positive brightens, negative darkens. Default 0."
+        "quantization. Positive brightens, negative darkens. Default 0.\n"
+        "Override with -Lloader:hdr_exposure=EV or :Xvalue."
     },
     {
         "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
