@@ -204,6 +204,8 @@ loader_manager_init_loader_suboptions(
         SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
     suboptions->background_colorspace = SIXEL_COLORSPACE_GAMMA;
     suboptions->png_trns_keycolor = 1;
+    suboptions->librsvg_allow_relative_resources = 0;
+    suboptions->librsvg_allow_stdin_svgz = 0;
     suboptions->libjpeg_enable_cms = 0;
     suboptions->libjpeg_cms_engine = SIXEL_CMS_ENGINE_NONE;
     suboptions->libjpeg_enable_orientation = 1;

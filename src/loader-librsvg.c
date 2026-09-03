@@ -82,10 +82,6 @@ loader_can_try_librsvg(sixel_chunk_t const *chunk);
 #define LIBRSVG_DEFAULT_DPI    90.0
 #define LIBRSVG_MAX_DIMENSION  32767
 #define LIBRSVG_MAX_IMAGE_PIXELS ((size_t)268435456u)
-#define LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES \
-    "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES"
-#define LIBRSVG_ENV_ALLOW_STDIN_SVGZ \
-    "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ"
 #define LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_OPEN \
     "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_OPEN"
 #define LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_WRITE \
@@ -1350,10 +1346,36 @@ librsvg_decode_policy_init(
 static void
 librsvg_decode_policy_init_from_env(sixel_librsvg_decode_policy_t *policy)
 {
+    sixel_loader_suboptions_t const *suboptions;
+    int allow_relative_resources;
+    int allow_stdin_svgz;
+
+    suboptions = sixel_loader_active_suboptions();
+    allow_relative_resources = 0;
+    allow_stdin_svgz = 0;
+    if (suboptions != NULL) {
+        allow_relative_resources =
+            suboptions->librsvg_allow_relative_resources;
+        allow_stdin_svgz = suboptions->librsvg_allow_stdin_svgz;
+    } else {
+        allow_relative_resources =
+            sixel_option_resolve_registered_boolean_binding(
+                SIXEL_OPTION_SCHEMA_LOADERS,
+                "librsvg",
+                SIXEL_SUBOPTION_BINDING_ID_1(
+                    librsvg_allow_relative_resources),
+                0);
+        allow_stdin_svgz =
+            sixel_option_resolve_registered_boolean_binding(
+                SIXEL_OPTION_SCHEMA_LOADERS,
+                "librsvg",
+                SIXEL_SUBOPTION_BINDING_ID_1(librsvg_allow_stdin_svgz),
+                0);
+    }
     librsvg_decode_policy_init(
         policy,
-        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES),
-        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ));
+        allow_relative_resources,
+        allow_stdin_svgz);
 }
 
 static SIXELSTATUS

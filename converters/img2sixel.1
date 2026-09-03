@@ -824,6 +824,9 @@ All loaders accept \fBbackground_policy=file_first|explicit_first\fP
 \fBbackground_colorspace=gamma|linear\fP (short form \fBCvalue\fP).
 PNG-capable loaders accept \fBtrns_keycolor=0|1\fP
 (short form \fBK0\fP or \fBK1\fP, default 1).
+The librsvg loader accepts \fBrelative_resources=0|1\fP
+(short form \fBA0\fP or \fBA1\fP) and \fBstdin_svgz=0|1\fP
+(short form \fBS0\fP or \fBS1\fP). Both default to 0.
 The libpng, libjpeg, libwebp, libtiff, and builtin loaders accept
 \fBcms_engine=none|auto|builtin|lcms2|colorsync\fP (short form \fBEvalue\fP,
 default none).

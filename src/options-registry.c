@@ -1766,6 +1766,20 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_loader_cms_environment_choices,
         libtiff_cms_engine),
 #endif
+#if HAVE_LIBRSVG
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_LIBRSVG,
+        "relative_resources", 'A',
+        "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES", NULL, NULL,
+        librsvg_allow_relative_resources),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_LIBRSVG,
+        "stdin_svgz", 'S', "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ",
+        NULL, NULL,
+        librsvg_allow_stdin_svgz),
+#endif
     SIXEL_REGISTRY_LOADER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
