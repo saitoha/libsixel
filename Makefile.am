@@ -95,9 +95,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/fuzz-img2sixel-cli.sh \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \
+	tools/check_lookup_policy_measurements.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
-	tools/plot_quality_curve.py
+	tools/plot_quality_curve.py \
+	tools/reproduce_lookup_policy_measurements.sh
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.
 #

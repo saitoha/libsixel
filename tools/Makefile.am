@@ -34,8 +34,11 @@ EXTRA_DIST = libsixel-config.in \
              jpegref.c \
              ls-action-summarize \
              ls-summarize \
+             check_lookup_policy_measurements.py \
              plot_quality_curve.py \
-             plot_lookup_policy_quality.sh
+             plot_lookup_policy_quality.sh \
+             plot_lookup_policy_speed.py \
+             reproduce_lookup_policy_measurements.sh
 
 if HAVE_JPEG
 EXTRA_PROGRAMS += jpegref

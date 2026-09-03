@@ -14,8 +14,8 @@ input_name=${input_image##*/}
 
 mkdir -p "${output_dir}"
 
-heckbert_common='{img2sixel} --threads=1 --precision=8bit --quality=full --quantize-model=heckbert:cover=off:merge=none --diffusion=none --gpu-policy=off'
-modern_common='{img2sixel} --threads=1 --precision=8bit --quality=full -Qkmeans:Gw -Xoklab -Wgamma --diffusion=none --gpu-policy=off'
+heckbert_common='{img2sixel} --threads=1 --precision=8bit --quality=full --loaders=libpng! --quantize-model=heckbert:cover=off:merge=none --diffusion=none --gpu-policy=off'
+modern_common='{img2sixel} --threads=1 --precision=8bit --quality=full --loaders=libpng! --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma --diffusion=none --gpu-policy=off'
 
 plot_quality_curve()
 {
@@ -26,6 +26,7 @@ plot_quality_curve()
         "${input_image}" \
         --colors "${policy_colors}" \
         --jobs 1 \
+        --clean-sixel-environment \
         --command1 "${policy_common} --lookup-policy=none {input}" \
         --label1 none \
         --command2 "${policy_common} --lookup-policy=5bit {input}" \

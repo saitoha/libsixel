@@ -11,6 +11,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import datetime
+import hashlib
+import json
 import os
 import platform
 import shlex
@@ -122,7 +125,8 @@ def make_command(img2sixel: str,
         "--threads=1",
         "--precision=8bit",
         "--quality=full",
-        "-Qkmeans:Gw",
+        "--loaders=libpng!",
+        "--quantize-model=kmeans:merge=ward:seed=1",
         "-Xoklab",
         "-Wgamma",
         "--diffusion=none",
@@ -136,13 +140,24 @@ def make_command(img2sixel: str,
     ]
 
 
-def run_once(command: Sequence[str]) -> float:
+def make_command_environment(clean_sixel_environment: bool) -> Dict[str, str]:
+    """Return the inherited environment with optional SIXEL_* isolation."""
+    env = os.environ.copy()
+    if clean_sixel_environment:
+        for name in list(env):
+            if name.startswith("SIXEL_"):
+                del env[name]
+    return env
+
+
+def run_once(command: Sequence[str], env: Dict[str, str]) -> float:
     """Run one fresh process and return elapsed monotonic seconds."""
     started = time.perf_counter()
     proc = subprocess.run(
         list(command),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE,
+        env=env,
         check=False,
     )
     elapsed = time.perf_counter() - started
@@ -162,7 +177,8 @@ def measure(img2sixel: str,
             policies: Sequence[str],
             warmups: int,
             runs: int,
-            revision: str) -> List[Dict[str, object]]:
+            revision: str,
+            command_env: Dict[str, str]) -> List[Dict[str, object]]:
     """Measure each point with rotated policy order to limit time drift."""
     rows: List[Dict[str, object]] = []
     for color_count in colors:
@@ -174,14 +190,14 @@ def measure(img2sixel: str,
             offset = warmup % len(policies)
             order = list(policies[offset:]) + list(policies[:offset])
             for policy in order:
-                run_once(commands[policy])
+                run_once(commands[policy], command_env)
 
         samples: Dict[str, List[float]] = {policy: [] for policy in policies}
         for run_index in range(runs):
             offset = run_index % len(policies)
             order = list(policies[offset:]) + list(policies[:offset])
             for policy in order:
-                samples[policy].append(run_once(commands[policy]))
+                samples[policy].append(run_once(commands[policy], command_env))
 
         medians = {
             policy: statistics.median(samples[policy]) for policy in policies
@@ -299,6 +315,154 @@ def plot(path: Path,
     plt.close(figure)
 
 
+def file_sha256(path: Path) -> str:
+    """Return a SHA-256 digest for one file without loading it at once."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while True:
+            chunk = handle.read(1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def display_path(path: Path, source_root: Path) -> str:
+    """Prefer a repository-relative path in checked-in metadata."""
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(source_root.resolve()))
+    except ValueError:
+        return str(resolved)
+
+
+def program_record(path_text: str, source_root: Path) -> Dict[str, object]:
+    """Describe a program launcher and its libtool payload when present."""
+    launcher = Path(path_text).resolve()
+    payload = launcher.parent / ".libs" / launcher.name
+    if not payload.is_file():
+        payload = launcher
+    return {
+        "launcher": display_path(launcher, source_root),
+        "launcher_sha256": file_sha256(launcher),
+        "payload": display_path(payload, source_root),
+        "payload_sha256": file_sha256(payload),
+    }
+
+
+def read_build_configuration(build_dir: Path) -> Dict[str, object]:
+    """Read the generated Autotools configuration without guessing flags."""
+    source_root = Path(__file__).resolve().parent.parent
+    result: Dict[str, object] = {
+        "directory": display_path(build_dir, source_root)
+    }
+    config_status = build_dir / "config.status"
+    if config_status.is_file() and os.access(config_status, os.X_OK):
+        proc = subprocess.run(
+            [str(config_status), "--config"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            text=True,
+        )
+        if proc.returncode == 0:
+            result["configure_arguments"] = proc.stdout.strip()
+
+    makefile = build_dir / "Makefile"
+    variables = ("CC", "CFLAGS", "CPPFLAGS", "LDFLAGS")
+    if makefile.is_file():
+        wanted = set(variables)
+        with makefile.open("r", encoding="utf-8", errors="replace") as handle:
+            for line in handle:
+                for name in tuple(wanted):
+                    prefix = f"{name} = "
+                    if line.startswith(prefix):
+                        result[name.lower()] = line[len(prefix):].rstrip("\n")
+                        wanted.remove(name)
+                        break
+                if not wanted:
+                    break
+    compiler = result.get("cc")
+    if isinstance(compiler, str) and compiler:
+        proc = subprocess.run(
+            [*shlex.split(compiler), "--version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+            text=True,
+        )
+        if proc.returncode == 0:
+            result["compiler_version"] = proc.stdout.strip()
+    return result
+
+
+def resolve_metadata_program(explicit: str | None,
+                             source_root: Path,
+                             relative_path: str) -> str | None:
+    """Resolve an optional metadata-only program path."""
+    if explicit:
+        path = Path(explicit)
+    else:
+        path = source_root / relative_path
+    if path.is_file():
+        return str(path.resolve())
+    return None
+
+
+def write_metadata(path: Path,
+                   source_root: Path,
+                   build_dir: Path,
+                   input_image: Path,
+                   input_label: str,
+                   img2sixel: str,
+                   lsqa: str | None,
+                   colors: Sequence[int],
+                   policies: Sequence[str],
+                   warmups: int,
+                   runs: int,
+                   revision: str,
+                   source_state: str,
+                   clean_sixel_environment: bool) -> None:
+    """Write common provenance for the quality and performance artifacts."""
+    programs = {"img2sixel": program_record(img2sixel, source_root)}
+    if lsqa is not None:
+        programs["lsqa"] = program_record(lsqa, source_root)
+    payload = {
+        "schema_version": 1,
+        "generated_at_utc": datetime.datetime.now(
+            datetime.timezone.utc
+        ).isoformat(),
+        "source": {
+            "revision": revision,
+            "tracked_worktree_state_at_start": source_state,
+        },
+        "build": read_build_configuration(build_dir),
+        "host": {
+            "platform": platform.platform(),
+            "processor": platform.processor(),
+            "python": platform.python_version(),
+            "matplotlib": matplotlib.__version__,
+        },
+        "input": {
+            "path": input_label,
+            "sha256": file_sha256(input_image),
+        },
+        "programs": programs,
+        "protocol": {
+            "policies": list(policies),
+            "speed_colors": list(colors),
+            "speed_warmups": warmups,
+            "speed_runs": runs,
+            "policy_order_rotated_each_round": True,
+            "sixel_environment_removed": clean_sixel_environment,
+        },
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -308,9 +472,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--warmups", type=int, default=2)
     parser.add_argument("--runs", type=int, default=9)
     parser.add_argument("--img2sixel")
+    parser.add_argument("--lsqa")
+    parser.add_argument("--build-dir", type=Path)
     parser.add_argument("--revision", default="unknown")
+    parser.add_argument("--source-state", default="unknown")
+    parser.add_argument("--clean-sixel-environment", action="store_true")
     parser.add_argument("--output-csv", type=Path, required=True)
     parser.add_argument("--output-plot", type=Path, required=True)
+    parser.add_argument("--output-metadata", type=Path)
     parser.add_argument("--title")
     return parser.parse_args()
 
@@ -320,7 +489,7 @@ def main() -> int:
     args = parse_args()
     source_root = Path(__file__).resolve().parent.parent
     input_image = args.input.resolve()
-    input_label = os.path.relpath(input_image, Path.cwd())
+    input_label = display_path(input_image, source_root)
     colors = parse_colors(args.colors)
     policies = parse_csv_strings(args.policies)
     if "none" not in policies:
@@ -331,6 +500,7 @@ def main() -> int:
         raise FileNotFoundError(f"Input image does not exist: {input_image}")
 
     img2sixel = resolve_img2sixel(args.img2sixel, source_root)
+    command_env = make_command_environment(args.clean_sixel_environment)
     rows = measure(
         img2sixel,
         input_image,
@@ -340,12 +510,35 @@ def main() -> int:
         args.warmups,
         args.runs,
         args.revision,
+        command_env,
     )
     write_csv(args.output_csv, rows)
     title = args.title or (
         f"End-to-end lookup-policy runtime on {input_image.name}"
     )
     plot(args.output_plot, rows, colors, policies, title, args.runs)
+    if args.output_metadata is not None:
+        lsqa = resolve_metadata_program(
+            args.lsqa,
+            source_root,
+            "assessment/lsqa",
+        )
+        write_metadata(
+            args.output_metadata,
+            source_root,
+            (args.build_dir or source_root).resolve(),
+            input_image,
+            input_label,
+            img2sixel,
+            lsqa,
+            colors,
+            policies,
+            args.warmups,
+            args.runs,
+            args.revision,
+            args.source_state,
+            args.clean_sixel_environment,
+        )
     return 0
 
 

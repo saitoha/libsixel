@@ -236,8 +236,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in \
 	AUTHORS ChangeLog NEWS README.md build-aux/ar-lib \
 	build-aux/compile build-aux/config.guess build-aux/config.sub \
-	build-aux/depcomp build-aux/install-sh build-aux/ltmain.sh \
-	build-aux/missing build-aux/py-compile ltmain.sh
+	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
+	build-aux/py-compile ltmain.sh
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -611,9 +611,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/fuzz-img2sixel-cli.sh \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \
+	tools/check_lookup_policy_measurements.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
-	tools/plot_quality_curve.py
+	tools/plot_quality_curve.py \
+	tools/reproduce_lookup_policy_measurements.sh
 
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.

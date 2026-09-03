@@ -272,6 +272,16 @@ def run_command_pipeline(pipeline: Sequence[Sequence[str]],
     return output
 
 
+def make_command_environment(clean_sixel_environment: bool) -> Dict[str, str]:
+    """Return the inherited environment with optional SIXEL_* isolation."""
+    env = os.environ.copy()
+    if clean_sixel_environment:
+        for name in list(env):
+            if name.startswith("SIXEL_"):
+                del env[name]
+    return env
+
+
 def build_render_pipeline(template: str,
                           image_path: str,
                           ncolors: int,
@@ -345,7 +355,8 @@ def evaluate_one_case(image_path: str,
                       img2sixel_path: str | None,
                       sixel2png_path: str | None,
                       lsqa_path: str,
-                      lsqa_opts: Sequence[str]) -> Dict[str, float]:
+                      lsqa_opts: Sequence[str],
+                      command_env: Dict[str, str]) -> Dict[str, float]:
     """Evaluate all lsqa metrics for one image at one color count."""
     render_pipeline = build_render_pipeline(
         template=render_template,
@@ -354,9 +365,9 @@ def evaluate_one_case(image_path: str,
         img2sixel_path=img2sixel_path,
         sixel2png_path=sixel2png_path,
     )
-    candidate_bytes = run_command_pipeline(render_pipeline)
+    candidate_bytes = run_command_pipeline(render_pipeline, env=command_env)
     with tempfile.TemporaryDirectory(prefix="lsqa-curve-") as tmp_dir:
-        lsqa_env = os.environ.copy()
+        lsqa_env = command_env.copy()
         lsqa_env["LSQA_PREFIX"] = str(Path(tmp_dir) / "curve")
         lsqa_env["LSQA_VERBOSE"] = "0"
         metrics_json = run_command(
@@ -706,6 +717,11 @@ def main() -> int:
         help="Extra option passed to lsqa (repeatable).",
     )
     parser.add_argument(
+        "--clean-sixel-environment",
+        action="store_true",
+        help="Remove inherited SIXEL_* variables from measured commands.",
+    )
+    parser.add_argument(
         "--output-csv",
         default="quality_curve.csv",
         help="Output CSV path (default: quality_curve.csv).",
@@ -788,6 +804,7 @@ def main() -> int:
     metrics = parse_metrics(args.metrics)
     command_templates = collect_command_templates(args)
     command_labels = collect_command_labels(args, command_templates)
+    command_env = make_command_environment(args.clean_sixel_environment)
 
     repo_root = Path(__file__).resolve().parent.parent
     img2sixel_path: str | None = None
@@ -868,6 +885,7 @@ def main() -> int:
                 sixel2png_path=sixel2png_path,
                 lsqa_path=lsqa_path,
                 lsqa_opts=args.lsqa_opt,
+                command_env=command_env,
             )
             row: Dict[str, object] = {
                 "kind": "image",
@@ -902,6 +920,7 @@ def main() -> int:
                     sixel2png_path=sixel2png_path,
                     lsqa_path=lsqa_path,
                     lsqa_opts=args.lsqa_opt,
+                    command_env=command_env,
                 )
                 future_map[future] = (command_name, command_template, image, color)
 
