@@ -1593,8 +1593,8 @@ above `none`. Calling the RGB666 loss merely "slight" would overstate what this
 single-image result supports.
 
 Among the accelerated policies at `K = 256`, `vptree` has the lowest measured
-mean Delta E00 at 2.746327 while taking 82.4 ms in the speed run. `fhedt` is
-faster at 75.5 ms, but its mean Delta E00 is 2.766032 and its mean chroma error
+mean Delta E00 at 2.746327 while taking 95.5 ms in the speed run. `fhedt` is
+faster at 84.5 ms, but its mean Delta E00 is 2.766032 and its mean chroma error
 is 2.053499 rather than `vptree`'s 2.011879. The differences are small enough
 that this is evidence of a favorable quality/speed balance on this fixture,
 not a universal ordering.
@@ -1747,15 +1747,15 @@ At `K = 256`, the result is:
 
 | Policy | Median time | Speedup over `none` |
 | --- | ---: | ---: |
-| `none` | 173.5 ms | 1.00x |
-| `5bit` | 127.4 ms | 1.36x |
-| `6bit` | 130.1 ms | 1.33x |
-| `certlut` | 104.3 ms | 1.66x |
-| `eytzinger` | 80.0 ms | 2.17x |
-| `fhedt` | 75.5 ms | 2.30x |
-| `vptree` | 82.4 ms | 2.11x |
-| `rbc` | 99.6 ms | 1.74x |
-| `mahalanobis` | 130.4 ms | 1.33x |
+| `none` | 187.6 ms | 1.00x |
+| `5bit` | 140.2 ms | 1.34x |
+| `6bit` | 142.5 ms | 1.32x |
+| `certlut` | 118.0 ms | 1.59x |
+| `eytzinger` | 89.7 ms | 2.09x |
+| `fhedt` | 84.5 ms | 2.22x |
+| `vptree` | 95.5 ms | 1.96x |
+| `rbc` | 110.3 ms | 1.70x |
+| `mahalanobis` | 143.5 ms | 1.31x |
 
 This confirms a real speed/accuracy tradeoff between `6bit` and `none` on the
 fixture. It does not show that `6bit` is the best current default: both the
@@ -1765,8 +1765,8 @@ initialization and cold-bucket costs, so their relative position changes with
 `K`, image size, cache reuse, and traversal order.
 
 The shallow `fhedt` curve is particularly informative. From `K = 16` through
-`K = 256`, its median rises from 60.2 ms to 75.5 ms, while `5bit` and `6bit`
-rise to 127.4 ms and 130.1 ms. This is consistent with `fhedt` paying for its
+`K = 256`, its median rises from 62.4 ms to 84.5 ms, while `5bit` and `6bit`
+rise to 140.2 ms and 142.5 ms. This is consistent with `fhedt` paying for its
 fixed-resolution grid and then applying it in constant time per pixel, whereas
 each previously unseen `5bit` or `6bit` bucket still scans `K` palette entries.
 The figure remains an end-to-end measurement, however, so it cannot assign
@@ -1863,19 +1863,63 @@ The corresponding spatially pooled view is
 with values in
 [`lookup-policy-kmeans-fs-ms-ssim.csv`](lookup-policies/measurements/lookup-policy-kmeans-fs-ms-ssim.csv).
 
+At `K = 256`, changing only `--diffusion=none` to `--diffusion=fs`
+produced:
+
+| Policy | Mean Delta E00 (`none` -> `fs`) | Mean absolute chroma error (`none` -> `fs`) | MS-SSIM (`none` -> `fs`) |
+| --- | ---: | ---: | ---: |
+| `none` | 1.867762 -> 2.258482 | 1.455218 -> 1.932712 | 0.991971 -> 0.992164 |
+| `5bit` | 4.215347 -> 5.170688 | 2.712114 -> 3.833148 | 0.968641 -> 0.981051 |
+| `6bit` | 2.748895 -> 3.636663 | 2.011616 -> 2.948649 | 0.985449 -> 0.984905 |
+| `certlut` | 2.748675 -> 3.636663 | 2.013487 -> 2.948649 | 0.985482 -> 0.984905 |
+| `eytzinger` | 2.749222 -> 3.636663 | 2.015684 -> 2.948649 | 0.985460 -> 0.984905 |
+| `fhedt` | 2.766032 -> 4.012012 | 2.053499 -> 3.120660 | 0.984794 -> 0.980201 |
+| `vptree` | 2.746327 -> 3.636663 | 2.011879 -> 2.948649 | 0.985457 -> 0.984905 |
+| `rbc` | 2.748417 -> 3.636663 | 2.010619 -> 2.948649 | 0.985393 -> 0.984905 |
+| `mahalanobis` | 2.748417 -> 3.636663 | 2.010619 -> 2.948649 | 0.985393 -> 0.984905 |
+
+Mean per-pixel Delta E00 and chroma error increased for every policy. That is
+not a contradiction: Floyd--Steinberg redistributes quantization error
+spatially rather than minimizing the independent error of each pixel.
+MS-SSIM moved in the other direction for `none`, and especially for `5bit`,
+while it decreased slightly for most of the other accelerated policies. The
+equal six-decimal aggregate values for several policies do not establish
+byte-identical or pixel-identical output.
+
 ![Median end-to-end runtime for each lookup policy with Floyd--Steinberg diffusion](lookup-policies/measurements/lookup-policy-fs-speed.png)
 
 The timing data are in
 [`lookup-policy-fs-speed.csv`](lookup-policies/measurements/lookup-policy-fs-speed.csv).
+
+At `K = 256`, the timing comparison is:
+
+| Policy | No-diffusion median | FS median | FS median change |
+| --- | ---: | ---: | ---: |
+| `none` | 187.6 ms | 183.3 ms | -2.3% |
+| `5bit` | 140.2 ms | 139.9 ms | -0.3% |
+| `6bit` | 142.5 ms | 141.9 ms | -0.5% |
+| `certlut` | 118.0 ms | 148.9 ms | +26.1% |
+| `eytzinger` | 89.7 ms | 102.1 ms | +13.9% |
+| `fhedt` | 84.5 ms | 88.2 ms | +4.5% |
+| `vptree` | 95.5 ms | 115.7 ms | +21.1% |
+| `rbc` | 110.3 ms | 117.4 ms | +6.4% |
+| `mahalanobis` | 143.5 ms | 142.8 ms | -0.5% |
+
 These are end-to-end results: they include diffusion arithmetic and every
 policy-dependent change to the error propagated into later pixels. They do not
 isolate nearest-neighbor query cost, and they must not be compared with the
 no-diffusion curves as though diffusion were a constant additive overhead.
+The dither-adjusted color stream can also change lookup-cache locality and the
+work performed by SIXEL encoding. In this run that effect is most visible for
+`certlut`, `vptree`, and `eytzinger`; the table does not by itself assign the
+timing change to one component.
 
 ### Measurement design
 
-The curves were measured on 2026-09-03 from a clean Autotools build of revision
-`feb7c76b2` on Darwin 25.5.0 arm64. The input was
+The no-diffusion and Floyd--Steinberg quality and speed curves were measured on
+2026-09-03 from a clean Autotools build of revision `6c9b478c9` on Darwin
+25.5.0 arm64. The focused shared-instance and Metal figures retain their
+separately recorded revision `c33493faa`. The input was
 [`images/snake.png`](../../images/snake.png). The broad curves use
 `K = 8, 16, 32, 64, 128, 256`; both focused curves use steps of 16 from 128
 through 256.
