@@ -8,7 +8,7 @@
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-03T11:17:57.366535+00:00",
+  "generated_at_utc": "2026-09-03T11:41:13.051353+00:00",
   "host": {
     "matplotlib": "3.11.1",
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
@@ -22,15 +22,15 @@
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "a71c47eaa76453ad97571b45f4ad0dee6f4fd26fdc84392d4ed64238c9620ba7",
+      "launcher_sha256": "dc2141f9db6d1763084018b2a7e45409f4253c34d5131828b43338f1a8c1b3f0",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "d717c57be49cbf984495551f78d9c5868eaf38a99a256eb440929e2bee317aeb"
+      "payload_sha256": "ca70c22e3bf162f1f7f37cba276282baa59c77e3d3a67f0641df900f1e601897"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "05b2ce263ba953d48d90fe468833f91e934545eec4c2d86380d17527ea7c0275",
+      "launcher_sha256": "bd7a8fb219f7b58a57dafb32b6063ad993a4230736067de4dd439d1eef5f3759",
       "payload": "assessment/.libs/lsqa",
-      "payload_sha256": "7051c714a138ee6f80c80278f39f8594e0123aa384ed311f5599c37db20383dd"
+      "payload_sha256": "571261254bd58431be0ee61d72ec78a00facb76fa7997db1a7cbcc53cb928b54"
     }
   },
   "protocol": {
@@ -109,6 +109,7 @@
     "quantize_model": "kmeans:merge=ward:seed=1",
     "scan": "raster",
     "sixel_environment_removed": true,
+    "size_measurement": "quality-pass SIXEL stdout byte length",
     "speed_runs": 9,
     "speed_warmups": 2,
     "threads": 1,
@@ -116,7 +117,7 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "453c72e0d702e84dfe01433e9ec7adf4f866dc65",
+    "revision": "4e1e9283d0a8cfc2d27b8698658ef882de0b1dbf",
     "tracked_worktree_state_at_start": "clean"
   }
 }

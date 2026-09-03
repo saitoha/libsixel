@@ -178,7 +178,7 @@ quality characteristic needs spatial context. Follow the
 [Quality Measurement Policy](../quality/measurement-policy.md) for thresholds
 and shell TAP conventions.
 
-## Measured static-image quality and speed
+## Measured static-image quality, size, and speed
 
 ### Questions and scope
 
@@ -186,7 +186,8 @@ The checked-in comparison asks how each concrete spatial `-d` method changes:
 
 1. spatially pooled decoded-image quality across palette sizes;
 2. mean per-pixel color error as a secondary diagnostic; and
-3. end-to-end single-image latency.
+3. encoded SIXEL byte size; and
+4. end-to-end single-image latency.
 
 MS-SSIM is the primary quality metric because dithering deliberately trades
 independent per-pixel error for spatially distributed error. Mean Delta E00 is
@@ -218,6 +219,15 @@ Higher is better. The values are stored with the Delta E00 reference values in
 Lower is better, but this spatially unpooled mean penalizes the local color
 changes used to shape error. Read it as a diagnostic alongside MS-SSIM, not as
 the primary dither ranking.
+
+### Encoded SIXEL size
+
+![Encoded SIXEL size for each spatial dither method compared with no dithering](dither-policies/measurements/dither-policy-size.png)
+
+Lower is smaller. Each value is the exact byte length of the same SIXEL stdout
+stream decoded for the quality measurement, including the DCS envelope,
+palette definitions, and image data. The values and ratios to `none` are in
+[`dither-policy-size.csv`](dither-policies/measurements/dither-policy-size.csv).
 
 ### End-to-end speed
 
@@ -265,36 +275,66 @@ local color error to make its spatial arrangement less objectionable. The
 blue-noise result at `K=256`, for example, moves mean Delta E00 from 1.8678 to
 1.8844 while moving MS-SSIM from 0.991971 to 0.992900.
 
+| Method | Size, `K=8` | Relative to `none` | Size, `K=256` | Relative to `none` |
+| --- | ---: | ---: | ---: | ---: |
+| `none` | 46.9 KiB | 1.000x | 266.8 KiB | 1.000x |
+| `fs` | 112.7 KiB | 2.404x | 340.0 KiB | 1.274x |
+| `atkinson` | 82.9 KiB | 1.769x | 310.1 KiB | 1.162x |
+| `jajuni` | 100.4 KiB | 2.141x | 307.2 KiB | 1.151x |
+| `stucki` | 89.5 KiB | 1.908x | 311.7 KiB | 1.168x |
+| `burkes` | 106.9 KiB | 2.280x | 322.0 KiB | 1.207x |
+| `sierra1` | 114.9 KiB | 2.451x | 344.5 KiB | 1.291x |
+| `sierra2` | 79.2 KiB | 1.688x | 302.7 KiB | 1.135x |
+| `sierra3` | 101.4 KiB | 2.163x | 310.0 KiB | 1.162x |
+| `lso2` | 86.6 KiB | 1.848x | 337.8 KiB | 1.266x |
+| `a_dither` | 56.8 KiB | 1.212x | 398.4 KiB | 1.493x |
+| `x_dither` | 52.0 KiB | 1.110x | 349.0 KiB | 1.308x |
+| `bluenoise` | 49.3 KiB | 1.051x | 294.4 KiB | 1.103x |
+
+Every measured dither produces a larger stream than `none` at every measured
+`K`. Blue noise has the smallest size overhead throughout the sweep: 5.1
+percent at `K=8` and 10.3 percent at `K=256`. Sierra-1 is largest through
+`K=64`, reaching 2.451x at `K=8`; `a_dither` is largest at `K=128` and
+`K=256`, reaching 1.493x at the latter endpoint.
+
+The size curve materially changes the quality-only interpretation. `lso2` has
+the best MS-SSIM at both endpoints, but costs 84.8 percent more bytes at `K=8`
+and 26.6 percent more at `K=256`. The positional methods are inexpensive in
+CPU time, but that does not make them uniformly inexpensive to transmit:
+`a_dither` is nearly baseline speed while producing the largest `K=256`
+stream. Dithering changes the spatial sequence of palette indices, which in
+turn changes SIXEL plane selection and run-length opportunities.
+
 | Method | Median, `K=8` | Relative to `none` | Median, `K=256` | Relative to `none` |
 | --- | ---: | ---: | ---: | ---: |
-| `none` | 67.5 ms | 1.00x | 191.1 ms | 1.00x |
-| `fs` | 75.4 ms | 1.12x | 200.8 ms | 1.05x |
-| `atkinson` | 78.7 ms | 1.16x | 204.2 ms | 1.07x |
-| `jajuni` | 93.0 ms | 1.38x | 215.4 ms | 1.13x |
-| `stucki` | 92.7 ms | 1.37x | 216.2 ms | 1.13x |
-| `burkes` | 83.0 ms | 1.23x | 203.7 ms | 1.07x |
-| `sierra1` | 74.6 ms | 1.10x | 199.2 ms | 1.04x |
-| `sierra2` | 88.2 ms | 1.31x | 210.3 ms | 1.10x |
-| `sierra3` | 87.9 ms | 1.30x | 211.1 ms | 1.10x |
-| `lso2` | 84.5 ms | 1.25x | 207.0 ms | 1.08x |
-| `a_dither` | 68.8 ms | 1.02x | 193.3 ms | 1.01x |
-| `x_dither` | 70.0 ms | 1.04x | 194.4 ms | 1.02x |
-| `bluenoise` | 69.4 ms | 1.03x | 194.3 ms | 1.02x |
+| `none` | 65.0 ms | 1.00x | 187.9 ms | 1.00x |
+| `fs` | 72.4 ms | 1.11x | 195.3 ms | 1.04x |
+| `atkinson` | 75.7 ms | 1.16x | 198.4 ms | 1.06x |
+| `jajuni` | 89.1 ms | 1.37x | 210.7 ms | 1.12x |
+| `stucki` | 88.6 ms | 1.36x | 211.7 ms | 1.13x |
+| `burkes` | 78.7 ms | 1.21x | 201.4 ms | 1.07x |
+| `sierra1` | 70.8 ms | 1.09x | 193.4 ms | 1.03x |
+| `sierra2` | 83.9 ms | 1.29x | 205.6 ms | 1.09x |
+| `sierra3` | 83.5 ms | 1.28x | 206.2 ms | 1.10x |
+| `lso2` | 80.7 ms | 1.24x | 203.0 ms | 1.08x |
+| `a_dither` | 65.4 ms | 1.01x | 191.0 ms | 1.02x |
+| `x_dither` | 66.0 ms | 1.02x | 188.8 ms | 1.00x |
+| `bluenoise` | 67.0 ms | 1.03x | 191.1 ms | 1.02x |
 
-The positional methods remain within four percent of `none` at both
+The positional methods remain within three percent of `none` at both
 endpoints. Fixed-stencil and table-driven diffusion cost more: at `K=8` their
-measured slowdown ranges from 1.10x for Sierra-1 to 1.38x for
+measured slowdown ranges from 1.09x for Sierra-1 to 1.37x for
 Jarvis--Judice--Ninke. The relative gap shrinks at `K=256` because the
 controlled direct lookup is `Theta(P K)` and dominates more of the total as
-the palette grows. For example, `lso2` adds about 17.0 ms at `K=8` and
-15.9 ms at `K=256`, although its displayed ratio changes from 1.25x to 1.08x.
+the palette grows. For example, `lso2` adds about 15.7 ms at `K=8` and
+15.1 ms at `K=256`, although its displayed ratio changes from 1.24x to 1.08x.
 The figure therefore measures user-visible end-to-end latency; it is not an
 isolated comparison of kernel arithmetic.
 
 ### Controlled protocol
 
 The curves were measured on 2026-09-03 from a clean Autotools build of revision
-`453c72e0d` on Darwin 25.5.0 arm64. The input is
+`4e1e9283d` on Darwin 25.5.0 arm64. The input is
 [`images/snake.png`](../../images/snake.png), and the sweep uses `K = 8, 16,
 32, 64, 128, 256`. Palette generation is controlled with seeded K-means, Ward
 final merging, and OKLab clustering. Palette application remains in gamma RGB.
@@ -335,9 +375,11 @@ PYTHON=.venv/bin/python tools/reproduce_dither_policy_measurements.sh
 
 The Python override is only an example. The runner rebuilds `img2sixel` and
 `lsqa`, removes inherited `SIXEL_*` variables, generates all figures and CSVs,
-records provenance, and validates the complete Cartesian set of 13 methods and
-six palette sizes. `DITHER_POLICY_WARMUPS` and `DITHER_POLICY_RUNS` change the
-timing budget; a run with different values is a different protocol.
+records provenance, and validates the complete quality, size, and speed
+Cartesian sets of 13 methods and six palette sizes. The size is taken from the
+same in-memory stream sent to `lsqa`; no second size-only encode is used.
+`DITHER_POLICY_WARMUPS` and `DITHER_POLICY_RUNS` change the timing budget; a run
+with different values is a different protocol.
 
 Rerun the complete command after changes to dither kernels, scan order,
 palette application, quantization, loading, SIXEL decoding, `lsqa`, compiler
@@ -349,9 +391,11 @@ interpretation together.
 - One natural image does not characterize gradients, flat fills, edges, alpha
   boundaries, or every spatial frequency. Do not choose a default from this
   fixture alone.
-- MS-SSIM is spatially pooled but does not measure temporal stability, SIXEL
-  size, palette-index chatter, or band seams.
+- MS-SSIM is spatially pooled but does not itself measure temporal stability,
+  SIXEL size, palette-index chatter, or band seams.
 - Mean Delta E00 hides worst-case pixels and the spatial spectrum of error.
+- Encoded size is content- and encoder-dependent. It does not predict a
+  transport's compression ratio, latency, or terminal rendering cost.
 - The speed curve includes loading, palette generation, direct lookup, and
   SIXEL encoding. It is not an isolated kernel microbenchmark.
 - The explicit raster sweep compares kernels, not their complete default
