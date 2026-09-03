@@ -177,6 +177,7 @@ int test_decoder_0022_decoder_ormode_dequantize_opaque(int argc, char **argv);
 int test_decoder_0023_decoder_high_color_dequantize_bypass(int argc, char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
+int test_lookup_0012_packing_registry_direct(int argc, char **argv);
 
 int test_probe_0001_probe_parse(int argc, char **argv);
 int test_status_0001_status_timeout(int argc, char **argv);
@@ -428,6 +429,8 @@ static test_entry_t const test_entries[] = {
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },
+    { "lookup/0012_lookup_packing_registry_direct",
+      test_lookup_0012_packing_registry_direct },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "status/0001_status_timeout", test_status_0001_status_timeout },
     { "icc/0001_icc_builtin_rgb_gray_v4_paths",

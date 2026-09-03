@@ -243,6 +243,8 @@ struct sixel_encoder {
     int lut_policy_override;
     int lut_policy_shared_instance_override;
     int lut_policy_shared_instance;
+    int lut_policy_packing_override;
+    int lut_policy_packing;
     int lut_policy_fhedt_resolution_override;
     int lut_policy_fhedt_resolution;
     int lut_policy_fhedt_refine_override;

@@ -27,6 +27,32 @@
 #endif
 
 #include "lookup-policy.h"
+#include "options.h"
+
+
+int
+sixel_lookup_policy_resolve_packing(
+    sixel_lookup_policy_prepare_request_t const *request,
+    char const *base_name)
+{
+    int packing;
+
+    packing = SIXEL_LOOKUP_PACK_LINEAR;
+    if (request == NULL || base_name == NULL) {
+        return packing;
+    }
+    if (request->lut_policy_packing_override != 0) {
+        return request->lut_policy_packing;
+    }
+    (void)sixel_option_resolve_registered_int_binding(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        base_name,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            lut_policy_packing,
+            lut_policy_packing_override),
+        &packing);
+    return packing;
+}
 
 
 static char const g_lookup_policy_name_none_8bit[] = "lookup/none.8bit";

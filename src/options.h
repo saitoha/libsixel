@@ -248,7 +248,7 @@ typedef struct sixel_option_value_schema {
 
 typedef struct sixel_suboption_key {
     sixel_option_schema_id_t option_id;
-    /* NULL makes the suboption common to every base of the option. */
+    /* A pointer selects one base; NULL with no base_mask selects every base. */
     sixel_option_value_schema_t const *base_def;
     /* Visibility is independent of the structure receiving the value. */
     unsigned int consumer_scope;
@@ -277,6 +277,8 @@ typedef struct sixel_suboption_key {
     sixel_suboption_binding_t binding;
     /* Optional topic preserves backend diagnostics during central parsing. */
     char const *environment_trace_topic;
+    /* Bits are schema value indexes and are exclusive with base_def. */
+    unsigned long long base_mask;
 } sixel_suboption_key_t;
 
 typedef union sixel_suboption_value {

@@ -621,12 +621,16 @@ auto      -> follow pixel depth to pick bucket size
 .br
            sub-option:
 .br
+             packing=linear|morton|hilbert, short form Pvalue
+.br
              shared_instance=0|1, short form S0 or S1
              (0: worker-local, 1: shared)
 .br
 6bit      -> force 6-bit RGB buckets (RGB inputs only)
 .br
            sub-option:
+.br
+             packing=linear|morton|hilbert, short form Pvalue
 .br
              shared_instance=0|1, short form S0 or S1
              (0: worker-local, 1: shared)
@@ -687,14 +691,16 @@ The \fInone\fP policy skips the lookup caches entirely so each pixel
 comparison scans the palette directly.  This mirrors the behaviour that
 `-q full` previously forced implicitly.
 .PP
-The \fIfhedt\fP grid honours the following environment variables.  A matching
+The lookup policies honour the following environment variables.  A matching
 command-line sub-option takes precedence:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, eytzinger,
 fhedt, vptree, rbc, or mahalanobis; default certlut)
 .br
-SIXEL_LOOKUP_PACKING (linear or morton; default linear) selects dense LUT
-packing for 5bit/6bit lookups; other policies ignore it.
+SIXEL_LOOKUP_PACKING (linear, morton, or hilbert; default linear) selects
+dense LUT packing for 5bit/6bit lookups; other policies ignore it.
+.br
+The matching sub-option is \fBpacking=VALUE\fP (short form \fBPVALUE\fP).
 .br
 SIXEL_LOOKUP_FHEDT_RESOLUTION (64, 128, or 256; default 64)
 .br
@@ -1955,8 +1961,9 @@ eytzinger, fhedt, vptree, rbc, or mahalanobis).
 .TP 5
 .B SIXEL_LOOKUP_PACKING
 .br
-select dense LUT packing for 5bit/6bit lookup (linear or morton; default
-linear; other policies ignore it).
+select dense LUT packing for 5bit/6bit lookup (linear, morton, or hilbert;
+default linear; other policies ignore it).  The matching suboption is
+\fBpacking=VALUE\fP (short form \fBPVALUE\fP).
 .TP 5
 .B SIXEL_LOOKUP_FHEDT_RESOLUTION
 .br

@@ -54,6 +54,7 @@
 #include "encoder.h"
 #include "fromhdr.h"
 #include "loader-common.h"
+#include "lookup-policy.h"
 #include "options-registry.h"
 #include "palette-common-cover.h"
 #include "palette-heckbert.h"
@@ -63,6 +64,7 @@
 
 #define SIXEL_REGISTRY_ARRAY_LENGTH(array_) \
     (sizeof(array_) / sizeof((array_)[0]))
+#define SIXEL_REGISTRY_BASE_BIT(index_) (1ULL << (unsigned int)(index_))
 
 #define SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE \
     SIXEL_OPTION_SCOPE_ENCODER_FAMILY
@@ -108,7 +110,7 @@
         (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
         0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
-        SIXEL_REGISTRY_NO_BINDING, NULL \
+        SIXEL_REGISTRY_NO_BINDING, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_TYPED_CHOICE( \
@@ -127,7 +129,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_TYPED_CHOICE_ENV( \
@@ -147,7 +149,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_TYPED_CHOICE_LIST( \
@@ -167,7 +169,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_TYPED_BOOLEAN( \
@@ -186,7 +188,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_NUMBER( \
@@ -199,7 +201,7 @@
         (legacy_), (kind_), NULL, 0u, NULL, 0u, (minimum_), (maximum_), \
         (has_minimum_), (has_maximum_), (allow_zero_), \
         SIXEL_SUBOPTION_ENV_RANGE_REJECT, (message_), (suffix_), \
-        SIXEL_REGISTRY_NO_BINDING, NULL \
+        SIXEL_REGISTRY_NO_BINDING, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_INT( \
@@ -242,7 +244,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_TYPED_UINT( \
@@ -269,7 +271,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 /*
@@ -375,7 +377,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
         }, \
-        (trace_topic_) \
+        (trace_topic_), 0ULL \
     }
 
 #define SIXEL_REGISTRY_LOADER_SIZE_ENV_ERROR( \
@@ -396,7 +398,7 @@
                 sixel_loader_suboptions_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 /* Encoder-owned size controls are copied into per-frame dither state. */
@@ -417,7 +419,7 @@
                 sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 /* Decoder-owned suboptions bind directly to request-local decoder state. */
@@ -438,7 +440,7 @@
                 sixel_decoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_FLOAT( \
@@ -485,7 +487,7 @@
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 /* Preserve legacy strtol() syntax while restricting the numeric choices. */
@@ -505,7 +507,27 @@
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        }, NULL \
+        }, NULL, 0ULL \
+    }
+
+/* One semantic row may belong to an explicit set of structured bases. */
+#define SIXEL_REGISTRY_ENCODER_MULTI_CHOICE( \
+    optflag_, base_mask_, name_, short_, env_, fallback_, legacy_, choices_, \
+    field_, override_) \
+    { \
+        (optflag_), NULL, SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, \
+        (name_), (short_), (env_), (fallback_), \
+        (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
+        SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, 0.0, 0.0, 0, 0, \
+        0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, (base_mask_) \
     }
 
 #define SIXEL_REGISTRY_ENCODER_CHOICE_ENV( \
@@ -525,7 +547,7 @@
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_BOOLEAN( \
@@ -544,7 +566,7 @@
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE( \
@@ -562,7 +584,7 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_OFFSET_NONE, SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_1(field_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_MIRROR_CHOICE( \
@@ -581,7 +603,7 @@
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, mirror_, int), \
             SIXEL_SUBOPTION_BINDING_ID_3(field_, override_, mirror_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_NUMBER( \
@@ -602,7 +624,7 @@
             (second_), \
             SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, (binding_id_) \
-        }, NULL \
+        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_UINT( \
@@ -869,6 +891,10 @@ enum {
     SIXEL_LOOKUP_BASE_RBC,
     SIXEL_LOOKUP_BASE_MAHALANOBIS
 };
+
+#define SIXEL_LOOKUP_BASE_SET_DENSE \
+    (SIXEL_REGISTRY_BASE_BIT(SIXEL_LOOKUP_BASE_5BIT) | \
+     SIXEL_REGISTRY_BASE_BIT(SIXEL_LOOKUP_BASE_6BIT))
 
 static sixel_option_value_schema_t const g_lookup_values[] = {
     { "auto", SIXEL_LUT_POLICY_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
@@ -1150,6 +1176,12 @@ static sixel_suboption_choice_t const g_sierra_variant_choices[] = {
     { "1", SIXEL_DIFFUSE_SIERRA1 },
     { "2", SIXEL_DIFFUSE_SIERRA2 },
     { "3", SIXEL_DIFFUSE_SIERRA3 }
+};
+
+static sixel_suboption_choice_t const g_lookup_packing_choices[] = {
+    { "linear", SIXEL_LOOKUP_PACK_LINEAR },
+    { "morton", SIXEL_LOOKUP_PACK_MORTON },
+    { "hilbert", SIXEL_LOOKUP_PACK_HILBERT }
 };
 
 static sixel_suboption_choice_t const g_kmeans_init_type_choices[] = {
@@ -1984,6 +2016,13 @@ static sixel_suboption_key_t const g_suboptions[] = {
         quantize_model_kcenter_swap_min_gain,
         quantize_model_kcenter_swap_min_gain_override),
 
+    SIXEL_REGISTRY_ENCODER_MULTI_CHOICE(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        SIXEL_LOOKUP_BASE_SET_DENSE,
+        "packing", 'P', "SIXEL_LOOKUP_PACKING", NULL, NULL,
+        g_lookup_packing_choices,
+        lut_policy_packing,
+        lut_policy_packing_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
         g_lookup_values + SIXEL_LOOKUP_BASE_5BIT,
@@ -2582,6 +2621,63 @@ static sixel_option_argument_schema_t const g_options[] = {
 };
 
 static int
+sixel_option_registry_base_index(
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
+    size_t *base_index_out)
+{
+    size_t base_index;
+
+    base_index = 0u;
+    if (schema == NULL || base_def == NULL || base_index_out == NULL) {
+        return 0;
+    }
+    while (base_index < schema->value_count) {
+        if (schema->values + base_index == base_def) {
+            *base_index_out = base_index;
+            return 1;
+        }
+        ++base_index;
+    }
+
+    return 0;
+}
+
+static int
+sixel_option_registry_key_is_common(sixel_suboption_key_t const *key)
+{
+    return key != NULL && key->base_def == NULL && key->base_mask == 0ULL;
+}
+
+static int
+sixel_option_registry_key_applies_to_base(
+    sixel_suboption_key_t const *key,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def)
+{
+    size_t base_index;
+
+    base_index = 0u;
+    if (key == NULL || schema == NULL) {
+        return 0;
+    }
+    if (base_def == NULL || sixel_option_registry_key_is_common(key)) {
+        return 1;
+    }
+    if (key->base_def != NULL) {
+        return key->base_def == base_def;
+    }
+    if (!sixel_option_registry_base_index(schema,
+                                          base_def,
+                                          &base_index) ||
+        base_index >= sizeof(key->base_mask) * CHAR_BIT) {
+        return 0;
+    }
+
+    return (key->base_mask & (1ULL << (unsigned int)base_index)) != 0ULL;
+}
+
+static int
 sixel_option_registry_key_applies(
     sixel_suboption_key_t const *key,
     sixel_option_argument_schema_t const *schema,
@@ -2595,8 +2691,9 @@ sixel_option_registry_key_applies(
         (key->consumer_scope & consumer_scope) == 0u) {
         return 0;
     }
-    return base_def == NULL || key->base_def == NULL ||
-        key->base_def == base_def;
+    return sixel_option_registry_key_applies_to_base(key,
+                                                     schema,
+                                                     base_def);
 }
 
 sixel_option_argument_schema_t const *
@@ -2707,9 +2804,13 @@ sixel_option_registry_suboption_at_for_scope(
     while (index < SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
         if (g_suboptions[index].option_id == schema->option_id &&
             (g_suboptions[index].consumer_scope & consumer_scope) != 0u) {
-            if (g_suboptions[index].base_def == NULL) {
+            if (sixel_option_registry_key_is_common(
+                    g_suboptions + index)) {
                 ++common_count;
-            } else if (g_suboptions[index].base_def == base_def) {
+            } else if (sixel_option_registry_key_applies_to_base(
+                           g_suboptions + index,
+                           schema,
+                           base_def)) {
                 ++specific_count;
             }
         }
@@ -2734,9 +2835,14 @@ sixel_option_registry_suboption_at_for_scope(
     while (index < SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
         if (g_suboptions[index].option_id == schema->option_id &&
             (g_suboptions[index].consumer_scope & consumer_scope) != 0u &&
-            ((request_common && g_suboptions[index].base_def == NULL) ||
+            ((request_common && sixel_option_registry_key_is_common(
+                                    g_suboptions + index)) ||
              (!request_common &&
-              g_suboptions[index].base_def == base_def))) {
+              !sixel_option_registry_key_is_common(g_suboptions + index) &&
+              sixel_option_registry_key_applies_to_base(
+                  g_suboptions + index,
+                  schema,
+                  base_def)))) {
             if (matched_index == requested_index) {
                 return g_suboptions + index;
             }
@@ -2773,22 +2879,48 @@ sixel_option_registry_suboption_by_binding(
     char const *base_name,
     char const *binding_identifier)
 {
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_value_schema_t const *base_def;
     sixel_suboption_key_t const *key;
+    size_t base_index;
     size_t index;
 
+    schema = NULL;
+    base_def = NULL;
     key = NULL;
+    base_index = 0u;
     index = 0u;
     if (binding_identifier == NULL || binding_identifier[0] == '\0') {
         return NULL;
+    }
+    schema = sixel_option_registry_get(option_id);
+    if (schema == NULL) {
+        return NULL;
+    }
+    if (base_name != NULL) {
+        while (base_index < schema->value_count) {
+            if (strcmp(schema->values[base_index].name, base_name) == 0) {
+                base_def = schema->values + base_index;
+                break;
+            }
+            ++base_index;
+        }
+        if (base_def == NULL) {
+            return NULL;
+        }
     }
     while (index < SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
         key = g_suboptions + index;
         if (key->option_id == option_id &&
             key->binding.identifier != NULL &&
             strcmp(key->binding.identifier, binding_identifier) == 0 &&
-            ((base_name == NULL && key->base_def == NULL) ||
-             (base_name != NULL && key->base_def != NULL &&
-              strcmp(key->base_def->name, base_name) == 0))) {
+            ((base_name == NULL &&
+              sixel_option_registry_key_is_common(key)) ||
+             (base_name != NULL &&
+              !sixel_option_registry_key_is_common(key) &&
+              sixel_option_registry_key_applies_to_base(key,
+                                                        schema,
+                                                        base_def)))) {
             return key;
         }
         ++index;
@@ -2946,9 +3078,11 @@ static int
 sixel_option_registry_owner_is_valid(sixel_suboption_key_t const *key)
 {
     sixel_option_argument_schema_t const *schema;
+    unsigned long long valid_base_mask;
     size_t base_index;
 
     schema = NULL;
+    valid_base_mask = 0ULL;
     base_index = 0u;
     if (key == NULL) {
         return 0;
@@ -2957,8 +3091,22 @@ sixel_option_registry_owner_is_valid(sixel_suboption_key_t const *key)
     if (schema == NULL) {
         return 0;
     }
-    if (key->base_def == NULL) {
+    if (key->base_def == NULL && key->base_mask == 0ULL) {
         return schema->value_count > 0u;
+    }
+    if (key->base_def == NULL) {
+        if (schema->value_count == 0u ||
+            schema->value_count > sizeof(key->base_mask) * CHAR_BIT) {
+            return 0;
+        }
+        valid_base_mask = schema->value_count ==
+                sizeof(key->base_mask) * CHAR_BIT
+            ? ULLONG_MAX
+            : (1ULL << (unsigned int)schema->value_count) - 1ULL;
+        return (key->base_mask & ~valid_base_mask) == 0ULL;
+    }
+    if (key->base_mask != 0ULL) {
+        return 0;
     }
     while (base_index < schema->value_count) {
         if (key->base_def == schema->values + base_index) {

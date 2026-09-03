@@ -822,9 +822,9 @@ struct sixel_palette_interface {
  *   disable non-thread-safe cache paths without relying on global state.
  * - request.shared_instance_enabled stores the effective shared-instance
  *   preference resolved by the caller (CLI override or environment default).
- * - FHEDT option pairs carry both a value and an override flag.  A zero
+ * - Lookup option pairs carry both a value and an override flag.  A zero
  *   override lets direct component users retain registry-backed environment
- *   defaults without teaching the backend about environment variable names.
+ *   defaults without teaching backends about environment variable names.
  * - Implementations may choose to ignore reuse hints.
  */
 typedef struct sixel_lookup_policy_interface sixel_lookup_policy_interface_t;
@@ -847,6 +847,8 @@ typedef struct sixel_lookup_policy_prepare_request {
     int pixelformat;
     int parallel_dither_active;
     int shared_instance_enabled;
+    int lut_policy_packing;
+    int lut_policy_packing_override;
     int fhedt_resolution;
     int fhedt_resolution_override;
     int fhedt_refine;

@@ -689,11 +689,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "      auto      -> follow pixel depth\n"
         "      5bit      -> force classic 5-bit buckets\n"
         "        sub-option:\n"
+        "          :packing=linear|morton|hilbert (:Pvalue)\n"
         "          :shared_instance=0|1 (:S0 or :S1)\n"
         "          0 -> build worker-local lookup state\n"
         "          1 -> share one lookup state across workers\n"
         "      6bit      -> favor 6-bit RGB buckets\n"
         "        sub-option:\n"
+        "          :packing=linear|morton|hilbert (:Pvalue)\n"
         "          :shared_instance=0|1 (:S0 or :S1)\n"
         "          0 -> build worker-local lookup state\n"
         "          1 -> share one lookup state across workers\n"
@@ -1973,7 +1975,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOOKUP_PACKING",
         "choose dense LUT packing for 5bit/6bit policies\n"
-        "(`linear`, `morton`, or `hilbert`; default `linear`)."
+        "(`linear`, `morton`, or `hilbert`; default `linear`). The matching\n"
+        "suboption is packing=VALUE (short form PVALUE)."
     },
     {
         "SIXEL_LOOKUP_FHEDT_RESOLUTION",

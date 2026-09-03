@@ -171,6 +171,9 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     prepare_request.shared_instance_enabled =
         sixel_filter_lookup_default_shared_instance_enabled(
             config->lut_policy);
+    prepare_request.lut_policy_packing = config->lut_policy_packing;
+    prepare_request.lut_policy_packing_override =
+        config->lut_policy_packing_override;
     prepare_request.fhedt_resolution = config->fhedt_resolution;
     prepare_request.fhedt_resolution_override =
         config->fhedt_resolution_override;

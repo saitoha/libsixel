@@ -31,6 +31,17 @@
 extern "C" {
 #endif
 
+typedef enum sixel_lookup_packing {
+    SIXEL_LOOKUP_PACK_LINEAR = 0,
+    SIXEL_LOOKUP_PACK_MORTON,
+    SIXEL_LOOKUP_PACK_HILBERT
+} sixel_lookup_packing_t;
+
+SIXEL_INTERNAL_API int
+sixel_lookup_policy_resolve_packing(
+    sixel_lookup_policy_prepare_request_t const *request,
+    char const *base_name);
+
 SIXEL_INTERNAL_API char const *
 sixel_lookup_policy_select_name(
     sixel_lookup_policy_select_request_t const *request);

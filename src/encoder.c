@@ -88,6 +88,7 @@
 #include "loader.h"
 #include "loader-common.h"
 #include "loader-order-schema.h"
+#include "lookup-policy.h"
 #include "tty.h"
 #include "encoder.h"
 #include "frame.h"
@@ -4058,6 +4059,9 @@ sixel_encoder_copy_lookup_options(sixel_encoder_t const *encoder,
         encoder->lut_policy_shared_instance_override;
     dither->lut_policy_shared_instance =
         encoder->lut_policy_shared_instance;
+    dither->lut_policy_packing_override =
+        encoder->lut_policy_packing_override;
+    dither->lut_policy_packing = encoder->lut_policy_packing;
     dither->lut_policy_fhedt_resolution_override =
         encoder->lut_policy_fhedt_resolution_override;
     dither->lut_policy_fhedt_resolution =
@@ -6766,6 +6770,9 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.float_depth = float32_view.depth;
     lookup_config.ncolors = (int)entries_view.entry_count;
     lookup_config.lut_policy = policy;
+    lookup_config.lut_policy_packing = dither->lut_policy_packing;
+    lookup_config.lut_policy_packing_override =
+        dither->lut_policy_packing_override;
     lookup_config.fhedt_resolution = dither->lut_policy_fhedt_resolution;
     lookup_config.fhedt_resolution_override =
         dither->lut_policy_fhedt_resolution_override;
@@ -7882,6 +7889,8 @@ sixel_encoder_new(
     (*ppencoder)->lut_policy_override   = 0;
     (*ppencoder)->lut_policy_shared_instance_override = 0;
     (*ppencoder)->lut_policy_shared_instance = 0;
+    (*ppencoder)->lut_policy_packing_override = 0;
+    (*ppencoder)->lut_policy_packing = SIXEL_LOOKUP_PACK_LINEAR;
     (*ppencoder)->lut_policy_fhedt_resolution_override = 0;
     (*ppencoder)->lut_policy_fhedt_resolution = 64;
     (*ppencoder)->lut_policy_fhedt_refine_override = 0;
@@ -8828,6 +8837,7 @@ sixel_encoder_apply_lut_policy_argument(
     encoder->lut_policy = resolution.resolved_base_value;
     encoder->lut_policy_override = 1;
     encoder->lut_policy_shared_instance = 0;
+    encoder->lut_policy_packing = SIXEL_LOOKUP_PACK_LINEAR;
     encoder->lut_policy_fhedt_resolution = 64;
     encoder->lut_policy_fhedt_refine = 1;
     encoder->lut_policy_fhedt_shared = 1;

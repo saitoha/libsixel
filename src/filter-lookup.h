@@ -49,6 +49,8 @@ typedef struct sixel_filter_lookup_config {
     int ncolors;
     int method_for_largest;
     int lut_policy;
+    int lut_policy_packing;
+    int lut_policy_packing_override;
     int fhedt_resolution;
     int fhedt_resolution_override;
     int fhedt_refine;

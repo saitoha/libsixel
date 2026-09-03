@@ -270,6 +270,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_DECODER_ORMODE_DEQUANTIZE_OPAQUE \
     -DBUILD_TEST_0023_DECODER_HIGH_COLOR_DEQUANTIZE_BYPASS \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
+    -DBUILD_TEST_0012_LOOKUP_PACKING_REGISTRY_DIRECT \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0005_COVER_ANCHOR \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -403,6 +404,7 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0023_decoder_high_color_dequantize_bypass.c \
     processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
+    processing/lookup/0012_lookup_packing_registry_direct.c \
     processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \
     loader/coregraphics/0008_loader_coregraphics_pixelformat.c \

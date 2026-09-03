@@ -28,13 +28,13 @@
 
 #include <limits.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #if HAVE_FLOAT_H
 # include <float.h>
 #endif
 
-#include "compat_stub.h"
 #include "loader-common.h"
 #include "lookup-policy-6bit.h"
 #include "options.h"
@@ -42,10 +42,6 @@
 #include "sixel_atomic.h"
 
 #define SIXEL_LUT_DENSE_EMPTY (-1)
-
-#define SIXEL_LOOKUP_PACK_LINEAR 0
-#define SIXEL_LOOKUP_PACK_MORTON 1
-#define SIXEL_LOOKUP_PACK_HILBERT 2
 
 /*
  * IDL (internal contract)
@@ -137,29 +133,6 @@ int
 sixel_lookup_policy_6bit_shared_instance_enabled(void)
 {
     return sixel_lookup_policy_bit6_env_shared_default_on();
-}
-
-static int
-sixel_lookup_policy_bit6_env_packing(void)
-{
-    char const *env;
-
-    env = sixel_compat_getenv("SIXEL_LOOKUP_PACKING");
-    if (env == NULL || env[0] == '\0') {
-        return SIXEL_LOOKUP_PACK_LINEAR;
-    }
-
-    if (sixel_compat_strcasecmp(env, "linear") == 0) {
-        return SIXEL_LOOKUP_PACK_LINEAR;
-    }
-    if (sixel_compat_strcasecmp(env, "morton") == 0) {
-        return SIXEL_LOOKUP_PACK_MORTON;
-    }
-    if (sixel_compat_strcasecmp(env, "hilbert") == 0) {
-        return SIXEL_LOOKUP_PACK_HILBERT;
-    }
-
-    return SIXEL_LOOKUP_PACK_LINEAR;
 }
 
 /* Expose the effective packing mode without coupling tests to private state. */
@@ -646,7 +619,9 @@ sixel_lookup_policy_bit6_configure_8bit(
     object->state_8bit.ncolors = request->reqcolor;
     object->state_8bit.palette = request->palette;
     object->state_8bit.allocator = request->allocator;
-    object->state_8bit.packing = sixel_lookup_policy_bit6_env_packing();
+    object->state_8bit.packing = sixel_lookup_policy_resolve_packing(
+        request,
+        "6bit");
     sixel_lookup_policy_bit6_trace_packing(object->state_8bit.packing);
     object->state_8bit.quant = sixel_lookup_policy_bit6_quant_make(
         (unsigned int)object->state_8bit.depth);

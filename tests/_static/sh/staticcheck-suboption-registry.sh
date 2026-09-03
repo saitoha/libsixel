@@ -381,6 +381,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_ENCODER_INT" ||
         macro == "SIXEL_REGISTRY_ENCODER_INT_PAIR" ||
         macro == "SIXEL_REGISTRY_ENCODER_MIRROR_CHOICE" ||
+        macro == "SIXEL_REGISTRY_ENCODER_MULTI_CHOICE" ||
         macro == "SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP" ||
         macro == "SIXEL_REGISTRY_ENCODER_SIZE" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT" ||
@@ -434,6 +435,14 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     }
     if (!macro_is_approved(macro)) {
         fail(option_id ":" name " uses unapproved row macro " macro)
+    }
+    if (macro ~ /MULTI/ &&
+            base !~ /^SIXEL_[A-Z0-9_]+_BASE_SET_[A-Z0-9_]+$/) {
+        fail(option_id ":" name " has no explicit multi-base set")
+    }
+    if (macro !~ /MULTI/ &&
+            base ~ /^SIXEL_[A-Z0-9_]+_BASE_SET_[A-Z0-9_]+$/) {
+        fail(option_id ":" name " uses a base set with a single-base macro")
     }
     exact_key = option_id SUBSEP base SUBSEP alias
     if (seen_exact[exact_key]) {
@@ -833,6 +842,9 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     if (option_id == "SIXEL_OPTION_SCHEMA_LUT_POLICY") {
         expected_lookup_contract[key] = 1
     }
+    if (macro ~ /MULTI/) {
+        expected_multi_base_contract[key] = 1
+    }
     if (option_id == "SIXEL_OPTION_SCHEMA_GPU_POLICY" &&
             name == "palette_threshold") {
         expected_dither_contract[key] = 1
@@ -1037,6 +1049,7 @@ FILENAME != registry_file {
              index($0, "LSXLUT1|*" test_lookup_contract[FILENAME] "*") > 0 ||
              index($0, "LSXFHD1|*" test_lookup_contract[FILENAME] "*") > 0)) {
         has_lookup_contract[FILENAME] = 1
+        lookup_contract_count[FILENAME] += 1
     }
     if (test_gpu_contract[FILENAME] != "" &&
             index($0, "LSXGPU1|*" test_gpu_contract[FILENAME] "*") > 0) {
@@ -1168,6 +1181,10 @@ END {
                 (test_lookup_contract[file] == "" ||
                  !has_lookup_contract[file])) {
             fail(file " does not verify its effective lookup setting")
+        }
+        if (expected_multi_base_contract[key] &&
+                lookup_contract_count[file] < 2) {
+            fail(file " does not verify every multi-base lookup consumer")
         }
         if (!expected_lookup_contract[key] &&
                 test_lookup_contract[file] != "") {

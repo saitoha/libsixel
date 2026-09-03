@@ -617,6 +617,9 @@ sixel_dither_prepare_lookup_policy(
     request.parallel_dither_active = parallel_dither_active;
     request.shared_instance_enabled = (shared_instance_enabled != 0) ? 1 : 0;
     if (dither != NULL) {
+        request.lut_policy_packing = dither->lut_policy_packing;
+        request.lut_policy_packing_override =
+            dither->lut_policy_packing_override;
         request.fhedt_resolution = dither->lut_policy_fhedt_resolution;
         request.fhedt_resolution_override =
             dither->lut_policy_fhedt_resolution_override;
@@ -2005,6 +2008,8 @@ sixel_dither_new(
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_shared_instance_override = 0;
     (*ppdither)->lut_policy_shared_instance = 0;
+    (*ppdither)->lut_policy_packing_override = 0;
+    (*ppdither)->lut_policy_packing = SIXEL_LOOKUP_PACK_LINEAR;
     (*ppdither)->lut_policy_fhedt_resolution_override = 0;
     (*ppdither)->lut_policy_fhedt_resolution = 64;
     (*ppdither)->lut_policy_fhedt_refine_override = 0;

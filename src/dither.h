@@ -160,6 +160,8 @@ struct sixel_dither {
     int lut_policy;                 /* histogram LUT policy */
     int lut_policy_shared_instance_override; /* CLI shared override flag */
     int lut_policy_shared_instance; /* parsed shared instance setting */
+    int lut_policy_packing_override; /* CLI dense packing override flag */
+    int lut_policy_packing;         /* parsed dense packing setting */
     int lut_policy_fhedt_resolution_override;
     int lut_policy_fhedt_resolution;
     int lut_policy_fhedt_refine_override;
