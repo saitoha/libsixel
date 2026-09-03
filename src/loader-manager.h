@@ -36,6 +36,9 @@
 extern "C" {
 #endif
 
+/* Keep the timeout shared by loader state and the OSC11 job fallback. */
+#define SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS 50
+
 typedef struct sixel_loader_entry {
     char const *name;
     char const *classid;

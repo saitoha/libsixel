@@ -847,7 +847,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               :hdr_header_exposure=0|1\n"
         "                               (:U0/:U1) controls HDR metadata;\n"
         "                               :osc11_query=0|1 (:Q0/:Q1)\n"
-        "                               controls background probing.\n"
+        "                               controls background probing;\n"
+        "                               :osc11_timeout=MILLISECONDS\n"
+        "                               (:Wvalue) controls its wait.\n"
         "                               PNG-capable loaders support\n"
         "                               :trns_keycolor=0|1 (:K0/:K1).\n"
         "                               librsvg supports\n"
@@ -1105,7 +1107,9 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS",
         "max wait time in milliseconds for OSC11 background color probing.\n"
-        "Defaults to 50. Invalid values fall back to 50."
+        "Use 0..2147483647. The -L suboption osc11_timeout (short form\n"
+        "Wvalue) overrides this setting. Defaults to 50. Invalid values\n"
+        "fall back to 50."
     },
     {
         "SIXEL_ANIMATION_HIDE_CURSOR",

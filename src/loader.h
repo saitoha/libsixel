@@ -94,9 +94,6 @@ sixel_loader_should_query_osc11_bgcolor(int enabled,
                                         int stderr_is_tty);
 
 SIXEL_INTERNAL_API int
-sixel_loader_parse_osc11_bg_query_timeout_ms(char const *value);
-
-SIXEL_INTERNAL_API int
 sixel_loader_wait_for_condition(sixel_loader_wait_predicate_t predicate,
                                 void *context,
                                 int timeout_ms);

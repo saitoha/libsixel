@@ -390,6 +390,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_LOADER_CHOICE_ENV" ||
         macro == "SIXEL_REGISTRY_LOADER_DOUBLE" ||
         macro == "SIXEL_REGISTRY_LOADER_UINT" ||
+        macro == "SIXEL_REGISTRY_LOADER_UINT_ENV_REJECT_SIGNED" ||
         macro == \
             "SIXEL_REGISTRY_LOADER_UINT_ENV_CLAMP_MAXIMUM_DIGITS" ||
         macro == "SIXEL_REGISTRY_LOADER_SIZE_ENV_ERROR"
@@ -783,6 +784,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         range_policy = "clamp-positive-uint"
     } else if (macro ~ /UINT_ENV_CLAMP_MAXIMUM/) {
         range_policy = "clamp-maximum"
+    } else if (macro ~ /UINT_ENV_REJECT_SIGNED/) {
+        range_policy = "parse-signed-long"
     } else if (macro ~ /UINT_ENV_REJECT_UNSIGNED_LONG/) {
         range_policy = "parse-unsigned-long"
         if ((fields[8] + 0.0) == 0.0 || (fields[10] + 0) == 1) {

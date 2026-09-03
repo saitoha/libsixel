@@ -152,10 +152,6 @@ function argument_is_reviewed(file, argument) {
         argument == "SIXEL_DECODER_GPU_POLICY_ENVVAR") {
         return 1
     }
-    if (file ~ /\/loader\.c$/ &&
-        argument == "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV") {
-        return 1
-    }
     if (file ~ /\/gpu-dequant\.c$/ &&
         argument == "SIXEL_GPU_DEQUANT_THRESHOLD_ENVVAR") {
         return 1

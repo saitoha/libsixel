@@ -39,27 +39,6 @@ wait_probe_predicate(void *context)
 }
 
 static int
-run_timeout_parse_cases(void)
-{
-    if (sixel_loader_parse_osc11_bg_query_timeout_ms(NULL) != 50 ||
-            sixel_loader_parse_osc11_bg_query_timeout_ms("") != 50 ||
-            sixel_loader_parse_osc11_bg_query_timeout_ms("-1") != 50 ||
-            sixel_loader_parse_osc11_bg_query_timeout_ms("abc") != 50 ||
-            sixel_loader_parse_osc11_bg_query_timeout_ms(
-                "999999999999999999") != 50) {
-        fprintf(stderr, "timeout parser did not fall back to default\n");
-        return 1;
-    }
-    if (sixel_loader_parse_osc11_bg_query_timeout_ms("0") != 0 ||
-            sixel_loader_parse_osc11_bg_query_timeout_ms("25") != 25) {
-        fprintf(stderr, "timeout parser did not accept valid values\n");
-        return 1;
-    }
-
-    return 0;
-}
-
-static int
 run_query_gate_cases(void)
 {
     if (!sixel_loader_should_query_osc11_bgcolor(1, 0, 1, 0) ||
@@ -129,11 +108,6 @@ test_loader_0052_loader_osc11_query_control(int argc, char **argv)
     (void)argv;
 
     status = run_query_gate_cases();
-    if (status != 0) {
-        return EXIT_FAILURE;
-    }
-
-    status = run_timeout_parse_cases();
     if (status != 0) {
         return EXIT_FAILURE;
     }

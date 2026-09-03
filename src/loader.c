@@ -69,9 +69,6 @@
 # endif
 # include <windows.h>
 #endif
-#if HAVE_ERRNO_H
-# include <errno.h>
-#endif
 #if HAVE_SYS_WAIT_H
 # include <sys/wait.h>
 #endif
@@ -117,10 +114,6 @@
 #ifndef STDERR_FILENO
 # define STDERR_FILENO 2
 #endif
-
-#define SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV \
-    "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS"
-#define SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS 50
 
 /*
  * Internal loader state carried across backends.  The fields mirror the
@@ -195,7 +188,9 @@ static void
 loader_osc11_bg_query_job_join(sixel_loader_osc11_bg_query_job_t *job);
 
 static int
-loader_can_query_osc11_bgcolor(sixel_loader_t const *loader, int enabled);
+loader_can_query_osc11_bgcolor(sixel_loader_t const *loader,
+                               int enabled,
+                               int timeout_ms);
 
 SIXEL_INTERNAL_API void
 sixel_loader_component_ref(sixel_loader_component_t *component)
@@ -355,30 +350,6 @@ sixel_loader_should_query_osc11_bgcolor(int enabled,
 }
 
 int
-sixel_loader_parse_osc11_bg_query_timeout_ms(char const *value)
-{
-    long parsed;
-    char *endptr;
-
-    parsed = 0L;
-    endptr = NULL;
-
-    if (value == NULL || value[0] == '\0') {
-        return SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
-    }
-
-    errno = 0;
-    parsed = strtol(value, &endptr, 10);
-    if (endptr == value || *endptr != '\0' ||
-            errno == ERANGE || parsed < 0L ||
-            parsed > (long)INT_MAX) {
-        return SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
-    }
-
-    return (int)parsed;
-}
-
-int
 sixel_loader_wait_for_condition(sixel_loader_wait_predicate_t predicate,
                                 void *context,
                                 int timeout_ms)
@@ -533,7 +504,9 @@ loader_osc11_bg_query_job_join(sixel_loader_osc11_bg_query_job_t *job)
 }
 
 static int
-loader_can_query_osc11_bgcolor(sixel_loader_t const *loader, int enabled)
+loader_can_query_osc11_bgcolor(sixel_loader_t const *loader,
+                               int enabled,
+                               int timeout_ms)
 {
     int stdout_is_tty;
     int stderr_is_tty;
@@ -552,12 +525,13 @@ loader_can_query_osc11_bgcolor(sixel_loader_t const *loader, int enabled)
     sixel_trace_topic_message(
         "loader",
         "LSXOSC1|enabled=%d|has_bgcolor=%d|stdout_tty=%d|"
-        "stderr_tty=%d|query=%d",
+        "stderr_tty=%d|query=%d|timeout_ms=%d",
         enabled != 0,
         loader->has_bgcolor != 0,
         stdout_is_tty != 0,
         stderr_is_tty != 0,
-        should_query);
+        should_query,
+        timeout_ms);
 
     return should_query;
 }
@@ -1214,7 +1188,6 @@ sixel_loader_load_file(
     sixel_loader_suboptions_t const *previous_active_suboptions;
     sixel_loader_manager_build_request_t build_request;
     sixel_loader_osc11_bg_query_job_t osc11_query_job;
-    char const *osc11_timeout_env;
     int osc11_timeout_ms;
     int osc11_bgcolor_applied;
     int thread_status;
@@ -1231,7 +1204,6 @@ sixel_loader_load_file(
     chunk_source_path = NULL;
     active_order_resolution = NULL;
     previous_active_suboptions = NULL;
-    osc11_timeout_env = NULL;
     osc11_timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
     osc11_bgcolor_applied = 0;
     thread_status = SIXEL_FALSE;
@@ -1319,10 +1291,7 @@ sixel_loader_load_file(
     loader_manager_resolve_loader_suboptions(active_order_resolution,
                                              &active_suboptions);
 
-    osc11_timeout_env = sixel_compat_getenv(
-        SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV);
-    osc11_timeout_ms = sixel_loader_parse_osc11_bg_query_timeout_ms(
-        osc11_timeout_env);
+    osc11_timeout_ms = active_suboptions.osc11_bg_query_timeout_ms;
 
     /*
      * Launch OSC11 probing before sixel_chunk_create_from_source() so the
@@ -1331,7 +1300,9 @@ sixel_loader_load_file(
      * non-fatal.
      */
     if (loader_can_query_osc11_bgcolor(
-            loader, active_suboptions.osc11_bg_query) != 0) {
+            loader,
+            active_suboptions.osc11_bg_query,
+            osc11_timeout_ms) != 0) {
         osc11_query_job.timeout_ms = osc11_timeout_ms;
         thread_status = sixel_thread_create(
             &osc11_query_job.thread,

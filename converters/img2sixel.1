@@ -1150,7 +1150,9 @@ When probing succeeds, the loader treats the returned background as gamma.
 .B SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
 .br
 timeout in milliseconds for the loader OSC11 background color query wait.
-Defaults to 50. Invalid values fall back to 50.
+Use 0 through 2147483647. The loader suboption
+\fB:osc11_timeout=MILLISECONDS\fP (short form \fB:Wvalue\fP) overrides this
+setting. Defaults to 50. Invalid values fall back to 50.
 .TP 5
 .B SIXEL_ANIMATION_HIDE_CURSOR
 .br
