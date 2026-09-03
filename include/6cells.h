@@ -1138,6 +1138,11 @@ typedef struct sixel_loader_suboptions {
     int png_trns_keycolor;
     int librsvg_allow_relative_resources;
     int librsvg_allow_stdin_svgz;
+    int builtin_pam_duplicate_keys;
+    int builtin_pam_endhdr_tokens;
+    int builtin_pam_large_header;
+    int builtin_pnm_trailing_data;
+    int builtin_pnm_truncated_ascii;
     int wic_ico_minsize;
     int libjpeg_enable_cms;
     int libjpeg_cms_engine;

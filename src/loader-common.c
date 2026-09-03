@@ -63,6 +63,7 @@
 #include "frame-private.h"
 #include "loader-common.h"
 #include "options.h"
+#include "options-registry.h"
 #include "timeline-logger.h"
 
 #if defined(__PCC__) || defined(__TINYC__)
@@ -277,22 +278,53 @@ sixel_loader_active_suboptions(void)
 }
 
 int
-loader_png_trns_keycolor_mode(void)
+loader_resolve_boolean_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    int fallback)
 {
     sixel_loader_suboptions_t const *suboptions;
-    int enabled;
+    sixel_suboption_key_t const *key_def;
+    int value;
 
     suboptions = sixel_loader_active_suboptions();
-    enabled = 1;
-    if (suboptions != NULL) {
-        enabled = suboptions->png_trns_keycolor;
-    } else {
-        enabled = sixel_option_resolve_registered_boolean_binding(
+    key_def = NULL;
+    value = fallback ? 1 : 0;
+    if (suboptions == NULL) {
+        return sixel_option_resolve_registered_boolean_binding(
             SIXEL_OPTION_SCHEMA_LOADERS,
-            NULL,
-            SIXEL_SUBOPTION_BINDING_ID_1(png_trns_keycolor),
-            1);
+            base_name,
+            binding_identifier,
+            fallback);
     }
+
+    key_def = sixel_option_registry_suboption_by_binding(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        base_name,
+        binding_identifier);
+    if (key_def == NULL ||
+        key_def->value_kind != SIXEL_SUBOPTION_VALUE_BOOLEAN ||
+        key_def->binding.target_class != SIXEL_SUBOPTION_TARGET_LOADER ||
+        key_def->binding.storage_kind != SIXEL_SUBOPTION_STORAGE_INT ||
+        key_def->binding.value_offset == SIXEL_SUBOPTION_OFFSET_NONE) {
+        return value;
+    }
+    memcpy(&value,
+           (unsigned char const *)suboptions +
+               key_def->binding.value_offset,
+           sizeof(value));
+    return value != 0;
+}
+
+int
+loader_png_trns_keycolor_mode(void)
+{
+    int enabled;
+
+    enabled = loader_resolve_boolean_suboption(
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(png_trns_keycolor),
+        1);
 
     /* Mode 2 enables both tRNS and alpha-channel keycolor handling. */
     return enabled != 0 ? 2 : 0;

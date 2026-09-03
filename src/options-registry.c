@@ -1793,6 +1793,36 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "orientation", 'O', "SIXEL_LOADER_BUILTIN_ORIENTATION",
         "SIXEL_LOADER_ORIENTATION", NULL,
         builtin_enable_orientation),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
+        "pam_duplicate_keys", 'D',
+        "SIXEL_LOADER_PAM_ALLOW_DUPLICATE_REQUIRED_KEYS", NULL, NULL,
+        builtin_pam_duplicate_keys),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
+        "pam_endhdr_tokens", 'G',
+        "SIXEL_LOADER_PAM_ALLOW_ENDHDR_TRAILING_TOKENS", NULL, NULL,
+        builtin_pam_endhdr_tokens),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
+        "pam_large_header", 'J', "SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER",
+        NULL, NULL,
+        builtin_pam_large_header),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
+        "pnm_trailing_data", 'N', "SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA",
+        NULL, NULL,
+        builtin_pnm_trailing_data),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
+        "pnm_truncated_ascii", 'Y',
+        "SIXEL_LOADER_PNM_ALLOW_TRUNCATED_ASCII", NULL, NULL,
+        builtin_pnm_truncated_ascii),
     SIXEL_REGISTRY_LOADER_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,

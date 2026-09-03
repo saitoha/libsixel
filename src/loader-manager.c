@@ -206,6 +206,11 @@ loader_manager_init_loader_suboptions(
     suboptions->png_trns_keycolor = 1;
     suboptions->librsvg_allow_relative_resources = 0;
     suboptions->librsvg_allow_stdin_svgz = 0;
+    suboptions->builtin_pam_duplicate_keys = 0;
+    suboptions->builtin_pam_endhdr_tokens = 0;
+    suboptions->builtin_pam_large_header = 0;
+    suboptions->builtin_pnm_trailing_data = 0;
+    suboptions->builtin_pnm_truncated_ascii = 0;
     suboptions->libjpeg_enable_cms = 0;
     suboptions->libjpeg_cms_engine = SIXEL_CMS_ENGINE_NONE;
     suboptions->libjpeg_enable_orientation = 1;

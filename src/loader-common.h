@@ -103,6 +103,12 @@ void sixel_loader_restore_suboptions(
     sixel_loader_suboptions_t const *suboptions);
 sixel_loader_suboptions_t const *sixel_loader_active_suboptions(void);
 
+/* Resolve one loader boolean from active request state or its registry row. */
+int loader_resolve_boolean_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    int fallback);
+
 /* Return the shared builtin/libpng PNG transparency compatibility mode. */
 int loader_png_trns_keycolor_mode(void);
 

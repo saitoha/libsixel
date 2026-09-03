@@ -51,6 +51,7 @@
 
 #include "compat_stub.h"
 #include "loader-common.h"
+#include "options.h"
 
 #define PNM_MAX_WIDTH   (1 << 16)
 #define PNM_MAX_HEIGHT  (1 << 16)
@@ -340,63 +341,46 @@ pnm_line_key_equals(unsigned char const *key_begin,
 static int
 pnm_allow_truncated_ascii(void)
 {
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_LOADER_PNM_ALLOW_TRUNCATED_ASCII");
-    if (value != NULL && strcmp(value, "1") == 0) {
-        return 1;
-    }
-    return 0;
+    return loader_resolve_boolean_suboption(
+        "builtin",
+        SIXEL_SUBOPTION_BINDING_ID_1(builtin_pnm_truncated_ascii),
+        0);
 }
 
 static int
 pnm_allow_duplicate_required_keys(void)
 {
-    char const *value;
-
-    value = sixel_compat_getenv(
-        "SIXEL_LOADER_PAM_ALLOW_DUPLICATE_REQUIRED_KEYS");
-    if (value != NULL && strcmp(value, "1") == 0) {
-        return 1;
-    }
-    return 0;
+    return loader_resolve_boolean_suboption(
+        "builtin",
+        SIXEL_SUBOPTION_BINDING_ID_1(builtin_pam_duplicate_keys),
+        0);
 }
 
 static int
 pnm_allow_trailing_data(void)
 {
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA");
-    if (value != NULL && strcmp(value, "1") == 0) {
-        return 1;
-    }
-    return 0;
+    return loader_resolve_boolean_suboption(
+        "builtin",
+        SIXEL_SUBOPTION_BINDING_ID_1(builtin_pnm_trailing_data),
+        0);
 }
 
 static int
 pnm_allow_endhdr_trailing_tokens(void)
 {
-    char const *value;
-
-    value = sixel_compat_getenv(
-        "SIXEL_LOADER_PAM_ALLOW_ENDHDR_TRAILING_TOKENS");
-    if (value != NULL && strcmp(value, "1") == 0) {
-        return 1;
-    }
-    return 0;
+    return loader_resolve_boolean_suboption(
+        "builtin",
+        SIXEL_SUBOPTION_BINDING_ID_1(builtin_pam_endhdr_tokens),
+        0);
 }
 
 static int
 pnm_allow_large_header(void)
 {
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER");
-    if (value != NULL && strcmp(value, "1") == 0) {
-        return 1;
-    }
-    return 0;
+    return loader_resolve_boolean_suboption(
+        "builtin",
+        SIXEL_SUBOPTION_BINDING_ID_1(builtin_pam_large_header),
+        0);
 }
 
 static int
