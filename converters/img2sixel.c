@@ -521,6 +521,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                 (default raster)\n"
         "      a_dither   -> positionally stable arithmetic dither\n"
         "        sub-option:\n"
+        "          strength=VALUE      -> floating point amplitude\n"
+        "                                 (default 0.150)\n"
+        "          TVALUE              -> short form of strength\n"
         "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
         "                                 (default raster)\n"
         "      x_dither   -> positionally stable arithmetic xor based dither\n"
@@ -575,6 +578,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                   (default raster)\n"
         "      compact suboption names (uppercase letter + value):\n"
         "        all methods: scan=N; sierra: variant=V\n"
+        "        a_dither: strength=T\n"
         "        interframe: diffusion=D\n"
         "        stbn: source=S, diffusion=D, strength=T, motion_adapt=M,\n"
         "          scene_cut_reset=C, scene_detect=E, alpha_guard=A,\n"
@@ -1262,8 +1266,9 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_DITHER_A_DITHER_STRENGTH",
-        "override positional a_dither strength. Defaults to 0.150 when\n"
-        "unset."
+        "override positional a_dither strength. The -d a_dither\n"
+        "suboption strength (short form TVALUE) takes precedence.\n"
+        "Defaults to 0.150 when unset."
     },
     {
         "SIXEL_DITHER_X_DITHER_STRENGTH",

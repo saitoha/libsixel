@@ -33,6 +33,7 @@
 #include "dither-policy-a-dither.h"
 #include "dither.h"
 #include "dither-common-pipeline.h"
+#include "options.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 
@@ -59,46 +60,26 @@ typedef struct sixel_dither_policy_a_dither_context {
 } sixel_dither_policy_a_dither_context_t;
 
 /*
- * Parse a float environment override. Invalid text is rejected so callers can
- * keep their default values.
- */
-static int
-sixel_dither_a_parse_float_env(char const *text, float *out_value)
-{
-    char *endptr;
-    double value;
-
-    endptr = NULL;
-    value = 0.0;
-    if (text == NULL || out_value == NULL || text[0] == '\0') {
-        return 0;
-    }
-
-    value = strtod(text, &endptr);
-    if (endptr == text || *endptr != '\0') {
-        return 0;
-    }
-
-    *out_value = (float)value;
-    return 1;
-}
-
-/*
- * Resolve the effective A-dither strength from environment.
+ * Resolve the registry environment for direct dither users, then let an
+ * encoder-bound suboption override it.  This keeps the public dither path
+ * compatible without duplicating environment parsing in this policy.
  */
 static float
-sixel_dither_get_a_strength(float default_strength)
+sixel_dither_get_a_strength(sixel_dither_t const *dither,
+                            float default_strength)
 {
-    char const *text;
     float value;
 
-    text = NULL;
     value = default_strength;
-
-    text = sixel_compat_getenv("SIXEL_DITHER_A_DITHER_STRENGTH");
-    if (text != NULL
-            && sixel_dither_a_parse_float_env(text, &value) == 0) {
-        value = default_strength;
+    (void)sixel_option_resolve_registered_float_binding(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        "a_dither",
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            a_dither_strength,
+            a_dither_strength_override),
+        &value);
+    if (dither != NULL && dither->a_dither_strength_override != 0) {
+        value = dither->a_dither_strength;
     }
 
     return value;
@@ -248,7 +229,7 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    strength = sixel_dither_get_a_strength(0.150f);
+    strength = sixel_dither_get_a_strength(dither, 0.150f);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
 
@@ -434,7 +415,7 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    strength = sixel_dither_get_a_strength(0.150f);
+    strength = sixel_dither_get_a_strength(dither, 0.150f);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
 

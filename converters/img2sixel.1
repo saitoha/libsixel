@@ -399,6 +399,10 @@ sub-option:
 .br
 sub-option:
 .br
+\fBstrength=VALUE\fP -> floating point amplitude (default 0.150)
+.br
+\fBTVALUE\fP -> short form of \fBstrength\fP
+.br
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBx_dither\fP -> positionally stable arithmetic xor based dither
@@ -468,7 +472,8 @@ sub-option:
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 Compact diffusion suboption names use one uppercase letter plus the value:
-all methods scan=N; sierra variant=V; interframe diffusion=D;
+all methods scan=N; sierra variant=V; a_dither strength=T;
+interframe diffusion=D;
 stbn source=S, diffusion=D, strength=T, motion_adapt=M,
 scene_cut_reset=C, scene_detect=E, alpha_guard=A, perceptual_weight=P,
 fastpath=F; bluenoise strength=T, gradient_factor=G, phase=P, seed=S,
@@ -1299,7 +1304,9 @@ Values <= 0 disable gradient modulation.
 .TP 5
 .B SIXEL_DITHER_A_DITHER_STRENGTH
 .br
-override positional a_dither strength. Defaults to 0.150 when unset.
+override positional a_dither strength. The
+\fB\-d a_dither:strength=VALUE\fP suboption (short form \fB:TVALUE\fP)
+takes precedence. Defaults to 0.150 when unset.
 .TP 5
 .B SIXEL_DITHER_X_DITHER_STRENGTH
 .br

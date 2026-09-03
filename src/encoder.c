@@ -706,7 +706,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "scene_reset_override=%d|scene_detect=%d|"
             "scene_detect_override=%d|alpha=%d|alpha_override=%d|"
             "perceptual=%d|perceptual_override=%d|fastpath=%d|"
-            "fastpath_override=%d|codes=",
+            "fastpath_override=%d|a_strength=%.9g|"
+            "a_strength_override=%d|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -735,7 +736,9 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->stbn_perceptual_weight_enabled,
             dither->stbn_perceptual_weight_override,
             dither->stbn_fastpath_enabled,
-            dither->stbn_fastpath_override);
+            dither->stbn_fastpath_override,
+            (double)dither->a_dither_strength,
+            dither->a_dither_strength_override);
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }
@@ -4698,6 +4701,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->stbn_fastpath_override;
     context->dither->stbn_fastpath_enabled =
         context->encoder->stbn_fastpath_enabled;
+    context->dither->a_dither_strength_override =
+        context->encoder->a_dither_strength_override;
+    context->dither->a_dither_strength =
+        context->encoder->a_dither_strength;
     context->dither->bluenoise_strength_override =
         context->encoder->bluenoise_strength_override;
     context->dither->bluenoise_strength = context->encoder->bluenoise_strength;
@@ -7586,6 +7593,8 @@ sixel_encoder_new(
     (*ppencoder)->stbn_perceptual_weight_enabled = 0;
     (*ppencoder)->stbn_fastpath_override = 0;
     (*ppencoder)->stbn_fastpath_enabled = 0;
+    (*ppencoder)->a_dither_strength_override = 0;
+    (*ppencoder)->a_dither_strength = 0.150f;
     (*ppencoder)->bluenoise_strength_override = 0;
     (*ppencoder)->bluenoise_strength = 0.055f;
     (*ppencoder)->bluenoise_phase_override = 0;
@@ -8544,6 +8553,7 @@ sixel_encoder_apply_diffusion_resolution(
     encoder->stbn_alpha_guard_enabled = 0;
     encoder->stbn_perceptual_weight_enabled = 0;
     encoder->stbn_fastpath_enabled = 0;
+    encoder->a_dither_strength = 0.150f;
     encoder->bluenoise_strength = 0.055f;
     encoder->bluenoise_gradient_factor = 0.0f;
     encoder->bluenoise_phase_x = 0;

@@ -1257,6 +1257,12 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_diffusion_values + SIXEL_DIFFUSION_BASE_SIERRA,
         "variant", 'V', "SIXEL_DITHER_SIERRA_VARIANT", NULL, NULL,
         g_sierra_variant_choices, method_for_diffuse),
+    SIXEL_REGISTRY_ENCODER_FLOAT(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        g_diffusion_values + SIXEL_DIFFUSION_BASE_A_DITHER,
+        "strength", 'T', "SIXEL_DITHER_A_DITHER_STRENGTH", NULL, NULL,
+        "-d a_dither:strength must be a floating point value.",
+        a_dither_strength, a_dither_strength_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_INTERFRAME,
