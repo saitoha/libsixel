@@ -2,16 +2,16 @@
 
 ## Definition
 
-"Lookup policy" is libsixel terminology for the strategy used to answer a
-repeated nearest-palette-color query:
+"Lookup policy" is libsixel terminology primarily for the strategy used to
+answer a repeated nearest-palette-color query:
 
 ```text
 lookup(color candidate, completed palette) -> palette index
 ```
 
 It is not a SIXEL wire-format term and does not mean reading a palette register
-whose index is already known. Lookup runs during palette application, after
-palette construction and before SIXEL byte generation:
+whose index is already known. Conceptually, lookup runs during palette
+application, after palette construction and before SIXEL byte generation:
 
 ```text
 loader -> palette construction -> palette application -> SIXEL encoding
@@ -24,6 +24,22 @@ The quantization model selected by `-Q` chooses the palette. The dithering
 method selected by `-d` changes each color candidate and propagates error. The
 lookup policy selected by `-~` maps that candidate to one entry in the completed
 palette. See [Encoding Pipeline](encoding-pipeline.md) for the complete flow.
+
+There is one important historical compatibility exception. In the current
+8-bit Heckbert path, `-~` also selects the resolution of the dense histogram
+used to construct the palette:
+
+| Policy group | RGB histogram resolution |
+| --- | --- |
+| `5bit` | `32^3` cells, five address bits per channel |
+| `6bit`, `certlut`, and the other accelerated policies | `64^3` cells, six address bits per channel |
+| `none` | `256^3` cells, eight address bits per channel |
+
+Changing `-~` can therefore change both the generated palette and its
+application when `-Q heckbert` is active. This coupling descends from the
+original RGB555 quantizer and is retained for compatibility; it is not a
+general requirement for lookup-policy implementations. Comparisons must state
+whether they hold the palette fixed or measure this end-to-end behavior.
 
 ## CLI surface
 
@@ -58,6 +74,8 @@ arguments, and dominant costs differ materially:
 - [`rbc`](lookup-policies/rbc.md): Random Ball Cover cluster pruning.
 - [`mahalanobis`](lookup-policies/mahalanobis.md): covariance metadata over RBC
   clusters and the current exhaustive query.
+- [Measured quality comparison](lookup-policies/quality-comparison.md):
+  reproducible Delta E and chroma curves across palette sizes.
 
 ## The shared mathematical problem
 
@@ -176,9 +194,10 @@ independent variable.
 
 ## Comparison with other implementations
 
-This comparison is about applying an already-built palette. A data structure
-used while generating a palette belongs to the `-Q` stage and is a separate
-comparison.
+This comparison is mainly about applying an already-built palette. A data
+structure used while generating a palette belongs to the `-Q` stage and is a
+separate comparison. Netpbm is included because the separation between its
+palette builder and remapper is historically important to libsixel.
 
 | Implementation | Palette-application strategy | Relation to libsixel |
 | --- | --- | --- |
@@ -186,6 +205,7 @@ comparison.
 | `go-sixel` | Eager RGB555 table built by scanning the palette at each cell center | Similar address space to `5bit`, but eager and center-representative rather than lazy and first-query-representative |
 | `libsixel/libsixel` fork | Lazy RGB555 hash/LUT in its current `quant.c` | Shares the historical 5-bit bucket design lineage |
 | `libimagequant` / pngquant | VP-tree palette remapping with a previous-result hint | Not a SIXEL encoder, but a direct influence on libsixel's VP-tree safe cache |
+| Netpbm `pnmquant` | `pnmcolormap` builds a Heckbert median-cut palette; `pnmremap` maps pixels to the closest palette color | A major historical quantization reference and a useful direct-remapping baseline |
 
 The current `a-sixel` source constructs a
 [`KdTreeBucketer` for all non-`Bit` palette builders](https://github.com/Jesterhearts/a-sixel/blob/e2ffc9aa674aeb00779d2b8d5a5bd7ddb4615022/src/lib.rs#L285-L296)
@@ -212,6 +232,16 @@ the previous-result optimization. These implementation comparisons are pinned
 to source commits so later algorithm changes do not silently rewrite the
 meaning of this document.
 
+Modern Netpbm documents [`pnmquant` as a composition of `pnmcolormap` and
+`pnmremap`](https://netpbm.sourceforge.net/doc/pnmquant.html).
+[`pnmcolormap`](https://netpbm.sourceforge.net/doc/pnmcolormap.html) uses
+Heckbert median cut to construct the palette, while
+[`pnmremap`](https://netpbm.sourceforge.net/doc/pnmremap.html) applies the
+palette by choosing a closest color in its default mode. That explicit split
+closely matches libsixel's conceptual palette-construction and
+palette-application boundary, even though libsixel's code and metrics have
+continued to evolve.
+
 ## Quality and performance
 
 Approximate lookup is not synonymous with lower end-to-end quality. Exact
@@ -221,6 +251,12 @@ size. In a smooth gradient, controlled reuse of a recent index can suppress
 index chatter, produce longer runs, and change error-diffusion feedback. That
 can improve speed, a perceptual metric, and SIXEL size simultaneously. It can
 also introduce banding or bias, so no such improvement is guaranteed.
+
+The [measured quality comparison](lookup-policies/quality-comparison.md) shows
+the historical five-bit limitation and several current policies on one fixture
+across `K = 8` through `K = 256`. It deliberately reports per-pixel color
+errors rather than using a spatially pooled similarity score as the primary
+view.
 
 With error diffusion, one changed index changes the error carried to later
 pixels. A small local lookup difference can therefore create a larger spatial
@@ -235,8 +271,9 @@ difference in the final image. Evaluate lookup changes on at least these axes:
 
 ## Design rules
 
-- Derive a lookup instance from a completed palette; do not choose or mutate
-  the palette in this stage.
+- Derive a lookup instance from a completed palette; new policies must not add
+  another palette-construction dependency. Treat the current Heckbert
+  histogram-resolution coupling as a documented compatibility exception.
 - Keep the per-pixel interface conceptually stateless. Explicit caches are
   policy state, while scan order and error propagation belong to dithering.
 - Treat worker sharing as a lifecycle and thread-safety decision, not only a

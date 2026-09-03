@@ -33,7 +33,9 @@ EXTRA_DIST = libsixel-config.in \
              lso-timeout.c \
              jpegref.c \
              ls-action-summarize \
-             ls-summarize
+             ls-summarize \
+             plot_quality_curve.py \
+             plot_lookup_policy_quality.sh
 
 if HAVE_JPEG
 EXTRA_PROGRAMS += jpegref

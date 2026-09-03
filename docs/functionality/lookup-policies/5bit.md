@@ -41,6 +41,13 @@ G = 2^(5 * 3) = 32,768 buckets
 The table stores one signed 32-bit palette index per bucket, approximately
 128 KiB before allocator overhead.
 
+Reducing one byte channel from 256 values to 32 address levels groups eight
+adjacent values together. Across RGB this reduces `256^3 = 16,777,216`
+possible tuples to `32^3 = 32,768` cells. A bucket boundary can cross a palette
+Voronoi boundary, and a histogram cell can erase distinctions among colors
+that should influence different median-cut boxes. The error is therefore not
+only a memory-capacity question.
+
 The documented `SIXEL_LOOKUP_PACKING` values are `linear` and `morton`.
 Linear packing concatenates channel fields. Morton packing interleaves their
 bits to improve spatial locality for some access patterns. The implementation
@@ -97,6 +104,41 @@ saturates.
 it [fills all cells eagerly using each cell center](https://github.com/mattn/go-sixel/blob/ceaaab1e2b5973d9ebc28b0a615760b921e90681/sixel.go#L676-L712).
 That makes its representative deterministic for a palette, while libsixel's
 representative is the first actual query observed in each bucket.
+
+## Historical quality limitation
+
+The quantizer used through the 1.8.7 era applied the same RGB555 address to two
+different jobs. Palette construction counted input colors in a `32^3`
+histogram and reconstructed every occupied cell from the truncated five-bit
+coordinates. Palette application then lazily cached the nearest palette index
+for the first pixel observed in each RGB555 cell. The historical channel map
+was simply:
+
+```text
+q_old(v) = floor(v / 8)
+r_old(q) = 8q
+```
+
+Consequently, as many as eight input values on each axis became one histogram
+value, with a per-channel truncation of up to seven byte values before median
+cut even started. The lazy application cache could then add a second source of
+error around palette decision boundaries.
+
+The current named `5bit` policy rounds and saturates its lookup address rather
+than reproducing that old truncating hash exactly. Its Heckbert configuration
+still selects a five-bit-per-channel histogram, however, so requesting a larger
+palette cannot recover color distinctions that the histogram already merged.
+This is why higher `K` does not guarantee that the quality gap will close.
+
+The [move from RGB555 to RGB666 in 2025](https://github.com/saitoha/libsixel/commit/4f57a743c11c4149656cdad6e3f8d59d76c58036),
+followed by [`none` as a full-precision control](https://github.com/saitoha/libsixel/commit/fafc097994dfcd1af8f17c09a94628ea158281a4)
+and by several structurally different search policies, grew out of the need to
+make this speed, memory, and quality tradeoff explicit. Later policies also
+address float colorspaces, parallelism, and different preparation/query costs;
+they are not merely cosmetic renamings of the old cache.
+
+The [measured quality comparison](quality-comparison.md) plots the current
+end-to-end effect with Delta E and chroma error over multiple palette sizes.
 
 The implementation is
 [`lookup-policy-5bit.c`](../../../src/lookup-policy-5bit.c). CLI and environment

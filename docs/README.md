@@ -33,6 +33,9 @@ are grouped by domain so each area can grow without overloading one document.
 - [Lookup policy](functionality/lookup-policy.md) defines libsixel's `-~` /
   `--lookup-policy` concept, mathematical basis, exactness guarantees, and
   preparation/query costs, and indexes one detailed chapter per policy.
+- [Lookup-policy quality comparison](functionality/lookup-policies/quality-comparison.md)
+  plots measured Delta E and chroma error against palette size and documents
+  the historical five-bit limitation.
 
 ## Command-line interface
 

@@ -92,6 +92,35 @@ leaf by a population-weighted color. Balanced division allocates palette
 capacity across occupied color-space regions without performing repeated
 global nearest-center assignment.
 
+## GD and Netpbm lineage
+
+kmiya's original `sixel` encoder used GD for image handling and quantization.
+libsixel removed that dependency on 2014-03-20 in
+[`b25e179b9`](https://github.com/saitoha/libsixel/commit/b25e179b9878ac8c4ddf675e44f57b86710500b4).
+Four days later it imported the median-cut implementation from Netpbm's
+`pnmquant.c` in
+[`80d5636cc`](https://github.com/saitoha/libsixel/commit/80d5636ccffcbd6387b524d2626388174cd4122e).
+Netpbm was therefore not just a convenient comparison: it supplied much of
+the practical foundation for libsixel's independent quantization path.
+
+Modern Netpbm separates the old operation into
+[`pnmcolormap`](https://netpbm.sourceforge.net/doc/pnmcolormap.html), which
+constructs a palette with Heckbert median cut, and
+[`pnmremap`](https://netpbm.sourceforge.net/doc/pnmremap.html), which maps the
+source image to a supplied palette. The
+[`pnmquant`](https://netpbm.sourceforge.net/doc/pnmquant.html) command composes
+those two stages. This is a useful conceptual reference for libsixel's own
+separation between palette construction and palette application, although the
+current libsixel implementation has diverged substantially in data structures,
+colorspaces, model choices, and lookup backends.
+
+The historical RGB555 implementation also used the same five-bit address for
+the median-cut histogram and for lazy palette application. That coupling made
+the apparent lookup choice affect palette quality as well. See
+[Lookup Policy](lookup-policy.md) and the
+[measured quality comparison](lookup-policies/quality-comparison.md) for the
+current compatibility behavior and its measured effect.
+
 ## Cost model and asymptotic order
 
 Use these variables when discussing cost:

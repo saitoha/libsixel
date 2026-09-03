@@ -46,6 +46,21 @@ characterize. Depending on the defect, useful measurements include:
 - chroma difference for palette or colorspace changes;
 - Delta E for perceptual color error.
 
+`lsqa` reports two complementary per-pixel color summaries:
+
+- `Δ E00_mean` is the arithmetic mean of CIEDE2000 color difference after
+  converting the reference and output pixels to CIELAB. It combines
+  lightness, chroma, and hue terms; lower values indicate less color error.
+- `Δ Chroma_mean` is the mean absolute difference between the CIELAB chroma
+  magnitudes `C*ab = sqrt(a*^2 + b*^2)`. It isolates magnitude loss or gain in
+  chroma but does not by itself measure hue or lightness error.
+
+For palette-resolution studies, prefer these per-pixel summaries as the
+primary explanatory curves. MS-SSIM spatially pools a luminance comparison and
+can conceal the direct color error being investigated. Retain MS-SSIM as a
+general perceptual gate, and use PSNR-Y when a separate luma error view is
+required.
+
 A secondary metric is diagnostic unless its interpretation and threshold are
 defined for the tested behavior. Do not select whichever metric makes a change
 look best after seeing the result.

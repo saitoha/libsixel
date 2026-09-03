@@ -8,8 +8,8 @@ For every (image, colors) pair it runs:
   img2sixel -p <colors> <image> [| optional postprocessors]
     -> lsqa <image> -
 
-Then it extracts requested metrics, writes a CSV table, and renders a PNG
-line chart where x-axis is color count and y-axis is metric value.
+Then it extracts requested metrics, writes a CSV table, and renders a line
+chart where x-axis is color count and y-axis is metric value.
 """
 
 from __future__ import annotations
@@ -40,6 +40,22 @@ METRIC_ALIASES = {
 }
 
 DEFAULT_COMMAND_TEMPLATE = "{img2sixel} -p {ncolors}"
+
+# The Okabe-Ito palette remains distinguishable under the common red-green
+# color-vision deficiencies. Markers and line styles provide a redundant cue
+# for monochrome printing and readers who cannot distinguish the colors.
+PLOT_COLORS = (
+    "#4D4D4D",
+    "#D55E00",
+    "#0072B2",
+    "#009E73",
+    "#CC79A7",
+    "#E69F00",
+    "#56B4E9",
+    "#F0E442",
+)
+PLOT_LINESTYLES = ("-", "--", "-.", ":")
+PLOT_MARKERS = ("o", "s", "^", "D", "v", "P", "X", "<")
 
 
 def split_command_template(template: str) -> List[str]:
@@ -400,6 +416,19 @@ def collect_command_templates(args: argparse.Namespace) -> List[Tuple[str, str]]
     return [("command1", DEFAULT_COMMAND_TEMPLATE)]
 
 
+def collect_command_labels(
+    args: argparse.Namespace,
+    command_templates: Sequence[Tuple[str, str]],
+) -> Dict[str, str]:
+    """Return explicit plot labels, falling back to command templates."""
+    labels: Dict[str, str] = {}
+    for command_name, command_template in command_templates:
+        index = command_index(command_name)
+        label = getattr(args, f"label{index}", None)
+        labels[command_name] = label if label else command_template
+    return labels
+
+
 def command_index(command_name: str) -> int:
     """Return numeric index from command name like command7."""
     if command_name.startswith("command"):
@@ -428,7 +457,11 @@ def write_csv(path: Path,
     """Write evaluation rows as a wide CSV table."""
     fieldnames = ["kind", "command", "template", "image", "colors", *metrics]
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=fieldnames,
+            lineterminator="\n",
+        )
         writer.writeheader()
         for row in rows:
             writer.writerow(row)
@@ -463,12 +496,13 @@ def plot_metrics(path: Path,
                  rows_image: Sequence[Dict[str, object]],
                  rows_aggregate: Sequence[Dict[str, object]],
                  command_templates: Sequence[Tuple[str, str]],
+                 command_labels: Dict[str, str],
                  metrics: Sequence[str],
                  colors: Sequence[int],
                  title: str,
                  show_per_image: bool,
                  aggregate_mode: str) -> None:
-    """Render a PNG chart for requested metrics."""
+    """Render a chart for requested metrics."""
     n_axes = len(metrics)
     figure, axes = plt.subplots(
         n_axes, 1, figsize=(10, 3.6 * n_axes), sharex=True
@@ -478,10 +512,6 @@ def plot_metrics(path: Path,
 
     images = sorted({str(row["image"]) for row in rows_image})
     commands = [name for name, _template in command_templates]
-    command_labels = {
-        name: template for name, template in command_templates
-    }
-
     # Prefer aggregate rows for image-set comparison.  When aggregate rows are
     # absent and multiple images exist, fall back to the first image for the
     # main command lines while optional per-image traces can still be shown.
@@ -498,7 +528,8 @@ def plot_metrics(path: Path,
 
     for axis, metric in zip(axes, metrics):
         if show_per_image and len(images) > 1:
-            for command_name in commands:
+            for command_position, command_name in enumerate(commands):
+                color = PLOT_COLORS[command_position % len(PLOT_COLORS)]
                 for image in images:
                     rows_trace = [
                         row for row in rows_image
@@ -513,9 +544,10 @@ def plot_metrics(path: Path,
                             linewidth=0.9,
                             alpha=0.20,
                             linestyle="--",
+                            color=color,
                         )
 
-        for command_name in commands:
+        for command_position, command_name in enumerate(commands):
             rows_command = [
                 row for row in rows_main if str(row["command"]) == command_name
             ]
@@ -531,6 +563,14 @@ def plot_metrics(path: Path,
                 x_cmd,
                 y_cmd,
                 linewidth=2.0,
+                color=PLOT_COLORS[command_position % len(PLOT_COLORS)],
+                linestyle=PLOT_LINESTYLES[
+                    command_position % len(PLOT_LINESTYLES)
+                ],
+                marker=PLOT_MARKERS[
+                    command_position % len(PLOT_MARKERS)
+                ],
+                markersize=4.5,
                 label=label,
             )
 
@@ -551,7 +591,7 @@ def plot_metrics(path: Path,
         figure.tight_layout(rect=[0.0, 0.0, 1.0, 0.97])
     else:
         figure.tight_layout()
-    figure.savefig(path, dpi=140)
+    figure.savefig(path, dpi=160, bbox_inches="tight")
     plt.close(figure)
 
 
@@ -633,6 +673,11 @@ def main() -> int:
                 "Use | to add postprocessing stages."
             ),
         )
+        parser.add_argument(
+            f"--label{index}",
+            dest=f"label{index}",
+            help=f"Short plot label for command template #{index}.",
+        )
     parser.add_argument(
         "--lsqa",
         help="Path to lsqa binary (auto-detected if omitted).",
@@ -651,7 +696,10 @@ def main() -> int:
     parser.add_argument(
         "--output-plot",
         default="quality_curve.png",
-        help="Output PNG path (default: quality_curve.png).",
+        help=(
+            "Output chart path. The suffix selects the Matplotlib format "
+            "(default: quality_curve.png)."
+        ),
     )
     parser.add_argument(
         "--title",
@@ -722,6 +770,7 @@ def main() -> int:
 
     metrics = parse_metrics(args.metrics)
     command_templates = collect_command_templates(args)
+    command_labels = collect_command_labels(args, command_templates)
 
     repo_root = Path(__file__).resolve().parent.parent
     img2sixel_path: str | None = None
@@ -913,6 +962,7 @@ def main() -> int:
         rows_image=rows_image,
         rows_aggregate=rows_aggregate,
         command_templates=command_templates,
+        command_labels=command_labels,
         metrics=metrics,
         colors=colors,
         title=args.title,

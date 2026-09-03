@@ -164,9 +164,17 @@ libsixel development line started in March 2014:
 - A snapshot identified as the 2014-03-02 original was committed on 2014-03-21
   for provenance. It was later moved to the standalone mirror rather than kept
   as a second implementation inside libsixel.
-- The early project removed the encoder's dependency on GD, introduced public
-  headers, added the `img2sixel` and `sixel2png` programs, and adopted
-  Autotools and Automake.
+- The early project removed the encoder's dependency on GD in
+  [`b25e179b9`](https://github.com/saitoha/libsixel/commit/b25e179b9878ac8c4ddf675e44f57b86710500b4),
+  then imported a Heckbert median-cut implementation from Netpbm's
+  `pnmquant.c` in
+  [`80d5636cc`](https://github.com/saitoha/libsixel/commit/80d5636ccffcbd6387b524d2626388174cd4122e).
+  This transition established an independent image-quantization path rather
+  than replacing GD with an unexplained in-project algorithm. See
+  [Palette Quantization](functionality/quantization.md) for the algorithmic
+  lineage.
+- The project introduced public headers, added the `img2sixel` and
+  `sixel2png` programs, and adopted Autotools and Automake.
 - The first package release, v0.11.0, was tagged on 2014-04-30. The project
   reached v1.0.0 on 2014-08-17.
 

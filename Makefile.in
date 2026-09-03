@@ -597,6 +597,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/lookup-policies/none.md \
 	docs/functionality/lookup-policies/rbc.md \
 	docs/functionality/lookup-policies/vptree.md \
+	docs/functionality/lookup-policies/quality-comparison.md \
+	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.png \
 	docs/functionality/overview.md \
 	docs/functionality/quantization.md \
 	docs/quality/measurement-policy.md \
