@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_ascii_pbm="${TOP_SRCDIR}/images/snake-ascii.pbm"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PALETTE_DISABLE_TABLES=1 "${snake_ascii_pbm}" -o "${ARTIFACT_LOCAL_DIR}/snake-fallback.sixel" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env _SIXEL_TEST_PALETTE_DISABLE_TABLES=1 "${snake_ascii_pbm}" -o "${ARTIFACT_LOCAL_DIR}/snake-fallback.sixel" || {
     printf 'not ok 1 - fallback output empty\n'
     exit 0
 }

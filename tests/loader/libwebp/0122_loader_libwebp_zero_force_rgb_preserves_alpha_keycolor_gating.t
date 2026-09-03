@@ -28,13 +28,13 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${input_webp}" >"${out_def
     exit 0
 }
 
-SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=0 \
+_SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${input_webp}" >"${out_zero}" || {
     echo "not ok" 1 - "zero-force-rgb static lossy-alpha decode failed"
     exit 0
 }
 
-SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=0 \
+_SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S -B#000 "${input_webp}" >"${out_zero_bg}" || {
     echo "not ok" 1 - "zero-force-rgb lossy-alpha decode with -B#000 failed"
     exit 0

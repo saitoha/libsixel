@@ -1545,12 +1545,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "safety limit."
     },
     {
-        "SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
-        "force lossy WebP inputs through the legacy RGB decode path instead\n"
-        "of the default YUV float32 pipeline. Intended for tests and\n"
-        "regression debugging; accepts only 0/1."
-    },
-    {
         "SIXEL_LOADER_CMS_RENDERING_INTENT",
         "set the loader CMS rendering-intent fallback order. Accepts\n"
         "comma-separated values from\n"
@@ -2020,12 +2014,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L",
         "emphasise L* weight during final merge distances independently of\n"
         "snap tuning (0.0-1.0)."
-    },
-    {
-        "SIXEL_PALETTE_DISABLE_TABLES",
-        "disable palette expansion lookup tables and exercise the\n"
-        "shift-based fallback used for testing. Accepts only 0/1; 1 skips\n"
-        "table initialisation."
     },
     {
         "SIXEL_DITHER_LOOKUP_POLICY",

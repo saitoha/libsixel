@@ -817,7 +817,7 @@ run_load_webp_fail_case(webp_fi_failpoint_t failpoint,
     if (force_rgb_env_value == NULL) {
         force_rgb_env_value = "0";
     }
-    if (sixel_compat_setenv("SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
+    if (sixel_compat_setenv("_SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE",
                             force_rgb_env_value) != 0) {
         fprintf(stderr, "%s: failed to configure force-rgb env\n", label);
         goto cleanup;
@@ -862,7 +862,7 @@ run_load_webp_fail_case(webp_fi_failpoint_t failpoint,
     result = 0;
 
 cleanup:
-    (void)sixel_compat_setenv("SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
+    (void)sixel_compat_setenv("_SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE",
                               "0");
     webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
     if (pixels != NULL) {

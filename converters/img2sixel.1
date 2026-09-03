@@ -1679,11 +1679,6 @@ out-of-range indexes fail with an error.
 the index is applied only on the first playback loop, and later loops
 decode from frame 0.
 .TP 5
-.B SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE
-.br
-force lossy WebP input through the legacy RGB decode path. Accepts only
-"0" or "1"; unset, empty, invalid, and "0" keep the default YUV path.
-.TP 5
 .B SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES
 .br
 allow librsvg file-path decode so local relative resources can resolve.
@@ -2073,11 +2068,6 @@ emphasise L* weight in Lab-family distances before snapping (0.0-1.0).
 .br
 emphasise L* weight during final merge distances independently of snap tuning
 (0.0-1.0).
-.TP 5
-.B SIXEL_PALETTE_DISABLE_TABLES
-.br
-disable palette expansion lookup tables and exercise the shift-based fallback
-used for testing. Only 0 and 1 are accepted; 1 skips table initialisation.
 .TP 5
 .B SIXEL_PALETTE_SNAP_TARGET_POLICY
 .br

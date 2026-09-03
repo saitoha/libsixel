@@ -37,7 +37,7 @@ case "${msg_default}" in
         ;;
 esac
 
-msg_one=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
+msg_one=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_lossy_rgb}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "force-rgb value 1 static lossy decode failed"
     printf '%s\n' '--- stderr ---' >&2
@@ -56,7 +56,7 @@ case "${msg_one}" in
         ;;
 esac
 
-msg_zero=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=0 \
+msg_zero=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_lossy_rgb}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "force-rgb value 0 static lossy decode failed"
     printf '%s\n' '--- stderr ---' >&2

@@ -27,7 +27,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! \
     exit 0
 }
 
-SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
+_SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! \
     "${image_webp}" >"${out_forced}" || {
     echo "not ok" 1 - "libwebp static lossless+icc decode failed with force-rgb env"

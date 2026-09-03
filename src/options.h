@@ -308,9 +308,6 @@ typedef union sixel_suboption_value {
 int
 sixel_option_parse_boolean_text(char const *text, int *value);
 
-int
-sixel_option_resolve_boolean_environment(char const *name, int fallback);
-
 /*
  * Test controls are intentionally absent from the public option registry.
  * These typed accessors keep their private environment names inside one

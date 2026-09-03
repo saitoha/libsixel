@@ -2204,28 +2204,6 @@ sixel_option_parse_boolean_text(char const *text, int *value)
     return 0;
 }
 
-int
-sixel_option_resolve_boolean_environment(char const *name, int fallback)
-{
-    char const *text;
-    int value;
-
-    text = NULL;
-    value = fallback ? 1 : 0;
-    if (name == NULL || name[0] == '\0') {
-        return value;
-    }
-    text = sixel_compat_getenv(name);
-    if (text == NULL || text[0] == '\0') {
-        return value;
-    }
-    if (!sixel_option_parse_boolean_text(text, &value)) {
-        return fallback ? 1 : 0;
-    }
-
-    return value;
-}
-
 typedef enum sixel_test_environment_kind {
     SIXEL_TEST_ENVIRONMENT_STRING = 0,
     SIXEL_TEST_ENVIRONMENT_BOOLEAN

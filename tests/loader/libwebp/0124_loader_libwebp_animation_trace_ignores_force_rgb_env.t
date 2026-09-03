@@ -59,7 +59,7 @@ case "${msg_default}" in
         ;;
 esac
 
-msg_forced=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
+msg_forced=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "forced-rgb libwebp animation decode failed"
     printf '%s\n' '--- stderr ---' >&2

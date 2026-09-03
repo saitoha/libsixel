@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}"
     exit 0
 }
 
-SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
+_SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_rgb}" || {
     echo "not ok" 1 - "libwebp lossy RGB-path decode failed"
     exit 0

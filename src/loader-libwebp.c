@@ -1497,13 +1497,8 @@ load_webp(unsigned char **result,
     *pwidth = features.width;
     *pheight = features.height;
 
-    /*
-     * Keep a test/debug escape hatch so regression tests can compare the
-     * lossy YUV path against the legacy RGB decode path.
-     */
-    if (sixel_option_resolve_boolean_environment(
-            "SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
-            0)) {
+    /* Keep the legacy RGB path available to the internal test broker. */
+    if (sixel_test_environment_libwebp_force_rgb()) {
         force_rgb_decode = 1;
     }
 

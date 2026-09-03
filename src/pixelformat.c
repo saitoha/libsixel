@@ -904,15 +904,8 @@ sixel_init_palette_tables(void)
     int i;
     int init_result;
 
-    /*
-     * Allow tests to force the shift-based path by disabling table
-     * initialization via SIXEL_PALETTE_DISABLE_TABLES. This exercises
-     * the fallback without introducing additional code paths in
-     * production builds.
-     */
-    if (sixel_option_resolve_boolean_environment(
-            "SIXEL_PALETTE_DISABLE_TABLES",
-            0)) {
+    /* Allow the internal test broker to force the shift-based path. */
+    if (sixel_test_environment_palette_disable_tables()) {
         return 0;
     }
 

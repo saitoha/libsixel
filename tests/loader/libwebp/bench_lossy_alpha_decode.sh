@@ -47,9 +47,9 @@ base_cmd = [img2sixel, "-L", "libwebp!", "-S", input_webp]
 def run_one(force_rgb):
     env = os.environ.copy()
     if force_rgb:
-        env["SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE"] = "1"
+        env["_SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE"] = "1"
     else:
-        env.pop("SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE", None)
+        env.pop("_SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE", None)
     t0 = time.perf_counter()
     subprocess.run(
         base_cmd,

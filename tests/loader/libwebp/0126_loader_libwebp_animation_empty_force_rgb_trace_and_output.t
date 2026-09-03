@@ -29,7 +29,7 @@ msg_default=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     exit 0
 }
 
-msg_empty=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE='' \
+msg_empty=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE='' \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >"${out_empty}") || {
     echo "not ok" 1 - "empty-force-rgb libwebp animation decode failed"
     printf '%s\n' '--- stderr ---' >&2

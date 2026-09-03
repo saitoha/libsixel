@@ -18,7 +18,7 @@ set -v
 
 image_lossy_rgb="${TOP_SRCDIR}/tests/data/inputs/snake_64.webp"
 
-msg_empty=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE='' \
+msg_empty=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE='' \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_lossy_rgb}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "lossy decode failed with empty force-rgb env"
     printf '%s\n' '--- stderr ---' >&2
