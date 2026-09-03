@@ -1115,6 +1115,15 @@ g_loader_background_colorspace_choices[] = {
     { "linear", SIXEL_COLORSPACE_LINEAR }
 };
 
+static sixel_suboption_choice_t const
+g_loader_cms_target_colorspace_choices[] = {
+    { "gamma", SIXEL_COLORSPACE_GAMMA },
+    { "linear", SIXEL_COLORSPACE_LINEAR },
+    { "cielab", SIXEL_COLORSPACE_CIELAB },
+    { "oklab", SIXEL_COLORSPACE_OKLAB },
+    { "din99d", SIXEL_COLORSPACE_DIN99D }
+};
+
 /*
  * This is the sole authoritative suboption registry.  A NULL base pointer
  * means that the row is shared by every base value of the owning option.
@@ -1739,6 +1748,15 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "SIXEL_LOADER_BACKGROUND_COLORSPACE", NULL, NULL,
         g_loader_background_colorspace_choices,
         background_colorspace),
+    SIXEL_REGISTRY_LOADER_CHOICE(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "cms_target", 'T', "SIXEL_LOADER_CMS_TARGET_COLORSPACE",
+        NULL, NULL, g_loader_cms_target_colorspace_choices,
+        cms_target_colorspace),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "prefer_8bit", 'V', "SIXEL_LOADER_PREFER_8BIT", NULL, NULL,
+        cms_prefer_8bit),
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "trns_keycolor", 'K', "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",

@@ -821,7 +821,10 @@ coregraphics, and builtin loaders accept
 \fBorientation=0|1\fP (short form \fBO0\fP or \fBO1\fP, default 1).
 All loaders accept \fBbackground_policy=file_first|explicit_first\fP
 (short form \fBPvalue\fP) and
-\fBbackground_colorspace=gamma|linear\fP (short form \fBCvalue\fP).
+\fBbackground_colorspace=gamma|linear\fP (short form \fBCvalue\fP),
+\fBcms_target=gamma|linear|cielab|oklab|din99d\fP
+(short form \fBTvalue\fP), and \fBprefer_8bit=0|1\fP
+(short form \fBV0\fP or \fBV1\fP).
 PNG-capable loaders accept \fBtrns_keycolor=0|1\fP
 (short form \fBK0\fP or \fBK1\fP, default 1).
 The librsvg loader accepts \fBrelative_resources=0|1\fP
@@ -1485,6 +1488,17 @@ override the lcms2 rendering-intent fallback order used by PNG loader CMS
 conversion. Accepts comma-separated values from "perceptual",
 "relative" ("relative_colorimetric"), "saturation", and "absolute"
 ("absolute_colorimetric"). Append "!" to disable default fallback intents.
+.TP 5
+.B SIXEL_LOADER_CMS_TARGET_COLORSPACE
+.br
+set the loader CMS output colorspace. Accepts "gamma", "linear", "cielab",
+"oklab", or "din99d". The default is "linear". Override with
+\fB-Lloader:cms_target=SPACE\fP or short form \fB-Lloader:TSPACE\fP.
+.TP 5
+.B SIXEL_LOADER_PREFER_8BIT
+.br
+select 8-bit loader CMS output. Accepts only 0 or 1; default 0. Override with
+\fB-Lloader:prefer_8bit=0|1\fP or short form \fB-Lloader:V0|V1\fP.
 .TP 5
 .B SIXEL_CMS_RENDERING_INTENT
 .br

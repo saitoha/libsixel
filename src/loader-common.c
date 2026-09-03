@@ -114,9 +114,6 @@ static SIXEL_LOADER_TLS int loader_background_colorspace_override = -1;
 static SIXEL_LOADER_TLS int loader_transparent_policy_override = -1;
 static SIXEL_LOADER_TLS sixel_loader_suboptions_t const
     *loader_active_suboptions;
-static int loader_cms_target_initialized;
-static int loader_cms_prefer_8bit_flag;
-static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
 
 typedef struct sixel_loader_timeline_scope {
     sixel_timeline_logger_t *logger;
@@ -314,6 +311,50 @@ loader_resolve_boolean_suboption(
                key_def->binding.value_offset,
            sizeof(value));
     return value != 0;
+}
+
+int
+loader_resolve_int_suboption(
+    char const *base_name,
+    char const *binding_identifier,
+    int fallback)
+{
+    sixel_loader_suboptions_t const *suboptions;
+    sixel_suboption_key_t const *key_def;
+    int value;
+
+    suboptions = sixel_loader_active_suboptions();
+    key_def = NULL;
+    value = fallback;
+    if (suboptions == NULL) {
+        if (sixel_option_resolve_registered_int_binding(
+                SIXEL_OPTION_SCHEMA_LOADERS,
+                base_name,
+                binding_identifier,
+                &value)) {
+            return value;
+        }
+        return fallback;
+    }
+
+    key_def = sixel_option_registry_suboption_by_binding(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        base_name,
+        binding_identifier);
+    if (key_def == NULL ||
+        (key_def->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
+         key_def->value_kind != SIXEL_SUBOPTION_VALUE_INT &&
+         key_def->value_kind != SIXEL_SUBOPTION_VALUE_SCALED_U8) ||
+        key_def->binding.target_class != SIXEL_SUBOPTION_TARGET_LOADER ||
+        key_def->binding.storage_kind != SIXEL_SUBOPTION_STORAGE_INT ||
+        key_def->binding.value_offset == SIXEL_SUBOPTION_OFFSET_NONE) {
+        return value;
+    }
+    memcpy(&value,
+           (unsigned char const *)suboptions +
+               key_def->binding.value_offset,
+           sizeof(value));
+    return value;
 }
 
 unsigned int
@@ -812,69 +853,61 @@ loader_background_policy(void)
     return policy;
 }
 
-static void
-loader_cms_initialize_target(void)
-{
-    char const *prefer8_env;
-    char const *target_env;
-
-    loader_background_lock();
-    if (loader_cms_target_initialized) {
-        loader_background_unlock();
-        return;
-    }
-    loader_cms_target_initialized = 1;
-    loader_cms_prefer_8bit_flag = 0;
-    loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
-
-    prefer8_env = sixel_compat_getenv("SIXEL_LOADER_PREFER_8BIT");
-    if (prefer8_env != NULL && strcmp(prefer8_env, "1") == 0) {
-        loader_cms_prefer_8bit_flag = 1;
-    }
-
-    target_env = sixel_compat_getenv("SIXEL_LOADER_CMS_TARGET_COLORSPACE");
-    if (target_env == NULL || target_env[0] == '\0') {
-        loader_background_unlock();
-        return;
-    }
-    if (strcmp(target_env, "gamma") == 0) {
-        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_GAMMA;
-    } else if (strcmp(target_env, "linear") == 0) {
-        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
-    } else if (strcmp(target_env, "cielab") == 0) {
-        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_CIELAB;
-    } else if (strcmp(target_env, "oklab") == 0) {
-        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_OKLAB;
-    } else if (strcmp(target_env, "din99d") == 0) {
-        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_DIN99D;
-    }
-    loader_background_unlock();
-}
-
 int
 loader_cms_prefer_8bit(void)
 {
-    int prefer_8bit;
-
-    loader_cms_initialize_target();
-    loader_background_lock();
-    prefer_8bit = loader_cms_prefer_8bit_flag;
-    loader_background_unlock();
-
-    return prefer_8bit;
+    return loader_resolve_boolean_suboption(
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(cms_prefer_8bit),
+        0);
 }
 
 SIXEL_INTERNAL_API int
 loader_cms_target_colorspace(void)
 {
-    int target_colorspace;
+    return loader_resolve_int_suboption(
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(cms_target_colorspace),
+        SIXEL_COLORSPACE_LINEAR);
+}
 
-    loader_cms_initialize_target();
-    loader_background_lock();
-    target_colorspace = loader_cms_target_colorspace_value;
-    loader_background_unlock();
+/* Keep the effective CMS consumer contract stable for per-option tests. */
+static char const *
+loader_cms_target_name(int target_colorspace)
+{
+    switch (target_colorspace) {
+    case SIXEL_COLORSPACE_GAMMA:
+        return "gamma";
+    case SIXEL_COLORSPACE_CIELAB:
+        return "cielab";
+    case SIXEL_COLORSPACE_OKLAB:
+        return "oklab";
+    case SIXEL_COLORSPACE_DIN99D:
+        return "din99d";
+    case SIXEL_COLORSPACE_LINEAR:
+    default:
+        return "linear";
+    }
+}
 
-    return target_colorspace;
+static char const *
+loader_cms_pixelformat_name(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+        return "rgb888";
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+        return "rgbfloat32";
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+        return "cielabfloat32";
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+        return "oklabfloat32";
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+        return "din99dfloat32";
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+    default:
+        return "linearrgbfloat32";
+    }
 }
 
 SIXELAPI int
@@ -882,30 +915,42 @@ loader_cms_target_pixelformat(void)
 {
     int prefer_8bit;
     int target_colorspace;
+    int pixelformat;
 
-    loader_cms_initialize_target();
-
-    loader_background_lock();
-    prefer_8bit = loader_cms_prefer_8bit_flag;
-    target_colorspace = loader_cms_target_colorspace_value;
-    loader_background_unlock();
+    prefer_8bit = loader_cms_prefer_8bit();
+    target_colorspace = loader_cms_target_colorspace();
+    pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
 
     if (prefer_8bit) {
-        return SIXEL_PIXELFORMAT_RGB888;
+        pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    } else {
+        switch (target_colorspace) {
+        case SIXEL_COLORSPACE_GAMMA:
+            pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+            break;
+        case SIXEL_COLORSPACE_CIELAB:
+            pixelformat = SIXEL_PIXELFORMAT_CIELABFLOAT32;
+            break;
+        case SIXEL_COLORSPACE_OKLAB:
+            pixelformat = SIXEL_PIXELFORMAT_OKLABFLOAT32;
+            break;
+        case SIXEL_COLORSPACE_DIN99D:
+            pixelformat = SIXEL_PIXELFORMAT_DIN99DFLOAT32;
+            break;
+        case SIXEL_COLORSPACE_LINEAR:
+        default:
+            pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+            break;
+        }
     }
-    switch (target_colorspace) {
-    case SIXEL_COLORSPACE_GAMMA:
-        return SIXEL_PIXELFORMAT_RGBFLOAT32;
-    case SIXEL_COLORSPACE_CIELAB:
-        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
-    case SIXEL_COLORSPACE_OKLAB:
-        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
-    case SIXEL_COLORSPACE_DIN99D:
-        return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
-    case SIXEL_COLORSPACE_LINEAR:
-    default:
-        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    if (sixel_trace_topic_is_enabled("loader_contract")) {
+        fprintf(stderr,
+                "LSXLDR1|cms_target=%s|prefer_8bit=%d|pixelformat=%s\n",
+                loader_cms_target_name(target_colorspace),
+                prefer_8bit,
+                loader_cms_pixelformat_name(pixelformat));
     }
+    return pixelformat;
 }
 
 SIXEL_INTERNAL_API void

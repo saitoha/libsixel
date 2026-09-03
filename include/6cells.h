@@ -1135,6 +1135,8 @@ typedef struct sixel_loader_manager_interface sixel_loader_manager_t;
 typedef struct sixel_loader_suboptions {
     int background_policy;
     int background_colorspace;
+    int cms_target_colorspace;
+    int cms_prefer_8bit;
     int png_trns_keycolor;
     int librsvg_allow_relative_resources;
     int librsvg_allow_stdin_svgz;

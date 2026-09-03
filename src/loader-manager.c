@@ -203,6 +203,8 @@ loader_manager_init_loader_suboptions(
     suboptions->background_policy =
         SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
     suboptions->background_colorspace = SIXEL_COLORSPACE_GAMMA;
+    suboptions->cms_target_colorspace = SIXEL_COLORSPACE_LINEAR;
+    suboptions->cms_prefer_8bit = 0;
     suboptions->png_trns_keycolor = 1;
     suboptions->librsvg_allow_relative_resources = 0;
     suboptions->librsvg_allow_stdin_svgz = 0;
