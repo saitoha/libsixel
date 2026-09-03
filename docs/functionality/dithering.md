@@ -37,7 +37,13 @@ kernels. The current base methods are:
 Methods have suboptions for concerns such as scan order, kernel variants,
 strength, temporal sources, and scene changes. Use `img2sixel -H` or the
 [`img2sixel(1)` manual](../../converters/img2sixel.1) as the detailed option
-reference.
+reference. The policy chapters below explain the algorithms rather than
+repeating that option inventory. As starting points, use `auto` for the normal
+compatibility rule, `none` for an undithered control, `bluenoise` when a
+stateless low-overhead spatial method is worth testing, and `interframe` or
+`stbn` only when an animation protocol can preserve and evaluate frame state.
+The checked-in one-image sweep is evidence about those exact commands, not a
+universal ranking.
 
 ## Mathematical model
 
@@ -64,25 +70,482 @@ coefficients `a[delta]`:
 e[p + delta] += a[delta] * r[p]
 ```
 
-The Floyd-Steinberg kernel, for example, distributes fractions `7/16`,
-`3/16`, `5/16`, and `1/16` to four later neighbors. Atkinson uses six `1/8`
-contributions and intentionally diffuses only three quarters of the residual.
-Jarvis-Judice-Ninke, Stucki, Burkes, and the Sierra variants use different
-fixed stencils to trade local smoothness, edge behavior, and the spatial
-frequency of visible error.
+The diagrams below show a left-to-right raster scan. `*` is the pixel being
+quantized, numbers are coefficient numerators, and the caption gives the
+common denominator. A serpentine scan mirrors the stencil on alternate rows.
+At an image boundary, libsixel omits out-of-range taps instead of renormalizing
+the remaining weights. Consequently, the stated coefficient sum describes an
+interior pixel, not an edge pixel.
 
-`lso2` remains a causal diffusion method, but selects coefficients from a
-fixed 256-entry table according to error magnitude and can update up to six
-downstream positions. The table makes the filter nonlinear and
-signal-dependent; it does not make its cost depend on image or palette size.
+## `auto`: palette-size selection
 
-`a_dither` and `x_dither` compute deterministic coordinate- and
-channel-dependent perturbations. `bluenoise` samples a compiled 64-by-64 mask
-and combines decorrelated samples to move error toward less objectionable
-spatial frequencies. These methods do not carry error from one neighboring
-pixel to another. `interframe` carries a full-frame residual between frames.
-`stbn` combines temporal state with spatiotemporal blue-noise, hash, mask, or
-PMJ-derived bias and optional spatial diffusion.
+```text
+img2sixel -d auto ...
+```
+
+`auto` is a selector, not a separate dither algorithm. When the policy is
+created, libsixel resolves it from the completed palette size `K`:
+
+```text
+K <= 16  -> atkinson
+K >  16  -> fs
+```
+
+The decision is constant-time and is made once, not independently for every
+pixel. After resolution, quality, size, state, and arithmetic are exactly
+those of the selected policy. This rule explains why `auto` is excluded from
+the measured policy sweep: including it would duplicate Atkinson at `K=8` and
+`K=16`, then Floyd--Steinberg at the remaining measured sizes.
+
+Use `auto` when compatibility with libsixel's normal selection rule matters.
+Select a concrete policy when output reproducibility must not change if the
+palette size crosses 16.
+
+## `none`: nearest color without error shaping
+
+```text
+img2sixel -d none ...
+```
+
+`none` sets both the positional bias and propagated error to zero:
+
+```text
+y[p] = x[p]
+i[p] = nearest_palette_index(x[p])
+```
+
+It still performs one palette lookup for every pixel. Do not confuse it with
+`--lookup-policy=none`, which selects a direct palette scan. The two options
+control different pipeline stages and can be used independently.
+
+This policy has no dither dependency between pixels, introduces no dither
+state, and adds only `Theta(P)` traversal work around the palette queries. It
+is useful for already-indexed artwork, exact palette experiments, and the
+control arm of a dither comparison. In the current static-image benchmark it
+is also the smallest encoded stream at every measured `K`, because it tends to
+preserve longer runs of the same palette index. Its lack of error shaping can,
+however, expose contouring in smooth gradients.
+
+## `fs`: Floyd--Steinberg error diffusion
+
+```text
+img2sixel -d fs ...
+
+          *  7
+       3  5  1    / 16
+```
+
+Floyd--Steinberg sends all of the interior-pixel residual to four future
+pixels: `7/16` forward, `3/16` down and backward, `5/16` down, and `1/16` down
+and forward. The weights sum to one, so the filter preserves the residual's
+DC component away from boundaries and clipping. It is the narrowest
+full-residual fixed kernel in this set: four taps over the current and next
+scanlines.
+
+The method originates in Robert W. Floyd and Louis Steinberg's 1976 paper,
+*An Adaptive Algorithm for Spatial Greyscale*. Its short stencil limits
+arithmetic and state, but causality makes output depend on scan direction and
+on the incoming error at a parallel-band boundary.
+
+On the checked-in fixture, `fs` lowers MS-SSIM relative to `none` at `K=8`,
+slightly exceeds it at `K=256`, and produces streams 2.404x and 1.274x as
+large at those endpoints. It is therefore a conventional general-purpose
+choice, not a guarantee of better quality or smaller output for every image.
+
+## `atkinson`: partial-residual diffusion
+
+```text
+img2sixel -d atkinson ...
+
+          *  1  1
+       1  1  1       / 8
+          1
+```
+
+Atkinson distributes six equal `1/8` contributions over a compact three-row
+neighborhood. Their sum is `6/8`: one quarter of the residual is deliberately
+not propagated. This attenuation limits long error chains and tends to retain
+local contrast, but it also means the local mean is not conserved as strictly
+as with a unit-sum kernel. The algorithm is attributed to Bill Atkinson and is
+associated with the original Macintosh image pipeline; the libsixel source is
+the normative definition of this implementation.
+
+Six fixed taps keep the dither work `Theta(P)`. It remains causal and
+scan-order dependent, while reaching one row farther than Floyd--Steinberg.
+`auto` selects it when `K <= 16`.
+
+In the controlled sweep, Atkinson improves MS-SSIM over `none` at every
+measured palette size. At `K=8` it reaches 0.929257 versus 0.913150 for
+`none`, while increasing size to 1.769x and latency to 1.16x. This is a useful
+example of why visual quality, encoded size, and CPU time must be evaluated as
+separate objectives.
+
+## `jajuni`: Jarvis--Judice--Ninke diffusion
+
+```text
+img2sixel -d jajuni ...
+
+             *  7  5
+       3  5  7  5  3
+       1  3  5  3  1    / 48
+```
+
+Jarvis--Judice--Ninke diffuses the complete residual through 12 future
+neighbors over three scanlines. The broad, symmetric-looking footprint moves
+error farther from its source than Floyd--Steinberg, but each pixel performs
+three times as many tap updates. The coefficients sum to `48/48` for an
+interior pixel.
+
+The kernel comes from Jarvis, Judice, and Ninke's 1976 paper
+[*A Survey of Techniques for the Display of Continuous Tone Pictures on
+Bilevel Displays*](https://doi.org/10.1016/S0146-664X(76)80003-2). The wider
+dependency footprint increases overlap requirements when work is divided
+into bands and gives more opportunities for rounding and clipping to affect
+later pixels.
+
+On the measured fixture, `jajuni` is slower than the other fixed policies at
+`K=8` (1.37x the `none` end-to-end time), produces a 2.141x stream, and has
+lower MS-SSIM than `none`. These are fixture-specific results, but they rule
+out the assumption that a wider unit-sum kernel is automatically superior.
+
+## `stucki`: attenuated wide diffusion
+
+```text
+img2sixel -d stucki ...
+
+             *  8  4
+       2  4  8  4  2
+       1  2  4  2  1    / 48 in libsixel
+```
+
+The current libsixel policy updates the same 12 positions as
+Jarvis--Judice--Ninke, with larger weight near the current column. Its
+numerators sum to 42 while libsixel divides by 48, so it propagates `7/8` of
+the interior residual. This is a material implementation detail: references
+often print the Stucki matrix with denominator 42, but changing libsixel to
+that normalized form would change output and is outside this document's
+scope.
+
+Peter Stucki described the underlying approach in the 1981 IBM research
+report [*MECCA: A Multiple-Error Correction Computation Algorithm for Bi-Level
+Image Hardcopy Reproduction*](https://dominoweb.draco.res.ibm.com/1319c04d395da62c85257568004f2ab3.html).
+For reproducibility, treat
+[`dither-policy-stucki.c`](../../src/dither-policy-stucki.c), rather than a
+generic Stucki diagram, as the definition of `-d stucki`.
+
+Stucki has 12 fixed taps and a two-row forward reach, so its asymptotic work
+is `Theta(P)` but its constant and band-boundary dependency are relatively
+large. It improves MS-SSIM at every measured `K`; at `K=8` that comes with a
+1.908x stream and 1.36x latency.
+
+## `burkes`: two-scanline wide diffusion
+
+```text
+img2sixel -d burkes ...
+
+             *  4  2
+       1  2  4  2  1    / 16
+```
+
+Burkes removes the far row from a Stucki-shaped neighborhood. Seven taps
+carry the complete `16/16` residual across the current and next scanlines.
+The smaller vertical reach reduces arithmetic and the amount of prior context
+needed by a band compared with the 12-tap wide kernels, while retaining a
+five-pixel next-row footprint.
+
+The policy is attributed to Daniel Burkes' unpublished 1988 description.
+Because that origin is not a stable archival specification, the coefficient
+matrix above and
+[`dither-policy-burkes.c`](../../src/dither-policy-burkes.c) define the
+libsixel behavior.
+
+On the fixture, Burkes is faster than the other wide fixed kernels but does
+not improve MS-SSIM over `none` at either endpoint. At `K=8` it takes 1.21x
+the baseline time and emits 2.280x as many bytes. Its shorter stencil is a
+computational tradeoff, not evidence of a universally smaller SIXEL stream.
+
+## `sierra`: three selectable kernels
+
+```text
+img2sixel -d sierra:variant=1 ...  # default
+img2sixel -d sierra:variant=2 ...
+img2sixel -d sierra:variant=3 ...
+```
+
+The Sierra policy is one CLI policy with three variants. `sierra1`,
+`sierra2`, and `sierra3` are accepted concrete names and are used in the
+measurement CSV. Each variant is causal and mirrors under serpentine scan.
+
+Variant 1 is the three-tap Sierra Lite, also known as Sierra-2-4A:
+
+```text
+          *  2
+       1  1       / 4
+```
+
+It propagates the full residual using the smallest fixed stencil in this
+document. That explains its low arithmetic cost, but not its output quality
+or compressibility: at `K=8` it is only 1.09x slower than `none`, yet has the
+lowest MS-SSIM of the three Sierra variants and the largest measured stream,
+2.451x the baseline.
+
+Variant 2 currently uses this ten-tap libsixel matrix:
+
+```text
+             *  4  3
+       1  2  3  2  1
+          2  3  2       / 32 in libsixel
+```
+
+Its numerators sum to 23, so it propagates `23/32` of the residual. Despite
+the historical “Sierra Two-row” label in the CLI help, the current libsixel
+implementation reaches two rows below the current pixel. This differs from
+the commonly reproduced two-row `1/16` matrix; the source, not the historical
+label, is the output contract. Variant 2 is the strongest Sierra result on the
+current fixture: it improves MS-SSIM at every measured `K` and has the
+smallest encoded size of the three variants at both endpoints.
+
+Variant 3 uses the original full Sierra-shaped matrix:
+
+```text
+             *  5  3
+       2  4  5  4  2
+          2  3  2       / 32
+```
+
+Its ten coefficients sum to `32/32`. It has the same footprint as libsixel's
+variant 2 but conserves the complete interior residual. On the fixture its
+MS-SSIM is below `none` at both endpoints and its `K=8` stream is 2.163x the
+baseline. The contrast with variant 2 is another reason to evaluate the exact
+coefficient set rather than choosing by family name alone.
+
+## `lso2`: error-magnitude-dependent diffusion
+
+```text
+img2sixel -d lso2 ...
+
+             *  w0  w1
+          w2  w3  w4
+              w5          / D
+```
+
+`lso2` is libsixel's nonlinear variable-coefficient policy. For each channel,
+it first computes the absolute quantization error
+
+```text
+d = clamp(abs(candidate - selected_palette_value), 0, 255)
+```
+
+and uses `d` to select one of 256 rows. That row supplies six weights and a
+denominator for the forward offsets shown above. The sign of the original
+residual is retained when the selected weights are applied. Large and small
+errors can therefore have different spatial transfer functions even at
+adjacent pixels.
+
+The tracked table [`lso2.h`](../../src/lso2.h) is generated from a small set
+of control rows in [`lso2.key`](../../src/lso2.key) by
+[`gen_varcoefs.awk`](../../tools/gen_varcoefs.awk). The generator sorts the
+control rows, linearly interpolates them over the 8-bit error domain,
+normalizes their shape, and searches for integer approximations. This is an
+offline fixed cost: runtime selection and six-tap application are `O(1)` per
+channel and `Theta(P)` per image.
+
+The design is influenced by variable-coefficient error diffusion, especially
+Victor Ostromoukhov's
+[*A Simple and Efficient Error-Diffusion Algorithm*](https://doi.org/10.1145/383259.383326)
+and Zhou and Fang's
+[*Improving Mid-Tone Quality of Variable-Coefficient Error Diffusion Using
+Threshold Modulation*](https://doi.org/10.1145/882262.882289). The coefficients
+and six-position stencil are libsixel-specific; `lso2` is not an alias for
+either published algorithm. It defaults to serpentine scan, unlike the other
+spatial policies.
+
+`lso2` has the highest MS-SSIM at both endpoints of the current sweep. That
+quality comes with a size and CPU cost: 1.848x the `none` bytes and 1.24x the
+latency at `K=8`, then 1.266x and 1.08x at `K=256`.
+
+## `a_dither`: addition-based positional dither
+
+```text
+img2sixel -d a_dither:strength=0.150 ...
+```
+
+`a_dither` does not feed quantization error to a neighbor. It computes a
+deterministic perturbation from coordinates `(x, y)` and channel `c`:
+
+```text
+m = (((x + 67c + 236y) * 119) mod 256) / 128 - 1
+b = strength * m
+candidate_8bit = source + 32b
+```
+
+The arithmetic generates a repeatable, spatially stable threshold pattern
+without storing a matrix or mutable error buffer. The default strength is
+0.150. Increasing it makes palette decisions easier to perturb but also
+increases local color error; zero reduces the policy to the same candidates
+as `none`.
+
+Øyvind Kolås introduced this policy to libsixel. Its name and formula come
+from his [*a dither*](https://pippin.gimp.org/a_dither/) work, which searched
+small procedural expressions and “magic numbers” using statistical measures
+and perceptual preference. It is related to ordered dithering by its
+coordinate-derived threshold, but it generates that threshold arithmetically
+instead of reading a Bayer matrix.
+
+The policy is `Theta(P)`, positionally reproducible, and nearly baseline in
+CPU time. It is not necessarily cheap to transmit: in the current sweep it
+emits 1.212x the `none` size at `K=8` and the largest `K=256` stream, 1.493x,
+despite taking only 1.01x and 1.02x the baseline time.
+
+## `x_dither`: xor-based positional dither
+
+```text
+img2sixel -d x_dither:strength=0.100 ...
+```
+
+`x_dither` has the same stateless structure as `a_dither`, but replaces the
+coordinate addition with xor and uses a 512-state residue:
+
+```text
+m = ((((x + 29c) xor (149y)) * 1234) mod 512) / 256 - 1
+b = strength * m
+candidate_8bit = source + 32b
+```
+
+Its default strength is 0.100. The xor changes the pattern's correlations; it
+does not make the result random. The same input coordinates, channel, and
+strength always produce the same candidate, and no preceding pixel can change
+it. The formula shares the origin and design motivation documented on the
+[*a dither*](https://pippin.gimp.org/a_dither/) page.
+
+This is also `Theta(P)` with constant state. It improves MS-SSIM over `none`
+at every measured `K` and is effectively baseline speed in the endpoint
+measurements. Its encoded-size overhead grows from 1.110x at `K=8` to 1.308x
+at `K=256`, so spatial stability does not imply stable SIXEL compression.
+
+## `bluenoise`: tiled blue-noise perturbation
+
+```text
+img2sixel -d bluenoise:strength=0.055:channel=mono ...
+```
+
+Blue noise suppresses low spatial frequencies and concentrates energy at
+higher frequencies, where patterning is generally less conspicuous. The
+libsixel policy samples an embedded 64-by-64 tile twice at decorrelated
+offsets, converts both samples to `[0, 1]`, and adds them to obtain a centered
+triangular perturbation:
+
+```text
+u = (mask(x + phase_x,      y + phase_y)      + 1) / 2
+v = (mask(x + phase_x + 13, y + phase_y + 29) + 1) / 2
+b = strength * (u + v - 1)
+candidate_8bit = source + 32b
+```
+
+The default strength is 0.055. `phase=X,Y` moves the tile without changing
+its values, while `seed=N` deterministically derives a phase when no explicit
+phase is present. `channel=mono` shares the spatial perturbation across color
+channels; `channel=rgb` applies fixed channel offsets to decorrelate them.
+`gradient_factor=G` can attenuate noise using the prepared gradient map, and
+`size` currently accepts the embedded size 64.
+
+Like the arithmetic positional methods, `bluenoise` has no neighbor-to-neighbor
+feedback. Its table is fixed-size, so lookup and perturbation are `O(1)` per
+pixel and the image cost is `Theta(P)`. The 64-pixel period can still become
+visible on adversarial content or under scaling; changing phase changes the
+placement, not that period.
+
+The spectral motivation follows blue-noise mask work; the later
+[Spatiotemporal Blue Noise Masks](https://research.nvidia.com/publication/2022-07_spatiotemporal-blue-noise-masks)
+paper provides useful background on why low-frequency noise and independent
+per-frame masks are undesirable. The embedded static tile is the CC0 64-by-64
+texture from [Moments in Graphics](https://momentsingraphics.de/BlueNoise.html),
+as recorded in [`bluenoise_64x64.h`](../../src/bluenoise_64x64.h). Static
+`bluenoise` itself is a two-dimensional tiled policy, not the temporal `stbn`
+policy described below.
+
+In the current static sweep, `bluenoise` improves MS-SSIM over `none` at every
+measured `K`, stays within three percent of baseline time, and has the smallest
+size overhead of every measured dither: 1.051x at `K=8` and 1.103x at
+`K=256`.
+
+## `interframe`: residual feedback across frames
+
+```text
+img2sixel -d interframe:diffusion=fs animation.gif
+```
+
+`interframe` extends the error-feedback equation along time. For pixel `p` in
+frame `t`, libsixel adds the previous stored residual before lookup, then
+stores the new residual for the next frame:
+
+```text
+candidate[t,p] = clamp(source[t,p] + frame_error[t-1,p])
+index[t,p] = nearest_palette_index(candidate[t,p])
+frame_error[t,p] = candidate[t,p] - palette[index[t,p]]
+```
+
+The optional `diffusion=KERNEL` also sends the current residual to later
+pixels in the same frame. It accepts `none` and the fixed spatial kernels;
+the default is `fs`. Thus temporal feedback and spatial diffusion are two
+composable axes, not competing names for one operation.
+
+This policy requires `Theta(P)` persistent frame state and `Theta(FP)` work
+for `F` frames, in addition to palette lookup. Geometry, pixel depth, reset
+events, and whether the caller preserves dither state are part of the output
+contract. It is intended for animation on the palette path; a single static
+frame cannot demonstrate its purpose and is excluded from the checked-in
+static benchmark.
+
+Interframe error can turn a spatially static approximation into temporal
+flicker, while insufficient reset handling can carry an old scene's residual
+into a new scene. Evaluate it with sequences, frame cadence, temporal metrics,
+and encoded animation size rather than reusing a still-image MS-SSIM ranking.
+
+## `stbn`: temporally varied sampling with residual feedback
+
+```text
+img2sixel -d stbn:source=hash:diffusion=none animation.gif
+```
+
+`stbn` builds on the interframe residual path and can add a frame-indexed,
+position-indexed perturbation before palette lookup. For paths that enable
+that bias, its high-level candidate is:
+
+```text
+candidate[t,p] = clamp(source[t,p] + frame_error[t-1,p]
+                       + strength * sample(t, p, channel))
+```
+
+`source` selects `hash`, an embedded `mask`, or a progressive multi-jittered
+(`pmj`) generator. The default is `hash`; the optional spatial diffusion
+kernel defaults to `none`. PMJ uses a progressively stratified 64-by-64
+sequence with deterministic coordinate and rank permutations. Its conceptual
+background is Christensen, Kensler, and Kilpatrick's
+[*Progressive Multi-Jittered Sample Sequences*](https://doi.org/10.1111/cgf.13472),
+but libsixel's tiled sampler and scrambles are project-specific.
+
+The control surface addresses animation failure modes: `motion_adapt` scales
+noise from residual energy, `scene_cut_reset` and `scene_detect` control stale
+history, `alpha_guard` suppresses perturbation near transparent boundaries,
+and `perceptual_weight` changes RGB channel amplitudes. `fastpath` enables the
+bit-exact PMJ cached path. Each option changes the temporal output contract and
+must be recorded in a reproducible comparison.
+
+The 8-bit and float32 paths currently differ in one important detail. The
+float32 path applies the selected hash, mask, or PMJ bias. The 8-bit path
+applies explicit noise bias for mask and PMJ, while its hash selection retains
+the interframe carry behavior without that extra bias. Do not assume that the
+same `stbn` command is bit-exact or perceptually equivalent across precision
+pipelines.
+
+Like `interframe`, `stbn` requires `Theta(P)` persistent state and `Theta(FP)`
+work, with a constant-time sampler per pixel. Its goal is not to maximize a
+single-frame score: it is to control the spatial and temporal spectrum of
+error. The NVIDIA
+[*Spatiotemporal Blue Noise Masks*](https://research.nvidia.com/publication/2022-07_spatiotemporal-blue-noise-masks)
+paper explains the general objective, but libsixel's hash, mask, and PMJ
+backends are independent implementations and should be measured separately.
 
 ## Cost model and asymptotic order
 
