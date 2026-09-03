@@ -829,6 +829,8 @@ All loaders accept \fBbackground_policy=file_first|explicit_first\fP
 The plus sign separates the ordered intents inside one loader entry; the
 inner trailing "!" disables fallback intents. When this is the final
 suboption, append a second "!" to also disable fallback loaders.
+All loaders accept \fBhdr_fallback_profile=linear-srgb|srgb\fP
+(short form \fBFvalue\fP) for builtin HDR fallback decode.
 PNG-capable loaders accept \fBtrns_keycolor=0|1\fP
 (short form \fBK0\fP or \fBK1\fP, default 1).
 The librsvg loader accepts \fBrelative_resources=0|1\fP
@@ -1448,6 +1450,14 @@ Accepts only "0" or "1"; "1" enables file-path decode.
 .br
 allow librsvg to spool gzip-compressed SVG input from stdin to a temporary
 file. Accepts only "0" or "1"; "1" enables spooling.
+.TP 5
+.B SIXEL_LOADER_HDR_FALLBACK_PROFILE
+.br
+set the builtin HDR source profile when GAMMA and PRIMARIES metadata are
+missing or unusable. Accepts "linear-srgb" (default) or "srgb".
+Header-derived metadata takes precedence. Override with
+\fB-Lloader:hdr_fallback_profile=PROFILE\fP or short form
+\fB-Lloader:FPROFILE\fP.
 .TP 5
 .B SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE
 .br

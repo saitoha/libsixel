@@ -32,6 +32,7 @@
 #include "cms.h"
 #include "compat_stub.h"
 #include "factory.h"
+#include "fromhdr.h"
 #include "loader-common.h"
 #include "loader-order-schema.h"
 #include "options.h"
@@ -206,6 +207,8 @@ loader_manager_init_loader_suboptions(
     suboptions->cms_target_colorspace = SIXEL_COLORSPACE_LINEAR;
     suboptions->cms_prefer_8bit = 0;
     suboptions->cms_rendering_intent_order = 0u;
+    suboptions->hdr_fallback_profile =
+        SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
     suboptions->png_trns_keycolor = 1;
     suboptions->librsvg_allow_relative_resources = 0;
     suboptions->librsvg_allow_stdin_svgz = 0;

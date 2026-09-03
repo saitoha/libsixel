@@ -29,6 +29,12 @@
 
 #include "chunk.h"
 
+/* Stable values let the loader option registry store HDR profile policy. */
+typedef enum sixel_builtin_hdr_fallback_profile {
+    SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB = 0,
+    SIXEL_BUILTIN_HDR_FALLBACK_SRGB
+} sixel_builtin_hdr_fallback_profile_t;
+
 /* Decode HDR into frame storage and apply builtin HDR postprocess controls. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_builtin_load_hdr_frame(

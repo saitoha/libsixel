@@ -50,6 +50,7 @@
 #include "compat_stub.h"
 #include "dither-interframe-method.h"
 #include "encoder.h"
+#include "fromhdr.h"
 #include "loader-common.h"
 #include "options-registry.h"
 #include "palette-common-cover.h"
@@ -1158,6 +1159,23 @@ static sixel_suboption_choice_t const g_loader_cms_intent_choices[] = {
     { "absolute_colorimetric", SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC }
 };
 
+static sixel_suboption_choice_t const g_loader_hdr_fallback_choices[] = {
+    { "linear-srgb", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
+    { "srgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB }
+};
+
+static sixel_suboption_choice_t const g_loader_hdr_fallback_env_choices[] = {
+    { "linear-srgb", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
+    { "linear_srgb", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
+    { "linearsrgb", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
+    { "linear", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
+    { "srgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB },
+    { "gamma-srgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB },
+    { "gamma_srgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB },
+    { "gammasrgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB },
+    { "gamma", SIXEL_BUILTIN_HDR_FALLBACK_SRGB }
+};
+
 /*
  * This is the sole authoritative suboption registry.  A NULL base pointer
  * means that the row is shared by every base value of the owning option.
@@ -1796,6 +1814,12 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "cms_intent", 'R', "SIXEL_LOADER_CMS_RENDERING_INTENT", NULL,
         "SIXEL_CMS_RENDERING_INTENT", g_loader_cms_intent_choices,
         cms_rendering_intent_order),
+    SIXEL_REGISTRY_LOADER_CHOICE_ENV(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "hdr_fallback_profile", 'F',
+        "SIXEL_LOADER_HDR_FALLBACK_PROFILE", NULL, NULL,
+        g_loader_hdr_fallback_choices, g_loader_hdr_fallback_env_choices,
+        hdr_fallback_profile),
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "trns_keycolor", 'K', "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",

@@ -827,11 +827,6 @@ sixel_builtin_hdr_init_profile_hint(sixel_builtin_hdr_profile_hint_t *out_hint)
 #define SIXEL_HDR_SRGB_BLUE_X  0.1500
 #define SIXEL_HDR_SRGB_BLUE_Y  0.0600
 
-typedef enum sixel_builtin_hdr_fallback_profile {
-    SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB = 0,
-    SIXEL_BUILTIN_HDR_FALLBACK_SRGB
-} sixel_builtin_hdr_fallback_profile_t;
-
 typedef enum sixel_builtin_hdr_tonemap_mode {
     SIXEL_BUILTIN_HDR_TONEMAP_NONE = 0,
     SIXEL_BUILTIN_HDR_TONEMAP_REINHARD
@@ -846,39 +841,6 @@ typedef struct sixel_builtin_hdr_profile_trace {
     sixel_builtin_hdr_fallback_profile_t fallback_profile;
     int profile_apply_failed;
 } sixel_builtin_hdr_profile_trace_t;
-
-static int
-sixel_builtin_hdr_parse_fallback_profile(
-    char const *text,
-    sixel_builtin_hdr_fallback_profile_t *out_profile)
-{
-    if (out_profile == NULL) {
-        return 0;
-    }
-    if (text == NULL || text[0] == '\0') {
-        *out_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
-        return 1;
-    }
-
-    if (sixel_builtin_hdr_ascii_case_equal(text, "linear-srgb") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "linear_srgb") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "linearsrgb") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "linear")) {
-        *out_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
-        return 1;
-    }
-
-    if (sixel_builtin_hdr_ascii_case_equal(text, "srgb") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "gamma-srgb") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "gamma_srgb") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "gammasrgb") ||
-        sixel_builtin_hdr_ascii_case_equal(text, "gamma")) {
-        *out_profile = SIXEL_BUILTIN_HDR_FALLBACK_SRGB;
-        return 1;
-    }
-
-    return 0;
-}
 
 static int
 sixel_builtin_hdr_parse_tonemap_mode(
@@ -1093,7 +1055,6 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
 {
     sixel_builtin_hdr_fallback_profile_t fallback_profile;
     sixel_cms_profile_t *src_profile;
-    char const *fallback_profile_text;
     double effective_gamma;
     double effective_white_x;
     double effective_white_y;
@@ -1111,7 +1072,6 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
 
     fallback_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
     src_profile = NULL;
-    fallback_profile_text = NULL;
     effective_gamma = 1.0;
     effective_white_x = SIXEL_HDR_SRGB_WHITE_X;
     effective_white_y = SIXEL_HDR_SRGB_WHITE_Y;
@@ -1202,16 +1162,11 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
         if (profile_trace != NULL) {
             profile_trace->fallback_profile_used = 1;
         }
-        fallback_profile_text = sixel_compat_getenv(
-            "SIXEL_LOADER_HDR_FALLBACK_PROFILE");
-        if (!sixel_builtin_hdr_parse_fallback_profile(fallback_profile_text,
-                                                      &fallback_profile)) {
-            loader_trace_message(
-                "builtin HDR: unknown SIXEL_LOADER_HDR_FALLBACK_PROFILE='%s'; "
-                "using linear-sRGB fallback",
-                fallback_profile_text);
-            fallback_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
-        }
+        fallback_profile = (sixel_builtin_hdr_fallback_profile_t)
+            loader_resolve_int_suboption(
+                NULL,
+                SIXEL_SUBOPTION_BINDING_ID_1(hdr_fallback_profile),
+                SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB);
         if (profile_trace != NULL) {
             profile_trace->fallback_profile = fallback_profile;
         }

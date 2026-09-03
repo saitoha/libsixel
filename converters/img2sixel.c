@@ -838,6 +838,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               :cms_intent=INTENT[+INTENT][!]\n"
         "                               (:Rvalue); when final, use !! to\n"
         "                               also disable loader fallbacks.\n"
+        "                               :hdr_fallback_profile=PROFILE\n"
+        "                               (:Fvalue) selects linear-srgb or\n"
+        "                               srgb.\n"
         "                               PNG-capable loaders support\n"
         "                               :trns_keycolor=0|1 (:K0/:K1).\n"
         "                               librsvg supports\n"
@@ -1475,7 +1478,8 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_HDR_FALLBACK_PROFILE",
         "set builtin HDR source-profile fallback when GAMMA/PRIMARIES are\n"
         "missing or unusable. Accepts linear-srgb (default) or srgb.\n"
-        "Header-derived metadata takes precedence."
+        "Header-derived metadata takes precedence. Override with\n"
+        "-Lloader:hdr_fallback_profile=PROFILE or :Fvalue."
     },
     {
         "SIXEL_LOADER_HDR_EXPOSURE_EV",
