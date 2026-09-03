@@ -1300,6 +1300,12 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "strength", 'T', "SIXEL_DITHER_A_DITHER_STRENGTH", NULL, NULL,
         "-d a_dither:strength must be a floating point value.",
         a_dither_strength, a_dither_strength_override),
+    SIXEL_REGISTRY_ENCODER_FLOAT(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        g_diffusion_values + SIXEL_DIFFUSION_BASE_X_DITHER,
+        "strength", 'T', "SIXEL_DITHER_X_DITHER_STRENGTH", NULL, NULL,
+        "-d x_dither:strength must be a floating point value.",
+        x_dither_strength, x_dither_strength_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_INTERFRAME,

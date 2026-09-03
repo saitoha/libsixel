@@ -803,6 +803,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
                name == "pin_threads")) ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_SIERRA/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_A_DITHER/ ||
+             fields[2] ~ /SIXEL_DIFFUSION_BASE_X_DITHER/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_INTERFRAME/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_STBN/)) {
         expected_dither_contract[key] = 1

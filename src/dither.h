@@ -126,6 +126,8 @@ struct sixel_dither {
     int stbn_fastpath_enabled;     /* parsed stbn fastpath toggle */
     int a_dither_strength_override; /* CLI A-dither strength flag */
     float a_dither_strength;       /* parsed A-dither strength */
+    int x_dither_strength_override; /* CLI X-dither strength flag */
+    float x_dither_strength;       /* parsed X-dither strength */
     int bluenoise_strength_override; /* CLI bluenoise strength flag */
     float bluenoise_strength;       /* parsed bluenoise strength */
     int bluenoise_phase_override;   /* CLI bluenoise phase flag */

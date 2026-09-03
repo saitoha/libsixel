@@ -91,6 +91,8 @@ struct sixel_encoder {
     int stbn_fastpath_enabled;
     int a_dither_strength_override;
     float a_dither_strength;
+    int x_dither_strength_override;
+    float x_dither_strength;
     int bluenoise_strength_override;
     float bluenoise_strength;
     int bluenoise_phase_override;

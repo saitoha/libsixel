@@ -429,6 +429,10 @@ sub-option:
 .br
 sub-option:
 .br
+\fBstrength=VALUE\fP -> floating point amplitude (default 0.100)
+.br
+\fBTVALUE\fP -> short form of \fBstrength\fP
+.br
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBbluenoise\fP -> tileable blue-noise ordered dither
@@ -494,7 +498,7 @@ sub-option:
 Compact diffusion suboption names use one uppercase letter plus the value:
 all methods scan=N, band_overwrap=O, band_width=B, threads_max=J,
 pin_threads=I;
-sierra variant=V; a_dither strength=T;
+sierra variant=V; a_dither/x_dither strength=T;
 interframe diffusion=D;
 stbn source=S, diffusion=D, strength=T, motion_adapt=M,
 scene_cut_reset=C, scene_detect=E, alpha_guard=A, perceptual_weight=P,
@@ -1338,6 +1342,8 @@ takes precedence. Defaults to 0.150 when unset.
 .B SIXEL_DITHER_X_DITHER_STRENGTH
 .br
 override positional x_dither strength. Defaults to 0.100 when unset.
+The \fB-d x_dither:strength=VALUE\fP suboption
+(short form \fB:TVALUE\fP) takes precedence.
 .TP 5
 .B SIXEL_DITHER_BLUENOISE_PHASE
 .br

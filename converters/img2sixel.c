@@ -539,6 +539,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                 (default raster)\n"
         "      x_dither   -> positionally stable arithmetic xor based dither\n"
         "        sub-option:\n"
+        "          strength=VALUE      -> floating point amplitude\n"
+        "                                 (default 0.100)\n"
+        "          TVALUE              -> short form of strength\n"
         "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
         "                                 (default raster)\n"
         "      bluenoise  -> tileable blue-noise ordered dither\n"
@@ -591,7 +594,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "        all methods: scan=N, band_overwrap=O, band_width=B,\n"
         "                     threads_max=J, pin_threads=I\n"
         "        sierra: variant=V\n"
-        "        a_dither: strength=T\n"
+        "        a_dither, x_dither: strength=T\n"
         "        interframe: diffusion=D\n"
         "        stbn: source=S, diffusion=D, strength=T, motion_adapt=M,\n"
         "          scene_cut_reset=C, scene_detect=E, alpha_guard=A,\n"
@@ -1289,8 +1292,9 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_DITHER_X_DITHER_STRENGTH",
-        "override positional x_dither strength. Defaults to 0.100 when\n"
-        "unset."
+        "override positional x_dither strength. The -d x_dither\n"
+        "suboption strength (short form TVALUE) takes precedence.\n"
+        "Defaults to 0.100 when unset."
     },
     {
         "SIXEL_DITHER_BLUENOISE_PHASE",

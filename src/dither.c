@@ -1950,6 +1950,8 @@ sixel_dither_new(
     (*ppdither)->stbn_fastpath_enabled = 0;
     (*ppdither)->a_dither_strength_override = 0;
     (*ppdither)->a_dither_strength = 0.150f;
+    (*ppdither)->x_dither_strength_override = 0;
+    (*ppdither)->x_dither_strength = 0.100f;
     (*ppdither)->bluenoise_strength_override = 0;
     (*ppdither)->bluenoise_strength = 0.055f;
     (*ppdither)->bluenoise_phase_override = 0;
