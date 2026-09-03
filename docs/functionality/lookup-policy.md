@@ -1539,6 +1539,10 @@ questions:
    RGB555 limitation alongside policies that were added later?
 3. What end-to-end speed does each policy deliver under the same modern CLI
    configuration?
+4. Does sharing the `5bit`, `6bit`, or `certlut` instance between workers
+   materially change end-to-end latency?
+5. What latency change does the Metal PaletteApply path produce for its
+   supported `none` and `eytzinger` policies?
 
 The checked-in measurements answer those questions for one fixture. They are
 not a universal ranking of lookup policies.
@@ -1760,6 +1764,84 @@ each previously unseen `5bit` or `6bit` bucket still scans `K` palette entries.
 The figure remains an end-to-end measurement, however, so it cannot assign
 the entire difference to lookup without a component-level benchmark.
 
+### Shared-instance performance
+
+![Median end-to-end runtime with private and shared lookup instances](lookup-policies/measurements/lookup-policy-shared-speed.png)
+
+This focused comparison holds the process thread limit at eight and compares
+`shared_instance=0` (`S0`, one lookup instance per dither worker) with
+`shared_instance=1` (`S1`, one instance shared by the workers). It covers only
+the three policies that expose this switch. The source data are in
+[`lookup-policy-shared-speed.csv`](lookup-policies/measurements/lookup-policy-shared-speed.csv).
+
+At `K = 256`, the result is:
+
+| Policy | `S0` median | `S1` median | `S1` change from `S0` |
+| --- | ---: | ---: | ---: |
+| `5bit` | 80.3 ms | 80.5 ms | +0.3% |
+| `6bit` | 80.6 ms | 80.4 ms | -0.2% |
+| `certlut` | 76.8 ms | 76.7 ms | -0.1% |
+
+Across this fixture and palette-size sweep, the private and shared curves are
+mostly within each other's interquartile ranges. This run does not establish a
+material end-to-end latency benefit for either setting. That is compatible
+with the implementation: sharing `5bit` and `6bit` primarily avoids duplicate
+dense-table storage, while the parallel path suppresses writes to those lazy
+tables; shared `certlut` trades worker-local state for mutex-protected reuse.
+Latency alone does not measure the memory benefit.
+
+The runner also required `S0` and `S1` to produce byte-identical SIXEL at
+`K = 256` for all three policies. Diffusion was disabled and band overlap was
+fixed at zero. This is intentionally not a thread-scaling benchmark and does
+not measure the quality effect of parallel-band error diffusion.
+
+### Metal PaletteApply performance
+
+![Median end-to-end runtime on CPU and forced Metal](lookup-policies/measurements/lookup-policy-metal-speed.png)
+
+The Metal comparison covers the two implemented GPU lookup modes, `none` and
+`eytzinger`. CPU points use `--gpu-policy=off`; Metal points use
+`--gpu-policy=force`, so an unsupported request, missing Metal device, or GPU
+failure makes the run fail instead of silently falling back. The source data
+are in
+[`lookup-policy-metal-speed.csv`](lookup-policies/measurements/lookup-policy-metal-speed.csv).
+
+At `K = 256`, the result is:
+
+| Policy | CPU median | Metal median | CPU / Metal |
+| --- | ---: | ---: | ---: |
+| `none` | 141.9 ms | 96.8 ms | 1.47x |
+| `eytzinger` | 67.6 ms | 89.9 ms | 0.75x |
+
+On this 600-by-450, 270,000-pixel input, Metal `none` first overtakes CPU
+`none` near the high end of the measured palette range: at `K = 128` the
+medians are 98.9 and 96.3 ms, while at `K = 256` Metal is 31.8 percent faster.
+For `eytzinger`, forced Metal is slower at every measured `K`; at `K = 256`
+it is 33.1 percent slower. Direct `none` retains an `O(P K)` palette scan whose
+larger `K` can amortize Metal setup and transfer costs. The CPU Eytzinger query
+already reduces lookup work enough that this one-shot 270,000-pixel run does
+not amortize those costs.
+
+This does not establish that CPU Eytzinger is faster for larger images or a
+long-lived process that reuses Metal state. Each sample starts a fresh
+`img2sixel` process, so process startup, Metal initialization, palette
+construction, transfers, and SIXEL encoding all remain in the measurement.
+It does show that pixel count alone is insufficient to predict a profitable
+GPU dispatch: palette size and CPU lookup policy matter too. The current
+`--gpu-policy=auto` threshold is based on pixel count, not `K`.
+
+The controlled K-means path used by the other speed figures currently
+completes palette application outside this Metal dispatch. The GPU comparison
+therefore uses `-Q heckbert:cover=off:merge=none` so it exercises PaletteApply.
+Each CPU/Metal pair uses the same policy and generated palette. Comparisons
+between the `none` and `eytzinger` pairs still include Heckbert's
+policy-dependent histogram resolution and must not be read as an isolated
+lookup microbenchmark.
+
+At `K = 256`, CPU and Metal output was byte-identical within each policy. The
+manifest records the output sizes and SHA-256 digests, as well as the detected
+30-core Apple M3 Max and Metal inventory.
+
 ### Measurement design
 
 The curves were measured on 2026-09-03 from a clean Autotools build of revision
@@ -1789,6 +1871,31 @@ img2sixel \
   --quantize-model=heckbert:cover=off:merge=none \
   --diffusion=none --gpu-policy=off \
   --lookup-policy=POLICY -p K \
+  images/snake.png
+```
+
+The shared-instance speed comparison uses controlled K-means, eight total
+pipeline threads, and explicit private or shared instances:
+
+```text
+img2sixel \
+  --threads=8 --precision=8bit --quality=full \
+  --loaders=libpng! \
+  --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma \
+  --diffusion=none:band_overwrap=0 --gpu-policy=off \
+  --lookup-policy=POLICY:shared_instance=0|1 -p K \
+  images/snake.png
+```
+
+The Metal comparison uses one CPU thread and forces the GPU PaletteApply path:
+
+```text
+img2sixel \
+  --threads=1 --precision=8bit --quality=full \
+  --loaders=libpng! \
+  --quantize-model=heckbert:cover=off:merge=none \
+  --diffusion=none:band_overwrap=0 --gpu-policy=off|force \
+  --lookup-policy=none|eytzinger -p K \
   images/snake.png
 ```
 
@@ -1827,6 +1934,21 @@ followed by nine measured rounds. `BUILD_DIR`, `PYTHON`, `MAKE`,
 input as the first two arguments supports exploratory runs without changing
 the checked-in artifacts.
 
+On a macOS Metal host, reproduce the focused execution-mode comparisons with:
+
+```sh
+PYTHON=.venv/bin/python tools/reproduce_lookup_policy_acceleration.sh
+```
+
+The Python override is only an example; use an interpreter with Matplotlib.
+The runner rebuilds the project, measures both fixed matrices, forces Metal,
+checks CPU/Metal output equivalence, checks `S0`/`S1` output equivalence, writes
+[`lookup-policy-acceleration-run.json`](lookup-policies/measurements/lookup-policy-acceleration-run.json),
+and invokes the common artifact validator. The default shared-instance thread
+limit is eight and can be changed with `LOOKUP_POLICY_SHARED_THREADS`; such a
+run is a different protocol and should not overwrite the checked-in results
+without updating their interpretation.
+
 The quality wrapper regenerates the broad and focused controlled K-means
 comparisons and the broad and focused current-Heckbert compatibility
 comparisons. The CSV files store the full command template for every point. A
@@ -1858,6 +1980,11 @@ another revision.
   work, while policy-dependent preparation remains part of the measurement.
 - No-diffusion results do not predict how a changed lookup index feeds error
   into later pixels under error diffusion.
+- The focused shared-instance run fixes the thread limit rather than sweeping
+  it. It does not characterize scaling, worker affinity, memory use, or
+  parallel-band seam quality.
+- The Metal run is specific to one GPU, input size, one-shot process model, and
+  supported request shape. GPU/CPU crossover points can move with all four.
 
 ## Design rules
 

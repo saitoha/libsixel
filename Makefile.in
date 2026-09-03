@@ -589,6 +589,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/lookup-policy.md \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-acceleration-run.json \
 	docs/functionality/lookup-policies/measurements/lookup-policy-heckbert-high-k.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-heckbert-high-k.png \
 	docs/functionality/lookup-policies/measurements/lookup-policy-kmeans-color-error.csv \
@@ -597,7 +598,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/lookup-policies/measurements/lookup-policy-kmeans-ms-ssim.png \
 	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-metal-speed.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-metal-speed.png \
 	docs/functionality/lookup-policies/measurements/lookup-policy-run.json \
+	docs/functionality/lookup-policies/measurements/lookup-policy-shared-speed.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-shared-speed.png \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.png \
 	docs/functionality/overview.md \

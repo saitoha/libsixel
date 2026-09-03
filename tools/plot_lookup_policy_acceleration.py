@@ -395,10 +395,27 @@ def metal_device_record() -> Dict[str, object]:
         payload = json.loads(proc.stdout)
     except json.JSONDecodeError:
         return {"query": shlex.join(command), "available": False}
+    devices = []
+    for item in payload.get("SPDisplaysDataType", []):
+        if not isinstance(item, dict):
+            continue
+        devices.append(
+            {
+                name: item[name]
+                for name in (
+                    "_name",
+                    "sppci_model",
+                    "sppci_vendor",
+                    "sppci_cores",
+                    "spdisplays_mtlgpufamilysupport",
+                )
+                if name in item
+            }
+        )
     return {
         "query": shlex.join(command),
         "available": True,
-        "inventory": payload.get("SPDisplaysDataType", []),
+        "devices": devices,
     }
 
 
