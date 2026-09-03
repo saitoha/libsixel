@@ -7,7 +7,7 @@ are grouped by domain so each area can grow without overloading one document.
 ## Project and format
 
 - [Project history and lineage](project-history.md) explains how libsixel was
-  derived from KMIYA's `sixel`, how the project developed, and how community
+  derived from kmiya's `sixel`, how the project developed, and how community
   contributions shaped it.
 - [SIXEL format](sixel-format.md) is a practical guide to the DEC SIXEL wire
   format, its control functions, rendering model, and interoperability limits.
@@ -23,13 +23,15 @@ are grouped by domain so each area can grow without overloading one document.
 - [Functional overview](functionality/overview.md) describes the product
   capabilities, major components, data flow, and architectural boundaries.
 - [Encoding pipeline](functionality/encoding-pipeline.md) connects loading,
-  palette construction, palette application, and SIXEL byte generation.
+  palette construction, palette application, SIXEL byte generation, and their
+  composed cost model.
 - [Palette quantization](functionality/quantization.md) explains `-Q`, palette
-  solver objectives, and the boundary between palette generation and use.
+  solver objectives, asymptotic costs, and the boundary between palette
+  generation and use.
 - [Dithering](functionality/dithering.md) explains `-d`, error shaping, scan
-  order, temporal behavior, and its interaction with lookup.
+  order, temporal behavior, per-pixel cost, and its interaction with lookup.
 - [Lookup policy](functionality/lookup-policy.md) defines libsixel's `-~` /
-  `--lookup-policy` concept and its correctness and performance tradeoffs.
+  `--lookup-policy` concept, mathematical basis, and preparation/query costs.
 
 ## Command-line interface
 

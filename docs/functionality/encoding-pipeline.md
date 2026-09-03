@@ -36,6 +36,35 @@ The loader contract ends when it has described the source image correctly.
 Palette and dithering policy must therefore remain independent of the backend
 that decoded PNG, JPEG, WebP, or another input format.
 
+## Composing the cost of an encode
+
+The stages also provide a useful performance model. Let `N` be loaded or
+sampled source pixels, `P` the output pixels that require palette mapping, and
+`K` the palette size. A normal fixed-palette encode can be accounted for as:
+
+```text
+load_and_normalize(N)
+  + build_palette(N, K)
+  + prepare_lookup(K)
+  + P * (dither_step + lookup_query(K))
+  + encode_indexed_pixels(P, K)
+```
+
+This is phase accounting rather than a claim that the implementation never
+fuses or overlaps work. It prevents three common mistakes:
+
+- a squared-error objective in `-Q` does not by itself mean quadratic runtime;
+- linear work in pixel count `P` is quadratic in side length for a square
+  image, because `P = W H`;
+- a lookup with expensive fixed preparation can still have constant query
+  cost and linear whole-image application.
+
+The controlling variables and bounds for palette construction, dither work,
+and lookup preparation/query are defined in
+[Palette Quantization](quantization.md), [Dithering](dithering.md), and
+[Lookup Policy](lookup-policy.md). Benchmarks should report those phases
+separately before presenting an end-to-end total.
+
 ## Palette construction
 
 Palette construction reduces the input color population to the number of

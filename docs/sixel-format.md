@@ -183,7 +183,7 @@ with selected palette registers. A typical encoder performs these operations:
 5. use `-` to advance after the band is complete;
 6. terminate the DCS with ST.
 
-The format does not require one particular ordering of color planes. KMIYA's
+The format does not require one particular ordering of color planes. kmiya's
 encoder and libsixel optimize ordering and repeated runs to reduce transmitted
 data while preserving the same rendered result.
 
@@ -265,7 +265,7 @@ failure even when the encoder already reported its original error.
 - [`src/sixel-writer.c`](../src/sixel-writer.c) owns DCS and header emission,
   transport wrapping, and string termination.
 - [`src/encoder-core-encode.c`](../src/encoder-core-encode.c) contains the core
-  palette-plane and sixel body encoding logic developed from KMIYA's approach,
+  palette-plane and sixel body encoding logic developed from kmiya's approach,
   including recovery after a late encoding error.
 - [`src/fromsixel.c`](../src/fromsixel.c) parses DCS parameters, raster
   attributes, repeat commands, color commands, and sixel masks.

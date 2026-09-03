@@ -2,7 +2,7 @@
 
 ## In one sentence
 
-libsixel is a descendant and code-lineage fork of KMIYA's `sixel` encoder and
+libsixel is a descendant and code-lineage fork of kmiya's `sixel` encoder and
 decoder, expanded by Hayaki Saito and many contributors into a portable C
 library, command-line toolset, image-processing pipeline, and integration
 platform.
@@ -14,7 +14,7 @@ repository.
 
 Two different fork relationships appear in the project's history:
 
-- libsixel itself is a code-lineage fork of KMIYA's archive, not a GitHub
+- libsixel itself is a code-lineage fork of kmiya's archive, not a GitHub
   fork;
 - [`libsixel/libsixel`](https://github.com/libsixel/libsixel) is a GitHub fork
   of [`saitoha/libsixel`](https://github.com/saitoha/libsixel), created in 2021
@@ -29,7 +29,7 @@ original repository was inactive, many distributions and users came to treat
 ## Before libsixel: the modern terminal-emulator revival
 
 The modern use of SIXEL in terminal emulators did not begin with libsixel.
-KMIYA added both ReGIS and SIXEL to
+@kmiya-culti added both ReGIS and SIXEL to
 [RLogin 2.9.0](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L2002-L2005)
 on 2010-09-17. This was an important early implementation in a contemporary
 terminal emulator and provided a practical starting point for sustained SIXEL
@@ -99,23 +99,23 @@ RLogin. This work remains much better known in the Japanese-language terminal
 community than elsewhere. Current libsixel preserves a practical connection
 to it through the experimental `img2sixel -@` (`--drcs`) output mode.
 
-## KMIYA's `sixel`
+## kmiya's `sixel`
 
-KMIYA's `sixel` was a compact C encoder and decoder distributed from
+kmiya's `sixel` was a compact C encoder and decoder distributed from
 `nanno.dip.jp`. Its encoder departed from older printer-oriented encoders that
 primarily minimized print-head movement. It organized output for efficient
 transport to terminal emulators while retaining compatibility with SIXEL
 devices. That approach became the starting point for libsixel's encoder.
 
 The original archive is represented by the
-[KMIYA `sixel` mirror](https://github.com/saitoha/sixel). The mirror records
-KMIYA's original licensing statement and identifies the project as the origin
+[kmiya `sixel` mirror](https://github.com/saitoha/sixel). The mirror records
+kmiya's original licensing statement and identifies the project as the origin
 of libsixel. Current derived source files, including
 [`src/fromsixel.c`](../src/fromsixel.c), also retain explicit attribution and
 describe their relationship to the 2014-03-02 original version.
 
 The March 2014 import was a branch point, not the end of development in
-KMIYA's line. Because KMIYA developed both RLogin and the standalone `sixel`
+kmiya's line. Because kmiya developed both RLogin and the standalone `sixel`
 utility, the latter continued to change alongside RLogin's SIXEL
 implementation:
 
@@ -126,7 +126,7 @@ implementation:
   [2.17.3 history](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html)
   records SIXEL extensions for indexed selection and 24-bit color. The
   [`v20141206`](https://github.com/saitoha/sixel/tree/v20141206) standalone
-  version then merged the true-color extension into KMIYA's main utility.
+  version then merged the true-color extension into kmiya's main utility.
 - The later
   [`v20180723`](https://github.com/saitoha/sixel/tree/v20180723) source merged
   an RGBA extension. It added an 8-bit-per-channel RGB color space and an RGBA
@@ -139,16 +139,16 @@ implementation:
 The mirror commit that imports `v20180723` is dated 2025, but the version name
 and matching RLogin 2.23.7 history place that source development in 2018. The
 standalone releases should therefore be understood as a parallel, actively
-evolving KMIYA line rather than as frozen snapshots of the code from which
+evolving kmiya line rather than as frozen snapshots of the code from which
 libsixel branched.
 
-The two lines also came to emphasize different goals. KMIYA's true-color work
+The two lines also came to emphasize different goals. kmiya's true-color work
 expanded the standalone encoder's palette table from 256 to 1,024 entries and
 developed private extensions together with RLogin. libsixel concentrated on a
 portable library and CLI, color quantization, and compatibility across the
 wider terminal ecosystem; its generated palettes remain limited to 256 entries
 by [`SIXEL_PALETTE_MAX`](../include/sixel.h.in). It did not import most of the
-KMIYA/RLogin-specific extension series. This divergence should not be mistaken
+kmiya/RLogin-specific extension series. This divergence should not be mistaken
 for inactivity in either line.
 
 ## Formation of libsixel
@@ -158,7 +158,7 @@ libsixel development line started in March 2014:
 
 - On 2014-03-19, commit
   [`0ebd7dd3c`](https://github.com/saitoha/libsixel/commit/0ebd7dd3c62353eeb0bbfc0dd2a8ee26c71f4777)
-  imported KMIYA's `tosixel.c` and `fromsixel.c` from the distributed archive.
+  imported kmiya's `tosixel.c` and `fromsixel.c` from the distributed archive.
 - The imported decoder was removed the next day while the new project began
   separating and rebuilding its library interfaces.
 - A snapshot identified as the 2014-03-02 original was committed on 2014-03-21
@@ -321,7 +321,7 @@ discussion and update the durable record where appropriate.
 - [mlterm development history](https://github.com/arakiken/mlterm/blob/a1678d61f79f49ad018cc453f896a453add8c97f/ChangeLog)
 - [Araki Ken's GNU Screen SIXEL branch](https://github.com/arakiken/screen/tree/sixel)
 - [Araki Ken's DRCS-SIXEL account](https://qiita.com/arakiken/items/626b02cd857d20c12fbc)
-- [KMIYA `sixel` source mirror](https://github.com/saitoha/sixel)
+- [kmiya `sixel` source mirror](https://github.com/saitoha/sixel)
 - [`libsixel/libsixel` community fork](https://github.com/libsixel/libsixel)
 - [Community-fork announcement and rationale](https://github.com/saitoha/libsixel/issues/154)
 - [libsixel release history](../NEWS)

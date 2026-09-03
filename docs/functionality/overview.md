@@ -27,11 +27,12 @@ The detailed [Encoding Pipeline](encoding-pipeline.md) explains the input and
 output contract of each stage and how these three controls cooperate:
 
 - [Palette Quantization](quantization.md), selected by `-Q`, determines which
-  palette colors are available;
+  palette colors are available and documents each solver's objective and cost;
 - [Dithering](dithering.md), selected by `-d`, determines how representation
-  error is distributed;
+  error is distributed and the state required to do so;
 - [Lookup Policy](lookup-policy.md), selected by `-~` or `--lookup-policy`,
-  determines how each color candidate is mapped to a palette index.
+  determines how each color candidate is mapped to a palette index and whether
+  cost is paid during preparation or per-pixel query.
 
 The broader pipeline also includes:
 
