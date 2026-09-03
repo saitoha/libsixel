@@ -312,6 +312,24 @@ int
 sixel_option_resolve_boolean_environment(char const *name, int fallback);
 
 /*
+ * Test controls are intentionally absent from the public option registry.
+ * These typed accessors keep their private environment names inside one
+ * broker instead of exposing raw string lookups to production consumers.
+ */
+SIXEL_INTERNAL_API char const *
+sixel_test_environment_bash_version(void);
+SIXEL_INTERNAL_API int
+sixel_test_environment_librsvg_open_failure(void);
+SIXEL_INTERNAL_API int
+sixel_test_environment_librsvg_write_failure(void);
+SIXEL_INTERNAL_API int
+sixel_test_environment_librsvg_close_failure(void);
+SIXEL_INTERNAL_API int
+sixel_test_environment_libwebp_force_rgb(void);
+SIXEL_INTERNAL_API int
+sixel_test_environment_palette_disable_tables(void);
+
+/*
  * Resolve registered environment variables through registry metadata.  The
  * typed entry points reject a registry kind mismatch before exposing a value
  * to lower-level code.

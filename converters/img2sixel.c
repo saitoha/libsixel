@@ -1211,11 +1211,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "suboption takes precedence."
     },
     {
-        "IMG2SIXEL_BASH_VERSION_OVERRIDE",
-        "override bash version parsing used by completion installers.\n"
-        "mainly intended for tests that need deterministic legacy behavior."
-    },
-    {
         "SIXEL_ABORT_TRACE",
         "dump abort backtraces when img2sixel terminates abnormally.\n"
         "Use 0 to disable or 1 to enable it. Unset, empty, or invalid\n"

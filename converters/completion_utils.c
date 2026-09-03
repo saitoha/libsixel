@@ -204,6 +204,8 @@ sixel_completion_policy_resolve_home(
     struct sixel_completion_policy_options const *options,
     char const **path,
     int *overridden);
+SIXEL_INTERNAL_API char const *
+sixel_test_environment_bash_version(void);
 
 /* ------------------------------------------------------------------------ */
 /* helpers for platform abstractions */
@@ -1376,11 +1378,10 @@ img2sixel_prefer_legacy_bash_path(void)
     /*
      * Test shells such as bash may expose a read-only BASH_VERSION
      * variable that cannot be overridden from the environment. Prefer an
-     * explicit IMG2SIXEL_BASH_VERSION_OVERRIDE knob so tests can request
-     * legacy completion behavior deterministically.
+     * explicit test broker value so tests can request legacy completion
+     * behavior deterministically.
      */
-    override_version = img2sixel_compat_getenv(
-        "IMG2SIXEL_BASH_VERSION_OVERRIDE");
+    override_version = sixel_test_environment_bash_version();
     if (override_version != NULL && override_version[0] != '\0') {
         version = override_version;
     } else {

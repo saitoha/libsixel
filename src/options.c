@@ -2226,6 +2226,157 @@ sixel_option_resolve_boolean_environment(char const *name, int fallback)
     return value;
 }
 
+typedef enum sixel_test_environment_kind {
+    SIXEL_TEST_ENVIRONMENT_STRING = 0,
+    SIXEL_TEST_ENVIRONMENT_BOOLEAN
+} sixel_test_environment_kind_t;
+
+typedef enum sixel_test_environment_key {
+    SIXEL_TEST_ENVIRONMENT_BASH_VERSION = 0,
+    SIXEL_TEST_ENVIRONMENT_LIBRSVG_OPEN_FAILURE,
+    SIXEL_TEST_ENVIRONMENT_LIBRSVG_WRITE_FAILURE,
+    SIXEL_TEST_ENVIRONMENT_LIBRSVG_CLOSE_FAILURE,
+    SIXEL_TEST_ENVIRONMENT_LIBWEBP_FORCE_RGB,
+    SIXEL_TEST_ENVIRONMENT_PALETTE_DISABLE_TABLES,
+    SIXEL_TEST_ENVIRONMENT_COUNT
+} sixel_test_environment_key_t;
+
+typedef struct sixel_test_environment_definition {
+    char const *name;
+    sixel_test_environment_kind_t kind;
+} sixel_test_environment_definition_t;
+
+static sixel_test_environment_definition_t const
+g_test_environment_definitions[] = {
+    {
+        "_SIXEL_TEST_COMPLETION_BASH_VERSION",
+        SIXEL_TEST_ENVIRONMENT_STRING
+    },
+    {
+        "_SIXEL_TEST_LIBRSVG_FAIL_TEMP_SVGZ_OPEN",
+        SIXEL_TEST_ENVIRONMENT_BOOLEAN
+    },
+    {
+        "_SIXEL_TEST_LIBRSVG_FAIL_TEMP_SVGZ_WRITE",
+        SIXEL_TEST_ENVIRONMENT_BOOLEAN
+    },
+    {
+        "_SIXEL_TEST_LIBRSVG_FAIL_TEMP_SVGZ_CLOSE",
+        SIXEL_TEST_ENVIRONMENT_BOOLEAN
+    },
+    {
+        "_SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE",
+        SIXEL_TEST_ENVIRONMENT_BOOLEAN
+    },
+    {
+        "_SIXEL_TEST_PALETTE_DISABLE_TABLES",
+        SIXEL_TEST_ENVIRONMENT_BOOLEAN
+    }
+};
+
+static sixel_test_environment_definition_t const *
+sixel_test_environment_definition(
+    sixel_test_environment_key_t key,
+    sixel_test_environment_kind_t kind)
+{
+    sixel_test_environment_definition_t const *definition;
+    size_t count;
+
+    definition = NULL;
+    count = sizeof(g_test_environment_definitions) /
+        sizeof(g_test_environment_definitions[0]);
+    if ((int)key < 0 || key >= SIXEL_TEST_ENVIRONMENT_COUNT ||
+        count != (size_t)SIXEL_TEST_ENVIRONMENT_COUNT) {
+        return NULL;
+    }
+    definition = &g_test_environment_definitions[(unsigned int)key];
+    if (definition->kind != kind) {
+        return NULL;
+    }
+    return definition;
+}
+
+static char const *
+sixel_test_environment_string(sixel_test_environment_key_t key)
+{
+    sixel_test_environment_definition_t const *definition;
+
+    definition = sixel_test_environment_definition(
+        key,
+        SIXEL_TEST_ENVIRONMENT_STRING);
+    if (definition == NULL) {
+        return NULL;
+    }
+    return sixel_compat_getenv(definition->name);
+}
+
+static int
+sixel_test_environment_boolean(sixel_test_environment_key_t key)
+{
+    sixel_test_environment_definition_t const *definition;
+    char const *text;
+    int value;
+
+    definition = sixel_test_environment_definition(
+        key,
+        SIXEL_TEST_ENVIRONMENT_BOOLEAN);
+    text = NULL;
+    value = 0;
+    if (definition == NULL) {
+        return 0;
+    }
+    text = sixel_compat_getenv(definition->name);
+    if (text == NULL || text[0] == '\0') {
+        return 0;
+    }
+    if (!sixel_option_parse_boolean_text(text, &value)) {
+        return 0;
+    }
+    return value;
+}
+
+char const *
+sixel_test_environment_bash_version(void)
+{
+    return sixel_test_environment_string(
+        SIXEL_TEST_ENVIRONMENT_BASH_VERSION);
+}
+
+int
+sixel_test_environment_librsvg_open_failure(void)
+{
+    return sixel_test_environment_boolean(
+        SIXEL_TEST_ENVIRONMENT_LIBRSVG_OPEN_FAILURE);
+}
+
+int
+sixel_test_environment_librsvg_write_failure(void)
+{
+    return sixel_test_environment_boolean(
+        SIXEL_TEST_ENVIRONMENT_LIBRSVG_WRITE_FAILURE);
+}
+
+int
+sixel_test_environment_librsvg_close_failure(void)
+{
+    return sixel_test_environment_boolean(
+        SIXEL_TEST_ENVIRONMENT_LIBRSVG_CLOSE_FAILURE);
+}
+
+int
+sixel_test_environment_libwebp_force_rgb(void)
+{
+    return sixel_test_environment_boolean(
+        SIXEL_TEST_ENVIRONMENT_LIBWEBP_FORCE_RGB);
+}
+
+int
+sixel_test_environment_palette_disable_tables(void)
+{
+    return sixel_test_environment_boolean(
+        SIXEL_TEST_ENVIRONMENT_PALETTE_DISABLE_TABLES);
+}
+
 int
 sixel_option_resolve_registered_boolean_binding(
     sixel_option_schema_id_t option_id,

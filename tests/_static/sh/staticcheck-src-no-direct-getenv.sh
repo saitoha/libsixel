@@ -5,10 +5,12 @@ set -eux
 
 src_root=$1
 src_dir=$src_root/src
+converters_dir=$src_root/converters
 matches=
 registered_matches=
 resolver_bypass_matches=
 getenv_argument_matches=
+internal_name_matches=
 registry_file=$src_dir/options-registry.c
 
 echo "1..1"
@@ -113,6 +115,22 @@ test -z "$registered_matches" || {
     exit 0
 }
 
+# Private test environment names belong only to the typed broker in options.c.
+internal_name_matches=$(find "$src_dir" "$converters_dir" -maxdepth 1 \
+    -type f \( -name '*.c' -o -name '*.h' \) \
+    ! -path "$src_dir/options.c" -exec awk '
+/_SIXEL_TEST_[A-Z0-9_]+/ {
+    print FILENAME ":" FNR ":" $0
+}
+' {} +)
+
+test -z "$internal_name_matches" || {
+    echo "not ok 1 - src files avoid direct getenv() calls"
+    echo "# private test environment names exist outside the typed broker"
+    printf '%s\n' "$internal_name_matches" | sed 's/^/# /'
+    exit 0
+}
+
 # Raw environment reads must use one literal or a reviewed generic helper.
 # Reject every other direct-call shape so line wrapping, comments, and local
 # prefix macros cannot hide a registry-owned name.
@@ -120,6 +138,7 @@ getenv_argument_matches=$(awk '
 function argument_is_reviewed(file, argument) {
     if (file ~ /\/options\.c$/ &&
         (argument == "variable" || argument == "name" ||
+         argument == "definition->name" ||
          argument == "key_def->env_name" ||
          argument == "key_def->env_fallback_name" ||
          argument == "key_def->env_legacy_name")) {
