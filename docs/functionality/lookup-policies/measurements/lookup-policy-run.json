@@ -1,0 +1,66 @@
+{
+  "build": {
+    "cc": "gcc",
+    "cflags": "-g -O2 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": ""
+  },
+  "generated_at_utc": "2026-09-03T07:06:05.340587+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.13.13"
+  },
+  "input": {
+    "path": "images/snake.png",
+    "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4"
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "cb60fda5647d60e142817f57b26fd640dbc017826791aea445946c77a57124cf",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "9b9cbf635bf0988e2d76d39fcd081a942993025d4bb51bcd6ef49c97144d429a"
+    },
+    "lsqa": {
+      "launcher": "assessment/lsqa",
+      "launcher_sha256": "4ae325fdb507e9848d2f2ea1b97d01862d916c3f64e897805639c2f125a1835d",
+      "payload": "assessment/.libs/lsqa",
+      "payload_sha256": "65d3b372d4f5d50e8b4380eedf5820f59ba6b0a4af2c9a59d3ce4fe317d2ad97"
+    }
+  },
+  "protocol": {
+    "policies": [
+      "none",
+      "5bit",
+      "6bit",
+      "certlut",
+      "eytzinger",
+      "fhedt",
+      "vptree",
+      "rbc",
+      "mahalanobis"
+    ],
+    "policy_order_rotated_each_round": true,
+    "sixel_environment_removed": true,
+    "speed_colors": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "speed_runs": 9,
+    "speed_warmups": 2
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "feb7c76b2c63d5bc9e92a840f7edf2c7faf2f019",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}

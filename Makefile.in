@@ -597,6 +597,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/lookup-policies/measurements/lookup-policy-kmeans-ms-ssim.png \
 	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-run.json \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.png \
 	docs/functionality/overview.md \

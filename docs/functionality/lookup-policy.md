@@ -1581,8 +1581,8 @@ above `none`. Calling the RGB666 loss merely "slight" would overstate what this
 single-image result supports.
 
 Among the accelerated policies at `K = 256`, `vptree` has the lowest measured
-mean Delta E00 at 2.746327 while taking 97.6 ms in the speed run. `fhedt` is
-faster at 89.7 ms, but its mean Delta E00 is 2.766032 and its mean chroma error
+mean Delta E00 at 2.746327 while taking 82.4 ms in the speed run. `fhedt` is
+faster at 75.5 ms, but its mean Delta E00 is 2.766032 and its mean chroma error
 is 2.053499 rather than `vptree`'s 2.011879. The differences are small enough
 that this is evidence of a favorable quality/speed balance on this fixture,
 not a universal ordering.
@@ -1735,15 +1735,15 @@ At `K = 256`, the result is:
 
 | Policy | Median time | Speedup over `none` |
 | --- | ---: | ---: |
-| `none` | 223.6 ms | 1.00x |
-| `5bit` | 143.5 ms | 1.56x |
-| `6bit` | 147.2 ms | 1.52x |
-| `certlut` | 120.9 ms | 1.85x |
-| `eytzinger` | 95.2 ms | 2.35x |
-| `fhedt` | 89.7 ms | 2.49x |
-| `vptree` | 97.6 ms | 2.29x |
-| `rbc` | 115.2 ms | 1.94x |
-| `mahalanobis` | 145.1 ms | 1.54x |
+| `none` | 173.5 ms | 1.00x |
+| `5bit` | 127.4 ms | 1.36x |
+| `6bit` | 130.1 ms | 1.33x |
+| `certlut` | 104.3 ms | 1.66x |
+| `eytzinger` | 80.0 ms | 2.17x |
+| `fhedt` | 75.5 ms | 2.30x |
+| `vptree` | 82.4 ms | 2.11x |
+| `rbc` | 99.6 ms | 1.74x |
+| `mahalanobis` | 130.4 ms | 1.33x |
 
 This confirms a real speed/accuracy tradeoff between `6bit` and `none` on the
 fixture. It does not show that `6bit` is the best current default: both the
@@ -1753,8 +1753,8 @@ initialization and cold-bucket costs, so their relative position changes with
 `K`, image size, cache reuse, and traversal order.
 
 The shallow `fhedt` curve is particularly informative. From `K = 16` through
-`K = 256`, its median rises from 75.7 ms to 89.7 ms, while `5bit` and `6bit`
-rise to 143.5 ms and 147.2 ms. This is consistent with `fhedt` paying for its
+`K = 256`, its median rises from 60.2 ms to 75.5 ms, while `5bit` and `6bit`
+rise to 127.4 ms and 130.1 ms. This is consistent with `fhedt` paying for its
 fixed-resolution grid and then applying it in constant time per pixel, whereas
 each previously unseen `5bit` or `6bit` bucket still scans `K` palette entries.
 The figure remains an end-to-end measurement, however, so it cannot assign
@@ -1763,7 +1763,7 @@ the entire difference to lookup without a component-level benchmark.
 ### Measurement design
 
 The curves were measured on 2026-09-03 from a clean Autotools build of revision
-`31e211cd3` on Darwin 25.5.0 arm64. The input was
+`feb7c76b2` on Darwin 25.5.0 arm64. The input was
 [`images/snake.png`](../../images/snake.png). The broad curves use
 `K = 8, 16, 32, 64, 128, 256`; both focused curves use steps of 16 from 128
 through 256.
@@ -1773,7 +1773,8 @@ The controlled K-means quality and speed comparisons use this normal CLI path:
 ```text
 img2sixel \
   --threads=1 --precision=8bit --quality=full \
-  -Qkmeans:Gw -Xoklab -Wgamma \
+  --loaders=libpng! \
+  --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma \
   --diffusion=none --gpu-policy=off \
   --lookup-policy=POLICY -p K \
   images/snake.png
@@ -1784,6 +1785,7 @@ The current Heckbert compatibility comparison instead uses:
 ```text
 img2sixel \
   --threads=1 --precision=8bit --quality=full \
+  --loaders=libpng! \
   --quantize-model=heckbert:cover=off:merge=none \
   --diffusion=none --gpu-policy=off \
   --lookup-policy=POLICY -p K \
@@ -1791,40 +1793,56 @@ img2sixel \
 ```
 
 `lsqa` compares each SIXEL stream with the original image and reports its
-existing `Δ E00_mean`, `Δ Chroma_mean`, and MS-SSIM metrics. Diffusion is
+existing `Δ E00_mean`, `Δ Chroma_mean`, and MS-SSIM metrics. Encoder input is
+pinned to the `libpng` loader, and the runner removes inherited `SIXEL_*`
+variables from both programs. The K-means seed is explicitly one. Diffusion is
 disabled so propagated error does not obscure the palette and lookup effects.
 One worker exercises the serial lazy-cache behavior of `5bit` and `6bit`.
 
 ### Reproducing the curves
 
-Build `img2sixel` and `lsqa`, install Python Matplotlib, then run:
+Configure an Autotools build with libpng and the assessment tools, install
+Python Matplotlib, commit the implementation being measured, and run from a
+tracked-clean worktree:
 
 ```sh
-tools/plot_lookup_policy_quality.sh \
-  docs/functionality/lookup-policies/measurements \
-  images/snake.png
-
-python3 tools/plot_lookup_policy_speed.py images/snake.png \
-  --revision "$(git rev-parse HEAD)" \
-  --output-csv \
-    docs/functionality/lookup-policies/measurements/lookup-policy-speed.csv \
-  --output-plot \
-    docs/functionality/lookup-policies/measurements/lookup-policy-speed.png
+tools/reproduce_lookup_policy_measurements.sh
 ```
 
-The wrapper uses
+This one command rebuilds `img2sixel` and `lsqa`, regenerates all six quality
+sweeps and the speed sweep, writes the plots, records provenance in
+[`lookup-policy-run.json`](lookup-policies/measurements/lookup-policy-run.json),
+and validates the complete Cartesian set of nine policies and configured
+palette sizes. It refuses tracked source changes so the recorded Git revision
+identifies the implementation that produced the results. Untracked files do
+not affect this check.
+
+The driver uses
 [`tools/plot_quality_curve.py`](../../tools/plot_quality_curve.py) for
-command execution, `lsqa` parsing, CSV output, and plotting. Override `PYTHON`,
-`IMG2SIXEL_PATH`, or `LSQA_PATH` when the binaries or interpreter are outside
-the source tree. Passing another image as the second argument preserves the
-same policy and `K` sweep. The speed script accepts `--img2sixel`, `--warmups`,
-and `--runs` for an out-of-tree executable or a different repetition budget.
+command execution, `lsqa` parsing, CSV output, and plotting. The default input
+is `images/snake.png`; the default performance budget is two warm-up rounds
+followed by nine measured rounds. `BUILD_DIR`, `PYTHON`, `MAKE`,
+`IMG2SIXEL_PATH`, `LSQA_PATH`, `LOOKUP_POLICY_WARMUPS`, and
+`LOOKUP_POLICY_RUNS` are explicit overrides. Supplying an output directory and
+input as the first two arguments supports exploratory runs without changing
+the checked-in artifacts.
 
 The quality wrapper regenerates the broad and focused controlled K-means
 comparisons and the broad and focused current-Heckbert compatibility
 comparisons. The CSV files store the full command template for every point. A
-rerun is comparable only when the revision, input, loader behavior, build
-options, metric implementation, and benchmark host are also recorded.
+manifest stores the source state and revision, input and executable SHA-256
+digests, libtool payload digests, configure arguments, compiler flags, Python
+and Matplotlib versions, platform, and timing protocol. A quality rerun is
+comparable when those inputs and commands match. Compare speed only on the same
+otherwise-idle host with the same power and thermal conditions; the manifest
+makes host or build changes visible but cannot normalize them.
+
+Rerun the complete command after changes to palette construction, lookup,
+working colorspaces, loading, SIXEL decoding, `lsqa`, compiler optimization, or
+the benchmark scripts. Review every CSV and plot diff together, then update
+the numeric tables and interpretation in this document in the same commit.
+Do not combine quality artifacts from one revision with speed artifacts from
+another revision.
 
 ### Interpretation limits
 
