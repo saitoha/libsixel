@@ -29,7 +29,9 @@ from matplotlib import ticker
 
 
 DEFAULT_COLORS = "8,16,32,64,128,256"
-DEFAULT_POLICIES = "none,5bit,6bit,certlut,eytzinger,vptree"
+DEFAULT_POLICIES = (
+    "none,5bit,6bit,certlut,eytzinger,fhedt,vptree,rbc,mahalanobis"
+)
 
 # The Okabe-Ito palette is combined with markers and line styles so the figure
 # remains legible with common color-vision deficiencies and in monochrome.
@@ -40,9 +42,22 @@ PLOT_COLORS = (
     "#009E73",
     "#CC79A7",
     "#E69F00",
+    "#56B4E9",
+    "#F0E442",
+    "#332288",
 )
-PLOT_MARKERS = ("o", "s", "^", "D", "v", "P")
-PLOT_LINESTYLES = ("-", "--", "-.", ":", (0, (5, 2)), (0, (3, 1, 1, 1)))
+PLOT_MARKERS = ("o", "s", "^", "D", "v", "P", "X", "<", ">")
+PLOT_LINESTYLES = (
+    "-",
+    "--",
+    "-.",
+    ":",
+    (0, (5, 2)),
+    (0, (3, 1, 1, 1)),
+    (0, (1, 1)),
+    (0, (5, 1, 1, 1)),
+    (0, (3, 2, 1, 2)),
+)
 
 
 def parse_csv_strings(raw: str) -> List[str]:

@@ -1657,12 +1657,15 @@ At `K = 256`, the result is:
 
 | Policy | Median time | Speedup over `none` |
 | --- | ---: | ---: |
-| `none` | 165.6 ms | 1.00x |
-| `5bit` | 117.0 ms | 1.42x |
-| `6bit` | 119.9 ms | 1.38x |
-| `certlut` | 94.3 ms | 1.76x |
-| `eytzinger` | 68.9 ms | 2.40x |
-| `vptree` | 71.3 ms | 2.32x |
+| `none` | 180.8 ms | 1.00x |
+| `5bit` | 131.2 ms | 1.38x |
+| `6bit` | 134.6 ms | 1.34x |
+| `certlut` | 108.7 ms | 1.66x |
+| `eytzinger` | 85.2 ms | 2.12x |
+| `fhedt` | 78.9 ms | 2.29x |
+| `vptree` | 85.0 ms | 2.13x |
+| `rbc` | 102.1 ms | 1.77x |
+| `mahalanobis` | 133.2 ms | 1.36x |
 
 This confirms a real speed/accuracy tradeoff between `6bit` and `none` on the
 fixture. It does not show that `6bit` is the best current default: both the
@@ -1671,10 +1674,19 @@ policies must be considered. Dense `5bit` and `6bit` tables also pay fixed
 initialization and cold-bucket costs, so their relative position changes with
 `K`, image size, cache reuse, and traversal order.
 
+The shallow `fhedt` curve is particularly informative. From `K = 16` through
+`K = 256`, its median rises from 63.0 ms to 78.9 ms, while `5bit` and `6bit`
+rise to 131.2 ms and 134.6 ms. This is consistent with `fhedt` paying for its
+fixed-resolution grid and then applying it in constant time per pixel, whereas
+each previously unseen `5bit` or `6bit` bucket still scans `K` palette entries.
+The figure remains an end-to-end measurement, however, so it cannot assign
+the entire difference to lookup without a component-level benchmark.
+
 ### Measurement design
 
-The curves were measured on 2026-09-03 from a clean Autotools build of revision
-`31e211cd3` on Darwin 25.5.0 arm64. The input was
+The quality curves were measured on 2026-09-03 from a clean Autotools build of
+revision `31e211cd3`. The speed curve was regenerated from revision
+`11b792bfe`. Both runs used Darwin 25.5.0 arm64. The input was
 [`images/snake.png`](../../images/snake.png). The broad curves use
 `K = 8, 16, 32, 64, 128, 256`; the focused curve uses steps of 16 from 128
 through 256.
