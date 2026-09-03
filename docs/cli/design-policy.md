@@ -17,6 +17,9 @@ status are part of the interface contract.
   validation. Derive other surfaces from it or add static checks against drift.
 - Keep public option constants, converter parsing, help text, manual pages,
   shell completion, environment variables, bindings, and tests synchronized.
+- Require every public environment control to have exactly one registry owner.
+  Consumers select typed bindings or accessors and do not copy environment
+  variable spellings or call a generic name-based resolver.
 - Preserve Autotools, Meson, and amalgamation parity when an option needs a new
   source file, public constant, test define, or generated input.
 
@@ -49,6 +52,20 @@ lookup policy, colorspace component, or similar subsystem. A suboption should
 have a typed domain, one canonical name, documented aliases only when needed,
 and an explicit environment representation if environment configuration is
 supported.
+
+Every public suboption must define both an uppercase ASCII one-letter short
+form and an environment variable in the owning registry row. If the short-form
+namespace cannot represent another setting, reduce or separate the option axis
+instead of introducing a long-only suboption.
+
+### Internal test controls
+
+Fault injection and test-only implementation switches are not public options
+or public environment contracts. Put them in the `_SIXEL_TEST_*` namespace,
+declare their value kind in the typed internal environment broker, and expose
+only semantic accessors to consumers. Keep these names out of public help,
+manual pages, shell completion, and language bindings. Do not add a generic
+consumer API that accepts an arbitrary environment variable name.
 
 ## Compatibility
 
@@ -87,6 +104,10 @@ precedence order. Unless an established interface defines another order, use:
 1. command-line value;
 2. environment value;
 3. built-in default.
+
+An empty public environment value is equivalent to an unset value unless an
+older documented contract explicitly requires otherwise. Public boolean
+suboptions accept only `0` and `1` in both CLI and environment forms.
 
 Cover precedence with focused tests. A test should distinguish an explicit
 default from an unset value when downstream behavior treats them differently.
