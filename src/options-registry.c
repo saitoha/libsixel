@@ -1202,6 +1202,11 @@ static sixel_suboption_choice_t const g_loader_hdr_fallback_env_choices[] = {
     { "gamma", SIXEL_BUILTIN_HDR_FALLBACK_SRGB }
 };
 
+static sixel_suboption_choice_t const g_loader_hdr_tonemap_choices[] = {
+    { "none", SIXEL_BUILTIN_HDR_TONEMAP_NONE },
+    { "reinhard", SIXEL_BUILTIN_HDR_TONEMAP_REINHARD }
+};
+
 /*
  * This is the sole authoritative suboption registry.  A NULL base pointer
  * means that the row is shared by every base value of the owning option.
@@ -1852,6 +1857,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         -DBL_MAX, DBL_MAX,
         "HDR exposure must be a finite number.",
         hdr_exposure_ev),
+    SIXEL_REGISTRY_LOADER_CHOICE(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "hdr_tonemap", 'H', "SIXEL_LOADER_HDR_TONEMAP", NULL, NULL,
+        g_loader_hdr_tonemap_choices,
+        hdr_tonemap_mode),
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "trns_keycolor", 'K', "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",

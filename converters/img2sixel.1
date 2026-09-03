@@ -832,6 +832,8 @@ suboption, append a second "!" to also disable fallback loaders.
 All loaders accept \fBhdr_fallback_profile=linear-srgb|srgb\fP
 (short form \fBFvalue\fP) for builtin HDR fallback decode and
 \fBhdr_exposure=EV\fP (short form \fBXvalue\fP) for finite EV stops.
+All loaders also accept \fBhdr_tonemap=none|reinhard\fP
+(short form \fBHvalue\fP) for builtin HDR tone mapping.
 PNG-capable loaders accept \fBtrns_keycolor=0|1\fP
 (short form \fBK0\fP or \fBK1\fP, default 1).
 The librsvg loader accepts \fBrelative_resources=0|1\fP
@@ -1466,6 +1468,12 @@ apply a finite number of EV stops before quantizing builtin HDR input.
 Positive values brighten and negative values darken; the default is zero.
 Override with \fB-Lloader:hdr_exposure=EV\fP or short form
 \fB-Lloader:Xvalue\fP.
+.TP 5
+.B SIXEL_LOADER_HDR_TONEMAP
+.br
+select builtin HDR tone mapping. Accepts "none" (default) or "reinhard".
+Override with \fB-Lloader:hdr_tonemap=MODE\fP or short form
+\fB-Lloader:Hvalue\fP.
 .TP 5
 .B SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE
 .br

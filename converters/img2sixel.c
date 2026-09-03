@@ -841,7 +841,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               :hdr_fallback_profile=PROFILE\n"
         "                               (:Fvalue) selects linear-srgb or\n"
         "                               srgb; :hdr_exposure=EV (:Xvalue)\n"
-        "                               applies finite EV stops.\n"
+        "                               applies finite EV stops;\n"
+        "                               :hdr_tonemap=MODE (:Hvalue)\n"
+        "                               selects none or reinhard.\n"
         "                               PNG-capable loaders support\n"
         "                               :trns_keycolor=0|1 (:K0/:K1).\n"
         "                               librsvg supports\n"
@@ -1496,7 +1498,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_HDR_TONEMAP",
         "apply HDR tone mapping on builtin HDR decode path. Accepts none\n"
-        "(default) or reinhard."
+        "(default) or reinhard. Override with\n"
+        "-Lloader:hdr_tonemap=MODE or :Hvalue."
     },
     {
         "SIXEL_LOADER_PREFER_8BIT",

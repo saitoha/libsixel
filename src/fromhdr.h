@@ -35,6 +35,12 @@ typedef enum sixel_builtin_hdr_fallback_profile {
     SIXEL_BUILTIN_HDR_FALLBACK_SRGB
 } sixel_builtin_hdr_fallback_profile_t;
 
+/* Stable values let the loader option registry store HDR tone mapping. */
+typedef enum sixel_builtin_hdr_tonemap_mode {
+    SIXEL_BUILTIN_HDR_TONEMAP_NONE = 0,
+    SIXEL_BUILTIN_HDR_TONEMAP_REINHARD
+} sixel_builtin_hdr_tonemap_mode_t;
+
 /* Decode HDR into frame storage and apply builtin HDR postprocess controls. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_builtin_load_hdr_frame(

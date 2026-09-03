@@ -827,11 +827,6 @@ sixel_builtin_hdr_init_profile_hint(sixel_builtin_hdr_profile_hint_t *out_hint)
 #define SIXEL_HDR_SRGB_BLUE_X  0.1500
 #define SIXEL_HDR_SRGB_BLUE_Y  0.0600
 
-typedef enum sixel_builtin_hdr_tonemap_mode {
-    SIXEL_BUILTIN_HDR_TONEMAP_NONE = 0,
-    SIXEL_BUILTIN_HDR_TONEMAP_REINHARD
-} sixel_builtin_hdr_tonemap_mode_t;
-
 typedef struct sixel_builtin_hdr_profile_trace {
     double effective_gamma;
     int gamma_from_header;
@@ -841,27 +836,6 @@ typedef struct sixel_builtin_hdr_profile_trace {
     sixel_builtin_hdr_fallback_profile_t fallback_profile;
     int profile_apply_failed;
 } sixel_builtin_hdr_profile_trace_t;
-
-static int
-sixel_builtin_hdr_parse_tonemap_mode(
-    char const *text,
-    sixel_builtin_hdr_tonemap_mode_t *out_mode)
-{
-    if (out_mode == NULL) {
-        return 0;
-    }
-    if (text == NULL || text[0] == '\0' ||
-        sixel_builtin_hdr_ascii_case_equal(text, "none")) {
-        *out_mode = SIXEL_BUILTIN_HDR_TONEMAP_NONE;
-        return 1;
-    }
-    if (sixel_builtin_hdr_ascii_case_equal(text, "reinhard")) {
-        *out_mode = SIXEL_BUILTIN_HDR_TONEMAP_REINHARD;
-        return 1;
-    }
-
-    return 0;
-}
 
 static char const *
 sixel_builtin_hdr_tonemap_mode_name(sixel_builtin_hdr_tonemap_mode_t mode)
@@ -1211,7 +1185,6 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
                                       sixel_builtin_hdr_profile_trace_t const
                                           *profile_trace)
 {
-    char const *tonemap_text;
     char const *fallback_label;
     char const *gamma_label;
     char const *primaries_label;
@@ -1243,7 +1216,6 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
     int use_header_exposure;
     int channel;
 
-    tonemap_text = NULL;
     fallback_label = NULL;
     gamma_label = "srgb";
     primaries_label = "srgb";
@@ -1342,14 +1314,11 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
         colorcorr_b = hint->colorcorr_b;
     }
 
-    tonemap_text = sixel_compat_getenv("SIXEL_LOADER_HDR_TONEMAP");
-    if (!sixel_builtin_hdr_parse_tonemap_mode(tonemap_text, &tonemap_mode)) {
-        loader_trace_message(
-            "builtin HDR: unknown SIXEL_LOADER_HDR_TONEMAP='%s'; "
-            "using none",
-            tonemap_text);
-        tonemap_mode = SIXEL_BUILTIN_HDR_TONEMAP_NONE;
-    }
+    tonemap_mode = (sixel_builtin_hdr_tonemap_mode_t)
+        loader_resolve_int_suboption(
+            NULL,
+            SIXEL_SUBOPTION_BINDING_ID_1(hdr_tonemap_mode),
+            SIXEL_BUILTIN_HDR_TONEMAP_NONE);
 
     exposure_ev = loader_resolve_double_suboption(
         NULL,
