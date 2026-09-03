@@ -10251,6 +10251,16 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+    case SIXEL_OPTFLAG_DIAGNOSTICS:  /* x */
+        status = sixel_option_apply_diagnostics_argument(
+            value,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
     case SIXEL_OPTFLAG_COLORS:  /* p */
         status = sixel_encoder_apply_colors_option(encoder, value);
         if (SIXEL_FAILED(status)) {

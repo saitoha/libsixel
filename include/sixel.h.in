@@ -724,6 +724,10 @@ typedef int SIXELSTATUS;
                                                  --runtime-policy=POLICY:
                                                  select process runtime tuning
                                                */
+#define SIXEL_OPTFLAG_DIAGNOSTICS       ('x') /* -x DIAGNOSTICS,
+                                                 --diagnostics=DIAGNOSTICS:
+                                                 select diagnostic policy
+                                               */
 #define SIXEL_OPTFLAG_CLUSTERING_COLORSPACE ('X')
     /* -X COLORSPACE */
     /* --clustering-colorspace=COLORSPACE */

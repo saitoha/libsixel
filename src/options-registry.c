@@ -63,6 +63,7 @@
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
+#include "threading.h"
 
 #define SIXEL_REGISTRY_ARRAY_LENGTH(array_) \
     (sizeof(array_) / sizeof((array_)[0]))
@@ -532,6 +533,25 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_REGISTRY_CHECKED_OFFSET( \
                 sixel_runtime_policy_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
+#define SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN( \
+    optflag_, base_, name_, short_, env_, scope_, field_, override_) \
+    { \
+        (optflag_), (base_), (scope_), (name_), (short_), (env_), NULL, \
+        NULL, SIXEL_SUBOPTION_VALUE_BOOLEAN, NULL, 0u, NULL, 0u, \
+        0.0, 1.0, 1, 1, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_DIAGNOSTICS, \
+            SIXEL_SUBOPTION_STORAGE_INT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_diagnostics_policy_options_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_diagnostics_policy_options_t, override_, int), \
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
         }, NULL, 0ULL \
@@ -1204,6 +1224,17 @@ static sixel_option_value_schema_t const g_runtime_policy_values[] = {
     { "neon", SIXEL_SIMD_LEVEL_NEON, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
 };
 
+static sixel_option_value_schema_t const g_diagnostics_values[] = {
+    {
+        "human", SIXEL_DIAGNOSTICS_MODE_HUMAN, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "code", SIXEL_DIAGNOSTICS_MODE_CODE, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    }
+};
+
 static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
     { "preserve", SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE },
     { "linear", SIXEL_RUNTIME_RESIZE_PRECISION_LINEAR32 },
@@ -1518,6 +1549,32 @@ static sixel_suboption_choice_t const g_loader_hdr_tonemap_choices[] = {
  * into every quantizer or diffusion method.
  */
 static sixel_suboption_key_t const g_suboptions[] = {
+    SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "quiet", 'Q', "SIXEL_DIAG_MODE_QUIET",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        quiet, quiet_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "prefix_suggestions", 'P', "SIXEL_OPTION_PREFIX_SUGGESTIONS",
+        SIXEL_OPTION_SCOPE_ALL,
+        prefix_suggestions, prefix_suggestions_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "fuzzy_suggestions", 'F', "SIXEL_OPTION_FUZZY_SUGGESTIONS",
+        SIXEL_OPTION_SCOPE_ALL,
+        fuzzy_suggestions, fuzzy_suggestions_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "path_suggestions", 'S', "SIXEL_OPTION_PATH_SUGGESTIONS",
+        SIXEL_OPTION_SCOPE_ALL,
+        path_suggestions, path_suggestions_override),
+    SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
+        "force_colors", 'C', "SIXEL_STATUS_FORCE_COLORS",
+        SIXEL_OPTION_SCOPE_ALL,
+        force_colors, force_colors_override),
+
     SIXEL_REGISTRY_RUNTIME_SIZE(
         SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
         "colorspace_min", 'C',
@@ -2571,6 +2628,18 @@ static sixel_suboption_key_t const g_suboptions[] = {
         (values_), SIXEL_REGISTRY_ARRAY_LENGTH(values_) \
     }
 
+#define SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA( \
+    option_id_, scope_, optflag_, name_, default_value_, values_, env_) \
+    { \
+        (option_id_), (scope_), (optflag_), (name_), \
+        SIXEL_OPTION_ARGUMENT_SINGLE, SIXEL_SUBOPTION_VALUE_STRUCTURED, \
+        SIXEL_OPTION_MATCH_PREFIX, SIXEL_OPTION_MATCH_EXACT, \
+        (env_), NULL, NULL, NULL, 0u, 0.0, 0.0, 0, 0, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, NULL, NULL, NULL, \
+        NULL, NULL, SIXEL_OPTION_DEFAULT_FIXED, { (default_value_) }, \
+        (values_), SIXEL_REGISTRY_ARRAY_LENGTH(values_) \
+    }
+
 #define SIXEL_REGISTRY_SCALAR_SCHEMA( \
     option_id_, scope_, optflag_, name_, kind_, argument_flags_, \
     environment_flags_, env_, environment_choices_, \
@@ -2868,6 +2937,14 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_SIMD_LEVEL_NEON,
         g_runtime_policy_values,
         "SIXEL_SIMD_LEVEL"),
+    SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_DIAGNOSTICS,
+        SIXEL_OPTION_SCOPE_ALL,
+        SIXEL_OPTFLAG_DIAGNOSTICS,
+        "diagnostics",
+        SIXEL_DIAGNOSTICS_MODE_HUMAN,
+        g_diagnostics_values,
+        "SIXEL_DIAG_MODE"),
 };
 
 static int
@@ -3185,8 +3262,9 @@ sixel_option_registry_suboption_by_binding(
  * environment values here so environment spelling and validation never leak
  * back into individual consumers.
  */
-SIXEL_INTERNAL_API sixel_option_environment_result_t
-sixel_option_registry_resolve_runtime_binding(
+static sixel_option_environment_result_t
+sixel_option_registry_resolve_process_binding(
+    sixel_option_schema_id_t option_id,
     char const *binding_identifier,
     sixel_suboption_value_kind_t expected_kind,
     sixel_suboption_value_t *value)
@@ -3209,7 +3287,7 @@ sixel_option_registry_resolve_runtime_binding(
         return SIXEL_OPTION_ENVIRONMENT_INVALID;
     }
     key = sixel_option_registry_suboption_by_binding(
-        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
+        option_id,
         NULL,
         binding_identifier);
     if (key == NULL || key->value_kind != expected_kind ||
@@ -3219,6 +3297,18 @@ sixel_option_registry_resolve_runtime_binding(
     text = sixel_compat_getenv(key->env_name);
     if (text == NULL || text[0] == '\0') {
         return SIXEL_OPTION_ENVIRONMENT_UNSET;
+    }
+
+    if (expected_kind == SIXEL_SUBOPTION_VALUE_BOOLEAN) {
+        if (text[0] == '0' && text[1] == '\0') {
+            value->int_value = 0;
+            return SIXEL_OPTION_ENVIRONMENT_MATCH;
+        }
+        if (text[0] == '1' && text[1] == '\0') {
+            value->int_value = 1;
+            return SIXEL_OPTION_ENVIRONMENT_MATCH;
+        }
+        return SIXEL_OPTION_ENVIRONMENT_INVALID;
     }
 
     if (expected_kind == SIXEL_SUBOPTION_VALUE_SIZE) {
@@ -3291,6 +3381,142 @@ sixel_option_registry_resolve_runtime_binding(
     }
 
     return SIXEL_OPTION_ENVIRONMENT_INVALID;
+}
+
+SIXEL_INTERNAL_API sixel_option_environment_result_t
+sixel_option_registry_resolve_runtime_binding(
+    char const *binding_identifier,
+    sixel_suboption_value_kind_t expected_kind,
+    sixel_suboption_value_t *value)
+{
+    return sixel_option_registry_resolve_process_binding(
+        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
+        binding_identifier,
+        expected_kind,
+        value);
+}
+
+static int
+sixel_diagnostics_boolean_value(
+    char const *binding_identifier,
+    int configured_value,
+    int override_active,
+    int fallback)
+{
+    sixel_suboption_value_t value;
+
+    memset(&value, 0, sizeof(value));
+    if (override_active) {
+        return configured_value;
+    }
+    if (sixel_option_registry_resolve_process_binding(
+            SIXEL_OPTION_SCHEMA_DIAGNOSTICS,
+            binding_identifier,
+            SIXEL_SUBOPTION_VALUE_BOOLEAN,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.int_value;
+    }
+
+    return fallback;
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_mode_is_code(void)
+{
+    sixel_suboption_value_t value;
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&value, 0, sizeof(value));
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    if (options.mode_override) {
+        return options.mode == SIXEL_DIAGNOSTICS_MODE_CODE;
+    }
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_DIAGNOSTICS,
+            &value,
+            NULL,
+            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.int_value == SIXEL_DIAGNOSTICS_MODE_CODE;
+    }
+
+    return 0;
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_quiet_is_enabled(void)
+{
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    return sixel_diagnostics_boolean_value(
+        SIXEL_SUBOPTION_BINDING_ID_2(quiet, quiet_override),
+        options.quiet,
+        options.quiet_override,
+        0);
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_prefix_suggestions_are_enabled(void)
+{
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    return sixel_diagnostics_boolean_value(
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            prefix_suggestions,
+            prefix_suggestions_override),
+        options.prefix_suggestions,
+        options.prefix_suggestions_override,
+        options.cli_suggestion_defaults);
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_fuzzy_suggestions_are_enabled(void)
+{
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    return sixel_diagnostics_boolean_value(
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            fuzzy_suggestions,
+            fuzzy_suggestions_override),
+        options.fuzzy_suggestions,
+        options.fuzzy_suggestions_override,
+        options.cli_suggestion_defaults);
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_path_suggestions_are_enabled(void)
+{
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    return sixel_diagnostics_boolean_value(
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            path_suggestions,
+            path_suggestions_override),
+        options.path_suggestions,
+        options.path_suggestions_override,
+        0);
+}
+
+SIXEL_INTERNAL_API int
+sixel_diagnostics_force_colors_is_enabled(void)
+{
+    sixel_diagnostics_policy_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    sixel_diagnostics_policy_load(&options);
+    return sixel_diagnostics_boolean_value(
+        SIXEL_SUBOPTION_BINDING_ID_2(force_colors, force_colors_override),
+        options.force_colors,
+        options.force_colors_override,
+        0);
 }
 
 /*
@@ -3431,6 +3657,7 @@ sixel_option_registry_binding_scope_is_valid(
         allowed_scope = SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE;
         break;
     case SIXEL_SUBOPTION_TARGET_RUNTIME:
+    case SIXEL_SUBOPTION_TARGET_DIAGNOSTICS:
         allowed_scope = SIXEL_OPTION_SCOPE_ALL;
         break;
     default:

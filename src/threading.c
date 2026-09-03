@@ -722,6 +722,7 @@ static sixel_thread_config_state_t g_thread_config = {
 };
 
 static sixel_runtime_policy_options_t g_runtime_policy;
+static sixel_diagnostics_policy_options_t g_diagnostics_policy;
 
 #if SIXEL_ENABLE_THREADS
 static sixel_mutex_t g_thread_config_mutex;
@@ -913,6 +914,38 @@ sixel_runtime_policy_store(sixel_runtime_policy_options_t const *options)
     }
     sixel_thread_config_lock();
     g_runtime_policy = *options;
+    sixel_thread_config_unlock();
+}
+
+void
+sixel_diagnostics_policy_load(
+    sixel_diagnostics_policy_options_t *options)
+{
+    if (options == NULL) {
+        return;
+    }
+    sixel_thread_config_lock();
+    *options = g_diagnostics_policy;
+    sixel_thread_config_unlock();
+}
+
+void
+sixel_diagnostics_policy_store(
+    sixel_diagnostics_policy_options_t const *options)
+{
+    if (options == NULL) {
+        return;
+    }
+    sixel_thread_config_lock();
+    g_diagnostics_policy = *options;
+    sixel_thread_config_unlock();
+}
+
+void
+sixel_diagnostics_policy_enable_cli_suggestion_defaults(void)
+{
+    sixel_thread_config_lock();
+    g_diagnostics_policy.cli_suggestion_defaults = 1;
     sixel_thread_config_unlock();
 }
 

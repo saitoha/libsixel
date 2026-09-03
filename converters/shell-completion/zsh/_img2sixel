@@ -892,6 +892,46 @@ _runtimepolicy() {
     'neon[limit SIMD selection to NEON]'
 }
 
+_diagnosticspolicy() {
+  local current base segment key prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    base=${current%%:*}
+    segment=${current##*:}
+    if [[ ${base} == human || ${base} == code ]]; then
+      if [[ ${segment} == *=* ]]; then
+        key=${segment%%=*}
+        prefix=${current%"${segment}"}
+        if [[ ${key} == quiet || ${key} == prefix_suggestions || \
+              ${key} == fuzzy_suggestions || \
+              ${key} == path_suggestions || ${key} == force_colors ]]; then
+          compadd -- "${prefix}${key}=0" "${prefix}${key}=1"
+          return 0
+        fi
+      else
+        prefix=${current%"${segment}"}
+        compadd -- "${prefix}Q0" "${prefix}Q1" \
+                   "${prefix}P0" "${prefix}P1" \
+                   "${prefix}F0" "${prefix}F1" \
+                   "${prefix}S0" "${prefix}S1" \
+                   "${prefix}C0" "${prefix}C1" \
+                   "${prefix}quiet=" \
+                   "${prefix}prefix_suggestions=" \
+                   "${prefix}fuzzy_suggestions=" \
+                   "${prefix}path_suggestions=" \
+                   "${prefix}force_colors="
+        return 0
+      fi
+    fi
+  fi
+
+  _values \
+    'DIAGNOSTICS' \
+    'human[emit human-readable diagnostics]' \
+    'code[emit stable machine-readable diagnostics]'
+}
+
 
 _completiontarget() {
   _values \
@@ -950,6 +990,7 @@ _arguments -S -s -A "-*" -S \
   {-~,--lookup-policy=}'[choose histogram lookup width and backend]':lookuppolicy:_lookuppolicy \
   {-G,--gpu-policy=}'[choose palette-apply accelerator policy]':gpupolicy:_gpupolicy \
   {-j,--runtime-policy=}'[choose process runtime policy]':runtimepolicy:_runtimepolicy \
+  {-x,--diagnostics=}'[choose diagnostic presentation]':diagnostics:_diagnosticspolicy \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
   {-T,--start-frame=}'[set animation start frame index for loaders]' \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \

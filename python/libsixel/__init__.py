@@ -652,6 +652,9 @@ SIXEL_OPTFLAG_GPU_POLICY        = 'G'  # -G GPUPOLICY,
 SIXEL_OPTFLAG_RUNTIME_POLICY    = 'j'  # -j RUNTIMEPOLICY,
                                       #   --runtime-policy=POLICY:
                                       #        choose process runtime tuning
+SIXEL_OPTFLAG_DIAGNOSTICS       = 'x'  # -x DIAGNOSTICS,
+                                      #   --diagnostics=MODE:
+                                      #        choose diagnostic presentation
 SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X'  # -X COLORSPACE, --clustering-colorspace=COLORSPACE:
                                           #        select palette clustering space.
                                           #        ignored with fixed palette options (-b, -m, -e).

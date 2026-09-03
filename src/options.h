@@ -28,15 +28,6 @@
 
 #include <stddef.h>
 
-/*
- * The CLI suggestion features can be driven by environment variables so
- * library embedders retain control.  Each variable accepts "1" to enable
- * the associated hint generator and "0" (or absence) to keep it quiet.
- */
-#define SIXEL_OPTION_ENV_PREFIX_SUGGESTIONS "SIXEL_OPTION_PREFIX_SUGGESTIONS"
-#define SIXEL_OPTION_ENV_FUZZY_SUGGESTIONS  "SIXEL_OPTION_FUZZY_SUGGESTIONS"
-#define SIXEL_OPTION_ENV_PATH_SUGGESTIONS   "SIXEL_OPTION_PATH_SUGGESTIONS"
-
 #define SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT 24
 #define SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_MAX 441
 #define SIXEL_OPTION_DEQUANTIZE_LSO_BASE (-1)
@@ -102,7 +93,8 @@ typedef enum sixel_suboption_target_class {
     SIXEL_SUBOPTION_TARGET_DECODER,
     SIXEL_SUBOPTION_TARGET_LOADER,
     SIXEL_SUBOPTION_TARGET_DEQUANTIZE,
-    SIXEL_SUBOPTION_TARGET_RUNTIME
+    SIXEL_SUBOPTION_TARGET_RUNTIME,
+    SIXEL_SUBOPTION_TARGET_DIAGNOSTICS
 } sixel_suboption_target_class_t;
 
 typedef enum sixel_suboption_storage_kind {
@@ -180,6 +172,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
     SIXEL_OPTION_SCHEMA_BGCOLOR,
     SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
+    SIXEL_OPTION_SCHEMA_DIAGNOSTICS,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
 
@@ -410,6 +403,27 @@ typedef enum sixel_runtime_resize_precision {
     SIXEL_RUNTIME_RESIZE_PRECISION_FLOAT_WORK
 } sixel_runtime_resize_precision_t;
 
+typedef struct sixel_diagnostics_policy_options {
+    int mode;
+    int mode_override;
+    int quiet;
+    int quiet_override;
+    int prefix_suggestions;
+    int prefix_suggestions_override;
+    int fuzzy_suggestions;
+    int fuzzy_suggestions_override;
+    int path_suggestions;
+    int path_suggestions_override;
+    int force_colors;
+    int force_colors_override;
+    int cli_suggestion_defaults;
+} sixel_diagnostics_policy_options_t;
+
+typedef enum sixel_diagnostics_mode {
+    SIXEL_DIAGNOSTICS_MODE_HUMAN = 0,
+    SIXEL_DIAGNOSTICS_MODE_CODE
+} sixel_diagnostics_mode_t;
+
 typedef struct sixel_option_argument_schema {
     sixel_option_schema_id_t option_id;
     unsigned int scope;
@@ -600,6 +614,20 @@ sixel_option_apply_runtime_policy_argument(
     unsigned int consumer_scope,
     char *diagnostic,
     size_t diagnostic_size);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_option_apply_diagnostics_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+SIXEL_INTERNAL_API int sixel_diagnostics_mode_is_code(void);
+SIXEL_INTERNAL_API int sixel_diagnostics_quiet_is_enabled(void);
+SIXEL_INTERNAL_API int sixel_diagnostics_prefix_suggestions_are_enabled(void);
+SIXEL_INTERNAL_API int sixel_diagnostics_fuzzy_suggestions_are_enabled(void);
+SIXEL_INTERNAL_API int sixel_diagnostics_path_suggestions_are_enabled(void);
+SIXEL_INTERNAL_API int sixel_diagnostics_force_colors_is_enabled(void);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument(

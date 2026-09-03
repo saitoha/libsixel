@@ -94,6 +94,15 @@ Encoder suboptions are \fB:colorspace_min=PIXELS\fP
 (\fB:Rvalue\fP), and \fB:scale_min_bytes=BYTES\fP
 (\fB:BBYTES\fP).
 .TP 5
+.B \-x \fIMODE[:KEY=VALUE]\fP, \-\-diagnostics=\fIMODE[:KEY=VALUE]\fP
+choose diagnostic presentation.  \fIMODE\fP is \fBhuman\fP (default) or
+\fBcode\fP.  Common suboptions are \fB:prefix_suggestions=0|1\fP
+(\fB:P0|:P1\fP), \fB:fuzzy_suggestions=0|1\fP
+(\fB:F0|:F1\fP), \fB:path_suggestions=0|1\fP
+(\fB:S0|:S1\fP), and \fB:force_colors=0|1\fP
+(\fB:C0|:C1\fP).  img2sixel also accepts \fB:quiet=0|1\fP
+(\fB:Q0|:Q1\fP).
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5
@@ -1163,30 +1172,45 @@ print help and list available loaders.
 .SH "ENVIRONMENT VARIABLES"
 \fIimg2sixel\fP honours the following environment variables:
 .TP 5
+.B SIXEL_DIAG_MODE
+.br
+select human or code diagnostics. Set to "code" to emit stable LSX*
+diagnostic headers. The \fB\-x MODE\fP option takes precedence.
+.TP 5
+.B SIXEL_DIAG_MODE_QUIET
+.br
+reduce option-parse stderr noise in code mode. Set to "1" to enable compact
+invalid-argument text or "0" to disable it. The \fB\-x *:quiet=0|1\fP
+suboption takes precedence.
+.TP 5
 .B SIXEL_OPTION_PREFIX_SUGGESTIONS
 .br
 toggle the prefix disambiguation hints emitted when a value matches more
 than one option. Set to "1" (the default when unset) to print the candidate
 list, or "0" to silence the diagnostic. Library embedders must opt in
-explicitly.
+explicitly. The \fB\-x *:prefix_suggestions=0|1\fP suboption takes
+precedence.
 .TP 5
 .B SIXEL_OPTION_FUZZY_SUGGESTIONS
 .br
 toggle the normalized Levenshtein suggestions that recommend the closest
 option names after a typo. Set to "1" (the default when unset) to print the
 hint list, or "0" to disable it. Library embedders must opt in explicitly.
+The \fB\-x *:fuzzy_suggestions=0|1\fP suboption takes precedence.
 .TP 5
 .B SIXEL_OPTION_PATH_SUGGESTIONS
 .br
 toggle the filesystem diagnostics that explain why a path could not be
 resolved. Set to "1" to show the guidance, or "0" (the default) to suppress
 it. The converter frontends keep the default disabled; library embedders must
-opt in explicitly.
+opt in explicitly. The \fB\-x *:path_suggestions=0|1\fP suboption takes
+precedence.
 .TP 5
 .B SIXEL_STATUS_FORCE_COLORS
 .br
 force ANSI colorized diagnostics from status markup output. Set to "1" to
-emit color sequences without relying on TTY detection.
+emit color sequences without relying on TTY detection. The
+\fB\-x *:force_colors=0|1\fP suboption takes precedence.
 .TP 5
 .B IMG2SIXEL_COMPLETION_BASH
 .br

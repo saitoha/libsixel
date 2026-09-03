@@ -125,6 +125,14 @@ implementation selected at runtime.
 The decoder suboption \fB:parallel_skew=-20..20\fP, with short form
 \fB:KVALUE\fP, biases decoder worker spans.
 .TP 5
+.B \-x MODE[:KEY=VALUE], \-\-diagnostics=MODE[:KEY=VALUE]
+Choose diagnostic presentation. MODE is \fBhuman\fP (default) or
+\fBcode\fP. Common suboptions are \fB:prefix_suggestions=0|1\fP
+(\fB:P0|:P1\fP), \fB:fuzzy_suggestions=0|1\fP
+(\fB:F0|:F1\fP), \fB:path_suggestions=0|1\fP
+(\fB:S0|:S1\fP), and \fB:force_colors=0|1\fP
+(\fB:C0|:C1\fP).
+.TP 5
 .B \-% KEY=VALUE, \--env=KEY=VALUE
 Set a process environment variable before decoding.
 This option can be repeated.
@@ -139,26 +147,40 @@ Show usage information, then exit.
 .SH "ENVIRONMENT VARIABLES"
 \fIsixel2png\fP honours the following environment variables:
 .TP 5
+.B SIXEL_DIAG_MODE
+.br
+select human or code diagnostics. Set to "code" to emit stable LSX*
+diagnostic headers. The \fB\-x MODE\fP option takes precedence.
+.TP 5
 .B SIXEL_OPTION_PREFIX_SUGGESTIONS
 .br
 toggle the prefix disambiguation hints emitted when a value matches more
 than one option. Set to "1" (the default when unset) to print the
 candidate list, or "0" to silence the diagnostic. Library embedders
-must opt in explicitly.
+must opt in explicitly. The \fB\-x *:prefix_suggestions=0|1\fP
+suboption takes precedence.
 .TP 5
 .B SIXEL_OPTION_FUZZY_SUGGESTIONS
 .br
 toggle the normalized Levenshtein suggestions that recommend the closest
 option names after a typo. Set to "1" (the default when unset) to print
 the hint list, or "0" to disable it. Library embedders must opt in
-explicitly.
+explicitly. The \fB\-x *:fuzzy_suggestions=0|1\fP suboption takes
+precedence.
 .TP 5
 .B SIXEL_OPTION_PATH_SUGGESTIONS
 .br
 toggle the filesystem diagnostics that explain why a path could not be
 resolved. Set to "1" to show the guidance, or "0" (the default) to suppress
 it. The converter frontends keep the default disabled; library embedders must
-opt in explicitly.
+opt in explicitly. The \fB\-x *:path_suggestions=0|1\fP suboption takes
+precedence.
+.TP 5
+.B SIXEL_STATUS_FORCE_COLORS
+.br
+force ANSI colorized diagnostics from status markup output. Set to "1" to
+emit color sequences without relying on TTY detection. The
+\fB\-x *:force_colors=0|1\fP suboption takes precedence.
 .TP 5
 .B SIXEL_THREADS
 .br

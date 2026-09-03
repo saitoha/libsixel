@@ -202,6 +202,17 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             (:KVALUE) biases worker spans\n"
     },
     {
+        'x',
+        "diagnostics",
+        "-x MODE[:KEY=VALUE], --diagnostics=MODE[:KEY=VALUE]\n"
+        "                           select human (default) or code.\n"
+        "                           common sub-options:\n"
+        "                             :prefix_suggestions=0|1 (:P0|:P1)\n"
+        "                             :fuzzy_suggestions=0|1 (:F0|:F1)\n"
+        "                             :path_suggestions=0|1 (:S0|:S1)\n"
+        "                             :force_colors=0|1 (:C0|:C1)\n"
+    },
+    {
         '%',
         "env",
         "-% KEY=VALUE, --env=KEY=VALUE\n"
@@ -230,7 +241,7 @@ sixel2png_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:G:j:%:DVH";
+static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:G:j:x:%:DVH";
 
 typedef struct sixel2png_parsed_option {
     int code;
@@ -524,6 +535,7 @@ main(int argc, char *argv[])
         {"threads",          required_argument,  NULL, '='},
         {"gpu-policy",       required_argument,  NULL, 'G'},
         {"runtime-policy",   required_argument,  NULL, 'j'},
+        {"diagnostics",      required_argument,  NULL, 'x'},
         {"env",              required_argument,  NULL, '%'},
         {"version",          no_argument,        NULL, 'V'},
         {"help",             no_argument,        NULL, 'H'},

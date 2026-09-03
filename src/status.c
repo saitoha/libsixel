@@ -55,6 +55,7 @@
 #endif  /* HAVE_LIBCURL */
 
 #include <sixel.h>
+#include "options.h"
 #include "status.h"
 
 #if !defined(SIXEL_STATUS_HAVE_TTY_HELPERS)
@@ -751,22 +752,7 @@ sixel_status_render_markup(const char *source,
 static int
 sixel_status_force_colors_enabled(void)
 {
-    const char *value;
-
-    value = sixel_compat_getenv("SIXEL_STATUS_FORCE_COLORS");
-    if (value == NULL) {
-        return 0;
-    }
-
-    /*
-     * Keep the override intentionally strict so test environments can opt in
-     * without changing behavior for unrelated values.
-     */
-    if (strcmp(value, "1") == 0) {
-        return 1;
-    }
-
-    return 0;
+    return sixel_diagnostics_force_colors_is_enabled();
 }
 
 

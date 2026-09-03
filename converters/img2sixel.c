@@ -92,6 +92,8 @@ const char *img2sixel_compat_getenv(const char *name);
 int img2sixel_compat_setenv(const char *name, const char *value);
 int img2sixel_trace_topic_is_enabled(char const *topic);
 void img2sixel_trace_topic_message(const char *topic, const char *format, ...);
+SIXEL_INTERNAL_API int sixel_diagnostics_mode_is_code(void);
+SIXEL_INTERNAL_API int sixel_diagnostics_quiet_is_enabled(void);
 
 #if !defined(LIBSIXEL_OPTIONS_H)
 /*
@@ -751,6 +753,19 @@ static cli_option_help_t const g_option_help_table[] = {
         "      :scale_min_bytes=BYTES (:BBYTES)\n"
     },
     {
+        'x',
+        "diagnostics",
+        "-x MODE[:KEY=VALUE], --diagnostics=MODE[:KEY=VALUE]\n"
+        "    select human-readable or stable code diagnostics.\n"
+        "    MODE is human (default) or code.\n"
+        "    sub-options:\n"
+        "      :quiet=0|1 (:Q0|:Q1)\n"
+        "      :prefix_suggestions=0|1 (:P0|:P1)\n"
+        "      :fuzzy_suggestions=0|1 (:F0|:F1)\n"
+        "      :path_suggestions=0|1 (:S0|:S1)\n"
+        "      :force_colors=0|1 (:C0|:C1)\n"
+    },
+    {
         'l',
         "loop-control",
         "-l LOOPMODE, --loop-control=LOOPMODE\n"
@@ -1043,17 +1058,20 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_OPTION_PREFIX_SUGGESTIONS",
         "toggle prefix disambiguation hints for ambiguous option values.\n"
-        "Set to '1' (default) to print candidates or '0' to silence them."
+        "Set to '1' (default) to print candidates or '0' to silence them.\n"
+        "The -x *:prefix_suggestions value takes precedence."
     },
     {
         "SIXEL_OPTION_FUZZY_SUGGESTIONS",
         "toggle normalized Levenshtein suggestions after typos.\n"
-        "Set to '1' (default) to show hints or '0' to disable them."
+        "Set to '1' (default) to show hints or '0' to disable them.\n"
+        "The -x *:fuzzy_suggestions value takes precedence."
     },
     {
         "SIXEL_OPTION_PATH_SUGGESTIONS",
         "toggle filesystem diagnostics when a path cannot be resolved.\n"
-        "Set to '1' to explain failures or '0' (default) to suppress them."
+        "Set to '1' to explain failures or '0' (default) to suppress them.\n"
+        "The -x *:path_suggestions value takes precedence."
     },
     {
         "SIXEL_TRACE_TOPIC",
@@ -1079,17 +1097,20 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DIAG_MODE",
         "choose machine-readable diagnostics mode.\n"
-        "Set to 'code' to emit stable LSX* diagnostic headers."
+        "Set to 'code' to emit stable LSX* diagnostic headers.\n"
+        "The -x MODE value takes precedence."
     },
     {
         "SIXEL_DIAG_MODE_QUIET",
         "reduce option-parse stderr noise in code diagnostic mode.\n"
-        "Only the exact value '1' enables compact invalid-argument text."
+        "Only the exact value '1' enables compact invalid-argument text.\n"
+        "The -x *:quiet value takes precedence."
     },
     {
         "SIXEL_STATUS_FORCE_COLORS",
         "force ANSI colorized diagnostics from status markup output.\n"
-        "Set to '1' to emit color sequences without TTY detection."
+        "Set to '1' to emit color sequences without TTY detection.\n"
+        "The -x *:force_colors value takes precedence."
     },
     {
         "SIXEL_CLIPBOARD_BACKEND",
@@ -2090,7 +2111,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:kil:T:t:ugvSn:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:kil:T:t:ugvSn:"
     "PE:U:B:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
@@ -2346,37 +2367,16 @@ img2sixel_safe_size_add(size_t *total, size_t addend)
 static int
 img2sixel_diag_mode_is_code(void)
 {
-    char const *value;
-
-    value = img2sixel_compat_getenv("SIXEL_DIAG_MODE");
-    if (value == NULL) {
-        return 0;
-    }
-    if (strcmp(value, "code") == 0) {
-        return 1;
-    }
-
-    return 0;
+    return sixel_diagnostics_mode_is_code();
 }
 
 static int
 img2sixel_diag_mode_is_quiet(void)
 {
-    char const *value;
-
     if (!img2sixel_diag_mode_is_code()) {
         return 0;
     }
-
-    value = img2sixel_compat_getenv("SIXEL_DIAG_MODE_QUIET");
-    if (value == NULL) {
-        return 0;
-    }
-    if (value[0] == '1' && value[1] == '\0') {
-        return 1;
-    }
-
-    return 0;
+    return sixel_diagnostics_quiet_is_enabled();
 }
 
 static void
@@ -3132,6 +3132,7 @@ img2sixel_main(int argc, char *argv[])
         {"lookup-policy",         required_argument,  &long_opt, '~'},
         {"gpu-policy",            required_argument,  &long_opt, 'G'},
         {"runtime-policy",        required_argument,  &long_opt, 'j'},
+        {"diagnostics",           required_argument,  &long_opt, 'x'},
         {"palette-type",          required_argument,  &long_opt, 't'},
         {"insecure",              no_argument,        &long_opt, 'k'},
         {"invert",                no_argument,        &long_opt, 'i'},
@@ -3502,7 +3503,10 @@ unknown_option_error:
             "                 [-d diffusiontype] [-Q model]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality]\n"
-            "                 [-~ lookuppolicy] [-l loopmode]\n"
+            "                 [-F mergepolicy] [-a coverpolicy]\n"
+            "                 [-~ lookuppolicy] [-G gpupolicy]\n"
+            "                 [-j runtimepolicy] [-x diagnostics]\n"
+            "                 [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
             "                 [-E encodepolicy] [-L loaderlist] [-# cmsengine]\n"
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"

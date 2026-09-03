@@ -91,15 +91,6 @@
 # define SIXEL_OPTION_UNUSED
 #endif
 
-static void
-sixel_option_apply_env_default(char const *variable);
-
-static int
-sixel_option_environment_is_enabled(char const *variable);
-
-static int
-sixel_option_diag_mode_is_code(void);
-
 typedef struct sixel_option_choice_suggestion {
     char const *name;
     double score;
@@ -130,73 +121,7 @@ sixel_option_trace_path_probe_end(
 void
 sixel_option_apply_cli_suggestion_defaults(void)
 {
-    sixel_option_apply_env_default(
-        SIXEL_OPTION_ENV_PREFIX_SUGGESTIONS);
-    sixel_option_apply_env_default(
-        SIXEL_OPTION_ENV_FUZZY_SUGGESTIONS);
-    /* Path suggestions stay opt-in for the CLI frontends. */
-}
-
-static void
-sixel_option_apply_env_default(char const *variable)
-{
-    char const *existing;
-    int status;
-
-    existing = NULL;
-    status = 0;
-
-    if (variable == NULL) {
-        return;
-    }
-
-    existing = sixel_compat_getenv(variable);
-    if (existing != NULL) {
-        return;
-    }
-
-    status = sixel_compat_setenv(variable, "1");
-    (void)status;
-}
-
-static int
-sixel_option_environment_is_enabled(char const *variable)
-{
-    char const *value;
-
-    value = NULL;
-
-    if (variable == NULL) {
-        return 0;
-    }
-
-    value = sixel_compat_getenv(variable);
-    if (value == NULL) {
-        return 0;
-    }
-    if (value[0] == '1' && value[1] == '\0') {
-        return 1;
-    }
-
-    return 0;
-}
-
-static int
-sixel_option_diag_mode_is_code(void)
-{
-    char const *value;
-
-    value = NULL;
-
-    value = sixel_compat_getenv("SIXEL_DIAG_MODE");
-    if (value == NULL) {
-        return 0;
-    }
-    if (strcmp(value, "code") == 0) {
-        return 1;
-    }
-
-    return 0;
+    sixel_diagnostics_policy_enable_cli_suggestion_defaults();
 }
 
 /*
@@ -598,9 +523,9 @@ sixel_option_report_ambiguous_prefix(
     if (buffer == NULL || buffer_size == 0u) {
         return;
     }
-    diag_mode_code = sixel_option_diag_mode_is_code();
-    suggestions_enabled = sixel_option_environment_is_enabled(
-        SIXEL_OPTION_ENV_PREFIX_SUGGESTIONS);
+    diag_mode_code = sixel_diagnostics_mode_is_code();
+    suggestions_enabled =
+        sixel_diagnostics_prefix_suggestions_are_enabled();
     active_candidates = suggestions_enabled ? candidates : NULL;
     if (diag_mode_code) {
         active_candidates = NULL;
@@ -634,7 +559,7 @@ sixel_option_report_invalid_choice(
     if (base_message == NULL) {
         return;
     }
-    diag_mode_code = sixel_option_diag_mode_is_code();
+    diag_mode_code = sixel_diagnostics_mode_is_code();
 
     if (!diag_mode_code && suggestions != NULL && suggestions[0] != '\0'
         && buffer != NULL && buffer_size > 0u) {
@@ -863,7 +788,7 @@ sixel_option_report_unknown_base_value(
     if (buffer == NULL || buffer_size == 0u) {
         return;
     }
-    diag_mode_code = sixel_option_diag_mode_is_code();
+    diag_mode_code = sixel_diagnostics_mode_is_code();
 
     if (diag_mode_code) {
         written = snprintf(
@@ -926,7 +851,7 @@ sixel_option_report_unknown_suboption_key(
     if (buffer == NULL || buffer_size == 0u) {
         return;
     }
-    diag_mode_code = sixel_option_diag_mode_is_code();
+    diag_mode_code = sixel_diagnostics_mode_is_code();
 
     if (diag_mode_code) {
         written = snprintf(
@@ -984,7 +909,7 @@ sixel_option_report_unknown_suboption_value(
     if (buffer == NULL || buffer_size == 0u) {
         return;
     }
-    diag_mode_code = sixel_option_diag_mode_is_code();
+    diag_mode_code = sixel_diagnostics_mode_is_code();
 
     if (diag_mode_code) {
         written = snprintf(
@@ -3173,6 +3098,65 @@ sixel_option_apply_runtime_policy_argument(
     return status;
 }
 
+SIXELSTATUS
+sixel_option_apply_diagnostics_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
+    sixel_diagnostics_policy_options_t options;
+
+    status = SIXEL_OK;
+    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_DIAGNOSTICS);
+    memset(&resolution, 0, sizeof(resolution));
+    memset(&options, 0, sizeof(options));
+    if (schema == NULL || argument == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        argument,
+        schema,
+        consumer_scope,
+        &resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    sixel_diagnostics_policy_load(&options);
+    sixel_option_reset_suboption_overrides(
+        schema,
+        consumer_scope,
+        &options,
+        SIXEL_SUBOPTION_TARGET_DIAGNOSTICS);
+    sixel_option_apply_suboption_environment(
+        schema,
+        resolution.base_def,
+        consumer_scope,
+        &options,
+        SIXEL_SUBOPTION_TARGET_DIAGNOSTICS);
+    options.mode = resolution.resolved_base_value;
+    options.mode_override = 1;
+    if (!sixel_option_apply_suboption_assignments(
+            &resolution,
+            &options,
+            SIXEL_SUBOPTION_TARGET_DIAGNOSTICS)) {
+        sixel_helper_set_additional_message(
+            "failed to apply diagnostics suboptions.");
+        status = SIXEL_BAD_ARGUMENT;
+    } else {
+        sixel_diagnostics_policy_store(&options);
+    }
+    sixel_option_free_argument_resolution(&resolution);
+    return status;
+}
+
 static int
 sixel_option_append_suboption_assignment(
     sixel_option_argument_resolution_t *resolution,
@@ -3549,8 +3533,8 @@ sixel_option_collect_choice_suggestions(
         return 0u;
     }
 
-    suggestions_enabled = sixel_option_environment_is_enabled(
-        SIXEL_OPTION_ENV_FUZZY_SUGGESTIONS);
+    suggestions_enabled =
+        sixel_diagnostics_fuzzy_suggestions_are_enabled();
     if (!suggestions_enabled) {
         return 0u;
     }
@@ -4459,12 +4443,12 @@ sixel_option_build_missing_path_message(
      * path translation for missing files.
      */
 #if defined(_WIN32) && HAVE_WINDOWS_H
-    suggestions_enabled = sixel_option_environment_is_enabled(
-        SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
+    suggestions_enabled =
+        sixel_diagnostics_path_suggestions_are_enabled();
     if (!suggestions_enabled) {
         sixel_trace_topic_message("suggestion",
             "skip suggestion lookup because %s is disabled",
-            SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
+            "path_suggestions");
         free(directory_copy);
         return 0;
     }
@@ -4769,12 +4753,12 @@ sixel_option_build_missing_path_message(
 
     return result;
 #elif HAVE_DIRENT_H && HAVE_SYS_STAT_H
-    suggestions_enabled = sixel_option_environment_is_enabled(
-        SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
+    suggestions_enabled =
+        sixel_diagnostics_path_suggestions_are_enabled();
     if (!suggestions_enabled) {
         sixel_trace_topic_message("suggestion",
             "skip suggestion lookup because %s is disabled",
-            SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
+            "path_suggestions");
         free(directory_copy);
         return 0;
     }

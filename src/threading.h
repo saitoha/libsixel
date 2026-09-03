@@ -35,6 +35,7 @@ extern "C" {
 typedef int (*sixel_thread_fn)(void *arg);
 
 struct sixel_runtime_policy_options;
+struct sixel_diagnostics_policy_options;
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
     && !defined(WITH_WINPTHREAD)
@@ -115,6 +116,12 @@ SIXEL_INTERNAL_API int sixel_runtime_policy_parallel_skew(int fallback);
 SIXEL_INTERNAL_API int sixel_runtime_policy_resize_precision(int fallback);
 SIXEL_INTERNAL_API size_t sixel_runtime_policy_scale_min_bytes(
     size_t fallback);
+SIXEL_INTERNAL_API void sixel_diagnostics_policy_load(
+    struct sixel_diagnostics_policy_options *options);
+SIXEL_INTERNAL_API void sixel_diagnostics_policy_store(
+    struct sixel_diagnostics_policy_options const *options);
+SIXEL_INTERNAL_API void
+sixel_diagnostics_policy_enable_cli_suggestion_defaults(void);
 
 #ifdef __cplusplus
 }
