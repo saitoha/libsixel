@@ -26,15 +26,17 @@ POLICIES = (
 BROAD_COLORS = (8, 16, 32, 64, 128, 256)
 FOCUSED_COLORS = (128, 144, 160, 176, 192, 208, 224, 240, 256)
 QUALITY_FILES = {
-    "lookup-policy-color-error.csv": BROAD_COLORS,
-    "lookup-policy-ms-ssim.csv": BROAD_COLORS,
-    "lookup-policy-kmeans-color-error.csv": BROAD_COLORS,
-    "lookup-policy-kmeans-ms-ssim.csv": BROAD_COLORS,
-    "lookup-policy-kmeans-high-k.csv": FOCUSED_COLORS,
-    "lookup-policy-heckbert-high-k.csv": FOCUSED_COLORS,
+    "lookup-policy-color-error.csv": (BROAD_COLORS, "none"),
+    "lookup-policy-ms-ssim.csv": (BROAD_COLORS, "none"),
+    "lookup-policy-kmeans-color-error.csv": (BROAD_COLORS, "none"),
+    "lookup-policy-kmeans-ms-ssim.csv": (BROAD_COLORS, "none"),
+    "lookup-policy-kmeans-fs-color-error.csv": (BROAD_COLORS, "fs"),
+    "lookup-policy-kmeans-fs-ms-ssim.csv": (BROAD_COLORS, "fs"),
+    "lookup-policy-kmeans-high-k.csv": (FOCUSED_COLORS, "none"),
+    "lookup-policy-heckbert-high-k.csv": (FOCUSED_COLORS, "none"),
 }
 PLOT_FILES = tuple(name.replace(".csv", ".png") for name in QUALITY_FILES)
-PLOT_FILES += ("lookup-policy-speed.png",)
+PLOT_FILES += ("lookup-policy-speed.png", "lookup-policy-fs-speed.png")
 POLICY_PATTERN = re.compile(r"--lookup-policy=([^ ]+)")
 ACCELERATION_FILES = (
     "lookup-policy-shared-speed.csv",
@@ -89,7 +91,9 @@ def validate_finite_metrics(row: Dict[str, str], path: Path) -> None:
             fail(f"non-finite {name} value in {path}")
 
 
-def validate_quality_file(path: Path, colors: Sequence[int]) -> None:
+def validate_quality_file(path: Path,
+                          colors: Sequence[int],
+                          diffusion: str) -> None:
     """Check one quality sweep for its complete policy/color Cartesian set."""
     rows = read_csv(path)
     actual: Set[Tuple[str, int]] = set()
@@ -98,6 +102,8 @@ def validate_quality_file(path: Path, colors: Sequence[int]) -> None:
         if row.get("kind") != "image":
             fail(f"unexpected aggregate row in single-image sweep: {path}")
         policy = policy_from_template(row.get("template", ""), path)
+        if f"--diffusion={diffusion}" not in row.get("template", ""):
+            fail(f"quality diffusion differs from protocol in {path}")
         try:
             color = int(row.get("colors", ""))
         except ValueError as exc:
@@ -118,7 +124,9 @@ def validate_quality_file(path: Path, colors: Sequence[int]) -> None:
         fail(f"quality sweep must contain exactly one named image: {path}")
 
 
-def validate_speed_file(path: Path, metadata: Dict[str, object]) -> None:
+def validate_speed_file(path: Path,
+                        metadata: Dict[str, object],
+                        diffusion: str) -> None:
     """Check speed rows, revision consistency, and baseline normalization."""
     rows = read_csv(path)
     protocol = metadata.get("protocol")
@@ -132,6 +140,8 @@ def validate_speed_file(path: Path, metadata: Dict[str, object]) -> None:
         fail(f"metadata speed colors differ from protocol: {colors}")
     if policies != POLICIES:
         fail(f"metadata policies differ from protocol: {policies}")
+    if protocol.get("diffusion") != diffusion:
+        fail(f"metadata diffusion differs from protocol: {diffusion}")
     if not revision or revision == "unknown":
         fail("metadata source revision is missing")
 
@@ -159,6 +169,8 @@ def validate_speed_file(path: Path, metadata: Dict[str, object]) -> None:
         command_policy = policy_from_template(row.get("command", ""), path)
         if command_policy != policy:
             fail(f"speed command/policy mismatch in {path}: {policy}")
+        if f"--diffusion={diffusion}" not in row.get("command", ""):
+            fail(f"speed diffusion differs from protocol in {path}")
 
     expected = {
         (policy, color) for policy in POLICIES for color in BROAD_COLORS
@@ -392,9 +404,19 @@ def main() -> int:
     directory = args.directory
 
     metadata = validate_metadata(directory / "lookup-policy-run.json")
-    for name, colors in QUALITY_FILES.items():
-        validate_quality_file(directory / name, colors)
-    validate_speed_file(directory / "lookup-policy-speed.csv", metadata)
+    fs_metadata = validate_metadata(directory / "lookup-policy-fs-run.json")
+    for name, (colors, diffusion) in QUALITY_FILES.items():
+        validate_quality_file(directory / name, colors, diffusion)
+    validate_speed_file(
+        directory / "lookup-policy-speed.csv",
+        metadata,
+        "none",
+    )
+    validate_speed_file(
+        directory / "lookup-policy-fs-speed.csv",
+        fs_metadata,
+        "fs",
+    )
     validate_plots(directory)
     acceleration_present = any(
         (directory / name).exists() for name in ACCELERATION_FILES
@@ -402,7 +424,7 @@ def main() -> int:
     if args.require_acceleration or acceleration_present:
         validate_acceleration(directory)
     print(
-        "validated 378 quality points and 54 speed points across 9 policies"
+        "validated 486 quality points and 108 speed points across 9 policies"
     )
     if args.require_acceleration or acceleration_present:
         print("validated 36 shared-instance and 24 Metal speed points")

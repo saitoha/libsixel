@@ -118,7 +118,8 @@ def percentile(values: Sequence[float], fraction: float) -> float:
 def make_command(img2sixel: str,
                  input_image: Path,
                  colors: int,
-                 policy: str) -> List[str]:
+                 policy: str,
+                 diffusion: str) -> List[str]:
     """Build the controlled single-image benchmark command."""
     return [
         img2sixel,
@@ -129,7 +130,7 @@ def make_command(img2sixel: str,
         "--quantize-model=kmeans:merge=ward:seed=1",
         "-Xoklab",
         "-Wgamma",
-        "--diffusion=none",
+        f"--diffusion={diffusion}",
         "--gpu-policy=off",
         f"--lookup-policy={policy}",
         "-p",
@@ -175,6 +176,7 @@ def measure(img2sixel: str,
             input_label: str,
             colors: Sequence[int],
             policies: Sequence[str],
+            diffusion: str,
             warmups: int,
             runs: int,
             revision: str,
@@ -183,7 +185,13 @@ def measure(img2sixel: str,
     rows: List[Dict[str, object]] = []
     for color_count in colors:
         commands = {
-            policy: make_command(img2sixel, input_image, color_count, policy)
+            policy: make_command(
+                img2sixel,
+                input_image,
+                color_count,
+                policy,
+                diffusion,
+            )
             for policy in policies
         }
         for warmup in range(warmups):
@@ -418,6 +426,7 @@ def write_metadata(path: Path,
                    lsqa: str | None,
                    colors: Sequence[int],
                    policies: Sequence[str],
+                   diffusion: str,
                    warmups: int,
                    runs: int,
                    revision: str,
@@ -450,6 +459,7 @@ def write_metadata(path: Path,
         "programs": programs,
         "protocol": {
             "policies": list(policies),
+            "diffusion": diffusion,
             "speed_colors": list(colors),
             "speed_warmups": warmups,
             "speed_runs": runs,
@@ -469,6 +479,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("input", type=Path)
     parser.add_argument("--colors", default=DEFAULT_COLORS)
     parser.add_argument("--policies", default=DEFAULT_POLICIES)
+    parser.add_argument("--diffusion", choices=("none", "fs"), default="none")
     parser.add_argument("--warmups", type=int, default=2)
     parser.add_argument("--runs", type=int, default=9)
     parser.add_argument("--img2sixel")
@@ -507,6 +518,7 @@ def main() -> int:
         input_label,
         colors,
         policies,
+        args.diffusion,
         args.warmups,
         args.runs,
         args.revision,
@@ -533,6 +545,7 @@ def main() -> int:
             lsqa,
             colors,
             policies,
+            args.diffusion,
             args.warmups,
             args.runs,
             args.revision,

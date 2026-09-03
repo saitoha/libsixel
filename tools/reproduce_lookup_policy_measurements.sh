@@ -57,5 +57,21 @@ PYTHON=${PYTHON} \
     --output-plot "${output_dir}/lookup-policy-speed.png" \
     --output-metadata "${output_dir}/lookup-policy-run.json"
 
+"${PYTHON}" "${TOP_SRCDIR}/tools/plot_lookup_policy_speed.py" \
+    "${input_image}" \
+    --img2sixel "${IMG2SIXEL_PATH}" \
+    --lsqa "${LSQA_PATH}" \
+    --build-dir "${BUILD_DIR}" \
+    --revision "${revision}" \
+    --source-state "${source_state}" \
+    --clean-sixel-environment \
+    --diffusion fs \
+    --warmups "${warmups}" \
+    --runs "${runs}" \
+    --output-csv "${output_dir}/lookup-policy-fs-speed.csv" \
+    --output-plot "${output_dir}/lookup-policy-fs-speed.png" \
+    --output-metadata "${output_dir}/lookup-policy-fs-run.json" \
+    --title "End-to-end lookup-policy runtime with FS on ${input_image##*/}"
+
 "${PYTHON}" "${TOP_SRCDIR}/tools/check_lookup_policy_measurements.py" \
     "${output_dir}"

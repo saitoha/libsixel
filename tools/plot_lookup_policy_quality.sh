@@ -16,6 +16,7 @@ mkdir -p "${output_dir}"
 
 heckbert_common='{img2sixel} --threads=1 --precision=8bit --quality=full --loaders=libpng! --quantize-model=heckbert:cover=off:merge=none --diffusion=none --gpu-policy=off'
 modern_common='{img2sixel} --threads=1 --precision=8bit --quality=full --loaders=libpng! --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma --diffusion=none --gpu-policy=off'
+modern_fs_common='{img2sixel} --threads=1 --precision=8bit --quality=full --loaders=libpng! --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma --diffusion=fs --gpu-policy=off'
 
 plot_quality_curve()
 {
@@ -81,6 +82,22 @@ plot_quality_curve \
     --output-csv "${output_dir}/lookup-policy-kmeans-ms-ssim.csv" \
     --output-plot "${output_dir}/lookup-policy-kmeans-ms-ssim.png" \
     --title "K-means lookup-policy MS-SSIM on ${input_name}"
+
+plot_quality_curve \
+    8,16,32,64,128,256 \
+    "${modern_fs_common} -p {ncolors}" \
+    --metrics 'Δ E00_mean,Δ Chroma_mean' \
+    --output-csv "${output_dir}/lookup-policy-kmeans-fs-color-error.csv" \
+    --output-plot "${output_dir}/lookup-policy-kmeans-fs-color-error.png" \
+    --title "K-means lookup-policy color error with FS on ${input_name}"
+
+plot_quality_curve \
+    8,16,32,64,128,256 \
+    "${modern_fs_common} -p {ncolors}" \
+    --metrics MS-SSIM \
+    --output-csv "${output_dir}/lookup-policy-kmeans-fs-ms-ssim.csv" \
+    --output-plot "${output_dir}/lookup-policy-kmeans-fs-ms-ssim.png" \
+    --title "K-means lookup-policy MS-SSIM with FS on ${input_name}"
 
 plot_quality_curve \
     128,144,160,176,192,208,224,240,256 \

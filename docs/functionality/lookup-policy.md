@@ -1530,7 +1530,7 @@ difference in the final image. Evaluate lookup changes on at least these axes:
 ### Questions
 
 The historical RGB555 path reduces each byte-valued color axis from 256 values
-to 32 histogram and cache addresses. This section asks three user-visible
+to 32 histogram and cache addresses. This section asks six user-visible
 questions:
 
 1. How do current policies compare when palette construction is controlled by
@@ -1543,9 +1543,17 @@ questions:
    materially change end-to-end latency?
 5. What latency change does the Metal PaletteApply path produce for its
    supported `none` and `eytzinger` policies?
+6. How do the nine policies change when Floyd--Steinberg error diffusion is
+   enabled instead of disabling dithering?
 
 The checked-in measurements answer those questions for one fixture. They are
 not a universal ranking of lookup policies.
+
+Unless a subsection explicitly says otherwise, every quality and speed result
+below uses `--diffusion=none`. This isolates palette construction and lookup
+more clearly by removing spatial error feedback. It is not representative of
+the default experience when a user enables dithering; the dedicated
+Floyd--Steinberg control below measures that case separately.
 
 ### Controlled K-means result
 
@@ -1842,6 +1850,28 @@ At `K = 256`, CPU and Metal output was byte-identical within each policy. The
 manifest records the output sizes and SHA-256 digests, as well as the detected
 30-core Apple M3 Max and Metal inventory.
 
+### Floyd--Steinberg control
+
+![Mean Delta E00 and mean absolute CIELAB chroma error with Floyd--Steinberg diffusion](lookup-policies/measurements/lookup-policy-kmeans-fs-color-error.png)
+
+This control repeats the broad controlled K-means comparison with only the
+diffusion setting changed from `none` to `fs`. The complete color-error values
+are in
+[`lookup-policy-kmeans-fs-color-error.csv`](lookup-policies/measurements/lookup-policy-kmeans-fs-color-error.csv).
+The corresponding spatially pooled view is
+[MS-SSIM](lookup-policies/measurements/lookup-policy-kmeans-fs-ms-ssim.png),
+with values in
+[`lookup-policy-kmeans-fs-ms-ssim.csv`](lookup-policies/measurements/lookup-policy-kmeans-fs-ms-ssim.csv).
+
+![Median end-to-end runtime for each lookup policy with Floyd--Steinberg diffusion](lookup-policies/measurements/lookup-policy-fs-speed.png)
+
+The timing data are in
+[`lookup-policy-fs-speed.csv`](lookup-policies/measurements/lookup-policy-fs-speed.csv).
+These are end-to-end results: they include diffusion arithmetic and every
+policy-dependent change to the error propagated into later pixels. They do not
+isolate nearest-neighbor query cost, and they must not be compared with the
+no-diffusion curves as though diffusion were a constant additive overhead.
+
 ### Measurement design
 
 The curves were measured on 2026-09-03 from a clean Autotools build of revision
@@ -1858,6 +1888,18 @@ img2sixel \
   --loaders=libpng! \
   --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma \
   --diffusion=none --gpu-policy=off \
+  --lookup-policy=POLICY -p K \
+  images/snake.png
+```
+
+The Floyd--Steinberg control changes only the diffusion option:
+
+```text
+img2sixel \
+  --threads=1 --precision=8bit --quality=full \
+  --loaders=libpng! \
+  --quantize-model=kmeans:merge=ward:seed=1 -Xoklab -Wgamma \
+  --diffusion=fs --gpu-policy=off \
   --lookup-policy=POLICY -p K \
   images/snake.png
 ```
@@ -1902,9 +1944,10 @@ img2sixel \
 `lsqa` compares each SIXEL stream with the original image and reports its
 existing `Δ E00_mean`, `Δ Chroma_mean`, and MS-SSIM metrics. Encoder input is
 pinned to the `libpng` loader, and the runner removes inherited `SIXEL_*`
-variables from both programs. The K-means seed is explicitly one. Diffusion is
-disabled so propagated error does not obscure the palette and lookup effects.
-One worker exercises the serial lazy-cache behavior of `5bit` and `6bit`.
+variables from both programs. The K-means seed is explicitly one. The baseline
+disables diffusion so propagated error does not obscure the palette and lookup
+effects; the control changes only that option to `fs`. One worker exercises
+the serial lazy-cache behavior of `5bit` and `6bit`.
 
 ### Reproducing the curves
 
@@ -1916,9 +1959,11 @@ tracked-clean worktree:
 tools/reproduce_lookup_policy_measurements.sh
 ```
 
-This one command rebuilds `img2sixel` and `lsqa`, regenerates all six quality
-sweeps and the speed sweep, writes the plots, records provenance in
-[`lookup-policy-run.json`](lookup-policies/measurements/lookup-policy-run.json),
+This one command rebuilds `img2sixel` and `lsqa`, regenerates all eight quality
+sweeps and both speed sweeps, writes the plots, and records provenance in
+[`lookup-policy-run.json`](lookup-policies/measurements/lookup-policy-run.json)
+and
+[`lookup-policy-fs-run.json`](lookup-policies/measurements/lookup-policy-fs-run.json),
 and validates the complete Cartesian set of nine policies and configured
 palette sizes. It refuses tracked source changes so the recorded Git revision
 identifies the implementation that produced the results. Untracked files do
@@ -1978,8 +2023,8 @@ another revision.
 - The speed curve is end-to-end single-image latency, not an isolated lookup
   microbenchmark. Loader, palette construction, and SIXEL encoding add common
   work, while policy-dependent preparation remains part of the measurement.
-- No-diffusion results do not predict how a changed lookup index feeds error
-  into later pixels under error diffusion.
+- The Floyd--Steinberg control demonstrates one diffusion method. It does not
+  predict ordered, arithmetic, or other error-diffusion methods.
 - The focused shared-instance run fixes the thread limit rather than sweeping
   it. It does not characterize scaling, worker affinity, memory use, or
   parallel-band seam quality.
