@@ -1698,6 +1698,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "SIXEL_LOADER_BACKGROUND_COLORSPACE", NULL, NULL,
         g_loader_background_colorspace_choices,
         background_colorspace),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "trns_keycolor", 'K', "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",
+        NULL, NULL,
+        png_trns_keycolor),
 
 #if HAVE_LIBPNG
     SIXEL_REGISTRY_LOADER_CHOICE_ENV(

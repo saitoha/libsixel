@@ -276,6 +276,28 @@ sixel_loader_active_suboptions(void)
     return loader_active_suboptions;
 }
 
+int
+loader_png_trns_keycolor_mode(void)
+{
+    sixel_loader_suboptions_t const *suboptions;
+    int enabled;
+
+    suboptions = sixel_loader_active_suboptions();
+    enabled = 1;
+    if (suboptions != NULL) {
+        enabled = suboptions->png_trns_keycolor;
+    } else {
+        enabled = sixel_option_resolve_registered_boolean_binding(
+            SIXEL_OPTION_SCHEMA_LOADERS,
+            NULL,
+            SIXEL_SUBOPTION_BINDING_ID_1(png_trns_keycolor),
+            1);
+    }
+
+    /* Mode 2 enables both tRNS and alpha-channel keycolor handling. */
+    return enabled != 0 ? 2 : 0;
+}
+
 static unsigned int
 loader_timeline_optional_bit(char const *role)
 {

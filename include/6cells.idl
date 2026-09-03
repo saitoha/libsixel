@@ -653,6 +653,7 @@ interface loader_manager;
 struct loader_suboptions {
     int background_policy;
     int background_colorspace;
+    int png_trns_keycolor;
     int wic_ico_minsize;
     int libjpeg_enable_cms;
     int libjpeg_cms_engine;

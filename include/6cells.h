@@ -1135,6 +1135,7 @@ typedef struct sixel_loader_manager_interface sixel_loader_manager_t;
 typedef struct sixel_loader_suboptions {
     int background_policy;
     int background_colorspace;
+    int png_trns_keycolor;
     int wic_ico_minsize;
     int libjpeg_enable_cms;
     int libjpeg_cms_engine;

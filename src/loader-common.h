@@ -103,6 +103,9 @@ void sixel_loader_restore_suboptions(
     sixel_loader_suboptions_t const *suboptions);
 sixel_loader_suboptions_t const *sixel_loader_active_suboptions(void);
 
+/* Return the shared builtin/libpng PNG transparency compatibility mode. */
+int loader_png_trns_keycolor_mode(void);
+
 void loader_thumbnailer_initialize_size_hint(void);
 int loader_thumbnailer_get_size_hint(void);
 int loader_thumbnailer_get_default_size_hint(void);

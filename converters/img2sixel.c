@@ -833,6 +833,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               :background_policy=POLICY (:Pvalue)\n"
         "                               and :background_colorspace=SPACE "
         "(:Cvalue).\n"
+        "                               PNG-capable loaders support\n"
+        "                               :trns_keycolor=0|1 (:K0/:K1).\n"
         "                               libpng/libjpeg/libwebp/libtiff/builtin support\n"
         "                               :cms_engine=none|auto|builtin|lcms2|"
         "colorsync (or :Evalue,\n"

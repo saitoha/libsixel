@@ -206,41 +206,6 @@ libpng_debug_trace_is_enabled(void)
 # define LIBPNG_DEBUG_LOG(...) do { } while (0)
 #endif
 
-static int
-libpng_trns_keycolor_mode(void)
-{
-    char const *env;
-    static int initialized = 0;
-    static int mode = 2;
-    /*
-     * mode:
-     *   0 -> disabled
-     *   1 -> tRNS keycolor only
-     *   2 -> tRNS keycolor + alpha-channel keycolor
-     *        (default when env is unset)
-     */
-
-    if (initialized) {
-        return mode;
-    }
-    initialized = 1;
-    mode = 2;
-
-    env = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR");
-    if (env == NULL || env[0] == '\0') {
-        return mode;
-    }
-    if (env[0] == '1' && env[1] == '\0') {
-        mode = 2;
-    } else if (env[0] == '0' && env[1] == '\0') {
-        mode = 0;
-    } else {
-        mode = 0;
-    }
-
-    return mode;
-}
-
 static double
 png_decode_srgb_unit(double value);
 
@@ -1808,7 +1773,7 @@ load_png(unsigned char      /* out */ **result,
                                 color_type == PNG_COLOR_TYPE_PALETTE;
     has_transparency = (has_tRNS_chunk || has_alpha_chunk) &&
                        !indexed_trns_palette_path;
-    trns_keycolor_mode = libpng_trns_keycolor_mode();
+    trns_keycolor_mode = loader_png_trns_keycolor_mode();
     use_trns_keycolor = trns_keycolor_mode != 0 &&
                         !enable_cms &&
                         bgcolor == NULL &&
@@ -4180,7 +4145,7 @@ load_apng_frames(
     color_type = (-1);
     has_alpha_chunk = 0;
     has_trns_chunk = 0;
-    trns_keycolor_mode = libpng_trns_keycolor_mode();
+    trns_keycolor_mode = loader_png_trns_keycolor_mode();
     memset(&canvas, 0, sizeof(canvas));
     canvas_bytes = 0;
     sequence_no = 0;

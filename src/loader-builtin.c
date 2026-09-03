@@ -1860,41 +1860,6 @@ typedef union _fn_pointer {
 } fn_pointer;
 
 static int
-sixel_builtin_trns_keycolor_mode(void)
-{
-    char const *env_value;
-    static int initialized = 0;
-    static int mode = 2;
-    /*
-     * mode:
-     *   0 -> disabled
-     *   1 -> tRNS keycolor only
-     *   2 -> tRNS keycolor + alpha-channel keycolor
-     *        (default when env is unset)
-     */
-
-    if (initialized) {
-        return mode;
-    }
-    initialized = 1;
-    mode = 2;
-
-    env_value = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR");
-    if (env_value == NULL || env_value[0] == '\0') {
-        return mode;
-    }
-    if (env_value[0] == '1' && env_value[1] == '\0') {
-        mode = 2;
-    } else if (env_value[0] == '0' && env_value[1] == '\0') {
-        mode = 0;
-    } else {
-        mode = 0;
-    }
-
-    return mode;
-}
-
-static int
 sixel_builtin_parse_png_transparency_info(
     sixel_chunk_t const *pchunk,
     int *color_type_out,
@@ -1983,7 +1948,7 @@ sixel_builtin_png_keycolor_mode_enabled(
     has_alpha_chunk = 0;
     has_trns_chunk = 0;
 
-    trns_keycolor_mode = sixel_builtin_trns_keycolor_mode();
+    trns_keycolor_mode = loader_png_trns_keycolor_mode();
     if (trns_keycolor_mode == 0) {
         return 0;
     }
@@ -3537,7 +3502,7 @@ sixel_builtin_load_apng_frames(
     apng_start_frame_no = start_frame_no;
     stop_decode = 0;
     stop_loop = 0;
-    trns_keycolor_mode = sixel_builtin_trns_keycolor_mode();
+    trns_keycolor_mode = loader_png_trns_keycolor_mode();
     sixel_builtin_apng_init_runtime(&runtime, trns_keycolor_mode);
     sixel_trace_topic_message(
         "apng",
