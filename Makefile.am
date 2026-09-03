@@ -68,7 +68,21 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/ci/local-jobs.tsv \
 	docs/ci/support-matrix.md \
 	docs/cli/design-policy.md \
+	docs/functionality/dithering.md \
+	docs/functionality/encoding-pipeline.md \
+	docs/functionality/lookup-policy.md \
+	docs/functionality/lookup-policies/5bit.md \
+	docs/functionality/lookup-policies/6bit.md \
+	docs/functionality/lookup-policies/auto.md \
+	docs/functionality/lookup-policies/certlut.md \
+	docs/functionality/lookup-policies/eytzinger.md \
+	docs/functionality/lookup-policies/fhedt.md \
+	docs/functionality/lookup-policies/mahalanobis.md \
+	docs/functionality/lookup-policies/none.md \
+	docs/functionality/lookup-policies/rbc.md \
+	docs/functionality/lookup-policies/vptree.md \
 	docs/functionality/overview.md \
+	docs/functionality/quantization.md \
 	docs/quality/measurement-policy.md \
 	docs/testing/guide.md \
 	openvms/gnv-ar.sh \

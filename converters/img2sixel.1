@@ -595,7 +595,7 @@ auto      -> follow pixel depth to pick bucket size
 .br
 none      -> disable LUT caching and scan the palette directly
 .br
-certlut -> certified hierarchical LUT with zero approximation
+certlut -> hierarchical LUT with center-based dominance testing
 .br
           sub-option:
 .br
@@ -604,11 +604,11 @@ certlut -> certified hierarchical LUT with zero approximation
 .br
           The RGB cube is divided into 64x64x64 cells and refined only
           where necessary.  certlut reuses a single kd-tree built from
-          the palette to certify the nearest and second nearest colours
-          for every cell without scanning the full palette each time.
+          the palette to find the nearest and second nearest colours at
+          each cell centre.  A pairwise bound either accepts the centre
+          winner for the cell or causes further refinement.
 .br
-eytzinger -> implicit binary tree lookup with a small neighbour scan
-            (default).
+eytzinger -> implicit binary tree lookup with a small neighbour scan.
 .br
 fhedt    -> Voronoi grid built via a 3-pass 3D EDT with optional
            boundary refinement at cell corners.

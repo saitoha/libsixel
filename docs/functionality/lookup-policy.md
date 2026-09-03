@@ -10,14 +10,20 @@ lookup(color candidate, completed palette) -> palette index
 ```
 
 It is not a SIXEL wire-format term and does not mean reading a palette register
-by an already known index. It is the mapping from a source or dither-adjusted
-color to the index that will represent that color.
+whose index is already known. Lookup runs during palette application, after
+palette construction and before SIXEL byte generation:
 
-Lookup runs during palette application, after palette construction. A policy
-may build an index or cache from the palette and then answer one query for each
-non-transparent pixel. Its design trades among preparation time, per-pixel
-cost, memory, sharing between workers, supported colorspaces, and exact or
-discretized mapping behavior.
+```text
+loader -> palette construction -> palette application -> SIXEL encoding
+                                      ^
+                                      |
+                                lookup policy
+```
+
+The quantization model selected by `-Q` chooses the palette. The dithering
+method selected by `-d` changes each color candidate and propagates error. The
+lookup policy selected by `-~` maps that candidate to one entry in the completed
+palette. See [Encoding Pipeline](encoding-pipeline.md) for the complete flow.
 
 ## CLI surface
 
@@ -29,292 +35,226 @@ discretized mapping behavior.
 ```
 
 The short option is the two-character spelling `-~`; there is no `--~` long
-option. The base policies are:
+option. The encoder default is currently `certlut`. An explicit `auto` value is
+a dispatch request and is not another search algorithm.
 
-| Policy | Strategy |
-| --- | --- |
-| `auto` | Lets the encoder select a backend for the active pixel representation |
-| `none` | Builds no lookup cache and scans the palette directly |
-| `5bit` | Uses a dense table with five address bits per RGB channel |
-| `6bit` | Uses a finer dense table with six bits per RGB channel for RGB input |
-| `certlut` | Uses a hierarchical LUT whose refinement certifies the nearest color |
-| `eytzinger` | Searches an implicit binary-tree layout and projected neighbors |
-| `fhedt` | Builds a Voronoi grid with a three-pass 3D distance transform |
-| `vptree` | Uses a metric VP-tree with safe-distance pruning |
-| `rbc` | Uses Random Ball Cover cluster pruning |
-| `mahalanobis` | Builds RBC covariance metadata; the current query path still scans all members |
+## Policy chapters
 
-Some policies expose suboptions and environment tuning for table layout,
-resolution, refinement, or sharing. Use `img2sixel -H` or the
-[`img2sixel(1)` manual](../../converters/img2sixel.1) for the current detailed
-surface.
+Each policy has a separate chapter because the algorithms, correctness
+arguments, and dominant costs differ materially:
 
-## What `none` means
+- [`auto`](lookup-policies/auto.md): selector behavior and fallbacks.
+- [`none`](lookup-policies/none.md): exhaustive palette scan.
+- [`5bit`](lookup-policies/5bit.md): lazy RGB555 bucket memoization.
+- [`6bit`](lookup-policies/6bit.md): lazy RGB666 bucket memoization.
+- [`certlut`](lookup-policies/certlut.md): intended cube certification and the
+  float32 kd-tree.
+- [`eytzinger`](lookup-policies/eytzinger.md): one-dimensional projection in
+  an Eytzinger array layout.
+- [`fhedt`](lookup-policies/fhedt.md): separable three-dimensional Euclidean
+  distance transform.
+- [`vptree`](lookup-policies/vptree.md): metric VP-tree and safe previous-color
+  cache.
+- [`rbc`](lookup-policies/rbc.md): Random Ball Cover cluster pruning.
+- [`mahalanobis`](lookup-policies/mahalanobis.md): covariance metadata over RBC
+  clusters and the current exhaustive query.
 
-`--lookup-policy=none` is the reference mental model: compare the candidate
-with palette entries directly and return the best index. It disables lookup
-acceleration, not color reduction, palette application, or dithering.
+## The shared mathematical problem
 
-This differs from `-d none`, which disables dither adjustment and error
-propagation but still needs a lookup for each pixel. For example:
-
-```text
--d none --lookup-policy=none
-```
-
-means "map each original pixel by a direct palette scan." Either option may be
-changed independently.
-
-## Mathematical problem
-
-For candidate color `x`, palette color `c[i]`, and channel weights `w[d]`,
-the reference weighted squared distance is:
+For candidate color `x`, palette color `c[i]`, and channel weights `w[d]`, most
+accelerated policies minimize a weighted squared Euclidean distance:
 
 ```text
-D(i, x) = sum_d w[d] * (x[d] - c[i][d])^2
-index(x) = argmin_i D(i, x)
+D_w(i, x) = sum_d w[d] * (x[d] - c[i][d])^2
+index(x) = argmin_i D_w(i, x)
 ```
 
-RGB dimensionality is fixed at three. A direct scan evaluates this expression
-for every palette entry. Search trees try to prove that some entries cannot
-beat the current best distance. Projection search uses the distance along one
-axis as a lower bound; metric trees use the triangle inequality; RBC uses a
-pivot distance and cluster radius. Those proofs can make a query short on
-well-separated data, but a lower average count does not imply a logarithmic
-worst case.
+There are three channels in accelerated RGB lookup. A direct scan evaluates the
+expression for all `K` palette entries. A tree or cluster index discards an
+entry only after a lower bound proves that it cannot improve the current best
+distance. A grid policy instead maps the continuous or byte-valued color space
+to finitely many cells and stores an answer per cell.
 
-Dense grid policies solve a related discretized problem. They quantize `x` to
-a cell and cache or precompute a palette answer for that cell. Lookup can then
-be constant-time, at the cost of table construction, memory, and possible
-differences at cell boundaries.
+The distance itself is part of the policy contract:
+
+- 8-bit policies use unweighted squared distance in byte coordinates.
+- float32 `none` uses unweighted squared distance in the stored coordinates.
+- other float32 policies normally use `w[d] = 1 / range[d]^2`, so every channel
+  is measured relative to its declared numeric range.
+
+Consequently, an exact float32 accelerated search is not necessarily
+index-equivalent to `none` in a colorspace whose channel ranges differ. The
+search can exactly minimize its normalized metric while `none` exactly
+minimizes a different metric. Tests and benchmarks must name both the working
+colorspace and the lookup policy.
 
 ## Result guarantees
 
-"Exact" needs a reference contract. This document uses three levels:
+This documentation uses three levels of guarantee:
 
-- **reference-index exact** returns the same palette index as `none`,
-  including its first-index tie rule;
-- **nearest-distance exact** returns a minimizer of the same distance, but may
-  choose another palette entry when several entries tie or floating-point
-  roundoff reaches a boundary;
-- **approximate** may return an entry whose distance is greater than the
-  reference minimum.
+- **scan-index exact** returns the same index as an exhaustive scan using the
+  policy's own distance and first-index tie rule;
+- **nearest-distance exact** returns a minimizer of the policy's distance, but
+  may choose another palette entry at a tie or floating-point boundary;
+- **approximate** may return an entry whose policy distance is greater than the
+  exhaustive minimum.
 
-These labels describe lookup of one already-adjusted color candidate. They do
-not claim that the selected palette, the dithered image, or the encoded SIXEL
-stream is globally optimal.
+The labels apply to one already-adjusted color candidate. They do not imply
+that palette construction, dithering, perceptual quality, or SIXEL output size
+is globally optimal.
 
-| Policy and representation | Default result guarantee | Qualification |
+| Policy and representation | Default guarantee | Important qualification |
 | --- | --- | --- |
-| `none` | Reference-index exact | Defines the direct-scan reference |
-| `5bit` / `6bit`, serial 8-bit | Approximate after a cell is cached | A cell's first query is exact; later colors in that cell reuse its index |
-| `5bit` / `6bit`, parallel 8-bit | Reference-index exact | The current parallel path does not populate the dense cache |
-| `5bit` / `6bit`, float32 | Reference-index exact | The current implementation falls back to a direct scan |
-| `certlut` | Nearest-distance exact | A cached cube is used only after certification; ties need not match direct-scan order |
-| `eytzinger`, 8-bit | Approximate | The fixed projected-neighbor window may omit the true nearest entry |
-| `eytzinger`, float32 | Nearest-distance exact | Projection bounds continue the search while an unseen entry can still win |
-| `fhedt`, 8-bit at `R < 256` | Approximate | Grid quantization and at-most-eight-candidate refinement are not a full palette scan |
-| `fhedt`, 8-bit at `R = 256` | Nearest-distance exact | Every 8-bit RGB value has its own grid coordinate |
+| `none` | Scan-index exact on its direct path | Canonical two-entry black/white palettes select an internal threshold policy first |
+| `5bit` / `6bit`, serial 8-bit | Approximate after a bucket is cached | The first query is exact; later colors in the bucket reuse its index |
+| `5bit` / `6bit`, parallel 8-bit | Scan-index exact | The current parallel path does not populate the shared table |
+| `5bit` / `6bit`, float32 | Scan-index exact | Exhaustive scan in the normalized policy metric |
+| `certlut`, 8-bit | Approximate | The current cube test checks only the center's second-nearest competitor, not every possible boundary competitor |
+| `certlut`, float32 | Nearest-distance exact | kd-tree pruning preserves the normalized policy minimum |
+| `eytzinger`, 8-bit | Approximate | A fixed projected-neighbor window can omit the true nearest entry |
+| `eytzinger`, float32 unit-range RGB/OKLab | Nearest-distance exact | Projection distance is a valid lower bound in these formats |
+| `eytzinger`, float32 unequal-range Lab/DIN99d | Approximate | The current projection normalization does not prove a lower bound for the weighted metric |
+| `fhedt`, 8-bit at `R < 256` | Approximate | Grid quantization and bounded refinement do not scan the full palette |
+| `fhedt`, 8-bit at `R = 256` | Nearest-distance exact | Every byte-valued RGB tuple has a grid coordinate |
 | `fhedt`, float32 | Approximate | Even `R = 256` discretizes a continuous working space |
-| `vptree` | Nearest-distance exact | Tree pruning and the current safe-distance cache preserve the minimum distance |
-| `rbc`, float32 | Nearest-distance exact | Cluster-radius lower bounds are evaluated in the search metric |
-| `rbc`, 8-bit | Reference-index exact | The current implementation uses a direct scan |
-| `mahalanobis`, float32 | Nearest-distance exact | The current implementation scans all cluster members |
-| `mahalanobis`, 8-bit | Reference-index exact | The current implementation uses a direct scan |
+| `vptree` | Nearest-distance exact | Tree pruning and the default safe cache preserve the policy minimum |
+| `rbc`, float32 | Nearest-distance exact | Ball-radius lower bounds use the same normalized metric as final comparisons |
+| `rbc`, 8-bit | Scan-index exact | The current implementation is a direct scan |
+| `mahalanobis`, float32 | Nearest-distance exact | The current query still compares every cluster member in the normalized metric |
+| `mahalanobis`, 8-bit | Scan-index exact | The current implementation is a direct scan |
 
-`auto` inherits the guarantee of the backend and representation to which it
-resolves. Configuration can matter as much as the policy name. In particular,
-the optional FHEDT cache stores the first refined result for a voxel. At
-`R < 256`, later colors in that voxel reuse the result, adding
-query-history dependence to an already discretized search.
+`auto` inherits the concrete backend's guarantee. Configuration can matter as
+much as the base policy name. For example, an optional FHEDT cache remembers a
+voxel result, while the serial dense-bucket policies remember the result of the
+first actual color that entered a bucket.
 
-### VP-tree safe-distance cache
+## Cost model
 
-The VP-tree accepts the previous lookup result as a likely palette index. For
-palette entry `c[i]`, let `s[i]` be the distance to its nearest other palette
-entry. If a new candidate `x` satisfies:
-
-```text
-distance(x, c[i]) <= s[i] / 2
-```
-
-then the triangle inequality proves that no other palette entry is closer.
-Because the implementation stores squared distances, the test threshold is
-`s[i]^2 / 4`. This is a proof radius, not a user-selected approximation
-tolerance. The same early confirmation is also applied when a tree pivot is
-visited.
-
-This design follows the VP-tree nearest-color search in
-[libimagequant, the quantization engine used by pngquant](https://github.com/ImageOptim/libimagequant/blob/2883dbd955fe9007bf33d7b64f6eafaf9fec4d6a/nearest.c#L128-L225).
-Its [remapping loop](https://github.com/ImageOptim/libimagequant/blob/2883dbd955fe9007bf33d7b64f6eafaf9fec4d6a/remap.c#L165-L220)
-likewise supplies the previous pixel's selected palette index as the likely
-index. libsixel's serial VP-tree cache preserves nearest-distance exactness;
-disabling it for parallel dithering changes the search cost and state, not the
-intended nearest-distance result.
-
-An implementation that deliberately enlarges this radius or accepts the
-previous index under a looser color-difference threshold would become
-approximate. If such a mode is added, it must be documented and tested
-separately from the current safe cache.
-
-## Cost model and asymptotic order
-
-Use these variables when discussing lookup cost:
+The policy chapters use these variables:
 
 - `P`: non-transparent pixels mapped to the palette;
-- `K`: palette entries;
-- `R`: lookup-grid resolution on each RGB axis;
-- `G = R^3`: cells in a dense RGB grid;
-- `U`: distinct lazy cells first encountered during an image;
-- `J = min(K, 16)`: current RBC pivot count;
-- `V`: projected or tree candidates actually visited by a query.
+- `K`: completed palette entries;
+- `R`: grid resolution on each of three axes;
+- `G = R^3`: grid cells;
+- `U`: distinct lazy buckets or cells first encountered;
+- `J = min(K, 16)`: the current RBC pivot count;
+- `V`: candidates that survive a query's bounds.
 
-The fixed three color dimensions are omitted. Preparation, one query, and the
-whole-image total must be kept separate:
+The fixed three color dimensions are omitted. Preparation cost, one-query cost,
+and whole-image cost must be kept separate.
 
-| Policy and representation | Preparation | One query | Extra space |
+| Policy | Preparation | One query | Extra space |
 | --- | --- | --- | --- |
-| `none` | `O(1)` beyond retaining the palette | `Theta(K)` | `O(1)` beyond the palette |
-| `5bit` / `6bit`, 8-bit RGB | `Theta(G)` table initialization | cache hit `Theta(1)`; first-cell miss `Theta(K)` | `Theta(G)` |
-| `certlut`, 8-bit RGB | `O(64^3 + K^2)` top-level initialization and current kd-tree build | warmed fixed-depth cell `Theta(1)`; cold refinement worst `O(K)` | initial `Theta(64^3 + K)`; fully refined worst `O(256^3 + K)` |
-| `eytzinger`, 8-bit | `Theta(K log K)` projection sort and layout | `Theta(log K)` with the fixed neighbor window | `Theta(K)` |
-| `eytzinger`, float32 | `Theta(K log K)` projection sort and layout | `O(log K + V)`; worst `Theta(K)` | `Theta(K)` |
-| `fhedt` | `Theta(R^3 + K)` three-pass distance transform | `Theta(1)` | `Theta(R^3 + K)` |
-| `vptree` | `Theta(K^2)` safe-distance preparation, followed by tree construction | typical balanced search `O(log K)`; worst `Theta(K)` | `Theta(K)` |
-| `rbc`, float32 | `Theta(K J)` pivot assignment and cluster data | `O(J + V)`; worst `Theta(K)` | `Theta(K + J)` |
-| `mahalanobis`, float32 | `Theta(K J)` clusters, means, and 3-by-3 inverse covariances | `Theta(K)` in the current implementation | `Theta(K + J)` |
+| `none` | `O(1)` | `Theta(K)` | `O(1)` |
+| `5bit` / `6bit`, serial 8-bit | `Theta(G)` initialization | hit `Theta(1)`; first-bucket miss `Theta(K)` | `Theta(G)` |
+| `certlut`, 8-bit | `O(64^3 + K^2)` in the current builder | warm fixed-depth lookup `Theta(1)`; cold refinement worst `O(K)` | initial `Theta(64^3 + K)`; fully refined worst `O(256^3 + K)` |
+| `certlut`, float32 | current kd-tree build conservatively `O(K^2)` | typical `O(log K)`; worst `Theta(K)` | `Theta(K)` |
+| `eytzinger` | `Theta(K log K)` | 8-bit `Theta(log K)`; float32 `O(log K + V)`, worst `Theta(K)` | `Theta(K)` |
+| `fhedt` | `Theta(R^3 + K)` | `Theta(1)` | `Theta(R^3 + K)` |
+| `vptree` | `Theta(K^2)` safe-radius preparation plus tree construction | typical balanced `O(log K)`; worst `Theta(K)` | `Theta(K)` |
+| `rbc`, float32 | `Theta(K J)` | `O(J + V)`; worst `Theta(K)` | `Theta(K + J)` |
+| `mahalanobis`, float32 | `Theta(K J)` | `Theta(K)` currently | `Theta(K + J)` |
 
-For direct lookup, whole-image work is `Theta(P K)`. For the serial 8-bit
-`5bit` and `6bit` implementations, lazy memoization gives:
+Direct lookup over an image is `Theta(P K)`. The serial `5bit` and `6bit`
+implementations instead have whole-image work:
 
 ```text
 Theta(G + P + U K)
 ```
 
-where `R` is 32 or 64 respectively. The table is allocated and initialized
-up front, but a bucket's nearest palette entry is computed only on its first
-use. When parallel dithering is active, the current implementation does not
-write those memoized answers, so repeated queries cannot assume the same
-amortized bound. The float32 implementations of these two policies currently
-fall back to a direct `Theta(K)` scan.
-
-The 8-bit `certlut` similarly combines a 64-by-64-by-64 top-level table with
-lazy hierarchical refinement and cube certification. Its warmed lookup has a
-fixed depth, while first use of an uncertified region can require a
-palette-wide nearest search. The float32 `certlut` path instead uses a
-kd-tree: a balanced query is typically `O(log K)` but has `Theta(K)` worst
-case, and the current recursive construction has a conservative `O(K^2)`
-bound.
-
-`eytzinger` sorts palette colors by a weighted one-dimensional projection,
-stores them in implicit binary-tree order, and finds the projected insertion
-point in `Theta(log K)`. The 8-bit path examines a fixed window around that
-point, so it stays logarithmic in `K` but is an approximate candidate search.
-The float32 path instead scans outward while the squared projection difference
-can still beat the best full distance. That stopping proof preserves an exact
-weighted-Euclidean answer, but `V` can grow to `K` when the projection cannot
-separate the palette.
-
-`fhedt` is the clearest fixed-precomputation case. It computes a three-
-dimensional squared-Euclidean Voronoi grid with three separable one-dimensional
-distance-transform passes. At a selected `R` of 64, 128, or 256, total
-application cost is:
+FHEDT has the clearest fixed-build-plus-linear-application form:
 
 ```text
 Theta(R^3 + K + P)
 ```
 
-For fixed `R` and `K` this is linear in the number of image pixels after a
-fixed table-build cost. Optional boundary refinement examines at most eight
-cell-corner candidates, which remains constant per query.
+A query being typically logarithmic does not establish a logarithmic worst
+case. VP-tree, kd-tree, projection, and RBC pruning can all visit most or all of
+the palette for unfavorable geometry. Likewise, lookup is linear in `P = W H`
+but quadratic in the side length of an `n`-by-`n` image; always name the
+independent variable.
 
-The VP-tree and RBC paths are data-dependent pruning structures. A balanced,
-well-separated palette often produces near-logarithmic VP-tree traversal, but
-the metric worst case visits every entry. The VP-tree's likely-index cache can
-reduce a smooth scan to one distance evaluation when the next color remains
-inside the proof radius. RBC compares at most `J` pivots and then searches
-clusters whose radius bound can still win; if every bound survives, it also
-scans all `K` entries. The 8-bit RBC path currently uses the direct linear
-scan.
+## Comparison with other implementations
 
-The float32 `mahalanobis` path prepares per-cluster means and inverse
-covariances and evaluates a Mahalanobis quadratic form. In the current code
-that value is not used to reject a cluster: every member of every cluster is
-still compared with the reference weighted-Euclidean distance. Its present
-query order is therefore `Theta(K)`, not logarithmic. The 8-bit path is also a
-direct scan.
+This comparison is about applying an already-built palette. A data structure
+used while generating a palette belongs to the `-Q` stage and is a separate
+comparison.
 
-`auto` has no single complexity class because it resolves to one of the
-concrete backends. Published benchmark results must name the resolved policy,
-pixel representation, table resolution, and whether lazy state was shared.
+| Implementation | Palette-application strategy | Relation to libsixel |
+| --- | --- | --- |
+| `a-sixel` | Lab kd-tree for every builder except `PaletteBuilder::Bit`; that builder uses a bit-dilation LUT | Closest to tree-based exact lookup, with a dedicated fast path coupled to one palette builder |
+| `go-sixel` | Eager RGB555 table built by scanning the palette at each cell center | Similar address space to `5bit`, but eager and center-representative rather than lazy and first-query-representative |
+| `libsixel/libsixel` fork | Lazy RGB555 hash/LUT in its current `quant.c` | Shares the historical 5-bit bucket design lineage |
+| `libimagequant` / pngquant | VP-tree palette remapping with a previous-result hint | Not a SIXEL encoder, but a direct influence on libsixel's VP-tree safe cache |
+
+The current `a-sixel` source constructs a
+[`KdTreeBucketer` for all non-`Bit` palette builders](https://github.com/Jesterhearts/a-sixel/blob/e2ffc9aa674aeb00779d2b8d5a5bd7ddb4615022/src/lib.rs#L285-L296)
+and performs [squared-Euclidean nearest-neighbor queries in Lab](https://github.com/Jesterhearts/a-sixel/blob/e2ffc9aa674aeb00779d2b8d5a5bd7ddb4615022/src/dither.rs#L76-L108).
+Its [`BitPaletteBucketer`](https://github.com/Jesterhearts/a-sixel/blob/e2ffc9aa674aeb00779d2b8d5a5bd7ddb4615022/src/bit.rs#L116-L190)
+is the exception. `a-sixel` also uses kd-trees inside some palette builders;
+that does not change which structure applies the completed palette.
+
+`go-sixel` builds all `2^15` RGB555 entries eagerly. Each entry represents the
+center of an 8-by-8-by-8 byte cube, while source pixels select a cell by their
+top five bits; see [`newPaletteLUT` and `lutIndex`](https://github.com/mattn/go-sixel/blob/ceaaab1e2b5973d9ebc28b0a615760b921e90681/sixel.go#L676-L712).
+libsixel's `5bit` policy instead scans the actual first query color in a bucket
+and memoizes that result, making its approximation dependent on traversal
+history.
+
+The `libsixel/libsixel` fork likewise computes an
+[RGB555 hash from the top five channel bits](https://github.com/libsixel/libsixel/blob/ee77c2f979dbccc86651a482e748fe7bf80bc89c/src/quant.c#L667-L675)
+and [fills an empty entry from the first palette scan that reaches it](https://github.com/libsixel/libsixel/blob/ee77c2f979dbccc86651a482e748fe7bf80bc89c/src/quant.c#L1091-L1139).
+Unlike that truncating hash, the current libsixel `5bit` policy rounds before
+packing its bucket coordinates.
+
+The VP-tree chapter gives the exact libimagequant source links used to trace
+the previous-result optimization. These implementation comparisons are pinned
+to source commits so later algorithm changes do not silently rewrite the
+meaning of this document.
 
 ## Quality and performance
 
-Lookup preparation can dominate a small image, while query throughput can
-dominate a large image. Benchmark those phases separately and include palette
-size, image size, colorspace, precision, thread count, and cache-sharing policy
-in the result.
-
-As with dithering, the independent variable matters. A lookup that is linear
-in `P = W H` is quadratic in side length `n` for an `n`-by-`n` image. Calling
-that a "quadratic lookup" would obscure the fact that it still performs
-constant work per pixel.
-
-Dense bucket policies reduce the query color before indexing a finite table and
-can therefore select a different entry from a direct scan. Other algorithms
-have their own refinement and pruning contracts. Do not classify a policy as a
-drop-in speed improvement until tests establish the required index equivalence
-or an explicit image-quality threshold.
-
-With error diffusion, one changed index also changes the error carried to later
-pixels. A small local lookup difference can therefore create a larger spatial
-difference in the final image.
-
 Approximate lookup is not synonymous with lower end-to-end quality. Exact
-nearest lookup minimizes only the current candidate's distance. It does not
-directly minimize spatial artifacts, temporal instability, or encoded size.
-In a smooth gradient, reusing a recent palette index within a controlled
-tolerance can suppress index chatter, produce longer same-color runs, and
-change the error-diffusion feedback. That can simultaneously reduce lookup
-work, improve a perceptual metric, and reduce SIXEL size. It can also introduce
-banding or bias, so none of those improvements is guaranteed.
+nearest lookup minimizes only the current candidate's chosen distance. It does
+not directly minimize spatial artifacts, temporal instability, or encoded
+size. In a smooth gradient, controlled reuse of a recent index can suppress
+index chatter, produce longer runs, and change error-diffusion feedback. That
+can improve speed, a perceptual metric, and SIXEL size simultaneously. It can
+also introduce banding or bias, so no such improvement is guaranteed.
 
-The current VP-tree proof-radius cache is a narrower case: away from distance
-ties it selects the same nearest color and therefore improves speed without
-changing quality or size. History-dependent bucket caches and any future
-looser previous-color threshold can change the selected color and may exhibit
-the broader tradeoff described above.
+With error diffusion, one changed index changes the error carried to later
+pixels. A small local lookup difference can therefore create a larger spatial
+difference in the final image. Evaluate lookup changes on at least these axes:
 
-Evaluate lookup changes along three independent axes:
-
-- reference distance and reference-index agreement against `none`;
-- decoded-image quality, including smooth gradients and error-diffusion
-  stability;
-- encoded byte size and palette-index transition or run statistics.
+- palette-index agreement and distance regret against the appropriate
+  exhaustive metric;
+- decoded-image quality, including gradients and error-diffusion stability;
+- encoded byte size and palette-index transition or run statistics;
+- preparation time, steady-state query time, and total time;
+- memory footprint and worker-sharing behavior.
 
 ## Design rules
 
-- Keep policy instances derived from a completed palette; they must not choose
-  or mutate the palette.
-- Keep the per-pixel interface conceptually stateless. Image traversal and
-  error propagation belong to the dither policy.
-- Treat worker sharing as a lifecycle and thread-safety decision, not merely a
-  performance flag.
-- Test index behavior directly before relying only on encoded bytes or
+- Derive a lookup instance from a completed palette; do not choose or mutate
+  the palette in this stage.
+- Keep the per-pixel interface conceptually stateless. Explicit caches are
+  policy state, while scan order and error propagation belong to dithering.
+- Treat worker sharing as a lifecycle and thread-safety decision, not only a
+  speed switch.
+- Test lookup indexes and distances directly before relying on encoded bytes or
   perceptual scores.
-- When a backend, cache threshold, representation, or parallel path changes,
-  update the result-guarantee table and its direct-lookup comparison tests.
+- When a backend, metric, cache threshold, representation, or parallel path
+  changes, update this guarantee table and the affected policy chapter.
 - Keep policy names and suboptions synchronized through the central option
   registry.
 
 ## Implementation and tests
 
-Selection is in [`lookup-policy.c`](../../src/lookup-policy.c), and individual
-backends are implemented by the `src/lookup-policy-*.c` translation units.
-Their interface explicitly owns mapping pixels to palette indexes and forbids
-image or output ownership; see [`6cells.h`](../../include/6cells.h).
+Selection is in [`lookup-policy.c`](../../src/lookup-policy.c). Concrete policy
+classes are the `src/lookup-policy-*.c` translation units, with some larger
+backends split into `src/lookup-*.c`. Their interface is declared in
+[`6cells.h`](../../include/6cells.h).
 
 Direct and end-to-end coverage is under
 [`tests/quant/palette/usage/`](../../tests/quant/palette/usage/). For the caller
-of this interface, see [Dithering](dithering.md); for the complete data flow,
-see [Encoding Pipeline](encoding-pipeline.md).
+of this interface, see [Dithering](dithering.md).

@@ -32,7 +32,7 @@ are grouped by domain so each area can grow without overloading one document.
   order, temporal behavior, per-pixel cost, and its interaction with lookup.
 - [Lookup policy](functionality/lookup-policy.md) defines libsixel's `-~` /
   `--lookup-policy` concept, mathematical basis, exactness guarantees, and
-  preparation/query costs.
+  preparation/query costs, and indexes one detailed chapter per policy.
 
 ## Command-line interface
 
