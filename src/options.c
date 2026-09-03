@@ -446,6 +446,7 @@ sixel_option_match_suboption_key(
     char const *token,
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope,
     int *matched_index,
     char *diagnostic,
     size_t diagnostic_size);
@@ -455,6 +456,7 @@ sixel_option_match_suboption_short_key(
     char const *token,
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope,
     int *matched_index,
     char const **value_text_out);
 
@@ -655,6 +657,7 @@ static void
 sixel_option_emit_candidate_list_from_subkeys(
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope,
     char *buffer,
     size_t buffer_size)
 {
@@ -678,15 +681,20 @@ sixel_option_emit_candidate_list_from_subkeys(
     }
 
     buffer[0] = '\0';
-    subkey_count = sixel_option_registry_suboption_count(schema, base_def);
+    subkey_count = sixel_option_registry_suboption_count_for_scope(
+        schema,
+        base_def,
+        consumer_scope);
     if (subkey_count == 0u) {
         return;
     }
 
     while (index < subkey_count && offset + 1u < buffer_size) {
-        subkey = sixel_option_registry_suboption_at(schema,
-                                                    base_def,
-                                                    index);
+        subkey = sixel_option_registry_suboption_at_for_scope(
+            schema,
+            base_def,
+            consumer_scope,
+            index);
         name = subkey != NULL ? subkey->name : NULL;
         if (name == NULL || name[0] == '\0') {
             ++index;
@@ -893,6 +901,7 @@ sixel_option_report_unknown_suboption_key(
     char const *suggestions,
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope,
     char *buffer,
     size_t buffer_size)
 {
@@ -909,6 +918,7 @@ sixel_option_report_unknown_suboption_key(
     diag_mode_code = 0;
     sixel_option_emit_candidate_list_from_subkeys(schema,
                                                   base_def,
+                                                  consumer_scope,
                                                   candidates,
                                                   sizeof(candidates));
     if (buffer == NULL || buffer_size == 0u) {
@@ -1014,6 +1024,7 @@ SIXELSTATUS
 sixel_option_parse_argument_with_suboptions(
     char const *argument,
     sixel_option_argument_schema_t const *schema,
+    unsigned int consumer_scope,
     sixel_option_argument_resolution_t *resolution,
     char *diagnostic,
     size_t diagnostic_size)
@@ -1057,7 +1068,11 @@ sixel_option_parse_argument_with_suboptions(
     if (diagnostic != NULL && diagnostic_size > 0u) {
         diagnostic[0] = '\0';
     }
-    if (resolution == NULL || schema == NULL || argument == NULL) {
+    if (resolution == NULL || schema == NULL || argument == NULL ||
+        consumer_scope == 0u ||
+        (consumer_scope & ~schema->scope) != 0u ||
+        ((consumer_scope & SIXEL_OPTION_SCOPE_ENCODER_FAMILY) != 0u &&
+         (consumer_scope & SIXEL_OPTION_SCOPE_DECODER_FAMILY) != 0u)) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (!sixel_option_registry_validate()) {
@@ -1112,9 +1127,10 @@ sixel_option_parse_argument_with_suboptions(
 
     resolution->resolved_base_value = schema->values[value_index].value;
     resolution->base_def = schema->values + value_index;
-    subkey_count = sixel_option_registry_suboption_count(
+    subkey_count = sixel_option_registry_suboption_count_for_scope(
         schema,
-        resolution->base_def);
+        resolution->base_def,
+        consumer_scope);
 
     while (cursor != NULL && *cursor != '\0') {
         entry_end = strchr(cursor, ':');
@@ -1140,6 +1156,7 @@ sixel_option_parse_argument_with_suboptions(
                 cursor,
                 schema,
                 resolution->base_def,
+                consumer_scope,
                 &key_index,
                 diagnostic,
                 diagnostic_size);
@@ -1148,6 +1165,7 @@ sixel_option_parse_argument_with_suboptions(
                 cursor,
                 schema,
                 resolution->base_def,
+                consumer_scope,
                 &key_index,
                 &value_text);
         }
@@ -1165,6 +1183,7 @@ sixel_option_parse_argument_with_suboptions(
                 diagnostic,
                 schema,
                 resolution->base_def,
+                consumer_scope,
                 match_message,
                 sizeof(match_message));
             status = SIXEL_BAD_ARGUMENT;
@@ -1175,9 +1194,10 @@ sixel_option_parse_argument_with_suboptions(
             status = SIXEL_BAD_ARGUMENT;
             goto cleanup;
         }
-        key_def = sixel_option_registry_suboption_at(
+        key_def = sixel_option_registry_suboption_at_for_scope(
             schema,
             resolution->base_def,
+            consumer_scope,
             (size_t)key_index);
         if (key_def == NULL) {
             status = SIXEL_BAD_ARGUMENT;
@@ -1314,6 +1334,7 @@ sixel_option_parse_dequantize_argument_with_options(
     status = sixel_option_parse_argument_with_suboptions(
         argument,
         schema,
+        SIXEL_OPTION_SCOPE_DECODER,
         &resolution,
         diagnostic,
         diagnostic_size);
@@ -1325,6 +1346,7 @@ sixel_option_parse_dequantize_argument_with_options(
     sixel_option_apply_suboption_environment(
         schema,
         resolution.base_def,
+        SIXEL_OPTION_SCOPE_DECODER,
         &options,
         SIXEL_SUBOPTION_TARGET_DEQUANTIZE);
     if (!sixel_option_apply_suboption_assignments(
@@ -1370,7 +1392,8 @@ static int
 sixel_option_argument_final_bang_is_choice_list(
     char const *argument,
     char const *argument_end,
-    sixel_option_argument_schema_t const *schema)
+    sixel_option_argument_schema_t const *schema,
+    unsigned int consumer_scope)
 {
     char const *item_start;
     char const *cursor;
@@ -1413,6 +1436,7 @@ sixel_option_argument_final_bang_is_choice_list(
     status = sixel_option_parse_argument_with_suboptions(
         item,
         schema,
+        consumer_scope,
         &resolution,
         NULL,
         0u);
@@ -1431,6 +1455,7 @@ SIXELSTATUS
 sixel_option_parse_argument_list_with_suboptions(
     char const *argument,
     sixel_option_argument_schema_t const *schema,
+    unsigned int consumer_scope,
     sixel_option_argument_list_resolution_t *resolution,
     char *diagnostic,
     size_t diagnostic_size)
@@ -1461,7 +1486,10 @@ sixel_option_parse_argument_list_with_suboptions(
     if (diagnostic != NULL && diagnostic_size > 0u) {
         diagnostic[0] = '\0';
     }
-    if (schema == NULL || resolution == NULL) {
+    if (schema == NULL || resolution == NULL || consumer_scope == 0u ||
+        (consumer_scope & ~schema->scope) != 0u ||
+        ((consumer_scope & SIXEL_OPTION_SCOPE_ENCODER_FAMILY) != 0u &&
+         (consumer_scope & SIXEL_OPTION_SCOPE_DECODER_FAMILY) != 0u)) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1484,7 +1512,8 @@ sixel_option_parse_argument_list_with_suboptions(
          !sixel_option_argument_final_bang_is_choice_list(
              argument,
              argument_end - 1,
-             schema))) {
+             schema,
+             consumer_scope))) {
         has_trailing_bang = 1;
         --argument_end;
         while (argument_end > argument &&
@@ -1528,6 +1557,7 @@ sixel_option_parse_argument_list_with_suboptions(
                 status = sixel_option_parse_argument_with_suboptions(
                     token_buffer,
                     schema,
+                    consumer_scope,
                     &item_resolution,
                     diagnostic,
                     diagnostic_size);
@@ -1985,10 +2015,18 @@ sixel_option_parse_typed_suboption_value(
         break;
     case SIXEL_SUBOPTION_VALUE_SIZE:
         errno = 0;
-        parsed_uint = strtoull(text, &endptr, 10);
+        if ((range_policy &
+             SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG) != 0) {
+            parsed_ulong = strtoul(text, &endptr, 10);
+            parsed_uint = (unsigned long long)parsed_ulong;
+        } else {
+            parsed_uint = strtoull(text, &endptr, 10);
+        }
         valid = endptr != text && endptr != NULL &&
             endptr[0] == '\0';
-        if (valid && errno == ERANGE) {
+        if (valid && errno == ERANGE &&
+            (range_policy &
+             SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG) == 0) {
             valid = 0;
         } else if (valid &&
                    parsed_uint > (unsigned long long)SIZE_MAX) {
@@ -2902,6 +2940,7 @@ void
 sixel_option_apply_suboption_environment(
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope,
     void *target,
     sixel_suboption_target_class_t target_class)
 {
@@ -2919,11 +2958,15 @@ sixel_option_apply_suboption_environment(
         return;
     }
 
-    count = sixel_option_registry_suboption_count(schema, base_def);
+    count = sixel_option_registry_suboption_count_for_scope(
+        schema,
+        base_def,
+        consumer_scope);
     while (index < count) {
-        key_def = sixel_option_registry_suboption_at(
+        key_def = sixel_option_registry_suboption_at_for_scope(
             schema,
             base_def,
+            consumer_scope,
             index);
         if (sixel_option_resolve_suboption_environment(key_def, &value)) {
             (void)sixel_option_apply_suboption_value(
@@ -2939,6 +2982,7 @@ sixel_option_apply_suboption_environment(
 void
 sixel_option_reset_suboption_overrides(
     sixel_option_argument_schema_t const *schema,
+    unsigned int consumer_scope,
     void *target,
     sixel_suboption_target_class_t target_class)
 {
@@ -2962,14 +3006,16 @@ sixel_option_reset_suboption_overrides(
     }
 
     while (base_index < schema->value_count) {
-        key_count = sixel_option_registry_suboption_count(
+        key_count = sixel_option_registry_suboption_count_for_scope(
             schema,
-            schema->values + base_index);
+            schema->values + base_index,
+            consumer_scope);
         key_index = 0u;
         while (key_index < key_count) {
-            key_def = sixel_option_registry_suboption_at(
+            key_def = sixel_option_registry_suboption_at_for_scope(
                 schema,
                 schema->values + base_index,
+                consumer_scope,
                 key_index);
             if (key_def != NULL &&
                 key_def->binding.target_class == target_class &&
@@ -3108,6 +3154,7 @@ sixel_option_match_suboption_key(
     char const *token,
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope,
     int *matched_index,
     char *diagnostic,
     size_t diagnostic_size)
@@ -3129,13 +3176,20 @@ sixel_option_match_suboption_key(
     if (matched_index != NULL) {
         *matched_index = 0;
     }
-    key_count = sixel_option_registry_suboption_count(schema, base_def);
+    key_count = sixel_option_registry_suboption_count_for_scope(
+        schema,
+        base_def,
+        consumer_scope);
     if (key_count == 0u) {
         return SIXEL_OPTION_CHOICE_NONE;
     }
 
     while (index < key_count) {
-        key = sixel_option_registry_suboption_at(schema, base_def, index);
+        key = sixel_option_registry_suboption_at_for_scope(
+            schema,
+            base_def,
+            consumer_scope,
+            index);
         if (key == NULL) {
             ++index;
             continue;
@@ -3172,7 +3226,11 @@ sixel_option_match_suboption_key(
     choice_count = 0u;
     index = 0u;
     while (index < key_count) {
-        key = sixel_option_registry_suboption_at(schema, base_def, index);
+        key = sixel_option_registry_suboption_at_for_scope(
+            schema,
+            base_def,
+            consumer_scope,
+            index);
         if (key == NULL) {
             ++index;
             continue;
@@ -3200,6 +3258,7 @@ sixel_option_match_suboption_short_key(
     char const *token,
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope,
     int *matched_index,
     char const **value_text_out)
 {
@@ -3221,14 +3280,21 @@ sixel_option_match_suboption_short_key(
     if (value_text_out != NULL) {
         *value_text_out = NULL;
     }
-    key_count = sixel_option_registry_suboption_count(schema, base_def);
+    key_count = sixel_option_registry_suboption_count_for_scope(
+        schema,
+        base_def,
+        consumer_scope);
     if (token == NULL || key_count == 0u) {
         return SIXEL_OPTION_CHOICE_NONE;
     }
 
     /* A nonempty suffix is required because it is the value text. */
     while (index < key_count) {
-        key = sixel_option_registry_suboption_at(schema, base_def, index);
+        key = sixel_option_registry_suboption_at_for_scope(
+            schema,
+            base_def,
+            consumer_scope,
+            index);
         if (key == NULL) {
             ++index;
             continue;

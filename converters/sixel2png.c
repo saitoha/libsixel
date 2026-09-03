@@ -180,13 +180,16 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         'G',
         "gpu-policy",
-        "-G GPUPOLICY, --gpu-policy=GPUPOLICY\n"
+        "-G POLICY[:KEY=VALUE], --gpu-policy=POLICY[:KEY=VALUE]\n"
         "                           choose decoder GPU accelerator\n"
         "                           policy. GPUPOLICY is one of:\n"
         "                             off   -> keep CPU path\n"
         "                             auto  -> use GPU only when\n"
         "                                      available and large\n"
         "                             force -> require GPU path\n"
+        "                           decoder sub-option:\n"
+        "                             :dequant_threshold=PIXELS\n"
+        "                             (:DPIXELS) sets the auto cutoff\n"
     },
     {
         '%',

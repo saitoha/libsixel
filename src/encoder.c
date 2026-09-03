@@ -118,6 +118,7 @@
 #include "filter-gradient.h"
 #include "filter-final-merge.h"
 #include "filter-factory.h"
+#include "gpu-palette.h"
 #include "filter-palette.h"
 #include "filter-fhedt.h"
 #include "filter-vptree.h"
@@ -143,6 +144,12 @@
     "LSO_TEST_SIGINT_NOTIFY_FD"
 #define SIXEL_ENCODER_SIGINT_SYNC_EVENT_DISPATCH_START \
     "callback_dispatch_start"
+
+static SIXELSTATUS
+sixel_encoder_apply_gpu_policy_argument(sixel_encoder_t *encoder,
+                                        char const *value,
+                                        char *diagnostic,
+                                        size_t diagnostic_size);
 
 #if defined(__EMSCRIPTEN__) && HAVE_MKSTEMP
 # define SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING 1
@@ -712,7 +719,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "band_overwrap=%u|band_overwrap_override=%d|"
             "band_width=%u|band_width_override=%d|dither_threads=%d|"
             "encode_threads=%d|threads_max=%u|threads_max_override=%d|"
-            "pin_threads=%d|pin_threads_override=%d|codes=",
+            "pin_threads=%d|pin_threads_override=%d|gpu_threshold=%zu|"
+            "gpu_threshold_override=%d|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -757,7 +765,9 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->dither_parallel_threads_max,
             dither->dither_parallel_threads_max_override,
             dither->pipeline_pin_threads,
-            dither->dither_pin_threads_override);
+            dither->dither_pin_threads_override,
+            dither->gpu_palette_threshold,
+            encoder->gpu_palette_threshold_override);
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }
@@ -4032,6 +4042,7 @@ typedef struct sixel_callback_context_for_mapfile {
     int lut_policy_shared_instance_override;
     int lut_policy_shared_instance;
     int gpu_policy;
+    size_t gpu_palette_threshold;
     int prefer_float32;
 } sixel_callback_context_for_mapfile_t;
 
@@ -4082,6 +4093,8 @@ load_image_callback_for_palette(
         callback_context->dither->lut_policy_shared_instance =
             callback_context->lut_policy_shared_instance;
         callback_context->dither->gpu_policy = callback_context->gpu_policy;
+        callback_context->dither->gpu_palette_threshold =
+            callback_context->gpu_palette_threshold;
 
         /* use palette which is extracted from the image */
         sixel_dither_set_palette(callback_context->dither,
@@ -4131,6 +4144,8 @@ load_image_callback_for_palette(
         callback_context->dither->lut_policy_shared_instance =
             callback_context->lut_policy_shared_instance;
         callback_context->dither->gpu_policy = callback_context->gpu_policy;
+        callback_context->dither->gpu_palette_threshold =
+            callback_context->gpu_palette_threshold;
 
         /* create adaptive palette from given frame object */
         status = sixel_dither_initialize(callback_context->dither,
@@ -4770,6 +4785,8 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     context->dither->lut_policy_shared_instance =
         context->encoder->lut_policy_shared_instance;
     context->dither->gpu_policy = context->encoder->gpu_policy;
+    context->dither->gpu_palette_threshold =
+        context->encoder->gpu_palette_threshold;
     sixel_dither_set_diffusion_scan(context->dither,
                                     context->encoder->method_for_scan);
 
@@ -5546,6 +5563,8 @@ palette_cleanup:
     callback_context.lut_policy_shared_instance =
         encoder->lut_policy_shared_instance;
     callback_context.gpu_policy = encoder->gpu_policy;
+    callback_context.gpu_palette_threshold =
+        encoder->gpu_palette_threshold;
     callback_context.prefer_float32 = encoder->prefer_float32;
 
     status = sixel_loader_new(&loader, encoder->allocator);
@@ -6216,6 +6235,7 @@ sixel_encoder_prepare_palette(
     (*dither)->lut_policy_shared_instance =
         encoder->lut_policy_shared_instance;
     (*dither)->gpu_policy = encoder->gpu_policy;
+    (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
     sixel_dither_set_sixel_reversible(*dither,
                                       encoder->sixel_reversible);
     memset(&merge_config, 0, sizeof(merge_config));
@@ -6562,6 +6582,7 @@ end:
         (*dither)->lut_policy_shared_instance =
             encoder->lut_policy_shared_instance;
         (*dither)->gpu_policy = encoder->gpu_policy;
+        (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
         /* pass down the user's demand for an exact palette size */
         (*dither)->force_palette = encoder->force_palette;
         if (cache_allowed
@@ -7575,10 +7596,16 @@ sixel_encoder_new(
     size_t parsed_sample_target;
     int has_sample_target;
     sixel_suboption_value_t env_value;
+    char const *gpu_policy_environment;
+    sixel_option_argument_schema_t const *gpu_policy_schema;
+    sixel_option_argument_resolution_t gpu_policy_resolution;
 
     parsed_sample_target = 0u;
     has_sample_target = 0;
     memset(&env_value, 0, sizeof(env_value));
+    gpu_policy_environment = NULL;
+    gpu_policy_schema = NULL;
+    memset(&gpu_policy_resolution, 0, sizeof(gpu_policy_resolution));
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -7804,6 +7831,9 @@ sixel_encoder_new(
     (*ppencoder)->lut_policy_shared_instance_override = 0;
     (*ppencoder)->lut_policy_shared_instance = 0;
     (*ppencoder)->gpu_policy            = SIXEL_GPU_POLICY_OFF;
+    (*ppencoder)->gpu_palette_threshold_override = 0;
+    (*ppencoder)->gpu_palette_threshold =
+        (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
     (*ppencoder)->sixel_reversible      = 0;
     (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
     (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
@@ -7923,14 +7953,29 @@ sixel_encoder_new(
         (*ppencoder)->lut_policy_shared_instance = 0;
     }
 
-    env_result = sixel_option_resolve_scalar_environment(
-        SIXEL_OPTION_SCHEMA_GPU_POLICY,
-        &env_value,
+    gpu_policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_GPU_POLICY);
+    sixel_option_apply_suboption_environment(
+        gpu_policy_schema,
         NULL,
-        0u);
-    if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        (*ppencoder)->gpu_policy = env_value.int_value;
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    gpu_policy_environment = sixel_option_resolve_argument_environment(
+        SIXEL_OPTION_SCHEMA_GPU_POLICY);
+    if (gpu_policy_environment != NULL &&
+        SIXEL_SUCCEEDED(sixel_option_parse_argument_with_suboptions(
+            gpu_policy_environment,
+            gpu_policy_schema,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &gpu_policy_resolution,
+            NULL,
+            0u)) &&
+        gpu_policy_resolution.assignment_count == 0u) {
+        (*ppencoder)->gpu_policy =
+            gpu_policy_resolution.resolved_base_value;
     }
+    sixel_option_free_argument_resolution(&gpu_policy_resolution);
 
     env_result = sixel_option_resolve_scalar_environment(
         SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
@@ -8500,6 +8545,7 @@ sixel_encoder_parse_quantize_model_argument(
     status = sixel_option_parse_argument_list_with_suboptions(
         value,
         sixel_option_registry_get(SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL),
+        SIXEL_OPTION_SCOPE_ENCODER,
         resolution,
         diagnostic,
         diagnostic_size);
@@ -8534,6 +8580,7 @@ sixel_encoder_parse_diffusion_argument(
     status = sixel_option_parse_argument_with_suboptions(
         value,
         sixel_option_registry_get(SIXEL_OPTION_SCHEMA_DIFFUSION),
+        SIXEL_OPTION_SCOPE_ENCODER,
         resolution,
         diagnostic,
         diagnostic_size);
@@ -8558,6 +8605,7 @@ sixel_encoder_apply_bound_suboptions(
     sixel_option_apply_suboption_environment(
         schema,
         resolution->base_def,
+        SIXEL_OPTION_SCOPE_ENCODER,
         encoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
     if (!sixel_option_apply_suboption_assignments(
@@ -8617,6 +8665,7 @@ sixel_encoder_apply_diffusion_resolution(
     encoder->bluenoise_size = 64;
     sixel_option_reset_suboption_overrides(
         schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
         encoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
 
@@ -8659,6 +8708,7 @@ sixel_encoder_apply_quantize_resolution(
         SIXEL_HECKBERT_PROFILE_COMPAT;
     sixel_option_reset_suboption_overrides(
         schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
         encoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
     status = sixel_encoder_apply_bound_suboptions(
@@ -8697,6 +8747,7 @@ sixel_encoder_apply_lut_policy_argument(
     status = sixel_option_parse_argument_with_suboptions(
         value,
         schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
         &resolution,
         diagnostic,
         diagnostic_size);
@@ -8709,6 +8760,7 @@ sixel_encoder_apply_lut_policy_argument(
     encoder->lut_policy_shared_instance = 0;
     sixel_option_reset_suboption_overrides(
         schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
         encoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
     status = sixel_encoder_apply_bound_suboptions(
@@ -8729,6 +8781,61 @@ sixel_encoder_apply_lut_policy_argument(
         ((sixel_dither_t *)encoder->dither_cache)
             ->lut_policy_shared_instance
             = encoder->lut_policy_shared_instance;
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_apply_gpu_policy_argument(sixel_encoder_t *encoder,
+                                        char const *value,
+                                        char *diagnostic,
+                                        size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
+
+    status = SIXEL_OK;
+    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_GPU_POLICY);
+    memset(&resolution, 0, sizeof(resolution));
+    if (encoder == NULL || schema == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        value,
+        schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        &resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    encoder->gpu_policy = resolution.resolved_base_value;
+    encoder->gpu_palette_threshold =
+        (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
+    sixel_option_reset_suboption_overrides(
+        schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        encoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    status = sixel_encoder_apply_bound_suboptions(
+        encoder,
+        schema,
+        &resolution);
+    sixel_option_free_argument_resolution(&resolution);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (encoder->dither_cache != NULL) {
+        ((sixel_dither_t *)encoder->dither_cache)->gpu_policy =
+            encoder->gpu_policy;
+        ((sixel_dither_t *)encoder->dither_cache)
+            ->gpu_palette_threshold = encoder->gpu_palette_threshold;
     }
 
     return SIXEL_OK;
@@ -10298,20 +10405,13 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_GPU_POLICY:  /* G */
-        status = sixel_option_parse_scalar_argument(
-            SIXEL_OPTION_SCHEMA_GPU_POLICY,
-            SIXEL_OPTION_SCOPE_ENCODER,
+        status = sixel_encoder_apply_gpu_policy_argument(
+            encoder,
             value,
-            &scalar_value,
             match_detail,
             sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
-        }
-        encoder->gpu_policy = scalar_value.int_value;
-        if (encoder->dither_cache != NULL) {
-            ((sixel_dither_t *)encoder->dither_cache)->gpu_policy =
-                encoder->gpu_policy;
         }
         break;
     case SIXEL_OPTFLAG_CLUSTERING_COLORSPACE:  /* X */

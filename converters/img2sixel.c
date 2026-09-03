@@ -713,11 +713,14 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         'G',
         "gpu-policy",
-        "-G GPUPOLICY, --gpu-policy=GPUPOLICY\n"
+        "-G POLICY[:KEY=VALUE], --gpu-policy=POLICY[:KEY=VALUE]\n"
         "    choose palette-apply accelerator policy:\n"
         "      off   -> keep the CPU path (default)\n"
         "      auto  -> probe GPU support and use it only above the threshold\n"
         "      force -> require a supported GPU path and fail otherwise\n"
+        "    encoder sub-option:\n"
+        "      :palette_threshold=PIXELS (:PPIXELS)\n"
+        "      set the auto-policy minimum pixel count\n"
         "    accelerates exact --lookup-policy=none and one-dimensional\n"
         "    --lookup-policy=eytzinger palette apply\n"
     },
@@ -1948,12 +1951,14 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_GPU_PALETTE_THRESHOLD",
         "set the minimum pixel count for --gpu-policy=auto.\n"
-        "Invalid values keep the built-in default 262144."
+        "Invalid values keep the built-in default 262144. The -G\n"
+        "palette_threshold suboption (short form PPIXELS) takes precedence."
     },
     {
         "SIXEL_GPU_DEQUANT_THRESHOLD",
         "set the minimum pixel count for GPU dequant auto policy.\n"
-        "Invalid values keep the built-in default 262144."
+        "Invalid values keep the built-in default 262144. The sixel2png -G\n"
+        "dequant_threshold suboption (short form DPIXELS) takes precedence."
     },
     {
         "SIXEL_LOOKUP_PACKING",

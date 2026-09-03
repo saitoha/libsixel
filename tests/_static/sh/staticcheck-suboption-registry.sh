@@ -368,6 +368,7 @@ function fail(message) {
 function macro_is_approved(macro) {
     return macro == "SIXEL_REGISTRY_DEQUANTIZE_CHOICE" ||
         macro == "SIXEL_REGISTRY_DEQUANTIZE_UINT" ||
+        macro == "SIXEL_REGISTRY_DECODER_SIZE" ||
         macro == "SIXEL_REGISTRY_ENCODER_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_ENCODER_CHOICE" ||
         macro == "SIXEL_REGISTRY_ENCODER_CHOICE_ENV" ||
@@ -379,6 +380,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_ENCODER_INT_PAIR" ||
         macro == "SIXEL_REGISTRY_ENCODER_MIRROR_CHOICE" ||
         macro == "SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP" ||
+        macro == "SIXEL_REGISTRY_ENCODER_SIZE" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT" ||
         macro == "SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_POSITIVE" ||
         macro == \
@@ -425,7 +427,7 @@ function inspect(row, fields, count, option_id, base, name, alias, env,
     if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
         fail(option_id ":" name " needs a non-empty environment variable")
     }
-    if (macro !~ /DEQUANTIZE|ENCODER|LOADER/) {
+    if (macro !~ /DEQUANTIZE|DECODER|ENCODER|LOADER/) {
         fail(option_id ":" name " needs a typed target binding")
     }
     if (!macro_is_approved(macro)) {
@@ -525,13 +527,17 @@ test -f "$help_file" -a -f "$man_file" || {
 # compact tables use name=A, while loader prose uses "short form Avalue".
 awk -v registry_file="$registry_file" \
     -v help_file="$help_file" \
-    -v man_file="$man_file" '
+    -v man_file="$man_file" \
+    -v decoder_help_file="$decoder_help_file" \
+    -v decoder_man_file="$decoder_man_file" '
 function fail(message) {
     print "# " message
     failed = 1
 }
-function inspect(row, fields, count, name, alias, key) {
+function inspect(row, fields, count, name, alias, key, macro) {
     gsub(/[[:space:]]+/, " ", row)
+    match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
+    macro = substr(row, RSTART, RLENGTH)
     sub(/^.*SIXEL_REGISTRY_[A-Z0-9_]+\(/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
@@ -543,6 +549,13 @@ function inspect(row, fields, count, name, alias, key) {
     expected[key] = 1
     expected_name[key] = name
     expected_alias[key] = alias
+    if (macro ~ /DEQUANTIZE|DECODER/) {
+        expected_help[key] = decoder_help_file
+        expected_man[key] = decoder_man_file
+    } else {
+        expected_help[key] = help_file
+        expected_man[key] = man_file
+    }
 }
 function mapping_is_documented(text, name, alias, offset, position,
                                window, short_position, short_window) {
@@ -609,16 +622,19 @@ END {
     for (key in expected) {
         name = expected_name[key]
         alias = expected_alias[key]
-        if (!mapping_is_documented(document[help_file], name, alias)) {
-            fail("img2sixel -H omits " name "=" alias)
+        if (!mapping_is_documented(document[expected_help[key]],
+                                   name, alias)) {
+            fail(expected_help[key] " omits " name "=" alias)
         }
-        if (!mapping_is_documented(document[man_file], name, alias)) {
-            fail("img2sixel.1 omits " name "=" alias)
+        if (!mapping_is_documented(document[expected_man[key]],
+                                   name, alias)) {
+            fail(expected_man[key] " omits " name "=" alias)
         }
     }
     exit failed ? 1 : 0
 }
-' "$registry_file" "$help_file" "$man_file" || {
+' "$registry_file" "$help_file" "$man_file" \
+    "$decoder_help_file" "$decoder_man_file" || {
     echo "not ok 1 - suboptions use one complete registry"
     exit 0
 }
@@ -639,7 +655,7 @@ function binding_from_registry(row, fields, count, macro, binding) {
     sub(/^[[:space:]]*/, "", row)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
-    if (macro ~ /LOADER_SIZE_ENV_ERROR/) {
+    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR/) {
         binding = fields[count - 1] "," fields[count]
     } else if (macro ~ /ENCODER_MIRROR_CHOICE|ENCODER_INT_PAIR/) {
         binding = fields[count - 2] "," fields[count - 1] "," \
@@ -794,6 +810,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         if ((fields[8] + 0.0) == 0.0 || (fields[10] + 0) == 1) {
             expected_unsigned_long_sign[key] = 1
         }
+    } else if (macro ~ /ENCODER_SIZE|DECODER_SIZE/) {
+        range_policy = "saturate-unsigned-long"
     }
     expected_range_policy[key] = range_policy
     if (option_id == "SIXEL_OPTION_SCHEMA_DIFFUSION" &&
@@ -812,9 +830,17 @@ function inspect_registry(row, fields, count, option_id, name, alias,
             name == "shared_instance") {
         expected_lookup_contract[key] = 1
     }
+    if (option_id == "SIXEL_OPTION_SCHEMA_GPU_POLICY" &&
+            name == "palette_threshold") {
+        expected_dither_contract[key] = 1
+    }
+    if (option_id == "SIXEL_OPTION_SCHEMA_GPU_POLICY" &&
+            name == "dequant_threshold") {
+        expected_gpu_contract[key] = 1
+    }
     binding_value = ""
     binding_override = ""
-    if (macro ~ /LOADER_SIZE_ENV_ERROR/) {
+    if (macro ~ /ENCODER_SIZE|DECODER_SIZE|LOADER_SIZE_ENV_ERROR/) {
         binding = fields[count - 1] "|" fields[count]
         binding_value = fields[count - 1]
         binding_override = fields[count]
@@ -925,6 +951,16 @@ FILENAME == registry_file {
     test_lookup_contract[FILENAME] = lookup_contract
     next
 }
+/^# GPU contract: / {
+    gpu_contract = $0
+    sub(/^# GPU contract: /, "", gpu_contract)
+    gsub(/[[:space:]]+/, " ", gpu_contract)
+    if (test_gpu_contract[FILENAME] != "") {
+        fail(FILENAME " contains more than one GPU contract marker")
+    }
+    test_gpu_contract[FILENAME] = gpu_contract
+    next
+}
 /^# Environment range: / {
     range_policy = $0
     sub(/^# Environment range: /, "", range_policy)
@@ -996,6 +1032,10 @@ FILENAME != registry_file {
     if (test_lookup_contract[FILENAME] != "" &&
             index($0, "LSXDTH1|*" test_lookup_contract[FILENAME] "*") > 0) {
         has_lookup_contract[FILENAME] = 1
+    }
+    if (test_gpu_contract[FILENAME] != "" &&
+            index($0, "LSXGPU1|*" test_gpu_contract[FILENAME] "*") > 0) {
+        has_gpu_contract[FILENAME] = 1
     }
     if (index($0, "range_trace#*LSXSUB1|*key=" expected_name[key] \
             "|stored=1|binding=" expected_trace_binding[key] \
@@ -1127,6 +1167,15 @@ END {
         if (!expected_lookup_contract[key] &&
                 test_lookup_contract[file] != "") {
             fail(file " has an unexpected lookup contract marker")
+        }
+        if (expected_gpu_contract[key] &&
+                (test_gpu_contract[file] == "" ||
+                 !has_gpu_contract[file])) {
+            fail(file " does not verify its effective GPU setting")
+        }
+        if (!expected_gpu_contract[key] &&
+                test_gpu_contract[file] != "") {
+            fail(file " has an unexpected GPU contract marker")
         }
         if (!has_environment[file]) {
             fail(file " does not exercise the registered environment name")

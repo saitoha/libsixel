@@ -35,10 +35,6 @@
 #include "bluenoise_64x64.h"
 #include "options.h"
 
-#define SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT 262144U
-#define SIXEL_GPU_PALETTE_THRESHOLD_ENVVAR \
-    "SIXEL_GPU_PALETTE_THRESHOLD"
-
 typedef struct sixel_gpu_bluenoise_conf {
     float strength;
     float gradient_factor;
@@ -291,23 +287,17 @@ sixel_gpu_palette_apply_bluenoise_overrides(
 SIXEL_INTERNAL_API size_t
 sixel_gpu_palette_auto_threshold(void)
 {
-    char const *text;
-    char *endptr;
-    unsigned long value;
+    size_t value;
 
-    text = sixel_compat_getenv(SIXEL_GPU_PALETTE_THRESHOLD_ENVVAR);
-    endptr = NULL;
-    value = 0UL;
-    if (text == NULL || text[0] == '\0') {
-        return (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
-    }
-
-    value = strtoul(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0') {
-        return (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
-    }
-
-    return (size_t)value;
+    value = (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
+    (void)sixel_option_resolve_registered_size_binding(
+        SIXEL_OPTION_SCHEMA_GPU_POLICY,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            gpu_palette_threshold,
+            gpu_palette_threshold_override),
+        &value);
+    return value;
 }
 
 static int
@@ -392,7 +382,9 @@ sixel_gpu_palette_has_engine(void)
 }
 
 static int
-sixel_gpu_palette_policy_may_apply(int policy, size_t pixel_count)
+sixel_gpu_palette_policy_may_apply(int policy,
+                                   size_t auto_threshold,
+                                   size_t pixel_count)
 {
     if (policy == SIXEL_GPU_POLICY_OFF) {
         return 0;
@@ -403,7 +395,7 @@ sixel_gpu_palette_policy_may_apply(int policy, size_t pixel_count)
     if (policy != SIXEL_GPU_POLICY_AUTO) {
         return 0;
     }
-    if (pixel_count < sixel_gpu_palette_auto_threshold()) {
+    if (pixel_count < auto_threshold) {
         return 0;
     }
 
@@ -412,6 +404,7 @@ sixel_gpu_palette_policy_may_apply(int policy, size_t pixel_count)
 
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
+                                            size_t auto_threshold,
                                             int lut_policy,
                                             int method_for_diffuse,
                                             int method_for_scan,
@@ -420,7 +413,9 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
     int effective_scan;
 
     effective_scan = SIXEL_SCAN_AUTO;
-    if (!sixel_gpu_palette_policy_may_apply(gpu_policy, pixel_count)) {
+    if (!sixel_gpu_palette_policy_may_apply(gpu_policy,
+                                            auto_threshold,
+                                            pixel_count)) {
         return 0;
     }
     if (sixel_gpu_palette_policy_is_force(gpu_policy)) {
@@ -472,7 +467,7 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
         return SIXEL_FALSE;
     }
     if (request->policy == SIXEL_GPU_POLICY_AUTO &&
-            request->pixel_count < sixel_gpu_palette_auto_threshold()) {
+            request->pixel_count < request->auto_threshold) {
         return SIXEL_FALSE;
     }
     if (request->method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER) {

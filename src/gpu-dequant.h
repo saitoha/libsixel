@@ -33,6 +33,8 @@
 extern "C" {
 #endif
 
+#define SIXEL_GPU_DEQUANT_AUTO_THRESHOLD_DEFAULT 262144U
+
 /*
  * GPU fast4 dequantization request.
  *
@@ -44,6 +46,7 @@ extern "C" {
  */
 typedef struct sixel_gpu_dequant_request {
     int policy;
+    size_t auto_threshold;
     unsigned char *dest;
     unsigned char const *rgba;
     size_t pixel_count;

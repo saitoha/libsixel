@@ -77,10 +77,12 @@ pipelines.
    environment variable manually.
 .RE
 .TP 5
-.B \-G \fIPOLICY\fP, \-\-gpu\-policy=\fIPOLICY\fP
+.B \-G \fIPOLICY[:KEY=VALUE]\fP, \-\-gpu\-policy=\fIPOLICY[:KEY=VALUE]\fP
 choose the palette application accelerator policy.
 \fBoff\fP keeps the CPU path, \fBauto\fP uses a supported GPU for
 sufficiently large images, and \fBforce\fP requires GPU acceleration.
+The encoder suboption \fB:palette_threshold=PIXELS\fP, with short form
+\fB:PPIXELS\fP, sets the minimum image size used by \fBauto\fP.
 .TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).

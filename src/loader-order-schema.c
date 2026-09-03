@@ -91,6 +91,7 @@ sixel_loader_order_parse_and_validate(
     status = sixel_option_parse_argument_list_with_suboptions(
         argument,
         sixel_loader_order_schema_get(),
+        SIXEL_OPTION_SCOPE_ENCODER,
         resolution,
         diagnostic,
         diagnostic_size);

@@ -31,7 +31,7 @@
  * These accessors expose read-only views of the single registry.  Callers may
  * enumerate a schema without owning parallel base or suboption tables.
  */
-sixel_option_argument_schema_t const *
+SIXEL_INTERNAL_API sixel_option_argument_schema_t const *
 sixel_option_registry_get(sixel_option_schema_id_t option_id);
 
 size_t
@@ -39,10 +39,23 @@ sixel_option_registry_suboption_count(
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def);
 
+SIXEL_INTERNAL_API size_t
+sixel_option_registry_suboption_count_for_scope(
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope);
+
 sixel_suboption_key_t const *
 sixel_option_registry_suboption_at(
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
+    size_t index);
+
+sixel_suboption_key_t const *
+sixel_option_registry_suboption_at_for_scope(
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope,
     size_t index);
 
 /*
@@ -59,7 +72,7 @@ sixel_option_registry_suboption_by_binding(
     char const *base_name,
     char const *binding_identifier);
 
-int
+SIXEL_INTERNAL_API int
 sixel_option_registry_validate(void);
 
 #endif /* LIBSIXEL_OPTIONS_REGISTRY_H */

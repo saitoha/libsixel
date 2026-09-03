@@ -64,9 +64,16 @@
 #include "gpu-dequant.h"
 #include "path.h"
 #include "options.h"
+#include "options-registry.h"
 #include "cpu.h"
 #include "sixel_atomic.h"
 #include "threading.h"
+
+static SIXELSTATUS
+decoder_apply_gpu_policy_argument(sixel_decoder_t *decoder,
+                                  char const *value,
+                                  char *diagnostic,
+                                  size_t diagnostic_size);
 
 #if defined(HAVE_NEON) && HAVE_NEON && \
     defined(HAVE_ARM_NEON_H) && HAVE_ARM_NEON_H && \
@@ -424,9 +431,13 @@ sixel_decoder_new(
                                                   default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_suboption_value_t env_value;
+    char const *gpu_policy_environment;
+    sixel_option_argument_schema_t const *gpu_policy_schema;
+    sixel_option_argument_resolution_t gpu_policy_resolution;
 
-    memset(&env_value, 0, sizeof(env_value));
+    gpu_policy_environment = NULL;
+    gpu_policy_schema = NULL;
+    memset(&gpu_policy_resolution, 0, sizeof(gpu_policy_resolution));
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -456,6 +467,9 @@ sixel_decoder_new(
     (*ppdecoder)->dequantize_selective_blur_threshold =
         SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT;
     (*ppdecoder)->gpu_policy = SIXEL_GPU_POLICY_OFF;
+    (*ppdecoder)->gpu_dequant_threshold_override = 0;
+    (*ppdecoder)->gpu_dequant_threshold =
+        (size_t)SIXEL_GPU_DEQUANT_AUTO_THRESHOLD_DEFAULT;
     (*ppdecoder)->thumbnail_size = 0;
     (*ppdecoder)->direct_color = 0;
     (*ppdecoder)->clipboard_input_active = 0;
@@ -478,13 +492,29 @@ sixel_decoder_new(
      * ignored so an inherited process environment cannot make decoder_new()
      * fail before the caller has a chance to set explicit options.
      */
-    if (sixel_option_resolve_scalar_environment(
-            SIXEL_OPTION_SCHEMA_GPU_POLICY,
-            &env_value,
+    gpu_policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_GPU_POLICY);
+    sixel_option_apply_suboption_environment(
+        gpu_policy_schema,
+        NULL,
+        SIXEL_OPTION_SCOPE_DECODER,
+        *ppdecoder,
+        SIXEL_SUBOPTION_TARGET_DECODER);
+    gpu_policy_environment = sixel_option_resolve_argument_environment(
+        SIXEL_OPTION_SCHEMA_GPU_POLICY);
+    if (gpu_policy_environment != NULL &&
+        SIXEL_SUCCEEDED(sixel_option_parse_argument_with_suboptions(
+            gpu_policy_environment,
+            gpu_policy_schema,
+            SIXEL_OPTION_SCOPE_DECODER,
+            &gpu_policy_resolution,
             NULL,
-            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        (*ppdecoder)->gpu_policy = env_value.int_value;
+            0u)) &&
+        gpu_policy_resolution.assignment_count == 0u) {
+        (*ppdecoder)->gpu_policy =
+            gpu_policy_resolution.resolved_base_value;
     }
+    sixel_option_free_argument_resolution(&gpu_policy_resolution);
 
     status = SIXEL_OK;
 
@@ -2592,6 +2622,60 @@ sixel_dequantize_selective_blur_rgba(unsigned char *indexed_pixels,
                                                   allocator,
                                                   output);
 }
+static SIXELSTATUS
+decoder_apply_gpu_policy_argument(sixel_decoder_t *decoder,
+                                  char const *value,
+                                  char *diagnostic,
+                                  size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
+
+    status = SIXEL_OK;
+    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_GPU_POLICY);
+    memset(&resolution, 0, sizeof(resolution));
+    if (decoder == NULL || schema == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        value,
+        schema,
+        SIXEL_OPTION_SCOPE_DECODER,
+        &resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    decoder->gpu_policy = resolution.resolved_base_value;
+    decoder->gpu_dequant_threshold =
+        (size_t)SIXEL_GPU_DEQUANT_AUTO_THRESHOLD_DEFAULT;
+    sixel_option_reset_suboption_overrides(
+        schema,
+        SIXEL_OPTION_SCOPE_DECODER,
+        decoder,
+        SIXEL_SUBOPTION_TARGET_DECODER);
+    sixel_option_apply_suboption_environment(
+        schema,
+        resolution.base_def,
+        SIXEL_OPTION_SCOPE_DECODER,
+        decoder,
+        SIXEL_SUBOPTION_TARGET_DECODER);
+    if (!sixel_option_apply_suboption_assignments(
+            &resolution,
+            decoder,
+            SIXEL_SUBOPTION_TARGET_DECODER)) {
+        sixel_helper_set_additional_message(
+            "suboption registry contains an invalid decoder binding.");
+        status = SIXEL_BAD_ARGUMENT;
+    }
+    sixel_option_free_argument_resolution(&resolution);
+    return status;
+}
+
 /* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
@@ -2612,7 +2696,6 @@ sixel_decoder_setopt(
     long bias;
     long parsed_value;
     char *endptr;
-    sixel_suboption_value_t scalar_value;
 
     sixel_decoder_ref(decoder);
     path_flags = 0u;
@@ -2620,7 +2703,6 @@ sixel_decoder_setopt(
     libc_buffer_size = 0u;
     libc_buffer = NULL;
     libc_path = NULL;
-    memset(&scalar_value, 0, sizeof(scalar_value));
 
     switch(arg) {
     case SIXEL_OPTFLAG_INPUT:  /* i */
@@ -2800,17 +2882,14 @@ sixel_decoder_setopt(
         break;
 
     case SIXEL_OPTFLAG_GPU_POLICY:  /* G */
-        status = sixel_option_parse_scalar_argument(
-            SIXEL_OPTION_SCHEMA_GPU_POLICY,
-            SIXEL_OPTION_SCOPE_DECODER,
+        status = decoder_apply_gpu_policy_argument(
+            decoder,
             value,
-            &scalar_value,
             NULL,
             0u);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        decoder->gpu_policy = scalar_value.int_value;
         break;
 
     case '?':
@@ -2953,6 +3032,7 @@ sixel_decoder_decode_pixels_gpu_fast4_try(
     }
 
     request.policy = decoder->gpu_policy;
+    request.auto_threshold = decoder->gpu_dequant_threshold;
     request.dest = dequant_pixels;
     request.rgba = direct_pixels;
     request.pixel_count = pixel_count;

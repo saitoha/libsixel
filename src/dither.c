@@ -1974,6 +1974,8 @@ sixel_dither_new(
     (*ppdither)->lut_policy_shared_instance_override = 0;
     (*ppdither)->lut_policy_shared_instance = 0;
     (*ppdither)->gpu_policy = SIXEL_GPU_POLICY_OFF;
+    (*ppdither)->gpu_palette_threshold =
+        (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
     (*ppdither)->lookup_policy = NULL;
     (*ppdither)->dither_policy = NULL;
     (*ppdither)->dither_policy_class_name = NULL;
@@ -4133,6 +4135,7 @@ sixel_dither_apply_palette_with_mode(
             dither->gpu_policy != SIXEL_GPU_POLICY_OFF) {
         memset(&gpu_request, 0, sizeof(gpu_request));
         gpu_request.policy = dither->gpu_policy;
+        gpu_request.auto_threshold = dither->gpu_palette_threshold;
         gpu_request.dest = dest;
         gpu_request.pixels = input_pixels;
         gpu_request.pixel_count = total_pixels;

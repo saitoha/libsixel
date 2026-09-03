@@ -26,14 +26,12 @@
 #include "config.h"
 #endif
 
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "compat_stub.h"
 #include "gpu-dequant.h"
-
-#define SIXEL_GPU_DEQUANT_AUTO_THRESHOLD_DEFAULT 262144U
-#define SIXEL_GPU_DEQUANT_THRESHOLD_ENVVAR \
-    "SIXEL_GPU_DEQUANT_THRESHOLD"
+#include "loader-common.h"
+#include "options.h"
 
 #if defined(HAVE_METAL)
 SIXELSTATUS
@@ -53,23 +51,17 @@ sixel_gpu_dequant_policy_is_force(int policy)
 SIXEL_INTERNAL_API size_t
 sixel_gpu_dequant_auto_threshold(void)
 {
-    char const *text;
-    char *endptr;
-    unsigned long value;
+    size_t value;
 
-    text = sixel_compat_getenv(SIXEL_GPU_DEQUANT_THRESHOLD_ENVVAR);
-    endptr = NULL;
-    value = 0UL;
-    if (text == NULL || text[0] == '\0') {
-        return (size_t)SIXEL_GPU_DEQUANT_AUTO_THRESHOLD_DEFAULT;
-    }
-
-    value = strtoul(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0') {
-        return (size_t)SIXEL_GPU_DEQUANT_AUTO_THRESHOLD_DEFAULT;
-    }
-
-    return (size_t)value;
+    value = (size_t)SIXEL_GPU_DEQUANT_AUTO_THRESHOLD_DEFAULT;
+    (void)sixel_option_resolve_registered_size_binding(
+        SIXEL_OPTION_SCHEMA_GPU_POLICY,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_2(
+            gpu_dequant_threshold,
+            gpu_dequant_threshold_override),
+        &value);
+    return value;
 }
 
 static int
@@ -122,6 +114,12 @@ sixel_gpu_dequant_fast4_rgba(sixel_gpu_dequant_request_t const *request)
             "gpu dequant: request is null.");
         return SIXEL_BAD_ARGUMENT;
     }
+    if (sixel_trace_topic_is_enabled("gpu_contract")) {
+        fprintf(stderr,
+                "LSXGPU1|consumer=decoder|policy=%d|threshold=%zu\n",
+                request->policy,
+                request->auto_threshold);
+    }
     if (request->policy == SIXEL_GPU_POLICY_OFF) {
         return SIXEL_FALSE;
     }
@@ -134,7 +132,7 @@ sixel_gpu_dequant_fast4_rgba(sixel_gpu_dequant_request_t const *request)
         return SIXEL_FALSE;
     }
     if (request->policy == SIXEL_GPU_POLICY_AUTO &&
-            request->pixel_count < sixel_gpu_dequant_auto_threshold()) {
+            request->pixel_count < request->auto_threshold) {
         return SIXEL_FALSE;
     }
     if (!sixel_gpu_dequant_has_engine()) {

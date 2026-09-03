@@ -4696,6 +4696,7 @@ sixel_encode_dither(
         if (dither_parallel.enabled) {
             if (sixel_gpu_palette_policy_claims_apply_stage(
                     dither->gpu_policy,
+                    dither->gpu_palette_threshold,
                     dither->lut_policy,
                     dither->method_for_diffuse,
                     dither->method_for_scan,

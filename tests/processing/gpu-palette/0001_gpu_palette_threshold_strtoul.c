@@ -1,8 +1,8 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Pin the historical strtoul() contract before the threshold moves into the
- * shared option registry.  The policy is intentionally tested without a GPU.
+ * Pin the historical strtoul() contract at the shared registry boundary.
+ * The policy is intentionally tested without a GPU.
  */
 
 #if defined(HAVE_CONFIG_H)

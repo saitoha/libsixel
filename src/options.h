@@ -99,6 +99,7 @@ typedef struct sixel_suboption_choice {
 typedef enum sixel_suboption_target_class {
     SIXEL_SUBOPTION_TARGET_NONE = 0,
     SIXEL_SUBOPTION_TARGET_ENCODER,
+    SIXEL_SUBOPTION_TARGET_DECODER,
     SIXEL_SUBOPTION_TARGET_LOADER,
     SIXEL_SUBOPTION_TARGET_DEQUANTIZE
 } sixel_suboption_target_class_t;
@@ -122,7 +123,8 @@ typedef enum sixel_suboption_environment_range_policy {
     SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH = 1 << 4,
     SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH = 1 << 5,
     SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG = 1 << 6,
-    SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY = 1 << 7
+    SIXEL_SUBOPTION_ENV_RANGE_PARSE_DIGITS_ONLY = 1 << 7,
+    SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG = 1 << 8
 } sixel_suboption_environment_range_policy_t;
 
 #define SIXEL_SUBOPTION_OFFSET_NONE ((size_t)-1)
@@ -190,6 +192,10 @@ typedef enum sixel_option_scope {
 #define SIXEL_OPTION_SCOPE_ALL \
     (SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_DECODER | \
      SIXEL_OPTION_SCOPE_IMG2SIXEL | SIXEL_OPTION_SCOPE_SIXEL2PNG)
+#define SIXEL_OPTION_SCOPE_ENCODER_FAMILY \
+    (SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL)
+#define SIXEL_OPTION_SCOPE_DECODER_FAMILY \
+    (SIXEL_OPTION_SCOPE_DECODER | SIXEL_OPTION_SCOPE_SIXEL2PNG)
 
 /* Structured arguments either select one base or an ordered base list. */
 typedef enum sixel_option_argument_form {
@@ -244,6 +250,8 @@ typedef struct sixel_suboption_key {
     sixel_option_schema_id_t option_id;
     /* NULL makes the suboption common to every base of the option. */
     sixel_option_value_schema_t const *base_def;
+    /* Visibility is independent of the structure receiving the value. */
+    unsigned int consumer_scope;
     char const *name;
     /* A compact suboption name is exactly one uppercase ASCII letter. */
     char short_name;
@@ -504,10 +512,11 @@ char const *
 sixel_option_resolve_argument_environment(
     sixel_option_schema_id_t option_id);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_argument_with_suboptions(
     char const *argument,
     sixel_option_argument_schema_t const *schema,
+    unsigned int consumer_scope,
     sixel_option_argument_resolution_t *resolution,
     char *diagnostic,
     size_t diagnostic_size);
@@ -539,12 +548,14 @@ void
 sixel_option_apply_suboption_environment(
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
+    unsigned int consumer_scope,
     void *target,
     sixel_suboption_target_class_t target_class);
 
 void
 sixel_option_reset_suboption_overrides(
     sixel_option_argument_schema_t const *schema,
+    unsigned int consumer_scope,
     void *target,
     sixel_suboption_target_class_t target_class);
 
@@ -563,7 +574,7 @@ sixel_option_parse_dequantize_argument_with_options(
     char *diagnostic,
     size_t diagnostic_size);
 
-void
+SIXEL_INTERNAL_API void
 sixel_option_free_argument_resolution(
     sixel_option_argument_resolution_t *resolution);
 
@@ -571,6 +582,7 @@ SIXELSTATUS
 sixel_option_parse_argument_list_with_suboptions(
     char const *argument,
     sixel_option_argument_schema_t const *schema,
+    unsigned int consumer_scope,
     sixel_option_argument_list_resolution_t *resolution,
     char *diagnostic,
     size_t diagnostic_size);

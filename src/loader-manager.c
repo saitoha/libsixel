@@ -256,6 +256,7 @@ loader_manager_init_loader_suboptions(
     sixel_option_apply_suboption_environment(
         schema,
         NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         suboptions,
         SIXEL_SUBOPTION_TARGET_LOADER);
 }

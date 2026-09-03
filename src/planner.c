@@ -1020,6 +1020,7 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     gpu_encode_only =
         sixel_gpu_palette_policy_claims_apply_stage(
             encoder->gpu_policy,
+            encoder->gpu_palette_threshold,
             encoder->lut_policy,
             encoder->method_for_diffuse,
             encoder->method_for_scan,

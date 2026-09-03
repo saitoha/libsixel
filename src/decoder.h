@@ -39,6 +39,8 @@ struct sixel_decoder {
     int dequantize_edge_strength;
     int dequantize_selective_blur_threshold;
     int gpu_policy;
+    int gpu_dequant_threshold_override;
+    size_t gpu_dequant_threshold;
     int thumbnail_size;
     int direct_color;
     sixel_allocator_t *allocator;

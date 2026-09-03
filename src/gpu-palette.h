@@ -33,6 +33,8 @@
 extern "C" {
 #endif
 
+#define SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT 262144U
+
 /*
  * PaletteApply GPU request.
  *
@@ -46,6 +48,7 @@ extern "C" {
  */
 typedef struct sixel_gpu_palette_request {
     int policy;
+    size_t auto_threshold;
     sixel_index_t *dest;
     unsigned char const *pixels;
     size_t pixel_count;
@@ -117,6 +120,7 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request);
  */
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
+                                            size_t auto_threshold,
                                             int lut_policy,
                                             int method_for_diffuse,
                                             int method_for_scan,
