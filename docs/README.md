@@ -31,7 +31,8 @@ are grouped by domain so each area can grow without overloading one document.
 - [Dithering](functionality/dithering.md) explains `-d`, error shaping, scan
   order, temporal behavior, per-pixel cost, and its interaction with lookup.
 - [Lookup policy](functionality/lookup-policy.md) defines libsixel's `-~` /
-  `--lookup-policy` concept, mathematical basis, and preparation/query costs.
+  `--lookup-policy` concept, mathematical basis, exactness guarantees, and
+  preparation/query costs.
 
 ## Command-line interface
 

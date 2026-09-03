@@ -88,6 +88,75 @@ a cell and cache or precompute a palette answer for that cell. Lookup can then
 be constant-time, at the cost of table construction, memory, and possible
 differences at cell boundaries.
 
+## Result guarantees
+
+"Exact" needs a reference contract. This document uses three levels:
+
+- **reference-index exact** returns the same palette index as `none`,
+  including its first-index tie rule;
+- **nearest-distance exact** returns a minimizer of the same distance, but may
+  choose another palette entry when several entries tie or floating-point
+  roundoff reaches a boundary;
+- **approximate** may return an entry whose distance is greater than the
+  reference minimum.
+
+These labels describe lookup of one already-adjusted color candidate. They do
+not claim that the selected palette, the dithered image, or the encoded SIXEL
+stream is globally optimal.
+
+| Policy and representation | Default result guarantee | Qualification |
+| --- | --- | --- |
+| `none` | Reference-index exact | Defines the direct-scan reference |
+| `5bit` / `6bit`, serial 8-bit | Approximate after a cell is cached | A cell's first query is exact; later colors in that cell reuse its index |
+| `5bit` / `6bit`, parallel 8-bit | Reference-index exact | The current parallel path does not populate the dense cache |
+| `5bit` / `6bit`, float32 | Reference-index exact | The current implementation falls back to a direct scan |
+| `certlut` | Nearest-distance exact | A cached cube is used only after certification; ties need not match direct-scan order |
+| `eytzinger`, 8-bit | Approximate | The fixed projected-neighbor window may omit the true nearest entry |
+| `eytzinger`, float32 | Nearest-distance exact | Projection bounds continue the search while an unseen entry can still win |
+| `fhedt`, 8-bit at `R < 256` | Approximate | Grid quantization and at-most-eight-candidate refinement are not a full palette scan |
+| `fhedt`, 8-bit at `R = 256` | Nearest-distance exact | Every 8-bit RGB value has its own grid coordinate |
+| `fhedt`, float32 | Approximate | Even `R = 256` discretizes a continuous working space |
+| `vptree` | Nearest-distance exact | Tree pruning and the current safe-distance cache preserve the minimum distance |
+| `rbc`, float32 | Nearest-distance exact | Cluster-radius lower bounds are evaluated in the search metric |
+| `rbc`, 8-bit | Reference-index exact | The current implementation uses a direct scan |
+| `mahalanobis`, float32 | Nearest-distance exact | The current implementation scans all cluster members |
+| `mahalanobis`, 8-bit | Reference-index exact | The current implementation uses a direct scan |
+
+`auto` inherits the guarantee of the backend and representation to which it
+resolves. Configuration can matter as much as the policy name. In particular,
+the optional FHEDT cache stores the first refined result for a voxel. At
+`R < 256`, later colors in that voxel reuse the result, adding
+query-history dependence to an already discretized search.
+
+### VP-tree safe-distance cache
+
+The VP-tree accepts the previous lookup result as a likely palette index. For
+palette entry `c[i]`, let `s[i]` be the distance to its nearest other palette
+entry. If a new candidate `x` satisfies:
+
+```text
+distance(x, c[i]) <= s[i] / 2
+```
+
+then the triangle inequality proves that no other palette entry is closer.
+Because the implementation stores squared distances, the test threshold is
+`s[i]^2 / 4`. This is a proof radius, not a user-selected approximation
+tolerance. The same early confirmation is also applied when a tree pivot is
+visited.
+
+This design follows the VP-tree nearest-color search in
+[libimagequant, the quantization engine used by pngquant](https://github.com/ImageOptim/libimagequant/blob/2883dbd955fe9007bf33d7b64f6eafaf9fec4d6a/nearest.c#L128-L225).
+Its [remapping loop](https://github.com/ImageOptim/libimagequant/blob/2883dbd955fe9007bf33d7b64f6eafaf9fec4d6a/remap.c#L165-L220)
+likewise supplies the previous pixel's selected palette index as the likely
+index. libsixel's serial VP-tree cache preserves nearest-distance exactness;
+disabling it for parallel dithering changes the search cost and state, not the
+intended nearest-distance result.
+
+An implementation that deliberately enlarges this radius or accepts the
+previous index under a looser color-difference threshold would become
+approximate. If such a mode is added, it must be documented and tested
+separately from the current safe cache.
+
 ## Cost model and asymptotic order
 
 Use these variables when discussing lookup cost:
@@ -161,10 +230,12 @@ cell-corner candidates, which remains constant per query.
 
 The VP-tree and RBC paths are data-dependent pruning structures. A balanced,
 well-separated palette often produces near-logarithmic VP-tree traversal, but
-the metric worst case visits every entry. RBC compares at most `J` pivots and
-then searches clusters whose radius bound can still win; if every bound
-survives, it also scans all `K` entries. The 8-bit RBC path currently uses the
-direct linear scan.
+the metric worst case visits every entry. The VP-tree's likely-index cache can
+reduce a smooth scan to one distance evaluation when the next color remains
+inside the proof radius. RBC compares at most `J` pivots and then searches
+clusters whose radius bound can still win; if every bound survives, it also
+scans all `K` entries. The 8-bit RBC path currently uses the direct linear
+scan.
 
 The float32 `mahalanobis` path prepares per-cluster means and inverse
 covariances and evaluates a Mahalanobis quadratic form. In the current code
@@ -199,6 +270,28 @@ With error diffusion, one changed index also changes the error carried to later
 pixels. A small local lookup difference can therefore create a larger spatial
 difference in the final image.
 
+Approximate lookup is not synonymous with lower end-to-end quality. Exact
+nearest lookup minimizes only the current candidate's distance. It does not
+directly minimize spatial artifacts, temporal instability, or encoded size.
+In a smooth gradient, reusing a recent palette index within a controlled
+tolerance can suppress index chatter, produce longer same-color runs, and
+change the error-diffusion feedback. That can simultaneously reduce lookup
+work, improve a perceptual metric, and reduce SIXEL size. It can also introduce
+banding or bias, so none of those improvements is guaranteed.
+
+The current VP-tree proof-radius cache is a narrower case: away from distance
+ties it selects the same nearest color and therefore improves speed without
+changing quality or size. History-dependent bucket caches and any future
+looser previous-color threshold can change the selected color and may exhibit
+the broader tradeoff described above.
+
+Evaluate lookup changes along three independent axes:
+
+- reference distance and reference-index agreement against `none`;
+- decoded-image quality, including smooth gradients and error-diffusion
+  stability;
+- encoded byte size and palette-index transition or run statistics.
+
 ## Design rules
 
 - Keep policy instances derived from a completed palette; they must not choose
@@ -209,6 +302,8 @@ difference in the final image.
   performance flag.
 - Test index behavior directly before relying only on encoded bytes or
   perceptual scores.
+- When a backend, cache threshold, representation, or parallel path changes,
+  update the result-guarantee table and its direct-lookup comparison tests.
 - Keep policy names and suboptions synchronized through the central option
   registry.
 
