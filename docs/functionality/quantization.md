@@ -127,8 +127,8 @@ The historical RGB555 implementation also used the same five-bit address for
 the median-cut histogram and for lazy palette application. That coupling made
 the apparent lookup choice affect palette quality as well. See
 [Lookup Policy](lookup-policy.md) and the
-[measured quality comparison](lookup-policies/quality-comparison.md) for the
-current compatibility behavior and its measured effect.
+[measured comparison](lookup-policy.md#measured-quality-and-speed-comparison) for
+the current compatibility behavior and its measured effect.
 
 ## Cost model and asymptotic order
 

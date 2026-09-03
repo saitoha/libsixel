@@ -14,10 +14,8 @@ input_name=${input_image##*/}
 
 mkdir -p "${output_dir}"
 
-legacy_common='{img2sixel} --threads=1 --precision=8bit --quality=full --quantize-model=heckbert:cover=off:merge=none --diffusion=none'
-palette_command='{img2sixel} --threads=1 --precision=8bit --quality=full -Qkmeans:Gw -Xoklab -Wgamma --diffusion=none --lookup-policy=none -p {ncolors} -M gpl:- -o /dev/null {input}'
-fixed_common="${palette_command} | {img2sixel} --threads=1 --precision=8bit --quality=full -m gpl:- -Wgamma --diffusion=none"
-working_common='{img2sixel} --threads=1 --precision=8bit --quality=full -Qkmeans:Gw -Xoklab --diffusion=none --lookup-policy=none -p {ncolors}'
+legacy_common='{img2sixel} --threads=1 --precision=8bit --quality=full --quantize-model=heckbert:cover=off:merge=none --diffusion=none --gpu-policy=off'
+modern_common='{img2sixel} --threads=1 --precision=8bit --quality=full -Qkmeans:Gw -Xoklab -Wgamma --diffusion=none --gpu-policy=off'
 
 plot_quality_curve()
 {
@@ -63,19 +61,19 @@ plot_quality_curve \
 
 plot_quality_curve \
     8,16,32,64,128,256 \
-    "${fixed_common}" \
+    "${modern_common} -p {ncolors}" \
     --metrics 'Δ E00_mean,Δ Chroma_mean' \
-    --output-csv "${output_dir}/lookup-policy-fixed-palette-color-error.csv" \
-    --output-plot "${output_dir}/lookup-policy-fixed-palette-color-error.png" \
-    --title "Fixed-palette lookup-policy color error on ${input_name}"
+    --output-csv "${output_dir}/lookup-policy-kmeans-color-error.csv" \
+    --output-plot "${output_dir}/lookup-policy-kmeans-color-error.png" \
+    --title "K-means lookup-policy color error on ${input_name}"
 
 plot_quality_curve \
     8,16,32,64,128,256 \
-    "${fixed_common}" \
+    "${modern_common} -p {ncolors}" \
     --metrics MS-SSIM \
-    --output-csv "${output_dir}/lookup-policy-fixed-palette-ms-ssim.csv" \
-    --output-plot "${output_dir}/lookup-policy-fixed-palette-ms-ssim.png" \
-    --title "Fixed-palette lookup-policy MS-SSIM on ${input_name}"
+    --output-csv "${output_dir}/lookup-policy-kmeans-ms-ssim.csv" \
+    --output-plot "${output_dir}/lookup-policy-kmeans-ms-ssim.png" \
+    --title "K-means lookup-policy MS-SSIM on ${input_name}"
 
 plot_quality_curve \
     128,144,160,176,192,208,224,240,256 \
@@ -84,18 +82,3 @@ plot_quality_curve \
     --output-csv "${output_dir}/lookup-policy-heckbert-high-k.csv" \
     --output-plot "${output_dir}/lookup-policy-heckbert-high-k.png" \
     --title "Heckbert-coupled lookup-policy color error, K=128–256, on ${input_name}"
-
-"${PYTHON}" "${TOP_SRCDIR}/tools/plot_quality_curve.py" \
-    "${input_image}" \
-    --colors 8,16,32,64,128,256 \
-    --jobs 1 \
-    --command1 "${working_common} -Wgamma {input}" \
-    --label1=-Wgamma \
-    --command2 "${working_common} -Woklab {input}" \
-    --label2=-Woklab \
-    --img2sixel "${IMG2SIXEL_PATH}" \
-    --lsqa "${LSQA_PATH}" \
-    --metrics 'Δ E00_mean,Δ Chroma_mean,MS-SSIM' \
-    --output-csv "${output_dir}/working-colorspace-comparison.csv" \
-    --output-plot "${output_dir}/working-colorspace-comparison.png" \
-    --title "Working-colorspace comparison with OKLab K-means on ${input_name}"

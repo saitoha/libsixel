@@ -71,29 +71,18 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dithering.md \
 	docs/functionality/encoding-pipeline.md \
 	docs/functionality/lookup-policy.md \
-	docs/functionality/lookup-policies/5bit.md \
-	docs/functionality/lookup-policies/6bit.md \
-	docs/functionality/lookup-policies/auto.md \
-	docs/functionality/lookup-policies/certlut.md \
-	docs/functionality/lookup-policies/eytzinger.md \
-	docs/functionality/lookup-policies/fhedt.md \
-	docs/functionality/lookup-policies/mahalanobis.md \
-	docs/functionality/lookup-policies/none.md \
-	docs/functionality/lookup-policies/rbc.md \
-	docs/functionality/lookup-policies/vptree.md \
-	docs/functionality/lookup-policies/quality-comparison.md \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.png \
-	docs/functionality/lookup-policies/measurements/lookup-policy-fixed-palette-color-error.csv \
-	docs/functionality/lookup-policies/measurements/lookup-policy-fixed-palette-color-error.png \
-	docs/functionality/lookup-policies/measurements/lookup-policy-fixed-palette-ms-ssim.csv \
-	docs/functionality/lookup-policies/measurements/lookup-policy-fixed-palette-ms-ssim.png \
 	docs/functionality/lookup-policies/measurements/lookup-policy-heckbert-high-k.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-heckbert-high-k.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-kmeans-color-error.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-kmeans-color-error.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-kmeans-ms-ssim.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-kmeans-ms-ssim.png \
 	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-ms-ssim.png \
-	docs/functionality/lookup-policies/measurements/working-colorspace-comparison.csv \
-	docs/functionality/lookup-policies/measurements/working-colorspace-comparison.png \
+	docs/functionality/lookup-policies/measurements/lookup-policy-speed.csv \
+	docs/functionality/lookup-policies/measurements/lookup-policy-speed.png \
 	docs/functionality/overview.md \
 	docs/functionality/quantization.md \
 	docs/quality/measurement-policy.md \
@@ -105,7 +94,10 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/fuzz-afl-runner.sh \
 	tools/fuzz-img2sixel-cli.sh \
 	tools/gen_perl_constants.pl \
-	tools/gen_perl_attach.pl
+	tools/gen_perl_attach.pl \
+	tools/plot_lookup_policy_quality.sh \
+	tools/plot_lookup_policy_speed.py \
+	tools/plot_quality_curve.py
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.
 #
