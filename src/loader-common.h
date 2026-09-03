@@ -107,8 +107,6 @@ void sixel_helper_set_builtin_enable_cms(int enable);
  */
 SIXEL_INTERNAL_API void
 sixel_helper_set_loader_background_colorspace(int colorspace);
-SIXEL_INTERNAL_API int
-sixel_loader_parse_transparent_policy(char const *value, int *policy);
 SIXEL_INTERNAL_API void
 sixel_helper_set_loader_transparent_policy(int policy);
 SIXEL_INTERNAL_API int

@@ -59,13 +59,65 @@ function fail(message) {
     print "# " message
     failed = 1
 }
+function macro_is_approved(macro) {
+    return macro == "SIXEL_REGISTRY_OPTION_SCHEMA" ||
+        macro == "SIXEL_REGISTRY_SCALAR_CHOICE" ||
+        macro == "SIXEL_REGISTRY_SCALAR_CHOICE_ENV" ||
+        macro == "SIXEL_REGISTRY_SCALAR_INT" ||
+        macro == "SIXEL_REGISTRY_SCALAR_UINT" ||
+        macro == "SIXEL_REGISTRY_SCALAR_STRING"
+}
+function expected_field_count(macro) {
+    if (macro == "SIXEL_REGISTRY_OPTION_SCHEMA") return 9
+    if (macro == "SIXEL_REGISTRY_SCALAR_CHOICE") return 10
+    if (macro == "SIXEL_REGISTRY_SCALAR_CHOICE_ENV") return 11
+    if (macro == "SIXEL_REGISTRY_SCALAR_INT") return 22
+    if (macro == "SIXEL_REGISTRY_SCALAR_UINT") return 15
+    if (macro == "SIXEL_REGISTRY_SCALAR_STRING") return 5
+    return 0
+}
+function split_fields(text, fields, position, character, quoted, depth,
+                      count, field) {
+    quoted = 0
+    depth = 0
+    count = 1
+    field = ""
+    for (position = 1; position <= length(text); ++position) {
+        character = substr(text, position, 1)
+        if (character == "\"" &&
+            (position == 1 ||
+             substr(text, position - 1, 1) != "\\")) {
+            quoted = !quoted
+        } else if (!quoted && character == "(") {
+            depth += 1
+        } else if (!quoted && character == ")" && depth > 0) {
+            depth -= 1
+        }
+        if (!quoted && depth == 0 && character == ",") {
+            fields[count] = field
+            count += 1
+            field = ""
+        } else {
+            field = field character
+        }
+    }
+    fields[count] = field
+    return count
+}
 function inspect(row, fields, count, option_id, scope, optflag, name,
-                 form, default_policy, values, field_index) {
+                 form, default_policy, values, field_index, macro,
+                 env_index, env) {
     gsub(/[[:space:]]+/, " ", row)
-    sub(/^.*SIXEL_REGISTRY_OPTION_SCHEMA\(/, "", row)
+    match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
+    macro = substr(row, RSTART, RLENGTH)
+    row = substr(row, RSTART + RLENGTH + 1)
     sub(/\),[[:space:]]*$/, "", row)
-    count = split(row, fields, /,[[:space:]]*/)
-    if (count != 8) {
+    count = split_fields(row, fields)
+    if (!macro_is_approved(macro)) {
+        fail("unapproved top-level option schema macro: " macro)
+        return
+    }
+    if (count != expected_field_count(macro)) {
         fail("malformed top-level option schema: " row)
         return
     }
@@ -77,9 +129,6 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
     scope = fields[2]
     optflag = fields[3]
     name = fields[4]
-    form = fields[5]
-    default_policy = fields[6]
-    values = fields[8]
     if (option_id !~ /^SIXEL_OPTION_SCHEMA_[A-Z0-9_]+$/) {
         fail("top-level schema has an invalid id: " option_id)
     }
@@ -92,17 +141,29 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
     if (name !~ /^"[a-z0-9][a-z0-9-]*"$/ || name ~ /-"$/) {
         fail(option_id " has a noncanonical long option name: " name)
     }
-    if (form !~ /^SIXEL_OPTION_ARGUMENT_(SINGLE|LIST)$/) {
-        fail(option_id " has an invalid argument form: " form)
-    }
-    if (default_policy !~ /^SIXEL_OPTION_DEFAULT_(FIXED|OWNER)$/) {
-        fail(option_id " has no explicit default policy")
-    }
-    if (fields[7] == "") {
-        fail(option_id " has no explicit default value")
-    }
-    if (values !~ /^g_[a-z0-9_]+_values$/) {
-        fail(option_id " has no registered value table: " values)
+    if (macro == "SIXEL_REGISTRY_OPTION_SCHEMA") {
+        form = fields[5]
+        default_policy = fields[6]
+        values = fields[8]
+        if (form !~ /^SIXEL_OPTION_ARGUMENT_(SINGLE|LIST)$/) {
+            fail(option_id " has an invalid argument form: " form)
+        }
+        if (default_policy !~ /^SIXEL_OPTION_DEFAULT_(FIXED|OWNER)$/) {
+            fail(option_id " has no explicit default policy")
+        }
+        if (fields[7] == "") {
+            fail(option_id " has no explicit default value")
+        }
+        if (values !~ /^g_[a-z0-9_]+_values$/) {
+            fail(option_id " has no registered value table: " values)
+        }
+    } else {
+        env_index = (macro == "SIXEL_REGISTRY_SCALAR_UINT" ||
+                     macro == "SIXEL_REGISTRY_SCALAR_STRING") ? 5 : 7
+        env = fields[env_index]
+        if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
+            fail(option_id " has no registered environment variable")
+        }
     }
     if (seen_id[option_id]) {
         fail("duplicate top-level schema id: " option_id)
@@ -127,7 +188,7 @@ in_registry && /^[[:space:]]*};/ {
     in_registry = 0
     next
 }
-in_registry && /SIXEL_REGISTRY_OPTION_SCHEMA\(/ {
+in_registry && /SIXEL_REGISTRY_(OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/ {
     in_row = 1
     row = $0
     next
@@ -193,11 +254,26 @@ function trim(text) {
     sub(/[[:space:]]*$/, "", text)
     return text
 }
+function check_surface(option_id, name, short_name, source_file,
+                       manual_file, getopt_needle, help_needle) {
+    getopt_needle = "{\"" name "\",required_argument"
+    help_needle = "{\047" short_name "\047,\"" name "\""
+    if (index(source[source_file], getopt_needle) == 0) {
+        fail(source_file " getopt table omits --" name)
+    }
+    if (index(source[source_file], help_needle) == 0) {
+        fail(source_file " help omits -" short_name "/--" name)
+    }
+    if (index(manual[manual_file], "-" short_name) == 0 ||
+        index(manual[manual_file], "--" name) == 0) {
+        fail(manual_file " omits -" short_name "/--" name)
+    }
+}
 function inspect(row, fields, count, option_id, scope, optflag, name,
-                 short_name, source_file, manual_file, getopt_needle,
-                 help_needle) {
+                 short_name, converter_scope) {
     gsub(/[[:space:]]+/, " ", row)
-    sub(/^.*SIXEL_REGISTRY_OPTION_SCHEMA\(/, "", row)
+    match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
+    row = substr(row, RSTART + RLENGTH + 1)
     sub(/\),[[:space:]]*$/, "", row)
     count = split(row, fields, /,[[:space:]]*/)
     option_id = trim(fields[1])
@@ -210,29 +286,19 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
         fail(option_id " has an unresolved short option " optflag)
         return
     }
-    source_file = ""
-    manual_file = ""
-    if (scope ~ /SIXEL_OPTION_SCOPE_IMG2SIXEL/) {
-        source_file = encoder_file
-        manual_file = encoder_man
-    } else if (scope ~ /SIXEL_OPTION_SCOPE_SIXEL2PNG/) {
-        source_file = decoder_file
-        manual_file = decoder_man
-    } else {
+    converter_scope = 0
+    if (scope ~ /SIXEL_OPTION_SCOPE_IMG2SIXEL/ ||
+        scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
+        check_surface(option_id, name, short_name, encoder_file, encoder_man)
+        converter_scope = 1
+    }
+    if (scope ~ /SIXEL_OPTION_SCOPE_SIXEL2PNG/ ||
+        scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
+        check_surface(option_id, name, short_name, decoder_file, decoder_man)
+        converter_scope = 1
+    }
+    if (!converter_scope) {
         fail(option_id " has no converter scope")
-        return
-    }
-    getopt_needle = "{\"" name "\",required_argument"
-    help_needle = "{\047" short_name "\047,\"" name "\""
-    if (index(source[source_file], getopt_needle) == 0) {
-        fail(source_file " getopt table omits --" name)
-    }
-    if (index(source[source_file], help_needle) == 0) {
-        fail(source_file " help omits -" short_name "/--" name)
-    }
-    if (index(manual[manual_file], "-" short_name) == 0 ||
-        index(manual[manual_file], "--" name) == 0) {
-        fail(manual_file " omits -" short_name "/--" name)
     }
 }
 BEGIN {
@@ -257,7 +323,8 @@ FILENAME == registry_file {
         in_registry = 0
         next
     }
-    if (in_registry && $0 ~ /SIXEL_REGISTRY_OPTION_SCHEMA\(/) {
+    if (in_registry &&
+        $0 ~ /SIXEL_REGISTRY_(OPTION_SCHEMA|SCALAR_[A-Z0-9_]+)\(/) {
         in_row = 1
         row = $0
         next

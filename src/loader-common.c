@@ -446,37 +446,6 @@ sixel_helper_set_loader_background_colorspace(int colorspace)
     loader_background_unlock();
 }
 
-SIXEL_INTERNAL_API int
-sixel_loader_parse_transparent_policy(char const *value, int *policy)
-{
-    if (value == NULL || policy == NULL || value[0] == '\0') {
-        return 0;
-    }
-
-    if (strcmp(value, "composite") == 0) {
-        *policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
-        return 1;
-    }
-    if (strcmp(value, "transparent") == 0 ||
-            strcmp(value, "background") == 0 ||
-            strcmp(value, "clear") == 0 ||
-            strcmp(value, "p2-0") == 0 ||
-            strcmp(value, "p20") == 0) {
-        *policy = SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
-        return 1;
-    }
-    if (strcmp(value, "keep") == 0 ||
-            strcmp(value, "keep-destination") == 0 ||
-            strcmp(value, "previous") == 0 ||
-            strcmp(value, "p2-1") == 0 ||
-            strcmp(value, "p21") == 0) {
-        *policy = SIXEL_LOADER_TRANSPARENT_POLICY_KEEP;
-        return 1;
-    }
-
-    return 0;
-}
-
 SIXEL_INTERNAL_API void
 sixel_helper_set_loader_transparent_policy(int policy)
 {
@@ -522,9 +491,10 @@ loader_background_initialize_colorspace(void)
 static void
 loader_initialize_transparent_policy(void)
 {
-    char const *env_value;
     int policy;
+    sixel_suboption_value_t value;
 
+    memset(&value, 0, sizeof(value));
     loader_background_lock();
     if (loader_transparent_policy_initialized) {
         loader_background_unlock();
@@ -533,9 +503,13 @@ loader_initialize_transparent_policy(void)
     loader_transparent_policy_initialized = 1;
     loader_transparent_policy_value =
         SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
-    env_value = sixel_compat_getenv("SIXEL_TRANSPARENT_POLICY");
     policy = SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
-    if (sixel_loader_parse_transparent_policy(env_value, &policy) != 0) {
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
+            &value,
+            NULL,
+            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        policy = value.int_value;
         loader_transparent_policy_value = policy;
     }
     loader_background_unlock();

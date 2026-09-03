@@ -58,6 +58,12 @@ typedef enum sixel_option_choice_result {
     SIXEL_OPTION_CHOICE_NONE = 2
 } sixel_option_choice_result_t;
 
+typedef enum sixel_option_precision_mode {
+    SIXEL_OPTION_PRECISION_AUTO = 0,
+    SIXEL_OPTION_PRECISION_8BIT,
+    SIXEL_OPTION_PRECISION_FLOAT32
+} sixel_option_precision_mode_t;
+
 /* The registry owns both syntax and typed value validation. */
 typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_CHOICE = 0,
@@ -142,6 +148,15 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
     SIXEL_OPTION_SCHEMA_LUT_POLICY,
     SIXEL_OPTION_SCHEMA_LOADERS,
+    SIXEL_OPTION_SCHEMA_PRECISION,
+    SIXEL_OPTION_SCHEMA_THREADS,
+    SIXEL_OPTION_SCHEMA_COLORS,
+    SIXEL_OPTION_SCHEMA_START_FRAME,
+    SIXEL_OPTION_SCHEMA_GPU_POLICY,
+    SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
+    SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
+    SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
+    SIXEL_OPTION_SCHEMA_BGCOLOR,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
 
@@ -176,6 +191,19 @@ typedef enum sixel_option_default_policy {
     SIXEL_OPTION_DEFAULT_FIXED = 0,
     SIXEL_OPTION_DEFAULT_OWNER
 } sixel_option_default_policy_t;
+
+/* Choice matching differences are data, including legacy env strictness. */
+typedef enum sixel_option_match_flag {
+    SIXEL_OPTION_MATCH_EXACT = 0,
+    SIXEL_OPTION_MATCH_PREFIX = 1 << 0,
+    SIXEL_OPTION_MATCH_CASE_INSENSITIVE = 1 << 1
+} sixel_option_match_flag_t;
+
+typedef enum sixel_option_environment_result {
+    SIXEL_OPTION_ENVIRONMENT_INVALID = -1,
+    SIXEL_OPTION_ENVIRONMENT_UNSET = 0,
+    SIXEL_OPTION_ENVIRONMENT_MATCH = 1
+} sixel_option_environment_result_t;
 
 /*
  * Base policies describe initialization which cannot be represented by a
@@ -212,12 +240,14 @@ typedef struct sixel_suboption_key {
     /* Environment-only aliases preserve strict CLI vocabularies. */
     sixel_suboption_choice_t const *environment_choices;
     size_t environment_choice_count;
+    /* CLI and environment ranges can differ for compatibility. */
     double minimum;
     double maximum;
     int has_minimum;
     int has_maximum;
     int allow_zero;
     sixel_suboption_environment_range_policy_t environment_range_policy;
+    /* Frontend-specific diagnostics remain declarative registry data. */
     char const *invalid_value_message;
     char const *invalid_value_suffix;
     sixel_suboption_binding_t binding;
@@ -307,6 +337,8 @@ typedef struct sixel_option_argument_schema {
     char const *option_name;
     sixel_option_argument_form_t argument_form;
     sixel_suboption_value_kind_t value_kind;
+    unsigned int argument_match_flags;
+    unsigned int environment_match_flags;
     char const *env_name;
     char const *env_fallback_name;
     char const *env_legacy_name;
@@ -316,10 +348,19 @@ typedef struct sixel_option_argument_schema {
     double maximum;
     int has_minimum;
     int has_maximum;
+    double environment_minimum;
+    double environment_maximum;
+    int environment_has_minimum;
+    int environment_has_maximum;
     int allow_zero;
     sixel_suboption_environment_range_policy_t environment_range_policy;
     char const *invalid_value_message;
+    char const *decoder_invalid_value_message;
     char const *invalid_value_suffix;
+    char const *minimum_error_message;
+    char const *maximum_error_message;
+    char const *environment_invalid_value_message;
+    char const *range_error_message;
     sixel_option_default_policy_t default_policy;
     sixel_suboption_value_t default_value;
     sixel_option_value_schema_t const *values;
@@ -398,6 +439,26 @@ sixel_option_report_invalid_choice(
     char const *suggestions,
     char *buffer,
     size_t buffer_size);
+
+SIXELSTATUS
+sixel_option_parse_scalar_argument(
+    sixel_option_schema_id_t option_id,
+    unsigned int consumer_scope,
+    char const *argument,
+    sixel_suboption_value_t *value,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+int
+sixel_option_resolve_scalar_environment(
+    sixel_option_schema_id_t option_id,
+    sixel_suboption_value_t *value,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+char const *
+sixel_option_resolve_argument_environment(
+    sixel_option_schema_id_t option_id);
 
 SIXELSTATUS
 sixel_option_parse_argument_with_suboptions(

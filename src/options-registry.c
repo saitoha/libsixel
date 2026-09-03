@@ -27,8 +27,11 @@
 #endif
 
 #include <sixel.h>
+#include <ctype.h>
+#include <errno.h>
 #include <limits.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 
 #if defined(SIXEL_ENABLE_THREADS) && SIXEL_ENABLE_THREADS
@@ -44,6 +47,7 @@
 #endif
 
 #include "cms.h"
+#include "compat_stub.h"
 #include "dither-interframe-method.h"
 #include "encoder.h"
 #include "loader-common.h"
@@ -781,6 +785,94 @@ static sixel_option_value_schema_t const g_loader_values[] = {
         SIXEL_OPTION_BASE_POLICY_NONE
     },
 #endif
+};
+
+static sixel_option_value_schema_t const g_precision_values[] = {
+    {
+        "auto", SIXEL_OPTION_PRECISION_AUTO, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "8bit", SIXEL_OPTION_PRECISION_8BIT, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "float32", SIXEL_OPTION_PRECISION_FLOAT32, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    }
+};
+
+static sixel_suboption_choice_t const g_precision_environment_choices[] = {
+    { "0", SIXEL_OPTION_PRECISION_8BIT },
+    { "1", SIXEL_OPTION_PRECISION_FLOAT32 }
+};
+
+static sixel_option_value_schema_t const g_threads_values[] = {
+    { "auto", 0, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
+static sixel_option_value_schema_t const g_gpu_policy_values[] = {
+    { "off", SIXEL_GPU_POLICY_OFF, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "auto", SIXEL_GPU_POLICY_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "force", SIXEL_GPU_POLICY_FORCE, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+};
+
+static sixel_option_value_schema_t const g_transparent_policy_values[] = {
+    {
+        "composite", SIXEL_TRANSPARENT_POLICY_COMPOSITE, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "transparent", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "background", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "clear", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "p2-0", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "p20", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "keep", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "keep-destination", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "previous", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "p2-1", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "p21", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    }
+};
+
+static sixel_option_value_schema_t const g_6delta_error_values[] = {
+    {
+        "diffuse", SIXEL_6DELTA_ERROR_DIFFUSE, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "skip", SIXEL_6DELTA_ERROR_SKIP, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    }
 };
 
 static sixel_suboption_choice_t const g_dequantize_lso_variant_choices[] = {
@@ -1673,14 +1765,105 @@ static sixel_suboption_key_t const g_suboptions[] = {
 
 #define SIXEL_REGISTRY_OPTION_SCHEMA( \
     option_id_, scope_, optflag_, name_, form_, default_policy_, \
-    default_value_, values_) \
+    default_value_, values_, env_) \
     { \
         (option_id_), (scope_), (optflag_), (name_), (form_), \
-        SIXEL_SUBOPTION_VALUE_STRUCTURED, NULL, NULL, NULL, NULL, 0u, \
-        0.0, 0.0, 0, 0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
+        SIXEL_SUBOPTION_VALUE_STRUCTURED, SIXEL_OPTION_MATCH_PREFIX, \
+        SIXEL_OPTION_MATCH_PREFIX, (env_), NULL, NULL, NULL, 0u, \
+        0.0, 0.0, 0, 0, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, NULL, NULL, NULL, \
+        NULL, NULL, \
         (default_policy_), { (default_value_) }, (values_), \
         SIXEL_REGISTRY_ARRAY_LENGTH(values_) \
     }
+
+#define SIXEL_REGISTRY_SCALAR_SCHEMA( \
+    option_id_, scope_, optflag_, name_, kind_, argument_flags_, \
+    environment_flags_, env_, environment_choices_, \
+    environment_choice_count_, minimum_, maximum_, has_minimum_, \
+    has_maximum_, environment_minimum_, environment_maximum_, \
+    environment_has_minimum_, environment_has_maximum_, allow_zero_, \
+    environment_range_, message_, decoder_message_, minimum_message_, \
+    maximum_message_, environment_message_, range_message_, \
+    default_policy_, default_value_, values_, value_count_) \
+    { \
+        (option_id_), (scope_), (optflag_), (name_), \
+        SIXEL_OPTION_ARGUMENT_SINGLE, (kind_), (argument_flags_), \
+        (environment_flags_), (env_), NULL, NULL, \
+        (environment_choices_), (environment_choice_count_), \
+        (minimum_), (maximum_), (has_minimum_), (has_maximum_), \
+        (environment_minimum_), (environment_maximum_), \
+        (environment_has_minimum_), (environment_has_maximum_), \
+        (allow_zero_), (environment_range_), (message_), \
+        (decoder_message_), NULL, \
+        (minimum_message_), (maximum_message_), \
+        (environment_message_), (range_message_), \
+        (default_policy_), { (default_value_) }, (values_), (value_count_) \
+    }
+
+#define SIXEL_REGISTRY_SCALAR_CHOICE( \
+    option_id_, scope_, optflag_, name_, argument_flags_, \
+    environment_flags_, env_, message_, default_value_, values_) \
+    SIXEL_REGISTRY_SCALAR_SCHEMA( \
+        option_id_, scope_, optflag_, name_, SIXEL_SUBOPTION_VALUE_CHOICE, \
+        argument_flags_, environment_flags_, env_, NULL, 0u, 0.0, 0.0, \
+        0, 0, 0.0, 0.0, 0, 0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        message_, NULL, NULL, NULL, NULL, NULL, \
+        SIXEL_OPTION_DEFAULT_FIXED, \
+        default_value_, values_, SIXEL_REGISTRY_ARRAY_LENGTH(values_))
+
+#define SIXEL_REGISTRY_SCALAR_CHOICE_ENV( \
+    option_id_, scope_, optflag_, name_, argument_flags_, \
+    environment_flags_, env_, message_, default_value_, values_, \
+    env_choices_) \
+    SIXEL_REGISTRY_SCALAR_SCHEMA( \
+        option_id_, scope_, optflag_, name_, SIXEL_SUBOPTION_VALUE_CHOICE, \
+        argument_flags_, environment_flags_, env_, env_choices_, \
+        SIXEL_REGISTRY_ARRAY_LENGTH(env_choices_), 0.0, 0.0, 0, 0, \
+        0.0, 0.0, 0, 0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
+        NULL, NULL, NULL, NULL, NULL, \
+        SIXEL_OPTION_DEFAULT_FIXED, default_value_, values_, \
+        SIXEL_REGISTRY_ARRAY_LENGTH(values_))
+
+#define SIXEL_REGISTRY_SCALAR_INT( \
+    option_id_, scope_, optflag_, name_, argument_flags_, \
+    environment_flags_, env_, minimum_, maximum_, has_minimum_, \
+    has_maximum_, environment_range_, message_, decoder_message_, \
+    minimum_message_, maximum_message_, environment_message_, \
+    range_message_, \
+    default_policy_, default_value_, values_, value_count_) \
+    SIXEL_REGISTRY_SCALAR_SCHEMA( \
+        option_id_, scope_, optflag_, name_, SIXEL_SUBOPTION_VALUE_INT, \
+        argument_flags_, environment_flags_, env_, NULL, 0u, minimum_, \
+        maximum_, has_minimum_, has_maximum_, minimum_, maximum_, \
+        has_minimum_, has_maximum_, 0, environment_range_, message_, \
+        decoder_message_, minimum_message_, maximum_message_, \
+        environment_message_, range_message_, \
+        default_policy_, default_value_, values_, value_count_)
+
+#define SIXEL_REGISTRY_SCALAR_UINT( \
+    option_id_, scope_, optflag_, name_, env_, minimum_, maximum_, \
+    environment_minimum_, environment_maximum_, environment_range_, \
+    message_, minimum_message_, maximum_message_, default_policy_, \
+    default_value_) \
+    SIXEL_REGISTRY_SCALAR_SCHEMA( \
+        option_id_, scope_, optflag_, name_, SIXEL_SUBOPTION_VALUE_UINT, \
+        SIXEL_OPTION_MATCH_EXACT, SIXEL_OPTION_MATCH_EXACT, env_, NULL, 0u, \
+        minimum_, maximum_, 1, 1, environment_minimum_, \
+        environment_maximum_, 1, 1, 0, environment_range_, message_, NULL, \
+        minimum_message_, maximum_message_, NULL, NULL, \
+        default_policy_, default_value_, NULL, 0u)
+
+#define SIXEL_REGISTRY_SCALAR_STRING( \
+    option_id_, scope_, optflag_, name_, env_) \
+    SIXEL_REGISTRY_SCALAR_SCHEMA( \
+        option_id_, scope_, optflag_, name_, SIXEL_SUBOPTION_VALUE_STRING, \
+        SIXEL_OPTION_MATCH_EXACT, SIXEL_OPTION_MATCH_EXACT, env_, NULL, 0u, \
+        0.0, 0.0, 0, 0, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        "option value must not be empty.", NULL, NULL, NULL, NULL, NULL, \
+        SIXEL_OPTION_DEFAULT_OWNER, \
+        0, NULL, 0u)
 
 static sixel_option_argument_schema_t const g_options[] = {
     SIXEL_REGISTRY_OPTION_SCHEMA(
@@ -1691,7 +1874,8 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTION_ARGUMENT_SINGLE,
         SIXEL_OPTION_DEFAULT_FIXED,
         SIXEL_DEQUANTIZE_NONE,
-        g_dequantize_values),
+        g_dequantize_values,
+        NULL),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
@@ -1700,7 +1884,8 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTION_ARGUMENT_SINGLE,
         SIXEL_OPTION_DEFAULT_FIXED,
         SIXEL_DIFFUSE_AUTO,
-        g_diffusion_values),
+        g_diffusion_values,
+        NULL),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
@@ -1709,7 +1894,8 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTION_ARGUMENT_LIST,
         SIXEL_OPTION_DEFAULT_FIXED,
         SIXEL_QUANTIZE_MODEL_AUTO,
-        g_quantize_values),
+        g_quantize_values,
+        NULL),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
         SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
@@ -1718,7 +1904,8 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTION_ARGUMENT_SINGLE,
         SIXEL_OPTION_DEFAULT_FIXED,
         SIXEL_LUT_POLICY_AUTO,
-        g_lookup_values),
+        g_lookup_values,
+        "SIXEL_DITHER_LOOKUP_POLICY"),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_LOADERS,
         SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
@@ -1727,7 +1914,139 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTION_ARGUMENT_LIST,
         SIXEL_OPTION_DEFAULT_OWNER,
         0,
-        g_loader_values),
+        g_loader_values,
+        "SIXEL_LOADER_PRIORITY_LIST"),
+    SIXEL_REGISTRY_SCALAR_CHOICE_ENV(
+        SIXEL_OPTION_SCHEMA_PRECISION,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_PRECISION,
+        "precision",
+        SIXEL_OPTION_MATCH_PREFIX,
+        SIXEL_OPTION_MATCH_EXACT,
+        "SIXEL_FLOAT32_DITHER",
+        "precision accepts auto, 8bit, or float32.",
+        SIXEL_OPTION_PRECISION_AUTO,
+        g_precision_values,
+        g_precision_environment_choices),
+    SIXEL_REGISTRY_SCALAR_INT(
+        SIXEL_OPTION_SCHEMA_THREADS,
+        SIXEL_OPTION_SCOPE_ALL,
+        SIXEL_OPTFLAG_THREADS,
+        "threads",
+        SIXEL_OPTION_MATCH_CASE_INSENSITIVE,
+        SIXEL_OPTION_MATCH_CASE_INSENSITIVE,
+        "SIXEL_THREADS",
+        1.0,
+        (double)INT_MAX,
+        1,
+        1,
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
+            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM |
+            SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG,
+        "threads accepts positive integers or 'auto'.",
+        "threads must be a positive integer or 'auto'.",
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        SIXEL_OPTION_DEFAULT_OWNER,
+        0,
+        g_threads_values,
+        SIXEL_REGISTRY_ARRAY_LENGTH(g_threads_values)),
+    SIXEL_REGISTRY_SCALAR_UINT(
+        SIXEL_OPTION_SCHEMA_COLORS,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_COLORS,
+        "colors",
+        "SIXEL_COLORS",
+        1.0,
+        (double)SIXEL_PALETTE_MAX,
+        2.0,
+        (double)SIXEL_PALETTE_MAX,
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT,
+        "cannot parse -p/--colors option.",
+        "-p/--colors parameter must be 1 or more.",
+        "-p/--colors parameter must be less then or equal to 256.",
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_PALETTE_MAX),
+    SIXEL_REGISTRY_SCALAR_INT(
+        SIXEL_OPTION_SCHEMA_START_FRAME,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_START_FRAME,
+        "start-frame",
+        SIXEL_OPTION_MATCH_EXACT,
+        SIXEL_OPTION_MATCH_EXACT,
+        "SIXEL_LOADER_ANIMATION_START_FRAME_NO",
+        0.0,
+        0.0,
+        0,
+        0,
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT,
+        "cannot parse start_frame option.",
+        NULL,
+        NULL,
+        NULL,
+        "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.",
+        "SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.",
+        SIXEL_OPTION_DEFAULT_OWNER,
+        0,
+        NULL,
+        0u),
+    SIXEL_REGISTRY_SCALAR_CHOICE(
+        SIXEL_OPTION_SCHEMA_GPU_POLICY,
+        SIXEL_OPTION_SCOPE_ALL,
+        SIXEL_OPTFLAG_GPU_POLICY,
+        "gpu-policy",
+        SIXEL_OPTION_MATCH_PREFIX,
+        SIXEL_OPTION_MATCH_PREFIX,
+        "SIXEL_GPU_POLICY",
+        "cannot parse gpu policy option.",
+        SIXEL_GPU_POLICY_OFF,
+        g_gpu_policy_values),
+    SIXEL_REGISTRY_SCALAR_CHOICE(
+        SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+        "transparent-policy",
+        SIXEL_OPTION_MATCH_PREFIX,
+        SIXEL_OPTION_MATCH_EXACT,
+        "SIXEL_TRANSPARENT_POLICY",
+        "cannot parse transparent policy option.",
+        SIXEL_TRANSPARENT_POLICY_BACKGROUND,
+        g_transparent_policy_values),
+    SIXEL_REGISTRY_SCALAR_UINT(
+        SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_6DELTA_THRESHOLD,
+        "6delta-threshold",
+        "SIXEL_6DELTA_THRESHOLD",
+        0.0,
+        255.0,
+        0.0,
+        255.0,
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT,
+        "6delta threshold must be an integer in range 0..255.",
+        NULL,
+        NULL,
+        SIXEL_OPTION_DEFAULT_OWNER,
+        0),
+    SIXEL_REGISTRY_SCALAR_CHOICE(
+        SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_6DELTA_ERROR,
+        "6delta-error",
+        SIXEL_OPTION_MATCH_PREFIX,
+        SIXEL_OPTION_MATCH_PREFIX,
+        "SIXEL_6DELTA_ERROR",
+        "cannot parse 6delta error option.",
+        SIXEL_6DELTA_ERROR_DIFFUSE,
+        g_6delta_error_values),
+    SIXEL_REGISTRY_SCALAR_STRING(
+        SIXEL_OPTION_SCHEMA_BGCOLOR,
+        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTFLAG_BGCOLOR,
+        "bgcolor",
+        "SIXEL_BGCOLOR"),
 };
 
 static int
@@ -2262,24 +2581,125 @@ sixel_option_registry_validate_uncached(void)
                 schema->option_name) ||
             (schema->argument_form != SIXEL_OPTION_ARGUMENT_SINGLE &&
              schema->argument_form != SIXEL_OPTION_ARGUMENT_LIST) ||
-            schema->value_kind != SIXEL_SUBOPTION_VALUE_STRUCTURED ||
-            schema->env_name != NULL ||
-            schema->env_fallback_name != NULL ||
-            schema->env_legacy_name != NULL ||
-            schema->environment_choices != NULL ||
-            schema->environment_choice_count != 0u ||
-            schema->has_minimum || schema->has_maximum ||
-            schema->allow_zero ||
-            schema->environment_range_policy !=
-                SIXEL_SUBOPTION_ENV_RANGE_REJECT ||
-            schema->invalid_value_message != NULL ||
-            schema->invalid_value_suffix != NULL ||
+            (schema->argument_match_flags &
+             ~(SIXEL_OPTION_MATCH_PREFIX |
+               SIXEL_OPTION_MATCH_CASE_INSENSITIVE)) != 0u ||
+            (schema->environment_match_flags &
+             ~(SIXEL_OPTION_MATCH_PREFIX |
+               SIXEL_OPTION_MATCH_CASE_INSENSITIVE)) != 0u ||
+            !sixel_option_registry_environment_name_is_valid(
+                schema->env_name,
+                0) ||
+            !sixel_option_registry_environment_name_is_valid(
+                schema->env_fallback_name,
+                0) ||
+            !sixel_option_registry_environment_name_is_valid(
+                schema->env_legacy_name,
+                0) ||
             (schema->default_policy != SIXEL_OPTION_DEFAULT_FIXED &&
              schema->default_policy != SIXEL_OPTION_DEFAULT_OWNER) ||
-            schema->values == NULL || schema->value_count == 0u ||
+            (schema->values == NULL) != (schema->value_count == 0u) ||
             (schema->default_policy == SIXEL_OPTION_DEFAULT_OWNER &&
              schema->default_value.int_value != 0)) {
             return 0;
+        }
+        if (schema->value_kind == SIXEL_SUBOPTION_VALUE_STRUCTURED) {
+            if (schema->values == NULL || schema->value_count == 0u ||
+                schema->environment_choices != NULL ||
+                schema->environment_choice_count != 0u ||
+                schema->has_minimum || schema->has_maximum ||
+                schema->environment_has_minimum ||
+                schema->environment_has_maximum ||
+                schema->allow_zero ||
+                schema->environment_range_policy !=
+                    SIXEL_SUBOPTION_ENV_RANGE_REJECT ||
+                schema->invalid_value_message != NULL ||
+                schema->decoder_invalid_value_message != NULL ||
+                schema->invalid_value_suffix != NULL ||
+                schema->minimum_error_message != NULL ||
+                schema->maximum_error_message != NULL ||
+                schema->environment_invalid_value_message != NULL ||
+                schema->range_error_message != NULL) {
+                return 0;
+            }
+        } else {
+            if (schema->argument_form != SIXEL_OPTION_ARGUMENT_SINGLE ||
+                (schema->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
+                 schema->value_kind != SIXEL_SUBOPTION_VALUE_INT &&
+                 schema->value_kind != SIXEL_SUBOPTION_VALUE_UINT &&
+                 schema->value_kind != SIXEL_SUBOPTION_VALUE_STRING)) {
+                return 0;
+            }
+            if (schema->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE &&
+                (schema->values == NULL || schema->value_count == 0u)) {
+                return 0;
+            }
+            if (schema->value_kind != SIXEL_SUBOPTION_VALUE_INT &&
+                schema->value_kind != SIXEL_SUBOPTION_VALUE_UINT &&
+                (schema->range_error_message != NULL ||
+                 schema->minimum_error_message != NULL ||
+                 schema->maximum_error_message != NULL)) {
+                return 0;
+            }
+            if ((schema->decoder_invalid_value_message != NULL &&
+                 (schema->scope & SIXEL_OPTION_SCOPE_DECODER) == 0u) ||
+                (schema->minimum_error_message != NULL &&
+                 !schema->has_minimum) ||
+                (schema->maximum_error_message != NULL &&
+                 !schema->has_maximum) ||
+                (schema->has_minimum && schema->has_maximum &&
+                 schema->minimum > schema->maximum) ||
+                (schema->environment_has_minimum &&
+                 schema->environment_has_maximum &&
+                 schema->environment_minimum >
+                    schema->environment_maximum)) {
+                return 0;
+            }
+            if ((schema->environment_choices == NULL) !=
+                (schema->environment_choice_count == 0u) ||
+                (schema->environment_choice_count > 0u &&
+                 schema->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE)) {
+                return 0;
+            }
+            if (schema->value_kind == SIXEL_SUBOPTION_VALUE_STRING &&
+                (schema->values != NULL || schema->has_minimum ||
+                 schema->has_maximum ||
+                 schema->environment_has_minimum ||
+                 schema->environment_has_maximum || schema->allow_zero ||
+                 schema->environment_range_policy !=
+                    SIXEL_SUBOPTION_ENV_RANGE_REJECT)) {
+                return 0;
+            }
+        }
+        if ((schema->environment_range_policy &
+             ~(SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
+               SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM |
+               SIXEL_SUBOPTION_ENV_RANGE_CLAMP_POSITIVE_MINIMUM |
+               SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
+               SIXEL_SUBOPTION_ENV_RANGE_CLAMP_UINT_WIDTH |
+               SIXEL_SUBOPTION_ENV_RANGE_REJECT_UINT_WIDTH |
+              SIXEL_SUBOPTION_ENV_RANGE_PARSE_UNSIGNED_LONG)) != 0 ||
+            ((schema->environment_range_policy &
+              SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) != 0 &&
+             !schema->environment_has_minimum) ||
+            ((schema->environment_range_policy &
+              SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) != 0 &&
+             !schema->environment_has_maximum)) {
+            return 0;
+        }
+        suboption_index = 0u;
+        while (suboption_index <
+               SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
+            key = g_suboptions + suboption_index;
+            if ((schema->env_name != NULL &&
+                 strcmp(schema->env_name, key->env_name) == 0) ||
+                (schema->env_fallback_name != NULL &&
+                 strcmp(schema->env_fallback_name, key->env_name) == 0) ||
+                (schema->env_legacy_name != NULL &&
+                 strcmp(schema->env_legacy_name, key->env_name) == 0)) {
+                return 0;
+            }
+            ++suboption_index;
         }
         previous_option_index = 0u;
         while (previous_option_index < option_index) {
@@ -2291,6 +2711,12 @@ sixel_option_registry_validate_uncached(void)
                          schema->option_name) == 0))) {
                 return 0;
             }
+            if (schema->env_name != NULL &&
+                previous_schema->env_name != NULL &&
+                strcmp(previous_schema->env_name,
+                       schema->env_name) == 0) {
+                return 0;
+            }
             ++previous_option_index;
         }
         default_found = 0;
@@ -2298,7 +2724,10 @@ sixel_option_registry_validate_uncached(void)
         while (base_index < schema->value_count) {
             base_def = schema->values + base_index;
             if (!sixel_option_registry_value_name_is_valid(
-                    base_def->name)) {
+                    base_def->name) ||
+                (schema->value_kind != SIXEL_SUBOPTION_VALUE_STRUCTURED &&
+                 (base_def->common_suboption_offset != 0u ||
+                  base_def->base_policy != SIXEL_OPTION_BASE_POLICY_NONE))) {
                 return 0;
             }
             previous_base_index = 0u;
@@ -2315,8 +2744,13 @@ sixel_option_registry_validate_uncached(void)
                 base_def->value == schema->default_value.int_value) {
                 default_found = 1;
             }
-            key_count = sixel_option_registry_suboption_count(schema,
-                                                               base_def);
+            key_count = sixel_option_registry_suboption_count(
+                schema,
+                base_def);
+            if (schema->value_kind != SIXEL_SUBOPTION_VALUE_STRUCTURED &&
+                key_count != 0u) {
+                return 0;
+            }
             key_index = 0u;
             while (key_index < key_count) {
                 key = sixel_option_registry_suboption_at(schema,
@@ -2449,7 +2883,7 @@ sixel_option_registry_validate_uncached(void)
             ++base_index;
         }
         if (schema->default_policy == SIXEL_OPTION_DEFAULT_FIXED &&
-            !default_found) {
+            schema->value_count > 0u && !default_found) {
             return 0;
         }
         ++option_index;
@@ -2528,6 +2962,408 @@ sixel_option_registry_validate(void)
     }
     return sixel_option_registry_validation_result;
 #endif
+}
+
+/*
+ * Scalar option values use the same registry metadata in every consumer.
+ * Keeping this parser with the immutable table also lets small embedders use
+ * scalar options without linking the CLI-oriented options.c object.
+ */
+static int
+sixel_option_registry_ascii_equal(char left, char right, int ignore_case)
+{
+    unsigned char left_byte;
+    unsigned char right_byte;
+
+    left_byte = (unsigned char)left;
+    right_byte = (unsigned char)right;
+    if (ignore_case != 0) {
+        left_byte = (unsigned char)tolower(left_byte);
+        right_byte = (unsigned char)tolower(right_byte);
+    }
+    return left_byte == right_byte;
+}
+
+static int
+sixel_option_registry_name_matches(char const *name,
+                                   char const *text,
+                                   unsigned int flags)
+{
+    size_t index;
+    int ignore_case;
+
+    index = 0u;
+    ignore_case =
+        (flags & SIXEL_OPTION_MATCH_CASE_INSENSITIVE) != 0u;
+    if (name == NULL || text == NULL || text[0] == '\0') {
+        return 0;
+    }
+    while (text[index] != '\0') {
+        if (name[index] == '\0' ||
+            !sixel_option_registry_ascii_equal(name[index],
+                                               text[index],
+                                               ignore_case)) {
+            return 0;
+        }
+        ++index;
+    }
+    return name[index] == '\0' ||
+        (flags & SIXEL_OPTION_MATCH_PREFIX) != 0u;
+}
+
+static int
+sixel_option_registry_match_choice(
+    sixel_option_argument_schema_t const *schema,
+    char const *text,
+    int environment_value,
+    int *matched_value)
+{
+    sixel_suboption_choice_t const *environment_choices;
+    size_t environment_choice_count;
+    size_t index;
+    int candidate;
+    int candidate_set;
+    int ambiguous;
+    unsigned int flags;
+
+    environment_choices = NULL;
+    environment_choice_count = 0u;
+    index = 0u;
+    candidate = 0;
+    candidate_set = 0;
+    ambiguous = 0;
+    if (schema == NULL || text == NULL || matched_value == NULL) {
+        return 0;
+    }
+    flags = environment_value != 0
+        ? schema->environment_match_flags
+        : schema->argument_match_flags;
+    environment_choices = schema->environment_choices;
+    environment_choice_count = schema->environment_choice_count;
+    if (environment_value != 0 && environment_choice_count > 0u) {
+        while (index < environment_choice_count) {
+            if (sixel_option_registry_name_matches(
+                    environment_choices[index].name,
+                    text,
+                    flags)) {
+                if (!candidate_set) {
+                    candidate = environment_choices[index].value;
+                    candidate_set = 1;
+                } else if (candidate != environment_choices[index].value) {
+                    ambiguous = 1;
+                }
+            }
+            ++index;
+        }
+    } else {
+        while (index < schema->value_count) {
+            if (sixel_option_registry_name_matches(
+                    schema->values[index].name,
+                    text,
+                    flags)) {
+                if (!candidate_set) {
+                    candidate = schema->values[index].value;
+                    candidate_set = 1;
+                } else if (candidate != schema->values[index].value) {
+                    ambiguous = 1;
+                }
+            }
+            ++index;
+        }
+    }
+    if (!candidate_set || ambiguous) {
+        return 0;
+    }
+    *matched_value = candidate;
+    return 1;
+}
+
+static void
+sixel_option_registry_set_diagnostic(char *diagnostic,
+                                     size_t diagnostic_size,
+                                     char const *message)
+{
+    if (diagnostic == NULL || diagnostic_size == 0u || message == NULL) {
+        return;
+    }
+    (void)sixel_compat_snprintf(diagnostic,
+                                diagnostic_size,
+                                "%s",
+                                message);
+}
+
+static void
+sixel_option_registry_report_scalar_error(
+    int environment_value,
+    char *diagnostic,
+    size_t diagnostic_size,
+    char const *message)
+{
+    sixel_option_registry_set_diagnostic(diagnostic,
+                                         diagnostic_size,
+                                         message);
+    if (environment_value == 0 && message != NULL) {
+        sixel_helper_set_additional_message(message);
+    }
+}
+
+static SIXELSTATUS
+sixel_option_registry_parse_scalar(
+    sixel_option_argument_schema_t const *schema,
+    unsigned int consumer_scope,
+    char const *text,
+    int environment_value,
+    sixel_suboption_value_t *value,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    char *endptr;
+    long parsed_int;
+    unsigned long long parsed_uint;
+    unsigned int flags;
+    double minimum;
+    double maximum;
+    char const *invalid_message;
+    int has_minimum;
+    int has_maximum;
+    int range_error;
+    int minimum_error;
+    int maximum_error;
+
+    endptr = NULL;
+    parsed_int = 0L;
+    parsed_uint = 0ULL;
+    flags = SIXEL_SUBOPTION_ENV_RANGE_REJECT;
+    minimum = 0.0;
+    maximum = 0.0;
+    invalid_message = NULL;
+    has_minimum = 0;
+    has_maximum = 0;
+    range_error = 0;
+    minimum_error = 0;
+    maximum_error = 0;
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        diagnostic[0] = '\0';
+    }
+    if (schema == NULL || text == NULL || text[0] == '\0' ||
+        value == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    minimum = schema->minimum;
+    maximum = schema->maximum;
+    has_minimum = schema->has_minimum;
+    has_maximum = schema->has_maximum;
+    invalid_message = schema->invalid_value_message;
+    if (environment_value != 0) {
+        minimum = schema->environment_minimum;
+        maximum = schema->environment_maximum;
+        has_minimum = schema->environment_has_minimum;
+        has_maximum = schema->environment_has_maximum;
+    } else if ((consumer_scope & SIXEL_OPTION_SCOPE_DECODER) != 0u &&
+               schema->decoder_invalid_value_message != NULL) {
+        invalid_message = schema->decoder_invalid_value_message;
+    }
+    if (schema->value_kind == SIXEL_SUBOPTION_VALUE_STRUCTURED ||
+        schema->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE ||
+        schema->value_count > 0u) {
+        if (sixel_option_registry_match_choice(schema,
+                                               text,
+                                               environment_value,
+                                               &value->int_value)) {
+            return SIXEL_OK;
+        }
+        if (schema->value_kind == SIXEL_SUBOPTION_VALUE_STRUCTURED ||
+            schema->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE) {
+            sixel_option_registry_report_scalar_error(
+                environment_value,
+                diagnostic,
+                diagnostic_size,
+                invalid_message);
+            return SIXEL_BAD_ARGUMENT;
+        }
+    }
+    if (environment_value != 0) {
+        flags = (unsigned int)schema->environment_range_policy;
+    }
+    if (schema->value_kind == SIXEL_SUBOPTION_VALUE_INT) {
+        errno = 0;
+        parsed_int = strtol(text, &endptr, 10);
+        if (endptr == text || endptr == NULL || endptr[0] != '\0') {
+            goto invalid;
+        }
+        if (errno == ERANGE || parsed_int < (long)INT_MIN ||
+            parsed_int > (long)INT_MAX) {
+            range_error = 1;
+            goto invalid;
+        }
+        if (has_minimum &&
+            (double)parsed_int < minimum &&
+            (flags & SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) != 0u) {
+            parsed_int = (long)minimum;
+        }
+        if (has_maximum &&
+            (double)parsed_int > maximum &&
+            (flags & SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) != 0u) {
+            parsed_int = (long)maximum;
+        }
+        if (has_minimum && (double)parsed_int < minimum) {
+            minimum_error = 1;
+            goto invalid;
+        }
+        if (has_maximum && (double)parsed_int > maximum) {
+            maximum_error = 1;
+            goto invalid;
+        }
+        value->int_value = (int)parsed_int;
+        return SIXEL_OK;
+    }
+    if (schema->value_kind == SIXEL_SUBOPTION_VALUE_UINT) {
+        if (text[0] == '-') {
+            minimum_error = 1;
+            goto invalid;
+        }
+        errno = 0;
+        parsed_uint = strtoull(text, &endptr, 10);
+        if (endptr == text || endptr == NULL || endptr[0] != '\0') {
+            goto invalid;
+        }
+        if (errno == ERANGE || parsed_uint > (unsigned long long)UINT_MAX) {
+            range_error = 1;
+            goto invalid;
+        }
+        if (has_minimum &&
+            (double)parsed_uint < minimum &&
+            (flags & SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) != 0u) {
+            parsed_uint = (unsigned long long)minimum;
+        }
+        if (has_maximum &&
+            (double)parsed_uint > maximum &&
+            (flags & SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) != 0u) {
+            parsed_uint = (unsigned long long)maximum;
+        }
+        if (has_minimum && (double)parsed_uint < minimum) {
+            minimum_error = 1;
+            goto invalid;
+        }
+        if (has_maximum && (double)parsed_uint > maximum) {
+            maximum_error = 1;
+            goto invalid;
+        }
+        value->uint_value = (unsigned int)parsed_uint;
+        return SIXEL_OK;
+    }
+    if (schema->value_kind == SIXEL_SUBOPTION_VALUE_STRING) {
+        value->string_value = text;
+        return SIXEL_OK;
+    }
+
+invalid:
+    sixel_option_registry_report_scalar_error(
+        environment_value,
+        diagnostic,
+        diagnostic_size,
+        environment_value == 0 && minimum_error &&
+            schema->minimum_error_message != NULL
+            ? schema->minimum_error_message
+            : environment_value == 0 && maximum_error &&
+                schema->maximum_error_message != NULL
+                ? schema->maximum_error_message
+                : range_error && schema->range_error_message != NULL
+            ? schema->range_error_message
+            : environment_value != 0 &&
+                schema->environment_invalid_value_message != NULL
+                ? schema->environment_invalid_value_message
+                : invalid_message);
+    return SIXEL_BAD_ARGUMENT;
+}
+
+char const *
+sixel_option_resolve_argument_environment(
+    sixel_option_schema_id_t option_id)
+{
+    sixel_option_argument_schema_t const *schema;
+    char const *text;
+
+    schema = sixel_option_registry_get(option_id);
+    text = NULL;
+    if (schema == NULL || !sixel_option_registry_validate()) {
+        return NULL;
+    }
+    if (schema->env_name != NULL) {
+        text = sixel_compat_getenv(schema->env_name);
+        if (text != NULL && text[0] != '\0') {
+            return text;
+        }
+    }
+    if (schema->env_fallback_name != NULL) {
+        text = sixel_compat_getenv(schema->env_fallback_name);
+        if (text != NULL && text[0] != '\0') {
+            return text;
+        }
+    }
+    if (schema->env_legacy_name != NULL) {
+        text = sixel_compat_getenv(schema->env_legacy_name);
+        if (text != NULL && text[0] != '\0') {
+            return text;
+        }
+    }
+    return NULL;
+}
+
+int
+sixel_option_resolve_scalar_environment(
+    sixel_option_schema_id_t option_id,
+    sixel_suboption_value_t *value,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    sixel_option_argument_schema_t const *schema;
+    char const *text;
+
+    schema = sixel_option_registry_get(option_id);
+    text = NULL;
+    if (schema == NULL || value == NULL ||
+        !sixel_option_registry_validate()) {
+        return SIXEL_OPTION_ENVIRONMENT_INVALID;
+    }
+    text = sixel_option_resolve_argument_environment(option_id);
+    if (text == NULL) {
+        return SIXEL_OPTION_ENVIRONMENT_UNSET;
+    }
+    if (SIXEL_FAILED(sixel_option_registry_parse_scalar(schema,
+                                                        0u,
+                                                        text,
+                                                        1,
+                                                        value,
+                                                        diagnostic,
+                                                        diagnostic_size))) {
+        return SIXEL_OPTION_ENVIRONMENT_INVALID;
+    }
+    return SIXEL_OPTION_ENVIRONMENT_MATCH;
+}
+
+SIXELSTATUS
+sixel_option_parse_scalar_argument(
+    sixel_option_schema_id_t option_id,
+    unsigned int consumer_scope,
+    char const *argument,
+    sixel_suboption_value_t *value,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    sixel_option_argument_schema_t const *schema;
+
+    schema = sixel_option_registry_get(option_id);
+    if (schema == NULL || !sixel_option_registry_validate()) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return sixel_option_registry_parse_scalar(schema,
+                                              consumer_scope,
+                                              argument,
+                                              0,
+                                              value,
+                                              diagnostic,
+                                              diagnostic_size);
 }
 
 /* emacs Local Variables:      */

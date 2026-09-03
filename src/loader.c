@@ -1355,8 +1355,9 @@ sixel_loader_load_file(
     status = SIXEL_FALSE;
     order_override = loader->loader_order;
     if (order_override == NULL) {
-        env_order = sixel_compat_getenv("SIXEL_LOADER_PRIORITY_LIST");
-        if (env_order != NULL && env_order[0] != '\0') {
+        env_order = sixel_option_resolve_argument_environment(
+            SIXEL_OPTION_SCHEMA_LOADERS);
+        if (env_order != NULL) {
             order_override = env_order;
         }
     }

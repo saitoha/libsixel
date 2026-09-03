@@ -92,6 +92,7 @@
 #include "frame-factory.h"
 #include "loader-common.h"
 #include "loader-gdk-pixbuf2.h"
+#include "options.h"
 #include "probe.h"
 
 typedef struct sixel_loader_gdkpixbuf_component {
@@ -322,45 +323,31 @@ static SIXELSTATUS
 gdkpixbuf_parse_animation_start_frame_no(int *start_frame_no)
 {
     SIXELSTATUS status;
-    char const *env_value;
-    char *endptr;
-    long parsed;
+    sixel_suboption_value_t value;
+    char diagnostic[128];
+    int env_result;
 
     status = SIXEL_OK;
-    env_value = NULL;
-    endptr = NULL;
-    parsed = 0;
+    memset(&value, 0, sizeof(value));
+    diagnostic[0] = '\0';
+    env_result = SIXEL_OPTION_ENVIRONMENT_UNSET;
 
     *start_frame_no = INT_MIN;
-    env_value = sixel_compat_getenv("SIXEL_LOADER_ANIMATION_START_FRAME_NO");
-    if (env_value == NULL || env_value[0] == '\0') {
+    env_result = sixel_option_resolve_scalar_environment(
+        SIXEL_OPTION_SCHEMA_START_FRAME,
+        &value,
+        diagnostic,
+        sizeof(diagnostic));
+    if (env_result == SIXEL_OPTION_ENVIRONMENT_UNSET) {
         goto end;
     }
-
-    errno = 0;
-    parsed = strtol(env_value, &endptr, 10);
-    if (endptr == env_value || *endptr != '\0') {
-        sixel_helper_set_additional_message(
-            "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    if (errno == ERANGE ||
-        parsed < (long)INT_MIN ||
-        parsed > (long)INT_MAX) {
-        sixel_helper_set_additional_message(
-            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    if (errno != 0) {
-        sixel_helper_set_additional_message(
-            "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
+    if (env_result == SIXEL_OPTION_ENVIRONMENT_INVALID) {
+        sixel_helper_set_additional_message(diagnostic);
         status = SIXEL_BAD_INPUT;
         goto end;
     }
 
-    *start_frame_no = (int)parsed;
+    *start_frame_no = value.int_value;
 
 end:
     return status;

@@ -44,11 +44,9 @@ extension_objc_args = common_objc_args + ['-fapplication-extension']
 # +----------------------------------------------+
 # |  Quick Look core aggregation                 |
 # +----------------------------------------------+
-# The Objective-C frontends expect the compat
-# helpers that power strerror() and snprintf().
-# Bundling compat_stub.c here mirrors the layout
-# used by the Autotools build and prevents linker
-# gaps when the static archive is reused.
+# Keep the standalone decoder dependencies aligned with the Autotools
+# archive. The registry owns thread parsing while compat_stub.c supplies
+# the portability helpers used by both components.
 
 srcs = files(
   '../src/status.c',
@@ -58,6 +56,7 @@ srcs = files(
   '../src/timeline-logger.c',
   '../src/timeline-writer.c',
   '../src/compat_stub.c',
+  '../src/options-registry.c',
   '../src/path.c',
 )
 srcs += [sixcells_h]

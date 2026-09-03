@@ -75,14 +75,6 @@
 # define SIXEL_KUNDITHER_USE_NEON 1
 #endif
 
-#define SIXEL_DECODER_GPU_POLICY_ENVVAR "SIXEL_GPU_POLICY"
-
-static sixel_option_choice_t const g_decoder_gpu_policy_choices[] = {
-    { "off", SIXEL_GPU_POLICY_OFF },
-    { "auto", SIXEL_GPU_POLICY_AUTO },
-    { "force", SIXEL_GPU_POLICY_FORCE }
-};
-
 static void
 decoder_clipboard_select_format(char *dest,
                                 size_t dest_size,
@@ -424,45 +416,6 @@ strdup_with_allocator(
     return p;
 }
 
-static SIXELSTATUS
-sixel_decoder_parse_gpu_policy_argument(char const *value,
-                                        int *policy)
-{
-    sixel_option_choice_result_t match_result;
-    char match_detail[256];
-    int match_value;
-
-    match_value = SIXEL_GPU_POLICY_OFF;
-    match_detail[0] = '\0';
-    match_result = sixel_option_match_choice(
-        value,
-        g_decoder_gpu_policy_choices,
-        sizeof(g_decoder_gpu_policy_choices) /
-        sizeof(g_decoder_gpu_policy_choices[0]),
-        &match_value,
-        match_detail,
-        sizeof(match_detail));
-    if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
-        *policy = match_value;
-        return SIXEL_OK;
-    }
-    if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-        sixel_option_report_ambiguous_prefix(
-            value,
-            match_detail,
-            match_detail,
-            sizeof(match_detail));
-        return SIXEL_BAD_ARGUMENT;
-    }
-    sixel_option_report_invalid_choice(
-        "cannot parse gpu policy option.",
-        match_detail,
-        match_detail,
-        sizeof(match_detail));
-    return SIXEL_BAD_ARGUMENT;
-}
-
-
 /* create decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_new(
@@ -471,9 +424,9 @@ sixel_decoder_new(
                                                   default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    char const *env_gpu_policy;
-    char match_detail[256];
-    int env_match_value;
+    sixel_suboption_value_t env_value;
+
+    memset(&env_value, 0, sizeof(env_value));
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -525,19 +478,12 @@ sixel_decoder_new(
      * ignored so an inherited process environment cannot make decoder_new()
      * fail before the caller has a chance to set explicit options.
      */
-    env_gpu_policy = sixel_compat_getenv(SIXEL_DECODER_GPU_POLICY_ENVVAR);
-    if (env_gpu_policy != NULL) {
-        match_detail[0] = '\0';
-        if (sixel_option_match_choice(
-                env_gpu_policy,
-                g_decoder_gpu_policy_choices,
-                sizeof(g_decoder_gpu_policy_choices) /
-                sizeof(g_decoder_gpu_policy_choices[0]),
-                &env_match_value,
-                match_detail,
-                sizeof(match_detail)) == SIXEL_OPTION_CHOICE_MATCH) {
-            (*ppdecoder)->gpu_policy = env_match_value;
-        }
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_GPU_POLICY,
+            &env_value,
+            NULL,
+            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        (*ppdecoder)->gpu_policy = env_value.int_value;
     }
 
     status = SIXEL_OK;
@@ -2666,6 +2612,7 @@ sixel_decoder_setopt(
     long bias;
     long parsed_value;
     char *endptr;
+    sixel_suboption_value_t scalar_value;
 
     sixel_decoder_ref(decoder);
     path_flags = 0u;
@@ -2673,6 +2620,7 @@ sixel_decoder_setopt(
     libc_buffer_size = 0u;
     libc_buffer = NULL;
     libc_path = NULL;
+    memset(&scalar_value, 0, sizeof(scalar_value));
 
     switch(arg) {
     case SIXEL_OPTFLAG_INPUT:  /* i */
@@ -2852,12 +2800,17 @@ sixel_decoder_setopt(
         break;
 
     case SIXEL_OPTFLAG_GPU_POLICY:  /* G */
-        status = sixel_decoder_parse_gpu_policy_argument(
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_GPU_POLICY,
+            SIXEL_OPTION_SCOPE_DECODER,
             value,
-            &decoder->gpu_policy);
+            &scalar_value,
+            NULL,
+            0u);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        decoder->gpu_policy = scalar_value.int_value;
         break;
 
     case '?':

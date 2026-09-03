@@ -1592,6 +1592,18 @@ sixel_option_parse_typed_suboption_value(
         valid = endptr != text && endptr != NULL && endptr[0] == '\0' &&
             errno != ERANGE && parsed_int >= (long)INT_MIN &&
             parsed_int <= (long)INT_MAX;
+        if (valid && key_def->has_minimum &&
+            (double)parsed_int < key_def->minimum &&
+            (range_policy &
+             SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM) != 0) {
+            parsed_int = (long)key_def->minimum;
+        }
+        if (valid && key_def->has_maximum &&
+            (double)parsed_int > key_def->maximum &&
+            (range_policy &
+             SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM) != 0) {
+            parsed_int = (long)key_def->maximum;
+        }
         if (valid && key_def->has_minimum) {
             valid = (double)parsed_int >= key_def->minimum;
         }

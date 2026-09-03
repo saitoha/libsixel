@@ -90,6 +90,7 @@
 
 #include "compat_stub.h"
 #include "threading.h"
+#include "options.h"
 
 /*
  * Backend selection is performed here so the header remains lightweight.
@@ -798,26 +799,6 @@ sixel_thread_config_unlock(void)
 }
 #endif
 
-#if SIXEL_ENABLE_THREADS
-static int
-sixel_threads_token_is_auto(char const *text)
-{
-    if (text == NULL) {
-        return 0;
-    }
-
-    if ((text[0] == 'a' || text[0] == 'A') &&
-        (text[1] == 'u' || text[1] == 'U') &&
-        (text[2] == 't' || text[2] == 'T') &&
-        (text[3] == 'o' || text[3] == 'O') &&
-        text[4] == '\0') {
-        return 1;
-    }
-
-    return 0;
-}
-#endif
-
 SIXELAPI int
 sixel_threads_normalize(int requested)
 {
@@ -855,53 +836,17 @@ sixel_threads_resolve_default(void)
 }
 
 static int
-sixel_threads_parse_env_value(char const *text, int *value)
-{
-    long parsed;
-    char *endptr;
-    int normalized;
-
-    if (text == NULL || value == NULL) {
-        return 0;
-    }
-
-    if (sixel_threads_token_is_auto(text)) {
-        normalized = sixel_threads_normalize(0);
-        *value = normalized;
-        return 1;
-    }
-
-    errno = 0;
-    parsed = strtol(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
-        return 0;
-    }
-
-    if (parsed < 1) {
-        normalized = sixel_threads_normalize(1);
-    } else if (parsed > INT_MAX) {
-        normalized = sixel_threads_normalize(INT_MAX);
-    } else {
-        normalized = sixel_threads_normalize((int)parsed);
-    }
-
-    *value = normalized;
-    return 1;
-}
-
-static int
 sixel_threads_resolve_env(void)
 {
-    char const *text;
-    int parsed;
+    sixel_suboption_value_t value;
 
-    text = sixel_compat_getenv("SIXEL_THREADS");
-    if (text == NULL || text[0] == '\0') {
-        return sixel_threads_resolve_default();
-    }
-
-    if (sixel_threads_parse_env_value(text, &parsed)) {
-        return parsed;
+    memset(&value, 0, sizeof(value));
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_THREADS,
+            &value,
+            NULL,
+            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return sixel_threads_normalize(value.int_value);
     }
 
     return sixel_threads_resolve_default();

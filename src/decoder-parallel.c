@@ -43,6 +43,7 @@
 # include "threading.h"
 #endif
 #include "compat_stub.h"
+#include "options.h"
 
 /*
  * Parallel decoding starts only after the serial parser has established
@@ -1896,22 +1897,6 @@ sixel_decoder_parallel_worker(void *arg)
 #endif
 
 static int
-sixel_decoder_threads_token_is_auto(char const *text)
-{
-    if (text == NULL) {
-        return 0;
-    }
-    if ((text[0] == 'a' || text[0] == 'A') &&
-            (text[1] == 'u' || text[1] == 'U') &&
-            (text[2] == 't' || text[2] == 'T') &&
-            (text[3] == 'o' || text[3] == 'O') &&
-            text[4] == '\0') {
-        return 1;
-    }
-    return 0;
-}
-
-static int
 sixel_decoder_threads_normalize(int requested)
 {
     int normalized;
@@ -1939,48 +1924,17 @@ sixel_decoder_threads_normalize(int requested)
 }
 
 static int
-sixel_decoder_threads_parse_value(char const *text, int *value)
-{
-    long parsed;
-    char *endptr;
-    int normalized;
-
-    if (text == NULL || value == NULL) {
-        return 0;
-    }
-    if (sixel_decoder_threads_token_is_auto(text)) {
-        normalized = sixel_decoder_threads_normalize(0);
-        *value = normalized;
-        return 1;
-    }
-    errno = 0;
-    parsed = strtol(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
-        return 0;
-    }
-    if (parsed < 1) {
-        normalized = sixel_decoder_threads_normalize(1);
-    } else if (parsed > INT_MAX) {
-        normalized = sixel_decoder_threads_normalize(INT_MAX);
-    } else {
-        normalized = sixel_decoder_threads_normalize((int)parsed);
-    }
-    *value = normalized;
-    return 1;
-}
-
-static int
 sixel_decoder_threads_resolve_env(void)
 {
-    char const *text;
-    int parsed;
+    sixel_suboption_value_t value;
 
-    text = sixel_compat_getenv("SIXEL_THREADS");
-    if (text == NULL || text[0] == '\0') {
-        return 1;
-    }
-    if (sixel_decoder_threads_parse_value(text, &parsed)) {
-        return sixel_decoder_threads_normalize(parsed);
+    memset(&value, 0, sizeof(value));
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_THREADS,
+            &value,
+            NULL,
+            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return sixel_decoder_threads_normalize(value.int_value);
     }
 
     return 1;
@@ -1990,22 +1944,28 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_override_threads(char const *text)
 {
     SIXELSTATUS status;
-    int parsed;
+    sixel_suboption_value_t value;
 
     status = SIXEL_BAD_ARGUMENT;
+    memset(&value, 0, sizeof(value));
     if (text == NULL || text[0] == '\0') {
         sixel_helper_set_additional_message(
             "decoder: missing thread count after -=/--threads.");
         goto end;
     }
-    if (!sixel_decoder_threads_parse_value(text, &parsed)) {
-        sixel_helper_set_additional_message(
-            "decoder: threads must be a positive integer or 'auto'.");
+    if (SIXEL_FAILED(sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_THREADS,
+            SIXEL_OPTION_SCOPE_DECODER,
+            text,
+            &value,
+            NULL,
+            0u))) {
         goto end;
     }
     sixel_decoder_threads_lock();
     g_decoder_threads.override_active = 1;
-    g_decoder_threads.override_threads = parsed;
+    g_decoder_threads.override_threads =
+        sixel_decoder_threads_normalize(value.int_value);
     sixel_decoder_threads_unlock();
     status = SIXEL_OK;
 end:

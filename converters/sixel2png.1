@@ -111,6 +111,11 @@ Use "auto" to match the detected hardware thread count.
 When SIXEL_THREADS is unset or empty, the sixel2png frontend defaults to
 "auto".
 .TP 5
+.B \-G POLICY, \-\-gpu\-policy=POLICY
+Choose the decoder accelerator policy.  \fBoff\fP keeps the CPU path,
+\fBauto\fP uses a supported GPU for sufficiently large images, and
+\fBforce\fP requires GPU acceleration.
+.TP 5
 .B \-% KEY=VALUE, \--env=KEY=VALUE
 Set a process environment variable before decoding.
 This option can be repeated.

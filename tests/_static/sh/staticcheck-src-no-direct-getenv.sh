@@ -73,9 +73,10 @@ if test -n "$matches"; then
     exit 0
 fi
 
-# Registry-owned environment names must not be copied into consumers.  They
-# select rows by stable binding metadata, leaving the registry as the only
-# source of environment spelling.
+# Registry-owned environment names must not be copied into consumers.
+# Suboptions select stable field bindings and scalar options select schema
+# identifiers, leaving the registry as the only source of environment
+# spelling.
 registered_matches=$(awk -v registry_file="$registry_file" '
 FILENAME == registry_file {
     line = $0
@@ -122,6 +123,12 @@ function argument_is_reviewed(file, argument) {
          argument == "key_def->env_name" ||
          argument == "key_def->env_fallback_name" ||
          argument == "key_def->env_legacy_name")) {
+        return 1
+    }
+    if (file ~ /\/options-registry\.c$/ &&
+        (argument == "schema->env_name" ||
+         argument == "schema->env_fallback_name" ||
+         argument == "schema->env_legacy_name")) {
         return 1
     }
     if (file ~ /\/fromhdr\.c$/ && argument == "env_name") {

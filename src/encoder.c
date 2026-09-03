@@ -129,14 +129,8 @@
 #include "planner.h"
 #include "sixel_atomic.h"
 
-#define SIXEL_ENCODER_PRECISION_ENVVAR "SIXEL_FLOAT32_DITHER"
-#define SIXEL_ENCODER_LUT_POLICY_ENVVAR "SIXEL_DITHER_LOOKUP_POLICY"
-#define SIXEL_ENCODER_GPU_POLICY_ENVVAR "SIXEL_GPU_POLICY"
 #define SIXEL_ENCODER_SAMPLE_TARGET_ENVVAR \
     "SIXEL_PALETTE_SAMPLE_TARGET"
-#define SIXEL_ENCODER_6DELTA_THRESHOLD_ENVVAR \
-    "SIXEL_6DELTA_THRESHOLD"
-#define SIXEL_ENCODER_6DELTA_ERROR_ENVVAR "SIXEL_6DELTA_ERROR"
 #define SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR \
     "SIXEL_ANIMATION_HIDE_CURSOR"
 #define SIXEL_ENCODER_PSD_TRACE_ONLY_ENVVAR \
@@ -290,12 +284,6 @@ sixel_encoder_quantize_override_lock_release(int acquired)
 }
 #endif
 
-typedef enum sixel_encoder_precision_mode {
-    SIXEL_ENCODER_PRECISION_MODE_AUTO = 0,
-    SIXEL_ENCODER_PRECISION_MODE_8BIT,
-    SIXEL_ENCODER_PRECISION_MODE_FLOAT32
-} sixel_encoder_precision_mode_t;
-
 static void clipboard_select_format(char *dest,
                                     size_t dest_size,
                                     char const *format,
@@ -310,9 +298,6 @@ static SIXELSTATUS clipboard_write_file(char const *path,
 static SIXELSTATUS clipboard_read_file(char const *path,
                                        unsigned char **data,
                                        size_t *size);
-static int sixel_encoder_threads_token_is_auto(char const *text);
-static int sixel_encoder_parse_threads_argument(char const *text,
-                                                int *value);
 static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
                                                   sixel_dither_t *dither);
 static int sixel_encoder_pixelformat_has_alpha(int pixelformat);
@@ -1667,44 +1652,6 @@ static sixel_option_choice_t const g_option_choices_encode_policy[] = {
     { "size", SIXEL_ENCODEPOLICY_SIZE }
 };
 
-static sixel_option_choice_t const g_option_choices_transparent_policy[] = {
-    { "composite", SIXEL_TRANSPARENT_POLICY_COMPOSITE },
-    { "transparent", SIXEL_TRANSPARENT_POLICY_BACKGROUND },
-    { "background", SIXEL_TRANSPARENT_POLICY_BACKGROUND },
-    { "clear", SIXEL_TRANSPARENT_POLICY_BACKGROUND },
-    { "p2-0", SIXEL_TRANSPARENT_POLICY_BACKGROUND },
-    { "p20", SIXEL_TRANSPARENT_POLICY_BACKGROUND },
-    { "keep", SIXEL_TRANSPARENT_POLICY_KEEP },
-    { "keep-destination", SIXEL_TRANSPARENT_POLICY_KEEP },
-    { "previous", SIXEL_TRANSPARENT_POLICY_KEEP },
-    { "p2-1", SIXEL_TRANSPARENT_POLICY_KEEP },
-    { "p21", SIXEL_TRANSPARENT_POLICY_KEEP }
-};
-
-static sixel_option_choice_t const g_option_choices_6delta_error[] = {
-    { "diffuse", SIXEL_6DELTA_ERROR_DIFFUSE },
-    { "skip", SIXEL_6DELTA_ERROR_SKIP }
-};
-
-static sixel_option_choice_t const g_option_choices_lut_policy[] = {
-    { "auto", SIXEL_LUT_POLICY_AUTO },
-    { "5bit", SIXEL_LUT_POLICY_5BIT },
-    { "6bit", SIXEL_LUT_POLICY_6BIT },
-    { "none", SIXEL_LUT_POLICY_NONE },
-    { "certlut", SIXEL_LUT_POLICY_CERTLUT },
-    { "eytzinger", SIXEL_LUT_POLICY_EYTZINGER },
-    { "fhedt", SIXEL_LUT_POLICY_FHEDT },
-    { "vptree", SIXEL_LUT_POLICY_VPTREE },
-    { "rbc", SIXEL_LUT_POLICY_RBC },
-    { "mahalanobis", SIXEL_LUT_POLICY_MAHALANOBIS }
-};
-
-static sixel_option_choice_t const g_option_choices_gpu_policy[] = {
-    { "off", SIXEL_GPU_POLICY_OFF },
-    { "auto", SIXEL_GPU_POLICY_AUTO },
-    { "force", SIXEL_GPU_POLICY_FORCE }
-};
-
 static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
     { "gamma", SIXEL_COLORSPACE_GAMMA },
     { "linear", SIXEL_COLORSPACE_LINEAR },
@@ -1740,12 +1687,6 @@ sixel_encoder_pixelformat_for_colorspace(int colorspace,
         return SIXEL_PIXELFORMAT_RGB888;
     }
 }
-
-static sixel_option_choice_t const g_option_choices_precision[] = {
-    { "auto", SIXEL_ENCODER_PRECISION_MODE_AUTO },
-    { "8bit", SIXEL_ENCODER_PRECISION_MODE_8BIT },
-    { "float32", SIXEL_ENCODER_PRECISION_MODE_FLOAT32 }
-};
 
 static char *
 arg_strdup(
@@ -3192,7 +3133,7 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
 static SIXELSTATUS
 sixel_encoder_apply_precision_override(
     sixel_encoder_t *encoder,
-    sixel_encoder_precision_mode_t mode)
+    sixel_option_precision_mode_t mode)
 {
     int prefer_float32;
 
@@ -3201,13 +3142,13 @@ sixel_encoder_apply_precision_override(
         prefer_float32 = 1;
     }
 
-    if (mode == SIXEL_ENCODER_PRECISION_MODE_AUTO) {
+    if (mode == SIXEL_OPTION_PRECISION_AUTO) {
         return SIXEL_OK;
     }
 
-    if (mode == SIXEL_ENCODER_PRECISION_MODE_FLOAT32) {
+    if (mode == SIXEL_OPTION_PRECISION_FLOAT32) {
         prefer_float32 = 1;
-    } else if (mode == SIXEL_ENCODER_PRECISION_MODE_8BIT) {
+    } else if (mode == SIXEL_OPTION_PRECISION_8BIT) {
         if (encoder->force_float32_colorspace != 0) {
             prefer_float32 = 1;
         } else {
@@ -5715,11 +5656,11 @@ sixel_encoder_pixelformat_has_alpha(int pixelformat)
 static int
 sixel_encoder_resolve_transparent_policy(sixel_encoder_t const *encoder)
 {
-    char const *env_value;
     int policy;
+    sixel_suboption_value_t value;
 
-    env_value = NULL;
     policy = SIXEL_TRANSPARENT_POLICY_BACKGROUND;
+    memset(&value, 0, sizeof(value));
 
     if (encoder == NULL) {
         return policy;
@@ -5736,12 +5677,14 @@ sixel_encoder_resolve_transparent_policy(sixel_encoder_t const *encoder)
     }
 
     policy = encoder->transparent_policy;
-    env_value = sixel_compat_getenv("SIXEL_TRANSPARENT_POLICY");
-    if (sixel_loader_parse_transparent_policy(env_value, &policy) != 0) {
-        return policy;
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
+            &value,
+            NULL,
+            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        policy = value.int_value;
     }
-
-    return encoder->transparent_policy;
+    return policy;
 }
 
 static int
@@ -7579,27 +7522,16 @@ sixel_encoder_new(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     char const *env_default_bgcolor = NULL;
-    char const *env_default_ncolors = NULL;
-    char const *env_lookup_policy = NULL;
-    char const *env_gpu_policy = NULL;
     char const *env_sample_target = NULL;
-    char const *env_6delta_threshold = NULL;
-    char const *env_6delta_error = NULL;
-    int ncolors;
-    long parsed_ncolors;
-    long parsed_6delta_threshold;
-    char *endptr;
-    char *threshold_endptr;
     int prefer_float32;
-    int env_match_value;
+    int env_result;
     size_t parsed_sample_target;
     int has_sample_target;
-    sixel_option_choice_result_t match_result;
-    char match_detail[128];
+    sixel_suboption_value_t env_value;
 
     parsed_sample_target = 0u;
-    parsed_6delta_threshold = 0L;
     has_sample_target = 0;
+    memset(&env_value, 0, sizeof(env_value));
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -7907,100 +7839,57 @@ sixel_encoder_new(
     sixel_encoding_planner_init(&(*ppencoder)->planner);
     (*ppencoder)->allocator             = allocator;
 
-    /*
-     * $SIXEL_FLOAT32_DITHER seeds the precision preference and is later
-     * overridden by the precision CLI flag when provided.
-     */
-    prefer_float32 = sixel_option_resolve_boolean_environment(
-        SIXEL_ENCODER_PRECISION_ENVVAR,
-        0);
+    /* Registry defaults are applied before explicit CLI/API options. */
+    prefer_float32 = 0;
+    env_result = sixel_option_resolve_scalar_environment(
+        SIXEL_OPTION_SCHEMA_PRECISION,
+        &env_value,
+        NULL,
+        0u);
+    if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        prefer_float32 =
+            env_value.int_value == SIXEL_OPTION_PRECISION_FLOAT32;
+    }
     (*ppencoder)->prefer_float32 = prefer_float32;
 
-    /*
-     * $SIXEL_DITHER_LOOKUP_POLICY mirrors the -~ flag so automated wrappers
-     * can seed the LUT backend before CLI overrides run.  Invalid prefixes are
-     * ignored to avoid hard failures when the environment is user-provided.
-     */
-    match_detail[0] = '\0';
-    env_lookup_policy = sixel_compat_getenv(
-        SIXEL_ENCODER_LUT_POLICY_ENVVAR);
-    if (env_lookup_policy != NULL) {
-        match_result = sixel_option_match_choice(
-            env_lookup_policy,
-            g_option_choices_lut_policy,
-            sizeof(g_option_choices_lut_policy)
-            / sizeof(g_option_choices_lut_policy[0]),
-            &env_match_value,
-            match_detail,
-            sizeof(match_detail));
-        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
-            (*ppencoder)->lut_policy = env_match_value;
-            (*ppencoder)->lut_policy_override = 1;
-            (*ppencoder)->lut_policy_shared_instance_override = 0;
-            (*ppencoder)->lut_policy_shared_instance = 0;
-        }
+    env_result = sixel_option_resolve_scalar_environment(
+        SIXEL_OPTION_SCHEMA_LUT_POLICY,
+        &env_value,
+        NULL,
+        0u);
+    if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        (*ppencoder)->lut_policy = env_value.int_value;
+        (*ppencoder)->lut_policy_override = 1;
+        (*ppencoder)->lut_policy_shared_instance_override = 0;
+        (*ppencoder)->lut_policy_shared_instance = 0;
     }
 
-    /*
-     * $SIXEL_GPU_POLICY mirrors -G/--gpu-policy.  The default remains off so
-     * acceleration never changes output or performance unless requested by
-     * the caller.
-     */
-    match_detail[0] = '\0';
-    env_gpu_policy = sixel_compat_getenv(SIXEL_ENCODER_GPU_POLICY_ENVVAR);
-    if (env_gpu_policy != NULL) {
-        match_result = sixel_option_match_choice(
-            env_gpu_policy,
-            g_option_choices_gpu_policy,
-            sizeof(g_option_choices_gpu_policy)
-            / sizeof(g_option_choices_gpu_policy[0]),
-            &env_match_value,
-            match_detail,
-            sizeof(match_detail));
-        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
-            (*ppencoder)->gpu_policy = env_match_value;
-        }
+    env_result = sixel_option_resolve_scalar_environment(
+        SIXEL_OPTION_SCHEMA_GPU_POLICY,
+        &env_value,
+        NULL,
+        0u);
+    if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        (*ppencoder)->gpu_policy = env_value.int_value;
     }
 
-    /*
-     * 6delta environment variables are process defaults.  Bad values are
-     * ignored like SIXEL_COLORS and the LUT policy env override, while the
-     * explicit CLI/API option remains strict.
-     */
-    env_6delta_threshold = sixel_compat_getenv(
-        SIXEL_ENCODER_6DELTA_THRESHOLD_ENVVAR);
-    if (env_6delta_threshold != NULL && env_6delta_threshold[0] != '\0') {
-        threshold_endptr = NULL;
-        errno = 0;
-        parsed_6delta_threshold = strtol(env_6delta_threshold,
-                                         &threshold_endptr,
-                                         10);
-        if (threshold_endptr != env_6delta_threshold &&
-            *threshold_endptr == '\0' &&
-            errno != ERANGE &&
-            parsed_6delta_threshold >= 0L &&
-            parsed_6delta_threshold <= 255L) {
-            (*ppencoder)->sixdelta_enabled = 1;
-            (*ppencoder)->sixdelta_threshold =
-                (unsigned int)parsed_6delta_threshold;
-        }
+    env_result = sixel_option_resolve_scalar_environment(
+        SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
+        &env_value,
+        NULL,
+        0u);
+    if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        (*ppencoder)->sixdelta_enabled = 1;
+        (*ppencoder)->sixdelta_threshold = env_value.uint_value;
     }
 
-    env_6delta_error = sixel_compat_getenv(
-        SIXEL_ENCODER_6DELTA_ERROR_ENVVAR);
-    if (env_6delta_error != NULL && env_6delta_error[0] != '\0') {
-        match_detail[0] = '\0';
-        match_result = sixel_option_match_choice(
-            env_6delta_error,
-            g_option_choices_6delta_error,
-            sizeof(g_option_choices_6delta_error)
-            / sizeof(g_option_choices_6delta_error[0]),
-            &env_match_value,
-            match_detail,
-            sizeof(match_detail));
-        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
-            (*ppencoder)->sixdelta_error_mode = env_match_value;
-        }
+    env_result = sixel_option_resolve_scalar_environment(
+        SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
+        &env_value,
+        NULL,
+        0u);
+    if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        (*ppencoder)->sixdelta_error_mode = env_value.int_value;
     }
 
     env_sample_target = sixel_compat_getenv(
@@ -8015,8 +7904,8 @@ sixel_encoder_new(
         }
     }
 
-    /* evaluate environment variable ${SIXEL_BGCOLOR} */
-    env_default_bgcolor = sixel_compat_getenv("SIXEL_BGCOLOR");
+    env_default_bgcolor = sixel_option_resolve_argument_environment(
+        SIXEL_OPTION_SCHEMA_BGCOLOR);
     if (env_default_bgcolor != NULL) {
         status = sixel_parse_x_colorspec(&(*ppencoder)->bgcolor,
                                          env_default_bgcolor,
@@ -8027,20 +7916,13 @@ sixel_encoder_new(
         (*ppencoder)->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_ENV;
     }
 
-    /* evaluate environment variable ${SIXEL_COLORS} */
-    env_default_ncolors = sixel_compat_getenv("SIXEL_COLORS");
-    if (env_default_ncolors) {
-        parsed_ncolors = 0L;
-        endptr = NULL;
-        errno = 0;
-        parsed_ncolors = strtol(env_default_ncolors, &endptr, 10);
-        if (endptr != env_default_ncolors && *endptr == '\0' &&
-            errno != ERANGE && parsed_ncolors <= (long)INT_MAX) {
-            ncolors = (int)parsed_ncolors;
-            if (ncolors > 1 && ncolors <= SIXEL_PALETTE_MAX) {
-                (*ppencoder)->reqcolors = ncolors;
-            }
-        }
+    env_result = sixel_option_resolve_scalar_environment(
+        SIXEL_OPTION_SCHEMA_COLORS,
+        &env_value,
+        NULL,
+        0u);
+    if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        (*ppencoder)->reqcolors = (int)env_value.uint_value;
     }
 
     /* success */
@@ -8435,56 +8317,6 @@ png_target_payload_view(char const *argument)
     }
 
     return argument;
-}
-
-static int
-sixel_encoder_threads_token_is_auto(char const *text)
-{
-    if (text == NULL) {
-        return 0;
-    }
-
-    if ((text[0] == 'a' || text[0] == 'A') &&
-        (text[1] == 'u' || text[1] == 'U') &&
-        (text[2] == 't' || text[2] == 'T') &&
-        (text[3] == 'o' || text[3] == 'O') &&
-        text[4] == '\0') {
-        return 1;
-    }
-
-    return 0;
-}
-
-static int
-sixel_encoder_parse_threads_argument(char const *text, int *value)
-{
-    long parsed;
-    char *endptr;
-
-    parsed = 0L;
-    endptr = NULL;
-
-    if (text == NULL || value == NULL) {
-        return 0;
-    }
-
-    if (sixel_encoder_threads_token_is_auto(text) != 0) {
-        *value = 0;
-        return 1;
-    }
-
-    errno = 0;
-    parsed = strtol(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
-        return 0;
-    }
-
-    if (parsed < 1L || parsed > (long)INT_MAX) {
-        return 0;
-    }
-
-    *value = (int)parsed;
-    return 1;
 }
 
 static int
@@ -8911,14 +8743,21 @@ sixel_encoder_parse_choice_argument(
 static SIXELSTATUS
 sixel_encoder_apply_threads_option(char const *value)
 {
-    int number;
+    SIXELSTATUS status;
+    sixel_suboption_value_t parsed;
 
-    if (sixel_encoder_parse_threads_argument(value, &number) == 0) {
-        sixel_helper_set_additional_message(
-            "threads accepts positive integers or 'auto'.");
-        return SIXEL_BAD_ARGUMENT;
+    memset(&parsed, 0, sizeof(parsed));
+    status = sixel_option_parse_scalar_argument(
+        SIXEL_OPTION_SCHEMA_THREADS,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        value,
+        &parsed,
+        NULL,
+        0u);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
-    sixel_set_threads(number);
+    sixel_set_threads(parsed.int_value);
     return SIXEL_OK;
 }
 
@@ -9012,13 +8851,17 @@ sixel_encoder_apply_colors_option(
     sixel_encoder_t *encoder,
     char const *value)
 {
+    SIXELSTATUS status;
     char *endptr;
     long parsed_reqcolors;
     int forced_palette;
+    sixel_suboption_value_t parsed;
 
+    status = SIXEL_OK;
     endptr = NULL;
     parsed_reqcolors = 0L;
     forced_palette = 0;
+    memset(&parsed, 0, sizeof(parsed));
     errno = 0;
     if (*value == '!' && value[1] == '\0') {
         /*
@@ -9032,6 +8875,18 @@ sixel_encoder_apply_colors_option(
          */
         parsed_reqcolors = SIXEL_PALETTE_MAX;
         forced_palette = 1;
+    } else if (strchr(value, '!') == NULL) {
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_COLORS,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            value,
+            &parsed,
+            NULL,
+            0u);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        parsed_reqcolors = (long)parsed.uint_value;
     } else {
         if (value[0] == '-') {
             /*
@@ -9272,21 +9127,21 @@ sixel_encoder_apply_start_frame_option(
     sixel_encoder_t *encoder,
     char const *value)
 {
-    char *endptr;
-    long parsed_value;
+    SIXELSTATUS status;
+    sixel_suboption_value_t parsed;
 
-    endptr = NULL;
-    parsed_value = 0L;
-    errno = 0;
-    parsed_value = strtol(value, &endptr, 10);
-    if (endptr == value || *endptr != '\0' || errno == ERANGE ||
-        parsed_value < (long)INT_MIN ||
-        parsed_value > (long)INT_MAX) {
-        sixel_helper_set_additional_message(
-            "cannot parse start_frame option.");
-        return SIXEL_BAD_ARGUMENT;
+    memset(&parsed, 0, sizeof(parsed));
+    status = sixel_option_parse_scalar_argument(
+        SIXEL_OPTION_SCHEMA_START_FRAME,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        value,
+        &parsed,
+        NULL,
+        0u);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
-    encoder->loader_start_frame_no = (int)parsed_value;
+    encoder->loader_start_frame_no = parsed.int_value;
     encoder->loader_start_frame_no_set = 1;
     return SIXEL_OK;
 }
@@ -9317,21 +9172,22 @@ sixel_encoder_apply_6delta_threshold_option(
     sixel_encoder_t *encoder,
     char const *value)
 {
-    char *endptr;
-    long parsed_value;
+    SIXELSTATUS status;
+    sixel_suboption_value_t parsed;
 
-    endptr = NULL;
-    parsed_value = 0L;
-    errno = 0;
-    parsed_value = strtol(value, &endptr, 10);
-    if (endptr == value || *endptr != '\0' || errno == ERANGE ||
-        parsed_value < 0L || parsed_value > 255L) {
-        sixel_helper_set_additional_message(
-            "6delta threshold must be an integer in range 0..255.");
-        return SIXEL_BAD_ARGUMENT;
+    memset(&parsed, 0, sizeof(parsed));
+    status = sixel_option_parse_scalar_argument(
+        SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        value,
+        &parsed,
+        NULL,
+        0u);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
     encoder->sixdelta_enabled = 1;
-    encoder->sixdelta_threshold = (unsigned int)parsed_value;
+    encoder->sixdelta_threshold = parsed.uint_value;
     return SIXEL_OK;
 }
 
@@ -9988,6 +9844,7 @@ sixel_encoder_setopt(
     sixel_option_argument_resolution_t d_resolution;
     sixel_option_argument_resolution_t const *q_resolution;
     char match_detail[128];
+    sixel_suboption_value_t scalar_value;
 
     sixel_encoder_ref(encoder);
     sixel_encoder_setopt_context_init(&setopt_context);
@@ -9995,6 +9852,7 @@ sixel_encoder_setopt(
     d_resolution.base_def = NULL;
     d_resolution.assignments = NULL;
     d_resolution.assignment_count = 0u;
+    memset(&scalar_value, 0, sizeof(scalar_value));
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
         status = sixel_encoder_apply_outfile_option(encoder, value);
@@ -10015,19 +9873,19 @@ sixel_encoder_setopt(
         encoder->has_gri_arg_limit = 1;
         break;
     case SIXEL_OPTFLAG_PRECISION:  /* . */
-        status = sixel_encoder_parse_choice_argument(
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_PRECISION,
+            SIXEL_OPTION_SCOPE_ENCODER,
             value,
-            g_option_choices_precision,
-            sizeof(g_option_choices_precision) /
-                sizeof(g_option_choices_precision[0]),
-            "precision accepts auto, 8bit, or float32.",
-            &match_value);
+            &scalar_value,
+            match_detail,
+            sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
         status = sixel_encoder_apply_precision_override(
             encoder,
-            (sixel_encoder_precision_mode_t)match_value);
+            (sixel_option_precision_mode_t)scalar_value.int_value);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -10239,6 +10097,16 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_BGCOLOR:  /* B */
         /* parse --bgcolor option */
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_BGCOLOR,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            value,
+            &scalar_value,
+            NULL,
+            0u);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         if (encoder->bgcolor) {
             sixel_allocator_free(encoder->allocator, encoder->bgcolor);
             encoder->bgcolor = NULL;
@@ -10255,17 +10123,17 @@ sixel_encoder_setopt(
         encoder->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
         break;
     case SIXEL_OPTFLAG_TRANSPARENT_POLICY:  /* A */
-        status = sixel_encoder_parse_choice_argument(
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
             value,
-            g_option_choices_transparent_policy,
-            sizeof(g_option_choices_transparent_policy) /
-                sizeof(g_option_choices_transparent_policy[0]),
-            "cannot parse transparent policy option.",
-            &match_value);
+            &scalar_value,
+            match_detail,
+            sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        encoder->transparent_policy = match_value;
+        encoder->transparent_policy = scalar_value.int_value;
         encoder->transparent_policy_override = 1;
         break;
     case SIXEL_OPTFLAG_TRANSPARENT_OFFSET:  /* + */
@@ -10283,17 +10151,17 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_6DELTA_ERROR:  /* Y */
-        status = sixel_encoder_parse_choice_argument(
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
+            SIXEL_OPTION_SCOPE_ENCODER,
             value,
-            g_option_choices_6delta_error,
-            sizeof(g_option_choices_6delta_error) /
-                sizeof(g_option_choices_6delta_error[0]),
-            "cannot parse 6delta error option.",
-            &match_value);
+            &scalar_value,
+            match_detail,
+            sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        encoder->sixdelta_error_mode = match_value;
+        encoder->sixdelta_error_mode = scalar_value.int_value;
         break;
     case SIXEL_OPTFLAG_INSECURE:  /* k */
         encoder->finsecure = 1;
@@ -10365,17 +10233,17 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_GPU_POLICY:  /* G */
-        status = sixel_encoder_parse_choice_argument(
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_GPU_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
             value,
-            g_option_choices_gpu_policy,
-            sizeof(g_option_choices_gpu_policy) /
-            sizeof(g_option_choices_gpu_policy[0]),
-            "cannot parse gpu policy option.",
-            &match_value);
+            &scalar_value,
+            match_detail,
+            sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        encoder->gpu_policy = match_value;
+        encoder->gpu_policy = scalar_value.int_value;
         if (encoder->dither_cache != NULL) {
             ((sixel_dither_t *)encoder->dither_cache)->gpu_policy =
                 encoder->gpu_policy;
