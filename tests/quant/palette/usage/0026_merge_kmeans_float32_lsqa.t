@@ -21,8 +21,6 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
               --env SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2 \
               --env SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=3 \
               --env SIXEL_PALETTE_KMEANS_THRESHOLD=0.1 \
-              --env SIXEL_PALETTE_LUMIN_FACTOR_R=0.3 \
-              --env SIXEL_PALETTE_LUMIN_FACTOR_G=0.4 \
               --env SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
               -Qkmeans:merge=ward -W oklab -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel merge kmeans float32 failed"

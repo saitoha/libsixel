@@ -79,9 +79,6 @@ static float env_final_merge_target_factor = 1.81f;
 static unsigned int env_final_merge_additional_lloyd = 3U;
 static unsigned int env_kmeans_iter_max = 20U;
 static double env_kmeans_threshold = 0.125;
-static double env_lumin_factor_r = 0.2989;
-static double env_lumin_factor_g = 0.5866;
-static double env_lumin_factor_b = 0.1145;
 static double env_final_merge_channel_factor_l = 1.0 / 3.0;
 static int env_final_merge_additional_lloyd_overridden = 0;
 static int env_final_merge_env_loaded = 0;
@@ -298,26 +295,14 @@ sixel_final_merge_load_env(void)
 {
     char const *env_value;
     char *endptr;
-    double parsed_component;
     double parsed_channel_factor;
-    double candidate_r;
-    double candidate_g;
-    double candidate_b;
-    int r_overridden;
-    int g_overridden;
     int lock_acquired;
     unsigned int registered_uint;
     double registered_double;
 
     env_value = NULL;
     endptr = NULL;
-    parsed_component = 0.0;
     parsed_channel_factor = 1.0 / 3.0;
-    candidate_r = env_lumin_factor_r;
-    candidate_g = env_lumin_factor_g;
-    candidate_b = env_lumin_factor_b;
-    r_overridden = 0;
-    g_overridden = 0;
     lock_acquired = 0;
     registered_uint = 0u;
     registered_double = 0.0;
@@ -367,51 +352,6 @@ sixel_final_merge_load_env(void)
                 quantize_model_kmeans_threshold_override),
             &registered_double)) {
         env_kmeans_threshold = registered_double;
-    }
-
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_LUMIN_FACTOR_R");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_component = strtod(env_value, &endptr);
-        if (endptr != env_value && errno == 0) {
-            if (parsed_component < 0.0) {
-                parsed_component = 0.0;
-            }
-            if (parsed_component > 1.0) {
-                parsed_component = 1.0;
-            }
-            candidate_r = parsed_component;
-            r_overridden = 1;
-        }
-    }
-
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_LUMIN_FACTOR_G");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_component = strtod(env_value, &endptr);
-        if (endptr != env_value && errno == 0) {
-            if (parsed_component < 0.0) {
-                parsed_component = 0.0;
-            }
-            if (parsed_component > 1.0) {
-                parsed_component = 1.0;
-            }
-            candidate_g = parsed_component;
-            g_overridden = 1;
-        }
-    }
-
-    if (r_overridden || g_overridden) {
-        candidate_b = 1.0 - candidate_r - candidate_g;
-        if (candidate_b >= 0.0) {
-            env_lumin_factor_r = candidate_r;
-            env_lumin_factor_g = candidate_g;
-            env_lumin_factor_b = candidate_b;
-        } else {
-            env_lumin_factor_r = 0.2989;
-            env_lumin_factor_g = 0.5866;
-            env_lumin_factor_b = 0.1145;
-        }
     }
 
     /*

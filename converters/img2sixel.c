@@ -1902,16 +1902,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "Accepts 0.0-8.0, default 0.0."
     },
     {
-        "SIXEL_PALETTE_LUMIN_FACTOR_R",
-        "Override the luminosity weighting for the red channel (0.0-1.0)."
-    },
-    {
-        "SIXEL_PALETTE_LUMIN_FACTOR_G",
-        "Override the luminosity weighting for the green channel\n"
-        "(0.0-1.0). The blue factor becomes 1 - R - G; negative results\n"
-        "ignore both overrides."
-    },
-    {
         "SIXEL_PALETTE_SNAP_TARGET_POLICY",
         "Control palette snap target search. Accepts 'reversible' for\n"
         "legacy fixed points or 'nearest'/'auto' for nearby fixed points\n"
