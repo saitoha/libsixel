@@ -1535,8 +1535,8 @@ questions:
 
 1. How do current policies compare when palette construction is controlled by
    `-Qkmeans:Gw -Xoklab`?
-2. What was the effect of the historical coupling between lookup policy and
-   Heckbert histogram resolution?
+2. How does the current Heckbert compatibility mapping expose the legacy
+   RGB555 limitation alongside policies that were added later?
 3. What end-to-end speed does each policy deliver under the same modern CLI
    configuration?
 
@@ -1563,7 +1563,10 @@ At `K = 256`, the measured values are:
 | `6bit` | 2.748895 | 2.011616 | 0.985449 |
 | `certlut` | 2.748675 | 2.013487 | 0.985482 |
 | `eytzinger` | 2.749222 | 2.015684 | 0.985460 |
+| `fhedt` | 2.766032 | 2.053499 | 0.984794 |
 | `vptree` | 2.746327 | 2.011879 | 0.985457 |
+| `rbc` | 2.748417 | 2.010619 | 0.985393 |
+| `mahalanobis` | 2.748417 | 2.010619 | 0.985393 |
 
 `-Qkmeans:Gw` selects K-means with Ward final merging, while `-Xoklab`
 places its clustering objective in OKLab. `-Wgamma` keeps palette application
@@ -1577,6 +1580,13 @@ its mean Delta E00 is 47.2 percent above `none`, while `5bit` is 125.7 percent
 above `none`. Calling the RGB666 loss merely "slight" would overstate what this
 single-image result supports.
 
+Among the accelerated policies at `K = 256`, `vptree` has the lowest measured
+mean Delta E00 at 2.746327 while taking 85.5 ms in the speed run. `fhedt` is
+faster at 79.5 ms, but its mean Delta E00 is 2.766032 and its mean chroma error
+is 2.053499 rather than `vptree`'s 2.011879. The differences are small enough
+that this is evidence of a favorable quality/speed balance on this fixture,
+not a universal ordering.
+
 A previously generated fixed-palette figure is intentionally not retained.
 The current CLI disables optimized lookup for an external `-m` palette, so
 each named policy followed the direct-scan path and the overlapping curves did
@@ -1584,71 +1594,77 @@ not constitute a policy comparison. Direct component-level benchmarks are the
 right way to hold a palette fixed; these CLI curves instead measure the normal
 user path and say so explicitly.
 
-### Why `none` looked unusually good at eight colors
+### Legacy RGB555 context in current Heckbert mode
 
-The original end-to-end result is retained because it measures the historical
-user-visible coupling:
+The current Heckbert comparison is retained because it exposes the palette
+construction coupling associated with preserving the legacy RGB555 path. It
+is not a reconstruction of a historical user choice: through the 1.8.7 era,
+the RGB555 route was fixed and users could not select a lookup policy.
 
 ![Mean Delta E00 and mean absolute CIELAB chroma error when each lookup policy also selects Heckbert histogram resolution](lookup-policies/measurements/lookup-policy-color-error.png)
 
 At `K = 8`, `none` reported mean absolute chroma error 8.435487, while `5bit`,
 `6bit`, `certlut`, `eytzinger`, and `vptree` reported 14.914233, 16.088598,
-16.104532, 16.587467, and 16.105232 respectively.
+16.104532, 16.587467, and 16.105232 respectively. The later `fhedt`, `rbc`,
+and `mahalanobis` policies reported 15.895770, 16.106705, and 16.106705.
 
-The cause is in
+The current compatibility mapping is in
 [`histogram_control_make_for_policy`](../../src/palette-heckbert.c#L403).
 The Heckbert builder uses eight bits per channel for `none`, five for `5bit`,
-and six for the other policies in this comparison. Those histograms change the
-box boundaries, weighted medians, and representative colors before palette
-application begins. Inspection of the decoded `K = 8` outputs found that the
-most frequently selected `none` entry was muted brown RGB `(125, 92, 87)`,
-with CIELAB chroma about 15.1. The six-bit palette instead most frequently
-selected olive RGB `(130, 128, 38)`, with chroma about 47.9. Large low- and
-medium-chroma regions of this particular image were therefore oversaturated
-by the six-bit palette.
+and six for the other policies in this comparison. The non-`5bit` branches are
+modern comparison points, not modes that the old CLI exposed. Their histograms
+change the box boundaries, weighted medians, and representative colors before
+palette application begins. Inspection of the decoded `K = 8` outputs found
+that the most frequently selected `none` entry was muted brown RGB
+`(125, 92, 87)`, with CIELAB chroma about 15.1. The six-bit palette instead
+most frequently selected olive RGB `(130, 128, 38)`, with chroma about 47.9.
+Large low- and medium-chroma regions of this particular image were therefore
+oversaturated by the six-bit palette.
 
 The explanation is fixture-specific: `none` happened to receive a palette
 whose chroma distribution better matched this image. It is not evidence that
 an exhaustive RGB lookup intrinsically minimizes CIELAB chroma error.
 
-### High-palette-size detail
+The companion spatially pooled measurement for this current comparison is:
 
-![Focused mean Delta E00 and mean absolute CIELAB chroma error for the Heckbert-coupled comparison from K 128 through 256](lookup-policies/measurements/lookup-policy-heckbert-high-k.png)
-
-The focused source data are in
-[`lookup-policy-heckbert-high-k.csv`](lookup-policies/measurements/lookup-policy-heckbert-high-k.csv).
-At `K = 256`, the measured values are:
-
-| Policy | Mean Delta E00 | Mean absolute chroma error |
-| --- | ---: | ---: |
-| `none` | 2.447771 | 1.842988 |
-| `5bit` | 3.155706 | 2.269776 |
-| `6bit` | 2.596776 | 1.859324 |
-| `certlut` | 2.403138 | 1.749753 |
-| `eytzinger` | 3.032645 | 2.461793 |
-| `vptree` | 2.400774 | 1.748358 |
-
-`5bit` has 0.707935 more mean Delta E00 than `none`, a 28.9 percent increase,
-and 0.426788 more mean chroma error, a 23.2 percent increase. Increasing `K`
-cannot recover distinctions already collapsed in the `32^3` Heckbert
-histogram. The figure also shows why this end-to-end result is not a pure
-lookup ranking: `certlut` and `vptree` happen to score slightly better than the
-full-histogram `none` control with their separately constructed palettes.
-
-The corresponding spatially pooled reference is:
-
-![MS-SSIM for the Heckbert-coupled lookup-policy comparison](lookup-policies/measurements/lookup-policy-ms-ssim.png)
+![MS-SSIM for the current Heckbert compatibility comparison](lookup-policies/measurements/lookup-policy-ms-ssim.png)
 
 At `K = 256`, `5bit` reaches 0.973219 while `none` reaches 0.986088. The
 underlying values are in
 [`lookup-policy-ms-ssim.csv`](lookup-policies/measurements/lookup-policy-ms-ssim.csv).
 
+### High-palette-size detail
+
+![Focused mean Delta E00 and mean absolute CIELAB chroma error for the controlled K-means comparison from K 128 through 256](lookup-policies/measurements/lookup-policy-kmeans-high-k.png)
+
+The focused source data are in
+[`lookup-policy-kmeans-high-k.csv`](lookup-policies/measurements/lookup-policy-kmeans-high-k.csv).
+At `K = 256`, the measured values are:
+
+| Policy | Mean Delta E00 | Mean absolute chroma error |
+| --- | ---: | ---: |
+| `none` | 1.867762 | 1.455218 |
+| `5bit` | 4.215347 | 2.712114 |
+| `6bit` | 2.748895 | 2.011616 |
+| `certlut` | 2.748675 | 2.013487 |
+| `eytzinger` | 2.749222 | 2.015684 |
+| `fhedt` | 2.766032 | 2.053499 |
+| `vptree` | 2.746327 | 2.011879 |
+| `rbc` | 2.748417 | 2.010619 |
+| `mahalanobis` | 2.748417 | 2.010619 |
+
+This focused figure uses the same `-Qkmeans:Gw -Xoklab -Wgamma` condition as
+the broad controlled comparison. It therefore enlarges the 128--256 region
+without introducing the policy-dependent Heckbert histogram resolution.
+`vptree` stays near the best accelerated-policy quality in this range, while
+the separate speed figure shows that its runtime remains close to `fhedt` and
+`eytzinger`.
+
 ### End-to-end speed
 
-![Median end-to-end runtime and speedup over none for each lookup policy](lookup-policies/measurements/lookup-policy-speed.png)
+![Median end-to-end runtime for each lookup policy](lookup-policies/measurements/lookup-policy-speed.png)
 
-The upper panel reports median elapsed time; lower is better. The lower panel
-reports the same medians as a speedup relative to `none`. Each point is the
+The figure reports median elapsed time; lower is better. Each point is the
 median of nine fresh processes after two warm-up runs, and the error bars show
 the interquartile range. The source data and complete command template are in
 [`lookup-policy-speed.csv`](lookup-policies/measurements/lookup-policy-speed.csv).
@@ -1657,15 +1673,15 @@ At `K = 256`, the result is:
 
 | Policy | Median time | Speedup over `none` |
 | --- | ---: | ---: |
-| `none` | 180.8 ms | 1.00x |
-| `5bit` | 131.2 ms | 1.38x |
-| `6bit` | 134.6 ms | 1.34x |
-| `certlut` | 108.7 ms | 1.66x |
-| `eytzinger` | 85.2 ms | 2.12x |
-| `fhedt` | 78.9 ms | 2.29x |
-| `vptree` | 85.0 ms | 2.13x |
-| `rbc` | 102.1 ms | 1.77x |
-| `mahalanobis` | 133.2 ms | 1.36x |
+| `none` | 182.5 ms | 1.00x |
+| `5bit` | 132.4 ms | 1.38x |
+| `6bit` | 135.3 ms | 1.35x |
+| `certlut` | 111.1 ms | 1.64x |
+| `eytzinger` | 87.5 ms | 2.08x |
+| `fhedt` | 79.5 ms | 2.29x |
+| `vptree` | 85.5 ms | 2.13x |
+| `rbc` | 103.5 ms | 1.76x |
+| `mahalanobis` | 136.1 ms | 1.34x |
 
 This confirms a real speed/accuracy tradeoff between `6bit` and `none` on the
 fixture. It does not show that `6bit` is the best current default: both the
@@ -1675,8 +1691,8 @@ initialization and cold-bucket costs, so their relative position changes with
 `K`, image size, cache reuse, and traversal order.
 
 The shallow `fhedt` curve is particularly informative. From `K = 16` through
-`K = 256`, its median rises from 63.0 ms to 78.9 ms, while `5bit` and `6bit`
-rise to 131.2 ms and 134.6 ms. This is consistent with `fhedt` paying for its
+`K = 256`, its median rises from 72.4 ms to 79.5 ms, while `5bit` and `6bit`
+rise to 132.4 ms and 135.3 ms. This is consistent with `fhedt` paying for its
 fixed-resolution grid and then applying it in constant time per pixel, whereas
 each previously unseen `5bit` or `6bit` bucket still scans `K` palette entries.
 The figure remains an end-to-end measurement, however, so it cannot assign
@@ -1684,9 +1700,8 @@ the entire difference to lookup without a component-level benchmark.
 
 ### Measurement design
 
-The quality curves were measured on 2026-09-03 from a clean Autotools build of
-revision `31e211cd3`. The speed curve was regenerated from revision
-`11b792bfe`. Both runs used Darwin 25.5.0 arm64. The input was
+The curves were measured on 2026-09-03 from a clean Autotools build of revision
+`31e211cd3` on Darwin 25.5.0 arm64. The input was
 [`images/snake.png`](../../images/snake.png). The broad curves use
 `K = 8, 16, 32, 64, 128, 256`; the focused curve uses steps of 16 from 128
 through 256.
@@ -1702,7 +1717,7 @@ img2sixel \
   images/snake.png
 ```
 
-The Heckbert-coupled comparison instead uses:
+The current Heckbert compatibility comparison instead uses:
 
 ```text
 img2sixel \
@@ -1743,11 +1758,11 @@ the source tree. Passing another image as the second argument preserves the
 same policy and `K` sweep. The speed script accepts `--img2sixel`, `--warmups`,
 and `--runs` for an out-of-tree executable or a different repetition budget.
 
-The quality wrapper regenerates the controlled K-means and the broad and
-focused Heckbert comparisons. The CSV files store the full command template
-for every point. A rerun is comparable only when the revision, input, loader
-behavior, build options, metric implementation, and benchmark host are also
-recorded.
+The quality wrapper regenerates the broad and focused controlled K-means
+comparisons and the broad current-Heckbert compatibility comparison. The CSV
+files store the full command template for every point. A rerun is comparable
+only when the revision, input, loader behavior, build options, metric
+implementation, and benchmark host are also recorded.
 
 ### Interpretation limits
 

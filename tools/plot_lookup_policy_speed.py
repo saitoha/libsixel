@@ -250,14 +250,8 @@ def plot(path: Path,
          policies: Sequence[str],
          title: str,
          runs: int) -> None:
-    """Plot median runtime with IQR and the corresponding speedup."""
-    figure, (runtime_ax, speedup_ax) = plt.subplots(
-        2,
-        1,
-        figsize=(9.0, 7.2),
-        sharex=True,
-        gridspec_kw={"height_ratios": (3, 2)},
-    )
+    """Plot median runtime with its interquartile range."""
+    figure, runtime_ax = plt.subplots(figsize=(9.0, 4.8))
     for index, policy in enumerate(policies):
         policy_rows = [row for row in rows if row["policy"] == policy]
         policy_rows.sort(key=lambda row: int(row["colors"]))
@@ -281,30 +275,18 @@ def plot(path: Path,
             label=policy,
             **style,
         )
-        speedup_ax.plot(
-            colors,
-            [float(row["speedup_vs_none"]) for row in policy_rows],
-            linewidth=1.8,
-            markersize=5.5,
-            label=policy,
-            **style,
-        )
 
     runtime_ax.set_title(title)
+    runtime_ax.set_xlabel("Palette size K")
     runtime_ax.set_ylabel("Median elapsed time (ms)")
     runtime_ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+    runtime_ax.set_xticks(colors)
     runtime_ax.grid(True, color="#D9D9D9", linewidth=0.7)
     runtime_ax.legend(ncol=3, frameon=False)
-
-    speedup_ax.axhline(1.0, color="#777777", linewidth=0.8)
-    speedup_ax.set_xlabel("Palette size K")
-    speedup_ax.set_ylabel("Speedup vs none (x)")
-    speedup_ax.set_xticks(colors)
-    speedup_ax.grid(True, color="#D9D9D9", linewidth=0.7)
     figure.text(
         0.99,
         0.01,
-        f"Fresh process per sample; median of {runs}; bars show IQR; lower is better above",
+        f"Fresh process per sample; median of {runs}; bars show IQR; lower is better",
         horizontalalignment="right",
         verticalalignment="bottom",
         fontsize=8,

@@ -14,7 +14,7 @@ input_name=${input_image##*/}
 
 mkdir -p "${output_dir}"
 
-legacy_common='{img2sixel} --threads=1 --precision=8bit --quality=full --quantize-model=heckbert:cover=off:merge=none --diffusion=none --gpu-policy=off'
+heckbert_common='{img2sixel} --threads=1 --precision=8bit --quality=full --quantize-model=heckbert:cover=off:merge=none --diffusion=none --gpu-policy=off'
 modern_common='{img2sixel} --threads=1 --precision=8bit --quality=full -Qkmeans:Gw -Xoklab -Wgamma --diffusion=none --gpu-policy=off'
 
 plot_quality_curve()
@@ -36,8 +36,14 @@ plot_quality_curve()
         --label4 certlut \
         --command5 "${policy_common} --lookup-policy=eytzinger {input}" \
         --label5 eytzinger \
-        --command6 "${policy_common} --lookup-policy=vptree {input}" \
-        --label6 vptree \
+        --command6 "${policy_common} --lookup-policy=fhedt {input}" \
+        --label6 fhedt \
+        --command7 "${policy_common} --lookup-policy=vptree {input}" \
+        --label7 vptree \
+        --command8 "${policy_common} --lookup-policy=rbc {input}" \
+        --label8 rbc \
+        --command9 "${policy_common} --lookup-policy=mahalanobis {input}" \
+        --label9 mahalanobis \
         --img2sixel "${IMG2SIXEL_PATH}" \
         --lsqa "${LSQA_PATH}" \
         "$@"
@@ -45,19 +51,19 @@ plot_quality_curve()
 
 plot_quality_curve \
     8,16,32,64,128,256 \
-    "${legacy_common} -p {ncolors}" \
+    "${heckbert_common} -p {ncolors}" \
     --metrics 'Δ E00_mean,Δ Chroma_mean' \
     --output-csv "${output_dir}/lookup-policy-color-error.csv" \
     --output-plot "${output_dir}/lookup-policy-color-error.png" \
-    --title "Heckbert-coupled lookup-policy color error on ${input_name}"
+    --title "Current Heckbert compatibility comparison on ${input_name}"
 
 plot_quality_curve \
     8,16,32,64,128,256 \
-    "${legacy_common} -p {ncolors}" \
+    "${heckbert_common} -p {ncolors}" \
     --metrics MS-SSIM \
     --output-csv "${output_dir}/lookup-policy-ms-ssim.csv" \
     --output-plot "${output_dir}/lookup-policy-ms-ssim.png" \
-    --title "Heckbert-coupled lookup-policy MS-SSIM on ${input_name}"
+    --title "Current Heckbert compatibility MS-SSIM on ${input_name}"
 
 plot_quality_curve \
     8,16,32,64,128,256 \
@@ -77,8 +83,8 @@ plot_quality_curve \
 
 plot_quality_curve \
     128,144,160,176,192,208,224,240,256 \
-    "${legacy_common} -p {ncolors}" \
+    "${modern_common} -p {ncolors}" \
     --metrics 'Δ E00_mean,Δ Chroma_mean' \
-    --output-csv "${output_dir}/lookup-policy-heckbert-high-k.csv" \
-    --output-plot "${output_dir}/lookup-policy-heckbert-high-k.png" \
-    --title "Heckbert-coupled lookup-policy color error, K=128–256, on ${input_name}"
+    --output-csv "${output_dir}/lookup-policy-kmeans-high-k.csv" \
+    --output-plot "${output_dir}/lookup-policy-kmeans-high-k.png" \
+    --title "K-means lookup-policy color error, K=128–256, on ${input_name}"
