@@ -22,7 +22,7 @@ msg=$(
     set +xv
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1 \
-        --env SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_CLOSE=1 \
+        --env _SIXEL_TEST_LIBRSVG_FAIL_TEMP_SVGZ_CLOSE=1 \
         -L librsvg! - -o/dev/null 2>&1 \
         <"${svgz_path}"
 ) || status="$?"

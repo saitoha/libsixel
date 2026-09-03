@@ -82,12 +82,6 @@ loader_can_try_librsvg(sixel_chunk_t const *chunk);
 #define LIBRSVG_DEFAULT_DPI    90.0
 #define LIBRSVG_MAX_DIMENSION  32767
 #define LIBRSVG_MAX_IMAGE_PIXELS ((size_t)268435456u)
-#define LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_OPEN \
-    "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_OPEN"
-#define LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_WRITE \
-    "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_WRITE"
-#define LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_CLOSE \
-    "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_CLOSE"
 #define LIBRSVG_CONTEXT_PARSE_FILE \
     "librsvg_render_to_frame: unable to parse SVG file."
 #define LIBRSVG_CONTEXT_PARSE_DATA \
@@ -280,12 +274,6 @@ librsvg_destroy_cairo_surface(cairo_surface_t **surface)
     }
     cairo_surface_destroy(*surface);
     *surface = NULL;
-}
-
-static int
-librsvg_env_is_enabled(char const *name)
-{
-    return sixel_option_resolve_boolean_environment(name, 0);
 }
 
 static int
@@ -777,7 +765,7 @@ librsvg_write_buffer_to_fd(int fd,
     /*
      * Test-only failpoint for deterministic stdin .svgz write-path coverage.
      */
-    if (librsvg_env_is_enabled(LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_WRITE)) {
+    if (sixel_test_environment_librsvg_write_failure()) {
         sixel_helper_set_additional_message(
             LIBRSVG_MESSAGE_TEMP_SVGZ_WRITE_FAILED);
         return SIXEL_LIBC_ERROR;
@@ -805,7 +793,7 @@ librsvg_close_temp_svgz_fd(int *fd)
     /*
      * Test-only failpoint for deterministic stdin .svgz close-path coverage.
      */
-    if (librsvg_env_is_enabled(LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_CLOSE)) {
+    if (sixel_test_environment_librsvg_close_failure()) {
         sixel_helper_set_additional_message(
             LIBRSVG_MESSAGE_TEMP_SVGZ_CLOSE_FAILED);
         *fd = (-1);
@@ -855,7 +843,7 @@ librsvg_open_temp_svgz_file(int *fd_out, char **path_out)
     /*
      * Test-only failpoint for deterministic stdin .svgz open-path coverage.
      */
-    if (librsvg_env_is_enabled(LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_OPEN)) {
+    if (sixel_test_environment_librsvg_open_failure()) {
         sixel_helper_set_additional_message(
             LIBRSVG_CONTEXT_TEMP_SVGZ_OPEN_FAILED);
         return SIXEL_LIBC_ERROR;
