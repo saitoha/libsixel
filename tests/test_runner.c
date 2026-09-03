@@ -139,6 +139,8 @@ int test_chunk_0001_chunk_factory(int argc, char **argv);
 int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
 int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
 int test_timeline_0003_timeline_clock_origin(int argc, char **argv);
+int test_timeline_0004_timeline_log_path_environment_probe(int argc,
+                                                           char **argv);
 int test_threadpool_0001_threadpool_service(int argc, char **argv);
 int test_threadpool_0002_thread_default_counts(int argc, char **argv);
 int test_scale_0001_parallel_factor_environment(int argc, char **argv);
@@ -380,6 +382,8 @@ static test_entry_t const test_entries[] = {
       test_timeline_0002_timeline_parallel_encode_decode },
     { "timeline/0003_timeline_clock_origin",
       test_timeline_0003_timeline_clock_origin },
+    { "timeline/0004_timeline_log_path_environment_probe",
+      test_timeline_0004_timeline_log_path_environment_probe },
     { "threadpool/0001_threadpool_service",
       test_threadpool_0001_threadpool_service },
     { "threadpool/0002_thread_default_counts",
