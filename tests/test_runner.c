@@ -121,6 +121,8 @@ int test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback(
     int argc,
     char **argv);
 int test_filter_0030_filter_palette_failure_output(int argc, char **argv);
+int test_filter_0031_filter_binning(int argc, char **argv);
+int test_filter_0032_filter_binning_failure_output(int argc, char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
@@ -211,6 +213,7 @@ int test_palette_0028_sampling_schedule(int argc, char **argv);
 int test_palette_0029_sampling_fallback(int argc, char **argv);
 int test_palette_0030_binning_policy(int argc, char **argv);
 int test_palette_0031_weighted_point_set(int argc, char **argv);
+int test_palette_0032_kmeans_binning_legacy_output(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
 int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
@@ -371,6 +374,10 @@ static test_entry_t const test_entries[] = {
       test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback },
     { "filter/0030_filter_palette_failure_output",
       test_filter_0030_filter_palette_failure_output },
+    { "filter/0031_filter_binning",
+      test_filter_0031_filter_binning },
+    { "filter/0032_filter_binning_failure_output",
+      test_filter_0032_filter_binning_failure_output },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
       test_gpupal_0001_strtoul },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",
@@ -500,6 +507,8 @@ static test_entry_t const test_entries[] = {
       test_palette_0030_binning_policy },
     { "palette/0031_weighted_point_set",
       test_palette_0031_weighted_point_set },
+    { "palette/0032_kmeans_binning_legacy_output",
+      test_palette_0032_kmeans_binning_legacy_output },
     { "cli/0029_cli_token_is_known_option",
       test_cli_0029_cli_token_is_known_option },
     { "cli/0030_cli_option_requires_argument",

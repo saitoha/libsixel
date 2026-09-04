@@ -134,6 +134,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-kmeans-build.c \
                 $(srcdir)/palette-kmeans-build.h \
                 $(srcdir)/palette-kmeans.h \
+                $(srcdir)/palette-bin-histogram.c \
+                $(srcdir)/palette-bin-histogram.h \
                 $(srcdir)/palette-plan.c \
                 $(srcdir)/palette-plan.h \
                 $(srcdir)/sample-stream.c \
@@ -220,6 +222,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/filter-load.h \
                 $(srcdir)/filter-factory.c \
                 $(srcdir)/filter-factory.h \
+                $(srcdir)/filter-factory-binning.c \
+                $(srcdir)/filter-factory-binning.h \
                 $(srcdir)/filter-final-merge.c \
                 $(srcdir)/filter-final-merge.h \
                 $(srcdir)/filter-dither.c \
@@ -230,6 +234,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/filter-encode.h \
                 $(srcdir)/filter-lookup.c \
                 $(srcdir)/filter-lookup.h \
+                $(srcdir)/filter-binning.c \
+                $(srcdir)/filter-binning.h \
                 $(srcdir)/filter-palette.c \
                 $(srcdir)/filter-palette.h \
                 $(srcdir)/filter-fhedt.c \

@@ -236,6 +236,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0028_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
     -DBUILD_TEST_0029_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
     -DBUILD_TEST_0030_FILTER_PALETTE_FAILURE_OUTPUT \
+    -DBUILD_TEST_0031_FILTER_BINNING \
+    -DBUILD_TEST_0032_FILTER_BINNING_FAILURE_OUTPUT \
     -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
     -DBUILD_TEST_0025_SAMPLE_STREAM \
     -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -243,6 +245,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0029_SAMPLING_FALLBACK_RESOLUTION \
     -DBUILD_TEST_0030_BINNING_POLICY_CONTRACT \
     -DBUILD_TEST_0031_WEIGHTED_POINT_SET \
+    -DBUILD_TEST_0032_KMEANS_BINNING_LEGACY_OUTPUT \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -385,6 +388,8 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
     processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
     processing/filter/0030_filter_palette_failure_output.c \
+    processing/filter/0031_filter_binning.c \
+    processing/filter/0032_filter_binning_failure_output.c \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
@@ -481,6 +486,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0029_sampling_fallback_resolution.c \
     quant/palette/0030_binning_policy_contract.c \
     quant/palette/0031_weighted_point_set.c \
+    quant/palette/0032_kmeans_binning_legacy_output.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \

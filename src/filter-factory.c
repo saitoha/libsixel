@@ -46,6 +46,7 @@
 #include "filter-encode.h"
 #include "filter-resize.h"
 #include "filter-sample.h"
+#include "filter-binning.h"
 #include "filter.h"
 
 typedef SIXELSTATUS (*sixel_filter_initializer_fn)(sixel_filter_t *filter,
@@ -99,6 +100,19 @@ sixel_filter_factory_sample_init(sixel_filter_t *filter,
     sample_config = (const sixel_filter_sample_config_t *)config;
 
     return sixel_filter_sample_init(filter, sample_config);
+}
+
+static SIXELSTATUS
+sixel_filter_factory_binning_init(sixel_filter_t *filter,
+                                  const void *config)
+{
+    sixel_filter_binning_config_t const *binning_config;
+
+    if (config == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    binning_config = (sixel_filter_binning_config_t const *)config;
+    return sixel_filter_binning_init(filter, binning_config);
 }
 
 static SIXELSTATUS
@@ -288,6 +302,8 @@ static const sixel_filter_factory_entry_t
      sixel_filter_factory_1d_eytzinger_init},
     {"resize", SIXEL_FILTER_KIND_RESIZE, sixel_filter_factory_resize_init},
     {"sample", SIXEL_FILTER_KIND_SAMPLE, sixel_filter_factory_sample_init},
+    {"binning", SIXEL_FILTER_KIND_BINNING,
+     sixel_filter_factory_binning_init},
 };
 
 static SIXELSTATUS

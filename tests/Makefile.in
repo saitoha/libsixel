@@ -147,6 +147,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
 	processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
 	processing/filter/0030_filter_palette_failure_output.c \
+	processing/filter/0031_filter_binning.c \
+	processing/filter/0032_filter_binning_failure_output.c \
 	processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
@@ -242,6 +244,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0029_sampling_fallback_resolution.c \
 	quant/palette/0030_binning_policy_contract.c \
 	quant/palette/0031_weighted_point_set.c \
+	quant/palette/0032_kmeans_binning_legacy_output.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/status/0001_status_timeout.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -300,6 +303,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0030_filter_palette_failure_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0031_filter_binning.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0032_filter_binning_failure_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
@@ -392,6 +397,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0029_sampling_fallback_resolution.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0030_binning_policy_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0031_weighted_point_set.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0032_kmeans_binning_legacy_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
@@ -595,6 +601,8 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po \
 	processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po \
 	processing/filter/$(DEPDIR)/test_runner-0030_filter_palette_failure_output.Po \
+	processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po \
+	processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po \
@@ -622,6 +630,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po \
 	quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po \
 	quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po \
+	quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 am__mv = mv -f
@@ -1341,6 +1350,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_FILTER_PALETTE_FAILURE_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_FILTER_BINNING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_FILTER_BINNING_FAILURE_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_SAMPLE_STREAM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -1348,6 +1359,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_SAMPLING_FALLBACK_RESOLUTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_BINNING_POLICY_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_WEIGHTED_POINT_SET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_KMEANS_BINNING_LEGACY_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -1515,6 +1527,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0030_filter_palette_failure_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0031_filter_binning.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0032_filter_binning_failure_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
@@ -1611,6 +1625,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0029_sampling_fallback_resolution.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0030_binning_policy_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0031_weighted_point_set.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0032_kmeans_binning_legacy_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/status/0001_status_timeout.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -1899,6 +1914,12 @@ processing/filter/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallb
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/filter/test_runner-0030_filter_palette_failure_output.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0031_filter_binning.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0032_filter_binning_failure_output.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/$(am__dirstamp):
@@ -2320,6 +2341,9 @@ quant/palette/test_runner-0030_binning_policy_contract.$(OBJEXT):  \
 quant/palette/test_runner-0031_weighted_point_set.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0032_kmeans_binning_legacy_output.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
 	@$(MKDIR_P) diagnostics/probe
 	@: >>diagnostics/probe/$(am__dirstamp)
@@ -2593,6 +2617,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0030_filter_palette_failure_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po@am__quote@ # am--include-marker
@@ -2620,6 +2646,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
 
@@ -3184,6 +3211,34 @@ processing/filter/test_runner-0030_filter_palette_failure_output.obj: processing
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0030_filter_palette_failure_output.c' object='processing/filter/test_runner-0030_filter_palette_failure_output.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0030_filter_palette_failure_output.obj `if test -f 'processing/filter/0030_filter_palette_failure_output.c'; then $(CYGPATH_W) 'processing/filter/0030_filter_palette_failure_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0030_filter_palette_failure_output.c'; fi`
+
+processing/filter/test_runner-0031_filter_binning.o: processing/filter/0031_filter_binning.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0031_filter_binning.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Tpo -c -o processing/filter/test_runner-0031_filter_binning.o `test -f 'processing/filter/0031_filter_binning.c' || echo '$(srcdir)/'`processing/filter/0031_filter_binning.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Tpo processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0031_filter_binning.c' object='processing/filter/test_runner-0031_filter_binning.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0031_filter_binning.o `test -f 'processing/filter/0031_filter_binning.c' || echo '$(srcdir)/'`processing/filter/0031_filter_binning.c
+
+processing/filter/test_runner-0031_filter_binning.obj: processing/filter/0031_filter_binning.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0031_filter_binning.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Tpo -c -o processing/filter/test_runner-0031_filter_binning.obj `if test -f 'processing/filter/0031_filter_binning.c'; then $(CYGPATH_W) 'processing/filter/0031_filter_binning.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0031_filter_binning.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Tpo processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0031_filter_binning.c' object='processing/filter/test_runner-0031_filter_binning.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0031_filter_binning.obj `if test -f 'processing/filter/0031_filter_binning.c'; then $(CYGPATH_W) 'processing/filter/0031_filter_binning.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0031_filter_binning.c'; fi`
+
+processing/filter/test_runner-0032_filter_binning_failure_output.o: processing/filter/0032_filter_binning_failure_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0032_filter_binning_failure_output.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Tpo -c -o processing/filter/test_runner-0032_filter_binning_failure_output.o `test -f 'processing/filter/0032_filter_binning_failure_output.c' || echo '$(srcdir)/'`processing/filter/0032_filter_binning_failure_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Tpo processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0032_filter_binning_failure_output.c' object='processing/filter/test_runner-0032_filter_binning_failure_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0032_filter_binning_failure_output.o `test -f 'processing/filter/0032_filter_binning_failure_output.c' || echo '$(srcdir)/'`processing/filter/0032_filter_binning_failure_output.c
+
+processing/filter/test_runner-0032_filter_binning_failure_output.obj: processing/filter/0032_filter_binning_failure_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0032_filter_binning_failure_output.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Tpo -c -o processing/filter/test_runner-0032_filter_binning_failure_output.obj `if test -f 'processing/filter/0032_filter_binning_failure_output.c'; then $(CYGPATH_W) 'processing/filter/0032_filter_binning_failure_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0032_filter_binning_failure_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Tpo processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0032_filter_binning_failure_output.c' object='processing/filter/test_runner-0032_filter_binning_failure_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0032_filter_binning_failure_output.obj `if test -f 'processing/filter/0032_filter_binning_failure_output.c'; then $(CYGPATH_W) 'processing/filter/0032_filter_binning_failure_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0032_filter_binning_failure_output.c'; fi`
 
 processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o: processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo -c -o processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o `test -f 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
@@ -4473,6 +4528,20 @@ quant/palette/test_runner-0031_weighted_point_set.obj: quant/palette/0031_weight
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0031_weighted_point_set.obj `if test -f 'quant/palette/0031_weighted_point_set.c'; then $(CYGPATH_W) 'quant/palette/0031_weighted_point_set.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0031_weighted_point_set.c'; fi`
 
+quant/palette/test_runner-0032_kmeans_binning_legacy_output.o: quant/palette/0032_kmeans_binning_legacy_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0032_kmeans_binning_legacy_output.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Tpo -c -o quant/palette/test_runner-0032_kmeans_binning_legacy_output.o `test -f 'quant/palette/0032_kmeans_binning_legacy_output.c' || echo '$(srcdir)/'`quant/palette/0032_kmeans_binning_legacy_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Tpo quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0032_kmeans_binning_legacy_output.c' object='quant/palette/test_runner-0032_kmeans_binning_legacy_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0032_kmeans_binning_legacy_output.o `test -f 'quant/palette/0032_kmeans_binning_legacy_output.c' || echo '$(srcdir)/'`quant/palette/0032_kmeans_binning_legacy_output.c
+
+quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj: quant/palette/0032_kmeans_binning_legacy_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Tpo -c -o quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj `if test -f 'quant/palette/0032_kmeans_binning_legacy_output.c'; then $(CYGPATH_W) 'quant/palette/0032_kmeans_binning_legacy_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0032_kmeans_binning_legacy_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Tpo quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0032_kmeans_binning_legacy_output.c' object='quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj `if test -f 'quant/palette/0032_kmeans_binning_legacy_output.c'; then $(CYGPATH_W) 'quant/palette/0032_kmeans_binning_legacy_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0032_kmeans_binning_legacy_output.c'; fi`
+
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
@@ -5273,6 +5342,8 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0030_filter_palette_failure_output.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
@@ -5300,6 +5371,7 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile
@@ -5467,6 +5539,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0028_filter_dither_6delta_bluenoise_gpu_exact_plane.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0030_filter_palette_failure_output.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
@@ -5494,6 +5568,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile

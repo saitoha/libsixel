@@ -205,17 +205,18 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmeans-assign.h \
 	$(srcdir)/palette-kmeans-build.c \
 	$(srcdir)/palette-kmeans-build.h $(srcdir)/palette-kmeans.h \
-	$(srcdir)/palette-plan.c $(srcdir)/palette-plan.h \
-	$(srcdir)/sample-stream.c $(srcdir)/sample-stream.h \
-	$(srcdir)/weighted-point-set.c $(srcdir)/weighted-point-set.h \
-	$(srcdir)/palette-kmedoids.c $(srcdir)/palette-kmedoids.h \
-	$(srcdir)/palette-kcenter.c $(srcdir)/palette-kcenter.h \
-	$(srcdir)/palette.c $(srcdir)/palette-factory.h \
-	$(srcdir)/palette.h $(srcdir)/palette-private.h \
-	$(srcdir)/dither.c $(srcdir)/dither.h \
-	$(srcdir)/oklch-lattice256.h $(srcdir)/dither-policy.c \
-	$(srcdir)/dither-policy.h $(srcdir)/dither-policy-none.c \
-	$(srcdir)/dither-policy-fs.c \
+	$(srcdir)/palette-bin-histogram.c \
+	$(srcdir)/palette-bin-histogram.h $(srcdir)/palette-plan.c \
+	$(srcdir)/palette-plan.h $(srcdir)/sample-stream.c \
+	$(srcdir)/sample-stream.h $(srcdir)/weighted-point-set.c \
+	$(srcdir)/weighted-point-set.h $(srcdir)/palette-kmedoids.c \
+	$(srcdir)/palette-kmedoids.h $(srcdir)/palette-kcenter.c \
+	$(srcdir)/palette-kcenter.h $(srcdir)/palette.c \
+	$(srcdir)/palette-factory.h $(srcdir)/palette.h \
+	$(srcdir)/palette-private.h $(srcdir)/dither.c \
+	$(srcdir)/dither.h $(srcdir)/oklch-lattice256.h \
+	$(srcdir)/dither-policy.c $(srcdir)/dither-policy.h \
+	$(srcdir)/dither-policy-none.c $(srcdir)/dither-policy-fs.c \
 	$(srcdir)/dither-policy-atkinson.c \
 	$(srcdir)/dither-policy-jajuni.c \
 	$(srcdir)/dither-policy-stucki.c \
@@ -266,11 +267,14 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/filter-colors.c $(srcdir)/filter-colors.h \
 	$(srcdir)/filter-load.c $(srcdir)/filter-load.h \
 	$(srcdir)/filter-factory.c $(srcdir)/filter-factory.h \
+	$(srcdir)/filter-factory-binning.c \
+	$(srcdir)/filter-factory-binning.h \
 	$(srcdir)/filter-final-merge.c $(srcdir)/filter-final-merge.h \
 	$(srcdir)/filter-dither.c $(srcdir)/filter-dither.h \
 	$(srcdir)/filter-gradient.c $(srcdir)/filter-gradient.h \
 	$(srcdir)/filter-encode.c $(srcdir)/filter-encode.h \
 	$(srcdir)/filter-lookup.c $(srcdir)/filter-lookup.h \
+	$(srcdir)/filter-binning.c $(srcdir)/filter-binning.h \
 	$(srcdir)/filter-palette.c $(srcdir)/filter-palette.h \
 	$(srcdir)/filter-fhedt.c $(srcdir)/filter-fhedt.h \
 	$(srcdir)/filter-vptree.c $(srcdir)/filter-vptree.h \
@@ -381,6 +385,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-assign.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-build.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-bin-histogram.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-plan.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sample-stream.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-weighted-point-set.lo \
@@ -421,11 +426,13 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-colors.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-load.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-factory.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-factory-binning.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-final-merge.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-dither.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-gradient.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-encode.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-lookup.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-binning.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-fhedt.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-vptree.lo \
@@ -572,11 +579,13 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-encoder-core.Plo \
 	./$(DEPDIR)/libsixel_la-encoder.Plo \
 	./$(DEPDIR)/libsixel_la-factory.Plo \
+	./$(DEPDIR)/libsixel_la-filter-binning.Plo \
 	./$(DEPDIR)/libsixel_la-filter-clip.Plo \
 	./$(DEPDIR)/libsixel_la-filter-colors.Plo \
 	./$(DEPDIR)/libsixel_la-filter-dither.Plo \
 	./$(DEPDIR)/libsixel_la-filter-encode.Plo \
 	./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo \
+	./$(DEPDIR)/libsixel_la-filter-factory-binning.Plo \
 	./$(DEPDIR)/libsixel_la-filter-factory.Plo \
 	./$(DEPDIR)/libsixel_la-filter-fhedt.Plo \
 	./$(DEPDIR)/libsixel_la-filter-final-merge.Plo \
@@ -650,6 +659,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-options-registry.Plo \
 	./$(DEPDIR)/libsixel_la-options.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
+	./$(DEPDIR)/libsixel_la-palette-bin-histogram.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-cover.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-merge.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-snap.Plo \
@@ -1086,6 +1096,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-build.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-build.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-bin-histogram.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-bin-histogram.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-plan.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-plan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sample-stream.c \
@@ -1171,6 +1183,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-load.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-factory.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-factory.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-factory-binning.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-factory-binning.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-final-merge.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-final-merge.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-dither.c \
@@ -1181,6 +1195,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-encode.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-lookup.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-lookup.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-binning.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-binning.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-palette.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-palette.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-fhedt.c \
@@ -1587,11 +1603,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-factory.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-binning.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-clip.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-colors.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-encode.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-factory-binning.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-factory.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-fhedt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-final-merge.Plo@am__quote@ # am--include-marker
@@ -1665,6 +1683,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options-registry.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-bin-histogram.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-cover.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-merge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-snap.Plo@am__quote@ # am--include-marker
@@ -1959,6 +1978,13 @@ libsixel_la-palette-kmeans-build.lo: palette-kmeans-build.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans-build.lo `test -f 'palette-kmeans-build.c' || echo '$(srcdir)/'`palette-kmeans-build.c
 
+libsixel_la-palette-bin-histogram.lo: palette-bin-histogram.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-bin-histogram.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-bin-histogram.Tpo -c -o libsixel_la-palette-bin-histogram.lo `test -f 'palette-bin-histogram.c' || echo '$(srcdir)/'`palette-bin-histogram.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-bin-histogram.Tpo $(DEPDIR)/libsixel_la-palette-bin-histogram.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-bin-histogram.c' object='libsixel_la-palette-bin-histogram.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-bin-histogram.lo `test -f 'palette-bin-histogram.c' || echo '$(srcdir)/'`palette-bin-histogram.c
+
 libsixel_la-palette-plan.lo: palette-plan.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-plan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-plan.Tpo -c -o libsixel_la-palette-plan.lo `test -f 'palette-plan.c' || echo '$(srcdir)/'`palette-plan.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-plan.Tpo $(DEPDIR)/libsixel_la-palette-plan.Plo
@@ -2239,6 +2265,13 @@ libsixel_la-filter-factory.lo: filter-factory.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-factory.lo `test -f 'filter-factory.c' || echo '$(srcdir)/'`filter-factory.c
 
+libsixel_la-filter-factory-binning.lo: filter-factory-binning.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-factory-binning.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-factory-binning.Tpo -c -o libsixel_la-filter-factory-binning.lo `test -f 'filter-factory-binning.c' || echo '$(srcdir)/'`filter-factory-binning.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-factory-binning.Tpo $(DEPDIR)/libsixel_la-filter-factory-binning.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-factory-binning.c' object='libsixel_la-filter-factory-binning.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-factory-binning.lo `test -f 'filter-factory-binning.c' || echo '$(srcdir)/'`filter-factory-binning.c
+
 libsixel_la-filter-final-merge.lo: filter-final-merge.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-final-merge.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-final-merge.Tpo -c -o libsixel_la-filter-final-merge.lo `test -f 'filter-final-merge.c' || echo '$(srcdir)/'`filter-final-merge.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-final-merge.Tpo $(DEPDIR)/libsixel_la-filter-final-merge.Plo
@@ -2273,6 +2306,13 @@ libsixel_la-filter-lookup.lo: filter-lookup.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-lookup.c' object='libsixel_la-filter-lookup.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-lookup.lo `test -f 'filter-lookup.c' || echo '$(srcdir)/'`filter-lookup.c
+
+libsixel_la-filter-binning.lo: filter-binning.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-binning.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-binning.Tpo -c -o libsixel_la-filter-binning.lo `test -f 'filter-binning.c' || echo '$(srcdir)/'`filter-binning.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-binning.Tpo $(DEPDIR)/libsixel_la-filter-binning.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-binning.c' object='libsixel_la-filter-binning.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-binning.lo `test -f 'filter-binning.c' || echo '$(srcdir)/'`filter-binning.c
 
 libsixel_la-filter-palette.lo: filter-palette.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-palette.Tpo -c -o libsixel_la-filter-palette.lo `test -f 'filter-palette.c' || echo '$(srcdir)/'`filter-palette.c
@@ -3046,11 +3086,13 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-factory.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-binning.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-clip.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-colors.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory-binning.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
@@ -3124,6 +3166,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-options-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-bin-histogram.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
@@ -3243,11 +3286,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-factory.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-binning.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-clip.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-colors.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory-binning.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
@@ -3321,6 +3366,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-options-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-bin-histogram.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo

@@ -30,6 +30,7 @@
 #include "frame.h"
 #include "sample-stream.h"
 #include "timeline-logger.h"
+#include "weighted-point-set.h"
 
 /*
  * Filter interface shared by resampling, clipping, colorspace conversion,
@@ -53,6 +54,7 @@ typedef enum sixel_filter_kind {
     SIXEL_FILTER_KIND_GRADIENT,
     SIXEL_FILTER_KIND_DITHER,
     SIXEL_FILTER_KIND_ENCODE,
+    SIXEL_FILTER_KIND_BINNING,
 } sixel_filter_kind_t;
 
 typedef enum sixel_filter_flags {
@@ -78,11 +80,14 @@ typedef struct sixel_filter_io {
     sixel_frame_t **slot;
 
     /*
-     * Typed palette-branch edge.  It is mutually exclusive with slot and
-     * allows sampling and palette filters to exchange an artifact without
-     * presenting it as an ordinary image frame.
+     * Typed sampling edge. It is mutually exclusive with slot and
+     * weighted_points, so a sampled frame is not presented as an ordinary
+     * image edge.
      */
     sixel_sample_stream_t *sample_stream;
+
+    /* Typed edge between binning and palette quantization stages. */
+    sixel_weighted_point_set_t *weighted_points;
 
     /*
      * Expected pixel format and colorspace at this edge. These are set by the
@@ -199,6 +204,17 @@ sixel_filter_bind_sample_output(sixel_filter_t *filter,
                                 sixel_sample_stream_t *stream,
                                 int pixelformat,
                                 int colorspace);
+
+SIXEL_INTERNAL_API void
+sixel_filter_bind_weighted_input(
+    sixel_filter_t *filter,
+    sixel_weighted_point_set_t *points);
+
+SIXEL_INTERNAL_API void
+sixel_filter_bind_weighted_output(
+    sixel_filter_t *filter,
+    sixel_weighted_point_set_t *points,
+    int colorspace);
 
 SIXEL_INTERNAL_API void sixel_filter_set_progress(sixel_filter_t *filter,
                                         sixel_filter_progress_fn progress_cb,

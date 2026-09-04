@@ -40,7 +40,13 @@ function is_h_input(path) {
 function is_filter_source(path, name) {
     name = file_basename(path)
     sub(/\.in$/, "", name)
-    return name ~ /^filter-.*\.c$/ && name != "filter-factory.c"
+    return name ~ /^filter-.*\.c$/ && !is_factory_source(path)
+}
+
+function is_factory_source(path, name) {
+    name = file_basename(path)
+    sub(/\.in$/, "", name)
+    return name ~ /^filter-factory(-.*)?\.c$/
 }
 
 function is_owner(component, expected, owner_basename) {
@@ -174,14 +180,14 @@ function check_token(value, line, component, basename) {
     if (is_c_input(FILENAME) &&
             value ~ /^sixel_filter_[A-Za-z0-9_]+_init$/) {
         component = constructor_owner(value)
-        if (basename != "filter-factory.c" && !is_owner(component)) {
+        if (!is_factory_source(FILENAME) && !is_owner(component)) {
             emit_violation("construction", line,
                            "foreign constructor " value)
         }
     }
 
     if (value == "sixel_filter_alloc" && basename != "filter.c" &&
-            basename != "filter-factory.c") {
+            !is_factory_source(FILENAME)) {
         emit_violation("construction", line,
                        "filter allocation bypasses factory")
     }

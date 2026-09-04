@@ -317,6 +317,15 @@ weights; otherwise a downstream quantizer could silently discard aggregation
 mass. Borrowed and owned arrays are distinct artifact states, and a failed
 ownership transfer leaves the caller's pointer slots unchanged.
 
+Kmeans hard and soft binning execute through the `binning` filter vtable. The
+filter accepts an unaggregated `none` artifact and publishes an owned weighted
+artifact. Its current backend is the compact sparse histogram retained from
+the Kmeans implementation, including hash-table traversal order; keeping that
+order stable prevents a structural migration from perturbing deterministic
+seeding and palette output. The residual histogram used by Kmeans feedback is
+a quantizer operation, not a second preprocessing filter, although it reuses
+the same compact histogram primitive.
+
 Algorithmic services may be shared below a filter, such as solid-color
 detection or lookup construction. Such services must not duplicate the
 filter's complete execution contract or provide an alternate orchestration

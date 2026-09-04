@@ -75,7 +75,7 @@ typedef enum sixel_kmeans_prune_policy {
     SIXEL_PALETTE_KMEANS_PRUNE_YINYANG,
 } sixel_kmeans_prune_policy;
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_build_kmeans(sixel_palette_t *palette,
                            unsigned char const *data,
                            unsigned int length,
@@ -86,7 +86,7 @@ sixel_palette_build_kmeans(sixel_palette_t *palette,
                            char const *engine_name,
                            sixel_palette_telemetry_t *telemetry);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_build_kmeans_float32(sixel_palette_t *palette,
                                    float const *data,
                                    unsigned int length,
