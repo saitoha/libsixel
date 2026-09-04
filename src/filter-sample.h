@@ -58,13 +58,6 @@ SIXELSTATUS
 sixel_filter_sample_init(sixel_filter_t *filter,
                          const sixel_filter_sample_config_t *config);
 
-SIXELSTATUS
-sixel_filter_sample_frame(const sixel_filter_sample_config_t *config,
-                          sixel_frame_t *frame,
-                          sixel_allocator_t *allocator,
-                          sixel_frame_t **sample_out,
-                          sixel_timeline_logger_t *logger);
-
 /*
  * Solid-region detection.
  *

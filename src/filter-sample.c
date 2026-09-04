@@ -799,21 +799,6 @@ sixel_filter_sample_copy_frame(
     return SIXEL_OK;
 }
 
-SIXELSTATUS
-sixel_filter_sample_frame(const sixel_filter_sample_config_t *config,
-                          sixel_frame_t *frame,
-                          sixel_allocator_t *allocator,
-                          sixel_frame_t **sample_out,
-                          sixel_timeline_logger_t *logger)
-{
-    SIXELSTATUS status;
-
-    status = sixel_filter_sample_copy_frame(config, frame, allocator,
-                                            sample_out, logger, NULL, NULL);
-
-    return status;
-}
-
 static SIXELSTATUS
 sixel_filter_sample_apply(sixel_filter_t *filter,
                           sixel_allocator_t *allocator,

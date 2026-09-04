@@ -116,7 +116,7 @@ sixel_filter_clip_adjust_bounds(sixel_filter_clip_config_t const *config,
     *clip_h_out = clip_h;
 }
 
-SIXELSTATUS
+static SIXELSTATUS
 sixel_filter_clip_frame(const sixel_filter_clip_config_t *config,
                         sixel_frame_t *frame,
                         sixel_timeline_logger_t *logger)

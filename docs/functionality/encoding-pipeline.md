@@ -72,6 +72,11 @@ entries available to the encoder. `-Q MODEL` selects the solver and `-p COLORS`
 sets the requested palette size. The result is a palette, not indexed image
 data.
 
+Sampling, conversion to the palette coordinate space, binning, and solving are
+separate logical stages within palette construction. Their target filter and
+policy boundaries are defined in the
+[Palette Construction Pipeline Architecture](palette-pipeline.md).
+
 The model affects which errors the palette can represent well. For example, a
 solver that minimizes aggregate error and one that limits the worst assignment
 distance may choose different entries from the same input. See

@@ -25,6 +25,9 @@ are grouped by domain so each area can grow without overloading one document.
 - [Encoding pipeline](functionality/encoding-pipeline.md) connects loading,
   palette construction, palette application, SIXEL byte generation, and their
   composed cost model.
+- [Palette construction pipeline](functionality/palette-pipeline.md) defines
+  the sampling, palette-space, binning, and quantization boundaries, joint
+  automatic policy resolution, typed artifacts, and migration waves.
 - [Palette quantization](functionality/quantization.md) explains `-Q`, palette
   solver objectives, asymptotic costs, and the boundary between palette
   generation and use.

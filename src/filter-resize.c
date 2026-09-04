@@ -175,7 +175,7 @@ sixel_filter_resize_use_float(const sixel_filter_resize_config_t *config)
     return prefer_float;
 }
 
-SIXELSTATUS
+static SIXELSTATUS
 sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
                           sixel_frame_t *frame,
                           sixel_timeline_logger_t *logger)

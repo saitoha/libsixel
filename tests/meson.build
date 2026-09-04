@@ -802,6 +802,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-filter-vtbl-boundary',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-filter-vtbl-boundary.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-output-instantiation-boundary',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-output-instantiation-boundary.sh',

@@ -63,7 +63,7 @@ static sixel_filter_vtbl_t const sixel_filter_encode_vtbl = {
     NULL
 };
 
-SIXELSTATUS
+static SIXELSTATUS
 sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
                           sixel_frame_t *frame,
                           sixel_timeline_logger_t *logger)

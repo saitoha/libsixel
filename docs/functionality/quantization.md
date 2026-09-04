@@ -33,6 +33,13 @@ than merely limiting work inside the solver. In the notation below, `N` is the
 number of pixels after that sampling step and `S` is the number of weighted
 samples or occupied histogram bins retained by model-specific preprocessing.
 
+The current CLI still carries sampling and some binning controls under `-Q`.
+The target architecture promotes them to independent, jointly resolved
+policies as described in the
+[Palette Construction Pipeline Architecture](palette-pipeline.md). Until that
+migration reaches the CLI wave, the option descriptions in this document and
+`img2sixel -H` describe the implemented interface.
+
 Let `x[i]` be a retained color sample with non-negative weight `w[i]`, and let
 `C` contain at most `K` palette colors. Colors are three-dimensional in the
 space selected with `-X`. The norm below is Euclidean in that space. Changing

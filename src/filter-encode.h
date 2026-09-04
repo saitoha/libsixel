@@ -51,11 +51,6 @@ SIXELSTATUS
 sixel_filter_encode_init(sixel_filter_t *filter,
                          const sixel_filter_encode_config_t *config);
 
-SIXELSTATUS
-sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
-                          sixel_frame_t *frame,
-                          sixel_timeline_logger_t *logger);
-
 #endif /* LIBSIXEL_FILTER_ENCODE_H */
 
 /* emacs Local Variables:      */

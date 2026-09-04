@@ -45,6 +45,11 @@ sixel_filter_final_merge_apply_filter(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
       sixel_timeline_logger_t *logger);
 
+static SIXELSTATUS
+sixel_filter_final_merge_apply(
+    const sixel_filter_final_merge_config_t *config,
+    sixel_timeline_logger_t *logger);
+
 static void
 sixel_filter_final_merge_dispose(sixel_filter_t *filter);
 
@@ -145,7 +150,7 @@ sixel_filter_final_merge_init(sixel_filter_t *filter,
     return SIXEL_OK;
 }
 
-SIXELAPI SIXELSTATUS
+static SIXELSTATUS
 sixel_filter_final_merge_apply(const sixel_filter_final_merge_config_t *config,
                                sixel_timeline_logger_t *logger)
 {

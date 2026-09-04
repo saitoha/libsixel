@@ -46,11 +46,6 @@ SIXELSTATUS
 sixel_filter_clip_init(sixel_filter_t *filter,
                        const sixel_filter_clip_config_t *config);
 
-SIXELSTATUS
-sixel_filter_clip_frame(const sixel_filter_clip_config_t *config,
-                        sixel_frame_t *frame,
-                        sixel_timeline_logger_t *logger);
-
 #endif /* LIBSIXEL_FILTER_CLIP_H */
 
 /* emacs Local Variables:      */

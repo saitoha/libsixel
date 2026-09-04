@@ -5104,6 +5104,14 @@ sixel_encoder_copy_samples(sixel_encoder_t *encoder,
 {
     SIXELSTATUS status;
     sixel_filter_sample_config_t config;
+    sixel_filter_t *filter;
+    int pixelformat;
+    int colorspace;
+
+    status = SIXEL_FALSE;
+    filter = NULL;
+    pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    colorspace = SIXEL_COLORSPACE_GAMMA;
 
     if (encoder == NULL || frame == NULL || sample_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -5119,11 +5127,19 @@ sixel_encoder_copy_samples(sixel_encoder_t *encoder,
     config.palette_sample_override = encoder->palette_sample_override;
     config.palette_sample_target = encoder->palette_sample_target;
 
-    status = sixel_filter_sample_frame(&config,
-                                       frame,
-                                       allocator,
-                                       sample_out,
-                                       encoder->logger);
+    status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_SAMPLE,
+                                                 &config,
+                                                 &filter);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    colorspace = sixel_frame_get_colorspace(frame);
+    sixel_filter_bind_input(filter, &frame, pixelformat, colorspace);
+    sixel_filter_bind_output(filter, sample_out, pixelformat, colorspace);
+    status = sixel_filter_run(filter, allocator, encoder->logger);
+    sixel_filter_free(filter);
 
     return status;
 }
@@ -5985,6 +6001,7 @@ sixel_encoder_prepare_palette(
     int effective_lut_policy_override;
     int fixed_palette_cache_candidate;
     int dither_cache_hit;
+    sixel_filter_t *merge_filter;
 
     target_logger = logger;
     cache_allowed = allow_cache != 0;
@@ -6009,6 +6026,7 @@ sixel_encoder_prepare_palette(
     effective_lut_policy_override = 0;
     fixed_palette_cache_candidate = 0;
     dither_cache_hit = 0;
+    merge_filter = NULL;
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -6241,7 +6259,17 @@ sixel_encoder_prepare_palette(
     memset(&merge_config, 0, sizeof(merge_config));
     merge_config.dither = *dither;
     merge_config.final_merge_mode = effective_final_merge_mode;
-    status = sixel_filter_final_merge_apply(&merge_config, target_logger);
+    status = sixel_filter_factory_create_by_kind(
+        SIXEL_FILTER_KIND_FINAL_MERGE,
+        &merge_config,
+        &merge_filter);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_filter_run(merge_filter,
+                                  encoder->allocator,
+                                  target_logger);
+    }
+    sixel_filter_free(merge_filter);
+    merge_filter = NULL;
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;

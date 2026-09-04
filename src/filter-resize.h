@@ -49,11 +49,6 @@ SIXELSTATUS
 sixel_filter_resize_init(sixel_filter_t *filter,
                          const sixel_filter_resize_config_t *config);
 
-SIXELSTATUS
-sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
-                          sixel_frame_t *frame,
-                          sixel_timeline_logger_t *logger);
-
 #endif /* LIBSIXEL_FILTER_RESIZE_H */
 
 /* emacs Local Variables:      */

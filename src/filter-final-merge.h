@@ -44,11 +44,6 @@ sixel_filter_final_merge_init(
     sixel_filter_t *filter,
     const sixel_filter_final_merge_config_t *config);
 
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_filter_final_merge_apply(
-    const sixel_filter_final_merge_config_t *config,
-    sixel_timeline_logger_t *logger);
-
 #endif /* LIBSIXEL_FILTER_FINAL_MERGE_H */
 
 /* emacs Local Variables:      */

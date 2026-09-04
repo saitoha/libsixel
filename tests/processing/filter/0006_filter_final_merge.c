@@ -93,50 +93,6 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
-static int
-test_final_merge_direct_apply_updates_dither(void)
-{
-    SIXELSTATUS status;
-    sixel_allocator_t *allocator;
-    sixel_dither_t *dither;
-    sixel_filter_final_merge_config_t config;
-
-    status = SIXEL_FALSE;
-    allocator = NULL;
-    dither = NULL;
-
-    status = make_allocator(&allocator);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-
-    status = make_dither(allocator, 16, &dither);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-
-    config.dither = dither;
-    config.final_merge_mode = SIXEL_FINAL_MERGE_NONE;
-
-    status = sixel_filter_final_merge_apply(&config, NULL);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-
-    if (dither->final_merge_mode != SIXEL_FINAL_MERGE_NONE) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
-cleanup:
-    if (dither != NULL) {
-        sixel_dither_unref(dither);
-    }
-    sixel_allocator_unref(allocator);
-
-    return SIXEL_SUCCEEDED(status);
-}
-
 int
 test_filter_0006_filter_final_merge(int argc, char **argv)
 {
@@ -150,12 +106,6 @@ test_filter_0006_filter_final_merge(int argc, char **argv)
     if (!test_final_merge_sets_mode_and_progress()) {
         fprintf(stderr,
                 "final-merge filter sets mode and reports progress failed\n");
-        success = 0;
-    }
-
-    if (!test_final_merge_direct_apply_updates_dither()) {
-        fprintf(stderr,
-                "final-merge apply updates dither failed\n");
         success = 0;
     }
 
