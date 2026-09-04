@@ -96,6 +96,8 @@ SIXEL_INTERNAL_API int sixel_diagnostics_mode_is_code(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_quiet_is_enabled(void);
 SIXEL_INTERNAL_API int
 sixel_option_encoder_environment_is_present(int optflag);
+SIXEL_INTERNAL_API int
+sixel_option_loader_osc11_query_environment_is_present(void);
 SIXEL_INTERNAL_API struct sixel_completion_policy_options *
 sixel_completion_policy_new(void);
 SIXEL_INTERNAL_API void
@@ -3406,7 +3408,7 @@ img2sixel_main(int argc, char *argv[])
      * img2sixel enables loader-side OSC11 probing by default only when the
      * variable is unset. User-provided values (including empty strings) win.
      */
-    if (img2sixel_compat_getenv("SIXEL_LOADER_OSC11_BG_QUERY") == NULL) {
+    if (!sixel_option_loader_osc11_query_environment_is_present()) {
         if (img2sixel_compat_setenv("SIXEL_LOADER_OSC11_BG_QUERY",
                                     "1") != 0) {
             sixel_helper_set_additional_message(

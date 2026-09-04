@@ -620,6 +620,9 @@ sixel_option_argument_environment_is_present(
     sixel_option_schema_id_t option_id);
 
 SIXEL_INTERNAL_API int
+sixel_option_loader_osc11_query_environment_is_present(void);
+
+SIXEL_INTERNAL_API int
 sixel_option_encoder_environment_is_present(int optflag);
 
 char const *

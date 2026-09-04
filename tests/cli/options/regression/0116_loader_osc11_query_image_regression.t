@@ -21,6 +21,32 @@ artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0116-loader-osc11-query-short-$$.six"
 env_output="${artifact_dir}/0116-loader-osc11-query-env-$$.six"
 
+unset SIXEL_LOADER_OSC11_BG_QUERY
+default_trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-Lbuiltin!" \
+    "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "osc11_query frontend default conversion failed"
+    exit 0
+}
+
+test "${default_trace#*LSXOSC1|enabled=1|has_bgcolor=0|stdout_tty=0|stderr_tty=0|query=0*}" != "${default_trace}" || {
+    echo "not ok" 1 - "unset osc11_query missed the frontend default"
+    exit 0
+}
+
+empty_trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_LOADER_OSC11_BG_QUERY=" "-Lbuiltin!" \
+    "${input_image}" 2>&1 >/dev/null) || {
+    echo "not ok" 1 - "empty osc11_query conversion failed"
+    exit 0
+}
+
+test "${empty_trace#*LSXOSC1|enabled=0|has_bgcolor=0|stdout_tty=0|stderr_tty=0|query=0*}" != "${empty_trace}" || {
+    echo "not ok" 1 - "empty osc11_query no longer suppresses the frontend default"
+    exit 0
+}
+
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_OSC11_BG_QUERY=1" \

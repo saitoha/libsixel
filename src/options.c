@@ -2355,6 +2355,45 @@ sixel_test_environment_palette_disable_tables(void)
         SIXEL_TEST_ENVIRONMENT_PALETTE_DISABLE_TABLES);
 }
 
+/*
+ * Presence checks deliberately differ from value resolution.  The registry
+ * treats an empty environment value as unset while the img2sixel frontend
+ * treats any explicit spelling, including an empty value, as user policy.
+ */
+static int
+sixel_option_suboption_environment_is_present(
+    sixel_suboption_key_t const *key_def)
+{
+    if (key_def == NULL || !sixel_option_registry_validate()) {
+        return 0;
+    }
+    if (key_def->env_name != NULL &&
+        sixel_compat_getenv(key_def->env_name) != NULL) {
+        return 1;
+    }
+    if (key_def->env_fallback_name != NULL &&
+        sixel_compat_getenv(key_def->env_fallback_name) != NULL) {
+        return 1;
+    }
+    if (key_def->env_legacy_name != NULL &&
+        sixel_compat_getenv(key_def->env_legacy_name) != NULL) {
+        return 1;
+    }
+    return 0;
+}
+
+int
+sixel_option_loader_osc11_query_environment_is_present(void)
+{
+    sixel_suboption_key_t const *key_def;
+
+    key_def = sixel_option_registry_suboption_by_binding(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(osc11_bg_query));
+    return sixel_option_suboption_environment_is_present(key_def);
+}
+
 int
 sixel_option_resolve_registered_boolean_binding(
     sixel_option_schema_id_t option_id,

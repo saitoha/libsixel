@@ -85,7 +85,7 @@ FILENAME == registry_file {
     while (gsub(/"[[:space:]]*"/, "", line) > 0) {
         # Join adjacent C string literals before extracting names.
     }
-    while (match(line, /"SIXEL_[A-Z0-9_]+"/)) {
+    while (match(line, /"[A-Z][A-Z0-9_]*_[A-Z0-9_]+"/)) {
         name = substr(line, RSTART + 1, RLENGTH - 2)
         registered[name] = 1
         line = substr(line, RSTART + RLENGTH)
@@ -97,7 +97,7 @@ FILENAME == registry_file {
     while (gsub(/"[[:space:]]*"/, "", line) > 0) {
         # A split literal must not hide a registry-owned name.
     }
-    while (match(line, /"SIXEL_[A-Z0-9_]+"/)) {
+    while (match(line, /"[A-Z][A-Z0-9_]*_[A-Z0-9_]+"/)) {
         name = substr(line, RSTART + 1, RLENGTH - 2)
         if (registered[name]) {
             print FILENAME ":" FNR ":" $0
@@ -134,7 +134,16 @@ test -z "$internal_name_matches" || {
 # Raw environment reads must use one literal or a reviewed generic helper.
 # Reject every other direct-call shape so line wrapping, comments, and local
 # prefix macros cannot hide a registry-owned name.
-getenv_argument_matches=$(awk '
+getenv_argument_matches=$(awk -v registry_file="$registry_file" '
+FILENAME == registry_file {
+    line = $0
+    while (match(line, /"[A-Z][A-Z0-9_]*_[A-Z0-9_]+"/)) {
+        name = substr(line, RSTART + 1, RLENGTH - 2)
+        registered[name] = 1
+        line = substr(line, RSTART + RLENGTH)
+    }
+    next
+}
 function argument_is_reviewed(file, argument) {
     if (file ~ /\/options\.c$/ &&
         (argument == "variable" || argument == "name" ||
@@ -180,16 +189,25 @@ function argument_is_reviewed(file, argument) {
         argument == "SIXEL_GPU_PALETTE_THRESHOLD_ENVVAR") {
         return 1
     }
+    if (file ~ /\/img2sixel\.c$/ && argument == "constchar*name") {
+        return 1
+    }
     return 0
 }
-function inspect_call(file, line_number, text, compact, argument) {
+function inspect_call(file, line_number, text, compact, argument, name) {
     compact = text
     gsub(/[[:space:]]/, "", compact)
-    sub(/^sixel_compat_getenv\(/, "", compact)
+    sub(/^(sixel_compat_getenv|img2sixel_compat_getenv)\(/, "", compact)
     sub(/\).*$/, "", compact)
     argument = compact
-    if (argument !~ /^"[A-Za-z0-9_]+"$/ &&
-        !argument_is_reviewed(file, argument)) {
+    if (argument ~ /^"[A-Za-z0-9_]+"$/) {
+        name = substr(argument, 2, length(argument) - 2)
+        if (registered[name]) {
+            print file ":" line_number ":" text
+        }
+        return
+    }
+    if (!argument_is_reviewed(file, argument)) {
         print file ":" line_number ":" text
     }
 }
@@ -199,7 +217,7 @@ FNR == 1 {
     call = ""
     splice = ""
 }
-FILENAME ~ /\/compat_stub\.[ch]$/ {
+FILENAME ~ /\/(compat_stub|compat)\.[ch]$/ {
     next
 }
 {
@@ -240,12 +258,16 @@ FILENAME ~ /\/compat_stub\.[ch]$/ {
             call = call " " rest
         } else {
             if (!match(rest,
-                       /sixel_compat_getenv[[:space:]]*\(/)) {
+                       /(sixel_compat_getenv|img2sixel_compat_getenv)/)) {
                 break
             }
             in_call = 1
             call = substr(rest, RSTART)
             call_line = FNR
+        }
+        if (!match(call,
+                   /(sixel_compat_getenv|img2sixel_compat_getenv)[[:space:]]*\(/)) {
+            break
         }
         if (!match(call, /\)/)) {
             break
@@ -257,7 +279,7 @@ FILENAME ~ /\/compat_stub\.[ch]$/ {
         call = ""
     }
 }
-' "$src_dir"/*.[ch])
+' "$registry_file" "$src_dir"/*.[ch] "$converters_dir"/*.[ch])
 
 test -z "$getenv_argument_matches" || {
     echo "not ok 1 - src files avoid direct getenv() calls"
