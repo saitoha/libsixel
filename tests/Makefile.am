@@ -189,6 +189,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_KMEDOIDS_CONSTRAINTS \
     -DBUILD_TEST_0003_KCENTER_CONSTRAINTS \
     -DBUILD_TEST_0004_PALETTE_FACTORY \
+    -DBUILD_TEST_0006_PALETTE_FALLBACK_CONVERSION \
+    -DBUILD_TEST_0007_PALETTE_FALLBACK_OUTPUT \
     -DBUILD_TEST_0001_PROBE_PARSE \
     -DBUILD_TEST_0001_STATUS_TIMEOUT \
     -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
@@ -461,6 +463,8 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0003_kcenter_constraints.c \
     quant/palette/0004_palette_factory.c \
     quant/palette/0005_cover_anchor.c \
+    quant/palette/fallback/0006_palette_fallback_conversion.c \
+    quant/palette/fallback/0007_palette_fallback_output.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \

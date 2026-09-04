@@ -201,6 +201,8 @@ int test_palette_0002_kmedoids_constraints(int argc, char **argv);
 int test_palette_0003_kcenter_constraints(int argc, char **argv);
 int test_palette_0004_palette_factory(int argc, char **argv);
 int test_palette_0005_cover_anchor(int argc, char **argv);
+int test_palfb_0006_conversion(int argc, char **argv);
+int test_palfb_0007_output(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
 int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
@@ -471,6 +473,10 @@ static test_entry_t const test_entries[] = {
       test_palette_0003_kcenter_constraints },
     { "palette/0004_palette_factory", test_palette_0004_palette_factory },
     { "palette/0005_cover_anchor", test_palette_0005_cover_anchor },
+    { "palette/fallback/0006_palette_fallback_conversion",
+      test_palfb_0006_conversion },
+    { "palette/fallback/0007_palette_fallback_output",
+      test_palfb_0007_output },
     { "cli/0029_cli_token_is_known_option",
       test_cli_0029_cli_token_is_known_option },
     { "cli/0030_cli_option_requires_argument",

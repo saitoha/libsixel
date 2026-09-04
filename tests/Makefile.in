@@ -232,6 +232,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0003_kcenter_constraints.c \
 	quant/palette/0004_palette_factory.c \
 	quant/palette/0005_cover_anchor.c \
+	quant/palette/fallback/0006_palette_fallback_conversion.c \
+	quant/palette/fallback/0007_palette_fallback_output.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/status/0001_status_timeout.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -372,6 +374,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0004_palette_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0005_cover_anchor.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fallback/test_runner-0006_palette_fallback_conversion.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/fallback/test_runner-0007_palette_fallback_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
@@ -593,7 +597,9 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po \
 	quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po \
 	quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po \
-	quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po
+	quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po \
+	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
+	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -1264,6 +1270,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_KMEDOIDS_CONSTRAINTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_KCENTER_CONSTRAINTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_PALETTE_FACTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_PALETTE_FALLBACK_CONVERSION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_PALETTE_FALLBACK_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PROBE_PARSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_STATUS_TIMEOUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
@@ -1561,6 +1569,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0003_kcenter_constraints.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0004_palette_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0005_cover_anchor.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fallback/0006_palette_fallback_conversion.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/fallback/0007_palette_fallback_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/status/0001_status_timeout.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -2229,6 +2239,18 @@ quant/palette/test_runner-0004_palette_factory.$(OBJEXT):  \
 quant/palette/test_runner-0005_cover_anchor.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fallback/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/fallback
+	@: >>quant/palette/fallback/$(am__dirstamp)
+quant/palette/fallback/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/fallback/$(DEPDIR)
+	@: >>quant/palette/fallback/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fallback/test_runner-0006_palette_fallback_conversion.$(OBJEXT):  \
+	quant/palette/fallback/$(am__dirstamp) \
+	quant/palette/fallback/$(DEPDIR)/$(am__dirstamp)
+quant/palette/fallback/test_runner-0007_palette_fallback_output.$(OBJEXT):  \
+	quant/palette/fallback/$(am__dirstamp) \
+	quant/palette/fallback/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
 	@$(MKDIR_P) diagnostics/probe
 	@: >>diagnostics/probe/$(am__dirstamp)
@@ -2377,6 +2399,7 @@ mostlyclean-compile:
 	-rm -f processing/threadpool/*.$(OBJEXT)
 	-rm -f processing/timeline/*.$(OBJEXT)
 	-rm -f quant/palette/*.$(OBJEXT)
+	-rm -f quant/palette/fallback/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -2520,6 +2543,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -4231,6 +4256,34 @@ quant/palette/test_runner-0005_cover_anchor.obj: quant/palette/0005_cover_anchor
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0005_cover_anchor.obj `if test -f 'quant/palette/0005_cover_anchor.c'; then $(CYGPATH_W) 'quant/palette/0005_cover_anchor.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0005_cover_anchor.c'; fi`
 
+quant/palette/fallback/test_runner-0006_palette_fallback_conversion.o: quant/palette/fallback/0006_palette_fallback_conversion.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fallback/test_runner-0006_palette_fallback_conversion.o -MD -MP -MF quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Tpo -c -o quant/palette/fallback/test_runner-0006_palette_fallback_conversion.o `test -f 'quant/palette/fallback/0006_palette_fallback_conversion.c' || echo '$(srcdir)/'`quant/palette/fallback/0006_palette_fallback_conversion.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Tpo quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fallback/0006_palette_fallback_conversion.c' object='quant/palette/fallback/test_runner-0006_palette_fallback_conversion.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fallback/test_runner-0006_palette_fallback_conversion.o `test -f 'quant/palette/fallback/0006_palette_fallback_conversion.c' || echo '$(srcdir)/'`quant/palette/fallback/0006_palette_fallback_conversion.c
+
+quant/palette/fallback/test_runner-0006_palette_fallback_conversion.obj: quant/palette/fallback/0006_palette_fallback_conversion.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fallback/test_runner-0006_palette_fallback_conversion.obj -MD -MP -MF quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Tpo -c -o quant/palette/fallback/test_runner-0006_palette_fallback_conversion.obj `if test -f 'quant/palette/fallback/0006_palette_fallback_conversion.c'; then $(CYGPATH_W) 'quant/palette/fallback/0006_palette_fallback_conversion.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fallback/0006_palette_fallback_conversion.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Tpo quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fallback/0006_palette_fallback_conversion.c' object='quant/palette/fallback/test_runner-0006_palette_fallback_conversion.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fallback/test_runner-0006_palette_fallback_conversion.obj `if test -f 'quant/palette/fallback/0006_palette_fallback_conversion.c'; then $(CYGPATH_W) 'quant/palette/fallback/0006_palette_fallback_conversion.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fallback/0006_palette_fallback_conversion.c'; fi`
+
+quant/palette/fallback/test_runner-0007_palette_fallback_output.o: quant/palette/fallback/0007_palette_fallback_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fallback/test_runner-0007_palette_fallback_output.o -MD -MP -MF quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Tpo -c -o quant/palette/fallback/test_runner-0007_palette_fallback_output.o `test -f 'quant/palette/fallback/0007_palette_fallback_output.c' || echo '$(srcdir)/'`quant/palette/fallback/0007_palette_fallback_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Tpo quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fallback/0007_palette_fallback_output.c' object='quant/palette/fallback/test_runner-0007_palette_fallback_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fallback/test_runner-0007_palette_fallback_output.o `test -f 'quant/palette/fallback/0007_palette_fallback_output.c' || echo '$(srcdir)/'`quant/palette/fallback/0007_palette_fallback_output.c
+
+quant/palette/fallback/test_runner-0007_palette_fallback_output.obj: quant/palette/fallback/0007_palette_fallback_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/fallback/test_runner-0007_palette_fallback_output.obj -MD -MP -MF quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Tpo -c -o quant/palette/fallback/test_runner-0007_palette_fallback_output.obj `if test -f 'quant/palette/fallback/0007_palette_fallback_output.c'; then $(CYGPATH_W) 'quant/palette/fallback/0007_palette_fallback_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fallback/0007_palette_fallback_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Tpo quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/fallback/0007_palette_fallback_output.c' object='quant/palette/fallback/test_runner-0007_palette_fallback_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/fallback/test_runner-0007_palette_fallback_output.obj `if test -f 'quant/palette/fallback/0007_palette_fallback_output.c'; then $(CYGPATH_W) 'quant/palette/fallback/0007_palette_fallback_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/fallback/0007_palette_fallback_output.c'; fi`
+
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
@@ -4898,6 +4951,8 @@ distclean-generic:
 	-$(am__rm_f) processing/timeline/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/fallback/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/fallback/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -5048,6 +5103,8 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po
+	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
+	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -5232,6 +5289,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0005_cover_anchor.Po
+	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
+	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

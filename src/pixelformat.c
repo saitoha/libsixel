@@ -41,6 +41,7 @@
 #include <sixel.h>
 
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "options.h"
 #include "threading.h"
 #include "pixelformat.h"
@@ -1255,6 +1256,11 @@ expand_palette(unsigned char *restrict dst,
 #endif
 
     if (tables_ready) {
+        sixel_trace_topic_message(
+            "pixelformat_contract",
+            "LSXPIX1|palette_expand=table|bpp=%d",
+            bpp);
+
         /*
          * Use lookup tables to unroll packed indices. Each path copies an
          * entire byte of indices in one memcpy, leaving only a small
@@ -1278,6 +1284,11 @@ expand_palette(unsigned char *restrict dst,
             break;
         }
     } else {
+        sixel_trace_topic_message(
+            "pixelformat_contract",
+            "LSXPIX1|palette_expand=fallback|bpp=%d",
+            bpp);
+
         /*
          * Mutex initialization failed or tables are unavailable.
          * Fall back to the original shift-based expansion to avoid
