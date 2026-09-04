@@ -146,6 +146,34 @@ sixel_sample_stream_take_owned(
     return status;
 }
 
+SIXELSTATUS
+sixel_sample_stream_refresh(sixel_sample_stream_t *stream)
+{
+    size_t width;
+    size_t height;
+
+    if (stream == NULL || stream->frame == NULL ||
+            stream->storage == SIXEL_SAMPLE_STREAM_EMPTY) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    stream->width = sixel_frame_get_width(stream->frame);
+    stream->height = sixel_frame_get_height(stream->frame);
+    if (stream->width <= 0 || stream->height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    width = (size_t)stream->width;
+    height = (size_t)stream->height;
+    if (width > SIZE_MAX / height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    stream->point_count = width * height;
+    stream->pixelformat = sixel_frame_get_pixelformat(stream->frame);
+    stream->colorspace = sixel_frame_get_colorspace(stream->frame);
+    return SIXEL_OK;
+}
+
 void
 sixel_sample_stream_dispose(sixel_sample_stream_t *stream)
 {

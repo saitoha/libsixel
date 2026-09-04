@@ -56,7 +56,7 @@ palette_failure_free(void *ptr)
 
 static SIXELSTATUS
 failing_palette_builder(void *userdata,
-                        sixel_frame_t *frame,
+                        sixel_sample_stream_t *samples,
                         sixel_dither_t **dither_out,
                         sixel_timeline_logger_t *logger)
 {
@@ -66,10 +66,10 @@ failing_palette_builder(void *userdata,
     status = SIXEL_FALSE;
     context = (failing_builder_context_t *)userdata;
 
-    (void)frame;
     (void)logger;
 
-    if (context == NULL || dither_out == NULL) {
+    if (context == NULL || samples == NULL || samples->frame == NULL ||
+            dither_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -91,6 +91,7 @@ test_palette_failure_clears_partial_output(void)
     sixel_frame_t *frame;
     sixel_filter_t *filter;
     sixel_dither_t *dither;
+    sixel_sample_stream_t samples;
     sixel_filter_palette_config_t config;
     failing_builder_context_t context;
 
@@ -99,6 +100,7 @@ test_palette_failure_clears_partial_output(void)
     frame = NULL;
     filter = NULL;
     dither = NULL;
+    sixel_sample_stream_init(&samples);
     context.allocator = NULL;
     context.calls = 0;
     context.free_count_after_build = 0;
@@ -118,6 +120,14 @@ test_palette_failure_clears_partial_output(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    status = sixel_sample_stream_bind_borrowed(
+        &samples,
+        frame,
+        SIXEL_PALETTE_SAMPLING_FULL_FRAME,
+        SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
 
     config.builder = failing_palette_builder;
     config.builder_userdata = &context;
@@ -130,10 +140,7 @@ test_palette_failure_clears_partial_output(void)
         goto cleanup;
     }
 
-    sixel_filter_bind_input(filter,
-                            &frame,
-                            sixel_frame_get_pixelformat(frame),
-                            sixel_frame_get_colorspace(frame));
+    sixel_filter_bind_sample_input(filter, &samples);
     status = sixel_filter_run(filter, allocator, NULL);
     if (status != SIXEL_BAD_ALLOCATION || dither != NULL ||
             context.calls != 1 ||
@@ -153,6 +160,7 @@ test_palette_failure_clears_partial_output(void)
 
 cleanup:
     sixel_filter_free(filter);
+    sixel_sample_stream_dispose(&samples);
     if (dither != NULL) {
         sixel_dither_unref(dither);
     }

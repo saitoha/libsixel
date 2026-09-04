@@ -105,6 +105,7 @@
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
 #include "palette-plan.h"
+#include "sample-stream.h"
 #include "palette-common-cover.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
@@ -422,7 +423,7 @@ typedef struct sixel_palette_async_job {
     sixel_cond_t cond;
     sixel_encoder_t *encoder;
     sixel_timeline_logger_t *logger;
-    sixel_frame_t *sample_frame;
+    sixel_sample_stream_t samples;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
     SIXELSTATUS status;
@@ -1496,9 +1497,16 @@ static SIXELSTATUS sixel_encoder_palette_job_init(
 static SIXELSTATUS sixel_encoder_palette_job_build(
     sixel_palette_async_job_t *job,
     sixel_dither_t **dither_out);
+static SIXELSTATUS sixel_encoder_sample_frame(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame,
+    sixel_allocator_t *allocator,
+    sixel_palette_sampling_policy_t policy,
+    sixel_palette_sampling_source_t source,
+    sixel_sample_stream_t *samples);
 static SIXELSTATUS sixel_encoder_apply_palette_filter(
     sixel_encoder_t *encoder,
-    sixel_frame_t **frame_slot,
+    sixel_sample_stream_t *samples,
     int allow_cache,
     sixel_dither_t **dither_out);
 static void sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job);
@@ -4447,6 +4455,7 @@ typedef struct sixel_encode_dag_context {
     int delay;
     int multiframe;
     sixel_palette_frame_state_t palette;
+    sixel_sample_stream_t samples;
 } sixel_encode_dag_context_t;
 
 /*
@@ -4822,7 +4831,7 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     if (context->dither == NULL &&
             fallback_stage == SIXEL_PALETTE_JOB_FAILURE_THREAD_CREATE &&
             context->palette_job_initialized != 0 &&
-            context->palette_job.sample_frame != NULL) {
+            context->palette_job.samples.frame != NULL) {
         status = sixel_encoder_palette_job_build(&context->palette_job,
                                                  &context->async_dither);
         sixel_encoder_trace_palette_fallback(
@@ -4839,10 +4848,20 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     }
 
     if (context->dither == NULL) {
-        status = sixel_encoder_apply_palette_filter(context->encoder,
-                                                    &context->frame,
-                                                    1,
-                                                    &context->dither);
+        status = sixel_encoder_sample_frame(
+            context->encoder,
+            context->frame,
+            context->encoder->allocator,
+            SIXEL_PALETTE_SAMPLING_FULL_FRAME,
+            SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME,
+            &context->samples);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_encoder_apply_palette_filter(
+                context->encoder,
+                &context->samples,
+                1,
+                &context->dither);
+        }
         if (fallback_stage != SIXEL_PALETTE_JOB_FAILURE_NONE) {
             sixel_encoder_trace_palette_fallback(
                 fallback_stage,
@@ -5328,10 +5347,13 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
 
 
 static SIXELSTATUS
-sixel_encoder_copy_samples(sixel_encoder_t *encoder,
-                           sixel_frame_t *frame,
-                           sixel_allocator_t *allocator,
-                           sixel_frame_t **sample_out)
+sixel_encoder_sample_frame(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame,
+    sixel_allocator_t *allocator,
+    sixel_palette_sampling_policy_t policy,
+    sixel_palette_sampling_source_t source,
+    sixel_sample_stream_t *samples)
 {
     SIXELSTATUS status;
     sixel_filter_sample_config_t config;
@@ -5344,11 +5366,13 @@ sixel_encoder_copy_samples(sixel_encoder_t *encoder,
     pixelformat = SIXEL_PIXELFORMAT_RGB888;
     colorspace = SIXEL_COLORSPACE_GAMMA;
 
-    if (encoder == NULL || frame == NULL || sample_out == NULL) {
+    if (encoder == NULL || frame == NULL || samples == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     memset(&config, 0, sizeof(config));
+    config.policy = policy;
+    config.source = source;
     config.clip_x = encoder->clipx;
     config.clip_y = encoder->clipy;
     config.clip_width = encoder->clipwidth;
@@ -5368,7 +5392,10 @@ sixel_encoder_copy_samples(sixel_encoder_t *encoder,
     pixelformat = sixel_frame_get_pixelformat(frame);
     colorspace = sixel_frame_get_colorspace(frame);
     sixel_filter_bind_input(filter, &frame, pixelformat, colorspace);
-    sixel_filter_bind_output(filter, sample_out, pixelformat, colorspace);
+    sixel_filter_bind_sample_output(filter,
+                                    samples,
+                                    pixelformat,
+                                    colorspace);
     status = sixel_filter_run(filter, allocator, encoder->logger);
     sixel_filter_free(filter);
 
@@ -5463,13 +5490,13 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
         return SIXEL_BAD_ARGUMENT;
     }
     *dither_out = NULL;
-    if (job->encoder == NULL || job->sample_frame == NULL) {
+    if (job->encoder == NULL || job->samples.frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     preserve_alpha_key =
         sixel_encoder_transparent_policy_preserves_alpha(job->encoder) &&
-        (sixel_encoder_frame_preserves_alpha_key(job->sample_frame) ||
+        (sixel_encoder_frame_preserves_alpha_key(job->samples.frame) ||
          sixel_encoder_6delta_reserves_alpha_key(job->encoder));
     if (job->requested_failure_stage ==
             SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT) {
@@ -5477,8 +5504,13 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
         return SIXEL_RUNTIME_ERROR;
     }
     if (!preserve_alpha_key) {
-        status = sixel_frame_set_pixelformat(job->sample_frame,
+        status = sixel_frame_set_pixelformat(job->samples.frame,
                                              job->target_pixelformat);
+        if (SIXEL_FAILED(status)) {
+            job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
+            return status;
+        }
+        status = sixel_sample_stream_refresh(&job->samples);
         if (SIXEL_FAILED(status)) {
             job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
             return status;
@@ -5491,7 +5523,7 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
         return SIXEL_RUNTIME_ERROR;
     }
     status = sixel_encoder_apply_palette_filter(job->encoder,
-                                                &job->sample_frame,
+                                                &job->samples,
                                                 0,
                                                 &local);
     if (SIXEL_FAILED(status)) {
@@ -5519,6 +5551,7 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    sixel_sample_stream_init(&job->samples);
     /*
      * Snapshot the test fault before starting any worker.  Environment
      * lookup is process-global and should not make a worker result depend on
@@ -5534,7 +5567,6 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
 
     job->encoder = NULL;
     job->logger = NULL;
-    job->sample_frame = NULL;
     job->allocator = allocator;
     job->dither = NULL;
     job->status = SIXEL_OK;
@@ -5567,10 +5599,7 @@ sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job)
     if (job == NULL) {
         return;
     }
-    if (job->sample_frame != NULL) {
-        sixel_frame_unref(job->sample_frame);
-        job->sample_frame = NULL;
-    }
+    sixel_sample_stream_dispose(&job->samples);
     job->encoder = NULL;
     job->logger = NULL;
     if (job->dither != NULL) {
@@ -5606,10 +5635,13 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_SAMPLE;
         return SIXEL_BAD_ALLOCATION;
     }
-    status = sixel_encoder_copy_samples(encoder,
-                                        frame,
-                                        encoder->allocator,
-                                        &job->sample_frame);
+    status = sixel_encoder_sample_frame(
+        encoder,
+        frame,
+        encoder->allocator,
+        SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID,
+        SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME,
+        &job->samples);
     if (SIXEL_FAILED(status)) {
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_SAMPLE;
         return status;
@@ -6980,7 +7012,7 @@ end:
 
 static SIXELSTATUS
 sixel_encoder_palette_builder(void *userdata,
-                              sixel_frame_t *frame,
+                              sixel_sample_stream_t *samples,
                               sixel_dither_t **dither_out,
                               sixel_timeline_logger_t *logger)
 {
@@ -6988,14 +7020,15 @@ sixel_encoder_palette_builder(void *userdata,
 
     context = NULL;
 
-    if (userdata == NULL || frame == NULL || dither_out == NULL) {
+    if (userdata == NULL || samples == NULL || samples->frame == NULL ||
+            dither_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     context = (sixel_palette_builder_context_t *)userdata;
 
     return sixel_encoder_prepare_palette(context->encoder,
-                                         frame,
+                                         samples->frame,
                                          dither_out,
                                          context->allow_cache,
                                          logger);
@@ -7003,7 +7036,7 @@ sixel_encoder_palette_builder(void *userdata,
 
 static SIXELSTATUS
 sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
-                                   sixel_frame_t **frame_slot,
+                                   sixel_sample_stream_t *samples,
                                    int allow_cache,
                                    sixel_dither_t **dither_out)
 {
@@ -7017,10 +7050,11 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
     filter = NULL;
     height = 0;
 
-    if (encoder == NULL || frame_slot == NULL || dither_out == NULL) {
+    if (encoder == NULL || samples == NULL || dither_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (*frame_slot == NULL) {
+    if (samples->frame == NULL ||
+            samples->storage == SIXEL_SAMPLE_STREAM_EMPTY) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -7036,12 +7070,9 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
         return status;
     }
 
-    sixel_filter_bind_input(filter,
-                            frame_slot,
-                            sixel_frame_get_pixelformat(*frame_slot),
-                            sixel_frame_get_colorspace(*frame_slot));
+    sixel_filter_bind_sample_input(filter, samples);
 
-    height = sixel_frame_get_height(*frame_slot);
+    height = samples->height;
     if (height < 0) {
         height = 0;
     }
@@ -7813,6 +7844,7 @@ sixel_encoder_encode_frame_internal(
     memset(&context.gradient_config, 0, sizeof(context.gradient_config));
     memset(&context.dither_config, 0, sizeof(context.dither_config));
     sixel_palette_frame_state_init(&context.palette);
+    sixel_sample_stream_init(&context.samples);
     sixel_palette_policy_resolution_init(
         &context.palette.sampling,
         SIXEL_PALETTE_SAMPLING_AUTO,
@@ -8019,6 +8051,7 @@ end:
     }
     sixel_encoder_filter_plan_teardown(&context.pre_plan);
     sixel_encoder_filter_plan_teardown(&context.post_plan);
+    sixel_sample_stream_dispose(&context.samples);
     if (context.palette_job_initialized != 0) {
         if (context.palette_job_started != 0
             && context.async_dither == NULL) {

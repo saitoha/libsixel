@@ -1,8 +1,8 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Unit tests for the sample filter. These tests exercise stride selection,
- * clipping support, and progress reporting.
+ * Unit tests for the sample filter. These tests exercise typed sample-stream
+ * output, stride selection, clipping support, and progress reporting.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -48,7 +48,7 @@ test_sample_stride_override(void)
     sixel_filter_t *filter;
     sixel_filter_sample_config_t config;
     sixel_frame_t *input_frame;
-    sixel_frame_t *sample_frame;
+    sixel_sample_stream_t samples;
     sixel_frame_pixels_view_t input_view;
     sixel_frame_pixels_view_t sample_view;
     test_progress_t progress;
@@ -63,7 +63,7 @@ test_sample_stride_override(void)
     allocator = NULL;
     filter = NULL;
     input_frame = NULL;
-    sample_frame = NULL;
+    sixel_sample_stream_init(&samples);
     memset(&input_view, 0, sizeof(input_view));
     memset(&sample_view, 0, sizeof(sample_view));
     progress.began = 0;
@@ -91,6 +91,8 @@ test_sample_stride_override(void)
         goto cleanup;
     }
 
+    config.policy = SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID;
+    config.source = SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME;
     config.clip_x = 0;
     config.clip_y = 0;
     config.clip_width = 0;
@@ -111,10 +113,10 @@ test_sample_stride_override(void)
                             &input_frame,
                             input_view.pixelformat,
                             input_view.colorspace);
-    sixel_filter_bind_output(filter,
-                             &sample_frame,
-                             input_view.pixelformat,
-                             input_view.colorspace);
+    sixel_filter_bind_sample_output(filter,
+                                    &samples,
+                                    input_view.pixelformat,
+                                    input_view.colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     expected_first = input_view.pixels[0];
@@ -138,11 +140,14 @@ test_sample_stride_override(void)
         goto cleanup;
     }
 
-    if (sample_frame == NULL) {
+    if (samples.frame == NULL || samples.frame == input_frame ||
+            samples.storage != SIXEL_SAMPLE_STREAM_OWNED_FRAME ||
+            samples.policy != SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID ||
+            samples.source != SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    status = test_frame_get_pixels_view(sample_frame, &sample_view);
+    status = test_frame_get_pixels_view(samples.frame, &sample_view);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -167,8 +172,8 @@ test_sample_stride_override(void)
 cleanup:
     sixel_filter_teardown(filter);
     sixel_filter_free(filter);
+    sixel_sample_stream_dispose(&samples);
     sixel_frame_unref(input_frame);
-    sixel_frame_unref(sample_frame);
     sixel_allocator_unref(allocator);
 
     return SIXEL_SUCCEEDED(status);
@@ -217,6 +222,8 @@ test_sample_respects_clip_region(void)
 
     expected = input_view.pixels[3];
 
+    config.policy = SIXEL_PALETTE_SAMPLING_AUTO;
+    config.source = SIXEL_PALETTE_SAMPLING_SOURCE_NONE;
     config.clip_x = 1;
     config.clip_y = 0;
     config.clip_width = 2;
@@ -281,6 +288,87 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
+static int
+test_sample_full_frame_is_borrowed(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_filter_t *filter;
+    sixel_filter_sample_config_t config;
+    sixel_frame_t *input_frame;
+    sixel_sample_stream_t samples;
+    test_progress_t progress;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    filter = NULL;
+    input_frame = NULL;
+    sixel_sample_stream_init(&samples);
+    memset(&config, 0, sizeof(config));
+    progress.began = 0;
+    progress.progressed = 0;
+    progress.completed = 0;
+    progress.aborted = 0;
+
+    status = make_allocator(&allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = make_rgb_frame(allocator, 3, 2, &input_frame);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    config.policy = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+    config.source = SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
+    status = sixel_filter_factory_create_by_kind(
+        SIXEL_FILTER_KIND_SAMPLE,
+        &config,
+        &filter);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    sixel_filter_bind_input(filter,
+                            &input_frame,
+                            sixel_frame_get_pixelformat(input_frame),
+                            sixel_frame_get_colorspace(input_frame));
+    sixel_filter_bind_sample_output(
+        filter,
+        &samples,
+        sixel_frame_get_pixelformat(input_frame),
+        sixel_frame_get_colorspace(input_frame));
+    sixel_filter_set_progress(filter, progress_cb, &progress, 1);
+
+    status = sixel_filter_run(filter, allocator, NULL);
+    if (SIXEL_FAILED(status) || samples.frame != input_frame ||
+            samples.storage != SIXEL_SAMPLE_STREAM_BORROWED_FRAME ||
+            samples.policy != SIXEL_PALETTE_SAMPLING_FULL_FRAME ||
+            samples.source !=
+                SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME ||
+            samples.point_count != 6u ||
+            progress.began != 1 || progress.completed != 1 ||
+            progress.aborted != 0) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    sixel_sample_stream_dispose(&samples);
+    if (sixel_frame_get_width(input_frame) != 3) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_filter_teardown(filter);
+    sixel_filter_free(filter);
+    sixel_sample_stream_dispose(&samples);
+    sixel_frame_unref(input_frame);
+    sixel_allocator_unref(allocator);
+
+    return SIXEL_SUCCEEDED(status);
+}
+
 int
 test_filter_0002_filter_sample(int argc, char **argv)
 {
@@ -298,6 +386,11 @@ test_filter_0002_filter_sample(int argc, char **argv)
 
     if (!test_sample_respects_clip_region()) {
         fprintf(stderr, "sample filter crops before sampling failed\n");
+        success = 0;
+    }
+
+    if (!test_sample_full_frame_is_borrowed()) {
+        fprintf(stderr, "sample filter full-frame borrowing failed\n");
         success = 0;
     }
 

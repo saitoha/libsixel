@@ -808,7 +808,15 @@ sixel_filter_sample_apply(sixel_filter_t *filter,
     sixel_filter_sample_state_t *state;
     sixel_frame_t *input_frame;
     sixel_frame_t *sample;
+    sixel_sample_stream_t *stream;
     int sample_height;
+
+    status = SIXEL_FALSE;
+    state = NULL;
+    input_frame = NULL;
+    sample = NULL;
+    stream = NULL;
+    sample_height = 0;
 
     if (filter == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -819,7 +827,10 @@ sixel_filter_sample_apply(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (filter->input.slot == NULL || filter->output.slot == NULL) {
+    stream = filter->output.sample_stream;
+    if (filter->input.slot == NULL ||
+            (filter->output.slot == NULL && stream == NULL) ||
+            (filter->output.slot != NULL && stream != NULL)) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -828,17 +839,51 @@ sixel_filter_sample_apply(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (*(filter->output.slot) != NULL) {
+    if (stream != NULL &&
+            state->config.policy == SIXEL_PALETTE_SAMPLING_FULL_FRAME) {
+        status = sixel_sample_stream_bind_borrowed(
+            stream,
+            input_frame,
+            state->config.policy,
+            state->config.source);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        sample_height = sixel_frame_get_height(input_frame);
+        if (sample_height > 0) {
+            filter->progress.total_units = sample_height;
+            filter->progress.completed_units = sample_height;
+            status = sixel_filter_update_progress(filter, sample_height);
+        }
+        return status;
+    }
+    if (stream != NULL &&
+            state->config.policy != SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (filter->output.slot != NULL && *(filter->output.slot) != NULL) {
         sixel_frame_unref(*(filter->output.slot));
         *(filter->output.slot) = NULL;
     }
 
-    sample_height = 0;
     status = sixel_filter_sample_copy_frame(&state->config, input_frame,
                                             allocator, &sample, logger,
                                             NULL, &sample_height);
     if (SIXEL_SUCCEEDED(status)) {
-        *(filter->output.slot) = sample;
+        if (stream != NULL) {
+            status = sixel_sample_stream_take_owned(
+                stream,
+                &sample,
+                state->config.policy,
+                state->config.source);
+            if (SIXEL_FAILED(status)) {
+                sixel_frame_unref(sample);
+                return status;
+            }
+        } else {
+            *(filter->output.slot) = sample;
+        }
         if (sample_height > 0) {
             filter->progress.total_units = sample_height;
             filter->progress.completed_units = sample_height;

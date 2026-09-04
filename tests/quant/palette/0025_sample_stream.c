@@ -117,6 +117,15 @@ sample_stream_ownership_is_valid(void)
         status = SIXEL_LOGIC_ERROR;
         goto cleanup;
     }
+    sixel_frame_set_colorspace(stream.frame, SIXEL_COLORSPACE_OKLAB);
+    status = sixel_sample_stream_refresh(&stream);
+    if (SIXEL_FAILED(status) ||
+            stream.colorspace != SIXEL_COLORSPACE_OKLAB ||
+            stream.point_count != 6u ||
+            stream.storage != SIXEL_SAMPLE_STREAM_OWNED_FRAME) {
+        status = SIXEL_LOGIC_ERROR;
+        goto cleanup;
+    }
     sixel_sample_stream_dispose(&stream);
     status = SIXEL_OK;
 

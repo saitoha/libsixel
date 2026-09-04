@@ -36,6 +36,14 @@
  */
 typedef struct sixel_filter_sample_config {
     /*
+     * An effective policy and its source are required when the output edge
+     * is a sample stream.  AUTO remains the compatibility value for callers
+     * that request the legacy frame output.
+     */
+    sixel_palette_sampling_policy_t policy;
+    sixel_palette_sampling_source_t source;
+
+    /*
      * Visible region used for palette sampling. When width/height are not
      * positive, the full frame bounds are used instead.
      */

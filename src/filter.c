@@ -184,6 +184,7 @@ sixel_filter_bind_input(sixel_filter_t *filter,
     }
 
     filter->input.slot = slot;
+    filter->input.sample_stream = NULL;
     filter->input.pixelformat = pixelformat;
     filter->input.colorspace = colorspace;
 }
@@ -199,6 +200,39 @@ sixel_filter_bind_output(sixel_filter_t *filter,
     }
 
     filter->output.slot = slot;
+    filter->output.sample_stream = NULL;
+    filter->output.pixelformat = pixelformat;
+    filter->output.colorspace = colorspace;
+}
+
+SIXELAPI void
+sixel_filter_bind_sample_input(sixel_filter_t *filter,
+                               sixel_sample_stream_t *stream)
+{
+    if (filter == NULL) {
+        return;
+    }
+
+    filter->input.slot = NULL;
+    filter->input.sample_stream = stream;
+    filter->input.pixelformat = stream != NULL
+        ? stream->pixelformat : SIXEL_PIXELFORMAT_RGB888;
+    filter->input.colorspace = stream != NULL
+        ? stream->colorspace : SIXEL_COLORSPACE_GAMMA;
+}
+
+SIXELAPI void
+sixel_filter_bind_sample_output(sixel_filter_t *filter,
+                                sixel_sample_stream_t *stream,
+                                int pixelformat,
+                                int colorspace)
+{
+    if (filter == NULL) {
+        return;
+    }
+
+    filter->output.slot = NULL;
+    filter->output.sample_stream = stream;
     filter->output.pixelformat = pixelformat;
     filter->output.colorspace = colorspace;
 }

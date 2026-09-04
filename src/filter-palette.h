@@ -31,13 +31,13 @@
 #include "filter.h"
 
 /*
- * A builder receives an empty output slot.  On success, it transfers one
- * owned dither reference to the slot.  On failure, the palette filter consumes
- * and clears any partial reference left there.
+ * A builder receives the typed sample stream and an empty output slot.  On
+ * success, it transfers one owned dither reference to the slot.  On failure,
+ * the palette filter consumes and clears any partial reference left there.
  */
 typedef SIXELSTATUS (*sixel_filter_palette_builder_fn)(
         void *userdata,
-        sixel_frame_t *frame,
+        sixel_sample_stream_t *samples,
         sixel_dither_t **dither_out,
         sixel_timeline_logger_t *logger);
 

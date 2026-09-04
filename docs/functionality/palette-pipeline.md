@@ -109,6 +109,13 @@ selection:
 | `adaptive-grid` | loaded frame | The planner admits the palette worker. |
 | `full-frame` | preprocessed frame | The palette worker is not admitted. |
 
+Both paths now execute through the sample filter vtable and produce the same
+typed sample-stream artifact. The adaptive path owns its compact sample frame;
+the full-frame path borrows the preprocessed frame. Palette construction
+consumes that artifact rather than accepting an ordinary frame edge. This
+structural change preserves the pixels and source stage selected by the legacy
+scheduler coupling.
+
 The current admission rule subtracts one unit for each active clip, resize,
 and colorspace operation from the resolved thread count. The palette worker is
 admitted only when more than one unit remains. A normal resize also introduces

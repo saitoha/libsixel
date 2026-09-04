@@ -28,6 +28,7 @@
 #include <sixel.h>
 
 #include "frame.h"
+#include "sample-stream.h"
 #include "timeline-logger.h"
 
 /*
@@ -75,6 +76,13 @@ typedef struct sixel_filter_io {
      * from input.slot and may replace *output.slot with a new frame.
      */
     sixel_frame_t **slot;
+
+    /*
+     * Typed palette-branch edge.  It is mutually exclusive with slot and
+     * allows sampling and palette filters to exchange an artifact without
+     * presenting it as an ordinary image frame.
+     */
+    sixel_sample_stream_t *sample_stream;
 
     /*
      * Expected pixel format and colorspace at this edge. These are set by the
@@ -181,6 +189,16 @@ SIXEL_INTERNAL_API void sixel_filter_bind_output(sixel_filter_t *filter,
                                        sixel_frame_t **slot,
                                        int pixelformat,
                                        int colorspace);
+
+SIXEL_INTERNAL_API void
+sixel_filter_bind_sample_input(sixel_filter_t *filter,
+                               sixel_sample_stream_t *stream);
+
+SIXEL_INTERNAL_API void
+sixel_filter_bind_sample_output(sixel_filter_t *filter,
+                                sixel_sample_stream_t *stream,
+                                int pixelformat,
+                                int colorspace);
 
 SIXEL_INTERNAL_API void sixel_filter_set_progress(sixel_filter_t *filter,
                                         sixel_filter_progress_fn progress_cb,

@@ -72,6 +72,9 @@ sixel_sample_stream_take_owned(
     sixel_palette_sampling_policy_t policy,
     sixel_palette_sampling_source_t source);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_sample_stream_refresh(sixel_sample_stream_t *stream);
+
 SIXEL_INTERNAL_API void
 sixel_sample_stream_dispose(sixel_sample_stream_t *stream);
 

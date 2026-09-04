@@ -66,13 +66,13 @@ sixel_filter_palette_apply(sixel_filter_t *filter,
 {
     SIXELSTATUS status;
     sixel_filter_palette_state_t *state;
-    sixel_frame_t *frame;
+    sixel_sample_stream_t *samples;
     sixel_dither_t **dither_out;
     int height;
 
     status = SIXEL_FALSE;
     state = NULL;
-    frame = NULL;
+    samples = NULL;
     dither_out = NULL;
     height = 0;
 
@@ -87,24 +87,25 @@ sixel_filter_palette_apply(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (filter->input.slot == NULL || filter->input.slot[0] == NULL) {
+    samples = filter->input.sample_stream;
+    if (samples == NULL || samples->frame == NULL ||
+            samples->storage == SIXEL_SAMPLE_STREAM_EMPTY) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    frame = filter->input.slot[0];
     dither_out = state->config.dither_out;
 
     if (dither_out == NULL || *dither_out != NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    height = sixel_frame_get_height(frame);
+    height = samples->height;
     if (height < 0) {
         height = 0;
     }
 
     status = state->config.builder(state->config.builder_userdata,
-                                   frame,
+                                   samples,
                                    dither_out,
                                    logger);
     if (SIXEL_FAILED(status)) {
