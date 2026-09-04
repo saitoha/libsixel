@@ -1,0 +1,139 @@
+{
+  "build": {
+    "cc": "gcc",
+    "cflags": "-g -O2 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": ""
+  },
+  "generated_at_utc": "2026-09-04T02:45:03.812519+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.5"
+  },
+  "input": {
+    "path": "images/snake.png",
+    "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4"
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "f9e26d37083356a74ddc836fca02ac8a6a41acb1c9f470a4ce03e4d73d86f26c"
+    },
+    "lsqa": {
+      "launcher": "assessment/lsqa",
+      "launcher_sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
+      "payload": "assessment/.libs/lsqa",
+      "payload_sha256": "1e859d5329b0e283b39543c8d3b587aba276d7149c2f5d4d88ae4595477dbdc2"
+    }
+  },
+  "protocol": {
+    "auto_omission": "auto currently selects Heckbert compatibility behavior; heckbert:profile=compat is the measured reference",
+    "clustering_colorspace": "oklab",
+    "colors": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "comparison_scope": "complete explicit -Q configurations",
+    "configuration_order_rotated_each_round": true,
+    "configurations": [
+      {
+        "config": "heckbert-compat",
+        "family": "heckbert",
+        "label": "compat",
+        "quantize_option": "heckbert:profile=compat"
+      },
+      {
+        "config": "heckbert-speed",
+        "family": "heckbert",
+        "label": "speed",
+        "quantize_option": "heckbert:profile=speed"
+      },
+      {
+        "config": "heckbert-quality",
+        "family": "heckbert",
+        "label": "quality",
+        "quantize_option": "heckbert:profile=quality"
+      },
+      {
+        "config": "kmeans",
+        "family": "kmeans",
+        "label": "k-means",
+        "quantize_option": "kmeans:seed=1"
+      },
+      {
+        "config": "medoids-pam",
+        "family": "medoids",
+        "label": "PAM",
+        "quantize_option": "medoids:algo=pam:seed=1"
+      },
+      {
+        "config": "medoids-sample",
+        "family": "medoids",
+        "label": "CLARA",
+        "quantize_option": "medoids:algo=sample:seed=1"
+      },
+      {
+        "config": "medoids-random",
+        "family": "medoids",
+        "label": "CLARANS",
+        "quantize_option": "medoids:algo=random:seed=1"
+      },
+      {
+        "config": "medoids-bandit",
+        "family": "medoids",
+        "label": "BanditPAM",
+        "quantize_option": "medoids:algo=bandit:seed=1"
+      },
+      {
+        "config": "center-fft",
+        "family": "center",
+        "label": "FFT",
+        "quantize_option": "center:algo=fft:seed=1"
+      },
+      {
+        "config": "center-swap",
+        "family": "center",
+        "label": "swap",
+        "quantize_option": "center:algo=swap:seed=1"
+      },
+      {
+        "config": "center-hybrid",
+        "family": "center",
+        "label": "hybrid",
+        "quantize_option": "center:algo=hybrid:seed=1"
+      }
+    ],
+    "cover_policy": "configuration default",
+    "diffusion": "none",
+    "end_to_end_timing": "uninstrumented fresh-process monotonic wall time",
+    "gpu_policy": "off",
+    "loader": "libpng!",
+    "lookup_policy": "none",
+    "merge_policy": "configuration default",
+    "palette_timing": "sum of complete top-level palette/build role=palette timeline spans, including multiple attempts or fallbacks",
+    "precision": "8bit",
+    "quality": "full",
+    "sixel_environment_removed": true,
+    "size_measurement": "quality-pass SIXEL stdout byte length",
+    "speed_runs": 9,
+    "speed_warmups": 2,
+    "threads": 1,
+    "working_colorspace": "gamma"
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "2d432919c6127589d390b6a170fb63a683b9b8b7",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}

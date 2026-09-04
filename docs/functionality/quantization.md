@@ -510,6 +510,120 @@ sizes. A result from one natural image or one `K` is evidence for that fixture,
 not a general ranking; include gradients, broad-gamut colors, flat artwork,
 rare saturated colors, and several palette sizes before proposing a default.
 
+## Measured complete CLI comparison
+
+The following figures compare eleven explicit `-Q` configurations at
+`K = 8, 16, 32, 64, 128, 256`. This is the first experiment described above:
+it measures the complete behavior exposed by each short CLI configuration,
+including that configuration's default merge and cover decisions. It does not
+isolate the mathematical solver core. Top-level `auto` is omitted because it
+currently selects Heckbert compatibility behavior;
+`heckbert:profile=compat` is the measured reference.
+
+The controlled command shape is:
+
+```text
+img2sixel --threads=1 --precision=8bit --quality=full \
+  --loaders=libpng! --quantize-model=CONFIG -Xoklab -Wgamma \
+  --diffusion=none --gpu-policy=off --lookup-policy=none \
+  -p K images/snake.png
+```
+
+The configurations are the three Heckbert profiles, `kmeans:seed=1`, the
+`pam`, `sample`, `random`, and `bandit` medoids algorithms, and the `fft`,
+`swap`, and `hybrid` center algorithms. Randomized configurations use seed 1.
+The SIXEL environment is removed. Dithering, GPU assistance, and approximate
+palette lookup are disabled so that they do not hide differences in the
+constructed palettes. The input is the 600-by-450 RGB
+[`images/snake.png`](../../images/snake.png) fixture. The manifest records its
+hash, source revision, executable hashes, compiler, build flags, host, and all
+other controls.
+
+### Quality
+
+![Quantize-model quality curves](quantize-models/measurements/quantize-model-quality.png)
+
+MS-SSIM reports spatially pooled similarity; mean Delta E00 reports average
+perceptual color error. Their rankings need not agree because neither is the
+objective of every quantizer. On this fixture, the Heckbert `quality` profile
+is the strongest measured quality configuration throughout the sweep. At
+`K=64`, it reaches MS-SSIM 0.982634 and mean Delta E00 2.6518, compared with
+0.949079 and 5.1518 for Heckbert `compat`.
+
+The recorded quality and size values for Heckbert `compat`, Heckbert `speed`,
+and the selected K-means configuration coincide at every measured `K`. This is
+an observation about these complete configurations on this input, not a claim
+that median cut and K-means are equivalent. The medoids variants likewise
+converge to nearly the same aggregate metrics while their running times differ
+substantially. K-center shows a different tradeoff: it is weaker at small `K`,
+but at `K=256` its three variants are close to the compatibility MS-SSIM and
+have lower mean Delta E00.
+
+### Palette-build and end-to-end speed
+
+![Quantize-model runtime curves](quantize-models/measurements/quantize-model-speed.png)
+
+Each point is the median of nine fresh-process samples after two warm-ups;
+error bars show the interquartile range. Configuration order rotates each
+round. The lower row is uninstrumented monotonic wall time for the complete
+command. The upper row is a separate instrumented measurement: it sums every
+complete top-level `palette/build`, `role=palette` timeline span in the
+command, including multiple engine attempts or fallbacks. Timeline logging
+adds some overhead, so the upper row describes instrumented palette work and
+must not be subtracted from the lower row as though both came from one run.
+
+At `K=64`, Heckbert `quality` spends 14.288 ms in the measured palette spans
+and 98.99 ms end to end, versus 6.199 ms and 89.07 ms for `compat`. K-center is
+the least expensive palette family in this fixture: its `fft` configuration
+uses 2.598 ms of palette spans and 85.29 ms end to end at the same `K`.
+
+The medoids algorithms demonstrate why the two timing domains are useful. At
+`K=256`, CLARA (`sample`) uses 11.142 ms of palette spans, PAM 13.076 ms,
+BanditPAM 60.278 ms, and CLARANS (`random`) 102.689 ms, even though their
+quality measurements remain very close. Corresponding end-to-end medians are
+160.29, 162.86, 210.76, and 253.64 ms. The result reflects the current default
+budgets on this fixture; it does not overturn their asymptotic or
+data-dependent cost models.
+
+### Encoded size
+
+![Quantize-model SIXEL size curves](quantize-models/measurements/quantize-model-size.png)
+
+Size is the exact byte length of the same no-dither SIXEL stream assessed for
+quality. It is a downstream consequence of palette selection, index layout,
+and SIXEL run structure rather than a quantizer objective. Better quality may
+therefore increase size. At `K=64`, Heckbert `quality` produces 144.5 KiB,
+compared with 119.3 KiB for `compat`. At `K=256`, medoids produces about
+208 KiB and K-center about 219 KiB, while `compat` produces 240.0 KiB and
+Heckbert `quality` 274.9 KiB.
+
+### Interpretation limits and reproduction
+
+These figures are evidence for one natural image, one host, one build, and one
+seed. They do not cover solver-core isolation, gradients, broad-gamut or rare
+colors, multiple randomized seeds, dithering, parallel execution, or GPU
+assistance. In particular, the result is not sufficient by itself to choose a
+project default. A solver-core comparison should add `-F none -a off` and pin
+candidate and iteration budgets as described in the preceding chapter.
+
+The exact tables are
+[`quantize-model-quality.csv`](quantize-models/measurements/quantize-model-quality.csv),
+[`quantize-model-speed.csv`](quantize-models/measurements/quantize-model-speed.csv),
+and
+[`quantize-model-size.csv`](quantize-models/measurements/quantize-model-size.csv).
+The full provenance is in
+[`quantize-model-run.json`](quantize-models/measurements/quantize-model-run.json).
+Rebuild the binaries, regenerate every CSV and figure, and validate the sweep
+with one command:
+
+```sh
+tools/reproduce_quantize_model_measurements.sh
+```
+
+`QUANTIZE_MODEL_WARMUPS` and `QUANTIZE_MODEL_RUNS` may shorten exploratory
+runs. Durable replacement results should retain the documented 2/9 protocol
+and must pass `tools/check_quantize_model_measurements.py`.
+
 ## Bypassing construction
 
 Monochrome, built-in palette, and palette-map modes supply palette entries

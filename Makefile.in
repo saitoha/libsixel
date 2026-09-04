@@ -621,6 +621,13 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.png \
 	docs/functionality/overview.md \
+	docs/functionality/quantize-models/measurements/quantize-model-quality.csv \
+	docs/functionality/quantize-models/measurements/quantize-model-quality.png \
+	docs/functionality/quantize-models/measurements/quantize-model-run.json \
+	docs/functionality/quantize-models/measurements/quantize-model-size.csv \
+	docs/functionality/quantize-models/measurements/quantize-model-size.png \
+	docs/functionality/quantize-models/measurements/quantize-model-speed.csv \
+	docs/functionality/quantize-models/measurements/quantize-model-speed.png \
 	docs/functionality/quantization.md \
 	docs/quality/measurement-policy.md \
 	docs/testing/guide.md \
