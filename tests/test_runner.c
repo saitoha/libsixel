@@ -209,6 +209,8 @@ int test_palette_0025_sample_stream(int argc, char **argv);
 int test_palette_0026_sampling_auto(int argc, char **argv);
 int test_palette_0028_sampling_schedule(int argc, char **argv);
 int test_palette_0029_sampling_fallback(int argc, char **argv);
+int test_palette_0030_binning_policy(int argc, char **argv);
+int test_palette_0031_weighted_point_set(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
 int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
@@ -494,6 +496,10 @@ static test_entry_t const test_entries[] = {
       test_palette_0028_sampling_schedule },
     { "palette/0029_sampling_fallback_resolution",
       test_palette_0029_sampling_fallback },
+    { "palette/0030_binning_policy_contract",
+      test_palette_0030_binning_policy },
+    { "palette/0031_weighted_point_set",
+      test_palette_0031_weighted_point_set },
     { "cli/0029_cli_token_is_known_option",
       test_cli_0029_cli_token_is_known_option },
     { "cli/0030_cli_option_requires_argument",

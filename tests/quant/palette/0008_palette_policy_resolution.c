@@ -28,33 +28,33 @@ palette_resolution_lifecycle_is_valid(void)
     sixel_palette_frame_state_init(&second);
 
     sixel_palette_policy_resolution_init(
-        &first.binning,
+        &first.quantizer,
         0,
         SIXEL_PALETTE_POLICY_ORIGIN_AUTO);
     status = sixel_palette_policy_resolve(
-        &first.binning,
+        &first.quantizer,
         2,
         SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA);
     if (SIXEL_FAILED(status) ||
-            first.binning.requested != 0 ||
-            first.binning.effective != 2 ||
-            first.binning.origin != SIXEL_PALETTE_POLICY_ORIGIN_AUTO ||
-            first.binning.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
-            first.binning.reason !=
+            first.quantizer.requested != 0 ||
+            first.quantizer.effective != 2 ||
+            first.quantizer.origin != SIXEL_PALETTE_POLICY_ORIGIN_AUTO ||
+            first.quantizer.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
+            first.quantizer.reason !=
                 SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA) {
         return 0;
     }
 
-    status = sixel_palette_policy_mark_executed(&first.binning);
+    status = sixel_palette_policy_mark_executed(&first.quantizer);
     if (SIXEL_FAILED(status) ||
-            first.binning.phase != SIXEL_PALETTE_POLICY_EXECUTED) {
+            first.quantizer.phase != SIXEL_PALETTE_POLICY_EXECUTED) {
         return 0;
     }
     status = sixel_palette_policy_resolve(
-        &first.binning,
+        &first.quantizer,
         3,
         SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
-    if (status != SIXEL_LOGIC_ERROR || first.binning.effective != 2) {
+    if (status != SIXEL_LOGIC_ERROR || first.quantizer.effective != 2) {
         return 0;
     }
 

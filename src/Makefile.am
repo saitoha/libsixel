@@ -138,6 +138,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-plan.h \
                 $(srcdir)/sample-stream.c \
                 $(srcdir)/sample-stream.h \
+                $(srcdir)/weighted-point-set.c \
+                $(srcdir)/weighted-point-set.h \
                 $(srcdir)/palette-kmedoids.c \
                 $(srcdir)/palette-kmedoids.h \
                 $(srcdir)/palette-kcenter.c \

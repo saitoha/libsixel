@@ -34,6 +34,7 @@ amalgamation_units = files(
   '../src/palette-kmeans-build.c',
   '../src/palette-plan.c',
   '../src/sample-stream.c',
+  '../src/weighted-point-set.c',
   '../src/palette-kmedoids.c',
   '../src/palette-kcenter.c',
   '../src/palette.c',

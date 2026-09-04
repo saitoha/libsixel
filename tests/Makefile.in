@@ -240,6 +240,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0026_sampling_auto_resolution.c \
 	quant/palette/0028_sampling_scheduler_contract.c \
 	quant/palette/0029_sampling_fallback_resolution.c \
+	quant/palette/0030_binning_policy_contract.c \
+	quant/palette/0031_weighted_point_set.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/status/0001_status_timeout.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -388,6 +390,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0026_sampling_auto_resolution.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0028_sampling_scheduler_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0029_sampling_fallback_resolution.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0030_binning_policy_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0031_weighted_point_set.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
@@ -616,6 +620,8 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0026_sampling_auto_resolution.Po \
 	quant/palette/$(DEPDIR)/test_runner-0028_sampling_scheduler_contract.Po \
 	quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po \
+	quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po \
+	quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 am__mv = mv -f
@@ -1340,6 +1346,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_SAMPLING_SCHEDULER_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_SAMPLING_FALLBACK_RESOLUTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_BINNING_POLICY_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_WEIGHTED_POINT_SET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -1601,6 +1609,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0026_sampling_auto_resolution.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0028_sampling_scheduler_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0029_sampling_fallback_resolution.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0030_binning_policy_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0031_weighted_point_set.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/status/0001_status_timeout.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -2304,6 +2314,12 @@ quant/palette/test_runner-0028_sampling_scheduler_contract.$(OBJEXT):  \
 quant/palette/test_runner-0029_sampling_fallback_resolution.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0030_binning_policy_contract.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0031_weighted_point_set.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
 	@$(MKDIR_P) diagnostics/probe
 	@: >>diagnostics/probe/$(am__dirstamp)
@@ -2602,6 +2618,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0026_sampling_auto_resolution.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0028_sampling_scheduler_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
 
@@ -4427,6 +4445,34 @@ quant/palette/test_runner-0029_sampling_fallback_resolution.obj: quant/palette/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0029_sampling_fallback_resolution.obj `if test -f 'quant/palette/0029_sampling_fallback_resolution.c'; then $(CYGPATH_W) 'quant/palette/0029_sampling_fallback_resolution.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0029_sampling_fallback_resolution.c'; fi`
 
+quant/palette/test_runner-0030_binning_policy_contract.o: quant/palette/0030_binning_policy_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0030_binning_policy_contract.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Tpo -c -o quant/palette/test_runner-0030_binning_policy_contract.o `test -f 'quant/palette/0030_binning_policy_contract.c' || echo '$(srcdir)/'`quant/palette/0030_binning_policy_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Tpo quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0030_binning_policy_contract.c' object='quant/palette/test_runner-0030_binning_policy_contract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0030_binning_policy_contract.o `test -f 'quant/palette/0030_binning_policy_contract.c' || echo '$(srcdir)/'`quant/palette/0030_binning_policy_contract.c
+
+quant/palette/test_runner-0030_binning_policy_contract.obj: quant/palette/0030_binning_policy_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0030_binning_policy_contract.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Tpo -c -o quant/palette/test_runner-0030_binning_policy_contract.obj `if test -f 'quant/palette/0030_binning_policy_contract.c'; then $(CYGPATH_W) 'quant/palette/0030_binning_policy_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0030_binning_policy_contract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Tpo quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0030_binning_policy_contract.c' object='quant/palette/test_runner-0030_binning_policy_contract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0030_binning_policy_contract.obj `if test -f 'quant/palette/0030_binning_policy_contract.c'; then $(CYGPATH_W) 'quant/palette/0030_binning_policy_contract.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0030_binning_policy_contract.c'; fi`
+
+quant/palette/test_runner-0031_weighted_point_set.o: quant/palette/0031_weighted_point_set.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0031_weighted_point_set.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Tpo -c -o quant/palette/test_runner-0031_weighted_point_set.o `test -f 'quant/palette/0031_weighted_point_set.c' || echo '$(srcdir)/'`quant/palette/0031_weighted_point_set.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Tpo quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0031_weighted_point_set.c' object='quant/palette/test_runner-0031_weighted_point_set.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0031_weighted_point_set.o `test -f 'quant/palette/0031_weighted_point_set.c' || echo '$(srcdir)/'`quant/palette/0031_weighted_point_set.c
+
+quant/palette/test_runner-0031_weighted_point_set.obj: quant/palette/0031_weighted_point_set.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0031_weighted_point_set.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Tpo -c -o quant/palette/test_runner-0031_weighted_point_set.obj `if test -f 'quant/palette/0031_weighted_point_set.c'; then $(CYGPATH_W) 'quant/palette/0031_weighted_point_set.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0031_weighted_point_set.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Tpo quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0031_weighted_point_set.c' object='quant/palette/test_runner-0031_weighted_point_set.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0031_weighted_point_set.obj `if test -f 'quant/palette/0031_weighted_point_set.c'; then $(CYGPATH_W) 'quant/palette/0031_weighted_point_set.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0031_weighted_point_set.c'; fi`
+
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
@@ -5252,6 +5298,8 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0026_sampling_auto_resolution.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0028_sampling_scheduler_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile
@@ -5444,6 +5492,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0026_sampling_auto_resolution.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0028_sampling_scheduler_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile

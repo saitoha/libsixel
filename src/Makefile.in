@@ -207,6 +207,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmeans-build.h $(srcdir)/palette-kmeans.h \
 	$(srcdir)/palette-plan.c $(srcdir)/palette-plan.h \
 	$(srcdir)/sample-stream.c $(srcdir)/sample-stream.h \
+	$(srcdir)/weighted-point-set.c $(srcdir)/weighted-point-set.h \
 	$(srcdir)/palette-kmedoids.c $(srcdir)/palette-kmedoids.h \
 	$(srcdir)/palette-kcenter.c $(srcdir)/palette-kcenter.h \
 	$(srcdir)/palette.c $(srcdir)/palette-factory.h \
@@ -382,6 +383,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-build.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-plan.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sample-stream.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-weighted-point-set.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmedoids.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kcenter.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette.lo \
@@ -678,6 +680,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-timeline-writer.Plo \
 	./$(DEPDIR)/libsixel_la-timer.Plo \
 	./$(DEPDIR)/libsixel_la-tty.Plo \
+	./$(DEPDIR)/libsixel_la-weighted-point-set.Plo \
 	./$(DEPDIR)/libsixel_la-writer.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -1087,6 +1090,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-plan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sample-stream.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sample-stream.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/weighted-point-set.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/weighted-point-set.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmedoids.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmedoids.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kcenter.c \
@@ -1690,6 +1695,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-timeline-writer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-timer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-tty.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-weighted-point-set.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-writer.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -1966,6 +1972,13 @@ libsixel_la-sample-stream.lo: sample-stream.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sample-stream.c' object='libsixel_la-sample-stream.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sample-stream.lo `test -f 'sample-stream.c' || echo '$(srcdir)/'`sample-stream.c
+
+libsixel_la-weighted-point-set.lo: weighted-point-set.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-weighted-point-set.lo -MD -MP -MF $(DEPDIR)/libsixel_la-weighted-point-set.Tpo -c -o libsixel_la-weighted-point-set.lo `test -f 'weighted-point-set.c' || echo '$(srcdir)/'`weighted-point-set.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-weighted-point-set.Tpo $(DEPDIR)/libsixel_la-weighted-point-set.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='weighted-point-set.c' object='libsixel_la-weighted-point-set.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-weighted-point-set.lo `test -f 'weighted-point-set.c' || echo '$(srcdir)/'`weighted-point-set.c
 
 libsixel_la-palette-kmedoids.lo: palette-kmedoids.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmedoids.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmedoids.Tpo -c -o libsixel_la-palette-kmedoids.lo `test -f 'palette-kmedoids.c' || echo '$(srcdir)/'`palette-kmedoids.c
@@ -3141,6 +3154,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-timeline-writer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-timer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tty.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-weighted-point-set.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-writer.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -3337,6 +3351,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-timeline-writer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-timer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tty.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-weighted-point-set.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-writer.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

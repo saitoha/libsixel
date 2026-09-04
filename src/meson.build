@@ -53,6 +53,8 @@ srcs = [
   'palette-plan.h',
   'sample-stream.c',
   'sample-stream.h',
+  'weighted-point-set.c',
+  'weighted-point-set.h',
   'palette-kmedoids.c',
   'palette-kmedoids.h',
   'palette-kcenter.c',

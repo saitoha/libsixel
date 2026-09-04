@@ -70,6 +70,36 @@ typedef enum sixel_palette_sampling_source {
     SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME
 } sixel_palette_sampling_source_t;
 
+/* Binning is independent of the quantizer that consumes its point set. */
+typedef enum sixel_palette_binning_policy {
+    SIXEL_PALETTE_BINNING_AUTO = 0,
+    SIXEL_PALETTE_BINNING_NONE,
+    SIXEL_PALETTE_BINNING_EXACT,
+    SIXEL_PALETTE_BINNING_HARD,
+    SIXEL_PALETTE_BINNING_SOFT
+} sixel_palette_binning_policy_t;
+
+typedef enum sixel_palette_binning_grid_map {
+    SIXEL_PALETTE_BINNING_GRID_NONE = 0,
+    SIXEL_PALETTE_BINNING_GRID_UNIFORM,
+    SIXEL_PALETTE_BINNING_GRID_SRGB
+} sixel_palette_binning_grid_map_t;
+
+typedef enum sixel_palette_binning_kernel {
+    SIXEL_PALETTE_BINNING_KERNEL_NONE = 0,
+    SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR
+} sixel_palette_binning_kernel_t;
+
+typedef enum sixel_palette_binning_backend {
+    SIXEL_PALETTE_BINNING_BACKEND_UNRESOLVED = 0,
+    SIXEL_PALETTE_BINNING_BACKEND_DIRECT,
+    SIXEL_PALETTE_BINNING_BACKEND_DENSE,
+    SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE
+} sixel_palette_binning_backend_t;
+
+#define SIXEL_PALETTE_BINNING_MIN_BITS 4u
+#define SIXEL_PALETTE_BINNING_MAX_BITS 8u
+
 #define SIXEL_PALETTE_POLICY_VALUE_UNSET (-1)
 
 typedef struct sixel_palette_policy_resolution {
@@ -80,11 +110,25 @@ typedef struct sixel_palette_policy_resolution {
     sixel_palette_resolution_reason_t reason;
 } sixel_palette_policy_resolution_t;
 
+/*
+ * A resolved binning state records semantic choices separately from storage.
+ * The entry bound is an allocation upper bound, not an expected occupancy.
+ */
+typedef struct sixel_palette_binning_state {
+    sixel_palette_policy_resolution_t policy;
+    unsigned int bits_per_axis;
+    sixel_palette_binning_grid_map_t grid_map;
+    sixel_palette_binning_kernel_t kernel;
+    sixel_palette_binning_backend_t backend;
+    size_t source_point_count;
+    size_t entry_capacity_bound;
+} sixel_palette_binning_state_t;
+
 /* Per-frame palette policy state owned by the existing encode DAG context. */
 typedef struct sixel_palette_frame_state {
     sixel_palette_policy_resolution_t sampling;
     sixel_palette_sampling_source_t sampling_source;
-    sixel_palette_policy_resolution_t binning;
+    sixel_palette_binning_state_t binning;
     sixel_palette_policy_resolution_t quantizer;
 } sixel_palette_frame_state_t;
 
@@ -121,6 +165,35 @@ sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_sampling_resolve_fallback(
     sixel_palette_frame_state_t *state);
+
+SIXEL_INTERNAL_API void
+sixel_palette_binning_state_init(
+    sixel_palette_binning_state_t *state,
+    sixel_palette_binning_policy_t requested,
+    sixel_palette_policy_origin_t origin);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_binning_entry_bound(
+    sixel_palette_binning_policy_t policy,
+    unsigned int bits_per_axis,
+    sixel_palette_binning_kernel_t kernel,
+    size_t source_point_count,
+    size_t *entry_capacity_bound);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_binning_resolve(
+    sixel_palette_binning_state_t *state,
+    sixel_palette_binning_policy_t effective,
+    unsigned int bits_per_axis,
+    sixel_palette_binning_grid_map_t grid_map,
+    sixel_palette_binning_kernel_t kernel,
+    sixel_palette_binning_backend_t backend,
+    size_t source_point_count,
+    sixel_palette_resolution_reason_t reason);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_binning_mark_bypassed(
+    sixel_palette_binning_state_t *state);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_policy_mark_executed(

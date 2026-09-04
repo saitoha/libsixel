@@ -507,6 +507,22 @@ sixel_palette_sampling_source_name(sixel_palette_sampling_source_t source)
     }
 }
 
+static sixel_palette_binning_policy_t
+sixel_palette_binning_from_legacy_kmeans(int mode)
+{
+    switch ((sixel_kmeans_binning_mode)mode) {
+    case SIXEL_PALETTE_KMEANS_BINNING_NONE:
+        return SIXEL_PALETTE_BINNING_NONE;
+    case SIXEL_PALETTE_KMEANS_BINNING_HARD:
+        return SIXEL_PALETTE_BINNING_HARD;
+    case SIXEL_PALETTE_KMEANS_BINNING_SOFT:
+        return SIXEL_PALETTE_BINNING_SOFT;
+    case SIXEL_PALETTE_KMEANS_BINNING_AUTO:
+    default:
+        return SIXEL_PALETTE_BINNING_AUTO;
+    }
+}
+
 static char const *
 sixel_palette_policy_origin_name(sixel_palette_policy_origin_t origin)
 {
@@ -7892,9 +7908,10 @@ sixel_encoder_encode_frame_internal(
         encoder->quantize_model == SIXEL_QUANTIZE_MODEL_AUTO
             ? SIXEL_PALETTE_POLICY_ORIGIN_AUTO
             : SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
-    sixel_palette_policy_resolution_init(
+    sixel_palette_binning_state_init(
         &context.palette.binning,
-        encoder->quantize_model_kmeans_binning_mode,
+        sixel_palette_binning_from_legacy_kmeans(
+            encoder->quantize_model_kmeans_binning_mode),
         encoder->quantize_model_kmeans_binning_override != 0
             ? SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS
             : SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);

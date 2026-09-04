@@ -204,6 +204,28 @@ policies. The planner may choose between them from the finite bin domain,
 estimated occupied cells, and memory budget. They should appear in diagnostics
 but should not become stable user-facing semantics.
 
+The internal contract represents these axes independently. `none` uses a
+direct point sequence; `exact` uses no finite grid and combines only equal
+coordinates; `hard` uses a finite grid without a distribution kernel; and
+`soft` uses a finite grid plus an explicit kernel. The initial kernel is
+trilinear, so one source point can contribute to at most eight grid cells.
+`dense` and `compact-sparse` identify storage selected for `hard` or `soft`;
+they do not alter the requested binning policy.
+
+The resolved binning state records the source point count and a strict upper
+bound on output entries. For a three-dimensional grid with `b` bits per axis,
+the bound is:
+
+```text
+none or exact: source point count
+hard:          min(source point count, 2^(3b))
+soft:          min(8 * source point count, 2^(3b))
+```
+
+The multiplication saturates before applying the finite-domain bound, so an
+untrusted point count cannot wrap the allocation estimate. This upper bound is
+not an occupancy prediction and must not by itself force a dense allocation.
+
 ## Progressive automatic resolution
 
 Sampling and binning are independent explicit policies, but their `auto`
@@ -285,6 +307,15 @@ format, colorspace, and whether the frame is borrowed or owned. A borrowed
 full-frame view never changes the frame reference count; an owned adaptive
 sample transfers its frame reference into the artifact. This distinction is
 explicit even though both currently use contiguous frame storage.
+
+The `WEIGHTED_POINT_SET` contract carries three interleaved coordinates in the
+palette colorspace, output weights, the source and output point counts, total
+sample mass, the effective binning semantics, the storage backend, and the
+entry-capacity bound. An unaggregated `none` result may omit its weight array to
+represent unit weights. `exact`, `hard`, and `soft` results must carry explicit
+weights; otherwise a downstream quantizer could silently discard aggregation
+mass. Borrowed and owned arrays are distinct artifact states, and a failed
+ownership transfer leaves the caller's pointer slots unchanged.
 
 Algorithmic services may be shared below a filter, such as solid-color
 detection or lookup construction. Such services must not duplicate the
