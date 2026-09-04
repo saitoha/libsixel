@@ -1040,8 +1040,8 @@ sixel_option_parse_argument_with_suboptions(
     if (resolution == NULL || schema == NULL || argument == NULL ||
         consumer_scope == 0u ||
         (consumer_scope & ~schema->scope) != 0u ||
-        ((consumer_scope & SIXEL_OPTION_SCOPE_ENCODER_FAMILY) != 0u &&
-         (consumer_scope & SIXEL_OPTION_SCOPE_DECODER_FAMILY) != 0u)) {
+        ((consumer_scope & SIXEL_OPTION_SCOPE_ENCODER) != 0u &&
+         (consumer_scope & SIXEL_OPTION_SCOPE_DECODER) != 0u)) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (!sixel_option_registry_validate()) {
@@ -1497,8 +1497,8 @@ sixel_option_parse_argument_list_with_suboptions(
     }
     if (schema == NULL || resolution == NULL || consumer_scope == 0u ||
         (consumer_scope & ~schema->scope) != 0u ||
-        ((consumer_scope & SIXEL_OPTION_SCOPE_ENCODER_FAMILY) != 0u &&
-         (consumer_scope & SIXEL_OPTION_SCOPE_DECODER_FAMILY) != 0u)) {
+        ((consumer_scope & SIXEL_OPTION_SCOPE_ENCODER) != 0u &&
+         (consumer_scope & SIXEL_OPTION_SCOPE_DECODER) != 0u)) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -3645,7 +3645,7 @@ sixel_option_apply_completion_policy_argument(
     status = sixel_option_parse_argument_with_suboptions(
         argument,
         schema,
-        SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         &resolution,
         diagnostic,
         diagnostic_size);

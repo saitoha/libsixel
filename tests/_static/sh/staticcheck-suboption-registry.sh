@@ -138,7 +138,9 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
     if (option_id !~ /^SIXEL_OPTION_SCHEMA_[A-Z0-9_]+$/) {
         fail("top-level schema has an invalid id: " option_id)
     }
-    if (scope !~ /^SIXEL_OPTION_SCOPE_[A-Z0-9_]+([[:space:]]*\|[[:space:]]*SIXEL_OPTION_SCOPE_[A-Z0-9_]+)*$/) {
+    if (scope != "SIXEL_OPTION_SCOPE_ENCODER" &&
+        scope != "SIXEL_OPTION_SCOPE_DECODER" &&
+        scope != "SIXEL_OPTION_SCOPE_ALL") {
         fail(option_id " has an invalid scope: " scope)
     }
     if (optflag !~ /^SIXEL_OPTFLAG_[A-Z0-9_]+$/) {
@@ -304,12 +306,12 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
         return
     }
     converter_scope = 0
-    if (scope ~ /SIXEL_OPTION_SCOPE_IMG2SIXEL/ ||
+    if (scope ~ /SIXEL_OPTION_SCOPE_ENCODER/ ||
         scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
         check_surface(option_id, name, short_name, encoder_file, encoder_man)
         converter_scope = 1
     }
-    if (scope ~ /SIXEL_OPTION_SCOPE_SIXEL2PNG/ ||
+    if (scope ~ /SIXEL_OPTION_SCOPE_DECODER/ ||
         scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
         check_surface(option_id, name, short_name, decoder_file, decoder_man)
         converter_scope = 1
@@ -599,7 +601,7 @@ function inspect(row, fields, count, name, alias, key, macro, scope) {
         scope = "SIXEL_OPTION_SCOPE_ALL"
     }
     if (macro == "SIXEL_REGISTRY_COMPLETION_STRING") {
-        scope = "SIXEL_OPTION_SCOPE_IMG2SIXEL"
+        scope = "SIXEL_OPTION_SCOPE_ENCODER"
     }
     if (scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
         expected_help[key] = help_file

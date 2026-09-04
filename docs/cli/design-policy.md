@@ -28,6 +28,13 @@ policy belongs in a converter. Reusable image or protocol behavior belongs in a
 library abstraction. Loader-specific behavior belongs in a typed loader
 suboption rather than a global special case.
 
+Library option scopes describe semantic encoder or decoder consumers only.
+They must not name concrete executables such as `img2sixel` or `sixel2png`.
+Each converter owns the projection from those semantic options to its getopt,
+help, manual, and shell-completion surfaces. This keeps intentional short-name
+reuse, such as encoder and decoder `-d`, separate without teaching the library
+which executable exposes either option.
+
 ## Naming
 
 ### Long options

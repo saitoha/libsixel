@@ -42,6 +42,18 @@ test_cli_0033_consumer_scope(int argc, char **argv)
         fprintf(stderr, "suboption registry is invalid\n");
         return EXIT_FAILURE;
     }
+    /*
+     * Encoder and decoder frontends both spell their primary image policy
+     * as -d.  The semantic consumer domains, rather than executable names,
+     * must keep this intentional short-option reuse unambiguous.
+     */
+    if (diffusion_schema->optflag != SIXEL_OPTFLAG_DIFFUSION ||
+        dequantize_schema->optflag != SIXEL_OPTFLAG_DEQUANTIZE ||
+        diffusion_schema->optflag != dequantize_schema->optflag ||
+        (diffusion_schema->scope & dequantize_schema->scope) != 0u) {
+        fprintf(stderr, "encoder and decoder short-option reuse is invalid\n");
+        return EXIT_FAILURE;
+    }
     if (sixel_option_registry_suboption_count_for_scope(
             diffusion_schema,
             NULL,

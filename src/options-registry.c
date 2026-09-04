@@ -74,9 +74,9 @@
 #endif
 
 #define SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE \
-    SIXEL_OPTION_SCOPE_ENCODER_FAMILY
+    SIXEL_OPTION_SCOPE_ENCODER
 #define SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE \
-    SIXEL_OPTION_SCOPE_DECODER_FAMILY
+    SIXEL_OPTION_SCOPE_DECODER
 #define SIXEL_REGISTRY_CONSUMER_SCOPE_FOR_TARGET(target_) \
     (((target_) == SIXEL_SUBOPTION_TARGET_DECODER || \
       (target_) == SIXEL_SUBOPTION_TARGET_DEQUANTIZE) \
@@ -620,7 +620,7 @@
 #define SIXEL_REGISTRY_COMPLETION_STRING( \
     optflag_, base_, name_, short_, env_, field_, override_) \
     { \
-        (optflag_), (base_), SIXEL_OPTION_SCOPE_IMG2SIXEL, (name_), \
+        (optflag_), (base_), SIXEL_OPTION_SCOPE_ENCODER, (name_), \
         (short_), (env_), NULL, NULL, SIXEL_SUBOPTION_VALUE_STRING, NULL, \
         0u, NULL, 0u, 0.0, 0.0, 0, 0, 0, \
         SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
@@ -2916,7 +2916,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
 static sixel_option_argument_schema_t const g_options[] = {
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_DEQUANTIZE,
-        SIXEL_OPTION_SCOPE_DECODER | SIXEL_OPTION_SCOPE_SIXEL2PNG,
+        SIXEL_OPTION_SCOPE_DECODER,
         SIXEL_OPTFLAG_DEQUANTIZE,
         "dequantize",
         SIXEL_OPTION_ARGUMENT_SINGLE,
@@ -2926,7 +2926,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         NULL),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_DIFFUSION,
         "diffusion",
         SIXEL_OPTION_ARGUMENT_SINGLE,
@@ -2936,7 +2936,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         NULL),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_QUANTIZE_MODEL,
         "quantize-model",
         SIXEL_OPTION_ARGUMENT_LIST,
@@ -2946,7 +2946,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         NULL),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_MERGE_POLICY,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_MERGE_POLICY,
         "merge-policy",
         SIXEL_OPTION_ARGUMENT_SINGLE,
@@ -2956,7 +2956,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         "SIXEL_PALETTE_FINAL_MERGE"),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_COVER_POLICY,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_COVER_POLICY,
         "cover-policy",
         SIXEL_OPTION_ARGUMENT_SINGLE,
@@ -2966,7 +2966,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         "SIXEL_PALETTE_COVER"),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_LUT_POLICY,
         "lookup-policy",
         SIXEL_OPTION_ARGUMENT_SINGLE,
@@ -2976,7 +2976,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         "SIXEL_DITHER_LOOKUP_POLICY"),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_LOADERS,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_LOADERS,
         "loaders",
         SIXEL_OPTION_ARGUMENT_LIST,
@@ -2986,7 +2986,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         "SIXEL_LOADER_PRIORITY_LIST"),
     SIXEL_REGISTRY_SCALAR_CHOICE_ENV(
         SIXEL_OPTION_SCHEMA_PRECISION,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_PRECISION,
         "precision",
         SIXEL_OPTION_MATCH_PREFIX,
@@ -3023,7 +3023,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_REGISTRY_ARRAY_LENGTH(g_threads_values)),
     SIXEL_REGISTRY_SCALAR_UINT(
         SIXEL_OPTION_SCHEMA_COLORS,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_COLORS,
         "colors",
         "SIXEL_COLORS",
@@ -3039,7 +3039,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_PALETTE_MAX),
     SIXEL_REGISTRY_SCALAR_INT(
         SIXEL_OPTION_SCHEMA_START_FRAME,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_START_FRAME,
         "start-frame",
         SIXEL_OPTION_MATCH_EXACT,
@@ -3072,7 +3072,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         "SIXEL_GPU_POLICY"),
     SIXEL_REGISTRY_SCALAR_CHOICE(
         SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_TRANSPARENT_POLICY,
         "transparent-policy",
         SIXEL_OPTION_MATCH_PREFIX,
@@ -3083,7 +3083,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         g_transparent_policy_values),
     SIXEL_REGISTRY_SCALAR_UINT(
         SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_6DELTA_THRESHOLD,
         "6delta-threshold",
         "SIXEL_6DELTA_THRESHOLD",
@@ -3099,7 +3099,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         0),
     SIXEL_REGISTRY_SCALAR_CHOICE(
         SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_6DELTA_ERROR,
         "6delta-error",
         SIXEL_OPTION_MATCH_PREFIX,
@@ -3110,7 +3110,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         g_6delta_error_values),
     SIXEL_REGISTRY_SCALAR_STRING(
         SIXEL_OPTION_SCHEMA_BGCOLOR,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_BGCOLOR,
         "bgcolor",
         "SIXEL_BGCOLOR"),
@@ -3147,7 +3147,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         g_clipboard_policy_environment_choices),
     SIXEL_REGISTRY_SCALAR_CHOICE(
         SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
-        SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_TERMINAL_POLICY,
         "terminal-policy",
         SIXEL_OPTION_MATCH_EXACT,
@@ -3158,7 +3158,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         g_terminal_policy_values),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_COMPLETION_POLICY,
-        SIXEL_OPTION_SCOPE_IMG2SIXEL,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_COMPLETION_POLICY,
         "completion-policy",
         SIXEL_OPTION_ARGUMENT_SINGLE,
@@ -4048,7 +4048,7 @@ sixel_option_registry_binding_scope_is_valid(
         allowed_scope = SIXEL_OPTION_SCOPE_ALL;
         break;
     case SIXEL_SUBOPTION_TARGET_COMPLETION:
-        allowed_scope = SIXEL_OPTION_SCOPE_IMG2SIXEL;
+        allowed_scope = SIXEL_OPTION_SCOPE_ENCODER;
         break;
     default:
         return 0;
@@ -5232,7 +5232,7 @@ sixel_option_encoder_environment_is_present(int optflag)
     while (index < SIXEL_REGISTRY_ARRAY_LENGTH(g_options)) {
         if (g_options[index].optflag == optflag &&
             (g_options[index].scope &
-             SIXEL_OPTION_SCOPE_ENCODER_FAMILY) != 0u) {
+             SIXEL_OPTION_SCOPE_ENCODER) != 0u) {
             return sixel_option_argument_environment_is_present(
                 g_options[index].option_id);
         }

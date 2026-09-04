@@ -184,24 +184,17 @@ typedef enum sixel_option_schema_id {
 } sixel_option_schema_id_t;
 
 /*
- * Option scopes keep short-name reuse explicit.  Encoder and decoder options
- * may share a character only when their library and converter scopes do not
- * overlap.
+ * Option scopes describe library consumer domains only.  Converter-specific
+ * visibility belongs to each converter's CLI tables and must not leak client
+ * executable names into the library registry.
  */
 typedef enum sixel_option_scope {
     SIXEL_OPTION_SCOPE_ENCODER = 1 << 0,
-    SIXEL_OPTION_SCOPE_DECODER = 1 << 1,
-    SIXEL_OPTION_SCOPE_IMG2SIXEL = 1 << 2,
-    SIXEL_OPTION_SCOPE_SIXEL2PNG = 1 << 3
+    SIXEL_OPTION_SCOPE_DECODER = 1 << 1
 } sixel_option_scope_t;
 
 #define SIXEL_OPTION_SCOPE_ALL \
-    (SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_DECODER | \
-     SIXEL_OPTION_SCOPE_IMG2SIXEL | SIXEL_OPTION_SCOPE_SIXEL2PNG)
-#define SIXEL_OPTION_SCOPE_ENCODER_FAMILY \
-    (SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_IMG2SIXEL)
-#define SIXEL_OPTION_SCOPE_DECODER_FAMILY \
-    (SIXEL_OPTION_SCOPE_DECODER | SIXEL_OPTION_SCOPE_SIXEL2PNG)
+    (SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_DECODER)
 
 /* Structured arguments either select one base or an ordered base list. */
 typedef enum sixel_option_argument_form {
