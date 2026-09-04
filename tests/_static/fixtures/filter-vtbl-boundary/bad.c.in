@@ -1,0 +1,30 @@
+typedef struct sixel_filter sixel_filter_t;
+typedef struct sixel_filter_vtbl sixel_filter_vtbl_t;
+
+static sixel_filter_vtbl_t const bad_vtbl = {
+    "bad",
+    SIXEL_FILTER_KIND_SAMPLE,
+    sixel_filter_bad_execute,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
+static void
+exercise_bypasses(sixel_filter_t *pipeline_filter)
+{
+    void *callback;
+
+    /* The scanner must ignore sixel_filter_clip_apply(filter, NULL, NULL). */
+    callback = "sixel_filter_resize_frame(&config, frame, logger)";
+    callback = sixel_filter_sample_apply;
+    callback = sixel_filter_sample_init;
+    sixel_filter_alloc(&pipeline_filter);
+    sixel_filter_init_with_vtbl
+        (pipeline_filter, &bad_vtbl, NULL);
+    pipeline_filter
+        ->vtbl
+        ->apply
+        (pipeline_filter, NULL, NULL);
+}

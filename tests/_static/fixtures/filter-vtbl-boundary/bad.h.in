@@ -1,0 +1,6 @@
+/* Calls in comments must not affect the boundary scanner. */
+/* sixel_filter_resize_frame(&config, frame, logger); */
+
+SIXELSTATUS
+sixel_filter_sample_frame
+    (const void *config, void *frame);

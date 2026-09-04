@@ -5192,6 +5192,16 @@ sixel_encoder_palette_job_thread(void *priv)
         }
     }
 
+    /*
+     * Never publish a failed builder's partial output.  The job object owns
+     * every non-NULL dither stored in it, so publishing a released pointer
+     * would make both the worker and the collector dispose the same object.
+     */
+    if (SIXEL_FAILED(status) && local != NULL) {
+        sixel_dither_unref(local);
+        local = NULL;
+    }
+
     sixel_mutex_lock(&job->mutex);
     job->status = status;
     job->dither = local;
@@ -5199,9 +5209,6 @@ sixel_encoder_palette_job_thread(void *priv)
     sixel_cond_broadcast(&job->cond);
     sixel_mutex_unlock(&job->mutex);
 
-    if (SIXEL_FAILED(status) && local != NULL) {
-        sixel_dither_unref(local);
-    }
     if (logger != NULL) {
         sixel_timeline_logger_clear_frame_context(logger);
     }
@@ -5967,6 +5974,23 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
 }
 
 
+/*
+ * Palette construction owns any dither placed in its output slot until it
+ * succeeds.  Clear the slot together with the final reference so synchronous
+ * and asynchronous callers never observe a released object.
+ */
+static void
+sixel_encoder_release_dither_output(sixel_dither_t **dither)
+{
+    if (dither == NULL || *dither == NULL) {
+        return;
+    }
+
+    sixel_dither_unref(*dither);
+    *dither = NULL;
+}
+
+
 /* create dither object from a frame */
 static SIXELSTATUS
 sixel_encoder_prepare_palette(
@@ -6030,6 +6054,7 @@ sixel_encoder_prepare_palette(
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    *dither = NULL;
     if (encoder != NULL) {
         if (target_logger == NULL) {
             target_logger = encoder->logger;
@@ -6042,7 +6067,11 @@ sixel_encoder_prepare_palette(
             status = SIXEL_OK;
         } else {
             status = sixel_dither_new(dither, (-1), encoder->allocator);
-            sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
+            if (SIXEL_SUCCEEDED(status)) {
+                sixel_dither_set_pixelformat(
+                    *dither,
+                    sixel_frame_get_pixelformat(frame));
+            }
         }
         goto end;
     case SIXEL_COLOR_OPTION_MONOCHROME:
@@ -6271,7 +6300,6 @@ sixel_encoder_prepare_palette(
     sixel_filter_free(merge_filter);
     merge_filter = NULL;
     if (SIXEL_FAILED(status)) {
-        sixel_dither_unref(*dither);
         goto end;
     }
     (*dither)->quantize_model = encoder->quantize_model;
@@ -6588,7 +6616,6 @@ sixel_encoder_prepare_palette(
     sixel_set_kcenter_swap_min_gain_override(0, 0.0);
     sixel_set_kcenter_prune_mass_override(0, 0.995);
     if (SIXEL_FAILED(status)) {
-        sixel_dither_unref(*dither);
         goto end;
     }
 
@@ -6598,14 +6625,12 @@ sixel_encoder_prepare_palette(
             clustering_colorspace,
             working_colorspace);
         if (SIXEL_FAILED(status)) {
-            sixel_dither_unref(*dither);
             goto end;
         }
     }
     if (reserve_alpha_key) {
         status = sixel_encoder_attach_alpha_keycolor(encoder, *dither);
         if (SIXEL_FAILED(status)) {
-            sixel_dither_unref(*dither);
             goto end;
         }
     }
@@ -6626,6 +6651,9 @@ end:
     if (cluster_frame != NULL) {
         sixel_frame_unref(cluster_frame);
         cluster_frame = NULL;
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_encoder_release_dither_output(dither);
     }
     if (SIXEL_SUCCEEDED(status) && dither != NULL && *dither != NULL) {
         sixel_encoder_copy_lookup_options(encoder, *dither);

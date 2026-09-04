@@ -1,0 +1,25 @@
+typedef struct sixel_filter sixel_filter_t;
+typedef struct sixel_filter_vtbl sixel_filter_vtbl_t;
+
+static void sixel_filter_sample_apply(void);
+
+static sixel_filter_vtbl_t const sample_vtbl = {
+    "sample",
+    SIXEL_FILTER_KIND_SAMPLE,
+    sixel_filter_sample_apply,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
+static void
+sixel_filter_sample_init(sixel_filter_t *filter)
+{
+    sixel_filter_init_with_vtbl(filter, &sample_vtbl, NULL);
+}
+
+static void
+sixel_filter_sample_apply(void)
+{
+}

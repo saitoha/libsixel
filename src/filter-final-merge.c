@@ -41,14 +41,9 @@ typedef struct sixel_filter_final_merge_state {
 } sixel_filter_final_merge_state_t;
 
 static SIXELSTATUS
-sixel_filter_final_merge_apply_filter(sixel_filter_t *filter,
-      sixel_allocator_t *allocator,
-      sixel_timeline_logger_t *logger);
-
-static SIXELSTATUS
-sixel_filter_final_merge_apply(
-    const sixel_filter_final_merge_config_t *config,
-    sixel_timeline_logger_t *logger);
+sixel_filter_final_merge_apply(sixel_filter_t *filter,
+                               sixel_allocator_t *allocator,
+                               sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_final_merge_dispose(sixel_filter_t *filter);
@@ -56,7 +51,7 @@ sixel_filter_final_merge_dispose(sixel_filter_t *filter);
 static sixel_filter_vtbl_t const sixel_filter_final_merge_vtbl = {
     "final-merge",
     SIXEL_FILTER_KIND_FINAL_MERGE,
-    sixel_filter_final_merge_apply_filter,
+    sixel_filter_final_merge_apply,
     sixel_filter_final_merge_dispose,
     NULL,
     NULL,
@@ -64,16 +59,14 @@ static sixel_filter_vtbl_t const sixel_filter_final_merge_vtbl = {
 };
 
 static SIXELSTATUS
-sixel_filter_final_merge_apply_filter(sixel_filter_t *filter,
-                                      sixel_allocator_t *allocator,
-                                      sixel_timeline_logger_t *logger)
+sixel_filter_final_merge_apply(sixel_filter_t *filter,
+                               sixel_allocator_t *allocator,
+                               sixel_timeline_logger_t *logger)
 {
-    SIXELSTATUS status;
     sixel_filter_final_merge_state_t *state;
 
     (void)allocator;
 
-    status = SIXEL_FALSE;
     state = NULL;
 
     if (filter == NULL) {
@@ -81,13 +74,26 @@ sixel_filter_final_merge_apply_filter(sixel_filter_t *filter,
     }
 
     state = (sixel_filter_final_merge_state_t *)filter->userdata;
-    if (state == NULL) {
+    if (state == NULL || state->config.dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = sixel_filter_final_merge_apply(&state->config, logger);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    sixel_dither_set_final_merge(state->config.dither,
+                                 state->config.final_merge_mode);
+
+    if (logger != NULL) {
+        sixel_timeline_logger_logf(logger,
+                                  "filter",
+                                  "worker",
+                                  "final-merge",
+                                  -1,
+                                  -1,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  "mode=%d",
+                                  state->config.final_merge_mode);
     }
 
     (void)sixel_filter_update_progress(filter, 1);
@@ -149,41 +155,6 @@ sixel_filter_final_merge_init(sixel_filter_t *filter,
 
     return SIXEL_OK;
 }
-
-static SIXELSTATUS
-sixel_filter_final_merge_apply(const sixel_filter_final_merge_config_t *config,
-                               sixel_timeline_logger_t *logger)
-{
-    SIXELSTATUS status;
-
-    status = SIXEL_FALSE;
-
-    if (config == NULL || config->dither == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    sixel_dither_set_final_merge(config->dither, config->final_merge_mode);
-
-    if (logger != NULL) {
-        sixel_timeline_logger_logf(logger,
-                          "filter",
-                          "worker",
-                          "final-merge",
-                          -1,
-                          -1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          "mode=%d",
-                          config->final_merge_mode);
-    }
-
-    status = SIXEL_OK;
-
-    return status;
-}
-
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

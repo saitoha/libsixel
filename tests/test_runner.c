@@ -120,6 +120,7 @@ int test_filter_0028_filter_dither_6delta_bluenoise_gpu_exact_plane(
 int test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback(
     int argc,
     char **argv);
+int test_filter_0030_filter_palette_failure_output(int argc, char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
@@ -361,6 +362,8 @@ static test_entry_t const test_entries[] = {
       test_filter_0028_filter_dither_6delta_bluenoise_gpu_exact_plane },
     { "filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback",
       test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback },
+    { "filter/0030_filter_palette_failure_output",
+      test_filter_0030_filter_palette_failure_output },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
       test_gpupal_0001_strtoul },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",

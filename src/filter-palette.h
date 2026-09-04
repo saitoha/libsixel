@@ -30,6 +30,11 @@
 #include "dither.h"
 #include "filter.h"
 
+/*
+ * A builder receives an empty output slot.  On success, it transfers one
+ * owned dither reference to the slot.  On failure, the palette filter consumes
+ * and clears any partial reference left there.
+ */
 typedef SIXELSTATUS (*sixel_filter_palette_builder_fn)(
         void *userdata,
         sixel_frame_t *frame,

@@ -5,109 +5,118 @@ set -eu
 
 src_root=${1:-}
 
-echo "1..3"
+echo "1..5"
 
 if test -z "$src_root"; then
-    echo "not ok 1 - filter headers hide direct execution helpers"
+    echo "not ok 1 - boundary scanner rejects representative bypasses"
     echo "# src_root argument is required"
-    echo "not ok 2 - filter execution stays behind the vtbl"
+    echo "not ok 2 - filter headers hide direct execution symbols"
     echo "# src_root argument is required"
-    echo "not ok 3 - filter construction stays behind the factory"
+    echo "not ok 3 - concrete execution stays in the owning filter"
+    echo "# src_root argument is required"
+    echo "not ok 4 - filter construction stays behind the factory"
+    echo "# src_root argument is required"
+    echo "not ok 5 - filter vtbl dispatch stays behind sixel_filter_run"
     echo "# src_root argument is required"
     exit 1
 fi
 
-if test ! -d "$src_root/src"; then
-    echo "not ok 1 - filter headers hide direct execution helpers"
-    echo "# missing source directory: $src_root/src"
-    echo "not ok 2 - filter execution stays behind the vtbl"
-    echo "# missing source directory: $src_root/src"
-    echo "not ok 3 - filter construction stays behind the factory"
-    echo "# missing source directory: $src_root/src"
+scanner=$src_root/tests/_static/awk/filter-vtbl-boundary.awk
+fixture_dir=$src_root/tests/_static/fixtures/filter-vtbl-boundary
+
+if test ! -f "$scanner" || test ! -d "$fixture_dir" ||
+        test ! -d "$src_root/src"; then
+    echo "not ok 1 - boundary scanner rejects representative bypasses"
+    echo "# missing scanner, fixtures, or source directory"
+    echo "not ok 2 - filter headers hide direct execution symbols"
+    echo "# missing scanner, fixtures, or source directory"
+    echo "not ok 3 - concrete execution stays in the owning filter"
+    echo "# missing scanner, fixtures, or source directory"
+    echo "not ok 4 - filter construction stays behind the factory"
+    echo "# missing scanner, fixtures, or source directory"
+    echo "not ok 5 - filter vtbl dispatch stays behind sixel_filter_run"
+    echo "# missing scanner, fixtures, or source directory"
     exit 1
 fi
 
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-filter-vtbl-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
-header_violations=$tmpdir/header-execution.txt
-execution_violations=$tmpdir/direct-execution.txt
-constructor_violations=$tmpdir/direct-construction.txt
+fixture_report=$tmpdir/fixture-report.txt
+source_report=$tmpdir/source-report.txt
+header_violations=$tmpdir/header-violations.txt
+execution_violations=$tmpdir/execution-violations.txt
+construction_violations=$tmpdir/construction-violations.txt
+dispatch_violations=$tmpdir/dispatch-violations.txt
 failed=0
 
-find "$src_root/src" -maxdepth 1 -type f -name 'filter-*.h' \
-    -exec awk '
-/sixel_filter_[A-Za-z0-9_]+_(apply|frame)[[:space:]]*\(/ {
-    print FILENAME ":" FNR ":" $0
+awk -f "$scanner" \
+    "$fixture_dir/bad.h.in" \
+    "$fixture_dir/bad.c.in" \
+    "$fixture_dir/filter-sample.c.in" > "$fixture_report"
+
+if awk -F '|' '
+$1 == "header" { ++header }
+$1 == "execution" { ++execution }
+$1 == "construction" { ++construction }
+$1 == "dispatch" { ++dispatch }
+END {
+    exit (header == 1 && execution == 2 && construction == 3 && dispatch == 1 ? 0 : 1)
 }
-' {} + > "$header_violations"
+' "$fixture_report"; then
+    echo "ok 1 - boundary scanner rejects representative bypasses"
+else
+    echo "not ok 1 - boundary scanner rejects representative bypasses"
+    sed 's/^/# scanner result: /' "$fixture_report"
+    failed=1
+fi
+
+awk -f "$scanner" "$src_root"/src/filter-*.h \
+    "$src_root"/src/*.c > "$source_report"
+
+awk -F '|' '$1 == "header" {
+    print $2 ":" $3 ":" $4
+}' "$source_report" > "$header_violations"
+awk -F '|' '$1 == "execution" {
+    print $2 ":" $3 ":" $4
+}' "$source_report" > "$execution_violations"
+awk -F '|' '$1 == "construction" {
+    print $2 ":" $3 ":" $4
+}' "$source_report" > "$construction_violations"
+awk -F '|' '$1 == "dispatch" {
+    print $2 ":" $3 ":" $4
+}' "$source_report" > "$dispatch_violations"
 
 if test -s "$header_violations"; then
-    echo "not ok 1 - filter headers hide direct execution helpers"
-    sed 's/^/# exposed execution helper: /' "$header_violations"
+    echo "not ok 2 - filter headers hide direct execution symbols"
+    sed 's/^/# /' "$header_violations"
     failed=1
 else
-    echo "ok 1 - filter headers hide direct execution helpers"
+    echo "ok 2 - filter headers hide direct execution symbols"
 fi
-
-find "$src_root/src" -maxdepth 1 -type f -name '*.c' -exec awk '
-function owner_path(line, suffix, component, start) {
-    start = index(line, "sixel_filter_")
-    component = substr(line, start + length("sixel_filter_"))
-    sub(/[[:space:]]*\(.*/, "", component)
-    sub(suffix "$", "", component)
-    if (suffix == "_frame") {
-        sub(/_(copy|create)$/, "", component)
-    }
-    if (component == "1d_eytzinger") {
-        component = "eytzinger"
-    }
-    gsub(/_/, "-", component)
-    return "/filter-" component ".c"
-}
-/sixel_filter_[A-Za-z0-9_]+_(apply|frame)[[:space:]]*\(/ {
-    suffix = $0 ~ /_frame[[:space:]]*\(/ ? "_frame" : "_apply"
-    owner = owner_path($0, suffix)
-    if (index(FILENAME, owner) == 0) {
-        print FILENAME ":" FNR ":" $0
-    }
-}
-' {} + > "$execution_violations"
 
 if test -s "$execution_violations"; then
-    echo "not ok 2 - filter execution stays behind the vtbl"
-    sed 's/^/# direct execution: /' "$execution_violations"
+    echo "not ok 3 - concrete execution stays in the owning filter"
+    sed 's/^/# /' "$execution_violations"
     failed=1
 else
-    echo "ok 2 - filter execution stays behind the vtbl"
+    echo "ok 3 - concrete execution stays in the owning filter"
 fi
 
-find "$src_root/src" -maxdepth 1 -type f -name '*.c' -exec awk '
-function owner_path(line, component, start) {
-    start = index(line, "sixel_filter_")
-    component = substr(line, start + length("sixel_filter_"))
-    sub(/_init[[:space:]]*\(.*/, "", component)
-    if (component == "1d_eytzinger") {
-        component = "eytzinger"
-    }
-    gsub(/_/, "-", component)
-    return "/filter-" component ".c"
-}
-/sixel_filter_[A-Za-z0-9_]+_init[[:space:]]*\(/ {
-    owner = owner_path($0)
-    if (FILENAME !~ /\/filter-factory\.c$/ &&
-        index(FILENAME, owner) == 0) {
-        print FILENAME ":" FNR ":" $0
-    }
-}
-' {} + > "$constructor_violations"
-
-if test -s "$constructor_violations"; then
-    echo "not ok 3 - filter construction stays behind the factory"
-    sed 's/^/# direct construction: /' "$constructor_violations"
+if test -s "$construction_violations"; then
+    echo "not ok 4 - filter construction stays behind the factory"
+    sed 's/^/# /' "$construction_violations"
     failed=1
 else
-    echo "ok 3 - filter construction stays behind the factory"
+    echo "ok 4 - filter construction stays behind the factory"
+fi
+
+if test -s "$dispatch_violations"; then
+    echo "not ok 5 - filter vtbl dispatch stays behind sixel_filter_run"
+    sed 's/^/# /' "$dispatch_violations"
+    failed=1
+else
+    echo "ok 5 - filter vtbl dispatch stays behind sixel_filter_run"
 fi
 
 exit "$failed"

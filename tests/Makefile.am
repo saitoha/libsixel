@@ -235,6 +235,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0027_FILTER_GPU_6DELTA_DISABLED_REJECT \
     -DBUILD_TEST_0028_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
     -DBUILD_TEST_0029_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
+    -DBUILD_TEST_0030_FILTER_PALETTE_FAILURE_OUTPUT \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -376,6 +377,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0027_filter_gpu_6delta_disabled_reject.c \
     processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
     processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
+    processing/filter/0030_filter_palette_failure_output.c \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
@@ -2137,6 +2139,10 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-frame-post187-export-guard.sh \
 		_static/sh/staticcheck-frame-instantiation-boundary.sh \
 		_static/sh/staticcheck-filter-vtbl-boundary.sh \
+		_static/awk/filter-vtbl-boundary.awk \
+		_static/fixtures/filter-vtbl-boundary/bad.c.in \
+		_static/fixtures/filter-vtbl-boundary/bad.h.in \
+		_static/fixtures/filter-vtbl-boundary/filter-sample.c.in \
 			_static/sh/staticcheck-output-instantiation-boundary.sh \
 			_static/sh/staticcheck-chunk-component-boundary.sh \
 			_static/sh/staticcheck-palette-component-boundary.sh \

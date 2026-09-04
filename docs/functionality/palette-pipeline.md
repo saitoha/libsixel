@@ -199,6 +199,12 @@ the filter factory, and execution calls may only occur inside the owning
 filter. This source check is especially important for the amalgamated build,
 where translation-unit visibility can allow a private-looking call to compile.
 
+This component-ownership check applies to the library implementation under
+`src/`. Programs under `converters/` are public-API consumers rather than
+filter-component implementations. A separate private-include check prevents
+those programs from depending on `src/*.h`; they are not treated as additional
+filter owners.
+
 ## Logical separation and physical fusion
 
 Separate filters do not require an intermediate allocation after every stage.

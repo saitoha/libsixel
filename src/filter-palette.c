@@ -94,7 +94,7 @@ sixel_filter_palette_apply(sixel_filter_t *filter,
     frame = filter->input.slot[0];
     dither_out = state->config.dither_out;
 
-    if (dither_out == NULL) {
+    if (dither_out == NULL || *dither_out != NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -108,6 +108,15 @@ sixel_filter_palette_apply(sixel_filter_t *filter,
                                    dither_out,
                                    logger);
     if (SIXEL_FAILED(status)) {
+        /*
+         * The filter owns any partial builder output.  Clear it before the
+         * failure reaches synchronous or asynchronous orchestration so a
+         * released dither can never be published through the output slot.
+         */
+        if (*dither_out != NULL) {
+            sixel_dither_unref(*dither_out);
+            *dither_out = NULL;
+        }
         return status;
     }
 
