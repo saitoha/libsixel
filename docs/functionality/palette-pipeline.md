@@ -87,6 +87,20 @@ sample point:
 An explicit weight prevents a later binning implementation from accidentally
 discarding the protection provided to a small solid-colored feature.
 
+The current implementation has an important migration hazard: sampling is
+coupled to palette-worker scheduling. When the planner can launch the palette
+worker, the adaptive-grid filter reads the loaded frame while the normal
+preprocessing branch runs concurrently. When that worker is unavailable, the
+synchronous palette builder receives the full frame after preprocessing and
+does not run the sample filter. Thread count, clipping, resizing, and
+colorspace work can therefore change both whether sampling occurs and which
+stage supplies its input. The `sample_target` setting only reaches the
+adaptive-grid branch.
+
+This coupling must first be described and covered by tests. Separating policy
+from scheduling before preserving both paths would silently change palette
+quality, output size, and performance.
+
 ## Binning policy
 
 Binning consumes points after their palette-space coordinates are known. It
@@ -244,9 +258,20 @@ default changes can be reviewed independently.
 2. Add requested, effective, reason, and lifecycle state to the existing
    per-frame encode DAG context. Remove unused policy copies from the palette
    worker job without changing output.
-3. Represent current target-derived grid sampling as an explicit internal
-   policy and record minimal sample metadata while retaining the current frame
-   payload.
+3a. Characterize the existing split without rerouting it. Represent
+    `full-frame` and `adaptive-grid` as internal effective policies, record
+    whether their input is the loaded or preprocessed frame, and test the
+    current thread-budget and heavy-operation cases.
+3b. Introduce a typed sample-stream artifact that can describe either a
+    borrowed full-frame view or an owned compact sample. Retain the frame
+    payload adapter and record minimal sample metadata.
+3c. Route both effective policies through the sample filter vtable and make
+    palette builders consume the sample-stream contract. Keep the existing
+    source stage and pixels for each path.
+3d. Move policy resolution ahead of scheduling. The scheduler consumes the
+    resolved sampling choice instead of choosing sampling as a side effect;
+    the temporary `auto` resolver reproduces the legacy split until measured
+    defaults are selected.
 4. Define orthogonal binning semantics and the weighted-point-set artifact
    contract before moving an implementation.
 5. Extract current K-means hard and soft histogram construction into an
