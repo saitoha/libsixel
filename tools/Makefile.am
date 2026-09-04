@@ -35,14 +35,17 @@ EXTRA_DIST = libsixel-config.in \
              ls-action-summarize \
              ls-summarize \
              check_dither_policy_measurements.py \
+             check_dither_spectrum_measurements.py \
              check_lookup_policy_measurements.py \
              plot_dither_policy_measurements.py \
+             plot_dither_spectrum_measurements.py \
              plot_lookup_policy_acceleration.py \
              plot_quality_curve.py \
              plot_lookup_policy_quality.sh \
              plot_lookup_policy_speed.py \
              reproduce_lookup_policy_acceleration.sh \
              reproduce_dither_policy_measurements.sh \
+             reproduce_dither_spectrum_measurements.sh \
              reproduce_lookup_policy_measurements.sh
 
 if HAVE_JPEG
