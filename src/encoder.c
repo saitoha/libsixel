@@ -430,6 +430,7 @@ typedef struct sixel_palette_async_job {
     int frame_no;
     int loop_no;
     int multiframe;
+    sixel_palette_job_failure_stage_t requested_failure_stage;
     sixel_palette_job_failure_stage_t failure_stage;
     int started;
     int finished;
@@ -5418,14 +5419,31 @@ sixel_encoder_palette_job_thread(void *priv)
 }
 
 
-static int
-sixel_encoder_palette_job_failure_requested(char const *stage)
+static sixel_palette_job_failure_stage_t
+sixel_encoder_palette_job_failure_stage_requested(void)
 {
     char const *requested;
 
     requested = sixel_test_environment_palette_job_failure();
-    return requested != NULL && stage != NULL &&
-        strcmp(requested, stage) == 0;
+    if (requested == NULL) {
+        return SIXEL_PALETTE_JOB_FAILURE_NONE;
+    }
+    if (strcmp(requested, "init") == 0) {
+        return SIXEL_PALETTE_JOB_FAILURE_INIT;
+    }
+    if (strcmp(requested, "sample") == 0) {
+        return SIXEL_PALETTE_JOB_FAILURE_SAMPLE;
+    }
+    if (strcmp(requested, "thread") == 0) {
+        return SIXEL_PALETTE_JOB_FAILURE_THREAD_CREATE;
+    }
+    if (strcmp(requested, "convert") == 0) {
+        return SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
+    }
+    if (strcmp(requested, "worker") == 0) {
+        return SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD;
+    }
+    return SIXEL_PALETTE_JOB_FAILURE_NONE;
 }
 
 
@@ -5453,7 +5471,8 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
         sixel_encoder_transparent_policy_preserves_alpha(job->encoder) &&
         (sixel_encoder_frame_preserves_alpha_key(job->sample_frame) ||
          sixel_encoder_6delta_reserves_alpha_key(job->encoder));
-    if (sixel_encoder_palette_job_failure_requested("convert")) {
+    if (job->requested_failure_stage ==
+            SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT) {
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
         return SIXEL_RUNTIME_ERROR;
     }
@@ -5466,7 +5485,8 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
         }
     }
 
-    if (sixel_encoder_palette_job_failure_requested("worker")) {
+    if (job->requested_failure_stage ==
+            SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD) {
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD;
         return SIXEL_RUNTIME_ERROR;
     }
@@ -5499,8 +5519,15 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    /*
+     * Snapshot the test fault before starting any worker.  Environment
+     * lookup is process-global and should not make a worker result depend on
+     * thread timing.
+     */
+    job->requested_failure_stage =
+        sixel_encoder_palette_job_failure_stage_requested();
     job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_NONE;
-    if (sixel_encoder_palette_job_failure_requested("init")) {
+    if (job->requested_failure_stage == SIXEL_PALETTE_JOB_FAILURE_INIT) {
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_INIT;
         return SIXEL_RUNTIME_ERROR;
     }
@@ -5575,7 +5602,7 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
     job->loop_no = sixel_frame_get_loop_no(frame);
     job->multiframe = sixel_frame_get_multiframe(frame);
 
-    if (sixel_encoder_palette_job_failure_requested("sample")) {
+    if (job->requested_failure_stage == SIXEL_PALETTE_JOB_FAILURE_SAMPLE) {
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_SAMPLE;
         return SIXEL_BAD_ALLOCATION;
     }
@@ -5588,7 +5615,8 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
         return status;
     }
 
-    if (sixel_encoder_palette_job_failure_requested("thread")) {
+    if (job->requested_failure_stage ==
+            SIXEL_PALETTE_JOB_FAILURE_THREAD_CREATE) {
         result = SIXEL_RUNTIME_ERROR;
     } else {
         result = sixel_thread_create(&job->thread,
