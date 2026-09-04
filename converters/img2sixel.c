@@ -98,17 +98,6 @@ SIXEL_INTERNAL_API int
 sixel_option_encoder_environment_is_present(int optflag);
 SIXEL_INTERNAL_API int
 sixel_option_loader_osc11_query_environment_is_present(void);
-SIXEL_INTERNAL_API struct sixel_completion_policy_options *
-sixel_completion_policy_new(void);
-SIXEL_INTERNAL_API void
-sixel_completion_policy_free(
-    struct sixel_completion_policy_options *options);
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_option_apply_completion_policy_argument(
-    struct sixel_completion_policy_options *options,
-    char const *argument,
-    char *diagnostic,
-    size_t diagnostic_size);
 
 #if !defined(LIBSIXEL_OPTIONS_H)
 /*
@@ -3138,7 +3127,7 @@ img2sixel_main(int argc, char *argv[])
     int n;
     int exit_code;
     sixel_encoder_t *encoder = NULL;
-    struct sixel_completion_policy_options *completion_policy;
+    img2sixel_completion_policy_t *completion_policy;
     int completion_cli_result;
     int completion_exit_status;
 #if HAVE_GETOPT_LONG
@@ -3348,7 +3337,7 @@ img2sixel_main(int argc, char *argv[])
             break;
         case 'K':
             if (completion_policy == NULL) {
-                completion_policy = sixel_completion_policy_new();
+                completion_policy = img2sixel_completion_policy_new();
                 if (completion_policy == NULL) {
                     option_parse_failed = 1;
                     status = SIXEL_BAD_ALLOCATION;
@@ -3356,7 +3345,7 @@ img2sixel_main(int argc, char *argv[])
                 }
             }
             detail_buffer[0] = '\0';
-            status = sixel_option_apply_completion_policy_argument(
+            status = img2sixel_completion_policy_apply(
                 completion_policy,
                 parsed_options[parsed_index].argument,
                 detail_buffer,
@@ -3606,7 +3595,7 @@ end:
         free(parsed_options);
         parsed_options = NULL;
     }
-    sixel_completion_policy_free(completion_policy);
+    img2sixel_completion_policy_free(completion_policy);
     exit_code = img2sixel_exit_code(status);
     img2sixel_trace_topic_message("lifecycle",
                                  "main return: exit_code=%d",

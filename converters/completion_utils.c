@@ -176,6 +176,81 @@ int fchmod(int, mode_t);
 #define IMG2SIXEL_COMPLETION_SHELL_BASH  1
 #define IMG2SIXEL_COMPLETION_SHELL_ZSH   2
 
+#define IMG2SIXEL_ARRAY_LENGTH(array_) \
+    (sizeof(array_) / sizeof((array_)[0]))
+
+/*
+ * Keep completion-policy names, short forms, environment variables, and
+ * storage bindings in one converter-owned table.  This is process policy;
+ * the library registry must not know that img2sixel has completion files.
+ */
+typedef enum img2sixel_option_schema_id {
+    IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY = 0
+} img2sixel_option_schema_id_t;
+
+typedef struct img2sixel_completion_policy_key {
+    img2sixel_option_schema_id_t option_id;
+    char const *base;
+    char const *name;
+    char short_name;
+    char const *environment;
+    size_t value_offset;
+    size_t override_offset;
+    char const *binding;
+} img2sixel_completion_policy_key_t;
+
+#if defined(__GNUC__) || defined(__clang__)
+# define IMG2SIXEL_MEMBER_TYPE_MATCHES(type_, field_, value_type_) \
+    __builtin_types_compatible_p( \
+        __typeof__(((type_ *)0)->field_), value_type_)
+#else
+# define IMG2SIXEL_MEMBER_TYPE_MATCHES(type_, field_, value_type_) \
+    (sizeof(((type_ *)0)->field_) == sizeof(value_type_))
+#endif
+
+#define IMG2SIXEL_CHECKED_OFFSET(type_, field_, value_type_) \
+    (offsetof(type_, field_) + \
+     0u * sizeof(char[IMG2SIXEL_MEMBER_TYPE_MATCHES( \
+                         type_, field_, value_type_) ? 1 : -1]))
+
+#define IMG2SIXEL_REGISTRY_COMPLETION_STRING( \
+    option_id_, base_, name_, short_, env_, field_, override_) \
+    { \
+        (option_id_), (base_), (name_), (short_), (env_), \
+        IMG2SIXEL_CHECKED_OFFSET( \
+            img2sixel_completion_policy_t, field_, char const *), \
+        IMG2SIXEL_CHECKED_OFFSET( \
+            img2sixel_completion_policy_t, override_, int), \
+        #field_ "," #override_ \
+    }
+
+static img2sixel_completion_policy_key_t const
+g_img2sixel_completion_policy_keys[] = {
+    IMG2SIXEL_REGISTRY_COMPLETION_STRING(
+        IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY, NULL,
+        "bash_path", 'B', "IMG2SIXEL_COMPLETION_BASH",
+        bash_path, bash_path_override),
+    IMG2SIXEL_REGISTRY_COMPLETION_STRING(
+        IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY, NULL,
+        "zsh_path", 'Z', "IMG2SIXEL_COMPLETION_ZSH",
+        zsh_path, zsh_path_override),
+    IMG2SIXEL_REGISTRY_COMPLETION_STRING(
+        IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY, NULL,
+        "directory", 'D', "IMG2SIXEL_COMPLETION_DIR",
+        directory, directory_override),
+    IMG2SIXEL_REGISTRY_COMPLETION_STRING(
+        IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY, NULL,
+        "home", 'H', "IMG2SIXEL_COMPLETION_HOME",
+        home, home_override),
+};
+
+typedef enum img2sixel_completion_policy_key_index {
+    IMG2SIXEL_COMPLETION_POLICY_BASH = 0,
+    IMG2SIXEL_COMPLETION_POLICY_ZSH,
+    IMG2SIXEL_COMPLETION_POLICY_DIRECTORY,
+    IMG2SIXEL_COMPLETION_POLICY_HOME
+} img2sixel_completion_policy_key_index_t;
+
 static void img2sixel_log_errno_impl(int saved_errno, const char *fmt, ...);
 #define img2sixel_log_errno(...) \
     img2sixel_log_errno_impl(errno, __VA_ARGS__)
@@ -184,26 +259,6 @@ void img2sixel_trace_topic_message(const char *topic,
                                    const char *format, ...);
 SIXEL_INTERNAL_API int
 sixel_diagnostics_trace_topic_is_enabled(char const *topic);
-SIXEL_INTERNAL_API int
-sixel_completion_policy_resolve_bash_path(
-    struct sixel_completion_policy_options const *options,
-    char const **path,
-    int *overridden);
-SIXEL_INTERNAL_API int
-sixel_completion_policy_resolve_zsh_path(
-    struct sixel_completion_policy_options const *options,
-    char const **path,
-    int *overridden);
-SIXEL_INTERNAL_API int
-sixel_completion_policy_resolve_directory(
-    struct sixel_completion_policy_options const *options,
-    char const **path,
-    int *overridden);
-SIXEL_INTERNAL_API int
-sixel_completion_policy_resolve_home(
-    struct sixel_completion_policy_options const *options,
-    char const **path,
-    int *overridden);
 SIXEL_INTERNAL_API char const *
 sixel_test_environment_bash_version(void);
 
@@ -276,6 +331,433 @@ img2sixel_trace_topic_message(const char *topic, const char *format, ...)
      * Flush topic traces so external token waiters observe lines promptly.
      */
     fflush(stderr);
+}
+
+static char const **
+img2sixel_completion_policy_value_slot(
+    img2sixel_completion_policy_t *policy,
+    img2sixel_completion_policy_key_t const *key)
+{
+    unsigned char *bytes;
+
+    if (policy == NULL || key == NULL) {
+        return NULL;
+    }
+    bytes = (unsigned char *)policy;
+    return (char const **)(void *)(bytes + key->value_offset);
+}
+
+static char const *const *
+img2sixel_completion_policy_const_value_slot(
+    img2sixel_completion_policy_t const *policy,
+    img2sixel_completion_policy_key_t const *key)
+{
+    unsigned char const *bytes;
+
+    if (policy == NULL || key == NULL) {
+        return NULL;
+    }
+    bytes = (unsigned char const *)policy;
+    return (char const *const *)(void const *)(bytes + key->value_offset);
+}
+
+static int *
+img2sixel_completion_policy_override_slot(
+    img2sixel_completion_policy_t *policy,
+    img2sixel_completion_policy_key_t const *key)
+{
+    unsigned char *bytes;
+
+    if (policy == NULL || key == NULL) {
+        return NULL;
+    }
+    bytes = (unsigned char *)policy;
+    return (int *)(void *)(bytes + key->override_offset);
+}
+
+static int const *
+img2sixel_completion_policy_const_override_slot(
+    img2sixel_completion_policy_t const *policy,
+    img2sixel_completion_policy_key_t const *key)
+{
+    unsigned char const *bytes;
+
+    if (policy == NULL || key == NULL) {
+        return NULL;
+    }
+    bytes = (unsigned char const *)policy;
+    return (int const *)(void const *)(bytes + key->override_offset);
+}
+
+static int
+img2sixel_completion_policy_registry_is_valid(void)
+{
+    size_t index;
+    size_t other;
+    img2sixel_completion_policy_key_t const *key;
+    img2sixel_completion_policy_key_t const *candidate;
+
+    index = 0u;
+    other = 0u;
+    key = NULL;
+    candidate = NULL;
+    if (IMG2SIXEL_ARRAY_LENGTH(g_img2sixel_completion_policy_keys) != 4u) {
+        return 0;
+    }
+    while (index < IMG2SIXEL_ARRAY_LENGTH(
+            g_img2sixel_completion_policy_keys)) {
+        key = g_img2sixel_completion_policy_keys + index;
+        if (key->option_id !=
+                IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY ||
+            key->base != NULL ||
+            key->name == NULL || key->name[0] == '\0' ||
+            key->short_name < 'A' || key->short_name > 'Z' ||
+            key->environment == NULL || key->environment[0] == '\0' ||
+            key->binding == NULL || key->binding[0] == '\0' ||
+            key->value_offset + sizeof(char const *) >
+                sizeof(img2sixel_completion_policy_t) ||
+            key->override_offset + sizeof(int) >
+                sizeof(img2sixel_completion_policy_t) ||
+            key->value_offset == key->override_offset) {
+            return 0;
+        }
+        other = index + 1u;
+        while (other < IMG2SIXEL_ARRAY_LENGTH(
+                g_img2sixel_completion_policy_keys)) {
+            candidate = g_img2sixel_completion_policy_keys + other;
+            if (strcmp(key->name, candidate->name) == 0 ||
+                key->short_name == candidate->short_name ||
+                strcmp(key->environment, candidate->environment) == 0 ||
+                key->value_offset == candidate->value_offset ||
+                key->override_offset == candidate->override_offset) {
+                return 0;
+            }
+            ++other;
+        }
+        ++index;
+    }
+    return 1;
+}
+
+/* Keep a Windows drive separator inside a completion path value. */
+static char *
+img2sixel_completion_policy_entry_end(char *entry)
+{
+    char *separator;
+    char *equal_pos;
+    int drive_separator;
+
+    separator = NULL;
+    equal_pos = NULL;
+    drive_separator = 0;
+    if (entry == NULL) {
+        return NULL;
+    }
+    equal_pos = strchr(entry, '=');
+    separator = strchr(entry, ':');
+    while (separator != NULL) {
+        drive_separator = 0;
+        if (separator[1] == '/' || separator[1] == '\\') {
+            if (equal_pos != NULL && equal_pos < separator &&
+                separator == equal_pos + 2 &&
+                ((equal_pos[1] >= 'A' && equal_pos[1] <= 'Z') ||
+                 (equal_pos[1] >= 'a' && equal_pos[1] <= 'z'))) {
+                drive_separator = 1;
+            } else if ((equal_pos == NULL || equal_pos > separator) &&
+                       separator == entry + 2 &&
+                       ((entry[1] >= 'A' && entry[1] <= 'Z') ||
+                        (entry[1] >= 'a' && entry[1] <= 'z'))) {
+                drive_separator = 1;
+            }
+        }
+        if (!drive_separator) {
+            return separator;
+        }
+        separator = strchr(separator + 1, ':');
+    }
+    return NULL;
+}
+
+static int
+img2sixel_completion_policy_find_key(
+    char const *token,
+    int long_form,
+    size_t *index_out,
+    char const **value_out)
+{
+    size_t index;
+
+    index = 0u;
+    if (token == NULL || index_out == NULL || value_out == NULL) {
+        return 0;
+    }
+    while (index < IMG2SIXEL_ARRAY_LENGTH(
+            g_img2sixel_completion_policy_keys)) {
+        if ((long_form && strcmp(
+                token,
+                g_img2sixel_completion_policy_keys[index].name) == 0) ||
+            (!long_form && token[0] ==
+                g_img2sixel_completion_policy_keys[index].short_name &&
+             token[1] != '\0')) {
+            *index_out = index;
+            if (!long_form) {
+                *value_out = token + 1;
+            }
+            return 1;
+        }
+        ++index;
+    }
+    return 0;
+}
+
+static void
+img2sixel_completion_policy_diagnostic(
+    char *diagnostic,
+    size_t diagnostic_size,
+    char const *message)
+{
+    int written;
+
+    written = 0;
+    if (diagnostic == NULL || diagnostic_size == 0u) {
+        return;
+    }
+    written = snprintf(diagnostic,
+                       diagnostic_size,
+                       "%s",
+                       message != NULL ? message : "");
+    (void)written;
+}
+
+img2sixel_completion_policy_t *
+img2sixel_completion_policy_new(void)
+{
+    if (!img2sixel_completion_policy_registry_is_valid()) {
+        return NULL;
+    }
+    return (img2sixel_completion_policy_t *)calloc(
+        1u,
+        sizeof(img2sixel_completion_policy_t));
+}
+
+void
+img2sixel_completion_policy_free(img2sixel_completion_policy_t *policy)
+{
+    size_t index;
+    char const **value_slot;
+
+    index = 0u;
+    value_slot = NULL;
+    if (policy == NULL) {
+        return;
+    }
+    while (index < IMG2SIXEL_ARRAY_LENGTH(
+            g_img2sixel_completion_policy_keys)) {
+        value_slot = img2sixel_completion_policy_value_slot(
+            policy,
+            g_img2sixel_completion_policy_keys + index);
+        if (value_slot != NULL) {
+            free((void *)*value_slot);
+        }
+        ++index;
+    }
+    free(policy);
+}
+
+SIXELSTATUS
+img2sixel_completion_policy_apply(
+    img2sixel_completion_policy_t *policy,
+    char const *argument,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    char *work;
+    char *cursor;
+    char *entry_end;
+    char *equal_pos;
+    char const *value;
+    char *values[4];
+    int assigned[4];
+    size_t base_length;
+    size_t index;
+    size_t key_index;
+    char const **value_slot;
+    int *override_slot;
+
+    work = NULL;
+    cursor = NULL;
+    entry_end = NULL;
+    equal_pos = NULL;
+    value = NULL;
+    memset(values, 0, sizeof(values));
+    memset(assigned, 0, sizeof(assigned));
+    base_length = 0u;
+    index = 0u;
+    key_index = 0u;
+    value_slot = NULL;
+    override_slot = NULL;
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        diagnostic[0] = '\0';
+    }
+    if (policy == NULL || argument == NULL ||
+        !img2sixel_completion_policy_registry_is_valid()) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    work = (char *)malloc(strlen(argument) + 1u);
+    if (work == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(work, argument, strlen(argument) + 1u);
+    cursor = strchr(work, ':');
+    if (cursor != NULL) {
+        *cursor = '\0';
+        ++cursor;
+    }
+    base_length = strlen(work);
+    if (base_length == 0u || base_length > sizeof("auto") - 1u ||
+        strncmp("auto", work, base_length) != 0) {
+        img2sixel_completion_policy_diagnostic(
+            diagnostic,
+            diagnostic_size,
+            "unknown completion policy; expected auto.");
+        goto invalid;
+    }
+
+    while (cursor != NULL && cursor[0] != '\0') {
+        entry_end = img2sixel_completion_policy_entry_end(cursor);
+        if (entry_end != NULL) {
+            *entry_end = '\0';
+        }
+        equal_pos = strchr(cursor, '=');
+        value = NULL;
+        if (equal_pos != NULL) {
+            if (equal_pos == cursor || equal_pos[1] == '\0') {
+                img2sixel_completion_policy_diagnostic(
+                    diagnostic,
+                    diagnostic_size,
+                    "suboption must be key=PATH or KEYPATH.");
+                goto invalid;
+            }
+            *equal_pos = '\0';
+            value = equal_pos + 1;
+            if (!img2sixel_completion_policy_find_key(
+                    cursor, 1, &key_index, &value)) {
+                img2sixel_completion_policy_diagnostic(
+                    diagnostic,
+                    diagnostic_size,
+                    "unknown completion policy suboption.");
+                goto invalid;
+            }
+        } else if (!img2sixel_completion_policy_find_key(
+                cursor, 0, &key_index, &value)) {
+            img2sixel_completion_policy_diagnostic(
+                diagnostic,
+                diagnostic_size,
+                "unknown completion policy suboption.");
+            goto invalid;
+        }
+        free(values[key_index]);
+        values[key_index] = (char *)malloc(strlen(value) + 1u);
+        if (values[key_index] == NULL) {
+            while (index < IMG2SIXEL_ARRAY_LENGTH(values)) {
+                free(values[index]);
+                ++index;
+            }
+            free(work);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memcpy(values[key_index], value, strlen(value) + 1u);
+        assigned[key_index] = 1;
+        if (entry_end == NULL) {
+            cursor = NULL;
+        } else {
+            cursor = entry_end + 1;
+        }
+    }
+
+    index = 0u;
+    while (index < IMG2SIXEL_ARRAY_LENGTH(
+            g_img2sixel_completion_policy_keys)) {
+        if (assigned[index]) {
+            value_slot = img2sixel_completion_policy_value_slot(
+                policy,
+                g_img2sixel_completion_policy_keys + index);
+            override_slot = img2sixel_completion_policy_override_slot(
+                policy,
+                g_img2sixel_completion_policy_keys + index);
+            free((void *)*value_slot);
+            *value_slot = values[index];
+            *override_slot = 1;
+            img2sixel_trace_topic_message(
+                "suboption_contract",
+                "LSXSUB1|schema=completion-policy|base=auto|key=%s|"
+                "stored=1|binding=%s|value=%s",
+                g_img2sixel_completion_policy_keys[index].name,
+                g_img2sixel_completion_policy_keys[index].binding,
+                values[index]);
+            values[index] = NULL;
+        }
+        ++index;
+    }
+    free(work);
+    return SIXEL_OK;
+
+invalid:
+    index = 0u;
+    while (index < IMG2SIXEL_ARRAY_LENGTH(values)) {
+        free(values[index]);
+        ++index;
+    }
+    free(work);
+    return SIXEL_BAD_ARGUMENT;
+}
+
+static int
+img2sixel_completion_policy_resolve(
+    img2sixel_completion_policy_t const *policy,
+    img2sixel_completion_policy_key_index_t key_index,
+    char const **path,
+    int *overridden)
+{
+    img2sixel_completion_policy_key_t const *key;
+    char const *const *value_slot;
+    int const *override_slot;
+    char const *environment_value;
+
+    key = NULL;
+    value_slot = NULL;
+    override_slot = NULL;
+    environment_value = NULL;
+    if (path == NULL || overridden == NULL ||
+        (size_t)key_index >= IMG2SIXEL_ARRAY_LENGTH(
+            g_img2sixel_completion_policy_keys) ||
+        !img2sixel_completion_policy_registry_is_valid()) {
+        return 0;
+    }
+    *path = NULL;
+    *overridden = 0;
+    key = g_img2sixel_completion_policy_keys + (size_t)key_index;
+    if (policy != NULL) {
+        value_slot = img2sixel_completion_policy_const_value_slot(
+            policy,
+            key);
+        override_slot = img2sixel_completion_policy_const_override_slot(
+            policy,
+            key);
+        if (value_slot != NULL && override_slot != NULL &&
+            *override_slot && *value_slot != NULL) {
+            *path = *value_slot;
+            *overridden = 1;
+            return 1;
+        }
+    }
+    environment_value = img2sixel_compat_getenv(key->environment);
+    if (environment_value == NULL || environment_value[0] == '\0') {
+        return 0;
+    }
+    *path = environment_value;
+    return 1;
 }
 
 static int
@@ -1175,7 +1657,7 @@ img2sixel_try_completion_path(
 int
 get_completion_text(
     const char *shell,
-    struct sixel_completion_policy_options const *policy,
+    img2sixel_completion_policy_t const *policy,
     char **out,
     size_t *len)
 {
@@ -1205,15 +1687,17 @@ get_completion_text(
     *len = 0;
 
     if (strcmp(shell, "bash") == 0) {
-        configured = sixel_completion_policy_resolve_bash_path(
+        configured = img2sixel_completion_policy_resolve(
             policy,
+            IMG2SIXEL_COMPLETION_POLICY_BASH,
             &configured_path,
             &overridden);
         suffix = "/bash/img2sixel";
         key = "bash_path";
     } else if (strcmp(shell, "zsh") == 0) {
-        configured = sixel_completion_policy_resolve_zsh_path(
+        configured = img2sixel_completion_policy_resolve(
             policy,
+            IMG2SIXEL_COMPLETION_POLICY_ZSH,
             &configured_path,
             &overridden);
         suffix = "/zsh/_img2sixel";
@@ -1231,8 +1715,9 @@ get_completion_text(
         return 0;
     }
 
-    configured = sixel_completion_policy_resolve_directory(
+    configured = img2sixel_completion_policy_resolve(
         policy,
+        IMG2SIXEL_COMPLETION_POLICY_DIRECTORY,
         &directory,
         &directory_overridden);
     if (configured && img2sixel_join_path(
@@ -1283,15 +1768,16 @@ get_completion_text(
 
 static const char *
 img2sixel_completion_home(
-    struct sixel_completion_policy_options const *policy)
+    img2sixel_completion_policy_t const *policy)
 {
     const char *home;
     int overridden;
 
     home = NULL;
     overridden = 0;
-    if (sixel_completion_policy_resolve_home(
+    if (img2sixel_completion_policy_resolve(
             policy,
+            IMG2SIXEL_COMPLETION_POLICY_HOME,
             &home,
             &overridden)) {
         img2sixel_trace_topic_message(
@@ -1554,7 +2040,7 @@ img2sixel_write_all_stdout(const char *buf, size_t len)
 static int
 img2sixel_handle_install(
     int mask,
-    struct sixel_completion_policy_options const *policy)
+    img2sixel_completion_policy_t const *policy)
 {
     const char *home;
     char *target_path;
@@ -1685,7 +2171,7 @@ img2sixel_handle_install(
 static int
 img2sixel_handle_show(
     int mask,
-    struct sixel_completion_policy_options const *policy)
+    img2sixel_completion_policy_t const *policy)
 {
     char *buf;
     size_t len;
@@ -1811,7 +2297,7 @@ img2sixel_unlink_result(const char *path)
 static int
 img2sixel_handle_uninstall(
     int mask,
-    struct sixel_completion_policy_options const *policy)
+    img2sixel_completion_policy_t const *policy)
 {
     const char *home;
     char *path;
@@ -2015,7 +2501,7 @@ int
 img2sixel_handle_completion_option(
     int option,
     const char *value,
-    struct sixel_completion_policy_options const *policy,
+    img2sixel_completion_policy_t const *policy,
     int *exit_code)
 {
     int mask;
@@ -2088,7 +2574,7 @@ int
 img2sixel_handle_completion_cli(
     int argc,
     char **argv,
-    struct sixel_completion_policy_options const *policy,
+    img2sixel_completion_policy_t const *policy,
     int *exit_code)
 {
     const char *action;

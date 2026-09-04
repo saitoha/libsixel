@@ -24,6 +24,8 @@
 #ifndef IMG2SIXEL_COMPLETION_UTILS_H
 #define IMG2SIXEL_COMPLETION_UTILS_H
 
+#include <sixel.h>
+
 #if HAVE_STDDEF_H
 # include <stddef.h>
 #endif
@@ -40,7 +42,30 @@ typedef int mode_t;
 # endif
 #endif
 
-struct sixel_completion_policy_options;
+/*
+ * Completion source selection is process policy owned by img2sixel.  Keep its
+ * storage beside the converter instead of adding an application-specific
+ * target to the library option registry.
+ */
+typedef struct img2sixel_completion_policy {
+    char const *bash_path;
+    int bash_path_override;
+    char const *zsh_path;
+    int zsh_path_override;
+    char const *directory;
+    int directory_override;
+    char const *home;
+    int home_override;
+} img2sixel_completion_policy_t;
+
+img2sixel_completion_policy_t *img2sixel_completion_policy_new(void);
+void img2sixel_completion_policy_free(
+    img2sixel_completion_policy_t *policy);
+SIXELSTATUS img2sixel_completion_policy_apply(
+    img2sixel_completion_policy_t *policy,
+    char const *argument,
+    char *diagnostic,
+    size_t diagnostic_size);
 
 int read_entire_file(const char *path, char **buf, size_t *len);
 int write_atomic(const char *dst_path, const void *buf, size_t len,
@@ -50,18 +75,18 @@ int files_equal(const char *path, const void *buf, size_t len);
 int ensure_line_in_file(const char *path, const char *line);
 int get_completion_text(
     const char *shell,
-    struct sixel_completion_policy_options const *policy,
+    img2sixel_completion_policy_t const *policy,
     char **out,
     size_t *len);
 int img2sixel_handle_completion_option(
     int option,
     const char *value,
-    struct sixel_completion_policy_options const *policy,
+    img2sixel_completion_policy_t const *policy,
     int *exit_code);
 int img2sixel_handle_completion_cli(
     int argc,
     char **argv,
-    struct sixel_completion_policy_options const *policy,
+    img2sixel_completion_policy_t const *policy,
     int *exit_code);
 
 #endif  /* IMG2SIXEL_COMPLETION_UTILS_H */

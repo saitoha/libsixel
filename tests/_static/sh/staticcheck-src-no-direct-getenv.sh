@@ -12,6 +12,7 @@ resolver_bypass_matches=
 getenv_argument_matches=
 internal_name_matches=
 registry_file=$src_dir/options-registry.c
+completion_registry_file=$converters_dir/completion_utils.c
 
 echo "1..1"
 set -v
@@ -134,7 +135,9 @@ test -z "$internal_name_matches" || {
 # Raw environment reads must use one literal or a reviewed generic helper.
 # Reject every other direct-call shape so line wrapping, comments, and local
 # prefix macros cannot hide a registry-owned name.
-getenv_argument_matches=$(awk -v registry_file="$registry_file" '
+getenv_argument_matches=$(awk \
+    -v registry_file="$registry_file" \
+    -v completion_registry_file="$completion_registry_file" '
 FILENAME == registry_file {
     line = $0
     while (match(line, /"[A-Z][A-Z0-9_]*_[A-Z0-9_]+"/)) {
@@ -143,6 +146,23 @@ FILENAME == registry_file {
         line = substr(line, RSTART + RLENGTH)
     }
     next
+}
+FILENAME == completion_registry_file {
+    if ($0 ~ /g_img2sixel_completion_policy_keys\[\]/) {
+        in_completion_registry = 1
+    }
+    if (in_completion_registry) {
+        line = $0
+        while (match(line, /"[A-Z][A-Z0-9_]*_[A-Z0-9_]+"/)) {
+            name = substr(line, RSTART + 1, RLENGTH - 2)
+            registered[name] = 1
+            line = substr(line, RSTART + RLENGTH)
+        }
+        if ($0 ~ /^[[:space:]]*};/) {
+            in_completion_registry = 0
+        }
+        next
+    }
 }
 function argument_is_reviewed(file, argument) {
     if (file ~ /\/options\.c$/ &&
@@ -190,6 +210,10 @@ function argument_is_reviewed(file, argument) {
         return 1
     }
     if (file ~ /\/img2sixel\.c$/ && argument == "constchar*name") {
+        return 1
+    }
+    if (file ~ /\/completion_utils\.c$/ &&
+        argument == "key->environment") {
         return 1
     }
     return 0
@@ -279,7 +303,8 @@ FILENAME ~ /\/(compat_stub|compat)\.[ch]$/ {
         call = ""
     }
 }
-' "$registry_file" "$src_dir"/*.[ch] "$converters_dir"/*.[ch])
+' "$registry_file" "$completion_registry_file" \
+    "$src_dir"/*.[ch] "$converters_dir"/*.[ch])
 
 test -z "$getenv_argument_matches" || {
     echo "not ok 1 - src files avoid direct getenv() calls"

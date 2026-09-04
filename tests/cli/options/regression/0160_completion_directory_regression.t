@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify completion directory through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_COMPLETION_POLICY|NULL|directory
+# Registry row: IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY|NULL|directory
 # Registry binding: directory|directory_override
 # Completion contract: key=directory|configured=1|used=1
 

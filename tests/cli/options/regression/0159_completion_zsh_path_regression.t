@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify completion zsh_path through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_COMPLETION_POLICY|NULL|zsh_path
+# Registry row: IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY|NULL|zsh_path
 # Registry binding: zsh_path|zsh_path_override
 # Completion contract: key=zsh_path|configured=1|used=1
 

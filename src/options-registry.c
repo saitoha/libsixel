@@ -617,27 +617,6 @@
         }, NULL, 0ULL \
     }
 
-#define SIXEL_REGISTRY_COMPLETION_STRING( \
-    optflag_, base_, name_, short_, env_, field_, override_) \
-    { \
-        (optflag_), (base_), SIXEL_OPTION_SCOPE_ENCODER, (name_), \
-        (short_), (env_), NULL, NULL, SIXEL_SUBOPTION_VALUE_STRING, NULL, \
-        0u, NULL, 0u, 0.0, 0.0, 0, 0, 0, \
-        SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
-        "string suboption must not be empty.", NULL, \
-        { \
-            SIXEL_SUBOPTION_TARGET_COMPLETION, \
-            SIXEL_SUBOPTION_STORAGE_STRING, \
-            SIXEL_REGISTRY_CHECKED_OFFSET( \
-                sixel_completion_policy_options_t, field_, char const *), \
-            SIXEL_SUBOPTION_OFFSET_NONE, \
-            SIXEL_REGISTRY_CHECKED_OFFSET( \
-                sixel_completion_policy_options_t, override_, int), \
-            SIXEL_SUBOPTION_OFFSET_NONE, \
-            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        }, NULL, 0ULL \
-    }
-
 #define SIXEL_REGISTRY_FLOAT( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_) \
     SIXEL_REGISTRY_NUMBER( \
@@ -1344,10 +1323,6 @@ static sixel_option_value_schema_t const g_terminal_policy_values[] = {
     { "1", 1, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
 };
 
-static sixel_option_value_schema_t const g_completion_policy_values[] = {
-    { "auto", 0, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
-};
-
 static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
     { "preserve", SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE },
     { "linear", SIXEL_RUNTIME_RESIZE_PRECISION_LINEAR32 },
@@ -1717,22 +1692,6 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_clipboard_policy_values + SIXEL_CLIPBOARD_BASE_FILE,
         "directory", 'D', "SIXEL_CLIPBOARD_FILE_DIR",
         directory, directory_override),
-    SIXEL_REGISTRY_COMPLETION_STRING(
-        SIXEL_OPTION_SCHEMA_COMPLETION_POLICY, NULL,
-        "bash_path", 'B', "IMG2SIXEL_COMPLETION_BASH",
-        bash_path, bash_path_override),
-    SIXEL_REGISTRY_COMPLETION_STRING(
-        SIXEL_OPTION_SCHEMA_COMPLETION_POLICY, NULL,
-        "zsh_path", 'Z', "IMG2SIXEL_COMPLETION_ZSH",
-        zsh_path, zsh_path_override),
-    SIXEL_REGISTRY_COMPLETION_STRING(
-        SIXEL_OPTION_SCHEMA_COMPLETION_POLICY, NULL,
-        "directory", 'D', "IMG2SIXEL_COMPLETION_DIR",
-        directory, directory_override),
-    SIXEL_REGISTRY_COMPLETION_STRING(
-        SIXEL_OPTION_SCHEMA_COMPLETION_POLICY, NULL,
-        "home", 'H', "IMG2SIXEL_COMPLETION_HOME",
-        home, home_override),
     SIXEL_REGISTRY_DIAGNOSTICS_INT(
         SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
         "log_lines", 'N', "SIXEL_LOG_LINES",
@@ -3156,16 +3115,6 @@ static sixel_option_argument_schema_t const g_options[] = {
         "terminal policy must be 0 or 1.",
         0,
         g_terminal_policy_values),
-    SIXEL_REGISTRY_OPTION_SCHEMA(
-        SIXEL_OPTION_SCHEMA_COMPLETION_POLICY,
-        SIXEL_OPTION_SCOPE_ENCODER,
-        SIXEL_OPTFLAG_COMPLETION_POLICY,
-        "completion-policy",
-        SIXEL_OPTION_ARGUMENT_SINGLE,
-        SIXEL_OPTION_DEFAULT_FIXED,
-        0,
-        g_completion_policy_values,
-        NULL),
 };
 
 static int
@@ -4046,9 +3995,6 @@ sixel_option_registry_binding_scope_is_valid(
     case SIXEL_SUBOPTION_TARGET_DIAGNOSTICS:
     case SIXEL_SUBOPTION_TARGET_CLIPBOARD:
         allowed_scope = SIXEL_OPTION_SCOPE_ALL;
-        break;
-    case SIXEL_SUBOPTION_TARGET_COMPLETION:
-        allowed_scope = SIXEL_OPTION_SCOPE_ENCODER;
         break;
     default:
         return 0;

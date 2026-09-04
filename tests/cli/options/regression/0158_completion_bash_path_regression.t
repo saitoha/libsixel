@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify completion bash_path through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_COMPLETION_POLICY|NULL|bash_path
+# Registry row: IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY|NULL|bash_path
 # Registry binding: bash_path|bash_path_override
 # Completion contract: key=bash_path|configured=1|used=1
 

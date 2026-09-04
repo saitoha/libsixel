@@ -95,8 +95,7 @@ typedef enum sixel_suboption_target_class {
     SIXEL_SUBOPTION_TARGET_DEQUANTIZE,
     SIXEL_SUBOPTION_TARGET_RUNTIME,
     SIXEL_SUBOPTION_TARGET_DIAGNOSTICS,
-    SIXEL_SUBOPTION_TARGET_CLIPBOARD,
-    SIXEL_SUBOPTION_TARGET_COMPLETION
+    SIXEL_SUBOPTION_TARGET_CLIPBOARD
 } sixel_suboption_target_class_t;
 
 typedef enum sixel_suboption_storage_kind {
@@ -179,7 +178,6 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_LOG_PATH,
     SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY,
     SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
-    SIXEL_OPTION_SCHEMA_COMPLETION_POLICY,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
 
@@ -465,17 +463,6 @@ typedef struct sixel_clipboard_policy_options {
     int directory_override;
 } sixel_clipboard_policy_options_t;
 
-typedef struct sixel_completion_policy_options {
-    char const *bash_path;
-    int bash_path_override;
-    char const *zsh_path;
-    int zsh_path_override;
-    char const *directory;
-    int directory_override;
-    char const *home;
-    int home_override;
-} sixel_completion_policy_options_t;
-
 typedef enum sixel_clipboard_backend {
     SIXEL_CLIPBOARD_BACKEND_SYSTEM = 0,
     SIXEL_CLIPBOARD_BACKEND_FILE
@@ -707,37 +694,6 @@ SIXEL_INTERNAL_API int sixel_clipboard_policy_backend(void);
 SIXEL_INTERNAL_API int sixel_clipboard_policy_copy_directory(
     char *buffer,
     size_t buffer_size);
-
-SIXEL_INTERNAL_API sixel_completion_policy_options_t *
-sixel_completion_policy_new(void);
-SIXEL_INTERNAL_API void
-sixel_completion_policy_free(sixel_completion_policy_options_t *options);
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_option_apply_completion_policy_argument(
-    sixel_completion_policy_options_t *options,
-    char const *argument,
-    char *diagnostic,
-    size_t diagnostic_size);
-SIXEL_INTERNAL_API int
-sixel_completion_policy_resolve_bash_path(
-    sixel_completion_policy_options_t const *options,
-    char const **path,
-    int *overridden);
-SIXEL_INTERNAL_API int
-sixel_completion_policy_resolve_zsh_path(
-    sixel_completion_policy_options_t const *options,
-    char const **path,
-    int *overridden);
-SIXEL_INTERNAL_API int
-sixel_completion_policy_resolve_directory(
-    sixel_completion_policy_options_t const *options,
-    char const **path,
-    int *overridden);
-SIXEL_INTERNAL_API int
-sixel_completion_policy_resolve_home(
-    sixel_completion_policy_options_t const *options,
-    char const **path,
-    int *overridden);
 
 SIXEL_INTERNAL_API int sixel_diagnostics_mode_is_code(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_quiet_is_enabled(void);

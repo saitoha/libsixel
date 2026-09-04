@@ -1,5 +1,5 @@
 #!/bin/sh
-# Emit TAP for the single suboption registry and its mandatory metadata.
+# Emit TAP for the typed suboption registries and their mandatory metadata.
 
 set -eux
 
@@ -8,6 +8,7 @@ set -v
 
 src_root=$1
 registry_file=$src_root/src/options-registry.c
+completion_registry_file=$src_root/converters/completion_utils.c
 help_file=$src_root/converters/img2sixel.c
 man_file=$src_root/converters/img2sixel.1
 decoder_help_file=$src_root/converters/sixel2png.c
@@ -19,6 +20,12 @@ dispatchers=
 test -f "$registry_file" || {
     echo "not ok 1 - suboptions use one complete registry"
     echo "# missing src/options-registry.c"
+    exit 0
+}
+
+test -f "$completion_registry_file" || {
+    echo "not ok 1 - suboptions use one complete registry"
+    echo "# missing converters/completion_utils.c"
     exit 0
 }
 
@@ -501,7 +508,7 @@ BEGIN {
     unknown_initializer = 0
     unknown_preprocessor = 0
 }
-/g_suboptions\[\][[:space:]]*=[[:space:]]*\{/ {
+/(g_suboptions|g_img2sixel_completion_policy_keys)\[\][[:space:]]*=[[:space:]]*\{/ {
     in_registry = 1
     next
 }
@@ -552,7 +559,7 @@ END {
     }
     exit failed ? 1 : 0
 }
-' "$registry_file" || {
+' "$registry_file" "$completion_registry_file" || {
     echo "not ok 1 - suboptions use one complete registry"
     exit 0
 }
@@ -566,6 +573,7 @@ test -f "$help_file" -a -f "$man_file" || {
 # Both user-visible references must carry every long-to-short mapping.  The
 # compact tables use name=A, while loader prose uses "short form Avalue".
 awk -v registry_file="$registry_file" \
+    -v completion_registry_file="$completion_registry_file" \
     -v help_file="$help_file" \
     -v man_file="$man_file" \
     -v decoder_help_file="$decoder_help_file" \
@@ -649,8 +657,8 @@ BEGIN {
     in_row = 0
     failed = 0
 }
-FILENAME == registry_file {
-    if ($0 ~ /g_suboptions\[\][[:space:]]*=[[:space:]]*\{/) {
+FILENAME == registry_file || FILENAME == completion_registry_file {
+    if ($0 ~ /(g_suboptions|g_img2sixel_completion_policy_keys)\[\][[:space:]]*=[[:space:]]*\{/) {
         in_registry = 1
         next
     }
@@ -703,7 +711,7 @@ END {
     }
     exit failed ? 1 : 0
 }
-' "$registry_file" "$help_file" "$man_file" \
+' "$registry_file" "$completion_registry_file" "$help_file" "$man_file" \
     "$decoder_help_file" "$decoder_man_file" || {
     echo "not ok 1 - suboptions use one complete registry"
     exit 0
@@ -823,7 +831,8 @@ test -d "$regression_dir" || {
     exit 0
 }
 
-awk -v registry_file="$registry_file" '
+awk -v registry_file="$registry_file" \
+    -v completion_registry_file="$completion_registry_file" '
 function fail(message) {
     print "# " message
     failed = 1
@@ -959,7 +968,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
             name == "directory") {
         expected_clipboard_contract[key] = "backend=file|directory=1"
     }
-    if (option_id == "SIXEL_OPTION_SCHEMA_COMPLETION_POLICY") {
+    if (option_id == "IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY") {
         expected_completion_contract[key] = \
             "key=" name "|configured=1|used=1"
     }
@@ -1011,8 +1020,8 @@ BEGIN {
     registry_rows = 0
     test_rows = 0
 }
-FILENAME == registry_file {
-    if ($0 ~ /g_suboptions\[\][[:space:]]*=[[:space:]]*\{/) {
+FILENAME == registry_file || FILENAME == completion_registry_file {
+    if ($0 ~ /(g_suboptions|g_img2sixel_completion_policy_keys)\[\][[:space:]]*=[[:space:]]*\{/) {
         in_registry = 1
         next
     }
@@ -1316,7 +1325,7 @@ END {
     for (file in test_key) {
         key = test_key[file]
         is_completion = expected_option[key] == \
-            "SIXEL_OPTION_SCHEMA_COMPLETION_POLICY"
+            "IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY"
         if (test_binding[file] != expected_binding[key]) {
             fail(file " binding does not match registry field selection")
         }
@@ -1510,7 +1519,7 @@ END {
     }
     exit failed ? 1 : 0
 }
-' "$registry_file" "$regression_dir"/*.t || {
+' "$registry_file" "$completion_registry_file" "$regression_dir"/*.t || {
     echo "not ok 1 - suboptions use one complete registry"
     exit 0
 }

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify completion home through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_COMPLETION_POLICY|NULL|home
+# Registry row: IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY|NULL|home
 # Registry binding: home|home_override
 # Completion contract: key=home|configured=1|used=1
 
