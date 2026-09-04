@@ -1,0 +1,133 @@
+{
+  "build": {
+    "cc": "gcc",
+    "cflags": "-g -O2 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": ""
+  },
+  "generated_at_utc": "2026-09-04T02:01:23.278747+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "numpy": "2.5.2",
+    "pillow": "12.3.0",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.5"
+  },
+  "input": {
+    "crop_size": 256,
+    "field_size": 512,
+    "gray_palette": "gray4",
+    "kind": "generated constant RGB P6 fields",
+    "ordered_inputs_sha256": "48ab7fd8c7d4e97fa9a37846cb96a25a1685eb4854bc2889fbe9bb80f45d20ff",
+    "tone_values": [
+      8,
+      26,
+      42,
+      60,
+      76,
+      94,
+      110,
+      128,
+      144,
+      162,
+      178,
+      196,
+      212,
+      230,
+      246
+    ]
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "cb9bf006d732078772304e4264e04c3d7058f3b578b391268319b4b669740924",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "b083ca933054c7c5f66d5df7f92d69c91cac0552da321e237db635641180f0f8"
+    }
+  },
+  "protocol": {
+    "angular_bins": 36,
+    "anisotropy_analysis_min_nyquist": 0.05,
+    "excluded": {
+      "auto": "selector rather than a concrete method",
+      "interframe": "requires an animation protocol",
+      "stbn": "requires an animation protocol"
+    },
+    "gpu_policy": "off",
+    "loader": "builtin!",
+    "lookup_policy": "none",
+    "low_frequency_cutoff_nyquist": 0.25,
+    "methods": [
+      {
+        "diffusion_option": "none:scan=raster",
+        "name": "none"
+      },
+      {
+        "diffusion_option": "fs:scan=raster",
+        "name": "fs"
+      },
+      {
+        "diffusion_option": "atkinson:scan=raster",
+        "name": "atkinson"
+      },
+      {
+        "diffusion_option": "jajuni:scan=raster",
+        "name": "jajuni"
+      },
+      {
+        "diffusion_option": "stucki:scan=raster",
+        "name": "stucki"
+      },
+      {
+        "diffusion_option": "burkes:scan=raster",
+        "name": "burkes"
+      },
+      {
+        "diffusion_option": "sierra:variant=1:scan=raster",
+        "name": "sierra1"
+      },
+      {
+        "diffusion_option": "sierra:variant=2:scan=raster",
+        "name": "sierra2"
+      },
+      {
+        "diffusion_option": "sierra:variant=3:scan=raster",
+        "name": "sierra3"
+      },
+      {
+        "diffusion_option": "lso2:scan=raster",
+        "name": "lso2"
+      },
+      {
+        "diffusion_option": "a_dither:strength=0.150:scan=raster",
+        "name": "a_dither"
+      },
+      {
+        "diffusion_option": "x_dither:strength=0.100:scan=raster",
+        "name": "x_dither"
+      },
+      {
+        "diffusion_option": "bluenoise:strength=0.055:gradient_factor=0:phase=0,0:channel=mono:size=64:scan=raster",
+        "name": "bluenoise"
+      }
+    ],
+    "output": "palette-preserving PNG stdout",
+    "periodogram_normalization": "unit AC energy per active tone, then arithmetic mean",
+    "precision": "8bit",
+    "radial_bins": 64,
+    "scan": "raster",
+    "sixel_environment_removed": true,
+    "threads": 1,
+    "window": "separable Hann",
+    "working_colorspace": "gamma"
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "e8c32d3693bf5bed3891b7b6dfb305a2a5319eda",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}

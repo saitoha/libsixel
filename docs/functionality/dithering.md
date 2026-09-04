@@ -641,6 +641,149 @@ quality characteristic needs spatial context. Follow the
 [Quality Measurement Policy](../quality/measurement-policy.md) for thresholds
 and shell TAP conventions.
 
+## Measured spatial error spectra
+
+### What the figures measure
+
+The following figures isolate the spatial arrangement of luma error on flat
+fields. They are modeled after the comparative presentation in de Goes et
+al.'s [*Blue Noise through Optimal Transport*](https://www.geometry.caltech.edu/pubs/dGBOD12.pdf),
+but they measure a different random field. That paper analyzes sampling-point
+processes; this experiment analyzes the decoded luma error produced by each
+libsixel dither policy. The figures are original outputs from the scripts in
+this repository, not reproductions of a figure from the paper.
+
+![Overview of all measured dither error spectra](dither-policies/measurements/dither-policy-spectrum-overview.png)
+
+The upper row groups all concrete static methods into three readable radial
+power plots. The lower matrix gives the same run's scalar descriptors so that
+all methods can be compared in one image. Cell shade ranks values within a
+column and does not mean “better” or “worse.” In particular, RMS error and
+spectral shape answer different questions.
+
+![Detailed spatial error spectrum atlas for every measured dither method](dither-policies/measurements/dither-policy-spectrum-atlas.png)
+
+Each atlas row contains:
+
+1. the signed luma-error texture for the middle gray threshold;
+2. the mean two-dimensional periodogram, with DC at the center;
+3. the radial mean power as a function of spatial frequency; and
+4. angular power variance as a function of spatial frequency.
+
+Bright energy near the center of a periodogram is slowly varying error that
+can appear as broad bands or blotches. Energy near the outside is finer error.
+A circular spectrum is isotropic. A streak, ellipse, lattice, or discrete peak
+reveals orientation or periodicity; a spectral direction is perpendicular to
+the corresponding stripe orientation in the image domain.
+
+For each input tone `t`, the script forms the central-crop error field
+
+```text
+E_t(x, y) = decoded_luma_t(x, y) - input_luma_t
+```
+
+subtracts its mean, applies a separable Hann window `w`, and computes
+
+```text
+P_t(f_x, f_y) = |FFT(w (E_t - mean(E_t)))|^2
+```
+
+Every non-constant `P_t` is normalized to unit AC energy before the 15 tones
+are averaged. This prevents a tone with a larger error amplitude from
+dominating the shape comparison. RMS luma error is retained separately so the
+normalization does not hide amplitude.
+
+The low-frequency ratio is the fraction of circular-spectrum energy below
+0.25 Nyquist. The reported anisotropy is
+
+```text
+A = 10 log10(variance_theta(P) / mean_theta(P)^2) dB
+```
+
+over angular sectors above 0.05 Nyquist. More-negative values have less
+angular variation and are therefore more isotropic under this definition.
+Spectral flatness is the geometric-to-arithmetic mean power ratio. It helps
+distinguish a broadly filled spectrum from sparse periodic peaks, even when
+both have similar radial averages or anisotropy.
+
+### Results of the controlled flat-field run
+
+The results at revision `e8c32d369` establish several distinct properties:
+
+- The fixed and adaptive diffusion methods put only 0.013 to 0.400 percent of
+  their AC energy below 0.25 Nyquist. The three positional methods put 1.469
+  to 4.656 percent there. This does not make every diffusion result
+  perceptually superior; it only shows stronger low-frequency suppression on
+  these fixed-palette flat fields.
+- `bluenoise` has the lowest aggregate anisotropy, -18.1 dB. Its low spectral
+  flatness, 0.002, and visible frequency comb also expose the embedded
+  64-by-64 tile. Isotropy does not imply aperiodicity.
+- `a_dither` has the largest angular variance, 5.8 dB, and near-zero spectral
+  flatness because its arithmetic threshold rule produces a sparse oriented
+  lattice. `x_dither` is more angularly balanced at -7.8 dB and has the
+  largest measured flatness, 0.364, although its two-dimensional spectrum
+  still exposes deterministic structure.
+- Jarvis--Judice--Ninke, Stucki, Burkes, Sierra-2, and Sierra-3 measure between
+  -0.8 and -5.7 dB aggregate anisotropy under raster scan. Their broader
+  kernels are more angularly balanced here than Floyd--Steinberg, Atkinson,
+  Sierra-1, and `lso2`, whose values range from 0.4 to 2.2 dB.
+- `none` maps each constant input to one constant palette entry. Subtracting
+  the mean removes all of its error energy, so its AC spectrum and isotropy
+  are undefined rather than zero. It has the smallest RMS luma error in this
+  experiment; shaping error spatially is not the same as minimizing
+  independent per-pixel error.
+
+The complete scalar values are in
+[`dither-spectrum-summary.csv`](dither-policies/measurements/dither-spectrum-summary.csv),
+the 64-bin radial curves are in
+[`dither-spectrum-curves.csv`](dither-policies/measurements/dither-spectrum-curves.csv),
+and exact commands, hashes, tool versions, and build configuration are in
+[`dither-spectrum-run.json`](dither-policies/measurements/dither-spectrum-run.json).
+
+### Controlled spectrum protocol
+
+The script generates 512-by-512 constant RGB P6 fields in memory at the 15
+integer tones nearest the decision thresholds of the fixed 16-level `gray4`
+palette. It analyzes the central 256-by-256 crop to reduce image-boundary
+effects. All methods use an 8-bit gamma-RGB palette-application path, direct
+`--lookup-policy=none`, one worker, raster scan, and disabled GPU assistance.
+The output is captured as palette-preserving PNG and decoded in memory.
+
+Explicit raster order makes the comparison about the selected policy rather
+than its default scan setting. Fixed palette construction removes palette
+generation as another variable. The protocol does not measure color-channel
+interactions, natural-image gradients and edges, serpentine scan, parallel
+band seams, GPU behavior, animation, or temporal spectra. The natural-image
+MS-SSIM, Delta E00, size, and latency sweep below remains necessary.
+
+### Reproducing the spectrum figures
+
+Configure an Autotools build, install Python NumPy, Pillow, and Matplotlib,
+commit the implementation to be measured, and run this one command from a
+tracked-clean worktree:
+
+```sh
+PYTHON=.venv/bin/python tools/reproduce_dither_spectrum_measurements.sh
+```
+
+The shell runner rebuilds `img2sixel`, generates the synthetic inputs in
+memory, executes all 13 methods over all 15 tones, writes the two PNG figures
+and both CSV files, records provenance, and runs the completeness checker. An
+optional first argument selects another output directory. To validate existing
+artifacts without measuring again, run:
+
+```sh
+.venv/bin/python tools/check_dither_spectrum_measurements.py \
+  docs/functionality/dither-policies/measurements
+```
+
+The runner refuses to publish measurements from a dirty tracked worktree, and
+the checker independently rejects such provenance. Rerun the one-shot command
+after changes to a dither policy, scan behavior, palette application, fixed
+palette values, image output, or the spectral-analysis scripts. Review the
+plots, CSV values, metadata, and prose together before committing regenerated
+results.
+
 ## Measured static-image quality, size, and speed
 
 ### Questions and scope
