@@ -101,6 +101,32 @@ This coupling must first be described and covered by tests. Separating policy
 from scheduling before preserving both paths would silently change palette
 quality, output size, and performance.
 
+The migration names the two current successful paths without changing their
+selection:
+
+| Effective sampling | Input source | Current selection |
+| --- | --- | --- |
+| `adaptive-grid` | loaded frame | The planner admits the palette worker. |
+| `full-frame` | preprocessed frame | The palette worker is not admitted. |
+
+The current admission rule subtracts one unit for each active clip, resize,
+and colorspace operation from the resolved thread count. The palette worker is
+admitted only when more than one unit remains. A normal resize also introduces
+the colorspace work needed to resize in linear RGB, so it currently consumes
+two units. The resulting boundary cases are:
+
+| Active work | Heavy-operation count | First thread count using `adaptive-grid` |
+| --- | ---: | ---: |
+| none | 0 | 2 |
+| clip or colorspace conversion | 1 | 3 |
+| resize | 2 | 4 |
+| clip and resize | 3 | 5 |
+
+`LSXSPL1` records the requested and effective sampling names, input source,
+lifecycle phase, resolution reason, thread count, heavy-operation count, and
+both thread-budget admission and final palette-job readiness. Fixed, preserved,
+and high-color palette paths mark sampling as bypassed.
+
 There is a second legacy coupling on the failure path. The palette worker was
 introduced as an opportunistic overlap optimization, so inability to use it
 must not by itself stop encoding. A thread-creation failure after sampling can

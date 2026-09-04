@@ -102,6 +102,34 @@ sixel_palette_policy_mark_executed(
 }
 
 SIXELSTATUS
+sixel_palette_sampling_resolve(
+    sixel_palette_frame_state_t *state,
+    sixel_palette_sampling_policy_t effective,
+    sixel_palette_sampling_source_t source,
+    sixel_palette_resolution_reason_t reason)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+    if (state == NULL ||
+            (effective != SIXEL_PALETTE_SAMPLING_FULL_FRAME &&
+             effective != SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID) ||
+            (source != SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME &&
+             source !=
+                SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_palette_policy_resolve(&state->sampling,
+                                          effective,
+                                          reason);
+    if (SIXEL_SUCCEEDED(status)) {
+        state->sampling_source = source;
+    }
+    return status;
+}
+
+SIXELSTATUS
 sixel_palette_policy_mark_bypassed(
     sixel_palette_policy_resolution_t *resolution)
 {
@@ -130,6 +158,7 @@ sixel_palette_frame_state_init(sixel_palette_frame_state_t *state)
         &state->sampling,
         SIXEL_PALETTE_POLICY_VALUE_UNSET,
         SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);
+    state->sampling_source = SIXEL_PALETTE_SAMPLING_SOURCE_NONE;
     sixel_palette_policy_resolution_init(
         &state->binning,
         SIXEL_PALETTE_POLICY_VALUE_UNSET,

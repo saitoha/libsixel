@@ -56,6 +56,19 @@ typedef enum sixel_palette_resolution_reason {
     SIXEL_PALETTE_RESOLUTION_NOT_APPLICABLE
 } sixel_palette_resolution_reason_t;
 
+/* Internal sampling names used while the legacy scheduler split is retained. */
+typedef enum sixel_palette_sampling_policy {
+    SIXEL_PALETTE_SAMPLING_AUTO = 0,
+    SIXEL_PALETTE_SAMPLING_FULL_FRAME,
+    SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID
+} sixel_palette_sampling_policy_t;
+
+typedef enum sixel_palette_sampling_source {
+    SIXEL_PALETTE_SAMPLING_SOURCE_NONE = 0,
+    SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME,
+    SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME
+} sixel_palette_sampling_source_t;
+
 #define SIXEL_PALETTE_POLICY_VALUE_UNSET (-1)
 
 typedef struct sixel_palette_policy_resolution {
@@ -69,6 +82,7 @@ typedef struct sixel_palette_policy_resolution {
 /* Per-frame palette policy state owned by the existing encode DAG context. */
 typedef struct sixel_palette_frame_state {
     sixel_palette_policy_resolution_t sampling;
+    sixel_palette_sampling_source_t sampling_source;
     sixel_palette_policy_resolution_t binning;
     sixel_palette_policy_resolution_t quantizer;
 } sixel_palette_frame_state_t;
@@ -83,6 +97,13 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_policy_resolve(
     sixel_palette_policy_resolution_t *resolution,
     int effective,
+    sixel_palette_resolution_reason_t reason);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_sampling_resolve(
+    sixel_palette_frame_state_t *state,
+    sixel_palette_sampling_policy_t effective,
+    sixel_palette_sampling_source_t source,
     sixel_palette_resolution_reason_t reason);
 
 SIXEL_INTERNAL_API SIXELSTATUS

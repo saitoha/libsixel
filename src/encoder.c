@@ -475,6 +475,128 @@ sixel_encoder_trace_palette_fallback(
         result);
 }
 
+static char const *
+sixel_palette_sampling_policy_name(int policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_SAMPLING_AUTO:
+        return "auto";
+    case SIXEL_PALETTE_SAMPLING_FULL_FRAME:
+        return "full-frame";
+    case SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID:
+        return "adaptive-grid";
+    case SIXEL_PALETTE_POLICY_VALUE_UNSET:
+    default:
+        return "unset";
+    }
+}
+
+static char const *
+sixel_palette_sampling_source_name(sixel_palette_sampling_source_t source)
+{
+    switch (source) {
+    case SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME:
+        return "loaded-frame";
+    case SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME:
+        return "preprocessed-frame";
+    case SIXEL_PALETTE_SAMPLING_SOURCE_NONE:
+    default:
+        return "none";
+    }
+}
+
+static char const *
+sixel_palette_policy_origin_name(sixel_palette_policy_origin_t origin)
+{
+    switch (origin) {
+    case SIXEL_PALETTE_POLICY_ORIGIN_AUTO:
+        return "auto";
+    case SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT:
+        return "explicit";
+    case SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS:
+        return "legacy-alias";
+    case SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT:
+    default:
+        return "default";
+    }
+}
+
+static char const *
+sixel_palette_policy_phase_name(sixel_palette_policy_phase_t phase)
+{
+    switch (phase) {
+    case SIXEL_PALETTE_POLICY_RESOLVED:
+        return "resolved";
+    case SIXEL_PALETTE_POLICY_EXECUTED:
+        return "executed";
+    case SIXEL_PALETTE_POLICY_BYPASSED:
+        return "bypassed";
+    case SIXEL_PALETTE_POLICY_UNRESOLVED:
+    default:
+        return "unresolved";
+    }
+}
+
+static char const *
+sixel_palette_resolution_reason_name(
+    sixel_palette_resolution_reason_t reason)
+{
+    switch (reason) {
+    case SIXEL_PALETTE_RESOLUTION_EXPLICIT:
+        return "explicit";
+    case SIXEL_PALETTE_RESOLUTION_LEGACY_COMPAT:
+        return "legacy-compat";
+    case SIXEL_PALETTE_RESOLUTION_INPUT_METADATA:
+        return "input-metadata";
+    case SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA:
+        return "sample-metadata";
+    case SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY:
+        return "quantizer-capability";
+    case SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE:
+        return "resource-profile";
+    case SIXEL_PALETTE_RESOLUTION_NOT_APPLICABLE:
+        return "not-applicable";
+    case SIXEL_PALETTE_RESOLUTION_NONE:
+    default:
+        return "none";
+    }
+}
+
+static void
+sixel_encoder_trace_sampling_plan(
+    sixel_palette_frame_state_t const *state,
+    sixel_encoding_planner_t const *planner,
+    int palette_job_ready)
+{
+    sixel_palette_policy_resolution_t const *sampling;
+    int total_threads;
+    int heavy_ops;
+    int allow_async;
+
+    if (state == NULL) {
+        return;
+    }
+    sampling = &state->sampling;
+    total_threads = planner != NULL ? planner->total_threads : 0;
+    heavy_ops = planner != NULL ? planner->heavy_ops : 0;
+    allow_async = planner != NULL ? planner->allow_palette_async : 0;
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXSPL1|requested=%s|effective=%s|source=%s|origin=%s|"
+        "phase=%s|reason=%s|threads=%d|heavy=%d|budget_async=%d|"
+        "job_ready=%d",
+        sixel_palette_sampling_policy_name(sampling->requested),
+        sixel_palette_sampling_policy_name(sampling->effective),
+        sixel_palette_sampling_source_name(state->sampling_source),
+        sixel_palette_policy_origin_name(sampling->origin),
+        sixel_palette_policy_phase_name(sampling->phase),
+        sixel_palette_resolution_reason_name(sampling->reason),
+        total_threads,
+        heavy_ops,
+        allow_async,
+        palette_job_ready != 0);
+}
+
 typedef struct sixel_palette_builder_context {
     sixel_encoder_t *encoder;
     int allow_cache;
@@ -4412,6 +4534,7 @@ static SIXELSTATUS
 sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
+    SIXELSTATUS sampling_status;
     int clustering_pixelformat;
 
     if (context == NULL) {
@@ -4440,6 +4563,15 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
             context->palette_job_failure_stage =
                 context->palette_job.failure_stage;
             context->palette_job_failure_status = status;
+        }
+        if (SIXEL_SUCCEEDED(status) ||
+                context->palette_job.failure_stage ==
+                    SIXEL_PALETTE_JOB_FAILURE_THREAD_CREATE) {
+            sampling_status = sixel_palette_policy_mark_executed(
+                &context->palette.sampling);
+            if (SIXEL_FAILED(sampling_status)) {
+                return sampling_status;
+            }
         }
     } else {
         context->palette_job_failure_stage =
@@ -4657,6 +4789,7 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     int histogram_colors;
     int method_for_diffuse;
     int skip_palette_diffusion;
+    int full_frame_sampling;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -4665,6 +4798,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     histogram_colors = 0;
     method_for_diffuse = SIXEL_DIFFUSE_NONE;
     skip_palette_diffusion = 0;
+    full_frame_sampling =
+        context->palette.sampling.effective ==
+            SIXEL_PALETTE_SAMPLING_FULL_FRAME &&
+        context->palette.sampling.phase == SIXEL_PALETTE_POLICY_RESOLVED;
     fallback_cause = context->palette_job_failure_status;
     fallback_stage = context->palette_job_failure_stage;
 
@@ -4714,6 +4851,9 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         }
         if (status != SIXEL_OK) {
             context->dither = NULL;
+        } else if (full_frame_sampling != 0) {
+            status = sixel_palette_policy_mark_executed(
+                &context->palette.sampling);
         }
     }
     if (context->palette_job_initialized != 0) {
@@ -7606,6 +7746,7 @@ sixel_encoder_encode_frame_internal(
     sixel_encoding_planner_t *planner;
     int target_pixelformat;
     int palette_ready;
+    int sampling_required;
     int clip_active;
     int current_pixelformat;
     int current_colorspace;
@@ -7644,6 +7785,10 @@ sixel_encoder_encode_frame_internal(
     memset(&context.gradient_config, 0, sizeof(context.gradient_config));
     memset(&context.dither_config, 0, sizeof(context.dither_config));
     sixel_palette_frame_state_init(&context.palette);
+    sixel_palette_policy_resolution_init(
+        &context.palette.sampling,
+        SIXEL_PALETTE_SAMPLING_AUTO,
+        SIXEL_PALETTE_POLICY_ORIGIN_AUTO);
     sixel_palette_policy_resolution_init(
         &context.palette.quantizer,
         encoder->quantize_model,
@@ -7752,6 +7897,40 @@ sixel_encoder_encode_frame_internal(
     context.current_pixelformat = current_pixelformat;
     context.current_colorspace = current_colorspace;
 
+    sampling_required = 1;
+    if (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT) {
+        sampling_required = 0;
+    } else if ((current_pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0
+            && planner != NULL
+            && planner->scale_active == 0
+            && sixel_frame_get_palette(context.frame) != NULL
+            && sixel_frame_get_ncolors(context.frame) > 0
+            && sixel_frame_get_ncolors(context.frame)
+                <= encoder->reqcolors) {
+        sampling_required = 0;
+    }
+    if (sampling_required != 0) {
+        if (palette_ready != 0) {
+            status = sixel_palette_sampling_resolve(
+                &context.palette,
+                SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID,
+                SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME,
+                SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
+        } else {
+            status = sixel_palette_sampling_resolve(
+                &context.palette,
+                SIXEL_PALETTE_SAMPLING_FULL_FRAME,
+                SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME,
+                SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
+        }
+    } else {
+        status = sixel_palette_policy_mark_bypassed(
+            &context.palette.sampling);
+    }
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
     /*
      * DAG layout:
      *   load -> palette_launch -> palette_collect -> dither -> output
@@ -7804,6 +7983,9 @@ sixel_encoder_encode_frame_internal(
 
 
 end:
+    sixel_encoder_trace_sampling_plan(&context.palette,
+                                      planner,
+                                      context.palette_ready);
     if (encoder != NULL && encoder->logger != NULL) {
         sixel_timeline_logger_clear_frame_context(encoder->logger);
     }
