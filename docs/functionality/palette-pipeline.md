@@ -256,6 +256,14 @@ disguised as an image frame:
 FRAME -> SAMPLE_STREAM -> WEIGHTED_POINT_SET -> PALETTE -> LOOKUP
 ```
 
+The initial `SAMPLE_STREAM` representation retains a frame payload adapter so
+the execution path can migrate without copying pixels a second time. It records
+the effective sampling policy, input source, point count, dimensions, pixel
+format, colorspace, and whether the frame is borrowed or owned. A borrowed
+full-frame view never changes the frame reference count; an owned adaptive
+sample transfers its frame reference into the artifact. This distinction is
+explicit even though both currently use contiguous frame storage.
+
 Algorithmic services may be shared below a filter, such as solid-color
 detection or lookup construction. Such services must not duplicate the
 filter's complete execution contract or provide an alternate orchestration

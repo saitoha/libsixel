@@ -206,6 +206,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmeans-build.c \
 	$(srcdir)/palette-kmeans-build.h $(srcdir)/palette-kmeans.h \
 	$(srcdir)/palette-plan.c $(srcdir)/palette-plan.h \
+	$(srcdir)/sample-stream.c $(srcdir)/sample-stream.h \
 	$(srcdir)/palette-kmedoids.c $(srcdir)/palette-kmedoids.h \
 	$(srcdir)/palette-kcenter.c $(srcdir)/palette-kcenter.h \
 	$(srcdir)/palette.c $(srcdir)/palette-factory.h \
@@ -380,6 +381,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-assign.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-build.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-plan.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sample-stream.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmedoids.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kcenter.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette.lo \
@@ -662,6 +664,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-planner.Plo \
 	./$(DEPDIR)/libsixel_la-probe.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
+	./$(DEPDIR)/libsixel_la-sample-stream.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
 	./$(DEPDIR)/libsixel_la-sixel-writer.Plo \
 	./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo \
@@ -1082,6 +1085,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-plan.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-plan.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sample-stream.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sample-stream.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmedoids.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmedoids.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kcenter.c \
@@ -1671,6 +1676,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-planner.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-probe.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sample-stream.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel-writer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo@am__quote@ # am--include-marker
@@ -1953,6 +1959,13 @@ libsixel_la-palette-plan.lo: palette-plan.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-plan.c' object='libsixel_la-palette-plan.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-plan.lo `test -f 'palette-plan.c' || echo '$(srcdir)/'`palette-plan.c
+
+libsixel_la-sample-stream.lo: sample-stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sample-stream.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sample-stream.Tpo -c -o libsixel_la-sample-stream.lo `test -f 'sample-stream.c' || echo '$(srcdir)/'`sample-stream.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-sample-stream.Tpo $(DEPDIR)/libsixel_la-sample-stream.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sample-stream.c' object='libsixel_la-sample-stream.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sample-stream.lo `test -f 'sample-stream.c' || echo '$(srcdir)/'`sample-stream.c
 
 libsixel_la-palette-kmedoids.lo: palette-kmedoids.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmedoids.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmedoids.Tpo -c -o libsixel_la-palette-kmedoids.lo `test -f 'palette-kmedoids.c' || echo '$(srcdir)/'`palette-kmedoids.c
@@ -3114,6 +3127,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-planner.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel-writer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo
@@ -3309,6 +3323,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-planner.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel-writer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo

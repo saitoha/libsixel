@@ -51,6 +51,8 @@ srcs = [
   'palette-kmeans-build.h',
   'palette-plan.c',
   'palette-plan.h',
+  'sample-stream.c',
+  'sample-stream.h',
   'palette-kmedoids.c',
   'palette-kmedoids.h',
   'palette-kcenter.c',

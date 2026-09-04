@@ -205,6 +205,7 @@ int test_palette_0005_cover_anchor(int argc, char **argv);
 int test_palfb_0006_conversion(int argc, char **argv);
 int test_palfb_0007_output(int argc, char **argv);
 int test_palette_0008_palette_policy_resolution(int argc, char **argv);
+int test_palette_0025_sample_stream(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
 int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
@@ -483,6 +484,7 @@ static test_entry_t const test_entries[] = {
       test_palfb_0007_output },
     { "palette/0008_palette_policy_resolution",
       test_palette_0008_palette_policy_resolution },
+    { "palette/0025_sample_stream", test_palette_0025_sample_stream },
     { "cli/0029_cli_token_is_known_option",
       test_cli_0029_cli_token_is_known_option },
     { "cli/0030_cli_option_requires_argument",
