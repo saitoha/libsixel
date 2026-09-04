@@ -246,6 +246,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0030_BINNING_POLICY_CONTRACT \
     -DBUILD_TEST_0031_WEIGHTED_POINT_SET \
     -DBUILD_TEST_0032_KMEANS_BINNING_LEGACY_OUTPUT \
+    -DBUILD_TEST_0033_QUANTIZER_CAPABILITIES \
+    -DBUILD_TEST_0034_PALETTE_STAGE_RESOLVERS \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -487,6 +489,8 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0030_binning_policy_contract.c \
     quant/palette/0031_weighted_point_set.c \
     quant/palette/0032_kmeans_binning_legacy_output.c \
+    quant/palette/0033_quantizer_capabilities.c \
+    quant/palette/0034_palette_stage_resolvers.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \

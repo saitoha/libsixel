@@ -907,9 +907,22 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                             sixel_encoder_t *encoder,
                             sixel_frame_t *frame)
 {
+    SIXELSTATUS status;
+    sixel_palette_sampling_resolver_input_t input;
+    sixel_palette_sampling_selection_t selection;
     sixel_palette_sampling_policy_t sampling_policy;
     int async_eligible;
 
+    status = SIXEL_FALSE;
+    input.requested = SIXEL_PALETTE_SAMPLING_AUTO;
+    input.total_threads = 1;
+    input.heavy_operations = 0;
+    input.async_eligible = 0;
+    selection.effective = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+    selection.source =
+        SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
+    selection.reason = SIXEL_PALETTE_RESOLUTION_NONE;
+    sampling_policy = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
     }
@@ -922,10 +935,14 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
      * through analyze, resolve, and schedule explicitly.
      */
     async_eligible = sixel_encoding_palette_job_eligible(encoder, frame);
-    sampling_policy = sixel_palette_sampling_select_auto(
-        planner->total_threads,
-        planner->heavy_ops,
-        async_eligible);
+    input.total_threads = planner->total_threads;
+    input.heavy_operations = planner->heavy_ops;
+    input.async_eligible = async_eligible;
+    status = sixel_palette_sampling_select(&input, &selection);
+    if (SIXEL_FAILED(status)) {
+        return;
+    }
+    sampling_policy = selection.effective;
     (void)sixel_encoding_planner_schedule(planner,
                                           encoder,
                                           frame,

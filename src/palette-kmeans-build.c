@@ -699,42 +699,6 @@ sixel_palette_kmeans_sum_byte_to_float(double component,
     return restored;
 }
 
-static sixel_kmeans_binning_mode
-sixel_kmeans_resolve_binning_for_input(sixel_kmeans_binning_mode mode,
-                                       unsigned int sample_count,
-                                       unsigned int reqcolors,
-                                       unsigned int autoratio)
-{
-    unsigned int colors;
-    unsigned int ratio;
-    unsigned int threshold;
-
-    colors = reqcolors;
-    ratio = autoratio;
-    threshold = 0u;
-    if (mode != SIXEL_PALETTE_KMEANS_BINNING_AUTO) {
-        return mode;
-    }
-
-    if (colors == 0u) {
-        colors = 1u;
-    }
-    if (ratio == 0u) {
-        ratio = 1u;
-    }
-    if (colors > UINT_MAX / ratio) {
-        threshold = UINT_MAX;
-    } else {
-        threshold = colors * ratio;
-    }
-
-    if (sample_count >= threshold) {
-        return SIXEL_PALETTE_KMEANS_BINNING_SOFT;
-    }
-
-    return SIXEL_PALETTE_KMEANS_BINNING_HARD;
-}
-
 static sixel_palette_binning_policy_t
 sixel_kmeans_binning_policy_from_legacy(sixel_kmeans_binning_mode mode)
 {
@@ -786,7 +750,8 @@ sixel_kmeans_build_point_set(
     double const scale[3],
     double const offset[3],
     sixel_kmeans_binning_mode requested_mode,
-    sixel_kmeans_binning_mode effective_mode,
+    unsigned int requested_colors,
+    unsigned int auto_ratio,
     unsigned int bits_per_axis,
     sixel_kmeans_mapping_mode mapping_mode,
     sixel_kmeans_softdist_mode softdist_mode,
@@ -800,7 +765,9 @@ sixel_kmeans_build_point_set(
     sixel_palette_binning_grid_map_t grid_map;
     sixel_palette_binning_kernel_t kernel;
     sixel_palette_binning_backend_t backend;
-    sixel_palette_resolution_reason_t reason;
+    sixel_palette_quantizer_capabilities_t capabilities;
+    sixel_palette_binning_resolver_input_t resolver_input;
+    sixel_palette_binning_selection_t selection;
     sixel_palette_binning_state_t raw_state;
     sixel_palette_binning_state_t binning;
     sixel_weighted_point_set_t raw_points;
@@ -810,11 +777,13 @@ sixel_kmeans_build_point_set(
 
     status = SIXEL_FALSE;
     requested = sixel_kmeans_binning_policy_from_legacy(requested_mode);
-    effective = sixel_kmeans_binning_policy_from_legacy(effective_mode);
+    effective = SIXEL_PALETTE_BINNING_AUTO;
     grid_map = SIXEL_PALETTE_BINNING_GRID_NONE;
     kernel = SIXEL_PALETTE_BINNING_KERNEL_NONE;
     backend = SIXEL_PALETTE_BINNING_BACKEND_DIRECT;
-    reason = SIXEL_PALETTE_RESOLUTION_EXPLICIT;
+    memset(&capabilities, 0, sizeof(capabilities));
+    memset(&resolver_input, 0, sizeof(resolver_input));
+    memset(&selection, 0, sizeof(selection));
     sixel_palette_binning_state_init(
         &raw_state,
         SIXEL_PALETTE_BINNING_NONE,
@@ -831,31 +800,46 @@ sixel_kmeans_build_point_set(
             output == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (requested_mode == SIXEL_PALETTE_KMEANS_BINNING_AUTO) {
-        reason = SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA;
+    status = sixel_palette_quantizer_capabilities_get(
+        SIXEL_QUANTIZE_MODEL_KMEANS,
+        &capabilities);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
     }
-    if (effective == SIXEL_PALETTE_BINNING_HARD ||
-            effective == SIXEL_PALETTE_BINNING_SOFT) {
-        grid_map = sixel_kmeans_binning_grid_from_legacy(mapping_mode);
-        backend = SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE;
+    resolver_input.requested = requested;
+    resolver_input.bits_per_axis = bits_per_axis;
+    resolver_input.grid_map =
+        sixel_kmeans_binning_grid_from_legacy(mapping_mode);
+    resolver_input.kernel = SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR;
+    resolver_input.backend =
+        SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE;
+    resolver_input.source_point_count = sample_count;
+    resolver_input.requested_colors = requested_colors;
+    resolver_input.auto_ratio = auto_ratio;
+    status = sixel_palette_binning_select(&resolver_input,
+                                          &capabilities,
+                                          &selection);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
     }
-    if (effective == SIXEL_PALETTE_BINNING_SOFT) {
+    effective = selection.effective;
+    grid_map = selection.grid_map;
+    kernel = selection.kernel;
+    backend = selection.backend;
+    if (selection.effective == SIXEL_PALETTE_BINNING_SOFT) {
         if (softdist_mode != SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR) {
-            return SIXEL_BAD_ARGUMENT;
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
         }
-        kernel = SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR;
-    }
-    if (effective == SIXEL_PALETTE_BINNING_NONE) {
-        bits_per_axis = 0u;
     }
     status = sixel_palette_binning_resolve(&binning,
                                            effective,
-                                           bits_per_axis,
+                                           selection.bits_per_axis,
                                            grid_map,
                                            kernel,
                                            backend,
                                            sample_count,
-                                           reason);
+                                           selection.reason);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -1262,7 +1246,6 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     float *float_palette_new;
     sixel_kmeans_init_type init_type;
     sixel_kmeans_binning_mode binning_mode;
-    sixel_kmeans_binning_mode resolved_binning_mode;
     sixel_kmeans_mapping_mode mapping_mode;
     sixel_kmeans_softdist_mode softdist_mode;
     sixel_kmeans_feedback_mode feedback_mode;
@@ -1466,7 +1449,6 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     float_palette_new = NULL;
     init_type = SIXEL_PALETTE_KMEANS_INIT_AUTO;
     binning_mode = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
-    resolved_binning_mode = SIXEL_PALETTE_KMEANS_BINNING_NONE;
     mapping_mode = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
     softdist_mode = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
     feedback_mode = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
@@ -1659,11 +1641,6 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     if (seed_enabled && seed_value == 0u) {
         seed_value = 1u;
     }
-    resolved_binning_mode = sixel_kmeans_resolve_binning_for_input(
-        binning_mode,
-        sample_count,
-        reqcolors,
-        autoratio);
     status = sixel_kmeans_build_point_set(samples,
                                           sample_count,
                                           input_is_,
@@ -1671,7 +1648,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                           float32_channel_scale,
                                           float32_channel_offset,
                                           binning_mode,
-                                          resolved_binning_mode,
+                                          reqcolors,
+                                          autoratio,
                                           binbits,
                                           mapping_mode,
                                           softdist_mode,

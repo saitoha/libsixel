@@ -131,18 +131,47 @@ sixel_palette_sampling_resolve(
     return status;
 }
 
-sixel_palette_sampling_policy_t
-sixel_palette_sampling_select_auto(int total_threads,
-                                   int heavy_operations,
-                                   int async_eligible)
+SIXELSTATUS
+sixel_palette_sampling_select(
+    sixel_palette_sampling_resolver_input_t const *input,
+    sixel_palette_sampling_selection_t *selection)
 {
     int available;
 
-    available = total_threads - heavy_operations;
-    if (async_eligible != 0 && total_threads > 1 && available > 1) {
-        return SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID;
+    available = 0;
+    if (input == NULL || selection == NULL || input->total_threads < 1 ||
+            input->heavy_operations < 0) {
+        return SIXEL_BAD_ARGUMENT;
     }
-    return SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+    if (input->requested == SIXEL_PALETTE_SAMPLING_FULL_FRAME) {
+        selection->effective = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+        selection->source =
+            SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
+        selection->reason = SIXEL_PALETTE_RESOLUTION_EXPLICIT;
+        return SIXEL_OK;
+    }
+    if (input->requested == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID) {
+        selection->effective = SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID;
+        selection->source = SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME;
+        selection->reason = SIXEL_PALETTE_RESOLUTION_EXPLICIT;
+        return SIXEL_OK;
+    }
+    if (input->requested != SIXEL_PALETTE_SAMPLING_AUTO) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    available = input->total_threads - input->heavy_operations;
+    if (input->async_eligible != 0 && input->total_threads > 1 &&
+            available > 1) {
+        selection->effective = SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID;
+        selection->source = SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME;
+    } else {
+        selection->effective = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+        selection->source =
+            SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
+    }
+    selection->reason = SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE;
+    return SIXEL_OK;
 }
 
 SIXELSTATUS
@@ -151,25 +180,31 @@ sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
                                     int heavy_operations,
                                     int async_eligible)
 {
-    sixel_palette_sampling_policy_t effective;
-    sixel_palette_sampling_source_t source;
+    SIXELSTATUS status;
+    sixel_palette_sampling_resolver_input_t input;
+    sixel_palette_sampling_selection_t selection;
 
+    status = SIXEL_FALSE;
+    input.requested = SIXEL_PALETTE_SAMPLING_AUTO;
+    input.total_threads = total_threads;
+    input.heavy_operations = heavy_operations;
+    input.async_eligible = async_eligible;
+    selection.effective = SIXEL_PALETTE_SAMPLING_AUTO;
+    selection.source = SIXEL_PALETTE_SAMPLING_SOURCE_NONE;
+    selection.reason = SIXEL_PALETTE_RESOLUTION_NONE;
     if (state == NULL || total_threads < 1 || heavy_operations < 0 ||
             state->sampling.requested != SIXEL_PALETTE_SAMPLING_AUTO) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    effective = sixel_palette_sampling_select_auto(total_threads,
-                                                    heavy_operations,
-                                                    async_eligible);
-    source = effective == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID
-        ? SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME
-        : SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
-    return sixel_palette_sampling_resolve(
-        state,
-        effective,
-        source,
-        SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
+    status = sixel_palette_sampling_select(&input, &selection);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_palette_sampling_resolve(state,
+                                          selection.effective,
+                                          selection.source,
+                                          selection.reason);
 }
 
 SIXELSTATUS
@@ -305,6 +340,209 @@ sixel_palette_binning_contract_is_valid(
         return kernel == SIXEL_PALETTE_BINNING_KERNEL_NONE;
     }
     return kernel == SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR;
+}
+
+SIXELSTATUS
+sixel_palette_quantizer_capabilities_get(
+    int quantize_model,
+    sixel_palette_quantizer_capabilities_t *capabilities)
+{
+    sixel_palette_quantizer_capabilities_t result;
+
+    result.quantize_model = quantize_model;
+    result.accepts_raw_samples = 1;
+    result.accepts_weighted_points = 0;
+    result.accepts_fractional_weights = 0;
+    result.requires_observed_representatives = 0;
+    result.accepts_additional_moments = 0;
+    if (capabilities == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    switch (quantize_model) {
+    case SIXEL_QUANTIZE_MODEL_KMEANS:
+        result.accepts_weighted_points = 1;
+        result.accepts_fractional_weights = 1;
+        break;
+    case SIXEL_QUANTIZE_MODEL_KMEDOIDS:
+        result.requires_observed_representatives = 1;
+        break;
+    case SIXEL_QUANTIZE_MODEL_KCENTER:
+    case SIXEL_QUANTIZE_MODEL_MEDIANCUT:
+        break;
+    case SIXEL_QUANTIZE_MODEL_AUTO:
+    default:
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *capabilities = result;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_palette_quantizer_select(
+    sixel_palette_quantizer_resolver_input_t const *input,
+    sixel_palette_quantizer_selection_t *selection)
+{
+    SIXELSTATUS status;
+    sixel_palette_quantizer_selection_t result;
+
+    status = SIXEL_FALSE;
+    result.effective = SIXEL_QUANTIZE_MODEL_AUTO;
+    result.reason = SIXEL_PALETTE_RESOLUTION_NONE;
+    result.capabilities.quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
+    result.capabilities.accepts_raw_samples = 0;
+    result.capabilities.accepts_weighted_points = 0;
+    result.capabilities.accepts_fractional_weights = 0;
+    result.capabilities.requires_observed_representatives = 0;
+    result.capabilities.accepts_additional_moments = 0;
+    if (input == NULL || selection == NULL ||
+            !sixel_palette_binning_policy_is_valid(
+                input->binning_requested)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (input->binning_requested == SIXEL_PALETTE_BINNING_EXACT) {
+        /* No quantizer can consume the exact-point artifact yet. */
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    result.effective = input->requested;
+    result.reason = SIXEL_PALETTE_RESOLUTION_EXPLICIT;
+    if (input->requested == SIXEL_QUANTIZE_MODEL_AUTO) {
+        if (input->binning_requested == SIXEL_PALETTE_BINNING_HARD ||
+                input->binning_requested == SIXEL_PALETTE_BINNING_SOFT) {
+            result.effective = SIXEL_QUANTIZE_MODEL_KMEANS;
+            result.reason =
+                SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY;
+        } else {
+            /* Preserve the current top-level AUTO compatibility choice. */
+            result.effective = SIXEL_QUANTIZE_MODEL_MEDIANCUT;
+            result.reason = SIXEL_PALETTE_RESOLUTION_LEGACY_COMPAT;
+        }
+    }
+    status = sixel_palette_quantizer_capabilities_get(
+        result.effective,
+        &result.capabilities);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    *selection = result;
+    return SIXEL_OK;
+}
+
+static int
+sixel_palette_binning_is_supported(
+    sixel_palette_binning_policy_t policy,
+    sixel_palette_quantizer_capabilities_t const *capabilities)
+{
+    if (capabilities == NULL) {
+        return 0;
+    }
+    if (policy == SIXEL_PALETTE_BINNING_NONE) {
+        return capabilities->accepts_raw_samples != 0;
+    }
+    if (policy == SIXEL_PALETTE_BINNING_EXACT) {
+        /* The artifact contract exists, but no exact filter exists yet. */
+        return 0;
+    }
+    if (policy == SIXEL_PALETTE_BINNING_HARD) {
+        return capabilities->accepts_weighted_points != 0 &&
+            capabilities->requires_observed_representatives == 0;
+    }
+    if (policy == SIXEL_PALETTE_BINNING_SOFT) {
+        return capabilities->accepts_weighted_points != 0 &&
+            capabilities->accepts_fractional_weights != 0 &&
+            capabilities->requires_observed_representatives == 0;
+    }
+    return 0;
+}
+
+SIXELSTATUS
+sixel_palette_binning_select(
+    sixel_palette_binning_resolver_input_t const *input,
+    sixel_palette_quantizer_capabilities_t const *capabilities,
+    sixel_palette_binning_selection_t *selection)
+{
+    sixel_palette_binning_selection_t result;
+    sixel_palette_binning_policy_t effective;
+    size_t colors;
+    size_t ratio;
+    size_t threshold;
+
+    result.effective = SIXEL_PALETTE_BINNING_AUTO;
+    result.bits_per_axis = 0u;
+    result.grid_map = SIXEL_PALETTE_BINNING_GRID_NONE;
+    result.kernel = SIXEL_PALETTE_BINNING_KERNEL_NONE;
+    result.backend = SIXEL_PALETTE_BINNING_BACKEND_UNRESOLVED;
+    result.reason = SIXEL_PALETTE_RESOLUTION_NONE;
+    effective = SIXEL_PALETTE_BINNING_AUTO;
+    colors = 0u;
+    ratio = 0u;
+    threshold = 0u;
+    if (input == NULL || capabilities == NULL || selection == NULL ||
+            input->source_point_count == 0u ||
+            !sixel_palette_binning_policy_is_valid(input->requested) ||
+            capabilities->quantize_model == SIXEL_QUANTIZE_MODEL_AUTO) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    effective = input->requested;
+    result.reason = SIXEL_PALETTE_RESOLUTION_EXPLICIT;
+    if (effective == SIXEL_PALETTE_BINNING_AUTO) {
+        result.reason = SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA;
+        if (capabilities->accepts_weighted_points == 0) {
+            effective = SIXEL_PALETTE_BINNING_NONE;
+            result.reason =
+                SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY;
+        } else if (capabilities->requires_observed_representatives != 0) {
+            effective = SIXEL_PALETTE_BINNING_EXACT;
+            result.reason =
+                SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY;
+        } else {
+            colors = input->requested_colors == 0u
+                ? 1u : input->requested_colors;
+            ratio = input->auto_ratio == 0u ? 1u : input->auto_ratio;
+            threshold = colors > SIZE_MAX / ratio
+                ? SIZE_MAX : colors * ratio;
+            effective = input->source_point_count >= threshold
+                ? SIXEL_PALETTE_BINNING_SOFT
+                : SIXEL_PALETTE_BINNING_HARD;
+            if (effective == SIXEL_PALETTE_BINNING_SOFT &&
+                    capabilities->accepts_fractional_weights == 0) {
+                effective = SIXEL_PALETTE_BINNING_HARD;
+                result.reason =
+                    SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY;
+            }
+        }
+    }
+    if (!sixel_palette_binning_is_supported(effective, capabilities)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    result.effective = effective;
+    if (effective == SIXEL_PALETTE_BINNING_NONE) {
+        result.backend = SIXEL_PALETTE_BINNING_BACKEND_DIRECT;
+    } else if (effective == SIXEL_PALETTE_BINNING_EXACT) {
+        result.backend = SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE;
+    } else {
+        result.bits_per_axis = input->bits_per_axis;
+        result.grid_map = input->grid_map;
+        result.backend = input->backend;
+        if (effective == SIXEL_PALETTE_BINNING_SOFT) {
+            result.kernel = input->kernel;
+        }
+    }
+    if (!sixel_palette_binning_contract_is_valid(result.effective,
+                                                  result.bits_per_axis,
+                                                  result.grid_map,
+                                                  result.kernel,
+                                                  result.backend)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *selection = result;
+    return SIXEL_OK;
 }
 
 SIXELSTATUS

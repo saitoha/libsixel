@@ -132,6 +132,67 @@ typedef struct sixel_palette_frame_state {
     sixel_palette_policy_resolution_t quantizer;
 } sixel_palette_frame_state_t;
 
+/*
+ * Quantizer capabilities describe the artifact boundary implemented today.
+ * A mathematical model may support a richer input in principle, but a flag is
+ * set only after the current quantizer entry point can consume that artifact.
+ */
+typedef struct sixel_palette_quantizer_capabilities {
+    int quantize_model;
+    int accepts_raw_samples;
+    int accepts_weighted_points;
+    int accepts_fractional_weights;
+    int requires_observed_representatives;
+    int accepts_additional_moments;
+} sixel_palette_quantizer_capabilities_t;
+
+/* Quantizer family selection stops before model-specific subpolicy choices. */
+typedef struct sixel_palette_quantizer_resolver_input {
+    int requested;
+    sixel_palette_binning_policy_t binning_requested;
+} sixel_palette_quantizer_resolver_input_t;
+
+typedef struct sixel_palette_quantizer_selection {
+    int effective;
+    sixel_palette_resolution_reason_t reason;
+    sixel_palette_quantizer_capabilities_t capabilities;
+} sixel_palette_quantizer_selection_t;
+
+/* Inputs and immutable result of the sampling-stage resolver. */
+typedef struct sixel_palette_sampling_resolver_input {
+    sixel_palette_sampling_policy_t requested;
+    int total_threads;
+    int heavy_operations;
+    int async_eligible;
+} sixel_palette_sampling_resolver_input_t;
+
+typedef struct sixel_palette_sampling_selection {
+    sixel_palette_sampling_policy_t effective;
+    sixel_palette_sampling_source_t source;
+    sixel_palette_resolution_reason_t reason;
+} sixel_palette_sampling_selection_t;
+
+/* Inputs and immutable result of the binning-stage resolver. */
+typedef struct sixel_palette_binning_resolver_input {
+    sixel_palette_binning_policy_t requested;
+    unsigned int bits_per_axis;
+    sixel_palette_binning_grid_map_t grid_map;
+    sixel_palette_binning_kernel_t kernel;
+    sixel_palette_binning_backend_t backend;
+    size_t source_point_count;
+    size_t requested_colors;
+    size_t auto_ratio;
+} sixel_palette_binning_resolver_input_t;
+
+typedef struct sixel_palette_binning_selection {
+    sixel_palette_binning_policy_t effective;
+    unsigned int bits_per_axis;
+    sixel_palette_binning_grid_map_t grid_map;
+    sixel_palette_binning_kernel_t kernel;
+    sixel_palette_binning_backend_t backend;
+    sixel_palette_resolution_reason_t reason;
+} sixel_palette_binning_selection_t;
+
 SIXEL_INTERNAL_API void
 sixel_palette_policy_resolution_init(
     sixel_palette_policy_resolution_t *resolution,
@@ -151,10 +212,10 @@ sixel_palette_sampling_resolve(
     sixel_palette_sampling_source_t source,
     sixel_palette_resolution_reason_t reason);
 
-SIXEL_INTERNAL_API sixel_palette_sampling_policy_t
-sixel_palette_sampling_select_auto(int total_threads,
-                                   int heavy_operations,
-                                   int async_eligible);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_sampling_select(
+    sixel_palette_sampling_resolver_input_t const *input,
+    sixel_palette_sampling_selection_t *selection);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
@@ -190,6 +251,22 @@ sixel_palette_binning_resolve(
     sixel_palette_binning_backend_t backend,
     size_t source_point_count,
     sixel_palette_resolution_reason_t reason);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_quantizer_capabilities_get(
+    int quantize_model,
+    sixel_palette_quantizer_capabilities_t *capabilities);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_quantizer_select(
+    sixel_palette_quantizer_resolver_input_t const *input,
+    sixel_palette_quantizer_selection_t *selection);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_binning_select(
+    sixel_palette_binning_resolver_input_t const *input,
+    sixel_palette_quantizer_capabilities_t const *capabilities,
+    sixel_palette_binning_selection_t *selection);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_binning_mark_bypassed(

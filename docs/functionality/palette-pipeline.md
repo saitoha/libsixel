@@ -253,6 +253,45 @@ boundary is reached. Resolution follows these rules:
 | `auto` | explicit | Resolve sampling without replacing the explicit binning policy. |
 | explicit | explicit | Validate the combination without replacing it. |
 
+The current capability table describes implemented artifact entry points, not
+what an algorithm could support after a future adapter is written:
+
+| Quantizer | Raw samples | Weighted points | Fractional weights | Requires observed representatives | Additional moments |
+| --- | --- | --- | --- | --- | --- |
+| Heckbert | yes | no | no | no | no |
+| K-means | yes | yes | yes | no | no |
+| K-medoids | yes | no | no | yes | no |
+| K-center | yes | no | no | no | no |
+
+K-medoids and K-center already build internal weighted candidate structures,
+but those private structures are not the shared weighted-point-set artifact.
+They therefore remain `no` until their public quantizer boundary consumes that
+artifact. K-medoids also replaces each histogram-bin mean by its nearest
+observed input color before solving, whereas K-center currently solves over
+histogram-bin means. Only K-medoids therefore declares the observed-color
+constraint. The `auto` quantizer name has no capabilities of its own; a
+resolver must first select a concrete family.
+
+Stage resolvers are pure functions over explicit input and result structures.
+They neither mutate the per-frame lifecycle state nor read process-wide option
+overrides. The caller applies a successful selection to the owning state before
+execution. A failed selection leaves both the plan and result object unchanged.
+The sampling compatibility wrapper now uses this contract before scheduler
+allocation. K-means resolves binning at point-set construction from the actual
+post-sampling point count, requested palette size, and quantizer capabilities.
+Its current `auto` threshold remains unchanged: it selects soft binning when
+`sample_count >= requested_colors * auto_ratio`, and hard binning otherwise.
+
+An explicit unsupported combination is rejected during resolution. In
+particular, soft binning requires a weighted-point consumer that accepts
+fractional weights, while hard binning cannot feed a quantizer that requires
+representatives to remain observed input colors. The `exact` artifact contract
+is defined, but its executable filter is intentionally deferred to migration
+wave 8. Until that filter exists, both the quantizer and binning resolvers
+reject an explicit `exact` request without publishing a partial selection.
+Resolver failure never triggers an allocation-time or execution-time algorithm
+fallback.
+
 When `-Qauto` is also requested, the planner retains a quantizer candidate set.
 If binning needs a concrete consumer capability, the quantizer family is
 resolved at that boundary rather than at the beginning of the frame. Remaining
