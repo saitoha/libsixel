@@ -134,6 +134,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-kmeans-build.c \
                 $(srcdir)/palette-kmeans-build.h \
                 $(srcdir)/palette-kmeans.h \
+                $(srcdir)/palette-plan.c \
+                $(srcdir)/palette-plan.h \
                 $(srcdir)/palette-kmedoids.c \
                 $(srcdir)/palette-kmedoids.h \
                 $(srcdir)/palette-kcenter.c \

@@ -104,6 +104,7 @@
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
+#include "palette-plan.h"
 #include "palette-common-cover.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
@@ -417,15 +418,6 @@ typedef struct sixel_palette_async_job {
     sixel_dither_t *dither;
     SIXELSTATUS status;
     int target_pixelformat;
-    int reqcolors;
-    int method_for_largest;
-    int method_for_rep;
-    int quality_mode;
-    int lut_policy;
-    int final_merge_mode;
-    int sixel_reversible;
-    int quantize_model;
-    int force_palette;
     int frame_no;
     int loop_no;
     int multiframe;
@@ -4276,6 +4268,7 @@ typedef struct sixel_encode_dag_context {
     int loop_no;
     int delay;
     int multiframe;
+    sixel_palette_frame_state_t palette;
 } sixel_encode_dag_context_t;
 
 /*
@@ -5235,15 +5228,6 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
     job->dither = NULL;
     job->status = SIXEL_OK;
     job->target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    job->reqcolors = 0;
-    job->method_for_largest = SIXEL_LARGE_AUTO;
-    job->method_for_rep = SIXEL_REP_AUTO;
-    job->quality_mode = SIXEL_QUALITY_AUTO;
-    job->lut_policy = SIXEL_LUT_POLICY_AUTO;
-    job->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
-    job->sixel_reversible = 0;
-    job->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
-    job->force_palette = 0;
     job->frame_no = 0;
     job->loop_no = 0;
     job->multiframe = 0;
@@ -5303,15 +5287,6 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
     job->encoder = encoder;
     job->logger = encoder->logger;
     job->target_pixelformat = target_pixelformat;
-    job->reqcolors = encoder->reqcolors;
-    job->method_for_largest = encoder->method_for_largest;
-    job->method_for_rep = encoder->method_for_rep;
-    job->quality_mode = encoder->quality_mode;
-    job->lut_policy = encoder->lut_policy;
-    job->final_merge_mode = encoder->final_merge_mode;
-    job->sixel_reversible = encoder->sixel_reversible;
-    job->quantize_model = encoder->quantize_model;
-    job->force_palette = encoder->force_palette;
     job->frame_no = sixel_frame_get_frame_no(frame);
     job->loop_no = sixel_frame_get_loop_no(frame);
     job->multiframe = sixel_frame_get_multiframe(frame);
@@ -7508,6 +7483,19 @@ sixel_encoder_encode_frame_internal(
     memset(&context.colors_config, 0, sizeof(context.colors_config));
     memset(&context.gradient_config, 0, sizeof(context.gradient_config));
     memset(&context.dither_config, 0, sizeof(context.dither_config));
+    sixel_palette_frame_state_init(&context.palette);
+    sixel_palette_policy_resolution_init(
+        &context.palette.quantizer,
+        encoder->quantize_model,
+        encoder->quantize_model == SIXEL_QUANTIZE_MODEL_AUTO
+            ? SIXEL_PALETTE_POLICY_ORIGIN_AUTO
+            : SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
+    sixel_palette_policy_resolution_init(
+        &context.palette.binning,
+        encoder->quantize_model_kmeans_binning_mode,
+        encoder->quantize_model_kmeans_binning_override != 0
+            ? SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS
+            : SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);
     context.current_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     context.current_colorspace = SIXEL_COLORSPACE_GAMMA;
     if (metadata != NULL) {

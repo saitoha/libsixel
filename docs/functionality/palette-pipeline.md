@@ -119,43 +119,47 @@ policies. The planner may choose between them from the finite bin domain,
 estimated occupied cells, and memory budget. They should appear in diagnostics
 but should not become stable user-facing semantics.
 
-## Joint automatic resolution
+## Progressive automatic resolution
 
 Sampling and binning are independent explicit policies, but their `auto`
-values are resolved jointly with the selected quantizer. The quantizer
-declares capabilities and preferences; it does not implement sampling or
-binning itself.
+values are resolved only when the next stage needs a concrete value. The
+quantizer declares capabilities and preferences; it does not implement
+sampling or binning itself.
 
 ```text
-requested quantizer + requested sampling + requested binning
-                              |
-                              v
-                   joint policy resolver
-                              |
-                              v
-          effective sampling + binning + quantizer plan
+frame metadata -> resolve sampling -> sampling
+                                      |
+                                      v
+                 sample metadata -> resolve binning -> binning
+                                                        |
+                                                        v
+                         weighted-point metadata -> quantization
 ```
 
-Resolution follows these rules:
+An unresolved value remains part of the per-frame plan until its execution
+boundary is reached. Resolution follows these rules:
 
 | Sampling | Binning | Resolver action |
 | --- | --- | --- |
-| `auto` | `auto` | Choose a compatible pair for the quantizer and resource profile. |
+| `auto` | `auto` | Resolve sampling first, then resolve binning from the resulting sample metadata. |
 | explicit | `auto` | Choose binning compatible with the sampling result and quantizer. |
-| `auto` | explicit | Choose sampling compatible with the binning policy and quantizer. |
+| `auto` | explicit | Resolve sampling without replacing the explicit binning policy. |
 | explicit | explicit | Validate the combination without replacing it. |
 
-When `-Qauto` is also requested, the resolver evaluates complete triples
-rather than committing to one axis prematurely. Candidate selection may use
-palette size, frame dimensions, colorspace, quality profile, sample count, and
-memory budget. It must be deterministic for the same inputs and settings.
+When `-Qauto` is also requested, the planner retains a quantizer candidate set.
+If binning needs a concrete consumer capability, the quantizer family is
+resolved at that boundary rather than at the beginning of the frame. Remaining
+quantizer subpolicies may stay unresolved until the weighted point set exists.
+Candidate selection may use palette size, frame dimensions, colorspace,
+quality profile, sample count, and memory budget. It must be deterministic for
+the same inputs and settings.
 
 Each quantizer must declare whether it accepts raw samples, weighted points,
 fractional weights, observed-color representatives, and additional moments.
 An unsupported explicit combination is an error. Only an `auto` input may be
-replaced during planning, and the effective choice must be fixed before
-execution. Allocation failure during execution must not silently select a
-different algorithm.
+replaced during planning. Each effective choice is fixed before its owning
+stage executes and is never reopened within that frame. Allocation failure
+during execution must not silently select a different algorithm.
 
 Soft binning can contribute one sample to as many as eight cells for a
 trilinear three-dimensional kernel. Sparse capacity estimates must be bounded
@@ -168,8 +172,10 @@ maximum occupied entries =
 ```
 
 The effective plan must be visible in verbose diagnostics and measurement
-metadata, including the requested values, resolved policies, storage backend,
-estimated allocation, and resolution reason.
+metadata, including the requested values, resolution phase, resolved policies,
+storage backend, estimated allocation, and resolution reason. Request origin
+and lifecycle are separate: an `auto` request remains identified as `auto`
+after an effective value has been selected.
 
 ## Filter and artifact boundaries
 
@@ -235,20 +241,30 @@ default changes can be reviewed independently.
 1. Enforce filter dispatch boundaries. Route existing sampling and final-merge
    execution through the factory and vtable, make whole-filter helpers private,
    and add a static boundary check.
-2. Add sampling as an explicit planner and execution-DAG node without changing
-   its current adaptive-grid behavior.
-3. Introduce typed sample-stream and weighted-point-set artifacts, then add an
-   independent binning filter with behavior-preserving adapters for existing
-   quantizers.
-4. Add top-level sampling and binning policy options. Keep existing `-Q`
+2. Add requested, effective, reason, and lifecycle state to the existing
+   per-frame encode DAG context. Remove unused policy copies from the palette
+   worker job without changing output.
+3. Represent current target-derived grid sampling as an explicit internal
+   policy and record minimal sample metadata while retaining the current frame
+   payload.
+4. Define orthogonal binning semantics and the weighted-point-set artifact
+   contract before moving an implementation.
+5. Extract current K-means hard and soft histogram construction into an
+   independent binning filter. Pass migrated binning settings explicitly while
+   preserving current point order and output.
+6. Declare quantizer capabilities and introduce stage-specific pure resolvers.
+   Resolve sampling before sampling and binning from actual sample metadata,
+   without silent execution-time fallback.
+7. Add top-level sampling and binning policy options. Keep existing `-Q`
    suboptions as deprecated aliases and reject conflicting explicit values.
-5. Move quantizer-specific histogram construction to the shared binning stage
-   where semantics match. Declare solver capabilities and implement joint
-   `auto` resolution without silent execution-time fallback.
-6. Measure the sampling, binning, and quantization axes independently. Use the
+8. Move other quantizer-specific histogram construction to the shared binning
+   stage only where semantics match, and add further explicit policies such as
+   exact aggregation.
+9. Measure the sampling, binning, and quantization axes independently. Use the
    results to select automatic profiles and only then change defaults.
-7. Add chunk streaming or operator fusion where measurement shows a benefit,
-   while keeping the logical filters and trace spans observable.
+10. Add chunk streaming, operator fusion, or storage optimizations where
+    measurement shows a benefit, while keeping logical filters, resolution
+    records, and trace spans observable.
 
 Each wave must leave the normal and amalgamated builds consistent. Tests must
 cover direct policy parsing, effective-plan resolution, unsupported

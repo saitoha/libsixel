@@ -49,6 +49,8 @@ srcs = [
   'palette-kmeans.h',
   'palette-kmeans-assign.h',
   'palette-kmeans-build.h',
+  'palette-plan.c',
+  'palette-plan.h',
   'palette-kmedoids.c',
   'palette-kmedoids.h',
   'palette-kcenter.c',

@@ -236,6 +236,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0028_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
     -DBUILD_TEST_0029_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
     -DBUILD_TEST_0030_FILTER_PALETTE_FAILURE_OUTPUT \
+    -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -467,6 +468,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0005_cover_anchor.c \
     quant/palette/fallback/0006_palette_fallback_conversion.c \
     quant/palette/fallback/0007_palette_fallback_output.c \
+    quant/palette/0008_palette_policy_resolution.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
