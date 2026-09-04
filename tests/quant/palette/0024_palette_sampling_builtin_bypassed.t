@@ -14,7 +14,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=auto|effective=unset|source=none|origin=auto|phase=bypassed|reason=not-applicable|threads=2|heavy=0|budget_async=1|job_ready=0*}" != "${trace}" || {
+test "${trace#*LSXSPL1|requested=auto|effective=unset|source=none|origin=auto|phase=bypassed|reason=not-applicable|threads=2|heavy=0|budget_async=0|job_ready=0*}" != "${trace}" || {
     echo "not ok 1 - built-in palette sampling was not bypassed"
     exit 0
 }

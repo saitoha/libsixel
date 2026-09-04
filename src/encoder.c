@@ -1514,7 +1514,9 @@ static SIXELSTATUS sixel_encoder_palette_job_launch(
     sixel_palette_async_job_t *job,
     sixel_frame_t *frame,
     int target_pixelformat,
-    sixel_encoder_t *encoder);
+    sixel_encoder_t *encoder,
+    sixel_palette_sampling_policy_t policy,
+    sixel_palette_sampling_source_t source);
 static SIXELSTATUS sixel_encoder_palette_job_wait(
     sixel_palette_async_job_t *job,
     sixel_dither_t **dither_out);
@@ -1954,7 +1956,7 @@ sixel_encoder_handoff_needs_preplan_clone(
 
     sixel_encoding_planner_init(&planner_snapshot);
     sixel_encoding_planner_reset_for_frame(&planner_snapshot);
-    sixel_encoding_planner_plan(&planner_snapshot, encoder, frame);
+    sixel_encoding_planner_analyze(&planner_snapshot, encoder, frame);
 
     if (planner_snapshot.clip_active != 0
         || planner_snapshot.scale_active != 0
@@ -4546,6 +4548,8 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
     SIXELSTATUS status;
     SIXELSTATUS sampling_status;
     int clustering_pixelformat;
+    sixel_palette_sampling_policy_t sampling_policy;
+    sixel_palette_sampling_source_t sampling_source;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -4554,6 +4558,16 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
     if (context->palette_ready == 0) {
         return SIXEL_OK;
     }
+    if (context->palette.sampling.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
+            context->palette.sampling.effective !=
+                SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID ||
+            context->palette.sampling_source !=
+                SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    sampling_policy = (sixel_palette_sampling_policy_t)
+        context->palette.sampling.effective;
+    sampling_source = context->palette.sampling_source;
 
     status = sixel_encoder_palette_job_init(&context->palette_job,
                                             context->encoder->allocator);
@@ -4566,7 +4580,9 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
         status = sixel_encoder_palette_job_launch(&context->palette_job,
                                                   context->frame,
                                                   clustering_pixelformat,
-                                                  context->encoder);
+                                                  context->encoder,
+                                                  sampling_policy,
+                                                  sampling_source);
         if (SIXEL_SUCCEEDED(status)) {
             context->palette_job_started = 1;
         } else {
@@ -4800,6 +4816,8 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     int method_for_diffuse;
     int skip_palette_diffusion;
     int full_frame_sampling;
+    sixel_palette_sampling_policy_t sampling_policy;
+    sixel_palette_sampling_source_t sampling_source;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -4814,6 +4832,13 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->palette.sampling.phase == SIXEL_PALETTE_POLICY_RESOLVED;
     fallback_cause = context->palette_job_failure_status;
     fallback_stage = context->palette_job_failure_stage;
+    sampling_policy = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+    sampling_source = SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
+    if (context->palette.sampling.phase == SIXEL_PALETTE_POLICY_RESOLVED) {
+        sampling_policy = (sixel_palette_sampling_policy_t)
+            context->palette.sampling.effective;
+        sampling_source = context->palette.sampling_source;
+    }
 
     if (context->palette_job_started != 0) {
         status = sixel_encoder_palette_job_wait(&context->palette_job,
@@ -4848,12 +4873,17 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     }
 
     if (context->dither == NULL) {
+        if (fallback_stage != SIXEL_PALETTE_JOB_FAILURE_NONE) {
+            sampling_policy = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+            sampling_source =
+                SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
+        }
         status = sixel_encoder_sample_frame(
             context->encoder,
             context->frame,
             context->encoder->allocator,
-            SIXEL_PALETTE_SAMPLING_FULL_FRAME,
-            SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME,
+            sampling_policy,
+            sampling_source,
             &context->samples);
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_encoder_apply_palette_filter(
@@ -5615,7 +5645,9 @@ static SIXELSTATUS
 sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
                                  sixel_frame_t *frame,
                                  int target_pixelformat,
-                                 sixel_encoder_t *encoder)
+                                 sixel_encoder_t *encoder,
+                                 sixel_palette_sampling_policy_t policy,
+                                 sixel_palette_sampling_source_t source)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int result;
@@ -5639,8 +5671,8 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
         encoder,
         frame,
         encoder->allocator,
-        SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID,
-        SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME,
+        policy,
+        source,
         &job->samples);
     if (SIXEL_FAILED(status)) {
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_SAMPLE;
@@ -7806,9 +7838,11 @@ sixel_encoder_encode_frame_internal(
     int target_pixelformat;
     int palette_ready;
     int sampling_required;
+    int async_eligible;
     int clip_active;
     int current_pixelformat;
     int current_colorspace;
+    sixel_palette_sampling_policy_t sampling_policy;
 
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -7917,12 +7951,12 @@ sixel_encoder_encode_frame_internal(
     }
 
     /*
-     * Build the thread allocation plan up front so palette sampling does not
-     * spawn extra workers when resize/clip/colorspace conversion already have
-     * work to do on the main path.
+     * Analyze frame work before resolving sampling.  Thread allocation is a
+     * later step and consumes the resolved policy; it does not choose which
+     * pixels represent palette construction.
      */
     if (planner != NULL) {
-        sixel_encoding_planner_plan(planner, encoder, context.frame);
+        sixel_encoding_planner_analyze(planner, encoder, context.frame);
         target_pixelformat = planner->working_pixelformat;
     } else {
         target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
@@ -7933,6 +7967,56 @@ sixel_encoder_encode_frame_internal(
     current_pixelformat = sixel_frame_get_pixelformat(context.frame);
     current_colorspace = sixel_frame_get_colorspace(context.frame);
 
+    sampling_required = 1;
+    if (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT) {
+        sampling_required = 0;
+    } else if ((current_pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0
+            && planner != NULL
+            && planner->scale_active == 0
+            && sixel_frame_get_palette(context.frame) != NULL
+            && sixel_frame_get_ncolors(context.frame) > 0
+            && sixel_frame_get_ncolors(context.frame)
+                <= encoder->reqcolors) {
+        sampling_required = 0;
+    }
+    async_eligible = sixel_encoding_palette_job_eligible(encoder,
+                                                         context.frame);
+    if (sampling_required != 0) {
+        if (planner != NULL) {
+            status = sixel_palette_sampling_resolve_auto(
+                &context.palette,
+                planner->total_threads,
+                planner->heavy_ops,
+                async_eligible);
+        } else {
+            status = sixel_palette_sampling_resolve_auto(
+                &context.palette,
+                1,
+                0,
+                0);
+        }
+    } else {
+        status = sixel_palette_policy_mark_bypassed(
+            &context.palette.sampling);
+    }
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    sampling_policy = context.palette.sampling.phase ==
+            SIXEL_PALETTE_POLICY_RESOLVED
+        ? (sixel_palette_sampling_policy_t)
+            context.palette.sampling.effective
+        : SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+    if (planner != NULL) {
+        status = sixel_encoding_planner_schedule(planner,
+                                                 encoder,
+                                                 context.frame,
+                                                 sampling_policy);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
     palette_ready = sixel_encoding_palette_job_ready(encoder,
                                                      planner,
                                                      context.frame);
@@ -7956,40 +8040,6 @@ sixel_encoder_encode_frame_internal(
     context.clip_active = clip_active;
     context.current_pixelformat = current_pixelformat;
     context.current_colorspace = current_colorspace;
-
-    sampling_required = 1;
-    if (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT) {
-        sampling_required = 0;
-    } else if ((current_pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0
-            && planner != NULL
-            && planner->scale_active == 0
-            && sixel_frame_get_palette(context.frame) != NULL
-            && sixel_frame_get_ncolors(context.frame) > 0
-            && sixel_frame_get_ncolors(context.frame)
-                <= encoder->reqcolors) {
-        sampling_required = 0;
-    }
-    if (sampling_required != 0) {
-        if (palette_ready != 0) {
-            status = sixel_palette_sampling_resolve(
-                &context.palette,
-                SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID,
-                SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME,
-                SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
-        } else {
-            status = sixel_palette_sampling_resolve(
-                &context.palette,
-                SIXEL_PALETTE_SAMPLING_FULL_FRAME,
-                SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME,
-                SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
-        }
-    } else {
-        status = sixel_palette_policy_mark_bypassed(
-            &context.palette.sampling);
-    }
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
 
     /*
      * DAG layout:

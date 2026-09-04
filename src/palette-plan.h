@@ -106,6 +106,17 @@ sixel_palette_sampling_resolve(
     sixel_palette_sampling_source_t source,
     sixel_palette_resolution_reason_t reason);
 
+SIXEL_INTERNAL_API sixel_palette_sampling_policy_t
+sixel_palette_sampling_select_auto(int total_threads,
+                                   int heavy_operations,
+                                   int async_eligible);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
+                                    int total_threads,
+                                    int heavy_operations,
+                                    int async_eligible);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_policy_mark_executed(
     sixel_palette_policy_resolution_t *resolution);

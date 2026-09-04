@@ -238,6 +238,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0030_FILTER_PALETTE_FAILURE_OUTPUT \
     -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
     -DBUILD_TEST_0025_SAMPLE_STREAM \
+    -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
+    -DBUILD_TEST_0028_SAMPLING_SCHEDULER_CONTRACT \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -471,6 +473,8 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/fallback/0007_palette_fallback_output.c \
     quant/palette/0008_palette_policy_resolution.c \
     quant/palette/0025_sample_stream.c \
+    quant/palette/0026_sampling_auto_resolution.c \
+    quant/palette/0028_sampling_scheduler_contract.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \

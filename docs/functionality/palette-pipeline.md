@@ -87,27 +87,22 @@ sample point:
 An explicit weight prevents a later binning implementation from accidentally
 discarding the protection provided to a small solid-colored feature.
 
-The current implementation has an important migration hazard: sampling is
-coupled to palette-worker scheduling. When the planner can launch the palette
-worker, the adaptive-grid filter reads the loaded frame while the normal
-preprocessing branch runs concurrently. When that worker is unavailable, the
-synchronous palette builder receives the full frame after preprocessing and
-does not run the sample filter. Thread count, clipping, resizing, and
-colorspace work can therefore change both whether sampling occurs and which
-stage supplies its input. The `sample_target` setting only reaches the
-adaptive-grid branch.
+The legacy implementation coupled sampling to palette-worker scheduling. A
+worker path used an adaptive grid from the loaded frame, while a synchronous
+path passed the full preprocessed frame directly to palette construction.
+Thread count, clipping, resizing, and colorspace work therefore changed both
+the sample population and its source stage. The `sample_target` setting only
+affected the adaptive path. Tests preserve these boundaries during migration
+because changing them silently would change palette quality, output size, and
+performance.
 
-This coupling must first be described and covered by tests. Separating policy
-from scheduling before preserving both paths would silently change palette
-quality, output size, and performance.
-
-The migration names the two current successful paths without changing their
-selection:
+The migration names the two successful paths and temporarily preserves their
+selection thresholds:
 
 | Effective sampling | Input source | Current selection |
 | --- | --- | --- |
-| `adaptive-grid` | loaded frame | The planner admits the palette worker. |
-| `full-frame` | preprocessed frame | The palette worker is not admitted. |
+| `adaptive-grid` | loaded frame | Auto resolution has capacity for the palette worker. |
+| `full-frame` | preprocessed frame | Auto resolution does not select asynchronous sampling. |
 
 Both paths now execute through the sample filter vtable and produce the same
 typed sample-stream artifact. The adaptive path owns its compact sample frame;
@@ -116,11 +111,12 @@ consumes that artifact rather than accepting an ordinary frame edge. This
 structural change preserves the pixels and source stage selected by the legacy
 scheduler coupling.
 
-The current admission rule subtracts one unit for each active clip, resize,
-and colorspace operation from the resolved thread count. The palette worker is
-admitted only when more than one unit remains. A normal resize also introduces
-the colorspace work needed to resize in linear RGB, so it currently consumes
-two units. The resulting boundary cases are:
+The temporary automatic resolver subtracts one unit for each active clip,
+resize, and colorspace operation from the resolved thread count. It selects
+`adaptive-grid` only when palette work is eligible and more than one unit
+remains. A normal resize also introduces the colorspace work needed to resize
+in linear RGB, so it currently consumes two units. The resulting boundary
+cases are:
 
 | Active work | Heavy-operation count | First thread count using `adaptive-grid` |
 | --- | ---: | ---: |
@@ -128,6 +124,19 @@ two units. The resulting boundary cases are:
 | clip or colorspace conversion | 1 | 3 |
 | resize | 2 | 4 |
 | clip and resize | 3 | 5 |
+
+Resolution and scheduling are ordered explicitly:
+
+```text
+frame work analysis
+    -> resolve sampling from resource profile
+    -> allocate workers for the effective sampling policy
+```
+
+The scheduler may reserve a palette worker only for a resolved
+`adaptive-grid` policy. A full-frame or bypassed path reserves none. This keeps
+the legacy automatic thresholds for palette-producing images while removing
+the scheduler decision as the source of sampling semantics.
 
 `LSXSPL1` records the requested and effective sampling names, input source,
 lifecycle phase, resolution reason, thread count, heavy-operation count, and

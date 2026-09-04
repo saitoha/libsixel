@@ -26,6 +26,8 @@
 
 #include <sixel.h>
 
+#include "palette-plan.h"
+
 struct sixel_encoder;
 
 typedef enum sixel_planner_node_kind {
@@ -95,6 +97,14 @@ typedef struct sixel_encoding_planner {
 void sixel_encoding_planner_init(sixel_encoding_planner_t *planner);
 void sixel_encoding_planner_reset_for_frame(
     sixel_encoding_planner_t *planner);
+void sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
+                                    struct sixel_encoder *encoder,
+                                    sixel_frame_t *frame);
+SIXELSTATUS sixel_encoding_planner_schedule(
+    sixel_encoding_planner_t *planner,
+    struct sixel_encoder *encoder,
+    sixel_frame_t *frame,
+    sixel_palette_sampling_policy_t sampling_policy);
 void sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                                  struct sixel_encoder *encoder,
                                  sixel_frame_t *frame);
@@ -109,6 +119,8 @@ void sixel_encoding_planner_replan(sixel_encoding_planner_t *planner,
 int sixel_encoding_palette_job_ready(struct sixel_encoder *encoder,
                                      sixel_encoding_planner_t *planner,
                                      sixel_frame_t *frame);
+int sixel_encoding_palette_job_eligible(struct sixel_encoder *encoder,
+                                        sixel_frame_t *frame);
 void sixel_encoding_planner_set_loader_metadata(
     sixel_encoding_planner_t *planner,
     int multiframe_known,

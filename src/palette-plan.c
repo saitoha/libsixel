@@ -129,6 +129,47 @@ sixel_palette_sampling_resolve(
     return status;
 }
 
+sixel_palette_sampling_policy_t
+sixel_palette_sampling_select_auto(int total_threads,
+                                   int heavy_operations,
+                                   int async_eligible)
+{
+    int available;
+
+    available = total_threads - heavy_operations;
+    if (async_eligible != 0 && total_threads > 1 && available > 1) {
+        return SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID;
+    }
+    return SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+}
+
+SIXELSTATUS
+sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
+                                    int total_threads,
+                                    int heavy_operations,
+                                    int async_eligible)
+{
+    sixel_palette_sampling_policy_t effective;
+    sixel_palette_sampling_source_t source;
+
+    if (state == NULL || total_threads < 1 || heavy_operations < 0 ||
+            state->sampling.requested != SIXEL_PALETTE_SAMPLING_AUTO) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    effective = sixel_palette_sampling_select_auto(total_threads,
+                                                    heavy_operations,
+                                                    async_eligible);
+    source = effective == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID
+        ? SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME
+        : SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
+    return sixel_palette_sampling_resolve(
+        state,
+        effective,
+        source,
+        SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
+}
+
 SIXELSTATUS
 sixel_palette_policy_mark_bypassed(
     sixel_palette_policy_resolution_t *resolution)

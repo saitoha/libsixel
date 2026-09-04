@@ -584,20 +584,16 @@ sixel_encoding_planner_reset_for_frame(sixel_encoding_planner_t *planner)
 }
 
 int
-sixel_encoding_palette_job_ready(sixel_encoder_t *encoder,
-                                 sixel_encoding_planner_t *planner,
-                                 sixel_frame_t *frame)
+sixel_encoding_palette_job_eligible(sixel_encoder_t *encoder,
+                                    sixel_frame_t *frame)
 {
     int pixelformat;
 
-    if (encoder == NULL || planner == NULL || frame == NULL) {
+    if (encoder == NULL || frame == NULL) {
         return 0;
     }
 
     if (encoder->palette_job_enabled == 0) {
-        return 0;
-    }
-    if (planner->allow_palette_async == 0) {
         return 0;
     }
     if (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT) {
@@ -615,14 +611,24 @@ sixel_encoding_palette_job_ready(sixel_encoder_t *encoder,
     return 1;
 }
 
+int
+sixel_encoding_palette_job_ready(sixel_encoder_t *encoder,
+                                 sixel_encoding_planner_t *planner,
+                                 sixel_frame_t *frame)
+{
+    if (planner == NULL || planner->allow_palette_async == 0) {
+        return 0;
+    }
+    return sixel_encoding_palette_job_eligible(encoder, frame);
+}
+
 
 void
-sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
-                            sixel_encoder_t *encoder,
-                            sixel_frame_t *frame)
+sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
+                               sixel_encoder_t *encoder,
+                               sixel_frame_t *frame)
 {
     int total;
-    int budget;
     int source_colorspace;
     int source_pixelformat;
     int source_is_float32;
@@ -663,10 +669,8 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     }
 
     /*
-     * Keep palette sampling from spawning extra threads when resize/clip or
-     * full-frame colorspace conversion already occupy the available workers.
-     * Heavy steps consume the budget; the palette worker runs only when at
-     * least one spare thread remains after accounting for them.
+     * Describe the work that consumes thread capacity.  Sampling resolution
+     * reads this profile before the scheduler allocates any palette worker.
      */
     total = sixel_threads_resolve();
     planner->total_threads = total;
@@ -844,18 +848,43 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     planner->heavy_ops = planner->clip_active
         + planner->scale_active
         + planner->colorspace_active;
+}
+
+SIXELSTATUS
+sixel_encoding_planner_schedule(
+    sixel_encoding_planner_t *planner,
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame,
+    sixel_palette_sampling_policy_t sampling_policy)
+{
+    int budget;
+    int total;
+
+    if (planner == NULL || encoder == NULL || frame == NULL ||
+            (sampling_policy != SIXEL_PALETTE_SAMPLING_FULL_FRAME &&
+             sampling_policy != SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    total = planner->total_threads;
+    planner->palette_threads = 0;
+    planner->allow_palette_async = 0;
+    planner->main_threads = total > 0 ? total : 1;
 
     if (total <= 1) {
-        return;
+        if (sampling_policy == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID) {
+            return SIXEL_LOGIC_ERROR;
+        }
+        return SIXEL_OK;
     }
 
     budget = total - planner->heavy_ops;
-    if (budget > 1) {
+    if (sampling_policy == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID &&
+            budget > 1) {
         planner->palette_threads = 1;
         planner->allow_palette_async = 1;
         planner->main_threads = total - planner->palette_threads;
-    } else {
-        planner->main_threads = total;
+    } else if (sampling_policy == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID) {
+        return SIXEL_LOGIC_ERROR;
     }
 
     sixel_encoding_planner_set_loader_metadata(
@@ -869,6 +898,38 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                                  encoder,
                                  frame,
                                  planner->allow_palette_async != 0);
+
+    return SIXEL_OK;
+}
+
+void
+sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
+                            sixel_encoder_t *encoder,
+                            sixel_frame_t *frame)
+{
+    sixel_palette_sampling_policy_t sampling_policy;
+    int async_eligible;
+
+    if (planner == NULL || encoder == NULL || frame == NULL) {
+        return;
+    }
+
+    sixel_encoding_planner_analyze(planner, encoder, frame);
+    /*
+     * Loader handoff uses this compatibility wrapper before the encode-frame
+     * policy state exists.  It still avoids reserving a palette worker when
+     * the frame cannot use one.  The encode DAG records the same resolution
+     * through analyze, resolve, and schedule explicitly.
+     */
+    async_eligible = sixel_encoding_palette_job_eligible(encoder, frame);
+    sampling_policy = sixel_palette_sampling_select_auto(
+        planner->total_threads,
+        planner->heavy_ops,
+        async_eligible);
+    (void)sixel_encoding_planner_schedule(planner,
+                                          encoder,
+                                          frame,
+                                          sampling_policy);
 }
 
 
