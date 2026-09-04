@@ -556,6 +556,8 @@ sixel_palette_resolution_reason_name(
         return "quantizer-capability";
     case SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE:
         return "resource-profile";
+    case SIXEL_PALETTE_RESOLUTION_FALLBACK:
+        return "fallback";
     case SIXEL_PALETTE_RESOLUTION_NOT_APPLICABLE:
         return "not-applicable";
     case SIXEL_PALETTE_RESOLUTION_NONE:
@@ -4815,7 +4817,6 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     int histogram_colors;
     int method_for_diffuse;
     int skip_palette_diffusion;
-    int full_frame_sampling;
     sixel_palette_sampling_policy_t sampling_policy;
     sixel_palette_sampling_source_t sampling_source;
 
@@ -4826,10 +4827,6 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     histogram_colors = 0;
     method_for_diffuse = SIXEL_DIFFUSE_NONE;
     skip_palette_diffusion = 0;
-    full_frame_sampling =
-        context->palette.sampling.effective ==
-            SIXEL_PALETTE_SAMPLING_FULL_FRAME &&
-        context->palette.sampling.phase == SIXEL_PALETTE_POLICY_RESOLVED;
     fallback_cause = context->palette_job_failure_status;
     fallback_stage = context->palette_job_failure_stage;
     sampling_policy = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
@@ -4874,6 +4871,11 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
 
     if (context->dither == NULL) {
         if (fallback_stage != SIXEL_PALETTE_JOB_FAILURE_NONE) {
+            status = sixel_palette_sampling_resolve_fallback(
+                &context->palette);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
             sampling_policy = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
             sampling_source =
                 SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
@@ -4901,7 +4903,8 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         }
         if (status != SIXEL_OK) {
             context->dither = NULL;
-        } else if (full_frame_sampling != 0) {
+        } else if (context->palette.sampling.phase ==
+                SIXEL_PALETTE_POLICY_RESOLVED) {
             status = sixel_palette_policy_mark_executed(
                 &context->palette.sampling);
         }

@@ -53,6 +53,7 @@ typedef enum sixel_palette_resolution_reason {
     SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA,
     SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY,
     SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE,
+    SIXEL_PALETTE_RESOLUTION_FALLBACK,
     SIXEL_PALETTE_RESOLUTION_NOT_APPLICABLE
 } sixel_palette_resolution_reason_t;
 
@@ -116,6 +117,10 @@ sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
                                     int total_threads,
                                     int heavy_operations,
                                     int async_eligible);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_sampling_resolve_fallback(
+    sixel_palette_frame_state_t *state);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_policy_mark_executed(

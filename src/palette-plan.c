@@ -171,6 +171,41 @@ sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
 }
 
 SIXELSTATUS
+sixel_palette_sampling_resolve_fallback(
+    sixel_palette_frame_state_t *state)
+{
+    sixel_palette_policy_resolution_t *sampling;
+
+    if (state == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    sampling = &state->sampling;
+    /*
+     * This transition represents the successful path that will construct the
+     * final palette, not the failed adaptive attempt.  Restrict it to an
+     * automatic request so a future explicit sampling option cannot silently
+     * change policy after execution has started.
+     */
+    if (sampling->requested != SIXEL_PALETTE_SAMPLING_AUTO ||
+            sampling->origin != SIXEL_PALETTE_POLICY_ORIGIN_AUTO ||
+            sampling->effective != SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID ||
+            (sampling->phase != SIXEL_PALETTE_POLICY_RESOLVED &&
+             sampling->phase != SIXEL_PALETTE_POLICY_EXECUTED) ||
+            state->sampling_source !=
+                SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME) {
+        return SIXEL_LOGIC_ERROR;
+    }
+
+    sampling->effective = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+    sampling->phase = SIXEL_PALETTE_POLICY_RESOLVED;
+    sampling->reason = SIXEL_PALETTE_RESOLUTION_FALLBACK;
+    state->sampling_source =
+        SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
+
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
 sixel_palette_policy_mark_bypassed(
     sixel_palette_policy_resolution_t *resolution)
 {

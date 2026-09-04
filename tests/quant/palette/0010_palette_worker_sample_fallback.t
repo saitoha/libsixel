@@ -39,5 +39,11 @@ test "${message#*LSXPFB1|stage=sample|action=full-frame-sync|*|rc=0*}" \
     exit 0
 }
 
+test "${message#*LSXSPL1|requested=auto|effective=full-frame|source=preprocessed-frame|origin=auto|phase=executed|reason=fallback|threads=4|heavy=0|budget_async=1|job_ready=1*}" \
+    != "${message}" || {
+    echo "not ok 1 - palette sample fallback state was not recorded"
+    exit 0
+}
+
 echo "ok 1 - palette sample failure falls back to full frame"
 exit 0

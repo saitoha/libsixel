@@ -157,7 +157,13 @@ The fallback contract distinguishes worker initialization, sample creation,
 thread creation, worker colorspace conversion, and worker palette construction
 failures. The `palette_contract` trace records the failed stage, the selected
 fallback action, the original status, and the fallback result. A failed
-builder's partial dither is never published.
+builder's partial dither is never published. A full-frame retry also
+re-resolves the authoritative sampling state to `full-frame` from the
+`preprocessed-frame`, records `fallback` as the resolution reason, and marks
+that policy executed only after synchronous palette construction succeeds.
+A thread-creation failure that successfully reuses its completed sample keeps
+`adaptive-grid` as the executed policy because its sample population did not
+change.
 
 Once an explicit sampling policy is available, it must not silently inherit
 the automatic policy's full-frame retry. Cross-policy fallback is permitted
