@@ -316,6 +316,8 @@ SIXEL_INTERNAL_API int
 sixel_test_environment_libwebp_force_rgb(void);
 SIXEL_INTERNAL_API int
 sixel_test_environment_palette_disable_tables(void);
+SIXEL_INTERNAL_API char const *
+sixel_test_environment_palette_job_failure(void);
 
 /*
  * Resolve registered environment variables through registry metadata.  The

@@ -101,12 +101,28 @@ This coupling must first be described and covered by tests. Separating policy
 from scheduling before preserving both paths would silently change palette
 quality, output size, and performance.
 
-There is a second legacy coupling on the failure path. After an asynchronous
-palette job has already sampled with `adaptive-grid`, a builder failure causes
-the collector to retry synchronously with the preprocessed full frame. That is
-an execution-time policy change, not merely a scheduling fallback. Before
-sampling state is attached to execution, a launched worker failure must become
-terminal for that frame and retain normal partial-output cleanup.
+There is a second legacy coupling on the failure path. The palette worker was
+introduced as an opportunistic overlap optimization, so inability to use it
+must not by itself stop encoding. A thread-creation failure after sampling can
+preserve semantics by building synchronously from the same sample. If no
+sample exists, or if the sampled palette builder itself fails, the current
+implicit automatic sampling policy retries with the preprocessed full frame.
+Sampling remains implicit and automatic even when `-Q` selects an explicit
+quantizer. The latter retry is an availability fallback, but it is also an
+execution-time sampling-policy change and must be reported as such.
+
+The fallback contract distinguishes worker initialization, sample creation,
+thread creation, worker colorspace conversion, and worker palette construction
+failures. The `palette_contract` trace records the failed stage, the selected
+fallback action, the original status, and the fallback result. A failed
+builder's partial dither is never published.
+
+Once an explicit sampling policy is available, it must not silently inherit
+the automatic policy's full-frame retry. Cross-policy fallback is permitted
+only when the resolver has retained an automatic request origin and records
+the additional attempt. An explicit request either uses the same sample or
+returns the failure unless a separately specified fallback chain says
+otherwise.
 
 ## Binning policy
 
@@ -265,9 +281,11 @@ default changes can be reviewed independently.
 2. Add requested, effective, reason, and lifecycle state to the existing
    per-frame encode DAG context. Remove unused policy copies from the palette
    worker job without changing output.
-3a0. Remove the post-launch cross-policy retry. Propagate a failed palette
-     worker's status without rebuilding from the full frame, and cover output
-     ownership and cleanup on that path.
+3a0. Restore the palette worker's availability contract and make it explicit.
+     Reuse an already constructed sample after thread-creation failure, use the
+     legacy full-frame retry only for the current implicit automatic policy,
+     trace every fallback decision, and cover each failure stage through the
+     real encode DAG.
 3a. Characterize the existing successful-path split without rerouting it. Represent
     `full-frame` and `adaptive-grid` as internal effective policies, record
     whether their input is the loaded or preprocessed frame, and test the
