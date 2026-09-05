@@ -151,6 +151,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0031_filter_binning.c \
 	processing/filter/0032_filter_binning_failure_output.c \
 	processing/filter/0033_filter_binning_exact.c \
+	processing/filter/0034_filter_binning_sample_stream.c \
+	processing/filter/0035_filter_binning_stream_format.c \
+	processing/filter/0036_filter_binning_stream_transparency.c \
+	processing/filter/0037_filter_binning_stream_float.c \
+	processing/filter/0038_filter_binning_stream_empty.c \
 	processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
@@ -313,6 +318,11 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0031_filter_binning.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0032_filter_binning_failure_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0033_filter_binning_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0034_filter_binning_sample_stream.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0035_filter_binning_stream_format.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0036_filter_binning_stream_transparency.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0037_filter_binning_stream_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0038_filter_binning_stream_empty.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
@@ -617,6 +627,11 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po \
 	processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po \
 	processing/filter/$(DEPDIR)/test_runner-0033_filter_binning_exact.Po \
+	processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Po \
+	processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Po \
+	processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po \
+	processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po \
+	processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po \
@@ -1372,6 +1387,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_FILTER_BINNING \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_FILTER_BINNING_FAILURE_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_FILTER_BINNING_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_FILTER_BINNING_SAMPLE_STREAM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_FILTER_BINNING_STREAM_FORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_FILTER_BINNING_STREAM_TRANSPARENCY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_FILTER_BINNING_STREAM_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_FILTER_BINNING_STREAM_EMPTY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_SAMPLE_STREAM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -1556,6 +1576,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0031_filter_binning.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0032_filter_binning_failure_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0033_filter_binning_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0034_filter_binning_sample_stream.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0035_filter_binning_stream_format.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0036_filter_binning_stream_transparency.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0037_filter_binning_stream_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0038_filter_binning_stream_empty.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
@@ -1956,6 +1981,21 @@ processing/filter/test_runner-0032_filter_binning_failure_output.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/filter/test_runner-0033_filter_binning_exact.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0034_filter_binning_sample_stream.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0035_filter_binning_stream_format.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0036_filter_binning_stream_transparency.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0037_filter_binning_stream_float.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0038_filter_binning_stream_empty.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/$(am__dirstamp):
@@ -2669,6 +2709,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0033_filter_binning_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po@am__quote@ # am--include-marker
@@ -3321,6 +3366,76 @@ processing/filter/test_runner-0033_filter_binning_exact.obj: processing/filter/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0033_filter_binning_exact.c' object='processing/filter/test_runner-0033_filter_binning_exact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0033_filter_binning_exact.obj `if test -f 'processing/filter/0033_filter_binning_exact.c'; then $(CYGPATH_W) 'processing/filter/0033_filter_binning_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0033_filter_binning_exact.c'; fi`
+
+processing/filter/test_runner-0034_filter_binning_sample_stream.o: processing/filter/0034_filter_binning_sample_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0034_filter_binning_sample_stream.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Tpo -c -o processing/filter/test_runner-0034_filter_binning_sample_stream.o `test -f 'processing/filter/0034_filter_binning_sample_stream.c' || echo '$(srcdir)/'`processing/filter/0034_filter_binning_sample_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Tpo processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0034_filter_binning_sample_stream.c' object='processing/filter/test_runner-0034_filter_binning_sample_stream.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0034_filter_binning_sample_stream.o `test -f 'processing/filter/0034_filter_binning_sample_stream.c' || echo '$(srcdir)/'`processing/filter/0034_filter_binning_sample_stream.c
+
+processing/filter/test_runner-0034_filter_binning_sample_stream.obj: processing/filter/0034_filter_binning_sample_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0034_filter_binning_sample_stream.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Tpo -c -o processing/filter/test_runner-0034_filter_binning_sample_stream.obj `if test -f 'processing/filter/0034_filter_binning_sample_stream.c'; then $(CYGPATH_W) 'processing/filter/0034_filter_binning_sample_stream.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0034_filter_binning_sample_stream.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Tpo processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0034_filter_binning_sample_stream.c' object='processing/filter/test_runner-0034_filter_binning_sample_stream.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0034_filter_binning_sample_stream.obj `if test -f 'processing/filter/0034_filter_binning_sample_stream.c'; then $(CYGPATH_W) 'processing/filter/0034_filter_binning_sample_stream.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0034_filter_binning_sample_stream.c'; fi`
+
+processing/filter/test_runner-0035_filter_binning_stream_format.o: processing/filter/0035_filter_binning_stream_format.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0035_filter_binning_stream_format.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Tpo -c -o processing/filter/test_runner-0035_filter_binning_stream_format.o `test -f 'processing/filter/0035_filter_binning_stream_format.c' || echo '$(srcdir)/'`processing/filter/0035_filter_binning_stream_format.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Tpo processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0035_filter_binning_stream_format.c' object='processing/filter/test_runner-0035_filter_binning_stream_format.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0035_filter_binning_stream_format.o `test -f 'processing/filter/0035_filter_binning_stream_format.c' || echo '$(srcdir)/'`processing/filter/0035_filter_binning_stream_format.c
+
+processing/filter/test_runner-0035_filter_binning_stream_format.obj: processing/filter/0035_filter_binning_stream_format.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0035_filter_binning_stream_format.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Tpo -c -o processing/filter/test_runner-0035_filter_binning_stream_format.obj `if test -f 'processing/filter/0035_filter_binning_stream_format.c'; then $(CYGPATH_W) 'processing/filter/0035_filter_binning_stream_format.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0035_filter_binning_stream_format.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Tpo processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0035_filter_binning_stream_format.c' object='processing/filter/test_runner-0035_filter_binning_stream_format.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0035_filter_binning_stream_format.obj `if test -f 'processing/filter/0035_filter_binning_stream_format.c'; then $(CYGPATH_W) 'processing/filter/0035_filter_binning_stream_format.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0035_filter_binning_stream_format.c'; fi`
+
+processing/filter/test_runner-0036_filter_binning_stream_transparency.o: processing/filter/0036_filter_binning_stream_transparency.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0036_filter_binning_stream_transparency.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Tpo -c -o processing/filter/test_runner-0036_filter_binning_stream_transparency.o `test -f 'processing/filter/0036_filter_binning_stream_transparency.c' || echo '$(srcdir)/'`processing/filter/0036_filter_binning_stream_transparency.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Tpo processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0036_filter_binning_stream_transparency.c' object='processing/filter/test_runner-0036_filter_binning_stream_transparency.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0036_filter_binning_stream_transparency.o `test -f 'processing/filter/0036_filter_binning_stream_transparency.c' || echo '$(srcdir)/'`processing/filter/0036_filter_binning_stream_transparency.c
+
+processing/filter/test_runner-0036_filter_binning_stream_transparency.obj: processing/filter/0036_filter_binning_stream_transparency.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0036_filter_binning_stream_transparency.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Tpo -c -o processing/filter/test_runner-0036_filter_binning_stream_transparency.obj `if test -f 'processing/filter/0036_filter_binning_stream_transparency.c'; then $(CYGPATH_W) 'processing/filter/0036_filter_binning_stream_transparency.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0036_filter_binning_stream_transparency.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Tpo processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0036_filter_binning_stream_transparency.c' object='processing/filter/test_runner-0036_filter_binning_stream_transparency.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0036_filter_binning_stream_transparency.obj `if test -f 'processing/filter/0036_filter_binning_stream_transparency.c'; then $(CYGPATH_W) 'processing/filter/0036_filter_binning_stream_transparency.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0036_filter_binning_stream_transparency.c'; fi`
+
+processing/filter/test_runner-0037_filter_binning_stream_float.o: processing/filter/0037_filter_binning_stream_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0037_filter_binning_stream_float.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Tpo -c -o processing/filter/test_runner-0037_filter_binning_stream_float.o `test -f 'processing/filter/0037_filter_binning_stream_float.c' || echo '$(srcdir)/'`processing/filter/0037_filter_binning_stream_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Tpo processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0037_filter_binning_stream_float.c' object='processing/filter/test_runner-0037_filter_binning_stream_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0037_filter_binning_stream_float.o `test -f 'processing/filter/0037_filter_binning_stream_float.c' || echo '$(srcdir)/'`processing/filter/0037_filter_binning_stream_float.c
+
+processing/filter/test_runner-0037_filter_binning_stream_float.obj: processing/filter/0037_filter_binning_stream_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0037_filter_binning_stream_float.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Tpo -c -o processing/filter/test_runner-0037_filter_binning_stream_float.obj `if test -f 'processing/filter/0037_filter_binning_stream_float.c'; then $(CYGPATH_W) 'processing/filter/0037_filter_binning_stream_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0037_filter_binning_stream_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Tpo processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0037_filter_binning_stream_float.c' object='processing/filter/test_runner-0037_filter_binning_stream_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0037_filter_binning_stream_float.obj `if test -f 'processing/filter/0037_filter_binning_stream_float.c'; then $(CYGPATH_W) 'processing/filter/0037_filter_binning_stream_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0037_filter_binning_stream_float.c'; fi`
+
+processing/filter/test_runner-0038_filter_binning_stream_empty.o: processing/filter/0038_filter_binning_stream_empty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0038_filter_binning_stream_empty.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Tpo -c -o processing/filter/test_runner-0038_filter_binning_stream_empty.o `test -f 'processing/filter/0038_filter_binning_stream_empty.c' || echo '$(srcdir)/'`processing/filter/0038_filter_binning_stream_empty.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Tpo processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0038_filter_binning_stream_empty.c' object='processing/filter/test_runner-0038_filter_binning_stream_empty.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0038_filter_binning_stream_empty.o `test -f 'processing/filter/0038_filter_binning_stream_empty.c' || echo '$(srcdir)/'`processing/filter/0038_filter_binning_stream_empty.c
+
+processing/filter/test_runner-0038_filter_binning_stream_empty.obj: processing/filter/0038_filter_binning_stream_empty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0038_filter_binning_stream_empty.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Tpo -c -o processing/filter/test_runner-0038_filter_binning_stream_empty.obj `if test -f 'processing/filter/0038_filter_binning_stream_empty.c'; then $(CYGPATH_W) 'processing/filter/0038_filter_binning_stream_empty.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0038_filter_binning_stream_empty.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Tpo processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0038_filter_binning_stream_empty.c' object='processing/filter/test_runner-0038_filter_binning_stream_empty.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0038_filter_binning_stream_empty.obj `if test -f 'processing/filter/0038_filter_binning_stream_empty.c'; then $(CYGPATH_W) 'processing/filter/0038_filter_binning_stream_empty.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0038_filter_binning_stream_empty.c'; fi`
 
 processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o: processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo -c -o processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o `test -f 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
@@ -5484,6 +5599,11 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0033_filter_binning_exact.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
@@ -5687,6 +5807,11 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0031_filter_binning.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0032_filter_binning_failure_output.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0033_filter_binning_exact.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0034_filter_binning_sample_stream.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0035_filter_binning_stream_format.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po

@@ -124,6 +124,11 @@ int test_filter_0030_filter_palette_failure_output(int argc, char **argv);
 int test_filter_0031_filter_binning(int argc, char **argv);
 int test_filter_0032_filter_binning_failure_output(int argc, char **argv);
 int test_filter_0033_filter_binning_exact(int argc, char **argv);
+int test_filter_0034_filter_binning_sample_stream(int argc, char **argv);
+int test_filter_0035_filter_binning_stream_format(int argc, char **argv);
+int test_filter_0036_filter_binning_stream_transparency(int argc, char **argv);
+int test_filter_0037_filter_binning_stream_float(int argc, char **argv);
+int test_filter_0038_filter_binning_stream_empty(int argc, char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
@@ -386,6 +391,16 @@ static test_entry_t const test_entries[] = {
       test_filter_0032_filter_binning_failure_output },
     { "filter/0033_filter_binning_exact",
       test_filter_0033_filter_binning_exact },
+    { "filter/0034_filter_binning_sample_stream",
+      test_filter_0034_filter_binning_sample_stream },
+    { "filter/0035_filter_binning_stream_format",
+      test_filter_0035_filter_binning_stream_format },
+    { "filter/0036_filter_binning_stream_transparency",
+      test_filter_0036_filter_binning_stream_transparency },
+    { "filter/0037_filter_binning_stream_float",
+      test_filter_0037_filter_binning_stream_float },
+    { "filter/0038_filter_binning_stream_empty",
+      test_filter_0038_filter_binning_stream_empty },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
       test_gpupal_0001_strtoul },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",

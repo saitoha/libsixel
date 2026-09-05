@@ -30,11 +30,23 @@
 #include "filter.h"
 #include "palette-plan.h"
 
+typedef enum sixel_filter_binning_output_order {
+    SIXEL_FILTER_BINNING_OUTPUT_NATIVE = 0,
+    SIXEL_FILTER_BINNING_OUTPUT_BIN_KEY_ASCENDING
+} sixel_filter_binning_output_order_t;
+
+typedef enum sixel_filter_binning_coordinate_mode {
+    SIXEL_FILTER_BINNING_COORDINATE_SOURCE = 0,
+    SIXEL_FILTER_BINNING_COORDINATE_CLAMPED
+} sixel_filter_binning_coordinate_mode_t;
+
 typedef struct sixel_filter_binning_config {
     sixel_palette_binning_state_t *binning;
     int input_is_float32;
     double scale[3];
     double offset[3];
+    sixel_filter_binning_output_order_t output_order;
+    sixel_filter_binning_coordinate_mode_t coordinate_mode;
 } sixel_filter_binning_config_t;
 
 SIXEL_INTERNAL_API SIXELSTATUS

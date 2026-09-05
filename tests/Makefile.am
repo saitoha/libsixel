@@ -240,6 +240,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0031_FILTER_BINNING \
     -DBUILD_TEST_0032_FILTER_BINNING_FAILURE_OUTPUT \
     -DBUILD_TEST_0033_FILTER_BINNING_EXACT \
+    -DBUILD_TEST_0034_FILTER_BINNING_SAMPLE_STREAM \
+    -DBUILD_TEST_0035_FILTER_BINNING_STREAM_FORMAT \
+    -DBUILD_TEST_0036_FILTER_BINNING_STREAM_TRANSPARENCY \
+    -DBUILD_TEST_0037_FILTER_BINNING_STREAM_FLOAT \
+    -DBUILD_TEST_0038_FILTER_BINNING_STREAM_EMPTY \
     -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
     -DBUILD_TEST_0025_SAMPLE_STREAM \
     -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -399,6 +404,11 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0031_filter_binning.c \
     processing/filter/0032_filter_binning_failure_output.c \
     processing/filter/0033_filter_binning_exact.c \
+    processing/filter/0034_filter_binning_sample_stream.c \
+    processing/filter/0035_filter_binning_stream_format.c \
+    processing/filter/0036_filter_binning_stream_transparency.c \
+    processing/filter/0037_filter_binning_stream_float.c \
+    processing/filter/0038_filter_binning_stream_empty.c \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
