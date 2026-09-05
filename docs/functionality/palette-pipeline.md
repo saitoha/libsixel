@@ -593,6 +593,67 @@ validates the measurement pipeline; it is not sufficient to select a project
 default. A default change requires additional natural, gradient, flat-artwork,
 broad-gamut, and rare-color fixtures, followed by the same recorded protocol.
 
+### Initial measured baseline
+
+The first durable run was recorded from revision `1259bb880` on arm64 macOS
+with the amalgamated command-line tools. These plots are views of the checked-in
+CSV data, not separately entered summaries.
+
+![Quality of the measured sampling and binning policies](palette-pipeline/measurements/palette-pipeline-quality.png)
+
+The sampling comparison is deliberately mixed at low `K`. At `K=8`,
+`adaptive-grid` raises MS-SSIM from 0.893526 to 0.911202 while mean Delta E00
+increases from 6.106531 to 6.352006. At `K=16`, it improves both metrics, but
+the two policies alternate by small amounts at larger palette sizes. A single
+quality scalar would therefore hide a real trade-off in the selected palette.
+
+With full-frame sampling, `none` has the highest MS-SSIM at five of the six
+palette sizes and the lowest mean Delta E00 from `K=16` through `K=256`.
+`exact` has the highest MS-SSIM at `K=32`, while `soft` has the lowest mean
+Delta E00 at `K=8`. The `K=256` mean Delta E00 values for `none` and `exact`
+are nearly identical, 1.803799 and 1.804042 respectively. `hard` generally
+gives up some measured quality, but its performance result explains why it is
+an important automatic-policy candidate.
+
+![Runtime of the measured sampling and binning policies](palette-pipeline/measurements/palette-pipeline-speed.png)
+
+`adaptive-grid` reduces the median palette-build span from 5.714 ms to
+0.379 ms at `K=8`, and from 16.062 ms to 4.565 ms at `K=256`. The corresponding
+end-to-end medians fall from 44.188 ms to 31.408 ms and from 146.056 ms to
+126.040 ms. Sampling is not the only end-to-end cost, so its large palette-span
+speedup becomes a smaller, but still measurable, process-level speedup.
+
+For full-frame binning, `hard` is the fastest policy at every measured `K`.
+At `K=256`, median palette-build times are 16.062 ms for `hard`, 36.017 ms for
+`soft`, 323.204 ms for `exact`, and 1262.131 ms for `none`. End-to-end medians
+are 146.056 ms, 164.720 ms, 452.875 ms, and 1389.988 ms respectively. This is
+a mechanism measurement on one image, but the widening high-`K` separation is
+large enough that automatic resolution must account for palette-build cost.
+
+![SIXEL size from the measured sampling and binning policies](palette-pipeline/measurements/palette-pipeline-size.png)
+
+The faster policies also change the stream rather than merely accelerating the
+same answer. `adaptive-grid` produces 49,790 bytes at `K=8`, versus 41,407 bytes
+for full-frame sampling, but the gap narrows to 260,131 versus 259,171 bytes at
+`K=256`. In the binning comparison, `hard` gives the smallest stream through
+`K=128`; `soft` is smallest at `K=256`, at 249,905 bytes. These are no-dither
+streams, so the size differences come from palette selection and application,
+not from an error-diffusion pattern.
+
+The raw values and provenance are retained in
+[`palette-pipeline-quality.csv`](palette-pipeline/measurements/palette-pipeline-quality.csv),
+[`palette-pipeline-size.csv`](palette-pipeline/measurements/palette-pipeline-size.csv),
+[`palette-pipeline-speed.csv`](palette-pipeline/measurements/palette-pipeline-speed.csv),
+and
+[`palette-pipeline-run.json`](palette-pipeline/measurements/palette-pipeline-run.json).
+The timing CSV contains every warm-up, measured run, and boundary washout; plot
+medians and interquartile ranges are derived from its raw measured rows.
+
+This baseline does not justify a default on its own. In particular, the low-`K`
+disagreement between MS-SSIM and Delta E00, and the quality gained by expensive
+full-frame policies, must be checked against the broader fixture classes listed
+above before the `auto` resolver is changed.
+
 ## Migration waves
 
 The migration is intentionally divided so structural changes, CLI changes, and

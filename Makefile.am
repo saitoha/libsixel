@@ -79,6 +79,13 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.png \
 	docs/functionality/encoding-pipeline.md \
 	docs/functionality/palette-pipeline.md \
+	docs/functionality/palette-pipeline/measurements/palette-pipeline-quality.csv \
+	docs/functionality/palette-pipeline/measurements/palette-pipeline-quality.png \
+	docs/functionality/palette-pipeline/measurements/palette-pipeline-run.json \
+	docs/functionality/palette-pipeline/measurements/palette-pipeline-size.csv \
+	docs/functionality/palette-pipeline/measurements/palette-pipeline-size.png \
+	docs/functionality/palette-pipeline/measurements/palette-pipeline-speed.csv \
+	docs/functionality/palette-pipeline/measurements/palette-pipeline-speed.png \
 	docs/functionality/lookup-policy.md \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.png \

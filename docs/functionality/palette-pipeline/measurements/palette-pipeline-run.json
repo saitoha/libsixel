@@ -1,0 +1,164 @@
+{
+  "build": {
+    "cc": "gcc",
+    "cflags": "-g -O2 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "--enable-amalgamated-tools --disable-amalgamated-lib BASH=/bin/sh",
+    "configured_source_directory": "/Users/saitoha/repo/libsixel",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": "",
+    "source_directory_matches": true
+  },
+  "generated_at_utc": "2026-09-05T11:44:31.234122+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.5"
+  },
+  "input": {
+    "path": "images/snake.png",
+    "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4"
+  },
+  "libsixel_linkage": {
+    "artifacts": [],
+    "mode": "amalgamated"
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "512adde75916ab776bc764ce7d46debe6c4bd049de5ce72c0faadff3510d70c7",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "4d0c1c3bb03cc6c9da8080940495eb85b351eadc1a8b3ae84b410785b2c4240c"
+    },
+    "lsqa": {
+      "launcher": "assessment/lsqa",
+      "launcher_sha256": "e06d7c59371cc8c1f7b7696df39e2c912ae249a85737935357f3ec3f2562f477",
+      "payload": "assessment/.libs/lsqa",
+      "payload_sha256": "4cf2aba398bfc60c7e10518b1f0f9f33b891ee976d1eb829a0b4769f745578ab"
+    }
+  },
+  "protocol": {
+    "clustering_colorspace": "oklab",
+    "colors": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "comparison_facets": {
+      "binning": [
+        [
+          "full-frame-none",
+          "none"
+        ],
+        [
+          "full-frame-exact",
+          "exact"
+        ],
+        [
+          "full-frame-hard",
+          "hard"
+        ],
+        [
+          "full-frame-soft",
+          "soft"
+        ]
+      ],
+      "sampling": [
+        [
+          "full-frame-hard",
+          "full frame"
+        ],
+        [
+          "adaptive-grid-hard",
+          "adaptive grid"
+        ]
+      ]
+    },
+    "comparison_scope": "independent palette sampling and binning policy axes",
+    "configurations": [
+      {
+        "binning_policy": "hard",
+        "comparison_axes": [
+          "sampling",
+          "binning"
+        ],
+        "config": "full-frame-hard",
+        "sampling_policy": "full-frame"
+      },
+      {
+        "binning_policy": "hard",
+        "comparison_axes": [
+          "sampling"
+        ],
+        "config": "adaptive-grid-hard",
+        "sampling_policy": "adaptive-grid"
+      },
+      {
+        "binning_policy": "none",
+        "comparison_axes": [
+          "binning"
+        ],
+        "config": "full-frame-none",
+        "sampling_policy": "full-frame"
+      },
+      {
+        "binning_policy": "exact",
+        "comparison_axes": [
+          "binning"
+        ],
+        "config": "full-frame-exact",
+        "sampling_policy": "full-frame"
+      },
+      {
+        "binning_policy": "soft",
+        "comparison_axes": [
+          "binning"
+        ],
+        "config": "full-frame-soft",
+        "sampling_policy": "full-frame"
+      }
+    ],
+    "cover_policy": "off",
+    "diffusion": "none",
+    "end_to_end_timing": "uninstrumented fresh-process monotonic wall time",
+    "gpu_policy": "off",
+    "interpretation_limit": "one fixture characterizes mechanisms but cannot select a project default",
+    "libsixel_linkage_snapshotted": true,
+    "loader": "libpng!",
+    "lookup_policy": "none",
+    "measurement_mode": "durable",
+    "merge_policy": "none",
+    "palette_timing": "sum of complete top-level palette/build role=palette timeline spans, including multiple attempts or fallbacks",
+    "precision": "8bit",
+    "provenance_rechecked_after_measurement": true,
+    "quality": "full",
+    "quantize_option": "kmeans:inittype=none:threshold=0.125:binbits=6:mapping=uniform:softdist=trilinear:autoratio=32:feedback=0:prune=hamerly:seed=1:restarts=1:iter=20:miniter=0:polish_iter=0:feedback_slots=1:feedback_interval=1:sample_target=16384",
+    "sample_target": 16384,
+    "sixel_environment_removed": true,
+    "size_measurement": "quality-pass SIXEL stdout byte length",
+    "speed_rows": "one raw duration per domain, K, round, position, and recorded boundary washout",
+    "speed_runs": 10,
+    "speed_warmups": 2,
+    "threads": 1,
+    "timing_order_design": {
+      "boundary_washout": "one recorded but excluded full-frame-hard process before every sequence",
+      "name": "Williams first-order carryover balance",
+      "physical_configurations": 5,
+      "sequence_period": 10
+    },
+    "working_colorspace": "gamma"
+  },
+  "schema_version": 1,
+  "source": {
+    "end_snapshot_matches": true,
+    "revision": "1259bb880d772489acae60f213a7ca48711e5cc1",
+    "top_source_directory": "/Users/saitoha/repo/libsixel",
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}
