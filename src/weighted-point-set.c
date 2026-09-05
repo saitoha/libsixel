@@ -103,7 +103,7 @@ sixel_weighted_point_set_bind(
             binning->entry_capacity_bound == 0u ||
             point_count > binning->entry_capacity_bound ||
             (policy == SIXEL_PALETTE_BINNING_NONE &&
-             point_count != binning->source_point_count) ||
+             point_count > binning->source_point_count) ||
             (policy != SIXEL_PALETTE_BINNING_NONE && weights == NULL) ||
             (weights == NULL && total_weight != (double)point_count) ||
             (weights != NULL && coordinates == weights)) {

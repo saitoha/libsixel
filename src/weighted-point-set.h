@@ -39,9 +39,10 @@ typedef enum sixel_weighted_point_ownership {
  * Typed output of the logical binning stage.
  *
  * Coordinates contain three interleaved doubles in the palette colorspace.
- * A NULL weight array represents unit mass for every point and is permitted
- * only for the unaggregated `none` policy.  Aggregated policies must publish
- * explicit weights so quantizers cannot accidentally discard sample mass.
+ * A NULL weight array represents unit mass for every visible point and is
+ * permitted only for the unaggregated `none` policy.  Transparent samples may
+ * make point_count smaller than source_point_count.  Aggregated policies must
+ * publish explicit weights so quantizers cannot accidentally discard mass.
  * The binning filter currently consumes only this unit-mass `none` form;
  * accepting an already weighted input requires a separate mass-validation
  * contract.

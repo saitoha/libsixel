@@ -25,6 +25,7 @@
 #ifndef LIBSIXEL_SAMPLE_STREAM_H
 #define LIBSIXEL_SAMPLE_STREAM_H
 
+#include <6cells.h>
 #include <sixel.h>
 
 #include "palette-plan.h"
@@ -32,7 +33,8 @@
 typedef enum sixel_sample_stream_storage {
     SIXEL_SAMPLE_STREAM_EMPTY = 0,
     SIXEL_SAMPLE_STREAM_BORROWED_FRAME,
-    SIXEL_SAMPLE_STREAM_OWNED_FRAME
+    SIXEL_SAMPLE_STREAM_OWNED_FRAME,
+    SIXEL_SAMPLE_STREAM_BORROWED_BUFFER
 } sixel_sample_stream_storage_t;
 
 /*
@@ -45,6 +47,9 @@ typedef enum sixel_sample_stream_storage {
  */
 typedef struct sixel_sample_stream {
     sixel_frame_t *frame;
+    void const *buffer;
+    size_t buffer_size;
+    sixel_frame_transparency_t transparency;
     sixel_sample_stream_storage_t storage;
     sixel_palette_sampling_policy_t policy;
     sixel_palette_sampling_source_t source;
@@ -62,6 +67,22 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_sample_stream_bind_borrowed(
     sixel_sample_stream_t *stream,
     sixel_frame_t *frame,
+    sixel_palette_sampling_policy_t policy,
+    sixel_palette_sampling_source_t source);
+
+/*
+ * Bind a flat, immutable pixel buffer without inventing frame geometry.
+ * The caller owns both the pixel bytes and any borrowed transparency mask for
+ * the complete lifetime of the sample stream.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_sample_stream_bind_borrowed_buffer(
+    sixel_sample_stream_t *stream,
+    void const *buffer,
+    size_t buffer_size,
+    int pixelformat,
+    int colorspace,
+    sixel_frame_transparency_t const *transparency,
     sixel_palette_sampling_policy_t policy,
     sixel_palette_sampling_source_t source);
 

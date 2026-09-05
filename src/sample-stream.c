@@ -27,6 +27,7 @@
 #endif
 
 #include <stdint.h>
+#include <string.h>
 
 #include <sixel.h>
 
@@ -56,6 +57,9 @@ sixel_sample_stream_init(sixel_sample_stream_t *stream)
     }
 
     stream->frame = NULL;
+    stream->buffer = NULL;
+    stream->buffer_size = 0u;
+    memset(&stream->transparency, 0, sizeof(stream->transparency));
     stream->storage = SIXEL_SAMPLE_STREAM_EMPTY;
     stream->policy = SIXEL_PALETTE_SAMPLING_AUTO;
     stream->source = SIXEL_PALETTE_SAMPLING_SOURCE_NONE;
@@ -64,6 +68,60 @@ sixel_sample_stream_init(sixel_sample_stream_t *stream)
     stream->height = 0;
     stream->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     stream->colorspace = SIXEL_COLORSPACE_GAMMA;
+}
+
+SIXELSTATUS
+sixel_sample_stream_bind_borrowed_buffer(
+    sixel_sample_stream_t *stream,
+    void const *buffer,
+    size_t buffer_size,
+    int pixelformat,
+    int colorspace,
+    sixel_frame_transparency_t const *transparency,
+    sixel_palette_sampling_policy_t policy,
+    sixel_palette_sampling_source_t source)
+{
+    sixel_frame_transparency_t empty_transparency;
+    sixel_frame_transparency_t const *selected_transparency;
+    size_t point_count;
+    int depth;
+
+    memset(&empty_transparency, 0, sizeof(empty_transparency));
+    selected_transparency = transparency != NULL
+        ? transparency : &empty_transparency;
+    point_count = 0u;
+    depth = 0;
+    if (stream == NULL || buffer == NULL || buffer_size == 0u ||
+            stream->storage != SIXEL_SAMPLE_STREAM_EMPTY ||
+            !sixel_sample_stream_policy_is_valid(policy) ||
+            !sixel_sample_stream_source_is_valid(source)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth <= 0 || buffer_size % (size_t)depth != 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    point_count = buffer_size / (size_t)depth;
+    if (point_count == 0u ||
+            (selected_transparency->transparent_mask == NULL &&
+             selected_transparency->transparent_mask_size != 0u) ||
+            (selected_transparency->transparent_mask != NULL &&
+             selected_transparency->transparent_mask_size < point_count)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    stream->buffer = buffer;
+    stream->buffer_size = buffer_size;
+    stream->transparency = *selected_transparency;
+    stream->storage = SIXEL_SAMPLE_STREAM_BORROWED_BUFFER;
+    stream->policy = policy;
+    stream->source = source;
+    stream->point_count = point_count;
+    stream->width = 0;
+    stream->height = 0;
+    stream->pixelformat = pixelformat;
+    stream->colorspace = colorspace;
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS

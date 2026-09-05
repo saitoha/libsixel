@@ -63,6 +63,10 @@ sixel_pixelformat_byte_to_float(int pixelformat,
                                 int channel,
                                 unsigned char value);
 
+/* Return the coordinate colorspace encoded by a pixel format. */
+int
+sixel_pixelformat_get_colorspace(int pixelformat);
+
 int
 sixel_helper_compute_depth(int pixelformat);
 

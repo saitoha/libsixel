@@ -129,6 +129,9 @@ int test_filter_0035_filter_binning_stream_format(int argc, char **argv);
 int test_filter_0036_filter_binning_stream_transparency(int argc, char **argv);
 int test_filter_0037_filter_binning_stream_float(int argc, char **argv);
 int test_filter_0038_filter_binning_stream_empty(int argc, char **argv);
+int test_filter_0039_filter_binning_stream_none(int argc, char **argv);
+int test_filter_0040_filter_binning_stream_exact(int argc, char **argv);
+int test_filter_0041_filter_binning_uniform_256(int argc, char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
@@ -222,8 +225,12 @@ int test_palette_0031_weighted_point_set(int argc, char **argv);
 int test_palette_0032_kmeans_binning_legacy_output(int argc, char **argv);
 int test_palette_0033_quantizer_capabilities(int argc, char **argv);
 int test_palette_0034_palette_stage_resolvers(int argc, char **argv);
-int test_palette_0040_palette_build_attempt_isolation(int argc, char **argv);
 int test_palette_0037_palette_sampling_indexed_frame(int argc, char **argv);
+int test_palette_0040_palette_build_attempt_isolation(int argc, char **argv);
+int test_palette_0041_kcenter_binning_filter(int argc, char **argv);
+int test_palette_0042_kcenter_large_buffer(int argc, char **argv);
+int test_palette_0043_kcenter_float_legacy_grid(int argc, char **argv);
+int test_palette_0044_kcenter_packed_alpha_layouts(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
 int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
@@ -401,6 +408,12 @@ static test_entry_t const test_entries[] = {
       test_filter_0037_filter_binning_stream_float },
     { "filter/0038_filter_binning_stream_empty",
       test_filter_0038_filter_binning_stream_empty },
+    { "filter/0039_filter_binning_stream_none",
+      test_filter_0039_filter_binning_stream_none },
+    { "filter/0040_filter_binning_stream_exact",
+      test_filter_0040_filter_binning_stream_exact },
+    { "filter/0041_filter_binning_uniform_256",
+      test_filter_0041_filter_binning_uniform_256 },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
       test_gpupal_0001_strtoul },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",
@@ -536,10 +549,18 @@ static test_entry_t const test_entries[] = {
       test_palette_0033_quantizer_capabilities },
     { "palette/0034_palette_stage_resolvers",
       test_palette_0034_palette_stage_resolvers },
-    { "palette/0040_palette_build_attempt_isolation",
-      test_palette_0040_palette_build_attempt_isolation },
     { "palette/0037_palette_sampling_indexed_frame",
       test_palette_0037_palette_sampling_indexed_frame },
+    { "palette/0040_palette_build_attempt_isolation",
+      test_palette_0040_palette_build_attempt_isolation },
+    { "palette/0041_kcenter_binning_filter",
+      test_palette_0041_kcenter_binning_filter },
+    { "palette/0042_kcenter_large_buffer",
+      test_palette_0042_kcenter_large_buffer },
+    { "palette/0043_kcenter_float_legacy_grid",
+      test_palette_0043_kcenter_float_legacy_grid },
+    { "palette/0044_kcenter_packed_alpha_layouts",
+      test_palette_0044_kcenter_packed_alpha_layouts },
     { "cli/0029_cli_token_is_known_option",
       test_cli_0029_cli_token_is_known_option },
     { "cli/0030_cli_option_requires_argument",

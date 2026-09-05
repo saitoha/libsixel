@@ -245,6 +245,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0036_FILTER_BINNING_STREAM_TRANSPARENCY \
     -DBUILD_TEST_0037_FILTER_BINNING_STREAM_FLOAT \
     -DBUILD_TEST_0038_FILTER_BINNING_STREAM_EMPTY \
+    -DBUILD_TEST_0039_FILTER_BINNING_STREAM_NONE \
+    -DBUILD_TEST_0040_FILTER_BINNING_STREAM_EXACT \
+    -DBUILD_TEST_0041_FILTER_BINNING_UNIFORM_256 \
     -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
     -DBUILD_TEST_0025_SAMPLE_STREAM \
     -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -255,8 +258,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0032_KMEANS_BINNING_LEGACY_OUTPUT \
     -DBUILD_TEST_0033_QUANTIZER_CAPABILITIES \
     -DBUILD_TEST_0034_PALETTE_STAGE_RESOLVERS \
-    -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
     -DBUILD_TEST_0037_PALETTE_SAMPLING_INDEXED_FRAME \
+    -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
+    -DBUILD_TEST_0041_KCENTER_BINNING_FILTER \
+    -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
+    -DBUILD_TEST_0043_KCENTER_FLOAT_LEGACY_GRID \
+    -DBUILD_TEST_0044_KCENTER_PACKED_ALPHA_LAYOUTS \
     -DBUILD_TEST_0035_CLI_PALETTE_BINNING_CONFLICT_ATOMIC \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
@@ -409,6 +416,9 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0036_filter_binning_stream_transparency.c \
     processing/filter/0037_filter_binning_stream_float.c \
     processing/filter/0038_filter_binning_stream_empty.c \
+    processing/filter/0039_filter_binning_stream_none.c \
+    processing/filter/0040_filter_binning_stream_exact.c \
+    processing/filter/0041_filter_binning_uniform_256.c \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
@@ -508,8 +518,12 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0032_kmeans_binning_legacy_output.c \
     quant/palette/0033_quantizer_capabilities.c \
     quant/palette/0034_palette_stage_resolvers.c \
-    quant/palette/0040_palette_build_attempt_isolation.c \
     quant/palette/0037_palette_sampling_indexed_frame.c \
+    quant/palette/0040_palette_build_attempt_isolation.c \
+    quant/palette/0041_kcenter_binning_filter.c \
+    quant/palette/0042_kcenter_large_buffer.c \
+    quant/palette/0043_kcenter_float_legacy_grid.c \
+    quant/palette/0044_kcenter_packed_alpha_layouts.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \

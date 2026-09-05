@@ -290,16 +290,18 @@ what an algorithm could support after a future adapter is written:
 | Heckbert | yes | no | no | no | no |
 | K-means | yes | yes | yes | no | no |
 | K-medoids | yes | no | no | yes | no |
-| K-center | yes | no | no | no | no |
+| K-center | yes | yes | no | no | no |
 
-K-medoids and K-center already build internal weighted candidate structures,
-but those private structures are not the shared weighted-point-set artifact.
-They therefore remain `no` until their public quantizer boundary consumes that
-artifact. K-medoids also replaces each histogram-bin mean by its nearest
-observed input color before solving, whereas K-center currently solves over
-histogram-bin means. Only K-medoids therefore declares the observed-color
-constraint. The `auto` quantizer name has no capabilities of its own; a
-resolver must first select a concrete family.
+K-center consumes the shared weighted-point-set artifact. It accepts unit or
+integral bin weights, but not fractional weights, because its pruning and
+candidate-selection stages retain integer population counts. K-medoids still
+builds a private weighted candidate structure and therefore remains `no` until
+its public quantizer boundary consumes the shared artifact. K-medoids also
+replaces each histogram-bin mean by its nearest observed input color before
+solving, whereas K-center solves over histogram-bin means under hard binning.
+Only K-medoids therefore declares the observed-color constraint. The `auto`
+quantizer name has no capabilities of its own; a resolver must first select a
+concrete family.
 
 Stage resolvers are pure functions over explicit input and result structures.
 They neither mutate the per-frame lifecycle state nor read process-wide option
@@ -314,11 +316,11 @@ Its current `auto` threshold remains unchanged: it selects soft binning when
 An explicit unsupported combination is rejected during resolution. In
 particular, soft binning requires a weighted-point consumer that accepts
 fractional weights, while hard binning cannot feed a quantizer that requires
-representatives to remain observed input colors. The `exact` artifact is
-currently executable by K-means. Other quantizers remain unsupported until
-their palette-builder boundaries consume the shared weighted-point-set
-artifact. Resolver failure never triggers an allocation-time or execution-time
-algorithm fallback.
+representatives to remain observed input colors. The `exact` and `hard`
+artifacts are executable by K-means and K-center. Soft is executable only by
+K-means. Other quantizers remain unsupported until their palette-builder
+boundaries consume the shared weighted-point-set artifact. Resolver failure
+never triggers an allocation-time or execution-time algorithm fallback.
 
 Wave 7b exposes the top-level option at the encoder boundary. Palette
 construction preflights compatibility without committing the quantizer to the
@@ -341,19 +343,20 @@ thread-local pointer refers to the encoder's stack frame. Concurrent palette
 instances are therefore independent, and re-entry on one active instance is
 rejected instead of overwriting another operation's result target.
 
-A failed float32 K-means engine resets the attempt lifecycle before invoking
-legacy K-means. Float samples are normalized to RGB888 for that retry because
-the legacy engine consumes byte samples; passing the float buffer through
-unchanged cannot form a valid legacy input. Exact binning is the exception:
-normalization could merge distinct float coordinates, so a failed float engine
-is returned without entering the RGB888 retry. If the palette component's
-historical solver fallback succeeds, the frame records the solver that
-actually produced the palette with `fallback` as its reason and discards the
-failed attempt's binning state. A fallback is rejected when its solver cannot
-consume an explicit `exact`, `hard`, or `soft` artifact; it cannot silently
-erase that request. An asynchronous palette worker commits the effective
-policy, origin, lifecycle phase, resolution reason, and actual source-point
-count only after its successful attempt, before collection completes.
+A failed float32 K-means or K-center engine resets the attempt lifecycle before
+invoking its legacy byte engine. Float samples are normalized to RGB888 for
+that retry because the legacy engines consume byte samples; passing the float
+buffer through unchanged cannot form a valid legacy input. Exact binning is
+the exception: normalization could merge distinct float coordinates, so a
+failed float engine is returned without entering the RGB888 retry. If the
+palette component's historical solver fallback succeeds, the frame records
+the solver that actually produced the palette with `fallback` as its reason
+and discards the failed attempt's binning state. A fallback is rejected when
+its solver cannot consume an explicit `exact`, `hard`, or `soft` artifact; it
+cannot silently erase that request. An asynchronous palette worker commits the
+effective policy, origin, lifecycle phase, resolution reason, and actual
+source-point count only after its successful attempt, before collection
+completes.
 When automatic adaptive sampling falls back to the full preprocessed frame,
 binning keeps its request and origin but resolves its sample-dependent metadata
 again against the replacement sample stream.
@@ -407,13 +410,22 @@ disguised as an image frame:
 FRAME -> SAMPLE_STREAM -> WEIGHTED_POINT_SET -> PALETTE -> LOOKUP
 ```
 
-The initial `SAMPLE_STREAM` representation retains a frame payload adapter so
-the execution path can migrate without copying pixels a second time. It records
-the effective sampling policy, input source, point count, dimensions, pixel
-format, colorspace, and whether the frame is borrowed or owned. A borrowed
-full-frame view never changes the frame reference count; an owned adaptive
-sample transfers its frame reference into the artifact. This distinction is
-explicit even though both currently use contiguous frame storage.
+The `SAMPLE_STREAM` representation accepts either a frame payload adapter or a
+borrowed flat pixel buffer. It records the effective sampling policy, input
+source, point count, pixel format, colorspace, and storage ownership. Frame
+streams also retain their dimensions. A borrowed full-frame view never changes
+the frame reference count; an owned adaptive sample transfers its frame
+reference into the artifact. The flat-buffer form carries no invented image
+geometry and allows palette engines to expose an already contiguous sample
+population even when its point count cannot be represented as a frame width.
+It is borrowed for the duration of one filter execution and cannot be
+refreshed as a frame-backed stream.
+
+The byte-layout boundary remains canonical: a buffer consumed by binning is
+RGB888 or RGBA8888. K-center adapts packed ARGB8888, BGRA8888, and ABGR8888
+inputs to RGBA8888 before binding the stream, preserving alpha values without
+premultiplication or compositing. This keeps pixel-layout conversion out of
+the binning algorithm while retaining the public dither input contract.
 
 The `WEIGHTED_POINT_SET` contract carries three interleaved coordinates in the
 palette colorspace, output weights, the source and output point counts, total
@@ -424,16 +436,32 @@ weights; otherwise a downstream quantizer could silently discard aggregation
 mass. Borrowed and owned arrays are distinct artifact states, and a failed
 ownership transfer leaves the caller's pointer slots unchanged.
 
-Kmeans exact, hard, and soft binning execute through the `binning` filter
-vtable. The filter currently accepts only the unit-mass form of an
-unaggregated `none` artifact and publishes an owned weighted artifact. This
-restriction avoids accepting weighted input until re-binning has a specified
-mass-validation contract. Hard and soft currently use the compact sparse
-histogram retained from the Kmeans implementation, including hash-table
-traversal order; keeping that order stable prevents a structural migration
-from perturbing deterministic seeding and palette output. The residual
-histogram used by Kmeans feedback is a quantizer operation, not a second
-preprocessing filter, although it reuses the same compact histogram primitive.
+K-means exact, hard, and soft binning and K-center none, exact, and hard
+binning execute through the `binning` filter vtable. The filter accepts only
+the unit-mass form of an unaggregated `none` artifact and publishes an owned
+weighted artifact. This restriction avoids accepting weighted input until
+re-binning has a specified mass-validation contract. Hard and soft use the
+compact sparse histogram retained from the K-means implementation. K-means
+keeps native hash-table traversal order so the structural migration does not
+perturb deterministic seeding and palette output. K-center requests ascending
+packed-bin-key order for hard binning to preserve its historical dense-table
+scan order. The residual histogram used by K-means feedback is a quantizer
+operation, not a second preprocessing filter, although it reuses the same
+compact histogram primitive.
+
+K-center hard binning uses a separate uniform-grid mapping with a half-open
+`[0, 256)` byte domain. For `b` bits per axis, a clamped channel value `x` is
+assigned by:
+
+```text
+bin(x) = floor(x * 2^b / 256)
+```
+
+This preserves the former `((unsigned int)x) >> (8 - b)` behavior. The
+distinction from the general closed `[0, 255]` uniform mapping is observable
+for float palette-space coordinates near a bin boundary even though every
+integer byte maps to the same expected legacy cell. Soft binning rejects this
+hard-only compatibility grid.
 
 Exact aggregation uses a separate compact hash table because finite grid keys
 cannot represent full palette-space coordinates. Equality is numeric equality
@@ -537,6 +565,8 @@ default changes can be reviewed independently.
 8b. Move other quantizer-specific histogram construction to the shared binning
     stage only where semantics match. Preserve observed-color and candidate
     selection contracts rather than treating every histogram as equivalent.
+    K-center is migrated with its integer-weight and historical grid-order
+    contracts; K-medoids remains private.
 9. Measure the sampling, binning, and quantization axes independently. Use the
    results to select automatic profiles and only then change defaults.
 10. Add chunk streaming, operator fusion, or storage optimizations where

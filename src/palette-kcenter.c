@@ -51,6 +51,9 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
+#include "filter-binning.h"
+#include "filter-factory-binning.h"
+#include "filter.h"
 #include "timeline-logger.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
@@ -58,8 +61,10 @@
 #include "palette-private.h"
 #include "options.h"
 #include "pixelformat.h"
+#include "sample-stream.h"
 #include "status.h"
 #include "timer.h"
+#include "weighted-point-set.h"
 
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
@@ -464,6 +469,7 @@ typedef struct sixel_kcenter_build_ctx {
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
+    sixel_palette_binning_state_t *binning;
     sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
@@ -2002,12 +2008,8 @@ sixel_kcenter_auto_point_budget_adaptive(unsigned int reqcolors,
 }
 
 typedef struct sixel_kcenter_collect_ctx {
-    unsigned char const *data;
-    unsigned int length;
-    unsigned int depth;
+    sixel_weighted_point_set_t const *input;
     int pixelformat;
-    int treat_input_as_float32;
-    unsigned int histbits;
     unsigned int point_budget;
     double prune_mass;
     unsigned int reqcolors;
@@ -2020,11 +2022,6 @@ typedef struct sixel_kcenter_collect_ctx {
     double const *float32_channel_scale;
     double const *float32_channel_offset;
     sixel_allocator_t *allocator;
-    unsigned int channels;
-    unsigned int pixel_stride;
-    unsigned int pixel_count;
-    unsigned int bin_count;
-    unsigned int shift_bits;
     unsigned int visible_count;
     unsigned int active_count;
     unsigned int keep_count;
@@ -2040,8 +2037,6 @@ typedef struct sixel_kcenter_collect_ctx {
     int input_is_float32;
     int use_perceptual_strata;
     int oklab_perceptual_space;
-    unsigned int *counts;
-    double *sums;
     sixel_kcenter_bin_t *bins;
     unsigned char *bin_selected;
     sixel_kcenter_dispersion_rank_t *dispersion;
@@ -2091,169 +2086,23 @@ sixel_kcenter_collect_ctx_clear(sixel_kcenter_collect_ctx_t *ctx)
 static SIXELSTATUS
 sixel_kcenter_collect_prepare(sixel_kcenter_collect_ctx_t *ctx)
 {
-    SIXELSTATUS status;
-    int input_is_float32;
-
-    status = SIXEL_BAD_ARGUMENT;
-    input_is_float32 = 0;
-    if (ctx == NULL) {
-        return status;
+    if (ctx == NULL || ctx->input == NULL ||
+            ctx->input->ownership == SIXEL_WEIGHTED_POINT_EMPTY ||
+            ctx->input->coordinates == NULL ||
+            ctx->input->point_count == 0u ||
+            ctx->input->point_count > UINT_MAX ||
+            ctx->input->total_weight <= 0.0 ||
+            ctx->input->total_weight > (double)UINT_MAX) {
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    ctx->channels = ctx->depth;
-    ctx->pixel_stride = ctx->depth;
     ctx->budget = ctx->point_budget;
-    ctx->visible_count = 0u;
+    ctx->visible_count = (unsigned int)ctx->input->total_weight;
     ctx->active_count = 0u;
     ctx->retained_count = 0u;
     ctx->selected_count = 0u;
-    ctx->input_is_float32 = 0;
     ctx->use_perceptual_strata = 0;
     ctx->oklab_perceptual_space = 0;
-
-    input_is_float32 = (ctx->treat_input_as_float32
-                        && SIXEL_PIXELFORMAT_IS_FLOAT32(ctx->pixelformat));
-    if (input_is_float32) {
-        if (ctx->depth == 0u
-                || ctx->depth % (unsigned int)sizeof(float) != 0u) {
-            return status;
-        }
-        ctx->channels = ctx->depth / (unsigned int)sizeof(float);
-        ctx->pixel_stride = ctx->depth;
-    }
-    if (ctx->channels != 3u && ctx->channels != 4u) {
-        return status;
-    }
-    if (ctx->pixel_stride == 0u) {
-        return status;
-    }
-
-    ctx->input_is_float32 = input_is_float32;
-    ctx->pixel_count = ctx->length / ctx->pixel_stride;
-    if (ctx->histbits > 8u) {
-        return status;
-    }
-    ctx->shift_bits = 8u - ctx->histbits;
-    ctx->bin_count = 1u << (ctx->histbits * 3u);
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-sixel_kcenter_collect_build_histogram(sixel_kcenter_collect_ctx_t *ctx)
-{
-    SIXELSTATUS status;
-    unsigned int index;
-    unsigned int ri;
-    unsigned int gi;
-    unsigned int bi;
-    unsigned int bin_index;
-    unsigned int offset;
-    unsigned int alpha_byte;
-    double red;
-    double green;
-    double blue;
-    float const *pixel_float;
-
-    status = SIXEL_BAD_ALLOCATION;
-    index = 0u;
-    ri = 0u;
-    gi = 0u;
-    bi = 0u;
-    bin_index = 0u;
-    offset = 0u;
-    alpha_byte = 0u;
-    red = 0.0;
-    green = 0.0;
-    blue = 0.0;
-    pixel_float = NULL;
-
-    ctx->counts = (unsigned int *)sixel_allocator_malloc(
-        ctx->allocator,
-        (size_t)ctx->bin_count * sizeof(unsigned int));
-    ctx->sums = (double *)sixel_allocator_malloc(
-        ctx->allocator,
-        (size_t)ctx->bin_count * 3u * sizeof(double));
-    if (ctx->counts == NULL || ctx->sums == NULL) {
-        return status;
-    }
-    memset(ctx->counts, 0, (size_t)ctx->bin_count * sizeof(unsigned int));
-    memset(ctx->sums, 0, (size_t)ctx->bin_count * 3u * sizeof(double));
-
-    for (index = 0u; index < ctx->pixel_count; ++index) {
-        offset = index * ctx->pixel_stride;
-        if (ctx->channels == 4u) {
-            if (ctx->input_is_float32) {
-                pixel_float = (float const *)(void const *)(ctx->data + offset);
-                if (sixel_pixelformat_float_channel_clamp(
-                        ctx->pixelformat,
-                        3,
-                        pixel_float[3]) <= 0.0f) {
-                    continue;
-                }
-            } else {
-                alpha_byte = ctx->data[offset + 3u];
-                if (alpha_byte == 0u) {
-                    continue;
-                }
-            }
-        }
-
-        if (ctx->input_is_float32) {
-            pixel_float = (float const *)(void const *)(ctx->data + offset);
-            red = (double)sixel_pixelformat_float_channel_clamp(
-                ctx->pixelformat,
-                0,
-                pixel_float[0]);
-            green = (double)sixel_pixelformat_float_channel_clamp(
-                ctx->pixelformat,
-                1,
-                pixel_float[1]);
-            blue = (double)sixel_pixelformat_float_channel_clamp(
-                ctx->pixelformat,
-                2,
-                pixel_float[2]);
-            red = red * ctx->float32_channel_scale[0]
-                + ctx->float32_channel_offset[0];
-            green = green * ctx->float32_channel_scale[1]
-                + ctx->float32_channel_offset[1];
-            blue = blue * ctx->float32_channel_scale[2]
-                + ctx->float32_channel_offset[2];
-        } else {
-            red = (double)ctx->data[offset + 0u];
-            green = (double)ctx->data[offset + 1u];
-            blue = (double)ctx->data[offset + 2u];
-        }
-
-        if (red < 0.0) {
-            red = 0.0;
-        } else if (red > 255.0) {
-            red = 255.0;
-        }
-        if (green < 0.0) {
-            green = 0.0;
-        } else if (green > 255.0) {
-            green = 255.0;
-        }
-        if (blue < 0.0) {
-            blue = 0.0;
-        } else if (blue > 255.0) {
-            blue = 255.0;
-        }
-
-        ri = ((unsigned int)red) >> ctx->shift_bits;
-        gi = ((unsigned int)green) >> ctx->shift_bits;
-        bi = ((unsigned int)blue) >> ctx->shift_bits;
-        bin_index = (ri << (ctx->histbits * 2u))
-            | (gi << ctx->histbits) | bi;
-        if (bin_index >= ctx->bin_count) {
-            continue;
-        }
-        ctx->counts[bin_index] += 1u;
-        ctx->sums[bin_index * 3u + 0u] += red;
-        ctx->sums[bin_index * 3u + 1u] += green;
-        ctx->sums[bin_index * 3u + 2u] += blue;
-        ++ctx->visible_count;
-    }
     return SIXEL_OK;
 }
 
@@ -2262,7 +2111,10 @@ sixel_kcenter_collect_build_bins_and_stats(sixel_kcenter_collect_ctx_t *ctx)
 {
     SIXELSTATUS status;
     unsigned int index;
+    unsigned int channel;
     unsigned int active_count;
+    double weight;
+    double coordinate;
     double keep_target;
     double accum_weight;
     double retained_weight;
@@ -2272,7 +2124,10 @@ sixel_kcenter_collect_build_bins_and_stats(sixel_kcenter_collect_ctx_t *ctx)
 
     status = SIXEL_BAD_ALLOCATION;
     index = 0u;
+    channel = 0u;
     active_count = 0u;
+    weight = 0.0;
+    coordinate = 0.0;
     keep_target = 0.0;
     accum_weight = 0.0;
     retained_weight = 0.0;
@@ -2286,11 +2141,7 @@ sixel_kcenter_collect_build_bins_and_stats(sixel_kcenter_collect_ctx_t *ctx)
         return SIXEL_OK;
     }
 
-    for (index = 0u; index < ctx->bin_count; ++index) {
-        if (ctx->counts[index] > 0u) {
-            ++active_count;
-        }
-    }
+    active_count = (unsigned int)ctx->input->point_count;
     if (active_count == 0u) {
         ctx->active_count = 0u;
         ctx->retained_count = 0u;
@@ -2305,22 +2156,37 @@ sixel_kcenter_collect_build_bins_and_stats(sixel_kcenter_collect_ctx_t *ctx)
         return status;
     }
 
-    active_count = 0u;
     ctx->total_weight = 0.0;
-    for (index = 0u; index < ctx->bin_count; ++index) {
-        if (ctx->counts[index] == 0u) {
-            continue;
+    for (index = 0u; index < active_count; ++index) {
+        weight = ctx->input->weights == NULL
+            ? 1.0 : ctx->input->weights[index];
+        if (weight <= 0.0 || weight > (double)UINT_MAX ||
+                weight != (double)(unsigned int)weight) {
+            return SIXEL_BAD_INPUT;
         }
-        ctx->bins[active_count].index = index;
-        ctx->bins[active_count].count = ctx->counts[index];
-        ctx->bins[active_count].r = ctx->sums[index * 3u + 0u]
-            / (double)ctx->counts[index];
-        ctx->bins[active_count].g = ctx->sums[index * 3u + 1u]
-            / (double)ctx->counts[index];
-        ctx->bins[active_count].b = ctx->sums[index * 3u + 2u]
-            / (double)ctx->counts[index];
-        ctx->total_weight += (double)ctx->counts[index];
-        ++active_count;
+        ctx->bins[index].index = index;
+        ctx->bins[index].count = (unsigned int)weight;
+        for (channel = 0u; channel < 3u; ++channel) {
+            coordinate = ctx->input->coordinates[index * 3u + channel];
+            if (ctx->input_is_float32) {
+                coordinate = coordinate *
+                    ctx->float32_channel_scale[channel] +
+                    ctx->float32_channel_offset[channel];
+            }
+            if (coordinate < 0.0) {
+                coordinate = 0.0;
+            } else if (coordinate > 255.0) {
+                coordinate = 255.0;
+            }
+            if (channel == 0u) {
+                ctx->bins[index].r = coordinate;
+            } else if (channel == 1u) {
+                ctx->bins[index].g = coordinate;
+            } else {
+                ctx->bins[index].b = coordinate;
+            }
+        }
+        ctx->total_weight += weight;
     }
 
     qsort(ctx->bins,
@@ -3013,12 +2879,6 @@ sixel_kcenter_collect_cleanup(sixel_kcenter_collect_ctx_t *ctx)
     if (ctx->bins != NULL) {
         sixel_allocator_free(ctx->allocator, ctx->bins);
     }
-    if (ctx->sums != NULL) {
-        sixel_allocator_free(ctx->allocator, ctx->sums);
-    }
-    if (ctx->counts != NULL) {
-        sixel_allocator_free(ctx->allocator, ctx->counts);
-    }
 }
 
 static SIXELSTATUS
@@ -3027,12 +2887,9 @@ sixel_kcenter_collect_points(double **points_out,
                              unsigned int *point_count_out,
                              unsigned int *visible_count_out,
                              unsigned int *active_count_out,
-                             unsigned char const *data,
-                             unsigned int length,
-                             unsigned int depth,
+                             sixel_weighted_point_set_t const *input,
                              int pixelformat,
-                             int treat_input_as_float32,
-                             unsigned int histbits,
+                             int input_is_float32,
                              unsigned int point_budget,
                              double prune_mass,
                              unsigned int reqcolors,
@@ -3054,7 +2911,7 @@ sixel_kcenter_collect_points(double **points_out,
     if (points_out == NULL || weights_out == NULL || point_count_out == NULL
             || visible_count_out == NULL
             || active_count_out == NULL
-            || data == NULL
+            || input == NULL
             || allocator == NULL) {
         return status;
     }
@@ -3066,12 +2923,9 @@ sixel_kcenter_collect_points(double **points_out,
     *active_count_out = 0u;
 
     sixel_kcenter_collect_ctx_clear(&collect);
-    collect.data = data;
-    collect.length = length;
-    collect.depth = depth;
+    collect.input = input;
     collect.pixelformat = pixelformat;
-    collect.treat_input_as_float32 = treat_input_as_float32;
-    collect.histbits = histbits;
+    collect.input_is_float32 = input_is_float32;
     collect.point_budget = point_budget;
     collect.prune_mass = prune_mass;
     collect.reqcolors = reqcolors;
@@ -3087,18 +2941,9 @@ sixel_kcenter_collect_points(double **points_out,
 
     /*
      * Keep the stage order stable to preserve tie-break behavior:
-     * histogram -> prune/stats -> budget -> candidate selection.
+     * weighted points -> prune/stats -> budget -> candidate selection.
      */
     status = sixel_kcenter_collect_prepare(&collect);
-    if (status != SIXEL_OK) {
-        goto end;
-    }
-    if (collect.pixel_count == 0u) {
-        status = SIXEL_OK;
-        goto end;
-    }
-
-    status = sixel_kcenter_collect_build_histogram(&collect);
     if (status != SIXEL_OK) {
         goto end;
     }
@@ -6048,6 +5893,7 @@ typedef struct sixel_kcenter_build_runtime {
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
+    sixel_palette_binning_state_t *binning;
     sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
@@ -6170,6 +6016,7 @@ sixel_kcenter_build_runtime_init(sixel_kcenter_build_runtime_t *rt,
     rt->allocator = ctx->allocator;
     rt->pixelformat = ctx->pixelformat;
     rt->treat_input_as_float32 = ctx->treat_input_as_float32;
+    rt->binning = ctx->binning;
     rt->logger = ctx->logger;
     rt->job_seq = ctx->job_seq;
     rt->engine_name = ctx->engine_name;
@@ -6220,13 +6067,237 @@ sixel_kcenter_build_runtime_init(sixel_kcenter_build_runtime_t *rt,
 }
 
 static SIXELSTATUS
+sixel_kcenter_prepare_sample_buffer(
+    sixel_kcenter_build_runtime_t const *rt,
+    unsigned char const **data_out,
+    unsigned int *length_out,
+    int *pixelformat_out,
+    unsigned char **owned_buffer_out)
+{
+    unsigned char *buffer;
+    unsigned char const *source;
+    unsigned char *destination;
+    size_t pixel_count;
+    size_t index;
+    unsigned int red_offset;
+    unsigned int green_offset;
+    unsigned int blue_offset;
+    unsigned int alpha_offset;
+
+    buffer = NULL;
+    source = NULL;
+    destination = NULL;
+    pixel_count = 0u;
+    index = 0u;
+    red_offset = 0u;
+    green_offset = 0u;
+    blue_offset = 0u;
+    alpha_offset = 0u;
+    if (rt == NULL || data_out == NULL || length_out == NULL ||
+            pixelformat_out == NULL || owned_buffer_out == NULL ||
+            rt->data == NULL || rt->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *data_out = rt->data;
+    *length_out = rt->length;
+    *pixelformat_out = rt->pixelformat;
+    *owned_buffer_out = NULL;
+    switch (rt->pixelformat) {
+    case SIXEL_PIXELFORMAT_ARGB8888:
+        red_offset = 1u;
+        green_offset = 2u;
+        blue_offset = 3u;
+        alpha_offset = 0u;
+        break;
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        red_offset = 2u;
+        green_offset = 1u;
+        blue_offset = 0u;
+        alpha_offset = 3u;
+        break;
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        red_offset = 3u;
+        green_offset = 2u;
+        blue_offset = 1u;
+        alpha_offset = 0u;
+        break;
+    default:
+        return SIXEL_OK;
+    }
+    if (rt->depth != 4u || rt->length == 0u || rt->length % 4u != 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    pixel_count = (size_t)rt->length / 4u;
+    if (pixel_count > SIZE_MAX / 4u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    buffer = (unsigned char *)sixel_allocator_malloc(
+        rt->allocator,
+        pixel_count * 4u);
+    if (buffer == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    /*
+     * The binning filter accepts canonical byte layouts.  Retain alpha
+     * exactly while adapting packed public dither inputs to RGBA8888; alpha
+     * interpretation remains the filter's responsibility.
+     */
+    source = rt->data;
+    destination = buffer;
+    for (index = 0u; index < pixel_count; ++index) {
+        destination[0] = source[red_offset];
+        destination[1] = source[green_offset];
+        destination[2] = source[blue_offset];
+        destination[3] = source[alpha_offset];
+        source += 4u;
+        destination += 4u;
+    }
+    *data_out = buffer;
+    *length_out = (unsigned int)(pixel_count * 4u);
+    *pixelformat_out = SIXEL_PIXELFORMAT_RGBA8888;
+    *owned_buffer_out = buffer;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kcenter_build_binned_points(
+    sixel_kcenter_build_runtime_t *rt,
+    sixel_weighted_point_set_t *output)
+{
+    SIXELSTATUS status;
+    sixel_palette_binning_state_t local_binning;
+    sixel_palette_binning_state_t *binning;
+    sixel_palette_binning_policy_t policy;
+    sixel_filter_binning_config_t config;
+    sixel_frame_transparency_t transparency;
+    sixel_sample_stream_t samples;
+    sixel_filter_t *filter;
+    unsigned char const *sample_data;
+    unsigned char *owned_sample_buffer;
+    unsigned int sample_length;
+    unsigned int pixel_count;
+    int sample_pixelformat;
+
+    status = SIXEL_BAD_ARGUMENT;
+    sixel_palette_binning_state_init(
+        &local_binning,
+        SIXEL_PALETTE_BINNING_HARD,
+        SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS);
+    binning = rt != NULL ? rt->binning : NULL;
+    policy = SIXEL_PALETTE_BINNING_AUTO;
+    memset(&config, 0, sizeof(config));
+    memset(&transparency, 0, sizeof(transparency));
+    sixel_sample_stream_init(&samples);
+    filter = NULL;
+    sample_data = NULL;
+    owned_sample_buffer = NULL;
+    sample_length = 0u;
+    pixel_count = 0u;
+    sample_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    if (rt == NULL || output == NULL || rt->allocator == NULL ||
+            rt->data == NULL || rt->depth == 0u) {
+        return status;
+    }
+    pixel_count = rt->length / rt->depth;
+    if (pixel_count == 0u) {
+        return status;
+    }
+    if (binning == NULL) {
+        binning = &local_binning;
+        status = sixel_palette_binning_resolve(
+            binning,
+            SIXEL_PALETTE_BINNING_HARD,
+            rt->histbits,
+            SIXEL_PALETTE_BINNING_GRID_UNIFORM_256,
+            SIXEL_PALETTE_BINNING_KERNEL_NONE,
+            SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE,
+            pixel_count,
+            SIXEL_PALETTE_RESOLUTION_LEGACY_COMPAT);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+    if (binning->policy.phase != SIXEL_PALETTE_POLICY_RESOLVED) {
+        status = SIXEL_LOGIC_ERROR;
+        goto cleanup;
+    }
+    policy = (sixel_palette_binning_policy_t)binning->policy.effective;
+    if (policy == SIXEL_PALETTE_BINNING_SOFT) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    status = sixel_kcenter_prepare_sample_buffer(rt,
+                                                 &sample_data,
+                                                 &sample_length,
+                                                 &sample_pixelformat,
+                                                 &owned_sample_buffer);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    if (sample_pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
+        transparency.alpha_zero_is_transparent = 1;
+    }
+    status = sixel_sample_stream_bind_borrowed_buffer(
+        &samples,
+        sample_data,
+        sample_length,
+        sample_pixelformat,
+        sixel_pixelformat_get_colorspace(sample_pixelformat),
+        &transparency,
+        SIXEL_PALETTE_SAMPLING_FULL_FRAME,
+        SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    config.binning = binning;
+    config.input_is_float32 = rt->input_is_float32;
+    memcpy(config.scale,
+           rt->float32_channel_scale,
+           sizeof(config.scale));
+    memcpy(config.offset,
+           rt->float32_channel_offset,
+           sizeof(config.offset));
+    config.output_order = policy == SIXEL_PALETTE_BINNING_HARD
+        ? SIXEL_FILTER_BINNING_OUTPUT_BIN_KEY_ASCENDING
+        : SIXEL_FILTER_BINNING_OUTPUT_NATIVE;
+    config.coordinate_mode =
+        SIXEL_FILTER_BINNING_COORDINATE_CLAMPED;
+    status = sixel_filter_factory_create_binning(&config, &filter);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    sixel_filter_bind_sample_input(filter, &samples);
+    sixel_filter_bind_weighted_output(filter,
+                                      output,
+                                      samples.colorspace);
+    status = sixel_filter_run(filter, rt->allocator, rt->logger);
+
+cleanup:
+    sixel_filter_free(filter);
+    sixel_sample_stream_dispose(&samples);
+    sixel_allocator_free(rt->allocator, owned_sample_buffer);
+    if (SIXEL_FAILED(status)) {
+        sixel_weighted_point_set_dispose(output);
+    }
+    return status;
+}
+
+static SIXELSTATUS
 sixel_kcenter_build_prepare_and_collect(sixel_kcenter_build_runtime_t *rt)
 {
+    SIXELSTATUS status;
+    sixel_weighted_point_set_t binned_points;
     unsigned int channel;
     float float_minimum;
     float float_maximum;
     double range;
 
+    status = SIXEL_BAD_ARGUMENT;
+    sixel_weighted_point_set_init(&binned_points);
     channel = 0u;
     float_minimum = 0.0f;
     float_maximum = 0.0f;
@@ -6337,18 +6408,20 @@ sixel_kcenter_build_prepare_and_collect(sixel_kcenter_build_runtime_t *rt)
          && rt->quality_mode != SIXEL_QUALITY_LOW
          && rt->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32);
 
+    status = sixel_kcenter_build_binned_points(rt, &binned_points);
+    if (SIXEL_FAILED(status)) {
+        rt->status = status;
+        goto cleanup;
+    }
     rt->status = sixel_kcenter_collect_points(
         &rt->points,
         &rt->weights,
         &rt->point_count,
         &rt->visible_count,
         &rt->active_count,
-        rt->data,
-        rt->length,
-        rt->depth,
+        &binned_points,
         rt->pixelformat,
-        rt->treat_input_as_float32,
-        rt->histbits,
+        rt->input_is_float32,
         rt->point_budget,
         rt->prune_mass,
         rt->reqcolors,
@@ -6362,13 +6435,17 @@ sixel_kcenter_build_prepare_and_collect(sixel_kcenter_build_runtime_t *rt)
         rt->float32_channel_offset,
         rt->allocator);
     if (SIXEL_FAILED(rt->status)) {
-        return rt->status;
+        goto cleanup;
     }
 
     if (rt->origcolors != NULL) {
         *rt->origcolors = rt->visible_count;
     }
-    return SIXEL_OK;
+    rt->status = SIXEL_OK;
+
+cleanup:
+    sixel_weighted_point_set_dispose(&binned_points);
+    return rt->status;
 }
 
 static SIXELSTATUS
@@ -7428,6 +7505,9 @@ sixel_palette_build_kcenter_internal(sixel_kcenter_internal_ctx_t *ctx)
     build_ctx->allocator = work_allocator;
     build_ctx->pixelformat = pixelformat;
     build_ctx->treat_input_as_float32 = treat_input_as_float32;
+    build_ctx->binning = SIXEL_PALETTE_CONTEXT(palette)->attempt != NULL
+        ? &SIXEL_PALETTE_CONTEXT(palette)->attempt->binning
+        : NULL;
     build_ctx->logger = logger;
     build_ctx->job_seq = job_seq;
     build_ctx->engine_name = engine_name;

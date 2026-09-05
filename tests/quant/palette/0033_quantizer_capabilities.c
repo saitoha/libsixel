@@ -29,7 +29,7 @@ static quantizer_capability_case_t const capability_cases[] = {
     { SIXEL_QUANTIZE_MODEL_MEDIANCUT, 1, 0, 0, 0, 0 },
     { SIXEL_QUANTIZE_MODEL_KMEANS, 1, 1, 1, 0, 0 },
     { SIXEL_QUANTIZE_MODEL_KMEDOIDS, 1, 0, 0, 1, 0 },
-    { SIXEL_QUANTIZE_MODEL_KCENTER, 1, 0, 0, 0, 0 }
+    { SIXEL_QUANTIZE_MODEL_KCENTER, 1, 1, 0, 0, 0 }
 };
 
 static int

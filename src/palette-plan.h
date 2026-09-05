@@ -84,6 +84,8 @@ typedef enum sixel_palette_binning_policy {
 typedef enum sixel_palette_binning_grid_map {
     SIXEL_PALETTE_BINNING_GRID_NONE = 0,
     SIXEL_PALETTE_BINNING_GRID_UNIFORM,
+    /* Preserve K-center's historical half-open [0, 256) hard grid. */
+    SIXEL_PALETTE_BINNING_GRID_UNIFORM_256,
     SIXEL_PALETTE_BINNING_GRID_SRGB
 } sixel_palette_binning_grid_map_t;
 

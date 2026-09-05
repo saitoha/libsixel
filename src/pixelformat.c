@@ -775,6 +775,23 @@ sixel_select_rgb_reader(int pixelformat)
 }
 
 
+int
+sixel_pixelformat_get_colorspace(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+        return SIXEL_COLORSPACE_LINEAR;
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+        return SIXEL_COLORSPACE_OKLAB;
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+        return SIXEL_COLORSPACE_CIELAB;
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+        return SIXEL_COLORSPACE_DIN99D;
+    default:
+        return SIXEL_COLORSPACE_GAMMA;
+    }
+}
+
 SIXELAPI int
 sixel_helper_compute_depth(int pixelformat)
 {

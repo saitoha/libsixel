@@ -300,6 +300,7 @@ sixel_palette_bin_map_sample_to_unit(
     unit = 0.0;
     if (channel >= 3u ||
             (grid_map != SIXEL_PALETTE_BINNING_GRID_UNIFORM &&
+             grid_map != SIXEL_PALETTE_BINNING_GRID_UNIFORM_256 &&
              grid_map != SIXEL_PALETTE_BINNING_GRID_SRGB)) {
         return 0.0;
     }
@@ -307,10 +308,13 @@ sixel_palette_bin_map_sample_to_unit(
         if (scale != NULL && offset != NULL && scale[channel] > 0.0) {
             unit = sample * scale[channel];
             unit += offset[channel];
-            unit /= 255.0;
+            unit /= grid_map == SIXEL_PALETTE_BINNING_GRID_UNIFORM_256
+                ? 256.0 : 255.0;
         }
     } else {
-        unit = sample / 255.0;
+        unit = sample /
+            (grid_map == SIXEL_PALETTE_BINNING_GRID_UNIFORM_256
+             ? 256.0 : 255.0);
     }
     unit = sixel_palette_bin_clamp_unit(unit);
     if (grid_map == SIXEL_PALETTE_BINNING_GRID_SRGB) {

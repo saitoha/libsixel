@@ -448,32 +448,50 @@ sixel_filter_binning_get_stream_view(
     depth = 0;
     channels = 0u;
     input_is_float32 = 0;
-    if (stream == NULL || stream->frame == NULL || view == NULL ||
-            transparency == NULL ||
+    if (stream == NULL || view == NULL || transparency == NULL ||
             channels_out == NULL || input_is_float32_out == NULL ||
             stream->storage == SIXEL_SAMPLE_STREAM_EMPTY) {
         return status;
     }
-    frame_if = sixel_frame_as_interface(stream->frame);
-    if (frame_if == NULL || frame_if->vtbl == NULL ||
-            frame_if->vtbl->get_pixels == NULL ||
-            frame_if->vtbl->get_transparency == NULL) {
-        return status;
-    }
     memset(view, 0, sizeof(*view));
     memset(transparency, 0, sizeof(*transparency));
-    status = frame_if->vtbl->get_pixels(frame_if, view);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    if (view->width != stream->width || view->height != stream->height ||
-            view->pixelformat != stream->pixelformat ||
-            view->colorspace != stream->colorspace) {
-        return SIXEL_LOGIC_ERROR;
-    }
-    status = frame_if->vtbl->get_transparency(frame_if, transparency);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    if (stream->storage == SIXEL_SAMPLE_STREAM_BORROWED_BUFFER) {
+        if (stream->buffer == NULL || stream->buffer_size == 0u ||
+                stream->point_count == 0u) {
+            return status;
+        }
+        view->pixelformat = stream->pixelformat;
+        view->colorspace = stream->colorspace;
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(stream->pixelformat)) {
+            view->pixels_float32 = (float *)(void *)stream->buffer;
+        } else {
+            view->pixels = (unsigned char *)(void *)stream->buffer;
+        }
+        *transparency = stream->transparency;
+    } else {
+        if (stream->frame == NULL) {
+            return status;
+        }
+        frame_if = sixel_frame_as_interface(stream->frame);
+        if (frame_if == NULL || frame_if->vtbl == NULL ||
+                frame_if->vtbl->get_pixels == NULL ||
+                frame_if->vtbl->get_transparency == NULL) {
+            return status;
+        }
+        status = frame_if->vtbl->get_pixels(frame_if, view);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (view->width != stream->width ||
+                view->height != stream->height ||
+                view->pixelformat != stream->pixelformat ||
+                view->colorspace != stream->colorspace) {
+            return SIXEL_LOGIC_ERROR;
+        }
+        status = frame_if->vtbl->get_transparency(frame_if, transparency);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
     }
     if ((transparency->transparent_mask == NULL &&
          transparency->transparent_mask_size != 0u) ||
@@ -509,6 +527,62 @@ sixel_filter_binning_get_stream_view(
 }
 
 static SIXELSTATUS
+sixel_filter_binning_read_stream_sample(
+    sixel_frame_pixels_view_t const *view,
+    sixel_frame_transparency_t const *transparency,
+    unsigned int channels,
+    int input_is_float32,
+    size_t index,
+    sixel_filter_binning_config_t const *config,
+    double sample[3],
+    int *visible_out)
+{
+    unsigned int channel;
+
+    channel = 0u;
+    if (view == NULL || transparency == NULL || config == NULL ||
+            sample == NULL || visible_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *visible_out = 0;
+    if (transparency->transparent_mask != NULL &&
+            transparency->transparent_mask[index] != 0u) {
+        return SIXEL_OK;
+    }
+    if (channels == 4u &&
+            transparency->alpha_zero_is_transparent != 0 &&
+            view->pixels[index * channels + 3u] == 0u) {
+        return SIXEL_OK;
+    }
+    for (channel = 0u; channel < 3u; ++channel) {
+        if (input_is_float32) {
+            sample[channel] = (double)
+                view->pixels_float32[index * channels + channel];
+            if (!(sample[channel] <= DBL_MAX &&
+                  sample[channel] >= -DBL_MAX)) {
+                return SIXEL_BAD_INPUT;
+            }
+            if (config->coordinate_mode ==
+                    SIXEL_FILTER_BINNING_COORDINATE_CLAMPED) {
+                sample[channel] = (double)
+                    sixel_pixelformat_float_channel_clamp(
+                        view->pixelformat,
+                        (int)channel,
+                        (float)sample[channel]);
+            }
+        } else {
+            sample[channel] = (double)
+                view->pixels[index * channels + channel];
+        }
+    }
+    if (!sixel_filter_binning_coordinates_are_valid(sample)) {
+        return SIXEL_BAD_INPUT;
+    }
+    *visible_out = 1;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_filter_binning_add_stream(
     sixel_palette_bin_histogram_t *histogram,
     sixel_sample_stream_t const *stream,
@@ -524,6 +598,7 @@ sixel_filter_binning_add_stream(
     unsigned int channel;
     unsigned int channels;
     int input_is_float32;
+    int visible;
     double sample[3];
     double mapped[3];
     double total_weight;
@@ -536,6 +611,7 @@ sixel_filter_binning_add_stream(
     channel = 0u;
     channels = 0u;
     input_is_float32 = 0;
+    visible = 0;
     memset(sample, 0, sizeof(sample));
     memset(mapped, 0, sizeof(mapped));
     total_weight = 0.0;
@@ -563,38 +639,20 @@ sixel_filter_binning_add_stream(
     }
 
     for (index = 0u; index < stream->point_count; ++index) {
-        if (transparency.transparent_mask != NULL &&
-                transparency.transparent_mask[index] != 0u) {
+        status = sixel_filter_binning_read_stream_sample(
+            &view,
+            &transparency,
+            channels,
+            input_is_float32,
+            index,
+            config,
+            sample,
+            &visible);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (!visible) {
             continue;
-        }
-        if (channels == 4u &&
-                transparency.alpha_zero_is_transparent != 0 &&
-                view.pixels[index * channels + 3u] == 0u) {
-            continue;
-        }
-        for (channel = 0u; channel < 3u; ++channel) {
-            if (input_is_float32) {
-                sample[channel] = (double)
-                    view.pixels_float32[index * channels + channel];
-                if (!(sample[channel] <= DBL_MAX &&
-                      sample[channel] >= -DBL_MAX)) {
-                    return SIXEL_BAD_INPUT;
-                }
-                if (config->coordinate_mode ==
-                        SIXEL_FILTER_BINNING_COORDINATE_CLAMPED) {
-                    sample[channel] = (double)
-                        sixel_pixelformat_float_channel_clamp(
-                            view.pixelformat,
-                            (int)channel,
-                            (float)sample[channel]);
-                }
-            } else {
-                sample[channel] = (double)
-                    view.pixels[index * channels + channel];
-            }
-        }
-        if (!sixel_filter_binning_coordinates_are_valid(sample)) {
-            return SIXEL_BAD_INPUT;
         }
         for (channel = 0u; channel < 3u; ++channel) {
             mapped[channel] = sixel_palette_bin_map_sample_to_unit(
@@ -626,6 +684,171 @@ sixel_filter_binning_add_stream(
     }
     *total_weight_out = total_weight;
     return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_filter_binning_add_exact_stream(
+    sixel_filter_exact_table_t *table,
+    sixel_sample_stream_t const *stream,
+    sixel_filter_binning_config_t const *config,
+    sixel_allocator_t *allocator,
+    double *total_weight_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_pixels_view_t view;
+    sixel_frame_transparency_t transparency;
+    size_t index;
+    unsigned int channels;
+    int input_is_float32;
+    int visible;
+    double sample[3];
+    double total_weight;
+
+    status = SIXEL_BAD_ARGUMENT;
+    memset(&view, 0, sizeof(view));
+    memset(&transparency, 0, sizeof(transparency));
+    index = 0u;
+    channels = 0u;
+    input_is_float32 = 0;
+    visible = 0;
+    memset(sample, 0, sizeof(sample));
+    total_weight = 0.0;
+    if (table == NULL || stream == NULL || config == NULL ||
+            allocator == NULL || total_weight_out == NULL) {
+        return status;
+    }
+    status = sixel_filter_binning_get_stream_view(stream,
+                                                   &view,
+                                                   &transparency,
+                                                   &channels,
+                                                   &input_is_float32);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    for (index = 0u; index < stream->point_count; ++index) {
+        status = sixel_filter_binning_read_stream_sample(
+            &view,
+            &transparency,
+            channels,
+            input_is_float32,
+            index,
+            config,
+            sample,
+            &visible);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (!visible) {
+            continue;
+        }
+        status = sixel_filter_exact_table_add(table,
+                                              sample,
+                                              1.0,
+                                              allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        total_weight += 1.0;
+    }
+    *total_weight_out = total_weight;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_filter_binning_publish_direct_stream(
+    sixel_sample_stream_t const *stream,
+    sixel_filter_binning_config_t const *config,
+    sixel_weighted_point_set_t *output,
+    sixel_palette_binning_state_t *binning,
+    int colorspace,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_frame_pixels_view_t view;
+    sixel_frame_transparency_t transparency;
+    size_t index;
+    size_t visible_count;
+    unsigned int channels;
+    int input_is_float32;
+    int visible;
+    double sample[3];
+    double *coordinates;
+
+    status = SIXEL_BAD_ARGUMENT;
+    memset(&view, 0, sizeof(view));
+    memset(&transparency, 0, sizeof(transparency));
+    index = 0u;
+    visible_count = 0u;
+    channels = 0u;
+    input_is_float32 = 0;
+    visible = 0;
+    memset(sample, 0, sizeof(sample));
+    coordinates = NULL;
+    if (stream == NULL || config == NULL || output == NULL ||
+            binning == NULL || allocator == NULL ||
+            stream->point_count > SIZE_MAX / 3u / sizeof(double)) {
+        return status;
+    }
+    status = sixel_filter_binning_get_stream_view(stream,
+                                                   &view,
+                                                   &transparency,
+                                                   &channels,
+                                                   &input_is_float32);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    coordinates = (double *)sixel_allocator_malloc(
+        allocator,
+        stream->point_count * 3u * sizeof(double));
+    if (coordinates == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    for (index = 0u; index < stream->point_count; ++index) {
+        status = sixel_filter_binning_read_stream_sample(
+            &view,
+            &transparency,
+            channels,
+            input_is_float32,
+            index,
+            config,
+            sample,
+            &visible);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        if (!visible) {
+            continue;
+        }
+        memcpy(coordinates + visible_count * 3u,
+               sample,
+               sizeof(sample));
+        ++visible_count;
+    }
+    if (visible_count == 0u) {
+        sixel_helper_set_additional_message(
+            "sixel_filter_binning_apply: no visible samples.");
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    status = sixel_weighted_point_set_take_owned(
+        output,
+        &coordinates,
+        NULL,
+        visible_count,
+        (double)visible_count,
+        colorspace,
+        binning,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_palette_policy_mark_executed(&binning->policy);
+
+cleanup:
+    if (coordinates != NULL) {
+        sixel_allocator_free(allocator, coordinates);
+    }
+    return status;
 }
 
 static int
@@ -921,43 +1144,38 @@ sixel_filter_binning_apply(sixel_filter_t *filter,
         total_weight = input->total_weight;
     } else {
         if (samples->storage == SIXEL_SAMPLE_STREAM_EMPTY ||
-                samples->frame == NULL ||
+                (samples->storage ==
+                     SIXEL_SAMPLE_STREAM_BORROWED_BUFFER
+                 ? samples->buffer == NULL : samples->frame == NULL) ||
                 filter->output.colorspace != samples->colorspace) {
             return SIXEL_LOGIC_ERROR;
         }
         source_point_count = samples->point_count;
     }
     policy = (sixel_palette_binning_policy_t)binning->policy.effective;
-    if ((policy != SIXEL_PALETTE_BINNING_EXACT &&
+    if ((policy != SIXEL_PALETTE_BINNING_NONE &&
+         policy != SIXEL_PALETTE_BINNING_EXACT &&
          policy != SIXEL_PALETTE_BINNING_HARD &&
          policy != SIXEL_PALETTE_BINNING_SOFT) ||
-            binning->backend !=
-                SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE ||
             binning->source_point_count != source_point_count ||
-            (samples != NULL &&
-             policy == SIXEL_PALETTE_BINNING_EXACT)) {
+            (policy == SIXEL_PALETTE_BINNING_NONE &&
+             binning->backend != SIXEL_PALETTE_BINNING_BACKEND_DIRECT) ||
+            (policy != SIXEL_PALETTE_BINNING_NONE &&
+             binning->backend !=
+                 SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE)) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (policy == SIXEL_PALETTE_BINNING_EXACT) {
-        status = sixel_filter_exact_table_prepare(&exact_table,
-                                                  input->point_count,
-                                                  allocator);
-        if (SIXEL_FAILED(status)) {
-            goto cleanup;
+    if (policy == SIXEL_PALETTE_BINNING_NONE) {
+        if (samples == NULL) {
+            return SIXEL_BAD_ARGUMENT;
         }
-        status = sixel_filter_binning_add_exact(&exact_table,
-                                                input,
-                                                allocator);
-        if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-        status = sixel_filter_binning_publish_exact(
-            &exact_table,
+        status = sixel_filter_binning_publish_direct_stream(
+            samples,
+            &state->config,
             output,
             binning,
-            input->total_weight,
-            input->colorspace,
+            filter->output.colorspace,
             allocator);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
@@ -965,13 +1183,53 @@ sixel_filter_binning_apply(sixel_filter_t *filter,
         goto progress;
     }
 
-    expected_entries = source_point_count;
-    if (policy == SIXEL_PALETTE_BINNING_SOFT) {
-        if (expected_entries > SIZE_MAX / 8u) {
-            expected_entries = SIZE_MAX / 8u;
+    if (policy == SIXEL_PALETTE_BINNING_EXACT) {
+        status = sixel_filter_exact_table_prepare(&exact_table,
+                                                  source_point_count,
+                                                  allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
         }
-        expected_entries *= 8u;
+        if (input != NULL) {
+            status = sixel_filter_binning_add_exact(&exact_table,
+                                                    input,
+                                                    allocator);
+        } else {
+            status = sixel_filter_binning_add_exact_stream(
+                &exact_table,
+                samples,
+                &state->config,
+                allocator,
+                &total_weight);
+        }
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        if (exact_table.size == 0u) {
+            sixel_helper_set_additional_message(
+                "sixel_filter_binning_apply: no visible samples.");
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
+        status = sixel_filter_binning_publish_exact(
+            &exact_table,
+            output,
+            binning,
+            total_weight,
+            filter->output.colorspace,
+            allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        goto progress;
     }
+
+    /*
+     * The resolver has already bounded occupancy by both source
+     * contributions and the finite grid domain.  Using the raw sample count
+     * here would make a small hard grid allocate in proportion to image size.
+     */
+    expected_entries = binning->entry_capacity_bound;
     status = sixel_palette_bin_histogram_init(
         &histogram,
         expected_entries,

@@ -339,7 +339,8 @@ sixel_palette_binning_contract_is_valid(
     if (policy == SIXEL_PALETTE_BINNING_HARD) {
         return kernel == SIXEL_PALETTE_BINNING_KERNEL_NONE;
     }
-    return kernel == SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR;
+    return kernel == SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR &&
+        grid_map != SIXEL_PALETTE_BINNING_GRID_UNIFORM_256;
 }
 
 SIXELSTATUS
@@ -368,6 +369,8 @@ sixel_palette_quantizer_capabilities_get(
         result.requires_observed_representatives = 1;
         break;
     case SIXEL_QUANTIZE_MODEL_KCENTER:
+        result.accepts_weighted_points = 1;
+        break;
     case SIXEL_QUANTIZE_MODEL_MEDIANCUT:
         break;
     case SIXEL_QUANTIZE_MODEL_AUTO:

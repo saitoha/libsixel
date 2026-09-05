@@ -6756,11 +6756,16 @@ sixel_encoder_resolve_direct_binning(
     }
     input.requested = (sixel_palette_binning_policy_t)
         binning->policy.requested;
-    input.bits_per_axis = encoder->quantize_model_kmeans_binbits;
-    input.grid_map = encoder->quantize_model_kmeans_mapping_mode ==
-            SIXEL_PALETTE_KMEANS_MAPPING_SRGB
-        ? SIXEL_PALETTE_BINNING_GRID_SRGB
-        : SIXEL_PALETTE_BINNING_GRID_UNIFORM;
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+        input.bits_per_axis = encoder->quantize_model_kcenter_histbits;
+        input.grid_map = SIXEL_PALETTE_BINNING_GRID_UNIFORM_256;
+    } else {
+        input.bits_per_axis = encoder->quantize_model_kmeans_binbits;
+        input.grid_map = encoder->quantize_model_kmeans_mapping_mode ==
+                SIXEL_PALETTE_KMEANS_MAPPING_SRGB
+            ? SIXEL_PALETTE_BINNING_GRID_SRGB
+            : SIXEL_PALETTE_BINNING_GRID_UNIFORM;
+    }
     input.kernel = SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR;
     input.backend = SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE;
     input.source_point_count = source_point_count;

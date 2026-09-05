@@ -52,8 +52,6 @@ static SIXELSTATUS
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame);
 static SIXELSTATUS
 sixel_frame_promote_to_float32(sixel_frame_t *frame);
-static int
-sixel_frame_colorspace_from_pixelformat(int pixelformat);
 static void
 sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat);
 static void *
@@ -1039,7 +1037,7 @@ sixel_frame_new(
      * getters do not read uninitialized memory before initialization.
      */
     (*ppframe)->colorspace =
-        sixel_frame_colorspace_from_pixelformat((*ppframe)->pixelformat);
+        sixel_pixelformat_get_colorspace((*ppframe)->pixelformat);
     (*ppframe)->delay = 0;
     (*ppframe)->frame_no = 0;
     (*ppframe)->loop_count = 0;
@@ -1488,7 +1486,7 @@ sixel_frame_set_pixelformat(
 
     working_pixelformat = frame->pixelformat;
     source_colorspace = frame->colorspace;
-    target_colorspace = sixel_frame_colorspace_from_pixelformat(pixelformat);
+    target_colorspace = sixel_pixelformat_get_colorspace(pixelformat);
 
     if (target_colorspace != source_colorspace) {
         /*
@@ -1948,33 +1946,11 @@ end:
     return status;
 }
 
-/*
- * Infer colorspace metadata from the pixelformat.  Float formats encode
- * their transfer characteristics directly, while byte-oriented formats
- * default to gamma encoded RGB.
- */
-static int
-sixel_frame_colorspace_from_pixelformat(int pixelformat)
-{
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        return SIXEL_COLORSPACE_LINEAR;
-    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-        return SIXEL_COLORSPACE_OKLAB;
-    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-        return SIXEL_COLORSPACE_CIELAB;
-    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        return SIXEL_COLORSPACE_DIN99D;
-    default:
-        return SIXEL_COLORSPACE_GAMMA;
-    }
-}
-
 static void
 sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat)
 {
     frame->pixelformat = pixelformat;
-    frame->colorspace = sixel_frame_colorspace_from_pixelformat(pixelformat);
+    frame->colorspace = sixel_pixelformat_get_colorspace(pixelformat);
 }
 
 #if HAVE_DIAGNOSTIC_UNUSED_FUNCTION

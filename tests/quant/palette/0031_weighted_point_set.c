@@ -56,11 +56,14 @@ weighted_point_set_contract_is_valid(void)
         1.0,
         SIXEL_COLORSPACE_OKLAB,
         &binning);
-    if (status != SIXEL_BAD_ARGUMENT ||
-            set.ownership != SIXEL_WEIGHTED_POINT_EMPTY) {
+    if (SIXEL_FAILED(status) ||
+            set.ownership != SIXEL_WEIGHTED_POINT_BORROWED ||
+            set.source_point_count != 2u || set.point_count != 1u ||
+            set.total_weight != 1.0) {
         status = SIXEL_LOGIC_ERROR;
         goto cleanup;
     }
+    sixel_weighted_point_set_dispose(&set);
     status = sixel_weighted_point_set_bind_borrowed(
         &set,
         borrowed_coordinates,

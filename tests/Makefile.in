@@ -156,6 +156,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0036_filter_binning_stream_transparency.c \
 	processing/filter/0037_filter_binning_stream_float.c \
 	processing/filter/0038_filter_binning_stream_empty.c \
+	processing/filter/0039_filter_binning_stream_none.c \
+	processing/filter/0040_filter_binning_stream_exact.c \
+	processing/filter/0041_filter_binning_uniform_256.c \
 	processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
@@ -254,8 +257,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0032_kmeans_binning_legacy_output.c \
 	quant/palette/0033_quantizer_capabilities.c \
 	quant/palette/0034_palette_stage_resolvers.c \
-	quant/palette/0040_palette_build_attempt_isolation.c \
 	quant/palette/0037_palette_sampling_indexed_frame.c \
+	quant/palette/0040_palette_build_attempt_isolation.c \
+	quant/palette/0041_kcenter_binning_filter.c \
+	quant/palette/0042_kcenter_large_buffer.c \
+	quant/palette/0043_kcenter_float_legacy_grid.c \
+	quant/palette/0044_kcenter_packed_alpha_layouts.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/status/0001_status_timeout.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -323,6 +330,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0036_filter_binning_stream_transparency.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0037_filter_binning_stream_float.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0038_filter_binning_stream_empty.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0039_filter_binning_stream_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0040_filter_binning_stream_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0041_filter_binning_uniform_256.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
@@ -418,8 +428,12 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0032_kmeans_binning_legacy_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0033_quantizer_capabilities.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0034_palette_stage_resolvers.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0040_palette_build_attempt_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0037_palette_sampling_indexed_frame.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0040_palette_build_attempt_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0041_kcenter_binning_filter.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0042_kcenter_large_buffer.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0043_kcenter_float_legacy_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
@@ -632,6 +646,9 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po \
 	processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po \
 	processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po \
+	processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po \
+	processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po \
+	processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po \
@@ -664,6 +681,10 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po \
 	quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po \
 	quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po \
+	quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Po \
+	quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po \
+	quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po \
+	quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 am__mv = mv -f
@@ -1392,6 +1413,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_FILTER_BINNING_STREAM_TRANSPARENCY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_FILTER_BINNING_STREAM_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_FILTER_BINNING_STREAM_EMPTY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_FILTER_BINNING_STREAM_NONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_FILTER_BINNING_STREAM_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_FILTER_BINNING_UNIFORM_256 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_SAMPLE_STREAM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -1402,8 +1426,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_KMEANS_BINNING_LEGACY_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_QUANTIZER_CAPABILITIES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_PALETTE_STAGE_RESOLVERS \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_PALETTE_SAMPLING_INDEXED_FRAME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_KCENTER_BINNING_FILTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_KCENTER_FLOAT_LEGACY_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_KCENTER_PACKED_ALPHA_LAYOUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_CLI_PALETTE_BINNING_CONFLICT_ATOMIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
@@ -1581,6 +1609,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0036_filter_binning_stream_transparency.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0037_filter_binning_stream_float.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0038_filter_binning_stream_empty.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0039_filter_binning_stream_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0040_filter_binning_stream_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0041_filter_binning_uniform_256.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
@@ -1680,8 +1711,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0032_kmeans_binning_legacy_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0033_quantizer_capabilities.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0034_palette_stage_resolvers.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0040_palette_build_attempt_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0037_palette_sampling_indexed_frame.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0040_palette_build_attempt_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0041_kcenter_binning_filter.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0042_kcenter_large_buffer.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0043_kcenter_float_legacy_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0044_kcenter_packed_alpha_layouts.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/status/0001_status_timeout.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -1996,6 +2031,15 @@ processing/filter/test_runner-0037_filter_binning_stream_float.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/filter/test_runner-0038_filter_binning_stream_empty.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0039_filter_binning_stream_none.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0040_filter_binning_stream_exact.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0041_filter_binning_uniform_256.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/$(am__dirstamp):
@@ -2426,10 +2470,22 @@ quant/palette/test_runner-0033_quantizer_capabilities.$(OBJEXT):  \
 quant/palette/test_runner-0034_palette_stage_resolvers.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0037_palette_sampling_indexed_frame.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-0040_palette_build_attempt_isolation.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
-quant/palette/test_runner-0037_palette_sampling_indexed_frame.$(OBJEXT):  \
+quant/palette/test_runner-0041_kcenter_binning_filter.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0042_kcenter_large_buffer.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0043_kcenter_float_legacy_grid.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
@@ -2714,6 +2770,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po@am__quote@ # am--include-marker
@@ -2746,6 +2805,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
 
@@ -3436,6 +3499,48 @@ processing/filter/test_runner-0038_filter_binning_stream_empty.obj: processing/f
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0038_filter_binning_stream_empty.c' object='processing/filter/test_runner-0038_filter_binning_stream_empty.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0038_filter_binning_stream_empty.obj `if test -f 'processing/filter/0038_filter_binning_stream_empty.c'; then $(CYGPATH_W) 'processing/filter/0038_filter_binning_stream_empty.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0038_filter_binning_stream_empty.c'; fi`
+
+processing/filter/test_runner-0039_filter_binning_stream_none.o: processing/filter/0039_filter_binning_stream_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0039_filter_binning_stream_none.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Tpo -c -o processing/filter/test_runner-0039_filter_binning_stream_none.o `test -f 'processing/filter/0039_filter_binning_stream_none.c' || echo '$(srcdir)/'`processing/filter/0039_filter_binning_stream_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Tpo processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0039_filter_binning_stream_none.c' object='processing/filter/test_runner-0039_filter_binning_stream_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0039_filter_binning_stream_none.o `test -f 'processing/filter/0039_filter_binning_stream_none.c' || echo '$(srcdir)/'`processing/filter/0039_filter_binning_stream_none.c
+
+processing/filter/test_runner-0039_filter_binning_stream_none.obj: processing/filter/0039_filter_binning_stream_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0039_filter_binning_stream_none.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Tpo -c -o processing/filter/test_runner-0039_filter_binning_stream_none.obj `if test -f 'processing/filter/0039_filter_binning_stream_none.c'; then $(CYGPATH_W) 'processing/filter/0039_filter_binning_stream_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0039_filter_binning_stream_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Tpo processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0039_filter_binning_stream_none.c' object='processing/filter/test_runner-0039_filter_binning_stream_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0039_filter_binning_stream_none.obj `if test -f 'processing/filter/0039_filter_binning_stream_none.c'; then $(CYGPATH_W) 'processing/filter/0039_filter_binning_stream_none.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0039_filter_binning_stream_none.c'; fi`
+
+processing/filter/test_runner-0040_filter_binning_stream_exact.o: processing/filter/0040_filter_binning_stream_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0040_filter_binning_stream_exact.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Tpo -c -o processing/filter/test_runner-0040_filter_binning_stream_exact.o `test -f 'processing/filter/0040_filter_binning_stream_exact.c' || echo '$(srcdir)/'`processing/filter/0040_filter_binning_stream_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Tpo processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0040_filter_binning_stream_exact.c' object='processing/filter/test_runner-0040_filter_binning_stream_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0040_filter_binning_stream_exact.o `test -f 'processing/filter/0040_filter_binning_stream_exact.c' || echo '$(srcdir)/'`processing/filter/0040_filter_binning_stream_exact.c
+
+processing/filter/test_runner-0040_filter_binning_stream_exact.obj: processing/filter/0040_filter_binning_stream_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0040_filter_binning_stream_exact.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Tpo -c -o processing/filter/test_runner-0040_filter_binning_stream_exact.obj `if test -f 'processing/filter/0040_filter_binning_stream_exact.c'; then $(CYGPATH_W) 'processing/filter/0040_filter_binning_stream_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0040_filter_binning_stream_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Tpo processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0040_filter_binning_stream_exact.c' object='processing/filter/test_runner-0040_filter_binning_stream_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0040_filter_binning_stream_exact.obj `if test -f 'processing/filter/0040_filter_binning_stream_exact.c'; then $(CYGPATH_W) 'processing/filter/0040_filter_binning_stream_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0040_filter_binning_stream_exact.c'; fi`
+
+processing/filter/test_runner-0041_filter_binning_uniform_256.o: processing/filter/0041_filter_binning_uniform_256.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0041_filter_binning_uniform_256.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Tpo -c -o processing/filter/test_runner-0041_filter_binning_uniform_256.o `test -f 'processing/filter/0041_filter_binning_uniform_256.c' || echo '$(srcdir)/'`processing/filter/0041_filter_binning_uniform_256.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Tpo processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0041_filter_binning_uniform_256.c' object='processing/filter/test_runner-0041_filter_binning_uniform_256.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0041_filter_binning_uniform_256.o `test -f 'processing/filter/0041_filter_binning_uniform_256.c' || echo '$(srcdir)/'`processing/filter/0041_filter_binning_uniform_256.c
+
+processing/filter/test_runner-0041_filter_binning_uniform_256.obj: processing/filter/0041_filter_binning_uniform_256.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0041_filter_binning_uniform_256.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Tpo -c -o processing/filter/test_runner-0041_filter_binning_uniform_256.obj `if test -f 'processing/filter/0041_filter_binning_uniform_256.c'; then $(CYGPATH_W) 'processing/filter/0041_filter_binning_uniform_256.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0041_filter_binning_uniform_256.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Tpo processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0041_filter_binning_uniform_256.c' object='processing/filter/test_runner-0041_filter_binning_uniform_256.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0041_filter_binning_uniform_256.obj `if test -f 'processing/filter/0041_filter_binning_uniform_256.c'; then $(CYGPATH_W) 'processing/filter/0041_filter_binning_uniform_256.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0041_filter_binning_uniform_256.c'; fi`
 
 processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o: processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo -c -o processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o `test -f 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
@@ -4767,6 +4872,20 @@ quant/palette/test_runner-0034_palette_stage_resolvers.obj: quant/palette/0034_p
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0034_palette_stage_resolvers.obj `if test -f 'quant/palette/0034_palette_stage_resolvers.c'; then $(CYGPATH_W) 'quant/palette/0034_palette_stage_resolvers.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0034_palette_stage_resolvers.c'; fi`
 
+quant/palette/test_runner-0037_palette_sampling_indexed_frame.o: quant/palette/0037_palette_sampling_indexed_frame.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0037_palette_sampling_indexed_frame.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Tpo -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.o `test -f 'quant/palette/0037_palette_sampling_indexed_frame.c' || echo '$(srcdir)/'`quant/palette/0037_palette_sampling_indexed_frame.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Tpo quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0037_palette_sampling_indexed_frame.c' object='quant/palette/test_runner-0037_palette_sampling_indexed_frame.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.o `test -f 'quant/palette/0037_palette_sampling_indexed_frame.c' || echo '$(srcdir)/'`quant/palette/0037_palette_sampling_indexed_frame.c
+
+quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj: quant/palette/0037_palette_sampling_indexed_frame.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Tpo -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj `if test -f 'quant/palette/0037_palette_sampling_indexed_frame.c'; then $(CYGPATH_W) 'quant/palette/0037_palette_sampling_indexed_frame.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0037_palette_sampling_indexed_frame.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Tpo quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0037_palette_sampling_indexed_frame.c' object='quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj `if test -f 'quant/palette/0037_palette_sampling_indexed_frame.c'; then $(CYGPATH_W) 'quant/palette/0037_palette_sampling_indexed_frame.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0037_palette_sampling_indexed_frame.c'; fi`
+
 quant/palette/test_runner-0040_palette_build_attempt_isolation.o: quant/palette/0040_palette_build_attempt_isolation.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0040_palette_build_attempt_isolation.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Tpo -c -o quant/palette/test_runner-0040_palette_build_attempt_isolation.o `test -f 'quant/palette/0040_palette_build_attempt_isolation.c' || echo '$(srcdir)/'`quant/palette/0040_palette_build_attempt_isolation.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Tpo quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po
@@ -4781,19 +4900,61 @@ quant/palette/test_runner-0040_palette_build_attempt_isolation.obj: quant/palett
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0040_palette_build_attempt_isolation.obj `if test -f 'quant/palette/0040_palette_build_attempt_isolation.c'; then $(CYGPATH_W) 'quant/palette/0040_palette_build_attempt_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0040_palette_build_attempt_isolation.c'; fi`
 
-quant/palette/test_runner-0037_palette_sampling_indexed_frame.o: quant/palette/0037_palette_sampling_indexed_frame.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0037_palette_sampling_indexed_frame.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Tpo -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.o `test -f 'quant/palette/0037_palette_sampling_indexed_frame.c' || echo '$(srcdir)/'`quant/palette/0037_palette_sampling_indexed_frame.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Tpo quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0037_palette_sampling_indexed_frame.c' object='quant/palette/test_runner-0037_palette_sampling_indexed_frame.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0041_kcenter_binning_filter.o: quant/palette/0041_kcenter_binning_filter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0041_kcenter_binning_filter.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Tpo -c -o quant/palette/test_runner-0041_kcenter_binning_filter.o `test -f 'quant/palette/0041_kcenter_binning_filter.c' || echo '$(srcdir)/'`quant/palette/0041_kcenter_binning_filter.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Tpo quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0041_kcenter_binning_filter.c' object='quant/palette/test_runner-0041_kcenter_binning_filter.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.o `test -f 'quant/palette/0037_palette_sampling_indexed_frame.c' || echo '$(srcdir)/'`quant/palette/0037_palette_sampling_indexed_frame.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0041_kcenter_binning_filter.o `test -f 'quant/palette/0041_kcenter_binning_filter.c' || echo '$(srcdir)/'`quant/palette/0041_kcenter_binning_filter.c
 
-quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj: quant/palette/0037_palette_sampling_indexed_frame.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Tpo -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj `if test -f 'quant/palette/0037_palette_sampling_indexed_frame.c'; then $(CYGPATH_W) 'quant/palette/0037_palette_sampling_indexed_frame.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0037_palette_sampling_indexed_frame.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Tpo quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0037_palette_sampling_indexed_frame.c' object='quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0041_kcenter_binning_filter.obj: quant/palette/0041_kcenter_binning_filter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0041_kcenter_binning_filter.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Tpo -c -o quant/palette/test_runner-0041_kcenter_binning_filter.obj `if test -f 'quant/palette/0041_kcenter_binning_filter.c'; then $(CYGPATH_W) 'quant/palette/0041_kcenter_binning_filter.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0041_kcenter_binning_filter.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Tpo quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0041_kcenter_binning_filter.c' object='quant/palette/test_runner-0041_kcenter_binning_filter.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj `if test -f 'quant/palette/0037_palette_sampling_indexed_frame.c'; then $(CYGPATH_W) 'quant/palette/0037_palette_sampling_indexed_frame.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0037_palette_sampling_indexed_frame.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0041_kcenter_binning_filter.obj `if test -f 'quant/palette/0041_kcenter_binning_filter.c'; then $(CYGPATH_W) 'quant/palette/0041_kcenter_binning_filter.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0041_kcenter_binning_filter.c'; fi`
+
+quant/palette/test_runner-0042_kcenter_large_buffer.o: quant/palette/0042_kcenter_large_buffer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0042_kcenter_large_buffer.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Tpo -c -o quant/palette/test_runner-0042_kcenter_large_buffer.o `test -f 'quant/palette/0042_kcenter_large_buffer.c' || echo '$(srcdir)/'`quant/palette/0042_kcenter_large_buffer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Tpo quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0042_kcenter_large_buffer.c' object='quant/palette/test_runner-0042_kcenter_large_buffer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0042_kcenter_large_buffer.o `test -f 'quant/palette/0042_kcenter_large_buffer.c' || echo '$(srcdir)/'`quant/palette/0042_kcenter_large_buffer.c
+
+quant/palette/test_runner-0042_kcenter_large_buffer.obj: quant/palette/0042_kcenter_large_buffer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0042_kcenter_large_buffer.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Tpo -c -o quant/palette/test_runner-0042_kcenter_large_buffer.obj `if test -f 'quant/palette/0042_kcenter_large_buffer.c'; then $(CYGPATH_W) 'quant/palette/0042_kcenter_large_buffer.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0042_kcenter_large_buffer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Tpo quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0042_kcenter_large_buffer.c' object='quant/palette/test_runner-0042_kcenter_large_buffer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0042_kcenter_large_buffer.obj `if test -f 'quant/palette/0042_kcenter_large_buffer.c'; then $(CYGPATH_W) 'quant/palette/0042_kcenter_large_buffer.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0042_kcenter_large_buffer.c'; fi`
+
+quant/palette/test_runner-0043_kcenter_float_legacy_grid.o: quant/palette/0043_kcenter_float_legacy_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0043_kcenter_float_legacy_grid.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Tpo -c -o quant/palette/test_runner-0043_kcenter_float_legacy_grid.o `test -f 'quant/palette/0043_kcenter_float_legacy_grid.c' || echo '$(srcdir)/'`quant/palette/0043_kcenter_float_legacy_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Tpo quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0043_kcenter_float_legacy_grid.c' object='quant/palette/test_runner-0043_kcenter_float_legacy_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0043_kcenter_float_legacy_grid.o `test -f 'quant/palette/0043_kcenter_float_legacy_grid.c' || echo '$(srcdir)/'`quant/palette/0043_kcenter_float_legacy_grid.c
+
+quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj: quant/palette/0043_kcenter_float_legacy_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Tpo -c -o quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj `if test -f 'quant/palette/0043_kcenter_float_legacy_grid.c'; then $(CYGPATH_W) 'quant/palette/0043_kcenter_float_legacy_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0043_kcenter_float_legacy_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Tpo quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0043_kcenter_float_legacy_grid.c' object='quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0043_kcenter_float_legacy_grid.obj `if test -f 'quant/palette/0043_kcenter_float_legacy_grid.c'; then $(CYGPATH_W) 'quant/palette/0043_kcenter_float_legacy_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0043_kcenter_float_legacy_grid.c'; fi`
+
+quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.o: quant/palette/0044_kcenter_packed_alpha_layouts.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Tpo -c -o quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.o `test -f 'quant/palette/0044_kcenter_packed_alpha_layouts.c' || echo '$(srcdir)/'`quant/palette/0044_kcenter_packed_alpha_layouts.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Tpo quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0044_kcenter_packed_alpha_layouts.c' object='quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.o `test -f 'quant/palette/0044_kcenter_packed_alpha_layouts.c' || echo '$(srcdir)/'`quant/palette/0044_kcenter_packed_alpha_layouts.c
+
+quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.obj: quant/palette/0044_kcenter_packed_alpha_layouts.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Tpo -c -o quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.obj `if test -f 'quant/palette/0044_kcenter_packed_alpha_layouts.c'; then $(CYGPATH_W) 'quant/palette/0044_kcenter_packed_alpha_layouts.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0044_kcenter_packed_alpha_layouts.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Tpo quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0044_kcenter_packed_alpha_layouts.c' object='quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.obj `if test -f 'quant/palette/0044_kcenter_packed_alpha_layouts.c'; then $(CYGPATH_W) 'quant/palette/0044_kcenter_packed_alpha_layouts.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0044_kcenter_packed_alpha_layouts.c'; fi`
 
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
@@ -5604,6 +5765,9 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
@@ -5636,6 +5800,10 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile
@@ -5812,6 +5980,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0036_filter_binning_stream_transparency.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0037_filter_binning_stream_float.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0038_filter_binning_stream_empty.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
@@ -5844,6 +6015,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0041_kcenter_binning_filter.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile
