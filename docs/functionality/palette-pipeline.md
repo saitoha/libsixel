@@ -518,6 +518,81 @@ internal optimization, not a CLI policy. It must be benchmarked because a
 materialized contiguous buffer can be better for SIMD or GPU conversion, while
 direct histogram updates can avoid allocation and memory traffic.
 
+## Measurement protocol for automatic profiles
+
+Automatic sampling and binning defaults must be selected from controlled
+measurements rather than from one complete `-Q` configuration. The initial
+experiment keeps K-means, colorspace conversion, palette application, and
+post-processing fixed while changing one pipeline axis at a time:
+
+| Comparison axis | Policies | Fixed peer policy |
+| --- | --- | --- |
+| sampling | `full-frame`, `adaptive-grid` | `hard` binning |
+| binning | `none`, `exact`, `hard`, `soft` | `full-frame` sampling |
+
+The controlled command uses one thread, the 8-bit path, full quality, a fully
+specified K-means configuration with seed 1 and `sample_target=16384`, OKLab
+clustering coordinates, gamma-space palette application, no dithering, exact
+palette lookup, no GPU assistance, no final merge, and no cover repair. The
+manifest records the complete K-means suboption string. It sweeps
+`K = 8, 16, 32, 64, 128, 256`. Quality records both MS-SSIM and mean Delta
+E00. Speed records repeated fresh-process end-to-end time and a separate
+instrumented top-level palette-build span. Size is the exact byte length of
+the same no-dither SIXEL stream assessed for quality.
+
+The runner measures five physical configurations. The full-frame/hard control
+is executed and stored once, then projected into both plot facets: as the
+full-frame sampling point and as the hard-binning point. Thus each facet stays
+self-contained without treating one command as two independent observations.
+The CSV files contain only directly measured quality, duration, and byte-count
+values; ratios, speedups, medians, and quartiles are derived by consumers when
+needed. Each timing row records its domain, phase, round, Williams sequence,
+position, raw duration, and exact command template. Warm-ups and boundary
+washouts are retained in the CSV so the validator can reconstruct the actual
+schedule instead of trusting a claimed run count.
+
+In durable mode, the reproduction wrapper refuses a dirty tracked worktree. It
+rebuilds the binaries, records the source revision, input and executable hashes,
+build and host information, and verifies that the selected build directory was
+configured from the recorded source tree. Timing follows a ten-sequence
+Williams design for the five physical configurations. This balances immediate
+predecessor and successor effects within each sequence rather than leaving a
+fixed pairwise order. One common full-frame/hard washout runs before every
+sequence, preventing the last policy of one sequence from becoming the
+unbalanced predecessor of the next. Its duration is recorded for audit but
+excluded from comparison statistics. Each policy occupies the first
+post-washout position equally often in a complete design. The runner records
+whether both tools embed the amalgamation or link the library. In amalgamated
+mode the executable payload contains libsixel. In library mode the runner reads
+`src/libsixel.la` and snapshots the selected `dlname` or `old_library` artifact,
+including platform-specific names, rather than globbing possibly stale build
+products. It snapshots that linkage, the tracked source state, the input, and
+both executable payloads before measurement, and rejects the run if any
+snapshot differs afterward. The wrapper then generates every CSV and plot and
+validates every row and canonical command against the manifest:
+
+```sh
+tools/reproduce_palette_pipeline_measurements.sh
+```
+
+Durable measurements always use two warm-ups and ten recorded runs, one full
+Williams sequence. A shorter run must be marked exploratory and must name a
+separate output directory. The wrapper resolves the path and rejects the durable
+artifact directory even if it is supplied explicitly or through an equivalent
+relative path:
+
+```sh
+PALETTE_PIPELINE_EXPLORATORY=1 \
+PALETTE_PIPELINE_WARMUPS=0 \
+PALETTE_PIPELINE_RUNS=1 \
+tools/reproduce_palette_pipeline_measurements.sh /tmp/palette-pipeline
+```
+
+The initial `images/snake.png` experiment characterizes mechanisms and
+validates the measurement pipeline; it is not sufficient to select a project
+default. A default change requires additional natural, gradient, flat-artwork,
+broad-gamut, and rare-color fixtures, followed by the same recorded protocol.
+
 ## Migration waves
 
 The migration is intentionally divided so structural changes, CLI changes, and
@@ -566,7 +641,9 @@ default changes can be reviewed independently.
     stage only where semantics match. Preserve observed-color and candidate
     selection contracts rather than treating every histogram as equivalent.
     K-center is migrated with its integer-weight and historical grid-order
-    contracts; K-medoids remains private.
+    contracts; K-medoids remains private because the shared artifact does not
+    yet carry packed bin keys, second moments, or the input-order information
+    required to choose an observed representative deterministically.
 9. Measure the sampling, binning, and quantization axes independently. Use the
    results to select automatic profiles and only then change defaults.
 10. Add chunk streaming, operator fusion, or storage optimizations where

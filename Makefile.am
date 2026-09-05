@@ -123,6 +123,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/fuzz-afl-runner.sh \
 	tools/fuzz-img2sixel-cli.sh \
 	tools/check_dither_policy_measurements.py \
+	tools/check_palette_pipeline_measurements.py \
 	tools/check_quantize_model_measurements.py \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \
@@ -131,11 +132,13 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_dither_policy_measurements.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
+	tools/plot_palette_pipeline_measurements.py \
 	tools/plot_quality_curve.py \
 	tools/plot_quantize_model_measurements.py \
 	tools/reproduce_lookup_policy_acceleration.sh \
 	tools/reproduce_dither_policy_measurements.sh \
 	tools/reproduce_lookup_policy_measurements.sh \
+	tools/reproduce_palette_pipeline_measurements.sh \
 	tools/reproduce_quantize_model_measurements.sh
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.
