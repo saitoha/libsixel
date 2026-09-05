@@ -248,7 +248,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0032_kmeans_binning_legacy_output.c \
 	quant/palette/0033_quantizer_capabilities.c \
 	quant/palette/0034_palette_stage_resolvers.c \
-	quant/palette/0035_palette_build_attempt_isolation.c \
+	quant/palette/0040_palette_build_attempt_isolation.c \
 	quant/palette/0037_palette_sampling_indexed_frame.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/status/0001_status_timeout.c \
@@ -406,7 +406,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0032_kmeans_binning_legacy_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0033_quantizer_capabilities.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0034_palette_stage_resolvers.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0035_palette_build_attempt_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0040_palette_build_attempt_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0037_palette_sampling_indexed_frame.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
@@ -644,8 +644,8 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po \
 	quant/palette/$(DEPDIR)/test_runner-0033_quantizer_capabilities.Po \
 	quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po \
-	quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Po \
 	quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po \
+	quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 am__mv = mv -f
@@ -1377,7 +1377,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_KMEANS_BINNING_LEGACY_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_QUANTIZER_CAPABILITIES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_PALETTE_STAGE_RESOLVERS \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_PALETTE_BUILD_ATTEMPT_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_PALETTE_SAMPLING_INDEXED_FRAME \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_CLI_PALETTE_BINNING_CONFLICT_ATOMIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
@@ -1649,7 +1649,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0032_kmeans_binning_legacy_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0033_quantizer_capabilities.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0034_palette_stage_resolvers.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0035_palette_build_attempt_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0040_palette_build_attempt_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0037_palette_sampling_indexed_frame.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/status/0001_status_timeout.c \
@@ -2377,7 +2377,7 @@ quant/palette/test_runner-0033_quantizer_capabilities.$(OBJEXT):  \
 quant/palette/test_runner-0034_palette_stage_resolvers.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
-quant/palette/test_runner-0035_palette_build_attempt_isolation.$(OBJEXT):  \
+quant/palette/test_runner-0040_palette_build_attempt_isolation.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-0037_palette_sampling_indexed_frame.$(OBJEXT):  \
@@ -2689,8 +2689,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0033_quantizer_capabilities.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
 
@@ -4628,19 +4628,19 @@ quant/palette/test_runner-0034_palette_stage_resolvers.obj: quant/palette/0034_p
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0034_palette_stage_resolvers.obj `if test -f 'quant/palette/0034_palette_stage_resolvers.c'; then $(CYGPATH_W) 'quant/palette/0034_palette_stage_resolvers.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0034_palette_stage_resolvers.c'; fi`
 
-quant/palette/test_runner-0035_palette_build_attempt_isolation.o: quant/palette/0035_palette_build_attempt_isolation.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0035_palette_build_attempt_isolation.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Tpo -c -o quant/palette/test_runner-0035_palette_build_attempt_isolation.o `test -f 'quant/palette/0035_palette_build_attempt_isolation.c' || echo '$(srcdir)/'`quant/palette/0035_palette_build_attempt_isolation.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Tpo quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0035_palette_build_attempt_isolation.c' object='quant/palette/test_runner-0035_palette_build_attempt_isolation.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0040_palette_build_attempt_isolation.o: quant/palette/0040_palette_build_attempt_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0040_palette_build_attempt_isolation.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Tpo -c -o quant/palette/test_runner-0040_palette_build_attempt_isolation.o `test -f 'quant/palette/0040_palette_build_attempt_isolation.c' || echo '$(srcdir)/'`quant/palette/0040_palette_build_attempt_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Tpo quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0040_palette_build_attempt_isolation.c' object='quant/palette/test_runner-0040_palette_build_attempt_isolation.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0035_palette_build_attempt_isolation.o `test -f 'quant/palette/0035_palette_build_attempt_isolation.c' || echo '$(srcdir)/'`quant/palette/0035_palette_build_attempt_isolation.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0040_palette_build_attempt_isolation.o `test -f 'quant/palette/0040_palette_build_attempt_isolation.c' || echo '$(srcdir)/'`quant/palette/0040_palette_build_attempt_isolation.c
 
-quant/palette/test_runner-0035_palette_build_attempt_isolation.obj: quant/palette/0035_palette_build_attempt_isolation.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0035_palette_build_attempt_isolation.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Tpo -c -o quant/palette/test_runner-0035_palette_build_attempt_isolation.obj `if test -f 'quant/palette/0035_palette_build_attempt_isolation.c'; then $(CYGPATH_W) 'quant/palette/0035_palette_build_attempt_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0035_palette_build_attempt_isolation.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Tpo quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0035_palette_build_attempt_isolation.c' object='quant/palette/test_runner-0035_palette_build_attempt_isolation.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0040_palette_build_attempt_isolation.obj: quant/palette/0040_palette_build_attempt_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0040_palette_build_attempt_isolation.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Tpo -c -o quant/palette/test_runner-0040_palette_build_attempt_isolation.obj `if test -f 'quant/palette/0040_palette_build_attempt_isolation.c'; then $(CYGPATH_W) 'quant/palette/0040_palette_build_attempt_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0040_palette_build_attempt_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Tpo quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0040_palette_build_attempt_isolation.c' object='quant/palette/test_runner-0040_palette_build_attempt_isolation.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0035_palette_build_attempt_isolation.obj `if test -f 'quant/palette/0035_palette_build_attempt_isolation.c'; then $(CYGPATH_W) 'quant/palette/0035_palette_build_attempt_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0035_palette_build_attempt_isolation.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0040_palette_build_attempt_isolation.obj `if test -f 'quant/palette/0040_palette_build_attempt_isolation.c'; then $(CYGPATH_W) 'quant/palette/0040_palette_build_attempt_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0040_palette_build_attempt_isolation.c'; fi`
 
 quant/palette/test_runner-0037_palette_sampling_indexed_frame.o: quant/palette/0037_palette_sampling_indexed_frame.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0037_palette_sampling_indexed_frame.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Tpo -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.o `test -f 'quant/palette/0037_palette_sampling_indexed_frame.c' || echo '$(srcdir)/'`quant/palette/0037_palette_sampling_indexed_frame.c
@@ -5489,8 +5489,8 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0033_quantizer_capabilities.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po
-	-rm -f quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile
@@ -5691,8 +5691,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0033_quantizer_capabilities.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po
-	-rm -f quant/palette/$(DEPDIR)/test_runner-0035_palette_build_attempt_isolation.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f Makefile

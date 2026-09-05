@@ -216,7 +216,7 @@ int test_palette_0031_weighted_point_set(int argc, char **argv);
 int test_palette_0032_kmeans_binning_legacy_output(int argc, char **argv);
 int test_palette_0033_quantizer_capabilities(int argc, char **argv);
 int test_palette_0034_palette_stage_resolvers(int argc, char **argv);
-int test_palette_0035_palette_build_attempt_isolation(int argc, char **argv);
+int test_palette_0040_palette_build_attempt_isolation(int argc, char **argv);
 int test_palette_0037_palette_sampling_indexed_frame(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
@@ -518,8 +518,8 @@ static test_entry_t const test_entries[] = {
       test_palette_0033_quantizer_capabilities },
     { "palette/0034_palette_stage_resolvers",
       test_palette_0034_palette_stage_resolvers },
-    { "palette/0035_palette_build_attempt_isolation",
-      test_palette_0035_palette_build_attempt_isolation },
+    { "palette/0040_palette_build_attempt_isolation",
+      test_palette_0040_palette_build_attempt_isolation },
     { "palette/0037_palette_sampling_indexed_frame",
       test_palette_0037_palette_sampling_indexed_frame },
     { "cli/0029_cli_token_is_known_option",

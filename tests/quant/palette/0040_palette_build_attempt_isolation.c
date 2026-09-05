@@ -29,7 +29,7 @@ attempt_matches(sixel_palette_build_attempt_t const *attempt,
 }
 
 int
-test_palette_0035_palette_build_attempt_isolation(int argc, char **argv)
+test_palette_0040_palette_build_attempt_isolation(int argc, char **argv)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
