@@ -602,6 +602,14 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/palette-pipeline/measurements/palette-pipeline-size.png \
 	docs/functionality/palette-pipeline/measurements/palette-pipeline-speed.csv \
 	docs/functionality/palette-pipeline/measurements/palette-pipeline-speed.png \
+	docs/functionality/palette-pipeline/suite-measurements/palette-pipeline-suite-quality.csv \
+	docs/functionality/palette-pipeline/suite-measurements/palette-pipeline-suite-quality.png \
+	docs/functionality/palette-pipeline/suite-measurements/palette-pipeline-suite-run.json \
+	docs/functionality/palette-pipeline/suite-measurements/palette-pipeline-suite-size.csv \
+	docs/functionality/palette-pipeline/suite-measurements/palette-pipeline-suite-size.png \
+	docs/functionality/palette-pipeline/suite-measurements/palette-pipeline-suite-speed-content.png \
+	docs/functionality/palette-pipeline/suite-measurements/palette-pipeline-suite-speed-scale.png \
+	docs/functionality/palette-pipeline/suite-measurements/palette-pipeline-suite-speed.csv \
 	images/measurements/palette-pipeline/a98-gamut-600x450.png \
 	images/measurements/palette-pipeline/rare-colors-600x450.png \
 	images/measurements/palette-pipeline/smooth-gradient-128x96.png \

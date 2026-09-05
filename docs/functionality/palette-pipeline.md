@@ -664,6 +664,65 @@ palette-build medians at `K=64` and `K=256`. A default change still requires a
 clean durable suite result and a separate resolver decision; an exploratory
 run is not evidence for changing `auto`.
 
+### Multi-fixture measured result
+
+The first durable suite run was recorded from revision `60cf33515` on arm64
+macOS with the amalgamated command-line tools. It contains 210 quality rows,
+210 size rows, and 6,048 raw timing rows after two warm-ups and ten recorded
+runs. The source tree was clean at the start, and the fixture, executable,
+linkage, and source snapshots still matched after measurement.
+
+![Quality differences across the content fixtures](palette-pipeline/suite-measurements/palette-pipeline-suite-quality.png)
+
+Adaptive-grid sampling changes quality in a content-dependent way, especially
+at small palettes. Its MS-SSIM difference from full-frame sampling ranges from
+-0.014705 to +0.057015 over the content suite, with both extrema occurring on
+the sparse-rare-color fixture below `K=64`. At `K >= 64`, that range narrows to
+-0.006149 through +0.015178. The result supports resolving sampling from image
+scale and requested palette construction rather than treating the faster path
+as an output-equivalent optimization.
+
+Binning has the same semantic warning. Relative to hard binning, none improves
+MS-SSIM by as much as 0.084973 at `K=8`, while soft loses 0.069334 at `K=64`,
+both on the sparse-rare-color fixture. Mean Delta E00 moves in the same
+direction for those cells by 2.089190 and -1.039323 respectively. The
+broad-gamut and rare-color fixtures expose differences that the natural and
+flat-artwork fixtures largely hide.
+
+![Palette-build and end-to-end speed across the content fixtures](palette-pipeline/suite-measurements/palette-pipeline-suite-speed-content.png)
+
+Adaptive-grid sampling is 1.44x to 22.14x faster in the palette-build span and
+1.08x to 1.66x faster end to end over the content facet. The scale facet shows
+why this should remain conditional: on the 12,288-pixel gradient it provides
+no useful gain at `K=256`, while at 270,000 and 607,500 pixels its palette-build
+median stays near 11 ms and full-frame hard grows from 15.89 ms to 19.96 ms.
+
+![Palette-build scaling on one continuous gradient](palette-pipeline/suite-measurements/palette-pipeline-suite-speed-scale.png)
+
+Hard is the fastest full-frame binning policy in all but one content cell. The
+exception is flat artwork at `K=8`, where exact is only 1.18x faster in the
+palette span and 1.02x end to end. The large `K=256` gradient makes the scaling
+difference concrete: hard takes 19.96 ms, soft 46.48 ms, exact 557.10 ms, and
+none 1,547.47 ms. These results favor hard as the automatic binning baseline;
+the slower policies remain explicit quality choices rather than sensible
+general defaults.
+
+![SIXEL-size differences across the content fixtures](palette-pipeline/suite-measurements/palette-pipeline-suite-size.png)
+
+Stream size has no global winner. Relative reductions range from -14.7% to
++11.6% across the binning comparisons and change sign with content and `K`.
+The resolver therefore must not infer a size advantage from palette-build
+speed alone.
+
+The canonical values and full provenance are retained in
+[`palette-pipeline-suite-quality.csv`](palette-pipeline/suite-measurements/palette-pipeline-suite-quality.csv),
+[`palette-pipeline-suite-size.csv`](palette-pipeline/suite-measurements/palette-pipeline-suite-size.csv),
+[`palette-pipeline-suite-speed.csv`](palette-pipeline/suite-measurements/palette-pipeline-suite-speed.csv),
+and
+[`palette-pipeline-suite-run.json`](palette-pipeline/suite-measurements/palette-pipeline-suite-run.json).
+This evidence is sufficient to constrain a separate `auto` resolver change;
+it does not itself change the current defaults.
+
 ### Initial measured baseline
 
 The first durable run was recorded from revision `1259bb880` on arm64 macOS
@@ -720,10 +779,10 @@ and
 The timing CSV contains every warm-up, measured run, and boundary washout; plot
 medians and interquartile ranges are derived from its raw measured rows.
 
-This baseline does not justify a default on its own. In particular, the low-`K`
-disagreement between MS-SSIM and Delta E00, and the quality gained by expensive
-full-frame policies, must be checked against the broader fixture classes listed
-above before the `auto` resolver is changed.
+This baseline did not justify a default on its own. The multi-fixture suite
+above now checks its low-`K` metric disagreement and expensive full-frame
+policies across broader content classes, while retaining this first run as the
+mechanism-level audit trail.
 
 ## Migration waves
 

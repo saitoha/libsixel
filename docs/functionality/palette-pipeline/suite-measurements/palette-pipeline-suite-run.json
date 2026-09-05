@@ -1,0 +1,319 @@
+{
+  "artifacts": {
+    "plots": [
+      "palette-pipeline-suite-quality.png",
+      "palette-pipeline-suite-size.png",
+      "palette-pipeline-suite-speed-content.png",
+      "palette-pipeline-suite-speed-scale.png"
+    ],
+    "row_counts": {
+      "quality": 210,
+      "size": 210,
+      "speed": 6048
+    }
+  },
+  "build": {
+    "cc": "gcc",
+    "cflags": "-g -O2 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "--enable-amalgamated-tools --disable-amalgamated-lib BASH=/bin/sh",
+    "configured_source_directory": "/Users/saitoha/repo/libsixel",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": "",
+    "source_directory_matches": true
+  },
+  "fixtures": [
+    {
+      "class": "natural",
+      "height": 450,
+      "id": "natural-snake",
+      "label": "natural photograph",
+      "path": "images/snake.png",
+      "pixels": 270000,
+      "roles": [
+        "content"
+      ],
+      "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+      "width": 600
+    },
+    {
+      "class": "flat-artwork",
+      "height": 746,
+      "id": "flat-artwork",
+      "label": "flat artwork",
+      "path": "images/vimperator3.png",
+      "pixels": 434172,
+      "roles": [
+        "content"
+      ],
+      "sha256": "469db2a68010522cde29cc1dce7617743cb5a293ad2874cde6744f5ebb23bd33",
+      "width": 582
+    },
+    {
+      "class": "gradient",
+      "height": 96,
+      "id": "smooth-gradient-small",
+      "label": "smooth gradient, small",
+      "path": "images/measurements/palette-pipeline/smooth-gradient-128x96.png",
+      "pixels": 12288,
+      "roles": [
+        "scale"
+      ],
+      "sha256": "c45e1716cda4f325561c1437f41ea0783386753e770b4c60fe978699abb9a923",
+      "width": 128
+    },
+    {
+      "class": "gradient",
+      "height": 450,
+      "id": "smooth-gradient-medium",
+      "label": "smooth gradient",
+      "path": "images/measurements/palette-pipeline/smooth-gradient-600x450.png",
+      "pixels": 270000,
+      "roles": [
+        "content",
+        "scale"
+      ],
+      "sha256": "47de1f7508b0bb9d1ebdf6b0b2278cb5ccd1db1ad82ff2fbee365dab40510a93",
+      "width": 600
+    },
+    {
+      "class": "gradient",
+      "height": 675,
+      "id": "smooth-gradient-large",
+      "label": "smooth gradient, large",
+      "path": "images/measurements/palette-pipeline/smooth-gradient-900x675.png",
+      "pixels": 607500,
+      "roles": [
+        "scale"
+      ],
+      "sha256": "b65bf96b6743b0971ee71bb1f903fa5c1d9aa065df242f8b34b5ee86cd5dd8a8",
+      "width": 900
+    },
+    {
+      "class": "rare-color",
+      "height": 450,
+      "id": "rare-colors",
+      "label": "sparse rare colors",
+      "path": "images/measurements/palette-pipeline/rare-colors-600x450.png",
+      "pixels": 270000,
+      "roles": [
+        "content"
+      ],
+      "sha256": "93f0f2284086e1db61d5d2d702b1e67a5d73063ce63c5df726dd5f2bf22ab5c7",
+      "width": 600
+    },
+    {
+      "class": "broad-gamut",
+      "height": 450,
+      "id": "a98-gamut",
+      "label": "Adobe RGB gamut ramps",
+      "path": "images/measurements/palette-pipeline/a98-gamut-600x450.png",
+      "pixels": 270000,
+      "roles": [
+        "content"
+      ],
+      "sha256": "3a025f519c2107ae6286d1807a0b100948550025eec547c5bde94e932270a133",
+      "width": 600
+    }
+  ],
+  "generated_at_utc": "2026-09-05T13:59:34.399746+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.5"
+  },
+  "libsixel_linkage": {
+    "artifacts": [],
+    "mode": "amalgamated"
+  },
+  "manifest": {
+    "path": "tools/palette_pipeline_suite.json",
+    "sha256": "93278ab8f6278f1959f776b13e7a14a6809778d11e9cff3f7c5470847ce7a083"
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "512adde75916ab776bc764ce7d46debe6c4bd049de5ce72c0faadff3510d70c7",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "4d0c1c3bb03cc6c9da8080940495eb85b351eadc1a8b3ae84b410785b2c4240c"
+    },
+    "lsqa": {
+      "launcher": "assessment/lsqa",
+      "launcher_sha256": "e06d7c59371cc8c1f7b7696df39e2c912ae249a85737935357f3ec3f2562f477",
+      "payload": "assessment/.libs/lsqa",
+      "payload_sha256": "4cf2aba398bfc60c7e10518b1f0f9f33b891ee976d1eb829a0b4769f745578ab"
+    }
+  },
+  "protocol": {
+    "comparison_scope": "palette sampling and binning across content and pixel count",
+    "content_classes": [
+      "broad-gamut",
+      "flat-artwork",
+      "gradient",
+      "natural",
+      "rare-color"
+    ],
+    "content_fixture_ids": [
+      "natural-snake",
+      "flat-artwork",
+      "smooth-gradient-medium",
+      "rare-colors",
+      "a98-gamut"
+    ],
+    "fixture_and_policy_orders_recorded": true,
+    "fixture_order_design": {
+      "full_carryover_balance_period": 14,
+      "measured_sequence_start": 0,
+      "name": "Williams-derived fixture order",
+      "physical_fixtures": 7,
+      "position_balance_period": 7,
+      "sequence_period": 14
+    },
+    "measurement_mode": "durable",
+    "provenance_rechecked_after_suite": true,
+    "quality_improvement": "candidate minus control for MS-SSIM; control minus candidate for mean Delta E00",
+    "scale_fixture_ids": [
+      "smooth-gradient-small",
+      "smooth-gradient-medium",
+      "smooth-gradient-large"
+    ],
+    "scale_plot_colors": [
+      64,
+      256
+    ],
+    "shared_single_fixture_measurement_code": true,
+    "single_fixture_protocol": {
+      "clustering_colorspace": "oklab",
+      "colors": [
+        8,
+        16,
+        32,
+        64,
+        128,
+        256
+      ],
+      "comparison_facets": {
+        "binning": [
+          [
+            "full-frame-none",
+            "none"
+          ],
+          [
+            "full-frame-exact",
+            "exact"
+          ],
+          [
+            "full-frame-hard",
+            "hard"
+          ],
+          [
+            "full-frame-soft",
+            "soft"
+          ]
+        ],
+        "sampling": [
+          [
+            "full-frame-hard",
+            "full frame"
+          ],
+          [
+            "adaptive-grid-hard",
+            "adaptive grid"
+          ]
+        ]
+      },
+      "comparison_scope": "independent palette sampling and binning policy axes",
+      "configurations": [
+        {
+          "binning_policy": "hard",
+          "comparison_axes": [
+            "sampling",
+            "binning"
+          ],
+          "config": "full-frame-hard",
+          "sampling_policy": "full-frame"
+        },
+        {
+          "binning_policy": "hard",
+          "comparison_axes": [
+            "sampling"
+          ],
+          "config": "adaptive-grid-hard",
+          "sampling_policy": "adaptive-grid"
+        },
+        {
+          "binning_policy": "none",
+          "comparison_axes": [
+            "binning"
+          ],
+          "config": "full-frame-none",
+          "sampling_policy": "full-frame"
+        },
+        {
+          "binning_policy": "exact",
+          "comparison_axes": [
+            "binning"
+          ],
+          "config": "full-frame-exact",
+          "sampling_policy": "full-frame"
+        },
+        {
+          "binning_policy": "soft",
+          "comparison_axes": [
+            "binning"
+          ],
+          "config": "full-frame-soft",
+          "sampling_policy": "full-frame"
+        }
+      ],
+      "cover_policy": "off",
+      "diffusion": "none",
+      "end_to_end_timing": "uninstrumented fresh-process monotonic wall time",
+      "gpu_policy": "off",
+      "interpretation_limit": "the fixture suite characterizes mechanisms but does not alone select a project default",
+      "libsixel_linkage_snapshotted": true,
+      "loader": "libpng:cms_engine=builtin!",
+      "lookup_policy": "none",
+      "lsqa_environment_removed": true,
+      "measurement_mode": "durable",
+      "merge_policy": "none",
+      "palette_timing": "sum of complete top-level palette/build role=palette timeline spans, including multiple attempts or fallbacks",
+      "precision": "8bit",
+      "provenance_rechecked_after_measurement": true,
+      "quality": "full",
+      "quality_reference_loader": "libpng,builtin!",
+      "quality_reference_loader_environment": {
+        "SIXEL_LOADER_LIBPNG_CMS_ENGINE": "builtin"
+      },
+      "quantize_option": "kmeans:inittype=none:threshold=0.125:binbits=6:mapping=uniform:softdist=trilinear:autoratio=32:feedback=0:prune=hamerly:seed=1:restarts=1:iter=20:miniter=0:polish_iter=0:feedback_slots=1:feedback_interval=1:sample_target=16384",
+      "sample_target": 16384,
+      "sixel_environment_removed": true,
+      "size_measurement": "quality-pass SIXEL stdout byte length",
+      "speed_rows": "one raw duration per domain, fixture, K, round, position, and recorded boundary washout",
+      "speed_runs": 10,
+      "speed_warmups": 2,
+      "threads": 1,
+      "timing_order_design": {
+        "boundary_washout": "one recorded but excluded full-frame-hard process before every fixture block",
+        "name": "Williams first-order carryover balance",
+        "physical_configurations": 5,
+        "sequence_period": 10
+      },
+      "working_colorspace": "gamma"
+    },
+    "size_improvement": "100 * (1 - candidate bytes / control bytes)",
+    "speed_improvement": "control median / candidate median",
+    "speed_runs": 10,
+    "speed_warmups": 2
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "60cf33515fda4e2d045a432c49bd761ee73ff568",
+    "suite_end_snapshot_matches": true,
+    "top_source_directory": "/Users/saitoha/repo/libsixel",
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}
