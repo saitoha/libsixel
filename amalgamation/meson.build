@@ -5,6 +5,28 @@ amalgamation_gen = find_program(join_paths(meson.project_source_root(),
 
 amalgamation_header_depends = [completion_embed]
 
+# Mirror the generator's recursive default discovery so an incremental build
+# cannot reuse stale code from a source omitted by the explicit lists below.
+# Meson 0.59 has no fs.glob().
+amalgamation_discovered_depends_text = run_command(
+  sh,
+  '-c',
+  'set -eu; cd "$1"; ' +
+  'find src tests converters assessment gdk-pixbuf-loader include ' +
+  '-type d -name _artifacts -prune -o -type f ' +
+  '\\( -name "*.c" -o -name "*.h" -o -name "*.m" \\) -print | ' +
+  'LC_ALL=C sort',
+  'meson-amalgamation-discovered-depends',
+  meson.project_source_root(),
+  check: true,
+).stdout().strip()
+amalgamation_discovered_depends = []
+if amalgamation_discovered_depends_text != ''
+  foreach discovered_depend : amalgamation_discovered_depends_text.split('\n')
+    amalgamation_discovered_depends += files('../' + discovered_depend)
+  endforeach
+endif
+
 amalgamation_suffix = 'c'
 if have_objc and (have_quicklook_thumbnailing or have_clipboard_macos or
                   have_metal)
@@ -226,7 +248,8 @@ amalgamation_out = custom_target('sixel-amalgamation.' + amalgamation_suffix,
   output: 'sixel.' + amalgamation_suffix,
   command: [amalgamation_gen, '@OUTPUT@', meson.project_source_root(),
             meson.project_build_root()],
-  depend_files: amalgamation_units + amalgamation_headers + [config_h] +
+  depend_files: amalgamation_units + amalgamation_headers +
+    amalgamation_discovered_depends + [config_h] +
     files('../tools/gen-amalgamation.sh'),
   depends: amalgamation_header_depends,
   build_by_default: true)

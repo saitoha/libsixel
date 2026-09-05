@@ -16,7 +16,7 @@
  * Pick an environment setter based on configure/meson feature detection.
  */
 static int
-test_setenv(char const *name, char const *value)
+test_kmeans_setenv(char const *name, char const *value)
 {
 #if defined(HAVE__PUTENV_S)
     return _putenv_s(name, value);
@@ -168,7 +168,7 @@ test_palette_0001_kmeans_init(int argc, char **argv)
         return 0;
     }
 
-    if (test_setenv("SIXEL_PALETTE_KMEANS_INITTYPE", "none") != 0) {
+    if (test_kmeans_setenv("SIXEL_PALETTE_KMEANS_INITTYPE", "none") != 0) {
         fprintf(stderr, "failed to set environment override\n");
 
         return 1;

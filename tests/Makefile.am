@@ -100,6 +100,7 @@ TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
         $(LIBCURL_CFLAGS) \
         $(LIBFETCH_CFLAGS) \
         $(WINHTTP_CFLAGS) \
+        $(LCMS2_CFLAGS) \
         $(LIBPNG_CFLAGS) \
         $(LIBTIFF_CFLAGS) \
         $(LIBJPEG_CFLAGS) \

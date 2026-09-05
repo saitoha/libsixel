@@ -8,8 +8,8 @@
 
 #if HAVE_GD
 static SIXELSTATUS
-new_gd_component(sixel_allocator_t *allocator,
-                 void **ppcomponent)
+gd_pixelformat_new_component(sixel_allocator_t *allocator,
+                             void **ppcomponent)
 {
     return create_loader_component_by_name("gd", allocator, ppcomponent);
 }
@@ -62,7 +62,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 0, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd rgba with background emits linear float32",
@@ -80,7 +80,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 0, 256, white_bg },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed png preserves pal8 when requested",
@@ -98,7 +98,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 0, 1, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd opaque truecolor with bg keeps rgb888 gamma path",
@@ -116,7 +116,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 0, 0, 256, white_bg },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd opaque indexed with bg stays rgb888 gamma",
@@ -134,7 +134,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 0, 1, 256, white_bg },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed keycolor preserves pal8+transparent index",
@@ -152,7 +152,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 0, 1, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed keycolor reqcolors fallback emits rgb+mask",
@@ -170,7 +170,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 3, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed keycolor with background emits linear float32",
@@ -188,7 +188,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 3, white_bg },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd high-depth png promotes to float32",
@@ -206,7 +206,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 0, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd high-depth alpha png emits float32 plus mask",
@@ -224,7 +224,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 0, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed multi-trns emits rgb+mask fallback",
@@ -242,7 +242,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed reqcolors boundary keeps pal8+transparent index",
@@ -260,7 +260,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 4, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd opaque truecolor keeps rgb888 gamma fast path",
@@ -278,7 +278,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 0, 0, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed input without palette request emits rgb888 gamma",
@@ -296,7 +296,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 0, 0, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed keycolor gama+iccp with background emits float32",
@@ -314,7 +314,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 256, white_bg },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed keycolor gAMA-only with background emits float32",
@@ -332,7 +332,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 256, white_bg },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd rgb16 sRGB-only png promotes to float32 linear",
@@ -350,7 +350,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 0, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed single trns+semi emits rgb+mask",
@@ -368,7 +368,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd reqcolors zero clamps to pal8-safe default",
@@ -386,7 +386,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 0, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd reqcolors above cap clamps to pal8-safe default",
@@ -404,7 +404,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, SIXEL_PALETTE_MAX + 1, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd pal256 reqcolors 255 falls back to rgb888",
@@ -422,7 +422,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 255, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd pal256 reqcolors 256 keeps pal8",
@@ -440,7 +440,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 256, NULL },
-            new_gd_component
+            gd_pixelformat_new_component
         },
         {
             "gd indexed single trns+semi with background emits float32",
@@ -458,7 +458,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 1, 256, white_bg },
-            new_gd_component
+            gd_pixelformat_new_component
         }
     };
     size_t index;

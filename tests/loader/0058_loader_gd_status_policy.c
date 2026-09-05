@@ -14,13 +14,13 @@
 
 #if HAVE_GD
 static int
-new_gd_component(sixel_allocator_t *allocator, void **ppcomponent)
+gd_status_new_component(sixel_allocator_t *allocator, void **ppcomponent)
 {
     return create_loader_component_by_name("gd", allocator, ppcomponent);
 }
 
 static char const *
-loader_test_source_root(void)
+gd_status_source_root(void)
 {
     char const *source_root;
 
@@ -39,9 +39,9 @@ loader_test_source_root(void)
 }
 
 static int
-load_chunk_from_relative(sixel_allocator_t *allocator,
-                         char const *relative_path,
-                         sixel_chunk_t **out_chunk)
+gd_status_load_chunk_relative(sixel_allocator_t *allocator,
+                              char const *relative_path,
+                              sixel_chunk_t **out_chunk)
 {
     SIXELSTATUS status;
     char image_path[PATH_MAX];
@@ -54,7 +54,7 @@ load_chunk_from_relative(sixel_allocator_t *allocator,
     }
 
     *out_chunk = NULL;
-    if (build_image_path(loader_test_source_root(),
+    if (build_image_path(gd_status_source_root(),
                          relative_path,
                          image_path,
                          sizeof(image_path)) != 0) {
@@ -155,7 +155,7 @@ run_load_with_gd_status_with_bgcolor(sixel_allocator_t *allocator,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = new_gd_component(allocator, (void **)&component);
+    status = gd_status_new_component(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -190,7 +190,7 @@ run_gd_predicate(sixel_allocator_t *allocator,
         return 1;
     }
 
-    status = new_gd_component(allocator, (void **)&component);
+    status = gd_status_new_component(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         return 1;
     }
@@ -248,7 +248,9 @@ expect_status_for_file(sixel_allocator_t *allocator,
 
     chunk = NULL;
     status = SIXEL_FALSE;
-    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+    if (gd_status_load_chunk_relative(allocator,
+                                      relative_path,
+                                      &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }
@@ -281,7 +283,9 @@ expect_truncated_status_for_file(sixel_allocator_t *allocator,
 
     chunk = NULL;
     status = SIXEL_FALSE;
-    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+    if (gd_status_load_chunk_relative(allocator,
+                                      relative_path,
+                                      &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }
@@ -327,7 +331,9 @@ expect_optional_format_status(sixel_allocator_t *allocator,
 
     chunk = NULL;
     status = SIXEL_FALSE;
-    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+    if (gd_status_load_chunk_relative(allocator,
+                                      relative_path,
+                                      &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", format_label);
         return 1;
     }
@@ -379,7 +385,9 @@ expect_transfer_status_for_file(sixel_allocator_t *allocator,
 
     chunk = NULL;
     status = SIXEL_FALSE;
-    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+    if (gd_status_load_chunk_relative(allocator,
+                                      relative_path,
+                                      &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }
@@ -414,12 +422,14 @@ expect_transfer_cache_reused_for_file(sixel_allocator_t *allocator,
     component = NULL;
     status = SIXEL_FALSE;
     result = 1;
-    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+    if (gd_status_load_chunk_relative(allocator,
+                                      relative_path,
+                                      &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }
 
-    status = new_gd_component(allocator, (void **)&component);
+    status = gd_status_new_component(allocator, (void **)&component);
     if (SIXEL_SUCCEEDED(status)) {
         status = configure_gd_component(component, NULL);
     }
@@ -521,7 +531,9 @@ expect_can_try_status_for_file(sixel_allocator_t *allocator,
     chunk = NULL;
     status = SIXEL_FALSE;
     can_try = 0;
-    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+    if (gd_status_load_chunk_relative(allocator,
+                                      relative_path,
+                                      &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }
@@ -569,7 +581,9 @@ expect_optional_can_try_status_for_file(sixel_allocator_t *allocator,
     chunk = NULL;
     status = SIXEL_FALSE;
     can_try = 0;
-    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+    if (gd_status_load_chunk_relative(allocator,
+                                      relative_path,
+                                      &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }

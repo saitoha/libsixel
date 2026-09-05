@@ -256,7 +256,7 @@ find_module_dir(gboolean *has_dylib)
 }
 
 static void
-assert_tail_pixels(GdkPixbuf *pixbuf)
+loader_module_assert_tail_pixels(GdkPixbuf *pixbuf)
 {
     guchar const *pixels;
     int rowstride;
@@ -380,7 +380,7 @@ run_loader_module_test(void)
     g_assert_cmpint(gdk_pixbuf_get_height(pixbuf), ==, 8);
     g_assert_cmpint(gdk_pixbuf_get_n_channels(pixbuf), ==, 3);
 
-    assert_tail_pixels(pixbuf);
+    loader_module_assert_tail_pixels(pixbuf);
 
     g_object_unref(loader);
 

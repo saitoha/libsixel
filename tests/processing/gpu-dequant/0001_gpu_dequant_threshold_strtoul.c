@@ -16,15 +16,15 @@
 #include "src/compat_stub.h"
 #include "src/gpu-dequant.h"
 
-typedef struct gpu_threshold_case {
+typedef struct gpu_dequant_threshold_case {
     char const *text;
     size_t expected;
-} gpu_threshold_case_t;
+} gpu_dequant_threshold_case_t;
 
 int
 test_gpudeq_0001_strtoul(int argc, char **argv)
 {
-    gpu_threshold_case_t const cases[] = {
+    gpu_dequant_threshold_case_t const cases[] = {
         { "", (size_t)262144u },
         { "0", (size_t)0u },
         { "17", (size_t)17u },

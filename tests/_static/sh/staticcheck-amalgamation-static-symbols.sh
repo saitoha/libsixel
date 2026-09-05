@@ -1,5 +1,5 @@
 #!/bin/sh
-# Emit TAP for duplicate static function symbols across amalgamation units.
+# Emit TAP for duplicate static helpers and test types across amalgamation units.
 
 set -eu
 
@@ -94,10 +94,12 @@ in_sources && $0 !~ /\\[[:space:]]*$/ {
 }
 ' "$tests_makefile" >> "$unit_entries"
 
-# The test runner amalgamation enables many test files in one translation unit.
-# Existing test helper names are being cleaned up incrementally, so enforce the
-# broad duplicate rule for production units and the recent allocator-helper
-# collision class for tests.
+# The test runner amalgamation enables every registered C test in one
+# translation unit.  Its private functions and typedef names therefore share
+# the ordinary identifier namespace even when their source files differ.
+# Resolve simple object-like renaming macros used by unity-safe tests.  Helpers
+# under feature conditionals must remain unique as well because amalgamated CI
+# configurations can enable several guarded tests in the same translation unit.
 LC_ALL=C sort -u "$unit_entries" -o "$unit_entries"
 
 if awk '
@@ -140,7 +142,7 @@ fi
 
 : > "$raw_symbols"
 while IFS= read -r unit_path; do
-    awk -v file="$unit_path" '
+    awk -v file="$unit_path" -v tests_root="$src_root/tests/" '
 function trim(s) {
     sub(/^[[:space:]]+/, "", s)
     sub(/[[:space:]]+$/, "", s)
@@ -182,10 +184,57 @@ function count_close(s, t) {
     t = s
     return gsub(/\)/, "", t)
 }
+function count_brace_open(s, t) {
+    t = s
+    return gsub(/\{/, "", t)
+}
+function count_brace_close(s, t) {
+    t = s
+    return gsub(/\}/, "", t)
+}
+function emit_private(name, namespace, resolved) {
+    resolved = (name in macro_alias) ? macro_alias[name] : name
+    if (namespace == "tag") {
+        resolved = "tag:" resolved
+    }
+    printf "%s\t%s\n", resolved, file
+}
+function emit_typedef(text,   name, parts, rest, tag, part_count) {
+    if (!is_test) {
+        return
+    }
+    rest = text
+    if (rest ~ /^typedef[[:space:]]+(struct|union|enum)[[:space:]]+/) {
+        sub(/^typedef[[:space:]]+(struct|union|enum)[[:space:]]+/, "",
+            rest)
+        tag = rest
+        sub(/[^A-Za-z0-9_].*$/, "", tag)
+        if (tag ~ /^[A-Za-z_][A-Za-z0-9_]*$/) {
+            emit_private(tag, "tag")
+        }
+    }
+
+    rest = text
+    if (rest ~ /\(\*[[:space:]]*[A-Za-z_][A-Za-z0-9_]*/) {
+        sub(/^.*\(\*[[:space:]]*/, "", rest)
+        name = rest
+        sub(/[^A-Za-z0-9_].*$/, "", name)
+    } else {
+        sub(/[[:space:]]*;[[:space:]]*$/, "", rest)
+        gsub(/[^A-Za-z0-9_]+/, " ", rest)
+        sub(/^[[:space:]]+/, "", rest)
+        sub(/[[:space:]]+$/, "", rest)
+        part_count = split(rest, parts, /[[:space:]]+/)
+        name = parts[part_count]
+    }
+    if (name ~ /^[A-Za-z_][A-Za-z0-9_]*$/) {
+        emit_private(name, "ordinary")
+    }
+}
 function emit_guarded_variable(line,   name) {
     if (line ~ /(^|[^A-Za-z0-9_])tracked_allocator_free_count([^A-Za-z0-9_]|$)/) {
         name = "tracked_allocator_free_count"
-        printf "%s\t%s\n", name, file
+        emit_private(name, "ordinary")
     }
 }
 function reset_state() {
@@ -193,12 +242,29 @@ function reset_state() {
     name = ""
     depth = 0
 }
-function start_signature(line) {
-    if (!match(line, /^[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(/)) {
+function is_declaration_keyword(candidate) {
+    return candidate == "char" || candidate == "double" ||
+           candidate == "float" || candidate == "int" ||
+           candidate == "long" || candidate == "short" ||
+           candidate == "signed" || candidate == "unsigned" ||
+           candidate == "void" || candidate == "_Bool" ||
+           candidate == "__attribute__"
+}
+function start_signature(line,   candidate, search) {
+    search = line
+    while (match(search,
+                 /[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(/)) {
+        candidate = substr(search, RSTART, RLENGTH)
+        sub(/[[:space:]]*\($/, "", candidate)
+        if (!is_declaration_keyword(candidate)) {
+            name = candidate
+            break
+        }
+        search = substr(search, RSTART + RLENGTH)
+    }
+    if (name == "") {
         return 0
     }
-    name = substr(line, RSTART, RLENGTH)
-    sub(/[[:space:]]*\($/, "", name)
     depth = count_open(line) - count_close(line)
     if (line ~ /;[[:space:]]*$/ && depth <= 0) {
         reset_state()
@@ -206,7 +272,7 @@ function start_signature(line) {
     }
     if (depth <= 0) {
         if (line ~ /\{/) {
-            printf "%s\t%s\n", name, file
+            emit_private(name, "ordinary")
             reset_state()
             return 0
         }
@@ -218,11 +284,57 @@ function start_signature(line) {
 }
 BEGIN {
     in_comment = 0
+    is_test = index(file, tests_root) == 1
+    in_typedef = 0
+    typedef_depth = 0
+    typedef_text = ""
     reset_state()
 }
 {
     line = trim(strip_comments($0))
     if (line == "") {
+        next
+    }
+
+    if (line ~ /^#[[:space:]]*define[[:space:]]+/) {
+        macro = line
+        sub(/^#[[:space:]]*define[[:space:]]+/, "", macro)
+        if (macro ~ /^[A-Za-z_][A-Za-z0-9_]*[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]*$/) {
+            split(macro, macro_parts, /[[:space:]]+/)
+            macro_alias[macro_parts[1]] = macro_parts[2]
+        }
+        next
+    }
+    if (line ~ /^#[[:space:]]*undef[[:space:]]+/) {
+        macro = line
+        sub(/^#[[:space:]]*undef[[:space:]]+/, "", macro)
+        sub(/[[:space:]].*$/, "", macro)
+        delete macro_alias[macro]
+        next
+    }
+    if (line ~ /^#/) {
+        next
+    }
+
+    if (in_typedef) {
+        typedef_text = typedef_text " " line
+        typedef_depth += count_brace_open(line) - count_brace_close(line)
+        if (typedef_depth == 0 && line ~ /;/) {
+            emit_typedef(typedef_text)
+            in_typedef = 0
+            typedef_text = ""
+        }
+        next
+    }
+    if (line ~ /^typedef([[:space:]]|$)/) {
+        typedef_text = line
+        typedef_depth = count_brace_open(line) - count_brace_close(line)
+        if (typedef_depth == 0 && line ~ /;/) {
+            emit_typedef(typedef_text)
+            typedef_text = ""
+        } else {
+            in_typedef = 1
+        }
         next
     }
 
@@ -273,7 +385,7 @@ BEGIN {
             next
         }
         if (line ~ /\{/) {
-            printf "%s\t%s\n", name, file
+            emit_private(name, "ordinary")
             reset_state()
             next
         }
@@ -287,7 +399,7 @@ BEGIN {
             next
         }
         if (line ~ /\{/) {
-            printf "%s\t%s\n", name, file
+            emit_private(name, "ordinary")
             reset_state()
             next
         }
@@ -297,7 +409,7 @@ BEGIN {
 done < "$unit_files"
 
 if test ! -s "$raw_symbols"; then
-    echo "ok 1 - amalgamation static symbols are unique"
+    echo "ok 1 - amalgamation static helpers and test types are unique"
     exit 0
 fi
 
@@ -306,14 +418,6 @@ LC_ALL=C sort -u "$raw_symbols" > "$symbols"
 if awk -F '\t' -v src_root="$src_root" '
 function is_test_file(file) {
     return index(file, src_root "/tests/") == 1
-}
-function is_guarded_test_helper(symbol) {
-    if (symbol == "tracked_malloc" || symbol == "tracked_calloc" ||
-        symbol == "tracked_realloc" || symbol == "tracked_free" ||
-        symbol == "tracked_allocator_free_count") {
-        return 1
-    }
-    return 0
 }
 {
     symbol = $1
@@ -348,8 +452,7 @@ END {
     status = 0
     for (i = 1; i <= count; ++i) {
         symbol = names[i]
-        if (non_test_count[symbol] > 1 ||
-            (test_count[symbol] > 1 && is_guarded_test_helper(symbol))) {
+        if (symbol_count[symbol] > 1) {
             status = 1
             printf "%s\t%d\t%s\n", symbol, symbol_count[symbol], files[symbol]
         }
@@ -357,14 +460,14 @@ END {
     exit status
 }
 ' "$symbols" > "$duplicates"; then
-    echo "ok 1 - amalgamation static symbols are unique"
+    echo "ok 1 - amalgamation static helpers and test types are unique"
     exit 0
 fi
 
-echo "not ok 1 - amalgamation static symbols are unique"
+echo "not ok 1 - amalgamation static helpers and test types are unique"
 while IFS=$(printf '\t') read -r symbol count files; do
     test -n "$symbol" || continue
-    echo "# duplicate static symbol: $symbol ($count definitions)"
+    echo "# duplicate static helper or test type: $symbol ($count definitions)"
     echo "# files: $files"
 done < "$duplicates"
 exit 1

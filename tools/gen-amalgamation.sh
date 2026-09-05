@@ -38,7 +38,9 @@ collect_units_from_dirs() {
         if [ ! -d "${src_root}/${dir}" ]; then
             continue
         fi
-        find "${src_root}/${dir}" -type f "$@" | \
+        find "${src_root}/${dir}" \
+            \( -type d -name _artifacts -prune \) -o \
+            \( -type f "$@" -print \) | \
             LC_ALL=C sort | sed "s#^${src_root}/##"
     done
 }
@@ -552,7 +554,7 @@ emit_all_units() {
         [ -z "${unit}" ] && continue
 
         case "${unit}" in
-            gdk-pixbuf-loader/*.c|tests/*.c)
+            gdk-pixbuf-loader/*.[cm]|tests/*.[cm])
                 case "${unit}" in
                     *.inc.c)
                         # Include fragments are pulled by their parent C files.
@@ -560,7 +562,8 @@ emit_all_units() {
                         ;;
                 esac
                 guard=$(echo "${unit}" | \
-                    sed 's/.*\///;s/.c$//' | tr '[:lower:]-.' '[:upper:]__')
+                    sed 's/.*\///;s/\.[cm]$//' | \
+                    tr '[:lower:]-.' '[:upper:]__')
                 guard=$(echo "${guard}" | sed 's/[^A-Z0-9_]/_/g')
                 case "${guard}" in
                     [0-9]*)

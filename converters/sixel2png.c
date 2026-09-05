@@ -465,7 +465,7 @@ sixel2png_handle_getopt_error(int short_opt, char const *token)
 
 /* output version info to STDOUT */
 static
-void show_version(void)
+void sixel2png_show_version(void)
 {
     printf("sixel2png " PACKAGE_VERSION "\n"
            "\n"
@@ -482,7 +482,7 @@ void show_version(void)
 
 
 static void
-show_help(void)
+sixel2png_show_help(void)
 {
     /*
      * Help text must go to stdout so shell pipelines like `sixel2png -H
@@ -630,11 +630,11 @@ main(int argc, char *argv[])
             }
             break;
         case 'V':
-            show_version();
+            sixel2png_show_version();
             status = SIXEL_OK;
             goto end;
         case 'H':
-            show_help();
+            sixel2png_show_help();
             status = SIXEL_OK;
             goto end;
         default:

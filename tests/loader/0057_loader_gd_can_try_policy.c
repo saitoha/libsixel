@@ -14,7 +14,7 @@
 
 #if HAVE_GD
 static int
-new_gd_component(sixel_allocator_t *allocator, void **ppcomponent)
+gd_can_try_new_component(sixel_allocator_t *allocator, void **ppcomponent)
 {
     return create_loader_component_by_name("gd", allocator, ppcomponent);
 }
@@ -57,7 +57,7 @@ expect_can_try(sixel_loader_component_t *loader,
 }
 
 static char const *
-loader_test_source_root(void)
+gd_can_try_source_root(void)
 {
     char const *source_root;
 
@@ -76,9 +76,9 @@ loader_test_source_root(void)
 }
 
 static int
-load_chunk_from_relative(sixel_allocator_t *allocator,
-                         char const *relative_path,
-                         sixel_chunk_t **out_chunk)
+gd_can_try_load_chunk_relative(sixel_allocator_t *allocator,
+                               char const *relative_path,
+                               sixel_chunk_t **out_chunk)
 {
     SIXELSTATUS status;
     char image_path[PATH_MAX];
@@ -91,7 +91,7 @@ load_chunk_from_relative(sixel_allocator_t *allocator,
     }
 
     *out_chunk = NULL;
-    if (build_image_path(loader_test_source_root(),
+    if (build_image_path(gd_can_try_source_root(),
                          relative_path,
                          image_path,
                          sizeof(image_path)) != 0) {
@@ -132,7 +132,9 @@ expect_optional_can_try_consistency(sixel_loader_component_t *loader,
     chunk = NULL;
     status = SIXEL_FALSE;
     can_try = 0;
-    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+    if (gd_can_try_load_chunk_relative(allocator,
+                                       relative_path,
+                                       &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }
@@ -230,7 +232,7 @@ run_can_try_policy_mode(char const *mode)
         fprintf(stderr, "allocator initialization failed\n");
         return 1;
     }
-    status = new_gd_component(allocator, (void **)&loader);
+    status = gd_can_try_new_component(allocator, (void **)&loader);
     if (SIXEL_FAILED(status) || loader == NULL) {
         sixel_allocator_unref(allocator);
         fprintf(stderr, "GD loader unavailable\n");

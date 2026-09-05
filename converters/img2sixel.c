@@ -2918,7 +2918,7 @@ void img2sixel_print_available_loaders(FILE *stream)
 
 /* output version info to STDOUT */
 static
-void show_version(void)
+void img2sixel_show_version(void)
 {
     printf("img2sixel " PACKAGE_VERSION "\n"
            "\n"
@@ -2992,7 +2992,7 @@ void show_version(void)
 
 /* output help messages to STDOUT */
 static
-void show_help(void)
+void img2sixel_show_help(void)
 {
     fprintf(stdout,
             "Usage: img2sixel [Options] imagefiles\n"
@@ -3429,11 +3429,11 @@ img2sixel_main(int argc, char *argv[])
             }
             break;
         case 'V':
-            show_version();
+            img2sixel_show_version();
             status = SIXEL_OK;
             goto end;
         case 'H':
-            show_help();
+            img2sixel_show_help();
             status = SIXEL_OK;
             goto end;
         default:

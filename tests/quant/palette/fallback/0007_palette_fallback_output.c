@@ -14,7 +14,7 @@
 #include <sixel.h>
 
 static int
-test_setenv(char const *name, char const *value)
+test_palette_fallback_output_setenv(char const *name, char const *value)
 {
 #if defined(HAVE__PUTENV_S)
     return _putenv_s(name, value);
@@ -54,7 +54,7 @@ test_palfb_0007_output(int argc, char **argv)
     table_pixelformat = SIXEL_PIXELFORMAT_G1;
     fallback_pixelformat = SIXEL_PIXELFORMAT_G1;
 
-    if (test_setenv(disable_tables, "0") != 0) {
+    if (test_palette_fallback_output_setenv(disable_tables, "0") != 0) {
         return EXIT_FAILURE;
     }
     status = sixel_helper_normalize_pixelformat(
@@ -69,7 +69,7 @@ test_palfb_0007_output(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    if (test_setenv(disable_tables, "1") != 0) {
+    if (test_palette_fallback_output_setenv(disable_tables, "1") != 0) {
         return EXIT_FAILURE;
     }
     status = sixel_helper_normalize_pixelformat(

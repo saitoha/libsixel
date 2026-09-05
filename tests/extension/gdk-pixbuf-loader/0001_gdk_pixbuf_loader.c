@@ -141,7 +141,7 @@ load_pixbuf_from_bytes(unsigned char const *data, gsize size, GError **error)
 }
 
 static void
-assert_tail_pixels(GdkPixbuf *pixbuf)
+gdk_pixbuf_loader_assert_tail_pixels(GdkPixbuf *pixbuf)
 {
     guchar const *pixels;
     int rowstride;
@@ -189,7 +189,7 @@ test_basic_load(void)
     g_assert_cmpint(gdk_pixbuf_get_height(pixbuf), ==, 8);
     g_assert_cmpint(gdk_pixbuf_get_n_channels(pixbuf), ==, 3);
 
-    assert_tail_pixels(pixbuf);
+    gdk_pixbuf_loader_assert_tail_pixels(pixbuf);
 
     g_object_unref(pixbuf);
 }
@@ -210,7 +210,7 @@ test_truncated_load(void)
     g_assert_cmpint(gdk_pixbuf_get_width(pixbuf), ==, 2);
     g_assert_cmpint(gdk_pixbuf_get_height(pixbuf), ==, 8);
 
-    assert_tail_pixels(pixbuf);
+    gdk_pixbuf_loader_assert_tail_pixels(pixbuf);
 
     g_object_unref(pixbuf);
 }

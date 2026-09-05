@@ -38,7 +38,7 @@ typedef struct gd_pixel_probe {
 } gd_pixel_probe_t;
 
 static char const *
-loader_test_source_root(void)
+gd_pixelpolicy_source_root(void)
 {
     char const *source_root;
 
@@ -194,7 +194,7 @@ run_gd_probe(char const *relative_path,
         return 1;
     }
 
-    if (build_image_path(loader_test_source_root(),
+    if (build_image_path(gd_pixelpolicy_source_root(),
                          relative_path,
                          path,
                          sizeof(path)) != 0) {
