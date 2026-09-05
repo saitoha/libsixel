@@ -31,6 +31,9 @@ are grouped by domain so each area can grow without overloading one document.
 - [Palette quantization](functionality/quantization.md) explains `-Q`, palette
   solver objectives, asymptotic costs, and the boundary between palette
   generation and use.
+- [Palette clustering color space](functionality/clustering-colorspace.md)
+  explains `-X`, its coordinate geometry and normalization, option
+  interactions, and measured quality, speed, and size tradeoffs.
 - [Dithering](functionality/dithering.md) explains `-d`, error shaping, scan
   order, temporal behavior, per-pixel cost, and its interaction with lookup.
 - [Lookup policy](functionality/lookup-policy.md) defines libsixel's `-~` /

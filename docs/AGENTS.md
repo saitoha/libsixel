@@ -24,6 +24,8 @@ before changing its subject area:
   runtime requirements, CI-backed support tiers, and platform matrix.
 - [Functionality](functionality/overview.md): capabilities, components, data
   flow, and architectural boundaries.
+- [Palette clustering color space](functionality/clustering-colorspace.md):
+  `-X` geometry, normalization, interactions, and reproducible measurements.
 - [CLI](cli/design-policy.md): option design, compatibility, parsing,
   diagnostics, and documentation synchronization.
 - [Quality](quality/measurement-policy.md): perceptual metrics, fixtures,

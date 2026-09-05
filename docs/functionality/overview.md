@@ -28,6 +28,8 @@ output contract of each stage and how these three controls cooperate:
 
 - [Palette Quantization](quantization.md), selected by `-Q`, determines which
   palette colors are available and documents each solver's objective and cost;
+- [Palette Clustering Color Space](clustering-colorspace.md), selected by `-X`,
+  determines the coordinate geometry used to construct those palette colors;
 - [Dithering](dithering.md), selected by `-d`, determines how representation
   error is distributed and the state required to do so;
 - [Lookup Policy](lookup-policy.md), selected by `-~` or `--lookup-policy`,

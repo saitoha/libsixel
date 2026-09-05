@@ -68,6 +68,14 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/ci/local-jobs.tsv \
 	docs/ci/support-matrix.md \
 	docs/cli/design-policy.md \
+	docs/functionality/clustering-colorspace.md \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-quality.csv \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-quality.png \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-run.json \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-size.csv \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-size.png \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-speed.csv \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-speed.png \
 	docs/functionality/dithering.md \
 	docs/functionality/dither-policies/measurements/dither-policy-delta-e00.png \
 	docs/functionality/dither-policies/measurements/dither-policy-ms-ssim.png \
@@ -142,6 +150,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	openvms/gnv-link-program.sh \
 	tools/fuzz-afl-runner.sh \
 	tools/fuzz-img2sixel-cli.sh \
+	tools/check_clustering_colorspace_measurements.py \
 	tools/check_dither_policy_measurements.py \
 	tools/check_palette_pipeline_measurements.py \
 	tools/check_palette_pipeline_suite_measurements.py \
@@ -152,6 +161,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/check_lookup_policy_measurements.py \
 	tools/palette_pipeline_suite.json \
 	tools/plot_lookup_policy_acceleration.py \
+	tools/plot_clustering_colorspace_measurements.py \
 	tools/plot_dither_policy_measurements.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
@@ -160,6 +170,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_quality_curve.py \
 	tools/plot_quantize_model_measurements.py \
 	tools/reproduce_lookup_policy_acceleration.sh \
+	tools/reproduce_clustering_colorspace_measurements.sh \
 	tools/reproduce_dither_policy_measurements.sh \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \

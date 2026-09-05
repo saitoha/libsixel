@@ -1,0 +1,102 @@
+{
+  "build": {
+    "cc": "gcc",
+    "cflags": "-O3 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": ""
+  },
+  "generated_at_utc": "2026-09-05T17:15:10.678530+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.5"
+  },
+  "input": {
+    "path": "images/snake.png",
+    "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4"
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "ac363a143663c5b8bd93e729b46b387a3f33f4886ce46c0434d0fc3b1f8c5cc7"
+    },
+    "lsqa": {
+      "launcher": "assessment/lsqa",
+      "launcher_sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
+      "payload": "assessment/.libs/lsqa",
+      "payload_sha256": "b200ce01de72675a10f18bb580fd807ec887d3423506accfc3bad319a2d60aa1"
+    }
+  },
+  "protocol": {
+    "binning_policy": "hard",
+    "colors": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "colorspaces": [
+      {
+        "colorspace": "gamma",
+        "contract_value": 0,
+        "label": "gamma sRGB"
+      },
+      {
+        "colorspace": "linear",
+        "contract_value": 1,
+        "label": "linear RGB"
+      },
+      {
+        "colorspace": "oklab",
+        "contract_value": 2,
+        "label": "OKLab"
+      },
+      {
+        "colorspace": "cielab",
+        "contract_value": 4,
+        "label": "CIELAB"
+      },
+      {
+        "colorspace": "din99d",
+        "contract_value": 5,
+        "label": "DIN99d"
+      }
+    ],
+    "comparison_scope": "clustering color spaces with a fixed K-means pipeline",
+    "configuration_order_rotated_each_round": true,
+    "contract_preflight": "model=kmeans, merge=none, lookup=none, hard binning, requested clustering space, and zero quantizer retries",
+    "contract_preflight_points": 30,
+    "cover_policy": "off",
+    "diffusion": "none",
+    "end_to_end_timing": "uninstrumented fresh-process monotonic wall time",
+    "gpu_policy": "off",
+    "loader": "builtin!",
+    "lookup_policy": "none",
+    "merge_policy": "none",
+    "palette_timing": "sum of complete top-level palette/build role=palette timeline spans; clustering-frame conversion is outside this span",
+    "palette_type": "rgb",
+    "precision": "float32",
+    "quality": "full",
+    "quantize_model": "kmeans:seed=1",
+    "sampling_policy": "full-frame",
+    "sixel_environment_removed": true,
+    "size_measurement": "quality-pass SIXEL stdout byte length",
+    "speed_runs": 9,
+    "speed_warmups": 2,
+    "threads": 1,
+    "working_colorspace": "gamma"
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "42db6380105fccc11b8eb90253fa615c8984be8a",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}

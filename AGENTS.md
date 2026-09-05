@@ -52,6 +52,7 @@ that documentation. The principal references are:
 - [SIXEL format](docs/sixel-format.md)
 - [Build, runtime, and platform support](docs/platform-support.md)
 - [Functional overview](docs/functionality/overview.md)
+- [Palette clustering color space](docs/functionality/clustering-colorspace.md)
 - [CLI design policy](docs/cli/design-policy.md)
 - [Quality measurement policy](docs/quality/measurement-policy.md)
 - [Testing guide](docs/testing/guide.md)

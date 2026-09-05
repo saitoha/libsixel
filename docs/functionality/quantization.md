@@ -42,9 +42,11 @@ not select the binning policy.
 
 Let `x[i]` be a retained color sample with non-negative weight `w[i]`, and let
 `C` contain at most `K` palette colors. Colors are three-dimensional in the
-space selected with `-X`. The norm below is Euclidean in that space. Changing
-the colorspace, channel normalization, histogram precision, or candidate
-collector changes the geometry or data set before optimization begins.
+space selected with `-X`. The norm below is Euclidean in that space. The
+[Palette Clustering Color Space](clustering-colorspace.md) reference defines
+the exact coordinates and normalization. Changing the color space, channel
+normalization, histogram precision, or candidate collector changes the
+geometry or data set before optimization begins.
 
 The five base models are described separately below. Their objectives are not
 interchangeable: a model that minimizes average squared error need not best
@@ -460,8 +462,9 @@ running time.
 
 The selected model is only one part of palette construction:
 
-- `-X` selects the clustering colorspace and therefore changes the distance
-  geometry used by K-means, K-medoids, and K-center;
+- `-X` selects the [clustering color space](clustering-colorspace.md) and
+  therefore changes the distance geometry used by K-means, K-medoids, and
+  K-center;
 - arithmetic precision, histogram bits, sampling, and candidate policies can
   change the population presented to a solver;
 - `-F` independently selects final palette merging and may merge an oversplit
