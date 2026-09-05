@@ -279,12 +279,6 @@ _quantizemodel() {
                      "${prefix}${key}=none" \
                      "${prefix}${key}=pca"
           return 0
-        elif [[ ${key} == binning ]]; then
-          compadd -- "${prefix}${key}=auto" \
-                     "${prefix}${key}=none" \
-                     "${prefix}${key}=hard" \
-                     "${prefix}${key}=soft"
-          return 0
         elif [[ ${key} == mapping ]]; then
           compadd -- "${prefix}${key}=uniform" \
                      "${prefix}${key}=srgb"
@@ -298,12 +292,6 @@ _quantizemodel() {
                      "${prefix}${key}=6" \
                      "${prefix}${key}=7" \
                      "${prefix}${key}=8"
-          return 0
-        elif [[ ${key} == autoratio ]]; then
-          compadd -- "${prefix}${key}=8" \
-                     "${prefix}${key}=16" \
-                     "${prefix}${key}=32" \
-                     "${prefix}${key}=64"
           return 0
         elif [[ ${key} == feedback ]]; then
           compadd -- "${prefix}${key}=off" \
@@ -384,14 +372,11 @@ _quantizemodel() {
         compadd -- "${prefix}Iauto" "${prefix}Inone" \
                    "${prefix}Ipca" "${prefix}inittype=" \
                    "${prefix}T0.120" "${prefix}threshold=" \
-                   "${prefix}Bauto" "${prefix}Bhard" \
-                   "${prefix}Bsoft" "${prefix}binning=" \
                    "${prefix}N4" "${prefix}N6" \
                    "${prefix}N8" "${prefix}binbits=" \
                    "${prefix}Muniform" "${prefix}Msrgb" \
                    "${prefix}mapping=" \
                    "${prefix}Dtrilinear" "${prefix}softdist=" \
-                   "${prefix}R32" "${prefix}autoratio=" \
                    "${prefix}Foff" "${prefix}Fon" \
                    "${prefix}feedback=" \
                    "${prefix}prune=" \

@@ -117,7 +117,6 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	cli/0032_cli_gpu_policy_option.c \
 	cli/0033_cli_suboption_consumer_scope.c \
 	cli/0034_cli_terminal_policy_option.c \
-	cli/0035_cli_palette_binning_conflict_atomic.c \
 	processing/filter/0001_filter_clip.c \
 	processing/filter/0002_filter_sample.c \
 	processing/filter/0003_filter_resize.c \
@@ -254,7 +253,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0029_sampling_fallback_resolution.c \
 	quant/palette/0030_binning_policy_contract.c \
 	quant/palette/0031_weighted_point_set.c \
-	quant/palette/0032_kmeans_binning_legacy_output.c \
+	quant/palette/0032_kmeans_binning_policy_output.c \
 	quant/palette/0033_quantizer_capabilities.c \
 	quant/palette/0034_palette_stage_resolvers.c \
 	quant/palette/0037_palette_sampling_indexed_frame.c \
@@ -291,7 +290,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0032_cli_gpu_policy_option.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0033_cli_suboption_consumer_scope.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0034_cli_terminal_policy_option.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0035_cli_palette_binning_conflict_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0001_filter_clip.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0002_filter_sample.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0003_filter_resize.$(OBJEXT) \
@@ -425,7 +423,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0029_sampling_fallback_resolution.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0030_binning_policy_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0031_weighted_point_set.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0032_kmeans_binning_legacy_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0032_kmeans_binning_policy_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0033_quantizer_capabilities.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0034_palette_stage_resolvers.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0037_palette_sampling_indexed_frame.$(OBJEXT) \
@@ -529,7 +527,6 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po \
 	cli/$(DEPDIR)/test_runner-0033_cli_suboption_consumer_scope.Po \
 	cli/$(DEPDIR)/test_runner-0034_cli_terminal_policy_option.Po \
-	cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
@@ -676,7 +673,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po \
 	quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po \
 	quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po \
-	quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po \
+	quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Po \
 	quant/palette/$(DEPDIR)/test_runner-0033_quantizer_capabilities.Po \
 	quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po \
 	quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po \
@@ -1423,7 +1420,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_SAMPLING_FALLBACK_RESOLUTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_BINNING_POLICY_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_WEIGHTED_POINT_SET \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_KMEANS_BINNING_LEGACY_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_KMEANS_BINNING_POLICY_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_QUANTIZER_CAPABILITIES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_PALETTE_STAGE_RESOLVERS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_PALETTE_SAMPLING_INDEXED_FRAME \
@@ -1432,7 +1429,6 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_KCENTER_FLOAT_LEGACY_GRID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_KCENTER_PACKED_ALPHA_LAYOUTS \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_CLI_PALETTE_BINNING_CONFLICT_ATOMIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -1570,7 +1566,6 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0032_cli_gpu_policy_option.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0033_cli_suboption_consumer_scope.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0034_cli_terminal_policy_option.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    cli/0035_cli_palette_binning_conflict_atomic.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0001_filter_clip.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0002_filter_sample.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0003_filter_resize.c \
@@ -1708,7 +1703,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0029_sampling_fallback_resolution.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0030_binning_policy_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0031_weighted_point_set.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0032_kmeans_binning_legacy_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0032_kmeans_binning_policy_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0033_quantizer_capabilities.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0034_palette_stage_resolvers.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0037_palette_sampling_indexed_frame.c \
@@ -1910,8 +1905,6 @@ cli/test_runner-0032_cli_gpu_policy_option.$(OBJEXT):  \
 cli/test_runner-0033_cli_suboption_consumer_scope.$(OBJEXT):  \
 	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
 cli/test_runner-0034_cli_terminal_policy_option.$(OBJEXT):  \
-	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
-cli/test_runner-0035_cli_palette_binning_conflict_atomic.$(OBJEXT):  \
 	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
 processing/filter/$(am__dirstamp):
 	@$(MKDIR_P) processing/filter
@@ -2461,7 +2454,7 @@ quant/palette/test_runner-0030_binning_policy_contract.$(OBJEXT):  \
 quant/palette/test_runner-0031_weighted_point_set.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
-quant/palette/test_runner-0032_kmeans_binning_legacy_output.$(OBJEXT):  \
+quant/palette/test_runner-0032_kmeans_binning_policy_output.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-0033_quantizer_capabilities.$(OBJEXT):  \
@@ -2653,7 +2646,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0033_cli_suboption_consumer_scope.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0034_cli_terminal_policy_option.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
@@ -2800,7 +2792,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0033_quantizer_capabilities.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po@am__quote@ # am--include-marker
@@ -2953,20 +2945,6 @@ cli/test_runner-0034_cli_terminal_policy_option.obj: cli/0034_cli_terminal_polic
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0034_cli_terminal_policy_option.c' object='cli/test_runner-0034_cli_terminal_policy_option.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0034_cli_terminal_policy_option.obj `if test -f 'cli/0034_cli_terminal_policy_option.c'; then $(CYGPATH_W) 'cli/0034_cli_terminal_policy_option.c'; else $(CYGPATH_W) '$(srcdir)/cli/0034_cli_terminal_policy_option.c'; fi`
-
-cli/test_runner-0035_cli_palette_binning_conflict_atomic.o: cli/0035_cli_palette_binning_conflict_atomic.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0035_cli_palette_binning_conflict_atomic.o -MD -MP -MF cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Tpo -c -o cli/test_runner-0035_cli_palette_binning_conflict_atomic.o `test -f 'cli/0035_cli_palette_binning_conflict_atomic.c' || echo '$(srcdir)/'`cli/0035_cli_palette_binning_conflict_atomic.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Tpo cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0035_cli_palette_binning_conflict_atomic.c' object='cli/test_runner-0035_cli_palette_binning_conflict_atomic.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0035_cli_palette_binning_conflict_atomic.o `test -f 'cli/0035_cli_palette_binning_conflict_atomic.c' || echo '$(srcdir)/'`cli/0035_cli_palette_binning_conflict_atomic.c
-
-cli/test_runner-0035_cli_palette_binning_conflict_atomic.obj: cli/0035_cli_palette_binning_conflict_atomic.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0035_cli_palette_binning_conflict_atomic.obj -MD -MP -MF cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Tpo -c -o cli/test_runner-0035_cli_palette_binning_conflict_atomic.obj `if test -f 'cli/0035_cli_palette_binning_conflict_atomic.c'; then $(CYGPATH_W) 'cli/0035_cli_palette_binning_conflict_atomic.c'; else $(CYGPATH_W) '$(srcdir)/cli/0035_cli_palette_binning_conflict_atomic.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Tpo cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0035_cli_palette_binning_conflict_atomic.c' object='cli/test_runner-0035_cli_palette_binning_conflict_atomic.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0035_cli_palette_binning_conflict_atomic.obj `if test -f 'cli/0035_cli_palette_binning_conflict_atomic.c'; then $(CYGPATH_W) 'cli/0035_cli_palette_binning_conflict_atomic.c'; else $(CYGPATH_W) '$(srcdir)/cli/0035_cli_palette_binning_conflict_atomic.c'; fi`
 
 processing/filter/test_runner-0001_filter_clip.o: processing/filter/0001_filter_clip.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0001_filter_clip.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Tpo -c -o processing/filter/test_runner-0001_filter_clip.o `test -f 'processing/filter/0001_filter_clip.c' || echo '$(srcdir)/'`processing/filter/0001_filter_clip.c
@@ -4830,19 +4808,19 @@ quant/palette/test_runner-0031_weighted_point_set.obj: quant/palette/0031_weight
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0031_weighted_point_set.obj `if test -f 'quant/palette/0031_weighted_point_set.c'; then $(CYGPATH_W) 'quant/palette/0031_weighted_point_set.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0031_weighted_point_set.c'; fi`
 
-quant/palette/test_runner-0032_kmeans_binning_legacy_output.o: quant/palette/0032_kmeans_binning_legacy_output.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0032_kmeans_binning_legacy_output.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Tpo -c -o quant/palette/test_runner-0032_kmeans_binning_legacy_output.o `test -f 'quant/palette/0032_kmeans_binning_legacy_output.c' || echo '$(srcdir)/'`quant/palette/0032_kmeans_binning_legacy_output.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Tpo quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0032_kmeans_binning_legacy_output.c' object='quant/palette/test_runner-0032_kmeans_binning_legacy_output.o' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0032_kmeans_binning_policy_output.o: quant/palette/0032_kmeans_binning_policy_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0032_kmeans_binning_policy_output.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Tpo -c -o quant/palette/test_runner-0032_kmeans_binning_policy_output.o `test -f 'quant/palette/0032_kmeans_binning_policy_output.c' || echo '$(srcdir)/'`quant/palette/0032_kmeans_binning_policy_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Tpo quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0032_kmeans_binning_policy_output.c' object='quant/palette/test_runner-0032_kmeans_binning_policy_output.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0032_kmeans_binning_legacy_output.o `test -f 'quant/palette/0032_kmeans_binning_legacy_output.c' || echo '$(srcdir)/'`quant/palette/0032_kmeans_binning_legacy_output.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0032_kmeans_binning_policy_output.o `test -f 'quant/palette/0032_kmeans_binning_policy_output.c' || echo '$(srcdir)/'`quant/palette/0032_kmeans_binning_policy_output.c
 
-quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj: quant/palette/0032_kmeans_binning_legacy_output.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Tpo -c -o quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj `if test -f 'quant/palette/0032_kmeans_binning_legacy_output.c'; then $(CYGPATH_W) 'quant/palette/0032_kmeans_binning_legacy_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0032_kmeans_binning_legacy_output.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Tpo quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0032_kmeans_binning_legacy_output.c' object='quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj' libtool=no @AMDEPBACKSLASH@
+quant/palette/test_runner-0032_kmeans_binning_policy_output.obj: quant/palette/0032_kmeans_binning_policy_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0032_kmeans_binning_policy_output.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Tpo -c -o quant/palette/test_runner-0032_kmeans_binning_policy_output.obj `if test -f 'quant/palette/0032_kmeans_binning_policy_output.c'; then $(CYGPATH_W) 'quant/palette/0032_kmeans_binning_policy_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0032_kmeans_binning_policy_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Tpo quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0032_kmeans_binning_policy_output.c' object='quant/palette/test_runner-0032_kmeans_binning_policy_output.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0032_kmeans_binning_legacy_output.obj `if test -f 'quant/palette/0032_kmeans_binning_legacy_output.c'; then $(CYGPATH_W) 'quant/palette/0032_kmeans_binning_legacy_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0032_kmeans_binning_legacy_output.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0032_kmeans_binning_policy_output.obj `if test -f 'quant/palette/0032_kmeans_binning_policy_output.c'; then $(CYGPATH_W) 'quant/palette/0032_kmeans_binning_policy_output.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0032_kmeans_binning_policy_output.c'; fi`
 
 quant/palette/test_runner-0033_quantizer_capabilities.o: quant/palette/0033_quantizer_capabilities.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0033_quantizer_capabilities.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0033_quantizer_capabilities.Tpo -c -o quant/palette/test_runner-0033_quantizer_capabilities.o `test -f 'quant/palette/0033_quantizer_capabilities.c' || echo '$(srcdir)/'`quant/palette/0033_quantizer_capabilities.c
@@ -5648,7 +5626,6 @@ distclean: distclean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0033_cli_suboption_consumer_scope.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0034_cli_terminal_policy_option.Po
-	-rm -f cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
@@ -5795,7 +5772,7 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po
-	-rm -f quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0033_quantizer_capabilities.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po
@@ -5863,7 +5840,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0033_cli_suboption_consumer_scope.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0034_cli_terminal_policy_option.Po
-	-rm -f cli/$(DEPDIR)/test_runner-0035_cli_palette_binning_conflict_atomic.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
@@ -6010,7 +5986,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0029_sampling_fallback_resolution.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0030_binning_policy_contract.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0031_weighted_point_set.Po
-	-rm -f quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_legacy_output.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0032_kmeans_binning_policy_output.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0033_quantizer_capabilities.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0034_palette_stage_resolvers.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0037_palette_sampling_indexed_frame.Po

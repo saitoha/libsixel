@@ -7,10 +7,10 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "palette/0032_kmeans_binning_legacy_output" || {
-    echo "not ok 1 - Kmeans binning legacy palette output"
+    "palette/0032_kmeans_binning_policy_output" || {
+    echo "not ok 1 - Kmeans binning policy palette output"
     exit 0
 }
 
-echo "ok 1 - Kmeans binning legacy palette output"
+echo "ok 1 - Kmeans binning policy palette output"
 exit 0

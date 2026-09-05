@@ -6184,7 +6184,7 @@ sixel_kcenter_build_binned_points(
     sixel_palette_binning_state_init(
         &local_binning,
         SIXEL_PALETTE_BINNING_HARD,
-        SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS);
+        SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);
     binning = rt != NULL ? rt->binning : NULL;
     policy = SIXEL_PALETTE_BINNING_AUTO;
     memset(&config, 0, sizeof(config));

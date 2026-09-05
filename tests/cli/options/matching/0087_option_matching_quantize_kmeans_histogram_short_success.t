@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qk:Bsoft:N6:Msrgb:Dtrilinear:R32:F1 \
+    --palette-binning=soft -Qk:N6:Msrgb:Dtrilinear:F1 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
     echo "not ok" 1 - "-Q kmeans short histogram suboptions were rejected"

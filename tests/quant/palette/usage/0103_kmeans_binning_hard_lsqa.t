@@ -19,8 +19,8 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/kmeans-binning-hard.six"
 lsqa_run_status=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qk:Bhard:N6:Msrgb:Dtrilinear:R32 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --palette-binning=hard \
+    -Qk:N6:Msrgb:Dtrilinear \
     -p 64 \
     -o "${output_sixel}" \
     "${input_image}" || {

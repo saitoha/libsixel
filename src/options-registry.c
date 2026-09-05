@@ -1488,13 +1488,6 @@ static sixel_suboption_choice_t const g_kmeans_init_type_choices[] = {
     { "pca", SIXEL_PALETTE_KMEANS_INIT_PCA }
 };
 
-static sixel_suboption_choice_t const g_kmeans_binning_choices[] = {
-    { "auto", SIXEL_PALETTE_KMEANS_BINNING_AUTO },
-    { "none", SIXEL_PALETTE_KMEANS_BINNING_NONE },
-    { "hard", SIXEL_PALETTE_KMEANS_BINNING_HARD },
-    { "soft", SIXEL_PALETTE_KMEANS_BINNING_SOFT }
-};
-
 static sixel_suboption_choice_t const g_kmeans_mapping_choices[] = {
     { "uniform", SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM },
     { "srgb", SIXEL_PALETTE_KMEANS_MAPPING_SRGB }
@@ -2053,13 +2046,6 @@ static sixel_suboption_key_t const g_suboptions[] = {
         0.0, 0.5, "-Q threshold must be in range 0.0-0.5.",
         quantize_model_kmeans_threshold,
         quantize_model_kmeans_threshold_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
-        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
-        g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
-        "binning", 'B', "SIXEL_PALETTE_KMEANS_BINNING", NULL, NULL,
-        g_kmeans_binning_choices,
-        quantize_model_kmeans_binning_mode,
-        quantize_model_kmeans_binning_override),
     SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
@@ -2081,14 +2067,6 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_kmeans_softdist_choices,
         quantize_model_kmeans_softdist_mode,
         quantize_model_kmeans_softdist_override),
-    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_SIGNED(
-        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
-        g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,
-        "autoratio", 'R', "SIXEL_PALETTE_KMEANS_AUTORATIO", NULL, NULL,
-        1.0, 1048576.0, 0,
-        "-Q autoratio must be in range 1-1048576.",
-        quantize_model_kmeans_autoratio,
-        quantize_model_kmeans_autoratio_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_KMEANS,

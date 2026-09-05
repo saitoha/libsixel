@@ -204,17 +204,9 @@ kernel = trilinear
 grid-map = POLICY
 ```
 
-The existing `-Q kmeans:binning=MODE` suboption and
-`SIXEL_PALETTE_KMEANS_BINNING` environment remain deprecated aliases while
-K-means is the requested quantizer. If an alias and the top-level option are
-both explicit, they must name the same policy; conflicting values are rejected
-instead of being resolved by option order. The alias does not make a legacy
-K-means environment select K-means when the requested quantizer is `auto` or a
-different family. Environment values are defaults rather than peer explicit
-requests: either CLI/API spelling overrides either environment spelling. If
-both environment spellings are present, the canonical top-level environment
-wins. Diagnostics retain `environment`, `legacy-environment`, `explicit`, or
-`legacy-alias` provenance after precedence is applied.
+The binning policy has one command-line spelling and one environment spelling.
+Quantizer suboptions do not select the binning policy. Diagnostics retain
+`environment`, `explicit`, or `auto` provenance after precedence is applied.
 
 The modes have these intended meanings:
 
@@ -314,8 +306,6 @@ automatic profile for quantizers that consume weighted points without an
 observed-representative constraint. Quantizers without weighted-point support
 resolve to `none`, while a quantizer that requires observed representatives
 resolves to `exact`. Soft binning remains available only by explicit request.
-The deprecated K-means `autoratio` setting remains accepted for compatibility
-but no longer changes automatic binning.
 
 An explicit unsupported combination is rejected during resolution. In
 particular, soft binning requires a weighted-point consumer that accepts

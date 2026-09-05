@@ -255,7 +255,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0029_SAMPLING_FALLBACK_RESOLUTION \
     -DBUILD_TEST_0030_BINNING_POLICY_CONTRACT \
     -DBUILD_TEST_0031_WEIGHTED_POINT_SET \
-    -DBUILD_TEST_0032_KMEANS_BINNING_LEGACY_OUTPUT \
+    -DBUILD_TEST_0032_KMEANS_BINNING_POLICY_OUTPUT \
     -DBUILD_TEST_0033_QUANTIZER_CAPABILITIES \
     -DBUILD_TEST_0034_PALETTE_STAGE_RESOLVERS \
     -DBUILD_TEST_0037_PALETTE_SAMPLING_INDEXED_FRAME \
@@ -264,7 +264,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
     -DBUILD_TEST_0043_KCENTER_FLOAT_LEGACY_GRID \
     -DBUILD_TEST_0044_KCENTER_PACKED_ALPHA_LAYOUTS \
-    -DBUILD_TEST_0035_CLI_PALETTE_BINNING_CONFLICT_ATOMIC \
     -DBUILD_TEST_0001_GPU_PALETTE_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_GPU_DEQUANT_THRESHOLD_STRTOUL \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
@@ -377,7 +376,6 @@ test_runner_SOURCES = test_runner.c \
     cli/0032_cli_gpu_policy_option.c \
     cli/0033_cli_suboption_consumer_scope.c \
     cli/0034_cli_terminal_policy_option.c \
-    cli/0035_cli_palette_binning_conflict_atomic.c \
     processing/filter/0001_filter_clip.c \
     processing/filter/0002_filter_sample.c \
     processing/filter/0003_filter_resize.c \
@@ -515,7 +513,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0029_sampling_fallback_resolution.c \
     quant/palette/0030_binning_policy_contract.c \
     quant/palette/0031_weighted_point_set.c \
-    quant/palette/0032_kmeans_binning_legacy_output.c \
+    quant/palette/0032_kmeans_binning_policy_output.c \
     quant/palette/0033_quantizer_capabilities.c \
     quant/palette/0034_palette_stage_resolvers.c \
     quant/palette/0037_palette_sampling_indexed_frame.c \

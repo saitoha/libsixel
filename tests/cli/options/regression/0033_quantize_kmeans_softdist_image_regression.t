@@ -23,7 +23,8 @@ env_output="${artifact_dir}/0033-quantize-kmeans-softdist-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -p 16 "-Qkmeans:Bsoft:Dtrilinear" "${input_image}" 2>&1 >"${short_output}") || {
+    --palette-binning=soft -p 16 "-Qkmeans:Dtrilinear" \
+    "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "kmeans:softdist short conversion failed"
     exit 0
 }
@@ -35,7 +36,8 @@ test "${short_trace#*LSXSUB1|*key=softdist|stored=1|binding=quantize_model_kmean
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_KMEANS_SOFTDIST=trilinear" -p 16 "-Qkmeans:Bsoft" \
+    --palette-binning=soft \
+    --env "SIXEL_PALETTE_KMEANS_SOFTDIST=trilinear" -p 16 -Qkmeans \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "kmeans:softdist env conversion failed"
     exit 0

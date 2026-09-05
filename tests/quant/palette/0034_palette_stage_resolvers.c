@@ -126,8 +126,6 @@ binning_input_init(sixel_palette_binning_resolver_input_t *input)
     input->kernel = SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR;
     input->backend = SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE;
     input->source_point_count = 255u;
-    input->requested_colors = 8u;
-    input->auto_ratio = 32u;
 }
 
 static int
@@ -156,9 +154,8 @@ kmeans_binning_selection_is_valid(void)
         return 0;
     }
 
-    /* The former density threshold must not switch AUTO back to soft. */
+    /* AUTO remains hard as the stable quality and memory tradeoff. */
     input.source_point_count = 256u;
-    input.auto_ratio = 1u;
     status = sixel_palette_binning_select(&input,
                                           &capabilities,
                                           &selection);

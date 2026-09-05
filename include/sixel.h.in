@@ -423,18 +423,12 @@ typedef int SIXELSTATUS;
                                                       auto, none, pca
                                                     threshold (or Tvalue):
                                                       float in 0.0-0.5
-                                                    binning (or Bvalue):
-                                                      auto, none, hard, soft
                                                     binbits (or Nvalue):
                                                       integer in 4-8
                                                     mapping (or Mvalue):
                                                       uniform, srgb
                                                     softdist (or Dvalue):
                                                       trilinear
-                                                    autoratio (or Rvalue):
-                                                      compatibility integer
-                                                      in 1-1048576; ignored
-                                                      by the hard auto profile
                                                     feedback (or Fvalue):
                                                       off, on
                                                     prune:

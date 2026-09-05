@@ -35,9 +35,7 @@ typedef enum sixel_palette_policy_origin {
     SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT = 0,
     SIXEL_PALETTE_POLICY_ORIGIN_AUTO,
     SIXEL_PALETTE_POLICY_ORIGIN_ENVIRONMENT,
-    SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT,
-    SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT,
-    SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS
+    SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT
 } sixel_palette_policy_origin_t;
 
 typedef enum sixel_palette_policy_phase {
@@ -196,8 +194,6 @@ typedef struct sixel_palette_binning_resolver_input {
     sixel_palette_binning_kernel_t kernel;
     sixel_palette_binning_backend_t backend;
     size_t source_point_count;
-    size_t requested_colors;
-    size_t auto_ratio;
 } sixel_palette_binning_resolver_input_t;
 
 typedef struct sixel_palette_binning_selection {

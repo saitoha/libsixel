@@ -83,14 +83,6 @@
 static SIXEL_TLS int sixel_kmeans_init_type_override_enabled = 0;
 static SIXEL_TLS sixel_kmeans_init_type sixel_kmeans_init_type_override_value
     = SIXEL_PALETTE_KMEANS_INIT_AUTO;
-static SIXEL_TLS int sixel_kmeans_binning_mode_override_enabled = 0;
-static SIXEL_TLS sixel_kmeans_binning_mode
-    sixel_kmeans_binning_mode_override_value
-        = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
-static SIXEL_TLS int sixel_kmeans_binning_origin_override_enabled = 0;
-static SIXEL_TLS sixel_palette_policy_origin_t
-    sixel_kmeans_binning_origin_override_value
-        = SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
 static SIXEL_TLS int sixel_kmeans_binbits_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kmeans_binbits_override_value = 6u;
 static SIXEL_TLS int sixel_kmeans_mapping_mode_override_enabled = 0;
@@ -101,8 +93,6 @@ static SIXEL_TLS int sixel_kmeans_softdist_mode_override_enabled = 0;
 static SIXEL_TLS sixel_kmeans_softdist_mode
     sixel_kmeans_softdist_mode_override_value
         = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
-static SIXEL_TLS int sixel_kmeans_autoratio_override_enabled = 0;
-static SIXEL_TLS unsigned int sixel_kmeans_autoratio_override_value = 32u;
 static SIXEL_TLS int sixel_kmeans_seed_override_enabled = 0;
 static SIXEL_TLS uint32_t sixel_kmeans_seed_override_value = 0u;
 static SIXEL_TLS int sixel_kmeans_restarts_override_enabled = 0;
@@ -391,85 +381,6 @@ sixel_get_kmeans_init_type(void)
     return resolved;
 }
 
-static sixel_kmeans_binning_mode
-sixel_kmeans_resolve_binning_mode(sixel_kmeans_binning_mode mode)
-{
-    switch (mode) {
-    case SIXEL_PALETTE_KMEANS_BINNING_NONE:
-    case SIXEL_PALETTE_KMEANS_BINNING_HARD:
-    case SIXEL_PALETTE_KMEANS_BINNING_SOFT:
-    case SIXEL_PALETTE_KMEANS_BINNING_AUTO:
-        return mode;
-    default:
-        return SIXEL_PALETTE_KMEANS_BINNING_AUTO;
-    }
-}
-
-void
-sixel_set_kmeans_binning_mode_override(int enabled,
-                                       sixel_kmeans_binning_mode mode)
-{
-    int lock_acquired;
-
-    lock_acquired = sixel_kmeans_override_lock_acquire();
-    sixel_kmeans_binning_mode_override_enabled = enabled ? 1 : 0;
-    sixel_kmeans_binning_mode_override_value
-        = sixel_kmeans_resolve_binning_mode(mode);
-    sixel_kmeans_override_lock_release(lock_acquired);
-}
-
-SIXEL_INTERNAL_API sixel_kmeans_binning_mode
-sixel_get_kmeans_binning_mode(void)
-{
-    int value;
-    static int loaded = 0;
-    static sixel_kmeans_binning_mode cached
-        = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
-
-    value = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
-    if (sixel_kmeans_binning_mode_override_enabled) {
-        return sixel_kmeans_binning_mode_override_value;
-    }
-    if (loaded) {
-        return cached;
-    }
-    loaded = 1;
-
-    if (sixel_option_resolve_registered_int_binding(
-            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
-            "kmeans",
-            SIXEL_SUBOPTION_BINDING_ID_2(
-                quantize_model_kmeans_binning_mode,
-                quantize_model_kmeans_binning_override),
-            &value)) {
-        cached = (sixel_kmeans_binning_mode)value;
-    }
-
-    return cached;
-}
-
-void
-sixel_set_kmeans_binning_origin_override(
-    int enabled,
-    sixel_palette_policy_origin_t origin)
-{
-    int lock_acquired;
-
-    lock_acquired = sixel_kmeans_override_lock_acquire();
-    sixel_kmeans_binning_origin_override_enabled = enabled ? 1 : 0;
-    sixel_kmeans_binning_origin_override_value = origin;
-    sixel_kmeans_override_lock_release(lock_acquired);
-}
-
-SIXEL_INTERNAL_API sixel_palette_policy_origin_t
-sixel_get_kmeans_binning_origin(void)
-{
-    if (sixel_kmeans_binning_origin_override_enabled != 0) {
-        return sixel_kmeans_binning_origin_override_value;
-    }
-    return SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
-}
-
 void
 sixel_set_kmeans_binbits_override(int enabled,
                                   unsigned int bits)
@@ -618,46 +529,6 @@ sixel_get_kmeans_softdist_mode(void)
             &value)) {
         cached = (sixel_kmeans_softdist_mode)value;
     }
-
-    return cached;
-}
-
-void
-sixel_set_kmeans_autoratio_override(int enabled,
-                                    unsigned int ratio)
-{
-    int lock_acquired;
-
-    lock_acquired = sixel_kmeans_override_lock_acquire();
-    sixel_kmeans_autoratio_override_enabled = enabled ? 1 : 0;
-    sixel_kmeans_autoratio_override_value = ratio;
-    sixel_kmeans_override_lock_release(lock_acquired);
-}
-
-SIXEL_INTERNAL_API unsigned int
-sixel_get_kmeans_autoratio(void)
-{
-    static int loaded = 0;
-    static unsigned int cached = 32u;
-
-    if (sixel_kmeans_autoratio_override_enabled) {
-        if (sixel_kmeans_autoratio_override_value < 1u) {
-            return 1u;
-        }
-        return sixel_kmeans_autoratio_override_value;
-    }
-    if (loaded) {
-        return cached;
-    }
-    loaded = 1;
-
-    (void)sixel_option_resolve_registered_uint_binding(
-            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
-            "kmeans",
-            SIXEL_SUBOPTION_BINDING_ID_2(
-                quantize_model_kmeans_autoratio,
-                quantize_model_kmeans_autoratio_override),
-            &cached);
 
     return cached;
 }

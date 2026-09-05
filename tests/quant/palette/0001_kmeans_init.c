@@ -47,22 +47,6 @@ test_sixel_kmeans_init_type_to_string(sixel_kmeans_init_type init_type)
 }
 
 static char const *
-test_sixel_kmeans_binning_mode_to_string(sixel_kmeans_binning_mode mode)
-{
-    switch (mode) {
-    case SIXEL_PALETTE_KMEANS_BINNING_NONE:
-        return "none";
-    case SIXEL_PALETTE_KMEANS_BINNING_HARD:
-        return "hard";
-    case SIXEL_PALETTE_KMEANS_BINNING_SOFT:
-        return "soft";
-    case SIXEL_PALETTE_KMEANS_BINNING_AUTO:
-    default:
-        return "auto";
-    }
-}
-
-static char const *
 test_sixel_kmeans_mapping_mode_to_string(sixel_kmeans_mapping_mode mode)
 {
     switch (mode) {
@@ -99,16 +83,12 @@ test_sixel_kmeans_feedback_mode_to_string(sixel_kmeans_feedback_mode mode)
 static void
 test_print_kmeans_histogram_settings(void)
 {
-    printf("binning=%s binbits=%u mapping=%s softdist=%s autoratio=%u "
-           "feedback=%s\n",
-           test_sixel_kmeans_binning_mode_to_string(
-               sixel_get_kmeans_binning_mode()),
+    printf("binbits=%u mapping=%s softdist=%s feedback=%s\n",
            sixel_get_kmeans_binbits(),
            test_sixel_kmeans_mapping_mode_to_string(
                sixel_get_kmeans_mapping_mode()),
            test_sixel_kmeans_softdist_mode_to_string(
                sixel_get_kmeans_softdist_mode()),
-           sixel_get_kmeans_autoratio(),
            test_sixel_kmeans_feedback_mode_to_string(
                sixel_get_kmeans_feedback_mode()));
 }
@@ -142,9 +122,6 @@ test_palette_0001_kmeans_init(int argc, char **argv)
     }
 
     if (run_histogram_override != 0) {
-        sixel_set_kmeans_binning_mode_override(
-            1,
-            SIXEL_PALETTE_KMEANS_BINNING_HARD);
         sixel_set_kmeans_binbits_override(1, 7u);
         sixel_set_kmeans_mapping_mode_override(
             1,
@@ -152,7 +129,6 @@ test_palette_0001_kmeans_init(int argc, char **argv)
         sixel_set_kmeans_softdist_mode_override(
             1,
             SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR);
-        sixel_set_kmeans_autoratio_override(1, 17u);
         sixel_set_kmeans_feedback_mode_override(
             1,
             SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);

@@ -162,11 +162,6 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == binning ]]; then
-                    for quant_candidate in auto none hard soft; do
-                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
-                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
-                    done
                 elif [[ ${quant_key} == mapping ]]; then
                     for quant_candidate in uniform srgb; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
@@ -179,11 +174,6 @@ _img2sixel()
                     done
                 elif [[ ${quant_key} == binbits ]]; then
                     for quant_candidate in 4 5 6 7 8; do
-                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
-                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
-                    done
-                elif [[ ${quant_key} == autoratio ]]; then
-                    for quant_candidate in 8 16 32 64; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
@@ -244,9 +234,9 @@ _img2sixel()
             quant_prefix="${cur%${quant_item}}"
             for quant_candidate in \
                 Iauto Inone Ipca inittype= T0.120 threshold= \
-                Bauto Bhard Bsoft binning= N4 N6 N8 binbits= \
+                N4 N6 N8 binbits= \
                 Muniform Msrgb mapping= Dtrilinear softdist= \
-                R32 autoratio= Foff Fon feedback= prune= \
+                Foff Fon feedback= prune= \
                 S1 S42 seed= restarts= \
                 iter= iter_max= miniter= polish_iter= \
                 feedback_slots= feedback_interval= \

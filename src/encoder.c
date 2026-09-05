@@ -509,40 +509,6 @@ sixel_palette_sampling_source_name(sixel_palette_sampling_source_t source)
     }
 }
 
-static sixel_palette_binning_policy_t
-sixel_palette_binning_from_legacy_kmeans(int mode)
-{
-    switch ((sixel_kmeans_binning_mode)mode) {
-    case SIXEL_PALETTE_KMEANS_BINNING_NONE:
-        return SIXEL_PALETTE_BINNING_NONE;
-    case SIXEL_PALETTE_KMEANS_BINNING_HARD:
-        return SIXEL_PALETTE_BINNING_HARD;
-    case SIXEL_PALETTE_KMEANS_BINNING_SOFT:
-        return SIXEL_PALETTE_BINNING_SOFT;
-    case SIXEL_PALETTE_KMEANS_BINNING_AUTO:
-    default:
-        return SIXEL_PALETTE_BINNING_AUTO;
-    }
-}
-
-static sixel_kmeans_binning_mode
-sixel_palette_binning_to_legacy_kmeans(
-    sixel_palette_binning_policy_t policy)
-{
-    switch (policy) {
-    case SIXEL_PALETTE_BINNING_NONE:
-        return SIXEL_PALETTE_KMEANS_BINNING_NONE;
-    case SIXEL_PALETTE_BINNING_HARD:
-        return SIXEL_PALETTE_KMEANS_BINNING_HARD;
-    case SIXEL_PALETTE_BINNING_SOFT:
-        return SIXEL_PALETTE_KMEANS_BINNING_SOFT;
-    case SIXEL_PALETTE_BINNING_AUTO:
-    case SIXEL_PALETTE_BINNING_EXACT:
-    default:
-        return SIXEL_PALETTE_KMEANS_BINNING_AUTO;
-    }
-}
-
 static char const *
 sixel_palette_binning_policy_name(int policy)
 {
@@ -562,105 +528,20 @@ sixel_palette_binning_policy_name(int policy)
     }
 }
 
-/*
- * The K-means suboption remains a compatibility alias.  It is active only
- * while K-means is the requested quantizer; its environment must not change
- * the historical AUTO/Heckbert path merely because the legacy variable is
- * present.  Two active explicit spellings must agree instead of depending on
- * command-line order.
- */
-static SIXELSTATUS
-sixel_encoder_validate_binning_values(
-    int quantize_model,
-    int palette_binning_policy,
-    int palette_binning_override,
-    sixel_palette_policy_origin_t palette_binning_origin,
-    int legacy_binning_mode,
-    int legacy_binning_override,
-    sixel_palette_policy_origin_t legacy_binning_origin)
-{
-    sixel_palette_binning_policy_t legacy_policy;
-    int legacy_active;
-
-    legacy_policy = SIXEL_PALETTE_BINNING_AUTO;
-    legacy_active = 0;
-    if (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
-            legacy_binning_override != 0) {
-        legacy_policy = sixel_palette_binning_from_legacy_kmeans(
-            legacy_binning_mode);
-        legacy_active = 1;
-    }
-    if (palette_binning_override != 0 && legacy_active != 0 &&
-            palette_binning_origin ==
-                SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT &&
-            legacy_binning_origin ==
-                SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS &&
-            palette_binning_policy != (int)legacy_policy) {
-        sixel_helper_set_additional_message(
-            "--palette-binning conflicts with the deprecated "
-            "-Q kmeans:binning alias.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-    return SIXEL_OK;
-}
-
 static SIXELSTATUS
 sixel_encoder_resolve_requested_binning(
     sixel_encoder_t const *encoder,
     sixel_palette_binning_policy_t *policy,
     sixel_palette_policy_origin_t *origin)
 {
-    SIXELSTATUS status;
-    sixel_palette_binning_policy_t legacy_policy;
-    sixel_palette_policy_origin_t legacy_origin;
-    int legacy_active;
-
-    status = SIXEL_FALSE;
-    legacy_policy = SIXEL_PALETTE_BINNING_AUTO;
-    legacy_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
-    legacy_active = 0;
     if (encoder == NULL || policy == NULL || origin == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    status = sixel_encoder_validate_binning_values(
-        encoder->quantize_model,
-        encoder->palette_binning_policy,
-        encoder->palette_binning_override,
-        (sixel_palette_policy_origin_t)
-            encoder->palette_binning_origin,
-        encoder->quantize_model_kmeans_binning_mode,
-        encoder->quantize_model_kmeans_binning_override,
-        (sixel_palette_policy_origin_t)
-            encoder->quantize_model_kmeans_binning_origin);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
-            encoder->quantize_model_kmeans_binning_override != 0) {
-        legacy_policy = sixel_palette_binning_from_legacy_kmeans(
-            encoder->quantize_model_kmeans_binning_mode);
-        legacy_origin = (sixel_palette_policy_origin_t)
-            encoder->quantize_model_kmeans_binning_origin;
-        legacy_active = 1;
-    }
-    if (encoder->palette_binning_override != 0 &&
-            encoder->palette_binning_origin ==
-                SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT) {
-        *policy = (sixel_palette_binning_policy_t)
-            encoder->palette_binning_policy;
-        *origin = SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT;
-    } else if (legacy_active != 0 &&
-            legacy_origin == SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS) {
-        *policy = legacy_policy;
-        *origin = SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
-    } else if (encoder->palette_binning_override != 0) {
+    if (encoder->palette_binning_override != 0) {
         *policy = (sixel_palette_binning_policy_t)
             encoder->palette_binning_policy;
         *origin = (sixel_palette_policy_origin_t)
             encoder->palette_binning_origin;
-    } else if (legacy_active != 0) {
-        *policy = legacy_policy;
-        *origin = legacy_origin;
     } else {
         *policy = SIXEL_PALETTE_BINNING_AUTO;
         *origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
@@ -678,10 +559,6 @@ sixel_palette_policy_origin_name(sixel_palette_policy_origin_t origin)
         return "environment";
     case SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT:
         return "explicit";
-    case SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT:
-        return "legacy-environment";
-    case SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS:
-        return "legacy-alias";
     case SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT:
     default:
         return "default";
@@ -6688,10 +6565,6 @@ sixel_encoder_select_palette_quantizer(
     if (binning_policy != SIXEL_PALETTE_BINNING_AUTO) {
         binning_input.requested = binning_policy;
         binning_input.source_point_count = 1u;
-        binning_input.requested_colors = encoder->reqcolors > 0
-            ? (size_t)encoder->reqcolors : 1u;
-        binning_input.auto_ratio =
-            encoder->quantize_model_kmeans_autoratio;
         if (binning_policy == SIXEL_PALETTE_BINNING_NONE) {
             binning_input.backend = SIXEL_PALETTE_BINNING_BACKEND_DIRECT;
         } else if (binning_policy == SIXEL_PALETTE_BINNING_EXACT) {
@@ -6769,9 +6642,6 @@ sixel_encoder_resolve_direct_binning(
     input.kernel = SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR;
     input.backend = SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE;
     input.source_point_count = source_point_count;
-    input.requested_colors = encoder->reqcolors > 0
-        ? (size_t)encoder->reqcolors : 1u;
-    input.auto_ratio = encoder->quantize_model_kmeans_autoratio;
     status = sixel_palette_binning_select(&input,
                                           &capabilities,
                                           &selection);
@@ -7170,10 +7040,6 @@ sixel_encoder_prepare_palette(
     sixel_set_kmeans_threshold_override(
         encoder->quantize_model_kmeans_threshold_override,
         encoder->quantize_model_kmeans_threshold);
-    sixel_set_kmeans_binning_mode_override(
-        binning_origin != SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT,
-        sixel_palette_binning_to_legacy_kmeans(requested_binning));
-    sixel_set_kmeans_binning_origin_override(1, binning_origin);
     sixel_set_kmeans_binbits_override(
         encoder->quantize_model_kmeans_binbits_override,
         encoder->quantize_model_kmeans_binbits);
@@ -7185,9 +7051,6 @@ sixel_encoder_prepare_palette(
         encoder->quantize_model_kmeans_softdist_override,
         (sixel_kmeans_softdist_mode)
             encoder->quantize_model_kmeans_softdist_mode);
-    sixel_set_kmeans_autoratio_override(
-        encoder->quantize_model_kmeans_autoratio_override,
-        encoder->quantize_model_kmeans_autoratio);
     sixel_set_kmeans_feedback_mode_override(
         encoder->quantize_model_kmeans_feedback_override,
         (sixel_kmeans_feedback_mode)
@@ -7412,12 +7275,6 @@ sixel_encoder_prepare_palette(
         &build_attempt);
     sixel_set_kmeans_init_type_override(0, SIXEL_PALETTE_KMEANS_INIT_AUTO);
     sixel_set_kmeans_threshold_override(0, 0.125);
-    sixel_set_kmeans_binning_mode_override(
-        0,
-        SIXEL_PALETTE_KMEANS_BINNING_AUTO);
-    sixel_set_kmeans_binning_origin_override(
-        0,
-        SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS);
     sixel_set_kmeans_binbits_override(0, 6u);
     sixel_set_kmeans_mapping_mode_override(
         0,
@@ -7425,7 +7282,6 @@ sixel_encoder_prepare_palette(
     sixel_set_kmeans_softdist_mode_override(
         0,
         SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR);
-    sixel_set_kmeans_autoratio_override(0, 32u);
     sixel_set_kmeans_seed_override(0, 0u);
     sixel_set_kmeans_restarts_override(0, 1u);
     sixel_set_kmeans_iter_override(0, 0u);
@@ -8857,11 +8713,6 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmeans_init_type = SIXEL_PALETTE_KMEANS_INIT_AUTO;
     (*ppencoder)->quantize_model_kmeans_threshold_override = 0;
     (*ppencoder)->quantize_model_kmeans_threshold = 0.125;
-    (*ppencoder)->quantize_model_kmeans_binning_override = 0;
-    (*ppencoder)->quantize_model_kmeans_binning_mode
-        = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
-    (*ppencoder)->quantize_model_kmeans_binning_origin
-        = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
     (*ppencoder)->quantize_model_kmeans_binbits_override = 0;
     (*ppencoder)->quantize_model_kmeans_binbits = 6u;
     (*ppencoder)->quantize_model_kmeans_mapping_override = 0;
@@ -8870,8 +8721,6 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmeans_softdist_override = 0;
     (*ppencoder)->quantize_model_kmeans_softdist_mode
         = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
-    (*ppencoder)->quantize_model_kmeans_autoratio_override = 0;
-    (*ppencoder)->quantize_model_kmeans_autoratio = 32u;
     (*ppencoder)->quantize_model_kmeans_feedback_override = 0;
     (*ppencoder)->quantize_model_kmeans_feedback_mode
         = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
@@ -9200,11 +9049,6 @@ sixel_encoder_new(
         SIXEL_OPTION_SCOPE_ENCODER,
         *ppencoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
-    if ((*ppencoder)->quantize_model_kmeans_binning_override != 0) {
-        (*ppencoder)->quantize_model_kmeans_binning_origin =
-            SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT;
-    }
-
     policy_schema = sixel_option_registry_get(
         SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING);
     sixel_option_apply_suboption_environment(
@@ -9953,70 +9797,15 @@ sixel_encoder_apply_diffusion_resolution(
 }
 
 static SIXELSTATUS
-sixel_encoder_validate_quantize_binning_resolution(
-    sixel_encoder_t const *encoder,
-    sixel_option_argument_resolution_t const *resolution)
-{
-    int legacy_mode;
-    int legacy_override;
-    sixel_palette_policy_origin_t legacy_origin;
-    size_t index;
-
-    legacy_mode = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
-    legacy_override = 0;
-    legacy_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
-    index = 0u;
-    if (encoder == NULL || resolution == NULL ||
-            resolution->base_def == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (resolution->resolved_base_value == SIXEL_QUANTIZE_MODEL_KMEANS) {
-        legacy_override = sixel_option_resolve_registered_int_binding(
-            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
-            "kmeans",
-            SIXEL_SUBOPTION_BINDING_ID_2(
-                quantize_model_kmeans_binning_mode,
-                quantize_model_kmeans_binning_override),
-            &legacy_mode);
-        if (legacy_override != 0) {
-            legacy_origin =
-                SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT;
-        }
-        while (index < resolution->assignment_count) {
-            if (resolution->assignments[index].key_def != NULL &&
-                    strcmp(resolution->assignments[index].key_def->name,
-                           "binning") == 0) {
-                legacy_mode = resolution->assignments[index].value.int_value;
-                legacy_override = 1;
-                legacy_origin =
-                    SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
-            }
-            ++index;
-        }
-    }
-    return sixel_encoder_validate_binning_values(
-        resolution->resolved_base_value,
-        encoder->palette_binning_policy,
-        encoder->palette_binning_override,
-        (sixel_palette_policy_origin_t)
-            encoder->palette_binning_origin,
-        legacy_mode,
-        legacy_override,
-        legacy_origin);
-}
-
-static SIXELSTATUS
 sixel_encoder_apply_quantize_resolution(
     sixel_encoder_t *encoder,
     sixel_option_argument_resolution_t const *resolution)
 {
     SIXELSTATUS status;
     sixel_option_argument_schema_t const *schema;
-    size_t index;
 
     status = SIXEL_OK;
     schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL);
-    index = 0u;
     if (encoder == NULL || resolution == NULL || schema == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -10036,20 +9825,6 @@ sixel_encoder_apply_quantize_resolution(
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    encoder->quantize_model_kmeans_binning_origin =
-        encoder->quantize_model_kmeans_binning_override != 0
-        ? SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT
-        : SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
-    while (index < resolution->assignment_count) {
-        if (resolution->assignments[index].key_def != NULL &&
-                strcmp(resolution->assignments[index].key_def->name,
-                       "binning") == 0) {
-            encoder->quantize_model_kmeans_binning_origin =
-                SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
-        }
-        ++index;
-    }
-
     sixel_encoder_apply_heckbert_profile_defaults(encoder);
     return SIXEL_OK;
 }
@@ -11628,12 +11403,6 @@ sixel_encoder_setopt(
         }
         q_resolution =
             &setopt_context.q_list_resolution.items[0].resolution;
-        status = sixel_encoder_validate_quantize_binning_resolution(
-            encoder,
-            q_resolution);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
         status = sixel_encoder_apply_quantize_resolution(
             encoder,
             q_resolution);
@@ -11662,18 +11431,6 @@ sixel_encoder_setopt(
             &scalar_value,
             match_detail,
             sizeof(match_detail));
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        status = sixel_encoder_validate_binning_values(
-            encoder->quantize_model,
-            scalar_value.int_value,
-            1,
-            SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT,
-            encoder->quantize_model_kmeans_binning_mode,
-            encoder->quantize_model_kmeans_binning_override,
-            (sixel_palette_policy_origin_t)
-                encoder->quantize_model_kmeans_binning_origin);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

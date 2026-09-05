@@ -46,13 +46,6 @@ typedef enum sixel_kmeans_init_type {
     SIXEL_PALETTE_KMEANS_INIT_PCA,
 } sixel_kmeans_init_type;
 
-typedef enum sixel_kmeans_binning_mode {
-    SIXEL_PALETTE_KMEANS_BINNING_AUTO = 0,
-    SIXEL_PALETTE_KMEANS_BINNING_NONE,
-    SIXEL_PALETTE_KMEANS_BINNING_HARD,
-    SIXEL_PALETTE_KMEANS_BINNING_SOFT,
-} sixel_kmeans_binning_mode;
-
 typedef enum sixel_kmeans_mapping_mode {
     SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM = 0,
     SIXEL_PALETTE_KMEANS_MAPPING_SRGB,
@@ -115,21 +108,6 @@ sixel_set_kmeans_init_type_override(int enabled,
                                     sixel_kmeans_init_type init_type);
 
 SIXEL_INTERNAL_API void
-sixel_set_kmeans_binning_mode_override(int enabled,
-                                       sixel_kmeans_binning_mode mode);
-
-SIXEL_INTERNAL_API sixel_kmeans_binning_mode
-sixel_get_kmeans_binning_mode(void);
-
-SIXEL_INTERNAL_API void
-sixel_set_kmeans_binning_origin_override(
-    int enabled,
-    sixel_palette_policy_origin_t origin);
-
-SIXEL_INTERNAL_API sixel_palette_policy_origin_t
-sixel_get_kmeans_binning_origin(void);
-
-SIXEL_INTERNAL_API void
 sixel_set_kmeans_binbits_override(int enabled,
                                   unsigned int bits);
 
@@ -149,13 +127,6 @@ sixel_set_kmeans_softdist_mode_override(int enabled,
 
 SIXEL_INTERNAL_API sixel_kmeans_softdist_mode
 sixel_get_kmeans_softdist_mode(void);
-
-SIXEL_INTERNAL_API void
-sixel_set_kmeans_autoratio_override(int enabled,
-                                    unsigned int ratio);
-
-SIXEL_INTERNAL_API unsigned int
-sixel_get_kmeans_autoratio(void);
 
 SIXEL_INTERNAL_API void
 sixel_set_kmeans_seed_override(int enabled,

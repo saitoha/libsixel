@@ -23,7 +23,7 @@ CMS_REFERENCE_LOADER_ENVIRONMENT = {
 SAMPLE_TARGET = 16384
 QUANTIZE_OPTION = (
     "kmeans:inittype=none:threshold=0.125:binbits=6:mapping=uniform:"
-    "softdist=trilinear:autoratio=32:feedback=0:prune=hamerly:seed=1:"
+    "softdist=trilinear:feedback=0:prune=hamerly:seed=1:"
     "restarts=1:iter=20:miniter=0:polish_iter=0:feedback_slots=1:"
     f"feedback_interval=1:sample_target={SAMPLE_TARGET}"
 )

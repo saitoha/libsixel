@@ -36,7 +36,7 @@ static int
 sixel_palette_policy_origin_is_valid(sixel_palette_policy_origin_t origin)
 {
     return origin >= SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT
-        && origin <= SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
+        && origin <= SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT;
 }
 
 static int

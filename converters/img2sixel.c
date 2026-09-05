@@ -244,11 +244,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "              pca  -> choose seeds from PCA axis\n"
         "          :threshold=VALUE (:TVALUE) stop refinement when delta "
         "reaches VALUE (0.0-0.5).\n"
-        "          :binning=MODE (:BMODE) deprecated --palette-binning alias:\n"
-        "              auto -> choose hard binning when supported (default)\n"
-        "              none -> disable histogram pre-binning\n"
-        "              hard -> hard-assignment histogram bins\n"
-        "              soft -> trilinear soft histogram bins\n"
         "          :binbits=BITS (:NBITS) histogram bits per channel "
         "(4-8, default 6).\n"
         "          :mapping=SPACE (:MSPACE) histogram mapping space:\n"
@@ -256,8 +251,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "              srgb    -> use sRGB gamma-aware mapping\n"
         "          :softdist=KIND (:DKIND) soft binning kernel:\n"
         "              trilinear -> trilinear kernel\n"
-        "          :autoratio=RATIO (:RRATIO) accepted for compatibility; "
-        "the current hard auto profile ignores it.\n"
         "          :feedback=0|1 (:F0 or :F1) residual histogram feedback;\n"
         "              0 disables feedback (default), 1 enables it.\n"
         "          :prune=POLICY k-means pruning policy:\n"
@@ -279,8 +272,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      compact suboption names (uppercase letter + value):\n"
         "        all models: sample_target=C\n"
         "        heckbert: profile=P\n"
-        "        kmeans: inittype=I, threshold=T, binning=B, binbits=N,\n"
-        "          mapping=M, softdist=D, autoratio=R, feedback=F,\n"
+        "        kmeans: inittype=I, threshold=T, binbits=N, mapping=M,\n"
+        "          softdist=D, feedback=F,\n"
         "          prune=P, seed=S, restarts=E, iter=A, iter_max=X,\n"
         "          miniter=U, polish_iter=H, feedback_slots=K,\n"
         "          feedback_interval=J\n"
@@ -1770,12 +1763,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "choose k-means seed selection: auto, pca, or none (default auto)."
     },
     {
-        "SIXEL_PALETTE_KMEANS_BINNING",
-        "deprecated alias for --palette-binning while -Q kmeans is active.\n"
-        "Accepts auto, none, hard, or soft. Conflicting explicit values are\n"
-        "rejected."
-    },
-    {
         "SIXEL_PALETTE_KMEANS_BINBITS",
         "k-means histogram bits per channel (4-8, default 6)."
     },
@@ -1787,11 +1774,6 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_KMEANS_SOFTDIST",
         "k-means soft-binning kernel. Currently supports trilinear."
-    },
-    {
-        "SIXEL_PALETTE_KMEANS_AUTORATIO",
-        "accepted compatibility setting (1-1048576, default 32); the\n"
-        "current hard auto-binning profile ignores it."
     },
     {
         "SIXEL_PALETTE_KMEANS_FEEDBACK",

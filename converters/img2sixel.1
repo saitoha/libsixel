@@ -209,18 +209,11 @@ Supported k-means suboptions:
 .br
 \fBthreshold\fP (short form \fBTVALUE\fP): floating value in 0.0-0.5.
 .br
-\fBbinning\fP (short form \fBBMODE\fP): deprecated alias for
-\fB\-\-palette\-binning\fP while k-means is active; accepts \fBauto\fP,
-\fBnone\fP, \fBhard\fP, or \fBsoft\fP.
-.br
 \fBbinbits\fP (short form \fBNBITS\fP): integer value in 4-8.
 .br
 \fBmapping\fP (short form \fBMSPACE\fP): \fBuniform\fP or \fBsrgb\fP.
 .br
 \fBsoftdist\fP (short form \fBDKIND\fP): \fBtrilinear\fP.
-.br
-\fBautoratio\fP (short form \fBRRATIO\fP): compatibility integer in
-1-1048576; the current hard auto-binning profile ignores it.
 .br
 \fBfeedback\fP (short form \fBF0\fP or \fBF1\fP): 0 or 1.
 .br
@@ -290,8 +283,8 @@ all models: sample_target=C;
 .br
 heckbert: profile=P;
 .br
-kmeans: inittype=I, threshold=T, binning=B, binbits=N, mapping=M,
-softdist=D, autoratio=R, feedback=F, prune=P, seed=S, restarts=E,
+kmeans: inittype=I, threshold=T, binbits=N, mapping=M, softdist=D,
+feedback=F, prune=P, seed=S, restarts=E,
 iter=A, iter_max=X, miniter=U, polish_iter=H, feedback_slots=K,
 feedback_interval=J;
 .br
@@ -1862,11 +1855,6 @@ delta threshold for k-means refinement (0.0-0.5, default 0.125).
 .br
 choose k-means seed selection: auto, pca, or none (default auto).
 .TP 5
-.B SIXEL_PALETTE_KMEANS_BINNING
-.br
-deprecated alias for \fB\-\-palette\-binning\fP while k-means is active.
-Accepts auto, none, hard, or soft. Conflicting explicit values are rejected.
-.TP 5
 .B SIXEL_PALETTE_KMEANS_BINBITS
 .br
 k-means histogram bits per channel (4-8, default 6).
@@ -1878,11 +1866,6 @@ k-means histogram mapping space: uniform or srgb (default uniform).
 .B SIXEL_PALETTE_KMEANS_SOFTDIST
 .br
 k-means soft-binning kernel. Currently supports trilinear.
-.TP 5
-.B SIXEL_PALETTE_KMEANS_AUTORATIO
-.br
-accepted compatibility setting (1-1048576, default 32); the current hard
-auto-binning profile ignores it.
 .TP 5
 .B SIXEL_PALETTE_KMEANS_FEEDBACK
 .br
