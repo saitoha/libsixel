@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "description": "Palette sampling and binning content and scale suite",
+  "generator": "tools/generate_palette_pipeline_suite_fixtures.py",
+  "fixtures": [
+    {
+      "id": "natural-snake",
+      "label": "natural photograph",
+      "class": "natural",
+      "path": "images/snake.png",
+      "width": 600,
+      "height": 450,
+      "roles": ["content"]
+    },
+    {
+      "id": "flat-artwork",
+      "label": "flat artwork",
+      "class": "flat-artwork",
+      "path": "images/vimperator3.png",
+      "width": 582,
+      "height": 746,
+      "roles": ["content"]
+    },
+    {
+      "id": "smooth-gradient-small",
+      "label": "smooth gradient, small",
+      "class": "gradient",
+      "path": "images/measurements/palette-pipeline/smooth-gradient-128x96.png",
+      "width": 128,
+      "height": 96,
+      "roles": ["scale"]
+    },
+    {
+      "id": "smooth-gradient-medium",
+      "label": "smooth gradient",
+      "class": "gradient",
+      "path": "images/measurements/palette-pipeline/smooth-gradient-600x450.png",
+      "width": 600,
+      "height": 450,
+      "roles": ["content", "scale"]
+    },
+    {
+      "id": "smooth-gradient-large",
+      "label": "smooth gradient, large",
+      "class": "gradient",
+      "path": "images/measurements/palette-pipeline/smooth-gradient-900x675.png",
+      "width": 900,
+      "height": 675,
+      "roles": ["scale"]
+    },
+    {
+      "id": "rare-colors",
+      "label": "sparse rare colors",
+      "class": "rare-color",
+      "path": "images/measurements/palette-pipeline/rare-colors-600x450.png",
+      "width": 600,
+      "height": 450,
+      "roles": ["content"]
+    },
+    {
+      "id": "a98-gamut",
+      "label": "Adobe RGB gamut ramps",
+      "class": "broad-gamut",
+      "path": "images/measurements/palette-pipeline/a98-gamut-600x450.png",
+      "width": 600,
+      "height": 450,
+      "roles": ["content"]
+    }
+  ]
+}

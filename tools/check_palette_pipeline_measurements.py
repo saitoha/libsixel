@@ -14,6 +14,12 @@ from typing import Dict, List, Set, Tuple
 
 
 COLORS = (8, 16, 32, 64, 128, 256)
+DEFAULT_LOADER_ORDER = "libpng!"
+CMS_LOADER_ORDER = "libpng:cms_engine=builtin!"
+CMS_REFERENCE_LOADER_ORDER = "libpng,builtin!"
+CMS_REFERENCE_LOADER_ENVIRONMENT = {
+    "SIXEL_LOADER_LIBPNG_CMS_ENGINE": "builtin",
+}
 SAMPLE_TARGET = 16384
 QUANTIZE_OPTION = (
     "kmeans:inittype=none:threshold=0.125:binbits=6:mapping=uniform:"
@@ -151,7 +157,6 @@ def read_metadata(path: Path, expected_mode: str) -> Dict[str, object]:
         "threads": 1,
         "precision": "8bit",
         "quality": "full",
-        "loader": "libpng!",
         "quantize_option": QUANTIZE_OPTION,
         "sample_target": SAMPLE_TARGET,
         "clustering_colorspace": "oklab",
@@ -185,6 +190,39 @@ def read_metadata(path: Path, expected_mode: str) -> Dict[str, object]:
     for name, expected in expected_protocol.items():
         if protocol.get(name) != expected:
             fail(f"measurement metadata has unexpected {name}")
+    loader_order = protocol.get("loader")
+    if loader_order not in (DEFAULT_LOADER_ORDER, CMS_LOADER_ORDER):
+        fail("measurement metadata has unexpected loader order")
+    if "quality_reference_loader" in protocol:
+        if protocol.get("lsqa_environment_removed") is not True:
+            fail("measurement protocol retains inherited LSQA environment")
+        reference_loader = protocol.get("quality_reference_loader")
+        reference_environment = protocol.get(
+            "quality_reference_loader_environment"
+        )
+        expected_reference_loader = (
+            "automatic"
+            if loader_order == DEFAULT_LOADER_ORDER
+            else CMS_REFERENCE_LOADER_ORDER
+        )
+        expected_reference_environment = (
+            {}
+            if loader_order == DEFAULT_LOADER_ORDER
+            else CMS_REFERENCE_LOADER_ENVIRONMENT
+        )
+        if reference_loader != expected_reference_loader:
+            fail("measurement metadata has unexpected reference loader")
+        if reference_environment != expected_reference_environment:
+            fail("measurement metadata has unexpected reference loader environment")
+    elif loader_order != DEFAULT_LOADER_ORDER:
+        fail("CMS measurement metadata lacks reference loader controls")
+    elif (
+        "lsqa_environment_removed" in protocol
+        and protocol["lsqa_environment_removed"] is not True
+    ):
+        # Older committed measurements predate explicit LSQA environment
+        # isolation.  Only that legacy default-loader form may omit the flag.
+        fail("measurement protocol retains inherited LSQA environment")
     if tuple(protocol.get("colors", [])) != COLORS:
         fail("measurement metadata has unexpected palette sizes")
     if protocol.get("configurations") != expected_config_records():
@@ -297,7 +335,8 @@ def config_map() -> Dict[str, Tuple[str, str]]:
 def validate_command(row: Dict[str, str],
                      path: Path,
                      timeline: bool = False,
-                     discard_output: bool = False) -> None:
+                     discard_output: bool = False,
+                     loader_order: str = DEFAULT_LOADER_ORDER) -> None:
     """Check one recorded command and its row identity."""
     config = row.get("config", "")
     expected = config_map()
@@ -320,7 +359,7 @@ def validate_command(row: Dict[str, str],
         "--threads=1",
         "--precision=8bit",
         "--quality=full",
-        "--loaders=libpng!",
+        f"--loaders={loader_order}",
         f"--palette-sampling={sampling}",
         f"--palette-binning={binning}",
         f"--quantize-model={QUANTIZE_OPTION}",
@@ -345,6 +384,32 @@ def validate_command(row: Dict[str, str],
         fail(f"command is not canonical in {path}: {config}")
 
 
+def validate_assessment_command(row: Dict[str, str],
+                                path: Path,
+                                loader_order: str,
+                                required: bool) -> None:
+    """Check the recorded lsqa command, including reference CMS controls."""
+    command = row.get("assessment_command", "")
+    if not command and not required:
+        return
+    try:
+        tokens = shlex.split(command)
+    except ValueError as exc:
+        raise ValueError(f"invalid assessment command in {path}") from exc
+    expected_tokens = ["{lsqa}"]
+    if loader_order == CMS_LOADER_ORDER:
+        expected_tokens.extend(
+            (
+                f"--loaders={CMS_REFERENCE_LOADER_ORDER}",
+                "--env",
+                "SIXEL_LOADER_LIBPNG_CMS_ENGINE=builtin",
+            )
+        )
+    expected_tokens.extend(("{input}", "-"))
+    if tokens != expected_tokens:
+        fail(f"assessment command is not canonical in {path}")
+
+
 def expected_points() -> Set[Tuple[str, int]]:
     """Return the complete configuration-by-K point set."""
     return {
@@ -357,12 +422,13 @@ def expected_points() -> Set[Tuple[str, int]]:
 def validate_rows(path: Path,
                   revision: str,
                   input_path: str,
-                  platform_name: str) -> List[Dict[str, str]]:
+                  platform_name: str,
+                  loader_order: str) -> List[Dict[str, str]]:
     """Validate common row identity and completeness."""
     rows = read_csv(path)
     actual: Set[Tuple[str, int]] = set()
     for row in rows:
-        validate_command(row, path)
+        validate_command(row, path, loader_order=loader_order)
         try:
             key = (row.get("config", ""), int(row.get("colors", "")))
         except ValueError as exc:
@@ -389,10 +455,17 @@ def validate_rows(path: Path,
 def validate_quality(path: Path,
                      revision: str,
                      input_path: str,
-                     platform_name: str) -> None:
+                     platform_name: str,
+                     loader_order: str,
+                     require_assessment_command: bool) -> None:
     """Validate all quality values."""
-    rows = validate_rows(path, revision, input_path, platform_name)
+    rows = validate_rows(
+        path, revision, input_path, platform_name, loader_order
+    )
     for row in rows:
+        validate_assessment_command(
+            row, path, loader_order, require_assessment_command
+        )
         key = (row["config"], row["colors"])
         try:
             ms_ssim = float(row.get("MS-SSIM", ""))
@@ -408,9 +481,12 @@ def validate_quality(path: Path,
 def validate_size(path: Path,
                   revision: str,
                   input_path: str,
-                  platform_name: str) -> None:
+                  platform_name: str,
+                  loader_order: str) -> None:
     """Validate raw stream sizes."""
-    rows = validate_rows(path, revision, input_path, platform_name)
+    rows = validate_rows(
+        path, revision, input_path, platform_name, loader_order
+    )
     for row in rows:
         key = (row["config"], row["colors"])
         try:
@@ -426,7 +502,8 @@ def validate_speed(path: Path,
                    input_path: str,
                    platform_name: str,
                    warmups: int,
-                   runs: int) -> None:
+                   runs: int,
+                   loader_order: str) -> None:
     """Validate every raw timing row and its exact executed schedule."""
     rows = read_csv(path)
     names = [config for config, _sampling, _binning in CONFIGS]
@@ -463,7 +540,13 @@ def validate_speed(path: Path,
                 )
     for row in rows:
         domain = row.get("domain", "")
-        validate_command(row, path, domain == "palette-build", True)
+        validate_command(
+            row,
+            path,
+            domain == "palette-build",
+            True,
+            loader_order,
+        )
         key = (row.get("config", ""), row.get("colors", ""))
         try:
             identity = (
@@ -555,17 +638,22 @@ def main() -> int:
     platform_name = str(host["platform"])
     warmups = int(protocol["speed_warmups"])
     runs = int(protocol["speed_runs"])
+    loader_order = str(protocol["loader"])
+    require_assessment_command = "quality_reference_loader" in protocol
     validate_quality(
         directory / "palette-pipeline-quality.csv",
         revision,
         input_path,
         platform_name,
+        loader_order,
+        require_assessment_command,
     )
     validate_size(
         directory / "palette-pipeline-size.csv",
         revision,
         input_path,
         platform_name,
+        loader_order,
     )
     validate_speed(
         directory / "palette-pipeline-speed.csv",
@@ -574,6 +662,7 @@ def main() -> int:
         platform_name,
         warmups,
         runs,
+        loader_order,
     )
     validate_plots(directory)
     return 0

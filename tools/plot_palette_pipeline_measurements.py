@@ -34,13 +34,19 @@ from plot_lookup_policy_speed import (
 )
 from plot_quantize_model_measurements import (
     resolve_lsqa,
-    run_quality,
+    run_quality_with_assessment_command,
     run_timeline,
     write_csv,
 )
 
 
 DEFAULT_COLORS = (8, 16, 32, 64, 128, 256)
+DEFAULT_LOADER_ORDER = "libpng!"
+CMS_LOADER_ORDER = "libpng:cms_engine=builtin!"
+CMS_REFERENCE_LOADER_ORDER = "libpng,builtin!"
+CMS_REFERENCE_LOADER_ENVIRONMENT = {
+    "SIXEL_LOADER_LIBPNG_CMS_ENGINE": "builtin",
+}
 SAMPLE_TARGET = 16384
 QUANTIZE_OPTION = (
     "kmeans:inittype=none:threshold=0.125:binbits=6:mapping=uniform:"
@@ -114,11 +120,23 @@ def measurement_records() -> List[Dict[str, str]]:
     ]
 
 
+def quality_reference_options(loader_order: str) -> Tuple[str, ...]:
+    """Return lsqa options that mirror the encoder's controlled loading."""
+    if loader_order == DEFAULT_LOADER_ORDER:
+        return ()
+    return (
+        f"--loaders={CMS_REFERENCE_LOADER_ORDER}",
+        "--env",
+        "SIXEL_LOADER_LIBPNG_CMS_ENGINE=builtin",
+    )
+
+
 def make_command(img2sixel: str,
                  input_image: Path,
                  colors: int,
                  record: Dict[str, str],
                  discard_output: bool,
+                 loader_order: str = DEFAULT_LOADER_ORDER,
                  timeline_path: Path | None = None) -> List[str]:
     """Build one command with every non-compared axis controlled."""
     command = [
@@ -126,7 +144,7 @@ def make_command(img2sixel: str,
         "--threads=1",
         "--precision=8bit",
         "--quality=full",
-        "--loaders=libpng!",
+        f"--loaders={loader_order}",
         f"--palette-sampling={record['sampling_policy']}",
         f"--palette-binning={record['binning_policy']}",
         f"--quantize-model={QUANTIZE_OPTION}",
@@ -165,6 +183,17 @@ def command_template(command: Sequence[str],
     return shlex.join([replacements.get(token, token) for token in command])
 
 
+def assessment_command_template(command: Sequence[str],
+                                lsqa: str,
+                                input_image: Path) -> str:
+    """Return a relocatable lsqa command exactly as it was executed."""
+    replacements = {
+        lsqa: "{lsqa}",
+        str(input_image): "{input}",
+    }
+    return shlex.join([replacements.get(token, token) for token in command])
+
+
 def williams_orders(names: Sequence[str]) -> List[List[str]]:
     """Return a Williams design balanced for first-order carryover."""
     count = len(names)
@@ -190,6 +219,7 @@ def measure_quality_and_size(
         input_label: str,
         revision: str,
         command_env: Dict[str, str],
+        loader_order: str = DEFAULT_LOADER_ORDER,
 ) -> Tuple[List[Dict[str, object]], List[Dict[str, object]]]:
     """Measure one decoded stream for every policy and palette size."""
     quality_rows: List[Dict[str, object]] = []
@@ -203,12 +233,16 @@ def measure_quality_and_size(
                 colors,
                 record,
                 False,
+                loader_order,
             )
-            metrics, encoded_bytes = run_quality(
-                command,
-                lsqa,
-                input_image,
-                command_env,
+            metrics, encoded_bytes, assessment_command = (
+                run_quality_with_assessment_command(
+                    command,
+                    lsqa,
+                    input_image,
+                    command_env,
+                    quality_reference_options(loader_order),
+                )
             )
             common: Dict[str, object] = {
                 "revision": revision,
@@ -228,6 +262,11 @@ def measure_quality_and_size(
                     **common,
                     "MS-SSIM": metrics["MS-SSIM"],
                     "Delta E00_mean": metrics["Delta E00_mean"],
+                    "assessment_command": assessment_command_template(
+                        assessment_command,
+                        lsqa,
+                        input_image,
+                    ),
                 }
             )
             size_rows.append(
@@ -245,7 +284,9 @@ def run_speed_command(domain: str,
                       colors: int,
                       record: Dict[str, str],
                       command_env: Dict[str, str],
-                      timeline_path: Path) -> Tuple[float, str]:
+                      timeline_path: Path,
+                      loader_order: str = DEFAULT_LOADER_ORDER) \
+        -> Tuple[float, str]:
     """Run one timing process and return its raw duration and command."""
     if domain == "end-to-end":
         command = make_command(
@@ -254,6 +295,7 @@ def run_speed_command(domain: str,
             colors,
             record,
             True,
+            loader_order,
         )
         return (
             run_once(command, command_env),
@@ -265,6 +307,7 @@ def run_speed_command(domain: str,
         colors,
         record,
         True,
+        loader_order,
         timeline_path,
     )
     return (
@@ -284,7 +327,9 @@ def measure_speed(img2sixel: str,
                   revision: str,
                   warmups: int,
                   runs: int,
-                  command_env: Dict[str, str]) -> List[Dict[str, object]]:
+                  command_env: Dict[str, str],
+                  loader_order: str = DEFAULT_LOADER_ORDER) \
+        -> List[Dict[str, object]]:
     """Record every raw timing observation in its executed order."""
     rows: List[Dict[str, object]] = []
     records = measurement_records()
@@ -313,6 +358,7 @@ def measure_speed(img2sixel: str,
                         by_name[washout_name],
                         command_env,
                         timeline_path,
+                        loader_order,
                     )
                     rows.append(
                         {
@@ -343,6 +389,7 @@ def measure_speed(img2sixel: str,
                             by_name[name],
                             command_env,
                             timeline_path,
+                            loader_order,
                         )
                         rows.append(
                             {
@@ -760,6 +807,7 @@ def write_metadata(path: Path,
                    source_diff_sha256: str,
                    measurement_mode: str,
                    clean_sixel_environment: bool,
+                   loader_order: str,
                    measured_artifacts: Dict[str, object]) -> None:
     """Write provenance and the controlled comparison protocol."""
     build_record = read_build_configuration(build_dir)
@@ -803,7 +851,17 @@ def write_metadata(path: Path,
             "threads": 1,
             "precision": "8bit",
             "quality": "full",
-            "loader": "libpng!",
+            "loader": loader_order,
+            "quality_reference_loader": (
+                "automatic"
+                if loader_order == DEFAULT_LOADER_ORDER
+                else CMS_REFERENCE_LOADER_ORDER
+            ),
+            "quality_reference_loader_environment": (
+                {}
+                if loader_order == DEFAULT_LOADER_ORDER
+                else CMS_REFERENCE_LOADER_ENVIRONMENT
+            ),
             "quantize_option": QUANTIZE_OPTION,
             "sample_target": SAMPLE_TARGET,
             "clustering_colorspace": "oklab",
@@ -828,6 +886,7 @@ def write_metadata(path: Path,
                 ),
             },
             "sixel_environment_removed": clean_sixel_environment,
+            "lsqa_environment_removed": True,
             "provenance_rechecked_after_measurement": True,
             "libsixel_linkage_snapshotted": True,
             "size_measurement": "quality-pass SIXEL stdout byte length",
@@ -869,6 +928,11 @@ def parse_args() -> argparse.Namespace:
         default="durable",
     )
     parser.add_argument("--clean-sixel-environment", action="store_true")
+    parser.add_argument(
+        "--loader-order",
+        choices=(DEFAULT_LOADER_ORDER, CMS_LOADER_ORDER),
+        default=DEFAULT_LOADER_ORDER,
+    )
     parser.add_argument("--warmups", type=int, default=2)
     parser.add_argument("--runs", type=int, default=10)
     parser.add_argument("--output-quality-csv", type=Path, required=True)
@@ -942,6 +1006,7 @@ def main() -> int:
         input_label,
         args.revision,
         command_env,
+        args.loader_order,
     )
     speed_rows = measure_speed(
         img2sixel,
@@ -951,6 +1016,7 @@ def main() -> int:
         args.warmups,
         args.runs,
         command_env,
+        args.loader_order,
     )
     if git_source_snapshot(source_root) != source_snapshot:
         raise RuntimeError("Source revision or tracked state changed during run.")
@@ -976,7 +1042,12 @@ def main() -> int:
     write_csv(
         args.output_quality_csv,
         quality_rows,
-        common_fields + ("MS-SSIM", "Delta E00_mean", "command"),
+        common_fields + (
+            "MS-SSIM",
+            "Delta E00_mean",
+            "command",
+            "assessment_command",
+        ),
     )
     write_csv(
         args.output_size_csv,
@@ -1020,6 +1091,7 @@ def main() -> int:
         source_snapshot["tracked_diff_sha256"],
         args.measurement_mode,
         args.clean_sixel_environment,
+        args.loader_order,
         measured_artifacts,
     )
     return 0

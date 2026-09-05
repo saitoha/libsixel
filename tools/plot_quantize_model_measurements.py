@@ -184,11 +184,14 @@ def command_template(command: Sequence[str],
     return text
 
 
-def run_quality(command: Sequence[str],
-                lsqa: str,
-                input_image: Path,
-                command_env: Dict[str, str]) -> Tuple[Dict[str, float], int]:
-    """Encode once and return perceptual metrics and the stream length."""
+def run_quality_with_assessment_command(
+        command: Sequence[str],
+        lsqa: str,
+        input_image: Path,
+        command_env: Dict[str, str],
+        lsqa_options: Sequence[str] = (),
+) -> Tuple[Dict[str, float], int, List[str]]:
+    """Encode once and return metrics, size, and the actual lsqa command."""
     encoded = subprocess.run(
         list(command),
         stdout=subprocess.PIPE,
@@ -204,10 +207,21 @@ def run_quality(command: Sequence[str],
         )
     with tempfile.TemporaryDirectory(prefix="lsqa-quantize-") as directory:
         lsqa_env = command_env.copy()
+        # Assessment settings are part of the measurement protocol.  Do not
+        # let a caller's interactive lsqa configuration silently change them.
+        for name in list(lsqa_env):
+            if name.startswith("LSQA_"):
+                del lsqa_env[name]
         lsqa_env["LSQA_PREFIX"] = str(Path(directory) / "quality")
         lsqa_env["LSQA_VERBOSE"] = "0"
+        assessment_command = [
+            lsqa,
+            *lsqa_options,
+            str(input_image),
+            "-",
+        ]
         assessed = subprocess.run(
-            [lsqa, str(input_image), "-"],
+            assessment_command,
             input=encoded.stdout,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -228,10 +242,30 @@ def run_quality(command: Sequence[str],
                 "Delta E00_mean": float(quality["Δ E00_mean"]),
             },
             len(encoded.stdout),
+            assessment_command,
         )
     except (AttributeError, KeyError, TypeError, UnicodeDecodeError,
             ValueError, json.JSONDecodeError) as exc:
         raise RuntimeError("lsqa output lacks valid quality metrics") from exc
+
+
+def run_quality(command: Sequence[str],
+                lsqa: str,
+                input_image: Path,
+                command_env: Dict[str, str],
+                lsqa_options: Sequence[str] = ()) \
+        -> Tuple[Dict[str, float], int]:
+    """Encode once and return perceptual metrics and the stream length."""
+    metrics, encoded_bytes, _assessment_command = (
+        run_quality_with_assessment_command(
+            command,
+            lsqa,
+            input_image,
+            command_env,
+            lsqa_options,
+        )
+    )
+    return metrics, encoded_bytes
 
 
 def measure_quality_and_size(

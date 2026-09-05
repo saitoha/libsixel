@@ -86,6 +86,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/palette-pipeline/measurements/palette-pipeline-size.png \
 	docs/functionality/palette-pipeline/measurements/palette-pipeline-speed.csv \
 	docs/functionality/palette-pipeline/measurements/palette-pipeline-speed.png \
+	images/measurements/palette-pipeline/a98-gamut-600x450.png \
+	images/measurements/palette-pipeline/rare-colors-600x450.png \
+	images/measurements/palette-pipeline/smooth-gradient-128x96.png \
+	images/measurements/palette-pipeline/smooth-gradient-600x450.png \
+	images/measurements/palette-pipeline/smooth-gradient-900x675.png \
 	docs/functionality/lookup-policy.md \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.png \
@@ -131,21 +136,26 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/fuzz-img2sixel-cli.sh \
 	tools/check_dither_policy_measurements.py \
 	tools/check_palette_pipeline_measurements.py \
+	tools/check_palette_pipeline_suite_measurements.py \
 	tools/check_quantize_model_measurements.py \
+	tools/generate_palette_pipeline_suite_fixtures.py \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \
 	tools/check_lookup_policy_measurements.py \
+	tools/palette_pipeline_suite.json \
 	tools/plot_lookup_policy_acceleration.py \
 	tools/plot_dither_policy_measurements.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
 	tools/plot_palette_pipeline_measurements.py \
+	tools/plot_palette_pipeline_suite_measurements.py \
 	tools/plot_quality_curve.py \
 	tools/plot_quantize_model_measurements.py \
 	tools/reproduce_lookup_policy_acceleration.sh \
 	tools/reproduce_dither_policy_measurements.sh \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \
+	tools/reproduce_palette_pipeline_suite_measurements.sh \
 	tools/reproduce_quantize_model_measurements.sh
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.
