@@ -247,6 +247,13 @@ The measured `palette/build` timeline span starts inside the quantizer and does
 not include conversion of the cloned clustering frame. End-to-end timing is
 therefore required to observe the whole cost of `-X`.
 
+A fixed hard-bin depth is not neutral across clustering spaces. Equal
+`binbits` values provide the same address precision on each transformed axis,
+but do not guarantee equal occupied-point counts or equal within-cell
+distortion. Consequently, `-X` can change both preprocessing loss and solver
+work even when every explicit sampling, binning, and quantizer option is held
+constant.
+
 ## Interactions with other controls
 
 ### Quantize model
@@ -287,7 +294,7 @@ The checked-in experiment compares all five spaces at
 ```text
 img2sixel --threads=1 --precision=float32 --quality=full \
   --loaders=builtin! --sampling-policy=full-frame \
-  --binning-policy=hard --quantize-model=kmeans:seed=1 \
+  --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
   -F none -a off -X COLORSPACE -Wgamma --diffusion=none \
   --gpu-policy=off --lookup-policy=none --palette-type=rgb \
   -p K images/snake.png
@@ -314,6 +321,59 @@ at those three points. At `K=256`, gamma has the best MS-SSIM and chroma result,
 while CIELAB has the lowest mean Delta E00. A perceptually motivated coordinate
 space is therefore not an automatic winner for every metric or palette size.
 
+### Hard-binning occupancy
+
+![Occupied hard-bin populations by clustering color space](clustering-color-spaces/measurements/clustering-colorspace-binning-occupancy.png)
+
+The input sample count is 270,000 for every point in this experiment. The
+effective solver population is not. The figure measures the number of occupied
+hard bins after transforming the same samples into each clustering space:
+
+| Space | 4 bits | 5 bits | 6 bits | 7 bits | 8 bits |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| gamma RGB | 612 | 2,967 | 13,201 | 43,827 | 62,586 |
+| linear RGB | 560 | 2,197 | 7,400 | 19,853 | 38,564 |
+| OKLab | 126 | 472 | 2,145 | 9,368 | 31,855 |
+| CIELAB | 135 | 538 | 2,519 | 11,187 | 37,601 |
+| DIN99d | 507 | 2,301 | 9,705 | 29,370 | 53,380 |
+
+At the fixed 6-bit setting, OKLab and CIELAB pass only 16.2% and 19.1% as
+many weighted points as gamma RGB to K-means. This explains much of their
+shorter `palette/build` spans: the solver is receiving less work. It also means
+that the main quality plot combines two effects, clustering geometry and
+space-dependent hard-binning loss. It must not be read as a pure comparison of
+the color-space objectives.
+
+### Quality sensitivity to hard binning
+
+![Quality difference between no binning and 6-bit hard binning](clustering-color-spaces/measurements/clustering-colorspace-binning-quality.png)
+
+This figure compares each fixed 6-bit hard-bin result with `none`, which sends
+one unit-weight point for each visible sampled pixel. Positive values favor
+`none`: an MS-SSIM increase, or a reduction in mean Delta E00 or mean Delta
+Chroma. At `K=256`, the comparison is:
+
+| Space | MS-SSIM, hard 6 | MS-SSIM, none | Delta E00, hard 6 | Delta E00, none |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| gamma RGB | 0.991358 | 0.992297 | 1.871517 | 1.758873 |
+| linear RGB | 0.988400 | 0.990912 | 2.128480 | 2.039005 |
+| OKLab | 0.988582 | 0.992108 | 1.945648 | 1.803799 |
+| CIELAB | 0.989611 | 0.990109 | 1.854451 | 1.818770 |
+| DIN99d | 0.987915 | 0.989767 | 1.916042 | 1.784310 |
+
+The suspected bias is therefore real on this fixture, especially for OKLab:
+removing hard binning raises its `K=256` MS-SSIM by 0.003526 and lowers mean
+Delta E00 by 0.141849. Gamma also improves, so occupancy alone is not a complete
+explanation. Results across 4 through 8 bits are not monotonic either. Coarser
+binning can regularize PCA seeding, and finite-restart K-means can settle in a
+different local minimum. More occupied cells therefore do not by themselves
+guarantee a better final palette.
+
+Use `none` when the purpose is to compare solver geometry without hard-grid
+loss. Use the production binning policy when the purpose is to compare the
+actual user-visible pipeline, but report occupied-point counts and binning
+distortion alongside quality and speed.
+
 ### Speed
 
 ![Clustering-color-space runtime curves](clustering-color-spaces/measurements/clustering-colorspace-speed.png)
@@ -328,10 +388,10 @@ OKLab and CIELAB have the shortest solver spans for most of this fixture even
 though their coordinate transforms are more complex than gamma RGB. This is
 not evidence that their transforms are cheaper: hard-bin occupancy, bound
 pruning, and convergence also change with the geometry. At `K=64`, the median
-solver spans are 23.866 ms for gamma, 10.276 ms for OKLab, and 10.523 ms for
-CIELAB; the corresponding end-to-end times are 91.25, 87.43, and 89.08 ms.
-At `K=256`, OKLab is fastest end to end at 185.47 ms, compared with 221.72 ms
-for gamma and 235.28 ms for DIN99d.
+solver spans are 26.209 ms for gamma, 11.328 ms for OKLab, and 11.556 ms for
+CIELAB; the corresponding end-to-end times are 104.38, 98.78, and 100.40 ms.
+At `K=256`, OKLab is fastest end to end at 205.92 ms, compared with 250.16 ms
+for gamma and 265.28 ms for DIN99d.
 
 ### Encoded size
 
@@ -347,6 +407,72 @@ RGB is again smallest at 237.3 KiB, followed by DIN99d at 240.6 KiB; gamma,
 CIELAB, and OKLab produce 249.3, 251.3, and 253.1 KiB respectively. These size
 rankings are properties of this image and encoder configuration, not general
 compression guarantees.
+
+## Adaptive hard-binning design
+
+A future adaptive hard-grid must resolve bin depth from the transformed sample
+distribution, not from the `-X` name. Keep three decisions distinct:
+
+1. binning policy, such as `hard`, `soft`, `exact`, or `none`;
+2. hard-grid depth; and
+3. dense or sparse physical storage.
+
+An explicit fixed depth remains authoritative. With an automatic depth, policy
+resolution can select `hard` before execution while grid-depth resolution stays
+pending until the binning filter has observed transformed samples. This is an
+incremental resolution state, not a second quantizer decision.
+
+Let `S_b` be the occupied-cell count at depth `b`, `x_i` a transformed sample,
+`w_i` its weight, and `mu_h` the weighted centroid of cell `h`. Measure the
+within-cell squared error
+
+```text
+E_b = sum_h sum_(i in h) w_i ||x_i - mu_h||^2
+```
+
+against total transformed variance
+
+```text
+T = sum_i w_i ||x_i - mu||^2.
+```
+
+The coarsest candidate depth should have to satisfy both an occupancy floor and
+a normalized distortion ceiling, for example:
+
+```text
+S_b >= min(S_8, rho * K)  and  E_b / T <= epsilon
+```
+
+`S_8` prevents a genuinely low-color image from being classified as deficient.
+`rho = 32` is useful as an exploratory starting point, but neither `rho` nor
+`epsilon` is a proposed default. The current occupancy data would move OKLab and
+CIELAB from 6 to 7 bits at `K=128` and `K=256` under the occupancy condition
+alone. The non-monotonic quality results show why the distortion condition and
+a broader validation set are also necessary.
+
+The histogram already retains cell weights and coordinate sums. Retaining a
+sum of squared norms, or equivalent per-axis second moments, would make `E_b`
+available without retaining each original pixel. A memory-conscious first
+implementation can start at 6 bits, coalesce nested keys to evaluate 5 and 4
+bits without rescanning, and rebuild at 7 or 8 bits only if the criteria fail.
+Higher-resolution rebuilding must replay a materialized transformed point set or
+an explicitly replayable stream. It must not silently allocate the maximum
+sparse table for every image.
+
+Resolution diagnostics should report source samples, occupied points,
+`E_b / T`, selected depth, peak bin storage, and the selection reason. These
+values belong to the same per-frame sample stream and clustering coordinates;
+animation retries must not reuse statistics from a previous frame. Exhausting
+the memory budget should select the best admissible hard grid and report the
+constraint. It should not silently change the binning policy to `none`.
+
+Before enabling this behavior by default, compare fixed 6-bit hard binning,
+adaptive hard binning, fixed 8-bit hard binning, `exact`, and `none`. The suite
+must cover natural images, smooth luminance and chroma gradients, rare saturated
+colors, broad-gamut inputs, all supported palette sizes, and multiple K-means
+seeds or restart schedules. Record quality, speed, encoded size, effective point
+count, and peak memory. Grid-depth controls and thresholds belong to the binning
+configuration rather than `-Q`; their final CLI spelling remains undecided.
 
 ## Interpretation and selection
 
@@ -374,8 +500,10 @@ without error diffusion.
 The exact tables are
 [`clustering-colorspace-quality.csv`](clustering-color-spaces/measurements/clustering-colorspace-quality.csv),
 [`clustering-colorspace-speed.csv`](clustering-color-spaces/measurements/clustering-colorspace-speed.csv),
+[`clustering-colorspace-size.csv`](clustering-color-spaces/measurements/clustering-colorspace-size.csv),
+[`clustering-colorspace-binning-occupancy.csv`](clustering-color-spaces/measurements/clustering-colorspace-binning-occupancy.csv),
 and
-[`clustering-colorspace-size.csv`](clustering-color-spaces/measurements/clustering-colorspace-size.csv).
+[`clustering-colorspace-binning-quality.csv`](clustering-color-spaces/measurements/clustering-colorspace-binning-quality.csv).
 The source revision, fixture and executable hashes, build flags, host, protocol,
 and preflight count are recorded in
 [`clustering-colorspace-run.json`](clustering-color-spaces/measurements/clustering-colorspace-run.json).
@@ -408,6 +536,10 @@ transforms and their lookup tables are in
 color-space identity in
 [`weighted-point-set.c`](../../src/weighted-point-set.c), and the generated
 palette is converted to the working space before palette application.
+With `LSIXEL_TRACE=stable`, the binning filter emits `LSXBSTAT1` records for
+the selected grid depth, source sample count, and effective point count. The
+measurement preflight uses this stable record rather than inferring occupancy
+from timing.
 
 Focused quality tests for all five `-X` values and the `-X`/`-W` cross-product
 are under

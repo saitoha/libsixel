@@ -8,12 +8,12 @@
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-05T17:15:10.678530+00:00",
+  "generated_at_utc": "2026-09-05T19:54:11.766866+00:00",
   "host": {
     "matplotlib": "3.11.1",
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
     "processor": "arm",
-    "python": "3.14.5"
+    "python": "3.13.13"
   },
   "input": {
     "path": "images/snake.png",
@@ -35,6 +35,17 @@
   },
   "protocol": {
     "binning_policy": "hard",
+    "binning_sensitivity_hard_binbits": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "binning_sensitivity_policies": [
+      "hard",
+      "none"
+    ],
     "colors": [
       8,
       16,
@@ -81,11 +92,20 @@
     "loader": "builtin!",
     "lookup_policy": "none",
     "merge_policy": "none",
+    "occupancy_binbits": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "occupancy_measurement": "LSXBSTAT1 effective_points emitted after binning and before K-means",
+    "occupancy_palette_size": 64,
     "palette_timing": "sum of complete top-level palette/build role=palette timeline spans; clustering-frame conversion is outside this span",
     "palette_type": "rgb",
     "precision": "float32",
     "quality": "full",
-    "quantize_model": "kmeans:seed=1",
+    "quantize_model": "kmeans:seed=1:binbits=6",
     "sampling_policy": "full-frame",
     "sixel_environment_removed": true,
     "size_measurement": "quality-pass SIXEL stdout byte length",
@@ -94,9 +114,9 @@
     "threads": 1,
     "working_colorspace": "gamma"
   },
-  "schema_version": 1,
+  "schema_version": 2,
   "source": {
-    "revision": "42db6380105fccc11b8eb90253fa615c8984be8a",
+    "revision": "fe341858bf439e4bcbfb8e5266ddf71b6151f5e7",
     "tracked_worktree_state_at_start": "clean"
   }
 }

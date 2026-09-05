@@ -512,6 +512,58 @@ internal optimization, not a CLI policy. It must be benchmarked because a
 materialized contiguous buffer can be better for SIMD or GPU conversion, while
 direct histogram updates can avoid allocation and memory traffic.
 
+## Adaptive hard-grid resolution
+
+Hard binning currently applies one fixed coordinate-grid depth to every
+clustering color space. This does not preserve an equivalent solver input. The
+same source samples can occupy very different numbers of cells after coordinate
+conversion; the measured difference and quality impact are documented in
+[Palette Clustering Color Space](clustering-colorspace.md#hard-binning-occupancy).
+
+The pipeline should keep the following decisions independent:
+
+- sampling chooses which source observations enter the palette path;
+- clustering-space conversion defines the geometry of those observations;
+- binning policy defines whether and how observations are aggregated;
+- grid-depth resolution controls hard-bin precision; and
+- storage planning chooses a dense or sparse representation under a memory
+  budget.
+
+When both policies are automatic, `-Q` may choose compatible initial sampling
+and binning policies. It must not permanently resolve a hard-grid depth before
+the binning filter observes the transformed distribution. An explicit sampling
+policy, binning policy, or fixed grid depth remains authoritative. Automatic
+depth is therefore a pending per-frame resolution state between transform and
+binning execution, not a hidden quantizer fallback.
+
+Occupied cells alone are an inadequate selection signal. For palette size `K`,
+the resolver should combine an effective-population ratio such as `S_b / K`
+with normalized within-cell squared error `E_b / T`. The first detects a point
+set that is too small for useful clustering; the second detects destructive
+aggregation even when many cells happen to be occupied. The definitions and an
+initial candidate rule are in
+[Adaptive hard-binning design](clustering-colorspace.md#adaptive-hard-binning-design).
+
+A bounded implementation can build a 6-bit histogram first. If it retains cell
+weights, coordinate sums, and squared moments, nested keys can be coalesced to
+evaluate 5- and 4-bit candidates without replaying samples. A failed 6-bit
+candidate can then rebuild at 7 or 8 bits from a materialized or explicitly
+replayable transformed point stream. Storage planning must enforce a peak-memory
+budget at each refinement; automatic mode must not allocate the largest table
+unconditionally.
+
+Stable diagnostics must expose the source count, occupied count, normalized
+binning distortion, selected depth, peak capacity, and resolution reason.
+Focused tests should fix each boundary independently: explicit-depth authority,
+low-color `S_8` saturation, occupancy failure, distortion failure, refinement,
+memory-limited selection, per-frame reset, and deterministic replay. A static
+check should keep depth resolution in the binning component so quantizers cannot
+bypass the filter DAG.
+
+The CLI spelling and default thresholds remain deliberately unspecified until a
+multi-image quality, speed, size, and peak-memory study is complete. Any public
+grid-depth control should be binning-owned rather than another `-Q` suboption.
+
 ## Measurement protocol for automatic profiles
 
 Automatic sampling and binning defaults must be selected from controlled
