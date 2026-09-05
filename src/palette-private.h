@@ -43,6 +43,7 @@ typedef struct sixel_palette_build_context {
     int quantize_model;
     int final_merge_mode;
     int lut_policy;
+    sixel_palette_build_attempt_t *attempt;
 } sixel_palette_build_context_t;
 
 typedef struct sixel_palette_storage {
@@ -58,6 +59,8 @@ typedef struct sixel_palette_storage {
     unsigned int original_colors;
     int depth;
     int float_depth;
+    sixel_palette_build_attempt_t build_attempt;
+    int build_attempt_active;
     sixel_palette_build_context_t *build_context;
 } sixel_palette_storage_t;
 

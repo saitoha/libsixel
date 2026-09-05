@@ -1030,6 +1030,16 @@ _palettesampling() {
     'adaptive-grid[sample the loaded frame before preprocessing]'
 }
 
+_palettebinning() {
+  _values \
+    'PALETTEBINNING' \
+    'auto[resolve from quantizer capability and sample density]' \
+    'none[pass sampled colors through unchanged]' \
+    'exact[combine identical colors; currently unavailable]' \
+    'hard[assign each color to one finite grid bin]' \
+    'soft[distribute color mass with trilinear weights]'
+}
+
 # Keep the following option order synchronized with `img2sixel -H`.
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
@@ -1043,6 +1053,8 @@ _arguments -S -s -A "-*" -S \
   {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
   '--palette-sampling='\
 '[choose pixels for palette construction]':palettesampling:_palettesampling \
+  '--palette-binning='\
+'[choose weighted-point aggregation]':palettebinning:_palettebinning \
   {-F,--merge-policy=}'[choose final palette merge policy]':mergepolicy:_mergepolicy \
   {-a,--cover-policy=}'[choose palette coverage policy]':coverpolicy:_coverpolicy \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \

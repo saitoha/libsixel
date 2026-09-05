@@ -20,6 +20,7 @@ def test_0169_python_api_constants_setopt_sync() -> None:
         from libsixel_wheel import SIXEL_LUT_POLICY_MAHALANOBIS
         from libsixel_wheel import SIXEL_LUT_POLICY_RBC
         from libsixel_wheel import SIXEL_OPTFLAG_PALETTE_SAMPLING
+        from libsixel_wheel import SIXEL_OPTFLAG_PALETTE_BINNING
         from libsixel_wheel import sixel_loader_new
         from libsixel_wheel import sixel_loader_setopt
         from libsixel_wheel import sixel_loader_unref
@@ -49,6 +50,8 @@ def test_0169_python_api_constants_setopt_sync() -> None:
         raise SystemExit("SIXEL_LUT_POLICY_MAHALANOBIS value mismatch")
     if SIXEL_OPTFLAG_PALETTE_SAMPLING != 0x100:
         raise SystemExit("SIXEL_OPTFLAG_PALETTE_SAMPLING value mismatch")
+    if SIXEL_OPTFLAG_PALETTE_BINNING != 0x101:
+        raise SystemExit("SIXEL_OPTFLAG_PALETTE_BINNING value mismatch")
 
     loader = sixel_loader_new()
     sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_START_FRAME_NO, "0")

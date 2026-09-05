@@ -1068,6 +1068,29 @@ static sixel_option_value_schema_t const g_palette_sampling_values[] = {
     }
 };
 
+static sixel_option_value_schema_t const g_palette_binning_values[] = {
+    {
+        "auto", SIXEL_PALETTE_BINNING_AUTO, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "none", SIXEL_PALETTE_BINNING_NONE, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "exact", SIXEL_PALETTE_BINNING_EXACT, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "hard", SIXEL_PALETTE_BINNING_HARD, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "soft", SIXEL_PALETTE_BINNING_SOFT, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    }
+};
+
 static sixel_option_value_schema_t const g_merge_policy_values[] = {
     { "auto", SIXEL_FINAL_MERGE_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
     { "none", SIXEL_FINAL_MERGE_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
@@ -2928,6 +2951,16 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_PALETTE_SAMPLING_AUTO,
         g_palette_sampling_values,
         "SIXEL_PALETTE_SAMPLING"),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_PALETTE_BINNING,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        SIXEL_OPTFLAG_PALETTE_BINNING,
+        "palette-binning",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_PALETTE_BINNING_AUTO,
+        g_palette_binning_values,
+        "SIXEL_PALETTE_BINNING"),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_MERGE_POLICY,
         SIXEL_OPTION_SCOPE_ENCODER,

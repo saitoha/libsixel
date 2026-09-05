@@ -750,6 +750,7 @@ sixel_kmeans_build_point_set(
     double const scale[3],
     double const offset[3],
     sixel_kmeans_binning_mode requested_mode,
+    sixel_palette_binning_state_t *binning_state,
     unsigned int requested_colors,
     unsigned int auto_ratio,
     unsigned int bits_per_axis,
@@ -769,7 +770,8 @@ sixel_kmeans_build_point_set(
     sixel_palette_binning_resolver_input_t resolver_input;
     sixel_palette_binning_selection_t selection;
     sixel_palette_binning_state_t raw_state;
-    sixel_palette_binning_state_t binning;
+    sixel_palette_binning_state_t local_binning;
+    sixel_palette_binning_state_t *binning;
     sixel_weighted_point_set_t raw_points;
     sixel_filter_binning_config_t config;
     sixel_filter_t *filter;
@@ -784,14 +786,22 @@ sixel_kmeans_build_point_set(
     memset(&capabilities, 0, sizeof(capabilities));
     memset(&resolver_input, 0, sizeof(resolver_input));
     memset(&selection, 0, sizeof(selection));
+    binning = binning_state;
     sixel_palette_binning_state_init(
         &raw_state,
         SIXEL_PALETTE_BINNING_NONE,
         SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
-    sixel_palette_binning_state_init(
-        &binning,
-        requested,
-        SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS);
+    if (binning == NULL) {
+        sixel_palette_binning_state_init(
+            &local_binning,
+            requested,
+            sixel_get_kmeans_binning_origin());
+        binning = &local_binning;
+    } else if (binning->policy.phase !=
+                   SIXEL_PALETTE_POLICY_UNRESOLVED ||
+            binning->policy.requested != (int)requested) {
+        return SIXEL_LOGIC_ERROR;
+    }
     sixel_weighted_point_set_init(&raw_points);
     memset(&config, 0, sizeof(config));
     filter = NULL;
@@ -832,7 +842,7 @@ sixel_kmeans_build_point_set(
             goto cleanup;
         }
     }
-    status = sixel_palette_binning_resolve(&binning,
+    status = sixel_palette_binning_resolve(binning,
                                            effective,
                                            selection.bits_per_axis,
                                            grid_map,
@@ -851,7 +861,7 @@ sixel_kmeans_build_point_set(
             sample_count,
             sample_count,
             colorspace,
-            &binning);
+            binning);
         goto cleanup;
     }
 
@@ -877,7 +887,7 @@ sixel_kmeans_build_point_set(
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    config.binning = &binning;
+    config.binning = binning;
     config.input_is_float32 = input_is_float32;
     memcpy(config.scale, scale, sizeof(config.scale));
     memcpy(config.offset, offset, sizeof(config.offset));
@@ -1131,6 +1141,7 @@ typedef struct sixel_palette_kmeans_build_request {
     int force_palette;
     int use_reversible;
     int final_merge_mode;
+    sixel_palette_binning_state_t *binning_state;
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
@@ -1156,6 +1167,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     int force_palette;
     int use_reversible;
     int final_merge_mode;
+    sixel_palette_binning_state_t *binning_state;
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
@@ -1316,6 +1328,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     force_palette = request->force_palette;
     use_reversible = request->use_reversible;
     final_merge_mode = request->final_merge_mode;
+    binning_state = request->binning_state;
     allocator = request->allocator;
     pixelformat = request->pixelformat;
     treat_input_as_float32 = request->treat_input_as_float32;
@@ -1648,6 +1661,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                           float32_channel_scale,
                                           float32_channel_offset,
                                           binning_mode,
+                                          binning_state,
                                           reqcolors,
                                           autoratio,
                                           binbits,
@@ -3225,6 +3239,7 @@ sixel_palette_build_kmeans_internal(
     int depth_result;
     size_t payload_size;
     int reversible_for_quantizer;
+    sixel_palette_build_context_t *context;
     sixel_palette_kmeans_build_request_t build_request;
 
     status = SIXEL_BAD_ARGUMENT;
@@ -3287,6 +3302,7 @@ sixel_palette_build_kmeans_internal(
     entry_depth = (unsigned int)depth_result;
 
     reversible_for_quantizer = SIXEL_PALETTE_CONTEXT(palette)->use_reversible;
+    context = SIXEL_PALETTE_CONTEXT(palette);
     build_request.result = &entries;
     build_request.result_float32 = &entries_float32;
     build_request.data = data;
@@ -3300,6 +3316,10 @@ sixel_palette_build_kmeans_internal(
     build_request.use_reversible = reversible_for_quantizer;
     build_request.final_merge_mode = SIXEL_PALETTE_CONTEXT(palette)
         ->final_merge_mode;
+    build_request.binning_state =
+        context != NULL && context->attempt != NULL
+            ? &context->attempt->binning
+            : NULL;
     build_request.allocator = work_allocator;
     build_request.pixelformat = pixelformat;
     build_request.treat_input_as_float32 = treat_input_as_float32;

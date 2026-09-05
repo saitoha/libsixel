@@ -100,6 +100,7 @@
 #include "options-registry.h"
 #include "dither.h"
 #include "dither-interframe-method.h"
+#include "palette.h"
 #include "palette-heckbert.h"
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
@@ -425,6 +426,7 @@ typedef struct sixel_palette_async_job {
     sixel_timeline_logger_t *logger;
     sixel_sample_stream_t samples;
     sixel_allocator_t *allocator;
+    sixel_palette_frame_state_t *palette_state;
     sixel_dither_t *dither;
     SIXELSTATUS status;
     int target_pixelformat;
@@ -523,14 +525,161 @@ sixel_palette_binning_from_legacy_kmeans(int mode)
     }
 }
 
+static sixel_kmeans_binning_mode
+sixel_palette_binning_to_legacy_kmeans(
+    sixel_palette_binning_policy_t policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_BINNING_NONE:
+        return SIXEL_PALETTE_KMEANS_BINNING_NONE;
+    case SIXEL_PALETTE_BINNING_HARD:
+        return SIXEL_PALETTE_KMEANS_BINNING_HARD;
+    case SIXEL_PALETTE_BINNING_SOFT:
+        return SIXEL_PALETTE_KMEANS_BINNING_SOFT;
+    case SIXEL_PALETTE_BINNING_AUTO:
+    case SIXEL_PALETTE_BINNING_EXACT:
+    default:
+        return SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+    }
+}
+
+static char const *
+sixel_palette_binning_policy_name(int policy)
+{
+    switch ((sixel_palette_binning_policy_t)policy) {
+    case SIXEL_PALETTE_BINNING_AUTO:
+        return "auto";
+    case SIXEL_PALETTE_BINNING_NONE:
+        return "none";
+    case SIXEL_PALETTE_BINNING_EXACT:
+        return "exact";
+    case SIXEL_PALETTE_BINNING_HARD:
+        return "hard";
+    case SIXEL_PALETTE_BINNING_SOFT:
+        return "soft";
+    default:
+        return "unset";
+    }
+}
+
+/*
+ * The K-means suboption remains a compatibility alias.  It is active only
+ * while K-means is the requested quantizer; its environment must not change
+ * the historical AUTO/Heckbert path merely because the legacy variable is
+ * present.  Two active explicit spellings must agree instead of depending on
+ * command-line order.
+ */
+static SIXELSTATUS
+sixel_encoder_validate_binning_values(
+    int quantize_model,
+    int palette_binning_policy,
+    int palette_binning_override,
+    sixel_palette_policy_origin_t palette_binning_origin,
+    int legacy_binning_mode,
+    int legacy_binning_override,
+    sixel_palette_policy_origin_t legacy_binning_origin)
+{
+    sixel_palette_binning_policy_t legacy_policy;
+    int legacy_active;
+
+    legacy_policy = SIXEL_PALETTE_BINNING_AUTO;
+    legacy_active = 0;
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
+            legacy_binning_override != 0) {
+        legacy_policy = sixel_palette_binning_from_legacy_kmeans(
+            legacy_binning_mode);
+        legacy_active = 1;
+    }
+    if (palette_binning_override != 0 && legacy_active != 0 &&
+            palette_binning_origin ==
+                SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT &&
+            legacy_binning_origin ==
+                SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS &&
+            palette_binning_policy != (int)legacy_policy) {
+        sixel_helper_set_additional_message(
+            "--palette-binning conflicts with the deprecated "
+            "-Q kmeans:binning alias.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_resolve_requested_binning(
+    sixel_encoder_t const *encoder,
+    sixel_palette_binning_policy_t *policy,
+    sixel_palette_policy_origin_t *origin)
+{
+    SIXELSTATUS status;
+    sixel_palette_binning_policy_t legacy_policy;
+    sixel_palette_policy_origin_t legacy_origin;
+    int legacy_active;
+
+    status = SIXEL_FALSE;
+    legacy_policy = SIXEL_PALETTE_BINNING_AUTO;
+    legacy_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
+    legacy_active = 0;
+    if (encoder == NULL || policy == NULL || origin == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_encoder_validate_binning_values(
+        encoder->quantize_model,
+        encoder->palette_binning_policy,
+        encoder->palette_binning_override,
+        (sixel_palette_policy_origin_t)
+            encoder->palette_binning_origin,
+        encoder->quantize_model_kmeans_binning_mode,
+        encoder->quantize_model_kmeans_binning_override,
+        (sixel_palette_policy_origin_t)
+            encoder->quantize_model_kmeans_binning_origin);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
+            encoder->quantize_model_kmeans_binning_override != 0) {
+        legacy_policy = sixel_palette_binning_from_legacy_kmeans(
+            encoder->quantize_model_kmeans_binning_mode);
+        legacy_origin = (sixel_palette_policy_origin_t)
+            encoder->quantize_model_kmeans_binning_origin;
+        legacy_active = 1;
+    }
+    if (encoder->palette_binning_override != 0 &&
+            encoder->palette_binning_origin ==
+                SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT) {
+        *policy = (sixel_palette_binning_policy_t)
+            encoder->palette_binning_policy;
+        *origin = SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT;
+    } else if (legacy_active != 0 &&
+            legacy_origin == SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS) {
+        *policy = legacy_policy;
+        *origin = SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
+    } else if (encoder->palette_binning_override != 0) {
+        *policy = (sixel_palette_binning_policy_t)
+            encoder->palette_binning_policy;
+        *origin = (sixel_palette_policy_origin_t)
+            encoder->palette_binning_origin;
+    } else if (legacy_active != 0) {
+        *policy = legacy_policy;
+        *origin = legacy_origin;
+    } else {
+        *policy = SIXEL_PALETTE_BINNING_AUTO;
+        *origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
+    }
+    return SIXEL_OK;
+}
+
 static char const *
 sixel_palette_policy_origin_name(sixel_palette_policy_origin_t origin)
 {
     switch (origin) {
     case SIXEL_PALETTE_POLICY_ORIGIN_AUTO:
         return "auto";
+    case SIXEL_PALETTE_POLICY_ORIGIN_ENVIRONMENT:
+        return "environment";
     case SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT:
         return "explicit";
+    case SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT:
+        return "legacy-environment";
     case SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS:
         return "legacy-alias";
     case SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT:
@@ -617,8 +766,42 @@ sixel_encoder_trace_sampling_plan(
         palette_job_ready != 0);
 }
 
+static void
+sixel_encoder_trace_palette_plan(
+    sixel_palette_frame_state_t const *state)
+{
+    sixel_palette_policy_resolution_t const *quantizer;
+    sixel_palette_policy_resolution_t const *binning;
+
+    if (state == NULL) {
+        return;
+    }
+    quantizer = &state->quantizer;
+    binning = &state->binning.policy;
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXBPS1|quantizer_requested=%d|quantizer_effective=%d|"
+        "quantizer_origin=%s|quantizer_phase=%s|quantizer_reason=%s|"
+        "binning_requested=%s|binning_effective=%s|binning_origin=%s|"
+        "binning_phase=%s|binning_reason=%s|points=%zu|"
+        "quantizer_retries=%u",
+        quantizer->requested,
+        quantizer->effective,
+        sixel_palette_policy_origin_name(quantizer->origin),
+        sixel_palette_policy_phase_name(quantizer->phase),
+        sixel_palette_resolution_reason_name(quantizer->reason),
+        sixel_palette_binning_policy_name(binning->requested),
+        sixel_palette_binning_policy_name(binning->effective),
+        sixel_palette_policy_origin_name(binning->origin),
+        sixel_palette_policy_phase_name(binning->phase),
+        sixel_palette_resolution_reason_name(binning->reason),
+        state->binning.source_point_count,
+        state->quantizer_retry_count);
+}
+
 typedef struct sixel_palette_builder_context {
     sixel_encoder_t *encoder;
+    sixel_palette_frame_state_t *palette_state;
     int allow_cache;
 } sixel_palette_builder_context_t;
 
@@ -1525,6 +1708,7 @@ static SIXELSTATUS sixel_encoder_sample_frame(
 static SIXELSTATUS sixel_encoder_apply_palette_filter(
     sixel_encoder_t *encoder,
     sixel_sample_stream_t *samples,
+    sixel_palette_frame_state_t *palette_state,
     int allow_cache,
     sixel_dither_t **dither_out);
 static void sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job);
@@ -1533,6 +1717,7 @@ static SIXELSTATUS sixel_encoder_palette_job_launch(
     sixel_frame_t *frame,
     int target_pixelformat,
     sixel_encoder_t *encoder,
+    sixel_palette_frame_state_t *palette_state,
     sixel_palette_sampling_policy_t policy,
     sixel_palette_sampling_source_t source);
 static SIXELSTATUS sixel_encoder_palette_job_wait(
@@ -4625,6 +4810,7 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
                                                   context->frame,
                                                   clustering_pixelformat,
                                                   context->encoder,
+                                                  &context->palette,
                                                   sampling_policy,
                                                   sampling_source);
         if (SIXEL_SUCCEEDED(status)) {
@@ -4938,6 +5124,16 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
             if (SIXEL_FAILED(status)) {
                 return status;
             }
+            /*
+             * A failed palette attempt may have resolved binning from the
+             * first sample set.  The fallback owns a different sample set,
+             * so retain only the request and resolve its metadata again.
+             */
+            sixel_palette_binning_state_init(
+                &context->palette.binning,
+                (sixel_palette_binning_policy_t)
+                    context->palette.binning.policy.requested,
+                context->palette.binning.policy.origin);
             sampling_policy = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
             sampling_source =
                 SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
@@ -4960,6 +5156,7 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
             status = sixel_encoder_apply_palette_filter(
                 context->encoder,
                 &context->samples,
+                &context->palette,
                 1,
                 &context->dither);
         }
@@ -5626,6 +5823,7 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
     }
     status = sixel_encoder_apply_palette_filter(job->encoder,
                                                 &job->samples,
+                                                job->palette_state,
                                                 0,
                                                 &local);
     if (SIXEL_FAILED(status)) {
@@ -5670,6 +5868,7 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
     job->encoder = NULL;
     job->logger = NULL;
     job->allocator = allocator;
+    job->palette_state = NULL;
     job->dither = NULL;
     job->status = SIXEL_OK;
     job->target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -5704,6 +5903,7 @@ sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job)
     sixel_sample_stream_dispose(&job->samples);
     job->encoder = NULL;
     job->logger = NULL;
+    job->palette_state = NULL;
     if (job->dither != NULL) {
         sixel_dither_unref(job->dither);
         job->dither = NULL;
@@ -5716,20 +5916,23 @@ sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job)
 static SIXELSTATUS
 sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
                                  sixel_frame_t *frame,
-                                 int target_pixelformat,
-                                 sixel_encoder_t *encoder,
-                                 sixel_palette_sampling_policy_t policy,
+    int target_pixelformat,
+    sixel_encoder_t *encoder,
+    sixel_palette_frame_state_t *palette_state,
+    sixel_palette_sampling_policy_t policy,
                                  sixel_palette_sampling_source_t source)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int result;
 
-    if (job == NULL || frame == NULL || encoder == NULL) {
+    if (job == NULL || frame == NULL || encoder == NULL ||
+            palette_state == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     job->encoder = encoder;
     job->logger = encoder->logger;
+    job->palette_state = palette_state;
     job->target_pixelformat = target_pixelformat;
     job->frame_no = sixel_frame_get_frame_no(frame);
     job->loop_no = sixel_frame_get_loop_no(frame);
@@ -6428,12 +6631,168 @@ sixel_encoder_release_dither_output(sixel_dither_t **dither)
 }
 
 
+/*
+ * Validate a quantizer/binning combination without committing an effective
+ * quantizer to the frame.  This preflight keeps known policy errors out of the
+ * sampling fallback while preserving staged AUTO resolution until the palette
+ * builder actually needs a concrete consumer.
+ */
+static SIXELSTATUS
+sixel_encoder_select_palette_quantizer(
+    sixel_encoder_t const *encoder,
+    sixel_palette_frame_state_t const *state,
+    sixel_palette_quantizer_selection_t *selection)
+{
+    SIXELSTATUS status;
+    sixel_palette_quantizer_resolver_input_t quantizer_input;
+    sixel_palette_quantizer_selection_t quantizer_selection;
+    sixel_palette_binning_resolver_input_t binning_input;
+    sixel_palette_binning_selection_t binning_selection;
+    sixel_palette_binning_policy_t binning_policy;
+    sixel_palette_policy_origin_t binning_origin;
+
+    status = SIXEL_FALSE;
+    memset(&quantizer_input, 0, sizeof(quantizer_input));
+    memset(&quantizer_selection, 0, sizeof(quantizer_selection));
+    memset(&binning_input, 0, sizeof(binning_input));
+    memset(&binning_selection, 0, sizeof(binning_selection));
+    binning_policy = SIXEL_PALETTE_BINNING_AUTO;
+    binning_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
+    if (encoder == NULL || state == NULL || selection == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_encoder_resolve_requested_binning(
+        encoder, &binning_policy, &binning_origin);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (state->quantizer.phase != SIXEL_PALETTE_POLICY_UNRESOLVED ||
+            state->binning.policy.phase !=
+                SIXEL_PALETTE_POLICY_UNRESOLVED ||
+            state->quantizer.requested != encoder->quantize_model ||
+            state->binning.policy.requested != (int)binning_policy ||
+            state->binning.policy.origin != binning_origin) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    quantizer_input.requested = encoder->quantize_model;
+    quantizer_input.binning_requested = binning_policy;
+    status = sixel_palette_quantizer_select(&quantizer_input,
+                                            &quantizer_selection);
+    if (SIXEL_FAILED(status)) {
+        if (binning_policy == SIXEL_PALETTE_BINNING_EXACT) {
+            sixel_helper_set_additional_message(
+                "palette binning policy 'exact' is not executable yet.");
+        } else {
+            sixel_helper_set_additional_message(
+                "cannot resolve the palette quantizer and binning policy.");
+        }
+        return status;
+    }
+
+    if (binning_policy != SIXEL_PALETTE_BINNING_AUTO) {
+        binning_input.requested = binning_policy;
+        binning_input.source_point_count = 1u;
+        binning_input.requested_colors = encoder->reqcolors > 0
+            ? (size_t)encoder->reqcolors : 1u;
+        binning_input.auto_ratio =
+            encoder->quantize_model_kmeans_autoratio;
+        if (binning_policy == SIXEL_PALETTE_BINNING_NONE) {
+            binning_input.backend = SIXEL_PALETTE_BINNING_BACKEND_DIRECT;
+        } else {
+            binning_input.bits_per_axis =
+                encoder->quantize_model_kmeans_binbits;
+            binning_input.grid_map =
+                encoder->quantize_model_kmeans_mapping_mode ==
+                    SIXEL_PALETTE_KMEANS_MAPPING_SRGB
+                ? SIXEL_PALETTE_BINNING_GRID_SRGB
+                : SIXEL_PALETTE_BINNING_GRID_UNIFORM;
+            binning_input.backend =
+                SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE;
+            if (binning_policy == SIXEL_PALETTE_BINNING_SOFT) {
+                binning_input.kernel =
+                    SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR;
+            }
+        }
+        status = sixel_palette_binning_select(
+            &binning_input,
+            &quantizer_selection.capabilities,
+            &binning_selection);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "palette binning policy is unsupported by the selected "
+                "quantizer.");
+            return status;
+        }
+    }
+
+    *selection = quantizer_selection;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_resolve_direct_binning(
+    sixel_encoder_t const *encoder,
+    sixel_palette_binning_state_t *binning,
+    int quantize_model,
+    size_t source_point_count)
+{
+    SIXELSTATUS status;
+    sixel_palette_quantizer_capabilities_t capabilities;
+    sixel_palette_binning_resolver_input_t input;
+    sixel_palette_binning_selection_t selection;
+
+    status = SIXEL_FALSE;
+    memset(&capabilities, 0, sizeof(capabilities));
+    memset(&input, 0, sizeof(input));
+    memset(&selection, 0, sizeof(selection));
+    if (encoder == NULL || binning == NULL || source_point_count == 0u ||
+            binning->policy.phase != SIXEL_PALETTE_POLICY_UNRESOLVED) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_palette_quantizer_capabilities_get(
+        quantize_model,
+        &capabilities);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    input.requested = (sixel_palette_binning_policy_t)
+        binning->policy.requested;
+    input.bits_per_axis = encoder->quantize_model_kmeans_binbits;
+    input.grid_map = encoder->quantize_model_kmeans_mapping_mode ==
+            SIXEL_PALETTE_KMEANS_MAPPING_SRGB
+        ? SIXEL_PALETTE_BINNING_GRID_SRGB
+        : SIXEL_PALETTE_BINNING_GRID_UNIFORM;
+    input.kernel = SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR;
+    input.backend = SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE;
+    input.source_point_count = source_point_count;
+    input.requested_colors = encoder->reqcolors > 0
+        ? (size_t)encoder->reqcolors : 1u;
+    input.auto_ratio = encoder->quantize_model_kmeans_autoratio;
+    status = sixel_palette_binning_select(&input,
+                                          &capabilities,
+                                          &selection);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_palette_binning_resolve(binning,
+                                         selection.effective,
+                                         selection.bits_per_axis,
+                                         selection.grid_map,
+                                         selection.kernel,
+                                         selection.backend,
+                                         source_point_count,
+                                         selection.reason);
+}
+
+
 /* create dither object from a frame */
 static SIXELSTATUS
 sixel_encoder_prepare_palette(
     sixel_encoder_t *encoder,  /* encoder object */
     sixel_frame_t   *frame,    /* input frame object */
     sixel_dither_t  **dither,  /* dither object to be created from the frame */
+    sixel_palette_frame_state_t *palette_state,
     int allow_cache,
     sixel_timeline_logger_t *logger)
 {
@@ -6452,6 +6811,7 @@ sixel_encoder_prepare_palette(
     int reserve_alpha_key;
     int palette_reqcolors;
     int quantize_override_lock_acquired;
+    int effective_quantize_model;
     int effective_method_for_largest;
     int effective_final_merge_mode;
     int effective_merge_oversplit_override;
@@ -6462,7 +6822,15 @@ sixel_encoder_prepare_palette(
     int effective_lut_policy_override;
     int fixed_palette_cache_candidate;
     int dither_cache_hit;
+    int palette_width;
+    int palette_height;
+    size_t source_point_count;
     sixel_filter_t *merge_filter;
+    sixel_palette_binning_policy_t requested_binning;
+    sixel_palette_policy_origin_t binning_origin;
+    sixel_palette_quantizer_selection_t quantizer_selection;
+    sixel_palette_build_attempt_t build_attempt;
+    sixel_palette_policy_resolution_t quantizer_attempt;
 
     target_logger = logger;
     cache_allowed = allow_cache != 0;
@@ -6477,6 +6845,7 @@ sixel_encoder_prepare_palette(
     reserve_alpha_key = 0;
     palette_reqcolors = 0;
     quantize_override_lock_acquired = 0;
+    effective_quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     effective_method_for_largest = SIXEL_LARGE_AUTO;
     effective_final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
     effective_merge_oversplit_override = 0;
@@ -6487,8 +6856,25 @@ sixel_encoder_prepare_palette(
     effective_lut_policy_override = 0;
     fixed_palette_cache_candidate = 0;
     dither_cache_hit = 0;
+    palette_width = 0;
+    palette_height = 0;
+    source_point_count = 0u;
     merge_filter = NULL;
-    if (encoder == NULL || frame == NULL || dither == NULL) {
+    requested_binning = SIXEL_PALETTE_BINNING_AUTO;
+    binning_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
+    memset(&quantizer_selection, 0, sizeof(quantizer_selection));
+    memset(&build_attempt, 0, sizeof(build_attempt));
+    sixel_palette_binning_state_init(
+        &build_attempt.binning,
+        SIXEL_PALETTE_BINNING_AUTO,
+        SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);
+    build_attempt.quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
+    sixel_palette_policy_resolution_init(
+        &quantizer_attempt,
+        SIXEL_QUANTIZE_MODEL_AUTO,
+        SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);
+    if (encoder == NULL || frame == NULL || dither == NULL ||
+            palette_state == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *dither = NULL;
@@ -6601,6 +6987,36 @@ sixel_encoder_prepare_palette(
     if (cache_allowed && encoder->dither_cache) {
         sixel_dither_unref(encoder->dither_cache);
     }
+    if (palette_state->quantizer.phase !=
+            SIXEL_PALETTE_POLICY_UNRESOLVED ||
+            palette_state->binning.policy.phase !=
+                SIXEL_PALETTE_POLICY_UNRESOLVED) {
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
+    status = sixel_encoder_select_palette_quantizer(
+        encoder,
+        palette_state,
+        &quantizer_selection);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    effective_quantize_model = quantizer_selection.effective;
+    requested_binning = (sixel_palette_binning_policy_t)
+        palette_state->binning.policy.requested;
+    binning_origin = palette_state->binning.policy.origin;
+    sixel_palette_binning_state_init(&build_attempt.binning,
+                                     requested_binning,
+                                     binning_origin);
+    quantizer_attempt = palette_state->quantizer;
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXBIN1|requested=%s|origin=%s|quantizer_requested=%d|"
+        "quantizer_effective=%d|phase=quantizer",
+        sixel_palette_binning_policy_name(requested_binning),
+        sixel_palette_policy_origin_name(binning_origin),
+        encoder->quantize_model,
+        effective_quantize_model);
     reserve_alpha_key =
         encoder->reqcolors > 1
         && sixel_encoder_transparent_policy_preserves_alpha(encoder)
@@ -6611,7 +7027,7 @@ sixel_encoder_prepare_palette(
         palette_reqcolors = encoder->reqcolors - 1;
     }
     effective_method_for_largest = SIXEL_LARGE_NORM;
-    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
         /*
          * Largest-axis selection only applies to the Heckbert median-cut
          * palette builder.
@@ -6627,7 +7043,7 @@ sixel_encoder_prepare_palette(
     effective_merge_lloyd = encoder->merge_policy_lloyd;
     effective_lut_policy = encoder->lut_policy;
     effective_lut_policy_override = encoder->lut_policy_override;
-    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
             && encoder->quantize_model_heckbert_profile
                 == SIXEL_HECKBERT_PROFILE_QUALITY
             && effective_merge_oversplit_override == 0
@@ -6644,7 +7060,7 @@ sixel_encoder_prepare_palette(
             effective_merge_lloyd_override = 1;
         }
     }
-    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
             && encoder->quantize_model_heckbert_profile
                 == SIXEL_HECKBERT_PROFILE_SPEED
             && effective_lut_policy_override == 0
@@ -6739,7 +7155,7 @@ sixel_encoder_prepare_palette(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    (*dither)->quantize_model = encoder->quantize_model;
+    (*dither)->quantize_model = effective_quantize_model;
 
     palette_pixels = sixel_frame_get_pixels(palette_frame);
     palette_pixelformat = sixel_frame_get_pixelformat(palette_frame);
@@ -6752,9 +7168,9 @@ sixel_encoder_prepare_palette(
         encoder->quantize_model_kmeans_threshold_override,
         encoder->quantize_model_kmeans_threshold);
     sixel_set_kmeans_binning_mode_override(
-        encoder->quantize_model_kmeans_binning_override,
-        (sixel_kmeans_binning_mode)
-            encoder->quantize_model_kmeans_binning_mode);
+        binning_origin != SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT,
+        sixel_palette_binning_to_legacy_kmeans(requested_binning));
+    sixel_set_kmeans_binning_origin_override(1, binning_origin);
     sixel_set_kmeans_binbits_override(
         encoder->quantize_model_kmeans_binbits_override,
         encoder->quantize_model_kmeans_binbits);
@@ -6959,19 +7375,46 @@ sixel_encoder_prepare_palette(
     sixel_set_kcenter_prune_mass_override(
         encoder->quantize_model_kcenter_prune_mass_override,
         encoder->quantize_model_kcenter_prune_mass);
-    status = sixel_dither_initialize(*dither,
-                                     palette_pixels,
-                                     sixel_frame_get_width(palette_frame),
-                                     sixel_frame_get_height(palette_frame),
-                                     palette_pixelformat,
-                                     effective_method_for_largest,
-                                     encoder->method_for_rep,
-                                     encoder->quality_mode);
+    palette_width = sixel_frame_get_width(palette_frame);
+    palette_height = sixel_frame_get_height(palette_frame);
+    if (palette_width <= 0 || palette_height <= 0 ||
+            (size_t)palette_width > SIZE_MAX / (size_t)palette_height) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    source_point_count =
+        (size_t)palette_width * (size_t)palette_height;
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
+        build_attempt.binning = palette_state->binning;
+    } else {
+        status = sixel_encoder_resolve_direct_binning(
+            encoder,
+            &build_attempt.binning,
+            effective_quantize_model,
+            source_point_count);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+    build_attempt.quantize_model = effective_quantize_model;
+    status = sixel_dither_initialize_with_palette_attempt(
+        *dither,
+        palette_pixels,
+        palette_width,
+        palette_height,
+        palette_pixelformat,
+        effective_method_for_largest,
+        encoder->method_for_rep,
+        encoder->quality_mode,
+        &build_attempt);
     sixel_set_kmeans_init_type_override(0, SIXEL_PALETTE_KMEANS_INIT_AUTO);
     sixel_set_kmeans_threshold_override(0, 0.125);
     sixel_set_kmeans_binning_mode_override(
         0,
         SIXEL_PALETTE_KMEANS_BINNING_AUTO);
+    sixel_set_kmeans_binning_origin_override(
+        0,
+        SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS);
     sixel_set_kmeans_binbits_override(0, 6u);
     sixel_set_kmeans_mapping_mode_override(
         0,
@@ -7055,6 +7498,28 @@ sixel_encoder_prepare_palette(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    if (build_attempt.quantize_model != effective_quantize_model) {
+        /*
+         * The palette component retains its historical solver fallback.  Do
+         * not publish the failed solver's binning attempt: validate and build
+         * metadata for the solver that actually produced the palette.
+         */
+        sixel_palette_binning_state_init(&build_attempt.binning,
+                                         requested_binning,
+                                         binning_origin);
+        status = sixel_encoder_resolve_direct_binning(
+            encoder,
+            &build_attempt.binning,
+            build_attempt.quantize_model,
+            source_point_count);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "palette fallback quantizer cannot consume the requested "
+                "binning policy.");
+            goto end;
+        }
+        (*dither)->quantize_model = build_attempt.quantize_model;
+    }
 
     if (clustering_colorspace != working_colorspace) {
         status = sixel_encoder_convert_palette_colorspace(
@@ -7077,7 +7542,33 @@ sixel_encoder_prepare_palette(
 
     sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
 
-    status = SIXEL_OK;
+    if (build_attempt.binning.policy.phase ==
+            SIXEL_PALETTE_POLICY_RESOLVED) {
+        status = sixel_palette_policy_mark_executed(
+            &build_attempt.binning.policy);
+    } else if (build_attempt.binning.policy.phase ==
+                   SIXEL_PALETTE_POLICY_EXECUTED) {
+        status = SIXEL_OK;
+    } else {
+        status = SIXEL_LOGIC_ERROR;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_palette_policy_resolve(
+            &quantizer_attempt,
+            build_attempt.quantize_model,
+            build_attempt.quantize_model == effective_quantize_model
+                ? quantizer_selection.reason
+                : SIXEL_PALETTE_RESOLUTION_FALLBACK);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_palette_policy_mark_executed(&quantizer_attempt);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        palette_state->quantizer = quantizer_attempt;
+        palette_state->binning = build_attempt.binning;
+        palette_state->quantizer_retry_count =
+            build_attempt.quantizer_retry_count;
+    }
 
 end:
     if (quantize_override_lock_acquired != 0) {
@@ -7134,6 +7625,7 @@ sixel_encoder_palette_builder(void *userdata,
     return sixel_encoder_prepare_palette(context->encoder,
                                          samples->frame,
                                          dither_out,
+                                         context->palette_state,
                                          context->allow_cache,
                                          logger);
 }
@@ -7141,6 +7633,7 @@ sixel_encoder_palette_builder(void *userdata,
 static SIXELSTATUS
 sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
                                    sixel_sample_stream_t *samples,
+                                   sixel_palette_frame_state_t *palette_state,
                                    int allow_cache,
                                    sixel_dither_t **dither_out)
 {
@@ -7154,7 +7647,8 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
     filter = NULL;
     height = 0;
 
-    if (encoder == NULL || samples == NULL || dither_out == NULL) {
+    if (encoder == NULL || samples == NULL || palette_state == NULL ||
+            dither_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (samples->frame == NULL ||
@@ -7163,6 +7657,7 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
     }
 
     builder_context.encoder = encoder;
+    builder_context.palette_state = palette_state;
     builder_context.allow_cache = allow_cache;
     palette_config.builder = sixel_encoder_palette_builder;
     palette_config.builder_userdata = &builder_context;
@@ -7917,9 +8412,20 @@ sixel_encoder_encode_frame_internal(
     sixel_palette_sampling_policy_t sampling_policy;
     sixel_palette_sampling_resolver_input_t sampling_input;
     sixel_palette_sampling_selection_t sampling_selection;
+    sixel_palette_quantizer_selection_t quantizer_preflight;
+    sixel_palette_binning_policy_t binning_policy;
+    sixel_palette_policy_origin_t binning_origin;
 
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    binning_policy = SIXEL_PALETTE_BINNING_AUTO;
+    binning_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
+    memset(&quantizer_preflight, 0, sizeof(quantizer_preflight));
+    status = sixel_encoder_resolve_requested_binning(
+        encoder, &binning_policy, &binning_origin);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
     memset(&context, 0, sizeof(context));
@@ -7967,11 +8473,8 @@ sixel_encoder_encode_frame_internal(
             : SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
     sixel_palette_binning_state_init(
         &context.palette.binning,
-        sixel_palette_binning_from_legacy_kmeans(
-            encoder->quantize_model_kmeans_binning_mode),
-        encoder->quantize_model_kmeans_binning_override != 0
-            ? SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS
-            : SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);
+        binning_policy,
+        binning_origin);
     context.current_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     context.current_colorspace = SIXEL_COLORSPACE_GAMMA;
     if (metadata != NULL) {
@@ -8059,6 +8562,13 @@ sixel_encoder_encode_frame_internal(
     async_eligible = sixel_encoding_palette_job_eligible(encoder,
                                                          context.frame);
     if (sampling_required != 0) {
+        status = sixel_encoder_select_palette_quantizer(
+            encoder,
+            &context.palette,
+            &quantizer_preflight);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         sampling_input.requested =
             (sixel_palette_sampling_policy_t)
                 encoder->palette_sampling_policy;
@@ -8081,6 +8591,14 @@ sixel_encoder_encode_frame_internal(
     } else {
         status = sixel_palette_policy_mark_bypassed(
             &context.palette.sampling);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_palette_policy_mark_bypassed(
+                &context.palette.quantizer);
+        }
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_palette_binning_mark_bypassed(
+                &context.palette.binning);
+        }
     }
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -8180,9 +8698,6 @@ sixel_encoder_encode_frame_internal(
 
 
 end:
-    sixel_encoder_trace_sampling_plan(&context.palette,
-                                      planner,
-                                      context.palette_ready);
     if (encoder != NULL && encoder->logger != NULL) {
         sixel_timeline_logger_clear_frame_context(encoder->logger);
     }
@@ -8201,6 +8716,10 @@ end:
         }
         sixel_encoder_palette_job_dispose(&context.palette_job);
     }
+    sixel_encoder_trace_sampling_plan(&context.palette,
+                                      planner,
+                                      context.palette_ready);
+    sixel_encoder_trace_palette_plan(&context.palette);
     if (context.output) {
         sixel_output_unref(context.output);
     }
@@ -8264,6 +8783,10 @@ sixel_encoder_new(
     (*ppencoder)->reqcolors             = (-1);
     (*ppencoder)->palette_sampling_policy = SIXEL_PALETTE_SAMPLING_AUTO;
     (*ppencoder)->palette_sampling_override = 0;
+    (*ppencoder)->palette_binning_policy = SIXEL_PALETTE_BINNING_AUTO;
+    (*ppencoder)->palette_binning_override = 0;
+    (*ppencoder)->palette_binning_origin =
+        SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
     (*ppencoder)->palette_sample_target = 0u;
     (*ppencoder)->palette_sample_override = 0;
     (*ppencoder)->force_palette         = 0;
@@ -8334,6 +8857,8 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmeans_binning_override = 0;
     (*ppencoder)->quantize_model_kmeans_binning_mode
         = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+    (*ppencoder)->quantize_model_kmeans_binning_origin
+        = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
     (*ppencoder)->quantize_model_kmeans_binbits_override = 0;
     (*ppencoder)->quantize_model_kmeans_binbits = 6u;
     (*ppencoder)->quantize_model_kmeans_mapping_override = 0;
@@ -8672,6 +9197,10 @@ sixel_encoder_new(
         SIXEL_OPTION_SCOPE_ENCODER,
         *ppencoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
+    if ((*ppencoder)->quantize_model_kmeans_binning_override != 0) {
+        (*ppencoder)->quantize_model_kmeans_binning_origin =
+            SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT;
+    }
 
     policy_schema = sixel_option_registry_get(
         SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING);
@@ -8687,6 +9216,24 @@ sixel_encoder_new(
             &policy_value)) {
         (*ppencoder)->palette_sampling_policy = policy_value;
         (*ppencoder)->palette_sampling_override = 1;
+    }
+
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_PALETTE_BINNING);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_PALETTE_BINNING,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &policy_value)) {
+        (*ppencoder)->palette_binning_policy = policy_value;
+        (*ppencoder)->palette_binning_override = 1;
+        (*ppencoder)->palette_binning_origin =
+            SIXEL_PALETTE_POLICY_ORIGIN_ENVIRONMENT;
     }
 
     policy_schema = sixel_option_registry_get(
@@ -9403,15 +9950,70 @@ sixel_encoder_apply_diffusion_resolution(
 }
 
 static SIXELSTATUS
+sixel_encoder_validate_quantize_binning_resolution(
+    sixel_encoder_t const *encoder,
+    sixel_option_argument_resolution_t const *resolution)
+{
+    int legacy_mode;
+    int legacy_override;
+    sixel_palette_policy_origin_t legacy_origin;
+    size_t index;
+
+    legacy_mode = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+    legacy_override = 0;
+    legacy_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
+    index = 0u;
+    if (encoder == NULL || resolution == NULL ||
+            resolution->base_def == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (resolution->resolved_base_value == SIXEL_QUANTIZE_MODEL_KMEANS) {
+        legacy_override = sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+            "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                quantize_model_kmeans_binning_mode,
+                quantize_model_kmeans_binning_override),
+            &legacy_mode);
+        if (legacy_override != 0) {
+            legacy_origin =
+                SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT;
+        }
+        while (index < resolution->assignment_count) {
+            if (resolution->assignments[index].key_def != NULL &&
+                    strcmp(resolution->assignments[index].key_def->name,
+                           "binning") == 0) {
+                legacy_mode = resolution->assignments[index].value.int_value;
+                legacy_override = 1;
+                legacy_origin =
+                    SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
+            }
+            ++index;
+        }
+    }
+    return sixel_encoder_validate_binning_values(
+        resolution->resolved_base_value,
+        encoder->palette_binning_policy,
+        encoder->palette_binning_override,
+        (sixel_palette_policy_origin_t)
+            encoder->palette_binning_origin,
+        legacy_mode,
+        legacy_override,
+        legacy_origin);
+}
+
+static SIXELSTATUS
 sixel_encoder_apply_quantize_resolution(
     sixel_encoder_t *encoder,
     sixel_option_argument_resolution_t const *resolution)
 {
     SIXELSTATUS status;
     sixel_option_argument_schema_t const *schema;
+    size_t index;
 
     status = SIXEL_OK;
     schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL);
+    index = 0u;
     if (encoder == NULL || resolution == NULL || schema == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -9430,6 +10032,19 @@ sixel_encoder_apply_quantize_resolution(
         resolution);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+    encoder->quantize_model_kmeans_binning_origin =
+        encoder->quantize_model_kmeans_binning_override != 0
+        ? SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT
+        : SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
+    while (index < resolution->assignment_count) {
+        if (resolution->assignments[index].key_def != NULL &&
+                strcmp(resolution->assignments[index].key_def->name,
+                       "binning") == 0) {
+            encoder->quantize_model_kmeans_binning_origin =
+                SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
+        }
+        ++index;
     }
 
     sixel_encoder_apply_heckbert_profile_defaults(encoder);
@@ -11010,6 +11625,12 @@ sixel_encoder_setopt(
         }
         q_resolution =
             &setopt_context.q_list_resolution.items[0].resolution;
+        status = sixel_encoder_validate_quantize_binning_resolution(
+            encoder,
+            q_resolution);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         status = sixel_encoder_apply_quantize_resolution(
             encoder,
             q_resolution);
@@ -11029,6 +11650,34 @@ sixel_encoder_setopt(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        break;
+    case SIXEL_OPTFLAG_PALETTE_BINNING:
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_PALETTE_BINNING,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            value,
+            &scalar_value,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        status = sixel_encoder_validate_binning_values(
+            encoder->quantize_model,
+            scalar_value.int_value,
+            1,
+            SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT,
+            encoder->quantize_model_kmeans_binning_mode,
+            encoder->quantize_model_kmeans_binning_override,
+            (sixel_palette_policy_origin_t)
+                encoder->quantize_model_kmeans_binning_origin);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        encoder->palette_binning_policy = scalar_value.int_value;
+        encoder->palette_binning_override = 1;
+        encoder->palette_binning_origin =
+            SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT;
         break;
     case SIXEL_OPTFLAG_MERGE_POLICY:  /* F */
         status = sixel_encoder_apply_registered_policy_argument(

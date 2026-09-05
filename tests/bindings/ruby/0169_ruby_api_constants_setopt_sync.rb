@@ -29,6 +29,9 @@ begin
   unless Libsixel::API::SIXEL_OPTFLAG_PALETTE_SAMPLING == 0x100
     raise RuntimeError, 'SIXEL_OPTFLAG_PALETTE_SAMPLING value mismatch'
   end
+  unless Libsixel::API::SIXEL_OPTFLAG_PALETTE_BINNING == 0x101
+    raise RuntimeError, 'SIXEL_OPTFLAG_PALETTE_BINNING value mismatch'
+  end
 
   out = Libsixel::API::Util.make_outptr
   status = Libsixel::API.sixel_loader_new(out, 0)

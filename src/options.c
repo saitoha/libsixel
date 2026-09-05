@@ -2217,6 +2217,8 @@ typedef enum sixel_test_environment_key {
     SIXEL_TEST_ENVIRONMENT_LIBWEBP_FORCE_RGB,
     SIXEL_TEST_ENVIRONMENT_PALETTE_DISABLE_TABLES,
     SIXEL_TEST_ENVIRONMENT_PALETTE_JOB_FAILURE,
+    SIXEL_TEST_ENVIRONMENT_PALETTE_QUANTIZER_FAILURE,
+    SIXEL_TEST_ENVIRONMENT_PALETTE_QUANTIZER_POST_BUILD_FAILURE,
     SIXEL_TEST_ENVIRONMENT_COUNT
 } sixel_test_environment_key_t;
 
@@ -2253,6 +2255,14 @@ g_test_environment_definitions[] = {
     },
     {
         "_SIXEL_TEST_PALETTE_JOB_FAILURE",
+        SIXEL_TEST_ENVIRONMENT_STRING
+    },
+    {
+        "_SIXEL_TEST_PALETTE_QUANTIZER_FAILURE",
+        SIXEL_TEST_ENVIRONMENT_STRING
+    },
+    {
+        "_SIXEL_TEST_PALETTE_QUANTIZER_POST_BUILD_FAILURE",
         SIXEL_TEST_ENVIRONMENT_STRING
     }
 };
@@ -2365,6 +2375,20 @@ sixel_test_environment_palette_job_failure(void)
 {
     return sixel_test_environment_string(
         SIXEL_TEST_ENVIRONMENT_PALETTE_JOB_FAILURE);
+}
+
+char const *
+sixel_test_environment_palette_quantizer_failure(void)
+{
+    return sixel_test_environment_string(
+        SIXEL_TEST_ENVIRONMENT_PALETTE_QUANTIZER_FAILURE);
+}
+
+char const *
+sixel_test_environment_palette_quantizer_post_build_failure(void)
+{
+    return sixel_test_environment_string(
+        SIXEL_TEST_ENVIRONMENT_PALETTE_QUANTIZER_POST_BUILD_FAILURE);
 }
 
 /*

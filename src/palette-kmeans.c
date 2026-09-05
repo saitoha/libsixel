@@ -87,6 +87,10 @@ static SIXEL_TLS int sixel_kmeans_binning_mode_override_enabled = 0;
 static SIXEL_TLS sixel_kmeans_binning_mode
     sixel_kmeans_binning_mode_override_value
         = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+static SIXEL_TLS int sixel_kmeans_binning_origin_override_enabled = 0;
+static SIXEL_TLS sixel_palette_policy_origin_t
+    sixel_kmeans_binning_origin_override_value
+        = SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
 static SIXEL_TLS int sixel_kmeans_binbits_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kmeans_binbits_override_value = 6u;
 static SIXEL_TLS int sixel_kmeans_mapping_mode_override_enabled = 0;
@@ -442,6 +446,28 @@ sixel_get_kmeans_binning_mode(void)
     }
 
     return cached;
+}
+
+void
+sixel_set_kmeans_binning_origin_override(
+    int enabled,
+    sixel_palette_policy_origin_t origin)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
+    sixel_kmeans_binning_origin_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_binning_origin_override_value = origin;
+    sixel_kmeans_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API sixel_palette_policy_origin_t
+sixel_get_kmeans_binning_origin(void)
+{
+    if (sixel_kmeans_binning_origin_override_enabled != 0) {
+        return sixel_kmeans_binning_origin_override_value;
+    }
+    return SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS;
 }
 
 void

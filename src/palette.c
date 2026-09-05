@@ -71,6 +71,7 @@
 #include "palette-kmedoids.h"
 #include "palette-private.h"
 #include "allocator.h"
+#include "options.h"
 #include "status.h"
 #include "compat_stub.h"
 #include "timeline-logger.h"
@@ -559,6 +560,8 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
 {
     SIXELSTATUS status;
     sixel_timeline_logger_t *logger;
+    char const *forced_failure;
+    char const *post_build_failure;
     sixel_palette_telemetry_t telemetry;
     /*
      * Quantizer internals still accept an int pointer as the timeline logging
@@ -569,8 +572,17 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
     char span_message[192];
 
     status = SIXEL_LOGIC_ERROR;
+    forced_failure = NULL;
+    post_build_failure = NULL;
     if (engine == NULL || engine->build_fn == NULL) {
         return status;
+    }
+    forced_failure = sixel_test_environment_palette_quantizer_failure();
+    if (forced_failure != NULL &&
+            (strcmp(forced_failure, engine->name) == 0 ||
+             (strcmp(forced_failure, "kmeans") == 0 &&
+              engine->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS))) {
+        return SIXEL_RUNTIME_ERROR;
     }
 
     logger = NULL;
@@ -595,6 +607,13 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                               &child_job_seq,
                               engine->name,
                               &telemetry);
+
+    post_build_failure =
+        sixel_test_environment_palette_quantizer_post_build_failure();
+    if (SIXEL_SUCCEEDED(status) && post_build_failure != NULL &&
+            strcmp(post_build_failure, engine->name) == 0) {
+        status = SIXEL_RUNTIME_ERROR;
+    }
 
     sixel_palette_format_quant_message(span_message,
                                        sizeof(span_message),
@@ -623,13 +642,31 @@ sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
 {
     sixel_palette_quant_engine_t const *engine;
     sixel_palette_build_context_t *context;
+    sixel_palette_binning_state_t *binning_state;
+    sixel_palette_binning_policy_t requested_binning;
+    sixel_palette_policy_origin_t binning_origin;
     SIXELSTATUS status;
+    unsigned char *legacy_pixels;
+    void const *legacy_data;
+    unsigned int legacy_length;
+    size_t pixel_count;
     int saved_lut_policy;
+    int legacy_pixelformat;
+    int source_depth;
 
     engine = NULL;
     context = NULL;
+    binning_state = NULL;
+    requested_binning = SIXEL_PALETTE_BINNING_AUTO;
+    binning_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
     status = SIXEL_LOGIC_ERROR;
+    legacy_pixels = NULL;
+    legacy_data = data;
+    legacy_length = length;
+    pixel_count = 0U;
     saved_lut_policy = SIXEL_LUT_POLICY_AUTO;
+    legacy_pixelformat = pixelformat;
+    source_depth = 0;
     context = SIXEL_PALETTE_CONTEXT(palette);
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -652,7 +689,66 @@ sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
                 return status;
             }
             context->lut_policy = saved_lut_policy;
+            /*
+             * Each engine retry owns a fresh binning attempt.  A failed
+             * float32 solver may already have executed the filter, so the
+             * legacy solver must not inherit that partial lifecycle state.
+             */
+            binning_state = context->attempt != NULL
+                ? &context->attempt->binning
+                : NULL;
+            if (binning_state != NULL) {
+                requested_binning =
+                    (sixel_palette_binning_policy_t)
+                        binning_state->policy.requested;
+                binning_origin = binning_state->policy.origin;
+                sixel_palette_binning_state_init(binning_state,
+                                                  requested_binning,
+                                                  binning_origin);
+            }
+            if (context->attempt != NULL) {
+                ++context->attempt->quantizer_retry_count;
+            }
         }
+    }
+
+    /*
+     * The legacy engine consumes byte RGB samples.  Float input must be
+     * normalized before retrying; passing its raw bytes makes the legacy
+     * engine reject the float pixel depth before it reaches K-means.
+     */
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        source_depth = sixel_helper_compute_depth(pixelformat);
+        if (source_depth <= 0 ||
+                length % (unsigned int)source_depth != 0U) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        pixel_count = length / (unsigned int)source_depth;
+        if (pixel_count == 0U || pixel_count > (size_t)INT_MAX ||
+                pixel_count > (size_t)UINT_MAX / 3U) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto end;
+        }
+        legacy_length = (unsigned int)pixel_count * 3U;
+        legacy_pixels = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            legacy_length);
+        if (legacy_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        status = sixel_helper_normalize_pixelformat(
+            legacy_pixels,
+            &legacy_pixelformat,
+            (unsigned char const *)data,
+            pixelformat,
+            (int)pixel_count,
+            1);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        legacy_data = legacy_pixels;
     }
 
     engine = sixel_palette_quant_engine_lookup(
@@ -661,12 +757,16 @@ sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
     if (engine != NULL) {
         status = sixel_palette_quant_engine_run(engine,
                                                 palette,
-                                                data,
-                                                length,
-                                                pixelformat,
+                                                legacy_data,
+                                                legacy_length,
+                                                legacy_pixelformat,
                                                 allocator);
     }
 
+end:
+    if (legacy_pixels != NULL) {
+        sixel_allocator_free(allocator, legacy_pixels);
+    }
     return status;
 }
 
@@ -1012,10 +1112,55 @@ sixel_palette_factory_new(sixel_allocator_t *allocator, void **object)
     storage->original_colors = 0U;
     storage->depth = 0;
     storage->float_depth = 0;
+    memset(&storage->build_attempt, 0, sizeof(storage->build_attempt));
+    storage->build_attempt_active = 0;
     storage->build_context = NULL;
     sixel_allocator_ref(allocator);
 
     *object = &storage->palette_interface;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_palette_build_attempt_begin(
+    sixel_palette_t *palette,
+    sixel_palette_build_attempt_t const *attempt)
+{
+    sixel_palette_storage_t *storage;
+
+    storage = NULL;
+    if (palette == NULL || attempt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage->build_context != NULL ||
+            storage->build_attempt_active != 0) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    storage->build_attempt = *attempt;
+    storage->build_attempt_active = 1;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_palette_build_attempt_finish(
+    sixel_palette_t *palette,
+    sixel_palette_build_attempt_t *attempt)
+{
+    sixel_palette_storage_t *storage;
+
+    storage = NULL;
+    if (palette == NULL || attempt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage->build_context != NULL ||
+            storage->build_attempt_active == 0) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    *attempt = storage->build_attempt;
+    memset(&storage->build_attempt, 0, sizeof(storage->build_attempt));
+    storage->build_attempt_active = 0;
     return SIXEL_OK;
 }
 
@@ -1300,14 +1445,21 @@ sixel_palette_vtbl_generate(
     unsigned int origcolors = 0U;
     unsigned int depth = 0U;
     int result_depth;
+    int effective_quantize_model;
     sixel_allocator_t *work_allocator;
 
     storage = NULL;
     memset(&context, 0, sizeof(context));
+    effective_quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     if (palette == NULL || request == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage->build_context != NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_generate: palette build is already active.");
+        return SIXEL_LOGIC_ERROR;
+    }
     work_allocator = storage->allocator;
     if (work_allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1329,6 +1481,9 @@ sixel_palette_vtbl_generate(
     context.quantize_model = request->quantize_model;
     context.final_merge_mode = request->final_merge_mode;
     context.lut_policy = request->lut_policy;
+    context.attempt = storage->build_attempt_active != 0
+        ? &storage->build_attempt
+        : NULL;
     storage->requested_colors = request->requested_colors;
     storage->build_context = &context;
 
@@ -1342,6 +1497,7 @@ sixel_palette_vtbl_generate(
                                                     work_allocator,
                                                     request->prefer_float32);
         if (SIXEL_SUCCEEDED(status)) {
+            effective_quantize_model = SIXEL_QUANTIZE_MODEL_KMEANS;
             ncolors = storage->entry_count;
             origcolors = storage->original_colors;
             depth = (unsigned int)storage->depth;
@@ -1355,6 +1511,7 @@ sixel_palette_vtbl_generate(
                                                      work_allocator,
                                                      request->prefer_float32);
         if (SIXEL_SUCCEEDED(status)) {
+            effective_quantize_model = SIXEL_QUANTIZE_MODEL_KCENTER;
             ncolors = storage->entry_count;
             origcolors = storage->original_colors;
             depth = (unsigned int)storage->depth;
@@ -1368,6 +1525,7 @@ sixel_palette_vtbl_generate(
                                                       work_allocator,
                                                       request->prefer_float32);
         if (SIXEL_SUCCEEDED(status)) {
+            effective_quantize_model = SIXEL_QUANTIZE_MODEL_KMEDOIDS;
             ncolors = storage->entry_count;
             origcolors = storage->original_colors;
             depth = (unsigned int)storage->depth;
@@ -1389,8 +1547,14 @@ sixel_palette_vtbl_generate(
                                                   request->pixelformat,
                                                   work_allocator,
                                                   request->prefer_float32);
+    if (SIXEL_SUCCEEDED(status)) {
+        effective_quantize_model = SIXEL_QUANTIZE_MODEL_MEDIANCUT;
+    }
 
 after_quantizer:
+    if (SIXEL_SUCCEEDED(status)) {
+        effective_quantize_model = SIXEL_QUANTIZE_MODEL_MEDIANCUT;
+    }
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "sixel_palette_generate: color map construction failed.");
@@ -1546,6 +1710,9 @@ success:
     storage->depth = (int)depth;
 
 end:
+    if (SIXEL_SUCCEEDED(status) && context.attempt != NULL) {
+        context.attempt->quantize_model = effective_quantize_model;
+    }
     storage->build_context = NULL;
     return status;
 }

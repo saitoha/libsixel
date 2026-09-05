@@ -216,6 +216,7 @@ int test_palette_0031_weighted_point_set(int argc, char **argv);
 int test_palette_0032_kmeans_binning_legacy_output(int argc, char **argv);
 int test_palette_0033_quantizer_capabilities(int argc, char **argv);
 int test_palette_0034_palette_stage_resolvers(int argc, char **argv);
+int test_palette_0035_palette_build_attempt_isolation(int argc, char **argv);
 int test_palette_0037_palette_sampling_indexed_frame(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
@@ -224,6 +225,7 @@ int test_cli_0031_cli_guard_missing_argument(int argc, char **argv);
 int test_cli_0032_cli_gpu_policy_option(int argc, char **argv);
 int test_cli_0033_consumer_scope(int argc, char **argv);
 int test_cli_0034_cli_terminal_policy_option(int argc, char **argv);
+int test_cli_0035_cli_palette_binning_conflict_atomic(int argc, char **argv);
 int test_security_0001_issue222_encoder_encode_bytes_packed_g1(int argc,
                                                                 char **argv);
 
@@ -516,6 +518,8 @@ static test_entry_t const test_entries[] = {
       test_palette_0033_quantizer_capabilities },
     { "palette/0034_palette_stage_resolvers",
       test_palette_0034_palette_stage_resolvers },
+    { "palette/0035_palette_build_attempt_isolation",
+      test_palette_0035_palette_build_attempt_isolation },
     { "palette/0037_palette_sampling_indexed_frame",
       test_palette_0037_palette_sampling_indexed_frame },
     { "cli/0029_cli_token_is_known_option",
@@ -530,6 +534,8 @@ static test_entry_t const test_entries[] = {
       test_cli_0033_consumer_scope },
     { "cli/0034_cli_terminal_policy_option",
       test_cli_0034_cli_terminal_policy_option },
+    { "cli/0035_cli_palette_binning_conflict_atomic",
+      test_cli_0035_cli_palette_binning_conflict_atomic },
     { "loader/0008_loader_coregraphics_pixelformat",
       test_loader_0008_loader_coregraphics_pixelformat },
     { "loader/0009_loader_wic_pixelformat",

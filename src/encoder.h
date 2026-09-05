@@ -53,6 +53,9 @@ struct sixel_encoder {
     int reqcolors;
     int palette_sampling_policy;  /* requested sampling-stage policy */
     int palette_sampling_override; /* non-zero when explicitly configured */
+    int palette_binning_policy;   /* requested binning-stage policy */
+    int palette_binning_override; /* non-zero when configured */
+    int palette_binning_origin;   /* source of the configured policy */
     size_t palette_sample_target;   /* target sample count for palette */
     int palette_sample_override;    /* non-zero when env requested target */
     int force_palette;              /* force palette size when non-zero */
@@ -121,6 +124,7 @@ struct sixel_encoder {
     double quantize_model_kmeans_threshold;
     int quantize_model_kmeans_binning_override;
     int quantize_model_kmeans_binning_mode;
+    int quantize_model_kmeans_binning_origin;
     int quantize_model_kmeans_binbits_override;
     unsigned int quantize_model_kmeans_binbits;
     int quantize_model_kmeans_mapping_override;

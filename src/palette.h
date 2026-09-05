@@ -27,6 +27,8 @@
 
 #include <6cells.h>
 
+#include "palette-plan.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -64,6 +66,21 @@ typedef struct sixel_palette_telemetry {
 /* @classid quant/palette */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_factory_new(sixel_allocator_t *allocator, void **object);
+
+/*
+ * Copy attempt-local state into and out of a palette instance.  Keeping the
+ * mutable copy on the instance makes concurrent palette objects independent
+ * and avoids pointers whose lifetime is shorter than the build operation.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_build_attempt_begin(
+    sixel_palette_t *palette,
+    sixel_palette_build_attempt_t const *attempt);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_build_attempt_finish(
+    sixel_palette_t *palette,
+    sixel_palette_build_attempt_t *attempt);
 
 
 #ifdef __cplusplus

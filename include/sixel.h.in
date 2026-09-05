@@ -541,6 +541,16 @@ typedef int SIXELSTATUS;
                                                      adaptive-grid
                                                    This option intentionally
                                                    has no short form. */
+#define SIXEL_OPTFLAG_PALETTE_BINNING   (0x101) /* --palette-binning=POLICY:
+                                                   choose how sampled colors
+                                                   become weighted points:
+                                                     auto
+                                                     none
+                                                     exact
+                                                     hard
+                                                     soft
+                                                   This option intentionally
+                                                   has no short form. */
 #define SIXEL_OPTFLAG_MERGE_POLICY      ('F')  /*
                                                   -F POLICY,
                                                   --merge-policy=POLICY:

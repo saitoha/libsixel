@@ -2337,8 +2337,8 @@ sixel_dither_set_quality_mode(
 }
 
 
-SIXELAPI SIXELSTATUS
-sixel_dither_initialize(
+static SIXELSTATUS
+sixel_dither_initialize_internal(
     sixel_dither_t  /* in */ *dither,
     unsigned char   /* in */ *data,
     int             /* in */ width,
@@ -2346,22 +2346,26 @@ sixel_dither_initialize(
     int             /* in */ pixelformat,
     int             /* in */ method_for_largest,
     int             /* in */ method_for_rep,
-    int             /* in */ quality_mode)
+    int             /* in */ quality_mode,
+    sixel_palette_build_attempt_t *build_attempt)
 {
     unsigned char *normalized_pixels = NULL;
     unsigned char *alpha_pixels = NULL;
     float *float_pixels = NULL;
     unsigned char *input_pixels;
     SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS attempt_status;
     size_t total_pixels;
     unsigned int payload_length;
     int method_for_largest_for_palette;
     int palette_pixelformat;
     int prefer_float32;
+    int palette_attempt_active;
     sixel_palette_generate_request_t palette_request;
     sixel_palette_float32_entries_request_t drop_float_request;
     sixel_palette_metadata_t palette_metadata;
 
+    palette_attempt_active = 0;
     /* ensure dither object is not null */
     if (dither == NULL) {
         sixel_helper_set_additional_message(
@@ -2518,8 +2522,25 @@ sixel_dither_initialize(
     palette_request.final_merge_mode = dither->final_merge_mode;
     palette_request.lut_policy = dither->lut_policy;
     palette_request.prefer_float32 = dither->prefer_float32;
+    if (build_attempt != NULL) {
+        status = sixel_palette_build_attempt_begin(dither->palette,
+                                                   build_attempt);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        palette_attempt_active = 1;
+    }
     status = dither->palette->vtbl->generate(dither->palette,
                                              &palette_request);
+    if (palette_attempt_active != 0) {
+        attempt_status = sixel_palette_build_attempt_finish(
+            dither->palette,
+            build_attempt);
+        palette_attempt_active = 0;
+        if (SIXEL_FAILED(attempt_status)) {
+            status = attempt_status;
+        }
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2555,6 +2576,10 @@ sixel_dither_initialize(
     status = SIXEL_OK;
 
 end:
+    if (palette_attempt_active != 0) {
+        (void)sixel_palette_build_attempt_finish(dither->palette,
+                                                 build_attempt);
+    }
     if (normalized_pixels != NULL) {
         sixel_allocator_free(dither->allocator, normalized_pixels);
     }
@@ -2569,6 +2594,51 @@ end:
     sixel_dither_unref(dither);
 
     return status;
+}
+
+SIXELSTATUS
+sixel_dither_initialize_with_palette_attempt(
+    sixel_dither_t *dither,
+    unsigned char *data,
+    int width,
+    int height,
+    int pixelformat,
+    int method_for_largest,
+    int method_for_rep,
+    int quality_mode,
+    sixel_palette_build_attempt_t *attempt)
+{
+    return sixel_dither_initialize_internal(dither,
+                                            data,
+                                            width,
+                                            height,
+                                            pixelformat,
+                                            method_for_largest,
+                                            method_for_rep,
+                                            quality_mode,
+                                            attempt);
+}
+
+SIXELAPI SIXELSTATUS
+sixel_dither_initialize(
+    sixel_dither_t  /* in */ *dither,
+    unsigned char   /* in */ *data,
+    int             /* in */ width,
+    int             /* in */ height,
+    int             /* in */ pixelformat,
+    int             /* in */ method_for_largest,
+    int             /* in */ method_for_rep,
+    int             /* in */ quality_mode)
+{
+    return sixel_dither_initialize_internal(dither,
+                                            data,
+                                            width,
+                                            height,
+                                            pixelformat,
+                                            method_for_largest,
+                                            method_for_rep,
+                                            quality_mode,
+                                            NULL);
 }
 
 

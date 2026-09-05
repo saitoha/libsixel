@@ -34,7 +34,9 @@
 typedef enum sixel_palette_policy_origin {
     SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT = 0,
     SIXEL_PALETTE_POLICY_ORIGIN_AUTO,
+    SIXEL_PALETTE_POLICY_ORIGIN_ENVIRONMENT,
     SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT,
+    SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ENVIRONMENT,
     SIXEL_PALETTE_POLICY_ORIGIN_LEGACY_ALIAS
 } sixel_palette_policy_origin_t;
 
@@ -124,12 +126,24 @@ typedef struct sixel_palette_binning_state {
     size_t entry_capacity_bound;
 } sixel_palette_binning_state_t;
 
+/*
+ * Attempt-local output shared by the dither and palette components.  The
+ * palette instance owns a copy while generate() is active, so solver retries
+ * cannot publish through thread-local pointers to an encoder stack frame.
+ */
+typedef struct sixel_palette_build_attempt {
+    sixel_palette_binning_state_t binning;
+    int quantize_model;
+    unsigned int quantizer_retry_count;
+} sixel_palette_build_attempt_t;
+
 /* Per-frame palette policy state owned by the existing encode DAG context. */
 typedef struct sixel_palette_frame_state {
     sixel_palette_policy_resolution_t sampling;
     sixel_palette_sampling_source_t sampling_source;
     sixel_palette_binning_state_t binning;
     sixel_palette_policy_resolution_t quantizer;
+    unsigned int quantizer_retry_count;
 } sixel_palette_frame_state_t;
 
 /*

@@ -209,7 +209,9 @@ Supported k-means suboptions:
 .br
 \fBthreshold\fP (short form \fBTVALUE\fP): floating value in 0.0-0.5.
 .br
-\fBbinning\fP (short form \fBBMODE\fP): \fBauto\fP, \fBnone\fP, \fBhard\fP, \fBsoft\fP.
+\fBbinning\fP (short form \fBBMODE\fP): deprecated alias for
+\fB\-\-palette\-binning\fP while k-means is active; accepts \fBauto\fP,
+\fBnone\fP, \fBhard\fP, or \fBsoft\fP.
 .br
 \fBbinbits\fP (short form \fBNBITS\fP): integer value in 4-8.
 .br
@@ -312,6 +314,17 @@ loaded-frame coordinates before resize and colorspace preprocessing. Thread
 availability may overlap adaptive sampling with other work, but does not
 change an explicitly selected policy.
 The \fBSIXEL_PALETTE_SAMPLING\fP environment provides the default.
+.TP 5
+.B \-\-palette\-binning=\fIPOLICY\fP
+choose how sampled colors become weighted quantizer input.
+\fIPOLICY\fP accepts \fBauto\fP, \fBnone\fP, \fBexact\fP,
+\fBhard\fP, or \fBsoft\fP. \fBnone\fP preserves the raw sample sequence;
+\fBhard\fP assigns each color to one finite grid bin; and \fBsoft\fP
+distributes its mass to neighboring bins with trilinear weights.
+\fBexact\fP reserves exact duplicate aggregation but is rejected until that
+filter is implemented. Explicit \fBhard\fP or \fBsoft\fP selects k-means when
+\fB\-Q auto\fP is active. The \fBSIXEL_PALETTE_BINNING\fP environment
+provides the default.
 .TP 5
 .B \-F \fIPOLICY\fP, \-\-merge\-policy=\fIPOLICY\fP
 configure final palette merging independently of the quantizer.
@@ -1459,7 +1472,7 @@ a multiple of six scanlines. The \fB-d\fP suboption
 .B SIXEL_DITHER_PARALLEL_BAND_OVERWRAP
 .br
 set overlap between adjacent dither bands to smooth seams. Accepts non-negative
-integers. The \fB-dP suboption \fBband_overwrap=LINES\fP (short form
+integers. The \fB-d\fP suboption \fBband_overwrap=LINES\fP (short form
 \fB:OLINES\fP) takes precedence.
 .TP 5
 .B SIXEL_DITHER_STBN_SOURCE
@@ -1849,8 +1862,8 @@ choose k-means seed selection: auto, pca, or none (default auto).
 .TP 5
 .B SIXEL_PALETTE_KMEANS_BINNING
 .br
-k-means histogram pre-binning mode: auto, none, hard, or soft. Default auto
-selects soft when sample density is high.
+deprecated alias for \fB\-\-palette\-binning\fP while k-means is active.
+Accepts auto, none, hard, or soft. Conflicting explicit values are rejected.
 .TP 5
 .B SIXEL_PALETTE_KMEANS_BINBITS
 .br

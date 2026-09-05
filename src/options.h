@@ -161,6 +161,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_DIFFUSION,
     SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
     SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING,
+    SIXEL_OPTION_SCHEMA_PALETTE_BINNING,
     SIXEL_OPTION_SCHEMA_MERGE_POLICY,
     SIXEL_OPTION_SCHEMA_COVER_POLICY,
     SIXEL_OPTION_SCHEMA_LUT_POLICY,
@@ -319,6 +320,10 @@ SIXEL_INTERNAL_API int
 sixel_test_environment_palette_disable_tables(void);
 SIXEL_INTERNAL_API char const *
 sixel_test_environment_palette_job_failure(void);
+SIXEL_INTERNAL_API char const *
+sixel_test_environment_palette_quantizer_failure(void);
+SIXEL_INTERNAL_API char const *
+sixel_test_environment_palette_quantizer_post_build_failure(void);
 
 /*
  * Resolve registered environment variables through registry metadata.  The

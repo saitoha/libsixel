@@ -51,6 +51,22 @@ typedef struct sixel_dither_frame_context {
 } sixel_dither_frame_context_t;
 
 /*
+ * Internal encoder entry point that carries one palette-build attempt across
+ * the dither and palette component boundary without global mutable pointers.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_initialize_with_palette_attempt(
+    sixel_dither_t *dither,
+    unsigned char *data,
+    int width,
+    int height,
+    int pixelformat,
+    int method_for_largest,
+    int method_for_rep,
+    int quality_mode,
+    sixel_palette_build_attempt_t *attempt);
+
+/*
  * Interframe dithering state container. The method_id identifies which
  * interframe strategy owns error_frame so future strategies (for example STBN)
  * can keep state isolated behind a shared lifecycle.

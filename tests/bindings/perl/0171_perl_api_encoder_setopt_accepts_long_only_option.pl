@@ -22,6 +22,10 @@ my $ok = eval {
         Image::LibSIXEL::Constants::SIXEL_OPTFLAG_PALETTE_SAMPLING(),
         'adaptive-grid'
     );
+    $encoder->setopt(
+        Image::LibSIXEL::Constants::SIXEL_OPTFLAG_PALETTE_BINNING(),
+        'hard'
+    );
     1;
 };
 

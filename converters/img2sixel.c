@@ -244,7 +244,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "              pca  -> choose seeds from PCA axis\n"
         "          :threshold=VALUE (:TVALUE) stop refinement when delta "
         "reaches VALUE (0.0-0.5).\n"
-        "          :binning=MODE (:BMODE) histogram pre-binning mode:\n"
+        "          :binning=MODE (:BMODE) deprecated --palette-binning alias:\n"
         "              auto -> choose binning mode automatically (default)\n"
         "              none -> disable histogram pre-binning\n"
         "              hard -> hard-assignment histogram bins\n"
@@ -385,6 +385,18 @@ static cli_option_help_t const g_option_help_table[] = {
         "    Thread availability may overlap adaptive sampling with other "
         "work,\n"
         "    but does not change an explicitly selected policy.\n"
+    },
+    {
+        SIXEL_OPTFLAG_PALETTE_BINNING,
+        "palette-binning",
+        "--palette-binning=POLICY\n"
+        "    choose how sampled colors become weighted quantizer input:\n"
+        "      auto  -> resolve from quantizer capability and sample density.\n"
+        "      none  -> pass every sampled color through unchanged.\n"
+        "      exact -> combine only identical colors (reserved; unavailable).\n"
+        "      hard  -> assign each color to one finite grid bin.\n"
+        "      soft  -> distribute color mass with trilinear weights.\n"
+        "    Explicit hard or soft binning selects k-means when -Q is auto.\n"
     },
     {
         'F',
@@ -1374,6 +1386,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "precedence."
     },
     {
+        "SIXEL_PALETTE_BINNING",
+        "select how sampled colors become weighted quantizer input. Accepts\n"
+        "auto, none, exact, hard, or soft. The --palette-binning option takes\n"
+        "precedence."
+    },
+    {
         "SIXEL_DITHER_PIN_THREADS",
         "pin pipeline worker threads to their initial CPUs (0 or 1;\n"
         "default 1). The -d suboption pin_threads (short form IVALUE)\n"
@@ -1752,8 +1770,9 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_KMEANS_BINNING",
-        "k-means histogram pre-binning mode: auto, none, hard, or soft.\n"
-        "Default auto picks soft when sample density is high."
+        "deprecated alias for --palette-binning while -Q kmeans is active.\n"
+        "Accepts auto, none, hard, or soft. Conflicting explicit values are\n"
+        "rejected."
     },
     {
         "SIXEL_PALETTE_KMEANS_BINBITS",
@@ -3194,6 +3213,8 @@ img2sixel_main(int argc, char *argv[])
         {"quantize-model",        required_argument,  &long_opt, 'Q'},
         {"palette-sampling", required_argument, &long_opt,
          SIXEL_OPTFLAG_PALETTE_SAMPLING},
+        {"palette-binning", required_argument, &long_opt,
+         SIXEL_OPTFLAG_PALETTE_BINNING},
         {"merge-policy",          required_argument,  &long_opt, 'F'},
         {"cover-policy",          required_argument,  &long_opt, 'a'},
         {"mapfile",               required_argument,  &long_opt, 'm'},

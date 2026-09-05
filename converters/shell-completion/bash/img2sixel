@@ -713,6 +713,10 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'auto full-frame adaptive-grid' -- "$cur" ) )
         return 0
         ;;
+    --palette-binning)
+        COMPREPLY=( $( compgen -W 'auto none exact hard soft' -- "$cur" ) )
+        return 0
+        ;;
     -F|--merge-policy)
         _img2sixel_complete_merge_policy
         return 0
@@ -997,6 +1001,7 @@ _img2sixel()
                                    -p --colors \
                                    -Q --quantize-model \
                                    --palette-sampling \
+                                   --palette-binning \
                                    -F --merge-policy \
                                    -a --cover-policy \
                                    -m --mapfile \

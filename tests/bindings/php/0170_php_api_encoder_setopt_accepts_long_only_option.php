@@ -20,6 +20,10 @@ try {
         Constants::SIXEL_OPTFLAG_PALETTE_SAMPLING,
         'adaptive-grid'
     );
+    $encoder->setopt(
+        Constants::SIXEL_OPTFLAG_PALETTE_BINNING,
+        'hard'
+    );
 
     echo "ok 1 - encoder accepts a numeric long-only option flag\n";
 } catch (Throwable $e) {

@@ -194,7 +194,8 @@ Binning consumes points after their palette-space coordinates are known. It
 controls how sample mass is aggregated, independently of the quantizer that
 will consume the result.
 
-The policy is expected to distinguish:
+The top-level `--palette-binning=POLICY` option and its
+`SIXEL_PALETTE_BINNING` environment default distinguish:
 
 ```text
 mode = auto | none | exact | hard | soft
@@ -202,6 +203,18 @@ bits = INTEGER
 kernel = trilinear
 grid-map = POLICY
 ```
+
+The existing `-Q kmeans:binning=MODE` suboption and
+`SIXEL_PALETTE_KMEANS_BINNING` environment remain deprecated aliases while
+K-means is the requested quantizer. If an alias and the top-level option are
+both explicit, they must name the same policy; conflicting values are rejected
+instead of being resolved by option order. The alias does not make a legacy
+K-means environment select K-means when the requested quantizer is `auto` or a
+different family. Environment values are defaults rather than peer explicit
+requests: either CLI/API spelling overrides either environment spelling. If
+both environment spellings are present, the canonical top-level environment
+wins. Diagnostics retain `environment`, `legacy-environment`, `explicit`, or
+`legacy-alias` provenance after precedence is applied.
 
 The modes have these intended meanings:
 
@@ -308,6 +321,43 @@ reject an explicit `exact` request without publishing a partial selection.
 Resolver failure never triggers an allocation-time or execution-time algorithm
 fallback.
 
+Wave 7b exposes the top-level option at the encoder boundary. Palette
+construction preflights compatibility without committing the quantizer to the
+per-frame lifecycle state. The palette builder resolves the concrete consumer
+only when it is ready to construct the palette. Thus
+`-Qauto --palette-binning=hard` and
+`-Qauto --palette-binning=soft` select K-means, while an incompatible explicit
+quantizer is rejected. This capability preflight runs before sampling and
+scheduler allocation, so a known policy error cannot be misclassified as a
+worker failure or enter the full-frame sampling fallback. K-means `auto`
+binning remains unresolved until its point-set builder sees the actual
+post-sampling count; the encoder does not precompute that density decision from
+frame dimensions.
+
+Only a successful palette-builder attempt commits quantizer and binning state
+to the encode DAG. Each quantizer-engine retry uses an attempt-local binning
+state. The dither call copies that state into the palette instance's build
+context and copies the result out after `generate()`; no process-global or
+thread-local pointer refers to the encoder's stack frame. Concurrent palette
+instances are therefore independent, and re-entry on one active instance is
+rejected instead of overwriting another operation's result target.
+
+A failed float32 K-means engine resets the attempt lifecycle before invoking
+legacy K-means. Float samples are normalized to RGB888 for that retry because
+the legacy engine consumes byte samples; passing the float buffer through
+unchanged cannot form a valid legacy input. If the palette component's
+historical solver fallback succeeds, the frame records the solver that
+actually produced the palette with `fallback` as
+its reason and discards the failed attempt's binning state. A fallback is
+rejected when its solver cannot consume an explicit `hard` or `soft` artifact;
+it cannot silently erase that request. An asynchronous palette worker commits
+the effective policy, origin, lifecycle phase, resolution reason, and actual
+source-point count only after its successful attempt, before collection
+completes.
+When automatic adaptive sampling falls back to the full preprocessed frame,
+binning keeps its request and origin but resolves its sample-dependent metadata
+again against the replacement sample stream.
+
 When `-Qauto` is also requested, the planner retains a quantizer candidate set.
 If binning needs a concrete consumer capability, the quantizer family is
 resolved at that boundary rather than at the beginning of the frame. Remaining
@@ -320,8 +370,10 @@ Each quantizer must declare whether it accepts raw samples, weighted points,
 fractional weights, observed-color representatives, and additional moments.
 An unsupported explicit combination is an error. Only an `auto` input may be
 replaced during planning. Each effective choice is fixed before its owning
-stage executes and is never reopened within that frame. Allocation failure
-during execution must not silently select a different algorithm.
+stage executes and is never reopened within that frame. A solver fallback is
+an explicit attempt transition: it must be compatible with the requested
+artifact, record the effective solver, and leave the frame state unchanged if
+the fallback is rejected.
 
 Soft binning can contribute one sample to as many as eight cells for a
 trilinear three-dimensional kernel. Sparse capacity estimates must be bounded

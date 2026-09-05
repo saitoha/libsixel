@@ -122,6 +122,14 @@ SIXEL_INTERNAL_API sixel_kmeans_binning_mode
 sixel_get_kmeans_binning_mode(void);
 
 SIXEL_INTERNAL_API void
+sixel_set_kmeans_binning_origin_override(
+    int enabled,
+    sixel_palette_policy_origin_t origin);
+
+SIXEL_INTERNAL_API sixel_palette_policy_origin_t
+sixel_get_kmeans_binning_origin(void);
+
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_binbits_override(int enabled,
                                   unsigned int bits);
 
