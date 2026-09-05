@@ -709,6 +709,10 @@ _img2sixel()
         _img2sixel_complete_quantize_model
         return 0
         ;;
+    --palette-sampling)
+        COMPREPLY=( $( compgen -W 'auto full-frame adaptive-grid' -- "$cur" ) )
+        return 0
+        ;;
     -F|--merge-policy)
         _img2sixel_complete_merge_policy
         return 0
@@ -992,6 +996,7 @@ _img2sixel()
                                    -6 --6reversible \
                                    -p --colors \
                                    -Q --quantize-model \
+                                   --palette-sampling \
                                    -F --merge-policy \
                                    -a --cover-policy \
                                    -m --mapfile \

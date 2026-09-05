@@ -55,9 +55,9 @@ final class Encoder
     private static function normalizeFlag($flag): int
     {
         if (is_int($flag)) {
-            if ($flag < 0 || $flag > 0xff) {
+            if ($flag < 0 || $flag > 0x7fffffff) {
                 throw new \InvalidArgumentException(
-                    'flag integer must be in range 0..255'
+                    'flag integer must be in range 0..2147483647'
                 );
             }
             return $flag;

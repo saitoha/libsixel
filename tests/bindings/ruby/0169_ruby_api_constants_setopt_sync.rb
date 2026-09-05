@@ -26,6 +26,9 @@ begin
 
   missing = expected.reject { |name| Libsixel::API.const_defined?(name, false) }
   raise RuntimeError, "missing constants: #{missing.join(', ')}" unless missing.empty?
+  unless Libsixel::API::SIXEL_OPTFLAG_PALETTE_SAMPLING == 0x100
+    raise RuntimeError, 'SIXEL_OPTFLAG_PALETTE_SAMPLING value mismatch'
+  end
 
   out = Libsixel::API::Util.make_outptr
   status = Libsixel::API.sixel_loader_new(out, 0)

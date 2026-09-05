@@ -151,7 +151,7 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
         fail(option_id " has an invalid scope: " scope)
     }
     if (optflag !~ /^SIXEL_OPTFLAG_[A-Z0-9_]+$/) {
-        fail(option_id " has no registered short option")
+        fail(option_id " has no registered option flag")
     }
     if (name !~ /^"[a-z0-9][a-z0-9-]*"$/ || name ~ /-"$/) {
         fail(option_id " has a noncanonical long option name: " name)
@@ -264,7 +264,8 @@ test -f "$public_header" -a -f "$help_file" -a -f "$man_file" \
 }
 
 # Until getopt tables are generated, require every structured registry option
-# to retain the same short/long pair in converter parsing, help, and manuals.
+# to retain its long form in converter parsing, help, and manuals.  Options
+# whose public flag is a character must retain the corresponding short form.
 awk -v registry_file="$registry_file" \
     -v header_file="$public_header" \
     -v encoder_file="$help_file" \
@@ -280,23 +281,34 @@ function trim(text) {
     sub(/[[:space:]]*$/, "", text)
     return text
 }
-function check_surface(option_id, name, short_name, source_file,
-                       manual_file, getopt_needle, help_needle) {
+function check_surface(option_id, name, optflag, short_name, long_only,
+                       source_file, manual_file, getopt_needle, help_needle) {
     getopt_needle = "{\"" name "\",required_argument"
-    help_needle = "{\047" short_name "\047,\"" name "\""
+    if (long_only) {
+        help_needle = "{" optflag ",\"" name "\""
+    } else {
+        help_needle = "{\047" short_name "\047,\"" name "\""
+    }
     if (index(source[source_file], getopt_needle) == 0) {
         fail(source_file " getopt table omits --" name)
     }
     if (index(source[source_file], help_needle) == 0) {
-        fail(source_file " help omits -" short_name "/--" name)
+        if (long_only) {
+            fail(source_file " help omits --" name)
+        } else {
+            fail(source_file " help omits -" short_name "/--" name)
+        }
     }
-    if (index(manual[manual_file], "-" short_name) == 0 ||
-        index(manual[manual_file], "--" name) == 0) {
-        fail(manual_file " omits -" short_name "/--" name)
+    if (index(manual[manual_file], "--" name) == 0) {
+        fail(manual_file " omits --" name)
+    }
+    if (!long_only &&
+        index(manual[manual_file], "-" short_name) == 0) {
+        fail(manual_file " omits -" short_name)
     }
 }
 function inspect(row, fields, count, option_id, scope, optflag, name,
-                 short_name, converter_scope) {
+                 short_name, long_only, converter_scope) {
     gsub(/[[:space:]]+/, " ", row)
     match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
     row = substr(row, RSTART + RLENGTH + 1)
@@ -308,19 +320,22 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
     name = trim(fields[4])
     gsub(/^"|"$/, "", name)
     short_name = option_short[optflag]
-    if (short_name == "") {
-        fail(option_id " has an unresolved short option " optflag)
+    long_only = option_long_only[optflag]
+    if (short_name == "" && !long_only) {
+        fail(option_id " has an unresolved option flag " optflag)
         return
     }
     converter_scope = 0
     if (scope ~ /SIXEL_OPTION_SCOPE_ENCODER/ ||
         scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
-        check_surface(option_id, name, short_name, encoder_file, encoder_man)
+        check_surface(option_id, name, optflag, short_name, long_only,
+                      encoder_file, encoder_man)
         converter_scope = 1
     }
     if (scope ~ /SIXEL_OPTION_SCOPE_DECODER/ ||
         scope ~ /SIXEL_OPTION_SCOPE_ALL/) {
-        check_surface(option_id, name, short_name, decoder_file, decoder_man)
+        check_surface(option_id, name, optflag, short_name, long_only,
+                      decoder_file, decoder_man)
         converter_scope = 1
     }
     if (!converter_scope) {
@@ -337,6 +352,10 @@ FILENAME == header_file {
         match($0, /\(\047.\047\)/)) {
         split($0, header_fields, /[[:space:]]+/)
         option_short[header_fields[2]] = substr($0, RSTART + 2, 1)
+    } else if ($0 ~ /^#define[[:space:]]+SIXEL_OPTFLAG_[A-Z0-9_]+/ &&
+               match($0, /\((0x[0-9A-Fa-f]+|[0-9]+)\)/)) {
+        split($0, header_fields, /[[:space:]]+/)
+        option_long_only[header_fields[2]] = 1
     }
     next
 }

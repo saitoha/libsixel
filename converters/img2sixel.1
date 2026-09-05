@@ -303,6 +303,16 @@ init_seeds=N, iter=I, histbits=H, point_budget=B, rare_keep=R,
 prune_mass=U, budget_policy=D, budget_scale=Y, swap_topk=K,
 swap_update=M, swap_patience=T, swap_min_gain=J.
 .TP 5
+.B \-\-palette\-sampling=\fIPOLICY\fP
+choose which pixels feed palette construction.
+\fIPOLICY\fP accepts \fBauto\fP, \fBfull\-frame\fP, or
+\fBadaptive\-grid\fP. \fBfull\-frame\fP uses the preprocessed output
+frame. \fBadaptive\-grid\fP samples the configured crop range directly from
+loaded-frame coordinates before resize and colorspace preprocessing. Thread
+availability may overlap adaptive sampling with other work, but does not
+change an explicitly selected policy.
+The \fBSIXEL_PALETTE_SAMPLING\fP environment provides the default.
+.TP 5
 .B \-F \fIPOLICY\fP, \-\-merge\-policy=\fIPOLICY\fP
 configure final palette merging independently of the quantizer.
 \fIPOLICY\fP accepts \fBauto\fP, \fBnone\fP, or \fBward\fP.

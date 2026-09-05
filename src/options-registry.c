@@ -1053,6 +1053,21 @@ static sixel_option_value_schema_t const g_quantize_values[] = {
     }
 };
 
+static sixel_option_value_schema_t const g_palette_sampling_values[] = {
+    {
+        "auto", SIXEL_PALETTE_SAMPLING_AUTO, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "full-frame", SIXEL_PALETTE_SAMPLING_FULL_FRAME, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "adaptive-grid", SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    }
+};
+
 static sixel_option_value_schema_t const g_merge_policy_values[] = {
     { "auto", SIXEL_FINAL_MERGE_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
     { "none", SIXEL_FINAL_MERGE_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
@@ -2904,6 +2919,16 @@ static sixel_option_argument_schema_t const g_options[] = {
         g_quantize_values,
         NULL),
     SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        SIXEL_OPTFLAG_PALETTE_SAMPLING,
+        "palette-sampling",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_PALETTE_SAMPLING_AUTO,
+        g_palette_sampling_values,
+        "SIXEL_PALETTE_SAMPLING"),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_MERGE_POLICY,
         SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_MERGE_POLICY,
@@ -4267,7 +4292,7 @@ sixel_option_registry_validate_uncached(void)
             (size_t)schema->option_id != option_index ||
             schema->scope == 0u ||
             (schema->scope & ~SIXEL_OPTION_SCOPE_ALL) != 0u ||
-            schema->optflag <= 0 || schema->optflag > UCHAR_MAX ||
+            schema->optflag <= 0 ||
             !sixel_option_registry_option_name_is_valid(
                 schema->option_name) ||
             (schema->argument_form != SIXEL_OPTION_ARGUMENT_SINGLE &&

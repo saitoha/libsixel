@@ -1022,6 +1022,14 @@ _precisionmode() {
     'float32[opt into the experimental high-precision pipeline]'
 }
 
+_palettesampling() {
+  _values \
+    'PALETTESAMPLING' \
+    'auto[choose from the current resource profile]' \
+    'full-frame[sample the preprocessed output frame]' \
+    'adaptive-grid[sample the loaded frame before preprocessing]'
+}
+
 # Keep the following option order synchronized with `img2sixel -H`.
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
@@ -1033,6 +1041,8 @@ _arguments -S -s -A "-*" -S \
   {-6,--6reversible}'[snap the palette to SIXEL-reversible tones]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
+  '--palette-sampling='\
+'[choose pixels for palette construction]':palettesampling:_palettesampling \
   {-F,--merge-policy=}'[choose final palette merge policy]':mergepolicy:_mergepolicy \
   {-a,--cover-policy=}'[choose palette coverage policy]':coverpolicy:_coverpolicy \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \

@@ -3,6 +3,7 @@
 
 declare(strict_types=1);
 
+use Libsixel\Constants;
 use Libsixel\Encoder;
 
 echo "1..1\n";
@@ -15,15 +16,14 @@ $encoder = null;
 
 try {
     $encoder = new Encoder();
+    $encoder->setopt(
+        Constants::SIXEL_OPTFLAG_PALETTE_SAMPLING,
+        'adaptive-grid'
+    );
 
-    try {
-        $encoder->setopt(0x80000000, '16');
-        echo "not ok 1 - encoder accepted oversized integer option flag\n";
-    } catch (InvalidArgumentException $e) {
-        echo "ok 1 - encoder rejects oversized integer option flag\n";
-    }
+    echo "ok 1 - encoder accepts a numeric long-only option flag\n";
 } catch (Throwable $e) {
-    echo "not ok 1 - encoder oversized-flag rejection check failed\n";
+    echo "not ok 1 - encoder long-only option flag check failed\n";
     echo '# ' . get_class($e) . ': ' . preg_replace('/\\s+/', ' ', $e->getMessage()) . "\n";
 } finally {
     if ($encoder !== null) {

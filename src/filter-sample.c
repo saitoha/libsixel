@@ -414,6 +414,7 @@ sixel_filter_sample_copy_frame(
     SIXELSTATUS status;
     sixel_frame_t *sample;
     sixel_frame_interface_t *frame_if;
+    sixel_frame_interface_t *normalized_frame_if;
     sixel_frame_interface_t *sample_if;
     sixel_frame_vtbl_t const *sample_vtbl;
     sixel_frame_pixels_request_t pixels_request;
@@ -460,6 +461,7 @@ sixel_filter_sample_copy_frame(
     solid_rows = 0;
     sample = NULL;
     frame_if = NULL;
+    normalized_frame_if = NULL;
     sample_if = NULL;
     sample_vtbl = NULL;
     memset(&pixels_request, 0, sizeof(pixels_request));
@@ -500,7 +502,46 @@ sixel_filter_sample_copy_frame(
     frame_if = sixel_frame_as_interface(frame);
     src_pixelformat = sixel_frame_get_pixelformat(frame);
     if ((src_pixelformat & SIXEL_FORMATTYPE_PALETTE)) {
-        return SIXEL_FEATURE_ERROR;
+        /*
+         * Sampling must not mutate the loader frame, because preprocessing
+         * still consumes it after a synchronous sample.  Expand an indexed
+         * clone to RGB before recursing through the ordinary byte path.
+         */
+        if (frame_if->vtbl == NULL || frame_if->vtbl->clone == NULL ||
+                frame_if->vtbl->set_pixelformat == NULL ||
+                frame_if->vtbl->unref == NULL) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        status = frame_if->vtbl->clone(frame_if, allocator,
+                                       &normalized_frame_if);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (normalized_frame_if == NULL || normalized_frame_if->vtbl == NULL ||
+                normalized_frame_if->vtbl->set_pixelformat == NULL ||
+                normalized_frame_if->vtbl->unref == NULL) {
+            if (normalized_frame_if != NULL &&
+                    normalized_frame_if->vtbl != NULL &&
+                    normalized_frame_if->vtbl->unref != NULL) {
+                normalized_frame_if->vtbl->unref(normalized_frame_if);
+            }
+            return SIXEL_BAD_ARGUMENT;
+        }
+        status = normalized_frame_if->vtbl->set_pixelformat(
+            normalized_frame_if,
+            SIXEL_PIXELFORMAT_RGB888);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_filter_sample_copy_frame(
+                config,
+                (sixel_frame_t *)normalized_frame_if,
+                allocator,
+                sample_out,
+                logger,
+                sample_width_out,
+                sample_height_out);
+        }
+        normalized_frame_if->vtbl->unref(normalized_frame_if);
+        return status;
     }
 
     src_pixels = sixel_frame_get_pixels(frame);

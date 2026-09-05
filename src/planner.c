@@ -859,6 +859,7 @@ sixel_encoding_planner_schedule(
 {
     int budget;
     int total;
+    int async_eligible;
 
     if (planner == NULL || encoder == NULL || frame == NULL ||
             (sampling_policy != SIXEL_PALETTE_SAMPLING_FULL_FRAME &&
@@ -866,25 +867,21 @@ sixel_encoding_planner_schedule(
         return SIXEL_BAD_ARGUMENT;
     }
     total = planner->total_threads;
+    async_eligible = sixel_encoding_palette_job_eligible(encoder, frame);
     planner->palette_threads = 0;
     planner->allow_palette_async = 0;
     planner->main_threads = total > 0 ? total : 1;
 
     if (total <= 1) {
-        if (sampling_policy == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID) {
-            return SIXEL_LOGIC_ERROR;
-        }
         return SIXEL_OK;
     }
 
     budget = total - planner->heavy_ops;
     if (sampling_policy == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID &&
-            budget > 1) {
+            budget > 1 && async_eligible != 0) {
         planner->palette_threads = 1;
         planner->allow_palette_async = 1;
         planner->main_threads = total - planner->palette_threads;
-    } else if (sampling_policy == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID) {
-        return SIXEL_LOGIC_ERROR;
     }
 
     sixel_encoding_planner_set_loader_metadata(
@@ -935,6 +932,8 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
      * through analyze, resolve, and schedule explicitly.
      */
     async_eligible = sixel_encoding_palette_job_eligible(encoder, frame);
+    input.requested = (sixel_palette_sampling_policy_t)
+        encoder->palette_sampling_policy;
     input.total_threads = planner->total_threads;
     input.heavy_operations = planner->heavy_ops;
     input.async_eligible = async_eligible;

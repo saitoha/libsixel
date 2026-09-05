@@ -375,6 +375,18 @@ static cli_option_help_t const g_option_help_table[] = {
         "          (0.0-8.0, default 0.0).\n"
     },
     {
+        SIXEL_OPTFLAG_PALETTE_SAMPLING,
+        "palette-sampling",
+        "--palette-sampling=POLICY\n"
+        "    choose which pixels feed palette construction:\n"
+        "      auto          -> preserve the resource-aware default.\n"
+        "      full-frame    -> use the preprocessed output frame.\n"
+        "      adaptive-grid -> sample the loaded frame before preprocessing.\n"
+        "    Thread availability may overlap adaptive sampling with other "
+        "work,\n"
+        "    but does not change an explicitly selected policy.\n"
+    },
+    {
         'F',
         "merge-policy",
         "-F POLICY, --merge-policy=POLICY\n"
@@ -1354,6 +1366,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "override encoder thread count.\n"
         "Accepts positive integers or the word 'auto' to match the\n"
         "hardware thread count. img2sixel sets empty/unset values to 'auto'."
+    },
+    {
+        "SIXEL_PALETTE_SAMPLING",
+        "select pixels used for palette construction. Accepts auto,\n"
+        "full-frame, or adaptive-grid. The --palette-sampling option takes\n"
+        "precedence."
     },
     {
         "SIXEL_DITHER_PIN_THREADS",
@@ -2438,13 +2456,22 @@ img2sixel_format_invalid_argument_message(char *buffer,
     }
 
     buffer[0] = '\0';
-    written = snprintf(buffer,
-                       buffer_size,
-                       "\\fW'%s'\\fP is invalid argument for "
-                       "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
-                       argument_text,
-                       (char)short_opt,
-                       long_opt);
+    if (short_opt > UCHAR_MAX) {
+        written = snprintf(buffer,
+                           buffer_size,
+                           "\\fW'%s'\\fP is invalid argument for "
+                           "\\fB--%s\\fP option:\n\n",
+                           argument_text,
+                           long_opt);
+    } else {
+        written = snprintf(buffer,
+                           buffer_size,
+                           "\\fW'%s'\\fP is invalid argument for "
+                           "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
+                           argument_text,
+                           (char)short_opt,
+                           long_opt);
+    }
     if (written < 0) {
         return;
     }
@@ -2672,22 +2699,41 @@ img2sixel_report_invalid_argument(int short_opt,
 
     if (img2sixel_diag_mode_is_quiet() != 0) {
         if (detail != NULL && detail[0] != '\0') {
-            (void)snprintf(
-                fallback_buffer,
-                sizeof(fallback_buffer),
-                "'%s' is invalid argument for -%c,--%s option:\n\n%s",
-                argument_copy,
-                (char)short_opt,
-                long_opt,
-                detail);
+            if (short_opt > UCHAR_MAX) {
+                (void)snprintf(
+                    fallback_buffer,
+                    sizeof(fallback_buffer),
+                    "'%s' is invalid argument for --%s option:\n\n%s",
+                    argument_copy,
+                    long_opt,
+                    detail);
+            } else {
+                (void)snprintf(
+                    fallback_buffer,
+                    sizeof(fallback_buffer),
+                    "'%s' is invalid argument for -%c,--%s option:\n\n%s",
+                    argument_copy,
+                    (char)short_opt,
+                    long_opt,
+                    detail);
+            }
         } else {
-            (void)snprintf(
-                fallback_buffer,
-                sizeof(fallback_buffer),
-                "'%s' is invalid argument for -%c,--%s option.",
-                argument_copy,
-                (char)short_opt,
-                long_opt);
+            if (short_opt > UCHAR_MAX) {
+                (void)snprintf(
+                    fallback_buffer,
+                    sizeof(fallback_buffer),
+                    "'%s' is invalid argument for --%s option.",
+                    argument_copy,
+                    long_opt);
+            } else {
+                (void)snprintf(
+                    fallback_buffer,
+                    sizeof(fallback_buffer),
+                    "'%s' is invalid argument for -%c,--%s option.",
+                    argument_copy,
+                    (char)short_opt,
+                    long_opt);
+            }
         }
         sixel_helper_set_additional_message(fallback_buffer);
         return;
@@ -3146,6 +3192,8 @@ img2sixel_main(int argc, char *argv[])
         {"6reversible",           no_argument,        &long_opt, '6'},
         {"colors",                required_argument,  &long_opt, 'p'},
         {"quantize-model",        required_argument,  &long_opt, 'Q'},
+        {"palette-sampling", required_argument, &long_opt,
+         SIXEL_OPTFLAG_PALETTE_SAMPLING},
         {"merge-policy",          required_argument,  &long_opt, 'F'},
         {"cover-policy",          required_argument,  &long_opt, 'a'},
         {"mapfile",               required_argument,  &long_opt, 'm'},

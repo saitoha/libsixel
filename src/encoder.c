@@ -4573,19 +4573,45 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (context->palette_ready == 0) {
+    if (context->palette.sampling.phase == SIXEL_PALETTE_POLICY_BYPASSED) {
         return SIXEL_OK;
     }
     if (context->palette.sampling.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
-            context->palette.sampling.effective !=
-                SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID ||
-            context->palette.sampling_source !=
-                SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME) {
+        (context->palette.sampling.effective ==
+             SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID &&
+         context->palette.sampling_source !=
+             SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME) ||
+        (context->palette.sampling.effective ==
+             SIXEL_PALETTE_SAMPLING_FULL_FRAME &&
+         context->palette.sampling_source !=
+             SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME)) {
         return SIXEL_LOGIC_ERROR;
     }
     sampling_policy = (sixel_palette_sampling_policy_t)
         context->palette.sampling.effective;
     sampling_source = context->palette.sampling_source;
+    if (sampling_policy == SIXEL_PALETTE_SAMPLING_FULL_FRAME) {
+        return SIXEL_OK;
+    }
+
+    if (context->palette_ready == 0) {
+        /*
+         * Explicit adaptive sampling keeps its loaded-frame source even when
+         * no palette worker is available.  Run the sample filter before the
+         * pre-plan mutates the frame; only execution overlaps are optional.
+         */
+        status = sixel_encoder_sample_frame(context->encoder,
+                                            context->frame,
+                                            context->encoder->allocator,
+                                            sampling_policy,
+                                            sampling_source,
+                                            &context->samples);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        return sixel_palette_policy_mark_executed(
+            &context->palette.sampling);
+    }
 
     status = sixel_encoder_palette_job_init(&context->palette_job,
                                             context->encoder->allocator);
@@ -4847,7 +4873,9 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     fallback_stage = context->palette_job_failure_stage;
     sampling_policy = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
     sampling_source = SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
-    if (context->palette.sampling.phase == SIXEL_PALETTE_POLICY_RESOLVED) {
+    if (context->palette.sampling.phase == SIXEL_PALETTE_POLICY_RESOLVED ||
+            context->palette.sampling.phase ==
+                SIXEL_PALETTE_POLICY_EXECUTED) {
         sampling_policy = (sixel_palette_sampling_policy_t)
             context->palette.sampling.effective;
         sampling_source = context->palette.sampling_source;
@@ -4887,6 +4915,24 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
 
     if (context->dither == NULL) {
         if (fallback_stage != SIXEL_PALETTE_JOB_FAILURE_NONE) {
+            if (context->palette.sampling.origin !=
+                    SIXEL_PALETTE_POLICY_ORIGIN_AUTO) {
+                status = fallback_cause;
+                if (SIXEL_SUCCEEDED(status)) {
+                    status = SIXEL_RUNTIME_ERROR;
+                }
+                sixel_encoder_trace_palette_fallback(
+                    fallback_stage,
+                    "propagate-explicit",
+                    fallback_cause,
+                    status);
+                if (context->palette_job_initialized != 0) {
+                    sixel_encoder_palette_job_dispose(
+                        &context->palette_job);
+                    context->palette_job_initialized = 0;
+                }
+                return status;
+            }
             status = sixel_palette_sampling_resolve_fallback(
                 &context->palette);
             if (SIXEL_FAILED(status)) {
@@ -4896,13 +4942,20 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
             sampling_source =
                 SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
         }
-        status = sixel_encoder_sample_frame(
-            context->encoder,
-            context->frame,
-            context->encoder->allocator,
-            sampling_policy,
-            sampling_source,
-            &context->samples);
+        if (context->samples.frame == NULL) {
+            status = sixel_encoder_sample_frame(
+                context->encoder,
+                context->frame,
+                context->encoder->allocator,
+                sampling_policy,
+                sampling_source,
+                &context->samples);
+        } else if (context->samples.policy != sampling_policy ||
+                   context->samples.source != sampling_source) {
+            return SIXEL_LOGIC_ERROR;
+        } else {
+            status = SIXEL_OK;
+        }
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_encoder_apply_palette_filter(
                 context->encoder,
@@ -7862,6 +7915,8 @@ sixel_encoder_encode_frame_internal(
     int current_pixelformat;
     int current_colorspace;
     sixel_palette_sampling_policy_t sampling_policy;
+    sixel_palette_sampling_resolver_input_t sampling_input;
+    sixel_palette_sampling_selection_t sampling_selection;
 
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -7900,8 +7955,10 @@ sixel_encoder_encode_frame_internal(
     sixel_sample_stream_init(&context.samples);
     sixel_palette_policy_resolution_init(
         &context.palette.sampling,
-        SIXEL_PALETTE_SAMPLING_AUTO,
-        SIXEL_PALETTE_POLICY_ORIGIN_AUTO);
+        encoder->palette_sampling_policy,
+        encoder->palette_sampling_policy == SIXEL_PALETTE_SAMPLING_AUTO
+            ? SIXEL_PALETTE_POLICY_ORIGIN_AUTO
+            : SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
     sixel_palette_policy_resolution_init(
         &context.palette.quantizer,
         encoder->quantize_model,
@@ -8002,18 +8059,24 @@ sixel_encoder_encode_frame_internal(
     async_eligible = sixel_encoding_palette_job_eligible(encoder,
                                                          context.frame);
     if (sampling_required != 0) {
-        if (planner != NULL) {
-            status = sixel_palette_sampling_resolve_auto(
+        sampling_input.requested =
+            (sixel_palette_sampling_policy_t)
+                encoder->palette_sampling_policy;
+        sampling_input.total_threads = planner != NULL
+            ? planner->total_threads
+            : 1;
+        sampling_input.heavy_operations = planner != NULL
+            ? planner->heavy_ops
+            : 0;
+        sampling_input.async_eligible = async_eligible;
+        status = sixel_palette_sampling_select(&sampling_input,
+                                                &sampling_selection);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_palette_sampling_resolve(
                 &context.palette,
-                planner->total_threads,
-                planner->heavy_ops,
-                async_eligible);
-        } else {
-            status = sixel_palette_sampling_resolve_auto(
-                &context.palette,
-                1,
-                0,
-                0);
+                sampling_selection.effective,
+                sampling_selection.source,
+                sampling_selection.reason);
         }
     } else {
         status = sixel_palette_policy_mark_bypassed(
@@ -8063,8 +8126,12 @@ sixel_encoder_encode_frame_internal(
 
     /*
      * DAG layout:
-     *   load -> palette_launch -> palette_collect -> dither -> output
-     *     \\-> preplan --------^
+     *   load -> palette_launch -> preplan -> palette_collect -> dither
+     *                         \________________^                 -> output
+     *
+     * Palette launch finishes all loaded-frame sampling before preplan may
+     * mutate the frame. An asynchronous palette build can still overlap
+     * preplan after sampling has completed.
      */
     nodes[SIXEL_DAG_NODE_LOAD].label = "load";
     nodes[SIXEL_DAG_NODE_LOAD].deps = 0u;
@@ -8080,7 +8147,7 @@ sixel_encoder_encode_frame_internal(
 
     nodes[SIXEL_DAG_NODE_PREPLAN].label = "preplan";
     nodes[SIXEL_DAG_NODE_PREPLAN].deps =
-        (1u << SIXEL_DAG_NODE_LOAD);
+        (1u << SIXEL_DAG_NODE_PALETTE_LAUNCH);
     nodes[SIXEL_DAG_NODE_PREPLAN].done = 0u;
     nodes[SIXEL_DAG_NODE_PREPLAN].run = sixel_encode_dag_node_preplan;
 
@@ -8195,6 +8262,8 @@ sixel_encoder_new(
 
     (*ppencoder)->ref                   = 1U;
     (*ppencoder)->reqcolors             = (-1);
+    (*ppencoder)->palette_sampling_policy = SIXEL_PALETTE_SAMPLING_AUTO;
+    (*ppencoder)->palette_sampling_override = 0;
     (*ppencoder)->palette_sample_target = 0u;
     (*ppencoder)->palette_sample_override = 0;
     (*ppencoder)->force_palette         = 0;
@@ -8603,6 +8672,22 @@ sixel_encoder_new(
         SIXEL_OPTION_SCOPE_ENCODER,
         *ppencoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
+
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &policy_value)) {
+        (*ppencoder)->palette_sampling_policy = policy_value;
+        (*ppencoder)->palette_sampling_override = 1;
+    }
 
     policy_schema = sixel_option_registry_get(
         SIXEL_OPTION_SCHEMA_MERGE_POLICY);
@@ -10928,6 +11013,19 @@ sixel_encoder_setopt(
         status = sixel_encoder_apply_quantize_resolution(
             encoder,
             q_resolution);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_PALETTE_SAMPLING:
+        status = sixel_encoder_apply_registered_policy_argument(
+            encoder,
+            SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING,
+            value,
+            &encoder->palette_sampling_policy,
+            &encoder->palette_sampling_override,
+            match_detail,
+            sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }

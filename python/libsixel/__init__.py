@@ -508,6 +508,7 @@ SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
                                       #        supported suboptions:
                                       #          inittype (or i):
                                       #            auto, none, pca
+SIXEL_OPTFLAG_PALETTE_SAMPLING = 0x100  # --palette-sampling=POLICY
                                       #          threshold (or t):
                                       #            float in 0.0-0.5
                                       #          binning (or b):

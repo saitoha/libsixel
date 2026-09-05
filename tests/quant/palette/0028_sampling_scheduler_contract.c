@@ -89,7 +89,21 @@ sampling_scheduler_contract_valid(void)
         encoder,
         frame,
         SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID);
-    if (status != SIXEL_LOGIC_ERROR || planner.main_threads != 2 ||
+    if (SIXEL_FAILED(status) || planner.main_threads != 2 ||
+            planner.palette_threads != 0 ||
+            planner.allow_palette_async != 0) {
+        status = SIXEL_LOGIC_ERROR;
+        goto cleanup;
+    }
+
+    planner.total_threads = 1;
+    planner.heavy_ops = 0;
+    status = sixel_encoding_planner_schedule(
+        &planner,
+        encoder,
+        frame,
+        SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID);
+    if (SIXEL_FAILED(status) || planner.main_threads != 1 ||
             planner.palette_threads != 0 ||
             planner.allow_palette_async != 0) {
         status = SIXEL_LOGIC_ERROR;

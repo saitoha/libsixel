@@ -52,6 +52,7 @@ try {
         'SIXEL_LUT_POLICY_RBC' => 0x9,
         'SIXEL_LUT_POLICY_MAHALANOBIS' => 0xa,
         'SIXEL_OPTFLAG_WORKING_COLORSPACE' => 'W',
+        'SIXEL_OPTFLAG_PALETTE_SAMPLING' => 0x100,
     ];
     foreach ($checks as $name => $expectedValue) {
         $actual = $reflection->getConstant($name);

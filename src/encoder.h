@@ -51,6 +51,8 @@ struct sixel_encoder {
     sixel_atomic_u32_t ref;         /* reference counter */
     sixel_allocator_t *allocator;   /* allocator object */
     int reqcolors;
+    int palette_sampling_policy;  /* requested sampling-stage policy */
+    int palette_sampling_override; /* non-zero when explicitly configured */
     size_t palette_sample_target;   /* target sample count for palette */
     int palette_sample_override;    /* non-zero when env requested target */
     int force_palette;              /* force palette size when non-zero */

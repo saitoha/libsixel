@@ -99,6 +99,21 @@ performance.
 The migration names the two successful paths and temporarily preserves their
 selection thresholds:
 
+`--palette-sampling=auto|full-frame|adaptive-grid` exposes this choice as an
+independent top-level encoder policy. `SIXEL_PALETTE_SAMPLING` supplies the
+same policy through the environment, and an explicit command-line value takes
+precedence. `auto` retains the resource-aware selection described below.
+`full-frame` consumes the frame after clipping, resizing, and colorspace
+preprocessing. `adaptive-grid` consumes the loader output and constructs its
+owned sample before preprocessing begins. The latter may run on a palette
+worker when capacity is available or synchronously otherwise; scheduling does
+not change its source pixels. The legacy `-Q ...:sample_target=COUNT` setting
+continues to control the adaptive grid's target population, not which sampling
+policy is selected. For an indexed loader frame, adaptive sampling clones the
+frame and expands its palette indices to RGB888 before taking the grid. This
+keeps the loader frame available to the main pipeline, at the cost of a
+temporary full-frame RGB expansion in the current implementation.
+
 | Effective sampling | Input source | Current selection |
 | --- | --- | --- |
 | `adaptive-grid` | loaded frame | Auto resolution has capacity for the palette worker. |
@@ -165,12 +180,13 @@ A thread-creation failure that successfully reuses its completed sample keeps
 `adaptive-grid` as the executed policy because its sample population did not
 change.
 
-Once an explicit sampling policy is available, it must not silently inherit
-the automatic policy's full-frame retry. Cross-policy fallback is permitted
-only when the resolver has retained an automatic request origin and records
-the additional attempt. An explicit request either uses the same sample or
-returns the failure unless a separately specified fallback chain says
-otherwise.
+An explicit sampling policy does not silently inherit the automatic policy's
+full-frame retry. Cross-policy fallback is permitted only when the resolver
+has retained an automatic request origin and records the additional attempt.
+An explicit request either uses the same sample or returns the failure unless
+a separately specified fallback chain says otherwise. When it returns a
+palette-worker failure, it preserves that failure status rather than replacing
+it with the resolver's cross-policy rejection status.
 
 ## Binning policy
 
@@ -443,8 +459,10 @@ default changes can be reviewed independently.
 6. Declare quantizer capabilities and introduce stage-specific pure resolvers.
    Resolve sampling before sampling and binning from actual sample metadata,
    without silent execution-time fallback.
-7. Add top-level sampling and binning policy options. Keep existing `-Q`
-   suboptions as deprecated aliases and reject conflicting explicit values.
+7a. Add the top-level sampling policy option while preserving automatic
+    selection. Keep sampling independent of thread count after resolution.
+7b. Add the top-level binning policy option. Keep existing `-Q` suboptions as
+    deprecated aliases and reject conflicting explicit values.
 8. Move other quantizer-specific histogram construction to the shared binning
    stage only where semantics match, and add further explicit policies such as
    exact aggregation.

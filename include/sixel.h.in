@@ -533,6 +533,14 @@ typedef int SIXELSTATUS;
                                                     swap_min_gain:
                                                       float in 0.0-8.0
                                                 */
+#define SIXEL_OPTFLAG_PALETTE_SAMPLING  (0x100) /* --palette-sampling=POLICY:
+                                                   choose which pixels feed
+                                                   palette construction:
+                                                     auto
+                                                     full-frame
+                                                     adaptive-grid
+                                                   This option intentionally
+                                                   has no short form. */
 #define SIXEL_OPTFLAG_MERGE_POLICY      ('F')  /*
                                                   -F POLICY,
                                                   --merge-policy=POLICY:

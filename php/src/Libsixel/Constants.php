@@ -162,6 +162,7 @@ final class Constants
     public const SIXEL_OPTFLAG_FIND_LARGEST = 'f';
     public const SIXEL_OPTFLAG_SELECT_COLOR = 's';
     public const SIXEL_OPTFLAG_QUANTIZE_MODEL = 'Q';
+    public const SIXEL_OPTFLAG_PALETTE_SAMPLING = 0x100;
     public const SIXEL_OPTFLAG_CROP = 'c';
     public const SIXEL_OPTFLAG_WIDTH = 'w';
     public const SIXEL_OPTFLAG_HEIGHT = 'h';

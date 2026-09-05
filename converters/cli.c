@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #if HAVE_ERRNO_H
 # include <errno.h>
@@ -343,8 +344,14 @@ cli_guard_missing_argument(int short_opt,
     char const *previous_token;
     int matched_token;
     int rewind_count;
+    int requires_argument;
 
-    if (cli_option_requires_argument(optstring, short_opt) == 0) {
+    requires_argument = cli_option_requires_argument(optstring, short_opt);
+    if (short_opt > UCHAR_MAX &&
+            cli_find_option_help(table, table_count, short_opt) != NULL) {
+        requires_argument = 1;
+    }
+    if (requires_argument == 0) {
         return 0;
     }
 
@@ -490,12 +497,22 @@ cli_report_missing_argument(char const *tool_name,
     memset(buffer, 0, sizeof(buffer));
     offset = 0u;
 
-    written = snprintf(buffer,
-                       sizeof(buffer),
-                       "%s: missing required argument for -%c,--%s option.\n\n",
-                       tool_name,
-                       (char)short_opt,
-                       long_opt);
+    if (short_opt > UCHAR_MAX) {
+        written = snprintf(
+            buffer,
+            sizeof(buffer),
+            "%s: missing required argument for --%s option.\n\n",
+            tool_name,
+            long_opt);
+    } else {
+        written = snprintf(
+            buffer,
+            sizeof(buffer),
+            "%s: missing required argument for -%c,--%s option.\n\n",
+            tool_name,
+            (char)short_opt,
+            long_opt);
+    }
     if (written < 0) {
         written = 0;
     }

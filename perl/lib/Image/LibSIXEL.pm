@@ -74,8 +74,9 @@ sub _validate_setopt {
     my ($opt) = @_;
 
     defined $opt || croak 'Bad argument: undefined option';
-    length $opt == 1 || croak sprintf 'Bad argument: %s', $opt;
-    return ord($opt);
+    return ord($opt) if length $opt == 1;
+    return 0 + $opt if $opt =~ /\A[0-9]+\z/ && $opt <= 2147483647;
+    croak sprintf 'Bad argument: %s', $opt;
 }
 
 sub _validate_output_setter_argument {
