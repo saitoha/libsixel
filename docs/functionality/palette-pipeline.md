@@ -544,6 +544,15 @@ aggregation even when many cells happen to be occupied. The definitions and an
 initial candidate rule are in
 [Adaptive hard-binning design](clustering-colorspace.md#adaptive-hard-binning-design).
 
+The dedicated five-fixture, five-seed study confirms that population is only a
+warning signal. Under its balanced criterion, stable thresholds range from
+0.49 through 2,050 effective points per palette color, and 28 of 75 conditions
+remain unresolved at the finest measured 8-bit grid. Even among measured cells
+at or above 32 points per color, only 45.8 percent pass. See
+[Measured point sufficiency](clustering-colorspace.md#measured-point-sufficiency)
+for the protocol, graphs, and raw data. Automatic depth must therefore not use
+a scalar point-count threshold as its acceptance rule.
+
 A bounded implementation can build a 6-bit histogram first. If it retains cell
 weights, coordinate sums, and squared moments, nested keys can be coalesced to
 evaluate 5- and 4-bit candidates without replaying samples. A failed 6-bit
@@ -560,9 +569,11 @@ memory-limited selection, per-frame reset, and deterministic replay. A static
 check should keep depth resolution in the binning component so quantizers cannot
 bypass the filter DAG.
 
-The CLI spelling and default thresholds remain deliberately unspecified until a
-multi-image quality, speed, size, and peak-memory study is complete. Any public
-grid-depth control should be binning-owned rather than another `-Q` suboption.
+The point-count study is complete, but the CLI spelling and default thresholds
+remain deliberately unspecified until normalized binning distortion is
+measured and an implemented adaptive policy is compared for quality, speed,
+size, and peak memory. Any public grid-depth control should be binning-owned
+rather than another `-Q` suboption.
 
 ## Measurement protocol for automatic profiles
 

@@ -71,11 +71,21 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/clustering-colorspace.md \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-quality.csv \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-quality.png \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-binning-occupancy.csv \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-binning-occupancy.png \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-binning-quality.csv \
+	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-binning-quality.png \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-run.json \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-size.csv \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-size.png \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-speed.csv \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-speed.png \
+	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-threshold-pass-rate.png \
+	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-threshold-quality.png \
+	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-threshold-raw.csv \
+	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-threshold-run.json \
+	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-threshold-summary.csv \
+	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-thresholds.csv \
 	docs/functionality/dithering.md \
 	docs/functionality/dither-policies/measurements/dither-policy-delta-e00.png \
 	docs/functionality/dither-policies/measurements/dither-policy-ms-ssim.png \

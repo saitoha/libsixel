@@ -1,0 +1,163 @@
+{
+  "build": {
+    "cc": "gcc",
+    "cflags": "-O3 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "configured_source_directory": "/Users/saitoha/repo/libsixel",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": "",
+    "source_directory_matches": true
+  },
+  "fixtures": [
+    {
+      "class": "natural",
+      "height": 450,
+      "id": "natural-snake",
+      "label": "natural photograph",
+      "path": "images/snake.png",
+      "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+      "width": 600
+    },
+    {
+      "class": "flat-artwork",
+      "height": 746,
+      "id": "flat-artwork",
+      "label": "flat artwork",
+      "path": "images/vimperator3.png",
+      "sha256": "469db2a68010522cde29cc1dce7617743cb5a293ad2874cde6744f5ebb23bd33",
+      "width": 582
+    },
+    {
+      "class": "gradient",
+      "height": 450,
+      "id": "smooth-gradient-medium",
+      "label": "smooth gradient",
+      "path": "images/measurements/palette-pipeline/smooth-gradient-600x450.png",
+      "sha256": "47de1f7508b0bb9d1ebdf6b0b2278cb5ccd1db1ad82ff2fbee365dab40510a93",
+      "width": 600
+    },
+    {
+      "class": "rare-color",
+      "height": 450,
+      "id": "rare-colors",
+      "label": "sparse rare colors",
+      "path": "images/measurements/palette-pipeline/rare-colors-600x450.png",
+      "sha256": "93f0f2284086e1db61d5d2d702b1e67a5d73063ce63c5df726dd5f2bf22ab5c7",
+      "width": 600
+    },
+    {
+      "class": "broad-gamut",
+      "height": 450,
+      "id": "a98-gamut",
+      "label": "Adobe RGB gamut ramps",
+      "path": "images/measurements/palette-pipeline/a98-gamut-600x450.png",
+      "sha256": "3a025f519c2107ae6286d1807a0b100948550025eec547c5bde94e932270a133",
+      "width": 600
+    }
+  ],
+  "generated_at_utc": "2026-09-05T21:06:07.101011+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.13.13"
+  },
+  "libsixel_linkage": {
+    "artifacts": [
+      {
+        "path": "src/.libs/libsixel.1.dylib",
+        "role": "shared",
+        "sha256": "0039320a2739adf8fb5ccca1ccadd3f995315e6cb814485dbeb5e89f18f1ea16"
+      }
+    ],
+    "mode": "library"
+  },
+  "manifest": {
+    "path": "tools/palette_pipeline_suite.json",
+    "sha256": "93278ab8f6278f1959f776b13e7a14a6809778d11e9cff3f7c5470847ce7a083"
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "ac363a143663c5b8bd93e729b46b387a3f33f4886ce46c0434d0fc3b1f8c5cc7"
+    },
+    "lsqa": {
+      "launcher": "assessment/lsqa",
+      "launcher_sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
+      "payload": "assessment/.libs/lsqa",
+      "payload_sha256": "b200ce01de72675a10f18bb580fd807ec887d3423506accfc3bad319a2d60aa1"
+    }
+  },
+  "protocol": {
+    "baseline": "none",
+    "binbits": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "colors": [
+      64,
+      128,
+      256
+    ],
+    "comparison_scope": "effective hard-bin population versus paired no-binning quality at high palette sizes",
+    "criteria": [
+      {
+        "Delta E00_regret_limit": 0.05,
+        "MS-SSIM_regret_limit": 0.001,
+        "name": "strict"
+      },
+      {
+        "Delta E00_regret_limit": 0.15,
+        "MS-SSIM_regret_limit": 0.002,
+        "name": "balanced"
+      },
+      {
+        "Delta E00_regret_limit": 0.25,
+        "MS-SSIM_regret_limit": 0.005,
+        "name": "relaxed"
+      }
+    ],
+    "diffusion": "none",
+    "gpu_policy": "off",
+    "interpretation_limit": "point count is correlated with hard-grid distortion and does not by itself establish a universal causal threshold",
+    "loader": "builtin!",
+    "lookup_policy": "none",
+    "lsqa_environment_removed": true,
+    "merge_policy": "none",
+    "order": "six policy/depth configurations rotated by fixture, K, colorspace, and seed",
+    "pass_rate_target": 0.8,
+    "precision": "float32",
+    "quality": "full",
+    "sampling_policy": "full-frame",
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "sixel_environment_removed": true,
+    "stable_threshold": "the coarsest observed grid for which it and every finer observed grid meet the paired-seed pass-rate target",
+    "threads": 1,
+    "working_colorspace": "gamma"
+  },
+  "rows": {
+    "raw": 2250,
+    "summary": 375,
+    "thresholds": 225
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "02fb78ff507b3ed54dd04f3bab42935450dd4fc9",
+    "suite_end_snapshot_matches": true,
+    "top_source_directory": "/Users/saitoha/repo/libsixel",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}

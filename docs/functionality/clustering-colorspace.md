@@ -444,11 +444,63 @@ S_b >= min(S_8, rho * K)  and  E_b / T <= epsilon
 ```
 
 `S_8` prevents a genuinely low-color image from being classified as deficient.
-`rho = 32` is useful as an exploratory starting point, but neither `rho` nor
-`epsilon` is a proposed default. The current occupancy data would move OKLab and
-CIELAB from 6 to 7 bits at `K=128` and `K=256` under the occupancy condition
-alone. The non-monotonic quality results show why the distortion condition and
-a broader validation set are also necessary.
+`rho = 32` was an exploratory reference, not a proposed default. The measured
+results below reject any single `rho` as a sufficient decision rule. A
+distortion condition and a content-diverse validation set are both necessary.
+
+### Measured point sufficiency
+
+![Hard-binning population and quality regret](clustering-color-spaces/threshold-measurements/clustering-binning-threshold-quality.png)
+
+The point-sufficiency study uses five content classes, all five clustering
+spaces, `K = 64, 128, 256`, hard grids from 4 through 8 bits, and five paired
+K-means seeds. Each hard-grid result is compared with `none` at the same
+fixture, `K`, clustering space, and seed. The run uses full-frame sampling,
+float32 coordinates, exact palette lookup, one thread, and no dithering. It
+therefore isolates the current hard-binning representation and solver response;
+it does not measure a complete future adaptive policy.
+
+The balanced analytical criterion accepts a seed when MS-SSIM regret is at
+most 0.002 and mean Delta E00 regret is at most 0.15. A grid passes a condition
+when at least four of five paired seeds pass. The *observed threshold* is the
+coarsest passing measured grid. The more conservative *stable threshold* also
+requires every finer measured grid to pass, because current K-means results are
+not monotonic in grid depth.
+
+| Palette size | Stable conditions | Median stable points | Median `S / K` | Passing conditions at 6 / 7 / 8 bits |
+| ---: | ---: | ---: | ---: | ---: |
+| 64 | 10 / 25 | 8,488.5 | 132.63 | 7 / 7 / 10 |
+| 128 | 16 / 25 | 3,034.5 | 23.71 | 12 / 13 / 16 |
+| 256 | 21 / 25 | 8,256 | 32.25 | 12 / 15 / 21 |
+
+Medians exclude conditions that never reach a stable threshold by 8 bits, so
+they are descriptive values rather than safe lower bounds. At `K=256`, the 21
+stable conditions range from 125 through 86,680 effective points, while four
+conditions remain censored at 8 bits. Across every palette size, only 47 of 75
+conditions have a stable balanced threshold. Fixed 6-, 7-, and 8-bit grids pass
+31, 35, and 47 conditions respectively.
+
+![Hard-binning paired-seed pass rate](clustering-color-spaces/threshold-measurements/clustering-binning-threshold-pass-rate.png)
+
+Point count alone does not predict the result. Among the 166 measured
+depth/condition cells with at least 32 effective points per palette color, only
+76, or 45.8 percent, pass the balanced condition. Near the same population,
+5-bit linear-RGB binning at about 19 points per color passes for the flat
+artwork fixture but fails for the rare-color fixture. Counts do not describe
+the distances collapsed inside a cell, and changing the weighted point set can
+also send finite-restart K-means to a different local minimum. More points can
+therefore produce a worse final palette even though they represent the source
+distribution more finely.
+
+The measurement supports using `S_b / K` as a deficiency warning, but not as an
+automatic acceptance test. An adaptive resolver should combine it with
+`E_b / T`, and calibration must evaluate the resulting policy rather than infer
+quality from either signal alone. If no admissible hard depth satisfies the
+chosen distortion and resource limits, `exact` or `none` is a separate,
+explicitly diagnosed fallback decision rather than an implied deeper hard
+grid.
+
+### Implementation constraints
 
 The histogram already retains cell weights and coordinate sums. Retaining a
 sum of squared norms, or equivalent per-axis second moments, would make `E_b`
@@ -466,13 +518,13 @@ animation retries must not reuse statistics from a previous frame. Exhausting
 the memory budget should select the best admissible hard grid and report the
 constraint. It should not silently change the binning policy to `none`.
 
-Before enabling this behavior by default, compare fixed 6-bit hard binning,
-adaptive hard binning, fixed 8-bit hard binning, `exact`, and `none`. The suite
-must cover natural images, smooth luminance and chroma gradients, rare saturated
-colors, broad-gamut inputs, all supported palette sizes, and multiple K-means
-seeds or restart schedules. Record quality, speed, encoded size, effective point
-count, and peak memory. Grid-depth controls and thresholds belong to the binning
-configuration rather than `-Q`; their final CLI spelling remains undecided.
+Before enabling this behavior by default, measure `E_b / T` on this suite and
+compare fixed 6-bit hard binning, the implemented adaptive policy, fixed 8-bit
+hard binning, `exact`, and `none`. Record quality, speed, encoded size,
+effective point count, and peak memory. Repeat with the intended production
+dithering policy after the palette-only comparison. Grid-depth controls and
+thresholds belong to the binning configuration rather than `-Q`; their final
+CLI spelling remains undecided.
 
 ## Interpretation and selection
 
@@ -527,6 +579,26 @@ python3 tools/check_clustering_colorspace_measurements.py \
 
 The reproduction wrapper refuses to record a tracked dirty worktree so that
 the manifest revision and executable provenance remain meaningful.
+
+The multi-fixture point-sufficiency tables are
+[`clustering-binning-threshold-raw.csv`](clustering-color-spaces/threshold-measurements/clustering-binning-threshold-raw.csv),
+[`clustering-binning-threshold-summary.csv`](clustering-color-spaces/threshold-measurements/clustering-binning-threshold-summary.csv),
+and
+[`clustering-binning-thresholds.csv`](clustering-color-spaces/threshold-measurements/clustering-binning-thresholds.csv).
+The corresponding provenance is recorded in
+[`clustering-binning-threshold-run.json`](clustering-color-spaces/threshold-measurements/clustering-binning-threshold-run.json).
+Regenerate both figures and all three tables with:
+
+```sh
+tools/reproduce_clustering_binning_threshold_measurements.sh
+```
+
+The durable run must pass:
+
+```sh
+python3 tools/check_clustering_binning_threshold_measurements.py \
+  docs/functionality/clustering-color-spaces/threshold-measurements
+```
 
 ## Implementation and tests
 
