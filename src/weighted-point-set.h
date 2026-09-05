@@ -42,6 +42,9 @@ typedef enum sixel_weighted_point_ownership {
  * A NULL weight array represents unit mass for every point and is permitted
  * only for the unaggregated `none` policy.  Aggregated policies must publish
  * explicit weights so quantizers cannot accidentally discard sample mass.
+ * The binning filter currently consumes only this unit-mass `none` form;
+ * accepting an already weighted input requires a separate mass-validation
+ * contract.
  */
 typedef struct sixel_weighted_point_set {
     double *coordinates;

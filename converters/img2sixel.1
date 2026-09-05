@@ -319,12 +319,11 @@ The \fBSIXEL_PALETTE_SAMPLING\fP environment provides the default.
 choose how sampled colors become weighted quantizer input.
 \fIPOLICY\fP accepts \fBauto\fP, \fBnone\fP, \fBexact\fP,
 \fBhard\fP, or \fBsoft\fP. \fBnone\fP preserves the raw sample sequence;
-\fBhard\fP assigns each color to one finite grid bin; and \fBsoft\fP
-distributes its mass to neighboring bins with trilinear weights.
-\fBexact\fP reserves exact duplicate aggregation but is rejected until that
-filter is implemented. Explicit \fBhard\fP or \fBsoft\fP selects k-means when
-\fB\-Q auto\fP is active. The \fBSIXEL_PALETTE_BINNING\fP environment
-provides the default.
+\fBexact\fP combines only identical colors at full precision; \fBhard\fP
+assigns each color to one finite grid bin; and \fBsoft\fP distributes its mass
+to neighboring bins with trilinear weights. Explicit \fBexact\fP,
+\fBhard\fP, or \fBsoft\fP selects k-means when \fB\-Q auto\fP is active.
+The \fBSIXEL_PALETTE_BINNING\fP environment provides the default.
 .TP 5
 .B \-F \fIPOLICY\fP, \-\-merge\-policy=\fIPOLICY\fP
 configure final palette merging independently of the quantizer.

@@ -393,10 +393,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "    choose how sampled colors become weighted quantizer input:\n"
         "      auto  -> resolve from quantizer capability and sample density.\n"
         "      none  -> pass every sampled color through unchanged.\n"
-        "      exact -> combine only identical colors (reserved; unavailable).\n"
+        "      exact -> combine only identical colors at full precision.\n"
         "      hard  -> assign each color to one finite grid bin.\n"
         "      soft  -> distribute color mass with trilinear weights.\n"
-        "    Explicit hard or soft binning selects k-means when -Q is auto.\n"
+        "    Explicit exact, hard, or soft selects k-means when -Q is auto.\n"
     },
     {
         'F',

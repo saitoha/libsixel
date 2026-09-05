@@ -314,25 +314,24 @@ Its current `auto` threshold remains unchanged: it selects soft binning when
 An explicit unsupported combination is rejected during resolution. In
 particular, soft binning requires a weighted-point consumer that accepts
 fractional weights, while hard binning cannot feed a quantizer that requires
-representatives to remain observed input colors. The `exact` artifact contract
-is defined, but its executable filter is intentionally deferred to migration
-wave 8. Until that filter exists, both the quantizer and binning resolvers
-reject an explicit `exact` request without publishing a partial selection.
-Resolver failure never triggers an allocation-time or execution-time algorithm
-fallback.
+representatives to remain observed input colors. The `exact` artifact is
+currently executable by K-means. Other quantizers remain unsupported until
+their palette-builder boundaries consume the shared weighted-point-set
+artifact. Resolver failure never triggers an allocation-time or execution-time
+algorithm fallback.
 
 Wave 7b exposes the top-level option at the encoder boundary. Palette
 construction preflights compatibility without committing the quantizer to the
 per-frame lifecycle state. The palette builder resolves the concrete consumer
 only when it is ready to construct the palette. Thus
 `-Qauto --palette-binning=hard` and
-`-Qauto --palette-binning=soft` select K-means, while an incompatible explicit
-quantizer is rejected. This capability preflight runs before sampling and
-scheduler allocation, so a known policy error cannot be misclassified as a
-worker failure or enter the full-frame sampling fallback. K-means `auto`
-binning remains unresolved until its point-set builder sees the actual
-post-sampling count; the encoder does not precompute that density decision from
-frame dimensions.
+`-Qauto --palette-binning=exact`, `hard`, or `soft` select K-means, while an
+incompatible explicit quantizer is rejected. This capability preflight runs
+before sampling and scheduler allocation, so a known policy error cannot be
+misclassified as a worker failure or enter the full-frame sampling fallback.
+K-means `auto` binning remains unresolved until its point-set builder sees the
+actual post-sampling count; the encoder does not precompute that density
+decision from frame dimensions.
 
 Only a successful palette-builder attempt commits quantizer and binning state
 to the encode DAG. Each quantizer-engine retry uses an attempt-local binning
@@ -345,15 +344,16 @@ rejected instead of overwriting another operation's result target.
 A failed float32 K-means engine resets the attempt lifecycle before invoking
 legacy K-means. Float samples are normalized to RGB888 for that retry because
 the legacy engine consumes byte samples; passing the float buffer through
-unchanged cannot form a valid legacy input. If the palette component's
+unchanged cannot form a valid legacy input. Exact binning is the exception:
+normalization could merge distinct float coordinates, so a failed float engine
+is returned without entering the RGB888 retry. If the palette component's
 historical solver fallback succeeds, the frame records the solver that
-actually produced the palette with `fallback` as
-its reason and discards the failed attempt's binning state. A fallback is
-rejected when its solver cannot consume an explicit `hard` or `soft` artifact;
-it cannot silently erase that request. An asynchronous palette worker commits
-the effective policy, origin, lifecycle phase, resolution reason, and actual
-source-point count only after its successful attempt, before collection
-completes.
+actually produced the palette with `fallback` as its reason and discards the
+failed attempt's binning state. A fallback is rejected when its solver cannot
+consume an explicit `exact`, `hard`, or `soft` artifact; it cannot silently
+erase that request. An asynchronous palette worker commits the effective
+policy, origin, lifecycle phase, resolution reason, and actual source-point
+count only after its successful attempt, before collection completes.
 When automatic adaptive sampling falls back to the full preprocessed frame,
 binning keeps its request and origin but resolves its sample-dependent metadata
 again against the replacement sample stream.
@@ -424,14 +424,31 @@ weights; otherwise a downstream quantizer could silently discard aggregation
 mass. Borrowed and owned arrays are distinct artifact states, and a failed
 ownership transfer leaves the caller's pointer slots unchanged.
 
-Kmeans hard and soft binning execute through the `binning` filter vtable. The
-filter accepts an unaggregated `none` artifact and publishes an owned weighted
-artifact. Its current backend is the compact sparse histogram retained from
-the Kmeans implementation, including hash-table traversal order; keeping that
-order stable prevents a structural migration from perturbing deterministic
-seeding and palette output. The residual histogram used by Kmeans feedback is
-a quantizer operation, not a second preprocessing filter, although it reuses
-the same compact histogram primitive.
+Kmeans exact, hard, and soft binning execute through the `binning` filter
+vtable. The filter currently accepts only the unit-mass form of an
+unaggregated `none` artifact and publishes an owned weighted artifact. This
+restriction avoids accepting weighted input until re-binning has a specified
+mass-validation contract. Hard and soft currently use the compact sparse
+histogram retained from the Kmeans implementation, including hash-table
+traversal order; keeping that order stable prevents a structural migration
+from perturbing deterministic seeding and palette output. The residual
+histogram used by Kmeans feedback is a quantizer operation, not a second
+preprocessing filter, although it reuses the same compact histogram primitive.
+
+Exact aggregation uses a separate compact hash table because finite grid keys
+cannot represent full palette-space coordinates. Equality is numeric equality
+across all three finite coordinates; positive and negative zero therefore
+name the same point. The table stores the first coordinate tuple unchanged and
+sums the weights of later equal tuples. It does not average, round, or map the
+coordinates through `bits` or `grid-map`. The initial capacity is bounded from
+the source point count with an initial target of at most 64 unique entries. The
+table doubles when observed occupancy crosses 70 percent, so an explicit
+`exact` request still requires linear auxiliary memory when every input point
+is distinct without reserving for the full source count up front. Hash-slot
+traversal gives deterministic output for the same input and build, but it does
+not preserve insertion order. Automatic binning does not select `exact` for
+K-means in this wave; an explicit `exact` request paired with `-Qauto` selects
+K-means by capability.
 
 Algorithmic services may be shared below a filter, such as solid-color
 detection or lookup construction. Such services must not duplicate the
@@ -515,9 +532,11 @@ default changes can be reviewed independently.
     selection. Keep sampling independent of thread count after resolution.
 7b. Add the top-level binning policy option. Keep existing `-Q` suboptions as
     deprecated aliases and reject conflicting explicit values.
-8. Move other quantizer-specific histogram construction to the shared binning
-   stage only where semantics match, and add further explicit policies such as
-   exact aggregation.
+8a. Implement exact aggregation in the shared binning filter and connect the
+    first weighted-point consumer, K-means.
+8b. Move other quantizer-specific histogram construction to the shared binning
+    stage only where semantics match. Preserve observed-color and candidate
+    selection contracts rather than treating every histogram as equivalent.
 9. Measure the sampling, binning, and quantization axes independently. Use the
    results to select automatic profiles and only then change defaults.
 10. Add chunk streaming, operator fusion, or storage optimizations where

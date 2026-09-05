@@ -45,15 +45,13 @@ quantizer_selection_is_valid(void)
     }
 
     input.binning_requested = SIXEL_PALETTE_BINNING_EXACT;
-    selection.effective = SIXEL_QUANTIZE_MODEL_KCENTER;
-    selection.reason = SIXEL_PALETTE_RESOLUTION_FALLBACK;
-    selection.capabilities.quantize_model = SIXEL_QUANTIZE_MODEL_KCENTER;
     status = sixel_palette_quantizer_select(&input, &selection);
-    if (status != SIXEL_BAD_ARGUMENT ||
-            selection.effective != SIXEL_QUANTIZE_MODEL_KCENTER ||
-            selection.reason != SIXEL_PALETTE_RESOLUTION_FALLBACK ||
+    if (SIXEL_FAILED(status) ||
+            selection.effective != SIXEL_QUANTIZE_MODEL_KMEANS ||
+            selection.reason !=
+                SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY ||
             selection.capabilities.quantize_model !=
-                SIXEL_QUANTIZE_MODEL_KCENTER) {
+                SIXEL_QUANTIZE_MODEL_KMEANS) {
         return 0;
     }
 
@@ -181,12 +179,17 @@ kmeans_binning_selection_is_valid(void)
     }
 
     input.requested = SIXEL_PALETTE_BINNING_EXACT;
-    selection.effective = SIXEL_PALETTE_BINNING_HARD;
     status = sixel_palette_binning_select(&input,
                                           &capabilities,
                                           &selection);
-    if (status != SIXEL_BAD_ARGUMENT ||
-            selection.effective != SIXEL_PALETTE_BINNING_HARD) {
+    if (SIXEL_FAILED(status) ||
+            selection.effective != SIXEL_PALETTE_BINNING_EXACT ||
+            selection.bits_per_axis != 0u ||
+            selection.grid_map != SIXEL_PALETTE_BINNING_GRID_NONE ||
+            selection.kernel != SIXEL_PALETTE_BINNING_KERNEL_NONE ||
+            selection.backend !=
+                SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE ||
+            selection.reason != SIXEL_PALETTE_RESOLUTION_EXPLICIT) {
         return 0;
     }
     return 1;

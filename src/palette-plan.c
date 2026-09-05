@@ -401,15 +401,11 @@ sixel_palette_quantizer_select(
                 input->binning_requested)) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (input->binning_requested == SIXEL_PALETTE_BINNING_EXACT) {
-        /* No quantizer can consume the exact-point artifact yet. */
-        return SIXEL_BAD_ARGUMENT;
-    }
-
     result.effective = input->requested;
     result.reason = SIXEL_PALETTE_RESOLUTION_EXPLICIT;
     if (input->requested == SIXEL_QUANTIZE_MODEL_AUTO) {
-        if (input->binning_requested == SIXEL_PALETTE_BINNING_HARD ||
+        if (input->binning_requested == SIXEL_PALETTE_BINNING_EXACT ||
+                input->binning_requested == SIXEL_PALETTE_BINNING_HARD ||
                 input->binning_requested == SIXEL_PALETTE_BINNING_SOFT) {
             result.effective = SIXEL_QUANTIZE_MODEL_KMEANS;
             result.reason =
@@ -443,8 +439,7 @@ sixel_palette_binning_is_supported(
         return capabilities->accepts_raw_samples != 0;
     }
     if (policy == SIXEL_PALETTE_BINNING_EXACT) {
-        /* The artifact contract exists, but no exact filter exists yet. */
-        return 0;
+        return capabilities->accepts_weighted_points != 0;
     }
     if (policy == SIXEL_PALETTE_BINNING_HARD) {
         return capabilities->accepts_weighted_points != 0 &&

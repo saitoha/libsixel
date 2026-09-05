@@ -6680,13 +6680,8 @@ sixel_encoder_select_palette_quantizer(
     status = sixel_palette_quantizer_select(&quantizer_input,
                                             &quantizer_selection);
     if (SIXEL_FAILED(status)) {
-        if (binning_policy == SIXEL_PALETTE_BINNING_EXACT) {
-            sixel_helper_set_additional_message(
-                "palette binning policy 'exact' is not executable yet.");
-        } else {
-            sixel_helper_set_additional_message(
-                "cannot resolve the palette quantizer and binning policy.");
-        }
+        sixel_helper_set_additional_message(
+            "cannot resolve the palette quantizer and binning policy.");
         return status;
     }
 
@@ -6699,6 +6694,9 @@ sixel_encoder_select_palette_quantizer(
             encoder->quantize_model_kmeans_autoratio;
         if (binning_policy == SIXEL_PALETTE_BINNING_NONE) {
             binning_input.backend = SIXEL_PALETTE_BINNING_BACKEND_DIRECT;
+        } else if (binning_policy == SIXEL_PALETTE_BINNING_EXACT) {
+            binning_input.backend =
+                SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE;
         } else {
             binning_input.bits_per_axis =
                 encoder->quantize_model_kmeans_binbits;

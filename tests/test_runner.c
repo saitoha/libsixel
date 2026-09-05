@@ -123,6 +123,7 @@ int test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback(
 int test_filter_0030_filter_palette_failure_output(int argc, char **argv);
 int test_filter_0031_filter_binning(int argc, char **argv);
 int test_filter_0032_filter_binning_failure_output(int argc, char **argv);
+int test_filter_0033_filter_binning_exact(int argc, char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
@@ -383,6 +384,8 @@ static test_entry_t const test_entries[] = {
       test_filter_0031_filter_binning },
     { "filter/0032_filter_binning_failure_output",
       test_filter_0032_filter_binning_failure_output },
+    { "filter/0033_filter_binning_exact",
+      test_filter_0033_filter_binning_exact },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
       test_gpupal_0001_strtoul },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",

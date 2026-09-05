@@ -702,6 +702,16 @@ sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
                     (sixel_palette_binning_policy_t)
                         binning_state->policy.requested;
                 binning_origin = binning_state->policy.origin;
+                /*
+                 * Exact binning promises equality in the source coordinate
+                 * domain.  Converting float samples to RGB888 before the
+                 * legacy retry can merge distinct coordinates, so preserve
+                 * the float engine failure instead of weakening that
+                 * contract silently.
+                 */
+                if (requested_binning == SIXEL_PALETTE_BINNING_EXACT) {
+                    return status;
+                }
                 sixel_palette_binning_state_init(binning_state,
                                                   requested_binning,
                                                   binning_origin);

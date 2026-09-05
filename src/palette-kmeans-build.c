@@ -797,10 +797,14 @@ sixel_kmeans_build_point_set(
             requested,
             sixel_get_kmeans_binning_origin());
         binning = &local_binning;
-    } else if (binning->policy.phase !=
-                   SIXEL_PALETTE_POLICY_UNRESOLVED ||
-            binning->policy.requested != (int)requested) {
-        return SIXEL_LOGIC_ERROR;
+    } else {
+        if (binning->policy.phase !=
+                SIXEL_PALETTE_POLICY_UNRESOLVED) {
+            return SIXEL_LOGIC_ERROR;
+        }
+        /* The frame plan is canonical; legacy K-means mode is only an alias. */
+        requested = (sixel_palette_binning_policy_t)
+            binning->policy.requested;
     }
     sixel_weighted_point_set_init(&raw_points);
     memset(&config, 0, sizeof(config));

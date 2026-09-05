@@ -23,33 +23,70 @@
 
 static unsigned int binning_failure_allocation_count;
 static unsigned int binning_failure_allocation_target;
+static unsigned int binning_failure_live_allocation_count;
 
 static void *
 binning_failure_malloc(size_t size)
 {
+    void *ptr;
+
+    ptr = NULL;
     ++binning_failure_allocation_count;
     if (binning_failure_allocation_count ==
             binning_failure_allocation_target) {
         return NULL;
     }
-    return malloc(size);
+    ptr = malloc(size);
+    if (ptr != NULL) {
+        ++binning_failure_live_allocation_count;
+    }
+    return ptr;
 }
 
 static void *
 binning_failure_calloc(size_t count, size_t size)
 {
-    return calloc(count, size);
+    void *ptr;
+
+    ptr = NULL;
+    ++binning_failure_allocation_count;
+    if (binning_failure_allocation_count ==
+            binning_failure_allocation_target) {
+        return NULL;
+    }
+    ptr = calloc(count, size);
+    if (ptr != NULL) {
+        ++binning_failure_live_allocation_count;
+    }
+    return ptr;
 }
 
 static void *
 binning_failure_realloc(void *ptr, size_t size)
 {
-    return realloc(ptr, size);
+    void *resized;
+    int had_allocation;
+
+    resized = NULL;
+    had_allocation = ptr != NULL;
+    ++binning_failure_allocation_count;
+    if (binning_failure_allocation_count ==
+            binning_failure_allocation_target) {
+        return NULL;
+    }
+    resized = realloc(ptr, size);
+    if (!had_allocation && resized != NULL) {
+        ++binning_failure_live_allocation_count;
+    }
+    return resized;
 }
 
 static void
 binning_failure_free(void *ptr)
 {
+    if (ptr != NULL && binning_failure_live_allocation_count != 0u) {
+        --binning_failure_live_allocation_count;
+    }
     free(ptr);
 }
 
@@ -64,8 +101,10 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
     sixel_weighted_point_set_t output;
     sixel_filter_binning_config_t config;
     sixel_filter_t *filter;
-    double coordinates[3];
+    double coordinates[291];
+    size_t index;
     unsigned int failure_target;
+    unsigned int live_allocation_baseline;
 
     (void)argc;
     (void)argv;
@@ -83,12 +122,17 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
     sixel_weighted_point_set_init(&output);
     memset(&config, 0, sizeof(config));
     filter = NULL;
-    coordinates[0] = 16.0;
-    coordinates[1] = 32.0;
-    coordinates[2] = 64.0;
+    index = 0u;
+    for (index = 0u; index < 97u; ++index) {
+        coordinates[index * 3u + 0u] = (double)index;
+        coordinates[index * 3u + 1u] = 100.0 + (double)index;
+        coordinates[index * 3u + 2u] = 200.0 + (double)index;
+    }
     failure_target = 0u;
     binning_failure_allocation_count = 0u;
     binning_failure_allocation_target = 0u;
+    binning_failure_live_allocation_count = 0u;
+    live_allocation_baseline = 0u;
 
     status = sixel_allocator_new(&allocator,
                                  binning_failure_malloc,
@@ -98,6 +142,7 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    live_allocation_baseline = binning_failure_live_allocation_count;
     status = sixel_palette_binning_resolve(
         &raw_state,
         SIXEL_PALETTE_BINNING_NONE,
@@ -105,7 +150,7 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
         SIXEL_PALETTE_BINNING_GRID_NONE,
         SIXEL_PALETTE_BINNING_KERNEL_NONE,
         SIXEL_PALETTE_BINNING_BACKEND_DIRECT,
-        1u,
+        97u,
         SIXEL_PALETTE_RESOLUTION_EXPLICIT);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -114,8 +159,8 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
         &raw_points,
         coordinates,
         NULL,
-        1u,
-        1.0,
+        97u,
+        97.0,
         SIXEL_COLORSPACE_GAMMA,
         &raw_state);
     if (SIXEL_FAILED(status)) {
@@ -134,7 +179,7 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
             SIXEL_PALETTE_BINNING_GRID_UNIFORM,
             SIXEL_PALETTE_BINNING_KERNEL_NONE,
             SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE,
-            1u,
+            97u,
             SIXEL_PALETTE_RESOLUTION_EXPLICIT);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
@@ -159,7 +204,55 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
         if (status != SIXEL_BAD_ALLOCATION ||
                 output.ownership != SIXEL_WEIGHTED_POINT_EMPTY ||
                 output.coordinates != NULL || output.weights != NULL ||
-                binning.policy.phase != SIXEL_PALETTE_POLICY_RESOLVED) {
+                binning.policy.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
+                binning_failure_live_allocation_count !=
+                    live_allocation_baseline) {
+            status = SIXEL_LOGIC_ERROR;
+            goto cleanup;
+        }
+        sixel_filter_free(filter);
+        filter = NULL;
+    }
+    for (failure_target = 1u; failure_target <= 4u; ++failure_target) {
+        sixel_palette_binning_state_init(
+            &binning,
+            SIXEL_PALETTE_BINNING_EXACT,
+            SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
+        status = sixel_palette_binning_resolve(
+            &binning,
+            SIXEL_PALETTE_BINNING_EXACT,
+            0u,
+            SIXEL_PALETTE_BINNING_GRID_NONE,
+            SIXEL_PALETTE_BINNING_KERNEL_NONE,
+            SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE,
+            97u,
+            SIXEL_PALETTE_RESOLUTION_EXPLICIT);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        config.binning = &binning;
+        status = sixel_filter_factory_create_by_kind(
+            SIXEL_FILTER_KIND_BINNING,
+            &config,
+            &filter);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        sixel_filter_bind_weighted_input(filter, &raw_points);
+        sixel_filter_bind_weighted_output(
+            filter,
+            &output,
+            SIXEL_COLORSPACE_GAMMA);
+        binning_failure_allocation_count = 0u;
+        binning_failure_allocation_target = failure_target;
+        status = sixel_filter_run(filter, allocator, NULL);
+        binning_failure_allocation_target = 0u;
+        if (status != SIXEL_BAD_ALLOCATION ||
+                output.ownership != SIXEL_WEIGHTED_POINT_EMPTY ||
+                output.coordinates != NULL || output.weights != NULL ||
+                binning.policy.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
+                binning_failure_live_allocation_count !=
+                    live_allocation_baseline) {
             status = SIXEL_LOGIC_ERROR;
             goto cleanup;
         }

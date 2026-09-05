@@ -238,6 +238,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0030_FILTER_PALETTE_FAILURE_OUTPUT \
     -DBUILD_TEST_0031_FILTER_BINNING \
     -DBUILD_TEST_0032_FILTER_BINNING_FAILURE_OUTPUT \
+    -DBUILD_TEST_0033_FILTER_BINNING_EXACT \
     -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
     -DBUILD_TEST_0025_SAMPLE_STREAM \
     -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -396,6 +397,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0030_filter_palette_failure_output.c \
     processing/filter/0031_filter_binning.c \
     processing/filter/0032_filter_binning_failure_output.c \
+    processing/filter/0033_filter_binning_exact.c \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
