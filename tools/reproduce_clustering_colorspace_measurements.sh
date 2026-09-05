@@ -48,6 +48,14 @@ cd "${TOP_SRCDIR}"
     --runs "${runs}" \
     --output-quality-csv "${output_dir}/clustering-colorspace-quality.csv" \
     --output-quality-plot "${output_dir}/clustering-colorspace-quality.png" \
+    --output-binning-quality-csv \
+    "${output_dir}/clustering-colorspace-binning-quality.csv" \
+    --output-binning-quality-plot \
+    "${output_dir}/clustering-colorspace-binning-quality.png" \
+    --output-binning-occupancy-csv \
+    "${output_dir}/clustering-colorspace-binning-occupancy.csv" \
+    --output-binning-occupancy-plot \
+    "${output_dir}/clustering-colorspace-binning-occupancy.png" \
     --output-size-csv "${output_dir}/clustering-colorspace-size.csv" \
     --output-size-plot "${output_dir}/clustering-colorspace-size.png" \
     --output-speed-csv "${output_dir}/clustering-colorspace-speed.csv" \

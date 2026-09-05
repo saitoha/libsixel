@@ -9,6 +9,7 @@ import datetime
 import json
 import os
 import platform
+import re
 import shlex
 import statistics
 import subprocess
@@ -41,6 +42,8 @@ from plot_quantize_model_measurements import (
 
 
 DEFAULT_COLORS = (8, 16, 32, 64, 128, 256)
+BINBITS = (4, 5, 6, 7, 8)
+OCCUPANCY_COLORS = 64
 COLORSPACES: Tuple[Tuple[str, str, int], ...] = (
     ("gamma", "gamma sRGB", 0),
     ("linear", "linear RGB", 1),
@@ -74,7 +77,9 @@ def make_command(img2sixel: str,
                  colors: int,
                  colorspace: str,
                  discard_output: bool,
-                 timeline_path: Path | None = None) -> List[str]:
+                 timeline_path: Path | None = None,
+                 binning_policy: str = "hard",
+                 binbits: int = 6) -> List[str]:
     """Build one controlled clustering-color-space command."""
     command = [
         img2sixel,
@@ -83,8 +88,8 @@ def make_command(img2sixel: str,
         "--quality=full",
         "--loaders=builtin!",
         "--sampling-policy=full-frame",
-        "--binning-policy=hard",
-        "--quantize-model=kmeans:seed=1",
+        f"--binning-policy={binning_policy}",
+        f"--quantize-model=kmeans:seed=1:binbits={binbits}",
         "-F",
         "none",
         "-a",
@@ -262,6 +267,148 @@ def measure_quality_and_size(
             )
             size_rows.append(row)
     return quality_rows, size_rows
+
+
+def measure_binning_quality(
+        img2sixel: str,
+        lsqa: str,
+        input_image: Path,
+        input_label: str,
+        revision: str,
+        command_env: Dict[str, str],
+        hard_rows: Sequence[Dict[str, object]],
+) -> List[Dict[str, object]]:
+    """Measure quality across hard-grid resolutions and no aggregation."""
+    rows: List[Dict[str, object]] = []
+    hard_by_key = {
+        (str(row["colorspace"]), int(row["colors"])): row
+        for row in hard_rows
+    }
+    for colors in DEFAULT_COLORS:
+        for record in colorspace_records():
+            colorspace = str(record["colorspace"])
+            for binning_policy, binbits in (
+                    *(("hard", value) for value in BINBITS),
+                    ("none", 6)):
+                if binning_policy == "hard" and binbits == 6:
+                    measured = dict(hard_by_key[(colorspace, colors)])
+                    metrics = {
+                        name: float(measured[name])
+                        for name in (
+                            "MS-SSIM",
+                            "Delta E00_mean",
+                            "Delta Chroma_mean",
+                        )
+                    }
+                    command_value = str(measured["command"])
+                else:
+                    command = make_command(
+                        img2sixel,
+                        input_image,
+                        colors,
+                        colorspace,
+                        False,
+                        binning_policy=binning_policy,
+                        binbits=binbits,
+                    )
+                    metrics, _encoded_bytes = run_quality(
+                        command,
+                        lsqa,
+                        input_image,
+                        command_env,
+                    )
+                    command_value = command_template(
+                        command,
+                        img2sixel,
+                        input_image,
+                    )
+                rows.append(
+                    {
+                        "revision": revision,
+                        "platform": platform.platform(),
+                        "input": input_label,
+                        "colors": colors,
+                        "colorspace": colorspace,
+                        "label": record["label"],
+                        "binning_policy": binning_policy,
+                        "binbits": binbits,
+                        **metrics,
+                        "command": command_value,
+                    }
+                )
+    return rows
+
+
+def measure_binning_occupancy(
+        img2sixel: str,
+        input_image: Path,
+        input_label: str,
+        revision: str,
+        command_env: Dict[str, str],
+) -> List[Dict[str, object]]:
+    """Measure the quantizer population produced by each hard grid."""
+    rows: List[Dict[str, object]] = []
+    pattern = re.compile(
+        r"LSXBSTAT1\|bits=(\d+)\|source_points=(\d+)\|"
+        r"effective_points=(\d+)"
+    )
+    for binbits in BINBITS:
+        for record in colorspace_records():
+            colorspace = str(record["colorspace"])
+            command = make_command(
+                img2sixel,
+                input_image,
+                OCCUPANCY_COLORS,
+                colorspace,
+                True,
+                binbits=binbits,
+            )
+            trace_env = command_env.copy()
+            trace_env["SIXEL_TRACE_TOPIC"] = "palette_contract"
+            proc = subprocess.run(
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                env=trace_env,
+                check=False,
+            )
+            diagnostic = proc.stderr.decode("utf-8", errors="replace")
+            matches = pattern.findall(diagnostic)
+            if proc.returncode != 0 or len(matches) != 1:
+                raise RuntimeError(
+                    "Binning occupancy trace failed for "
+                    f"{colorspace}, bits={binbits}:\n{diagnostic.strip()}"
+                )
+            traced_bits, source_points, effective_points = (
+                int(value) for value in matches[0]
+            )
+            if traced_bits != binbits or effective_points < 1:
+                raise RuntimeError(
+                    "Binning occupancy trace is inconsistent for "
+                    f"{colorspace}, bits={binbits}"
+                )
+            rows.append(
+                {
+                    "revision": revision,
+                    "platform": platform.platform(),
+                    "input": input_label,
+                    "colors": OCCUPANCY_COLORS,
+                    "colorspace": colorspace,
+                    "label": record["label"],
+                    "binbits": binbits,
+                    "source_points": source_points,
+                    "effective_points": effective_points,
+                    "compression_ratio": (
+                        source_points / effective_points
+                    ),
+                    "command": command_template(
+                        command,
+                        img2sixel,
+                        input_image,
+                    ),
+                }
+            )
+    return rows
 
 
 def measure_speed(img2sixel: str,
@@ -488,6 +635,120 @@ def plot_quality(path: Path,
     plt.close(figure)
 
 
+def plot_binning_quality(path: Path,
+                         rows: Sequence[Dict[str, object]],
+                         input_name: str) -> None:
+    """Plot quality recovered by removing finite-grid aggregation."""
+    figure, axes = plt.subplots(1, 3, figsize=(13.2, 4.3), sharex=True)
+    metrics = (
+        ("MS-SSIM", "MS-SSIM improvement"),
+        ("Delta E00_mean", "Mean Delta E00 reduction"),
+        ("Delta Chroma_mean", "Mean Delta Chroma reduction"),
+    )
+    for colorspace, label, _contract_value in COLORSPACES:
+        color, marker, linestyle = STYLES[colorspace]
+        selected = {
+            (
+                int(row["colors"]),
+                str(row["binning_policy"]),
+                int(row["binbits"]),
+            ): row
+            for row in rows
+            if row["colorspace"] == colorspace
+        }
+        x = list(DEFAULT_COLORS)
+        for axis, (metric, ylabel) in zip(axes, metrics):
+            if metric == "MS-SSIM":
+                y = [
+                    float(selected[(colors, "none", 6)][metric])
+                    - float(selected[(colors, "hard", 6)][metric])
+                    for colors in x
+                ]
+            else:
+                y = [
+                    float(selected[(colors, "hard", 6)][metric])
+                    - float(selected[(colors, "none", 6)][metric])
+                    for colors in x
+                ]
+            axis.plot(
+                x,
+                y,
+                color=color,
+                marker=marker,
+                linestyle=linestyle,
+                linewidth=1.8,
+                markersize=4.5,
+                label=label,
+            )
+            axis.set_ylabel(ylabel)
+    for axis in axes:
+        configure_x_axis(axis)
+        axis.axhline(0.0, color="#777777", linewidth=0.8)
+        axis.set_xlabel("Palette size K")
+    axes[0].legend(fontsize=8.0, frameon=False, loc="best")
+    figure.suptitle(
+        f"Quality recovered by disabling hard binning on {input_name}",
+        y=0.995,
+    )
+    figure.text(
+        0.99,
+        0.008,
+        "Positive values favor unaggregated input; same seeded K-means",
+        horizontalalignment="right",
+        fontsize=8,
+        color="#555555",
+    )
+    figure.tight_layout(rect=(0.0, 0.035, 1.0, 0.94))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(path, dpi=160)
+    plt.close(figure)
+
+
+def plot_binning_occupancy(path: Path,
+                           rows: Sequence[Dict[str, object]],
+                           input_name: str) -> None:
+    """Plot occupied hard-grid cells across coordinate resolutions."""
+    figure, axis = plt.subplots(1, 1, figsize=(7.6, 4.5))
+    for colorspace, label, _contract_value in COLORSPACES:
+        color, marker, linestyle = STYLES[colorspace]
+        selected = sorted(
+            (row for row in rows if row["colorspace"] == colorspace),
+            key=lambda row: int(row["binbits"]),
+        )
+        axis.plot(
+            [int(row["binbits"]) for row in selected],
+            [int(row["effective_points"]) for row in selected],
+            color=color,
+            marker=marker,
+            linestyle=linestyle,
+            linewidth=1.8,
+            markersize=4.5,
+            label=label,
+        )
+    axis.set_yscale("log")
+    axis.set_xticks(BINBITS)
+    axis.set_xlabel("Hard-binning bits per axis")
+    axis.set_ylabel("Weighted points passed to K-means")
+    axis.grid(True, color="#D9D9D9", linewidth=0.7)
+    axis.legend(fontsize=8.0, frameon=False, loc="best")
+    figure.suptitle(
+        f"Hard-grid occupancy by clustering space on {input_name}",
+        y=0.995,
+    )
+    figure.text(
+        0.99,
+        0.008,
+        "Full-frame samples; K=64; occupancy is measured before K-means",
+        horizontalalignment="right",
+        fontsize=8,
+        color="#555555",
+    )
+    figure.tight_layout(rect=(0.0, 0.035, 1.0, 0.94))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(path, dpi=160)
+    plt.close(figure)
+
+
 def plot_speed(path: Path,
                rows: Sequence[Dict[str, object]],
                input_name: str,
@@ -573,7 +834,7 @@ def write_metadata(path: Path,
                    verified_points: int) -> None:
     """Write provenance and the controlled comparison protocol."""
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_utc": datetime.datetime.now(
             datetime.timezone.utc
         ).isoformat(),
@@ -608,7 +869,7 @@ def write_metadata(path: Path,
             "loader": "builtin!",
             "sampling_policy": "full-frame",
             "binning_policy": "hard",
-            "quantize_model": "kmeans:seed=1",
+            "quantize_model": "kmeans:seed=1:binbits=6",
             "merge_policy": "none",
             "cover_policy": "off",
             "working_colorspace": "gamma",
@@ -616,6 +877,14 @@ def write_metadata(path: Path,
             "lookup_policy": "none",
             "gpu_policy": "off",
             "palette_type": "rgb",
+            "binning_sensitivity_policies": ["hard", "none"],
+            "binning_sensitivity_hard_binbits": list(BINBITS),
+            "occupancy_binbits": list(BINBITS),
+            "occupancy_palette_size": OCCUPANCY_COLORS,
+            "occupancy_measurement": (
+                "LSXBSTAT1 effective_points emitted after binning and before "
+                "K-means"
+            ),
             "speed_warmups": warmups,
             "speed_runs": runs,
             "configuration_order_rotated_each_round": True,
@@ -656,6 +925,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--runs", type=int, default=9)
     parser.add_argument("--output-quality-csv", type=Path, required=True)
     parser.add_argument("--output-quality-plot", type=Path, required=True)
+    parser.add_argument(
+        "--output-binning-quality-csv", type=Path, required=True
+    )
+    parser.add_argument(
+        "--output-binning-quality-plot", type=Path, required=True
+    )
+    parser.add_argument(
+        "--output-binning-occupancy-csv", type=Path, required=True
+    )
+    parser.add_argument(
+        "--output-binning-occupancy-plot", type=Path, required=True
+    )
     parser.add_argument("--output-size-csv", type=Path, required=True)
     parser.add_argument("--output-size-plot", type=Path, required=True)
     parser.add_argument("--output-speed-csv", type=Path, required=True)
@@ -686,6 +967,22 @@ def main() -> int:
     quality_rows, size_rows = measure_quality_and_size(
         img2sixel,
         lsqa,
+        input_image,
+        input_label,
+        args.revision,
+        command_env,
+    )
+    binning_quality_rows = measure_binning_quality(
+        img2sixel,
+        lsqa,
+        input_image,
+        input_label,
+        args.revision,
+        command_env,
+        quality_rows,
+    )
+    occupancy_rows = measure_binning_occupancy(
+        img2sixel,
         input_image,
         input_label,
         args.revision,
@@ -728,6 +1025,29 @@ def main() -> int:
         ),
     )
     write_csv(
+        args.output_binning_quality_csv,
+        binning_quality_rows,
+        common_fields + (
+            "binning_policy",
+            "binbits",
+            "MS-SSIM",
+            "Delta E00_mean",
+            "Delta Chroma_mean",
+            "command",
+        ),
+    )
+    write_csv(
+        args.output_binning_occupancy_csv,
+        occupancy_rows,
+        common_fields + (
+            "binbits",
+            "source_points",
+            "effective_points",
+            "compression_ratio",
+            "command",
+        ),
+    )
+    write_csv(
         args.output_speed_csv,
         speed_rows,
         common_fields + (
@@ -749,6 +1069,16 @@ def main() -> int:
         ),
     )
     plot_quality(args.output_quality_plot, quality_rows, input_image.name)
+    plot_binning_quality(
+        args.output_binning_quality_plot,
+        binning_quality_rows,
+        input_image.name,
+    )
+    plot_binning_occupancy(
+        args.output_binning_occupancy_plot,
+        occupancy_rows,
+        input_image.name,
+    )
     plot_size(args.output_size_plot, size_rows, input_image.name)
     plot_speed(
         args.output_speed_plot,

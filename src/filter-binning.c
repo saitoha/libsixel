@@ -35,6 +35,7 @@
 #include <sixel.h>
 
 #include "filter-binning.h"
+#include "loader-common.h"
 #include "palette-bin-histogram.h"
 #include "pixelformat.h"
 #include "status.h"
@@ -1271,6 +1272,18 @@ sixel_filter_binning_apply(sixel_filter_t *filter,
     }
 
 progress:
+    /*
+     * Expose the population seen by the quantizer.  The source population is
+     * not enough to reproduce performance or quality comparisons because a
+     * finite grid can have very different occupancy in different color
+     * spaces even when its bits-per-axis value is unchanged.
+     */
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXBSTAT1|bits=%u|source_points=%zu|effective_points=%zu",
+        binning->bits_per_axis,
+        source_point_count,
+        output->point_count);
     completed = source_point_count > (size_t)INT_MAX
         ? INT_MAX : (int)source_point_count;
     filter->progress.total_units = completed;

@@ -13,6 +13,8 @@ from typing import Dict, List, Set, Tuple
 
 
 COLORS = (8, 16, 32, 64, 128, 256)
+BINBITS = (4, 5, 6, 7, 8)
+OCCUPANCY_COLORS = 64
 COLORSPACES: Tuple[Tuple[str, str, int], ...] = (
     ("gamma", "gamma sRGB", 0),
     ("linear", "linear RGB", 1),
@@ -22,6 +24,8 @@ COLORSPACES: Tuple[Tuple[str, str, int], ...] = (
 )
 PLOTS = (
     "clustering-colorspace-quality.png",
+    "clustering-colorspace-binning-quality.png",
+    "clustering-colorspace-binning-occupancy.png",
     "clustering-colorspace-speed.png",
     "clustering-colorspace-size.png",
 )
@@ -61,7 +65,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
         payload = json.load(handle)
-    if not isinstance(payload, dict) or payload.get("schema_version") != 1:
+    if not isinstance(payload, dict) or payload.get("schema_version") != 2:
         fail(f"unsupported measurement metadata schema: {path}")
     source = payload.get("source")
     protocol = payload.get("protocol")
@@ -86,7 +90,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
         "loader": "builtin!",
         "sampling_policy": "full-frame",
         "binning_policy": "hard",
-        "quantize_model": "kmeans:seed=1",
+        "quantize_model": "kmeans:seed=1:binbits=6",
         "merge_policy": "none",
         "cover_policy": "off",
         "working_colorspace": "gamma",
@@ -94,6 +98,10 @@ def read_metadata(path: Path) -> Dict[str, object]:
         "lookup_policy": "none",
         "gpu_policy": "off",
         "palette_type": "rgb",
+        "binning_sensitivity_policies": ["hard", "none"],
+        "binning_sensitivity_hard_binbits": list(BINBITS),
+        "occupancy_binbits": list(BINBITS),
+        "occupancy_palette_size": OCCUPANCY_COLORS,
         "configuration_order_rotated_each_round": True,
         "sixel_environment_removed": True,
         "size_measurement": "quality-pass SIXEL stdout byte length",
@@ -147,7 +155,9 @@ def require_pair(tokens: List[str], option: str, value: str, path: Path) -> None
 
 def validate_command(row: Dict[str, str],
                      path: Path,
-                     timeline: bool = False) -> None:
+                     timeline: bool = False,
+                     binning_policy: str = "hard",
+                     binbits: int = 6) -> None:
     """Check one recorded command and its row identity."""
     colorspace = row.get("colorspace", "")
     expected = {
@@ -170,8 +180,8 @@ def validate_command(row: Dict[str, str],
         "--quality=full",
         "--loaders=builtin!",
         "--sampling-policy=full-frame",
-        "--binning-policy=hard",
-        "--quantize-model=kmeans:seed=1",
+        f"--binning-policy={binning_policy}",
+        f"--quantize-model=kmeans:seed=1:binbits={binbits}",
         f"-X{colorspace}",
         "-Wgamma",
         "--diffusion=none",
@@ -253,6 +263,112 @@ def validate_quality(path: Path, revision: str) -> None:
                 fail(f"invalid {name} in {path}: {key}")
 
 
+def validate_binning_quality(path: Path, revision: str) -> None:
+    """Validate paired hard-grid and unaggregated quality observations."""
+    rows = read_csv(path)
+    actual: Set[Tuple[str, int, str, int]] = set()
+    expected = {
+        (colorspace, colors, policy, binbits)
+        for colorspace, _label, _contract_value in COLORSPACES
+        for colors in COLORS
+        for policy, binbits in (
+            *(("hard", value) for value in BINBITS),
+            ("none", 6),
+        )
+    }
+    for row in rows:
+        policy = row.get("binning_policy", "")
+        try:
+            key = (
+                row.get("colorspace", ""),
+                int(row.get("colors", "")),
+                policy,
+                int(row.get("binbits", "")),
+            )
+        except ValueError as exc:
+            raise ValueError(
+                f"invalid binning quality identity in {path}"
+            ) from exc
+        if key in actual or policy not in ("hard", "none"):
+            fail(f"invalid binning quality point in {path}: {key}")
+        actual.add(key)
+        if row.get("revision") != revision:
+            fail(f"binning quality revision differs in {path}: {key}")
+        validate_command(
+            row,
+            path,
+            binning_policy=policy,
+            binbits=key[3],
+        )
+        try:
+            ms_ssim = float(row.get("MS-SSIM", ""))
+            delta_e00 = float(row.get("Delta E00_mean", ""))
+            delta_chroma = float(row.get("Delta Chroma_mean", ""))
+        except ValueError as exc:
+            raise ValueError(
+                f"invalid binning quality value in {path}: {key}"
+            ) from exc
+        if not math.isfinite(ms_ssim) or not 0.0 <= ms_ssim <= 1.0:
+            fail(f"invalid binning MS-SSIM in {path}: {key}")
+        if not all(
+                math.isfinite(value) and value >= 0.0
+                for value in (delta_e00, delta_chroma)):
+            fail(f"invalid binning color error in {path}: {key}")
+    if actual != expected:
+        fail(
+            f"binning quality sweep mismatch in {path}: "
+            f"missing={sorted(expected - actual)}, "
+            f"extra={sorted(actual - expected)}"
+        )
+
+
+def validate_binning_occupancy(path: Path, revision: str) -> None:
+    """Validate effective hard-grid populations and compression ratios."""
+    rows = read_csv(path)
+    actual: Set[Tuple[str, int]] = set()
+    expected = {
+        (colorspace, binbits)
+        for colorspace, _label, _contract_value in COLORSPACES
+        for binbits in BINBITS
+    }
+    source_populations: Set[int] = set()
+    for row in rows:
+        try:
+            binbits = int(row.get("binbits", ""))
+            key = (row.get("colorspace", ""), binbits)
+            source_points = int(row.get("source_points", ""))
+            effective_points = int(row.get("effective_points", ""))
+            ratio = float(row.get("compression_ratio", ""))
+        except ValueError as exc:
+            raise ValueError(
+                f"invalid binning occupancy value in {path}"
+            ) from exc
+        if key in actual:
+            fail(f"duplicate binning occupancy point in {path}: {key}")
+        actual.add(key)
+        source_populations.add(source_points)
+        if row.get("revision") != revision:
+            fail(f"binning occupancy revision differs in {path}: {key}")
+        if int(row.get("colors", "0")) != OCCUPANCY_COLORS:
+            fail(f"unexpected occupancy palette size in {path}: {key}")
+        validate_command(row, path, binbits=binbits)
+        if source_points < 1 or not 1 <= effective_points <= source_points:
+            fail(f"invalid binning occupancy in {path}: {key}")
+        if not math.isclose(
+                ratio,
+                source_points / effective_points,
+                rel_tol=1e-12):
+            fail(f"invalid binning compression ratio in {path}: {key}")
+    if actual != expected:
+        fail(
+            f"binning occupancy sweep mismatch in {path}: "
+            f"missing={sorted(expected - actual)}, "
+            f"extra={sorted(actual - expected)}"
+        )
+    if len(source_populations) != 1:
+        fail("binning occupancy source population differs across the sweep")
+
+
 def validate_size(path: Path, revision: str) -> None:
     """Validate exact stream lengths and gamma ratios."""
     for row in validate_rows(path, revision):
@@ -330,6 +446,14 @@ def main() -> int:
     runs = int(metadata["protocol"]["speed_runs"])
     validate_quality(
         directory / "clustering-colorspace-quality.csv",
+        revision,
+    )
+    validate_binning_quality(
+        directory / "clustering-colorspace-binning-quality.csv",
+        revision,
+    )
+    validate_binning_occupancy(
+        directory / "clustering-colorspace-binning-occupancy.csv",
         revision,
     )
     validate_size(
