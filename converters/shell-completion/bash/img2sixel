@@ -699,11 +699,11 @@ _img2sixel()
         _img2sixel_complete_quantize_model
         return 0
         ;;
-    --palette-sampling)
+    --sampling-policy)
         COMPREPLY=( $( compgen -W 'auto full-frame adaptive-grid' -- "$cur" ) )
         return 0
         ;;
-    --palette-binning)
+    --binning-policy)
         COMPREPLY=( $( compgen -W 'auto none exact hard soft' -- "$cur" ) )
         return 0
         ;;
@@ -990,8 +990,8 @@ _img2sixel()
                                    -6 --6reversible \
                                    -p --colors \
                                    -Q --quantize-model \
-                                   --palette-sampling \
-                                   --palette-binning \
+                                   --sampling-policy \
+                                   --binning-policy \
                                    -F --merge-policy \
                                    -a --cover-policy \
                                    -m --mapfile \

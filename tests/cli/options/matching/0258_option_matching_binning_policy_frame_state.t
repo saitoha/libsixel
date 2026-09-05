@@ -13,10 +13,10 @@ set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=4 \
-    --palette-binning=soft -Qauto -dnone -p16 "-~none" \
+    --binning-policy=soft -Qauto -dnone -p16 "-~none" \
     -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - async palette-binning encode failed"
+    echo "not ok 1 - async binning-policy encode failed"
     exit 0
 }
 

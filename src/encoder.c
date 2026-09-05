@@ -9050,7 +9050,7 @@ sixel_encoder_new(
         *ppencoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
     policy_schema = sixel_option_registry_get(
-        SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING);
+        SIXEL_OPTION_SCHEMA_SAMPLING_POLICY);
     sixel_option_apply_suboption_environment(
         policy_schema,
         policy_schema != NULL ? policy_schema->values : NULL,
@@ -9058,7 +9058,7 @@ sixel_encoder_new(
         *ppencoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
     if (sixel_option_resolve_registered_base_environment(
-            SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING,
+            SIXEL_OPTION_SCHEMA_SAMPLING_POLICY,
             SIXEL_OPTION_SCOPE_ENCODER,
             &policy_value)) {
         (*ppencoder)->palette_sampling_policy = policy_value;
@@ -9066,7 +9066,7 @@ sixel_encoder_new(
     }
 
     policy_schema = sixel_option_registry_get(
-        SIXEL_OPTION_SCHEMA_PALETTE_BINNING);
+        SIXEL_OPTION_SCHEMA_BINNING_POLICY);
     sixel_option_apply_suboption_environment(
         policy_schema,
         policy_schema != NULL ? policy_schema->values : NULL,
@@ -9074,7 +9074,7 @@ sixel_encoder_new(
         *ppencoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
     if (sixel_option_resolve_registered_base_environment(
-            SIXEL_OPTION_SCHEMA_PALETTE_BINNING,
+            SIXEL_OPTION_SCHEMA_BINNING_POLICY,
             SIXEL_OPTION_SCOPE_ENCODER,
             &policy_value)) {
         (*ppencoder)->palette_binning_policy = policy_value;
@@ -11410,10 +11410,10 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case SIXEL_OPTFLAG_PALETTE_SAMPLING:
+    case SIXEL_OPTFLAG_SAMPLING_POLICY:
         status = sixel_encoder_apply_registered_policy_argument(
             encoder,
-            SIXEL_OPTION_SCHEMA_PALETTE_SAMPLING,
+            SIXEL_OPTION_SCHEMA_SAMPLING_POLICY,
             value,
             &encoder->palette_sampling_policy,
             &encoder->palette_sampling_override,
@@ -11423,9 +11423,9 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case SIXEL_OPTFLAG_PALETTE_BINNING:
+    case SIXEL_OPTFLAG_BINNING_POLICY:
         status = sixel_option_parse_scalar_argument(
-            SIXEL_OPTION_SCHEMA_PALETTE_BINNING,
+            SIXEL_OPTION_SCHEMA_BINNING_POLICY,
             SIXEL_OPTION_SCOPE_ENCODER,
             value,
             &scalar_value,

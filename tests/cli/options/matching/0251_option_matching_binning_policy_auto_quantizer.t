@@ -13,7 +13,7 @@ set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    --palette-binning=hard -Qauto -dnone -p16 "-~none" \
+    --binning-policy=hard -Qauto -dnone -p16 "-~none" \
     -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || {
     echo "not ok 1 - hard binning with auto quantizer failed"

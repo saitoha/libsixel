@@ -27,18 +27,18 @@ palette index to every pixel; dithering and lookup perform that later step.
 suboptions. `-p COLORS` sets the requested palette size and normally defaults
 to 256 colors.
 
-All models accept `sample_target=COUNT`. Sampling happens before the selected
-solver is called, so `COUNT` changes the population being optimized rather
-than merely limiting work inside the solver. In the notation below, `N` is the
-number of pixels after that sampling step and `S` is the number of weighted
-samples or occupied histogram bins retained by model-specific preprocessing.
+All models accept `sample_target=COUNT`. The independent
+`--sampling-policy=POLICY` option chooses how source pixels are sampled, while
+`COUNT` bounds the adaptive sample population. In the notation below, `N` is
+the number of pixels after that sampling step and `S` is the number of weighted
+samples or occupied histogram bins retained by preprocessing.
 
-The current CLI still carries sampling and some binning controls under `-Q`.
-The target architecture promotes them to independent, jointly resolved
-policies as described in the
-[Palette Construction Pipeline Architecture](palette-pipeline.md). Until that
-migration reaches the CLI wave, the option descriptions in this document and
-`img2sixel -H` describe the implemented interface.
+`--binning-policy=POLICY` independently chooses how sampled colors become the
+weighted point set consumed by the solver. The two policies and their staged
+resolution are described in the
+[Palette Construction Pipeline Architecture](palette-pipeline.md). Quantizer
+suboptions may parameterize a supported binning implementation, but they do
+not select the binning policy.
 
 Let `x[i]` be a retained color sample with non-negative weight `w[i]`, and let
 `C` contain at most `K` palette colors. Colors are three-dimensional in the
@@ -171,15 +171,17 @@ usually called D-squared or k-means++ seeding, introduced in
 sorts them, and initializes centers from equal-weight intervals on that axis;
 it falls back to the legacy initializer if PCA seeding cannot complete.
 
-`binning=hard` replaces colors by individual histogram cells.
-`binning=soft` distributes a color over as many as eight neighboring cells with
-trilinear weights. `binning=auto` selects between those paths from the retained
-sample-to-palette-size ratio. `binbits` controls histogram resolution and
-`mapping=uniform|srgb` controls how coordinates address that histogram; neither
-option replaces `-X`, which defines the clustering colorspace. Binning changes
+`--binning-policy=hard` replaces colors by individual histogram cells, while
+`--binning-policy=soft` distributes a color over as many as eight neighboring
+cells with trilinear weights. `--binning-policy=auto` currently selects hard
+binning when the solver can consume its weighted point set. The K-means
+`binbits` suboption controls histogram resolution, and
+`mapping=uniform|srgb` controls how coordinates address that histogram.
+`softdist` selects the distribution kernel for soft binning. None of these
+options replaces `-X`, which defines the clustering colorspace. Binning changes
 the weighted data set and can therefore change the optimum. It is an
-approximation/preconditioning choice, not merely an acceleration of the same
-Lloyd iterations.
+approximation or preconditioning choice, not merely an acceleration of the
+same Lloyd iterations.
 
 The pruning policies skip distance calculations by maintaining bounds:
 

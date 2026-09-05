@@ -368,9 +368,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "          (0.0-8.0, default 0.0).\n"
     },
     {
-        SIXEL_OPTFLAG_PALETTE_SAMPLING,
-        "palette-sampling",
-        "--palette-sampling=POLICY\n"
+        SIXEL_OPTFLAG_SAMPLING_POLICY,
+        "sampling-policy",
+        "--sampling-policy=POLICY\n"
         "    choose which pixels feed palette construction:\n"
         "      auto          -> preserve the resource-aware default.\n"
         "      full-frame    -> use the preprocessed output frame.\n"
@@ -380,9 +380,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "    but does not change an explicitly selected policy.\n"
     },
     {
-        SIXEL_OPTFLAG_PALETTE_BINNING,
-        "palette-binning",
-        "--palette-binning=POLICY\n"
+        SIXEL_OPTFLAG_BINNING_POLICY,
+        "binning-policy",
+        "--binning-policy=POLICY\n"
         "    choose how sampled colors become weighted quantizer input:\n"
         "      auto  -> use hard when supported; otherwise use a compatible "
         "form.\n"
@@ -1374,15 +1374,15 @@ static cli_env_help_t const g_env_help_table[] = {
         "hardware thread count. img2sixel sets empty/unset values to 'auto'."
     },
     {
-        "SIXEL_PALETTE_SAMPLING",
+        "SIXEL_SAMPLING_POLICY",
         "select pixels used for palette construction. Accepts auto,\n"
-        "full-frame, or adaptive-grid. The --palette-sampling option takes\n"
+        "full-frame, or adaptive-grid. The --sampling-policy option takes\n"
         "precedence."
     },
     {
-        "SIXEL_PALETTE_BINNING",
+        "SIXEL_BINNING_POLICY",
         "select how sampled colors become weighted quantizer input. Accepts\n"
-        "auto, none, exact, hard, or soft. The --palette-binning option takes\n"
+        "auto, none, exact, hard, or soft. The --binning-policy option takes\n"
         "precedence."
     },
     {
@@ -3194,10 +3194,10 @@ img2sixel_main(int argc, char *argv[])
         {"6reversible",           no_argument,        &long_opt, '6'},
         {"colors",                required_argument,  &long_opt, 'p'},
         {"quantize-model",        required_argument,  &long_opt, 'Q'},
-        {"palette-sampling", required_argument, &long_opt,
-         SIXEL_OPTFLAG_PALETTE_SAMPLING},
-        {"palette-binning", required_argument, &long_opt,
-         SIXEL_OPTFLAG_PALETTE_BINNING},
+        {"sampling-policy", required_argument, &long_opt,
+         SIXEL_OPTFLAG_SAMPLING_POLICY},
+        {"binning-policy", required_argument, &long_opt,
+         SIXEL_OPTFLAG_BINNING_POLICY},
         {"merge-policy",          required_argument,  &long_opt, 'F'},
         {"cover-policy",          required_argument,  &long_opt, 'a'},
         {"mapfile",               required_argument,  &long_opt, 'm'},

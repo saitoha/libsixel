@@ -26,11 +26,11 @@ begin
 
   missing = expected.reject { |name| Libsixel::API.const_defined?(name, false) }
   raise RuntimeError, "missing constants: #{missing.join(', ')}" unless missing.empty?
-  unless Libsixel::API::SIXEL_OPTFLAG_PALETTE_SAMPLING == 0x100
-    raise RuntimeError, 'SIXEL_OPTFLAG_PALETTE_SAMPLING value mismatch'
+  unless Libsixel::API::SIXEL_OPTFLAG_SAMPLING_POLICY == 0x100
+    raise RuntimeError, 'SIXEL_OPTFLAG_SAMPLING_POLICY value mismatch'
   end
-  unless Libsixel::API::SIXEL_OPTFLAG_PALETTE_BINNING == 0x101
-    raise RuntimeError, 'SIXEL_OPTFLAG_PALETTE_BINNING value mismatch'
+  unless Libsixel::API::SIXEL_OPTFLAG_BINNING_POLICY == 0x101
+    raise RuntimeError, 'SIXEL_OPTFLAG_BINNING_POLICY value mismatch'
   end
 
   out = Libsixel::API::Util.make_outptr

@@ -15,7 +15,7 @@ set +e
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_JOB_FAILURE=init \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=4 \
-    --palette-sampling=adaptive-grid \
+    --sampling-policy=adaptive-grid \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null)
 status=$?

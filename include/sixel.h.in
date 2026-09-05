@@ -529,7 +529,7 @@ typedef int SIXELSTATUS;
                                                     swap_min_gain:
                                                       float in 0.0-8.0
                                                 */
-#define SIXEL_OPTFLAG_PALETTE_SAMPLING  (0x100) /* --palette-sampling=POLICY:
+#define SIXEL_OPTFLAG_SAMPLING_POLICY   (0x100) /* --sampling-policy=POLICY:
                                                    choose which pixels feed
                                                    palette construction:
                                                      auto
@@ -537,7 +537,7 @@ typedef int SIXELSTATUS;
                                                      adaptive-grid
                                                    This option intentionally
                                                    has no short form. */
-#define SIXEL_OPTFLAG_PALETTE_BINNING   (0x101) /* --palette-binning=POLICY:
+#define SIXEL_OPTFLAG_BINNING_POLICY    (0x101) /* --binning-policy=POLICY:
                                                    choose how sampled colors
                                                    become weighted points:
                                                      auto (hard when

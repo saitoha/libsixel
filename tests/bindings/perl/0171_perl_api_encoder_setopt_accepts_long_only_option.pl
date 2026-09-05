@@ -19,11 +19,11 @@ plan tests => 1;
 my $ok = eval {
     my $encoder = Image::LibSIXEL::Encoder->new();
     $encoder->setopt(
-        Image::LibSIXEL::Constants::SIXEL_OPTFLAG_PALETTE_SAMPLING(),
+        Image::LibSIXEL::Constants::SIXEL_OPTFLAG_SAMPLING_POLICY(),
         'adaptive-grid'
     );
     $encoder->setopt(
-        Image::LibSIXEL::Constants::SIXEL_OPTFLAG_PALETTE_BINNING(),
+        Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BINNING_POLICY(),
         'hard'
     );
     1;

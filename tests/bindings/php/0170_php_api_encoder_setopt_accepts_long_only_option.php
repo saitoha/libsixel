@@ -17,11 +17,11 @@ $encoder = null;
 try {
     $encoder = new Encoder();
     $encoder->setopt(
-        Constants::SIXEL_OPTFLAG_PALETTE_SAMPLING,
+        Constants::SIXEL_OPTFLAG_SAMPLING_POLICY,
         'adaptive-grid'
     );
     $encoder->setopt(
-        Constants::SIXEL_OPTFLAG_PALETTE_BINNING,
+        Constants::SIXEL_OPTFLAG_BINNING_POLICY,
         'hard'
     );
 

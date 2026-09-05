@@ -99,8 +99,8 @@ performance.
 The migration names the two successful paths and temporarily preserves their
 selection thresholds:
 
-`--palette-sampling=auto|full-frame|adaptive-grid` exposes this choice as an
-independent top-level encoder policy. `SIXEL_PALETTE_SAMPLING` supplies the
+`--sampling-policy=auto|full-frame|adaptive-grid` exposes this choice as an
+independent top-level encoder policy. `SIXEL_SAMPLING_POLICY` supplies the
 same policy through the environment, and an explicit command-line value takes
 precedence. `auto` retains the resource-aware selection described below.
 `full-frame` consumes the frame after clipping, resizing, and colorspace
@@ -194,8 +194,8 @@ Binning consumes points after their palette-space coordinates are known. It
 controls how sample mass is aggregated, independently of the quantizer that
 will consume the result.
 
-The top-level `--palette-binning=POLICY` option and its
-`SIXEL_PALETTE_BINNING` environment default distinguish:
+The top-level `--binning-policy=POLICY` option and its
+`SIXEL_BINNING_POLICY` environment default distinguish:
 
 ```text
 mode = auto | none | exact | hard | soft
@@ -320,8 +320,8 @@ Wave 7b exposes the top-level option at the encoder boundary. Palette
 construction preflights compatibility without committing the quantizer to the
 per-frame lifecycle state. The palette builder resolves the concrete consumer
 only when it is ready to construct the palette. Thus
-`-Qauto --palette-binning=hard` and
-`-Qauto --palette-binning=exact`, `hard`, or `soft` select K-means, while an
+`-Qauto --binning-policy=hard` and
+`-Qauto --binning-policy=exact`, `hard`, or `soft` select K-means, while an
 incompatible explicit quantizer is rejected. This capability preflight runs
 before sampling and scheduler allocation, so a known policy error cannot be
 misclassified as a worker failure or enter the full-frame sampling fallback.
@@ -818,8 +818,8 @@ default changes can be reviewed independently.
    without silent execution-time fallback.
 7a. Add the top-level sampling policy option while preserving automatic
     selection. Keep sampling independent of thread count after resolution.
-7b. Add the top-level binning policy option. Keep existing `-Q` suboptions as
-    deprecated aliases and reject conflicting explicit values.
+7b. Add the top-level binning policy option and remove the quantizer-local
+    policy spelling so the independent stage has one option owner.
 8a. Implement exact aggregation in the shared binning filter and connect the
     first weighted-point consumer, K-means.
 8b. Move other quantizer-specific histogram construction to the shared binning
@@ -837,5 +837,5 @@ default changes can be reviewed independently.
 
 Each wave must leave the normal and amalgamated builds consistent. Tests must
 cover direct policy parsing, effective-plan resolution, unsupported
-combinations, compatibility aliases, output quality, allocation bounds, and
-the filter boundary itself.
+combinations, output quality, allocation bounds, and the filter boundary
+itself.

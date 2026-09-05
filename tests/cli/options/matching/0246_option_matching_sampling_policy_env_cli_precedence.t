@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify explicit palette-sampling keeps command-line priority over environment.
+# Verify explicit sampling-policy keeps command-line priority over environment.
 
 set -eux
 
@@ -13,18 +13,18 @@ set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    --env SIXEL_PALETTE_SAMPLING=full-frame \
-    --palette-sampling=adaptive-grid \
+    --env SIXEL_SAMPLING_POLICY=full-frame \
+    --sampling-policy=adaptive-grid \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - palette-sampling precedence encode failed"
+    echo "not ok 1 - sampling-policy precedence encode failed"
     exit 0
 }
 
 test "${trace#*LSXSPL1|requested=adaptive-grid|effective=adaptive-grid|source=loaded-frame|origin=explicit|phase=executed|reason=explicit*}" != "${trace}" || {
-    echo "not ok 1 - environment overrode command-line palette-sampling"
+    echo "not ok 1 - environment overrode command-line sampling-policy"
     exit 0
 }
 
-echo "ok 1 - command-line palette-sampling overrides environment"
+echo "ok 1 - command-line sampling-policy overrides environment"
 exit 0

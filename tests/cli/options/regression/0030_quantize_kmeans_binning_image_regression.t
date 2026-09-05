@@ -16,17 +16,17 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
-cli_output="${artifact_dir}/0030-palette-binning-cli-$$.six"
+cli_output="${artifact_dir}/0030-binning-policy-cli-$$.six"
 env_output="${artifact_dir}/0030-quantize-kmeans-binning-env-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --palette-binning=soft \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --binning-policy=soft \
     -p 16 -Qkmeans "${input_image}" >"${cli_output}" || {
     echo "not ok" 1 - "CLI soft binning conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_BINNING=soft" -p 16 -Qkmeans \
+    --env "SIXEL_BINNING_POLICY=soft" -p 16 -Qkmeans \
     "${input_image}" >"${env_output}" || {
     echo "not ok" 1 - "environment soft binning conversion failed"
     exit 0

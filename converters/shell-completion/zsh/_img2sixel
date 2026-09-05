@@ -1007,20 +1007,20 @@ _precisionmode() {
     'float32[opt into the experimental high-precision pipeline]'
 }
 
-_palettesampling() {
+_samplingpolicy() {
   _values \
-    'PALETTESAMPLING' \
+    'SAMPLINGPOLICY' \
     'auto[choose from the current resource profile]' \
     'full-frame[sample the preprocessed output frame]' \
     'adaptive-grid[sample the loaded frame before preprocessing]'
 }
 
-_palettebinning() {
+_binningpolicy() {
   _values \
-    'PALETTEBINNING' \
-    'auto[resolve from quantizer capability and sample density]' \
+    'BINNINGPOLICY' \
+    'auto[select hard when supported or another compatible form]' \
     'none[pass sampled colors through unchanged]' \
-    'exact[combine identical colors; currently unavailable]' \
+    'exact[combine identical colors at full precision]' \
     'hard[assign each color to one finite grid bin]' \
     'soft[distribute color mass with trilinear weights]'
 }
@@ -1036,10 +1036,10 @@ _arguments -S -s -A "-*" -S \
   {-6,--6reversible}'[snap the palette to SIXEL-reversible tones]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
-  '--palette-sampling='\
-'[choose pixels for palette construction]':palettesampling:_palettesampling \
-  '--palette-binning='\
-'[choose weighted-point aggregation]':palettebinning:_palettebinning \
+  '--sampling-policy='\
+'[choose pixels for palette construction]':samplingpolicy:_samplingpolicy \
+  '--binning-policy='\
+'[choose weighted-point aggregation]':binningpolicy:_binningpolicy \
   {-F,--merge-policy=}'[choose final palette merge policy]':mergepolicy:_mergepolicy \
   {-a,--cover-policy=}'[choose palette coverage policy]':coverpolicy:_coverpolicy \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \

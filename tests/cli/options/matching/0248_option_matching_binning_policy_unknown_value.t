@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify palette-sampling rejects an unknown policy name.
+# Verify binning-policy rejects an unknown policy name.
 
 set -eux
 
@@ -13,19 +13,19 @@ set -v
 
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --palette-sampling=unknown \
+    --binning-policy=unknown \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok 1 - unknown palette-sampling policy exit status mismatch"
+    echo "not ok 1 - unknown binning-policy policy exit status mismatch"
     exit 0
 }
 
-test "${message#*--palette-sampling*}" != "${message}" || {
-    echo "not ok 1 - unknown palette-sampling diagnostic is missing"
+test "${message#*--binning-policy*}" != "${message}" || {
+    echo "not ok 1 - unknown binning-policy diagnostic is missing"
     exit 0
 }
 
-echo "ok 1 - palette-sampling rejects an unknown policy"
+echo "ok 1 - binning-policy rejects an unknown policy"
 exit 0
