@@ -79,7 +79,8 @@ def make_command(img2sixel: str,
                  discard_output: bool,
                  timeline_path: Path | None = None,
                  binning_policy: str = "hard",
-                 binbits: int = 6) -> List[str]:
+                 binbits: int = 6,
+                 seed: int = 1) -> List[str]:
     """Build one controlled clustering-color-space command."""
     command = [
         img2sixel,
@@ -89,7 +90,7 @@ def make_command(img2sixel: str,
         "--loaders=builtin!",
         "--sampling-policy=full-frame",
         f"--binning-policy={binning_policy}",
-        f"--quantize-model=kmeans:seed=1:binbits={binbits}",
+        f"--quantize-model=kmeans:seed={seed}:binbits={binbits}",
         "-F",
         "none",
         "-a",

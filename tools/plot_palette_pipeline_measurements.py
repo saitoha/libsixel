@@ -721,12 +721,23 @@ def git_source_snapshot(source_root: Path) -> Dict[str, str]:
 
 
 def read_active_make_assignment(makefile: Path, name: str) -> str:
-    """Read one active assignment from a generated Automake Makefile."""
+    """Read one active logical assignment from an Automake Makefile."""
     prefix = f"{name} = "
     with makefile.open("r", encoding="utf-8", errors="replace") as handle:
         for line in handle:
-            if line.startswith(prefix):
-                return line[len(prefix):].strip()
+            if not line.startswith(prefix):
+                continue
+            value = line[len(prefix):].rstrip()
+            while value.endswith("\\"):
+                value = value[:-1].rstrip() + " "
+                try:
+                    continuation = next(handle)
+                except StopIteration as exc:
+                    raise ValueError(
+                        f"Unterminated {name} assignment in {makefile}"
+                    ) from exc
+                value += continuation.strip()
+            return value.strip()
     raise ValueError(f"Cannot resolve {name} from {makefile}")
 
 

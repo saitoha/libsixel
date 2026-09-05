@@ -150,6 +150,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	openvms/gnv-link-program.sh \
 	tools/fuzz-afl-runner.sh \
 	tools/fuzz-img2sixel-cli.sh \
+	tools/check_clustering_binning_threshold_measurements.py \
 	tools/check_clustering_colorspace_measurements.py \
 	tools/check_dither_policy_measurements.py \
 	tools/check_palette_pipeline_measurements.py \
@@ -161,6 +162,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/check_lookup_policy_measurements.py \
 	tools/palette_pipeline_suite.json \
 	tools/plot_lookup_policy_acceleration.py \
+	tools/plot_clustering_binning_threshold_measurements.py \
 	tools/plot_clustering_colorspace_measurements.py \
 	tools/plot_dither_policy_measurements.py \
 	tools/plot_lookup_policy_quality.sh \
@@ -170,6 +172,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_quality_curve.py \
 	tools/plot_quantize_model_measurements.py \
 	tools/reproduce_lookup_policy_acceleration.sh \
+	tools/reproduce_clustering_binning_threshold_measurements.sh \
 	tools/reproduce_clustering_colorspace_measurements.sh \
 	tools/reproduce_dither_policy_measurements.sh \
 	tools/reproduce_lookup_policy_measurements.sh \
