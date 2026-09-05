@@ -277,8 +277,8 @@ boundary is reached. Resolution follows these rules:
 
 | Sampling | Binning | Resolver action |
 | --- | --- | --- |
-| `auto` | `auto` | Resolve sampling first, then resolve binning from the resulting sample metadata. |
-| explicit | `auto` | Choose binning compatible with the sampling result and quantizer. |
+| `auto` | `auto` | Resolve sampling first, then select the measured hard binning profile when the quantizer supports it. |
+| explicit | `auto` | Select hard binning when supported, otherwise choose the quantizer-compatible form. |
 | `auto` | explicit | Resolve sampling without replacing the explicit binning policy. |
 | explicit | explicit | Validate the combination without replacing it. |
 
@@ -308,10 +308,14 @@ They neither mutate the per-frame lifecycle state nor read process-wide option
 overrides. The caller applies a successful selection to the owning state before
 execution. A failed selection leaves both the plan and result object unchanged.
 The sampling compatibility wrapper now uses this contract before scheduler
-allocation. K-means resolves binning at point-set construction from the actual
-post-sampling point count, requested palette size, and quantizer capabilities.
-Its current `auto` threshold remains unchanged: it selects soft binning when
-`sample_count >= requested_colors * auto_ratio`, and hard binning otherwise.
+allocation. K-means resolves binning at point-set construction after sampling.
+The multi-fixture quality and performance measurements below make `hard` the
+automatic profile for quantizers that consume weighted points without an
+observed-representative constraint. Quantizers without weighted-point support
+resolve to `none`, while a quantizer that requires observed representatives
+resolves to `exact`. Soft binning remains available only by explicit request.
+The deprecated K-means `autoratio` setting remains accepted for compatibility
+but no longer changes automatic binning.
 
 An explicit unsupported combination is rejected during resolution. In
 particular, soft binning requires a weighted-point consumer that accepts
@@ -331,9 +335,9 @@ only when it is ready to construct the palette. Thus
 incompatible explicit quantizer is rejected. This capability preflight runs
 before sampling and scheduler allocation, so a known policy error cannot be
 misclassified as a worker failure or enter the full-frame sampling fallback.
-K-means `auto` binning remains unresolved until its point-set builder sees the
-actual post-sampling count; the encoder does not precompute that density
-decision from frame dimensions.
+K-means `auto` binning remains unresolved until its point-set builder reaches
+the binning boundary. The encoder does not duplicate the profile decision from
+frame dimensions or scheduler state.
 
 Only a successful palette-builder attempt commits quantizer and binning state
 to the encode DAG. Each quantizer-engine retry uses an attempt-local binning
@@ -703,7 +707,7 @@ Hard is the fastest full-frame binning policy in all but one content cell. The
 exception is flat artwork at `K=8`, where exact is only 1.18x faster in the
 palette span and 1.02x end to end. The large `K=256` gradient makes the scaling
 difference concrete: hard takes 19.96 ms, soft 46.48 ms, exact 557.10 ms, and
-none 1,547.47 ms. These results favor hard as the automatic binning baseline;
+none 1,547.47 ms. These results define hard as the automatic binning baseline;
 the slower policies remain explicit quality choices rather than sensible
 general defaults.
 

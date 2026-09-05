@@ -464,9 +464,6 @@ sixel_palette_binning_select(
 {
     sixel_palette_binning_selection_t result;
     sixel_palette_binning_policy_t effective;
-    size_t colors;
-    size_t ratio;
-    size_t threshold;
 
     result.effective = SIXEL_PALETTE_BINNING_AUTO;
     result.bits_per_axis = 0u;
@@ -475,9 +472,6 @@ sixel_palette_binning_select(
     result.backend = SIXEL_PALETTE_BINNING_BACKEND_UNRESOLVED;
     result.reason = SIXEL_PALETTE_RESOLUTION_NONE;
     effective = SIXEL_PALETTE_BINNING_AUTO;
-    colors = 0u;
-    ratio = 0u;
-    threshold = 0u;
     if (input == NULL || capabilities == NULL || selection == NULL ||
             input->source_point_count == 0u ||
             !sixel_palette_binning_policy_is_valid(input->requested) ||
@@ -488,7 +482,7 @@ sixel_palette_binning_select(
     effective = input->requested;
     result.reason = SIXEL_PALETTE_RESOLUTION_EXPLICIT;
     if (effective == SIXEL_PALETTE_BINNING_AUTO) {
-        result.reason = SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA;
+        result.reason = SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE;
         if (capabilities->accepts_weighted_points == 0) {
             effective = SIXEL_PALETTE_BINNING_NONE;
             result.reason =
@@ -498,20 +492,12 @@ sixel_palette_binning_select(
             result.reason =
                 SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY;
         } else {
-            colors = input->requested_colors == 0u
-                ? 1u : input->requested_colors;
-            ratio = input->auto_ratio == 0u ? 1u : input->auto_ratio;
-            threshold = colors > SIZE_MAX / ratio
-                ? SIZE_MAX : colors * ratio;
-            effective = input->source_point_count >= threshold
-                ? SIXEL_PALETTE_BINNING_SOFT
-                : SIXEL_PALETTE_BINNING_HARD;
-            if (effective == SIXEL_PALETTE_BINNING_SOFT &&
-                    capabilities->accepts_fractional_weights == 0) {
-                effective = SIXEL_PALETTE_BINNING_HARD;
-                result.reason =
-                    SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY;
-            }
+            /*
+             * The checked-in content and scale suite makes hard binning the
+             * automatic weighted-point profile.  Soft remains explicit: it
+             * is slower and can dilute sparse high-chroma colors.
+             */
+            effective = SIXEL_PALETTE_BINNING_HARD;
         }
     }
     if (!sixel_palette_binning_is_supported(effective, capabilities)) {

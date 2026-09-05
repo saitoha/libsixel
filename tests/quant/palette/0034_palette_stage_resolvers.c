@@ -152,19 +152,20 @@ kmeans_binning_selection_is_valid(void)
             selection.effective != SIXEL_PALETTE_BINNING_HARD ||
             selection.bits_per_axis != 6u ||
             selection.kernel != SIXEL_PALETTE_BINNING_KERNEL_NONE ||
-            selection.reason != SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA) {
+            selection.reason != SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE) {
         return 0;
     }
 
+    /* The former density threshold must not switch AUTO back to soft. */
     input.source_point_count = 256u;
+    input.auto_ratio = 1u;
     status = sixel_palette_binning_select(&input,
                                           &capabilities,
                                           &selection);
     if (SIXEL_FAILED(status) ||
-            selection.effective != SIXEL_PALETTE_BINNING_SOFT ||
-            selection.kernel !=
-                SIXEL_PALETTE_BINNING_KERNEL_TRILINEAR ||
-            selection.reason != SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA) {
+            selection.effective != SIXEL_PALETTE_BINNING_HARD ||
+            selection.kernel != SIXEL_PALETTE_BINNING_KERNEL_NONE ||
+            selection.reason != SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE) {
         return 0;
     }
 

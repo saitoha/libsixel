@@ -219,7 +219,8 @@ Supported k-means suboptions:
 .br
 \fBsoftdist\fP (short form \fBDKIND\fP): \fBtrilinear\fP.
 .br
-\fBautoratio\fP (short form \fBRRATIO\fP): integer value in 1-1048576.
+\fBautoratio\fP (short form \fBRRATIO\fP): compatibility integer in
+1-1048576; the current hard auto-binning profile ignores it.
 .br
 \fBfeedback\fP (short form \fBF0\fP or \fBF1\fP): 0 or 1.
 .br
@@ -323,6 +324,8 @@ choose how sampled colors become weighted quantizer input.
 assigns each color to one finite grid bin; and \fBsoft\fP distributes its mass
 to neighboring bins with trilinear weights. Explicit \fBexact\fP,
 \fBhard\fP, or \fBsoft\fP selects k-means when \fB\-Q auto\fP is active.
+\fBauto\fP selects hard binning for a compatible weighted-point quantizer;
+other quantizers select a compatible input form.
 The \fBSIXEL_PALETTE_BINNING\fP environment provides the default.
 .TP 5
 .B \-F \fIPOLICY\fP, \-\-merge\-policy=\fIPOLICY\fP
@@ -1878,7 +1881,8 @@ k-means soft-binning kernel. Currently supports trilinear.
 .TP 5
 .B SIXEL_PALETTE_KMEANS_AUTORATIO
 .br
-k-means auto-binning density ratio threshold (1-1048576, default 32).
+accepted compatibility setting (1-1048576, default 32); the current hard
+auto-binning profile ignores it.
 .TP 5
 .B SIXEL_PALETTE_KMEANS_FEEDBACK
 .br

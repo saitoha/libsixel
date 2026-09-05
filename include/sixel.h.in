@@ -432,7 +432,9 @@ typedef int SIXELSTATUS;
                                                     softdist (or Dvalue):
                                                       trilinear
                                                     autoratio (or Rvalue):
-                                                      integer in 1-1048576
+                                                      compatibility integer
+                                                      in 1-1048576; ignored
+                                                      by the hard auto profile
                                                     feedback (or Fvalue):
                                                       off, on
                                                     prune:
@@ -544,7 +546,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_PALETTE_BINNING   (0x101) /* --palette-binning=POLICY:
                                                    choose how sampled colors
                                                    become weighted points:
-                                                     auto
+                                                     auto (hard when
+                                                           supported)
                                                      none
                                                      exact
                                                      hard

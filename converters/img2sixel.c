@@ -245,7 +245,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :threshold=VALUE (:TVALUE) stop refinement when delta "
         "reaches VALUE (0.0-0.5).\n"
         "          :binning=MODE (:BMODE) deprecated --palette-binning alias:\n"
-        "              auto -> choose binning mode automatically (default)\n"
+        "              auto -> choose hard binning when supported (default)\n"
         "              none -> disable histogram pre-binning\n"
         "              hard -> hard-assignment histogram bins\n"
         "              soft -> trilinear soft histogram bins\n"
@@ -256,8 +256,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "              srgb    -> use sRGB gamma-aware mapping\n"
         "          :softdist=KIND (:DKIND) soft binning kernel:\n"
         "              trilinear -> trilinear kernel\n"
-        "          :autoratio=RATIO (:RRATIO) auto mode threshold ratio "
-        "(1-1048576, default 32).\n"
+        "          :autoratio=RATIO (:RRATIO) accepted for compatibility; "
+        "the current hard auto profile ignores it.\n"
         "          :feedback=0|1 (:F0 or :F1) residual histogram feedback;\n"
         "              0 disables feedback (default), 1 enables it.\n"
         "          :prune=POLICY k-means pruning policy:\n"
@@ -391,7 +391,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "palette-binning",
         "--palette-binning=POLICY\n"
         "    choose how sampled colors become weighted quantizer input:\n"
-        "      auto  -> resolve from quantizer capability and sample density.\n"
+        "      auto  -> use hard when supported; otherwise use a compatible "
+        "form.\n"
         "      none  -> pass every sampled color through unchanged.\n"
         "      exact -> combine only identical colors at full precision.\n"
         "      hard  -> assign each color to one finite grid bin.\n"
@@ -1789,8 +1790,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_KMEANS_AUTORATIO",
-        "k-means auto-binning density ratio threshold (1-1048576,\n"
-        "default 32)."
+        "accepted compatibility setting (1-1048576, default 32); the\n"
+        "current hard auto-binning profile ignores it."
     },
     {
         "SIXEL_PALETTE_KMEANS_FEEDBACK",
