@@ -161,6 +161,8 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/threading/measurement.md \
 	docs/threading/measurements/animation-thread4-timeline.png \
 	docs/threading/measurements/animation-thread4.jsonl \
+	docs/threading/measurements/decoder-size-comparison.csv \
+	docs/threading/measurements/decoder-thread8-900x675.jsonl \
 	docs/threading/measurements/decoder-thread8-timeline.png \
 	docs/threading/measurements/decoder-thread8.jsonl \
 	docs/threading/measurements/encoder-thread2-timeline.png \

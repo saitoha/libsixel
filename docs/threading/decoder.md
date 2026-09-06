@@ -29,29 +29,76 @@ serial parser reaches parallel anchor
              join all N
                  |
                  v
-   paint span 0, span 1, ... span N-1
-        one joined worker at a time
+       derive each span's painted rows
+                 |
+     overlap? ----+---- yes -> serial fallback
+                 |
+                 no
+                 v
+       create all N paint workers
+                 |
+       all-ready release barrier
+                 |
+                 v
+          parallel paint + join
                  |
                  v
        continue serial parser/output
 ```
 
 Each scan reconstructs the local SIXEL state needed at its useful boundary.
-Byte spans can nevertheless target overlapping destination pixels. Painting
-all of them concurrently into the shared image would introduce data races and
-could violate parser order, so the direct paint pass starts and joins one span
-at a time.
+It also records the first and last row that the corresponding paint pass would
+touch. The controller releases all paint workers together only when those row
+ranges are ordered and disjoint. The shared pixel and paint-mask buffers can
+then be updated without locks because no two workers own the same row.
 
-The checked-in eight-worker timeline makes the distinction visible. Eight
-scan intervals begin together. The eight paint intervals then form a
-staircase, with no overlap. PNG output follows and dominates this small test's
-remaining wall time; it is not part of the decoder worker budget.
+An arbitrary byte split is advanced to the next SIXEL `-` boundary. This
+normally aligns useful work to complete six-row bands; it does not create an
+automatic five-row overlap. Several short byte spans can, however, converge on
+the same later boundary and describe overlapping rows. The current
+implementation detects that case after scan and falls back before paint rather
+than attempting an unsafe parallel write.
 
-![Eight-worker decoder timeline](measurements/decoder-thread8-timeline.png)
+All paint workers wait at a release barrier. If any worker cannot be created,
+the controller aborts and joins the workers that already exist while they are
+still blocked, leaving the serial fallback image untouched.
+
+The checked-in eight-worker timeline uses a 1920 by 1080 raster. Eight scan
+intervals begin together. All eight paint workers then become ready at a
+barrier before their intervals begin as a parallel block. PNG output follows
+and dominates the remaining process wall time; it is not part of the decoder
+worker budget. Scan is shown in light blue and paint in dark blue.
+
+![Eight-worker Full HD decoder timeline](measurements/decoder-thread8-timeline.png)
+
+## Raster-size comparison
+
+The same source and encoder policy were used to create two dedicated decoder
+fixtures. These are single diagnostic observations, not repeated performance
+benchmarks:
+
+| Raster | SIXEL bytes | Scan wall | Parallel paint wall | Decoder wall | PNG wall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 900 x 675 | 334,858 | 1.249 ms | 1.188 ms | 2.715 ms | 18.507 ms |
+| 1920 x 1080 | 1,114,189 | 3.379 ms | 3.189 ms | 6.915 ms | 68.783 ms |
+
+Increasing the raster from 607,500 to 2,073,600 pixels multiplied the pixel
+count by 3.41, scan wall time by approximately 2.71, parallel-paint wall time
+by approximately 2.68, and the complete decoder interval by approximately
+2.55 in this run. Scan and paint are now similar parts of direct decoding:
+at Full HD they occupy 48.9 and 46.1 percent of the decoder interval,
+respectively. PNG serialization is an order of magnitude longer than either
+decoder phase in both observations.
+
+The percentages use the complete decoder interval as their denominator. Scan,
+paint, and controller gaps do not form a perfectly additive partition, and PNG
+serialization is deliberately excluded. The retained
+[`decoder-size-comparison.csv`](measurements/decoder-size-comparison.csv) and
+both raw timelines allow this observation to be recalculated.
 
 Calling this only “band decoding” hides two facts: the initial work units are
-encoded byte spans, and the ordinary destination paint is currently ordered
-rather than parallel.
+encoded byte spans, and destination paint becomes row-parallel only after the
+validation pass has proved independence.
 
 ## Local-buffer and undither path
 
@@ -76,7 +123,7 @@ the configured thread option was ignored.
 Parallel work must preserve:
 
 - control-sequence and palette semantics at each span boundary;
-- parser-order writes when spans address the same destination region;
+- disjoint row ownership, or clean fallback before shared-buffer writes;
 - raster clipping, paint-mask, and OR-mode behavior;
 - identical malformed-input and allocation-failure handling; and
 - the public decoder's output ownership contract.
@@ -84,11 +131,15 @@ Parallel work must preserve:
 The timeline instrumentation records paired starts and finishes for both scan
 and paint. `tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t` keeps
 that diagnostic contract from silently degrading back to zero-length markers.
+`0012_parallel_paint_barrier.t` verifies that every paint worker reaches the
+barrier before paint begins. Decoder tests 0025 and 0026 cover partial worker
+creation and overlapping row ranges, including the clean-fallback guarantee.
 
 ## Measurement limits
 
-The checked-in chart is an architectural observation from one generated
-SIXEL input. It is not a decoder scaling curve. A performance study should
-vary payload size, SIXEL command mix, destination dimensions, palette changes,
-OR mode, output format, and thread count. Measure parser/paint time separately
-from PNG serialization when the question is decoder parallelism.
+The checked-in chart and two-size comparison are architectural observations
+from one generated image class. They are not a decoder scaling curve. A
+performance study should use repeated samples and vary payload size, SIXEL
+command mix, destination dimensions, palette changes, OR mode, output format,
+and thread count. Measure parser/paint time separately from PNG serialization
+when the question is decoder parallelism.

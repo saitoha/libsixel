@@ -7,7 +7,7 @@ The checked-in threading artifacts answer architectural questions:
 - how the encoder divides a configured worker budget;
 - at which count dither and encode first overlap;
 - which pools actually execute jobs;
-- whether decoder scan and paint spans overlap; and
+- whether decoder scan joins before the paint barrier and paint spans overlap;
 - whether animation frames are encoded concurrently.
 
 They are deliberately not advertised as throughput or scalability results.
@@ -32,10 +32,11 @@ The Python path is only an example. The runner:
 3. removes inherited `SIXEL_*` policy variables from measured commands;
 4. sweeps encoder budgets from one through twelve;
 5. records representative encoder timelines at two, four, and eight workers;
-6. records an eight-worker decoder timeline;
+6. records eight-worker decoder timelines at 900 by 675 and 1920 by 1080,
+   using the Full HD result for the main figure;
 7. records a four-worker, finite two-frame animation timeline;
 8. renders every timeline with `tools/timeline.py --sort-order start`; and
-9. validates artifact completeness and current ordering invariants.
+9. validates artifact completeness and current synchronization invariants.
 
 An alternate output directory may be passed as the first argument. The second
 and third arguments replace the static and animation fixtures respectively.
@@ -64,8 +65,13 @@ following non-threading choices:
 
 At 256 colors the current automatic dither work-band overlap is zero. This is
 useful for observing allocation but is not a neutral seam-quality experiment.
-The static input is encoded once at one worker and that SIXEL stream is used as
-the decoder input, avoiding a thread-dependent decoder fixture.
+
+The decoder comparison encodes the same static source into dedicated 900 by
+675 and 1920 by 1080 streams with one encoder worker and the controlled policy
+above. Both are decoded with eight workers and GPU acceleration disabled. The
+Full HD raw timeline supplies the main decoder figure. This keeps decoder
+fixture construction independent of the encoder allocation sweep and avoids a
+thread-dependent decoder input.
 
 The animation case fixes the same policies but uses 16 colors and scales a
 finite two-frame GIF to width 1200. Six overlap rows are selected automatically
@@ -87,8 +93,14 @@ Representative raw JSONL records and rendered charts are retained for:
 - [encoder, two workers](measurements/encoder-thread2.jsonl);
 - [encoder, four workers](measurements/encoder-thread4.jsonl);
 - [encoder, eight workers](measurements/encoder-thread8.jsonl);
-- [decoder, eight workers](measurements/decoder-thread8.jsonl); and
+- [decoder, eight workers, 900 by 675](measurements/decoder-thread8-900x675.jsonl);
+- [decoder, eight workers, 1920 by 1080](measurements/decoder-thread8.jsonl);
 - [animation, four workers](measurements/animation-thread4.jsonl).
+
+[`measurements/decoder-size-comparison.csv`](measurements/decoder-size-comparison.csv)
+records raster dimensions, SIXEL payload size and hash, scan, parallel-paint,
+decoder and PNG wall intervals, and scan/paint fractions. These values describe
+one instrumented run and are not throughput thresholds.
 
 Run the artifact checker independently with:
 
@@ -99,9 +111,10 @@ PYTHON=.venv/bin/python \
 
 The checker verifies the recorded revision relationship, complete budget
 sweep, two-worker pipeline exception, first useful overlap, dither worker
-participation, requested tail growth, paired timeline spans, serialized direct
-decoder paint, serialized animation frame encoding, and PNG integrity. It does
-not bless the measured elapsed seconds as performance thresholds.
+participation, requested tail growth, paired timeline spans, the decoder
+all-ready paint barrier, overlapping direct paint intervals, serialized
+animation frame encoding, and PNG integrity. It does not bless the measured
+elapsed seconds as performance thresholds.
 
 ## Band-seam quality protocol
 
@@ -202,7 +215,8 @@ re-encoding, but it does require rerendering and visual inspection.
 
 - It is one run on one arm64 macOS host.
 - Diagnostic logging perturbs scheduling and short job duration.
-- It records allocation and ordering, not speedup or CPU utilization.
+- It records allocation and ordering, not speedup or CPU utilization. The
+  decoder size comparison is two diagnostic points, not a scaling curve.
 - It does not exercise GPU palette application.
 - It does not compare decoder direct and local-buffer paths.
 - It does not contain band-seam quality metrics yet; the protocol above is the

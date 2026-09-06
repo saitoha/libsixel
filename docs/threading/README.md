@@ -10,7 +10,8 @@ timeline or changing a thread-count policy.
 - [Encoder threading](encoder.md) explains palette work, the dither/encode
   pipeline, its budget split, the ordered writer, and measured timelines.
 - [Decoder threading](decoder.md) explains the serial parser anchor, parallel
-  validation scan, ordered paint pass, and local-buffer decode path.
+  validation scan, row-independence proof, parallel paint barrier, and
+  local-buffer decode path.
 - [Animation threading](animation.md) explains loader/encoder handoff, frame
   ordering, temporal state, and the current lack of a process-wide budget.
 - [Measurement and reproduction](measurement.md) defines the checked-in

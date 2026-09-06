@@ -141,14 +141,21 @@ encoded payload: [ byte span 0 ][ byte span 1 ][ byte span 2 ] ...
                decode or validation workers
                          |
                          v
-              ordered publication to the image
+           derive destination row ownership
+                         |
+                all-ready paint barrier
+                         |
+                         v
+                parallel image paint
 ```
 
 Spans may overlap in the destination even when their input bytes do not. The
-normal direct path therefore performs a parallel validation scan and then
-paints spans in parser order. Some streams also require a serial fallback when
-a worker encounters a token needing global parser context, such as a raster
-reset or palette redefinition.
+normal direct path therefore performs a parallel validation scan, records each
+span's actual destination-row range, and releases parallel paint only when the
+ranges are disjoint. Overlapping ranges fall back before any paint worker can
+modify the image. Some streams also require a serial fallback when a worker
+encounters a token needing global parser context, such as a raster reset or
+palette redefinition.
 
 ## Ordering is part of correctness
 
@@ -156,7 +163,8 @@ Parallel stages may compute independent fragments out of order, but externally
 visible state is committed in a defined order:
 
 - encoder SIXEL fragments are written by increasing band index;
-- direct decoder paint spans preserve parser order;
+- direct decoder paint spans own disjoint rows, otherwise they fall back before
+  publication;
 - animation frames are encoded in frame order; and
 - temporal dither state crosses frame boundaries only in that order.
 

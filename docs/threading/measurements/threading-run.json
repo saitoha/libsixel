@@ -5,10 +5,10 @@
     "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
     "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
-    "directory": ".",
+    "directory": "/Users/saitoha/repo/libsixel",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-06T00:53:51.934803+00:00",
+  "generated_at_utc": "2026-09-06T02:37:43.621622+00:00",
   "host": {
     "matplotlib": "3.11.1",
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
@@ -21,6 +21,23 @@
       "path": "tests/data/inputs/formats/gif-anim-no-netscape-2frame.gif",
       "sha256": "15332659a84fb290472ae4005df16d57cc567dde772e052efb7a346789215f82"
     },
+    "decoder": {
+      "contract": "dedicated size-controlled decoder fixtures",
+      "encoded_rasters": [
+        {
+          "height": 675,
+          "id": "900x675",
+          "width": 900
+        },
+        {
+          "height": 1080,
+          "id": "1920x1080",
+          "width": 1920
+        }
+      ],
+      "path": "images/measurements/palette-pipeline/smooth-gradient-900x675.png",
+      "sha256": "b65bf96b6743b0971ee71bb1f903fa5c1d9aa065df242f8b34b5ee86cd5dd8a8"
+    },
     "static": {
       "path": "images/measurements/palette-pipeline/smooth-gradient-900x675.png",
       "sha256": "b65bf96b6743b0971ee71bb1f903fa5c1d9aa065df242f8b34b5ee86cd5dd8a8"
@@ -28,27 +45,34 @@
   },
   "programs": {
     "img2sixel": {
-      "launcher": "converters/img2sixel",
+      "launcher": "/Users/saitoha/repo/libsixel/converters/img2sixel",
       "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
-      "payload": "converters/.libs/img2sixel",
+      "payload": "/Users/saitoha/repo/libsixel/converters/.libs/img2sixel",
       "payload_sha256": "ac363a143663c5b8bd93e729b46b387a3f33f4886ce46c0434d0fc3b1f8c5cc7"
     },
     "sixel2png": {
-      "launcher": "converters/sixel2png",
+      "launcher": "/Users/saitoha/repo/libsixel/converters/sixel2png",
       "launcher_sha256": "b7b512951e1e6e4dafe1bc9490e2bf82c9de8bf8cca885f3db5601f9a8bdc917",
-      "payload": "converters/.libs/sixel2png",
+      "payload": "/Users/saitoha/repo/libsixel/converters/.libs/sixel2png",
       "payload_sha256": "1f3d2d7ea7845d8c0188e0e49799712a1b92cd42d7b0228098a55ab5877b3edc"
     },
     "timeline": {
       "launcher": "tools/timeline.py",
-      "launcher_sha256": "f25b5969a8b78f7b0194f45c9fd3a6703ebe72958655611e596bb2c88ff38f67",
+      "launcher_sha256": "1894bc957503c5dc4e676dbccfc20a58467a82debfe017bef3ca947ba6aad520",
       "payload": "tools/timeline.py",
-      "payload_sha256": "f25b5969a8b78f7b0194f45c9fd3a6703ebe72958655611e596bb2c88ff38f67"
+      "payload_sha256": "1894bc957503c5dc4e676dbccfc20a58467a82debfe017bef3ca947ba6aad520"
     }
   },
   "protocol": {
     "animation_command": "'{img2sixel}' --threads=4 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 16 -g -w 1200 -J '{log}' -o '{output}' '{animation_input}'",
-    "decoder_command": "'{sixel2png}' --threads=8 --gpu-policy=off -J '{log}' -i '{serial_sixel}' -o '{null}'",
+    "decoder_commands": [
+      "'{sixel2png}' --threads=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
+      "'{sixel2png}' --threads=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'"
+    ],
+    "decoder_fixture_commands": [
+      "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 900 -h 675 -o '{decoder_sixel}' '{input}'",
+      "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -o '{decoder_sixel}' '{input}'"
+    ],
     "encoder_commands": [
       "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
       "'{img2sixel}' --threads=2 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
@@ -89,9 +113,9 @@
     ],
     "timing_interpretation": "One diagnostic run per configuration; elapsed time is not a performance benchmark."
   },
-  "schema_version": 1,
+  "schema_version": 2,
   "source": {
-    "revision": "ae97b164fdb4868c6042fc9fb3f4b94529b6e485",
+    "revision": "0f273166d142becbe71a4b4d1f00e79c1454b534",
     "tracked_worktree_state_at_start": "clean"
   }
 }
