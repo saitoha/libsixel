@@ -9,7 +9,8 @@ timeline or changing a thread-count policy.
   quality implications of band boundaries.
 - [Encoder threading](encoder.md) explains palette work, the dither/encode
   pipeline, its budget split, the ordered writer, Full HD `img2sixel`
-  timelines, and repeated worker-scaling results.
+  timelines, repeated worker-scaling results, and the requested-palette-size
+  sweep at two, four, six, and eight worker budgets.
 - [Decoder threading](decoder.md) explains the serial parser anchor, parallel
   validation scan, row-independence proof, parallel paint barrier, and
   local-buffer decode path, with repeated Full HD worker-scaling results.

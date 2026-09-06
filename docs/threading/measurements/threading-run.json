@@ -8,7 +8,7 @@
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-06T04:45:55.280550+00:00",
+  "generated_at_utc": "2026-09-06T06:37:42.711406+00:00",
   "host": {
     "logical_cpu_count": 14,
     "matplotlib": "3.11.1",
@@ -50,15 +50,15 @@
   "programs": {
     "checker": {
       "launcher": "tools/check_threading_measurements.py",
-      "launcher_sha256": "5b168462bc06218615c42c691886cfa4aefb8dc212785ae8f9df59c0c730fbf5",
+      "launcher_sha256": "024872c9656bea8607d726cd357e73b03646a99beedf9d101f636a323c395b40",
       "payload": "tools/check_threading_measurements.py",
-      "payload_sha256": "5b168462bc06218615c42c691886cfa4aefb8dc212785ae8f9df59c0c730fbf5"
+      "payload_sha256": "024872c9656bea8607d726cd357e73b03646a99beedf9d101f636a323c395b40"
     },
     "generator": {
       "launcher": "tools/plot_threading_measurements.py",
-      "launcher_sha256": "87707ef6d923e899c091dd50eca91a0daf3a9d937a259f8fc07c78cce340d8a8",
+      "launcher_sha256": "f1bb20276b739ad067660c5d40bdb6c25dc12d4d0c231f1645f83c9a34c9c347",
       "payload": "tools/plot_threading_measurements.py",
-      "payload_sha256": "87707ef6d923e899c091dd50eca91a0daf3a9d937a259f8fc07c78cce340d8a8"
+      "payload_sha256": "f1bb20276b739ad067660c5d40bdb6c25dc12d4d0c231f1645f83c9a34c9c347"
     },
     "img2sixel": {
       "launcher": "converters/img2sixel",
@@ -113,6 +113,34 @@
       "timed_runs_per_thread": 9,
       "warmup_runs_per_thread": 2,
       "worker_count_order": "alternating ascending and descending rounds"
+    },
+    "encoder_color_scaling": {
+      "color_count_interpretation": "requested palette size from img2sixel -p",
+      "color_counts": [
+        2,
+        4,
+        8,
+        16,
+        24,
+        32,
+        48,
+        64,
+        96,
+        128,
+        192,
+        256
+      ],
+      "command": "'{img2sixel}' '--threads={threads}' --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p '{ncolors}' -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "condition_order": "alternating ascending and descending rounds",
+      "summary": "median with inclusive interquartile range",
+      "thread_counts": [
+        2,
+        4,
+        6,
+        8
+      ],
+      "timed_runs_per_condition": 9,
+      "warmup_runs_per_condition": 2
     },
     "encoder_commands": [
       "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
@@ -177,7 +205,7 @@
       4,
       8
     ],
-    "timing_interpretation": "Timelines and size points are single diagnostic runs. The encoder and decoder scaling sweeps use repeated instrumented samples without exclusive host or CPU affinity."
+    "timing_interpretation": "Timelines and size points are single diagnostic runs. The encoder worker, encoder color-count, and decoder scaling sweeps use repeated instrumented samples without exclusive host or CPU affinity."
   },
   "runtime": {
     "dependencies_unchanged_during_measurement": true,
@@ -208,9 +236,9 @@
       }
     }
   },
-  "schema_version": 5,
+  "schema_version": 6,
   "source": {
-    "revision": "e7d60633e63ae85763ae38c702442b89cf4bb130",
+    "revision": "fe4e7dd44662777ac5f9a1f25b5b660976c00e02",
     "tracked_worktree_state_at_start": "clean"
   }
 }

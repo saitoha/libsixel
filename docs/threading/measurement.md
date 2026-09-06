@@ -8,6 +8,8 @@ The checked-in threading artifacts answer architectural questions:
 - at which count dither and encode first overlap;
 - which pools actually execute jobs;
 - how Full HD encoder phases scale with the configured worker budget;
+- how Full HD encoder phases vary with requested palette size at selected
+  worker budgets;
 - whether decoder scan joins before the paint barrier and paint spans overlap;
 - how Full HD decoder phases scale with the configured worker budget; and
 - whether animation frames are encoded concurrently.
@@ -40,15 +42,17 @@ The Python path is only an example. The runner:
    eight workers;
 6. sweeps the Full HD encoder from one through sixteen workers, using two
    warm-ups and nine timed runs at each count;
-7. records eight-worker decoder timelines at 900 by 675 and 1920 by 1080,
+7. sweeps twelve requested palette sizes at two, four, six, and eight encoder
+   workers, again using two warm-ups and nine timed runs per condition;
+8. records eight-worker decoder timelines at 900 by 675 and 1920 by 1080,
    using the Full HD result for the main figure;
-8. sweeps the Full HD decoder from one through sixteen workers, using two
+9. sweeps the Full HD decoder from one through sixteen workers, using two
    warm-ups and nine timed runs at each count;
-9. proves which build-tree libsixel both converter payloads load and rejects
+10. proves which build-tree libsixel both converter payloads load and rejects
    any input, tool, converter, or library hash change during measurement;
-10. records a four-worker, finite two-frame animation timeline;
-11. renders every timeline with `tools/timeline.py --sort-order start`; and
-12. validates artifact completeness and current synchronization invariants.
+11. records a four-worker, finite two-frame animation timeline;
+12. renders every timeline with `tools/timeline.py --sort-order start`; and
+13. validates artifact completeness and current synchronization invariants.
 
 An alternate output directory may be passed as the first argument. The second
 and third arguments replace the static and animation fixtures respectively.
@@ -61,7 +65,8 @@ The encoder experiments use a controlled 900 by 675 smooth-gradient source.
 `img2sixel -w 1920 -h 1080` resizes it to a Full HD processed raster before
 palette construction and encoding. The source file is therefore not a native
 Full HD fixture; the measured command and the raster processed by the encoder
-are Full HD. The following non-threading choices are fixed:
+are Full HD. The worker-budget sweep, allocation sweep, and representative
+timelines fix the following non-threading choices:
 
 ```text
 --precision=8bit
@@ -80,6 +85,9 @@ are Full HD. The following non-threading choices are fixed:
 
 At 256 colors the current automatic dither work-band overlap is zero. This is
 useful for observing allocation but is not a neutral seam-quality experiment.
+In particular, every point in the encoder worker-budget chart passes the
+literal argument `-p 256`. The value is a requested palette size; the protocol
+does not reinterpret it as a measured count of realized distinct entries.
 
 The encoder scaling sweep records the complete `main/encoder` interval,
 palette construction, and the dither/encode tail. Timed rounds alternate
@@ -88,6 +96,17 @@ and inclusive interquartile ranges, and the CSV retains output SIXEL size and
 hash for every execution. `--threads` is a worker budget rather than a
 physical-core reservation because no affinity or exclusive-host control is
 applied.
+
+The encoder color-count sweep changes only `-p K` from that controlled encoder
+configuration. It uses K = 2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, and 256
+at `--threads=2`, 4, 6, and 8. These values remain worker budgets rather than
+physical-core reservations. Each of the 48 conditions receives two warm-ups
+and nine timed runs. Whole rounds traverse the Cartesian condition list in
+alternating directions. The chart shares both axes across its four panels and
+uses a log2 color-count axis. It also marks the current automatic transition
+from six overlap rows at K <= 32 to zero rows at K > 32. Because K and overlap
+change together at that boundary, this experiment must not be cited as an
+isolated overlap-cost measurement.
 
 The decoder comparison encodes the same static source into dedicated 900 by
 675 and 1920 by 1080 streams with one encoder worker and the controlled policy
@@ -147,6 +166,15 @@ validated planner and worker observations, phase intervals, and output SIXEL
 size and hash. The accompanying
 [scaling chart](measurements/encoder-thread-scaling.png) plots complete
 encoder, palette-build, and dither/encode-tail medians with IQR shading.
+
+[`measurements/encoder-color-scaling.csv`](measurements/encoder-color-scaling.csv)
+retains 96 warm-ups and 432 timed Full HD `img2sixel` observations across the
+twelve requested palette sizes and four worker budgets. It records palette
+size, exact execution order, phase intervals, automatic overlap, output size
+and hash, and validated planner observations. The accompanying
+[palette-size chart](measurements/encoder-color-scaling.png) uses one panel per
+worker budget and plots complete encoder, palette-build, and dither/encode-tail
+medians with IQR shading.
 
 [`measurements/decoder-size-comparison.csv`](measurements/decoder-size-comparison.csv)
 records raster dimensions, SIXEL payload size and hash, scan, parallel-paint,

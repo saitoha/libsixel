@@ -103,20 +103,20 @@ lines because `--threads` does not parallelize it.
 serialization is measured separately but intentionally omitted from these
 worker-scaling lines.*
 
-The one-worker serial path took 15.478 ms at the median. Two workers took
-18.261 ms, 18.0 percent longer: the parallel path pays for a validation scan,
+The one-worker serial path took 15.605 ms at the median. Two workers took
+18.396 ms, 17.9 percent longer: the parallel path pays for a validation scan,
 a joined independence check, worker creation, and a separate paint pass, while
 too little work is available to amortize them. Time then fell through ten
-workers, where the best observed decoder median was 5.222 ms, or 2.96 times
+workers, where the best observed decoder median was 5.256 ms, or 2.97 times
 faster than the one-worker path. Counts from eleven through sixteen did not
-produce a consistent further reduction; their medians ranged from 5.619 to
-6.321 ms.
+produce a consistent further reduction; their medians ranged from 6.122 to
+6.652 ms.
 
 Both validation scan and direct paint scale through the useful range, then
 flatten near 2.2 to 3.2 ms. This explains why the complete decoder curve remains
 well above the ideal `T(1) / N` guide: the two phases are sequential, and each
 retains scheduling, barrier, and controller costs. The associated PNG phase
-was approximately 66 ms and did not improve with worker count.
+was approximately 66 to 67 ms and did not improve with worker count.
 
 These numbers characterize this fixture, binary, and host. Diagnostic JSONL
 logging perturbs short phases, and no CPU affinity, exclusive host, frequency
@@ -137,15 +137,15 @@ the libsixel decoder interval.*
 
 | Raster | SIXEL bytes | Scan wall | Parallel paint wall | Decoder wall | PNG wall |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 900 x 675 | 334,858 | 0.838 ms | 0.946 ms | 2.004 ms | 18.211 ms |
-| 1920 x 1080 | 1,114,189 | 2.562 ms | 3.241 ms | 6.174 ms | 66.034 ms |
+| 900 x 675 | 334,858 | 1.444 ms | 2.265 ms | 4.204 ms | 27.038 ms |
+| 1920 x 1080 | 1,114,189 | 2.757 ms | 3.428 ms | 6.576 ms | 69.280 ms |
 
 Increasing the raster from 607,500 to 2,073,600 pixels multiplied the pixel
-count by 3.41, scan wall time by approximately 3.06, parallel-paint wall time
-by approximately 3.43, and the complete decoder interval by approximately
-3.08 in this run. These two points include visible single-run scheduling and
+count by 3.41, scan wall time by approximately 1.91, parallel-paint wall time
+by approximately 1.51, and the complete decoder interval by approximately
+1.56 in this run. These two points include visible single-run scheduling and
 cache noise and must not be read as a scaling curve. At Full HD, scan and paint
-occupy 41.5 and 52.5 percent of the decoder interval,
+occupy 41.9 and 52.1 percent of the decoder interval,
 respectively. PNG serialization remains much longer than either decoder phase
 in both observations.
 
