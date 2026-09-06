@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import shlex
 import shutil
 import statistics
@@ -170,6 +171,40 @@ def run_once(command: Sequence[str], env: Dict[str, str]) -> float:
             f"{diagnostic}"
         )
     return elapsed
+
+
+def require_work_format(command: Sequence[str],
+                        env: Dict[str, str],
+                        expected: str,
+                        input_data: bytes | None = None) -> str:
+    """Run a planner probe and require one effective working format."""
+    trace_env = env.copy()
+    trace_env["SIXEL_TRACE_TOPIC"] = "palette_contract"
+    diagnostic_command = list(command[:-1]) + ["-v", command[-1]]
+    proc = subprocess.run(
+        diagnostic_command,
+        input=input_data,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        env=trace_env,
+        check=False,
+    )
+    diagnostic = proc.stderr.decode("utf-8", errors="replace")
+    formats = re.findall(
+        r"formats: source=\S+ work=(\S+) scale_out=\S+",
+        diagnostic,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"Working-format preflight failed ({proc.returncode}):\n"
+            f"{diagnostic.strip()}"
+        )
+    if formats != [expected]:
+        raise RuntimeError(
+            "Working-format preflight observed an unexpected format: "
+            f"expected {expected}, observed {formats}"
+        )
+    return formats[0]
 
 
 def measure(img2sixel: str,
@@ -459,6 +494,8 @@ def write_metadata(path: Path,
         },
         "programs": programs,
         "protocol": {
+            "precision": "8bit",
+            "required_work_format": "rgb888",
             "policies": list(policies),
             "diffusion": diffusion,
             "speed_colors": list(colors),
@@ -513,6 +550,17 @@ def main() -> int:
 
     img2sixel = resolve_img2sixel(args.img2sixel, source_root)
     command_env = make_command_environment(args.clean_sixel_environment)
+    require_work_format(
+        make_command(
+            img2sixel,
+            input_image,
+            colors[0],
+            policies[0],
+            args.diffusion,
+        ),
+        command_env,
+        "rgb888",
+    )
     rows = measure(
         img2sixel,
         input_image,

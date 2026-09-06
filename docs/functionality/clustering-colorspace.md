@@ -285,6 +285,14 @@ comparison should also request float32 for `gamma`, otherwise representation
 precision becomes a second independent variable. The measurements below use
 `--precision=float32` for every space.
 
+Gamma RGB can be clustered in either 8-bit or float32 coordinates. Linear RGB
+and the Lab-family spaces are not available as 8-bit clustering
+representations. In the separate
+[working-precision cross-section](precision.md#precision-around-clustering-configurations),
+the gamma pair therefore includes clustering precision, while the other four
+pairs hold the float32 clustering stage fixed and change only the surrounding
+base gamma pipeline.
+
 ## Measured comparison
 
 The checked-in experiment compares all five spaces at

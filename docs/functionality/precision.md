@@ -32,10 +32,14 @@ even when the base request is `--precision=8bit`. Such a command is useful,
 but it is not an 8-bit-versus-float32 experiment.
 
 `-X` has a different role. It selects the coordinates used to construct the
-palette. A floating-point clustering space such as `-Xoklab` may create a
-float palette-building view without promoting an otherwise gamma `rgb888`
-main path. This separation permits the same palette objective to be evaluated
-with either base working precision.
+palette. Gamma RGB can be clustered in either 8-bit or float32 coordinates, so
+the `-Xgamma` pair includes a real clustering-precision comparison. Linear RGB
+and the Lab-family clustering spaces are float32-only; there is no 8-bit
+Linear RGB, OKLab, CIELAB, or DIN99d clustering mode to compare. Those
+selections create a float32 palette-building view without necessarily
+promoting an otherwise gamma `rgb888` main path. Their matched `--precision`
+pairs compare the shared pipeline before and after the same float32 clustering
+stage, not two numeric representations of that stage.
 
 Use verbose planner output to audit the effective path. A controlled 8-bit
 run must contain:
@@ -79,7 +83,8 @@ precision sensitivity exists. It evaluates 43 configurations:
 - thirteen static-image dither policies;
 - nine lookup policies;
 - five sampling/binning configurations; and
-- five clustering color spaces.
+- gamma clustering in both precisions, plus four float32-only clustering-space
+  selections whose pairs measure the surrounding base pipeline precision.
 
 Each configuration is measured once with a true `rgb888` path and once with a
 true `rgb-f32` path. The figures keep four user-visible outcomes together:
@@ -112,7 +117,7 @@ statistical or practical significance.
 | dither policy | 13 | 1.22x | 7 / 13 | 0 / 13 | +0.09% to +18.80% |
 | lookup policy | 9 | 1.17x | 4 / 9 | 5 / 9 | -4.98% to +0.22% |
 | sampling and binning | 5 | 1.18x | 2 / 5 | 3 / 5 | -0.06% to +0.09% |
-| clustering color space | 5 | 1.18x | 2 / 5 | 5 / 5 | -0.02% to +0.41% |
+| clustering configuration | 5 | 1.18x | 2 / 5 | 5 / 5 | -0.02% to +0.41% |
 
 The quantizer rows change MS-SSIM by at most `0.000080`, mean Delta E00 by at
 most `0.0009`, and size by less than `0.09%` on this fixture. Their median
@@ -144,12 +149,14 @@ on this input. The float32 `vptree` median is slightly lower than 8-bit, but
 their timing interquartile ranges overlap; this run does not establish a
 float32 speed advantage.
 
-For clustering color spaces, float32 lowers mean Delta E00 in all five rows,
-while MS-SSIM moves in both directions and size stays within 0.41%. The gamma
-clustering row has the largest Delta E00 reduction, `0.0186`. This is another
-reason to keep `-X` and base precision as separately reported axes: even when
-the named clustering coordinates are unchanged, the population reaching them
-can differ.
+Across the five clustering configurations, the float32 row lowers mean Delta
+E00 in every pair, while MS-SSIM moves in both directions and size stays
+within 0.41%. The gamma row has the largest Delta E00 reduction, `0.0186`, and
+is the only row that includes a change in clustering-coordinate precision.
+The Linear RGB and Lab-family clustering calculations remain float32 in both
+rows; their differences come from the samples entering that stage and palette
+application afterward. Those four rows must not be cited as
+8-bit-versus-float32 comparisons of the named color spaces.
 
 The largest output movements are summarized below. A positive quality delta
 means that float32 reports a larger value; a positive size delta means a larger
@@ -179,9 +186,9 @@ SIXEL stream.
 
 ![Eight-bit and float32 quality, speed, and size for each sampling and binning configuration](precision/measurements/precision-palette-pipeline.png)
 
-### Clustering color spaces
+### Precision around clustering configurations
 
-![Eight-bit and float32 quality, speed, and size for each clustering color space](precision/measurements/precision-clustering-colorspace.png)
+![Eight-bit and float32 base-pipeline quality, speed, and size around clustering configurations](precision/measurements/precision-clustering-colorspace.png)
 
 ## Reproduction and validation
 

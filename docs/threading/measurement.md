@@ -83,6 +83,15 @@ timelines fix the following non-threading choices:
 -p 256
 ```
 
+The requested 8-bit mode is verified as an effective `work=rgb888` path. The
+Linear RGB and OKLab transformations used by resizing and palette construction
+still use their required float32 intermediate coordinates; this does not turn
+the shared gamma working raster into `rgb-f32`. Precision remains an
+independent experiment across the whole encoder. The current scaling curves
+describe only the true 8-bit profile above; the controlled single-thread
+cross-section in [Encoder Working Precision](../functionality/precision.md)
+shows the corresponding policy-wide float32 cost and output sensitivity.
+
 At 256 colors the current automatic dither work-band overlap is zero. This is
 useful for observing allocation but is not a neutral seam-quality experiment.
 In particular, every point in the encoder worker-budget chart passes the

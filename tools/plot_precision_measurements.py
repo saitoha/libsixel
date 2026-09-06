@@ -61,8 +61,8 @@ DOMAIN_TITLES = {
     "clustering-colorspace": "Clustering color space",
 }
 PRECISION_STYLES = {
-    "8bit": ("#0072B2", "o", "8-bit"),
-    "float32": ("#D55E00", "s", "float32"),
+    "8bit": ("#0072B2", "o", "base 8-bit"),
+    "float32": ("#D55E00", "s", "base float32"),
 }
 
 
@@ -612,16 +612,26 @@ def plot_domain(path: Path,
         handles, legend_labels, loc="upper right", bbox_to_anchor=(0.98, 0.965),
         frameon=False, ncol=2,
     )
+    if domain == "clustering-colorspace":
+        title = "Base precision around clustering configurations"
+    else:
+        title = f"{DOMAIN_TITLES[domain]}: base working precision"
     figure.suptitle(
-        f"{DOMAIN_TITLES[domain]}: 8-bit and float32 precision", x=0.07,
-        y=0.975, ha="left", fontsize=15, fontweight="bold",
+        title, x=0.07, y=0.975, ha="left", fontsize=15,
+        fontweight="bold",
     )
+    detail = (
+        f"{input_name}, K={PALETTE_COLORS}, one thread, builtin loader, "
+        "gamma working space, GPU off. Whiskers show timing IQR."
+    )
+    if domain == "clustering-colorspace":
+        detail += (
+            " Gamma changes clustering precision; Linear/Lab clustering "
+            "stays float32."
+        )
     figure.text(
         0.07, 0.935,
-        (
-            f"{input_name}, K={PALETTE_COLORS}, one thread, builtin loader, "
-            "gamma working space, GPU off. Whiskers show timing IQR."
-        ),
+        detail,
         ha="left", va="top", fontsize=9, color="#444444",
     )
     figure.subplots_adjust(
@@ -688,6 +698,10 @@ def write_metadata(path: Path,
             "quality": "full",
             "loader": "builtin!",
             "working_colorspace": "gamma",
+            "clustering_precision_interpretation": (
+                "gamma changes clustering precision; linear and Lab-family "
+                "clustering remains float32 in both base-precision rows"
+            ),
             "gpu_policy": "off",
             "speed_warmups": warmups,
             "speed_runs": runs,

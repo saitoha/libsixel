@@ -29,6 +29,7 @@ from plot_lookup_policy_speed import (
     make_command_environment,
     program_record,
     read_build_configuration,
+    require_work_format,
     resolve_img2sixel,
 )
 
@@ -731,6 +732,7 @@ def write_metadata(path: Path, source_root: Path, build_dir: Path,
             ],
             "threads": 1,
             "precision": "8bit",
+            "required_work_format": "rgb888",
             "loader": "builtin!",
             "working_colorspace": "gamma",
             "lookup_policy": "none",
@@ -780,6 +782,12 @@ def main() -> int:
     build_dir = args.build_dir.resolve() if args.build_dir else source_root
     img2sixel = resolve_img2sixel(args.img2sixel, source_root)
     command_env = make_command_environment(args.clean_sixel_environment)
+    require_work_format(
+        make_command(img2sixel, DITHER_METHODS[0][1]),
+        command_env,
+        "rgb888",
+        b"P6\n1 1\n255\n\x00\x00\x00",
+    )
     results = [
         measure_method(img2sixel, method, diffusion, command_env)
         for method, diffusion in DITHER_METHODS

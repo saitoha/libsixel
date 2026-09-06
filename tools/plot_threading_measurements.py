@@ -29,6 +29,7 @@ from plot_lookup_policy_speed import (
     make_command_environment,
     program_record,
     read_build_configuration,
+    require_work_format,
 )
 
 
@@ -1702,6 +1703,8 @@ def write_metadata(args: argparse.Namespace,
             "dependencies_unchanged_during_measurement": True,
         },
         "protocol": {
+            "precision": "8bit",
+            "required_work_format": "rgb888",
             "thread_counts": list(args.threads),
             "timeline_thread_counts": list(args.timeline_threads),
             "sixel_environment_removed": args.clean_sixel_environment,
@@ -1847,6 +1850,17 @@ def main() -> int:
     env = bind_libsixel_environment(
         make_command_environment(args.clean_sixel_environment),
         args.libsixel_library,
+    )
+    require_work_format(
+        [
+            str(args.img2sixel_payload),
+            *encoder_policy_arguments(1),
+            "-o",
+            os.devnull,
+            str(args.input),
+        ],
+        env,
+        "rgb888",
     )
     snapshot = measurement_snapshot(args, source_root)
 

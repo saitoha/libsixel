@@ -28,6 +28,7 @@ from plot_lookup_policy_speed import (
     file_sha256,
     program_record,
     read_build_configuration,
+    require_work_format,
     resolve_img2sixel,
 )
 from plot_palette_pipeline_measurements import (
@@ -44,6 +45,7 @@ from plot_palette_pipeline_measurements import (
     configured_source_root,
     git_source_snapshot,
     libsixel_linkage,
+    make_command,
     make_command_environment,
     measure_quality_and_size,
     measurement_records,
@@ -879,6 +881,7 @@ def single_fixture_protocol(mode: str,
         "comparison_facets": AXIS_CONFIGS,
         "threads": 1,
         "precision": "8bit",
+        "required_work_format": "rgb888",
         "quality": "full",
         "loader": CMS_LOADER_ORDER,
         "quality_reference_loader": CMS_REFERENCE_LOADER_ORDER,
@@ -1097,6 +1100,18 @@ def main() -> int:
     ):
         raise ValueError("suite source state differs from the source tree")
     command_env = make_command_environment(True)
+    require_work_format(
+        make_command(
+            img2sixel,
+            Path(fixtures[0]["resolved_path"]),
+            DEFAULT_COLORS[0],
+            measurement_records()[0],
+            True,
+            CMS_LOADER_ORDER,
+        ),
+        command_env,
+        "rgb888",
+    )
     quality_rows, size_rows = measure_suite_quality(
         fixtures,
         img2sixel,

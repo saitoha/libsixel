@@ -30,6 +30,7 @@ from plot_lookup_policy_speed import (
     percentile,
     program_record,
     read_build_configuration,
+    require_work_format,
     resolve_img2sixel,
     run_once,
 )
@@ -866,6 +867,7 @@ def write_metadata(path: Path,
             "colorspaces": colorspace_records(),
             "threads": 1,
             "precision": "float32",
+            "required_work_format": "rgb-f32",
             "quality": "full",
             "loader": "builtin!",
             "sampling_policy": "full-frame",
@@ -960,6 +962,17 @@ def main() -> int:
     img2sixel = resolve_img2sixel(args.img2sixel, source_root)
     lsqa = resolve_lsqa(args.lsqa, source_root)
     command_env = make_command_environment(args.clean_sixel_environment)
+    require_work_format(
+        make_command(
+            img2sixel,
+            input_image,
+            DEFAULT_COLORS[0],
+            COLORSPACES[0][0],
+            True,
+        ),
+        command_env,
+        "rgb-f32",
+    )
     verified_points = verify_palette_contracts(
         img2sixel,
         input_image,

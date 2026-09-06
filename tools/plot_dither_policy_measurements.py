@@ -30,6 +30,7 @@ from plot_lookup_policy_speed import (
     percentile,
     program_record,
     read_build_configuration,
+    require_work_format,
     resolve_img2sixel,
     run_once,
 )
@@ -530,6 +531,7 @@ def write_metadata(path: Path,
             ],
             "threads": 1,
             "precision": "8bit",
+            "required_work_format": "rgb888",
             "quantize_model": "kmeans:seed=1",
             "merge_policy": "ward",
             "clustering_colorspace": "oklab",
@@ -591,6 +593,17 @@ def main() -> int:
     img2sixel = resolve_img2sixel(args.img2sixel, source_root)
     lsqa = resolve_lsqa(args.lsqa, source_root)
     command_env = make_command_environment(args.clean_sixel_environment)
+    require_work_format(
+        make_command(
+            img2sixel,
+            input_image,
+            DEFAULT_COLORS[0],
+            DITHER_METHODS[0][1],
+            True,
+        ),
+        command_env,
+        "rgb888",
+    )
     quality_rows, size_rows = measure_quality_and_size(
         img2sixel,
         lsqa,

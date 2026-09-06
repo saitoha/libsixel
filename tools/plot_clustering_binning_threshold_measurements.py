@@ -34,6 +34,7 @@ from plot_lookup_policy_speed import (
     percentile,
     program_record,
     read_build_configuration,
+    require_work_format,
     resolve_img2sixel,
 )
 from plot_palette_pipeline_measurements import (
@@ -780,6 +781,7 @@ def write_metadata(path: Path,
             "baseline": "none",
             "threads": 1,
             "precision": "float32",
+            "required_work_format": "rgb-f32",
             "quality": "full",
             "loader": "builtin!",
             "sampling_policy": "full-frame",
@@ -853,6 +855,17 @@ def main() -> int:
     for name in list(command_env):
         if name.startswith("LSQA_"):
             del command_env[name]
+    require_work_format(
+        make_command(
+            img2sixel,
+            Path(fixtures[0]["resolved_path"]),
+            colors_values[0],
+            "gamma",
+            True,
+        ),
+        command_env,
+        "rgb-f32",
+    )
     start = snapshot(
         source_root,
         build_dir,

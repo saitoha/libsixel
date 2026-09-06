@@ -105,6 +105,8 @@ subject of the experiment:
 - effective thread count;
 - loader and decode path;
 - image dimensions and frame selection;
+- requested precision, effective working format, and temporary format
+  conversions;
 - working and clustering colorspaces;
 - palette size and palette source;
 - alpha background;
@@ -113,6 +115,47 @@ subject of the experiment:
 
 Run repeated measurements when nondeterminism is plausible. A quality gate must
 not depend on a lucky palette seed, iteration order, or scheduling outcome.
+
+### Precision and effective format
+
+Treat encoder precision as a cross-cutting experimental variable rather than a
+property of only one algorithm. It can change loader output, sampling and
+binning, palette construction, dithering, palette lookup, and band encoding.
+See the [working-precision guide](../functionality/precision.md) for the pipeline
+boundaries and the maintained comparison.
+
+Do not infer the effective path from the command line alone. Before collecting
+a durable result, inspect the verbose palette-contract trace and require the
+expected working format. A controlled 8-bit gamma run must report
+`work=rgb888`; its float32 counterpart must report `work=rgb-f32`. Record this
+preflight result in generated metadata so that a planner change cannot silently
+change the experiment.
+
+Distinguish three different facts in reports:
+
+- the requested base precision selected by `--precision`;
+- the effective shared working format used by the main encoder pipeline;
+- a temporary float32 view created for an operation such as resizing or
+  clustering.
+
+A temporary conversion does not by itself make the whole pipeline a float32
+pipeline. Conversely, a result is not an 8-bit-path measurement merely because
+the input file stores 8-bit samples.
+
+Gamma RGB clustering supports both 8-bit and float32 coordinates. A matched
+`-Xgamma` comparison can therefore vary the clustering precision as well as the
+surrounding base pipeline. Linear RGB and the Lab-family clustering spaces are
+float32-only. There is no 8-bit Linear RGB, OKLab, CIELAB, or DIN99d clustering
+mode: their matched `--precision=8bit|float32` rows keep clustering itself at
+float32 and compare only the surrounding base pipeline. Label such figures as
+base-precision comparisons, not as 8-bit-versus-float32 comparisons of those
+color spaces.
+
+When precision is not the independent variable, hold both the requested
+precision and effective working format constant. When precision is the
+independent variable, use adjacent matched pairs, alternate their execution
+order, verify both effective formats before timing, and keep all other policy
+choices fixed.
 
 ## Baseline policy
 
