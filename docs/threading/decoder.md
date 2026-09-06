@@ -63,6 +63,15 @@ All paint workers wait at a release barrier. If any worker cannot be created,
 the controller aborts and joins the workers that already exist while they are
 still blocked, leaving the serial fallback image untouched.
 
+## Why a PNG phase appears
+
+All checked-in decoder measurements invoke `sixel2png`. The command first uses
+libsixel to decode the SIXEL stream and then serializes the returned raster as
+a PNG file. Its timeline therefore contains a downstream `png/io` interval in
+addition to the decoder interval. PNG wall time is retained to make the CLI
+measurement boundary explicit and to show end-to-end context; it is not
+decoder work and is not parallelized by the decoder's `--threads` budget.
+
 The checked-in eight-worker timeline uses a 1920 by 1080 raster. Eight scan
 intervals begin together. All eight paint workers then become ready at a
 barrier before their intervals begin as a parallel block. PNG output follows
@@ -71,24 +80,74 @@ worker budget. Scan is shown in light blue and paint in dark blue.
 
 ![Eight-worker Full HD decoder timeline](measurements/decoder-thread8-timeline.png)
 
+*Figure: Full HD decoding measured through `sixel2png`; the final PNG interval
+is CLI output serialization after libsixel decoding.*
+
+## Worker-budget scaling
+
+The following Full HD experiment varies `--threads` from one through sixteen.
+The horizontal axis is the configured decoder worker budget, which is the
+closest user-facing control to an available-core budget. It is not a count of
+reserved physical cores: workers have no affinity, the host is not isolated,
+and this arm64 macOS host reports fourteen logical CPUs.
+
+Each point is the median of nine instrumented runs after two warm-ups. The
+shaded region is the inclusive interquartile range. Successive rounds traverse
+worker counts in alternating directions to reduce monotonic time-order bias.
+GPU processing is disabled. PNG serialization is excluded from the plotted
+lines because `--threads` does not parallelize it.
+
+![Full HD decoder time by worker budget](measurements/decoder-thread-scaling.png)
+
+*Figure: Full HD decoder intervals measured inside `sixel2png`. PNG
+serialization is measured separately but intentionally omitted from these
+worker-scaling lines.*
+
+The one-worker serial path took 14.519 ms at the median. Two workers took
+18.009 ms, 24.0 percent longer: the parallel path pays for a validation scan,
+a joined independence check, worker creation, and a separate paint pass, while
+too little work is available to amortize them. Time then fell through ten
+workers, where the best observed decoder median was 5.204 ms, or 2.79 times
+faster than the one-worker path. Counts from eleven through sixteen did not
+produce a consistent further reduction; their medians ranged from 5.947 to
+6.360 ms.
+
+Both validation scan and direct paint scale through the useful range, then
+flatten near 2.1 to 3.2 ms. This explains why the complete decoder curve remains
+well above the ideal `T(1) / N` guide: the two phases are sequential, and each
+retains scheduling, barrier, and controller costs. The associated PNG phase
+was approximately 61 to 63 ms and did not improve with worker count.
+
+These numbers characterize this fixture, binary, and host. Diagnostic JSONL
+logging perturbs short phases, and no CPU affinity, exclusive host, frequency
+control, or confidence-interval claim is implied. The retained
+[`decoder-thread-scaling.csv`](measurements/decoder-thread-scaling.csv)
+contains all 144 timed observations rather than only the plotted summaries.
+It also retains the 32 warm-up executions and their exact schedule positions.
+
 ## Raster-size comparison
 
 The same source and encoder policy were used to create two dedicated decoder
 fixtures. These are single diagnostic observations, not repeated performance
 benchmarks:
 
+*Table: Single-run raster-size observations measured through `sixel2png`.
+`PNG wall` is the command's downstream output-serialization phase, not part of
+the libsixel decoder interval.*
+
 | Raster | SIXEL bytes | Scan wall | Parallel paint wall | Decoder wall | PNG wall |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 900 x 675 | 334,858 | 1.249 ms | 1.188 ms | 2.715 ms | 18.507 ms |
-| 1920 x 1080 | 1,114,189 | 3.379 ms | 3.189 ms | 6.915 ms | 68.783 ms |
+| 900 x 675 | 334,858 | 2.395 ms | 1.792 ms | 4.555 ms | 28.513 ms |
+| 1920 x 1080 | 1,114,189 | 3.295 ms | 3.206 ms | 6.836 ms | 61.257 ms |
 
 Increasing the raster from 607,500 to 2,073,600 pixels multiplied the pixel
-count by 3.41, scan wall time by approximately 2.71, parallel-paint wall time
-by approximately 2.68, and the complete decoder interval by approximately
-2.55 in this run. Scan and paint are now similar parts of direct decoding:
-at Full HD they occupy 48.9 and 46.1 percent of the decoder interval,
-respectively. PNG serialization is an order of magnitude longer than either
-decoder phase in both observations.
+count by 3.41, scan wall time by approximately 1.38, parallel-paint wall time
+by approximately 1.79, and the complete decoder interval by approximately
+1.50 in this run. These two points include visible single-run scheduling and
+cache noise and must not be read as a scaling curve. At Full HD, scan and paint
+occupy 48.2 and 46.9 percent of the decoder interval,
+respectively. PNG serialization remains much longer than either decoder phase
+in both observations.
 
 The percentages use the complete decoder interval as their denominator. Scan,
 paint, and controller gaps do not form a perfectly additive partition, and PNG
@@ -137,9 +196,10 @@ creation and overlapping row ranges, including the clean-fallback guarantee.
 
 ## Measurement limits
 
-The checked-in chart and two-size comparison are architectural observations
-from one generated image class. They are not a decoder scaling curve. A
-performance study should use repeated samples and vary payload size, SIXEL
-command mix, destination dimensions, palette changes, OR mode, output format,
-and thread count. Measure parser/paint time separately from PNG serialization
-when the question is decoder parallelism.
+The checked-in timeline and two-size comparison are single diagnostic
+observations from one generated image class. The worker-budget figure is a
+repeated decoder scaling curve, but remains one session on one host. A broader
+performance study should vary payload size, SIXEL command mix, destination
+dimensions, palette changes, OR mode, output format, and host. Measure
+parser/paint time separately from PNG serialization when the question is
+decoder parallelism.

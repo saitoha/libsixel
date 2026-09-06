@@ -8,8 +8,9 @@
     "directory": "/Users/saitoha/repo/libsixel",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-06T02:37:43.621622+00:00",
+  "generated_at_utc": "2026-09-06T03:18:05.156964+00:00",
   "host": {
+    "logical_cpu_count": 14,
     "matplotlib": "3.11.1",
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
     "processor": "arm",
@@ -44,6 +45,18 @@
     }
   },
   "programs": {
+    "checker": {
+      "launcher": "tools/check_threading_measurements.py",
+      "launcher_sha256": "1eb50fba6457f08c69073c00636ffe9a891eb17407b927639d9e73144852ae2f",
+      "payload": "tools/check_threading_measurements.py",
+      "payload_sha256": "1eb50fba6457f08c69073c00636ffe9a891eb17407b927639d9e73144852ae2f"
+    },
+    "generator": {
+      "launcher": "tools/plot_threading_measurements.py",
+      "launcher_sha256": "ea0d0df725c17c0dfc95f8312ec27483f9c03dca84e3498e31e0890bf6f624b5",
+      "payload": "tools/plot_threading_measurements.py",
+      "payload_sha256": "ea0d0df725c17c0dfc95f8312ec27483f9c03dca84e3498e31e0890bf6f624b5"
+    },
     "img2sixel": {
       "launcher": "/Users/saitoha/repo/libsixel/converters/img2sixel",
       "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
@@ -73,6 +86,31 @@
       "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 900 -h 675 -o '{decoder_sixel}' '{input}'",
       "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -o '{decoder_sixel}' '{input}'"
     ],
+    "decoder_scaling": {
+      "command": "'{sixel2png}' '--threads={threads}' --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
+      "summary": "median with inclusive interquartile range",
+      "thread_counts": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "timed_runs_per_thread": 9,
+      "warmup_runs_per_thread": 2,
+      "worker_count_order": "alternating ascending and descending rounds"
+    },
     "encoder_commands": [
       "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
       "'{img2sixel}' --threads=2 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
@@ -111,11 +149,28 @@
       4,
       8
     ],
-    "timing_interpretation": "One diagnostic run per configuration; elapsed time is not a performance benchmark."
+    "timing_interpretation": "Timelines and size points are single diagnostic runs. The decoder scaling sweep uses repeated instrumented samples without exclusive host or CPU affinity."
   },
-  "schema_version": 2,
+  "runtime": {
+    "dependencies_unchanged_during_measurement": true,
+    "libsixel": {
+      "path": "/Users/saitoha/repo/libsixel/src/.libs/libsixel.1.dylib",
+      "sha256": "f4290c3c52c7ebc978721e11929318964e9775b6349763928db17b1eb7be13df"
+    },
+    "load_probe": {
+      "command": "'{sixel2png_payload}' --threads=1 --gpu-policy=off -i '{decoder_sixel}' -o '{null}'",
+      "loaded_path": "/Users/saitoha/repo/libsixel/src/.libs/libsixel.1.dylib",
+      "loaded_sha256": "f4290c3c52c7ebc978721e11929318964e9775b6349763928db17b1eb7be13df",
+      "method": "DYLD_PRINT_LIBRARIES",
+      "payload": "/Users/saitoha/repo/libsixel/converters/.libs/sixel2png",
+      "search_directory": "/Users/saitoha/repo/libsixel/src/.libs",
+      "search_variable": "DYLD_LIBRARY_PATH",
+      "verified": true
+    }
+  },
+  "schema_version": 4,
   "source": {
-    "revision": "0f273166d142becbe71a4b4d1f00e79c1454b534",
+    "revision": "65519a9733c583c7ac0bdaa302de269fad60b8e7",
     "tracked_worktree_state_at_start": "clean"
   }
 }

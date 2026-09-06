@@ -11,7 +11,7 @@ timeline or changing a thread-count policy.
   pipeline, its budget split, the ordered writer, and measured timelines.
 - [Decoder threading](decoder.md) explains the serial parser anchor, parallel
   validation scan, row-independence proof, parallel paint barrier, and
-  local-buffer decode path.
+  local-buffer decode path, with repeated Full HD worker-scaling results.
 - [Animation threading](animation.md) explains loader/encoder handoff, frame
   ordering, temporal state, and the current lack of a process-wide budget.
 - [Measurement and reproduction](measurement.md) defines the checked-in
@@ -19,5 +19,6 @@ timeline or changing a thread-count policy.
   protocol for measuring band-seam quality.
 
 The checked-in charts and raw records are under
-[`measurements/`](measurements/). They are architectural observations from one
-controlled run, not general throughput benchmarks.
+[`measurements/`](measurements/). Most are architectural observations from one
+controlled run. The decoder scaling chart uses repeated samples, but remains a
+host-specific characterization rather than a general throughput benchmark.
