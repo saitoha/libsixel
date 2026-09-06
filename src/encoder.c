@@ -1562,6 +1562,7 @@ sixel_encoder_handoff_trace_emit(
 typedef struct sixel_filter_plan_node {
     sixel_filter_t *filter;
     sixel_filter_kind_t kind;
+    int linear_resize_allocation;
 } sixel_filter_plan_node_t;
 
 typedef struct sixel_filter_plan {
@@ -3476,6 +3477,7 @@ sixel_encoder_filter_plan_init(sixel_filter_plan_t *plan)
     for (index = 0; index < SIXEL_ENCODER_FILTER_PLAN_MAX; ++index) {
         plan->nodes[index].filter = NULL;
         plan->nodes[index].kind = SIXEL_FILTER_KIND_GENERIC;
+        plan->nodes[index].linear_resize_allocation = 0;
     }
 }
 
@@ -3495,6 +3497,7 @@ sixel_encoder_filter_plan_teardown(sixel_filter_plan_t *plan)
             plan->nodes[index].filter = NULL;
         }
         plan->nodes[index].kind = SIXEL_FILTER_KIND_GENERIC;
+        plan->nodes[index].linear_resize_allocation = 0;
     }
     plan->count = 0;
 }
@@ -3545,6 +3548,7 @@ sixel_encoder_filter_plan_append(
 
     plan->nodes[plan->count].filter = filter;
     plan->nodes[plan->count].kind = filter->kind;
+    plan->nodes[plan->count].linear_resize_allocation = 0;
     plan->count++;
 
     return SIXEL_OK;
@@ -3557,9 +3561,17 @@ sixel_encoder_filter_plan_run(sixel_filter_plan_t *plan,
                               sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
+    char detail_copy[256];
+    char message[640];
+    char const *detail;
     int index;
+    int nwrite;
 
     status = SIXEL_FALSE;
+    detail_copy[0] = '\0';
+    message[0] = '\0';
+    detail = NULL;
+    nwrite = 0;
 
     if (plan == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -3570,6 +3582,27 @@ sixel_encoder_filter_plan_run(sixel_filter_plan_t *plan,
                                   allocator,
                                   logger);
         if (SIXEL_FAILED(status)) {
+            if (status == SIXEL_BAD_ALLOCATION
+                && plan->nodes[index].linear_resize_allocation != 0) {
+                detail = sixel_helper_get_additional_message();
+                if (detail != NULL && detail[0] != '\0') {
+                    (void)snprintf(detail_copy,
+                                   sizeof(detail_copy),
+                                   "%s ",
+                                   detail);
+                }
+                nwrite = snprintf(
+                    message,
+                    sizeof(message),
+                    "Linear RGB float32 resizing could not allocate memory. "
+                    "%sRetry with -j auto:resize_precision=preserve to use "
+                    "the lower-memory integer resize path; this can reduce "
+                    "resampling accuracy.",
+                    detail_copy);
+                if (nwrite > 0) {
+                    sixel_helper_set_additional_message(message);
+                }
+            }
             return status;
         }
     }
@@ -4791,6 +4824,14 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
                 if (SIXEL_FAILED(status)) {
                     return status;
                 }
+                if (context->planner->resize_precision_mode !=
+                        SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE
+                    && SIXEL_PIXELFORMAT_IS_FLOAT32(
+                           context->planner->scale_input_pixelformat)) {
+                    context->pre_plan.nodes[
+                        context->pre_plan.count - 1]
+                            .linear_resize_allocation = 1;
+                }
                 context->current_pixelformat =
                     context->planner->scale_input_pixelformat;
                 context->current_colorspace =
@@ -4810,6 +4851,14 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
                     height);
                 if (SIXEL_FAILED(status)) {
                     return status;
+                }
+                if (context->planner->resize_precision_mode !=
+                        SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE
+                    && SIXEL_PIXELFORMAT_IS_FLOAT32(
+                           context->planner->scale_input_pixelformat)) {
+                    context->pre_plan.nodes[
+                        context->pre_plan.count - 1]
+                            .linear_resize_allocation = 1;
                 }
                 context->current_pixelformat =
                     context->planner->scale_pixelformat;

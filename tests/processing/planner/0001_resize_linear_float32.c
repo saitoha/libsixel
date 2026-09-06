@@ -1,8 +1,9 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify that the planner's large byte-input resize fallback describes the
- * actual gamma RGB edge passed to the resize filter.
+ * Verify that legal large byte inputs retain the linear float32 resize path.
+ * The source dimensions require more than 64 MiB as RGB float32 but remain
+ * below the documented per-allocation limit.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -18,11 +19,11 @@
 #include "src/frame.h"
 #include "src/planner.h"
 
-#define PRMF_WIDTH 4096
-#define PRMF_HEIGHT 1366
+#define PRLF_WIDTH 4096
+#define PRLF_HEIGHT 1366
 
 static int
-planner_byte_fallback_valid(void)
+planner_linear_float32_valid(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -53,8 +54,8 @@ planner_byte_fallback_valid(void)
     }
     status = sixel_frame_init_borrowed(frame,
                                        pixels,
-                                       PRMF_WIDTH,
-                                       PRMF_HEIGHT,
+                                       PRLF_WIDTH,
+                                       PRLF_HEIGHT,
                                        SIXEL_PIXELFORMAT_RGB888,
                                        NULL,
                                        -1);
@@ -71,9 +72,11 @@ planner_byte_fallback_valid(void)
     sixel_encoding_planner_analyze(&planner, encoder, frame);
 
     if (planner.scale_active == 0 ||
-            planner.scale_input_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            planner.scale_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            planner.colorspace_before_scale != 0 ||
+            planner.scale_input_pixelformat !=
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+            planner.scale_pixelformat !=
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+            planner.colorspace_before_scale == 0 ||
             planner.colorspace_after_scale == 0 ||
             planner.working_pixelformat != SIXEL_PIXELFORMAT_OKLABFLOAT32) {
         status = SIXEL_LOGIC_ERROR;
@@ -90,13 +93,13 @@ end:
 }
 
 int
-test_plan_0001_resize_fallback(int argc, char **argv)
+test_plan_0001_resize_linear_float32(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
 
-    if (!planner_byte_fallback_valid()) {
-        fprintf(stderr, "planner resize memory fallback failed\n");
+    if (!planner_linear_float32_valid()) {
+        fprintf(stderr, "planner linear float32 resize path failed\n");
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;

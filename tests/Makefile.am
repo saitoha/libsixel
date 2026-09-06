@@ -275,7 +275,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_SIXEL_WRITER_FACTORY \
     -DBUILD_TEST_0001_FRAME_FACTORY \
     -DBUILD_TEST_0002_FRAME_FLOAT_REQUEST \
-    -DBUILD_TEST_0001_RESIZE_MEMORY_FALLBACK \
+    -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
+    -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
     -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
     -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
@@ -286,6 +287,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
     -DBUILD_TEST_0001_PARALLEL_FACTOR_ENVIRONMENT \
     -DBUILD_TEST_0002_PARALLEL_MIN_BYTES_ENVIRONMENT \
+    -DBUILD_TEST_0003_RESAMPLE_ALLOCATION_FAILURE \
     -DBUILD_TEST_0001_DECODER_PARALLEL_SPLIT_AFTER_NEWLINE \
     -DBUILD_TEST_0002_DECODER_ORMODE_RAW_OVERLAY \
     -DBUILD_TEST_0003_DECODER_ORMODE_WIDE_OVERLAY \
@@ -432,7 +434,8 @@ test_runner_SOURCES = test_runner.c \
     processing/sixel-writer/0001_sixel_writer_factory.c \
     processing/frame/0001_frame_factory.c \
     processing/frame/0002_frame_float_request.c \
-    processing/planner/0001_resize_memory_fallback.c \
+    processing/planner/0001_resize_linear_float32.c \
+    processing/planner/0002_resize_allocation_failure.c \
     processing/chunk/0001_chunk_factory.c \
     processing/timeline/0001_timeline_logger_factory.c \
     processing/timeline/0002_timeline_parallel_encode_decode.c \
@@ -443,6 +446,7 @@ test_runner_SOURCES = test_runner.c \
     processing/threadpool/0002_thread_default_counts.c \
     processing/scale/0001_parallel_factor_environment.c \
     processing/scale/0002_parallel_min_bytes_environment.c \
+    processing/scale/0003_resample_allocation_failure.c \
     processing/decoder/0001_decoder_parallel_split_after_newline.c \
     processing/decoder/0002_decoder_ormode_raw_overlay.c \
     processing/decoder/0003_decoder_ormode_wide_overlay.c \

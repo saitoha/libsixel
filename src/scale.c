@@ -1443,7 +1443,7 @@ scale_with_resampling_parallel(
  * larger inputs benefit from threading while smaller ones retain the serial
  * behavior.
  */
-static void
+static SIXELSTATUS
 scale_with_resampling(
     unsigned char *dst,
     unsigned char const *src,
@@ -1474,10 +1474,12 @@ scale_with_resampling(
     dst_size = (size_t)dstw * (size_t)dsth * (size_t)depth;
     tmp = (unsigned char *)sixel_allocator_malloc(allocator, tmp_size);
     if (tmp == NULL) {
+        sixel_helper_set_additional_message(
+            "scale_with_resampling: scratch allocation failed.");
         if (logger_prepared) {
             sixel_timeline_logger_unref(logger);
         }
-        return;
+        return SIXEL_BAD_ALLOCATION;
     }
     /*
      * Zero the intermediate and destination buffers so any resample taps
@@ -1504,7 +1506,7 @@ scale_with_resampling(
         if (logger_prepared) {
             sixel_timeline_logger_unref(logger);
         }
-        return;
+        return SIXEL_OK;
     }
 
     if (logger_prepared) {
@@ -1532,6 +1534,7 @@ scale_with_resampling(
     if (logger_prepared) {
         sixel_timeline_logger_unref(logger);
     }
+    return SIXEL_OK;
 }
 
 /*
@@ -1539,7 +1542,7 @@ scale_with_resampling(
  * on i386 so the SIXEL_ALIGN_STACK prologue stays in place when SSE2 locals
  * need to spill to the stack.
  */
-static SIXEL_ALIGN_STACK SIXEL_NO_INLINE void
+static SIXEL_ALIGN_STACK SIXEL_NO_INLINE SIXELSTATUS
 scale_with_resampling_float32(
     float *dst,
     float const *src,
@@ -1595,11 +1598,15 @@ scale_with_resampling_float32(
     float32x4_t maxv_neon;
 #endif
 
-    tmp_bytes = (size_t)(dstw * srch * depth * (int)sizeof(float));
-    dst_bytes = (size_t)(dstw * dsth * depth * (int)sizeof(float));
+    tmp_bytes = (size_t)dstw * (size_t)srch * (size_t)depth
+        * sizeof(float);
+    dst_bytes = (size_t)dstw * (size_t)dsth * (size_t)depth
+        * sizeof(float);
     tmp = (float *)sixel_allocator_malloc(allocator, tmp_bytes);
     if (tmp == NULL) {
-        return;
+        sixel_helper_set_additional_message(
+            "scale_with_resampling_float32: scratch allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
     }
     /*
      * Initialize the intermediate and destination buffers so pixels without
@@ -1883,6 +1890,7 @@ scale_with_resampling_float32(
     }
 
     sixel_allocator_free(allocator, tmp);
+    return SIXEL_OK;
 }
 
 
@@ -1933,49 +1941,50 @@ sixel_helper_scale_image(
     switch (method_for_resampling) {
     case SIXEL_RES_NEAREST:
         scale_without_resampling(dst, src, srcw, srch, dstw, dsth, depth);
+        nret = SIXEL_OK;
         break;
     case SIXEL_RES_GAUSSIAN:
-        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              gaussian, 1.0, allocator);
+        nret = scale_with_resampling(dst, src, srcw, srch, dstw, dsth,
+                                     depth, gaussian, 1.0, allocator);
         break;
     case SIXEL_RES_HANNING:
-        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              hanning, 1.0, allocator);
+        nret = scale_with_resampling(dst, src, srcw, srch, dstw, dsth,
+                                     depth, hanning, 1.0, allocator);
         break;
     case SIXEL_RES_HAMMING:
-        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              hamming, 1.0, allocator);
+        nret = scale_with_resampling(dst, src, srcw, srch, dstw, dsth,
+                                     depth, hamming, 1.0, allocator);
         break;
     case SIXEL_RES_WELSH:
-        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              welsh, 1.0, allocator);
+        nret = scale_with_resampling(dst, src, srcw, srch, dstw, dsth,
+                                     depth, welsh, 1.0, allocator);
         break;
     case SIXEL_RES_BICUBIC:
-        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              bicubic, 2.0, allocator);
+        nret = scale_with_resampling(dst, src, srcw, srch, dstw, dsth,
+                                     depth, bicubic, 2.0, allocator);
         break;
     case SIXEL_RES_LANCZOS2:
-        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              lanczos2, 2.0, allocator);
+        nret = scale_with_resampling(dst, src, srcw, srch, dstw, dsth,
+                                     depth, lanczos2, 2.0, allocator);
         break;
     case SIXEL_RES_LANCZOS3:
-        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              lanczos3, 3.0, allocator);
+        nret = scale_with_resampling(dst, src, srcw, srch, dstw, dsth,
+                                     depth, lanczos3, 3.0, allocator);
         break;
     case SIXEL_RES_LANCZOS4:
-        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              lanczos4, 4.0, allocator);
+        nret = scale_with_resampling(dst, src, srcw, srch, dstw, dsth,
+                                     depth, lanczos4, 4.0, allocator);
         break;
     case SIXEL_RES_BILINEAR:
     default:
-        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              bilinear, 1.0, allocator);
+        nret = scale_with_resampling(dst, src, srcw, srch, dstw, dsth,
+                                     depth, bilinear, 1.0, allocator);
         break;
     }
 
     /* release temporary copy created for pixel-format normalization */
     sixel_allocator_free(allocator, new_src);
-    return 0;
+    return nret;
 }
 
 SIXELAPI int
@@ -2007,56 +2016,45 @@ sixel_helper_scale_image_float32(
     case SIXEL_RES_NEAREST:
         scale_without_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth);
-        break;
+        return SIXEL_OK;
     case SIXEL_RES_GAUSSIAN:
-        scale_with_resampling_float32(
+        return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
             gaussian, 1.0, allocator);
-        break;
     case SIXEL_RES_HANNING:
-        scale_with_resampling_float32(
+        return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
             hanning, 1.0, allocator);
-        break;
     case SIXEL_RES_HAMMING:
-        scale_with_resampling_float32(
+        return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
             hamming, 1.0, allocator);
-        break;
     case SIXEL_RES_WELSH:
-        scale_with_resampling_float32(
+        return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
             welsh, 1.0, allocator);
-        break;
     case SIXEL_RES_BICUBIC:
-        scale_with_resampling_float32(
+        return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
             bicubic, 2.0, allocator);
-        break;
     case SIXEL_RES_LANCZOS2:
-        scale_with_resampling_float32(
+        return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
             lanczos2, 2.0, allocator);
-        break;
     case SIXEL_RES_LANCZOS3:
-        scale_with_resampling_float32(
+        return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
             lanczos3, 3.0, allocator);
-        break;
     case SIXEL_RES_LANCZOS4:
-        scale_with_resampling_float32(
+        return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
             lanczos4, 4.0, allocator);
-        break;
     case SIXEL_RES_BILINEAR:
     default:
-        scale_with_resampling_float32(
+        return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
             bilinear, 1.0, allocator);
-        break;
     }
-
-    return 0;
 }
 
 

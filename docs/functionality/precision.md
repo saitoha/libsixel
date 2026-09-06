@@ -51,6 +51,32 @@ formats: source=rgb888 work=rgb888 scale_out=rgb888
 The corresponding float32 run must report `work=rgb-f32`. Measurement scripts
 must validate this field rather than infer the path from the command line.
 
+## Resize precision and memory
+
+Normal filtered resizing converts integer gamma RGB input to linear RGB
+float32, resamples in linear light, and converts to the requested working
+representation afterward. This avoids the dark interpolation produced by
+averaging gamma-encoded channel values. The planner must not silently replace
+that path with an integer resize when a float32 allocation is large or fails.
+If the conversion or resampler cannot allocate its required buffer, encoding
+stops with `SIXEL_BAD_ALLOCATION`.
+
+On a memory-constrained system, the user can explicitly select the smaller
+integer path:
+
+```sh
+img2sixel -j auto:resize_precision=preserve -w50% input.png
+```
+
+`preserve` keeps integer input in an RGB888 resize path and delays any required
+float32 working-colorspace conversion until after scaling. It can substantially
+reduce peak memory for downscaling, but interpolation then operates on
+gamma-encoded 8-bit values and can reduce resampling accuracy. `linear` uses a
+temporary linear RGB float32 resize workspace, while `float` also retains the
+requested float32 working representation after resizing. The allocation error
+message names the `preserve` command as an explicit recovery option and states
+this accuracy trade-off.
+
 ## Where precision can affect the pipeline
 
 The same precision request reaches several independently interesting stages:
