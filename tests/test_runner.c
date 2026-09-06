@@ -195,6 +195,10 @@ int test_decoder_0022_decoder_ormode_dequantize_opaque(int argc, char **argv);
 int test_decoder_0023_decoder_high_color_dequantize_bypass(int argc, char **argv);
 int
 test_decoder_0024_decoder_parallel_skew_environment(int argc, char **argv);
+int test_decoder_0025_decoder_paint_create_failure_clean(int argc,
+                                                         char **argv);
+int test_decoder_0026_decoder_paint_overlap_fallback_clean(int argc,
+                                                           char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 int test_lookup_0012_packing_registry_direct(int argc, char **argv);
@@ -501,6 +505,10 @@ static test_entry_t const test_entries[] = {
       test_decoder_0023_decoder_high_color_dequantize_bypass },
     { "decoder/0024_decoder_parallel_skew_environment",
       test_decoder_0024_decoder_parallel_skew_environment },
+    { "decoder/0025_decoder_paint_create_failure_clean",
+      test_decoder_0025_decoder_paint_create_failure_clean },
+    { "decoder/0026_decoder_paint_overlap_fallback_clean",
+      test_decoder_0026_decoder_paint_overlap_fallback_clean },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },

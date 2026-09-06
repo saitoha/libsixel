@@ -319,6 +319,8 @@ sixel_test_environment_libwebp_force_rgb(void);
 SIXEL_INTERNAL_API int
 sixel_test_environment_palette_disable_tables(void);
 SIXEL_INTERNAL_API char const *
+sixel_test_environment_decoder_paint_thread_create_failure(void);
+SIXEL_INTERNAL_API char const *
 sixel_test_environment_palette_job_failure(void);
 SIXEL_INTERNAL_API char const *
 sixel_test_environment_palette_quantizer_failure(void);

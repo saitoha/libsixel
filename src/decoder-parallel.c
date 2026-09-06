@@ -84,6 +84,8 @@ typedef struct sixel_decoder_worker_context {
     sixel_timeline_logger_t *logger;
     int trust_raster_size;
     int painted_outside_raster;
+    int first_painted_row;
+    int last_painted_row;
     int max_color_index;
     int result;
     int runtime_error;
@@ -115,6 +117,7 @@ typedef struct sixel_decoder_worker_chain {
     int thread_count;
     int decode_done;
     int decode_failed;
+    int paint_ready;
     int paint_released;
     unsigned char *global_buffer;
     unsigned char *global_mask;
@@ -679,6 +682,8 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
 
     context->runtime_error = 0;
     context->painted_outside_raster = 0;
+    context->first_painted_row = (-1);
+    context->last_painted_row = (-1);
     context->max_color_index = (-1);
 
     if (context->logger != NULL) {
@@ -851,6 +856,18 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                 }
                 if (effective_repeat <= 0) {
                     continue;
+                }
+                /*
+                 * Scan mode reaches the same validated samples as paint mode.
+                 * Retain its exact row bounds so request_start() can prove that
+                 * shared-buffer writes are disjoint before releasing paint.
+                 */
+                if (context->first_painted_row < 0 ||
+                        global_y < context->first_painted_row) {
+                    context->first_painted_row = global_y;
+                }
+                if (global_y > context->last_painted_row) {
+                    context->last_painted_row = global_y;
                 }
                 if (mode == SIXEL_DECODER_DIRECT_PAINT) {
                     global_index = (size_t)global_y *
@@ -1056,11 +1073,22 @@ sixel_decoder_parallel_direct_worker(void *arg)
     status = (-1);
     context->result = status;
     context->runtime_error = 0;
+    context->first_painted_row = (-1);
+    context->last_painted_row = (-1);
     context->max_color_index = (-1);
     context->painted_outside_raster = 0;
 
     if (context->direct_mode_kind == SIXEL_DECODER_DIRECT_PAINT) {
+        if (context->logger != NULL) {
+            sixel_timeline_logger_logf(context->logger,
+                                      "paint",
+                                      "decoder",
+                                      "ready",
+                                      context->index);
+        }
         sixel_mutex_lock(&chain->mutex);
+        chain->paint_ready += 1;
+        sixel_cond_broadcast(&chain->cond);
         while (!chain->paint_released && !chain->abort_requested) {
             sixel_cond_wait(&chain->cond, &chain->mutex);
         }
@@ -1075,6 +1103,59 @@ sixel_decoder_parallel_direct_worker(void *arg)
     status = sixel_decoder_parallel_direct_parse(context);
     context->result = status;
     return status;
+}
+
+static int
+sixel_decoder_parallel_direct_rows_disjoint(
+    sixel_decoder_worker_context_t const *contexts,
+    int threads)
+{
+    int previous_last_row;
+    int first_row;
+    int last_row;
+    int i;
+
+    if (contexts == NULL || threads < 1) {
+        return 0;
+    }
+
+    previous_last_row = (-1);
+    for (i = 0; i < threads; ++i) {
+        first_row = contexts[i].first_painted_row;
+        last_row = contexts[i].last_painted_row;
+        if (first_row < 0 && last_row < 0) {
+            continue;
+        }
+        if (first_row < 0 || last_row < first_row ||
+                first_row <= previous_last_row) {
+            return 0;
+        }
+        previous_last_row = last_row;
+    }
+
+    return 1;
+}
+
+static int
+sixel_decoder_parallel_fail_paint_thread_create(int index)
+{
+    char const *text;
+    char *end;
+    long value;
+
+    text = sixel_test_environment_decoder_paint_thread_create_failure();
+    end = NULL;
+    value = (-1);
+    if (text == NULL || text[0] == '\0') {
+        return 0;
+    }
+
+    value = strtol(text, &end, 10);
+    if (end == text || *end != '\0' || value < 0 || value > INT_MAX) {
+        return 0;
+    }
+
+    return value == index;
 }
 
 #if !defined(SIXEL_DECODE_PIXELS_NO_FAST4)
@@ -2151,7 +2232,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
     int max_color_index;
     int trust_raster_size;
     int undither_prepared;
-    int paint_released;
 
     status = SIXEL_RUNTIME_ERROR;
     prepare_status = SIXEL_OK;
@@ -2171,7 +2251,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
     palette_limit = 0;
     max_color_index = (-1);
     undither_prepared = 0;
-    paint_released = 0;
     trust_raster_size = (decode_flags &
         SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE) != 0U;
     if (painted_outside_raster != NULL) {
@@ -2325,6 +2404,8 @@ sixel_decoder_parallel_request_start(int direct_mode,
         contexts[i].trust_raster_size = trust_raster_size;
         contexts[i].result = (-1);
         contexts[i].runtime_error = 0;
+        contexts[i].first_painted_row = (-1);
+        contexts[i].last_painted_row = (-1);
         contexts[i].direct_mode_kind = SIXEL_DECODER_DIRECT_SCAN;
         contexts[i].undither = undither_prepared ? undither : NULL;
     }
@@ -2334,6 +2415,8 @@ sixel_decoder_parallel_request_start(int direct_mode,
         for (i = 0; i < threads; ++i) {
             contexts[i].result = (-1);
             contexts[i].runtime_error = 0;
+            contexts[i].first_painted_row = (-1);
+            contexts[i].last_painted_row = (-1);
             contexts[i].max_color_index = (-1);
             contexts[i].painted_outside_raster = 0;
             contexts[i].direct_mode_kind = SIXEL_DECODER_DIRECT_SCAN;
@@ -2361,41 +2444,70 @@ sixel_decoder_parallel_request_start(int direct_mode,
             }
         }
 
+        if (!runtime_error && !parallel_failed && created == threads &&
+                !sixel_decoder_parallel_direct_rows_disjoint(
+                    contexts, threads)) {
+            parallel_failed = 1;
+        }
+
         if (!runtime_error && !parallel_failed && created == threads) {
             max_color_index = (-1);
             created = 0;
-            paint_released = 1;
             sixel_mutex_lock(&chain.mutex);
             chain.abort_requested = 0;
-            chain.paint_released = 1;
-            sixel_cond_broadcast(&chain.cond);
+            chain.paint_ready = 0;
+            chain.paint_released = 0;
             sixel_mutex_unlock(&chain.mutex);
 
             /*
              * The direct paint pass writes into the shared destination image.
-             * Keep the validation scan parallel, then serialize painting so
-             * overlapping spans preserve parser order without data races.
+             * The validation scan proved that every span owns disjoint rows.
+             * Hold every paint worker at a barrier until all threads exist so
+             * a partial thread-creation failure cannot dirty the serial
+             * fallback image.
              */
             for (i = 0; i < threads; ++i) {
                 contexts[i].result = (-1);
                 contexts[i].runtime_error = 0;
+                contexts[i].first_painted_row = (-1);
+                contexts[i].last_painted_row = (-1);
                 contexts[i].max_color_index = (-1);
                 contexts[i].painted_outside_raster = 0;
                 contexts[i].direct_mode_kind = SIXEL_DECODER_DIRECT_PAINT;
-                status = sixel_thread_create(
-                    &workers[i],
-                    sixel_decoder_parallel_direct_worker,
-                    &contexts[i]);
+                if (sixel_decoder_parallel_fail_paint_thread_create(i)) {
+                    status = SIXEL_RUNTIME_ERROR;
+                } else {
+                    status = sixel_thread_create(
+                        &workers[i],
+                        sixel_decoder_parallel_direct_worker,
+                        &contexts[i]);
+                }
                 if (SIXEL_FAILED(status)) {
                     parallel_failed = 1;
                     sixel_decoder_parallel_cancel_decode(&chain);
                     break;
                 }
                 created += 1;
+            }
+
+            if (!parallel_failed && created == threads) {
+                sixel_mutex_lock(&chain.mutex);
+                while (chain.paint_ready < threads &&
+                        !chain.abort_requested) {
+                    sixel_cond_wait(&chain.cond, &chain.mutex);
+                }
+                if (!chain.abort_requested) {
+                    chain.paint_released = 1;
+                    sixel_cond_broadcast(&chain.cond);
+                }
+                sixel_mutex_unlock(&chain.mutex);
+            }
+
+            for (i = 0; i < created; ++i) {
                 sixel_thread_join(&workers[i]);
                 if (contexts[i].result != 0) {
                     parallel_failed = 1;
-                    if (paint_released) {
+                    if (chain.paint_released) {
                         runtime_error = 1;
                     }
                 }

@@ -308,6 +308,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_DECODER_ORMODE_DEQUANTIZE_OPAQUE \
     -DBUILD_TEST_0023_DECODER_HIGH_COLOR_DEQUANTIZE_BYPASS \
     -DBUILD_TEST_0024_DECODER_PARALLEL_SKEW_ENVIRONMENT \
+    -DBUILD_TEST_0025_DECODER_PAINT_CREATE_FAILURE_CLEAN \
+    -DBUILD_TEST_0026_DECODER_PAINT_OVERLAP_FALLBACK_CLEAN \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0012_LOOKUP_PACKING_REGISTRY_DIRECT \
     -DBUILD_TEST_0001_DITHER_POLICY \
@@ -461,6 +463,8 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0022_decoder_ormode_dequantize_opaque.c \
     processing/decoder/0023_decoder_high_color_dequantize_bypass.c \
     processing/decoder/0024_decoder_parallel_skew_environment.c \
+    processing/decoder/0025_decoder_paint_create_failure_clean.c \
+    processing/decoder/0026_decoder_paint_overlap_fallback_clean.c \
     processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
     processing/lookup/0012_lookup_packing_registry_direct.c \
