@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import shlex
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
@@ -16,6 +17,31 @@ DECODER_SCALING_THREADS = tuple(range(1, 17))
 DECODER_SIZES = (
     ("900x675", 900, 675, "decoder-thread8-900x675.jsonl"),
     ("1920x1080", 1920, 1080, "decoder-thread8.jsonl"),
+)
+ENCODER_COMMAND_SUFFIX = (
+    "--precision=8bit",
+    "--quality=full",
+    "--sampling-policy=full-frame",
+    "--binning-policy=hard",
+    "--quantize-model=kmeans:seed=1",
+    "--merge-policy=ward",
+    "-Xoklab",
+    "-Wgamma",
+    "--diffusion=fs:scan=raster",
+    "--gpu-policy=off",
+    "--lookup-policy=6bit:shared_instance=1",
+    "-p",
+    "256",
+    "-w",
+    "1920",
+    "-h",
+    "1080",
+    "-v",
+    "-J",
+    "{log}",
+    "-o",
+    "{output}",
+    "{input}",
 )
 REQUIRED_FILES = (
     "thread-budget.csv",
@@ -38,6 +64,15 @@ REQUIRED_FILES = (
     "animation-thread4.jsonl",
     "animation-thread4-timeline.png",
 )
+
+
+def expected_encoder_command(threads: object) -> List[str]:
+    """Return the canonical controlled img2sixel command tokens."""
+    return [
+        "{img2sixel}",
+        f"--threads={threads}",
+        *ENCODER_COMMAND_SUFFIX,
+    ]
 
 
 def load_jsonl(path: Path) -> List[Dict[str, object]]:
@@ -104,18 +139,27 @@ def validate_png(path: Path) -> None:
             raise ValueError(f"invalid PNG signature: {path.name}")
 
 
-def validate_budget(path: Path, revision: str) -> None:
+def validate_budget(path: Path,
+                    revision: str,
+                    commands: Sequence[str]) -> None:
     """Validate the current encoder allocation contract and observations."""
     with path.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
     if [int(row["threads"]) for row in rows] != list(THREADS):
         raise ValueError("thread-budget.csv does not cover threads 1 through 12")
-    for row in rows:
+    if len(commands) != len(rows):
+        raise ValueError("encoder budget command count changed")
+    for row, command in zip(rows, commands):
         threads = int(row["threads"])
         dither = int(row["planned_dither_threads"])
         encode = int(row["planned_encode_threads"])
         if row["revision"] != revision:
             raise ValueError("CSV and metadata revisions differ")
+        expected_command = expected_encoder_command(threads)
+        if shlex.split(row["command"]) != expected_command:
+            raise ValueError("encoder budget policy is stale")
+        if shlex.split(command) != expected_command:
+            raise ValueError("encoder budget command provenance is stale")
         if (row["fixture"] != "1920x1080"
                 or int(row["width"]) != 1920
                 or int(row["height"]) != 1080
@@ -340,7 +384,8 @@ def validate_encoder_scaling(path: Path,
                              revision: str,
                              threads_values: Sequence[int],
                              warmups: int,
-                             repeats: int) -> None:
+                             repeats: int,
+                             command_template: str) -> None:
     """Validate the complete scheduled img2sixel scaling experiment."""
     with path.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
@@ -348,6 +393,8 @@ def validate_encoder_scaling(path: Path,
     expected_rows = len(threads_values) * total_rounds
     if len(rows) != expected_rows:
         raise ValueError("encoder scaling CSV has an unexpected row count")
+    if shlex.split(command_template) != expected_encoder_command("{threads}"):
+        raise ValueError("encoder scaling protocol command is stale")
     width = len(threads_values)
     for round_index in range(1, total_rounds + 1):
         first = (round_index - 1) * width
@@ -391,10 +438,8 @@ def validate_encoder_scaling(path: Path,
                 or int(row["height"]) != 1080
                 or int(row["pixels"]) != 1920 * 1080):
             raise ValueError("encoder scaling fixture is not Full HD")
-        if "-w 1920 -h 1080" not in row["command"]:
-            raise ValueError("encoder scaling command is not Full HD")
-        if f"--threads={threads}" not in row["command"]:
-            raise ValueError("encoder scaling command worker count is stale")
+        if shlex.split(row["command"]) != expected_encoder_command(threads):
+            raise ValueError("encoder scaling command provenance is stale")
         for field in (
                 "encoder_wall_seconds",
                 "palette_wall_seconds",
@@ -429,7 +474,8 @@ def validate_encoder_scaling(path: Path,
             continue
         if row["planner_mode"] != "pipeline" or dither + encode != threads:
             raise ValueError("encoder scaling planner budget is stale")
-        if int(row["observed_encode_pool_threads"]) < encode:
+        observed_encode = int(row["observed_encode_pool_threads"])
+        if observed_encode < encode or observed_encode > threads:
             raise ValueError("encoder scaling encode pool was not observed")
         if int(row["observed_writer_threads"]) != 1:
             raise ValueError("encoder scaling writer was not observed")
@@ -461,15 +507,49 @@ def validate_animation(path: Path) -> None:
         raise ValueError("animation frame encoding is not serialized")
 
 
-def validate_encoder(path: Path) -> None:
-    """Validate paired encoder band and writer diagnostics."""
+def validate_encoder(path: Path, expected: Dict[str, str]) -> None:
+    """Validate one retained Full HD encoder diagnostic against its CSV."""
     records = load_jsonl(path)
-    if count(records, "encode", "worker", "worker_start") != count(
-            records, "encode", "worker", "worker_done"):
+    dither_starts = count(records, "dither", "worker", "start")
+    dither_finishes = count(records, "dither", "worker", "finish")
+    encode_starts = count(records, "encode", "worker", "worker_start")
+    encode_finishes = count(records, "encode", "worker", "worker_done")
+    writer_starts = count(records, "encode", "writer", "writer_start")
+    writer_finishes = count(records, "encode", "writer", "writer_stop")
+    row_ready = count(records, "dither", "producer", "row_ready")
+    aborts = sum(
+        1 for record in records if record.get("event") == "abort"
+    )
+    if dither_starts != dither_finishes:
+        raise ValueError(f"encoder dither events are unpaired: {path.name}")
+    if encode_starts != encode_finishes:
         raise ValueError(f"encoder band events are unpaired: {path.name}")
-    if count(records, "encode", "writer", "writer_start") != count(
-            records, "encode", "writer", "writer_stop"):
+    if writer_starts != writer_finishes:
         raise ValueError(f"encoder writer events are unpaired: {path.name}")
+    observed = (
+        dither_starts,
+        dither_finishes,
+        encode_starts,
+        encode_finishes,
+        writer_starts,
+        writer_finishes,
+        aborts,
+    )
+    recorded = tuple(int(expected[name]) for name in (
+        "dither_start_count",
+        "dither_finish_count",
+        "encode_worker_start_count",
+        "encode_worker_finish_count",
+        "writer_start_count",
+        "writer_finish_count",
+        "encoder_abort_count",
+    ))
+    if observed != recorded:
+        raise ValueError(f"encoder CSV and timeline differ: {path.name}")
+    if encode_starts != 180:
+        raise ValueError(f"encoder timeline is not Full HD: {path.name}")
+    if int(expected["threads"]) >= 4 and row_ready != 1080:
+        raise ValueError(f"encoder dither extent is not Full HD: {path.name}")
 
 
 def parse_args() -> argparse.Namespace:
@@ -535,9 +615,22 @@ def main() -> int:
             fixture_commands, DECODER_SIZES):
         if f"-w {width} -h {height}" not in str(command):
             raise ValueError("decoder fixture command dimensions changed")
-    validate_budget(root / "thread-budget.csv", revision)
+    encoder_commands = metadata["protocol"]["encoder_commands"]
+    validate_budget(
+        root / "thread-budget.csv",
+        revision,
+        encoder_commands,
+    )
+    with (root / "thread-budget.csv").open(
+            "r", encoding="utf-8", newline="") as handle:
+        budget_rows = {
+            int(row["threads"]): row for row in csv.DictReader(handle)
+        }
     for threads in (2, 4, 8):
-        validate_encoder(root / f"encoder-thread{threads}.jsonl")
+        validate_encoder(
+            root / f"encoder-thread{threads}.jsonl",
+            budget_rows[threads],
+        )
     encoder_scaling = metadata["protocol"]["encoder_scaling"]
     encoder_threads = tuple(
         int(value) for value in encoder_scaling["thread_counts"]
@@ -560,6 +653,7 @@ def main() -> int:
         encoder_threads,
         encoder_warmups,
         encoder_repeats,
+        encoder_scaling["command"],
     )
     for _, _, _, log_name in DECODER_SIZES:
         validate_decoder(root / log_name)
