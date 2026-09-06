@@ -242,7 +242,9 @@ def write_csv(path: Path, rows: Sequence[Dict[str, object]]) -> None:
     if not rows:
         raise ValueError("cannot write an empty CSV")
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(
+            handle, fieldnames=list(rows[0]), lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(rows)
 

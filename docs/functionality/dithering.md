@@ -618,6 +618,14 @@ contracts. Parallel bands need enough context to reproduce the intended error
 state at their boundaries; merely assigning rows to workers is not equivalent
 to sequential diffusion.
 
+The current encoder can recompute overlap rows as local warm-up and discard
+their output before committing a work band. This reduces a sharp state reset
+but does not import the complete preceding error history, so a banded encode
+can differ slightly from a one-worker full-frame scan. The distinction between
+SIXEL's six-row output bands and these larger palette-application work bands,
+including the seam-quality measurement protocol, is documented in the
+[Threading overview](../threading/overview.md#work-band-seams-and-image-quality).
+
 The constant `T` in the cost model limits arithmetic per pixel but does not
 remove this dependency chain. Error diffusion is asymptotically linear while
 remaining harder to parallelize than positionally stable methods.

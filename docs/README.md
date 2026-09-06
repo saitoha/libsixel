@@ -58,6 +58,15 @@ are grouped by domain so each area can grow without overloading one document.
 - [Testing guide](testing/guide.md) covers test organization, shell TAP rules,
   registration, portability, and required checks.
 
+## Threading
+
+- [Threading documentation](threading/README.md) indexes the execution model,
+  band encoding and decoding, encoder and decoder budgets, animation, timeline
+  interpretation, and reproducible measurements.
+- [Threading overview](threading/overview.md) defines SIXEL bands,
+  palette-application work bands, decoder byte spans, ordered publication, and
+  the small quality differences that work-band seam policy can introduce.
+
 ## Continuous integration
 
 - [CI architecture and design](ci/design.md) describes GitHub Actions,

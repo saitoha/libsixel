@@ -154,6 +154,25 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/quantization.md \
 	docs/quality/measurement-policy.md \
 	docs/testing/guide.md \
+	docs/threading/README.md \
+	docs/threading/animation.md \
+	docs/threading/decoder.md \
+	docs/threading/encoder.md \
+	docs/threading/measurement.md \
+	docs/threading/measurements/animation-thread4-timeline.png \
+	docs/threading/measurements/animation-thread4.jsonl \
+	docs/threading/measurements/decoder-thread8-timeline.png \
+	docs/threading/measurements/decoder-thread8.jsonl \
+	docs/threading/measurements/encoder-thread2-timeline.png \
+	docs/threading/measurements/encoder-thread2.jsonl \
+	docs/threading/measurements/encoder-thread4-timeline.png \
+	docs/threading/measurements/encoder-thread4.jsonl \
+	docs/threading/measurements/encoder-thread8-timeline.png \
+	docs/threading/measurements/encoder-thread8.jsonl \
+	docs/threading/measurements/thread-budget.csv \
+	docs/threading/measurements/thread-budget.png \
+	docs/threading/measurements/threading-run.json \
+	docs/threading/overview.md \
 	openvms/gnv-ar.sh \
 	openvms/gnv-cc.sh \
 	openvms/gnv-rm.sh \

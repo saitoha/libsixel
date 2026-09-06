@@ -99,6 +99,13 @@ and diagnostic metrics. It is used to detect visual regressions that byte-level
 tests cannot describe. Its use and threshold policy are defined in
 [Quality Measurement Policy](../quality/measurement-policy.md).
 
+### Threading
+
+Threading is organized as stage-local worker pools with explicit ordered
+publication boundaries. The [Threading documentation](../threading/README.md)
+defines SIXEL bands, palette-application work bands, decoder byte spans,
+encoder and decoder budgets, animation handoff, and reproducible timelines.
+
 ### Integration surfaces
 
 libsixel is consumed through several surfaces:

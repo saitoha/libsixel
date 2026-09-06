@@ -32,6 +32,8 @@ before changing its subject area:
   thresholds, baselines, and performance comparisons.
 - [Testing](testing/guide.md): test organization, shell TAP rules,
   registration, portability, and required checks.
+- [Threading](threading/README.md): worker budgets, band encoding and decoding,
+  stage ordering, animation, and reproducible timeline measurements.
 - [CI](ci/design.md): workflow responsibilities, matrix design, failure
   triage, and CI-change validation.
 - [CI support matrix](ci/support-matrix.md): generated GitHub Actions and

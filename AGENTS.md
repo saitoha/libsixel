@@ -56,6 +56,7 @@ that documentation. The principal references are:
 - [CLI design policy](docs/cli/design-policy.md)
 - [Quality measurement policy](docs/quality/measurement-policy.md)
 - [Testing guide](docs/testing/guide.md)
+- [Threading architecture](docs/threading/README.md)
 - [CI architecture and design](docs/ci/design.md)
 
 Keep `docs/` focused on durable project-wide guidance. Issue investigations,
