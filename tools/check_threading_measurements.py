@@ -518,11 +518,9 @@ def main() -> int:
             raise ValueError(f"program provenance is incomplete for {name}")
     decoder_input = metadata["inputs"]["decoder"]
     encoder_input = metadata["inputs"]["static"]
-    if (int(encoder_input["source_width"]) != 900
-            or int(encoder_input["source_height"]) != 675
-            or int(encoder_input["processed_width"]) != 1920
+    if (int(encoder_input["processed_width"]) != 1920
             or int(encoder_input["processed_height"]) != 1080):
-        raise ValueError("encoder source or processed dimensions changed")
+        raise ValueError("encoder processed dimensions changed")
     raster_sizes = [
         (item["id"], int(item["width"]), int(item["height"]))
         for item in decoder_input["encoded_rasters"]

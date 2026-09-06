@@ -1017,7 +1017,7 @@ def plot_encoder_scaling(path: Path,
     axis.set_xticks(threads)
     axis.set_ylim(bottom=0)
     axis.grid(True, color="#D9D9D9", linewidth=0.7)
-    axis.legend(frameon=False, ncol=2)
+    axis.legend(frameon=False, ncol=2, loc="upper right")
     figure.text(
         0.99,
         0.01,
@@ -1437,8 +1437,6 @@ def write_metadata(args: argparse.Namespace,
             "static": {
                 "path": display_path(input_path, source_root),
                 "sha256": file_sha256(input_path),
-                "source_width": 900,
-                "source_height": 675,
                 "processed_width": ENCODER_WIDTH,
                 "processed_height": ENCODER_HEIGHT,
                 "contract": (
