@@ -5,10 +5,10 @@
     "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
     "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
-    "directory": "/Users/saitoha/repo/libsixel",
+    "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-06T03:18:05.156964+00:00",
+  "generated_at_utc": "2026-09-06T04:30:29.875129+00:00",
   "host": {
     "logical_cpu_count": 14,
     "matplotlib": "3.11.1",
@@ -40,33 +40,38 @@
       "sha256": "b65bf96b6743b0971ee71bb1f903fa5c1d9aa065df242f8b34b5ee86cd5dd8a8"
     },
     "static": {
+      "contract": "img2sixel resizes the controlled source to Full HD",
       "path": "images/measurements/palette-pipeline/smooth-gradient-900x675.png",
-      "sha256": "b65bf96b6743b0971ee71bb1f903fa5c1d9aa065df242f8b34b5ee86cd5dd8a8"
+      "processed_height": 1080,
+      "processed_width": 1920,
+      "sha256": "b65bf96b6743b0971ee71bb1f903fa5c1d9aa065df242f8b34b5ee86cd5dd8a8",
+      "source_height": 675,
+      "source_width": 900
     }
   },
   "programs": {
     "checker": {
       "launcher": "tools/check_threading_measurements.py",
-      "launcher_sha256": "1eb50fba6457f08c69073c00636ffe9a891eb17407b927639d9e73144852ae2f",
+      "launcher_sha256": "05decb379110d6f517dc791b7324426fe7055b499a4866a956e6a10d1223ea5e",
       "payload": "tools/check_threading_measurements.py",
-      "payload_sha256": "1eb50fba6457f08c69073c00636ffe9a891eb17407b927639d9e73144852ae2f"
+      "payload_sha256": "05decb379110d6f517dc791b7324426fe7055b499a4866a956e6a10d1223ea5e"
     },
     "generator": {
       "launcher": "tools/plot_threading_measurements.py",
-      "launcher_sha256": "ea0d0df725c17c0dfc95f8312ec27483f9c03dca84e3498e31e0890bf6f624b5",
+      "launcher_sha256": "92ae746065f5a7bc81d8c0259c5ad5627b9efe3b61699e61ff4188261000573a",
       "payload": "tools/plot_threading_measurements.py",
-      "payload_sha256": "ea0d0df725c17c0dfc95f8312ec27483f9c03dca84e3498e31e0890bf6f624b5"
+      "payload_sha256": "92ae746065f5a7bc81d8c0259c5ad5627b9efe3b61699e61ff4188261000573a"
     },
     "img2sixel": {
-      "launcher": "/Users/saitoha/repo/libsixel/converters/img2sixel",
+      "launcher": "converters/img2sixel",
       "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
-      "payload": "/Users/saitoha/repo/libsixel/converters/.libs/img2sixel",
+      "payload": "converters/.libs/img2sixel",
       "payload_sha256": "ac363a143663c5b8bd93e729b46b387a3f33f4886ce46c0434d0fc3b1f8c5cc7"
     },
     "sixel2png": {
-      "launcher": "/Users/saitoha/repo/libsixel/converters/sixel2png",
+      "launcher": "converters/sixel2png",
       "launcher_sha256": "b7b512951e1e6e4dafe1bc9490e2bf82c9de8bf8cca885f3db5601f9a8bdc917",
-      "payload": "/Users/saitoha/repo/libsixel/converters/.libs/sixel2png",
+      "payload": "converters/.libs/sixel2png",
       "payload_sha256": "1f3d2d7ea7845d8c0188e0e49799712a1b92cd42d7b0228098a55ab5877b3edc"
     },
     "timeline": {
@@ -112,19 +117,44 @@
       "worker_count_order": "alternating ascending and descending rounds"
     },
     "encoder_commands": [
-      "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=2 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=3 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=4 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=5 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=6 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=7 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=8 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=9 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=10 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=11 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=12 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'"
+      "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=2 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=3 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=4 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=5 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=6 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=7 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=8 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=9 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=10 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=11 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threads=12 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'"
     ],
+    "encoder_scaling": {
+      "command": "'{img2sixel}' '--threads={threads}' --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -v -J '{log}' -o '{output}' '{input}'",
+      "summary": "median with inclusive interquartile range",
+      "thread_counts": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "timed_runs_per_thread": 9,
+      "warmup_runs_per_thread": 2,
+      "worker_count_order": "alternating ascending and descending rounds"
+    },
     "sixel_environment_removed": true,
     "thread_counts": [
       1,
@@ -149,28 +179,40 @@
       4,
       8
     ],
-    "timing_interpretation": "Timelines and size points are single diagnostic runs. The decoder scaling sweep uses repeated instrumented samples without exclusive host or CPU affinity."
+    "timing_interpretation": "Timelines and size points are single diagnostic runs. The encoder and decoder scaling sweeps use repeated instrumented samples without exclusive host or CPU affinity."
   },
   "runtime": {
     "dependencies_unchanged_during_measurement": true,
     "libsixel": {
-      "path": "/Users/saitoha/repo/libsixel/src/.libs/libsixel.1.dylib",
+      "path": "src/.libs/libsixel.1.dylib",
       "sha256": "f4290c3c52c7ebc978721e11929318964e9775b6349763928db17b1eb7be13df"
     },
-    "load_probe": {
-      "command": "'{sixel2png_payload}' --threads=1 --gpu-policy=off -i '{decoder_sixel}' -o '{null}'",
-      "loaded_path": "/Users/saitoha/repo/libsixel/src/.libs/libsixel.1.dylib",
-      "loaded_sha256": "f4290c3c52c7ebc978721e11929318964e9775b6349763928db17b1eb7be13df",
-      "method": "DYLD_PRINT_LIBRARIES",
-      "payload": "/Users/saitoha/repo/libsixel/converters/.libs/sixel2png",
-      "search_directory": "/Users/saitoha/repo/libsixel/src/.libs",
-      "search_variable": "DYLD_LIBRARY_PATH",
-      "verified": true
+    "load_probes": {
+      "img2sixel": {
+        "command": "'{img2sixel_payload}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -o '{null}' '{input}'",
+        "loaded_path": "src/.libs/libsixel.1.dylib",
+        "loaded_sha256": "f4290c3c52c7ebc978721e11929318964e9775b6349763928db17b1eb7be13df",
+        "method": "DYLD_PRINT_LIBRARIES",
+        "payload": "converters/.libs/img2sixel",
+        "search_directory": "src/.libs",
+        "search_variable": "DYLD_LIBRARY_PATH",
+        "verified": true
+      },
+      "sixel2png": {
+        "command": "'{sixel2png_payload}' --threads=1 --gpu-policy=off -i '{decoder_sixel}' -o '{null}'",
+        "loaded_path": "src/.libs/libsixel.1.dylib",
+        "loaded_sha256": "f4290c3c52c7ebc978721e11929318964e9775b6349763928db17b1eb7be13df",
+        "method": "DYLD_PRINT_LIBRARIES",
+        "payload": "converters/.libs/sixel2png",
+        "search_directory": "src/.libs",
+        "search_variable": "DYLD_LIBRARY_PATH",
+        "verified": true
+      }
     }
   },
-  "schema_version": 4,
+  "schema_version": 5,
   "source": {
-    "revision": "65519a9733c583c7ac0bdaa302de269fad60b8e7",
+    "revision": "aa280da3fb49fead8690094901a6eaf232fa100f",
     "tracked_worktree_state_at_start": "clean"
   }
 }

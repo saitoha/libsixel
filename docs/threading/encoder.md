@@ -48,7 +48,9 @@ limits can override the automatic split. GPU palette application is different:
 the GPU produces the complete index plane, so all CPU workers are placed on
 the encode side after the command buffer becomes visible.
 
-The measured automatic allocation for `N = 1..12` is:
+The measured automatic allocation for `N = 1..12` is shown below. These runs
+use `img2sixel` to resize the controlled 900 by 675 source to a 1920 by 1080
+processed raster before encoding:
 
 | `--threads` | Planned dither | Planned encode | Runtime interpretation |
 | ---: | ---: | ---: | --- |
@@ -73,6 +75,9 @@ the single dither budget is consumed by the producer executing palette
 application.
 
 ![Measured encoder thread budget](measurements/thread-budget.png)
+
+*Figure: Full HD encoder allocation measured through `img2sixel`. This chart
+shows planned and observed worker counts, not elapsed time.*
 
 The top panel shows planner allocation. The lower panel distinguishes workers
 that actually executed jobs from post-dither encode capacity. After palette
@@ -107,6 +112,9 @@ operation; the short worker intervals at its end are the six-row jobs.
 
 ![Two-worker encoder timeline](measurements/encoder-thread2-timeline.png)
 
+*Figure: Single Full HD diagnostic run measured through `img2sixel` with
+`--threads=2`.*
+
 At four workers, two dither work bands overlap two initial encode workers. The
 solid dither spans are work-band lifetimes; the thin encode marks are many
 short six-row jobs. The frame-level interval and writer appear in addition to
@@ -114,14 +122,68 @@ the configured worker budget.
 
 ![Four-worker encoder timeline](measurements/encoder-thread4-timeline.png)
 
-The [eight-worker timeline](measurements/encoder-thread8-timeline.png) shows
-the same shape at a wider allocation: six planned dither workers and two
-planned encode workers, followed by a request to expose the complete encode
-capacity after dithering ends.
+*Figure: Single Full HD diagnostic run measured through `img2sixel` with
+`--threads=4`.*
+
+At eight workers, six dither work bands overlap two initial encode workers.
+The pool then requests the complete encode capacity after dithering ends. The
+larger processed raster makes the relative span lengths easier to see than the
+previous 900 by 675 timeline.
+
+![Eight-worker encoder timeline](measurements/encoder-thread8-timeline.png)
+
+*Figure: Single Full HD diagnostic run measured through `img2sixel` with
+`--threads=8`.*
 
 These charts use `tools/timeline.py --sort-order start`. Row numbering is local
 to the rendered worker group and must not be interpreted as a stable thread
 identity across separate runs.
+
+## Worker-budget scaling
+
+The following experiment varies `img2sixel --threads` from one through
+sixteen while keeping the Full HD processed raster and all non-threading
+policies fixed. The horizontal axis is a configured worker budget, not a
+reservation of physical cores. Workers are unpinned, the host is not isolated,
+and this arm64 macOS host reports fourteen logical CPUs.
+
+Each point is the median of nine instrumented runs after two warm-ups. The
+shaded region is the inclusive interquartile range. Successive rounds traverse
+worker counts in alternating directions. The complete encoder interval begins
+before image loading and ends after the frame has been encoded. The palette
+line isolates palette construction, while the dither/encode tail begins at
+palette-application preparation and ends with the complete encoder interval.
+These stage lines expose bottlenecks but are not an additive partition.
+
+![Full HD encoder time by worker budget](measurements/encoder-thread-scaling.png)
+
+*Figure: Full HD encoder intervals measured through `img2sixel`; nine timed
+runs follow two warm-ups at each configured worker budget. Lines show medians
+and shading shows inclusive IQR.*
+
+The one-worker encoder median was 860.392 ms. Two and three workers reached
+only 1.09 and 1.12 times speedup because palette construction remained serial
+and the dither/encode tail still used the serial or single-producer shape. Four
+workers were the first point with a multi-worker dither pool and reduced the
+median to 455.081 ms, a 1.89 times speedup. Eight workers reached 231.335 ms,
+or 3.72 times faster than one worker.
+
+Palette construction stayed close to 69 ms across all budgets. The complete
+encoder curve flattened from 188.766 ms at thirteen workers to 184.035 ms at
+sixteen; fourteen workers measured 186.535 ms, or 4.61 times faster than one
+worker. The small ordering changes in that plateau are within this
+non-isolated experiment and are not evidence that budgets beyond the host's
+logical CPU count improve throughput.
+
+The output remained deterministic across all eleven executions at each fixed
+worker count, but it was not identical across worker counts. The retained
+SIXEL sizes ranged from 1,106,783 to 1,114,189 bytes, a spread of about 0.7
+percent. Parallel work-band boundaries alter error-diffusion history, so this
+is a controlled threading comparison rather than an identical-output
+microbenchmark. The raw
+[`encoder-thread-scaling.csv`](measurements/encoder-thread-scaling.csv)
+retains all 144 timed observations, 32 warm-up executions, phase intervals,
+planner observations, output size and hash, and exact schedule positions.
 
 ## Image-quality boundary
 

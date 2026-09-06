@@ -7,16 +7,18 @@ The checked-in threading artifacts answer architectural questions:
 - how the encoder divides a configured worker budget;
 - at which count dither and encode first overlap;
 - which pools actually execute jobs;
+- how Full HD encoder phases scale with the configured worker budget;
 - whether decoder scan joins before the paint barrier and paint spans overlap;
 - how Full HD decoder phases scale with the configured worker budget; and
 - whether animation frames are encoded concurrently.
 
 Most timeline configurations are recorded once and are deliberately not
-advertised as throughput results. The decoder worker sweep is a repeated,
-stage-specific characterization, but its diagnostic timestamps still include
-instrumentation overhead. A portable performance benchmark additionally needs
-an isolated host, controlled power state, CPU affinity where available,
-several image classes and sizes, and uncertainty across independent sessions.
+advertised as throughput results. The encoder and decoder worker sweeps are
+repeated, stage-specific characterizations, but their diagnostic timestamps
+still include instrumentation overhead. A portable performance benchmark
+additionally needs an isolated host, controlled power state, CPU affinity where
+available, several image classes and sizes, and uncertainty across independent
+sessions.
 
 ## One-command reproduction
 
@@ -32,17 +34,21 @@ The Python path is only an example. The runner:
 1. refuses to record a dirty tracked worktree;
 2. rebuilds the configured tree with `$TOP_SRCDIR/.local/bin` first in `PATH`;
 3. removes inherited `SIXEL_*` policy variables from measured commands;
-4. sweeps encoder budgets from one through twelve;
-5. records representative encoder timelines at two, four, and eight workers;
-6. records eight-worker decoder timelines at 900 by 675 and 1920 by 1080,
-   using the Full HD result for the main figure;
-7. sweeps the Full HD decoder from one through sixteen workers, using two
+4. resizes the controlled static source to a Full HD processed raster and
+   sweeps encoder budgets from one through twelve;
+5. records representative Full HD `img2sixel` timelines at two, four, and
+   eight workers;
+6. sweeps the Full HD encoder from one through sixteen workers, using two
    warm-ups and nine timed runs at each count;
-8. proves which build-tree libsixel the `sixel2png` payload loads and rejects
+7. records eight-worker decoder timelines at 900 by 675 and 1920 by 1080,
+   using the Full HD result for the main figure;
+8. sweeps the Full HD decoder from one through sixteen workers, using two
+   warm-ups and nine timed runs at each count;
+9. proves which build-tree libsixel both converter payloads load and rejects
    any input, tool, converter, or library hash change during measurement;
-9. records a four-worker, finite two-frame animation timeline;
-10. renders every timeline with `tools/timeline.py --sort-order start`; and
-11. validates artifact completeness and current synchronization invariants.
+10. records a four-worker, finite two-frame animation timeline;
+11. renders every timeline with `tools/timeline.py --sort-order start`; and
+12. validates artifact completeness and current synchronization invariants.
 
 An alternate output directory may be passed as the first argument. The second
 and third arguments replace the static and animation fixtures respectively.
@@ -51,8 +57,11 @@ reported as such.
 
 ## Controlled encoder configuration
 
-The allocation sweep uses a 900 by 675 smooth-gradient fixture and fixes the
-following non-threading choices:
+The encoder experiments use a controlled 900 by 675 smooth-gradient source.
+`img2sixel -w 1920 -h 1080` resizes it to a Full HD processed raster before
+palette construction and encoding. The source file is therefore not a native
+Full HD fixture; the measured command and the raster processed by the encoder
+are Full HD. The following non-threading choices are fixed:
 
 ```text
 --precision=8bit
@@ -71,6 +80,14 @@ following non-threading choices:
 
 At 256 colors the current automatic dither work-band overlap is zero. This is
 useful for observing allocation but is not a neutral seam-quality experiment.
+
+The encoder scaling sweep records the complete `main/encoder` interval,
+palette construction, and the dither/encode tail. Timed rounds alternate
+between ascending and descending worker-count order. The plot reports medians
+and inclusive interquartile ranges, and the CSV retains output SIXEL size and
+hash for every execution. `--threads` is a worker budget rather than a
+physical-core reservation because no affinity or exclusive-host control is
+applied.
 
 The decoder comparison encodes the same static source into dedicated 900 by
 675 and 1920 by 1080 streams with one encoder worker and the controlled policy
@@ -103,14 +120,16 @@ at this palette size.
 [`measurements/threading-run.json`](measurements/threading-run.json) records
 the source revision, clean-state assertion, host, compiler, configure flags,
 program hashes, input hashes, the dynamically loaded build-tree libsixel and
-its hash, the platform load-probe method, and templated commands. Collection
-aborts unless relevant inputs, tools, converter payloads, and that library have
-the same hashes before and after the measurement session.
+its hash, platform load probes for both `img2sixel` and `sixel2png`, and
+templated commands. Collection aborts unless relevant inputs, tools, converter
+payloads, and that library have the same hashes before and after the
+measurement session.
 
 [`measurements/thread-budget.csv`](measurements/thread-budget.csv) records the
 planned split and observed worker participation for every configured budget.
 The accompanying [budget chart](measurements/thread-budget.png) separates
 planned stage allocation, observed job execution, and post-dither capacity.
+Both were recorded through `img2sixel` with a Full HD processed raster.
 
 Representative raw JSONL records and rendered charts are retained for:
 
@@ -120,6 +139,14 @@ Representative raw JSONL records and rendered charts are retained for:
 - [decoder, eight workers, 900 by 675](measurements/decoder-thread8-900x675.jsonl);
 - [decoder, eight workers, 1920 by 1080](measurements/decoder-thread8.jsonl);
 - [animation, four workers](measurements/animation-thread4.jsonl).
+
+[`measurements/encoder-thread-scaling.csv`](measurements/encoder-thread-scaling.csv)
+retains two warm-ups and nine timed Full HD `img2sixel` samples for every
+worker budget from one through sixteen. It records the exact execution order,
+validated planner and worker observations, phase intervals, and output SIXEL
+size and hash. The accompanying
+[scaling chart](measurements/encoder-thread-scaling.png) plots complete
+encoder, palette-build, and dither/encode-tail medians with IQR shading.
 
 [`measurements/decoder-size-comparison.csv`](measurements/decoder-size-comparison.csv)
 records raster dimensions, SIXEL payload size and hash, scan, parallel-paint,
@@ -142,13 +169,14 @@ PYTHON=.venv/bin/python \
 ```
 
 The checker verifies the recorded revision relationship, complete budget
-sweep, two-worker pipeline exception, first useful overlap, dither worker
-participation, requested tail growth, paired timeline spans, the decoder
-all-ready paint barrier, overlapping direct paint intervals, serialized
-animation frame encoding, every warm-up and timed schedule position, exact
-per-run scan/ready/paint/abort counts, absence of fallback, loaded-library and
-command provenance, and PNG integrity. It does not bless the measured elapsed
-seconds as performance thresholds.
+sweep, Full HD encoder command boundary, two-worker pipeline exception, first
+useful overlap, dither worker participation, requested tail growth, paired
+timeline spans, deterministic output within each encoder worker count, the
+decoder all-ready paint barrier, overlapping direct paint intervals,
+serialized animation frame encoding, every warm-up and timed schedule
+position, exact per-run scan/ready/paint/abort counts, absence of fallback,
+both converter load probes, command provenance, and PNG integrity. It does not
+bless the measured elapsed seconds as performance thresholds.
 
 ## Band-seam quality protocol
 
@@ -250,8 +278,9 @@ re-encoding, but it does require rerendering and visual inspection.
 - It is one measurement session on one arm64 macOS host.
 - Diagnostic logging perturbs scheduling and short job duration. The scaling
   sweep repeats samples, but does not reserve the host or pin workers to cores.
-- The decoder scaling chart characterizes wall intervals, not CPU utilization
-  or portable throughput. The size comparison remains two diagnostic points.
+- The encoder and decoder scaling charts characterize wall intervals, not CPU
+  utilization or portable throughput. The decoder size comparison remains two
+  diagnostic points.
 - It does not exercise GPU palette application.
 - It does not compare decoder direct and local-buffer paths.
 - It does not contain band-seam quality metrics yet; the protocol above is the

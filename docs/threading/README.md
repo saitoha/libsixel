@@ -8,7 +8,8 @@ timeline or changing a thread-count policy.
   palette-application work bands, decoder byte spans, ordering, and the image
   quality implications of band boundaries.
 - [Encoder threading](encoder.md) explains palette work, the dither/encode
-  pipeline, its budget split, the ordered writer, and measured timelines.
+  pipeline, its budget split, the ordered writer, Full HD `img2sixel`
+  timelines, and repeated worker-scaling results.
 - [Decoder threading](decoder.md) explains the serial parser anchor, parallel
   validation scan, row-independence proof, parallel paint barrier, and
   local-buffer decode path, with repeated Full HD worker-scaling results.
@@ -20,5 +21,6 @@ timeline or changing a thread-count policy.
 
 The checked-in charts and raw records are under
 [`measurements/`](measurements/). Most are architectural observations from one
-controlled run. The decoder scaling chart uses repeated samples, but remains a
-host-specific characterization rather than a general throughput benchmark.
+controlled run. The encoder and decoder scaling charts use repeated samples,
+but remain host-specific characterizations rather than general throughput
+benchmarks.
