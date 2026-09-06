@@ -5661,6 +5661,20 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
         return SIXEL_BAD_ARGUMENT;
     }
     *dither_out = NULL;
+    /*
+     * Publish a stage before validating worker-owned inputs.  An early
+     * asynchronous failure must not reach the collector as an unclassified
+     * error: auto sampling then needs the same full-frame fallback used for
+     * conversion and palette-build failures.  Preserve an injected worker
+     * stage so the fault remains deterministic under a loaded test runner.
+     */
+    job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD;
+    if (job->requested_failure_stage ==
+            SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT ||
+            job->requested_failure_stage ==
+                SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD) {
+        job->failure_stage = job->requested_failure_stage;
+    }
     if (job->encoder == NULL || job->samples.frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -5826,6 +5840,12 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
         return status;
     }
 
+    /*
+     * Initialize shared result state before publishing the job to a worker.
+     * The worker may finish before sixel_thread_create() returns, so writing
+     * failure_stage after that call can erase its completed failure report.
+     */
+    job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_NONE;
     if (job->requested_failure_stage ==
             SIXEL_PALETTE_JOB_FAILURE_THREAD_CREATE) {
         result = SIXEL_RUNTIME_ERROR;
@@ -5844,7 +5864,6 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
         return SIXEL_RUNTIME_ERROR;
     }
 
-    job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_NONE;
     job->started = 1;
 
     return SIXEL_OK;
