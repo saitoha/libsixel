@@ -70,7 +70,8 @@ pipelines.
    unset.
 .TP 5
 .B 8bit
--> force the historical integer pipeline regardless of the environment.
+-> use the historical integer pipeline when the working color space is
+   \\fBgamma\\fP. Float-only working color spaces still require float32.
 .TP 5
 .B float32
 -> request the experimental high-precision solvers without exporting the
@@ -1132,15 +1133,15 @@ select internal working color space
 .br
 \fICOLORSPACE\fP is one of them:
 .br
-gamma  -> keep gamma encoded pixels (default)
+gamma  -> keep gamma encoded pixels at the selected precision (default)
 .br
-linear -> convert to linear RGB for processing
+linear -> convert to linear RGB float32 for processing
 .br
-oklab -> operate in OKLab uniform color space for palette decisions
+oklab -> operate in OKLab float32 for palette decisions
 .br
-cielab -> operate in CIELAB uniform color space for palette decisions
+cielab -> operate in CIELAB float32 for palette decisions
 .br
-din99d -> operate in DIN99d uniform color space for palette decisions
+din99d -> operate in DIN99d float32 for palette decisions
 .br
 .TP 5
 .B \-U \fICOLORSPACE\fP, \-\-output\-colorspace=\fICOLORSPACE\fP

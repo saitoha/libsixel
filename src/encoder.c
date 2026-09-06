@@ -3391,32 +3391,27 @@ sixel_encoder_apply_precision_override(
     sixel_encoder_t *encoder,
     sixel_option_precision_mode_t mode)
 {
-    int prefer_float32;
-
-    prefer_float32 = encoder->prefer_float32;
-    if (encoder->force_float32_colorspace != 0) {
-        prefer_float32 = 1;
-    }
-
     if (mode == SIXEL_OPTION_PRECISION_AUTO) {
         return SIXEL_OK;
     }
 
     if (mode == SIXEL_OPTION_PRECISION_FLOAT32) {
-        prefer_float32 = 1;
+        encoder->precision_prefer_float32 = 1;
     } else if (mode == SIXEL_OPTION_PRECISION_8BIT) {
-        if (encoder->force_float32_colorspace != 0) {
-            prefer_float32 = 1;
-        } else {
-            prefer_float32 = 0;
-        }
+        encoder->precision_prefer_float32 = 0;
     } else {
         sixel_helper_set_additional_message(
             "sixel_encoder_setopt: invalid precision override.");
         return SIXEL_BAD_ARGUMENT;
     }
 
-    encoder->prefer_float32 = prefer_float32;
+    /*
+     * Precision preference and colorspace requirements are independent.
+     * Keeping both states makes repeated -W and --precision options resolve
+     * identically regardless of their order.
+     */
+    encoder->prefer_float32 = encoder->precision_prefer_float32
+        || encoder->force_float32_colorspace;
 
     return SIXEL_OK;
 }
@@ -8911,6 +8906,7 @@ sixel_encoder_new(
     (*ppencoder)->clustering_colorspace_set = 0;
     (*ppencoder)->force_float32_colorspace = 0;
     (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->precision_prefer_float32 = 0;
     (*ppencoder)->prefer_float32        = 0;
     (*ppencoder)->ormode                = 0;
     (*ppencoder)->transparent_policy =
@@ -8984,6 +8980,7 @@ sixel_encoder_new(
         prefer_float32 =
             env_value.int_value == SIXEL_OPTION_PRECISION_FLOAT32;
     }
+    (*ppencoder)->precision_prefer_float32 = prefer_float32;
     (*ppencoder)->prefer_float32 = prefer_float32;
 
     env_result = sixel_option_resolve_scalar_environment(
@@ -11763,8 +11760,10 @@ sixel_encoder_setopt(
             if (encoder->clustering_colorspace_set == 0) {
                 encoder->clustering_colorspace = match_value;
             }
-            encoder->force_float32_colorspace = 1;
-            encoder->prefer_float32 = 1;
+            encoder->force_float32_colorspace =
+                match_value != SIXEL_COLORSPACE_GAMMA;
+            encoder->prefer_float32 = encoder->precision_prefer_float32
+                || encoder->force_float32_colorspace;
         }
         break;
     case SIXEL_OPTFLAG_OUTPUT_COLORSPACE:  /* U */

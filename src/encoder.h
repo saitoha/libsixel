@@ -304,6 +304,8 @@ struct sixel_encoder {
     int clustering_colorspace_set;
     int force_float32_colorspace;
     int output_colorspace;
+    /* Base precision request, independent of float-only colorspaces. */
+    int precision_prefer_float32;
     int prefer_float32;
     int ormode;
     int transparent_policy;

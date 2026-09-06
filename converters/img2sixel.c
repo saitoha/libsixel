@@ -190,7 +190,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "-., --precision=MODE\n"
         "    control quantization precision.\n"
         "      auto    -> honor the SIXEL_FLOAT32_DITHER environment (default).\n"
-        "      8bit    -> force the historical integer pipeline.\n"
+        "      8bit    -> use the integer pipeline with gamma working space.\n"
         "      float32 -> request the experimental high-precision path.\n"
     },
     {
@@ -1051,11 +1051,11 @@ static cli_option_help_t const g_option_help_table[] = {
         "working-colorspace",
         "-W COLORSPACE, --working-colorspace=COLORSPACE\n"
         "    choose internal working color space\n"
-        "      gamma  -> sRGB gamma(default)\n"
-        "      linear -> linear RGB color space\n"
-        "      oklab  -> OKLab color space\n"
-        "      cielab -> CIELAB color space\n"
-        "      din99d -> DIN99d color space\n"
+        "      gamma  -> sRGB gamma at the selected precision (default)\n"
+        "      linear -> linear RGB in float32\n"
+        "      oklab  -> OKLab in float32\n"
+        "      cielab -> CIELAB in float32\n"
+        "      din99d -> DIN99d in float32\n"
     },
     {
         'U',

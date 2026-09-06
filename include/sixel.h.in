@@ -308,7 +308,9 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_8BIT_MODE         ('8')  /* -8, --8bit-mode: for 8bit terminals or printers */
 #define SIXEL_OPTFLAG_6REVERSIBLE       ('6')  /* -6, --6reversible: snap palette to reversible tones */
 #define SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT ('R')  /* -R, --gri-limit: limit arguments of DECGRI('!') to 255 */
-#define SIXEL_OPTFLAG_PRECISION         ('.')  /* -., --precision: control quantization precision. */
+#define SIXEL_OPTFLAG_PRECISION         ('.')
+    /* -., --precision: control quantization precision. */
+    /* 8bit applies when the working colorspace is gamma. */
 #define SIXEL_OPTFLAG_THREADS           ('=')  /* -=, --threads: override encoder/decoder thread count. */
 #define SIXEL_OPTFLAG_COLORS            ('p')  /* -p COLORS, --colors=COLORS: specify number of colors */
 #define SIXEL_OPTFLAG_MAPFILE           ('m')  /* -m FILE, --mapfile=FILE: specify set of colors */
@@ -769,11 +771,11 @@ typedef int SIXELSTATUS;
     /* -W COLORSPACE */
     /* --working-colorspace=COLORSPACE */
     /* select internal working space */
-    /*   gamma  -> keep gamma encoded pixels */
-    /*   linear -> convert to linear RGB */
-    /*   oklab  -> OKLab color space */
-    /*   cielab -> CIELAB color space */
-    /*   din99d -> DIN99d color space */
+    /*   gamma  -> keep the selected precision */
+    /*   linear -> convert to linear RGB float32 */
+    /*   oklab  -> OKLab float32 */
+    /*   cielab -> CIELAB float32 */
+    /*   din99d -> DIN99d float32 */
 #define SIXEL_OPTFLAG_OUTPUT_COLORSPACE     ('U')
     /* -U COLORSPACE */
     /* --output-colorspace=COLORSPACE */

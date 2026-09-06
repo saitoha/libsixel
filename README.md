@@ -451,9 +451,10 @@ Options:
                             auto    -> honor the
                                         `SIXEL_FLOAT32_DITHER`
                                         environment (default).
-                            8bit    -> force the historical integer
-                                        pipeline regardless of the
-                                        environment.
+                            8bit    -> use the historical integer
+                                        pipeline with gamma working
+                                        space. Float-only working spaces
+                                        still require float32.
                             float32 -> request the experimental
                                         high-precision path even when
                                         the environment keeps the
@@ -1011,11 +1012,12 @@ steps.
 -O, --ormode               enables sixel output in "ormode"
 -W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE
                            choose internal working color space
-                             gamma  -> sRGB gamma(default)
-                             linear -> linear RGB color space
-                             oklab  -> OKLab color space
-                             cielab -> CIELAB color space
-                             din99d -> DIN99d color space
+                             gamma  -> sRGB gamma at selected precision
+                                        (default)
+                             linear -> linear RGB in float32
+                             oklab  -> OKLab in float32
+                             cielab -> CIELAB in float32
+                             din99d -> DIN99d in float32
 -U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE
                            choose output color space
                              gamma   -> sRGB gamma(default)
