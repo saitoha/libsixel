@@ -681,6 +681,27 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     context->painted_outside_raster = 0;
     context->max_color_index = (-1);
 
+    if (context->logger != NULL) {
+        /*
+         * Pair every direct scan or paint terminal event with a start event.
+         * The timeline renderer needs both boundaries to show concurrency;
+         * a finish-only record collapses the worker lifetime to a point.
+         */
+        sixel_timeline_logger_logf(context->logger,
+                          mode == SIXEL_DECODER_DIRECT_SCAN ?
+                          "scan" : "paint",
+                          "decoder",
+                          "start",
+                          context->index,
+                          context->index,
+                          0,
+                          0,
+                          context->start_offset,
+                          context->end_offset,
+                          "worker %d direct begin",
+                          context->index);
+    }
+
     if (context->input == NULL || anchor == NULL ||
             context->length <= 0 || context->payload_len <= 0 ||
             width <= 0 || height <= 0 || chain->global_buffer == NULL) {
