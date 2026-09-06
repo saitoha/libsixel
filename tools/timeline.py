@@ -35,12 +35,23 @@ def _darken(color: Tuple[float, float, float],
 
 class ParallelEvent:
     def __init__(self, record: Dict[str, object]):
+        event_aliases = {
+            "worker_start": "start",
+            "worker_done": "finish",
+            "writer_start": "start",
+            "writer_stop": "finish",
+        }
+        event = str(record.get("event", ""))
+
         self.ts = float(record.get("ts", 0.0))
         self.session_id = int(record.get("session_id", 0))
         self.thread = int(record.get("thread", -1))
         self.role = str(record.get("role", ""))
         self.worker = str(record.get("worker", ""))
-        self.event = str(record.get("event", ""))
+        # Encoder job and writer diagnostics predate the generic start/finish
+        # vocabulary.  Normalize them here so their measured lifetimes do not
+        # collapse into point markers on the rendered timeline.
+        self.event = event_aliases.get(event, event)
         self.job = int(record.get("job", -1))
         self.frame_no = int(record.get("frame_no", -1))
         self.loop_no = int(record.get("loop_no", -1))
@@ -525,10 +536,24 @@ def render(
 
     yticks = [pos for pos in range(len(rows))]
     ylabels = []
+    worker_thread_counts = {
+        worker: len({slot for row_worker, slot, _, _ in rows
+                     if row_worker == worker})
+        for worker, _, _, _ in rows
+    }
+    worker_thread_ordinals: Dict[Tuple[str, int], int] = {}
+    next_worker_ordinal: Dict[str, int] = defaultdict(int)
     for worker, slot, frame_no, loop_no in rows:
         label = _loader_worker_label(worker)
         if worker == "decoder":
             label = f"{worker} #{slot}"
+        elif worker_thread_counts.get(worker, 0) > 1:
+            worker_slot = (worker, slot)
+            if worker_slot not in worker_thread_ordinals:
+                next_worker_ordinal[worker] += 1
+                worker_thread_ordinals[worker_slot] = \
+                    next_worker_ordinal[worker]
+            label = f"{label} #{worker_thread_ordinals[worker_slot]}"
         if split_by_frame and frame_no >= 0:
             label = f"{label} [L{loop_no} F{frame_no}]"
         elif annotate_frames:
@@ -584,7 +609,12 @@ def render(
                                   linestyle=""))
         labels.append(role if role else "(unspecified)")
     if handles:
-        ax.legend(handles, labels, title="Role", loc="upper right")
+        ax.legend(handles,
+                  labels,
+                  title="Role",
+                  loc="upper left",
+                  bbox_to_anchor=(1.01, 1.0),
+                  borderaxespad=0.0)
 
     fig.tight_layout()
     fig.savefig(output)

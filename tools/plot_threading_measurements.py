@@ -1,0 +1,603 @@
+#!/usr/bin/env python3
+"""Measure thread-budget allocation and record representative timelines."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import datetime
+import json
+import os
+import platform
+import re
+import shlex
+import shutil
+import subprocess
+import tempfile
+from pathlib import Path
+from typing import Dict, Iterable, List, Sequence, Tuple
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+from plot_lookup_policy_speed import (
+    display_path,
+    file_sha256,
+    make_command_environment,
+    program_record,
+    read_build_configuration,
+)
+
+
+DEFAULT_THREADS = tuple(range(1, 13))
+PLANNER_PATTERN = re.compile(
+    r"band_height=(\d+) overlap=(\d+) threads: dither=(\d+) encode=(\d+)"
+)
+MODE_PATTERN = re.compile(r"bands=(\d+) queue=(\d+) mode=(serial|pipeline)")
+
+
+def parse_threads(value: str) -> Tuple[int, ...]:
+    """Parse an ordered list of unique positive thread counts."""
+    values = tuple(int(item) for item in value.split(","))
+    if not values or any(item < 1 for item in values):
+        raise ValueError("thread counts must be positive")
+    if len(values) != len(set(values)):
+        raise ValueError("thread counts must not contain duplicates")
+    return values
+
+
+def run_checked(command: Sequence[str], env: Dict[str, str]) \
+        -> subprocess.CompletedProcess[bytes]:
+    """Run one command and include its diagnostic on failure."""
+    proc = subprocess.run(
+        list(command),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        env=env,
+        check=False,
+    )
+    if proc.returncode != 0:
+        diagnostic = proc.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(
+            f"Command failed ({proc.returncode}): {shlex.join(command)}\n"
+            f"{diagnostic}"
+        )
+    return proc
+
+
+def encoder_command(img2sixel: str,
+                    input_path: Path,
+                    threads: int,
+                    output_path: Path,
+                    log_path: Path) -> List[str]:
+    """Build the controlled static encoder command."""
+    return [
+        img2sixel,
+        f"--threads={threads}",
+        "--precision=8bit",
+        "--quality=full",
+        "--sampling-policy=full-frame",
+        "--binning-policy=hard",
+        "--quantize-model=kmeans:seed=1",
+        "--merge-policy=ward",
+        "-Xoklab",
+        "-Wgamma",
+        "--diffusion=fs:scan=raster",
+        "--gpu-policy=off",
+        "--lookup-policy=6bit:shared_instance=1",
+        "-p",
+        "256",
+        "-v",
+        "-J",
+        str(log_path),
+        "-o",
+        str(output_path),
+        str(input_path),
+    ]
+
+
+def animation_command(img2sixel: str,
+                      input_path: Path,
+                      threads: int,
+                      output_path: Path,
+                      log_path: Path) -> List[str]:
+    """Build a finite two-frame animation command."""
+    command = encoder_command(
+        img2sixel,
+        input_path,
+        threads,
+        output_path,
+        log_path,
+    )
+    command[command.index("-p"):command.index("-p") + 2] = ["-p", "16"]
+    command[command.index("-v"):command.index("-v") + 1] = ["-g", "-w", "1200"]
+    return command
+
+
+def decoder_command(sixel2png: str,
+                    input_path: Path,
+                    threads: int,
+                    log_path: Path) -> List[str]:
+    """Build the controlled decoder command."""
+    return [
+        sixel2png,
+        f"--threads={threads}",
+        "--gpu-policy=off",
+        "-J",
+        str(log_path),
+        "-i",
+        str(input_path),
+        "-o",
+        os.devnull,
+    ]
+
+
+def load_records(path: Path) -> List[Dict[str, object]]:
+    """Read one JSONL timeline."""
+    records: List[Dict[str, object]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if line.strip():
+                records.append(json.loads(line))
+    if not records:
+        raise RuntimeError(f"timeline is empty: {path}")
+    return records
+
+
+def event_intervals(records: Iterable[Dict[str, object]],
+                    start_event: str,
+                    finish_event: str,
+                    worker: str,
+                    role: str) -> List[Tuple[float, float]]:
+    """Pair matching worker events by session, thread, and job."""
+    starts: Dict[Tuple[int, int, int], List[float]] = {}
+    intervals: List[Tuple[float, float]] = []
+    for record in sorted(records, key=lambda item: float(item["ts"])):
+        if record.get("worker") != worker or record.get("role") != role:
+            continue
+        key = (
+            int(record.get("session_id", 0)),
+            int(record.get("thread", -1)),
+            int(record.get("job", -1)),
+        )
+        event = str(record.get("event", ""))
+        if event == start_event:
+            starts.setdefault(key, []).append(float(record["ts"]))
+        elif event == finish_event and starts.get(key):
+            intervals.append((starts[key].pop(0), float(record["ts"])))
+    return intervals
+
+
+def dither_intervals(records: Sequence[Dict[str, object]]) \
+        -> List[Tuple[float, float]]:
+    """Return parallel bands or the serial producer's row-ready window."""
+    intervals = event_intervals(records, "start", "finish", "dither", "worker")
+    if intervals:
+        return intervals
+    row_times = [
+        float(record["ts"])
+        for record in records
+        if record.get("worker") == "dither"
+        and record.get("role") == "producer"
+        and record.get("event") == "row_ready"
+    ]
+    if len(row_times) > 1:
+        return [(min(row_times), max(row_times))]
+    return []
+
+
+def intervals_overlap(left: Sequence[Tuple[float, float]],
+                      right: Sequence[Tuple[float, float]]) -> bool:
+    """Return whether any two half-open activity intervals overlap."""
+    return any(max(a0, b0) < min(a1, b1)
+               for a0, a1 in left for b0, b1 in right)
+
+
+def parse_planner(diagnostic: str) -> Dict[str, object]:
+    """Extract the planner pipeline summary from verbose stderr."""
+    mode_matches = MODE_PATTERN.findall(diagnostic)
+    planner_matches = PLANNER_PATTERN.findall(diagnostic)
+    if len(mode_matches) != 1 or len(planner_matches) != 1:
+        raise RuntimeError("verbose output did not contain one pipeline plan")
+    bands, queue, mode = mode_matches[0]
+    band_height, overlap, dither, encode = planner_matches[0]
+    return {
+        "planner_mode": mode,
+        "bands": int(bands),
+        "queue_depth": int(queue),
+        "band_height": int(band_height),
+        "overlap_rows": int(overlap),
+        "planned_dither_threads": int(dither),
+        "planned_encode_threads": int(encode),
+    }
+
+
+def unique_threads(records: Sequence[Dict[str, object]],
+                   worker: str,
+                   role: str,
+                   event: str) -> int:
+    """Count OS thread identifiers for one raw timeline event."""
+    return len({
+        int(record.get("thread", -1))
+        for record in records
+        if record.get("worker") == worker
+        and record.get("role") == role
+        and record.get("event") == event
+    })
+
+
+def command_template(command: Sequence[str],
+                     replacements: Dict[str, str]) -> str:
+    """Replace machine-specific arguments in one provenance command."""
+    rendered: List[str] = []
+    for argument in command:
+        rendered.append(replacements.get(argument, argument))
+    return shlex.join(rendered)
+
+
+def write_csv(path: Path, rows: Sequence[Dict[str, object]]) -> None:
+    """Write records with stable column order."""
+    if not rows:
+        raise ValueError("cannot write an empty CSV")
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def plot_budget(path: Path, rows: Sequence[Dict[str, object]]) -> None:
+    """Plot planned overlap allocation and observed pool membership."""
+    threads = [int(row["threads"]) for row in rows]
+    dither = [int(row["planned_dither_threads"]) for row in rows]
+    encode = [int(row["planned_encode_threads"]) for row in rows]
+    observed_dither = [
+        int(row["observed_parallel_dither_threads"]) for row in rows
+    ]
+    observed_encode = [
+        int(row["observed_encode_pool_threads"]) for row in rows
+    ]
+    tail_capacity = [
+        int(row["threads"])
+        if str(row["tail_grow_requested"]) == "yes"
+        else int(row["observed_encode_pool_threads"])
+        for row in rows
+    ]
+
+    figure, (plan_ax, observed_ax) = plt.subplots(
+        2,
+        1,
+        figsize=(9.2, 7.0),
+        sharex=True,
+        gridspec_kw={"height_ratios": (1.1, 1.0)},
+    )
+    plan_ax.bar(threads, dither, color="#55A868", label="dither budget")
+    plan_ax.bar(
+        threads,
+        encode,
+        bottom=dither,
+        color="#4C72B0",
+        label="encode budget",
+    )
+    plan_ax.annotate(
+        "2: planner proposes 1+1, but the runtime pipeline gate\n"
+        "requires two encode workers and serializes the stages",
+        xy=(2, 2),
+        xytext=(3.1, 4.2),
+        arrowprops={"arrowstyle": "->", "color": "#444444"},
+        fontsize=8.5,
+    )
+    plan_ax.set_ylabel("Planned stage workers")
+    plan_ax.set_title("Encoder thread budget during dither/encode overlap")
+    plan_ax.grid(True, axis="y", color="#D9D9D9", linewidth=0.7)
+    plan_ax.legend(frameon=False, ncol=2, loc="upper left")
+
+    observed_ax.plot(
+        threads,
+        observed_dither,
+        color="#55A868",
+        marker="o",
+        linewidth=1.8,
+        label="parallel dither pool",
+    )
+    observed_ax.plot(
+        threads,
+        observed_encode,
+        color="#4C72B0",
+        marker="s",
+        linewidth=1.8,
+        label="encode workers observed",
+    )
+    observed_ax.plot(
+        threads,
+        tail_capacity,
+        color="#4C72B0",
+        linestyle="--",
+        linewidth=1.2,
+        label="post-dither encode capacity",
+    )
+    for row in rows:
+        if str(row["dither_encode_overlap"]) == "yes":
+            observed_ax.axvspan(
+                int(row["threads"]) - 0.42,
+                int(row["threads"]) + 0.42,
+                color="#DDDDDD",
+                alpha=0.22,
+                linewidth=0,
+            )
+    observed_ax.set_xlabel("Configured worker budget (--threads)")
+    observed_ax.set_ylabel("Distinct pool threads")
+    observed_ax.set_xticks(threads)
+    observed_ax.grid(True, color="#D9D9D9", linewidth=0.7)
+    observed_ax.legend(frameon=False, loc="upper left")
+    figure.text(
+        0.99,
+        0.01,
+        "Grey columns had measured dither/encode overlap. Writer and caller "
+        "threads are excluded.",
+        horizontalalignment="right",
+        fontsize=8,
+        color="#555555",
+    )
+    figure.tight_layout(rect=(0.0, 0.035, 1.0, 1.0))
+    figure.savefig(path, dpi=160)
+    plt.close(figure)
+
+
+def measure_encoder(args: argparse.Namespace,
+                    source_root: Path,
+                    input_path: Path,
+                    work_dir: Path,
+                    env: Dict[str, str],
+                    threads_values: Sequence[int]) \
+        -> Tuple[List[Dict[str, object]], Path, List[str]]:
+    """Run the static budget sweep and retain representative logs."""
+    rows: List[Dict[str, object]] = []
+    commands: List[str] = []
+    serial_sixel = work_dir / "encoder-thread1.six"
+    retained = set(args.timeline_threads)
+    for threads in threads_values:
+        log_path = work_dir / f"encoder-thread{threads}.jsonl"
+        output_path = work_dir / f"encoder-thread{threads}.six"
+        command = encoder_command(
+            args.img2sixel,
+            input_path,
+            threads,
+            output_path,
+            log_path,
+        )
+        print(f"[encoder {threads}/{max(threads_values)}]", flush=True)
+        proc = run_checked(command, env)
+        diagnostic = proc.stderr.decode("utf-8", errors="replace")
+        records = load_records(log_path)
+        plan = parse_planner(diagnostic)
+        encode_intervals = event_intervals(
+            records,
+            "worker_start",
+            "worker_done",
+            "encode",
+            "worker",
+        )
+        row: Dict[str, object] = {
+            "revision": args.revision,
+            "threads": threads,
+            **plan,
+            "observed_parallel_dither_threads": unique_threads(
+                records, "dither", "worker", "start"
+            ),
+            "observed_encode_pool_threads": unique_threads(
+                records, "encode", "worker", "worker_start"
+            ),
+            "observed_writer_threads": unique_threads(
+                records, "encode", "writer", "writer_start"
+            ),
+            "tail_grow_requested": "yes" if any(
+                record.get("worker") == "encode"
+                and record.get("role") == "controller"
+                and record.get("event") == "grow_workers"
+                for record in records
+            ) else "no",
+            "dither_encode_overlap": "yes" if intervals_overlap(
+                dither_intervals(records), encode_intervals
+            ) else "no",
+            "elapsed_seconds": max(float(record["ts"]) for record in records),
+            "command": command_template(
+                command,
+                {
+                    args.img2sixel: "{img2sixel}",
+                    str(input_path): "{input}",
+                    str(output_path): "{output}",
+                    str(log_path): "{log}",
+                },
+            ),
+        }
+        rows.append(row)
+        commands.append(str(row["command"]))
+        if threads in retained:
+            shutil.copyfile(
+                log_path,
+                args.output_dir / f"encoder-thread{threads}.jsonl",
+            )
+    return rows, serial_sixel, commands
+
+
+def measure_auxiliary_timelines(args: argparse.Namespace,
+                                animation_input: Path,
+                                serial_sixel: Path,
+                                work_dir: Path,
+                                env: Dict[str, str]) -> Dict[str, str]:
+    """Record decoder and finite-animation representative timelines."""
+    decoder_log = args.output_dir / "decoder-thread8.jsonl"
+    decoder = decoder_command(args.sixel2png, serial_sixel, 8, decoder_log)
+    print("[decoder 8]", flush=True)
+    run_checked(decoder, env)
+
+    animation_log = args.output_dir / "animation-thread4.jsonl"
+    animation_output = work_dir / "animation-thread4.six"
+    animation = animation_command(
+        args.img2sixel,
+        animation_input,
+        4,
+        animation_output,
+        animation_log,
+    )
+    print("[animation 4]", flush=True)
+    run_checked(animation, env)
+    return {
+        "decoder": command_template(
+            decoder,
+            {
+                args.sixel2png: "{sixel2png}",
+                str(serial_sixel): "{serial_sixel}",
+                str(decoder_log): "{log}",
+                os.devnull: "{null}",
+            },
+        ),
+        "animation": command_template(
+            animation,
+            {
+                args.img2sixel: "{img2sixel}",
+                str(animation_input): "{animation_input}",
+                str(animation_output): "{output}",
+                str(animation_log): "{log}",
+            },
+        ),
+    }
+
+
+def write_metadata(args: argparse.Namespace,
+                   source_root: Path,
+                   input_path: Path,
+                   animation_input: Path,
+                   encoder_commands: Sequence[str],
+                   auxiliary_commands: Dict[str, str]) -> None:
+    """Write revision, host, inputs, tools, and protocol provenance."""
+    payload = {
+        "schema_version": 1,
+        "generated_at_utc": datetime.datetime.now(
+            datetime.timezone.utc
+        ).isoformat(),
+        "source": {
+            "revision": args.revision,
+            "tracked_worktree_state_at_start": args.source_state,
+        },
+        "build": read_build_configuration(args.build_dir),
+        "host": {
+            "platform": platform.platform(),
+            "processor": platform.processor(),
+            "python": platform.python_version(),
+            "matplotlib": matplotlib.__version__,
+        },
+        "inputs": {
+            "static": {
+                "path": display_path(input_path, source_root),
+                "sha256": file_sha256(input_path),
+            },
+            "animation": {
+                "path": display_path(animation_input, source_root),
+                "sha256": file_sha256(animation_input),
+                "contract": "finite two-frame GIF without a loop extension",
+            },
+        },
+        "programs": {
+            "img2sixel": program_record(args.img2sixel, source_root),
+            "sixel2png": program_record(args.sixel2png, source_root),
+            "timeline": program_record(
+                str(source_root / "tools" / "timeline.py"), source_root
+            ),
+        },
+        "protocol": {
+            "thread_counts": list(args.threads),
+            "timeline_thread_counts": list(args.timeline_threads),
+            "sixel_environment_removed": args.clean_sixel_environment,
+            "encoder_commands": list(encoder_commands),
+            "decoder_command": auxiliary_commands["decoder"],
+            "animation_command": auxiliary_commands["animation"],
+            "timeline_commands": [
+                "{python} tools/timeline.py --sort-order start "
+                "--frame-mode off {log} --output {png}",
+                "{python} tools/timeline.py --sort-order start "
+                "--frame-mode on {animation_log} --output {png}",
+            ],
+            "timing_interpretation": (
+                "One diagnostic run per configuration; elapsed time is not "
+                "a performance benchmark."
+            ),
+        },
+    }
+    with (args.output_dir / "threading-run.json").open(
+            "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+
+
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--img2sixel", required=True)
+    parser.add_argument("--sixel2png", required=True)
+    parser.add_argument("--build-dir", type=Path, required=True)
+    parser.add_argument("--input", type=Path, required=True)
+    parser.add_argument("--animation-input", type=Path, required=True)
+    parser.add_argument("--threads", default=",".join(
+        str(value) for value in DEFAULT_THREADS
+    ))
+    parser.add_argument("--timeline-threads", default="2,4,8")
+    parser.add_argument("--revision", default="unknown")
+    parser.add_argument("--source-state", default="unknown")
+    parser.add_argument("--clean-sixel-environment", action="store_true")
+    parser.add_argument("--output-dir", type=Path, required=True)
+    return parser.parse_args()
+
+
+def main() -> int:
+    """Run the measurements and write all non-timeline-plot artifacts."""
+    args = parse_args()
+    source_root = Path(__file__).resolve().parent.parent
+    args.input = args.input.resolve()
+    args.animation_input = args.animation_input.resolve()
+    args.build_dir = args.build_dir.resolve()
+    args.output_dir = args.output_dir.resolve()
+    args.threads = parse_threads(args.threads)
+    args.timeline_threads = parse_threads(args.timeline_threads)
+    if not set(args.timeline_threads).issubset(args.threads):
+        raise ValueError("timeline thread counts must be part of the sweep")
+    if not args.input.is_file() or not args.animation_input.is_file():
+        raise FileNotFoundError("measurement input is missing")
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    env = make_command_environment(args.clean_sixel_environment)
+
+    with tempfile.TemporaryDirectory(prefix="libsixel-threading-") as temp:
+        work_dir = Path(temp)
+        rows, serial_sixel, encoder_commands = measure_encoder(
+            args,
+            source_root,
+            args.input,
+            work_dir,
+            env,
+            args.threads,
+        )
+        auxiliary_commands = measure_auxiliary_timelines(
+            args,
+            args.animation_input,
+            serial_sixel,
+            work_dir,
+            env,
+        )
+
+    write_csv(args.output_dir / "thread-budget.csv", rows)
+    plot_budget(args.output_dir / "thread-budget.png", rows)
+    write_metadata(
+        args,
+        source_root,
+        args.input,
+        args.animation_input,
+        encoder_commands,
+        auxiliary_commands,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

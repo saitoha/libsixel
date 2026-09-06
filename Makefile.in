@@ -682,6 +682,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/check_palette_pipeline_measurements.py \
 	tools/check_palette_pipeline_suite_measurements.py \
 	tools/check_quantize_model_measurements.py \
+	tools/check_threading_measurements.py \
 	tools/generate_palette_pipeline_suite_fixtures.py \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \
@@ -697,6 +698,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_palette_pipeline_suite_measurements.py \
 	tools/plot_quality_curve.py \
 	tools/plot_quantize_model_measurements.py \
+	tools/plot_threading_measurements.py \
 	tools/reproduce_lookup_policy_acceleration.sh \
 	tools/reproduce_clustering_binning_threshold_measurements.sh \
 	tools/reproduce_clustering_colorspace_measurements.sh \
@@ -704,7 +706,9 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \
 	tools/reproduce_palette_pipeline_suite_measurements.sh \
-	tools/reproduce_quantize_model_measurements.sh
+	tools/reproduce_quantize_model_measurements.sh \
+	tools/reproduce_threading_measurements.sh \
+	tools/timeline.py
 
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.
