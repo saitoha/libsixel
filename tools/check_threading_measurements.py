@@ -11,6 +11,7 @@ from typing import Dict, Iterable, List, Sequence, Tuple
 
 
 THREADS = tuple(range(1, 13))
+DECODER_SCALING_THREADS = tuple(range(1, 17))
 DECODER_SIZES = (
     ("900x675", 900, 675, "decoder-thread8-900x675.jsonl"),
     ("1920x1080", 1920, 1080, "decoder-thread8.jsonl"),
@@ -342,8 +343,8 @@ def main() -> int:
     )
     scaling = metadata["protocol"]["decoder_scaling"]
     scaling_threads = tuple(int(value) for value in scaling["thread_counts"])
-    if scaling_threads != THREADS:
-        raise ValueError("decoder scaling does not cover threads 1 through 12")
+    if scaling_threads != DECODER_SCALING_THREADS:
+        raise ValueError("decoder scaling does not cover threads 1 through 16")
     if int(scaling["warmup_runs_per_thread"]) != 2:
         raise ValueError("decoder scaling warmup protocol changed")
     repeats = int(scaling["timed_runs_per_thread"])

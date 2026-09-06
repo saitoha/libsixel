@@ -33,6 +33,7 @@ from plot_lookup_policy_speed import (
 
 
 DEFAULT_THREADS = tuple(range(1, 13))
+DEFAULT_DECODER_SCALING_THREADS = tuple(range(1, 17))
 DEFAULT_DECODER_WARMUPS = 2
 DEFAULT_DECODER_REPEATS = 9
 DECODER_SIZES = (
@@ -460,7 +461,9 @@ def inclusive_quartiles(values: Sequence[float]) -> Tuple[float, float]:
 
 def plot_decoder_scaling(path: Path,
                          rows: Sequence[Dict[str, object]],
-                         logical_cpus: int) -> None:
+                         logical_cpus: int,
+                         warmups: int,
+                         repeats: int) -> None:
     """Plot repeated Full HD decoder timings against the worker budget."""
     threads = sorted({int(row["threads"]) for row in rows})
     fields = (
@@ -468,7 +471,7 @@ def plot_decoder_scaling(path: Path,
         ("scan_wall_seconds", "validation scan", "#8CBFDB", "s"),
         ("paint_wall_seconds", "direct paint", "#225C8D", "^"),
     )
-    figure, axis = plt.subplots(figsize=(9.2, 5.4))
+    figure, axis = plt.subplots(figsize=(10.2, 5.4))
 
     for field, label, color, marker in fields:
         x_values: List[int] = []
@@ -545,8 +548,8 @@ def plot_decoder_scaling(path: Path,
     figure.text(
         0.99,
         0.01,
-        "Lines show medians; shaded bands show IQR. Workers are not pinned "
-        "to physical cores.",
+        f"{repeats} timed runs after {warmups} warm-ups. Lines show medians; "
+        "shading shows IQR. Workers are not pinned to physical cores.",
         horizontalalignment="right",
         fontsize=8,
         color="#555555",
@@ -933,7 +936,7 @@ def parse_args() -> argparse.Namespace:
     ))
     parser.add_argument("--timeline-threads", default="2,4,8")
     parser.add_argument("--decoder-scaling-threads", default=",".join(
-        str(value) for value in DEFAULT_THREADS
+        str(value) for value in DEFAULT_DECODER_SCALING_THREADS
     ))
     parser.add_argument(
         "--decoder-warmups", type=int, default=DEFAULT_DECODER_WARMUPS
@@ -1004,6 +1007,8 @@ def main() -> int:
         args.output_dir / "decoder-thread-scaling.png",
         decoder_scaling_rows,
         os.cpu_count() or 0,
+        args.decoder_warmups,
+        args.decoder_repeats,
     )
     write_metadata(
         args,
