@@ -193,6 +193,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/check_dither_policy_measurements.py \
 	tools/check_palette_pipeline_measurements.py \
 	tools/check_palette_pipeline_suite_measurements.py \
+	tools/check_precision_measurements.py \
 	tools/check_quantize_model_measurements.py \
 	tools/check_threading_measurements.py \
 	tools/generate_palette_pipeline_suite_fixtures.py \
@@ -209,6 +210,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_palette_pipeline_measurements.py \
 	tools/plot_palette_pipeline_suite_measurements.py \
 	tools/plot_quality_curve.py \
+	tools/plot_precision_measurements.py \
 	tools/plot_quantize_model_measurements.py \
 	tools/plot_threading_measurements.py \
 	tools/reproduce_lookup_policy_acceleration.sh \
@@ -218,6 +220,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \
 	tools/reproduce_palette_pipeline_suite_measurements.sh \
+	tools/reproduce_precision_measurements.sh \
 	tools/reproduce_quantize_model_measurements.sh \
 	tools/reproduce_threading_measurements.sh \
 	tools/timeline.py

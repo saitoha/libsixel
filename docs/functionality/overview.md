@@ -30,6 +30,9 @@ output contract of each stage and how these three controls cooperate:
   palette colors are available and documents each solver's objective and cost;
 - [Palette Clustering Color Space](clustering-colorspace.md), selected by `-X`,
   determines the coordinate geometry used to construct those palette colors;
+- [Encoder Working Precision](precision.md), selected by `--precision`,
+  determines the base sample representation shared across palette
+  construction, palette application, dithering, lookup, and encoding;
 - [Dithering](dithering.md), selected by `-d`, determines how representation
   error is distributed and the state required to do so;
 - [Lookup Policy](lookup-policy.md), selected by `-~` or `--lookup-policy`,

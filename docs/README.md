@@ -34,6 +34,9 @@ are grouped by domain so each area can grow without overloading one document.
 - [Palette clustering color space](functionality/clustering-colorspace.md)
   explains `-X`, its coordinate geometry and normalization, option
   interactions, and measured quality, speed, and size tradeoffs.
+- [Encoder working precision](functionality/precision.md) explains the
+  cross-cutting `--precision` axis, effective 8-bit and float32 paths, and the
+  shared quality, speed, and size comparison across processing policies.
 - [Dithering](functionality/dithering.md) explains `-d`, error shaping, scan
   order, temporal behavior, per-pixel cost, and its interaction with lookup.
 - [Lookup policy](functionality/lookup-policy.md) defines libsixel's `-~` /

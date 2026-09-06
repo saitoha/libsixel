@@ -1,0 +1,179 @@
+# Encoder Working Precision
+
+## Scope
+
+`img2sixel --precision=8bit|float32` selects the base representation used by
+the shared encoder pipeline. This is not only a loader or resize setting. The
+chosen representation can change the samples presented to palette
+construction, arithmetic inside palette application, lookup-policy backends,
+dither error state, selected palette indices, and the resulting SIXEL stream.
+It also changes memory traffic and the amount of work available to threaded or
+GPU execution paths.
+
+Precision is therefore a cross-cutting measurement axis. Results for
+[palette quantization](quantization.md), [dithering](dithering.md),
+[lookup policy](lookup-policy.md),
+[sampling and binning](palette-pipeline.md), and
+[clustering color space](clustering-colorspace.md) must state both the requested
+precision and the effective working format.
+
+## Requested precision and effective format
+
+With `-Wgamma`, the two explicit base modes have distinct planner contracts:
+
+| CLI request | Effective shared working format | Main sample representation |
+| --- | --- | --- |
+| `--precision=8bit` | `rgb888` | three unsigned 8-bit gamma-sRGB channels |
+| `--precision=float32` | `rgb-f32` | three float32 gamma-sRGB channels |
+
+A non-gamma working color space such as `-Wlinear` or `-Woklab` requires
+floating-point samples. It promotes the effective shared path to `rgb-f32`
+even when the base request is `--precision=8bit`. Such a command is useful,
+but it is not an 8-bit-versus-float32 experiment.
+
+`-X` has a different role. It selects the coordinates used to construct the
+palette. A floating-point clustering space such as `-Xoklab` may create a
+float palette-building view without promoting an otherwise gamma `rgb888`
+main path. This separation permits the same palette objective to be evaluated
+with either base working precision.
+
+Use verbose planner output to audit the effective path. A controlled 8-bit
+run must contain:
+
+```text
+formats: source=rgb888 work=rgb888 scale_out=rgb888
+```
+
+The corresponding float32 run must report `work=rgb-f32`. Measurement scripts
+must validate this field rather than infer the path from the command line.
+
+## Where precision can affect the pipeline
+
+The same precision request reaches several independently interesting stages:
+
+1. Loading and normalization decide whether decoded integer samples can remain
+   byte-valued or need conversion to float.
+2. Sampling and binning observe the normalized colors. Rounding can change bin
+   occupancy, accumulated weights, and representative coordinates.
+3. The quantizer operates on that point set. A different point population can
+   change initial centers, assignments, convergence, and the final palette.
+4. Palette conversion produces the representation used for palette
+   application.
+5. Lookup policies use precision-specific indexes, table coordinates, distance
+   calculations, or caches. Their quality and cost can change independently.
+6. Dither policies calculate and propagate representation error. Integer
+   rounding changes both the current decision and later error state.
+7. SIXEL encoding consumes the selected indices. Even a small index change can
+   alter plane occupancy, runs, and stream size.
+
+Consequently, an isolated observation such as "float32 made K-means slower"
+is incomplete unless the experiment shows whether the palette, lookup, dither,
+and output stream also changed.
+
+## Cross-cutting measurement
+
+The checked-in comparison uses one controlled cross-section to reveal where
+precision sensitivity exists. It evaluates 43 configurations:
+
+- eleven explicit quantize-model configurations;
+- thirteen static-image dither policies;
+- nine lookup policies;
+- five sampling/binning configurations; and
+- five clustering color spaces.
+
+Each configuration is measured once with a true `rgb888` path and once with a
+true `rgb-f32` path. The figures keep four user-visible outcomes together:
+MS-SSIM, mean Delta E00, end-to-end latency, and exact SIXEL byte size.
+
+The controlled fixture is the 600-by-450 RGB
+[`images/snake.png`](../../images/snake.png) at `K=64`. Commands use the
+builtin loader, one thread, full quality, gamma working coordinates, and no GPU
+assistance. Each domain reuses the command builder owned by its detailed
+measurement document, then changes only `--precision` within a matched pair.
+Thus a pair is a valid precision comparison, while absolute values from two
+different domains need not share every other policy.
+
+The domain figures are:
+
+- [quantize models](precision/measurements/precision-quantizer.png);
+- [dither policies](precision/measurements/precision-dither.png);
+- [lookup policies](precision/measurements/precision-lookup.png);
+- [sampling and binning](precision/measurements/precision-palette-pipeline.png);
+  and
+- [clustering color spaces](precision/measurements/precision-clustering-colorspace.png).
+
+The plots use paired markers rather than bars from zero. This makes small
+precision changes visible without implying that a narrow quality-axis range is
+an absolute magnitude comparison. Blue filled circles represent 8-bit;
+orange open squares represent float32, so the distinction also survives
+grayscale reproduction. Timing whiskers show the interquartile range.
+
+## Reproduction and validation
+
+Commit the implementation being measured, build the assessment tools, install
+Python Matplotlib, and run from a tracked-clean worktree:
+
+```sh
+PYTHON=.venv/bin/python tools/reproduce_precision_measurements.sh
+```
+
+The runner rebuilds `img2sixel` and `lsqa`, removes inherited `SIXEL_*`
+variables, measures both precisions in alternating adjacent order, rotates and
+reverses configuration order between rounds, generates all figures and the
+combined CSV, and validates the result. The default timing budget is two
+warm-ups followed by seven measured rounds. `PRECISION_WARMUPS` and
+`PRECISION_RUNS` may shorten an exploratory run, but such data is a different
+protocol and must not silently replace the checked-in baseline.
+
+Before measuring a row, the script enables stable planner and palette
+diagnostics. It rejects the run unless 8-bit reports `rgb888`, float32 reports
+`rgb-f32`, and palette construction reports `quantizer_retries=0`. These checks
+prevent a command label, implicit working-space promotion, or solver fallback
+from misidentifying the implementation that was measured.
+
+The complete per-row data, exact command templates, effective work formats,
+quality deltas, size and timing ratios, and timing quartiles are in
+[`precision-comparison.csv`](precision/measurements/precision-comparison.csv).
+Source revision, input and executable hashes, build configuration, host, and
+the configuration manifest are in
+[`precision-run.json`](precision/measurements/precision-run.json). Validate a
+regenerated directory directly with:
+
+```sh
+python3 tools/check_precision_measurements.py \
+  docs/functionality/precision/measurements
+```
+
+## Interpretation limits
+
+This comparison deliberately fixes one image, one palette size, one thread,
+one working color space, and CPU execution. It answers whether precision can
+materially affect a policy and shows the direction on this fixture. It does not
+replace each topic's palette-size sweep, multi-fixture study, dither spectrum,
+thread-scaling experiment, or GPU comparison.
+
+In particular, do not generalize a small `K=64` difference to all palettes.
+Integer quantization boundaries, lookup grids, dither feedback, and SIXEL run
+structure can create non-monotonic results as `K` changes. If a precision
+difference influences a default or an optimization, repeat the owning topic's
+full protocol at both precisions and retain the effective-format preflight.
+
+Rerun the cross-cutting suite after changes to loading, normalization,
+colorspace conversion, sampling, binning, quantization, palette conversion,
+lookup, dithering, SIXEL encoding, decoding used by `lsqa`, or the measurement
+tools themselves.
+
+## Implementation and tests
+
+Precision option state and effective-format resolution are owned by
+[`encoder.c`](../../src/encoder.c) and [`encoder.h`](../../src/encoder.h).
+The planner exposes the resolved source, work, and scale-output formats through
+its verbose DAG diagnostic. Focused option-order and promotion tests are under
+[`tests/cli/options/matching/`](../../tests/cli/options/matching/).
+
+The measurement driver is
+[`tools/plot_precision_measurements.py`](../../tools/plot_precision_measurements.py),
+the one-command wrapper is
+[`tools/reproduce_precision_measurements.sh`](../../tools/reproduce_precision_measurements.sh),
+and the artifact contract is enforced by
+[`tools/check_precision_measurements.py`](../../tools/check_precision_measurements.py).

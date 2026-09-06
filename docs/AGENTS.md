@@ -26,6 +26,8 @@ before changing its subject area:
   flow, and architectural boundaries.
 - [Palette clustering color space](functionality/clustering-colorspace.md):
   `-X` geometry, normalization, interactions, and reproducible measurements.
+- [Encoder working precision](functionality/precision.md): requested and
+  effective `--precision` paths and cross-policy measurement controls.
 - [CLI](cli/design-policy.md): option design, compatibility, parsing,
   diagnostics, and documentation synchronization.
 - [Quality](quality/measurement-policy.md): perceptual metrics, fixtures,
