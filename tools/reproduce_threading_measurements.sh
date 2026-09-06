@@ -14,7 +14,7 @@ IMG2SIXEL_PATH=${IMG2SIXEL_PATH-${BUILD_DIR}/converters/img2sixel}
 SIXEL2PNG_PATH=${SIXEL2PNG_PATH-${BUILD_DIR}/converters/sixel2png}
 
 output_dir=${1-${TOP_SRCDIR}/docs/threading/measurements}
-static_input=${2-${TOP_SRCDIR}/images/measurements/palette-pipeline/smooth-gradient-900x675.png}
+static_input=${2-${TOP_SRCDIR}/images/measurements/palette-pipeline/smooth-gradient-1920x1080.png}
 animation_input=${3-${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-no-netscape-2frame.gif}
 source_state=clean
 

@@ -185,7 +185,12 @@ def a98_gamut(x: int,
 def generated_fixtures(source_root: Path) -> Iterable[Tuple[Path, bytes]]:
     """Yield every generated fixture path and canonical byte representation."""
     directory = source_root / FIXTURE_DIRECTORY
-    for width, height in ((128, 96), (600, 450), (900, 675)):
+    for width, height in (
+        (128, 96),
+        (600, 450),
+        (900, 675),
+        (1920, 1080),
+    ):
         name = f"smooth-gradient-{width}x{height}.png"
         yield directory / name, encode_png(width, height, smooth_gradient)
     rare = make_rare_color_pixel(600, 450)

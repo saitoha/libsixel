@@ -261,7 +261,9 @@ def verify_loaded_libsixel(args: argparse.Namespace,
                            command: Sequence[str],
                            replacements: Dict[str, str],
                            env: Dict[str, str],
-                           source_root: Path) -> Dict[str, object]:
+                           source_root: Path,
+                           required_diagnostic: str | None = None) \
+        -> Dict[str, object]:
     """Probe one converter payload and prove which libsixel it loads."""
     probe_env = env.copy()
     system = platform.system()
@@ -283,6 +285,12 @@ def verify_loaded_libsixel(args: argparse.Namespace,
     loaded_path = str(args.libsixel_library.resolve())
     if loaded_path not in diagnostic:
         raise RuntimeError("load probe did not observe the measured libsixel")
+    if (required_diagnostic is not None
+            and required_diagnostic not in diagnostic):
+        raise RuntimeError(
+            "load probe did not observe the required encoder contract: "
+            f"{required_diagnostic}"
+        )
     return {
         "verified": True,
         "method": method,
@@ -297,6 +305,8 @@ def verify_loaded_libsixel(args: argparse.Namespace,
             command,
             replacements,
         ),
+        "required_diagnostic": required_diagnostic,
+        "required_diagnostic_observed": required_diagnostic is not None,
     }
 
 
@@ -1180,8 +1190,6 @@ def measure_encoder(args: argparse.Namespace,
             threads,
             output_path,
             log_path,
-            ENCODER_WIDTH,
-            ENCODER_HEIGHT,
         )
         print(f"[encoder {threads}/{max(threads_values)}]", flush=True)
         proc = run_checked(command, env)
@@ -1245,8 +1253,6 @@ def measure_encoder_scaling(args: argparse.Namespace,
                 threads,
                 output_path,
                 log_path,
-                ENCODER_WIDTH,
-                ENCODER_HEIGHT,
             )
             replacements = {
                 str(args.img2sixel_payload): "{img2sixel}",
@@ -1338,9 +1344,7 @@ def measure_encoder_color_scaling(args: argparse.Namespace,
                 threads,
                 output_path,
                 log_path,
-                ENCODER_WIDTH,
-                ENCODER_HEIGHT,
-                ncolors,
+                ncolors=ncolors,
             )
             replacements = {
                 str(args.img2sixel_payload): "{img2sixel}",
@@ -1642,7 +1646,7 @@ def write_metadata(args: argparse.Namespace,
                    snapshot: Dict[str, object]) -> None:
     """Write revision, host, inputs, tools, and protocol provenance."""
     payload = {
-        "schema_version": 6,
+        "schema_version": 7,
         "generated_at_utc": datetime.datetime.now(
             datetime.timezone.utc
         ).isoformat(),
@@ -1662,10 +1666,11 @@ def write_metadata(args: argparse.Namespace,
             "static": {
                 "path": display_path(input_path, source_root),
                 "sha256": file_sha256(input_path),
-                "processed_width": ENCODER_WIDTH,
-                "processed_height": ENCODER_HEIGHT,
+                "width": ENCODER_WIDTH,
+                "height": ENCODER_HEIGHT,
                 "contract": (
-                    "img2sixel resizes the controlled source to Full HD"
+                    "native Full HD input; measured encoder commands do not "
+                    "resize"
                 ),
             },
             "animation": {
@@ -1850,10 +1855,7 @@ def main() -> int:
         encoder_probe_command = [
             str(args.img2sixel_payload),
             *encoder_policy_arguments(1),
-            "-w",
-            str(ENCODER_WIDTH),
-            "-h",
-            str(ENCODER_HEIGHT),
+            "-v",
             "-o",
             os.devnull,
             str(args.input),
@@ -1869,6 +1871,7 @@ def main() -> int:
             },
             env,
             source_root,
+            "scale plan active=0 width=1920 height=1080",
         )
         rows, encoder_commands = measure_encoder(
             args,

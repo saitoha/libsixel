@@ -34,10 +34,6 @@ ENCODER_COMMAND_SUFFIX = (
     "--lookup-policy=6bit:shared_instance=1",
     "-p",
     "256",
-    "-w",
-    "1920",
-    "-h",
-    "1080",
     "-v",
     "-J",
     "{log}",
@@ -172,8 +168,8 @@ def validate_budget(path: Path,
                 or int(row["height"]) != 1080
                 or int(row["pixels"]) != 1920 * 1080):
             raise ValueError("encoder budget sweep is not Full HD")
-        if "-w 1920 -h 1080" not in row["command"]:
-            raise ValueError("encoder budget command is not Full HD")
+        if "-w" in shlex.split(row["command"]):
+            raise ValueError("encoder budget command unexpectedly resizes")
         if (float(row["encoder_wall_seconds"]) <= 0.0
                 or float(row["palette_wall_seconds"]) <= 0.0
                 or float(row["dither_encode_wall_seconds"]) <= 0.0):
@@ -698,8 +694,8 @@ def main() -> int:
             validate_png(path)
     with (root / "threading-run.json").open("r", encoding="utf-8") as handle:
         metadata = json.load(handle)
-    if int(metadata["schema_version"]) != 6:
-        raise ValueError("threading metadata schema is not version 6")
+    if int(metadata["schema_version"]) != 7:
+        raise ValueError("threading metadata schema is not version 7")
     revision = str(metadata["source"]["revision"])
     if metadata["source"]["tracked_worktree_state_at_start"] != "clean":
         raise ValueError("threading artifacts were not recorded from clean source")
@@ -719,15 +715,23 @@ def main() -> int:
         if str(Path(load_probe["loaded_path"]).parent) != (
                 load_probe["search_directory"]):
             raise ValueError(f"{name} libsixel search path is inconsistent")
+    encoder_probe = load_probes["img2sixel"]
+    if (encoder_probe["required_diagnostic"] !=
+            "scale plan active=0 width=1920 height=1080"
+            or not encoder_probe["required_diagnostic_observed"]):
+        raise ValueError("native Full HD encoder probe is missing")
     for name in ("img2sixel", "sixel2png", "generator", "checker", "timeline"):
         record = metadata["programs"][name]
         if not record["launcher_sha256"] or not record["payload_sha256"]:
             raise ValueError(f"program provenance is incomplete for {name}")
     decoder_input = metadata["inputs"]["decoder"]
     encoder_input = metadata["inputs"]["static"]
-    if (int(encoder_input["processed_width"]) != 1920
-            or int(encoder_input["processed_height"]) != 1080):
-        raise ValueError("encoder processed dimensions changed")
+    if (int(encoder_input["width"]) != 1920
+            or int(encoder_input["height"]) != 1080
+            or encoder_input["contract"] != (
+                "native Full HD input; measured encoder commands do not "
+                "resize")):
+        raise ValueError("encoder native-input contract changed")
     raster_sizes = [
         (item["id"], int(item["width"]), int(item["height"]))
         for item in decoder_input["encoded_rasters"]
@@ -772,7 +776,7 @@ def main() -> int:
             "alternating ascending and descending rounds"):
         raise ValueError("encoder scaling schedule protocol changed")
     if ("--threads={threads}" not in encoder_scaling["command"]
-            or "-w 1920 -h 1080" not in encoder_scaling["command"]):
+            or "-w" in shlex.split(encoder_scaling["command"])):
         raise ValueError("encoder scaling command template changed")
     validate_encoder_scaling(
         root / "encoder-thread-scaling.csv",
