@@ -26,6 +26,8 @@ REQUIRED_FILES = (
     "encoder-thread8.jsonl",
     "encoder-thread8-timeline.png",
     "decoder-size-comparison.csv",
+    "decoder-thread-scaling.csv",
+    "decoder-thread-scaling.png",
     "decoder-thread8-900x675.jsonl",
     "decoder-thread8.jsonl",
     "decoder-thread8-timeline.png",
@@ -220,6 +222,47 @@ def validate_decoder_sizes(path: Path, root: Path, revision: str) -> None:
                 )
 
 
+def validate_decoder_scaling(path: Path,
+                             revision: str,
+                             threads_values: Sequence[int],
+                             repeats: int) -> None:
+    """Validate raw repeated decoder scaling observations."""
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    expected_rows = len(threads_values) * repeats
+    if len(rows) != expected_rows:
+        raise ValueError("decoder scaling CSV has an unexpected row count")
+    for threads in threads_values:
+        samples = [
+            row for row in rows if int(row["threads"]) == threads
+        ]
+        if [int(row["sample"]) for row in samples] != list(
+                range(1, repeats + 1)):
+            raise ValueError(
+                f"decoder scaling samples changed at threads={threads}"
+            )
+        for row in samples:
+            if row["revision"] != revision:
+                raise ValueError("decoder scaling revision is stale")
+            if row["fixture"] != "1920x1080":
+                raise ValueError("decoder scaling fixture changed")
+            if int(row["width"]) != 1920 or int(row["height"]) != 1080:
+                raise ValueError("decoder scaling dimensions changed")
+            decoder = float(row["decoder_wall_seconds"])
+            png = float(row["png_wall_seconds"])
+            total = float(row["total_wall_seconds"])
+            if decoder <= 0.0 or png <= 0.0 or total <= 0.0:
+                raise ValueError("decoder scaling contains non-positive time")
+            if threads == 1:
+                if row["scan_wall_seconds"] or row["paint_wall_seconds"]:
+                    raise ValueError("serial decoder unexpectedly has phases")
+            elif (float(row["scan_wall_seconds"]) <= 0.0
+                  or float(row["paint_wall_seconds"]) <= 0.0):
+                raise ValueError("parallel decoder phase timing is missing")
+            if f"--threads={threads}" not in row["command"]:
+                raise ValueError("decoder scaling command is stale")
+
+
 def validate_animation(path: Path) -> None:
     """Validate two finite, non-overlapping frame encode intervals."""
     records = load_jsonl(path)
@@ -267,8 +310,8 @@ def main() -> int:
             validate_png(path)
     with (root / "threading-run.json").open("r", encoding="utf-8") as handle:
         metadata = json.load(handle)
-    if int(metadata["schema_version"]) != 2:
-        raise ValueError("threading metadata schema is not version 2")
+    if int(metadata["schema_version"]) != 3:
+        raise ValueError("threading metadata schema is not version 3")
     revision = str(metadata["source"]["revision"])
     if metadata["source"]["tracked_worktree_state_at_start"] != "clean":
         raise ValueError("threading artifacts were not recorded from clean source")
@@ -296,6 +339,21 @@ def main() -> int:
         root / "decoder-size-comparison.csv",
         root,
         revision,
+    )
+    scaling = metadata["protocol"]["decoder_scaling"]
+    scaling_threads = tuple(int(value) for value in scaling["thread_counts"])
+    if scaling_threads != THREADS:
+        raise ValueError("decoder scaling does not cover threads 1 through 12")
+    if int(scaling["warmup_runs_per_thread"]) != 2:
+        raise ValueError("decoder scaling warmup protocol changed")
+    repeats = int(scaling["timed_runs_per_thread"])
+    if repeats != 9:
+        raise ValueError("decoder scaling repeat protocol changed")
+    validate_decoder_scaling(
+        root / "decoder-thread-scaling.csv",
+        revision,
+        scaling_threads,
+        repeats,
     )
     validate_animation(root / "animation-thread4.jsonl")
     print("threading measurement artifacts are consistent")

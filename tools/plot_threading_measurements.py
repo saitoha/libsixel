@@ -12,6 +12,7 @@ import platform
 import re
 import shlex
 import shutil
+import statistics
 import subprocess
 import tempfile
 from pathlib import Path
@@ -32,6 +33,8 @@ from plot_lookup_policy_speed import (
 
 
 DEFAULT_THREADS = tuple(range(1, 13))
+DEFAULT_DECODER_WARMUPS = 2
+DEFAULT_DECODER_REPEATS = 9
 DECODER_SIZES = (
     ("900x675", 900, 675),
     ("1920x1080", 1920, 1080),
@@ -213,6 +216,24 @@ def phase_wall_seconds(records: Sequence[Dict[str, object]],
     )
     if not intervals:
         raise RuntimeError(f"timeline omitted {worker}/{role} phase")
+    return max(end for _, end in intervals) - min(
+        start for start, _ in intervals
+    )
+
+
+def optional_phase_wall_seconds(records: Sequence[Dict[str, object]],
+                                worker: str,
+                                role: str) -> object:
+    """Return a phase wall interval, or an empty CSV field when absent."""
+    intervals = event_intervals(
+        records,
+        "start",
+        "finish",
+        worker,
+        role,
+    )
+    if not intervals:
+        return ""
     return max(end for _, end in intervals) - min(
         start for start, _ in intervals
     )
@@ -431,6 +452,110 @@ def plot_budget(path: Path, rows: Sequence[Dict[str, object]]) -> None:
     plt.close(figure)
 
 
+def inclusive_quartiles(values: Sequence[float]) -> Tuple[float, float]:
+    """Return inclusive first and third quartiles for repeated samples."""
+    quartiles = statistics.quantiles(values, n=4, method="inclusive")
+    return quartiles[0], quartiles[2]
+
+
+def plot_decoder_scaling(path: Path,
+                         rows: Sequence[Dict[str, object]],
+                         logical_cpus: int) -> None:
+    """Plot repeated Full HD decoder timings against the worker budget."""
+    threads = sorted({int(row["threads"]) for row in rows})
+    fields = (
+        ("decoder_wall_seconds", "decoder", "#4C72B0", "o"),
+        ("scan_wall_seconds", "validation scan", "#8CBFDB", "s"),
+        ("paint_wall_seconds", "direct paint", "#225C8D", "^"),
+    )
+    figure, axis = plt.subplots(figsize=(9.2, 5.4))
+
+    for field, label, color, marker in fields:
+        x_values: List[int] = []
+        medians: List[float] = []
+        lows: List[float] = []
+        highs: List[float] = []
+        for workers in threads:
+            samples = [
+                float(row[field]) * 1000.0
+                for row in rows
+                if int(row["threads"]) == workers and row[field] != ""
+            ]
+            if not samples:
+                continue
+            low, high = inclusive_quartiles(samples)
+            x_values.append(workers)
+            medians.append(statistics.median(samples))
+            lows.append(low)
+            highs.append(high)
+        axis.plot(
+            x_values,
+            medians,
+            color=color,
+            marker=marker,
+            linewidth=1.9,
+            label=f"{label} median",
+        )
+        axis.fill_between(
+            x_values,
+            lows,
+            highs,
+            color=color,
+            alpha=0.15,
+            linewidth=0,
+        )
+
+    serial = statistics.median([
+        float(row["decoder_wall_seconds"]) * 1000.0
+        for row in rows
+        if int(row["threads"]) == 1
+    ])
+    axis.plot(
+        threads,
+        [serial / workers for workers in threads],
+        color="#777777",
+        linestyle="--",
+        linewidth=1.1,
+        label="ideal decoder time from 1-worker median",
+    )
+    if logical_cpus in threads:
+        axis.axvline(
+            logical_cpus,
+            color="#888888",
+            linestyle=":",
+            linewidth=1.0,
+        )
+        axis.annotate(
+            f"host reports {logical_cpus} logical CPUs",
+            xy=(logical_cpus, axis.get_ylim()[1]),
+            xytext=(-5, -6),
+            textcoords="offset points",
+            horizontalalignment="right",
+            verticalalignment="top",
+            fontsize=8,
+            color="#555555",
+        )
+    axis.set_title("Full HD decoder time by configured worker budget")
+    axis.set_xlabel("Configured decoder worker budget (--threads)")
+    axis.set_ylabel("Wall interval (ms, lower is better)")
+    axis.set_xticks(threads)
+    axis.set_ylim(bottom=0)
+    axis.grid(True, color="#D9D9D9", linewidth=0.7)
+    axis.legend(frameon=False, ncol=2)
+    figure.text(
+        0.99,
+        0.01,
+        "Lines show medians; shaded bands show IQR. Workers are not pinned "
+        "to physical cores.",
+        horizontalalignment="right",
+        fontsize=8,
+        color="#555555",
+    )
+    figure.tight_layout(rect=(0.0, 0.04, 1.0, 1.0))
+    figure.savefig(path, dpi=160)
+    plt.close(figure)
+
+
 def measure_encoder(args: argparse.Namespace,
                     source_root: Path,
                     input_path: Path,
@@ -507,14 +632,103 @@ def measure_encoder(args: argparse.Namespace,
     return rows, commands
 
 
+def measure_decoder_scaling(args: argparse.Namespace,
+                            sixel_path: Path,
+                            work_dir: Path,
+                            env: Dict[str, str]) \
+        -> Tuple[List[Dict[str, object]], List[str]]:
+    """Measure repeated Full HD decoder phases for each worker budget."""
+    rows: List[Dict[str, object]] = []
+    commands: Dict[int, str] = {}
+    sixel_bytes = sixel_path.stat().st_size
+    sixel_hash = file_sha256(sixel_path)
+    total_runs = args.decoder_warmups + args.decoder_repeats
+    for run_index in range(total_runs):
+        ordered_threads = args.decoder_scaling_threads
+        if run_index % 2:
+            ordered_threads = tuple(reversed(ordered_threads))
+        for threads in ordered_threads:
+            log_path = work_dir / (
+                f"decoder-scaling-thread{threads}-run{run_index + 1}.jsonl"
+            )
+            command = decoder_command(
+                args.sixel2png,
+                sixel_path,
+                threads,
+                log_path,
+            )
+            commands[threads] = command_template(
+                command,
+                {
+                    args.sixel2png: "{sixel2png}",
+                    f"--threads={threads}": "--threads={threads}",
+                    str(sixel_path): "{decoder_sixel}",
+                    str(log_path): "{log}",
+                    os.devnull: "{null}",
+                },
+            )
+            run_checked(command, env)
+            if run_index < args.decoder_warmups:
+                continue
+            records = load_records(log_path)
+            rows.append({
+                "revision": args.revision,
+                "fixture": "1920x1080",
+                "width": 1920,
+                "height": 1080,
+                "pixels": 1920 * 1080,
+                "sixel_bytes": sixel_bytes,
+                "sixel_sha256": sixel_hash,
+                "threads": threads,
+                "sample": run_index - args.decoder_warmups + 1,
+                "decoder_wall_seconds": phase_wall_seconds(
+                    records, "io", "decoder"
+                ),
+                "scan_wall_seconds": optional_phase_wall_seconds(
+                    records, "decoder", "scan"
+                ),
+                "paint_wall_seconds": optional_phase_wall_seconds(
+                    records, "decoder", "paint"
+                ),
+                "png_wall_seconds": phase_wall_seconds(
+                    records, "png", "io"
+                ),
+                "total_wall_seconds": (
+                    max(float(record["ts"]) for record in records)
+                    - min(float(record["ts"]) for record in records)
+                ),
+                "command": command_template(
+                    command,
+                    {
+                        args.sixel2png: "{sixel2png}",
+                        str(sixel_path): "{decoder_sixel}",
+                        str(log_path): "{log}",
+                        os.devnull: "{null}",
+                    },
+                ),
+            })
+        print(
+            f"[decoder scaling run {run_index + 1}/{total_runs}]",
+            flush=True,
+        )
+    rows.sort(key=lambda row: (int(row["threads"]), int(row["sample"])))
+    return rows, [commands[threads] for threads in args.decoder_scaling_threads]
+
+
 def measure_auxiliary_timelines(args: argparse.Namespace,
                                 input_path: Path,
                                 animation_input: Path,
                                 work_dir: Path,
                                 env: Dict[str, str]) \
-        -> Tuple[Dict[str, object], List[Dict[str, object]]]:
+        -> Tuple[
+            Dict[str, object],
+            List[Dict[str, object]],
+            List[Dict[str, object]],
+        ]:
     """Record decoder and finite-animation representative timelines."""
     decoder_rows: List[Dict[str, object]] = []
+    decoder_scaling_rows: List[Dict[str, object]] = []
+    decoder_scaling_commands: List[str] = []
     fixture_commands: List[str] = []
     decoder_commands: List[str] = []
     for identifier, width, height in DECODER_SIZES:
@@ -578,6 +792,15 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
                 os.devnull: "{null}",
             },
         ))
+        if identifier == "1920x1080":
+            decoder_scaling_rows, decoder_scaling_commands = (
+                measure_decoder_scaling(
+                    args,
+                    decoder_sixel,
+                    work_dir,
+                    env,
+                )
+            )
 
     animation_log = args.output_dir / "animation-thread4.jsonl"
     animation_output = work_dir / "animation-thread4.six"
@@ -593,6 +816,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
     return ({
         "decoder_fixtures": fixture_commands,
         "decoders": decoder_commands,
+        "decoder_scaling": decoder_scaling_commands,
         "animation": command_template(
             animation,
             {
@@ -602,7 +826,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
                 str(animation_log): "{log}",
             },
         ),
-    }, decoder_rows)
+    }, decoder_rows, decoder_scaling_rows)
 
 
 def write_metadata(args: argparse.Namespace,
@@ -613,7 +837,7 @@ def write_metadata(args: argparse.Namespace,
                    auxiliary_commands: Dict[str, object]) -> None:
     """Write revision, host, inputs, tools, and protocol provenance."""
     payload = {
-        "schema_version": 2,
+        "schema_version": 3,
         "generated_at_utc": datetime.datetime.now(
             datetime.timezone.utc
         ).isoformat(),
@@ -625,6 +849,7 @@ def write_metadata(args: argparse.Namespace,
         "host": {
             "platform": platform.platform(),
             "processor": platform.processor(),
+            "logical_cpu_count": os.cpu_count(),
             "python": platform.python_version(),
             "matplotlib": matplotlib.__version__,
         },
@@ -668,6 +893,13 @@ def write_metadata(args: argparse.Namespace,
                 "decoder_fixtures"
             ],
             "decoder_commands": auxiliary_commands["decoders"],
+            "decoder_scaling": {
+                "thread_counts": list(args.decoder_scaling_threads),
+                "warmup_runs_per_thread": args.decoder_warmups,
+                "timed_runs_per_thread": args.decoder_repeats,
+                "commands": auxiliary_commands["decoder_scaling"],
+                "summary": "median with inclusive interquartile range",
+            },
             "animation_command": auxiliary_commands["animation"],
             "timeline_commands": [
                 "{python} tools/timeline.py --sort-order start "
@@ -676,8 +908,9 @@ def write_metadata(args: argparse.Namespace,
                 "--frame-mode on {animation_log} --output {png}",
             ],
             "timing_interpretation": (
-                "One diagnostic run per configuration; elapsed time is not "
-                "a performance benchmark."
+                "Timelines and size points are single diagnostic runs. The "
+                "decoder scaling sweep uses repeated instrumented samples "
+                "without exclusive host or CPU affinity."
             ),
         },
     }
@@ -699,6 +932,15 @@ def parse_args() -> argparse.Namespace:
         str(value) for value in DEFAULT_THREADS
     ))
     parser.add_argument("--timeline-threads", default="2,4,8")
+    parser.add_argument("--decoder-scaling-threads", default=",".join(
+        str(value) for value in DEFAULT_THREADS
+    ))
+    parser.add_argument(
+        "--decoder-warmups", type=int, default=DEFAULT_DECODER_WARMUPS
+    )
+    parser.add_argument(
+        "--decoder-repeats", type=int, default=DEFAULT_DECODER_REPEATS
+    )
     parser.add_argument("--revision", default="unknown")
     parser.add_argument("--source-state", default="unknown")
     parser.add_argument("--clean-sixel-environment", action="store_true")
@@ -716,6 +958,11 @@ def main() -> int:
     args.output_dir = args.output_dir.resolve()
     args.threads = parse_threads(args.threads)
     args.timeline_threads = parse_threads(args.timeline_threads)
+    args.decoder_scaling_threads = parse_threads(
+        args.decoder_scaling_threads
+    )
+    if args.decoder_warmups < 0 or args.decoder_repeats < 2:
+        raise ValueError("decoder scaling needs warmups >= 0 and repeats >= 2")
     if not set(args.timeline_threads).issubset(args.threads):
         raise ValueError("timeline thread counts must be part of the sweep")
     if not args.input.is_file() or not args.animation_input.is_file():
@@ -733,7 +980,9 @@ def main() -> int:
             env,
             args.threads,
         )
-        auxiliary_commands, decoder_rows = measure_auxiliary_timelines(
+        (auxiliary_commands,
+         decoder_rows,
+         decoder_scaling_rows) = measure_auxiliary_timelines(
             args,
             args.input,
             args.animation_input,
@@ -746,7 +995,16 @@ def main() -> int:
         args.output_dir / "decoder-size-comparison.csv",
         decoder_rows,
     )
+    write_csv(
+        args.output_dir / "decoder-thread-scaling.csv",
+        decoder_scaling_rows,
+    )
     plot_budget(args.output_dir / "thread-budget.png", rows)
+    plot_decoder_scaling(
+        args.output_dir / "decoder-thread-scaling.png",
+        decoder_scaling_rows,
+        os.cpu_count() or 0,
+    )
     write_metadata(
         args,
         source_root,

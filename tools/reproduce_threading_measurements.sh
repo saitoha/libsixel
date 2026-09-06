@@ -1,5 +1,5 @@
 #!/bin/sh
-# Rebuild and reproduce the thread-budget and timeline artifacts.
+# Rebuild and reproduce thread-budget, scaling, and timeline artifacts.
 
 set -eu
 
