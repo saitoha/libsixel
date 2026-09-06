@@ -93,20 +93,95 @@ measurement document, then changes only `--precision` within a matched pair.
 Thus a pair is a valid precision comparison, while absolute values from two
 different domains need not share every other policy.
 
-The domain figures are:
-
-- [quantize models](precision/measurements/precision-quantizer.png);
-- [dither policies](precision/measurements/precision-dither.png);
-- [lookup policies](precision/measurements/precision-lookup.png);
-- [sampling and binning](precision/measurements/precision-palette-pipeline.png);
-  and
-- [clustering color spaces](precision/measurements/precision-clustering-colorspace.png).
-
 The plots use paired markers rather than bars from zero. This makes small
 precision changes visible without implying that a narrow quality-axis range is
 an absolute magnitude comparison. Blue filled circles represent 8-bit;
 orange open squares represent float32, so the distinction also survives
 grayscale reproduction. Timing whiskers show the interquartile range.
+
+## Measured results
+
+The checked-in run was recorded on 2026-09-06 from clean revision
+`194bc9060` on macOS arm64. The table summarizes the float32 result relative to
+the matching 8-bit row. Counts report the direction of the metric, not its
+statistical or practical significance.
+
+| Domain | Configurations | Median float32 / 8-bit time | Float32 has higher MS-SSIM | Float32 has lower mean Delta E00 | Stream-size range |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| quantize model | 11 | 1.18x | 2 / 11 | 3 / 11 | -0.07% to +0.09% |
+| dither policy | 13 | 1.22x | 7 / 13 | 0 / 13 | +0.09% to +18.80% |
+| lookup policy | 9 | 1.17x | 4 / 9 | 5 / 9 | -4.98% to +0.22% |
+| sampling and binning | 5 | 1.18x | 2 / 5 | 3 / 5 | -0.06% to +0.09% |
+| clustering color space | 5 | 1.18x | 2 / 5 | 5 / 5 | -0.02% to +0.41% |
+
+The quantizer rows change MS-SSIM by at most `0.000080`, mean Delta E00 by at
+most `0.0009`, and size by less than `0.09%` on this fixture. Their median
+float32 overhead ranges from 1.15x through 1.25x. This suggests that the
+controlled palette solvers are relatively insensitive to base precision here,
+while conversion and float palette application still have a measurable cost.
+The sampling/binning rows show similarly small output changes, although their
+timing ratios range from 1.05x for no binning through 1.29x for adaptive-grid
+hard binning.
+
+Dithering is different. Float32 increases mean Delta E00 for all thirteen
+methods, but increases MS-SSIM for seven. The two metrics answer different
+questions: Delta E00 averages pointwise perceptual color error, whereas
+MS-SSIM rewards spatial structure created by the redistributed error. Float32
+also increases every measured dithered stream size. Atkinson has the largest
+size increase, 18.80%, while its MS-SSIM improves by `0.003680` and mean Delta
+E00 worsens by `0.1170`. Floyd--Steinberg loses `0.004429` MS-SSIM, adds
+`0.2892` mean Delta E00, and produces a 4.98% larger stream. Precision is
+therefore part of a dither policy's observable behavior, not merely an
+arithmetic implementation detail.
+
+The lookup comparison shows the largest changes for address-quantized or
+approximate policies. The float32 `5bit` row gains `0.005444` MS-SSIM, lowers
+mean Delta E00 by `0.2039`, and produces a 4.75% smaller stream. `eytzinger`
+lowers mean Delta E00 by `0.1016` and size by 4.98%, but loses `0.001964`
+MS-SSIM. `fhedt` gains `0.001638` MS-SSIM and lowers mean Delta E00 by
+`0.0413`. Exact `none`, `certlut`, and the tree-like policies change much less
+on this input. The float32 `vptree` median is slightly lower than 8-bit, but
+their timing interquartile ranges overlap; this run does not establish a
+float32 speed advantage.
+
+For clustering color spaces, float32 lowers mean Delta E00 in all five rows,
+while MS-SSIM moves in both directions and size stays within 0.41%. The gamma
+clustering row has the largest Delta E00 reduction, `0.0186`. This is another
+reason to keep `-X` and base precision as separately reported axes: even when
+the named clustering coordinates are unchanged, the population reaching them
+can differ.
+
+The largest output movements are summarized below. A positive quality delta
+means that float32 reports a larger value; a positive size delta means a larger
+SIXEL stream.
+
+| Domain and configuration | Time ratio | MS-SSIM delta | Mean Delta E00 delta | Size delta |
+| --- | ---: | ---: | ---: | ---: |
+| dither `fs` | 1.25x | -0.004429 | +0.2892 | +4.98% |
+| dither `atkinson` | 1.29x | +0.003680 | +0.1170 | +18.80% |
+| lookup `5bit` | 1.24x | +0.005444 | -0.2039 | -4.75% |
+| lookup `eytzinger` | 1.06x | -0.001964 | -0.1016 | -4.98% |
+| lookup `fhedt` | 1.04x | +0.001638 | -0.0413 | -0.06% |
+
+### Quantize models
+
+![Eight-bit and float32 quality, speed, and size for each quantize-model configuration](precision/measurements/precision-quantizer.png)
+
+### Dither policies
+
+![Eight-bit and float32 quality, speed, and size for each dither policy](precision/measurements/precision-dither.png)
+
+### Lookup policies
+
+![Eight-bit and float32 quality, speed, and size for each lookup policy](precision/measurements/precision-lookup.png)
+
+### Sampling and binning
+
+![Eight-bit and float32 quality, speed, and size for each sampling and binning configuration](precision/measurements/precision-palette-pipeline.png)
+
+### Clustering color spaces
+
+![Eight-bit and float32 quality, speed, and size for each clustering color space](precision/measurements/precision-clustering-colorspace.png)
 
 ## Reproduction and validation
 

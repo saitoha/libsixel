@@ -1,0 +1,343 @@
+{
+  "artifacts": {
+    "csv": "precision-comparison.csv",
+    "plots": [
+      "precision-quantizer.png",
+      "precision-dither.png",
+      "precision-lookup.png",
+      "precision-palette-pipeline.png",
+      "precision-clustering-colorspace.png"
+    ],
+    "row_count": 86
+  },
+  "build": {
+    "cc": "gcc",
+    "cflags": "-O3 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": ""
+  },
+  "generated_at_utc": "2026-09-06T08:53:43.881940+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.13.13"
+  },
+  "input": {
+    "path": "images/snake.png",
+    "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4"
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "f8325a0e0ca2ad4e79ebdb46ffdb1b4930bdc7bbeae40c029854017b7b6ac93a"
+    },
+    "lsqa": {
+      "launcher": "assessment/lsqa",
+      "launcher_sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
+      "payload": "assessment/.libs/lsqa",
+      "payload_sha256": "0560c6b1472bf503cb799f32aaa8962d57d17574246c3f31d8f586aa6b91d5c3"
+    }
+  },
+  "protocol": {
+    "colors": 64,
+    "comparison_scope": "controlled K=64 cross-section of every documented quantizer, dither, lookup, sampling/binning, and clustering-color-space configuration",
+    "configuration_order_rotated_and_reversed": true,
+    "domains": [
+      {
+        "config": "heckbert-compat",
+        "domain": "quantizer",
+        "label": "heckbert / compat",
+        "option": "heckbert:profile=compat"
+      },
+      {
+        "config": "heckbert-speed",
+        "domain": "quantizer",
+        "label": "heckbert / speed",
+        "option": "heckbert:profile=speed"
+      },
+      {
+        "config": "heckbert-quality",
+        "domain": "quantizer",
+        "label": "heckbert / quality",
+        "option": "heckbert:profile=quality"
+      },
+      {
+        "config": "kmeans",
+        "domain": "quantizer",
+        "label": "k-means",
+        "option": "kmeans:seed=1"
+      },
+      {
+        "config": "medoids-pam",
+        "domain": "quantizer",
+        "label": "PAM",
+        "option": "medoids:algo=pam:seed=1"
+      },
+      {
+        "config": "medoids-sample",
+        "domain": "quantizer",
+        "label": "CLARA",
+        "option": "medoids:algo=sample:seed=1"
+      },
+      {
+        "config": "medoids-random",
+        "domain": "quantizer",
+        "label": "CLARANS",
+        "option": "medoids:algo=random:seed=1"
+      },
+      {
+        "config": "medoids-bandit",
+        "domain": "quantizer",
+        "label": "BanditPAM",
+        "option": "medoids:algo=bandit:seed=1"
+      },
+      {
+        "config": "center-fft",
+        "domain": "quantizer",
+        "label": "FFT",
+        "option": "center:algo=fft:seed=1"
+      },
+      {
+        "config": "center-swap",
+        "domain": "quantizer",
+        "label": "swap",
+        "option": "center:algo=swap:seed=1"
+      },
+      {
+        "config": "center-hybrid",
+        "domain": "quantizer",
+        "label": "hybrid",
+        "option": "center:algo=hybrid:seed=1"
+      },
+      {
+        "config": "none",
+        "domain": "dither",
+        "label": "none",
+        "option": "none:scan=raster"
+      },
+      {
+        "config": "fs",
+        "domain": "dither",
+        "label": "fs",
+        "option": "fs:scan=raster"
+      },
+      {
+        "config": "atkinson",
+        "domain": "dither",
+        "label": "atkinson",
+        "option": "atkinson:scan=raster"
+      },
+      {
+        "config": "jajuni",
+        "domain": "dither",
+        "label": "jajuni",
+        "option": "jajuni:scan=raster"
+      },
+      {
+        "config": "stucki",
+        "domain": "dither",
+        "label": "stucki",
+        "option": "stucki:scan=raster"
+      },
+      {
+        "config": "burkes",
+        "domain": "dither",
+        "label": "burkes",
+        "option": "burkes:scan=raster"
+      },
+      {
+        "config": "sierra1",
+        "domain": "dither",
+        "label": "sierra1",
+        "option": "sierra:variant=1:scan=raster"
+      },
+      {
+        "config": "sierra2",
+        "domain": "dither",
+        "label": "sierra2",
+        "option": "sierra:variant=2:scan=raster"
+      },
+      {
+        "config": "sierra3",
+        "domain": "dither",
+        "label": "sierra3",
+        "option": "sierra:variant=3:scan=raster"
+      },
+      {
+        "config": "lso2",
+        "domain": "dither",
+        "label": "lso2",
+        "option": "lso2:scan=raster"
+      },
+      {
+        "config": "a_dither",
+        "domain": "dither",
+        "label": "a_dither",
+        "option": "a_dither:strength=0.150:scan=raster"
+      },
+      {
+        "config": "x_dither",
+        "domain": "dither",
+        "label": "x_dither",
+        "option": "x_dither:strength=0.100:scan=raster"
+      },
+      {
+        "config": "bluenoise",
+        "domain": "dither",
+        "label": "bluenoise",
+        "option": "bluenoise:strength=0.055:gradient_factor=0:phase=0,0:channel=mono:size=64:scan=raster"
+      },
+      {
+        "config": "none",
+        "domain": "lookup",
+        "label": "none",
+        "option": "none"
+      },
+      {
+        "config": "5bit",
+        "domain": "lookup",
+        "label": "5bit",
+        "option": "5bit"
+      },
+      {
+        "config": "6bit",
+        "domain": "lookup",
+        "label": "6bit",
+        "option": "6bit"
+      },
+      {
+        "config": "certlut",
+        "domain": "lookup",
+        "label": "certlut",
+        "option": "certlut"
+      },
+      {
+        "config": "eytzinger",
+        "domain": "lookup",
+        "label": "eytzinger",
+        "option": "eytzinger"
+      },
+      {
+        "config": "fhedt",
+        "domain": "lookup",
+        "label": "fhedt",
+        "option": "fhedt"
+      },
+      {
+        "config": "vptree",
+        "domain": "lookup",
+        "label": "vptree",
+        "option": "vptree"
+      },
+      {
+        "config": "rbc",
+        "domain": "lookup",
+        "label": "rbc",
+        "option": "rbc"
+      },
+      {
+        "config": "mahalanobis",
+        "domain": "lookup",
+        "label": "mahalanobis",
+        "option": "mahalanobis"
+      },
+      {
+        "config": "full-frame-hard",
+        "domain": "palette-pipeline",
+        "label": "full-frame-hard",
+        "option": "sampling=full-frame;binning=hard"
+      },
+      {
+        "config": "adaptive-grid-hard",
+        "domain": "palette-pipeline",
+        "label": "adaptive-grid-hard",
+        "option": "sampling=adaptive-grid;binning=hard"
+      },
+      {
+        "config": "full-frame-none",
+        "domain": "palette-pipeline",
+        "label": "full-frame-none",
+        "option": "sampling=full-frame;binning=none"
+      },
+      {
+        "config": "full-frame-exact",
+        "domain": "palette-pipeline",
+        "label": "full-frame-exact",
+        "option": "sampling=full-frame;binning=exact"
+      },
+      {
+        "config": "full-frame-soft",
+        "domain": "palette-pipeline",
+        "label": "full-frame-soft",
+        "option": "sampling=full-frame;binning=soft"
+      },
+      {
+        "config": "gamma",
+        "domain": "clustering-colorspace",
+        "label": "gamma sRGB",
+        "option": "-Xgamma"
+      },
+      {
+        "config": "linear",
+        "domain": "clustering-colorspace",
+        "label": "linear RGB",
+        "option": "-Xlinear"
+      },
+      {
+        "config": "oklab",
+        "domain": "clustering-colorspace",
+        "label": "OKLab",
+        "option": "-Xoklab"
+      },
+      {
+        "config": "cielab",
+        "domain": "clustering-colorspace",
+        "label": "CIELAB",
+        "option": "-Xcielab"
+      },
+      {
+        "config": "din99d",
+        "domain": "clustering-colorspace",
+        "label": "DIN99d",
+        "option": "-Xdin99d"
+      }
+    ],
+    "end_to_end_timing": "uninstrumented fresh-process monotonic wall time",
+    "gpu_policy": "off",
+    "interpretation_limit": "this single K and fixture expose precision sensitivity; they do not replace each topic's palette-size sweep",
+    "loader": "builtin!",
+    "precision_pair_order_alternated_each_round": true,
+    "precisions": [
+      {
+        "label": "8-bit",
+        "precision": "8bit",
+        "required_work_format": "rgb888"
+      },
+      {
+        "label": "float32",
+        "precision": "float32",
+        "required_work_format": "rgb-f32"
+      }
+    ],
+    "preflight": "every row must report its required planner work format and quantizer_retries=0",
+    "quality": "full",
+    "quality_metrics": "lsqa MS-SSIM, mean Delta E00, and mean Delta Chroma",
+    "sixel_environment_removed": true,
+    "size_measurement": "quality-pass SIXEL stdout byte length",
+    "speed_runs": 7,
+    "speed_warmups": 2,
+    "threads": 1,
+    "working_colorspace": "gamma"
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "194bc906098e9918b30bd62a715ceec5fa738e2f",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}

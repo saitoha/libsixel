@@ -145,6 +145,14 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.png \
 	docs/functionality/overview.md \
+	docs/functionality/precision.md \
+	docs/functionality/precision/measurements/precision-clustering-colorspace.png \
+	docs/functionality/precision/measurements/precision-comparison.csv \
+	docs/functionality/precision/measurements/precision-dither.png \
+	docs/functionality/precision/measurements/precision-lookup.png \
+	docs/functionality/precision/measurements/precision-palette-pipeline.png \
+	docs/functionality/precision/measurements/precision-quantizer.png \
+	docs/functionality/precision/measurements/precision-run.json \
 	docs/functionality/quantize-models/measurements/quantize-model-quality.csv \
 	docs/functionality/quantize-models/measurements/quantize-model-quality.png \
 	docs/functionality/quantize-models/measurements/quantize-model-run.json \
