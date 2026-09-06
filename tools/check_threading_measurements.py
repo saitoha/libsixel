@@ -11,6 +11,10 @@ from typing import Dict, Iterable, List, Sequence, Tuple
 
 
 THREADS = tuple(range(1, 13))
+DECODER_SIZES = (
+    ("900x675", 900, 675, "decoder-thread8-900x675.jsonl"),
+    ("1920x1080", 1920, 1080, "decoder-thread8.jsonl"),
+)
 REQUIRED_FILES = (
     "thread-budget.csv",
     "thread-budget.png",
@@ -21,6 +25,8 @@ REQUIRED_FILES = (
     "encoder-thread4-timeline.png",
     "encoder-thread8.jsonl",
     "encoder-thread8-timeline.png",
+    "decoder-size-comparison.csv",
+    "decoder-thread8-900x675.jsonl",
     "decoder-thread8.jsonl",
     "decoder-thread8-timeline.png",
     "animation-thread4.jsonl",
@@ -145,6 +151,58 @@ def validate_decoder(path: Path) -> None:
             raise ValueError("decoder paint spans are no longer serialized")
 
 
+def phase_wall_seconds(records: Sequence[Dict[str, object]],
+                       worker: str,
+                       role: str) -> float:
+    """Return the wall interval enclosing one paired timeline phase."""
+    intervals = paired_intervals(
+        records,
+        worker,
+        role,
+        "start",
+        "finish",
+    )
+    if not intervals:
+        raise ValueError(f"timeline omitted {worker}/{role} phase")
+    return max(end for _, end in intervals) - min(
+        start for start, _ in intervals
+    )
+
+
+def validate_decoder_sizes(path: Path, root: Path, revision: str) -> None:
+    """Validate size comparison rows against their retained timelines."""
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    if [row["fixture"] for row in rows] != [
+        item[0] for item in DECODER_SIZES
+    ]:
+        raise ValueError("decoder size comparison fixtures changed")
+    for row, (identifier, width, height, log_name) in zip(
+            rows, DECODER_SIZES):
+        records = load_jsonl(root / log_name)
+        decoder_seconds = phase_wall_seconds(records, "io", "decoder")
+        scan_seconds = phase_wall_seconds(records, "decoder", "scan")
+        paint_seconds = phase_wall_seconds(records, "decoder", "paint")
+        if row["revision"] != revision:
+            raise ValueError("decoder size CSV and metadata revisions differ")
+        if int(row["width"]) != width or int(row["height"]) != height:
+            raise ValueError(f"decoder dimensions changed for {identifier}")
+        if int(row["pixels"]) != width * height:
+            raise ValueError(f"decoder pixel count changed for {identifier}")
+        checks = (
+            ("decoder_wall_seconds", decoder_seconds),
+            ("scan_wall_seconds", scan_seconds),
+            ("paint_wall_seconds", paint_seconds),
+            ("scan_fraction_of_decoder", scan_seconds / decoder_seconds),
+            ("paint_fraction_of_decoder", paint_seconds / decoder_seconds),
+        )
+        for field, expected in checks:
+            if abs(float(row[field]) - expected) > 1e-12:
+                raise ValueError(
+                    f"decoder size CSV field {field} is stale for {identifier}"
+                )
+
+
 def validate_animation(path: Path) -> None:
     """Validate two finite, non-overlapping frame encode intervals."""
     records = load_jsonl(path)
@@ -192,13 +250,36 @@ def main() -> int:
             validate_png(path)
     with (root / "threading-run.json").open("r", encoding="utf-8") as handle:
         metadata = json.load(handle)
+    if int(metadata["schema_version"]) != 2:
+        raise ValueError("threading metadata schema is not version 2")
     revision = str(metadata["source"]["revision"])
     if metadata["source"]["tracked_worktree_state_at_start"] != "clean":
         raise ValueError("threading artifacts were not recorded from clean source")
+    decoder_input = metadata["inputs"]["decoder"]
+    raster_sizes = [
+        (item["id"], int(item["width"]), int(item["height"]))
+        for item in decoder_input["encoded_rasters"]
+    ]
+    expected_sizes = [item[:3] for item in DECODER_SIZES]
+    if raster_sizes != expected_sizes:
+        raise ValueError("decoder metadata does not cover the controlled sizes")
+    fixture_commands = metadata["protocol"]["decoder_fixture_commands"]
+    if len(fixture_commands) != len(DECODER_SIZES):
+        raise ValueError("decoder fixture command count changed")
+    for command, (_, width, height, _) in zip(
+            fixture_commands, DECODER_SIZES):
+        if f"-w {width} -h {height}" not in str(command):
+            raise ValueError("decoder fixture command dimensions changed")
     validate_budget(root / "thread-budget.csv", revision)
     for threads in (2, 4, 8):
         validate_encoder(root / f"encoder-thread{threads}.jsonl")
-    validate_decoder(root / "decoder-thread8.jsonl")
+    for _, _, _, log_name in DECODER_SIZES:
+        validate_decoder(root / log_name)
+    validate_decoder_sizes(
+        root / "decoder-size-comparison.csv",
+        root,
+        revision,
+    )
     validate_animation(root / "animation-thread4.jsonl")
     print("threading measurement artifacts are consistent")
     return 0

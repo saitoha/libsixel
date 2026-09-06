@@ -32,6 +32,10 @@ from plot_lookup_policy_speed import (
 
 
 DEFAULT_THREADS = tuple(range(1, 13))
+DECODER_SIZES = (
+    ("900x675", 900, 675),
+    ("1920x1080", 1920, 1080),
+)
 PLANNER_PATTERN = re.compile(
     r"band_height=(\d+) overlap=(\d+) threads: dither=(\d+) encode=(\d+)"
 )
@@ -67,14 +71,9 @@ def run_checked(command: Sequence[str], env: Dict[str, str]) \
     return proc
 
 
-def encoder_command(img2sixel: str,
-                    input_path: Path,
-                    threads: int,
-                    output_path: Path,
-                    log_path: Path) -> List[str]:
-    """Build the controlled static encoder command."""
+def encoder_policy_arguments(threads: int) -> List[str]:
+    """Return the controlled choices shared by static encoder fixtures."""
     return [
-        img2sixel,
         f"--threads={threads}",
         "--precision=8bit",
         "--quality=full",
@@ -89,9 +88,40 @@ def encoder_command(img2sixel: str,
         "--lookup-policy=6bit:shared_instance=1",
         "-p",
         "256",
+    ]
+
+
+def encoder_command(img2sixel: str,
+                    input_path: Path,
+                    threads: int,
+                    output_path: Path,
+                    log_path: Path) -> List[str]:
+    """Build the controlled static encoder command."""
+    return [
+        img2sixel,
+        *encoder_policy_arguments(threads),
         "-v",
         "-J",
         str(log_path),
+        "-o",
+        str(output_path),
+        str(input_path),
+    ]
+
+
+def decoder_fixture_command(img2sixel: str,
+                            input_path: Path,
+                            output_path: Path,
+                            width: int,
+                            height: int) -> List[str]:
+    """Build a deterministic near-display-sized decoder fixture."""
+    return [
+        img2sixel,
+        *encoder_policy_arguments(1),
+        "-w",
+        str(width),
+        "-h",
+        str(height),
         "-o",
         str(output_path),
         str(input_path),
@@ -168,6 +198,60 @@ def event_intervals(records: Iterable[Dict[str, object]],
         elif event == finish_event and starts.get(key):
             intervals.append((starts[key].pop(0), float(record["ts"])))
     return intervals
+
+
+def phase_wall_seconds(records: Sequence[Dict[str, object]],
+                       worker: str,
+                       role: str) -> float:
+    """Return the wall interval enclosing one paired timeline phase."""
+    intervals = event_intervals(
+        records,
+        "start",
+        "finish",
+        worker,
+        role,
+    )
+    if not intervals:
+        raise RuntimeError(f"timeline omitted {worker}/{role} phase")
+    return max(end for _, end in intervals) - min(
+        start for start, _ in intervals
+    )
+
+
+def decoder_measurement_row(identifier: str,
+                            width: int,
+                            height: int,
+                            revision: str,
+                            sixel_path: Path,
+                            log_path: Path,
+                            command: Sequence[str],
+                            replacements: Dict[str, str]) \
+        -> Dict[str, object]:
+    """Summarize one decoder timeline without treating it as a benchmark."""
+    records = load_records(log_path)
+    decoder_seconds = phase_wall_seconds(records, "io", "decoder")
+    scan_seconds = phase_wall_seconds(records, "decoder", "scan")
+    paint_seconds = phase_wall_seconds(records, "decoder", "paint")
+    return {
+        "revision": revision,
+        "fixture": identifier,
+        "width": width,
+        "height": height,
+        "pixels": width * height,
+        "sixel_bytes": sixel_path.stat().st_size,
+        "sixel_sha256": file_sha256(sixel_path),
+        "scan_wall_seconds": scan_seconds,
+        "paint_wall_seconds": paint_seconds,
+        "decoder_wall_seconds": decoder_seconds,
+        "png_wall_seconds": phase_wall_seconds(records, "png", "io"),
+        "total_wall_seconds": (
+            max(float(record["ts"]) for record in records)
+            - min(float(record["ts"]) for record in records)
+        ),
+        "scan_fraction_of_decoder": scan_seconds / decoder_seconds,
+        "paint_fraction_of_decoder": paint_seconds / decoder_seconds,
+        "command": command_template(command, replacements),
+    }
 
 
 def dither_intervals(records: Sequence[Dict[str, object]]) \
@@ -353,11 +437,10 @@ def measure_encoder(args: argparse.Namespace,
                     work_dir: Path,
                     env: Dict[str, str],
                     threads_values: Sequence[int]) \
-        -> Tuple[List[Dict[str, object]], Path, List[str]]:
+        -> Tuple[List[Dict[str, object]], List[str]]:
     """Run the static budget sweep and retain representative logs."""
     rows: List[Dict[str, object]] = []
     commands: List[str] = []
-    serial_sixel = work_dir / "encoder-thread1.six"
     retained = set(args.timeline_threads)
     for threads in threads_values:
         log_path = work_dir / f"encoder-thread{threads}.jsonl"
@@ -421,19 +504,80 @@ def measure_encoder(args: argparse.Namespace,
                 log_path,
                 args.output_dir / f"encoder-thread{threads}.jsonl",
             )
-    return rows, serial_sixel, commands
+    return rows, commands
 
 
 def measure_auxiliary_timelines(args: argparse.Namespace,
+                                input_path: Path,
                                 animation_input: Path,
-                                serial_sixel: Path,
                                 work_dir: Path,
-                                env: Dict[str, str]) -> Dict[str, str]:
+                                env: Dict[str, str]) \
+        -> Tuple[Dict[str, object], List[Dict[str, object]]]:
     """Record decoder and finite-animation representative timelines."""
-    decoder_log = args.output_dir / "decoder-thread8.jsonl"
-    decoder = decoder_command(args.sixel2png, serial_sixel, 8, decoder_log)
-    print("[decoder 8]", flush=True)
-    run_checked(decoder, env)
+    decoder_rows: List[Dict[str, object]] = []
+    fixture_commands: List[str] = []
+    decoder_commands: List[str] = []
+    for identifier, width, height in DECODER_SIZES:
+        decoder_sixel = work_dir / f"decoder-{identifier}.six"
+        fixture = decoder_fixture_command(
+            args.img2sixel,
+            input_path,
+            decoder_sixel,
+            width,
+            height,
+        )
+        print(f"[decoder fixture {identifier}]", flush=True)
+        run_checked(fixture, env)
+
+        if identifier == "1920x1080":
+            decoder_log = args.output_dir / "decoder-thread8.jsonl"
+        else:
+            decoder_log = (
+                args.output_dir / f"decoder-thread8-{identifier}.jsonl"
+            )
+        decoder = decoder_command(
+            args.sixel2png,
+            decoder_sixel,
+            8,
+            decoder_log,
+        )
+        print(f"[decoder {identifier}, 8 workers]", flush=True)
+        run_checked(decoder, env)
+
+        fixture_template = command_template(
+            fixture,
+            {
+                args.img2sixel: "{img2sixel}",
+                str(input_path): "{input}",
+                str(decoder_sixel): "{decoder_sixel}",
+            },
+        )
+        decoder_template = command_template(
+            decoder,
+            {
+                args.sixel2png: "{sixel2png}",
+                str(decoder_sixel): "{decoder_sixel}",
+                str(decoder_log): "{log}",
+                os.devnull: "{null}",
+            },
+        )
+        fixture_commands.append(fixture_template)
+        decoder_commands.append(decoder_template)
+        decoder_rows.append(decoder_measurement_row(
+            identifier,
+            width,
+            height,
+            args.revision,
+            decoder_sixel,
+            decoder_log,
+            decoder,
+            {
+                args.sixel2png: "{sixel2png}",
+                str(decoder_sixel): "{decoder_sixel}",
+                str(decoder_log): "{log}",
+                os.devnull: "{null}",
+            },
+        ))
 
     animation_log = args.output_dir / "animation-thread4.jsonl"
     animation_output = work_dir / "animation-thread4.six"
@@ -446,16 +590,9 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
     )
     print("[animation 4]", flush=True)
     run_checked(animation, env)
-    return {
-        "decoder": command_template(
-            decoder,
-            {
-                args.sixel2png: "{sixel2png}",
-                str(serial_sixel): "{serial_sixel}",
-                str(decoder_log): "{log}",
-                os.devnull: "{null}",
-            },
-        ),
+    return ({
+        "decoder_fixtures": fixture_commands,
+        "decoders": decoder_commands,
         "animation": command_template(
             animation,
             {
@@ -465,7 +602,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
                 str(animation_log): "{log}",
             },
         ),
-    }
+    }, decoder_rows)
 
 
 def write_metadata(args: argparse.Namespace,
@@ -473,10 +610,10 @@ def write_metadata(args: argparse.Namespace,
                    input_path: Path,
                    animation_input: Path,
                    encoder_commands: Sequence[str],
-                   auxiliary_commands: Dict[str, str]) -> None:
+                   auxiliary_commands: Dict[str, object]) -> None:
     """Write revision, host, inputs, tools, and protocol provenance."""
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_utc": datetime.datetime.now(
             datetime.timezone.utc
         ).isoformat(),
@@ -501,6 +638,19 @@ def write_metadata(args: argparse.Namespace,
                 "sha256": file_sha256(animation_input),
                 "contract": "finite two-frame GIF without a loop extension",
             },
+            "decoder": {
+                "path": display_path(input_path, source_root),
+                "sha256": file_sha256(input_path),
+                "encoded_rasters": [
+                    {
+                        "id": identifier,
+                        "width": width,
+                        "height": height,
+                    }
+                    for identifier, width, height in DECODER_SIZES
+                ],
+                "contract": "dedicated size-controlled decoder fixtures",
+            },
         },
         "programs": {
             "img2sixel": program_record(args.img2sixel, source_root),
@@ -514,7 +664,10 @@ def write_metadata(args: argparse.Namespace,
             "timeline_thread_counts": list(args.timeline_threads),
             "sixel_environment_removed": args.clean_sixel_environment,
             "encoder_commands": list(encoder_commands),
-            "decoder_command": auxiliary_commands["decoder"],
+            "decoder_fixture_commands": auxiliary_commands[
+                "decoder_fixtures"
+            ],
+            "decoder_commands": auxiliary_commands["decoders"],
             "animation_command": auxiliary_commands["animation"],
             "timeline_commands": [
                 "{python} tools/timeline.py --sort-order start "
@@ -572,7 +725,7 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory(prefix="libsixel-threading-") as temp:
         work_dir = Path(temp)
-        rows, serial_sixel, encoder_commands = measure_encoder(
+        rows, encoder_commands = measure_encoder(
             args,
             source_root,
             args.input,
@@ -580,15 +733,19 @@ def main() -> int:
             env,
             args.threads,
         )
-        auxiliary_commands = measure_auxiliary_timelines(
+        auxiliary_commands, decoder_rows = measure_auxiliary_timelines(
             args,
+            args.input,
             args.animation_input,
-            serial_sixel,
             work_dir,
             env,
         )
 
     write_csv(args.output_dir / "thread-budget.csv", rows)
+    write_csv(
+        args.output_dir / "decoder-size-comparison.csv",
+        decoder_rows,
+    )
     plot_budget(args.output_dir / "thread-budget.png", rows)
     write_metadata(
         args,

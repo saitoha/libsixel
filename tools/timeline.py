@@ -465,6 +465,8 @@ def render(
 
     role_palette = {
         "controller": 0.15,
+        "scan": 0.65,
+        "paint": 0.25,
         "decode": 0.35,
         "copy": 0.55,
         "writer": 0.7,
