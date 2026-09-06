@@ -166,9 +166,11 @@ Representative raw JSONL records and rendered charts are retained for:
 - [decoder, eight workers, 1920 by 1080](measurements/decoder-thread8.jsonl);
 - [animation, four workers](measurements/animation-thread4.jsonl).
 
-The encoder timeline loader spans cover the 900 by 675 source PNG, while the
-Full HD resize appears later as `worker/filter` activity. “Full HD encoder
-timeline” refers to the processed raster, not the loader input dimensions.
+The encoder timeline loader spans cover the 900 by 675 source PNG. Pre-resize
+linearization, linear-RGB resizing, conversion back to the `-Wgamma` working
+space, and the later `-Xoklab` palette-input conversion appear as separate
+filter and colorspace activity. “Full HD encoder timeline” refers to the
+processed raster, not the loader input dimensions or the loader span alone.
 
 [`measurements/encoder-thread-scaling.csv`](measurements/encoder-thread-scaling.csv)
 retains two warm-ups and nine timed Full HD `img2sixel` samples for every

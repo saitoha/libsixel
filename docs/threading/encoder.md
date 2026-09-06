@@ -107,14 +107,44 @@ two encode workers, and one writer in the operating-system thread timeline.
 ## Timeline interpretation
 
 The `loader:builtin` spans in these figures decode the 900 by 675 source PNG;
-they do not decode a Full HD PNG. The resize filter expands the decoded frame
-to 1920 by 1080 later on the `worker` row. In the retained two-, four-, and
-eight-worker runs, chunk creation took 0.541 to 1.015 ms, builtin pixel decode
-took 0.333 to 0.415 ms, and the subsequent resize took 25.373 to 26.164 ms.
-The 1,823,391-byte source is almost the size of its 1,822,500-byte unpacked RGB
-payload and was read from a warmed filesystem cache. Its unusually short
-decode interval is therefore real for this fixture, but is not representative
-of decoding a compressed Full HD PNG.
+they do not decode a Full HD PNG. The complete preprocessing sequence for the
+controlled `-Wgamma -Xoklab` command is:
+
+```text
+builtin PNG decode: 900x675 gamma RGB888
+              |
+              v
+colorspace/pre: gamma RGB888 -> linear RGB float32
+              |
+              v
+resize: 900x675 -> 1920x1080 in linear RGB float32
+              |
+              v
+colorspace/post: linear RGB float32 -> gamma RGB888 (-Wgamma)
+              |
+              v
+palette input: gamma RGB888 -> Oklab float32 (-Xoklab)
+              |
+              v
+K-means palette build
+```
+
+The first two conversions bracket the `scale` interval rather than belonging
+to it. In the retained eight-worker run, linearization took 3.888 ms, the
+linear-RGB resize took 26.164 ms, conversion back to gamma RGB took 6.412 ms,
+and the later Oklab conversion took 8.926 ms. Thus the scale bar alone omits
+19.226 ms of required color conversion before palette construction. The
+repeated bars on each `colorspace #N` row belong to these distinct conversion
+stages; the row identifies a reused operating-system thread, not one semantic
+colorspace operation.
+
+Across the retained two-, four-, and eight-worker runs, chunk creation took
+0.541 to 1.015 ms, builtin pixel decode took 0.333 to 0.415 ms, and the
+linear-RGB resize itself took 25.373 to 26.164 ms. The 1,823,391-byte source is
+almost the size of its 1,822,500-byte unpacked RGB payload and was read from a
+warmed filesystem cache. Its unusually short decode interval is therefore real
+for this fixture, but is not representative of decoding a compressed Full HD
+PNG.
 
 At two configured workers, palette application completes before the band
 workers begin useful encode work. The long `encode` interval is the frame-level
@@ -123,8 +153,8 @@ operation; the short worker intervals at its end are the six-row jobs.
 ![Two-worker encoder timeline](measurements/encoder-thread2-timeline.png)
 
 *Figure: Single `img2sixel --threads=2` diagnostic run. The builtin loader
-decodes the 900 by 675 PNG before a later filter resizes it to the Full HD
-processed raster.*
+decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
+back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
 At four workers, two dither work bands overlap two initial encode workers. The
 solid dither spans are work-band lifetimes; the thin encode marks are many
@@ -134,8 +164,8 @@ the configured worker budget.
 ![Four-worker encoder timeline](measurements/encoder-thread4-timeline.png)
 
 *Figure: Single `img2sixel --threads=4` diagnostic run. The builtin loader
-decodes the 900 by 675 PNG before a later filter resizes it to the Full HD
-processed raster.*
+decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
+back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
 At eight workers, six dither work bands overlap two initial encode workers.
 The pool then requests the complete encode capacity after dithering ends. The
@@ -145,8 +175,8 @@ previous 900 by 675 timeline.
 ![Eight-worker encoder timeline](measurements/encoder-thread8-timeline.png)
 
 *Figure: Single `img2sixel --threads=8` diagnostic run. The builtin loader
-decodes the 900 by 675 PNG before a later filter resizes it to the Full HD
-processed raster.*
+decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
+back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
 These charts use `tools/timeline.py --sort-order start`. Row numbering is local
 to the rendered worker group and must not be interpreted as a stable thread
