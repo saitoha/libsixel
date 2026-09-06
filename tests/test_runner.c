@@ -147,6 +147,8 @@ int
 test_encoder_core_0006_ormode_body_skip_empty_planes(int argc, char **argv);
 int test_sixel_writer_0001_sixel_writer_factory(int argc, char **argv);
 int test_frame_0001_frame_factory(int argc, char **argv);
+int test_frame_0002_float_request(int argc, char **argv);
+int test_plan_0001_resize_fallback(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
 int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
 int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
@@ -438,6 +440,9 @@ static test_entry_t const test_entries[] = {
     { "sixel-writer/0001_sixel_writer_factory",
       test_sixel_writer_0001_sixel_writer_factory },
     { "frame/0001_frame_factory", test_frame_0001_frame_factory },
+    { "frame/0002_frame_float_request", test_frame_0002_float_request },
+    { "planner/0001_resize_memory_fallback",
+      test_plan_0001_resize_fallback },
     { "chunk/0001_chunk_factory", test_chunk_0001_chunk_factory },
     { "timeline/0001_timeline_logger_factory",
       test_timeline_0001_timeline_logger_factory },

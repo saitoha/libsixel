@@ -27,8 +27,6 @@
 
 /* STDC_HEADERS */
 #include <stdlib.h>
-#include <stdint.h>
-
 #include <sixel.h>
 
 #include "filter-resize.h"
@@ -153,28 +151,6 @@ sixel_filter_resize_compute_target(const sixel_filter_resize_config_t *config,
     *dst_height_out = dst_height;
 }
 
-static int
-sixel_filter_resize_use_float(const sixel_filter_resize_config_t *config)
-{
-    int prefer_float;
-
-    prefer_float = 0;
-
-    if (config == NULL) {
-        return prefer_float;
-    }
-
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(config->planner_scale_pixelformat)) {
-        prefer_float = 1;
-    }
-
-    if (config->prefer_float32 != 0) {
-        prefer_float = 1;
-    }
-
-    return prefer_float;
-}
-
 static SIXELSTATUS
 sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
                           sixel_frame_t *frame,
@@ -186,10 +162,6 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
     int dst_width;
     int dst_height;
     int use_float_resize;
-    int float_depth;
-    size_t float_pixels;
-    size_t float_bytes;
-    size_t float_limit;
     int target_zero;
     int target_clamped_width;
     int target_clamped_height;
@@ -200,10 +172,6 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
     dst_width = 0;
     dst_height = 0;
     use_float_resize = 0;
-    float_depth = 0;
-    float_pixels = 0U;
-    float_bytes = 0U;
-    float_limit = SIXEL_ALLOCATE_BYTES_MAX / 2U;
     target_zero = 0;
     target_clamped_width = 0;
     target_clamped_height = 0;
@@ -285,39 +253,13 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
     }
 
     if (dst_width > 0 && dst_height > 0) {
-        use_float_resize = sixel_filter_resize_use_float(config);
-        if (use_float_resize != 0) {
-            float_depth = sixel_helper_compute_depth(
-                config != NULL ? config->planner_scale_pixelformat
-                                : sixel_frame_get_pixelformat(frame));
-            if (float_depth > 0
-                && (size_t)src_width <= SIZE_MAX / (size_t)src_height) {
-                float_pixels = (size_t)src_width * (size_t)src_height;
-                if (float_pixels <= SIZE_MAX / (size_t)float_depth) {
-                    float_bytes = float_pixels * (size_t)float_depth;
-                    if (float_limit == 0U
-                        || float_bytes > float_limit) {
-                        use_float_resize = 0;
-                        if (logger != NULL) {
-                            sixel_timeline_logger_logf(
-                                logger,
-                                "filter",
-                                "worker",
-                                "scale-fallback",
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                src_width,
-                                src_height,
-                                "float-bytes=%zu limit=%zu",
-                                float_bytes,
-                                float_limit);
-                        }
-                    }
-                }
-            }
-        }
+        /*
+         * Dispatch from the frame representation produced by the preceding
+         * filter.  Planner preferences describe intent, but cannot make a
+         * byte RGB buffer valid input to the float32 resize implementation.
+         */
+        use_float_resize = SIXEL_PIXELFORMAT_IS_FLOAT32(
+            sixel_frame_get_pixelformat(frame));
         if (use_float_resize != 0) {
             status = sixel_frame_resize_float32(
                 frame,

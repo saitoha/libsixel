@@ -168,6 +168,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/encoder-core/0006_encoder_core_ormode_body_skips_empty_planes.c \
 	processing/sixel-writer/0001_sixel_writer_factory.c \
 	processing/frame/0001_frame_factory.c \
+	processing/frame/0002_frame_float_request.c \
+	processing/planner/0001_resize_memory_fallback.c \
 	processing/chunk/0001_chunk_factory.c \
 	processing/timeline/0001_timeline_logger_factory.c \
 	processing/timeline/0002_timeline_parallel_encode_decode.c \
@@ -343,6 +345,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0006_encoder_core_ormode_body_skips_empty_planes.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/sixel-writer/test_runner-0001_sixel_writer_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0001_frame_factory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0002_frame_float_request.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/planner/test_runner-0001_resize_memory_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0001_timeline_logger_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0002_timeline_parallel_encode_decode.$(OBJEXT) \
@@ -653,10 +657,12 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po \
 	processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
+	processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po \
 	processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po \
+	processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Po \
 	processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po \
 	processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
@@ -1445,6 +1451,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_ENCODER_CORE_ORMODE_BODY_SKIPS_EMPTY_PLANES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SIXEL_WRITER_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_FACTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_FRAME_FLOAT_REQUEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_RESIZE_MEMORY_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
@@ -1625,6 +1633,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0006_encoder_core_ormode_body_skips_empty_planes.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/sixel-writer/0001_sixel_writer_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0001_frame_factory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0002_frame_float_request.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/planner/0001_resize_memory_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0001_timeline_logger_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0002_timeline_parallel_encode_decode.c \
@@ -2105,6 +2115,18 @@ processing/frame/$(DEPDIR)/$(am__dirstamp):
 processing/frame/test_runner-0001_frame_factory.$(OBJEXT):  \
 	processing/frame/$(am__dirstamp) \
 	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/frame/test_runner-0002_frame_float_request.$(OBJEXT):  \
+	processing/frame/$(am__dirstamp) \
+	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/planner/$(am__dirstamp):
+	@$(MKDIR_P) processing/planner
+	@: >>processing/planner/$(am__dirstamp)
+processing/planner/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/planner/$(DEPDIR)
+	@: >>processing/planner/$(DEPDIR)/$(am__dirstamp)
+processing/planner/test_runner-0001_resize_memory_fallback.$(OBJEXT):  \
+	processing/planner/$(am__dirstamp) \
+	processing/planner/$(DEPDIR)/$(am__dirstamp)
 processing/chunk/$(am__dirstamp):
 	@$(MKDIR_P) processing/chunk
 	@: >>processing/chunk/$(am__dirstamp)
@@ -2640,6 +2662,7 @@ mostlyclean-compile:
 	-rm -f processing/gpu-dequant/*.$(OBJEXT)
 	-rm -f processing/gpu-palette/*.$(OBJEXT)
 	-rm -f processing/lookup/*.$(OBJEXT)
+	-rm -f processing/planner/*.$(OBJEXT)
 	-rm -f processing/scale/*.$(OBJEXT)
 	-rm -f processing/sixel-writer/*.$(OBJEXT)
 	-rm -f processing/threadpool/*.$(OBJEXT)
@@ -2784,10 +2807,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
@@ -3677,6 +3702,34 @@ processing/frame/test_runner-0001_frame_factory.obj: processing/frame/0001_frame
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0001_frame_factory.c' object='processing/frame/test_runner-0001_frame_factory.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0001_frame_factory.obj `if test -f 'processing/frame/0001_frame_factory.c'; then $(CYGPATH_W) 'processing/frame/0001_frame_factory.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0001_frame_factory.c'; fi`
+
+processing/frame/test_runner-0002_frame_float_request.o: processing/frame/0002_frame_float_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0002_frame_float_request.o -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Tpo -c -o processing/frame/test_runner-0002_frame_float_request.o `test -f 'processing/frame/0002_frame_float_request.c' || echo '$(srcdir)/'`processing/frame/0002_frame_float_request.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Tpo processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0002_frame_float_request.c' object='processing/frame/test_runner-0002_frame_float_request.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0002_frame_float_request.o `test -f 'processing/frame/0002_frame_float_request.c' || echo '$(srcdir)/'`processing/frame/0002_frame_float_request.c
+
+processing/frame/test_runner-0002_frame_float_request.obj: processing/frame/0002_frame_float_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0002_frame_float_request.obj -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Tpo -c -o processing/frame/test_runner-0002_frame_float_request.obj `if test -f 'processing/frame/0002_frame_float_request.c'; then $(CYGPATH_W) 'processing/frame/0002_frame_float_request.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0002_frame_float_request.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Tpo processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0002_frame_float_request.c' object='processing/frame/test_runner-0002_frame_float_request.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0002_frame_float_request.obj `if test -f 'processing/frame/0002_frame_float_request.c'; then $(CYGPATH_W) 'processing/frame/0002_frame_float_request.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0002_frame_float_request.c'; fi`
+
+processing/planner/test_runner-0001_resize_memory_fallback.o: processing/planner/0001_resize_memory_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/planner/test_runner-0001_resize_memory_fallback.o -MD -MP -MF processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Tpo -c -o processing/planner/test_runner-0001_resize_memory_fallback.o `test -f 'processing/planner/0001_resize_memory_fallback.c' || echo '$(srcdir)/'`processing/planner/0001_resize_memory_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Tpo processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/planner/0001_resize_memory_fallback.c' object='processing/planner/test_runner-0001_resize_memory_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/planner/test_runner-0001_resize_memory_fallback.o `test -f 'processing/planner/0001_resize_memory_fallback.c' || echo '$(srcdir)/'`processing/planner/0001_resize_memory_fallback.c
+
+processing/planner/test_runner-0001_resize_memory_fallback.obj: processing/planner/0001_resize_memory_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/planner/test_runner-0001_resize_memory_fallback.obj -MD -MP -MF processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Tpo -c -o processing/planner/test_runner-0001_resize_memory_fallback.obj `if test -f 'processing/planner/0001_resize_memory_fallback.c'; then $(CYGPATH_W) 'processing/planner/0001_resize_memory_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/planner/0001_resize_memory_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Tpo processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/planner/0001_resize_memory_fallback.c' object='processing/planner/test_runner-0001_resize_memory_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/planner/test_runner-0001_resize_memory_fallback.obj `if test -f 'processing/planner/0001_resize_memory_fallback.c'; then $(CYGPATH_W) 'processing/planner/0001_resize_memory_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/planner/0001_resize_memory_fallback.c'; fi`
 
 processing/chunk/test_runner-0001_chunk_factory.o: processing/chunk/0001_chunk_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/chunk/test_runner-0001_chunk_factory.o -MD -MP -MF processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Tpo -c -o processing/chunk/test_runner-0001_chunk_factory.o `test -f 'processing/chunk/0001_chunk_factory.c' || echo '$(srcdir)/'`processing/chunk/0001_chunk_factory.c
@@ -5637,6 +5690,8 @@ distclean-generic:
 	-$(am__rm_f) processing/gpu-palette/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/$(am__dirstamp)
+	-$(am__rm_f) processing/planner/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/planner/$(am__dirstamp)
 	-$(am__rm_f) processing/scale/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/scale/$(am__dirstamp)
 	-$(am__rm_f) processing/sixel-writer/$(DEPDIR)/$(am__dirstamp)
@@ -5794,10 +5849,12 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po
+	-rm -f processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
@@ -6010,10 +6067,12 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po
+	-rm -f processing/planner/$(DEPDIR)/test_runner-0001_resize_memory_fallback.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po

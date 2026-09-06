@@ -4743,16 +4743,6 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
     context->resize_config.percent_height = context->encoder->percentheight;
     context->resize_config.method_for_resampling =
         context->encoder->method_for_resampling;
-    context->resize_config.prefer_float32 = context->encoder->prefer_float32;
-    if (context->planner != NULL) {
-        context->resize_config.planner_scale_pixelformat =
-            context->planner->scale_pixelformat;
-    } else {
-        context->resize_config.planner_scale_pixelformat =
-            sixel_encoder_pixelformat_for_colorspace(
-                context->encoder->working_colorspace,
-                context->encoder->prefer_float32);
-    }
 
     context->colors_config.target_pixelformat = context->target_pixelformat;
 
@@ -4795,14 +4785,17 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
                     context->current_pixelformat,
                     context->current_colorspace,
                     context->planner->scale_input_pixelformat,
-                    SIXEL_COLORSPACE_LINEAR,
+                    sixel_pixelformat_get_colorspace(
+                        context->planner->scale_input_pixelformat),
                     height);
                 if (SIXEL_FAILED(status)) {
                     return status;
                 }
                 context->current_pixelformat =
                     context->planner->scale_input_pixelformat;
-                context->current_colorspace = SIXEL_COLORSPACE_LINEAR;
+                context->current_colorspace =
+                    sixel_pixelformat_get_colorspace(
+                        context->planner->scale_input_pixelformat);
                 break;
             case SIXEL_PLANNER_NODE_SCALE:
                 status = sixel_encoder_filter_plan_append(

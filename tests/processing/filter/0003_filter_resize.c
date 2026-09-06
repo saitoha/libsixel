@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *
  * Unit tests for the resize filter. These cases verify dimension
- * calculations, float preference, and progress reporting.
+ * calculations, input representation dispatch, and progress reporting.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -53,8 +53,6 @@ test_resize_changes_dimensions(void)
     config.percent_width = 0;
     config.percent_height = 0;
     config.method_for_resampling = SIXEL_RES_NEAREST;
-    config.prefer_float32 = 0;
-    config.planner_scale_pixelformat = frame->pixelformat;
 
     status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_RESIZE,
                                                  &config,
@@ -98,7 +96,7 @@ cleanup:
 }
 
 static int
-test_resize_prefers_float_when_requested(void)
+test_resize_uses_float_for_float_input(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -131,8 +129,6 @@ test_resize_prefers_float_when_requested(void)
     config.percent_width = 0;
     config.percent_height = 0;
     config.method_for_resampling = SIXEL_RES_BICUBIC;
-    config.prefer_float32 = 1;
-    config.planner_scale_pixelformat = frame->pixelformat;
 
     status = sixel_filter_factory_create_by_name("resize",
                                                  &config,
@@ -195,9 +191,9 @@ test_filter_0003_filter_resize(int argc, char **argv)
         success = 0;
     }
 
-    if (!test_resize_prefers_float_when_requested()) {
+    if (!test_resize_uses_float_for_float_input()) {
         fprintf(stderr,
-                "resize filter keeps float frames when preferred failed\n");
+                "resize filter keeps float input in float32 failed\n");
         success = 0;
     }
 

@@ -825,7 +825,8 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
                         && (scale_limit == 0U || scale_bytes > scale_limit)) {
                     scale_input_pixelformat = SIXEL_PIXELFORMAT_RGB888;
                     scale_pixelformat = scale_input_pixelformat;
-                    colorspace_before_scale = 1;
+                    colorspace_before_scale =
+                        source_pixelformat != scale_input_pixelformat;
                     colorspace_after_scale = (target_pixelformat
                                               != scale_pixelformat);
                 }

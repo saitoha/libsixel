@@ -41,8 +41,6 @@ typedef struct sixel_filter_resize_config {
     int percent_width;
     int percent_height;
     int method_for_resampling;
-    int prefer_float32;
-    int planner_scale_pixelformat;
 } sixel_filter_resize_config_t;
 
 SIXELSTATUS

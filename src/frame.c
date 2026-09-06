@@ -1401,12 +1401,8 @@ sixel_frame_set_pixelformat(
     int target_colorspace;
     int working_pixelformat;
     int depth;
-    int float_depth;
     size_t pixel_total;
     size_t pixel_size;
-    size_t float_pixels;
-    size_t float_bytes;
-    size_t float_limit;
     unsigned char *pixels;
 
     if (frame == NULL) {
@@ -1425,11 +1421,6 @@ sixel_frame_set_pixelformat(
     status = SIXEL_OK;
     working_pixelformat = frame->pixelformat;
     source_colorspace = frame->colorspace;
-    float_depth = 0;
-    float_pixels = 0U;
-    float_bytes = 0U;
-    float_limit = SIXEL_ALLOCATE_BYTES_MAX / 2U;
-
     /*
      * Palette and byte-form buffers need to be normalized before any
      * colorspace adjustments so that channel ordering matches the
@@ -1445,31 +1436,14 @@ sixel_frame_set_pixelformat(
         }
         if (SIXEL_SUCCEEDED(status)
                 && !SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
-            float_depth = sixel_helper_compute_depth(pixelformat);
-            if (float_limit != 0U
-                    && float_depth > 0
-                    && frame->width > 0
-                    && frame->height > 0
-                    && (size_t)frame->width
-                           <= SIZE_MAX / (size_t)frame->height) {
-                float_pixels = (size_t)frame->width
-                    * (size_t)frame->height;
-                if (float_pixels <= SIZE_MAX / (size_t)float_depth) {
-                    float_bytes = float_pixels
-                        * (size_t)float_depth;
-                }
-            }
-            if (float_limit != 0U
-                    && (float_bytes == 0U || float_bytes > float_limit)) {
-                pixelformat = SIXEL_PIXELFORMAT_RGB888;
-            } else {
-                status = sixel_frame_promote_to_float32(frame);
-            }
-        }
-        if (pixelformat == SIXEL_PIXELFORMAT_RGB888
-                && SIXEL_SUCCEEDED(status)
-                && frame->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
-            status = sixel_frame_convert_to_rgb888(frame);
+            /*
+             * A setter must either install the requested representation or
+             * report why it cannot.  Silently retaining RGB888 made callers
+             * publish float32 colorspace metadata for byte RGB storage.
+             * The allocator still enforces SIXEL_ALLOCATE_BYTES_MAX, while
+             * the encoder planner owns any deliberate pre-resize fallback.
+             */
+            status = sixel_frame_promote_to_float32(frame);
         }
     } else if (pixelformat == SIXEL_PIXELFORMAT_RGB888
             && working_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
