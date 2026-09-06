@@ -175,6 +175,8 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/threading/measurements/encoder-thread8.jsonl \
 	docs/threading/measurements/encoder-thread-scaling.csv \
 	docs/threading/measurements/encoder-thread-scaling.png \
+	docs/threading/measurements/encoder-color-scaling.csv \
+	docs/threading/measurements/encoder-color-scaling.png \
 	docs/threading/measurements/thread-budget.csv \
 	docs/threading/measurements/thread-budget.png \
 	docs/threading/measurements/threading-run.json \

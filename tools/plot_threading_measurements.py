@@ -34,6 +34,8 @@ from plot_lookup_policy_speed import (
 
 DEFAULT_THREADS = tuple(range(1, 13))
 DEFAULT_ENCODER_SCALING_THREADS = tuple(range(1, 17))
+DEFAULT_ENCODER_COLOR_THREADS = (2, 4, 6, 8)
+DEFAULT_ENCODER_COLORS = (2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, 256)
 DEFAULT_ENCODER_WARMUPS = 2
 DEFAULT_ENCODER_REPEATS = 9
 DEFAULT_DECODER_SCALING_THREADS = tuple(range(1, 17))
@@ -80,7 +82,8 @@ def run_checked(command: Sequence[str], env: Dict[str, str]) \
     return proc
 
 
-def encoder_policy_arguments(threads: int) -> List[str]:
+def encoder_policy_arguments(threads: int,
+                             ncolors: int = 256) -> List[str]:
     """Return the controlled choices shared by static encoder fixtures."""
     return [
         f"--threads={threads}",
@@ -96,7 +99,7 @@ def encoder_policy_arguments(threads: int) -> List[str]:
         "--gpu-policy=off",
         "--lookup-policy=6bit:shared_instance=1",
         "-p",
-        "256",
+        str(ncolors),
     ]
 
 
@@ -106,11 +109,12 @@ def encoder_command(img2sixel: str,
                     output_path: Path,
                     log_path: Path,
                     width: int = 0,
-                    height: int = 0) -> List[str]:
+                    height: int = 0,
+                    ncolors: int = 256) -> List[str]:
     """Build the controlled static encoder command."""
     command = [
         img2sixel,
-        *encoder_policy_arguments(threads),
+        *encoder_policy_arguments(threads, ncolors),
     ]
     if width > 0 and height > 0:
         command.extend(["-w", str(width), "-h", str(height)])
@@ -1032,6 +1036,130 @@ def plot_encoder_scaling(path: Path,
     plt.close(figure)
 
 
+def plot_encoder_color_scaling(path: Path,
+                               rows: Sequence[Dict[str, object]],
+                               warmups: int,
+                               repeats: int) -> None:
+    """Plot Full HD img2sixel time by requested colors and worker budget."""
+    threads_values = sorted({int(row["threads"]) for row in rows})
+    colors_values = sorted({int(row["ncolors"]) for row in rows})
+    fields = (
+        ("encoder_wall_seconds", "complete encoder", "#4C72B0", "o"),
+        ("palette_wall_seconds", "palette build", "#DD8452", "s"),
+        (
+            "dither_encode_wall_seconds",
+            "dither/encode tail",
+            "#55A868",
+            "^",
+        ),
+    )
+    figure, axes = plt.subplots(
+        2,
+        2,
+        figsize=(12.0, 8.0),
+        sharex=True,
+        sharey=True,
+    )
+    flat_axes = list(axes.flat)
+    if len(threads_values) > len(flat_axes):
+        raise ValueError("encoder color plot supports at most four budgets")
+    for index, (axis, threads) in enumerate(
+            zip(flat_axes, threads_values)):
+        for field, label, color, marker in fields:
+            medians: List[float] = []
+            lows: List[float] = []
+            highs: List[float] = []
+            for ncolors in colors_values:
+                samples = [
+                    float(row[field]) * 1000.0
+                    for row in rows
+                    if int(row["threads"]) == threads
+                    and int(row["ncolors"]) == ncolors
+                    and row["phase"] == "timed"
+                ]
+                low, high = inclusive_quartiles(samples)
+                medians.append(statistics.median(samples))
+                lows.append(low)
+                highs.append(high)
+            axis.plot(
+                colors_values,
+                medians,
+                color=color,
+                marker=marker,
+                markersize=4.5,
+                linewidth=1.8,
+                label=f"{label} median",
+            )
+            axis.fill_between(
+                colors_values,
+                lows,
+                highs,
+                color=color,
+                alpha=0.14,
+                linewidth=0,
+            )
+        axis.axvline(
+            32,
+            color="#777777",
+            linestyle=":",
+            linewidth=1.0,
+        )
+        axis.set_title(f"--threads={threads} worker budget")
+        axis.set_xscale("log", base=2)
+        axis.set_xticks(colors_values)
+        axis.set_xticklabels(
+            [str(value) for value in colors_values],
+            rotation=45,
+            horizontalalignment="right",
+            fontsize=8,
+        )
+        axis.set_xlim(1.8, 280)
+        axis.set_ylim(bottom=0)
+        axis.grid(True, color="#D9D9D9", linewidth=0.7)
+        if index == 0:
+            axis.annotate(
+                "K <= 32: 6 overlap rows\nK > 32: 0 overlap rows",
+                xy=(32, axis.get_ylim()[1]),
+                xytext=(8, -8),
+                textcoords="offset points",
+                horizontalalignment="left",
+                verticalalignment="top",
+                fontsize=8,
+                color="#555555",
+            )
+    for axis in flat_axes[len(threads_values):]:
+        axis.set_visible(False)
+    handles, labels = flat_axes[0].get_legend_handles_labels()
+    figure.suptitle(
+        "Full HD img2sixel encoder time by requested palette size",
+        y=0.985,
+    )
+    figure.legend(
+        handles,
+        labels,
+        frameon=False,
+        ncol=3,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.955),
+    )
+    figure.supxlabel(
+        "Requested palette colors (-p K, log2 scale)", y=0.045
+    )
+    figure.supylabel("Wall interval (ms, lower is better)", x=0.025)
+    figure.text(
+        0.99,
+        0.012,
+        f"img2sixel; {repeats} timed runs after {warmups} warm-ups per "
+        "condition. Medians with IQR; workers are unpinned.",
+        horizontalalignment="right",
+        fontsize=8,
+        color="#555555",
+    )
+    figure.tight_layout(rect=(0.04, 0.065, 1.0, 0.91))
+    figure.savefig(path, dpi=160)
+    plt.close(figure)
+
+
 def measure_encoder(args: argparse.Namespace,
                     source_root: Path,
                     input_path: Path,
@@ -1169,6 +1297,102 @@ def measure_encoder_scaling(args: argparse.Namespace,
             })
         print(
             f"[encoder scaling run {run_index + 1}/{total_runs}]",
+            flush=True,
+        )
+    return rows, command_pattern
+
+
+def measure_encoder_color_scaling(args: argparse.Namespace,
+                                  input_path: Path,
+                                  work_dir: Path,
+                                  env: Dict[str, str]) \
+        -> Tuple[List[Dict[str, object]], str]:
+    """Measure Full HD img2sixel phases by colors and worker budget."""
+    rows: List[Dict[str, object]] = []
+    command_pattern = ""
+    conditions = tuple(
+        (ncolors, threads)
+        for ncolors in args.encoder_colors
+        for threads in args.encoder_color_threads
+    )
+    total_runs = args.encoder_warmups + args.encoder_repeats
+    for run_index in range(total_runs):
+        ordered_conditions = conditions
+        traversal = "ascending"
+        if run_index % 2:
+            ordered_conditions = tuple(reversed(ordered_conditions))
+            traversal = "descending"
+        for position, (ncolors, threads) in enumerate(
+                ordered_conditions, start=1):
+            log_path = work_dir / (
+                f"encoder-color{ncolors}-thread{threads}-"
+                f"run{run_index + 1}.jsonl"
+            )
+            output_path = work_dir / (
+                f"encoder-color{ncolors}-thread{threads}-"
+                f"run{run_index + 1}.six"
+            )
+            command = encoder_command(
+                str(args.img2sixel_payload),
+                input_path,
+                threads,
+                output_path,
+                log_path,
+                ENCODER_WIDTH,
+                ENCODER_HEIGHT,
+                ncolors,
+            )
+            replacements = {
+                str(args.img2sixel_payload): "{img2sixel}",
+                str(input_path): "{input}",
+                str(output_path): "{output}",
+                str(log_path): "{log}",
+            }
+            command_pattern = command_template(
+                command,
+                {
+                    **replacements,
+                    f"--threads={threads}": "--threads={threads}",
+                    str(ncolors): "{ncolors}",
+                },
+            )
+            proc = run_checked(command, env)
+            records = load_records(log_path)
+            observation = encoder_observation(
+                records,
+                proc.stderr.decode("utf-8", errors="replace"),
+                threads,
+            )
+            if run_index < args.encoder_warmups:
+                phase = "warmup"
+                sample = run_index + 1
+            else:
+                phase = "timed"
+                sample = run_index - args.encoder_warmups + 1
+            rows.append({
+                "revision": args.revision,
+                "fixture": "1920x1080",
+                "width": ENCODER_WIDTH,
+                "height": ENCODER_HEIGHT,
+                "pixels": ENCODER_WIDTH * ENCODER_HEIGHT,
+                "ncolors": ncolors,
+                "threads": threads,
+                "round": run_index + 1,
+                "phase": phase,
+                "sample": sample,
+                "traversal": traversal,
+                "schedule_position": position,
+                **observation,
+                "sixel_bytes": output_path.stat().st_size,
+                "sixel_sha256": file_sha256(output_path),
+                "total_wall_seconds": (
+                    max(float(record["ts"]) for record in records)
+                    - min(float(record["ts"]) for record in records)
+                ),
+                "command": command_template(command, replacements),
+            })
+        print(
+            f"[encoder color scaling run {run_index + 1}/{total_runs}]",
             flush=True,
         )
     return rows, command_pattern
@@ -1412,12 +1636,13 @@ def write_metadata(args: argparse.Namespace,
                    animation_input: Path,
                    encoder_commands: Sequence[str],
                    encoder_scaling_command: str,
+                   encoder_color_scaling_command: str,
                    encoder_load_probe: Dict[str, object],
                    auxiliary_commands: Dict[str, object],
                    snapshot: Dict[str, object]) -> None:
     """Write revision, host, inputs, tools, and protocol provenance."""
     payload = {
-        "schema_version": 5,
+        "schema_version": 6,
         "generated_at_utc": datetime.datetime.now(
             datetime.timezone.utc
         ).isoformat(),
@@ -1486,6 +1711,20 @@ def write_metadata(args: argparse.Namespace,
                     "alternating ascending and descending rounds"
                 ),
             },
+            "encoder_color_scaling": {
+                "thread_counts": list(args.encoder_color_threads),
+                "color_counts": list(args.encoder_colors),
+                "warmup_runs_per_condition": args.encoder_warmups,
+                "timed_runs_per_condition": args.encoder_repeats,
+                "command": encoder_color_scaling_command,
+                "summary": "median with inclusive interquartile range",
+                "condition_order": (
+                    "alternating ascending and descending rounds"
+                ),
+                "color_count_interpretation": (
+                    "requested palette size from img2sixel -p"
+                ),
+            },
             "decoder_fixture_commands": auxiliary_commands[
                 "decoder_fixtures"
             ],
@@ -1509,8 +1748,9 @@ def write_metadata(args: argparse.Namespace,
             ],
             "timing_interpretation": (
                 "Timelines and size points are single diagnostic runs. The "
-                "encoder and decoder scaling sweeps use repeated instrumented "
-                "samples without exclusive host or CPU affinity."
+                "encoder worker, encoder color-count, and decoder scaling "
+                "sweeps use repeated instrumented samples without exclusive "
+                "host or CPU affinity."
             ),
         },
     }
@@ -1535,6 +1775,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeline-threads", default="2,4,8")
     parser.add_argument("--encoder-scaling-threads", default=",".join(
         str(value) for value in DEFAULT_ENCODER_SCALING_THREADS
+    ))
+    parser.add_argument("--encoder-color-threads", default=",".join(
+        str(value) for value in DEFAULT_ENCODER_COLOR_THREADS
+    ))
+    parser.add_argument("--encoder-colors", default=",".join(
+        str(value) for value in DEFAULT_ENCODER_COLORS
     ))
     parser.add_argument(
         "--encoder-warmups", type=int, default=DEFAULT_ENCODER_WARMUPS
@@ -1577,11 +1823,15 @@ def main() -> int:
     args.encoder_scaling_threads = parse_threads(
         args.encoder_scaling_threads
     )
+    args.encoder_color_threads = parse_threads(args.encoder_color_threads)
+    args.encoder_colors = parse_threads(args.encoder_colors)
     args.decoder_scaling_threads = parse_threads(
         args.decoder_scaling_threads
     )
     if args.encoder_warmups < 0 or args.encoder_repeats < 2:
         raise ValueError("encoder scaling needs warmups >= 0 and repeats >= 2")
+    if any(value < 2 or value > 256 for value in args.encoder_colors):
+        raise ValueError("encoder color counts must be between 2 and 256")
     if args.decoder_warmups < 0 or args.decoder_repeats < 2:
         raise ValueError("decoder scaling needs warmups >= 0 and repeats >= 2")
     if not set(args.timeline_threads).issubset(args.threads):
@@ -1636,6 +1886,13 @@ def main() -> int:
                 env,
             )
         )
+        (encoder_color_scaling_rows,
+         encoder_color_scaling_command) = measure_encoder_color_scaling(
+            args,
+            args.input,
+            work_dir,
+            env,
+        )
         (auxiliary_commands,
          decoder_rows,
          decoder_scaling_rows) = measure_auxiliary_timelines(
@@ -1658,6 +1915,10 @@ def main() -> int:
         encoder_scaling_rows,
     )
     write_csv(
+        args.output_dir / "encoder-color-scaling.csv",
+        encoder_color_scaling_rows,
+    )
+    write_csv(
         args.output_dir / "decoder-size-comparison.csv",
         decoder_rows,
     )
@@ -1670,6 +1931,12 @@ def main() -> int:
         args.output_dir / "encoder-thread-scaling.png",
         encoder_scaling_rows,
         os.cpu_count() or 0,
+        args.encoder_warmups,
+        args.encoder_repeats,
+    )
+    plot_encoder_color_scaling(
+        args.output_dir / "encoder-color-scaling.png",
+        encoder_color_scaling_rows,
         args.encoder_warmups,
         args.encoder_repeats,
     )
@@ -1687,6 +1954,7 @@ def main() -> int:
         args.animation_input,
         encoder_commands,
         encoder_scaling_command,
+        encoder_color_scaling_command,
         encoder_load_probe,
         auxiliary_commands,
         snapshot,

@@ -13,6 +13,8 @@ from typing import Dict, Iterable, List, Sequence, Tuple
 
 THREADS = tuple(range(1, 13))
 ENCODER_SCALING_THREADS = tuple(range(1, 17))
+ENCODER_COLOR_THREADS = (2, 4, 6, 8)
+ENCODER_COLORS = (2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, 256)
 DECODER_SCALING_THREADS = tuple(range(1, 17))
 DECODER_SIZES = (
     ("900x675", 900, 675, "decoder-thread8-900x675.jsonl"),
@@ -55,6 +57,8 @@ REQUIRED_FILES = (
     "encoder-thread8-timeline.png",
     "encoder-thread-scaling.csv",
     "encoder-thread-scaling.png",
+    "encoder-color-scaling.csv",
+    "encoder-color-scaling.png",
     "decoder-size-comparison.csv",
     "decoder-thread-scaling.csv",
     "decoder-thread-scaling.png",
@@ -66,13 +70,16 @@ REQUIRED_FILES = (
 )
 
 
-def expected_encoder_command(threads: object) -> List[str]:
+def expected_encoder_command(threads: object,
+                             ncolors: object = 256) -> List[str]:
     """Return the canonical controlled img2sixel command tokens."""
-    return [
+    command = [
         "{img2sixel}",
         f"--threads={threads}",
         *ENCODER_COMMAND_SUFFIX,
     ]
+    command[command.index("-p") + 1] = str(ncolors)
+    return command
 
 
 def load_jsonl(path: Path) -> List[Dict[str, object]]:
@@ -490,6 +497,126 @@ def validate_encoder_scaling(path: Path,
             raise ValueError("encoder scaling dither pool was not observed")
 
 
+def validate_encoder_color_scaling(path: Path,
+                                   revision: str,
+                                   threads_values: Sequence[int],
+                                   colors_values: Sequence[int],
+                                   warmups: int,
+                                   repeats: int,
+                                   command_template: str) -> None:
+    """Validate the scheduled color-count by worker-budget experiment."""
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    conditions = [
+        (ncolors, threads)
+        for ncolors in colors_values
+        for threads in threads_values
+    ]
+    total_rounds = warmups + repeats
+    expected_rows = len(conditions) * total_rounds
+    if len(rows) != expected_rows:
+        raise ValueError("encoder color scaling has an unexpected row count")
+    if shlex.split(command_template) != expected_encoder_command(
+            "{threads}", "{ncolors}"):
+        raise ValueError("encoder color scaling protocol command is stale")
+    width = len(conditions)
+    for round_index in range(1, total_rounds + 1):
+        first = (round_index - 1) * width
+        scheduled = rows[first:first + width]
+        traversal = "ascending" if round_index % 2 else "descending"
+        expected_conditions = conditions.copy()
+        if traversal == "descending":
+            expected_conditions.reverse()
+        observed_conditions = [
+            (int(row["ncolors"]), int(row["threads"]))
+            for row in scheduled
+        ]
+        if observed_conditions != expected_conditions:
+            raise ValueError(
+                f"encoder color schedule changed at round={round_index}"
+            )
+        phase = "warmup" if round_index <= warmups else "timed"
+        sample = round_index if phase == "warmup" else round_index - warmups
+        for position, row in enumerate(scheduled, start=1):
+            if int(row["round"]) != round_index:
+                raise ValueError("encoder color scaling round is stale")
+            if row["phase"] != phase or int(row["sample"]) != sample:
+                raise ValueError("encoder color scaling sample phase is stale")
+            if row["traversal"] != traversal:
+                raise ValueError("encoder color scaling traversal is stale")
+            if int(row["schedule_position"]) != position:
+                raise ValueError("encoder color schedule position is stale")
+
+    for condition in conditions:
+        ncolors, threads = condition
+        condition_rows = [
+            row for row in rows
+            if int(row["ncolors"]) == ncolors
+            and int(row["threads"]) == threads
+        ]
+        if len({row["sixel_sha256"] for row in condition_rows}) != 1:
+            raise ValueError("encoder output changed within one condition")
+        if len({row["sixel_bytes"] for row in condition_rows}) != 1:
+            raise ValueError("encoder output size changed within one condition")
+    for row in rows:
+        threads = int(row["threads"])
+        ncolors = int(row["ncolors"])
+        dither = int(row["planned_dither_threads"])
+        encode = int(row["planned_encode_threads"])
+        if row["revision"] != revision:
+            raise ValueError("encoder color scaling revision is stale")
+        if (row["fixture"] != "1920x1080"
+                or int(row["width"]) != 1920
+                or int(row["height"]) != 1080
+                or int(row["pixels"]) != 1920 * 1080):
+            raise ValueError("encoder color scaling fixture is not Full HD")
+        if shlex.split(row["command"]) != expected_encoder_command(
+                threads, ncolors):
+            raise ValueError("encoder color scaling command is stale")
+        for field in (
+                "encoder_wall_seconds",
+                "palette_wall_seconds",
+                "dither_encode_wall_seconds",
+                "total_wall_seconds"):
+            if float(row[field]) <= 0.0:
+                raise ValueError("encoder color scaling has non-positive time")
+        if int(row["sixel_bytes"]) <= 0:
+            raise ValueError("encoder color scaling output is empty")
+        if int(row["encoder_abort_count"]) != 0:
+            raise ValueError("encoder color scaling contains an abort")
+        expected_overlap_rows = 6 if ncolors <= 32 else 0
+        if int(row["overlap_rows"]) != expected_overlap_rows:
+            raise ValueError("encoder color overlap policy is stale")
+        counts = tuple(int(row[name]) for name in (
+            "dither_start_count",
+            "dither_finish_count",
+            "encode_worker_start_count",
+            "encode_worker_finish_count",
+            "writer_start_count",
+            "writer_finish_count",
+        ))
+        if counts[0] != counts[1] or counts[2] != counts[3]:
+            raise ValueError("encoder color worker spans are unpaired")
+        if counts[4] != counts[5] or counts[2] != 180:
+            raise ValueError("encoder color writer or Full HD extent is stale")
+        if row["planner_mode"] != "pipeline" or dither + encode != threads:
+            raise ValueError("encoder color planner budget is stale")
+        observed_encode = int(row["observed_encode_pool_threads"])
+        if observed_encode < encode or observed_encode > threads:
+            raise ValueError("encoder color encode pool was not observed")
+        if int(row["observed_writer_threads"]) != 1:
+            raise ValueError("encoder color writer was not observed")
+        expected_overlap = "yes" if threads >= 3 else "no"
+        expected_grow = "yes" if threads >= 3 else "no"
+        if row["dither_encode_overlap"] != expected_overlap:
+            raise ValueError("encoder color overlap state is stale")
+        if row["tail_grow_requested"] != expected_grow:
+            raise ValueError("encoder color tail growth is stale")
+        if (threads >= 4
+                and int(row["observed_parallel_dither_threads"]) != dither):
+            raise ValueError("encoder color dither pool was not observed")
+
+
 def validate_animation(path: Path) -> None:
     """Validate two finite, non-overlapping frame encode intervals."""
     records = load_jsonl(path)
@@ -571,8 +698,8 @@ def main() -> int:
             validate_png(path)
     with (root / "threading-run.json").open("r", encoding="utf-8") as handle:
         metadata = json.load(handle)
-    if int(metadata["schema_version"]) != 5:
-        raise ValueError("threading metadata schema is not version 5")
+    if int(metadata["schema_version"]) != 6:
+        raise ValueError("threading metadata schema is not version 6")
     revision = str(metadata["source"]["revision"])
     if metadata["source"]["tracked_worktree_state_at_start"] != "clean":
         raise ValueError("threading artifacts were not recorded from clean source")
@@ -654,6 +781,36 @@ def main() -> int:
         encoder_warmups,
         encoder_repeats,
         encoder_scaling["command"],
+    )
+    color_scaling = metadata["protocol"]["encoder_color_scaling"]
+    color_threads = tuple(
+        int(value) for value in color_scaling["thread_counts"]
+    )
+    colors_values = tuple(
+        int(value) for value in color_scaling["color_counts"]
+    )
+    if color_threads != ENCODER_COLOR_THREADS:
+        raise ValueError("encoder color scaling worker budgets changed")
+    if colors_values != ENCODER_COLORS:
+        raise ValueError("encoder color scaling palette sizes changed")
+    color_warmups = int(color_scaling["warmup_runs_per_condition"])
+    color_repeats = int(color_scaling["timed_runs_per_condition"])
+    if color_warmups != 2 or color_repeats != 9:
+        raise ValueError("encoder color scaling repetition protocol changed")
+    if color_scaling["condition_order"] != (
+            "alternating ascending and descending rounds"):
+        raise ValueError("encoder color scaling schedule protocol changed")
+    if color_scaling["color_count_interpretation"] != (
+            "requested palette size from img2sixel -p"):
+        raise ValueError("encoder color count interpretation changed")
+    validate_encoder_color_scaling(
+        root / "encoder-color-scaling.csv",
+        revision,
+        color_threads,
+        colors_values,
+        color_warmups,
+        color_repeats,
+        color_scaling["command"],
     )
     for _, _, _, log_name in DECODER_SIZES:
         validate_decoder(root / log_name)
