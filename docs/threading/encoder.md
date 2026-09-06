@@ -106,14 +106,25 @@ two encode workers, and one writer in the operating-system thread timeline.
 
 ## Timeline interpretation
 
+The `loader:builtin` spans in these figures decode the 900 by 675 source PNG;
+they do not decode a Full HD PNG. The resize filter expands the decoded frame
+to 1920 by 1080 later on the `worker` row. In the retained two-, four-, and
+eight-worker runs, chunk creation took 0.541 to 1.015 ms, builtin pixel decode
+took 0.333 to 0.415 ms, and the subsequent resize took 25.373 to 26.164 ms.
+The 1,823,391-byte source is almost the size of its 1,822,500-byte unpacked RGB
+payload and was read from a warmed filesystem cache. Its unusually short
+decode interval is therefore real for this fixture, but is not representative
+of decoding a compressed Full HD PNG.
+
 At two configured workers, palette application completes before the band
 workers begin useful encode work. The long `encode` interval is the frame-level
 operation; the short worker intervals at its end are the six-row jobs.
 
 ![Two-worker encoder timeline](measurements/encoder-thread2-timeline.png)
 
-*Figure: Single Full HD diagnostic run measured through `img2sixel` with
-`--threads=2`.*
+*Figure: Single `img2sixel --threads=2` diagnostic run. The builtin loader
+decodes the 900 by 675 PNG before a later filter resizes it to the Full HD
+processed raster.*
 
 At four workers, two dither work bands overlap two initial encode workers. The
 solid dither spans are work-band lifetimes; the thin encode marks are many
@@ -122,8 +133,9 @@ the configured worker budget.
 
 ![Four-worker encoder timeline](measurements/encoder-thread4-timeline.png)
 
-*Figure: Single Full HD diagnostic run measured through `img2sixel` with
-`--threads=4`.*
+*Figure: Single `img2sixel --threads=4` diagnostic run. The builtin loader
+decodes the 900 by 675 PNG before a later filter resizes it to the Full HD
+processed raster.*
 
 At eight workers, six dither work bands overlap two initial encode workers.
 The pool then requests the complete encode capacity after dithering ends. The
@@ -132,8 +144,9 @@ previous 900 by 675 timeline.
 
 ![Eight-worker encoder timeline](measurements/encoder-thread8-timeline.png)
 
-*Figure: Single Full HD diagnostic run measured through `img2sixel` with
-`--threads=8`.*
+*Figure: Single `img2sixel --threads=8` diagnostic run. The builtin loader
+decodes the 900 by 675 PNG before a later filter resizes it to the Full HD
+processed raster.*
 
 These charts use `tools/timeline.py --sort-order start`. Row numbering is local
 to the rendered worker group and must not be interpreted as a stable thread
@@ -239,6 +252,27 @@ The raw
 432 timed observations and 96 warm-ups. It records the requested color count,
 worker budget, phase intervals, overlap decision, output size and hash, and
 alternating schedule position for every execution.
+
+### Quantizer-profile caveat
+
+This palette-size sweep is not a default-policy benchmark. It explicitly uses
+K-means with hard binning, a fixed seed, Ward merging, and Oklab clustering.
+The top-level automatic palette policies normally retain the Heckbert
+compatibility path. Merely deleting `--quantize-model=kmeans:seed=1` from this
+command would not restore that path, because an explicit hard-binning request
+causes automatic quantizer resolution to choose a weighted-point-capable
+K-means implementation.
+
+A focused check on the same Full HD processed fixture at 256 requested colors
+and `--threads=8` illustrates why the distinction matters. After two warm-ups,
+nine runs gave a 71.009 ms median palette-build interval for the measured
+K-means/hard profile. Explicit `heckbert:profile=compat` with compatible
+automatic binning gave 17.315 ms, about 4.10 times faster; the corresponding
+complete encoder medians were 232.411 and 179.358 ms. This is a profile
+comparison, not a one-variable quantizer comparison: Heckbert cannot consume
+the hard-binned weighted points used by the K-means condition. The spot check
+is evidence that the chart must not be extrapolated to default encoder
+latency, not a replacement for a repeated Heckbert palette-size sweep.
 
 ## Image-quality boundary
 

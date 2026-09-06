@@ -108,6 +108,13 @@ from six overlap rows at K <= 32 to zero rows at K > 32. Because K and overlap
 change together at that boundary, this experiment must not be cited as an
 isolated overlap-cost measurement.
 
+This controlled profile is intentionally distinct from the top-level automatic
+palette path, which normally retains Heckbert compatibility behavior. Its
+palette-build intervals include the cost of K-means, hard binning, Ward
+merging, and Oklab clustering. The focused Heckbert comparison documented in
+[Encoder threading](encoder.md#quantizer-profile-caveat) also changes binning
+to a compatible policy; do not interpret it as a quantizer-only benchmark.
+
 The decoder comparison encodes the same static source into dedicated 900 by
 675 and 1920 by 1080 streams with one encoder worker and the controlled policy
 above. Both are decoded with eight workers and GPU acceleration disabled. The
@@ -158,6 +165,10 @@ Representative raw JSONL records and rendered charts are retained for:
 - [decoder, eight workers, 900 by 675](measurements/decoder-thread8-900x675.jsonl);
 - [decoder, eight workers, 1920 by 1080](measurements/decoder-thread8.jsonl);
 - [animation, four workers](measurements/animation-thread4.jsonl).
+
+The encoder timeline loader spans cover the 900 by 675 source PNG, while the
+Full HD resize appears later as `worker/filter` activity. “Full HD encoder
+timeline” refers to the processed raster, not the loader input dimensions.
 
 [`measurements/encoder-thread-scaling.csv`](measurements/encoder-thread-scaling.csv)
 retains two warm-ups and nine timed Full HD `img2sixel` samples for every
