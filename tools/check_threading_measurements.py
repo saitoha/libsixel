@@ -347,6 +347,8 @@ def main() -> int:
         raise ValueError("decoder scaling does not cover threads 1 through 16")
     if int(scaling["warmup_runs_per_thread"]) != 2:
         raise ValueError("decoder scaling warmup protocol changed")
+    if "--threads={threads}" not in scaling["command"]:
+        raise ValueError("decoder scaling command template changed")
     repeats = int(scaling["timed_runs_per_thread"])
     if repeats != 9:
         raise ValueError("decoder scaling repeat protocol changed")

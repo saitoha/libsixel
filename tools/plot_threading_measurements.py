@@ -639,10 +639,10 @@ def measure_decoder_scaling(args: argparse.Namespace,
                             sixel_path: Path,
                             work_dir: Path,
                             env: Dict[str, str]) \
-        -> Tuple[List[Dict[str, object]], List[str]]:
+        -> Tuple[List[Dict[str, object]], str]:
     """Measure repeated Full HD decoder phases for each worker budget."""
     rows: List[Dict[str, object]] = []
-    commands: Dict[int, str] = {}
+    command_pattern = ""
     sixel_bytes = sixel_path.stat().st_size
     sixel_hash = file_sha256(sixel_path)
     total_runs = args.decoder_warmups + args.decoder_repeats
@@ -660,7 +660,7 @@ def measure_decoder_scaling(args: argparse.Namespace,
                 threads,
                 log_path,
             )
-            commands[threads] = command_template(
+            command_pattern = command_template(
                 command,
                 {
                     args.sixel2png: "{sixel2png}",
@@ -715,7 +715,7 @@ def measure_decoder_scaling(args: argparse.Namespace,
             flush=True,
         )
     rows.sort(key=lambda row: (int(row["threads"]), int(row["sample"])))
-    return rows, [commands[threads] for threads in args.decoder_scaling_threads]
+    return rows, command_pattern
 
 
 def measure_auxiliary_timelines(args: argparse.Namespace,
@@ -731,7 +731,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
     """Record decoder and finite-animation representative timelines."""
     decoder_rows: List[Dict[str, object]] = []
     decoder_scaling_rows: List[Dict[str, object]] = []
-    decoder_scaling_commands: List[str] = []
+    decoder_scaling_command = ""
     fixture_commands: List[str] = []
     decoder_commands: List[str] = []
     for identifier, width, height in DECODER_SIZES:
@@ -796,7 +796,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
             },
         ))
         if identifier == "1920x1080":
-            decoder_scaling_rows, decoder_scaling_commands = (
+            decoder_scaling_rows, decoder_scaling_command = (
                 measure_decoder_scaling(
                     args,
                     decoder_sixel,
@@ -819,7 +819,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
     return ({
         "decoder_fixtures": fixture_commands,
         "decoders": decoder_commands,
-        "decoder_scaling": decoder_scaling_commands,
+        "decoder_scaling": decoder_scaling_command,
         "animation": command_template(
             animation,
             {
@@ -900,7 +900,7 @@ def write_metadata(args: argparse.Namespace,
                 "thread_counts": list(args.decoder_scaling_threads),
                 "warmup_runs_per_thread": args.decoder_warmups,
                 "timed_runs_per_thread": args.decoder_repeats,
-                "commands": auxiliary_commands["decoder_scaling"],
+                "command": auxiliary_commands["decoder_scaling"],
                 "summary": "median with inclusive interquartile range",
             },
             "animation_command": auxiliary_commands["animation"],
