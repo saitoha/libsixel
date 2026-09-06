@@ -8,7 +8,7 @@
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-06T04:40:56.593292+00:00",
+  "generated_at_utc": "2026-09-06T04:45:55.280550+00:00",
   "host": {
     "logical_cpu_count": 14,
     "matplotlib": "3.11.1",
@@ -50,9 +50,9 @@
   "programs": {
     "checker": {
       "launcher": "tools/check_threading_measurements.py",
-      "launcher_sha256": "e4c666e94cd7968c3528abb2d1209dd1195db98da2b8a44c1e85557578fca448",
+      "launcher_sha256": "5b168462bc06218615c42c691886cfa4aefb8dc212785ae8f9df59c0c730fbf5",
       "payload": "tools/check_threading_measurements.py",
-      "payload_sha256": "e4c666e94cd7968c3528abb2d1209dd1195db98da2b8a44c1e85557578fca448"
+      "payload_sha256": "5b168462bc06218615c42c691886cfa4aefb8dc212785ae8f9df59c0c730fbf5"
     },
     "generator": {
       "launcher": "tools/plot_threading_measurements.py",
@@ -210,7 +210,7 @@
   },
   "schema_version": 5,
   "source": {
-    "revision": "208fb43af9f504501b3f1160cdb37cc803181756",
+    "revision": "e7d60633e63ae85763ae38c702442b89cf4bb130",
     "tracked_worktree_state_at_start": "clean"
   }
 }

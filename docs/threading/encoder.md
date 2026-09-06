@@ -161,16 +161,16 @@ These stage lines expose bottlenecks but are not an additive partition.
 runs follow two warm-ups at each configured worker budget. Lines show medians
 and shading shows inclusive IQR.*
 
-The one-worker encoder median was 860.392 ms. Two and three workers reached
+The one-worker encoder median was 857.199 ms. Two and three workers reached
 only 1.09 and 1.12 times speedup because palette construction remained serial
 and the dither/encode tail still used the serial or single-producer shape. Four
 workers were the first point with a multi-worker dither pool and reduced the
-median to 455.081 ms, a 1.89 times speedup. Eight workers reached 231.335 ms,
-or 3.72 times faster than one worker.
+median to 452.450 ms, a 1.89 times speedup. Eight workers reached 229.362 ms,
+or 3.74 times faster than one worker.
 
 Palette construction stayed close to 69 ms across all budgets. The complete
-encoder curve flattened from 188.766 ms at thirteen workers to 184.035 ms at
-sixteen; fourteen workers measured 186.535 ms, or 4.61 times faster than one
+encoder curve flattened from 187.511 ms at thirteen workers to 185.301 ms at
+sixteen; fourteen workers measured 187.148 ms, or 4.58 times faster than one
 worker. The small ordering changes in that plateau are within this
 non-isolated experiment and are not evidence that budgets beyond the host's
 logical CPU count improve throughput.
