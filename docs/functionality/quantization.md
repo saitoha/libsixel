@@ -551,25 +551,30 @@ constructed palettes. The input is the 600-by-450 RGB
 hash, source revision, executable hashes, compiler, build flags, host, and all
 other controls.
 
+Working precision is an independent control, not an incidental property of
+`-Q`. This sweep is the true `rgb888` baseline. The matched `rgb888`/`rgb-f32`
+cross-section at `K=64`, including every configuration below, is documented in
+[Encoder Working Precision](precision.md#quantize-models).
+
 ### Quality
 
 ![Quantize-model quality curves](quantize-models/measurements/quantize-model-quality.png)
 
 MS-SSIM reports spatially pooled similarity; mean Delta E00 reports average
 perceptual color error. Their rankings need not agree because neither is the
-objective of every quantizer. On this fixture, the Heckbert `quality` profile
-is the strongest measured quality configuration throughout the sweep. At
-`K=64`, it reaches MS-SSIM 0.982634 and mean Delta E00 2.6518, compared with
-0.949079 and 5.1518 for Heckbert `compat`.
+objective of every quantizer. On this fixture, sampled K-medoids is strongest
+at `K=8` and `K=16`; the Heckbert `quality` profile is strongest from `K=32`
+through `K=256`. At `K=64`, Heckbert `quality` reaches MS-SSIM 0.982641 and
+mean Delta E00 2.6519, compared with 0.949159 and 5.1516 for Heckbert
+`compat`.
 
-The recorded quality and size values for Heckbert `compat`, Heckbert `speed`,
-and the selected K-means configuration coincide at every measured `K`. This is
-an observation about these complete configurations on this input, not a claim
-that median cut and K-means are equivalent. The medoids variants likewise
-converge to nearly the same aggregate metrics while their running times differ
-substantially. K-center shows a different tradeoff: it is weaker at small `K`,
-but at `K=256` its three variants are close to the compatibility MS-SSIM and
-have lower mean Delta E00.
+Heckbert `compat` and `speed` still coincide in quality and size at every
+measured `K`, but true 8-bit K-means no longer coincides with them. At `K=64`,
+K-means reaches 0.979406 MS-SSIM and mean Delta E00 2.7298. The medoids
+variants converge to nearly the same aggregate metrics while their running
+times differ substantially. K-center shows a different tradeoff: it is weaker
+at small `K`, but at `K=256` its variants are close to the compatibility
+MS-SSIM and have lower mean Delta E00.
 
 ### Palette-build and end-to-end speed
 
@@ -584,16 +589,17 @@ command, including multiple engine attempts or fallbacks. Timeline logging
 adds some overhead, so the upper row describes instrumented palette work and
 must not be subtracted from the lower row as though both came from one run.
 
-At `K=64`, Heckbert `quality` spends 14.288 ms in the measured palette spans
-and 98.99 ms end to end, versus 6.199 ms and 89.07 ms for `compat`. K-center is
-the least expensive palette family in this fixture: its `fft` configuration
-uses 2.598 ms of palette spans and 85.29 ms end to end at the same `K`.
+At `K=64`, Heckbert `quality` spends 14.320 ms in the measured palette spans
+and 75.56 ms end to end, versus 5.736 ms and 66.99 ms for `compat`. K-center
+`fft` uses 5.987 ms of palette spans and 67.39 ms end to end at the same `K`;
+the complete 8-bit pipeline has substantially less common palette-application
+cost than the earlier float-promoted run.
 
 The medoids algorithms demonstrate why the two timing domains are useful. At
-`K=256`, CLARA (`sample`) uses 11.142 ms of palette spans, PAM 13.076 ms,
-BanditPAM 60.278 ms, and CLARANS (`random`) 102.689 ms, even though their
+`K=256`, CLARA (`sample`) uses 10.471 ms of palette spans, PAM 12.353 ms,
+BanditPAM 49.696 ms, and CLARANS (`random`) 94.954 ms, even though their
 quality measurements remain very close. Corresponding end-to-end medians are
-160.29, 162.86, 210.76, and 253.64 ms. The result reflects the current default
+122.39, 123.53, 161.19, and 205.66 ms. The result reflects the current default
 budgets on this fixture; it does not overturn their asymptotic or
 data-dependent cost models.
 
@@ -606,8 +612,8 @@ quality. It is a downstream consequence of palette selection, index layout,
 and SIXEL run structure rather than a quantizer objective. Better quality may
 therefore increase size. At `K=64`, Heckbert `quality` produces 144.5 KiB,
 compared with 119.3 KiB for `compat`. At `K=256`, medoids produces about
-208 KiB and K-center about 219 KiB, while `compat` produces 240.0 KiB and
-Heckbert `quality` 274.9 KiB.
+208 KiB and K-center about 219 KiB, while `compat` produces 239.8 KiB and
+Heckbert `quality` 274.6 KiB.
 
 ### Interpretation limits and reproduction
 

@@ -597,6 +597,13 @@ E00. Speed records repeated fresh-process end-to-end time and a separate
 instrumented top-level palette-build span. Size is the exact byte length of
 the same no-dither SIXEL stream assessed for quality.
 
+The requested 8-bit path is required to resolve to an effective `rgb888`
+working format. Sampling and binning can observe different point populations
+when the base path is float32, even though Linear RGB and Lab-family
+clustering coordinates themselves remain float32-only. The matched `K=64`
+cross-section is documented in
+[Encoder Working Precision](precision.md#sampling-and-binning).
+
 The runner measures five physical configurations. The full-frame/hard control
 is executed and stored once, then projected into both plot facets: as the
 full-frame sampling point and as the hard-binning point. Thus each facet stays
@@ -723,7 +730,7 @@ run is not evidence for changing `auto`.
 
 ### Multi-fixture measured result
 
-The first durable suite run was recorded from revision `60cf33515` on arm64
+The current durable suite run was recorded from revision `f2c138d8f` on arm64
 macOS with the amalgamated command-line tools. It contains 210 quality rows,
 210 size rows, and 6,048 raw timing rows after two warm-ups and ten recorded
 runs. The source tree was clean at the start, and the fixture, executable,
@@ -735,39 +742,41 @@ Adaptive-grid sampling changes quality in a content-dependent way, especially
 at small palettes. Its MS-SSIM difference from full-frame sampling ranges from
 -0.014705 to +0.057015 over the content suite, with both extrema occurring on
 the sparse-rare-color fixture below `K=64`. At `K >= 64`, that range narrows to
--0.006149 through +0.015178. The result supports resolving sampling from image
+-0.006158 through +0.015178. The result supports resolving sampling from image
 scale and requested palette construction rather than treating the faster path
 as an output-equivalent optimization.
 
 Binning has the same semantic warning. Relative to hard binning, none improves
-MS-SSIM by as much as 0.084973 at `K=8`, while soft loses 0.069334 at `K=64`,
-both on the sparse-rare-color fixture. Mean Delta E00 moves in the same
-direction for those cells by 2.089190 and -1.039323 respectively. The
+MS-SSIM by as much as 0.084976 at `K=8`, while soft loses 0.069335 at `K=64`,
+both on the sparse-rare-color fixture. None lowers mean Delta E00 by 2.089192
+in the first cell, while soft raises it by 1.039360 in the second. The
 broad-gamut and rare-color fixtures expose differences that the natural and
 flat-artwork fixtures largely hide.
 
 ![Palette-build and end-to-end speed across the content fixtures](palette-pipeline/suite-measurements/palette-pipeline-suite-speed-content.png)
 
-Adaptive-grid sampling is 1.44x to 22.14x faster in the palette-build span and
-1.08x to 1.66x faster end to end over the content facet. The scale facet shows
+Adaptive-grid sampling is 1.56x to 24.48x faster in the palette-build span and
+1.11x to 1.71x faster end to end over the content facet. The scale facet shows
 why this should remain conditional: on the 12,288-pixel gradient it provides
 no useful gain at `K=256`, while at 270,000 and 607,500 pixels its palette-build
-median stays near 11 ms and full-frame hard grows from 15.89 ms to 19.96 ms.
+median stays near 10.7--11.0 ms and full-frame hard grows from 16.78 ms to
+22.77 ms.
 
 ![Palette-build scaling on one continuous gradient](palette-pipeline/suite-measurements/palette-pipeline-suite-speed-scale.png)
 
-Hard is the fastest full-frame binning policy in all but one content cell. The
-exception is flat artwork at `K=8`, where exact is only 1.18x faster in the
-palette span and 1.02x end to end. The large `K=256` gradient makes the scaling
-difference concrete: hard takes 19.96 ms, soft 46.48 ms, exact 557.10 ms, and
-none 1,547.47 ms. These results define hard as the automatic binning baseline;
-the slower policies remain explicit quality choices rather than sensible
-general defaults.
+Hard is the fastest full-frame binning policy in 26 of 30 content cells. Exact
+wins on flat artwork and sparse rare colors at `K=8` and `K=16`; its largest
+advantage is the flat-artwork `K=8` cell, where it is 1.58x faster in the
+palette span and 1.07x end to end. The large `K=256` gradient makes the usual
+scaling difference concrete: hard takes 22.77 ms, soft 46.34 ms, exact
+521.00 ms, and none 1,339.26 ms. These results define hard as the automatic
+binning baseline; exact remains useful when repeated-color structure makes its
+deduplication cheaper.
 
 ![SIXEL-size differences across the content fixtures](palette-pipeline/suite-measurements/palette-pipeline-suite-size.png)
 
-Stream size has no global winner. Relative reductions range from -14.7% to
-+11.6% across the binning comparisons and change sign with content and `K`.
+Stream size has no global winner. Relative changes range from -11.6% to +23.8%
+across the binning comparisons and change sign with content and `K`.
 The resolver therefore must not infer a size advantage from palette-build
 speed alone.
 
@@ -782,48 +791,48 @@ it does not itself change the current defaults.
 
 ### Initial measured baseline
 
-The first durable run was recorded from revision `1259bb880` on arm64 macOS
+The current durable run was recorded from revision `f2c138d8f` on arm64 macOS
 with the amalgamated command-line tools. These plots are views of the checked-in
 CSV data, not separately entered summaries.
 
 ![Quality of the measured sampling and binning policies](palette-pipeline/measurements/palette-pipeline-quality.png)
 
 The sampling comparison is deliberately mixed at low `K`. At `K=8`,
-`adaptive-grid` raises MS-SSIM from 0.893526 to 0.911202 while mean Delta E00
-increases from 6.106531 to 6.352006. At `K=16`, it improves both metrics, but
+`adaptive-grid` raises MS-SSIM from 0.893544 to 0.911172 while mean Delta E00
+increases from 6.106351 to 6.351918. At `K=16`, it improves both metrics, but
 the two policies alternate by small amounts at larger palette sizes. A single
 quality scalar would therefore hide a real trade-off in the selected palette.
 
 With full-frame sampling, `none` has the highest MS-SSIM at five of the six
 palette sizes and the lowest mean Delta E00 from `K=16` through `K=256`.
 `exact` has the highest MS-SSIM at `K=32`, while `soft` has the lowest mean
-Delta E00 at `K=8`. The `K=256` mean Delta E00 values for `none` and `exact`
-are nearly identical, 1.803799 and 1.804042 respectively. `hard` generally
+Delta E00 at `K=8`. The `K=256` mean Delta E00 values for `exact` and `none`
+are nearly identical, 1.803524 and 1.805527 respectively. `hard` generally
 gives up some measured quality, but its performance result explains why it is
 an important automatic-policy candidate.
 
 ![Runtime of the measured sampling and binning policies](palette-pipeline/measurements/palette-pipeline-speed.png)
 
-`adaptive-grid` reduces the median palette-build span from 5.714 ms to
-0.379 ms at `K=8`, and from 16.062 ms to 4.565 ms at `K=256`. The corresponding
-end-to-end medians fall from 44.188 ms to 31.408 ms and from 146.056 ms to
-126.040 ms. Sampling is not the only end-to-end cost, so its large palette-span
+`adaptive-grid` reduces the median palette-build span from 6.364 ms to
+0.400 ms at `K=8`, and from 15.674 ms to 4.325 ms at `K=256`. The corresponding
+end-to-end medians fall from 46.515 ms to 31.782 ms and from 119.456 ms to
+100.229 ms. Sampling is not the only end-to-end cost, so its large palette-span
 speedup becomes a smaller, but still measurable, process-level speedup.
 
 For full-frame binning, `hard` is the fastest policy at every measured `K`.
-At `K=256`, median palette-build times are 16.062 ms for `hard`, 36.017 ms for
-`soft`, 323.204 ms for `exact`, and 1262.131 ms for `none`. End-to-end medians
-are 146.056 ms, 164.720 ms, 452.875 ms, and 1389.988 ms respectively. This is
+At `K=256`, median palette-build times are 15.674 ms for `hard`, 31.638 ms for
+`soft`, 269.394 ms for `exact`, and 1001.222 ms for `none`. End-to-end medians
+are 119.456 ms, 135.036 ms, 373.645 ms, and 1103.421 ms respectively. This is
 a mechanism measurement on one image, but the widening high-`K` separation is
 large enough that automatic resolution must account for palette-build cost.
 
 ![SIXEL size from the measured sampling and binning policies](palette-pipeline/measurements/palette-pipeline-size.png)
 
 The faster policies also change the stream rather than merely accelerating the
-same answer. `adaptive-grid` produces 49,790 bytes at `K=8`, versus 41,407 bytes
-for full-frame sampling, but the gap narrows to 260,131 versus 259,171 bytes at
+same answer. `adaptive-grid` produces 49,782 bytes at `K=8`, versus 41,410 bytes
+for full-frame sampling, but the gap narrows to 260,366 versus 259,426 bytes at
 `K=256`. In the binning comparison, `hard` gives the smallest stream through
-`K=128`; `soft` is smallest at `K=256`, at 249,905 bytes. These are no-dither
+`K=128`; `soft` is smallest at `K=256`, at 249,867 bytes. These are no-dither
 streams, so the size differences come from palette selection and application,
 not from an error-diffusion pattern.
 

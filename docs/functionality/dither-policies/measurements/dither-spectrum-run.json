@@ -1,21 +1,21 @@
 {
   "build": {
     "cc": "gcc",
-    "cflags": "-g -O2 -std=c99",
+    "cflags": "-O3 -std=c99",
     "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
-    "configure_arguments": "BASH=/bin/sh",
+    "configure_arguments": "--without-libcurl --with-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-04T02:01:23.278747+00:00",
+  "generated_at_utc": "2026-09-06T09:04:02.480061+00:00",
   "host": {
     "matplotlib": "3.11.1",
     "numpy": "2.5.2",
     "pillow": "12.3.0",
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
     "processor": "arm",
-    "python": "3.14.5"
+    "python": "3.13.13"
   },
   "input": {
     "crop_size": 256,
@@ -44,9 +44,9 @@
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "cb9bf006d732078772304e4264e04c3d7058f3b578b391268319b4b669740924",
+      "launcher_sha256": "81fac0dc19d0996f1ffd007d0459b85d60eec87e652eb60a6112207944a549b1",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "b083ca933054c7c5f66d5df7f92d69c91cac0552da321e237db635641180f0f8"
+      "payload_sha256": "91dc0de349557a87ef13b78131edbc668ac296c45e2cb77a564662b8ad75b0e0"
     }
   },
   "protocol": {
@@ -127,7 +127,7 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "e8c32d3693bf5bed3891b7b6dfb305a2a5319eda",
+    "revision": "f2c138d8f6aa0a90c89d019f85eaf9bb3efa5edb",
     "tracked_worktree_state_at_start": "clean"
   }
 }

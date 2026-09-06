@@ -1,14 +1,14 @@
 {
   "build": {
     "cc": "gcc",
-    "cflags": "-g -O2 -std=c99",
+    "cflags": "-O3 -std=c99",
     "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
-    "configure_arguments": "BASH=/bin/sh",
+    "configure_arguments": "--without-libcurl --with-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-03T08:39:31.546846+00:00",
+  "generated_at_utc": "2026-09-06T09:08:41.796508+00:00",
   "host": {
     "matplotlib": "3.11.1",
     "metal_device": {
@@ -25,7 +25,7 @@
     },
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
     "processor": "arm",
-    "python": "3.14.5"
+    "python": "3.13.13"
   },
   "input": {
     "path": "images/snake.png",
@@ -34,15 +34,15 @@
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
+      "launcher_sha256": "81fac0dc19d0996f1ffd007d0459b85d60eec87e652eb60a6112207944a549b1",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "9c7421cb5899522c935be0820d88d499f08c02ed02b2aff678fe9ecfaf08eb0d"
+      "payload_sha256": "91dc0de349557a87ef13b78131edbc668ac296c45e2cb77a564662b8ad75b0e0"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
+      "launcher_sha256": "627520e43037f0c928dfe10802e97d1d26ac32cac6befec76603db9f897a714c",
       "payload": "assessment/.libs/lsqa",
-      "payload_sha256": "b3304f82839caadb897fc672590e72851b04cf345bc0e484b1235c1c6909e9a2"
+      "payload_sha256": "fb02799c5a41364c6d2984af9e97c48bbb696e48d039daa8fc72c32b249bb087"
     }
   },
   "protocol": {
@@ -56,11 +56,13 @@
     ],
     "fresh_process_per_sample": true,
     "metal": {
+      "cover_policy": "off",
       "cpu_gpu_policies": [
         "off",
         "force"
       ],
       "force_success_required": true,
+      "merge_policy": "none",
       "output_equivalence": {
         "eytzinger": {
           "byte_identical": true,
@@ -79,30 +81,31 @@
         "none",
         "eytzinger"
       ],
-      "quantize_model": "heckbert:cover=off:merge=none",
+      "quantize_model": "heckbert",
       "threads": 1
     },
     "policy_order_rotated_each_round": true,
     "runs": 9,
     "shared_instance": {
+      "merge_policy": "ward",
       "output_equivalence": {
         "5bit": {
           "byte_identical": true,
           "colors": 256,
-          "output_size": 255814,
-          "sha256": "8bb839b82d113db26e35496f13874ac3cee7cc249b66f42ce9afa1f6f8828a50"
+          "output_size": 263701,
+          "sha256": "6f96683c40a440e088f5195681fa38fe5ea981a61554c5d5163c1c739d791539"
         },
         "6bit": {
           "byte_identical": true,
           "colors": 256,
-          "output_size": 255814,
-          "sha256": "8bb839b82d113db26e35496f13874ac3cee7cc249b66f42ce9afa1f6f8828a50"
+          "output_size": 263701,
+          "sha256": "6f96683c40a440e088f5195681fa38fe5ea981a61554c5d5163c1c739d791539"
         },
         "certlut": {
           "byte_identical": true,
           "colors": 256,
-          "output_size": 258299,
-          "sha256": "27f2855fd774c28fb71ba0b425a27ac12d648ca468eef26882418783f085390a"
+          "output_size": 263375,
+          "sha256": "faf0276195b1d250c77016c9dc54c10238f9eee3ac679f75249550c2b9212a5d"
         }
       },
       "policies": [
@@ -110,7 +113,7 @@
         "6bit",
         "certlut"
       ],
-      "quantize_model": "kmeans:merge=ward:seed=1",
+      "quantize_model": "kmeans:seed=1",
       "threads": 8,
       "values": [
         0,
@@ -122,7 +125,7 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "c33493faa3bd17859b1f1fefbb4d534462f9d831",
+    "revision": "f2c138d8f6aa0a90c89d019f85eaf9bb3efa5edb",
     "tracked_worktree_state_at_start": "clean"
   }
 }

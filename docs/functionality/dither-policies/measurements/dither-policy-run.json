@@ -1,19 +1,19 @@
 {
   "build": {
     "cc": "gcc",
-    "cflags": "-g -O2 -std=c99",
+    "cflags": "-O3 -std=c99",
     "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
-    "configure_arguments": "BASH=/bin/sh",
+    "configure_arguments": "--without-libcurl --with-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-03T11:41:13.051353+00:00",
+  "generated_at_utc": "2026-09-06T09:03:35.130289+00:00",
   "host": {
     "matplotlib": "3.11.1",
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
     "processor": "arm",
-    "python": "3.14.5"
+    "python": "3.13.13"
   },
   "input": {
     "path": "images/snake.png",
@@ -22,15 +22,15 @@
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "dc2141f9db6d1763084018b2a7e45409f4253c34d5131828b43338f1a8c1b3f0",
+      "launcher_sha256": "81fac0dc19d0996f1ffd007d0459b85d60eec87e652eb60a6112207944a549b1",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "ca70c22e3bf162f1f7f37cba276282baa59c77e3d3a67f0641df900f1e601897"
+      "payload_sha256": "91dc0de349557a87ef13b78131edbc668ac296c45e2cb77a564662b8ad75b0e0"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "bd7a8fb219f7b58a57dafb32b6063ad993a4230736067de4dd439d1eef5f3759",
+      "launcher_sha256": "627520e43037f0c928dfe10802e97d1d26ac32cac6befec76603db9f897a714c",
       "payload": "assessment/.libs/lsqa",
-      "payload_sha256": "571261254bd58431be0ee61d72ec78a00facb76fa7997db1a7cbcc53cb928b54"
+      "payload_sha256": "fb02799c5a41364c6d2984af9e97c48bbb696e48d039daa8fc72c32b249bb087"
     }
   },
   "protocol": {
@@ -50,6 +50,7 @@
     },
     "gpu_policy": "off",
     "lookup_policy": "none",
+    "merge_policy": "ward",
     "method_order_rotated_each_round": true,
     "methods": [
       {
@@ -106,7 +107,7 @@
       }
     ],
     "precision": "8bit",
-    "quantize_model": "kmeans:merge=ward:seed=1",
+    "quantize_model": "kmeans:seed=1",
     "scan": "raster",
     "sixel_environment_removed": true,
     "size_measurement": "quality-pass SIXEL stdout byte length",
@@ -117,7 +118,7 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "4e1e9283d0a8cfc2d27b8698658ef882de0b1dbf",
+    "revision": "f2c138d8f6aa0a90c89d019f85eaf9bb3efa5edb",
     "tracked_worktree_state_at_start": "clean"
   }
 }

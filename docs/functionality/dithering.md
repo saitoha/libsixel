@@ -147,10 +147,10 @@ The method originates in Robert W. Floyd and Louis Steinberg's 1976 paper,
 arithmetic and state, but causality makes output depend on scan direction and
 on the incoming error at a parallel-band boundary.
 
-On the checked-in fixture, `fs` lowers MS-SSIM relative to `none` at `K=8`,
-slightly exceeds it at `K=256`, and produces streams 2.404x and 1.274x as
-large at those endpoints. It is therefore a conventional general-purpose
-choice, not a guarantee of better quality or smaller output for every image.
+On the checked-in true 8-bit fixture, `fs` raises MS-SSIM relative to `none`
+at every measured `K`, and produces streams 2.493x and 1.259x as large at
+`K=8` and `K=256`. It is therefore a conventional general-purpose choice, not
+a guarantee of better quality or smaller output for every image or precision.
 
 ## `atkinson`: partial-residual diffusion
 
@@ -175,8 +175,8 @@ scan-order dependent, while reaching one row farther than Floyd--Steinberg.
 `auto` selects it when `K <= 16`.
 
 In the controlled sweep, Atkinson improves MS-SSIM over `none` at every
-measured palette size. At `K=8` it reaches 0.929257 versus 0.913150 for
-`none`, while increasing size to 1.769x and latency to 1.16x. This is a useful
+measured palette size. At `K=8` it reaches 0.932078 versus 0.913809 for
+`none`, while increasing size to 1.681x and latency to 1.03x. This is a useful
 example of why visual quality, encoded size, and CPU time must be evaluated as
 separate objectives.
 
@@ -203,8 +203,8 @@ dependency footprint increases overlap requirements when work is divided
 into bands and gives more opportunities for rounding and clipping to affect
 later pixels.
 
-On the measured fixture, `jajuni` is slower than the other fixed policies at
-`K=8` (1.37x the `none` end-to-end time), produces a 2.141x stream, and has
+On the measured fixture, `jajuni` is among the slower fixed policies at `K=8`
+(1.11x the `none` end-to-end time), produces a 2.277x stream, and has
 lower MS-SSIM than `none`. These are fixture-specific results, but they rule
 out the assumption that a wider unit-sum kernel is automatically superior.
 
@@ -236,7 +236,7 @@ generic Stucki diagram, as the definition of `-d stucki`.
 Stucki has 12 fixed taps and a two-row forward reach, so its asymptotic work
 is `Theta(P)` but its constant and band-boundary dependency are relatively
 large. It improves MS-SSIM at every measured `K`; at `K=8` that comes with a
-1.908x stream and 1.36x latency.
+2.060x stream and 1.11x latency.
 
 ## `burkes`: two-scanline wide diffusion
 
@@ -259,10 +259,10 @@ matrix above and
 [`dither-policy-burkes.c`](../../src/dither-policy-burkes.c) define the
 libsixel behavior.
 
-On the fixture, Burkes is faster than the other wide fixed kernels but does
-not improve MS-SSIM over `none` at either endpoint. At `K=8` it takes 1.21x
-the baseline time and emits 2.280x as many bytes. Its shorter stencil is a
-computational tradeoff, not evidence of a universally smaller SIXEL stream.
+On the true 8-bit fixture, Burkes improves MS-SSIM over `none` at every
+measured `K`. At `K=8` it takes 1.10x the baseline time and emits 2.288x as
+many bytes. Its shorter stencil is a computational tradeoff, not evidence of
+a universally smaller SIXEL stream.
 
 ## `sierra`: three selectable kernels
 
@@ -285,9 +285,9 @@ Variant 1 is the three-tap Sierra Lite, also known as Sierra-2-4A:
 
 It propagates the full residual using the smallest fixed stencil in this
 document. That explains its low arithmetic cost, but not its output quality
-or compressibility: at `K=8` it is only 1.09x slower than `none`, yet has the
+or compressibility: at `K=8` it is only 1.02x slower than `none`, yet has the
 lowest MS-SSIM of the three Sierra variants and the largest measured stream,
-2.451x the baseline.
+2.563x the baseline.
 
 Variant 2 currently uses this ten-tap libsixel matrix:
 
@@ -315,9 +315,10 @@ Variant 3 uses the original full Sierra-shaped matrix:
 
 Its ten coefficients sum to `32/32`. It has the same footprint as libsixel's
 variant 2 but conserves the complete interior residual. On the fixture its
-MS-SSIM is below `none` at both endpoints and its `K=8` stream is 2.163x the
-baseline. The contrast with variant 2 is another reason to evaluate the exact
-coefficient set rather than choosing by family name alone.
+MS-SSIM is below `none` at `K=8` but above it at `K=256`, and its `K=8`
+stream is 2.305x the baseline. The contrast with variant 2 is another reason
+to evaluate the exact coefficient set rather than choosing by family name
+alone.
 
 ## `lso2`: error-magnitude-dependent diffusion
 
@@ -361,8 +362,8 @@ either published algorithm. It defaults to serpentine scan, unlike the other
 spatial policies.
 
 `lso2` has the highest MS-SSIM at both endpoints of the current sweep. That
-quality comes with a size and CPU cost: 1.848x the `none` bytes and 1.24x the
-latency at `K=8`, then 1.266x and 1.08x at `K=256`.
+quality comes with a size and CPU cost: 1.994x the `none` bytes and 1.13x the
+latency at `K=8`, then 1.321x and 1.07x at `K=256`.
 
 ## `a_dither`: addition-based positional dither
 
@@ -394,8 +395,8 @@ instead of reading a Bayer matrix.
 
 The policy is `Theta(P)`, positionally reproducible, and nearly baseline in
 CPU time. It is not necessarily cheap to transmit: in the current sweep it
-emits 1.212x the `none` size at `K=8` and the largest `K=256` stream, 1.493x,
-despite taking only 1.01x and 1.02x the baseline time.
+emits 1.174x the `none` size at `K=8` and the largest `K=256` stream, 1.360x,
+despite taking only 1.03x the baseline time at both endpoints.
 
 ## `x_dither`: xor-based positional dither
 
@@ -420,7 +421,7 @@ it. The formula shares the origin and design motivation documented on the
 
 This is also `Theta(P)` with constant state. It improves MS-SSIM over `none`
 at every measured `K` and is effectively baseline speed in the endpoint
-measurements. Its encoded-size overhead grows from 1.110x at `K=8` to 1.308x
+measurements. Its encoded-size overhead grows from 1.079x at `K=8` to 1.202x
 at `K=256`, so spatial stability does not imply stable SIXEL compression.
 
 ## `bluenoise`: tiled blue-noise perturbation
@@ -465,9 +466,9 @@ as recorded in [`bluenoise_64x64.h`](../../src/bluenoise_64x64.h). Static
 policy described below.
 
 In the current static sweep, `bluenoise` improves MS-SSIM over `none` at every
-measured `K`, stays within three percent of baseline time, and has the smallest
-size overhead of every measured dither: 1.051x at `K=8` and 1.103x at
-`K=256`.
+measured `K`, takes 1.03x and 1.05x the baseline time at the endpoints, and
+has the smallest size overhead through `K=64`: 1.032x at `K=8`. At `K=256`
+its size is 1.045x the no-dither stream, while Atkinson is smaller at 1.013x.
 
 ## `interframe`: residual feedback across frames
 
@@ -716,25 +717,26 @@ both have similar radial averages or anisotropy.
 
 ### Results of the controlled flat-field run
 
-The results at revision `e8c32d369` establish several distinct properties:
+The true 8-bit results at revision `f2c138d8f` establish several distinct
+properties:
 
-- The fixed and adaptive diffusion methods put only 0.013 to 0.400 percent of
-  their AC energy below 0.25 Nyquist. The three positional methods put 1.469
-  to 4.656 percent there. This does not make every diffusion result
-  perceptually superior; it only shows stronger low-frequency suppression on
-  these fixed-palette flat fields.
-- `bluenoise` has the lowest aggregate anisotropy, -18.1 dB. Its low spectral
+- Low-frequency suppression is not separated cleanly by policy family.
+  Burkes and Sierra-1 put only 0.053 and 0.056 percent of their AC energy
+  below 0.25 Nyquist, while Atkinson and `lso2` put 4.355 and 3.125 percent
+  there. The three positional methods range from 1.370 through 4.637 percent.
+  Kernel family alone therefore does not predict the measured spectrum.
+- `bluenoise` has the lowest aggregate anisotropy, -20.5 dB. Its low spectral
   flatness, 0.002, and visible frequency comb also expose the embedded
   64-by-64 tile. Isotropy does not imply aperiodicity.
-- `a_dither` has the largest angular variance, 5.8 dB, and near-zero spectral
+- `a_dither` has substantial angular variance, 5.8 dB, and near-zero spectral
   flatness because its arithmetic threshold rule produces a sparse oriented
-  lattice. `x_dither` is more angularly balanced at -7.8 dB and has the
-  largest measured flatness, 0.364, although its two-dimensional spectrum
+  lattice. `x_dither` is more angularly balanced at -9.7 dB and has high
+  measured flatness, 0.398, although its two-dimensional spectrum
   still exposes deterministic structure.
-- Jarvis--Judice--Ninke, Stucki, Burkes, Sierra-2, and Sierra-3 measure between
-  -0.8 and -5.7 dB aggregate anisotropy under raster scan. Their broader
-  kernels are more angularly balanced here than Floyd--Steinberg, Atkinson,
-  Sierra-1, and `lso2`, whose values range from 0.4 to 2.2 dB.
+- Raster-scan diffusion spans from -6.8 dB for Atkinson through 7.4 dB for
+  Burkes. Broad kernels are not uniformly more isotropic: Sierra-3 measures
+  -0.2 dB, while Jarvis--Judice--Ninke measures 4.9 dB. Precision, rounding,
+  coefficients, and scan order all contribute to the realized pattern.
 - `none` maps each constant input to one constant palette entry. Subtracting
   the mean removes all of its error energy, so its AC spectrum and isotropy
   are undefined rather than zero. It has the smallest RMS luma error in this
@@ -859,61 +861,61 @@ retains more digits; rounding here is for readability.
 
 | Method | MS-SSIM, `K=8` | Mean Delta E00, `K=8` | MS-SSIM, `K=256` | Mean Delta E00, `K=256` |
 | --- | ---: | ---: | ---: | ---: |
-| `none` | 0.913150 | 5.6738 | 0.991971 | 1.8678 |
-| `fs` | 0.897204 | 7.1647 | 0.992164 | 2.2585 |
-| `atkinson` | 0.929257 | 5.8992 | 0.993364 | 1.9438 |
-| `jajuni` | 0.872093 | 6.9085 | 0.991119 | 2.1324 |
-| `stucki` | 0.925509 | 5.9963 | 0.993065 | 1.9799 |
-| `burkes` | 0.888138 | 7.0569 | 0.991947 | 2.1804 |
-| `sierra1` | 0.892550 | 7.1820 | 0.991948 | 2.2728 |
-| `sierra2` | 0.926554 | 5.8479 | 0.993128 | 1.9200 |
-| `sierra3` | 0.873537 | 6.9359 | 0.991229 | 2.1432 |
-| `lso2` | 0.930382 | 5.9884 | 0.993466 | 2.0788 |
-| `a_dither` | 0.922113 | 5.7055 | 0.992143 | 2.2287 |
-| `x_dither` | 0.917181 | 5.6844 | 0.992511 | 2.0367 |
-| `bluenoise` | 0.915700 | 5.6777 | 0.992900 | 1.8844 |
+| `none` | 0.913809 | 5.7147 | 0.989294 | 1.9048 |
+| `fs` | 0.916997 | 7.1031 | 0.992358 | 2.1621 |
+| `atkinson` | 0.932078 | 5.9910 | 0.989313 | 1.9201 |
+| `jajuni` | 0.881341 | 7.0512 | 0.990272 | 2.1140 |
+| `stucki` | 0.930779 | 6.2858 | 0.991722 | 1.9975 |
+| `burkes` | 0.917406 | 6.8457 | 0.991449 | 2.1335 |
+| `sierra1` | 0.906065 | 7.2963 | 0.992230 | 2.2692 |
+| `sierra2` | 0.927969 | 6.0785 | 0.989960 | 1.9492 |
+| `sierra3` | 0.882446 | 7.0870 | 0.990129 | 2.1531 |
+| `lso2` | 0.936901 | 6.2211 | 0.992889 | 2.2148 |
+| `a_dither` | 0.922389 | 5.7429 | 0.991945 | 2.1713 |
+| `x_dither` | 0.917538 | 5.7221 | 0.991342 | 2.0103 |
+| `bluenoise` | 0.914826 | 5.7162 | 0.990088 | 1.9112 |
 
-At `K=8`, `lso2`, Atkinson, Sierra-2, and Stucki improve MS-SSIM over
-`none` by 0.017232, 0.016107, 0.013404, and 0.012359 respectively. All three
-positional methods also improve it, though by smaller amounts. Floyd--
-Steinberg, Jarvis--Judice--Ninke, Burkes, Sierra-1, and Sierra-3 instead reduce
-MS-SSIM on this fixture at that palette size. The separation narrows as `K`
-grows, but Atkinson, Stucki, Sierra-2, `lso2`, and all three positional methods
-remain above `none` at every measured `K`. This consistency is a reason to
-test them on a broader fixture set, not enough evidence to change the default.
+At `K=8`, `lso2`, Atkinson, Stucki, and Sierra-2 improve MS-SSIM over
+`none` by 0.023092, 0.018269, 0.016970, and 0.014160 respectively. Floyd--
+Steinberg, Burkes, and all three positional methods also improve it, while
+Jarvis--Judice--Ninke and Sierra variants 1 and 3 reduce it. At `K=256`, every
+measured dither is above `none`, although Atkinson's margin is only 0.000019.
+This is a reason to test a broader fixture set, not enough evidence to change
+the default.
 
 Mean Delta E00 is higher than `none` for every dither in both endpoint rows.
 That result is expected rather than contradictory: direct lookup selects the
 nearest palette entry in its own lookup metric, while dithering may accept more
 local color error to make its spatial arrangement less objectionable. The
-blue-noise result at `K=256`, for example, moves mean Delta E00 from 1.8678 to
-1.8844 while moving MS-SSIM from 0.991971 to 0.992900.
+blue-noise result at `K=256`, for example, moves mean Delta E00 from 1.9048 to
+1.9112 while moving MS-SSIM from 0.989294 to 0.990088.
 
 | Method | Size, `K=8` | Relative to `none` | Size, `K=256` | Relative to `none` |
 | --- | ---: | ---: | ---: | ---: |
-| `none` | 46.9 KiB | 1.000x | 266.8 KiB | 1.000x |
-| `fs` | 112.7 KiB | 2.404x | 340.0 KiB | 1.274x |
-| `atkinson` | 82.9 KiB | 1.769x | 310.1 KiB | 1.162x |
-| `jajuni` | 100.4 KiB | 2.141x | 307.2 KiB | 1.151x |
-| `stucki` | 89.5 KiB | 1.908x | 311.7 KiB | 1.168x |
-| `burkes` | 106.9 KiB | 2.280x | 322.0 KiB | 1.207x |
-| `sierra1` | 114.9 KiB | 2.451x | 344.5 KiB | 1.291x |
-| `sierra2` | 79.2 KiB | 1.688x | 302.7 KiB | 1.135x |
-| `sierra3` | 101.4 KiB | 2.163x | 310.0 KiB | 1.162x |
-| `lso2` | 86.6 KiB | 1.848x | 337.8 KiB | 1.266x |
-| `a_dither` | 56.8 KiB | 1.212x | 398.4 KiB | 1.493x |
-| `x_dither` | 52.0 KiB | 1.110x | 349.0 KiB | 1.308x |
-| `bluenoise` | 49.3 KiB | 1.051x | 294.4 KiB | 1.103x |
+| `none` | 45.1 KiB | 1.000x | 254.3 KiB | 1.000x |
+| `fs` | 112.5 KiB | 2.493x | 320.3 KiB | 1.259x |
+| `atkinson` | 75.9 KiB | 1.681x | 257.7 KiB | 1.013x |
+| `jajuni` | 102.8 KiB | 2.277x | 290.8 KiB | 1.143x |
+| `stucki` | 93.0 KiB | 2.060x | 289.2 KiB | 1.137x |
+| `burkes` | 103.3 KiB | 2.288x | 307.1 KiB | 1.207x |
+| `sierra1` | 115.7 KiB | 2.563x | 335.0 KiB | 1.317x |
+| `sierra2` | 82.5 KiB | 1.827x | 272.1 KiB | 1.070x |
+| `sierra3` | 104.0 KiB | 2.305x | 290.8 KiB | 1.144x |
+| `lso2` | 90.0 KiB | 1.994x | 336.1 KiB | 1.321x |
+| `a_dither` | 53.0 KiB | 1.174x | 345.9 KiB | 1.360x |
+| `x_dither` | 48.7 KiB | 1.079x | 305.7 KiB | 1.202x |
+| `bluenoise` | 46.6 KiB | 1.032x | 265.8 KiB | 1.045x |
 
 Every measured dither produces a larger stream than `none` at every measured
-`K`. Blue noise has the smallest size overhead throughout the sweep: 5.1
-percent at `K=8` and 10.3 percent at `K=256`. Sierra-1 is largest through
-`K=64`, reaching 2.451x at `K=8`; `a_dither` is largest at `K=128` and
-`K=256`, reaching 1.493x at the latter endpoint.
+`K`. Blue noise has the smallest size overhead through `K=64`, starting at
+3.2 percent for `K=8`; Atkinson is smallest at `K=128` and `K=256`, reaching
+1.3 percent at the latter endpoint. Sierra-1 is largest through `K=64`,
+reaching 2.563x at `K=8`; `a_dither` is largest at `K=128` and `K=256`,
+reaching 1.360x at the latter endpoint.
 
 The size curve materially changes the quality-only interpretation. `lso2` has
-the best MS-SSIM at both endpoints, but costs 84.8 percent more bytes at `K=8`
-and 26.6 percent more at `K=256`. The positional methods are inexpensive in
+the best MS-SSIM at both endpoints, but costs 99.4 percent more bytes at `K=8`
+and 32.1 percent more at `K=256`. The positional methods are inexpensive in
 CPU time, but that does not make them uniformly inexpensive to transmit:
 `a_dither` is nearly baseline speed while producing the largest `K=256`
 stream. Dithering changes the spatial sequence of palette indices, which in
@@ -921,40 +923,46 @@ turn changes SIXEL plane selection and run-length opportunities.
 
 | Method | Median, `K=8` | Relative to `none` | Median, `K=256` | Relative to `none` |
 | --- | ---: | ---: | ---: | ---: |
-| `none` | 65.0 ms | 1.00x | 187.9 ms | 1.00x |
-| `fs` | 72.4 ms | 1.11x | 195.3 ms | 1.04x |
-| `atkinson` | 75.7 ms | 1.16x | 198.4 ms | 1.06x |
-| `jajuni` | 89.1 ms | 1.37x | 210.7 ms | 1.12x |
-| `stucki` | 88.6 ms | 1.36x | 211.7 ms | 1.13x |
-| `burkes` | 78.7 ms | 1.21x | 201.4 ms | 1.07x |
-| `sierra1` | 70.8 ms | 1.09x | 193.4 ms | 1.03x |
-| `sierra2` | 83.9 ms | 1.29x | 205.6 ms | 1.09x |
-| `sierra3` | 83.5 ms | 1.28x | 206.2 ms | 1.10x |
-| `lso2` | 80.7 ms | 1.24x | 203.0 ms | 1.08x |
-| `a_dither` | 65.4 ms | 1.01x | 191.0 ms | 1.02x |
-| `x_dither` | 66.0 ms | 1.02x | 188.8 ms | 1.00x |
-| `bluenoise` | 67.0 ms | 1.03x | 191.1 ms | 1.02x |
+| `none` | 56.5 ms | 1.00x | 142.2 ms | 1.00x |
+| `fs` | 58.8 ms | 1.04x | 147.0 ms | 1.03x |
+| `atkinson` | 58.3 ms | 1.03x | 146.0 ms | 1.03x |
+| `jajuni` | 62.9 ms | 1.11x | 152.9 ms | 1.08x |
+| `stucki` | 62.9 ms | 1.11x | 152.0 ms | 1.07x |
+| `burkes` | 62.1 ms | 1.10x | 148.9 ms | 1.05x |
+| `sierra1` | 57.7 ms | 1.02x | 147.5 ms | 1.04x |
+| `sierra2` | 61.1 ms | 1.08x | 150.4 ms | 1.06x |
+| `sierra3` | 62.8 ms | 1.11x | 150.6 ms | 1.06x |
+| `lso2` | 64.1 ms | 1.13x | 152.6 ms | 1.07x |
+| `a_dither` | 58.0 ms | 1.03x | 146.2 ms | 1.03x |
+| `x_dither` | 56.5 ms | 1.00x | 146.1 ms | 1.03x |
+| `bluenoise` | 58.2 ms | 1.03x | 149.5 ms | 1.05x |
 
-The positional methods remain within three percent of `none` at both
+The positional methods remain within five percent of `none` at both
 endpoints. Fixed-stencil and table-driven diffusion cost more: at `K=8` their
-measured slowdown ranges from 1.09x for Sierra-1 to 1.37x for
-Jarvis--Judice--Ninke. The relative gap shrinks at `K=256` because the
+measured slowdown ranges from 1.02x for Sierra-1 to 1.13x for `lso2`. The
+relative gap generally shrinks at `K=256` because the
 controlled direct lookup is `Theta(P K)` and dominates more of the total as
-the palette grows. For example, `lso2` adds about 15.7 ms at `K=8` and
-15.1 ms at `K=256`, although its displayed ratio changes from 1.24x to 1.08x.
+the palette grows. For example, `lso2` adds about 7.6 ms at `K=8` and
+10.4 ms at `K=256`, although its displayed ratio changes from 1.13x to 1.07x.
 The figure therefore measures user-visible end-to-end latency; it is not an
 isolated comparison of kernel arithmetic.
 
 ### Controlled protocol
 
-The curves were measured on 2026-09-03 from a clean Autotools build of revision
-`4e1e9283d` on Darwin 25.5.0 arm64. The input is
+The curves were measured on 2026-09-06 from a clean Autotools build of revision
+`f2c138d8f` on macOS 26.5.1 arm64. The input is
 [`images/snake.png`](../../images/snake.png), and the sweep uses `K = 8, 16,
 32, 64, 128, 256`. Palette generation is controlled with seeded K-means, Ward
 final merging, and OKLab clustering. Palette application remains in gamma RGB.
 Direct `--lookup-policy=none` avoids adding an approximate lookup policy to the
 quality comparison. GPU assistance is disabled, and one worker avoids
 parallel-band seams and scan-history differences.
+
+The requested `--precision=8bit` is required to resolve to `work=rgb888`; a
+float-promoted command is a different experiment. The matched precision
+cross-section in [Encoder Working Precision](precision.md#dither-policies)
+shows why this matters: dither residual arithmetic changes quality, size, and
+speed rather than merely changing an internal representation.
 
 Every spatial method uses explicit raster order so the figure compares kernels
 under one scan contract. This intentionally overrides `lso2`'s normal

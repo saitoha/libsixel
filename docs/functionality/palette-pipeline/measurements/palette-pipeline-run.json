@@ -1,42 +1,48 @@
 {
   "build": {
     "cc": "gcc",
-    "cflags": "-g -O2 -std=c99",
+    "cflags": "-O3 -std=c99",
     "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
-    "configure_arguments": "--enable-amalgamated-tools --disable-amalgamated-lib BASH=/bin/sh",
-    "configured_source_directory": "/Users/saitoha/repo/libsixel",
+    "configure_arguments": "--without-libcurl --with-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "configured_source_directory": "/private/tmp/libsixel-measure-clone.lFhufe/repo",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
     "directory": ".",
     "ldflags": "",
     "source_directory_matches": true
   },
-  "generated_at_utc": "2026-09-05T11:44:31.234122+00:00",
+  "generated_at_utc": "2026-09-06T09:11:25.872716+00:00",
   "host": {
     "matplotlib": "3.11.1",
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
     "processor": "arm",
-    "python": "3.14.5"
+    "python": "3.13.13"
   },
   "input": {
     "path": "images/snake.png",
     "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4"
   },
   "libsixel_linkage": {
-    "artifacts": [],
-    "mode": "amalgamated"
+    "artifacts": [
+      {
+        "path": "src/.libs/libsixel.1.dylib",
+        "role": "shared",
+        "sha256": "264aa9468e36ac26084a1d32c640805a9157c6fb1e04a06fc0d316c69655e78e"
+      }
+    ],
+    "mode": "library"
   },
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "512adde75916ab776bc764ce7d46debe6c4bd049de5ce72c0faadff3510d70c7",
+      "launcher_sha256": "81fac0dc19d0996f1ffd007d0459b85d60eec87e652eb60a6112207944a549b1",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "4d0c1c3bb03cc6c9da8080940495eb85b351eadc1a8b3ae84b410785b2c4240c"
+      "payload_sha256": "91dc0de349557a87ef13b78131edbc668ac296c45e2cb77a564662b8ad75b0e0"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "e06d7c59371cc8c1f7b7696df39e2c912ae249a85737935357f3ec3f2562f477",
+      "launcher_sha256": "627520e43037f0c928dfe10802e97d1d26ac32cac6befec76603db9f897a714c",
       "payload": "assessment/.libs/lsqa",
-      "payload_sha256": "4cf2aba398bfc60c7e10518b1f0f9f33b891ee976d1eb829a0b4769f745578ab"
+      "payload_sha256": "fb02799c5a41364c6d2984af9e97c48bbb696e48d039daa8fc72c32b249bb087"
     }
   },
   "protocol": {
@@ -131,12 +137,15 @@
     "libsixel_linkage_snapshotted": true,
     "loader": "libpng!",
     "lookup_policy": "none",
+    "lsqa_environment_removed": true,
     "measurement_mode": "durable",
     "merge_policy": "none",
     "palette_timing": "sum of complete top-level palette/build role=palette timeline spans, including multiple attempts or fallbacks",
     "precision": "8bit",
     "provenance_rechecked_after_measurement": true,
     "quality": "full",
+    "quality_reference_loader": "automatic",
+    "quality_reference_loader_environment": {},
     "quantize_option": "kmeans:inittype=none:threshold=0.125:binbits=6:mapping=uniform:softdist=trilinear:feedback=0:prune=hamerly:seed=1:restarts=1:iter=20:miniter=0:polish_iter=0:feedback_slots=1:feedback_interval=1:sample_target=16384",
     "sample_target": 16384,
     "sixel_environment_removed": true,
@@ -156,8 +165,8 @@
   "schema_version": 1,
   "source": {
     "end_snapshot_matches": true,
-    "revision": "1259bb880d772489acae60f213a7ca48711e5cc1",
-    "top_source_directory": "/Users/saitoha/repo/libsixel",
+    "revision": "f2c138d8f6aa0a90c89d019f85eaf9bb3efa5edb",
+    "top_source_directory": "/private/tmp/libsixel-measure-clone.lFhufe/repo",
     "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "tracked_worktree_state_at_start": "clean"
   }

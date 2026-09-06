@@ -1,19 +1,19 @@
 {
   "build": {
     "cc": "gcc",
-    "cflags": "-g -O2 -std=c99",
+    "cflags": "-O3 -std=c99",
     "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
-    "configure_arguments": "BASH=/bin/sh",
+    "configure_arguments": "--without-libcurl --with-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-03T09:27:53.051579+00:00",
+  "generated_at_utc": "2026-09-06T09:07:12.312616+00:00",
   "host": {
     "matplotlib": "3.11.1",
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
     "processor": "arm",
-    "python": "3.14.5"
+    "python": "3.13.13"
   },
   "input": {
     "path": "images/snake.png",
@@ -22,15 +22,15 @@
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "d5bb99d9493635b9fd20680b01c04c01e8e4227b2d6b3bb89a85faf60c094c8f",
+      "launcher_sha256": "81fac0dc19d0996f1ffd007d0459b85d60eec87e652eb60a6112207944a549b1",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "8b21e926b4d5b86a4c42871106967e33d438497e9d7344f36790358122c5652e"
+      "payload_sha256": "91dc0de349557a87ef13b78131edbc668ac296c45e2cb77a564662b8ad75b0e0"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "84b768f8cd886b2a3c8e5c2bd787e8e1ee31a9a00dd8eaa9b41076539e69fd4c",
+      "launcher_sha256": "627520e43037f0c928dfe10802e97d1d26ac32cac6befec76603db9f897a714c",
       "payload": "assessment/.libs/lsqa",
-      "payload_sha256": "5776ce83fc3e585efae0073cf436bcf4264f8de6c556edb321eb3d81926c19b0"
+      "payload_sha256": "fb02799c5a41364c6d2984af9e97c48bbb696e48d039daa8fc72c32b249bb087"
     }
   },
   "protocol": {
@@ -61,7 +61,7 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "6c9b478c91f5ac5637519fdcdda10f1d1fe0d49d",
+    "revision": "f2c138d8f6aa0a90c89d019f85eaf9bb3efa5edb",
     "tracked_worktree_state_at_start": "clean"
   }
 }
