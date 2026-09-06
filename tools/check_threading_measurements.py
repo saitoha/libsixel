@@ -138,17 +138,34 @@ def validate_budget(path: Path, revision: str) -> None:
 
 
 def validate_decoder(path: Path) -> None:
-    """Validate parallel scan plus ordered paint timeline structure."""
+    """Validate scan completion, paint barrier, and parallel paint spans."""
     records = load_jsonl(path)
     scan = paired_intervals(records, "decoder", "scan", "start", "finish")
     paint = paired_intervals(records, "decoder", "paint", "start", "finish")
+    ready = [
+        float(record["ts"])
+        for record in records
+        if record.get("worker") == "decoder"
+        and record.get("role") == "paint"
+        and record.get("event") == "ready"
+    ]
     if len(scan) != 8 or len(paint) != 8:
         raise ValueError("decoder timeline does not contain eight scan/paint spans")
+    if len(ready) != 8:
+        raise ValueError("decoder timeline does not contain eight ready workers")
+    if min(ready) < max(end for _, end in scan):
+        raise ValueError("decoder paint worker became ready before scan joined")
     if min(start for start, _ in paint) < max(end for _, end in scan):
         raise ValueError("decoder paint started before the validation scan joined")
-    for previous, current in zip(paint, paint[1:]):
-        if current[0] < previous[1]:
-            raise ValueError("decoder paint spans are no longer serialized")
+    if min(start for start, _ in paint) < max(ready):
+        raise ValueError("decoder paint started before every worker was ready")
+    overlaps = any(
+        left[0] < right[1] and right[0] < left[1]
+        for index, left in enumerate(paint)
+        for right in paint[index + 1:]
+    )
+    if not overlaps:
+        raise ValueError("decoder paint spans did not overlap")
 
 
 def phase_wall_seconds(records: Sequence[Dict[str, object]],
