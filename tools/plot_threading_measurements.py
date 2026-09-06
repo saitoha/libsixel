@@ -192,6 +192,26 @@ def locate_libsixel_library(build_dir: Path) -> Path:
     raise FileNotFoundError("could not locate the built shared libsixel")
 
 
+def bind_libsixel_environment(env: Dict[str, str],
+                              library: Path) -> Dict[str, str]:
+    """Bind direct converter payloads to the measured build-tree library."""
+    bound = env.copy()
+    system = platform.system()
+    if system == "Darwin":
+        variable = "DYLD_LIBRARY_PATH"
+    elif system == "Linux":
+        variable = "LD_LIBRARY_PATH"
+    else:
+        raise RuntimeError(
+            f"no shared-library binding is implemented for {system}"
+        )
+    previous = bound.get(variable, "")
+    bound[variable] = str(library.parent)
+    if previous:
+        bound[variable] += os.pathsep + previous
+    return bound
+
+
 def measurement_snapshot(args: argparse.Namespace,
                          source_root: Path) -> Dict[str, object]:
     """Hash every input, tool, and binary that can affect measurements."""
@@ -226,24 +246,20 @@ def verify_loaded_libsixel(args: argparse.Namespace,
                            source_root: Path) -> Dict[str, object]:
     """Probe the converter payload and prove which libsixel it loads."""
     probe_env = env.copy()
-    payload = libtool_payload_path(args.sixel2png)
+    payload = args.sixel2png_payload
     system = platform.system()
     if system == "Darwin":
-        variable = "DYLD_LIBRARY_PATH"
+        search_variable = "DYLD_LIBRARY_PATH"
         diagnostic_variable = "DYLD_PRINT_LIBRARIES"
         method = "DYLD_PRINT_LIBRARIES"
     elif system == "Linux":
-        variable = "LD_LIBRARY_PATH"
+        search_variable = "LD_LIBRARY_PATH"
         diagnostic_variable = "LD_DEBUG"
         method = "LD_DEBUG=libs"
     else:
         raise RuntimeError(
             f"no dynamic-library load probe is implemented for {system}"
         )
-    previous = probe_env.get(variable, "")
-    probe_env[variable] = str(args.libsixel_library.parent)
-    if previous:
-        probe_env[variable] += os.pathsep + previous
     probe_env[diagnostic_variable] = "1" if system == "Darwin" else "libs"
     command = [
         str(payload),
@@ -265,6 +281,10 @@ def verify_loaded_libsixel(args: argparse.Namespace,
         "loaded_path": display_path(args.libsixel_library, source_root),
         "loaded_sha256": file_sha256(args.libsixel_library),
         "payload": display_path(payload, source_root),
+        "search_variable": search_variable,
+        "search_directory": display_path(
+            args.libsixel_library.parent, source_root
+        ),
         "command": command_template(
             command,
             {
@@ -859,7 +879,7 @@ def measure_decoder_scaling(args: argparse.Namespace,
                 f"decoder-scaling-thread{threads}-run{run_index + 1}.jsonl"
             )
             command = decoder_command(
-                args.sixel2png,
+                str(args.sixel2png_payload),
                 sixel_path,
                 threads,
                 log_path,
@@ -867,7 +887,7 @@ def measure_decoder_scaling(args: argparse.Namespace,
             command_pattern = command_template(
                 command,
                 {
-                    args.sixel2png: "{sixel2png}",
+                    str(args.sixel2png_payload): "{sixel2png}",
                     f"--threads={threads}": "--threads={threads}",
                     str(sixel_path): "{decoder_sixel}",
                     str(log_path): "{log}",
@@ -917,7 +937,7 @@ def measure_decoder_scaling(args: argparse.Namespace,
                 "command": command_template(
                     command,
                     {
-                        args.sixel2png: "{sixel2png}",
+                        str(args.sixel2png_payload): "{sixel2png}",
                         str(sixel_path): "{decoder_sixel}",
                         str(log_path): "{log}",
                         os.devnull: "{null}",
@@ -968,7 +988,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
                 args.output_dir / f"decoder-thread8-{identifier}.jsonl"
             )
         decoder = decoder_command(
-            args.sixel2png,
+            str(args.sixel2png_payload),
             decoder_sixel,
             8,
             decoder_log,
@@ -987,7 +1007,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
         decoder_template = command_template(
             decoder,
             {
-                args.sixel2png: "{sixel2png}",
+                str(args.sixel2png_payload): "{sixel2png}",
                 str(decoder_sixel): "{decoder_sixel}",
                 str(decoder_log): "{log}",
                 os.devnull: "{null}",
@@ -1004,7 +1024,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
             decoder_log,
             decoder,
             {
-                args.sixel2png: "{sixel2png}",
+                str(args.sixel2png_payload): "{sixel2png}",
                 str(decoder_sixel): "{decoder_sixel}",
                 str(decoder_log): "{log}",
                 os.devnull: "{null}",
@@ -1185,6 +1205,7 @@ def main() -> int:
     args.animation_input = args.animation_input.resolve()
     args.build_dir = args.build_dir.resolve()
     args.output_dir = args.output_dir.resolve()
+    args.sixel2png_payload = libtool_payload_path(args.sixel2png)
     if args.libsixel_library is None:
         args.libsixel_library = locate_libsixel_library(args.build_dir)
     else:
@@ -1201,7 +1222,10 @@ def main() -> int:
     if not args.input.is_file() or not args.animation_input.is_file():
         raise FileNotFoundError("measurement input is missing")
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    env = make_command_environment(args.clean_sixel_environment)
+    env = bind_libsixel_environment(
+        make_command_environment(args.clean_sixel_environment),
+        args.libsixel_library,
+    )
     snapshot = measurement_snapshot(args, source_root)
 
     with tempfile.TemporaryDirectory(prefix="libsixel-threading-") as temp:

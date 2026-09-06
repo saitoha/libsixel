@@ -369,6 +369,9 @@ def main() -> int:
     if (load_probe["loaded_path"] != library["path"]
             or load_probe["loaded_sha256"] != library["sha256"]):
         raise ValueError("loaded libsixel provenance is inconsistent")
+    if str(Path(load_probe["loaded_path"]).parent) != (
+            load_probe["search_directory"]):
+        raise ValueError("measured libsixel search path is inconsistent")
     for name in ("img2sixel", "sixel2png", "generator", "checker", "timeline"):
         record = metadata["programs"][name]
         if not record["launcher_sha256"] or not record["payload_sha256"]:
