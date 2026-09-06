@@ -168,6 +168,114 @@ def decoder_command(sixel2png: str,
     ]
 
 
+def libtool_payload_path(path_text: str) -> Path:
+    """Return a libtool program payload or the launcher itself."""
+    launcher = Path(path_text).resolve()
+    payload = launcher.parent / ".libs" / launcher.name
+    return payload if payload.is_file() else launcher
+
+
+def locate_libsixel_library(build_dir: Path) -> Path:
+    """Locate the built shared libsixel used by libtool converter wrappers."""
+    library_dir = build_dir / "src" / ".libs"
+    patterns = (
+        "libsixel.1.dylib",
+        "libsixel.so.1",
+        "libsixel.so.*",
+        "libsixel-*.dll",
+        "cygsixel-*.dll",
+    )
+    for pattern in patterns:
+        for candidate in sorted(library_dir.glob(pattern)):
+            if candidate.is_file():
+                return candidate.resolve()
+    raise FileNotFoundError("could not locate the built shared libsixel")
+
+
+def measurement_snapshot(args: argparse.Namespace,
+                         source_root: Path) -> Dict[str, object]:
+    """Hash every input, tool, and binary that can affect measurements."""
+    programs = {
+        "img2sixel": program_record(args.img2sixel, source_root),
+        "sixel2png": program_record(args.sixel2png, source_root),
+        "generator": program_record(str(Path(__file__)), source_root),
+        "checker": program_record(
+            str(source_root / "tools" / "check_threading_measurements.py"),
+            source_root,
+        ),
+        "timeline": program_record(
+            str(source_root / "tools" / "timeline.py"), source_root
+        ),
+    }
+    return {
+        "programs": programs,
+        "libsixel": {
+            "path": display_path(args.libsixel_library, source_root),
+            "sha256": file_sha256(args.libsixel_library),
+        },
+        "inputs": {
+            "static_sha256": file_sha256(args.input),
+            "animation_sha256": file_sha256(args.animation_input),
+        },
+    }
+
+
+def verify_loaded_libsixel(args: argparse.Namespace,
+                           sixel_path: Path,
+                           env: Dict[str, str],
+                           source_root: Path) -> Dict[str, object]:
+    """Probe the converter payload and prove which libsixel it loads."""
+    probe_env = env.copy()
+    payload = libtool_payload_path(args.sixel2png)
+    system = platform.system()
+    if system == "Darwin":
+        variable = "DYLD_LIBRARY_PATH"
+        diagnostic_variable = "DYLD_PRINT_LIBRARIES"
+        method = "DYLD_PRINT_LIBRARIES"
+    elif system == "Linux":
+        variable = "LD_LIBRARY_PATH"
+        diagnostic_variable = "LD_DEBUG"
+        method = "LD_DEBUG=libs"
+    else:
+        raise RuntimeError(
+            f"no dynamic-library load probe is implemented for {system}"
+        )
+    previous = probe_env.get(variable, "")
+    probe_env[variable] = str(args.libsixel_library.parent)
+    if previous:
+        probe_env[variable] += os.pathsep + previous
+    probe_env[diagnostic_variable] = "1" if system == "Darwin" else "libs"
+    command = [
+        str(payload),
+        "--threads=1",
+        "--gpu-policy=off",
+        "-i",
+        str(sixel_path),
+        "-o",
+        os.devnull,
+    ]
+    proc = run_checked(command, probe_env)
+    diagnostic = proc.stderr.decode("utf-8", errors="replace")
+    loaded_path = str(args.libsixel_library.resolve())
+    if loaded_path not in diagnostic:
+        raise RuntimeError("load probe did not observe the measured libsixel")
+    return {
+        "verified": True,
+        "method": method,
+        "loaded_path": display_path(args.libsixel_library, source_root),
+        "loaded_sha256": file_sha256(args.libsixel_library),
+        "payload": display_path(payload, source_root),
+        "command": command_template(
+            command,
+            {
+                str(payload): "{sixel2png_payload}",
+                str(sixel_path): "{decoder_sixel}",
+                os.devnull: "{null}",
+            },
+        ),
+    }
+
+
 def load_records(path: Path) -> List[Dict[str, object]]:
     """Read one JSONL timeline."""
     records: List[Dict[str, object]] = []
@@ -299,6 +407,98 @@ def intervals_overlap(left: Sequence[Tuple[float, float]],
     """Return whether any two half-open activity intervals overlap."""
     return any(max(a0, b0) < min(a1, b1)
                for a0, a1 in left for b0, b1 in right)
+
+
+def timeline_event_count(records: Sequence[Dict[str, object]],
+                         worker: str,
+                         role: str,
+                         event: str) -> int:
+    """Count matching timeline events in one decoder execution."""
+    return sum(
+        1 for record in records
+        if record.get("worker") == worker
+        and record.get("role") == role
+        and record.get("event") == event
+    )
+
+
+def decoder_parallel_observation(records: Sequence[Dict[str, object]],
+                                 threads: int) -> Dict[str, object]:
+    """Validate and summarize the path used by one decoder execution."""
+    scan = event_intervals(records, "start", "finish", "decoder", "scan")
+    paint = event_intervals(
+        records, "start", "finish", "decoder", "paint"
+    )
+    counts = {
+        "scan_start_count": timeline_event_count(
+            records, "decoder", "scan", "start"
+        ),
+        "scan_finish_count": timeline_event_count(
+            records, "decoder", "scan", "finish"
+        ),
+        "paint_ready_count": timeline_event_count(
+            records, "decoder", "paint", "ready"
+        ),
+        "paint_start_count": timeline_event_count(
+            records, "decoder", "paint", "start"
+        ),
+        "paint_finish_count": timeline_event_count(
+            records, "decoder", "paint", "finish"
+        ),
+        "decoder_abort_count": (
+            timeline_event_count(records, "decoder", "scan", "abort")
+            + timeline_event_count(records, "decoder", "paint", "abort")
+        ),
+    }
+    if threads == 1:
+        if any(int(value) != 0 for value in counts.values()):
+            raise RuntimeError("one-worker decoder used a parallel phase")
+        return {
+            **counts,
+            "observed_path": "serial",
+            "barrier_ordered": "not-applicable",
+            "paint_spans_overlap": "not-applicable",
+        }
+
+    required = (
+        "scan_start_count",
+        "scan_finish_count",
+        "paint_ready_count",
+        "paint_start_count",
+        "paint_finish_count",
+    )
+    if any(int(counts[name]) != threads for name in required):
+        raise RuntimeError(
+            f"decoder did not complete {threads} direct scan/paint spans"
+        )
+    if counts["decoder_abort_count"] != 0:
+        raise RuntimeError("decoder direct path emitted an abort event")
+    ready = [
+        float(record["ts"])
+        for record in records
+        if record.get("worker") == "decoder"
+        and record.get("role") == "paint"
+        and record.get("event") == "ready"
+    ]
+    barrier_ordered = (
+        len(scan) == threads
+        and len(paint) == threads
+        and min(ready) >= max(end for _, end in scan)
+        and min(start for start, _ in paint) >= max(ready)
+    )
+    paint_overlap = any(
+        left[0] < right[1] and right[0] < left[1]
+        for index, left in enumerate(paint)
+        for right in paint[index + 1:]
+    )
+    if not barrier_ordered or not paint_overlap:
+        raise RuntimeError("decoder direct paint barrier was not observed")
+    return {
+        **counts,
+        "observed_path": "parallel-direct",
+        "barrier_ordered": "yes",
+        "paint_spans_overlap": "yes",
+    }
 
 
 def parse_planner(diagnostic: str) -> Dict[str, object]:
@@ -482,7 +682,9 @@ def plot_decoder_scaling(path: Path,
             samples = [
                 float(row[field]) * 1000.0
                 for row in rows
-                if int(row["threads"]) == workers and row[field] != ""
+                if int(row["threads"]) == workers
+                and row["phase"] == "timed"
+                and row[field] != ""
             ]
             if not samples:
                 continue
@@ -511,7 +713,7 @@ def plot_decoder_scaling(path: Path,
     serial = statistics.median([
         float(row["decoder_wall_seconds"]) * 1000.0
         for row in rows
-        if int(row["threads"]) == 1
+        if int(row["threads"]) == 1 and row["phase"] == "timed"
     ])
     axis.plot(
         threads,
@@ -538,7 +740,7 @@ def plot_decoder_scaling(path: Path,
             fontsize=8,
             color="#555555",
         )
-    axis.set_title("Full HD decoder time by configured worker budget")
+    axis.set_title("Full HD sixel2png decoder time by worker budget")
     axis.set_xlabel("Configured decoder worker budget (--threads)")
     axis.set_ylabel("Wall interval (ms, lower is better)")
     axis.set_xticks(threads)
@@ -548,8 +750,8 @@ def plot_decoder_scaling(path: Path,
     figure.text(
         0.99,
         0.01,
-        f"{repeats} timed runs after {warmups} warm-ups. Lines show medians; "
-        "shading shows IQR. Workers are not pinned to physical cores.",
+        f"sixel2png; {repeats} timed runs after {warmups} warm-ups. Medians "
+        "with IQR; PNG is not plotted; workers are unpinned.",
         horizontalalignment="right",
         fontsize=8,
         color="#555555",
@@ -648,9 +850,11 @@ def measure_decoder_scaling(args: argparse.Namespace,
     total_runs = args.decoder_warmups + args.decoder_repeats
     for run_index in range(total_runs):
         ordered_threads = args.decoder_scaling_threads
+        traversal = "ascending"
         if run_index % 2:
             ordered_threads = tuple(reversed(ordered_threads))
-        for threads in ordered_threads:
+            traversal = "descending"
+        for position, threads in enumerate(ordered_threads, start=1):
             log_path = work_dir / (
                 f"decoder-scaling-thread{threads}-run{run_index + 1}.jsonl"
             )
@@ -671,9 +875,14 @@ def measure_decoder_scaling(args: argparse.Namespace,
                 },
             )
             run_checked(command, env)
-            if run_index < args.decoder_warmups:
-                continue
             records = load_records(log_path)
+            observation = decoder_parallel_observation(records, threads)
+            if run_index < args.decoder_warmups:
+                phase = "warmup"
+                sample = run_index + 1
+            else:
+                phase = "timed"
+                sample = run_index - args.decoder_warmups + 1
             rows.append({
                 "revision": args.revision,
                 "fixture": "1920x1080",
@@ -683,7 +892,12 @@ def measure_decoder_scaling(args: argparse.Namespace,
                 "sixel_bytes": sixel_bytes,
                 "sixel_sha256": sixel_hash,
                 "threads": threads,
-                "sample": run_index - args.decoder_warmups + 1,
+                "round": run_index + 1,
+                "phase": phase,
+                "sample": sample,
+                "traversal": traversal,
+                "schedule_position": position,
+                **observation,
                 "decoder_wall_seconds": phase_wall_seconds(
                     records, "io", "decoder"
                 ),
@@ -714,11 +928,11 @@ def measure_decoder_scaling(args: argparse.Namespace,
             f"[decoder scaling run {run_index + 1}/{total_runs}]",
             flush=True,
         )
-    rows.sort(key=lambda row: (int(row["threads"]), int(row["sample"])))
     return rows, command_pattern
 
 
 def measure_auxiliary_timelines(args: argparse.Namespace,
+                                source_root: Path,
                                 input_path: Path,
                                 animation_input: Path,
                                 work_dir: Path,
@@ -732,6 +946,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
     decoder_rows: List[Dict[str, object]] = []
     decoder_scaling_rows: List[Dict[str, object]] = []
     decoder_scaling_command = ""
+    library_load_probe: Dict[str, object] = {}
     fixture_commands: List[str] = []
     decoder_commands: List[str] = []
     for identifier, width, height in DECODER_SIZES:
@@ -796,6 +1011,12 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
             },
         ))
         if identifier == "1920x1080":
+            library_load_probe = verify_loaded_libsixel(
+                args,
+                decoder_sixel,
+                env,
+                source_root,
+            )
             decoder_scaling_rows, decoder_scaling_command = (
                 measure_decoder_scaling(
                     args,
@@ -820,6 +1041,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
         "decoder_fixtures": fixture_commands,
         "decoders": decoder_commands,
         "decoder_scaling": decoder_scaling_command,
+        "library_load_probe": library_load_probe,
         "animation": command_template(
             animation,
             {
@@ -837,10 +1059,11 @@ def write_metadata(args: argparse.Namespace,
                    input_path: Path,
                    animation_input: Path,
                    encoder_commands: Sequence[str],
-                   auxiliary_commands: Dict[str, object]) -> None:
+                   auxiliary_commands: Dict[str, object],
+                   snapshot: Dict[str, object]) -> None:
     """Write revision, host, inputs, tools, and protocol provenance."""
     payload = {
-        "schema_version": 3,
+        "schema_version": 4,
         "generated_at_utc": datetime.datetime.now(
             datetime.timezone.utc
         ).isoformat(),
@@ -880,12 +1103,11 @@ def write_metadata(args: argparse.Namespace,
                 "contract": "dedicated size-controlled decoder fixtures",
             },
         },
-        "programs": {
-            "img2sixel": program_record(args.img2sixel, source_root),
-            "sixel2png": program_record(args.sixel2png, source_root),
-            "timeline": program_record(
-                str(source_root / "tools" / "timeline.py"), source_root
-            ),
+        "programs": snapshot["programs"],
+        "runtime": {
+            "libsixel": snapshot["libsixel"],
+            "load_probe": auxiliary_commands["library_load_probe"],
+            "dependencies_unchanged_during_measurement": True,
         },
         "protocol": {
             "thread_counts": list(args.threads),
@@ -902,6 +1124,9 @@ def write_metadata(args: argparse.Namespace,
                 "timed_runs_per_thread": args.decoder_repeats,
                 "command": auxiliary_commands["decoder_scaling"],
                 "summary": "median with inclusive interquartile range",
+                "worker_count_order": (
+                    "alternating ascending and descending rounds"
+                ),
             },
             "animation_command": auxiliary_commands["animation"],
             "timeline_commands": [
@@ -929,6 +1154,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--img2sixel", required=True)
     parser.add_argument("--sixel2png", required=True)
     parser.add_argument("--build-dir", type=Path, required=True)
+    parser.add_argument("--libsixel-library", type=Path)
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--animation-input", type=Path, required=True)
     parser.add_argument("--threads", default=",".join(
@@ -959,6 +1185,10 @@ def main() -> int:
     args.animation_input = args.animation_input.resolve()
     args.build_dir = args.build_dir.resolve()
     args.output_dir = args.output_dir.resolve()
+    if args.libsixel_library is None:
+        args.libsixel_library = locate_libsixel_library(args.build_dir)
+    else:
+        args.libsixel_library = args.libsixel_library.resolve()
     args.threads = parse_threads(args.threads)
     args.timeline_threads = parse_threads(args.timeline_threads)
     args.decoder_scaling_threads = parse_threads(
@@ -972,6 +1202,7 @@ def main() -> int:
         raise FileNotFoundError("measurement input is missing")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     env = make_command_environment(args.clean_sixel_environment)
+    snapshot = measurement_snapshot(args, source_root)
 
     with tempfile.TemporaryDirectory(prefix="libsixel-threading-") as temp:
         work_dir = Path(temp)
@@ -987,10 +1218,16 @@ def main() -> int:
          decoder_rows,
          decoder_scaling_rows) = measure_auxiliary_timelines(
             args,
+            source_root,
             args.input,
             args.animation_input,
             work_dir,
             env,
+        )
+
+    if measurement_snapshot(args, source_root) != snapshot:
+        raise RuntimeError(
+            "measurement inputs, tools, or binaries changed during the run"
         )
 
     write_csv(args.output_dir / "thread-budget.csv", rows)
@@ -1017,6 +1254,7 @@ def main() -> int:
         args.animation_input,
         encoder_commands,
         auxiliary_commands,
+        snapshot,
     )
     return 0
 

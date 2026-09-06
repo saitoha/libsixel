@@ -226,42 +226,85 @@ def validate_decoder_sizes(path: Path, root: Path, revision: str) -> None:
 def validate_decoder_scaling(path: Path,
                              revision: str,
                              threads_values: Sequence[int],
+                             warmups: int,
                              repeats: int) -> None:
-    """Validate raw repeated decoder scaling observations."""
+    """Validate the complete scheduled decoder scaling experiment."""
     with path.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
-    expected_rows = len(threads_values) * repeats
+    total_rounds = warmups + repeats
+    expected_rows = len(threads_values) * total_rounds
     if len(rows) != expected_rows:
         raise ValueError("decoder scaling CSV has an unexpected row count")
-    for threads in threads_values:
-        samples = [
-            row for row in rows if int(row["threads"]) == threads
-        ]
-        if [int(row["sample"]) for row in samples] != list(
-                range(1, repeats + 1)):
-            raise ValueError(
-                f"decoder scaling samples changed at threads={threads}"
-            )
-        for row in samples:
-            if row["revision"] != revision:
-                raise ValueError("decoder scaling revision is stale")
-            if row["fixture"] != "1920x1080":
-                raise ValueError("decoder scaling fixture changed")
-            if int(row["width"]) != 1920 or int(row["height"]) != 1080:
-                raise ValueError("decoder scaling dimensions changed")
-            decoder = float(row["decoder_wall_seconds"])
-            png = float(row["png_wall_seconds"])
-            total = float(row["total_wall_seconds"])
-            if decoder <= 0.0 or png <= 0.0 or total <= 0.0:
-                raise ValueError("decoder scaling contains non-positive time")
-            if threads == 1:
-                if row["scan_wall_seconds"] or row["paint_wall_seconds"]:
-                    raise ValueError("serial decoder unexpectedly has phases")
-            elif (float(row["scan_wall_seconds"]) <= 0.0
-                  or float(row["paint_wall_seconds"]) <= 0.0):
+    width = len(threads_values)
+    for round_index in range(1, total_rounds + 1):
+        first = (round_index - 1) * width
+        scheduled = rows[first:first + width]
+        traversal = "ascending" if round_index % 2 else "descending"
+        expected_threads = list(threads_values)
+        if traversal == "descending":
+            expected_threads.reverse()
+        phase = "warmup" if round_index <= warmups else "timed"
+        sample = round_index if phase == "warmup" else round_index - warmups
+        if [int(row["threads"]) for row in scheduled] != expected_threads:
+            raise ValueError(f"decoder scaling schedule changed at round={round_index}")
+        for position, row in enumerate(scheduled, start=1):
+            if int(row["round"]) != round_index:
+                raise ValueError("decoder scaling round is stale")
+            if row["phase"] != phase or int(row["sample"]) != sample:
+                raise ValueError("decoder scaling warmup/sample phase is stale")
+            if row["traversal"] != traversal:
+                raise ValueError("decoder scaling traversal is stale")
+            if int(row["schedule_position"]) != position:
+                raise ValueError("decoder scaling schedule position is stale")
+
+    sixel_hashes = {row["sixel_sha256"] for row in rows}
+    sixel_sizes = {row["sixel_bytes"] for row in rows}
+    if len(sixel_hashes) != 1 or len(sixel_sizes) != 1:
+        raise ValueError("decoder scaling fixture changed during the sweep")
+    for row in rows:
+        threads = int(row["threads"])
+        if row["revision"] != revision:
+            raise ValueError("decoder scaling revision is stale")
+        if row["fixture"] != "1920x1080":
+            raise ValueError("decoder scaling fixture changed")
+        if int(row["width"]) != 1920 or int(row["height"]) != 1080:
+            raise ValueError("decoder scaling dimensions changed")
+        decoder = float(row["decoder_wall_seconds"])
+        png = float(row["png_wall_seconds"])
+        total = float(row["total_wall_seconds"])
+        if decoder <= 0.0 or png <= 0.0 or total <= 0.0:
+            raise ValueError("decoder scaling contains non-positive time")
+        if threads == 1:
+            if row["scan_wall_seconds"] or row["paint_wall_seconds"]:
+                raise ValueError("serial decoder unexpectedly has phases")
+            if row["observed_path"] != "serial":
+                raise ValueError("serial decoder path observation is stale")
+            expected_counts = (0, 0, 0, 0, 0, 0)
+            if (row["barrier_ordered"] != "not-applicable"
+                    or row["paint_spans_overlap"] != "not-applicable"):
+                raise ValueError("serial decoder unexpectedly used a barrier")
+        else:
+            if (float(row["scan_wall_seconds"]) <= 0.0
+                    or float(row["paint_wall_seconds"]) <= 0.0):
                 raise ValueError("parallel decoder phase timing is missing")
-            if f"--threads={threads}" not in row["command"]:
-                raise ValueError("decoder scaling command is stale")
+            if row["observed_path"] != "parallel-direct":
+                raise ValueError("decoder scaling fell back from direct paint")
+            expected_counts = (threads, threads, threads, threads, threads, 0)
+            if (row["barrier_ordered"] != "yes"
+                    or row["paint_spans_overlap"] != "yes"):
+                raise ValueError("parallel decoder barrier observation is stale")
+        observed_counts = tuple(int(row[name]) for name in (
+            "scan_start_count",
+            "scan_finish_count",
+            "paint_ready_count",
+            "paint_start_count",
+            "paint_finish_count",
+            "decoder_abort_count",
+        ))
+        if observed_counts != expected_counts:
+            raise ValueError("decoder scaling span counts are stale")
+        if f"--threads={threads}" not in row["command"]:
+            raise ValueError("decoder scaling command is stale")
 
 
 def validate_animation(path: Path) -> None:
@@ -311,11 +354,25 @@ def main() -> int:
             validate_png(path)
     with (root / "threading-run.json").open("r", encoding="utf-8") as handle:
         metadata = json.load(handle)
-    if int(metadata["schema_version"]) != 3:
-        raise ValueError("threading metadata schema is not version 3")
+    if int(metadata["schema_version"]) != 4:
+        raise ValueError("threading metadata schema is not version 4")
     revision = str(metadata["source"]["revision"])
     if metadata["source"]["tracked_worktree_state_at_start"] != "clean":
         raise ValueError("threading artifacts were not recorded from clean source")
+    runtime = metadata["runtime"]
+    library = runtime["libsixel"]
+    load_probe = runtime["load_probe"]
+    if not runtime["dependencies_unchanged_during_measurement"]:
+        raise ValueError("measurement dependencies changed during the run")
+    if not load_probe["verified"]:
+        raise ValueError("measured libsixel load was not verified")
+    if (load_probe["loaded_path"] != library["path"]
+            or load_probe["loaded_sha256"] != library["sha256"]):
+        raise ValueError("loaded libsixel provenance is inconsistent")
+    for name in ("img2sixel", "sixel2png", "generator", "checker", "timeline"):
+        record = metadata["programs"][name]
+        if not record["launcher_sha256"] or not record["payload_sha256"]:
+            raise ValueError(f"program provenance is incomplete for {name}")
     decoder_input = metadata["inputs"]["decoder"]
     raster_sizes = [
         (item["id"], int(item["width"]), int(item["height"]))
@@ -345,8 +402,12 @@ def main() -> int:
     scaling_threads = tuple(int(value) for value in scaling["thread_counts"])
     if scaling_threads != DECODER_SCALING_THREADS:
         raise ValueError("decoder scaling does not cover threads 1 through 16")
-    if int(scaling["warmup_runs_per_thread"]) != 2:
+    warmups = int(scaling["warmup_runs_per_thread"])
+    if warmups != 2:
         raise ValueError("decoder scaling warmup protocol changed")
+    if scaling["worker_count_order"] != (
+            "alternating ascending and descending rounds"):
+        raise ValueError("decoder scaling schedule protocol changed")
     if "--threads={threads}" not in scaling["command"]:
         raise ValueError("decoder scaling command template changed")
     repeats = int(scaling["timed_runs_per_thread"])
@@ -356,6 +417,7 @@ def main() -> int:
         root / "decoder-thread-scaling.csv",
         revision,
         scaling_threads,
+        warmups,
         repeats,
     )
     validate_animation(root / "animation-thread4.jsonl")
