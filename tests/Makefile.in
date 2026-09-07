@@ -244,6 +244,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/0059_loader_gd_pixelpolicy_detail.c \
 	loader/0061_loader_tty_cpr_parser.c \
 	loader/0062_loader_animation_hide_cursor_environment.c \
+	loader/0064_loader_tty_response_dispatcher.c \
 	loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
 	loader/chunk_test_common.h loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
@@ -422,6 +423,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0059_loader_gd_pixelpolicy_detail.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0061_loader_tty_cpr_parser.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0062_loader_animation_hide_cursor_environment.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0064_loader_tty_response_dispatcher.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
@@ -569,6 +571,7 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po \
 	loader/$(DEPDIR)/test_runner-0061_loader_tty_cpr_parser.Po \
 	loader/$(DEPDIR)/test_runner-0062_loader_animation_hide_cursor_environment.Po \
+	loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po \
@@ -1540,6 +1543,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_LOADER_ANIMATION_HIDE_CURSOR_ENVIRONMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_LOADER_TTY_RESPONSE_DISPATCHER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -1721,6 +1725,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0059_loader_gd_pixelpolicy_detail.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0061_loader_tty_cpr_parser.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0062_loader_animation_hide_cursor_environment.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0064_loader_tty_response_dispatcher.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/chunk_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
@@ -2459,6 +2464,8 @@ loader/test_runner-0061_loader_tty_cpr_parser.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-0062_loader_animation_hide_cursor_environment.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0064_loader_tty_response_dispatcher.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
@@ -2737,6 +2744,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0061_loader_tty_cpr_parser.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0062_loader_animation_hide_cursor_environment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po@am__quote@ # am--include-marker
@@ -4766,6 +4774,20 @@ loader/test_runner-0062_loader_animation_hide_cursor_environment.obj: loader/006
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0062_loader_animation_hide_cursor_environment.obj `if test -f 'loader/0062_loader_animation_hide_cursor_environment.c'; then $(CYGPATH_W) 'loader/0062_loader_animation_hide_cursor_environment.c'; else $(CYGPATH_W) '$(srcdir)/loader/0062_loader_animation_hide_cursor_environment.c'; fi`
 
+loader/test_runner-0064_loader_tty_response_dispatcher.o: loader/0064_loader_tty_response_dispatcher.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0064_loader_tty_response_dispatcher.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Tpo -c -o loader/test_runner-0064_loader_tty_response_dispatcher.o `test -f 'loader/0064_loader_tty_response_dispatcher.c' || echo '$(srcdir)/'`loader/0064_loader_tty_response_dispatcher.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Tpo loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0064_loader_tty_response_dispatcher.c' object='loader/test_runner-0064_loader_tty_response_dispatcher.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0064_loader_tty_response_dispatcher.o `test -f 'loader/0064_loader_tty_response_dispatcher.c' || echo '$(srcdir)/'`loader/0064_loader_tty_response_dispatcher.c
+
+loader/test_runner-0064_loader_tty_response_dispatcher.obj: loader/0064_loader_tty_response_dispatcher.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0064_loader_tty_response_dispatcher.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Tpo -c -o loader/test_runner-0064_loader_tty_response_dispatcher.obj `if test -f 'loader/0064_loader_tty_response_dispatcher.c'; then $(CYGPATH_W) 'loader/0064_loader_tty_response_dispatcher.c'; else $(CYGPATH_W) '$(srcdir)/loader/0064_loader_tty_response_dispatcher.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Tpo loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0064_loader_tty_response_dispatcher.c' object='loader/test_runner-0064_loader_tty_response_dispatcher.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0064_loader_tty_response_dispatcher.obj `if test -f 'loader/0064_loader_tty_response_dispatcher.c'; then $(CYGPATH_W) 'loader/0064_loader_tty_response_dispatcher.c'; else $(CYGPATH_W) '$(srcdir)/loader/0064_loader_tty_response_dispatcher.c'; fi`
+
 loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o: loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Tpo -c -o loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o `test -f 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c' || echo '$(srcdir)/'`loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Tpo loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
@@ -5824,6 +5846,7 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0061_loader_tty_cpr_parser.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0062_loader_animation_hide_cursor_environment.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
@@ -6045,6 +6068,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0061_loader_tty_cpr_parser.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0062_loader_animation_hide_cursor_environment.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po

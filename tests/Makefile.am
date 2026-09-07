@@ -354,6 +354,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
     -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
     -DBUILD_TEST_0062_LOADER_ANIMATION_HIDE_CURSOR_ENVIRONMENT \
+    -DBUILD_TEST_0064_LOADER_TTY_RESPONSE_DISPATCHER \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -510,6 +511,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0059_loader_gd_pixelpolicy_detail.c \
     loader/0061_loader_tty_cpr_parser.c \
     loader/0062_loader_animation_hide_cursor_environment.c \
+    loader/0064_loader_tty_response_dispatcher.c \
     loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
     loader/chunk_test_common.h \
     loader/pixelformat_test_common.h \

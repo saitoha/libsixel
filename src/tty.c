@@ -74,6 +74,7 @@
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "rgblookup.h"
+#include "sleep.h"
 #include "timer.h"
 
 #if defined(_WIN32)
@@ -133,6 +134,32 @@ static char const g_tty_show_cursor_seq[] = "\033[?25h";
 # define SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY 0
 #endif
 
+/*
+ * OSC11 and CPR share the terminal input queue.  A dispatcher is required
+ * whenever both protocols can be queried so select/read pairs never compete
+ * for bytes from the same tty.
+ */
+#if HAVE_FCNTL_H && HAVE_SYS_SELECT_H \
+    && (HAVE_UNISTD_H || HAVE_SYS_UNISTD_H) \
+    && SIXEL_TTY_HAVE_TERMIOS_CBREAK \
+    && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+# define SIXEL_TTY_HAVE_RESPONSE_DISPATCHER 1
+#else
+# define SIXEL_TTY_HAVE_RESPONSE_DISPATCHER 0
+#endif
+
+#if SIXEL_TTY_HAVE_RESPONSE_DISPATCHER && SIXEL_ENABLE_THREADS
+# include <pthread.h>
+#endif
+
+#if SIXEL_TTY_HAVE_RESPONSE_DISPATCHER
+static SIXELSTATUS
+sixel_tty_response_dispatcher_guard_begin(void);
+
+static SIXELSTATUS
+sixel_tty_response_dispatcher_guard_end(void);
+#endif
+
 static int
 sixel_tty_term_supports_ansi(const char *term);
 
@@ -153,7 +180,11 @@ sixel_tty_parse_cpr_positive_int(char const *response,
 
 #if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
 static SIXELSTATUS
-sixel_tty_query_cursor_position(int fd, int timeout_ms, int *row, int *col);
+sixel_tty_query_cursor_position(sixel_write_function f_write,
+                                void *priv,
+                                int timeout_ms,
+                                int *row,
+                                int *col);
 #endif
 
 #if SIXEL_TTY_HAVE_TERMIOS_CBREAK
@@ -775,88 +806,56 @@ sixel_tty_parse_cpr_response(int *row,
     return SIXEL_FALSE;
 }
 
-#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
-static SIXELSTATUS
-sixel_tty_query_cursor_position(int fd, int timeout_ms, int *row, int *col)
+/*
+ * Classify one physical tty read for every response type with a registered
+ * destination.  The caller can therefore route concatenated OSC11 and CPR
+ * replies without letting protocol-specific readers compete for the bytes.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_dispatch_response(unsigned int *dispatched,
+                            unsigned char *bgcolor,
+                            int *row,
+                            int *col,
+                            char const *response,
+                            size_t response_size)
 {
-#if HAVE_SYS_SELECT_H && HAVE_UNISTD_H && !defined(__EMSCRIPTEN__)
     SIXELSTATUS status;
-    double deadline;
-    double now;
-    int readable;
-    int remaining_usec;
-    ssize_t read_size;
-    size_t response_size;
-    char response[64];
 
     status = SIXEL_FALSE;
-    deadline = 0.0;
-    now = 0.0;
-    readable = 0;
-    remaining_usec = 0;
-    read_size = 0;
-    response_size = 0u;
-    response[0] = '\0';
-
-    if (fd < 0 || row == NULL || col == NULL) {
+    if (dispatched == NULL || response == NULL ||
+            (row == NULL) != (col == NULL)) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (timeout_ms < 0) {
-        timeout_ms = 0;
+    *dispatched = 0u;
+    if (response_size == 0u) {
+        return SIXEL_FALSE;
     }
 
-    deadline = sixel_timer_now() + (double)timeout_ms / 1000.0;
-    for (;;) {
-        now = sixel_timer_now();
-        remaining_usec = (int)((deadline - now) * 1000000.0);
-        if (remaining_usec < 0) {
-            remaining_usec = 0;
-        }
-
-        status = sixel_tty_wait_fd_readable(fd,
-                                            remaining_usec,
-                                            &readable);
-        if (SIXEL_FAILED(status)) {
+    if (bgcolor != NULL) {
+        status = sixel_tty_parse_osc11_response(bgcolor,
+                                                response,
+                                                response_size);
+        if (SIXEL_SUCCEEDED(status)) {
+            *dispatched |= SIXEL_TTY_DISPATCHED_OSC11;
+        } else if (status == SIXEL_BAD_ALLOCATION) {
             return status;
         }
-        if (readable == 0) {
-            return SIXEL_FALSE;
-        }
-
-        read_size = read(fd,
-                         response + response_size,
-                         sizeof(response) - response_size);
-        if (read_size <= 0) {
-            return SIXEL_FALSE;
-        }
-        response_size += (size_t)read_size;
-
+    }
+    if (row != NULL) {
         status = sixel_tty_parse_cpr_response(row,
                                               col,
                                               response,
                                               response_size);
         if (SIXEL_SUCCEEDED(status)) {
-            return status;
-        }
-        if (status != SIXEL_FALSE) {
-            return status;
-        }
-        if (response_size >= sizeof(response)) {
-            return SIXEL_FALSE;
-        }
-        if (sixel_timer_now() >= deadline) {
-            return SIXEL_FALSE;
+            *dispatched |= SIXEL_TTY_DISPATCHED_CPR;
         }
     }
-#else
-    (void)fd;
-    (void)timeout_ms;
-    (void)row;
-    (void)col;
-    return SIXEL_NOT_IMPLEMENTED;
-#endif
+
+    if (*dispatched == 0u) {
+        return SIXEL_FALSE;
+    }
+    return SIXEL_OK;
 }
-#endif  /* SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY */
 
 #if SIXEL_TTY_HAVE_TERMIOS_CBREAK
 static int
@@ -1047,6 +1046,9 @@ sixel_tty_restore_cursor(int fd)
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_tty_begin_animation_input_guard(void)
 {
+#if SIXEL_TTY_HAVE_RESPONSE_DISPATCHER
+    return sixel_tty_response_dispatcher_guard_begin();
+#else
     SIXELSTATUS status;
     struct termios old_termios;
     struct termios new_termios;
@@ -1075,11 +1077,15 @@ sixel_tty_begin_animation_input_guard(void)
     }
 
     return SIXEL_OK;
+#endif
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_tty_end_animation_input_guard(void)
 {
+#if SIXEL_TTY_HAVE_RESPONSE_DISPATCHER
+    return sixel_tty_response_dispatcher_guard_end();
+#else
     SIXELSTATUS status;
     int slot;
 
@@ -1102,6 +1108,7 @@ sixel_tty_end_animation_input_guard(void)
     }
 
     return SIXEL_OK;
+#endif
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -1405,6 +1412,651 @@ end:
 }
 #endif  /* SIXEL_TTY_HAVE_TERMIOS_CBREAK */
 
+#if SIXEL_TTY_HAVE_RESPONSE_DISPATCHER
+#define SIXEL_TTY_RESPONSE_BUFFER_SIZE 512u
+#define SIXEL_TTY_RESPONSE_READ_SIZE 128u
+#define SIXEL_TTY_RESPONSE_READ_SLICE_USEC 10000
+
+enum sixel_tty_response_kind {
+    SIXEL_TTY_RESPONSE_OSC11 = 1,
+    SIXEL_TTY_RESPONSE_CPR = 2
+};
+
+typedef struct sixel_tty_response_request {
+    int kind;
+    int done;
+    int keep_draining;
+    SIXELSTATUS status;
+    double deadline;
+    size_t response_start;
+    unsigned char bgcolor[3];
+    int row;
+    int col;
+} sixel_tty_response_request_t;
+
+typedef struct sixel_tty_response_dispatcher {
+    int initialized;
+    int ttyfd;
+    int user_count;
+    int reader_active;
+    int animation_guard_active;
+    struct termios old_termios;
+    sixel_tty_response_request_t *osc11_request;
+    sixel_tty_response_request_t *cpr_request;
+    size_t response_size;
+    char response[SIXEL_TTY_RESPONSE_BUFFER_SIZE];
+} sixel_tty_response_dispatcher_t;
+
+static sixel_tty_response_dispatcher_t g_tty_response_dispatcher;
+
+#if SIXEL_ENABLE_THREADS
+static pthread_mutex_t g_tty_response_dispatcher_mutex;
+static pthread_once_t g_tty_response_dispatcher_once = PTHREAD_ONCE_INIT;
+static int g_tty_response_dispatcher_mutex_ready;
+
+static void
+sixel_tty_response_dispatcher_lock_init_once(void)
+{
+    int rc;
+
+    rc = pthread_mutex_init(&g_tty_response_dispatcher_mutex, NULL);
+    if (rc == 0) {
+        g_tty_response_dispatcher_mutex_ready = 1;
+    }
+}
+#endif
+
+/*
+ * Protect both request registration and reader ownership.  Only the thread
+ * which changes reader_active from zero to one may call select/read.
+ */
+static int
+sixel_tty_response_dispatcher_lock(void)
+{
+#if SIXEL_ENABLE_THREADS
+    int once_status;
+    int rc;
+
+    once_status = pthread_once(&g_tty_response_dispatcher_once,
+                               sixel_tty_response_dispatcher_lock_init_once);
+    if (once_status != 0 || !g_tty_response_dispatcher_mutex_ready) {
+        return 0;
+    }
+    rc = pthread_mutex_lock(&g_tty_response_dispatcher_mutex);
+    if (rc != 0) {
+        return 0;
+    }
+#endif
+    if (!g_tty_response_dispatcher.initialized) {
+        g_tty_response_dispatcher.ttyfd = -1;
+        g_tty_response_dispatcher.initialized = 1;
+    }
+    return 1;
+}
+
+static void
+sixel_tty_response_dispatcher_unlock(void)
+{
+#if SIXEL_ENABLE_THREADS
+    int rc;
+
+    rc = pthread_mutex_unlock(&g_tty_response_dispatcher_mutex);
+    if (rc != 0) {
+        abort();
+    }
+#endif
+}
+
+static sixel_tty_response_request_t **
+sixel_tty_response_dispatcher_slot(int kind)
+{
+    if (kind == SIXEL_TTY_RESPONSE_OSC11) {
+        return &g_tty_response_dispatcher.osc11_request;
+    }
+    if (kind == SIXEL_TTY_RESPONSE_CPR) {
+        return &g_tty_response_dispatcher.cpr_request;
+    }
+    return NULL;
+}
+
+/*
+ * Preserve the newest control-sequence prefix if unrelated input fills the
+ * buffer during a long OSC11 drain.  Request offsets move with the retained
+ * suffix so a later terminal reply remains parseable.
+ */
+static void
+sixel_tty_response_dispatcher_compact_locked(void)
+{
+    size_t drop_size;
+    sixel_tty_response_request_t *request;
+
+    drop_size = SIXEL_TTY_RESPONSE_BUFFER_SIZE / 2u;
+    memmove(g_tty_response_dispatcher.response,
+            g_tty_response_dispatcher.response + drop_size,
+            g_tty_response_dispatcher.response_size - drop_size);
+    g_tty_response_dispatcher.response_size -= drop_size;
+
+    request = g_tty_response_dispatcher.osc11_request;
+    if (request != NULL) {
+        if (request->response_start >= drop_size) {
+            request->response_start -= drop_size;
+        } else {
+            request->response_start = 0u;
+        }
+    }
+    request = g_tty_response_dispatcher.cpr_request;
+    if (request != NULL) {
+        if (request->response_start >= drop_size) {
+            request->response_start -= drop_size;
+        } else {
+            request->response_start = 0u;
+        }
+    }
+}
+
+static void
+sixel_tty_response_dispatcher_parse_locked(void)
+{
+    sixel_tty_response_request_t *osc11_request;
+    sixel_tty_response_request_t *cpr_request;
+    SIXELSTATUS status;
+    unsigned int dispatched;
+
+    osc11_request = g_tty_response_dispatcher.osc11_request;
+    cpr_request = g_tty_response_dispatcher.cpr_request;
+    status = SIXEL_FALSE;
+    dispatched = 0u;
+
+    if (osc11_request != NULL && !osc11_request->done) {
+        status = sixel_tty_dispatch_response(
+            &dispatched,
+            osc11_request->bgcolor,
+            NULL,
+            NULL,
+            g_tty_response_dispatcher.response
+                + osc11_request->response_start,
+            g_tty_response_dispatcher.response_size
+                - osc11_request->response_start);
+        if (status == SIXEL_BAD_ALLOCATION ||
+                (dispatched & SIXEL_TTY_DISPATCHED_OSC11) != 0u) {
+            osc11_request->status = status;
+            osc11_request->done = 1;
+        }
+    }
+
+    dispatched = 0u;
+    if (cpr_request != NULL && !cpr_request->done) {
+        status = sixel_tty_dispatch_response(
+            &dispatched,
+            NULL,
+            &cpr_request->row,
+            &cpr_request->col,
+            g_tty_response_dispatcher.response
+                + cpr_request->response_start,
+            g_tty_response_dispatcher.response_size
+                - cpr_request->response_start);
+        if ((dispatched & SIXEL_TTY_DISPATCHED_CPR) != 0u) {
+            cpr_request->status = status;
+            cpr_request->done = 1;
+        }
+    }
+}
+
+static void
+sixel_tty_response_dispatcher_append_locked(char const *bytes, size_t size)
+{
+    size_t copy_size;
+
+    while (size > 0u) {
+        if (g_tty_response_dispatcher.response_size
+                == SIXEL_TTY_RESPONSE_BUFFER_SIZE) {
+            sixel_tty_response_dispatcher_compact_locked();
+        }
+        copy_size = SIXEL_TTY_RESPONSE_BUFFER_SIZE
+            - g_tty_response_dispatcher.response_size;
+        if (copy_size > size) {
+            copy_size = size;
+        }
+        memcpy(g_tty_response_dispatcher.response
+                   + g_tty_response_dispatcher.response_size,
+               bytes,
+               copy_size);
+        g_tty_response_dispatcher.response_size += copy_size;
+        bytes += copy_size;
+        size -= copy_size;
+        sixel_tty_response_dispatcher_parse_locked();
+    }
+}
+
+static void
+sixel_tty_response_dispatcher_fail_locked(SIXELSTATUS status)
+{
+    sixel_tty_response_request_t *request;
+
+    request = g_tty_response_dispatcher.osc11_request;
+    if (request != NULL && !request->done) {
+        request->status = status;
+        request->done = 1;
+    }
+    request = g_tty_response_dispatcher.cpr_request;
+    if (request != NULL && !request->done) {
+        request->status = status;
+        request->done = 1;
+    }
+}
+
+static SIXELSTATUS
+sixel_tty_response_dispatcher_open_locked(void)
+{
+    struct termios new_termios;
+    SIXELSTATUS status;
+    int ttyfd;
+
+    status = SIXEL_FALSE;
+    ttyfd = -1;
+    memset(&new_termios, 0, sizeof(new_termios));
+
+    if (g_tty_response_dispatcher.ttyfd >= 0) {
+        return SIXEL_OK;
+    }
+    ttyfd = sixel_compat_open("/dev/tty", O_RDWR | O_NONBLOCK);
+    if (ttyfd < 0 || !sixel_compat_isatty(ttyfd)) {
+        if (ttyfd >= 0) {
+            (void)sixel_compat_close(ttyfd);
+        }
+        return SIXEL_FALSE;
+    }
+    status = sixel_tty_cbreak_fd(
+        ttyfd,
+        &g_tty_response_dispatcher.old_termios,
+        &new_termios);
+    if (SIXEL_FAILED(status)) {
+        (void)sixel_compat_close(ttyfd);
+        return status;
+    }
+    g_tty_response_dispatcher.ttyfd = ttyfd;
+    g_tty_response_dispatcher.response_size = 0u;
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_tty_response_dispatcher_close_locked(void)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (g_tty_response_dispatcher.user_count != 0) {
+        return status;
+    }
+    if (g_tty_response_dispatcher.ttyfd >= 0) {
+        status = sixel_tty_restore_fd(
+            g_tty_response_dispatcher.ttyfd,
+            &g_tty_response_dispatcher.old_termios);
+        (void)sixel_compat_close(g_tty_response_dispatcher.ttyfd);
+    }
+    g_tty_response_dispatcher.ttyfd = -1;
+    g_tty_response_dispatcher.reader_active = 0;
+    g_tty_response_dispatcher.response_size = 0u;
+
+    return status;
+}
+
+static SIXELSTATUS
+sixel_tty_response_dispatcher_begin(sixel_tty_response_request_t *request,
+                                    int kind,
+                                    int timeout_ms,
+                                    int keep_draining)
+{
+    sixel_tty_response_request_t **slot;
+    SIXELSTATUS status;
+
+    slot = NULL;
+    status = SIXEL_FALSE;
+
+    if (request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (timeout_ms < 0) {
+        timeout_ms = 0;
+    }
+    memset(request, 0, sizeof(*request));
+    request->kind = kind;
+    request->keep_draining = keep_draining != 0;
+    request->status = SIXEL_FALSE;
+    request->deadline = sixel_timer_now()
+        + (double)timeout_ms / 1000.0;
+
+    if (!sixel_tty_response_dispatcher_lock()) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+    slot = sixel_tty_response_dispatcher_slot(kind);
+    if (slot == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto unlock;
+    }
+    if (*slot != NULL) {
+        status = SIXEL_FALSE;
+        goto unlock;
+    }
+
+    if (g_tty_response_dispatcher.user_count == 0) {
+        status = sixel_tty_response_dispatcher_open_locked();
+        if (SIXEL_FAILED(status)) {
+            goto unlock;
+        }
+    }
+
+    request->response_start = g_tty_response_dispatcher.response_size;
+    *slot = request;
+    ++g_tty_response_dispatcher.user_count;
+    status = SIXEL_OK;
+
+unlock:
+    sixel_tty_response_dispatcher_unlock();
+    return status;
+}
+
+static void
+sixel_tty_response_dispatcher_end(sixel_tty_response_request_t *request)
+{
+    sixel_tty_response_request_t **slot;
+
+    slot = NULL;
+    if (request == NULL ||
+            !sixel_tty_response_dispatcher_lock()) {
+        return;
+    }
+    slot = sixel_tty_response_dispatcher_slot(request->kind);
+    if (slot != NULL && *slot == request) {
+        *slot = NULL;
+        --g_tty_response_dispatcher.user_count;
+    }
+    (void)sixel_tty_response_dispatcher_close_locked();
+    sixel_tty_response_dispatcher_unlock();
+}
+
+static SIXELSTATUS
+sixel_tty_response_dispatcher_guard_begin(void)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+    if (!sixel_tty_response_dispatcher_lock()) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+    if (g_tty_response_dispatcher.animation_guard_active) {
+        status = SIXEL_OK;
+        goto unlock;
+    }
+    status = sixel_tty_response_dispatcher_open_locked();
+    if (SIXEL_FAILED(status)) {
+        goto unlock;
+    }
+    g_tty_response_dispatcher.animation_guard_active = 1;
+    ++g_tty_response_dispatcher.user_count;
+
+unlock:
+    sixel_tty_response_dispatcher_unlock();
+    return status;
+}
+
+static SIXELSTATUS
+sixel_tty_response_dispatcher_guard_end(void)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (!sixel_tty_response_dispatcher_lock()) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+    if (g_tty_response_dispatcher.animation_guard_active) {
+        g_tty_response_dispatcher.animation_guard_active = 0;
+        --g_tty_response_dispatcher.user_count;
+        status = sixel_tty_response_dispatcher_close_locked();
+    }
+    sixel_tty_response_dispatcher_unlock();
+
+    return status;
+}
+
+static SIXELSTATUS
+sixel_tty_response_dispatcher_wait(
+    sixel_tty_response_request_t *request,
+    sixel_tty_query_stop_function should_stop,
+    void *context)
+{
+    SIXELSTATUS status;
+    int is_reader;
+    int ttyfd;
+    int readable;
+    int stop_requested;
+    int wait_usec;
+    ssize_t read_size;
+    char bytes[SIXEL_TTY_RESPONSE_READ_SIZE];
+
+    status = SIXEL_FALSE;
+    is_reader = 0;
+    ttyfd = -1;
+    readable = 0;
+    stop_requested = 0;
+    wait_usec = SIXEL_TTY_RESPONSE_READ_SLICE_USEC;
+    read_size = 0;
+
+    if (request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    for (;;) {
+        stop_requested = 0;
+        if (should_stop != NULL) {
+            stop_requested = should_stop(context);
+        }
+
+        if (!sixel_tty_response_dispatcher_lock()) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        if (!request->keep_draining &&
+                sixel_timer_now() >= request->deadline) {
+            request->status = SIXEL_FALSE;
+            request->done = 1;
+        }
+        if (request->done) {
+            status = request->status;
+            sixel_tty_response_dispatcher_unlock();
+            return status;
+        }
+
+        is_reader = 0;
+        ttyfd = g_tty_response_dispatcher.ttyfd;
+        if (!g_tty_response_dispatcher.reader_active) {
+            g_tty_response_dispatcher.reader_active = 1;
+            is_reader = 1;
+        }
+        sixel_tty_response_dispatcher_unlock();
+
+        if (!is_reader) {
+            sixel_sleep(1000u);
+            continue;
+        }
+
+        readable = 0;
+        wait_usec = SIXEL_TTY_RESPONSE_READ_SLICE_USEC;
+        if (stop_requested != 0) {
+            /* Consume a response which was already queued before shutdown. */
+            wait_usec = 0;
+        }
+        status = sixel_tty_wait_fd_readable(
+            ttyfd,
+            wait_usec,
+            &readable);
+        if (SIXEL_FAILED(status) && errno == EINTR) {
+            status = SIXEL_OK;
+            readable = 0;
+        }
+        read_size = 0;
+        if (SIXEL_SUCCEEDED(status) && readable != 0) {
+            read_size = read(ttyfd, bytes, sizeof(bytes));
+            if (read_size < 0 &&
+                    (errno == EAGAIN || errno == EWOULDBLOCK ||
+                     errno == EINTR)) {
+                read_size = 0;
+            }
+        }
+
+        if (!sixel_tty_response_dispatcher_lock()) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        if (SIXEL_FAILED(status)) {
+            sixel_tty_response_dispatcher_fail_locked(status);
+        } else if (read_size < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_tty_response_dispatcher_fail_locked(status);
+        } else if (read_size > 0) {
+            sixel_tty_response_dispatcher_append_locked(
+                bytes,
+                (size_t)read_size);
+        }
+        if (stop_requested != 0 && !request->done) {
+            request->status = SIXEL_FALSE;
+            request->done = 1;
+        }
+        g_tty_response_dispatcher.reader_active = 0;
+        sixel_tty_response_dispatcher_unlock();
+    }
+}
+#endif  /* SIXEL_TTY_HAVE_RESPONSE_DISPATCHER */
+
+#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
+static SIXELSTATUS
+sixel_tty_query_cursor_position(sixel_write_function f_write,
+                                void *priv,
+                                int timeout_ms,
+                                int *row,
+                                int *col)
+{
+#if SIXEL_TTY_HAVE_RESPONSE_DISPATCHER
+    sixel_tty_response_request_t request;
+    SIXELSTATUS status;
+    int nwrite;
+
+    status = SIXEL_FALSE;
+    nwrite = 0;
+    memset(&request, 0, sizeof(request));
+
+    if (f_write == NULL || row == NULL || col == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_tty_response_dispatcher_begin(
+        &request,
+        SIXEL_TTY_RESPONSE_CPR,
+        timeout_ms,
+        0);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    /* Register before writing so a terminal's immediate reply is routable. */
+    nwrite = f_write("\033[6n", 4, priv);
+    if (nwrite < 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        goto end;
+    }
+    status = sixel_tty_response_dispatcher_wait(&request, NULL, NULL);
+    if (SIXEL_SUCCEEDED(status)) {
+        *row = request.row;
+        *col = request.col;
+    }
+
+end:
+    sixel_tty_response_dispatcher_end(&request);
+    return status;
+#else
+    SIXELSTATUS status;
+    SIXELSTATUS restore_status;
+    struct termios old_termios;
+    struct termios new_termios;
+    double deadline;
+    int readable;
+    int remaining_usec;
+    int raw_active;
+    int nwrite;
+    ssize_t read_size;
+    size_t response_size;
+    char response[64];
+
+    status = SIXEL_FALSE;
+    restore_status = SIXEL_FALSE;
+    deadline = 0.0;
+    readable = 0;
+    remaining_usec = 0;
+    raw_active = 0;
+    nwrite = 0;
+    read_size = 0;
+    response_size = 0u;
+    response[0] = '\0';
+
+    if (f_write == NULL || row == NULL || col == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (timeout_ms < 0) {
+        timeout_ms = 0;
+    }
+    status = sixel_tty_cbreak(&old_termios, &new_termios);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    raw_active = 1;
+    nwrite = f_write("\033[6n", 4, priv);
+    if (nwrite < 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        goto end;
+    }
+
+    deadline = sixel_timer_now() + (double)timeout_ms / 1000.0;
+    for (;;) {
+        remaining_usec = (int)((deadline - sixel_timer_now()) * 1000000.0);
+        if (remaining_usec < 0) {
+            remaining_usec = 0;
+        }
+        status = sixel_tty_wait_fd_readable(STDIN_FILENO,
+                                            remaining_usec,
+                                            &readable);
+        if (SIXEL_FAILED(status) || !readable) {
+            status = SIXEL_FALSE;
+            goto end;
+        }
+        read_size = read(STDIN_FILENO,
+                         response + response_size,
+                         sizeof(response) - response_size);
+        if (read_size <= 0) {
+            status = SIXEL_FALSE;
+            goto end;
+        }
+        response_size += (size_t)read_size;
+        status = sixel_tty_parse_cpr_response(row,
+                                              col,
+                                              response,
+                                              response_size);
+        if (SIXEL_SUCCEEDED(status) || status != SIXEL_FALSE ||
+                response_size >= sizeof(response) ||
+                sixel_timer_now() >= deadline) {
+            goto end;
+        }
+    }
+
+end:
+    if (raw_active != 0) {
+        restore_status = sixel_tty_restore(&old_termios);
+        if (SIXEL_FAILED(restore_status) && SIXEL_SUCCEEDED(status)) {
+            status = restore_status;
+        }
+    }
+    return status;
+#endif
+}
+#endif  /* SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY */
+
 
 SIXELSTATUS
 sixel_tty_wait_stdin(int usec)
@@ -1431,147 +2083,58 @@ sixel_tty_query_osc11_bgcolor_with_drain(
     sixel_tty_query_stop_function should_stop,
     void *context)
 {
-#if HAVE_FCNTL_H && HAVE_SYS_SELECT_H && SIXEL_TTY_HAVE_TERMIOS_CBREAK \
-    && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if SIXEL_TTY_HAVE_RESPONSE_DISPATCHER
     static char const query[] = "\033]11;?\007";
+    sixel_tty_response_request_t request;
     SIXELSTATUS status;
-    struct termios old_termios;
-    struct termios new_termios;
     int ttyfd;
     ssize_t written;
-    ssize_t read_size;
-    int readable;
-    int remaining_ms;
-    int slice_ms;
-    int wait_usec;
-    int raw_active;
     int keep_draining;
-    int stop_requested;
-    size_t response_size;
-    char response[512];
 
     status = SIXEL_FALSE;
     ttyfd = -1;
     written = 0;
-    read_size = 0;
-    readable = 0;
-    remaining_ms = 0;
-    slice_ms = 0;
-    wait_usec = 0;
-    raw_active = 0;
     keep_draining = 0;
-    stop_requested = 0;
-    response_size = 0u;
-    response[0] = '\0';
+    memset(&request, 0, sizeof(request));
 
     if (bgcolor == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-
-    if (timeout_ms < 0) {
-        timeout_ms = 0;
-    }
     if (should_stop != NULL) {
         keep_draining = 1;
     }
-    remaining_ms = timeout_ms;
-
-    ttyfd = sixel_compat_open("/dev/tty", O_RDWR);
-    if (ttyfd < 0) {
-        return SIXEL_FALSE;
-    }
-    if (!sixel_compat_isatty(ttyfd)) {
-        goto cleanup;
-    }
-
-    status = sixel_tty_cbreak_fd(ttyfd, &old_termios, &new_termios);
+    status = sixel_tty_response_dispatcher_begin(
+        &request,
+        SIXEL_TTY_RESPONSE_OSC11,
+        timeout_ms,
+        keep_draining);
     if (SIXEL_FAILED(status)) {
-        goto cleanup;
+        return status;
     }
-    raw_active = 1;
 
+    if (!sixel_tty_response_dispatcher_lock()) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
+    ttyfd = g_tty_response_dispatcher.ttyfd;
+    sixel_tty_response_dispatcher_unlock();
     written = sixel_compat_write(ttyfd, query, sizeof(query) - 1u);
     if (written != (ssize_t)(sizeof(query) - 1u)) {
         status = SIXEL_FALSE;
-        goto cleanup;
+        goto end;
     }
 
-    for (;;) {
-        stop_requested = 0;
-        if (keep_draining != 0) {
-            stop_requested = should_stop(context);
-        }
-
-        wait_usec = 0;
-        if (stop_requested != 0) {
-            /* Drain whatever is already queued before leaving. */
-            wait_usec = 0;
-            slice_ms = 0;
-        } else if (remaining_ms > 0) {
-            /*
-             * Poll in small slices so a partial OSC response can be consumed
-             * across multiple reads while still honoring the total timeout.
-             */
-            slice_ms = remaining_ms;
-            if (slice_ms > 10) {
-                slice_ms = 10;
-            }
-            wait_usec = slice_ms * 1000;
-        } else {
-            slice_ms = 0;
-            if (keep_draining != 0) {
-                wait_usec = 10 * 1000;
-            }
-        }
-        status = sixel_tty_wait_fd_readable(ttyfd, wait_usec, &readable);
-        if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-        if (!readable) {
-            if (stop_requested != 0) {
-                goto cleanup;
-            }
-            if (remaining_ms <= 0 && keep_draining == 0) {
-                status = SIXEL_FALSE;
-                goto cleanup;
-            }
-            if (remaining_ms > 0) {
-                remaining_ms -= slice_ms;
-            }
-            continue;
-        }
-        if (response_size + 1u >= sizeof(response)) {
-            status = SIXEL_BAD_ARGUMENT;
-            goto cleanup;
-        }
-        read_size = read(ttyfd,
-                         response + response_size,
-                         sizeof(response) - response_size - 1u);
-        if (read_size <= 0) {
-            status = SIXEL_FALSE;
-            goto cleanup;
-        }
-        response_size += (size_t)read_size;
-        response[response_size] = '\0';
-
-        status = sixel_tty_parse_osc11_response(bgcolor,
-                                                response,
-                                                response_size);
-        if (SIXEL_SUCCEEDED(status)) {
-            goto cleanup;
-        }
-        if (status == SIXEL_BAD_ALLOCATION) {
-            goto cleanup;
-        }
+    status = sixel_tty_response_dispatcher_wait(&request,
+                                                should_stop,
+                                                context);
+    if (SIXEL_SUCCEEDED(status)) {
+        bgcolor[0] = request.bgcolor[0];
+        bgcolor[1] = request.bgcolor[1];
+        bgcolor[2] = request.bgcolor[2];
     }
 
-cleanup:
-    if (raw_active != 0) {
-        (void)sixel_tty_restore_fd(ttyfd, &old_termios);
-    }
-    if (ttyfd >= 0) {
-        (void)sixel_compat_close(ttyfd);
-    }
+end:
+    sixel_tty_response_dispatcher_end(&request);
     return status;
 #else
     (void)bgcolor;
@@ -1604,19 +2167,12 @@ sixel_tty_scroll(
     int nwrite;
 #if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
     struct winsize size = {0, 0, 0, 0};
-    struct termios old_termios;
-    struct termios new_termios;
-    SIXELSTATUS restore_status;
     int row = 0;
     int col = 0;
     int cellheight;
     int scroll;
-    int raw_active;
     char buffer[256];
     int result;
-
-    restore_status = SIXEL_FALSE;
-    raw_active = 0;
 
     /* confirm I/O file descriptors are tty devices */
     if (!sixel_compat_isatty(STDIN_FILENO)
@@ -1669,29 +2225,15 @@ sixel_tty_scroll(
         goto end;
     }
 
-    /* set the terminal to cbreak mode */
-    status = sixel_tty_cbreak(&old_termios, &new_termios);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    raw_active = 1;
-
-    /* request cursor position report */
-    nwrite = f_write("\033[6n", 4, priv);
-    if (nwrite < 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message(
-            "sixel_tty_scroll: f_write() failed.");
-        goto end;
-    }
-
     /*
-     * Wait for a cursor position report with a hard deadline.  scanf() is
-     * intentionally not used here because a timeout, a partial CPR, or an
-     * unrelated byte in the terminal input stream must not leave stdin
-     * blocked in a format-string read.
+     * Register CPR before writing its query.  The shared response dispatcher
+     * then routes either CPR or OSC11 without concurrent reads from the tty.
      */
-    status = sixel_tty_query_cursor_position(STDIN_FILENO, 1000, &row, &col);
+    status = sixel_tty_query_cursor_position(f_write,
+                                             priv,
+                                             1000,
+                                             &row,
+                                             &col);
     if (SIXEL_FAILED(status)) {
         /*
          * If we can't get any response from the terminal, move the cursor to
@@ -1756,14 +2298,6 @@ sixel_tty_scroll(
     status = SIXEL_OK;
 
 end:
-#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
-    if (raw_active != 0) {
-        restore_status = sixel_tty_restore(&old_termios);
-        if (SIXEL_FAILED(restore_status) && SIXEL_SUCCEEDED(status)) {
-            status = restore_status;
-        }
-    }
-#endif
     return status;
 }
 

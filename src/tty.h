@@ -62,6 +62,17 @@ sixel_tty_parse_cpr_response(int *row,
                              char const *response,
                              size_t response_size);
 
+#define SIXEL_TTY_DISPATCHED_OSC11 0x01u
+#define SIXEL_TTY_DISPATCHED_CPR   0x02u
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_dispatch_response(unsigned int *dispatched,
+                            unsigned char *bgcolor,
+                            int *row,
+                            int *col,
+                            char const *response,
+                            size_t response_size);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms);
 
