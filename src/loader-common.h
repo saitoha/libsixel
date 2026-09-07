@@ -86,8 +86,10 @@ typedef struct sixel_loader_timeline_callback_state {
     ((policy) == SIXEL_LOADER_ALPHA_POLICY_CLEAR || \
      (policy) == SIXEL_LOADER_ALPHA_POLICY_KEEP)
 
-#define SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST     0
-#define SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST 1
+#define SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST \
+    SIXEL_BACKGROUND_POLICY_FILE_FIRST
+#define SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST \
+    SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST
 
 /*
  * Install the immutable options for one synchronous loader invocation.

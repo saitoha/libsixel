@@ -32,6 +32,9 @@ begin
   unless Libsixel::API::SIXEL_OPTFLAG_BINNING_POLICY == 0x101
     raise RuntimeError, 'SIXEL_OPTFLAG_BINNING_POLICY value mismatch'
   end
+  unless Libsixel::API::SIXEL_OPTFLAG_BACKGROUND_POLICY == 0x102
+    raise RuntimeError, 'SIXEL_OPTFLAG_BACKGROUND_POLICY value mismatch'
+  end
 
   out = Libsixel::API::Util.make_outptr
   status = Libsixel::API.sixel_loader_new(out, 0)

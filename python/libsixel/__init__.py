@@ -86,6 +86,7 @@ SIXEL_DEFALUT_GIF_DELAY      = 1
 #        | WIC_ICO_MINSIZE -> (10)       |
 #        | START_FRAME_NO  -> (11)       |
 #        | BGCOLOR_SOURCE  -> (12)       |
+#        | BACKGROUND_POLICY -> (13)     |
 #        +-------------------------------+
 SIXEL_LOADER_OPTION_REQUIRE_STATIC = 1
 SIXEL_LOADER_OPTION_USE_PALETTE = 2
@@ -99,6 +100,7 @@ SIXEL_LOADER_OPTION_CONTEXT = 9
 SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE = 10
 SIXEL_LOADER_OPTION_START_FRAME_NO = 11
 SIXEL_LOADER_OPTION_BGCOLOR_SOURCE = 12
+SIXEL_LOADER_OPTION_BACKGROUND_POLICY = 13
 
 SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT = 0
 SIXEL_LOADER_BGCOLOR_SOURCE_ENV = 1
@@ -385,6 +387,9 @@ SIXEL_LOOP_DISABLE         = 2   # always disable loop
 SIXEL_ALPHA_POLICY_COMPOSITE = 0  # composite over resolved background
 SIXEL_ALPHA_POLICY_CLEAR   = 1   # request DCS P2=0 clearing
 SIXEL_ALPHA_POLICY_KEEP    = 2   # request DCS P2=1 preservation
+SIXEL_ALPHA_POLICY_AUTO    = 3   # clear or keep for retained output
+SIXEL_BACKGROUND_POLICY_FILE_FIRST = 0
+SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST = 1
 SIXEL_6DELTA_ERROR_DIFFUSE = 0   # diffuse error from kept RGB
 SIXEL_6DELTA_ERROR_SKIP    = 1   # skip diffusion on kept pixels
 
@@ -523,6 +528,7 @@ SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
                                       #            off, on
 SIXEL_OPTFLAG_SAMPLING_POLICY = 0x100  # --sampling-policy=POLICY
 SIXEL_OPTFLAG_BINNING_POLICY  = 0x101  # --binning-policy=POLICY
+SIXEL_OPTFLAG_BACKGROUND_POLICY = 0x102  # --background-policy=POLICY
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:
                                       #        crop source image to fit the
                                       #        specified geometry. REGION should
@@ -909,6 +915,7 @@ def sixel_loader_setopt(loader, option, value=None):
         SIXEL_LOADER_OPTION_INSECURE,
         SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE,
         SIXEL_LOADER_OPTION_START_FRAME_NO,
+        SIXEL_LOADER_OPTION_BACKGROUND_POLICY,
     }
 
     if option in int_options:

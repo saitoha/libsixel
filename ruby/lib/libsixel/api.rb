@@ -143,6 +143,9 @@ module Libsixel
     SIXEL_ALPHA_POLICY_COMPOSITE = 0 unless const_defined?(:SIXEL_ALPHA_POLICY_COMPOSITE)
     SIXEL_ALPHA_POLICY_CLEAR = 1 unless const_defined?(:SIXEL_ALPHA_POLICY_CLEAR)
     SIXEL_ALPHA_POLICY_KEEP = 2 unless const_defined?(:SIXEL_ALPHA_POLICY_KEEP)
+    SIXEL_ALPHA_POLICY_AUTO = 3 unless const_defined?(:SIXEL_ALPHA_POLICY_AUTO)
+    SIXEL_BACKGROUND_POLICY_FILE_FIRST = 0 unless const_defined?(:SIXEL_BACKGROUND_POLICY_FILE_FIRST)
+    SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST = 1 unless const_defined?(:SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST)
     SIXEL_OPTFLAG_ALPHA_POLICY = 'A' unless const_defined?(:SIXEL_OPTFLAG_ALPHA_POLICY)
     SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+' unless const_defined?(:SIXEL_OPTFLAG_TRANSPARENT_OFFSET)
     SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z' unless const_defined?(:SIXEL_OPTFLAG_6DELTA_THRESHOLD)
@@ -152,6 +155,7 @@ module Libsixel
     SIXEL_OPTFLAG_QUANTIZE_MODEL = 'Q' unless const_defined?(:SIXEL_OPTFLAG_QUANTIZE_MODEL)
     SIXEL_OPTFLAG_SAMPLING_POLICY = 0x100 unless const_defined?(:SIXEL_OPTFLAG_SAMPLING_POLICY)
     SIXEL_OPTFLAG_BINNING_POLICY = 0x101 unless const_defined?(:SIXEL_OPTFLAG_BINNING_POLICY)
+    SIXEL_OPTFLAG_BACKGROUND_POLICY = 0x102 unless const_defined?(:SIXEL_OPTFLAG_BACKGROUND_POLICY)
     SIXEL_OPTFLAG_MAPFILE = 'm' unless const_defined?(:SIXEL_OPTFLAG_MAPFILE)
     SIXEL_OPTFLAG_CROP = 'c' unless const_defined?(:SIXEL_OPTFLAG_CROP)
     SIXEL_OPTFLAG_WIDTH = 'w' unless const_defined?(:SIXEL_OPTFLAG_WIDTH)
@@ -289,7 +293,7 @@ module Libsixel
 
     def self.__loader_setopt_option_bucket(option)
       case option
-      when 1, 2, 3, 5, 6, 10, 11
+      when 1, 2, 3, 5, 6, 10, 11, 13
         :int
       when 4
         :bgcolor

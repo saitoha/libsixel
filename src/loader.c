@@ -128,6 +128,8 @@ struct sixel_loader {
     unsigned char bgcolor[3];
     int has_bgcolor;
     int bgcolor_source;
+    int background_policy;
+    int background_policy_override;
     int loop_control;
     int finsecure;
     int prefer_float32;
@@ -343,9 +345,11 @@ int
 sixel_loader_should_query_osc11_bgcolor(int enabled,
                                         int has_bgcolor,
                                         int stdout_is_tty,
-                                        int stderr_is_tty)
+                                        int stderr_is_tty,
+                                        int alpha_policy)
 {
-    if (enabled == 0 || has_bgcolor != 0) {
+    if (enabled == 0 || has_bgcolor != 0 ||
+        alpha_policy != SIXEL_ALPHA_POLICY_COMPOSITE) {
         return 0;
     }
     if (stdout_is_tty == 0 && stderr_is_tty == 0) {
@@ -517,25 +521,29 @@ loader_can_query_osc11_bgcolor(sixel_loader_t const *loader,
     int stdout_is_tty;
     int stderr_is_tty;
     int should_query;
+    int alpha_policy;
 
     if (loader == NULL) {
         return 0;
     }
     stdout_is_tty = sixel_compat_isatty(STDOUT_FILENO);
     stderr_is_tty = sixel_compat_isatty(STDERR_FILENO);
+    alpha_policy = loader_transparent_policy();
     should_query = sixel_loader_should_query_osc11_bgcolor(
         enabled,
         loader->has_bgcolor,
         stdout_is_tty,
-        stderr_is_tty);
+        stderr_is_tty,
+        alpha_policy);
     sixel_trace_topic_message(
         "loader",
         "LSXOSC1|enabled=%d|has_bgcolor=%d|stdout_tty=%d|"
-        "stderr_tty=%d|query=%d|timeout_ms=%d",
+        "stderr_tty=%d|alpha_policy=%d|query=%d|timeout_ms=%d",
         enabled != 0,
         loader->has_bgcolor != 0,
         stdout_is_tty != 0,
         stderr_is_tty != 0,
+        alpha_policy,
         should_query,
         timeout_ms);
 
@@ -902,6 +910,8 @@ sixel_loader_new(
     loader->bgcolor[2] = 0;
     loader->has_bgcolor = 0;
     loader->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
+    loader->background_policy = SIXEL_BACKGROUND_POLICY_FILE_FIRST;
+    loader->background_policy_override = 0;
     loader->loop_control = SIXEL_LOOP_AUTO;
     loader->finsecure = 0;
     loader->prefer_float32 = 0;
@@ -1062,6 +1072,25 @@ sixel_loader_setopt(
             goto end;
         }
         loader->bgcolor_source = *flag;
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_BACKGROUND_POLICY:
+        flag = (int const *)value;
+        if (flag == NULL) {
+            loader->background_policy = SIXEL_BACKGROUND_POLICY_FILE_FIRST;
+            loader->background_policy_override = 0;
+            status = SIXEL_OK;
+            break;
+        }
+        if (*flag != SIXEL_BACKGROUND_POLICY_FILE_FIRST &&
+            *flag != SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST) {
+            sixel_helper_set_additional_message(
+                "sixel_loader_setopt: background policy is invalid.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        loader->background_policy = *flag;
+        loader->background_policy_override = 1;
         status = SIXEL_OK;
         break;
     case SIXEL_LOADER_OPTION_LOOP_CONTROL:
@@ -1350,6 +1379,10 @@ sixel_loader_load_file(
     }
     loader_manager_resolve_loader_suboptions(active_order_resolution,
                                              &active_suboptions);
+    if (loader->background_policy_override != 0) {
+        /* A dedicated request option overrides loader-list defaults. */
+        active_suboptions.background_policy = loader->background_policy;
+    }
     thumbnail_size_explicit = loader_resolution_assigns_binding(
         active_order_resolution,
         SIXEL_SUBOPTION_BINDING_ID_1(thumbnail_size_hint));

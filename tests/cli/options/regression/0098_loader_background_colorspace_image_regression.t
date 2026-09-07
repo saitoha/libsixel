@@ -26,7 +26,8 @@ control_output="${artifact_dir}/0098-loader-background-colorspace-control-$$.six
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Lbuiltin:Pexplicit_first:Clinear!" -B#808080 "${input_image}" \
+    -A composite "-Lbuiltin:Pexplicit_first:Clinear!" \
+    -B#808080 "${input_image}" \
     2>&1 >"${short_output}") || {
     echo "not ok" 1 - "background_colorspace short conversion failed"
     exit 0
@@ -39,6 +40,7 @@ test "${short_trace#*LSXSUB1|*key=background_colorspace|stored=1|binding=backgro
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -A composite \
     --env "SIXEL_BACKGROUND_POLICY=explicit_first" \
     --env "SIXEL_LOADER_BACKGROUND_COLORSPACE=linear" "-Lbuiltin!" \
     -B#808080 "${input_image}" 2>&1 >"${env_output}") || {
@@ -52,6 +54,7 @@ test "${env_trace#*LSXSUB1|*key=background_colorspace|stored=1|binding=backgroun
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -A composite \
     --env "SIXEL_BACKGROUND_POLICY=explicit_first" \
     --env "SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma" "-Lbuiltin!" \
     -B#808080 "${input_image}" >"${control_output}" || {

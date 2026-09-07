@@ -26,6 +26,10 @@ my $ok = eval {
         Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BINNING_POLICY(),
         'hard'
     );
+    $encoder->setopt(
+        Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BACKGROUND_POLICY(),
+        'explicit_first'
+    );
     1;
 };
 

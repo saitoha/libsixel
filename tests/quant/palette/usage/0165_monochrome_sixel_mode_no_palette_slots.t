@@ -14,7 +14,7 @@ set +x
 input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 sixel_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -L builtin -e -o - "${input_image}") || {
+    -A composite -L builtin -e -o - "${input_image}") || {
     echo "not ok" 1 - "monochrome SIXEL mode emitted palette slots"
     exit 0
 }

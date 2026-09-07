@@ -119,6 +119,10 @@ final class Constants
     public const SIXEL_ALPHA_POLICY_COMPOSITE = 0;
     public const SIXEL_ALPHA_POLICY_CLEAR = 1;
     public const SIXEL_ALPHA_POLICY_KEEP = 2;
+    public const SIXEL_ALPHA_POLICY_AUTO = 3;
+
+    public const SIXEL_BACKGROUND_POLICY_FILE_FIRST = 0;
+    public const SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST = 1;
 
     public const SIXEL_6DELTA_ERROR_DIFFUSE = 0;
     public const SIXEL_6DELTA_ERROR_SKIP = 1;
@@ -187,6 +191,7 @@ final class Constants
     public const SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U';
     public const SIXEL_OPTFLAG_ORMODE = 'O';
     public const SIXEL_OPTFLAG_ALPHA_POLICY = 'A';
+    public const SIXEL_OPTFLAG_BACKGROUND_POLICY = 0x102;
     public const SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+';
     public const SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z';
     public const SIXEL_OPTFLAG_6DELTA_ERROR = 'Y';
@@ -212,6 +217,7 @@ final class Constants
     public const SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE = 10;
     public const SIXEL_LOADER_OPTION_START_FRAME_NO = 11;
     public const SIXEL_LOADER_OPTION_BGCOLOR_SOURCE = 12;
+    public const SIXEL_LOADER_OPTION_BACKGROUND_POLICY = 13;
 
     public const SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT = 0;
     public const SIXEL_LOADER_BGCOLOR_SOURCE_ENV = 1;

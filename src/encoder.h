@@ -310,6 +310,8 @@ struct sixel_encoder {
     int ormode;
     int transparent_policy;
     int transparent_policy_override;
+    int background_policy;
+    int background_policy_override;
     int transparent_offset_left;
     int transparent_offset_top;
     unsigned char *accumulation_pixels;

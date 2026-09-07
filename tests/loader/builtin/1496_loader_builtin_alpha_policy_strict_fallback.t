@@ -19,6 +19,20 @@ out_default=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
+out_auto=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_ALPHA_POLICY=auto \
+    -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
+    echo "not ok 1 - auto alpha policy render failed"
+    exit 0
+}
+
+out_clear=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_ALPHA_POLICY=clear \
+    -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
+    echo "not ok 1 - clear alpha policy render failed"
+    exit 0
+}
+
 out_composite=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_ALPHA_POLICY=composite \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
@@ -40,8 +54,13 @@ out_keep=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${out_default}" = "${out_composite}" || {
-    echo "not ok 1 - default policy mismatch against explicit composite"
+test "${out_default}" = "${out_auto}" || {
+    echo "not ok 1 - default policy mismatch against explicit auto"
+    exit 0
+}
+
+test "${out_default}" = "${out_clear}" || {
+    echo "not ok 1 - default auto policy did not resolve to clear"
     exit 0
 }
 
@@ -50,8 +69,13 @@ test "${out_default}" = "${out_invalid}" || {
     exit 0
 }
 
+test "${out_default}" != "${out_composite}" || {
+    echo "not ok 1 - composite did not change alpha-zero behavior"
+    exit 0
+}
+
 test "${out_default}" != "${out_keep}" || {
-    echo "not ok 1 - keep policy did not change alpha-zero behavior"
+    echo "not ok 1 - keep policy did not change the DCS request"
     exit 0
 }
 

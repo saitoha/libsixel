@@ -91,7 +91,8 @@ SIXEL_INTERNAL_API int
 sixel_loader_should_query_osc11_bgcolor(int enabled,
                                         int has_bgcolor,
                                         int stdout_is_tty,
-                                        int stderr_is_tty);
+                                        int stderr_is_tty,
+                                        int alpha_policy);
 
 SIXEL_INTERNAL_API int
 sixel_loader_wait_for_condition(sixel_loader_wait_predicate_t predicate,

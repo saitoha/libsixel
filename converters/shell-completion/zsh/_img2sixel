@@ -175,9 +175,17 @@ _encodepolicy() {
 _alphapolicy() {
   _values \
     'ALPHAPOLICY' \
-    'composite[composite alpha over the resolved background (default)]' \
+    'auto[clear normally; keep for transparent offset or 6delta (default)]' \
+    'composite[composite alpha over the resolved background]' \
     'clear[request P2=0 clearing for omitted pixels]' \
     'keep[request P2=1 preservation for omitted pixels]'
+}
+
+_backgroundpolicy() {
+  _values \
+    'BACKGROUNDPOLICY' \
+    'file_first[prefer file background (default)]' \
+    'explicit_first[prefer -B, SIXEL_BGCOLOR, or OSC 11]'
 }
 
 _6deltaerror() {
@@ -1074,6 +1082,8 @@ _arguments -S -s -A "-*" -S \
   {-b,--builtin-palette=}'[select built-in palette type]':builtinpalette:_builtinpalette \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
   {-B,--bgcolor=}'[select background color]' \
+  '--background-policy='\
+'[select background source priority]':backgroundpolicy:_backgroundpolicy \
   {-A,--alpha-policy=}'[select alpha policy]':alphapolicy:_alphapolicy \
   {-+,--transparent-offset=}'[add transparent left/top pixel offset]' \
   {-Z,--6delta-threshold=}'[set RGB tolerance for 6delta encoding]' \

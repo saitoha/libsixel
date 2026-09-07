@@ -16,7 +16,8 @@ keycolor_header="$(printf '\033P0;1q')"
 output_text=''
 status_code=0
 
-output_text=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! \
+output_text=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -A composite -Lbuiltin:cms_engine=auto! \
     -d fs:scan=raster "${input_psd}" 2>&1) || status_code=$?
 
 test "${status_code}" -eq 0 || {

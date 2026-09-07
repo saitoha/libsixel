@@ -20,7 +20,7 @@ builtin_explicit_first="${ARTIFACT_LOCAL_DIR}/builtin_bgan6a08_explicit_first.si
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${builtin_default}" || {
-    echo "not ok" 1 - "builtin default bKGD composite conversion failed"
+    echo "not ok" 1 - "builtin default bKGD conversion failed"
     exit 0
 }
 

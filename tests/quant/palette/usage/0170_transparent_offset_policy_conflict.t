@@ -25,7 +25,7 @@ test "${status}" -ne 0 || {
 }
 
 case "${output}" in
-    *"transparent-offset requires alpha-policy=keep"*) ;;
+    *"transparent-offset requires alpha-policy=auto or keep"*) ;;
     *)
         echo "not ok 1 - transparent-offset conflict message mismatch"
         exit 0

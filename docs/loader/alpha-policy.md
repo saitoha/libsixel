@@ -10,11 +10,12 @@ takes precedence over the environment.
 
 | Policy | Loader treatment | SIXEL treatment |
 | --- | --- | --- |
+| `auto` | Preserve source alpha without terminal background probing. | Select `clear` normally and `keep` when transparent offset or 6delta output requires retained pixels. |
 | `composite` | Composite source alpha over the resolved background. | Emit opaque output when composition succeeds. If no background can be resolved, fall back to `keep`. |
 | `clear` | Preserve alpha-zero pixels. | Omit alpha-zero pixels and emit DCS `P2=0`, requesting the terminal to clear omitted pixels. |
 | `keep` | Preserve alpha-zero pixels. | Omit alpha-zero pixels and emit DCS `P2=1`, requesting the terminal to keep existing pixels. |
 
-`composite` is the default. These are the only accepted policy names.
+`auto` is the default. These are the only accepted policy names.
 Semi-transparent pixels are composited when a background is available because
 SIXEL cannot represent partial alpha.
 
@@ -48,10 +49,13 @@ The loader may resolve a background from these sources:
 - an OSC 11 terminal background reply when probing is enabled and succeeds;
 - a file background such as PNG `bKGD` or the GIF logical-screen background.
 
-`SIXEL_BACKGROUND_POLICY` selects whether a supported file background or an
-explicit color wins. OSC 11 colors are terminal UI colors and are interpreted
-as gamma-encoded values. See `img2sixel -H` for the background source,
-priority, colorspace, and OSC 11 controls.
+`--background-policy=POLICY` selects whether a supported file background or an
+external color wins. `file_first` is the default; `explicit_first` prefers
+`-B`, `SIXEL_BGCOLOR`, or a successful OSC 11 reply. The dedicated option
+overrides the loader suboption and `SIXEL_BACKGROUND_POLICY`. OSC 11 colors
+are terminal UI colors and are interpreted as gamma-encoded values. OSC 11 is
+queried only for effective `composite` policy. See `img2sixel -H` for the
+background source, priority, colorspace, and OSC 11 controls.
 
 When `composite` cannot resolve any source, the loader must not expose hidden
 RGB from fully transparent pixels as visible output. It retains the alpha-zero
@@ -77,10 +81,10 @@ including alpha zero, and clear the mask after successful composition.
 
 ## Related options
 
-`--transparent-offset` requires `keep` because positional padding relies on
-the `P2=1` image-plane request. `clear` and `composite` are rejected when an
-explicit transparent offset is active. 6delta accumulation uses the same
-`P2=1` contract.
+`--transparent-offset` and 6delta output require `keep` because their retained
+pixels rely on the `P2=1` image-plane request. `auto` selects `keep` for either
+feature. Explicit `clear` and `composite` are rejected when either feature is
+active.
 
 Regression coverage is split between loader tests, which verify pixel
 composition and mask retention, and encoder/palette tests, which verify DCS

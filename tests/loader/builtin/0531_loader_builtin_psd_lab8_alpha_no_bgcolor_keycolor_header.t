@@ -18,7 +18,8 @@ output_bg=''
 status_no=0
 status_bg=0
 
-output_no=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
+output_no=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -A composite -Lbuiltin! \
     -d fs:scan=raster "${input_psd}" 2>&1) || status_no=$?
 
 test "${status_no}" -eq 0 || {
@@ -31,7 +32,8 @@ test "${output_no#*"${keycolor_header}"}" != "${output_no}" || {
     exit 0
 }
 
-output_bg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
+output_bg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -A composite -Lbuiltin! \
     -d fs:scan=raster -B "#000000" "${input_psd}" 2>&1) || status_bg=$?
 
 test "${status_bg}" -eq 0 || {

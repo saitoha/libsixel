@@ -286,6 +286,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_ALPHA_POLICY_COMPOSITE 0  /* composite over resolved background */
 #define SIXEL_ALPHA_POLICY_CLEAR     1  /* request DCS P2=0 clearing */
 #define SIXEL_ALPHA_POLICY_KEEP      2  /* request DCS P2=1 preservation */
+#define SIXEL_ALPHA_POLICY_AUTO      3  /* clear, or keep for retained output */
+
+/* background source priority for alpha composition */
+#define SIXEL_BACKGROUND_POLICY_FILE_FIRST     0
+#define SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST 1
 
 /* 6delta encoding error handling */
 #define SIXEL_6DELTA_ERROR_DIFFUSE 0  /* diffuse error from kept RGB */
@@ -546,6 +551,9 @@ typedef int SIXELSTATUS;
                                                      soft
                                                    This option intentionally
                                                    has no short form. */
+#define SIXEL_OPTFLAG_BACKGROUND_POLICY (0x102) /* --background-policy=POLICY:
+                                                   select background source
+                                                   priority; no short form */
 #define SIXEL_OPTFLAG_MERGE_POLICY      ('F')  /*
                                                   -F POLICY,
                                                   --merge-policy=POLICY:
@@ -784,7 +792,7 @@ typedef int SIXELSTATUS;
                                                 */
 /* -A ALPHAPOLICY */
 /* --alpha-policy=ALPHAPOLICY */
-/* choose source alpha and omitted pixel policy: composite, clear, keep */
+/* choose source alpha and omitted pixel policy: auto, composite, clear, keep */
 #define SIXEL_OPTFLAG_ALPHA_POLICY ('A')
 /* -+ LEFT,TOP, --transparent-offset=LEFT,TOP */
 /* add transparent left/top pixel offset for P2=1 image-plane reuse */
@@ -1769,6 +1777,7 @@ typedef struct sixel_loader sixel_loader_t;
 #define SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE   (10)
 #define SIXEL_LOADER_OPTION_START_FRAME_NO    (11)
 #define SIXEL_LOADER_OPTION_BGCOLOR_SOURCE    (12)
+#define SIXEL_LOADER_OPTION_BACKGROUND_POLICY (13)
 
 /* values for SIXEL_LOADER_OPTION_BGCOLOR_SOURCE */
 #define SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT  (0)

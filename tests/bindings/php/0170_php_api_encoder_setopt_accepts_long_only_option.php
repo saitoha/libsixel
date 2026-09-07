@@ -24,6 +24,10 @@ try {
         Constants::SIXEL_OPTFLAG_BINNING_POLICY,
         'hard'
     );
+    $encoder->setopt(
+        Constants::SIXEL_OPTFLAG_BACKGROUND_POLICY,
+        'explicit_first'
+    );
 
     echo "ok 1 - encoder accepts a numeric long-only option flag\n";
 } catch (Throwable $e) {

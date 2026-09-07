@@ -20,14 +20,14 @@ scale_rgb=0
 scale_has_keycolor=0
 
 scale_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
-    -Lbuiltin:cms_engine=none! -d fs:scan=raster \
+    -A composite -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r nearest "${input_png}" 2>&1 >/dev/null) || {
     echo "not ok 1 - scaled pal8 transparent render failed"
     exit 0
 }
 
 scale_out=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lbuiltin:cms_engine=none! -d fs:scan=raster \
+    -A composite -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r nearest "${input_png}") || {
     echo "not ok 1 - scaled pal8 transparent sixel output failed"
     exit 0

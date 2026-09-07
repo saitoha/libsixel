@@ -41,14 +41,23 @@ wait_probe_predicate(void *context)
 static int
 run_query_gate_cases(void)
 {
-    if (!sixel_loader_should_query_osc11_bgcolor(1, 0, 1, 0) ||
-            !sixel_loader_should_query_osc11_bgcolor(1, 0, 0, 1)) {
+    if (!sixel_loader_should_query_osc11_bgcolor(
+            1, 0, 1, 0, SIXEL_ALPHA_POLICY_COMPOSITE) ||
+            !sixel_loader_should_query_osc11_bgcolor(
+                1, 0, 0, 1, SIXEL_ALPHA_POLICY_COMPOSITE)) {
         fprintf(stderr, "enabled query should use either tty stream\n");
         return 1;
     }
-    if (sixel_loader_should_query_osc11_bgcolor(0, 0, 1, 1) ||
-            sixel_loader_should_query_osc11_bgcolor(1, 1, 1, 1) ||
-            sixel_loader_should_query_osc11_bgcolor(1, 0, 0, 0)) {
+    if (sixel_loader_should_query_osc11_bgcolor(
+            0, 0, 1, 1, SIXEL_ALPHA_POLICY_COMPOSITE) ||
+            sixel_loader_should_query_osc11_bgcolor(
+                1, 1, 1, 1, SIXEL_ALPHA_POLICY_COMPOSITE) ||
+            sixel_loader_should_query_osc11_bgcolor(
+                1, 0, 0, 0, SIXEL_ALPHA_POLICY_COMPOSITE) ||
+            sixel_loader_should_query_osc11_bgcolor(
+                1, 0, 1, 1, SIXEL_ALPHA_POLICY_CLEAR) ||
+            sixel_loader_should_query_osc11_bgcolor(
+                1, 0, 1, 1, SIXEL_ALPHA_POLICY_KEEP)) {
         fprintf(stderr, "disabled OSC11 query gate was accepted\n");
         return 1;
     }

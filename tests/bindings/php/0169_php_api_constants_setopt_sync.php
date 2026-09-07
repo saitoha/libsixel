@@ -54,6 +54,7 @@ try {
         'SIXEL_OPTFLAG_WORKING_COLORSPACE' => 'W',
         'SIXEL_OPTFLAG_SAMPLING_POLICY' => 0x100,
         'SIXEL_OPTFLAG_BINNING_POLICY' => 0x101,
+        'SIXEL_OPTFLAG_BACKGROUND_POLICY' => 0x102,
     ];
     foreach ($checks as $name => $expectedValue) {
         $actual = $reflection->getConstant($name);

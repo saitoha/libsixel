@@ -1369,6 +1369,10 @@ static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
 
 static sixel_option_value_schema_t const g_alpha_policy_values[] = {
     {
+        "auto", SIXEL_ALPHA_POLICY_AUTO, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
         "composite", SIXEL_ALPHA_POLICY_COMPOSITE, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
@@ -1378,6 +1382,17 @@ static sixel_option_value_schema_t const g_alpha_policy_values[] = {
     },
     {
         "keep", SIXEL_ALPHA_POLICY_KEEP, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    }
+};
+
+static sixel_option_value_schema_t const g_background_policy_values[] = {
+    {
+        "file_first", SIXEL_BACKGROUND_POLICY_FILE_FIRST, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "explicit_first", SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     }
 };
@@ -1579,8 +1594,8 @@ static sixel_suboption_choice_t const g_loader_bmp_environment_choices[] = {
 };
 
 static sixel_suboption_choice_t const g_loader_background_policy_choices[] = {
-    { "file_first", SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST },
-    { "explicit_first", SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST }
+    { "file_first", SIXEL_BACKGROUND_POLICY_FILE_FIRST },
+    { "explicit_first", SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST }
 };
 
 static sixel_suboption_choice_t const
@@ -3042,8 +3057,18 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTION_MATCH_EXACT,
         "SIXEL_ALPHA_POLICY",
         "cannot parse alpha policy option.",
-        SIXEL_ALPHA_POLICY_COMPOSITE,
+        SIXEL_ALPHA_POLICY_AUTO,
         g_alpha_policy_values),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_BACKGROUND_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        SIXEL_OPTFLAG_BACKGROUND_POLICY,
+        "background-policy",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_BACKGROUND_POLICY_FILE_FIRST,
+        g_background_policy_values,
+        NULL),
     SIXEL_REGISTRY_SCALAR_UINT(
         SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
         SIXEL_OPTION_SCOPE_ENCODER,

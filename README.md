@@ -943,9 +943,24 @@ steps.
                              rgb:rr/gg/bb
                              rgb:rrr/ggg/bbb
                              rgb:rrrr/gggg/bbbb
+--background-policy=POLICY
+                           choose the background source used for alpha
+                           composition
+                             file_first -> prefer PNG bKGD or the GIF
+                                           logical-screen background
+                                           (default)
+                             explicit_first -> prefer -B,
+                                               SIXEL_BGCOLOR, or an OSC 11
+                                               reply
+                           This dedicated option overrides the loader
+                           background_policy suboption and
+                           SIXEL_BACKGROUND_POLICY.
 -A ALPHAPOLICY, --alpha-policy=ALPHAPOLICY
                            choose source alpha and omitted SIXEL
-                           pixel policy (default: composite)
+                           pixel policy (default: auto)
+                             auto      -> use clear normally and keep for
+                                          transparent offset or 6delta
+                                          output
                              composite -> composite source alpha over
                                           the resolved background
                              clear     -> preserve alpha-zero and emit
@@ -955,11 +970,12 @@ steps.
 -+ LEFT,TOP, --transparent-offset=LEFT,TOP
                            add transparent left/top pixel offset with
                            DCS P2=1 image-plane reuse. 0,0 disables
-                           the offset. Requires alpha-policy=keep.
+                           the offset. Requires alpha-policy=auto or keep.
 -Z DELTA, --6delta-threshold=DELTA
                            set RGB per-channel tolerance for
                            6delta encoding. DELTA must be 0..255
-                           (default: 0).
+                           (default: 0). Requires
+                           alpha-policy=auto or keep.
 -Y MODE, --6delta-error=MODE
                            choose 6delta kept-pixel error handling.
                              diffuse -> diffuse error from the
@@ -1046,7 +1062,8 @@ SIXEL_LOADER_OSC11_BG_QUERY
                            variable to "1" only when it is
                            unset. When probing succeeds, the
                            returned background is treated as
-                           gamma.
+                           gamma. Only effective
+                           alpha-policy=composite probes the terminal.
 SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
                            timeout in milliseconds for the
                            loader OSC11 background query wait.
@@ -1082,10 +1099,16 @@ SIXEL_LOADER_BACKGROUND_COLORSPACE
                            Accepts gamma (default) or linear.
                            Ignored when bgcolor comes from
                            SIXEL_LOADER_OSC11_BG_QUERY.
+SIXEL_BACKGROUND_POLICY    choose background priority for builtin PNG,
+                           APNG, and GIF composition. Accepts file_first
+                           (default) or explicit_first. file_first prefers
+                           file background over -B, SIXEL_BGCOLOR, or
+                           OSC 11; explicit_first reverses that priority.
+                           --background-policy takes precedence.
 SIXEL_ALPHA_POLICY         control source alpha and omitted SIXEL pixel
-                           handling. Accepts composite (default), clear,
-                           or keep. The values and semantics are identical
-                           to -A/--alpha-policy.
+                           handling. Accepts auto (default), composite,
+                           clear, or keep. The values and semantics are
+                           identical to -A/--alpha-policy.
 SIXEL_6DELTA_THRESHOLD     set default RGB per-channel tolerance for
                            6delta encoding. Accepts 0..255.
                            Invalid values keep the built-in default 0.

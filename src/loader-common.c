@@ -93,7 +93,7 @@ static int loader_background_colorspace_initialized;
 static int loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
 static int loader_transparent_policy_initialized;
 static int loader_transparent_policy_value =
-    SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
+    SIXEL_LOADER_ALPHA_POLICY_CLEAR;
 static int loader_background_policy_initialized;
 static int loader_background_policy_value =
     SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
@@ -820,15 +820,17 @@ loader_initialize_transparent_policy(void)
     }
     loader_transparent_policy_initialized = 1;
     loader_transparent_policy_value =
-        SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
-    policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
+        SIXEL_LOADER_ALPHA_POLICY_CLEAR;
+    policy = SIXEL_ALPHA_POLICY_AUTO;
     if (sixel_option_resolve_scalar_environment(
             SIXEL_OPTION_SCHEMA_ALPHA_POLICY,
             &value,
             NULL,
             0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
         policy = value.int_value;
-        loader_transparent_policy_value = policy;
+        if (policy != SIXEL_ALPHA_POLICY_AUTO) {
+            loader_transparent_policy_value = policy;
+        }
     }
     loader_background_unlock();
 }

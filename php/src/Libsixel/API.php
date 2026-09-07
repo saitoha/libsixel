@@ -220,6 +220,7 @@ CDEF;
             Constants::SIXEL_LOADER_OPTION_INSECURE,
             Constants::SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE,
             Constants::SIXEL_LOADER_OPTION_START_FRAME_NO,
+            Constants::SIXEL_LOADER_OPTION_BACKGROUND_POLICY,
         ];
 
         if (in_array($option, $intOptions, true)) {

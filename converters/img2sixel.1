@@ -931,10 +931,23 @@ rgb:rrr/ggg/bbb
 .br
 rgb:rrrr/gggg/bbbb
 .TP 5
+.B \-\-background\-policy=\fIPOLICY\fP
+choose the background source used for alpha composition.
+.br
+file_first -> prefer PNG bKGD or the GIF logical-screen background (default).
+.br
+explicit_first -> prefer \fB\-B\fP, \fBSIXEL_BGCOLOR\fP, or an OSC 11 reply.
+.br
+This dedicated option overrides the loader \fBbackground_policy\fP suboption
+and \fBSIXEL_BACKGROUND_POLICY\fP.
+.TP 5
 .B \-A \fIALPHAPOLICY\fP, \-\-alpha\-policy=\fIALPHAPOLICY\fP
 choose source alpha and omitted SIXEL pixel policy
 .br
-composite -> composite source alpha over the resolved background (default).
+auto -> use clear normally and keep for transparent offset or 6delta output
+(default).
+.br
+composite -> composite source alpha over the resolved background.
 Sources are \fB-B\fP, OSC 11, and supported file backgrounds. If unresolved,
 fall back to keep.
 .br
@@ -951,12 +964,13 @@ terminal-dependent.
 .B \-+ \fILEFT,TOP\fP, \-\-transparent\-offset=\fILEFT,TOP\fP
 add transparent left/top pixel offset with DCS P2=1 image-plane reuse.
 0,0 disables the offset. Requires
-\fB--alpha-policy=keep\fP. Incompatible with \fB-O\fP and
+\fB--alpha-policy=auto\fP or \fBkeep\fP. Incompatible with \fB-O\fP and
 \fB-I\fP.
 .TP 5
 .B \-Z \fIDELTA\fP, \-\-6delta\-threshold=\fIDELTA\fP
 enable 6delta encoding and set RGB per-channel tolerance.
 DELTA must be 0..255 (default: disabled).
+Requires \fB--alpha-policy=auto\fP or \fBkeep\fP.
 .TP 5
 .B \-Y \fIMODE\fP, \-\-6delta\-error=\fIMODE\fP
 choose 6delta kept-pixel error handling.
@@ -1384,7 +1398,8 @@ provided. Use 0 or 1. The loader suboption
 \fB:osc11_query=0|1\fP (short form \fB:Q0\fP or \fB:Q1\fP) overrides this
 setting. Default is off.
 \fIimg2sixel\fP sets this variable to \(dq1\(dq only when it is unset.
-When probing succeeds, the loader treats the returned background as gamma.
+The loader probes only when the effective alpha policy is composite. When
+probing succeeds, it treats the returned background as gamma.
 .TP 5
 .B SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
 .br
@@ -1630,14 +1645,17 @@ ignored when OSC11 query supplies the background color.
 .B SIXEL_BACKGROUND_POLICY
 .br
 choose background priority for builtin PNG/APNG/GIF composition.
-"file_first" (default) prefers file background over \fB-B\fP/\fBSIXEL_BGCOLOR\fP.
-"explicit_first" prefers \fB-B\fP/\fBSIXEL_BGCOLOR\fP over file background.
+"file_first" (default) prefers file background over \fB-B\fP,
+\fBSIXEL_BGCOLOR\fP, or OSC 11.
+"explicit_first" gives those external sources priority over file background.
 Invalid or empty values fall back to "file_first".
+The \fB--background-policy\fP option takes precedence.
 .TP 5
 .B SIXEL_ALPHA_POLICY
 .br
 control source alpha and omitted SIXEL pixel handling.
 The values and semantics are identical to \fB-A\fP/\fB--alpha-policy\fP.
+The default is "auto".
 .TP 5
 .B SIXEL_6DELTA_THRESHOLD
 .br

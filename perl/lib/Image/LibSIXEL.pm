@@ -312,6 +312,7 @@ sub sixel_loader_setopt {
     my $opt_insecure;
     my $opt_wic_ico_minsize;
     my $opt_start_frame_no;
+    my $opt_background_policy;
     my $opt_bgcolor;
     my $opt_loader_order;
 
@@ -333,6 +334,8 @@ sub sixel_loader_setopt {
         Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE();
     $opt_start_frame_no =
         Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_START_FRAME_NO();
+    $opt_background_policy =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_BACKGROUND_POLICY();
     $opt_bgcolor =
         Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_BGCOLOR();
     $opt_loader_order =
@@ -344,7 +347,8 @@ sub sixel_loader_setopt {
             $option == $opt_loop_control ||
             $option == $opt_insecure ||
             $option == $opt_wic_ico_minsize ||
-            $option == $opt_start_frame_no) {
+            $option == $opt_start_frame_no ||
+            $option == $opt_background_policy) {
         ($value_arg, $value_keepalive) =
             _coerce_loader_int_option_value($value);
     } elsif ($option == $opt_bgcolor) {

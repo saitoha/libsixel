@@ -889,12 +889,25 @@ static cli_option_help_t const g_option_help_table[] = {
         "    #rrrgggbbb #rrrrggggbbbb rgb:r/g/b rgb:rr/gg/bb rgb:rrr/ggg/bbb rgb:rrrr/gggg/bbbb\n"
     },
     {
+        SIXEL_OPTFLAG_BACKGROUND_POLICY,
+        "background-policy",
+        "--background-policy=POLICY\n"
+        "    choose the background source used for alpha composition\n"
+        "      file_first     -> prefer PNG bKGD or the GIF background\n"
+        "                        (default)\n"
+        "      explicit_first -> prefer -B, SIXEL_BGCOLOR, or OSC 11\n"
+        "    this dedicated option overrides -L background_policy and\n"
+        "    SIXEL_BACKGROUND_POLICY.\n"
+    },
+    {
         'A',
         "alpha-policy",
         "-A ALPHAPOLICY, --alpha-policy=ALPHAPOLICY\n"
         "    choose source alpha and omitted SIXEL pixel policy\n"
+        "      auto      -> clear by default; select keep for transparent\n"
+        "                   offset or 6delta output (default)\n"
         "      composite -> composite source alpha over the resolved\n"
-        "                   background (default). Sources are -B, OSC 11,\n"
+        "                   background. Sources are -B, OSC 11,\n"
         "                   and supported file backgrounds. If unresolved,\n"
         "                   fall back to keep\n"
         "      clear     -> preserve alpha-zero and emit DCS P2=0, requesting\n"
@@ -911,7 +924,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "-+ LEFT,TOP, --transparent-offset=LEFT,TOP\n"
         "    add transparent left/top pixel offset with DCS P2=1 image-plane\n"
         "    reuse\n"
-        "    (0,0 disables the offset; requires alpha-policy=keep)\n"
+        "    (0,0 disables the offset; requires alpha-policy=auto or keep)\n"
     },
     {
         'Z',
@@ -927,7 +940,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    pixels stay slightly off.  the shortcut compares against the\n"
         "    quantized color on screen, so at 0 it never fires and every\n"
         "    pixel goes through the lookup.  DELTA must be 0..255\n"
-        "    (default: disabled).\n"
+        "    (default: disabled). Requires alpha-policy=auto or keep.\n"
     },
     {
         'Y',
@@ -1251,6 +1264,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "Use 0 or 1. The -L suboption osc11_query (short form Qvalue)\n"
         "overrides this setting. Defaults to off, but\n"
         "img2sixel sets it to '1' when the variable is unset.\n"
+        "Only effective alpha-policy=composite probes the terminal.\n"
         "When OSC11 succeeds, background colorspace is forced to gamma."
     },
     {
@@ -1507,14 +1521,16 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_BACKGROUND_POLICY",
         "choose background priority for builtin PNG/APNG/GIF composition.\n"
-        "file_first (default) prefers file background over -B/SIXEL_BGCOLOR.\n"
-        "explicit_first prefers -B/SIXEL_BGCOLOR over file background.\n"
-        "Invalid or empty values fall back to file_first."
+        "file_first (default) prefers file background over -B, environment,\n"
+        "or OSC 11. explicit_first prefers those external sources.\n"
+        "Invalid or empty values fall back to file_first.\n"
+        "--background-policy takes precedence."
     },
     {
         "SIXEL_ALPHA_POLICY",
         "control source alpha and omitted SIXEL pixel handling.\n"
-        "The values and semantics are identical to -A/--alpha-policy."
+        "The values and semantics are identical to -A/--alpha-policy.\n"
+        "The default is auto."
     },
     {
         "SIXEL_LOADER_ORIENTATION",
@@ -3240,6 +3256,8 @@ img2sixel_main(int argc, char *argv[])
         {"clustering-colorspace", required_argument,  &long_opt, 'X'},
         {"working-colorspace",    required_argument,  &long_opt, 'W'},
         {"bgcolor",               required_argument,  &long_opt, 'B'},
+        {"background-policy", required_argument, &long_opt,
+         SIXEL_OPTFLAG_BACKGROUND_POLICY},
         {"alpha-policy",          required_argument,  &long_opt, 'A'},
         {"transparent-offset",    required_argument,  &long_opt, '+'},
         {"6delta-threshold",      required_argument,  &long_opt, 'Z'},
@@ -3630,7 +3648,8 @@ unknown_option_error:
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-X clusteringcolorspace]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace]\n"
-            "                 [-B bgcolor] [-A alphapolicy]\n"
+            "                 [-B bgcolor] [--background-policy policy]\n"
+            "                 [-A alphapolicy]\n"
             "                 [-+ left,top]\n"
             "                 [-Z delta]\n"
             "                 [-o outfile] [filename ...]\n\n"
