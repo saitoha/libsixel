@@ -175,10 +175,11 @@ _encodepolicy() {
 _transparentpolicy() {
   _values \
     'TRANSPARENTPOLICY' \
-    'composite[composite alpha over the background color]' \
-    'background[emit transparent pixels with DCS P2=0 (default)]' \
-    'keep[emit transparent pixels with DCS P2=1]' \
-    'transparent[alias for background]'
+    'background[composite alpha over the OSC 11 or -B color (default)]' \
+    'transparent[emit transparent pixels with DCS P2=1]' \
+    'clear[emit transparent pixels with DCS P2=0]' \
+    'composite[alias for background]' \
+    'keep[alias for transparent]'
 }
 
 _6deltaerror() {

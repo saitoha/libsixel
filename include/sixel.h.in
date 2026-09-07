@@ -282,14 +282,18 @@ typedef int SIXELSTATUS;
 #define SIXEL_LOOP_FORCE           1   /* always enable loop */
 #define SIXEL_LOOP_DISABLE         2   /* always disable loop */
 
-/* transparent output policy */
-#define SIXEL_TRANSPARENT_POLICY_COMPOSITE  0  /* composite over background */
-#define SIXEL_TRANSPARENT_POLICY_BACKGROUND 1  /* transparent, DCS P2=0/2 */
-#define SIXEL_TRANSPARENT_POLICY_KEEP       2  /* transparent, DCS P2=1 */
-#define SIXEL_TRANSPARENT_POLICY_P2_0 \
+/* alpha and transparent output policy */
+#define SIXEL_TRANSPARENT_POLICY_BACKGROUND 0  /* composite over background */
+#define SIXEL_TRANSPARENT_POLICY_CLEAR      1  /* transparent, DCS P2=0 */
+#define SIXEL_TRANSPARENT_POLICY_TRANSPARENT 2 /* transparent, DCS P2=1 */
+#define SIXEL_TRANSPARENT_POLICY_COMPOSITE \
     SIXEL_TRANSPARENT_POLICY_BACKGROUND
+#define SIXEL_TRANSPARENT_POLICY_KEEP \
+    SIXEL_TRANSPARENT_POLICY_TRANSPARENT
+#define SIXEL_TRANSPARENT_POLICY_P2_0 \
+    SIXEL_TRANSPARENT_POLICY_CLEAR
 #define SIXEL_TRANSPARENT_POLICY_P2_1 \
-    SIXEL_TRANSPARENT_POLICY_KEEP
+    SIXEL_TRANSPARENT_POLICY_TRANSPARENT
 
 /* 6delta encoding error handling */
 #define SIXEL_6DELTA_ERROR_DIFFUSE 0  /* diffuse error from kept RGB */
@@ -788,7 +792,7 @@ typedef int SIXELSTATUS;
                                                 */
 /* -A TRANSPARENTPOLICY */
 /* --transparent-policy=TRANSPARENTPOLICY */
-/* choose transparent output policy: composite, background, keep */
+/* choose alpha output policy: background, transparent, clear */
 #define SIXEL_OPTFLAG_TRANSPARENT_POLICY ('A')
 /* -+ LEFT,TOP, --transparent-offset=LEFT,TOP */
 /* add transparent left/top pixel offset for P2=1 image-plane reuse */
@@ -1910,8 +1914,8 @@ sixel_encoder_set_cancel_callback(
 
 /*
  * Set the previous RGB plane used by 6delta encoding.  Plain
- * transparent-policy=keep/P2=1 transparency does not need this buffer; it is
- * only consulted after 6delta is explicitly enabled, for example with
+ * transparent-policy=transparent/P2=1 does not need this buffer; it is only
+ * consulted after 6delta is explicitly enabled, for example with
  * --6delta-threshold.  The buffer is copied as RGB888.  Pass NULL for PIXELS
  * to clear the retained 6delta buffer.
  *

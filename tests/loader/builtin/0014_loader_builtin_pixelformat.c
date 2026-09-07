@@ -15,8 +15,9 @@
  * - PSD RGB16/RGB32 callbacks keep float precision (RGBFLOAT32)
  * - PSD CMYK32/Lab32 callbacks keep float precision family
  * - PSD RGB8+alpha callback stays RGB888 (mask side-channel handles alpha)
- * - PIC RGBA callback keeps alpha-zero mask and applies bgcolor blend
- * - TGA RGBA callback keeps alpha-zero mask and returns RGB888
+ * - PIC RGBA callback composites alpha against an explicit background
+ * - TGA RGBA callback preserves alpha without a background
+ * - TGA RGBA callback composites alpha against an explicit background
  * - TGA indexed RGBA callback keeps PAL8 and collapses transparent index
  * - Frame clip/resize keep transparent mask geometry in sync
  * - Mask resize follows resampling method and stays binary after thresholding
@@ -205,7 +206,7 @@ capture_pic_rgba_alpha_probe(sixel_frame_t *frame, void *data)
 }
 
 static int
-run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
+run_builtin_loader_pic_rgba_background_numeric_test(void)
 {
     static unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     static unsigned char const expected_pixels[12] = {
@@ -214,7 +215,6 @@ run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
         0xe0u, 0xe0u, 0xffu,
         0xffu, 0xffu, 0xffu
     };
-    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     builtin_loader_probe_options_t options;
     pic_rgba_alpha_probe_context_t probe;
     SIXELSTATUS status;
@@ -238,7 +238,7 @@ run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
     result = run_builtin_loader_probe_case(
-        "builtin loader pic rgba alpha mask/bgcolor numeric",
+        "builtin loader pic rgba background numeric",
         "/tests/data/inputs/formats/pic_valid_raw_rgba_2x2.pic",
         &options,
         capture_pic_rgba_alpha_probe,
@@ -249,61 +249,53 @@ run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
     }
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
-                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "builtin loader pic rgba background numeric: "
                 "loader failed (%d)\n",
                 (int)status);
         return 1;
     }
     if (probe.callback_count != 1) {
         fprintf(stderr,
-                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "builtin loader pic rgba background numeric: "
                 "callback count mismatch (%d)\n",
                 probe.callback_count);
         return 1;
     }
     if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         fprintf(stderr,
-                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "builtin loader pic rgba background numeric: "
                 "pixelformat mismatch (%d)\n",
                 probe.pixelformat);
         return 1;
     }
     if (probe.width != 2 || probe.height != 2) {
         fprintf(stderr,
-                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "builtin loader pic rgba background numeric: "
                 "geometry mismatch (%dx%d)\n",
                 probe.width,
                 probe.height);
         return 1;
     }
-    if (probe.alpha_zero_is_transparent != 1) {
+    if (probe.alpha_zero_is_transparent != 0) {
         fprintf(stderr,
-                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "builtin loader pic rgba background numeric: "
                 "alpha_zero_is_transparent mismatch (%d)\n",
                 probe.alpha_zero_is_transparent);
         return 1;
     }
-    if (probe.has_transparent_mask != 1 || probe.transparent_mask_size < 4u) {
+    if (probe.has_transparent_mask != 0 || probe.transparent_mask_size != 0u) {
         fprintf(stderr,
-                "builtin loader pic rgba alpha mask/bgcolor numeric: "
-                "transparent mask missing (%d, %zu)\n",
+                "builtin loader pic rgba background numeric: "
+                "unexpected transparent mask (%d, %zu)\n",
                 probe.has_transparent_mask,
                 probe.transparent_mask_size);
-        return 1;
-    }
-    if (memcmp(probe.transparent_mask,
-               expected_mask,
-               sizeof(expected_mask)) != 0) {
-        fprintf(stderr,
-                "builtin loader pic rgba alpha mask/bgcolor numeric: "
-                "transparent mask mismatch\n");
         return 1;
     }
     if (memcmp(probe.pixels,
                expected_pixels,
                sizeof(expected_pixels)) != 0) {
         fprintf(stderr,
-                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "builtin loader pic rgba background numeric: "
                 "unexpected semi-alpha composite values\n");
         fprintf(stderr, "actual:");
         for (index = 0u; index < sizeof(probe.pixels); ++index) {
@@ -325,12 +317,13 @@ verify_tga_rgba_alpha_probe(
     char const *label,
     tga_rgba_alpha_probe_context_t const *probe,
     unsigned char const *expected_pixels,
-    unsigned char const *expected_mask)
+    unsigned char const *expected_mask,
+    int expect_mask)
 {
     if (label == NULL ||
         probe == NULL ||
         expected_pixels == NULL ||
-        expected_mask == NULL) {
+        (expect_mask && expected_mask == NULL)) {
         return 1;
     }
     if (probe->callback_count != 1) {
@@ -358,21 +351,25 @@ verify_tga_rgba_alpha_probe(
                 probe->transparent);
         return 1;
     }
-    if (probe->alpha_zero_is_transparent != 1) {
-        fprintf(stderr, "%s: alpha_zero_is_transparent mismatch (%d)\n",
-                label,
-                probe->alpha_zero_is_transparent);
-        return 1;
-    }
-    if (probe->has_transparent_mask != 1 || probe->transparent_mask_size < 4u) {
-        fprintf(stderr, "%s: transparent mask missing (%d, %zu)\n",
+    if (expect_mask) {
+        if (probe->alpha_zero_is_transparent != 1 ||
+            probe->has_transparent_mask != 1 ||
+            probe->transparent_mask_size < 4u) {
+            fprintf(stderr, "%s: transparent mask metadata mismatch\n",
+                    label);
+            return 1;
+        }
+        if (memcmp(probe->transparent_mask, expected_mask, 4u) != 0) {
+            fprintf(stderr, "%s: transparent mask mismatch\n", label);
+            return 1;
+        }
+    } else if (probe->alpha_zero_is_transparent != 0 ||
+               probe->has_transparent_mask != 0 ||
+               probe->transparent_mask_size != 0u) {
+        fprintf(stderr, "%s: unexpected transparent mask (%d, %zu)\n",
                 label,
                 probe->has_transparent_mask,
                 probe->transparent_mask_size);
-        return 1;
-    }
-    if (memcmp(probe->transparent_mask, expected_mask, 4u) != 0) {
-        fprintf(stderr, "%s: transparent mask mismatch\n", label);
         return 1;
     }
     if (memcmp(probe->pixels, expected_pixels, 12u) != 0) {
@@ -449,7 +446,7 @@ capture_tga_pal_rgba_probe(sixel_frame_t *frame, void *data)
 }
 
 static int
-run_builtin_loader_tga_rgba_alpha_mask_bgcolor_numeric_test(void)
+run_builtin_loader_tga_rgba_background_numeric_test(void)
 {
     static unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     static unsigned char const expected_black_rgb[12] = {
@@ -488,7 +485,7 @@ run_builtin_loader_tga_rgba_alpha_mask_bgcolor_numeric_test(void)
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
     result = run_builtin_loader_probe_case(
-        "builtin loader tga rgba alpha mask/bgcolor numeric (default black)",
+        "builtin loader tga rgba background numeric (no background)",
         "/tests/data/inputs/formats/tga-rgba-2x2-top-left.tga",
         &options,
         capture_tga_rgba_alpha_probe,
@@ -499,16 +496,17 @@ run_builtin_loader_tga_rgba_alpha_mask_bgcolor_numeric_test(void)
     }
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
-                "builtin loader tga rgba alpha mask/bgcolor numeric: "
+                "builtin loader tga rgba background numeric: "
                 "loader failed (%d)\n",
                 (int)status);
         return 1;
     }
     result = verify_tga_rgba_alpha_probe(
-        "builtin loader tga rgba alpha mask/bgcolor numeric (default black)",
+        "builtin loader tga rgba background numeric (no background)",
         &probe_black,
         expected_black_rgb,
-        expected_mask);
+        expected_mask,
+        1);
     if (result != 0) {
         return result;
     }
@@ -516,7 +514,7 @@ run_builtin_loader_tga_rgba_alpha_mask_bgcolor_numeric_test(void)
     options.set_bgcolor = 1;
     options.bgcolor = bgcolor_white;
     result = run_builtin_loader_probe_case(
-        "builtin loader tga rgba alpha mask/bgcolor numeric (white bgcolor)",
+        "builtin loader tga rgba background numeric (white background)",
         "/tests/data/inputs/formats/tga-rgba-2x2-top-left.tga",
         &options,
         capture_tga_rgba_alpha_probe,
@@ -527,22 +525,23 @@ run_builtin_loader_tga_rgba_alpha_mask_bgcolor_numeric_test(void)
     }
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
-                "builtin loader tga rgba alpha mask/bgcolor numeric: "
+                "builtin loader tga rgba background numeric: "
                 "loader failed with bgcolor (%d)\n",
                 (int)status);
         return 1;
     }
     result = verify_tga_rgba_alpha_probe(
-        "builtin loader tga rgba alpha mask/bgcolor numeric (white bgcolor)",
+        "builtin loader tga rgba background numeric (white background)",
         &probe_white,
         expected_white_rgb,
-        expected_mask);
+        NULL,
+        0);
     if (result != 0) {
         return result;
     }
     if (memcmp(probe_black.pixels, probe_white.pixels, 12u) == 0) {
         fprintf(stderr,
-                "builtin loader tga rgba alpha mask/bgcolor numeric: "
+                "builtin loader tga rgba background numeric: "
                 "bgcolor did not affect composite RGB\n");
         return 1;
     }
@@ -5676,7 +5675,7 @@ run_builtin_loader_test(void)
           run_bmp_png16_cms_on_opaque_t },
         { "SIXEL_TEST_BMP_NUMERIC_BI_PNG16_ALPHA_BGCOLOR_CMS_ON",
           run_bmp_png16_bg_cms_on_t },
-        { "SIXEL_TEST_BMP_NUMERIC_BI_PNG16_ALPHA_MASK_NO_BG_ICC_CMS_ON",
+        { "SIXEL_TEST_BMP_NUMERIC_BI_PNG16_ALPHA_FILE_BG_ICC_CMS_ON",
           run_bmp_png16_icc_cms_on_num_t },
         { "SIXEL_TEST_BMP_NUMERIC_BI_PNG_OPAQUE",
           run_builtin_loader_bmp_bi_png_opaque_numeric_test },
@@ -5838,8 +5837,8 @@ run_builtin_loader_test(void)
         }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {
-        { "SIXEL_TEST_TGA_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",
-          run_builtin_loader_tga_rgba_alpha_mask_bgcolor_numeric_test },
+        { "SIXEL_TEST_TGA_NUMERIC_RGBA_BACKGROUND",
+          run_builtin_loader_tga_rgba_background_numeric_test },
         { "SIXEL_TEST_TGA_NUMERIC_PAL_RGBA_TRANSPARENT_INDEX",
           run_builtin_loader_tga_pal_rgba_transparent_index_numeric_test }
     };
@@ -5920,8 +5919,8 @@ run_builtin_loader_test(void)
     static builtin_loader_env_dispatch_entry_t const psd_env_dispatch[] = {
         { "SIXEL_TEST_PSD_VALIDATE_DEFENSIVE",
           run_builtin_loader_psd_validate_defensive_test },
-        { "SIXEL_TEST_PIC_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",
-          run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test }
+        { "SIXEL_TEST_PIC_NUMERIC_RGBA_BACKGROUND",
+          run_builtin_loader_pic_rgba_background_numeric_test }
     };
     static builtin_loader_env_dispatch_entry_t const frame_env_dispatch[] = {
         { "SIXEL_TEST_FRAME_NUMERIC_TRANSPARENT_MASK_GEOMETRY",

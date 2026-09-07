@@ -1197,6 +1197,7 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
     size_t pixel_count;
     size_t index;
     int has_background;
+    int preserve_zero_alpha;
     int has_zero_alpha;
     int channel;
 
@@ -1212,6 +1213,7 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
     pixel_count = 0u;
     index = 0u;
     has_background = 0;
+    preserve_zero_alpha = 0;
     has_zero_alpha = 0;
     channel = 0;
     if (frame == NULL ||
@@ -1228,25 +1230,38 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
     pixel_count = (size_t)frame->width * (size_t)frame->height;
     pixels = frame->pixels.u8ptr;
 
-    transparent_mask = (unsigned char *)sixel_allocator_malloc(
-        frame->allocator,
-        pixel_count);
-    if (transparent_mask == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
     has_background = bgcolor != NULL ? 1 : 0;
+    /*
+     * Background policy may drop the mask only after every alpha value has
+     * actually been composited. Without a resolved color, retaining the mask
+     * prevents hidden RGB in an alpha-zero pixel from becoming visible.
+     */
+    preserve_zero_alpha = has_background == 0 ||
+        SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+            transparent_policy);
+    if (preserve_zero_alpha != 0) {
+        transparent_mask = (unsigned char *)sixel_allocator_malloc(
+            frame->allocator,
+            pixel_count);
+        if (transparent_mask == NULL) {
+            sixel_helper_set_additional_message(
+                "builtin: sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
     if (has_background != 0) {
         sixel_builtin_fill_linear_bgcolor(bg_linear, bgcolor);
     }
 
     for (index = 0u; index < pixel_count; ++index) {
         alpha_unit = (float)pixels[index * 4u + 3u] / 255.0f;
-        transparent_mask[index] = alpha_unit <= 0.0f ? 1u : 0u;
-        if (transparent_mask[index] != 0u) {
+        if (alpha_unit <= 0.0f) {
             has_zero_alpha = 1;
+            if (transparent_mask != NULL) {
+                transparent_mask[index] = 1u;
+            }
+        } else if (transparent_mask != NULL) {
+            transparent_mask[index] = 0u;
         }
         if (has_background != 0 &&
             !(SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
@@ -1274,7 +1289,7 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
         frame->transparent_mask = NULL;
         frame->transparent_mask_size = 0u;
     }
-    if (has_zero_alpha != 0) {
+    if (has_zero_alpha != 0 && transparent_mask != NULL) {
         frame->transparent_mask = transparent_mask;
         frame->transparent_mask_size = pixel_count;
         frame->alpha_zero_is_transparent = 1;

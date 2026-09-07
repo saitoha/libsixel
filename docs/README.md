@@ -45,6 +45,12 @@ are grouped by domain so each area can grow without overloading one document.
   measured Delta E, chroma, MS-SSIM, and runtime comparison across palette
   sizes.
 
+## Image loading
+
+- [Transparent pixel policy](loader/transparent-policy.md) defines loader-side
+  background composition, alpha-zero preservation, SIXEL `P2` selection, and
+  the loader/encoder ownership boundary.
+
 ## Command-line interface
 
 - [CLI design policy](cli/design-policy.md) defines option design,

@@ -92,9 +92,10 @@ sixel_gpu_palette_accumulation_is_supported(
 
     /*
      * 6delta accumulation is a byte-size optimization layered on top of
-     * transparent-policy=keep.  The GPU path can participate only when the
-     * caller gives it the retained RGB plane and the optional result mask
-     * that the encoder later uses to keep the retained plane honest.
+     * transparent-policy=transparent.  The GPU path can participate only
+     * when the caller gives it the retained RGB plane and the optional
+     * result mask that the encoder later uses to keep the retained plane
+     * honest.
      */
     if (request->has_6delta_accumulation == 0) {
         /*

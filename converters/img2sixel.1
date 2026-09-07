@@ -932,20 +932,25 @@ rgb:rrr/ggg/bbb
 rgb:rrrr/gggg/bbbb
 .TP 5
 .B \-A \fITRANSPARENTPOLICY\fP, \-\-transparent\-policy=\fITRANSPARENTPOLICY\fP
-choose transparent output policy
+choose alpha output policy
 .br
-composite -> composite alpha over the background color
+background -> composite alpha over the OSC 11 or \fB-B\fP color (default)
 .br
-background -> emit transparent pixels with DCS P2=0 (default)
+transparent -> emit transparent pixels with DCS P2=1
 .br
-keep -> emit transparent pixels with DCS P2=1 for terminals that preserve the
-previous image plane
+clear -> emit transparent pixels with DCS P2=0
 .br
-transparent -> alias for background
+composite -> alias for background
+.br
+keep -> alias for transparent
+.br
+P2=1 is for terminals that preserve the previous image plane.
 .TP 5
 .B \-+ \fILEFT,TOP\fP, \-\-transparent\-offset=\fILEFT,TOP\fP
 add transparent left/top pixel offset with DCS P2=1 image-plane reuse.
-0,0 disables the offset. Incompatible with \fB-O\fP and \fB-I\fP.
+0,0 disables the offset. Requires
+\fB--transparent-policy=transparent\fP. Incompatible with \fB-O\fP and
+\fB-I\fP.
 .TP 5
 .B \-Z \fIDELTA\fP, \-\-6delta\-threshold=\fIDELTA\fP
 enable 6delta encoding and set RGB per-channel tolerance.
@@ -1630,10 +1635,9 @@ Invalid or empty values fall back to "file_first".
 .B SIXEL_TRANSPARENT_POLICY
 .br
 control alpha normalization and transparent SIXEL P2 handling.
-"composite" bakes alpha into the background when available.
-"background" and "transparent" keep alpha==0 as transparent and emit P2=0
-(default). "keep" keeps alpha==0 as transparent and emits P2=1 for previous
-image-plane reuse.
+"background" and "composite" bake alpha into the OSC 11 or \fB-B\fP
+background (default). "transparent" and "keep" preserve alpha==0 and emit
+P2=1. "clear" and "p2-0" preserve alpha==0 and emit P2=0.
 .TP 5
 .B SIXEL_6DELTA_THRESHOLD
 .br

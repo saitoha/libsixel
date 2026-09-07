@@ -320,8 +320,6 @@ static int sixel_encoder_resolve_transparent_policy(
     sixel_encoder_t const *encoder);
 static int sixel_encoder_transparent_offset_enabled(
     sixel_encoder_t const *encoder);
-static int sixel_encoder_transparent_policy_preserves_alpha(
-    sixel_encoder_t const *encoder);
 static void sixel_encoder_begin_loader_transparent_policy(
     sixel_encoder_t const *encoder);
 static void sixel_encoder_end_loader_transparent_policy(
@@ -2400,7 +2398,7 @@ sixel_encoder_6delta_accumulation_requested(
     }
 
     return sixel_encoder_resolve_transparent_policy(encoder)
-        == SIXEL_TRANSPARENT_POLICY_KEEP ? 1 : 0;
+        == SIXEL_TRANSPARENT_POLICY_TRANSPARENT ? 1 : 0;
 }
 
 static int
@@ -4865,8 +4863,6 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
                 break;
             case SIXEL_PLANNER_NODE_COLORSPACE_POST:
                 if (context->frame != NULL &&
-                    sixel_encoder_transparent_policy_preserves_alpha(
-                        context->encoder) &&
                     sixel_encoder_frame_preserves_alpha_key(context->frame) &&
                     sixel_encoder_pixelformat_has_alpha(
                         context->current_pixelformat)) {
@@ -5722,9 +5718,8 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
     }
 
     preserve_alpha_key =
-        sixel_encoder_transparent_policy_preserves_alpha(job->encoder) &&
-        (sixel_encoder_frame_preserves_alpha_key(job->samples.frame) ||
-         sixel_encoder_6delta_reserves_alpha_key(job->encoder));
+        sixel_encoder_frame_preserves_alpha_key(job->samples.frame) ||
+        sixel_encoder_6delta_reserves_alpha_key(job->encoder);
     if (job->requested_failure_stage ==
             SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT) {
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
@@ -6338,7 +6333,7 @@ sixel_encoder_resolve_transparent_policy(sixel_encoder_t const *encoder)
          * Transparent offset is a positional P2=1 contract.  Let the option
          * override the environment unless the caller explicitly set -A.
          */
-        return SIXEL_TRANSPARENT_POLICY_KEEP;
+        return SIXEL_TRANSPARENT_POLICY_TRANSPARENT;
     }
 
     policy = encoder->transparent_policy;
@@ -6361,17 +6356,6 @@ sixel_encoder_transparent_offset_enabled(sixel_encoder_t const *encoder)
 
     return encoder->transparent_offset_left != 0 ||
            encoder->transparent_offset_top != 0;
-}
-
-static int
-sixel_encoder_transparent_policy_preserves_alpha(
-    sixel_encoder_t const *encoder)
-{
-    int policy;
-
-    policy = sixel_encoder_resolve_transparent_policy(encoder);
-    return policy == SIXEL_TRANSPARENT_POLICY_BACKGROUND ||
-           policy == SIXEL_TRANSPARENT_POLICY_KEEP;
 }
 
 static void
@@ -6448,9 +6432,9 @@ sixel_encoder_validate_transparent_offset(sixel_encoder_t const *encoder)
         return SIXEL_OK;
     }
     if (encoder->transparent_policy_override != 0 &&
-        encoder->transparent_policy != SIXEL_TRANSPARENT_POLICY_KEEP) {
+        encoder->transparent_policy != SIXEL_TRANSPARENT_POLICY_TRANSPARENT) {
         sixel_helper_set_additional_message(
-            "transparent-offset requires transparent-policy=keep.");
+            "transparent-offset requires transparent-policy=transparent.");
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -6876,8 +6860,7 @@ sixel_encoder_prepare_palette(
         }
         sixel_dither_set_palette(*dither, sixel_frame_get_palette(frame));
         sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
-        if (sixel_encoder_transparent_policy_preserves_alpha(encoder) &&
-            sixel_frame_get_transparent(frame) != (-1)) {
+        if (sixel_frame_get_transparent(frame) != (-1)) {
             sixel_dither_set_transparent(*dither, sixel_frame_get_transparent(frame));
         }
         if (*dither && cache_allowed && encoder->dither_cache) {
@@ -6948,7 +6931,6 @@ sixel_encoder_prepare_palette(
         effective_quantize_model);
     reserve_alpha_key =
         encoder->reqcolors > 1
-        && sixel_encoder_transparent_policy_preserves_alpha(encoder)
         && (sixel_encoder_frame_preserves_alpha_key(frame)
             || sixel_encoder_6delta_reserves_alpha_key(encoder));
     palette_reqcolors = encoder->reqcolors;
@@ -8029,14 +8011,9 @@ sixel_encoder_output_without_macro(
                                               frame_no,
                                               loop_no,
                                               multiframe);
-    if (sixel_encoder_transparent_policy_preserves_alpha(encoder)) {
-        status = sixel_encoder_bind_transparent_mask(encoder, dither, frame);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    } else {
-        sixel_dither_clear_pipeline_transparent_mask_hint(dither);
-        sixel_dither_set_pipeline_accumulation_result_enabled(dither, 0);
+    status = sixel_encoder_bind_transparent_mask(encoder, dither, frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
     status = sixel_encode(p, width, height, depth, dither, output);
     if (status != SIXEL_OK) {
@@ -8200,16 +8177,11 @@ sixel_encoder_output_with_macro(
                                                   frame_no,
                                                   loop_no,
                                                   multiframe);
-        if (sixel_encoder_transparent_policy_preserves_alpha(encoder)) {
-            status = sixel_encoder_bind_transparent_mask(encoder,
-                                                         dither,
-                                                         frame);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-        } else {
-            sixel_dither_clear_pipeline_transparent_mask_hint(dither);
-            sixel_dither_set_pipeline_accumulation_result_enabled(dither, 0);
+        status = sixel_encoder_bind_transparent_mask(encoder,
+                                                     dither,
+                                                     frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
         status = sixel_encode(converted,
                               width,
@@ -8436,13 +8408,11 @@ sixel_encoder_encode_frame_internal(
         sixel_encoding_planner_reset_for_frame(planner);
     }
 
-    if (sixel_encoder_transparent_policy_preserves_alpha(encoder)) {
-        status = sixel_encoder_promote_pal8_transparent_for_geometry(
-            encoder,
-            context.frame);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    status = sixel_encoder_promote_pal8_transparent_for_geometry(
+        encoder,
+        context.frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     /*

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify transparent-offset rejects transparent policies that clear pixels.
+# Verify transparent-offset rejects background composition.
 
 set -eux
 
@@ -25,12 +25,12 @@ test "${status}" -ne 0 || {
 }
 
 case "${output}" in
-    *"transparent-offset requires transparent-policy=keep"*) ;;
+    *"transparent-offset requires transparent-policy=transparent"*) ;;
     *)
         echo "not ok 1 - transparent-offset conflict message mismatch"
         exit 0
         ;;
 esac
 
-echo "ok 1 - transparent-offset rejects background transparent policy"
+echo "ok 1 - transparent-offset rejects background composition"
 exit 0

@@ -32,7 +32,7 @@ set +x
 out_text=""
 IFS= read -r out_text < "${out}" || test -n "${out_text}"
 case "${out_text}" in
-    *"$(printf '\033')P0;0q"*)
+    *"$(printf '\033')P0;1q"*)
         echo "not ok 1 - repeated short -% did not use last value"
         ;;
     *)

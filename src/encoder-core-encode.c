@@ -2758,14 +2758,19 @@ sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
          */
         p[1] = 1;
     } else if (keycolor >= 0) {
-        if (output->transparent_policy == SIXEL_TRANSPARENT_POLICY_KEEP) {
+        if (output->transparent_policy ==
+                SIXEL_TRANSPARENT_POLICY_BACKGROUND ||
+            output->transparent_policy ==
+                SIXEL_TRANSPARENT_POLICY_TRANSPARENT) {
             /*
              * P2=1 asks the terminal to keep the current image-plane pixel
-             * when a zero/transparent SIXEL cell is omitted.
+             * when a zero/transparent SIXEL cell is omitted. Background
+             * policy reaches this branch only when the loader could not
+             * resolve a color and retained source transparency.
              */
             p[1] = 1;
         } else if (output->transparent_policy ==
-                   SIXEL_TRANSPARENT_POLICY_BACKGROUND) {
+                   SIXEL_TRANSPARENT_POLICY_CLEAR) {
             /*
              * Spell out P2=0 for transparent output so the header carries
              * the clear-to-background contract even when P2's default value
@@ -4581,9 +4586,11 @@ sixel_encode_dither(
         goto end;
     }
     if (sixel_output_has_transparent_offset(output) != 0) {
-        if (output->transparent_policy != SIXEL_TRANSPARENT_POLICY_KEEP) {
+        if (output->transparent_policy !=
+                SIXEL_TRANSPARENT_POLICY_TRANSPARENT) {
             sixel_helper_set_additional_message(
-                "transparent-offset requires transparent-policy=keep.");
+                "transparent-offset requires transparent-policy="
+                "transparent.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }

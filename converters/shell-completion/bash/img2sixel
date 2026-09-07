@@ -891,10 +891,11 @@ _img2sixel()
         return 0
         ;;
     -A|--transparent-policy)
-        COMPREPLY=( $( compgen -W 'composite \
-                                   background \
-                                   keep \
-                                   transparent' -- "$cur" ) )
+        COMPREPLY=( $( compgen -W 'background \
+                                   transparent \
+                                   clear \
+                                   composite \
+                                   keep' -- "$cur" ) )
         return 0
         ;;
     -+|--transparent-offset)

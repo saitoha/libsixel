@@ -16,6 +16,8 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/images/pngsuite/background/bgan6a08.png"
+# The reference composites every alpha value, including the zero-alpha first
+# column, over linear #808080.
 reference_image="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0084_pngsuite_background_midgray_linear_bgan6a08_msssim.ppm"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0098-loader-background-colorspace-short-$$.six"

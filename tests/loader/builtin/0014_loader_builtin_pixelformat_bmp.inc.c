@@ -197,12 +197,11 @@ bmp_numeric_compose_expected_linear_u16(float out_rgb[12],
 }
 
 static int
-verify_bmp_float_probe(char const *label,
-                       bmp_numeric_probe_context_t const *probe,
-                       float const expected_rgb[12],
-                       float tolerance)
+verify_bmp_composited_float_probe(char const *label,
+                                  bmp_numeric_probe_context_t const *probe,
+                                  float const expected_rgb[12],
+                                  float tolerance)
 {
-    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     unsigned char expected_rgb_u8[12];
     size_t index;
 
@@ -240,24 +239,18 @@ verify_bmp_float_probe(char const *label,
                 probe->height);
         return 1;
     }
-    if (probe->alpha_zero_is_transparent != 1) {
+    if (probe->alpha_zero_is_transparent != 0) {
         fprintf(stderr, "%s: alpha_zero_is_transparent mismatch (%d)\n",
                 label,
                 probe->alpha_zero_is_transparent);
         return 1;
     }
-    if (probe->has_transparent_mask != 1 ||
-        probe->transparent_mask_size < sizeof(expected_mask)) {
-        fprintf(stderr, "%s: transparent mask mismatch (%d, %zu)\n",
+    if (probe->has_transparent_mask != 0 ||
+        probe->transparent_mask_size != 0u) {
+        fprintf(stderr, "%s: unexpected transparent mask (%d, %zu)\n",
                 label,
                 probe->has_transparent_mask,
                 probe->transparent_mask_size);
-        return 1;
-    }
-    if (memcmp(probe->transparent_mask,
-               expected_mask,
-               sizeof(expected_mask)) != 0) {
-        fprintf(stderr, "%s: transparent mask samples mismatch\n", label);
         return 1;
     }
     if (probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
@@ -558,7 +551,7 @@ run_builtin_loader_bmp_rgba_bgcolor_float32_numeric_test(void)
     bmp_numeric_compose_expected_linear(expected_gamma,
                                         src_rgba_topdown,
                                         bg_gamma_linear);
-    result = verify_bmp_float_probe(
+    result = verify_bmp_composited_float_probe(
         "builtin loader bmp rgba bgcolor float32 numeric (gamma bg)",
         &probe_gamma,
         expected_gamma,
@@ -593,7 +586,7 @@ run_builtin_loader_bmp_rgba_bgcolor_float32_numeric_test(void)
     bmp_numeric_compose_expected_linear(expected_linear,
                                         src_rgba_topdown,
                                         bg_linear);
-    result = verify_bmp_float_probe(
+    result = verify_bmp_composited_float_probe(
         "builtin loader bmp rgba bgcolor float32 numeric (linear bg)",
         &probe_linear,
         expected_linear,
@@ -1389,7 +1382,7 @@ run_builtin_loader_bmp_v4_alpha_bgcolor_float32_numeric_test(void)
     bmp_numeric_compose_expected_linear(expected_linear,
                                         src_rgba_topdown,
                                         bg_linear);
-    result = verify_bmp_float_probe(
+    result = verify_bmp_composited_float_probe(
         "builtin loader bmp v4 alpha bgcolor float32 numeric",
         &probe,
         expected_linear,
@@ -2043,7 +2036,7 @@ run_builtin_loader_bmp_v5_alpha_bgcolor_float32_numeric_test(void)
     bmp_numeric_compose_expected_linear(expected_linear,
                                         src_rgba_topdown,
                                         bg_linear);
-    result = verify_bmp_float_probe(
+    result = verify_bmp_composited_float_probe(
         "builtin loader bmp v5 alpha bgcolor float32 numeric",
         &probe,
         expected_linear,
@@ -2189,7 +2182,7 @@ run_builtin_loader_bmp_v3_alpha_bgcolor_float32_numeric_test(void)
     bmp_numeric_compose_expected_linear(expected_linear,
                                         src_rgba_topdown,
                                         bg_linear);
-    result = verify_bmp_float_probe(
+    result = verify_bmp_composited_float_probe(
         "builtin loader bmp v3 alpha bgcolor float32 numeric",
         &probe,
         expected_linear,
@@ -2459,7 +2452,7 @@ run_builtin_loader_bmp_bi_png_alpha_bgcolor_numeric_test(void)
     bmp_numeric_compose_expected_linear(expected_linear,
                                         src_rgba_topdown,
                                         bg_linear);
-    result = verify_bmp_float_probe(
+    result = verify_bmp_composited_float_probe(
         "builtin loader bmp bi-png alpha bgcolor numeric",
         &probe,
         expected_linear,
@@ -2617,7 +2610,7 @@ run_builtin_loader_bmp_bi_png16_alpha_bgcolor_numeric_test(void)
     bmp_numeric_compose_expected_linear_u16(expected_linear,
                                             src_rgba16_topdown,
                                             bg_linear);
-    result = verify_bmp_float_probe(
+    result = verify_bmp_composited_float_probe(
         "builtin loader bmp bi-png16 alpha bgcolor numeric",
         &probe,
         expected_linear,
@@ -2906,7 +2899,7 @@ run_bmp_png16_bg_cms_on_t(void)
         &probe,
         2,
         2,
-        1);
+        0);
 
 end:
     sixel_helper_set_loader_background_colorspace(-1);
@@ -2916,7 +2909,6 @@ end:
 static int
 run_bmp_png16_icc_cms_on_num_t(void)
 {
-    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     builtin_loader_probe_options_t options_off;
     builtin_loader_probe_options_t options_on;
     bmp_numeric_probe_context_t probe_off;
@@ -2945,7 +2937,7 @@ run_bmp_png16_icc_cms_on_num_t(void)
     options_on.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
 
     result = run_builtin_loader_probe_case(
-        "builtin loader bmp bi-png16 alpha no-bg icc cms off baseline",
+        "builtin loader bmp bi-png16 alpha file-bg icc cms off baseline",
         "/tests/data/inputs/formats/bmp-info40-bi-png-rgba16-icc-2x2.bmp",
         &options_off,
         capture_bmp_numeric_probe,
@@ -2956,28 +2948,20 @@ run_bmp_png16_icc_cms_on_num_t(void)
     }
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha no-bg icc cms off "
+                "builtin loader bmp bi-png16 alpha file-bg icc cms off "
                 "baseline: loader failed (%d)\n",
                 (int)status);
         return 1;
     }
     if (verify_bmp_png16_no_bg_rgbf_probe(
-            "builtin loader bmp bi-png16 alpha no-bg icc cms off baseline",
+            "builtin loader bmp bi-png16 alpha file-bg icc cms off baseline",
             &probe_off,
-            1) != 0) {
-        return 1;
-    }
-    if (memcmp(probe_off.transparent_mask,
-               expected_mask,
-               sizeof(expected_mask)) != 0) {
-        fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha no-bg icc cms off "
-                "baseline: transparent-mask mismatch\n");
+            0) != 0) {
         return 1;
     }
 
     result = run_builtin_loader_probe_case(
-        "builtin loader bmp bi-png16 alpha no-bg icc cms on numeric",
+        "builtin loader bmp bi-png16 alpha file-bg icc cms on numeric",
         "/tests/data/inputs/formats/bmp-info40-bi-png-rgba16-icc-2x2.bmp",
         &options_on,
         capture_bmp_numeric_probe,
@@ -2988,23 +2972,15 @@ run_bmp_png16_icc_cms_on_num_t(void)
     }
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha no-bg icc cms on "
+                "builtin loader bmp bi-png16 alpha file-bg icc cms on "
                 "numeric: loader failed (%d)\n",
                 (int)status);
         return 1;
     }
     if (verify_bmp_png16_no_bg_rgbf_probe(
-            "builtin loader bmp bi-png16 alpha no-bg icc cms on numeric",
+            "builtin loader bmp bi-png16 alpha file-bg icc cms on numeric",
             &probe_on,
-            1) != 0) {
-        return 1;
-    }
-    if (memcmp(probe_on.transparent_mask,
-               expected_mask,
-               sizeof(expected_mask)) != 0) {
-        fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha no-bg icc cms on "
-                "numeric: transparent-mask mismatch\n");
+            0) != 0) {
         return 1;
     }
 
@@ -3326,7 +3302,7 @@ run_builtin_loader_bmp_v5_icc_rgba_bgcolor_num_test(void)
         &probe,
         2,
         2,
-        1);
+        0);
 
 end:
     sixel_helper_set_loader_background_colorspace(-1);
@@ -3546,7 +3522,7 @@ run_builtin_loader_bmp_alphabitfields_bgcolor_numeric_test(void)
                                         src_rgba_topdown,
                                         bg_linear);
 
-    return verify_bmp_float_probe(
+    return verify_bmp_composited_float_probe(
         "builtin loader bmp alphabitfields bgcolor numeric",
         &probe,
         expected_linear,

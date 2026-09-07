@@ -35,7 +35,7 @@ sixel_output=$(
 }
 
 case "${sixel_output}" in
-    "${esc}P0;0q"*)
+    "${esc}P0;1q"*)
         ;;
     *)
         echo "not ok" 1 - "stdin .svgz decode output header mismatch"

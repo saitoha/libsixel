@@ -892,13 +892,14 @@ static cli_option_help_t const g_option_help_table[] = {
         'A',
         "transparent-policy",
         "-A TRANSPARENTPOLICY, --transparent-policy=TRANSPARENTPOLICY\n"
-        "    choose transparent output policy\n"
-        "      composite   -> composite alpha over background color\n"
-        "      background  -> emit transparent pixels with DCS P2=0 (default)\n"
-        "      keep        -> emit transparent pixels with DCS P2=1 for\n"
-        "                     terminals that preserve the previous\n"
-        "                     image plane\n"
-        "      transparent -> alias for background\n"
+        "    choose alpha output policy\n"
+        "      background  -> composite alpha over the OSC 11 or -B color\n"
+        "                     (default)\n"
+        "      transparent -> emit transparent pixels with DCS P2=1\n"
+        "      clear       -> emit transparent pixels with DCS P2=0\n"
+        "      composite   -> alias for background\n"
+        "      keep        -> alias for transparent\n"
+        "    P2=1 is for terminals that preserve the previous image plane.\n"
     },
     {
         '+',
@@ -906,7 +907,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "-+ LEFT,TOP, --transparent-offset=LEFT,TOP\n"
         "    add transparent left/top pixel offset with DCS P2=1 image-plane\n"
         "    reuse\n"
-        "    (0,0 disables the offset; requires transparent-policy=keep)\n"
+        "    (0,0 disables the offset; requires transparent-policy="
+        "transparent)\n"
     },
     {
         'Z',
@@ -1509,11 +1511,9 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_TRANSPARENT_POLICY",
         "control alpha normalization and transparent SIXEL P2 handling.\n"
-        "composite bakes alpha into the background when available.\n"
-        "background/transparent keep alpha==0 as transparent and emit P2=0\n"
-        "(default).\n"
-        "keep keeps alpha==0 as transparent and emits P2=1 for previous\n"
-        "image-plane reuse."
+        "background/composite bake alpha into the OSC 11 or -B background\n"
+        "(default). transparent/keep preserve alpha==0 and emit P2=1.\n"
+        "clear/p2-0 preserve alpha==0 and emit P2=0."
     },
     {
         "SIXEL_LOADER_ORIENTATION",

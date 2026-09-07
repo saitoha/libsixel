@@ -1369,27 +1369,27 @@ static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
 
 static sixel_option_value_schema_t const g_transparent_policy_values[] = {
     {
-        "composite", SIXEL_TRANSPARENT_POLICY_COMPOSITE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "transparent", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
         "background", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
-        "clear", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
+        "transparent", SIXEL_TRANSPARENT_POLICY_TRANSPARENT, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
-        "p2-0", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
+        "clear", SIXEL_TRANSPARENT_POLICY_CLEAR, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
-        "p20", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
+        "composite", SIXEL_TRANSPARENT_POLICY_COMPOSITE, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "p2-0", SIXEL_TRANSPARENT_POLICY_P2_0, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "p20", SIXEL_TRANSPARENT_POLICY_P2_0, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {

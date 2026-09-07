@@ -2539,6 +2539,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     int has_transparency;
     int transparent_policy;
     int blend_with_background;
+    int preserve_zero_alpha;
     unsigned char *transparent_mask;
     size_t pixel_count;
     size_t index;
@@ -2559,6 +2560,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     has_transparency = 0;
     transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
     blend_with_background = 0;
+    preserve_zero_alpha = 0;
     transparent_mask = NULL;
     pixel_count = 0u;
     index = 0u;
@@ -2585,6 +2587,14 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                                                       sixel_chunk_get_size(pchunk));
     transparent_policy = loader_transparent_policy();
     blend_with_background = has_background != 0 ? 1 : 0;
+    /*
+     * Treat mask removal as the result of successful composition, not merely
+     * as a consequence of the requested policy. This preserves a safe
+     * transparent fallback when no background source can be resolved.
+     */
+    preserve_zero_alpha = has_background == 0 ||
+        SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+            transparent_policy);
 
     png_is_16bit = stbi_is_16_bit_from_memory(sixel_chunk_get_buffer(pchunk), (int)sixel_chunk_get_size(pchunk));
     if (png_is_16bit != 0) {
@@ -2604,22 +2614,25 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                 return SIXEL_BAD_INTEGER_OVERFLOW;
             }
             pixel_count = (size_t)frame->width * (size_t)frame->height;
-            transparent_mask = (unsigned char *)sixel_allocator_malloc(
-                allocator,
-                pixel_count);
-            if (transparent_mask == NULL) {
-                stbi_image_free(pixels16);
-                sixel_helper_set_additional_message(
-                    "load_with_builtin: sixel_allocator_malloc() failed.");
-                return SIXEL_BAD_ALLOCATION;
-            }
             has_zero_alpha = 0;
-            for (index = 0u; index < pixel_count; ++index) {
-                if (pixels16[index * 4u + 3u] == 0u) {
-                    transparent_mask[index] = 1u;
-                    has_zero_alpha = 1;
-                } else {
-                    transparent_mask[index] = 0u;
+            if (preserve_zero_alpha != 0) {
+                transparent_mask = (unsigned char *)sixel_allocator_malloc(
+                    allocator,
+                    pixel_count);
+                if (transparent_mask == NULL) {
+                    stbi_image_free(pixels16);
+                    sixel_helper_set_additional_message(
+                        "load_with_builtin: sixel_allocator_malloc() "
+                        "failed.");
+                    return SIXEL_BAD_ALLOCATION;
+                }
+                for (index = 0u; index < pixel_count; ++index) {
+                    if (pixels16[index * 4u + 3u] == 0u) {
+                        transparent_mask[index] = 1u;
+                        has_zero_alpha = 1;
+                    } else {
+                        transparent_mask[index] = 0u;
+                    }
                 }
             }
             status = sixel_frompng_convert_rgba16_to_linearrgbfloat32(
@@ -2919,22 +2932,24 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     pixel_count = (size_t)frame->width * (size_t)frame->height;
-    transparent_mask = (unsigned char *)sixel_allocator_malloc(
-        allocator,
-        pixel_count);
-    if (transparent_mask == NULL) {
-        stbi_image_free(pixels8);
-        sixel_helper_set_additional_message(
-            "load_with_builtin: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
     has_zero_alpha = 0;
-    for (index = 0u; index < pixel_count; ++index) {
-        if (pixels8[index * 4u + 3u] == 0u) {
-            transparent_mask[index] = 1u;
-            has_zero_alpha = 1;
-        } else {
-            transparent_mask[index] = 0u;
+    if (preserve_zero_alpha != 0) {
+        transparent_mask = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            pixel_count);
+        if (transparent_mask == NULL) {
+            stbi_image_free(pixels8);
+            sixel_helper_set_additional_message(
+                "load_with_builtin: sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        for (index = 0u; index < pixel_count; ++index) {
+            if (pixels8[index * 4u + 3u] == 0u) {
+                transparent_mask[index] = 1u;
+                has_zero_alpha = 1;
+            } else {
+                transparent_mask[index] = 0u;
+            }
         }
     }
     status = sixel_frompng_convert_rgba8_to_linearrgbfloat32(
