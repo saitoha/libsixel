@@ -177,6 +177,20 @@ migration path, and which releases or interfaces are affected.
 
 ### Choice values and prefix abbreviations
 
+Choice names should make their useful abbreviations as short as practical.
+When selecting a new canonical name, prefer an initial character that is
+unique within the active choice domain so that a practiced user can usually
+select it with one character. Avoid needlessly increasing the shortest unique
+prefix of an existing value. Clear domain terminology and compatibility with
+released names still take precedence; do not invent an obscure name merely to
+reserve an initial.
+
+The lookup-policy names demonstrate the preferred result: `a`, `5`, `6`, `n`,
+`c`, `e`, `f`, `v`, `r`, and `m` identify all current policies. Diffusion
+names follow the same preference where the vocabulary permits it: `n`, `f`,
+`j`, `l`, `i`, and `x` are single-character selections, while established
+groups beginning with `a`, `b`, and `s` require a longer unambiguous prefix.
+
 Only arguments whose registered type permits prefix matching may be
 abbreviated. This includes structured-option base names and choice-valued
 suboption values. It does not include long suboption keys, arbitrary strings,
@@ -319,6 +333,7 @@ The reciprocal `Policy:` reference in each check or test is enforced by
 | CLI-22 | `clipboard:` and `png:clipboard:` work as input and output pseudo targets. | [tests/io/clipboard/0002_clipboard_file_backend.t](../../tests/io/clipboard/0002_clipboard_file_backend.t) |
 | CLI-23 | Typed scalar options and suboptions register environment names, and public environment controls remain synchronized with help. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh), [tests/_static/sh/staticcheck-docs-envvars-help-table.sh](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) |
 | CLI-24 | A close suboption-key typo is rejected with its canonical key as a `Did you mean:` suggestion. | [tests/cli/options/matching/0276_option_matching_suboption_key_typo_suggestion.t](../../tests/cli/options/matching/0276_option_matching_suboption_key_typo_suggestion.t) |
+| CLI-25 | Every current lookup policy is accepted by its single-character shortest prefix. | [tests/cli/options/matching/0277_option_matching_lookup_single_character_prefixes.t](../../tests/cli/options/matching/0277_option_matching_lookup_single_character_prefixes.t) |
 
 ### Coverage boundary
 
