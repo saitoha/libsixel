@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying unknown medoids suboption keys are rejected with candidates.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

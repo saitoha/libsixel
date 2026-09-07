@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying -Q accepts short-form kmeans histogram suboptions.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

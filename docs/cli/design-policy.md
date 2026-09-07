@@ -17,6 +17,33 @@ that belong to a loader, quantizer, diffusion method, lookup method, or another
 named subsystem. Choose the level from the user's mental model of the feature,
 then apply the naming and compatibility rules below.
 
+A structured option argument has this general form:
+
+```text
+BASE[:SUBOPTION...]
+```
+
+The long suboption form is `name=value`. Every public suboption also has a
+compact form consisting of one uppercase ASCII letter followed immediately by
+the value: `Kvalue`. For example, `-Q kmeans:inittype=pca` and
+`-Q kmeans:Ipca` select the same setting. The compact form does not use `=`,
+and lowercase letters do not enter the compact-key namespace.
+
+Some suboptions apply to every base of the enclosing option, while others are
+valid only for particular bases. A compact letter therefore has meaning in
+the context of its top-level option and active base; the same letter may be
+used by unrelated options or by disjoint bases. List-valued options apply the
+same grammar to each list item.
+
+Every public option or suboption that represents a configurable setting must
+have a corresponding environment-variable form. Pure actions such as showing
+help and positional input or output targets are not configuration settings.
+The environment name is part of the public interface and must be listed by
+`-H` and the manual; it is not inferred by mechanically capitalizing the CLI
+name. Multiple CLI routes to the same setting may intentionally share one
+environment variable. `--env NAME=VALUE` supplies that environment form for
+one converter invocation; it does not define a separate setting.
+
 ## Naming
 
 ### Long options
@@ -50,16 +77,21 @@ integer flag to a long-only option.
 
 ### Suboptions
 
-Use suboptions for policy specific to a named loader, quantizer, diffusion method,
-lookup policy, colorspace component, or similar subsystem. A suboption should
-have a typed domain, one canonical name, documented aliases only when needed,
-and an explicit environment representation if environment configuration is
-supported.
+Use suboptions for policy specific to a named loader, quantizer, diffusion
+method, lookup policy, colorspace component, or similar subsystem. A
+suboption has a typed domain, one canonical long name, one uppercase compact
+name, and an explicit environment representation. Retain additional aliases
+only when required by a released compatibility contract.
 
 Every public suboption must define both an uppercase ASCII one-letter short
 form and an environment variable in its registered definition. If the short-form
 namespace cannot represent another setting, reduce or separate the option axis
 instead of introducing a long-only suboption.
+
+Long suboption names require exact `name=value` spelling. Do not accept a
+prefix of a long key because it could become ambiguous when another setting is
+added. The compact `Kvalue` spelling is the only abbreviated key form. Choice
+values within either spelling may use the prefix rules described below.
 
 List-valued options must define the type of every item they accept. Their help
 and diagnostics must describe the same base values and suboptions.
@@ -101,6 +133,32 @@ migration path, and which releases or interfaces are affected.
   option and invalid value.
 - Never continue with partially initialized option state after a parse error.
 
+### Choice values and prefix abbreviations
+
+Only arguments whose registered type permits prefix matching may be
+abbreviated. This includes structured-option base names and choice-valued
+suboption values. It does not include long suboption keys, arbitrary strings,
+paths, or numeric values.
+
+Choice matching follows this order:
+
+1. A complete choice name is an exact match and wins immediately.
+2. Otherwise, a nonempty prefix is accepted when every matching spelling maps
+   to the same semantic value. This permits a unique prefix and also permits
+   compatible aliases that share a value.
+3. A prefix matching different semantic values is ambiguous and is rejected.
+4. A token matching no accepted prefix is unknown and is rejected.
+
+For example, `-s ave` resolves to `average`, while a value such as `-d st` is
+rejected when it matches both `stucki` and `stbn`. Similarly,
+`scan=ser` may abbreviate `scan=serpentine`, but `sca=serpentine` is not a
+valid abbreviation of the `scan` suboption key.
+
+Command-line and environment matching rules are declared separately. A CLI
+choice accepting prefixes does not imply that its environment form accepts
+the same prefixes or aliases. Environment values normally use the stricter
+spellings documented in `-H` and the manual.
+
 ## Defaults and precedence
 
 Every configurable value needs one identifiable default and a documented
@@ -119,6 +177,14 @@ when downstream behavior depends on whether the user made a choice.
 
 ## Diagnostics and suggestions
 
+libsixel intentionally treats diagnostics as part of CLI design rather than
+as incidental parser errors. The intended experience is maximally helpful,
+not terse: users should be guided from an invalid command toward the valid
+spellings and choices available in its exact context. The matching and
+suggestion machinery deliberately accepts the resulting complexity. This
+helpfulness must remain deterministic and must never make an invalid token
+silently succeed.
+
 - Diagnostics must identify the option and invalid input precisely.
 - Suggestions are diagnostics, not parsing. A suggestion must not turn invalid
   input into a successful command.
@@ -131,6 +197,26 @@ when downstream behavior depends on whether the user made a choice.
 Library embedders and standalone converters may use different diagnostic
 defaults. Preserve that boundary.
 
+An ambiguous accepted prefix is rejected with an `ambiguous prefix`
+diagnostic. Human-readable mode lists the matched spellings when prefix
+suggestions are enabled. Unknown base names, suboption keys, and suboption
+values are distinguished from one another; the diagnostic lists the valid
+keys or values for the active option and base.
+
+Typo suggestions compare the invalid token with prefixes that would be valid
+choices. Matching uses case-insensitive normalized Levenshtein similarity.
+Candidates must have edit distance at most two and similarity of at least
+0.6; candidates of at most three characters require distance one. Results are
+ordered by higher similarity, lower edit distance, shorter name, and then
+lexical order, with at most five names emitted after `Did you mean:`.
+
+The diagnostics policy controls these additions independently:
+`prefix_suggestions` controls candidates for ambiguous prefixes,
+`fuzzy_suggestions` controls typo candidates, and `path_suggestions` controls
+filesystem suggestions. Human-readable CLI diagnostics enable prefix and
+fuzzy guidance by default. Code mode retains the stable error category but
+omits human-oriented candidate text.
+
 ## Input and output contracts
 
 - Keep SIXEL, raster, JSON, or other machine-readable output free of progress
@@ -141,6 +227,20 @@ defaults. Preserve that boundary.
 - Treat file overwriting, output creation, partial-output cleanup, and broken
   pipes as designed behaviors.
 - Keep `--help`, `--version`, and error exit statuses stable and scriptable.
+
+### Pseudo targets
+
+`clipboard:` is a pseudo path accepted wherever a converter accepts a
+supported input or output target. As an input it reads a compatible image or
+text payload from the selected clipboard backend; as an output it publishes
+the generated payload. A documented format prefix can be combined with it,
+for example `png:clipboard:`, to select the clipboard representation.
+
+The `clipboard:` marker must terminate the operand and is interpreted as a
+pseudo target rather than a filesystem path or remote URL. It is distinct
+from the `-` stdin/stdout sentinel. Clipboard backend policy is configured by
+`-y`/`--clipboard-policy`, its typed suboptions, and their corresponding
+environment variables.
 
 ## Automated coverage
 
@@ -154,7 +254,7 @@ The reciprocal `Policy:` reference in each check or test is enforced by
 | ID | Design contract | Static check or test |
 | --- | --- | --- |
 | CLI-01 | Every public top-level option has a one-character short form and a long form with the same argument shape. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh) |
-| CLI-02 | Public suboptions have typed values, uppercase one-letter forms, environment forms, and image-level coverage. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh) |
+| CLI-02 | Public suboptions have typed values, uppercase one-letter compact forms, environment forms, and image-level coverage. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh) |
 | CLI-03 | `img2sixel -H` and the manual expose the same top-level option declarations. | [tests/_static/sh/staticcheck-docs-help-vs-man.sh](../../tests/_static/sh/staticcheck-docs-help-vs-man.sh) |
 | CLI-04 | The manual and Bash completion expose the same top-level option declarations. | [tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh](../../tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh) |
 | CLI-05 | Public environment controls are represented in the generated help inventory. | [tests/_static/sh/staticcheck-docs-envvars-help-table.sh](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) |
@@ -169,6 +269,14 @@ The reciprocal `Policy:` reference in each check or test is enforced by
 | CLI-14 | `png:-` writes PNG data to standard output. | [tests/cli/core/0014_basic_png_stdout.t](../../tests/cli/core/0014_basic_png_stdout.t) |
 | CLI-15 | The help command remains available. | [tests/cli/core/0001_help.t](../../tests/cli/core/0001_help.t) |
 | CLI-16 | The version command remains available. | [tests/cli/core/0002_version.t](../../tests/cli/core/0002_version.t) |
+| CLI-17 | Uppercase compact suboption keys are accepted without `=`. | [tests/cli/options/matching/0087_option_matching_quantize_kmeans_histogram_short_success.t](../../tests/cli/options/matching/0087_option_matching_quantize_kmeans_histogram_short_success.t) |
+| CLI-18 | Long suboption keys require exact spelling rather than prefix abbreviation. | [tests/cli/options/matching/0026_option_matching_loader_suboption_prefix_rejected.t](../../tests/cli/options/matching/0026_option_matching_loader_suboption_prefix_rejected.t) |
+| CLI-19 | A compact suboption key followed by `=` is rejected. | [tests/cli/options/matching/0233_option_matching_quantize_short_suboption_equals_rejected.t](../../tests/cli/options/matching/0233_option_matching_quantize_short_suboption_equals_rejected.t) |
+| CLI-20 | An unknown suboption key is rejected with the valid keys for the active base. | [tests/cli/options/matching/0112_option_matching_quantize_medoids_unknown_key_lists_candidates.t](../../tests/cli/options/matching/0112_option_matching_quantize_medoids_unknown_key_lists_candidates.t) |
+| CLI-21 | Fuzzy typo suggestions can be disabled without changing rejection behavior. | [tests/cli/options/matching/0009_option_matching_distance2_fuzzy_off.t](../../tests/cli/options/matching/0009_option_matching_distance2_fuzzy_off.t) |
+| CLI-22 | `clipboard:` and `png:clipboard:` work as input and output pseudo targets. | [tests/io/clipboard/0002_clipboard_file_backend.t](../../tests/io/clipboard/0002_clipboard_file_backend.t) |
+| CLI-23 | Typed scalar options and suboptions register environment names, and public environment controls remain synchronized with help. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh), [tests/_static/sh/staticcheck-docs-envvars-help-table.sh](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) |
+| CLI-24 | A close suboption-key typo is rejected with its canonical key as a `Did you mean:` suggestion. | [tests/cli/options/matching/0276_option_matching_suboption_key_typo_suggestion.t](../../tests/cli/options/matching/0276_option_matching_suboption_key_typo_suggestion.t) |
 
 ### Coverage boundary
 

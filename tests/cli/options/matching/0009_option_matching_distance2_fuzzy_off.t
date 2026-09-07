@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying fuzzy suggestions can be disabled for invalid choices.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 
