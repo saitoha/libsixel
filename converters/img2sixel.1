@@ -38,7 +38,7 @@ is present.
 Arguments that select from a fixed set accept unique prefixes.  For
 example, "\-s ave" resolves to "average", but "\-s a" is rejected because
 it matches both "auto" and "average".
-." Keep this list in the same order as `img2sixel -H`.
+." Keep option signatures synchronized with `img2sixel -H`; grouping may differ.
 .TP 5
 .B \-o, \-\-outfile
 specify output file name (default:stdout).
@@ -50,7 +50,7 @@ while \(dqpng:\fIpath\fP\(dq stores the PNG alongside the SIXEL
 output. Using \(dq\-o output.png\(dq writes the PNG directly to that
 path.
 .TP 5
-.B \-= \fICOUNT\fP, \-\-threads=\fICOUNT\fP
+.B \-= \fICOUNT|auto\fP, \-\-threads=\fICOUNT|auto\fP
 select the encoder thread count used for band parallelism.
 The special value \fBauto\fP matches the hardware thread count.
 Positive integers keep deterministic ordering with \fICOUNT\fP greater
@@ -1033,6 +1033,52 @@ The builtin loader accepts \fBbmp_info40_mode=MODE\fP (short form
 \fBBMODE\fP). The WIC loader accepts \fBwic:ico_minsize=SIZE\fP (short
 form \fBISIZE\fP) to pick the smallest ICO frame whose edge is at least
 SIZE.
+.PP
+Every loader suboption has an environment default. The mapping below uses
+\fIscope:suboption=variable\fP. The \fBcommon\fP scope applies to every
+loader that supports the suboption; a named scope applies only to that loader.
+An explicit loader suboption overrides its environment default.
+.nf
+common:background_policy=SIXEL_BACKGROUND_POLICY
+common:background_colorspace=SIXEL_LOADER_BACKGROUND_COLORSPACE
+common:cms_target=SIXEL_LOADER_CMS_TARGET_COLORSPACE
+common:prefer_8bit=SIXEL_LOADER_PREFER_8BIT
+common:cms_intent=SIXEL_LOADER_CMS_RENDERING_INTENT
+common:hdr_fallback_profile=SIXEL_LOADER_HDR_FALLBACK_PROFILE
+common:hdr_exposure=SIXEL_LOADER_HDR_EXPOSURE_EV
+common:hdr_tonemap=SIXEL_LOADER_HDR_TONEMAP
+common:hdr_header_exposure=SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE
+common:osc11_query=SIXEL_LOADER_OSC11_BG_QUERY
+common:osc11_timeout=SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
+common:thumbnail_size=SIXEL_THUMBNAILER_HINT_SIZE
+common:trns_keycolor=SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR
+libpng:cms_engine=SIXEL_LOADER_LIBPNG_CMS_ENGINE
+libpng:orientation=SIXEL_LOADER_LIBPNG_ORIENTATION
+libjpeg:cms_engine=SIXEL_LOADER_LIBJPEG_CMS_ENGINE
+libjpeg:orientation=SIXEL_LOADER_LIBJPEG_ORIENTATION
+libwebp:cms_engine=SIXEL_LOADER_LIBWEBP_CMS_ENGINE
+libwebp:orientation=SIXEL_LOADER_LIBWEBP_ORIENTATION
+libwebp:max_output_frames=SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES
+coregraphics:orientation=SIXEL_LOADER_COREGRAPHICS_ORIENTATION
+coregraphics:cache_max_bytes=SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES
+libtiff:cms_engine=SIXEL_LOADER_LIBTIFF_CMS_ENGINE
+librsvg:relative_resources=SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES
+librsvg:stdin_svgz=SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ
+builtin:cms_engine=SIXEL_LOADER_BUILTIN_CMS_ENGINE
+builtin:orientation=SIXEL_LOADER_BUILTIN_ORIENTATION
+builtin:pam_duplicate_keys=SIXEL_LOADER_PAM_ALLOW_DUPLICATE_REQUIRED_KEYS
+builtin:pam_endhdr_tokens=SIXEL_LOADER_PAM_ALLOW_ENDHDR_TRAILING_TOKENS
+builtin:pam_large_header=SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER
+builtin:pnm_trailing_data=SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA
+builtin:pnm_truncated_ascii=SIXEL_LOADER_PNM_ALLOW_TRUNCATED_ASCII
+builtin:bmp_info40_mode=SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE
+wic:ico_minsize=SIXEL_LOADER_WIC_ICO_MINSIZE
+.fi
+.PP
+Per-loader CMS and orientation variables fall back to their corresponding
+\fBSIXEL_LOADER_CMS_ENGINE\fP and \fBSIXEL_LOADER_ORIENTATION\fP global
+defaults. The environment-variable section below documents these fallback
+chains and legacy names.
 .br
 Recognized loader names (availability depends on the build):
 .RS
@@ -1113,7 +1159,7 @@ set the default loader CMS backend for this process by exporting
 .br
 \fBauto\fP prefers lcms2, then ColorSync (macOS), then builtin.
 .TP 5
-.B \-@, \-\-drcs
+.B \-@ \fIMMV:CHARSET:PATH\fP, \-\-drcs=\fIMMV:CHARSET:PATH\fP
 emit extended DRCS tiles instead of a regular SIXEL image (experimental).
 This option accepts arguments in the form \fIMMV:CHARSET:PATH\fP. MMV picks the
 Unicode mapping revision (0..2, default 2). CHARSET chooses the DRCS slot
@@ -1241,6 +1287,10 @@ zsh -> remove the Zsh completion script
 all -> remove both scripts.
 Each removal prints the outcome yet silently skips missing files so repeated
 invocations remain idempotent.
+.TP 5
+.B \-% \fIKEY=VALUE\fP, \-\-env=\fIKEY=VALUE\fP
+set a process environment variable before conversion. This option may be
+specified more than once.
 .TP 5
 .B \-V, \-\-version
 show version and license info.

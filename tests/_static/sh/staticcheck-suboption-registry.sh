@@ -392,6 +392,7 @@ FILENAME == encoder_file || FILENAME == decoder_file {
 }
 FILENAME == encoder_man || FILENAME == decoder_man {
     line = $0
+    gsub(/\\\(ti/, "~", line)
     gsub(/\\/, "", line)
     gsub(/[[:space:]]+/, "", line)
     manual[FILENAME] = manual[FILENAME] line
@@ -601,7 +602,22 @@ function fail(message) {
     print "# " message
     failed = 1
 }
-function inspect(row, fields, count, name, alias, key, macro, scope) {
+function loader_scope(base, token) {
+    if (base == "NULL") {
+        return "common"
+    }
+    if (!match(base, /SIXEL_LOADER_INDEX_[A-Z0-9_]+/)) {
+        fail("loader suboption has an unresolved scope: " base)
+        return ""
+    }
+    token = substr(base, RSTART, RLENGTH)
+    sub(/^SIXEL_LOADER_INDEX_/, "", token)
+    return tolower(token)
+}
+function inspect(row, fields, count, name, alias, key, macro, scope,
+                 base, environment, environment_fallback,
+                 environment_legacy, environment_mapping,
+                 environment_scope) {
     gsub(/[[:space:]]+/, " ", row)
     match(row, /SIXEL_REGISTRY_[A-Z0-9_]+/)
     macro = substr(row, RSTART, RLENGTH)
@@ -610,8 +626,16 @@ function inspect(row, fields, count, name, alias, key, macro, scope) {
     count = split(row, fields, /,[[:space:]]*/)
     name = fields[3]
     alias = fields[4]
+    base = fields[2]
+    environment = fields[5]
+    environment_fallback = fields[6]
+    environment_legacy = fields[7]
     gsub(/^"|"$/, "", name)
     gsub(/^\047|\047$/, "", alias)
+    gsub(/[[:space:]]/, "", base)
+    gsub(/[[:space:]"]/, "", environment)
+    gsub(/[[:space:]"]/, "", environment_fallback)
+    gsub(/[[:space:]"]/, "", environment_legacy)
     key = name SUBSEP alias
     expected[key] = 1
     expected_name[key] = name
@@ -642,6 +666,21 @@ function inspect(row, fields, count, name, alias, key, macro, scope) {
     } else {
         expected_help[key] = help_file
         expected_man[key] = man_file
+    }
+    if (macro ~ /LOADER_/) {
+        environment_scope = loader_scope(base)
+        if (environment_scope != "") {
+            environment_mapping = environment_scope ":" name "=" \
+                environment
+            expected_loader_environment[environment_mapping] = 1
+            expected_loader_environment_name[environment] = 1
+            if (environment_fallback != "NULL") {
+                expected_loader_environment_name[environment_fallback] = 1
+            }
+            if (environment_legacy != "NULL") {
+                expected_loader_environment_name[environment_legacy] = 1
+            }
+        }
     }
 }
 function mapping_is_documented(text, name, alias, offset, position,
@@ -726,6 +765,24 @@ END {
                 !mapping_is_documented(document[expected_second_man[key]],
                                        name, alias)) {
             fail(expected_second_man[key] " omits " name "=" alias)
+        }
+    }
+    for (environment_mapping in expected_loader_environment) {
+        if (index(document[help_file], environment_mapping) == 0) {
+            fail(help_file " omits loader environment mapping " \
+                 environment_mapping)
+        }
+        if (index(document[man_file], environment_mapping) == 0) {
+            fail(man_file " omits loader environment mapping " \
+                 environment_mapping)
+        }
+    }
+    for (environment in expected_loader_environment_name) {
+        if (index(document[help_file], environment) == 0) {
+            fail(help_file " omits loader environment " environment)
+        }
+        if (index(document[man_file], environment) == 0) {
+            fail(man_file " omits loader environment " environment)
         }
     }
     exit failed ? 1 : 0
@@ -1063,6 +1120,13 @@ FILENAME == registry_file || FILENAME == completion_registry_file {
     }
     next
 }
+/^# Top-level option regression$/ {
+    if (top_level_test[FILENAME]) {
+        fail(FILENAME " contains more than one top-level marker")
+    }
+    top_level_test[FILENAME] = 1
+    next
+}
 /^# Registry row: / {
     key = $0
     sub(/^# Registry row: /, "", key)
@@ -1327,6 +1391,12 @@ FILENAME != registry_file {
 }
 END {
     for (file in regression_test) {
+        if (top_level_test[file]) {
+            if (test_key[file] != "") {
+                fail(file " mixes top-level and suboption markers")
+            }
+            continue
+        }
         if (test_key[file] == "") {
             fail(file " has no registry row marker")
         }
@@ -1342,6 +1412,9 @@ END {
         }
     }
     for (file in test_key) {
+        if (top_level_test[file]) {
+            continue
+        }
         key = test_key[file]
         is_completion = expected_option[key] == \
             "IMG2SIXEL_OPTION_SCHEMA_COMPLETION_POLICY"

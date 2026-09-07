@@ -65,6 +65,18 @@ form and an environment variable in the owning registry row. If the short-form
 namespace cannot represent another setting, reduce or separate the option axis
 instead of introducing a long-only suboption.
 
+`SIXEL_OPTION_ARGUMENT_LIST` defines argument cardinality. The option value
+schema and suboption registry together define the list item type. Consumers
+must enumerate that existing schema instead of introducing a parallel list
+option table.
+
+When one option exposes suboptions for multiple named bases, `--help` and the
+manual must show the exact primary environment mapping as
+`scope:suboption=VARIABLE`. Derive the expected pairs from the typed registry;
+do not infer environment names from a prefix convention. This is especially
+important for list options, where each item can select a different base and
+therefore a different environment namespace.
+
 ### Internal test controls
 
 Fault injection and test-only implementation switches are not public options

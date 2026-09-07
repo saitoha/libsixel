@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify top-level soft binning agrees across CLI and environment requests.
+# Top-level option regression
 
 set -eux
 

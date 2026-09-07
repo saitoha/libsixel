@@ -1,9 +1,10 @@
 #!/bin/sh
-# Emit TAP for help/manpage option list and alpha-policy parity.
+# Emit TAP for help/manpage option set and alpha-policy parity.
 
-set -eu
+set -eux
 
 echo "1..1"
+set -v
 
 src_root=$1
 
@@ -47,7 +48,7 @@ fi
 
 while IFS= read -r line; do
     case "$line" in
-    [[:space:]]-[A-Za-z0-9],*)
+    -?,*|[[:space:]]-?,*)
         read -r token1 token2 _extra <<EOF
 $line
 EOF
@@ -55,7 +56,7 @@ EOF
         test -z "$token2" && continue
         printf '%s %s\n' "$token1" "$token2"
         ;;
-    [[:space:]]-[A-Za-z0-9][[:space:]]*)
+    -?[[:space:]]*|[[:space:]]-?[[:space:]]*)
         read -r token1 token2 token3 _extra <<EOF
 $line
 EOF
@@ -68,30 +69,54 @@ done < "$help_raw" > "$help_norm"
 
 while IFS= read -r line; do
     case "$line" in
-    ".B \\-[A-Za-z0-9],"*)
+    ".B \\-"*)
         clean=$(printf '%s\n' "$line" \
-            | sed 's/\\fP//g; s/\\fI//g; s#\\##g; \
-                   s/^\\.B[[:space:]]*//; s/[[:space:]]\+/ /g')
-        read -r token1 token2 token3 _extra <<EOF
+            | sed -e 's/\\(ti/~/g' \
+                  -e 's/\\fP//g' \
+                  -e 's/\\fI//g' \
+                  -e 's#\\##g' \
+                  -e 's/^\.B[[:space:]]*//' \
+                  -e 's/[[:space:]]\+/ /g')
+        case "$clean" in
+        -?,*)
+            read -r token1 token2 _extra <<EOF
 $clean
 EOF
-        test -z "$token1" && continue
-        test -z "$token2" && continue
-        printf '%s %s\n' "$token1" "$token2"
-        ;;
-    ".B \\-[A-Za-z0-9] "*)
-        clean=$(printf '%s\n' "$line" \
-            | sed 's/\\fP//g; s/\\fI//g; s#\\##g; \
-                   s/^\\.B[[:space:]]*//; s/[[:space:]]\+/ /g')
-        read -r token1 token2 token3 _extra <<EOF
+            test -z "$token1" && continue
+            test -z "$token2" && continue
+            printf '%s %s\n' "$token1" "$token2"
+            ;;
+        -?[[:space:]]*)
+            read -r token1 token2 token3 _extra <<EOF
 $clean
 EOF
-        test -z "$token1" && continue
-        test -z "$token3" && continue
-        printf '%s %s %s\n' "$token1" "$token2" "$token3"
+            test -z "$token1" && continue
+            test -z "$token3" && continue
+            printf '%s %s %s\n' "$token1" "$token2" "$token3"
+            ;;
+        esac
         ;;
     esac
 done < "$man_file" > "$man_norm"
+
+# The manual groups related options for reading, while -H follows parser order.
+# Sort the normalized declarations so this check enforces exact membership and
+# argument spelling without coupling either document to the other's layout.
+LC_ALL=C sort -u "$help_norm" -o "$help_norm"
+LC_ALL=C sort -u "$man_norm" -o "$man_norm"
+
+help_count=$(wc -l < "$help_norm")
+man_count=$(wc -l < "$man_norm")
+test "$help_count" -ge 50 || {
+    echo "not ok 1 - help/manpage option parser returned too few entries"
+    echo "# help=$help_count man=$man_count"
+    exit 1
+}
+test "$man_count" -ge 50 || {
+    echo "not ok 1 - help/manpage option parser returned too few entries"
+    echo "# help=$help_count man=$man_count"
+    exit 1
+}
 
 sum_help=$(cksum < "$help_norm")
 sum_man=$(cksum < "$man_norm")

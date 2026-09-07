@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify automatic Kmeans binning retains the explicit hard-policy output.
+# Top-level option regression
 
 set -eux
 

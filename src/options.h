@@ -197,7 +197,11 @@ typedef enum sixel_option_scope {
 #define SIXEL_OPTION_SCOPE_ALL \
     (SIXEL_OPTION_SCOPE_ENCODER | SIXEL_OPTION_SCOPE_DECODER)
 
-/* Structured arguments either select one base or an ordered base list. */
+/*
+ * Structured arguments either select one base or an ordered base list.
+ * The values and suboption registry define the item type; this tag changes
+ * only the argument cardinality and its parsed resolution container.
+ */
 typedef enum sixel_option_argument_form {
     SIXEL_OPTION_ARGUMENT_SINGLE = 0,
     SIXEL_OPTION_ARGUMENT_LIST
