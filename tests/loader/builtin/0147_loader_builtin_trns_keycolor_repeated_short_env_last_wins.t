@@ -1,6 +1,5 @@
 #!/bin/sh
-# Verify repeated short -% assignments honor the last value for transparent
-# policy.
+# Verify repeated short -% assignments honor the last alpha-policy value.
 
 set -eux
 
@@ -15,21 +14,21 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_bmp="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-bi-png-rgba16-2x2.bmp"
-out_repeated="${ARTIFACT_LOCAL_DIR}/builtin-transparent-policy-repeated-last-composite.six"
-out_composite="${ARTIFACT_LOCAL_DIR}/builtin-transparent-policy-composite.six"
-out_transparent="${ARTIFACT_LOCAL_DIR}/builtin-transparent-policy-transparent.six"
+out_repeated="${ARTIFACT_LOCAL_DIR}/builtin-alpha-policy-repeated-last-composite.six"
+out_composite="${ARTIFACT_LOCAL_DIR}/builtin-alpha-policy-composite.six"
+out_keep="${ARTIFACT_LOCAL_DIR}/builtin-alpha-policy-keep.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-              -% SIXEL_TRANSPARENT_POLICY=transparent \
-              -% SIXEL_TRANSPARENT_POLICY=composite \
+              -% SIXEL_ALPHA_POLICY=keep \
+              -% SIXEL_ALPHA_POLICY=composite \
               -Lbuiltin:cms_engine=none! -d fs:scan=raster -B#fff \
               "${input_bmp}" >"${out_repeated}" || {
-    echo "not ok 1 - builtin repeated short -% transparent-policy render failed"
+    echo "not ok 1 - builtin repeated short -% alpha-policy render failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-              -% SIXEL_TRANSPARENT_POLICY=composite \
+              -% SIXEL_ALPHA_POLICY=composite \
               -Lbuiltin:cms_engine=none! -d fs:scan=raster -B#fff \
               "${input_bmp}" >"${out_composite}" || {
     echo "not ok 1 - builtin explicit composite policy render failed"
@@ -37,10 +36,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-              -% SIXEL_TRANSPARENT_POLICY=transparent \
+              -% SIXEL_ALPHA_POLICY=keep \
               -Lbuiltin:cms_engine=none! -d fs:scan=raster -B#fff \
-              "${input_bmp}" >"${out_transparent}" || {
-    echo "not ok 1 - builtin explicit transparent policy render failed"
+              "${input_bmp}" >"${out_keep}" || {
+    echo "not ok 1 - builtin explicit keep policy render failed"
     exit 0
 }
 
@@ -49,11 +48,11 @@ cmp -s "${out_repeated}" "${out_composite}" || {
     exit 0
 }
 
-cmp -s "${out_repeated}" "${out_transparent}" && {
+cmp -s "${out_repeated}" "${out_keep}" && {
     echo "not ok 1 - builtin repeated short -% did not change policy state"
     exit 0
 }
 
-echo "ok 1 - builtin repeated short -% uses last transparent-policy value"
+echo "ok 1 - builtin repeated short -% uses last alpha-policy value"
 
 exit 0

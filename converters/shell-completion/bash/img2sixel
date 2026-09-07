@@ -890,11 +890,9 @@ _img2sixel()
                                    size' -- "$cur" ) )
         return 0
         ;;
-    -A|--transparent-policy)
-        COMPREPLY=( $( compgen -W 'background \
-                                   transparent \
+    -A|--alpha-policy)
+        COMPREPLY=( $( compgen -W 'composite \
                                    clear \
-                                   composite \
                                    keep' -- "$cur" ) )
         return 0
         ;;
@@ -1028,7 +1026,7 @@ _img2sixel()
                                    -b --builtin-palette \
                                    -E --encode-policy \
                                    -B --bgcolor \
-                                   -A --transparent-policy \
+                                   -A --alpha-policy \
                                    -+ --transparent-offset \
                                    -Z --6delta-threshold \
                                    -Y --6delta-error \

@@ -15,14 +15,14 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 status_invalid=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=keep --6delta-error=diffuse \
+    --alpha-policy=keep --6delta-error=diffuse \
     -L builtin -e -o - "${input_image}" >/dev/null || {
     echo "not ok" 1 - "valid 6delta-error=diffuse was rejected"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=keep -Y skip \
+    --alpha-policy=keep -Y skip \
     -L builtin -e -o - "${input_image}" >/dev/null || {
     echo "not ok" 1 - "valid -Y skip was rejected"
     exit 0
@@ -30,7 +30,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 set +e
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=keep --6delta-error=carry \
+    --alpha-policy=keep --6delta-error=carry \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
 status_invalid=$?
 set -e

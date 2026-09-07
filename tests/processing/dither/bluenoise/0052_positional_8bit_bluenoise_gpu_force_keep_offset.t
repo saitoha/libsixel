@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test covering forced GPU bluenoise with transparent keep accumulation.
 #
-# transparent-policy=keep with transparent-offset emits P2=1 padding without
+# alpha-policy=keep with transparent-offset emits P2=1 padding without
 # needing a 6delta retained RGB plane.  FORCE mode must still be able to
 # exercise the GPU path for terminal video clients that prefer full-paint GPU
 # output over CPU fallback.
@@ -175,10 +175,10 @@ main(void)
         goto end;
     }
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                  SIXEL_OPTFLAG_ALPHA_POLICY,
                                   "keep");
     if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "transparent policy option failed: %04x\n", status);
+        fprintf(stderr, "alpha policy option failed: %04x\n", status);
         goto end;
     }
     status = sixel_encoder_setopt(encoder,

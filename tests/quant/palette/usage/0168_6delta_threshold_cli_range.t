@@ -19,7 +19,7 @@ status_text=0
 status_error_mode=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=keep --6delta-threshold=8 \
+    --alpha-policy=keep --6delta-threshold=8 \
     -L builtin -e -o - "${input_image}" >/dev/null || {
     echo "not ok" 1 - "valid 6delta-threshold was rejected"
     exit 0
@@ -27,19 +27,19 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 set +e
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=keep --6delta-threshold=256 \
+    --alpha-policy=keep --6delta-threshold=256 \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
 status_256=$?
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=keep --6delta-threshold=-1 \
+    --alpha-policy=keep --6delta-threshold=-1 \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
 status_negative=$?
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=keep --6delta-threshold=fast \
+    --alpha-policy=keep --6delta-threshold=fast \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
 status_text=$?
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=keep --6delta-threshold=8 --6delta-error=skip \
+    --alpha-policy=keep --6delta-threshold=8 --6delta-error=skip \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
 status_error_mode=$?
 set -e

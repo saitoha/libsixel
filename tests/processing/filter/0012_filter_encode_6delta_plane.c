@@ -237,7 +237,7 @@ plane_make_encoder(sixel_encoder_t **encoder_out, int declare_plane)
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder,
-                                      SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                      SIXEL_OPTFLAG_ALPHA_POLICY,
                                       "keep");
     }
     if (SIXEL_SUCCEEDED(status)) {

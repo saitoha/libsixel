@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify background policy fills a zero-alpha pixel with the -B color.
+# Verify composite policy fills a zero-alpha pixel with the -B color.
 
 set -eux
 
@@ -17,16 +17,16 @@ esc="$(printf '\033')"
 expected="${esc}Pq\"1;1;1;1#0;2;100;100;100#0@${esc}\\"
 
 output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=background -B '#ffffff' \
+    --alpha-policy=composite -B '#ffffff' \
     -L builtin! -d fs:scan=raster -o - "${input_png}") || {
-    echo "not ok" 1 - "builtin background policy render failed"
+    echo "not ok" 1 - "builtin composite policy render failed"
     exit 0
 }
 
 test "${output}" = "${expected}" || {
-    echo "not ok" 1 - "background policy did not fill alpha zero with -B"
+    echo "not ok" 1 - "composite policy did not fill alpha zero with -B"
     exit 0
 }
 
-echo "ok" 1 - "background policy fills alpha zero with -B"
+echo "ok" 1 - "composite policy fills alpha zero with -B"
 exit 0

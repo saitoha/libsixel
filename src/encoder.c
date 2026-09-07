@@ -2398,7 +2398,7 @@ sixel_encoder_6delta_accumulation_requested(
     }
 
     return sixel_encoder_resolve_transparent_policy(encoder)
-        == SIXEL_TRANSPARENT_POLICY_TRANSPARENT ? 1 : 0;
+        == SIXEL_ALPHA_POLICY_KEEP ? 1 : 0;
 }
 
 static int
@@ -6319,7 +6319,7 @@ sixel_encoder_resolve_transparent_policy(sixel_encoder_t const *encoder)
     int policy;
     sixel_suboption_value_t value;
 
-    policy = SIXEL_TRANSPARENT_POLICY_BACKGROUND;
+    policy = SIXEL_ALPHA_POLICY_COMPOSITE;
     memset(&value, 0, sizeof(value));
 
     if (encoder == NULL) {
@@ -6333,12 +6333,12 @@ sixel_encoder_resolve_transparent_policy(sixel_encoder_t const *encoder)
          * Transparent offset is a positional P2=1 contract.  Let the option
          * override the environment unless the caller explicitly set -A.
          */
-        return SIXEL_TRANSPARENT_POLICY_TRANSPARENT;
+        return SIXEL_ALPHA_POLICY_KEEP;
     }
 
     policy = encoder->transparent_policy;
     if (sixel_option_resolve_scalar_environment(
-            SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
+            SIXEL_OPTION_SCHEMA_ALPHA_POLICY,
             &value,
             NULL,
             0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
@@ -6432,9 +6432,9 @@ sixel_encoder_validate_transparent_offset(sixel_encoder_t const *encoder)
         return SIXEL_OK;
     }
     if (encoder->transparent_policy_override != 0 &&
-        encoder->transparent_policy != SIXEL_TRANSPARENT_POLICY_TRANSPARENT) {
+        encoder->transparent_policy != SIXEL_ALPHA_POLICY_KEEP) {
         sixel_helper_set_additional_message(
-            "transparent-offset requires transparent-policy=transparent.");
+            "transparent-offset requires alpha-policy=keep.");
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -8941,7 +8941,7 @@ sixel_encoder_new(
     (*ppencoder)->prefer_float32        = 0;
     (*ppencoder)->ormode                = 0;
     (*ppencoder)->transparent_policy =
-        SIXEL_TRANSPARENT_POLICY_BACKGROUND;
+        SIXEL_ALPHA_POLICY_COMPOSITE;
     (*ppencoder)->transparent_policy_override = 0;
     (*ppencoder)->transparent_offset_left = 0;
     (*ppencoder)->transparent_offset_top = 0;
@@ -11596,9 +11596,9 @@ sixel_encoder_setopt(
         }
         encoder->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
         break;
-    case SIXEL_OPTFLAG_TRANSPARENT_POLICY:  /* A */
+    case SIXEL_OPTFLAG_ALPHA_POLICY:  /* A */
         status = sixel_option_parse_scalar_argument(
-            SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
+            SIXEL_OPTION_SCHEMA_ALPHA_POLICY,
             SIXEL_OPTION_SCOPE_ENCODER,
             value,
             &scalar_value,

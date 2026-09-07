@@ -93,7 +93,7 @@ static int loader_background_colorspace_initialized;
 static int loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
 static int loader_transparent_policy_initialized;
 static int loader_transparent_policy_value =
-    SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
+    SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
 static int loader_background_policy_initialized;
 static int loader_background_policy_value =
     SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
@@ -771,9 +771,9 @@ SIXEL_INTERNAL_API void
 sixel_helper_set_loader_transparent_policy(int policy)
 {
     loader_background_lock();
-    if (policy == SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND ||
-            policy == SIXEL_LOADER_TRANSPARENT_POLICY_CLEAR ||
-            policy == SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT) {
+    if (policy == SIXEL_LOADER_ALPHA_POLICY_COMPOSITE ||
+            policy == SIXEL_LOADER_ALPHA_POLICY_CLEAR ||
+            policy == SIXEL_LOADER_ALPHA_POLICY_KEEP) {
         loader_transparent_policy_override = policy;
     } else {
         loader_transparent_policy_override = -1;
@@ -820,10 +820,10 @@ loader_initialize_transparent_policy(void)
     }
     loader_transparent_policy_initialized = 1;
     loader_transparent_policy_value =
-        SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
-    policy = SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
+        SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
+    policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
     if (sixel_option_resolve_scalar_environment(
-            SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
+            SIXEL_OPTION_SCHEMA_ALPHA_POLICY,
             &value,
             NULL,
             0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
@@ -893,9 +893,9 @@ loader_transparent_policy(void)
 
     loader_background_lock();
     override_value = loader_transparent_policy_override;
-    if (override_value == SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND ||
-            override_value == SIXEL_LOADER_TRANSPARENT_POLICY_CLEAR ||
-            override_value == SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT) {
+    if (override_value == SIXEL_LOADER_ALPHA_POLICY_COMPOSITE ||
+            override_value == SIXEL_LOADER_ALPHA_POLICY_CLEAR ||
+            override_value == SIXEL_LOADER_ALPHA_POLICY_KEEP) {
         loader_background_unlock();
         return override_value;
     }

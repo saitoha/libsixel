@@ -311,7 +311,7 @@ accumulation_encode(sixel_allocator_t *allocator,
         goto end;
     }
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                  SIXEL_OPTFLAG_ALPHA_POLICY,
                                   "keep");
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -410,7 +410,7 @@ accumulation_encode_sequence(sixel_allocator_t *allocator,
         goto end;
     }
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                  SIXEL_OPTFLAG_ALPHA_POLICY,
                                   "keep");
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -535,7 +535,7 @@ accumulation_encode_sequence_delta3(sixel_allocator_t *allocator,
         goto end;
     }
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                  SIXEL_OPTFLAG_ALPHA_POLICY,
                                   "keep");
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -625,7 +625,7 @@ accumulation_hidden_alpha_seed_second_alpha(sixel_allocator_t *allocator,
         goto end;
     }
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                  SIXEL_OPTFLAG_ALPHA_POLICY,
                                   "keep");
     if (SIXEL_FAILED(status)) {
         goto end;

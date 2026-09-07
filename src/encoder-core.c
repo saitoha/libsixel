@@ -152,7 +152,7 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
     output->penetrate_multiplexer = 0;
     output->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
     output->ormode = 0;
-    output->transparent_policy = SIXEL_TRANSPARENT_POLICY_BACKGROUND;
+    output->transparent_policy = SIXEL_ALPHA_POLICY_COMPOSITE;
     output->keycolor_reserved = 0;
     output->transparent_offset_left = 0;
     output->transparent_offset_top = 0;

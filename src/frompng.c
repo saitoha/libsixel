@@ -2160,7 +2160,7 @@ sixel_frompng_convert_rgba8_to_linearrgbfloat32(
         if (blend_with_background == 0) {
             continue;
         }
-        if (SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+        if (SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(
                 transparent_policy) && alpha <= 0.0) {
             continue;
         }
@@ -2436,7 +2436,7 @@ sixel_frompng_convert_rgba16_to_linearrgbfloat32(
         if (blend_with_background == 0) {
             continue;
         }
-        if (SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+        if (SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(
                 transparent_policy) && alpha <= 0.0) {
             continue;
         }
@@ -2558,7 +2558,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     background_from_file = 0;
     has_background = 0;
     has_transparency = 0;
-    transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    transparent_policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
     blend_with_background = 0;
     preserve_zero_alpha = 0;
     transparent_mask = NULL;
@@ -2593,7 +2593,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
      * transparent fallback when no background source can be resolved.
      */
     preserve_zero_alpha = has_background == 0 ||
-        SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+        SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(
             transparent_policy);
 
     png_is_16bit = stbi_is_16_bit_from_memory(sixel_chunk_get_buffer(pchunk), (int)sixel_chunk_get_size(pchunk));

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming keep transparent policy emits the P2=1 SIXEL header.
+# TAP test confirming keep alpha policy emits the P2=1 SIXEL header.
 
 set -eux
 
@@ -21,7 +21,7 @@ svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-transparent-2color.svg
 keep_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-transparent-keep-header.six"
 esc="$(printf '\033')"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --transparent-policy=keep \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --alpha-policy=keep \
     -L librsvg! "${svg_path}" >"${keep_sixel}" || {
     echo "not ok" 1 - "keep transparent SVG conversion failed"
     exit 0

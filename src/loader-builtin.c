@@ -1237,7 +1237,7 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
      * prevents hidden RGB in an alpha-zero pixel from becoming visible.
      */
     preserve_zero_alpha = has_background == 0 ||
-        SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+        SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(
             transparent_policy);
     if (preserve_zero_alpha != 0) {
         transparent_mask = (unsigned char *)sixel_allocator_malloc(
@@ -1264,7 +1264,7 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
             transparent_mask[index] = 0u;
         }
         if (has_background != 0 &&
-            !(SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+            !(SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(
                   transparent_policy) && alpha_unit <= 0.0f) &&
             alpha_unit < 1.0f) {
             inv_alpha = 1.0f - alpha_unit;
@@ -1313,7 +1313,7 @@ sixel_builtin_apply_bmp_alpha_policy(
 {
     int transparent_policy;
 
-    transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    transparent_policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
     if (frame == NULL ||
         frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
@@ -4310,7 +4310,7 @@ sixel_builtin_finalize_loaded_frame(
 
     status = SIXEL_OK;
     orientation = 1;
-    transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    transparent_policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
     if (request == NULL || frame == NULL || request->fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -5598,7 +5598,7 @@ sixel_builtin_apply_pic_alpha_policy(
 {
     int transparent_policy;
 
-    transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    transparent_policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
     if (frame == NULL ||
         frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
@@ -5617,7 +5617,7 @@ sixel_builtin_apply_tga_truecolor_alpha_policy(
 {
     int transparent_policy;
 
-    transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    transparent_policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
     if (frame == NULL ||
         frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;

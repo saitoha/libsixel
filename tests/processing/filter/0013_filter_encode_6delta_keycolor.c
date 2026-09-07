@@ -271,7 +271,7 @@ test_filter_0013_filter_encode_6delta_keycolor(int argc, char **argv)
                                              SIXEL_OPTFLAG_DIFFUSION,
                                              "none"))
         || SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                                             SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                             SIXEL_OPTFLAG_ALPHA_POLICY,
                                              "keep"))
         || SIXEL_FAILED(sixel_encoder_setopt(encoder,
                                              SIXEL_OPTFLAG_6DELTA_THRESHOLD,

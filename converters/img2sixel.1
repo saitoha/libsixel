@@ -931,25 +931,27 @@ rgb:rrr/ggg/bbb
 .br
 rgb:rrrr/gggg/bbbb
 .TP 5
-.B \-A \fITRANSPARENTPOLICY\fP, \-\-transparent\-policy=\fITRANSPARENTPOLICY\fP
-choose alpha output policy
+.B \-A \fIALPHAPOLICY\fP, \-\-alpha\-policy=\fIALPHAPOLICY\fP
+choose source alpha and omitted SIXEL pixel policy
 .br
-background -> composite alpha over the OSC 11 or \fB-B\fP color (default)
+composite -> composite source alpha over the resolved background (default).
+Sources are \fB-B\fP, OSC 11, and supported file backgrounds. If unresolved,
+fall back to keep.
 .br
-transparent -> emit transparent pixels with DCS P2=1
+clear -> preserve alpha-zero and emit DCS P2=0, requesting the terminal to
+clear omitted pixels.
 .br
-clear -> emit transparent pixels with DCS P2=0
+keep -> preserve alpha-zero and emit DCS P2=1, requesting the terminal to keep
+existing pixels.
 .br
-composite -> alias for background
-.br
-keep -> alias for transparent
-.br
-P2=1 is for terminals that preserve the previous image plane.
+Semi-transparent pixels are composited when a background is available because
+SIXEL cannot represent partial alpha. P2 rendering details are
+terminal-dependent.
 .TP 5
 .B \-+ \fILEFT,TOP\fP, \-\-transparent\-offset=\fILEFT,TOP\fP
 add transparent left/top pixel offset with DCS P2=1 image-plane reuse.
 0,0 disables the offset. Requires
-\fB--transparent-policy=transparent\fP. Incompatible with \fB-O\fP and
+\fB--alpha-policy=keep\fP. Incompatible with \fB-O\fP and
 \fB-I\fP.
 .TP 5
 .B \-Z \fIDELTA\fP, \-\-6delta\-threshold=\fIDELTA\fP
@@ -1632,12 +1634,10 @@ choose background priority for builtin PNG/APNG/GIF composition.
 "explicit_first" prefers \fB-B\fP/\fBSIXEL_BGCOLOR\fP over file background.
 Invalid or empty values fall back to "file_first".
 .TP 5
-.B SIXEL_TRANSPARENT_POLICY
+.B SIXEL_ALPHA_POLICY
 .br
-control alpha normalization and transparent SIXEL P2 handling.
-"background" and "composite" bake alpha into the OSC 11 or \fB-B\fP
-background (default). "transparent" and "keep" preserve alpha==0 and emit
-P2=1. "clear" and "p2-0" preserve alpha==0 and emit P2=0.
+control source alpha and omitted SIXEL pixel handling.
+The values and semantics are identical to \fB-A\fP/\fB--alpha-policy\fP.
 .TP 5
 .B SIXEL_6DELTA_THRESHOLD
 .br

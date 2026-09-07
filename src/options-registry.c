@@ -1367,49 +1367,17 @@ static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
     { "float", SIXEL_RUNTIME_RESIZE_PRECISION_FLOAT_WORK }
 };
 
-static sixel_option_value_schema_t const g_transparent_policy_values[] = {
+static sixel_option_value_schema_t const g_alpha_policy_values[] = {
     {
-        "background", SIXEL_TRANSPARENT_POLICY_BACKGROUND, 0u,
+        "composite", SIXEL_ALPHA_POLICY_COMPOSITE, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
-        "transparent", SIXEL_TRANSPARENT_POLICY_TRANSPARENT, 0u,
+        "clear", SIXEL_ALPHA_POLICY_CLEAR, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
-        "clear", SIXEL_TRANSPARENT_POLICY_CLEAR, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "composite", SIXEL_TRANSPARENT_POLICY_COMPOSITE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "p2-0", SIXEL_TRANSPARENT_POLICY_P2_0, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "p20", SIXEL_TRANSPARENT_POLICY_P2_0, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "keep", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "keep-destination", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "previous", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "p2-1", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "p21", SIXEL_TRANSPARENT_POLICY_KEEP, 0u,
+        "keep", SIXEL_ALPHA_POLICY_KEEP, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     }
 };
@@ -3066,16 +3034,16 @@ static sixel_option_argument_schema_t const g_options[] = {
         g_gpu_policy_values,
         "SIXEL_GPU_POLICY"),
     SIXEL_REGISTRY_SCALAR_CHOICE(
-        SIXEL_OPTION_SCHEMA_TRANSPARENT_POLICY,
+        SIXEL_OPTION_SCHEMA_ALPHA_POLICY,
         SIXEL_OPTION_SCOPE_ENCODER,
-        SIXEL_OPTFLAG_TRANSPARENT_POLICY,
-        "transparent-policy",
+        SIXEL_OPTFLAG_ALPHA_POLICY,
+        "alpha-policy",
         SIXEL_OPTION_MATCH_PREFIX,
         SIXEL_OPTION_MATCH_EXACT,
-        "SIXEL_TRANSPARENT_POLICY",
-        "cannot parse transparent policy option.",
-        SIXEL_TRANSPARENT_POLICY_BACKGROUND,
-        g_transparent_policy_values),
+        "SIXEL_ALPHA_POLICY",
+        "cannot parse alpha policy option.",
+        SIXEL_ALPHA_POLICY_COMPOSITE,
+        g_alpha_policy_values),
     SIXEL_REGISTRY_SCALAR_UINT(
         SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
         SIXEL_OPTION_SCOPE_ENCODER,

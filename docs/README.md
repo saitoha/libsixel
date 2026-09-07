@@ -47,9 +47,9 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Image loading
 
-- [Transparent pixel policy](loader/transparent-policy.md) defines loader-side
-  background composition, alpha-zero preservation, SIXEL `P2` selection, and
-  the loader/encoder ownership boundary.
+- [Alpha policy](loader/alpha-policy.md) defines loader-side background
+  composition, alpha-zero preservation, SIXEL `P2` requests, terminal-specific
+  rendering, and the loader/encoder ownership boundary.
 
 ## Command-line interface
 

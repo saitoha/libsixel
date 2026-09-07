@@ -382,6 +382,9 @@ SIXEL_FORMAT_HDR           = 0xb # read only
 SIXEL_LOOP_AUTO            = 0   # honer the setting of GIF header
 SIXEL_LOOP_FORCE           = 1   # always enable loop
 SIXEL_LOOP_DISABLE         = 2   # always disable loop
+SIXEL_ALPHA_POLICY_COMPOSITE = 0  # composite over resolved background
+SIXEL_ALPHA_POLICY_CLEAR   = 1   # request DCS P2=0 clearing
+SIXEL_ALPHA_POLICY_KEEP    = 2   # request DCS P2=1 preservation
 SIXEL_6DELTA_ERROR_DIFFUSE = 0   # diffuse error from kept RGB
 SIXEL_6DELTA_ERROR_SKIP    = 1   # skip diffusion on kept pixels
 
@@ -674,9 +677,9 @@ SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U'  # -U OUTPUT_COLORSPACE, --output-colorspa
                                       #          linear  -> linear RGB output
                                       #          smpte-c -> SMPTE-C gamma encoded output
 SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image
-SIXEL_OPTFLAG_TRANSPARENT_POLICY = 'A'  # -A POLICY, --transparent-policy=POLICY:
-                                        #        select transparent pixel output
-                                        #        handling.
+SIXEL_OPTFLAG_ALPHA_POLICY = 'A'  # -A POLICY, --alpha-policy=POLICY:
+                                  #        select source alpha and omitted
+                                  #        SIXEL pixel handling.
 SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+'  # -+ ROWS, --transparent-offset=ROWS:
                                         #        delay transparent rows.
 SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z'  # -Z DELTA, --6delta-threshold=DELTA:

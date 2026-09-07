@@ -16,9 +16,9 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-minimal-1x1-rgba.png
 esc="$(printf '\033')"
 
 clear_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --transparent-policy=clear -B '#ffffff' \
+    --alpha-policy=clear -B '#ffffff' \
     -L builtin! -d fs:scan=raster -o - "${input_image}") || {
-    echo "not ok" 1 - "clear transparent-policy render failed"
+    echo "not ok" 1 - "clear alpha-policy render failed"
     exit 0
 }
 test "${clear_output#"${esc}P0;0q"}" != "${clear_output}" || {

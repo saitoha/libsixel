@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify transparent policy strict parsing and invalid fallback behavior.
+# Verify alpha-policy strict parsing and invalid fallback behavior.
 
 set -eux
 
@@ -15,28 +15,28 @@ input_bmp="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-bi-png-rgba16-2x2.
 
 out_default=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - default transparent policy render failed"
+    echo "not ok 1 - default alpha policy render failed"
     exit 0
 }
 
 out_composite=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_TRANSPARENT_POLICY=composite \
+    --env SIXEL_ALPHA_POLICY=composite \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - composite transparent policy render failed"
+    echo "not ok 1 - composite alpha policy render failed"
     exit 0
 }
 
 out_invalid=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_TRANSPARENT_POLICY=invalid \
+    --env SIXEL_ALPHA_POLICY=invalid \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - invalid transparent policy render failed"
+    echo "not ok 1 - invalid alpha policy render failed"
     exit 0
 }
 
-out_transparent=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_TRANSPARENT_POLICY=transparent \
+out_keep=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_ALPHA_POLICY=keep \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - transparent policy render failed"
+    echo "not ok 1 - keep alpha policy render failed"
     exit 0
 }
 
@@ -46,14 +46,14 @@ test "${out_default}" = "${out_composite}" || {
 }
 
 test "${out_default}" = "${out_invalid}" || {
-    echo "not ok 1 - invalid transparent policy did not fall back to default"
+    echo "not ok 1 - invalid alpha policy did not fall back to default"
     exit 0
 }
 
-test "${out_default}" != "${out_transparent}" || {
-    echo "not ok 1 - transparent policy did not change alpha-zero behavior"
+test "${out_default}" != "${out_keep}" || {
+    echo "not ok 1 - keep policy did not change alpha-zero behavior"
     exit 0
 }
 
-echo "ok 1 - transparent policy strict parse/fallback and mode switch verified"
+echo "ok 1 - alpha policy strict parse/fallback and mode switch verified"
 exit 0

@@ -890,16 +890,20 @@ static cli_option_help_t const g_option_help_table[] = {
     },
     {
         'A',
-        "transparent-policy",
-        "-A TRANSPARENTPOLICY, --transparent-policy=TRANSPARENTPOLICY\n"
-        "    choose alpha output policy\n"
-        "      background  -> composite alpha over the OSC 11 or -B color\n"
-        "                     (default)\n"
-        "      transparent -> emit transparent pixels with DCS P2=1\n"
-        "      clear       -> emit transparent pixels with DCS P2=0\n"
-        "      composite   -> alias for background\n"
-        "      keep        -> alias for transparent\n"
-        "    P2=1 is for terminals that preserve the previous image plane.\n"
+        "alpha-policy",
+        "-A ALPHAPOLICY, --alpha-policy=ALPHAPOLICY\n"
+        "    choose source alpha and omitted SIXEL pixel policy\n"
+        "      composite -> composite source alpha over the resolved\n"
+        "                   background (default). Sources are -B, OSC 11,\n"
+        "                   and supported file backgrounds. If unresolved,\n"
+        "                   fall back to keep\n"
+        "      clear     -> preserve alpha-zero and emit DCS P2=0, requesting\n"
+        "                   the terminal to clear omitted pixels\n"
+        "      keep      -> preserve alpha-zero and emit DCS P2=1, requesting\n"
+        "                   the terminal to keep existing pixels\n"
+        "    semi-transparent pixels are composited when a background is\n"
+        "    available because SIXEL cannot represent partial alpha.\n"
+        "    P2 rendering details are terminal-dependent.\n"
     },
     {
         '+',
@@ -907,8 +911,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "-+ LEFT,TOP, --transparent-offset=LEFT,TOP\n"
         "    add transparent left/top pixel offset with DCS P2=1 image-plane\n"
         "    reuse\n"
-        "    (0,0 disables the offset; requires transparent-policy="
-        "transparent)\n"
+        "    (0,0 disables the offset; requires alpha-policy=keep)\n"
     },
     {
         'Z',
@@ -1509,11 +1512,9 @@ static cli_env_help_t const g_env_help_table[] = {
         "Invalid or empty values fall back to file_first."
     },
     {
-        "SIXEL_TRANSPARENT_POLICY",
-        "control alpha normalization and transparent SIXEL P2 handling.\n"
-        "background/composite bake alpha into the OSC 11 or -B background\n"
-        "(default). transparent/keep preserve alpha==0 and emit P2=1.\n"
-        "clear/p2-0 preserve alpha==0 and emit P2=0."
+        "SIXEL_ALPHA_POLICY",
+        "control source alpha and omitted SIXEL pixel handling.\n"
+        "The values and semantics are identical to -A/--alpha-policy."
     },
     {
         "SIXEL_LOADER_ORIENTATION",
@@ -3239,7 +3240,7 @@ img2sixel_main(int argc, char *argv[])
         {"clustering-colorspace", required_argument,  &long_opt, 'X'},
         {"working-colorspace",    required_argument,  &long_opt, 'W'},
         {"bgcolor",               required_argument,  &long_opt, 'B'},
-        {"transparent-policy",    required_argument,  &long_opt, 'A'},
+        {"alpha-policy",          required_argument,  &long_opt, 'A'},
         {"transparent-offset",    required_argument,  &long_opt, '+'},
         {"6delta-threshold",      required_argument,  &long_opt, 'Z'},
         {"6delta-error",          required_argument,  &long_opt, 'Y'},
@@ -3629,7 +3630,7 @@ unknown_option_error:
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-X clusteringcolorspace]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace]\n"
-            "                 [-B bgcolor] [-A transparentpolicy]\n"
+            "                 [-B bgcolor] [-A alphapolicy]\n"
             "                 [-+ left,top]\n"
             "                 [-Z delta]\n"
             "                 [-o outfile] [filename ...]\n\n"

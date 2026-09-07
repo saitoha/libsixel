@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify transparent-offset rejects background composition.
+# Verify transparent-offset rejects composite alpha handling.
 
 set -eux
 
@@ -14,23 +14,23 @@ set +e
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -L builtin -p 2 --transparent-policy=background -+ 3,5 \
+    -L builtin -p 2 --alpha-policy=composite -+ 3,5 \
     -o - "${input_image}" 2>&1 >/dev/null)
 status=$?
 set -e
 
 test "${status}" -ne 0 || {
-    echo "not ok 1 - transparent-offset accepted background policy"
+    echo "not ok 1 - transparent-offset accepted composite policy"
     exit 0
 }
 
 case "${output}" in
-    *"transparent-offset requires transparent-policy=transparent"*) ;;
+    *"transparent-offset requires alpha-policy=keep"*) ;;
     *)
         echo "not ok 1 - transparent-offset conflict message mismatch"
         exit 0
         ;;
 esac
 
-echo "ok 1 - transparent-offset rejects background composition"
+echo "ok 1 - transparent-offset rejects composite policy"
 exit 0
