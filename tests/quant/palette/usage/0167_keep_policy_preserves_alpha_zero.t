@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify keep policy preserves alpha zero even when -B is present.
+# Policy: docs/loader/alpha-policy.md
 
 set -eux
 

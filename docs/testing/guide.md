@@ -170,6 +170,11 @@ category, this may include:
 Keep numbering, filenames, registrations, build defines, and test purpose in
 sync. Run the existing static checks that enforce these relationships.
 
+Behavioral policy documents with an enforced coverage inventory also require
+reciprocal document/test path references. Follow the
+[documentation-to-test traceability policy](../AGENTS.md#documentation-to-test-traceability)
+and run `staticcheck-doc-test-links` after changing either side.
+
 ## Required validation
 
 Put project-local Autotools, Meson, and related tools first in `PATH`.

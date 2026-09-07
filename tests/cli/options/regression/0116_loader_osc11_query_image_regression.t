@@ -2,6 +2,8 @@
 # Verify common loader osc11_query through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|NULL|osc11_query
 # Registry binding: osc11_bg_query
+# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/background-policy.md
 
 set -eux
 

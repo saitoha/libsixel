@@ -68,6 +68,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/ci/local-jobs.tsv \
 	docs/ci/support-matrix.md \
 	docs/cli/design-policy.md \
+	docs/concepts/pixelformat.md \
+	docs/loader/alpha-policy.md \
+	docs/loader/background-policy.md \
+	docs/loader/assets/alpha-policy-comparison.gif \
+	docs/loader/assets/alpha-policy-comparison.png \
 	docs/functionality/clustering-colorspace.md \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-quality.csv \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-quality.png \

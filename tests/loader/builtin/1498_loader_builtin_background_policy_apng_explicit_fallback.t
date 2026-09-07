@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify APNG background policy fallback when only explicit background exists.
+# Policy: docs/loader/background-policy.md
 
 set -eux
 

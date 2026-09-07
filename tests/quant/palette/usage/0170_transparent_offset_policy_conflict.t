@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify transparent-offset rejects composite alpha handling.
+# Policy: docs/loader/alpha-policy.md
 
 set -eux
 

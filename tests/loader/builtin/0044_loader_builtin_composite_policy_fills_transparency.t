@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify composite policy fills a zero-alpha pixel with the -B color.
+# Policy: docs/loader/alpha-policy.md
 
 set -eux
 

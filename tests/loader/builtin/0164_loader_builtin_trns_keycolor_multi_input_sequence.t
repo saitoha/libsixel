@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify alpha-policy selection is stable across multi-input sequences.
+# Policy: docs/loader/alpha-policy.md
 
 set -eux
 

@@ -1,5 +1,6 @@
 /*
  * Verify OSC11 response extraction for BEL and ST terminated payloads.
+ * Policy: docs/loader/background-policy.md
  */
 
 #if defined(HAVE_CONFIG_H)

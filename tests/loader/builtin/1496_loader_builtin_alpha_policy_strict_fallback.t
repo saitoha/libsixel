@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify alpha-policy strict parsing and invalid fallback behavior.
+# Policy: docs/loader/alpha-policy.md
 
 set -eux
 

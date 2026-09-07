@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify clear policy emits P2=0 when it preserves an alpha-zero pixel.
+# Policy: docs/loader/alpha-policy.md
 
 set -eux
 

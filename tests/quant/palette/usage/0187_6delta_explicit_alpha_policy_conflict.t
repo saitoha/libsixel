@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify 6delta rejects an explicitly incompatible alpha policy.
+# Policy: docs/loader/alpha-policy.md
 
 set -eux
 

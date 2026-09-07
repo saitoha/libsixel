@@ -1860,6 +1860,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-docs-help-vs-man.sh \
     _static/sh/staticcheck-docs-man-vs-bash-completion.sh \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
+    _static/sh/staticcheck-doc-test-links.sh \
     _static/sh/staticcheck-c-header-modeline.sh \
     check-test-exports.list \
     $(TEST_DATA_DIRS)
@@ -6258,6 +6259,7 @@ SIXEL_INSTALLCHECK ?= 0
 	staticcheck-docs-help-vs-man \
 	staticcheck-docs-man-vs-bash-completion \
 	staticcheck-docs-envvars-help-table \
+	staticcheck-doc-test-links \
 	staticcheck-c-header-modeline
 
 # Keep Autotools staticcheck semantics aligned with Meson:
@@ -6321,6 +6323,7 @@ staticcheck-help-sixel2png-source-contract \
 staticcheck-docs-help-vs-man \
 staticcheck-docs-man-vs-bash-completion \
 staticcheck-docs-envvars-help-table \
+staticcheck-doc-test-links \
 staticcheck-c-header-modeline: \
 	T_LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS) --enable-hard-errors
 
@@ -6906,6 +6909,16 @@ staticcheck-docs-envvars-help-table:
 		--trs-file staticcheck-docs-envvars-help-table.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-envvars-help-table.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-doc-test-links:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-doc-test-links" \
+		--log-file staticcheck-doc-test-links.log \
+		--trs-file staticcheck-doc-test-links.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-doc-test-links.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-docs-help-vs-man:

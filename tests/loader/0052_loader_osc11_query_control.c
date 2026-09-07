@@ -1,5 +1,7 @@
 /*
  * Verify loader-side OSC11 query control helpers.
+ * Policy: docs/loader/alpha-policy.md
+ * Policy: docs/loader/background-policy.md
  */
 
 #if defined(HAVE_CONFIG_H)

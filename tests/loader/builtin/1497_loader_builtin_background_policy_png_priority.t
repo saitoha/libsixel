@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify PNG bKGD priority policy, strict parsing, and fallback behavior.
+# Policy: docs/loader/background-policy.md
 
 set -eux
 

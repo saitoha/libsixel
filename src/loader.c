@@ -1281,6 +1281,7 @@ sixel_loader_load_file(
     int wait_result;
     int chunk_job_id;
     int suboptions_active;
+    int background_policy_explicit;
     int thumbnail_size_explicit;
 
     pchunk = NULL;
@@ -1298,6 +1299,7 @@ sixel_loader_load_file(
     wait_result = 0;
     chunk_job_id = -1;
     suboptions_active = 0;
+    background_policy_explicit = 0;
     thumbnail_size_explicit = 0;
     sixel_option_init_argument_list_resolution(&order_resolution);
     loader_manager_init_loader_suboptions(&active_suboptions);
@@ -1379,8 +1381,12 @@ sixel_loader_load_file(
     }
     loader_manager_resolve_loader_suboptions(active_order_resolution,
                                              &active_suboptions);
-    if (loader->background_policy_override != 0) {
-        /* A dedicated request option overrides loader-list defaults. */
+    background_policy_explicit = loader_resolution_assigns_binding(
+        active_order_resolution,
+        SIXEL_SUBOPTION_BINDING_ID_1(background_policy));
+    if (background_policy_explicit == 0 &&
+        loader->background_policy_override != 0) {
+        /* A request option overrides environment and built-in defaults. */
         active_suboptions.background_policy = loader->background_policy;
     }
     thumbnail_size_explicit = loader_resolution_assigns_binding(

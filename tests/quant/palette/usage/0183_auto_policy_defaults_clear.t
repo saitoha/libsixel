@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify the default auto alpha policy resolves to clear.
+# Policy: docs/loader/alpha-policy.md
 
 set -eux
 

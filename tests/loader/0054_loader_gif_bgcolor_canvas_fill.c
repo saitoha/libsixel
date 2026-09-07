@@ -2,6 +2,7 @@
  * Verify GIF logical-screen background fill follows the configured
  * background-selection policy when compositing starts from a partially
  * covered first frame.
+ * Policy: docs/loader/background-policy.md
  */
 
 #if defined(HAVE_CONFIG_H)

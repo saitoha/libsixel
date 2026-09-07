@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test: builtin PNG default background policy stays file_first for bKGD.
+# Policy: docs/loader/background-policy.md
 
 set -eux
 

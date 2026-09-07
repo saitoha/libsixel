@@ -58,6 +58,11 @@ positions retain their previous contents. For a decoder that produces an image
 rather than drawing on an existing terminal surface, the second behavior
 requires an explicit transparency or paint-mask policy.
 
+`P2` does not add an alpha channel to SIXEL. See
+[Pixel Formats and Alpha Representation](concepts/pixelformat.md) for the
+distinction between input alpha, frame transparency metadata, and omitted
+SIXEL pixels.
+
 `P3` is the horizontal grid-size parameter. The VT300 ignored it because its
 grid size was fixed. Modern applications should not rely on it for output
 dimensions.

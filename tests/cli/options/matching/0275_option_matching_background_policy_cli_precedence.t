@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify --background-policy overrides loader and environment defaults.
+# Verify --background-policy takes precedence over SIXEL_BACKGROUND_POLICY.
+# Policy: docs/loader/background-policy.md
 
 set -eux
 
@@ -18,7 +19,7 @@ file_first=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -A composite \
     --env SIXEL_BACKGROUND_POLICY=explicit_first \
     --background-policy=file_first \
-    -L builtin:Pexplicit_first:cms_engine=none! \
+    -L builtin:cms_engine=none! \
     -B '#ffffff' -d fs:scan=raster -o - "${input_image}") || {
     echo "not ok" 1 - "file-first background-policy render failed"
     exit 0
@@ -28,16 +29,16 @@ explicit_first=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -A composite \
     --env SIXEL_BACKGROUND_POLICY=file_first \
     --background-policy=explicit_first \
-    -L builtin:Pfile_first:cms_engine=none! \
+    -L builtin:cms_engine=none! \
     -B '#ffffff' -d fs:scan=raster -o - "${input_image}") || {
     echo "not ok" 1 - "explicit-first background-policy render failed"
     exit 0
 }
 
 test "${file_first}" != "${explicit_first}" || {
-    echo "not ok" 1 - "dedicated background-policy did not select priority"
+    echo "not ok" 1 - "background-policy did not override environment"
     exit 0
 }
 
-echo "ok" 1 - "background-policy overrides loader and environment defaults"
+echo "ok" 1 - "background-policy overrides environment"
 exit 0

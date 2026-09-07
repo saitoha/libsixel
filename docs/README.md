@@ -18,6 +18,12 @@ are grouped by domain so each area can grow without overloading one document.
   build requirements, runtime assumptions, CI-backed support tiers, and the
   OS, architecture, compiler, and build-system matrix.
 
+## Concepts
+
+- [Pixel formats and alpha representation](concepts/pixelformat.md) separates
+  input memory layouts, frame storage, alpha-zero metadata, and what can be
+  represented in a SIXEL stream.
+
 ## Functionality
 
 - [Functional overview](functionality/overview.md) describes the product
@@ -50,6 +56,9 @@ are grouped by domain so each area can grow without overloading one document.
 - [Alpha policy](loader/alpha-policy.md) defines loader-side background
   composition, alpha-zero preservation, SIXEL `P2` requests, terminal-specific
   rendering, and the loader/encoder ownership boundary.
+- [Background policy](loader/background-policy.md) defines how builtin PNG,
+  APNG, and GIF loaders choose between file and external backgrounds, including
+  option precedence, colorspace, and OSC 11 interaction.
 
 ## Command-line interface
 

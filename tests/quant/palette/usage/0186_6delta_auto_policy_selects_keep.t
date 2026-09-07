@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify default auto alpha policy selects keep for 6delta output.
+# Policy: docs/loader/alpha-policy.md
 
 set -eux
 

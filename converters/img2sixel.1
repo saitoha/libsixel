@@ -938,8 +938,8 @@ file_first -> prefer PNG bKGD or the GIF logical-screen background (default).
 .br
 explicit_first -> prefer \fB\-B\fP, \fBSIXEL_BGCOLOR\fP, or an OSC 11 reply.
 .br
-This dedicated option overrides the loader \fBbackground_policy\fP suboption
-and \fBSIXEL_BACKGROUND_POLICY\fP.
+An explicit loader \fBbackground_policy\fP suboption overrides this option.
+This option overrides \fBSIXEL_BACKGROUND_POLICY\fP.
 .TP 5
 .B \-A \fIALPHAPOLICY\fP, \-\-alpha\-policy=\fIALPHAPOLICY\fP
 choose source alpha and omitted SIXEL pixel policy
@@ -1649,7 +1649,8 @@ choose background priority for builtin PNG/APNG/GIF composition.
 \fBSIXEL_BGCOLOR\fP, or OSC 11.
 "explicit_first" gives those external sources priority over file background.
 Invalid or empty values fall back to "file_first".
-The \fB--background-policy\fP option takes precedence.
+The \fB--background-policy\fP option takes precedence unless an explicit
+loader \fBbackground_policy\fP suboption is present.
 .TP 5
 .B SIXEL_ALPHA_POLICY
 .br

@@ -1,5 +1,6 @@
 /*
  * Verify temporary loader background-colorspace override behavior.
+ * Policy: docs/loader/background-policy.md
  */
 
 #if defined(HAVE_CONFIG_H)

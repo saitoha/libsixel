@@ -896,8 +896,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      file_first     -> prefer PNG bKGD or the GIF background\n"
         "                        (default)\n"
         "      explicit_first -> prefer -B, SIXEL_BGCOLOR, or OSC 11\n"
-        "    this dedicated option overrides -L background_policy and\n"
-        "    SIXEL_BACKGROUND_POLICY.\n"
+        "    an explicit -L background_policy overrides this option.\n"
+        "    this option overrides SIXEL_BACKGROUND_POLICY.\n"
     },
     {
         'A',
@@ -1524,7 +1524,8 @@ static cli_env_help_t const g_env_help_table[] = {
         "file_first (default) prefers file background over -B, environment,\n"
         "or OSC 11. explicit_first prefers those external sources.\n"
         "Invalid or empty values fall back to file_first.\n"
-        "--background-policy takes precedence."
+        "--background-policy takes precedence unless an explicit loader\n"
+        "background_policy suboption is present."
     },
     {
         "SIXEL_ALPHA_POLICY",

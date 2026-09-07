@@ -2,6 +2,7 @@
 # Verify common loader background policy through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|NULL|background_policy
 # Registry binding: background_policy
+# Policy: docs/loader/background-policy.md
 
 set -eux
 
@@ -24,6 +25,7 @@ control_output="${artifact_dir}/0097-loader-background-policy-control-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env "SIXEL_BACKGROUND_POLICY=file_first" \
     "-Lbuiltin:Pexplicit_first!" -B#fff "${input_image}" \
     2>&1 >"${short_output}") || {
     echo "not ok" 1 - "background_policy short conversion failed"

@@ -952,8 +952,8 @@ steps.
                              explicit_first -> prefer -B,
                                                SIXEL_BGCOLOR, or an OSC 11
                                                reply
-                           This dedicated option overrides the loader
-                           background_policy suboption and
+                           An explicit loader background_policy suboption
+                           overrides this option. This option overrides
                            SIXEL_BACKGROUND_POLICY.
 -A ALPHAPOLICY, --alpha-policy=ALPHAPOLICY
                            choose source alpha and omitted SIXEL

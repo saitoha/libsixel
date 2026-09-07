@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify GIF background policy default/invalid fallback and explicit-first switch.
+# Policy: docs/loader/background-policy.md
 
 set -eux
 

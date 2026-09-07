@@ -1,6 +1,7 @@
 /*
  * Verify OSC11/shared background color parser accepts and rejects the same
  * syntax used by -B / SIXEL_BGCOLOR.
+ * Policy: docs/loader/background-policy.md
  */
 
 #if defined(HAVE_CONFIG_H)

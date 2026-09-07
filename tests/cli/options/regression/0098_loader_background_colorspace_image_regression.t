@@ -2,6 +2,8 @@
 # Verify common loader background colorspace through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|NULL|background_colorspace
 # Registry binding: background_colorspace
+# Policy: docs/loader/alpha-policy.md
+# Policy: docs/loader/background-policy.md
 
 set -eux
 
