@@ -117,6 +117,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	cli/0032_cli_gpu_policy_option.c \
 	cli/0033_cli_suboption_consumer_scope.c \
 	cli/0034_cli_terminal_policy_option.c \
+	cli/0035_cli_lookup_policy_initial_prefixes.c \
 	processing/filter/0001_filter_clip.c \
 	processing/filter/0002_filter_sample.c \
 	processing/filter/0003_filter_resize.c \
@@ -296,6 +297,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0032_cli_gpu_policy_option.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0033_cli_suboption_consumer_scope.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0034_cli_terminal_policy_option.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0035_cli_lookup_policy_initial_prefixes.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0001_filter_clip.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0002_filter_sample.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0003_filter_resize.$(OBJEXT) \
@@ -539,6 +541,7 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po \
 	cli/$(DEPDIR)/test_runner-0033_cli_suboption_consumer_scope.Po \
 	cli/$(DEPDIR)/test_runner-0034_cli_terminal_policy_option.Po \
+	cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
@@ -1523,6 +1526,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_CLI_GPU_POLICY_OPTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_CLI_SUBOPTION_CONSUMER_SCOPE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_CLI_TERMINAL_POLICY_OPTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_CLI_LOOKUP_POLICY_INITIAL_PREFIXES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_LOADER_OSC11_QUERY_CONTROL \
@@ -1590,6 +1594,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0032_cli_gpu_policy_option.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0033_cli_suboption_consumer_scope.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0034_cli_terminal_policy_option.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    cli/0035_cli_lookup_policy_initial_prefixes.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0001_filter_clip.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0002_filter_sample.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0003_filter_resize.c \
@@ -1936,6 +1941,8 @@ cli/test_runner-0032_cli_gpu_policy_option.$(OBJEXT):  \
 cli/test_runner-0033_cli_suboption_consumer_scope.$(OBJEXT):  \
 	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
 cli/test_runner-0034_cli_terminal_policy_option.$(OBJEXT):  \
+	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
+cli/test_runner-0035_cli_lookup_policy_initial_prefixes.$(OBJEXT):  \
 	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
 processing/filter/$(am__dirstamp):
 	@$(MKDIR_P) processing/filter
@@ -2702,6 +2709,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0033_cli_suboption_consumer_scope.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0034_cli_terminal_policy_option.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
@@ -3007,6 +3015,20 @@ cli/test_runner-0034_cli_terminal_policy_option.obj: cli/0034_cli_terminal_polic
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0034_cli_terminal_policy_option.c' object='cli/test_runner-0034_cli_terminal_policy_option.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0034_cli_terminal_policy_option.obj `if test -f 'cli/0034_cli_terminal_policy_option.c'; then $(CYGPATH_W) 'cli/0034_cli_terminal_policy_option.c'; else $(CYGPATH_W) '$(srcdir)/cli/0034_cli_terminal_policy_option.c'; fi`
+
+cli/test_runner-0035_cli_lookup_policy_initial_prefixes.o: cli/0035_cli_lookup_policy_initial_prefixes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0035_cli_lookup_policy_initial_prefixes.o -MD -MP -MF cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Tpo -c -o cli/test_runner-0035_cli_lookup_policy_initial_prefixes.o `test -f 'cli/0035_cli_lookup_policy_initial_prefixes.c' || echo '$(srcdir)/'`cli/0035_cli_lookup_policy_initial_prefixes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Tpo cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0035_cli_lookup_policy_initial_prefixes.c' object='cli/test_runner-0035_cli_lookup_policy_initial_prefixes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0035_cli_lookup_policy_initial_prefixes.o `test -f 'cli/0035_cli_lookup_policy_initial_prefixes.c' || echo '$(srcdir)/'`cli/0035_cli_lookup_policy_initial_prefixes.c
+
+cli/test_runner-0035_cli_lookup_policy_initial_prefixes.obj: cli/0035_cli_lookup_policy_initial_prefixes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0035_cli_lookup_policy_initial_prefixes.obj -MD -MP -MF cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Tpo -c -o cli/test_runner-0035_cli_lookup_policy_initial_prefixes.obj `if test -f 'cli/0035_cli_lookup_policy_initial_prefixes.c'; then $(CYGPATH_W) 'cli/0035_cli_lookup_policy_initial_prefixes.c'; else $(CYGPATH_W) '$(srcdir)/cli/0035_cli_lookup_policy_initial_prefixes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Tpo cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0035_cli_lookup_policy_initial_prefixes.c' object='cli/test_runner-0035_cli_lookup_policy_initial_prefixes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0035_cli_lookup_policy_initial_prefixes.obj `if test -f 'cli/0035_cli_lookup_policy_initial_prefixes.c'; then $(CYGPATH_W) 'cli/0035_cli_lookup_policy_initial_prefixes.c'; else $(CYGPATH_W) '$(srcdir)/cli/0035_cli_lookup_policy_initial_prefixes.c'; fi`
 
 processing/filter/test_runner-0001_filter_clip.o: processing/filter/0001_filter_clip.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0001_filter_clip.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Tpo -c -o processing/filter/test_runner-0001_filter_clip.o `test -f 'processing/filter/0001_filter_clip.c' || echo '$(srcdir)/'`processing/filter/0001_filter_clip.c
@@ -5774,6 +5796,7 @@ distclean: distclean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0033_cli_suboption_consumer_scope.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0034_cli_terminal_policy_option.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
@@ -5994,6 +6017,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0033_cli_suboption_consumer_scope.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0034_cli_terminal_policy_option.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po

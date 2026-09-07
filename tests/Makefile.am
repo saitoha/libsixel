@@ -340,6 +340,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0032_CLI_GPU_POLICY_OPTION \
     -DBUILD_TEST_0033_CLI_SUBOPTION_CONSUMER_SCOPE \
     -DBUILD_TEST_0034_CLI_TERMINAL_POLICY_OPTION \
+    -DBUILD_TEST_0035_CLI_LOOKUP_POLICY_INITIAL_PREFIXES \
     -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
     -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
     -DBUILD_TEST_0052_LOADER_OSC11_QUERY_CONTROL \
@@ -382,6 +383,7 @@ test_runner_SOURCES = test_runner.c \
     cli/0032_cli_gpu_policy_option.c \
     cli/0033_cli_suboption_consumer_scope.c \
     cli/0034_cli_terminal_policy_option.c \
+    cli/0035_cli_lookup_policy_initial_prefixes.c \
     processing/filter/0001_filter_clip.c \
     processing/filter/0002_filter_sample.c \
     processing/filter/0003_filter_resize.c \
