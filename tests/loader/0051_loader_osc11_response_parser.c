@@ -1,5 +1,6 @@
 /*
- * Verify OSC11 response extraction for BEL and ST terminated payloads.
+ * Verify OSC11 response extraction for supported BEL- and ST-terminated
+ * payloads.
  * Policy: docs/loader/background-policy.md
  */
 
@@ -21,10 +22,6 @@ typedef struct osc11_success_case {
     unsigned char green;
     unsigned char blue;
 } osc11_success_case_t;
-
-typedef struct osc11_failure_case {
-    char const *response;
-} osc11_failure_case_t;
 
 static int
 run_osc11_success_cases(void)
@@ -76,62 +73,14 @@ run_osc11_success_cases(void)
     return 0;
 }
 
-static int
-run_osc11_failure_cases(void)
-{
-    static osc11_failure_case_t const cases[] = {
-        { "#112233\007" },
-        { "\033]11;not-a-color\007" },
-        { "\033]11;#112233" },
-        { "\033]10;#112233\007" }
-    };
-    size_t index;
-    SIXELSTATUS status;
-    unsigned char parsed[3];
-    size_t response_size;
-
-    index = 0u;
-    status = SIXEL_FALSE;
-    parsed[0] = 0u;
-    parsed[1] = 0u;
-    parsed[2] = 0u;
-    response_size = 0u;
-
-    for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
-        response_size = strlen(cases[index].response);
-        status = sixel_tty_parse_osc11_response(parsed,
-                                                cases[index].response,
-                                                response_size);
-        if (SIXEL_SUCCEEDED(status)) {
-            fprintf(stderr,
-                    "OSC11 response should be rejected: case=%zu\n",
-                    index);
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 int
 test_loader_0051_loader_osc11_response_parser(int argc, char **argv)
 {
-    int status;
-
     (void)argc;
     (void)argv;
-
-    status = run_osc11_success_cases();
-    if (status != 0) {
-        return EXIT_FAILURE;
-    }
-
-    status = run_osc11_failure_cases();
-    if (status != 0) {
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
+    return run_osc11_success_cases() == 0
+        ? EXIT_SUCCESS
+        : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */

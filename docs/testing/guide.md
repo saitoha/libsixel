@@ -111,6 +111,7 @@ Follow [Quality Measurement Policy](../quality/measurement-policy.md). In partic
 - Use the project's allocation, I/O, environment, and compatibility wrappers when they own cross-platform behavior.
 - Avoid direct CRT-sensitive calls such as `getenv()` or `fopen()` where static policy requires a libsixel wrapper.
 - Keep setup, one observation, and cleanup focused on the contract.
+- The unified `test_runner` executable is only a build and dispatch container. Keep each independently reportable observation in its own C source, runner entry, and TAP wrapper; sharing one executable does not permit unrelated observations to be combined in one C test function or source file.
 - Register test-runner defines in every applicable normal and amalgamated path.
 
 ## Portability
@@ -135,6 +136,26 @@ Register a test in every build path that supports its feature. Depending on the 
 Keep numbering, filenames, registrations, build defines, and test purpose in sync. Run the existing static checks that enforce these relationships.
 
 Behavioral policy documents with an enforced coverage inventory also require reciprocal document/test path references. Follow the [documentation-to-test traceability policy](../AGENTS.md#documentation-to-test-traceability) and run `staticcheck-doc-test-links` after changing either side.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+Each automated contract has a stable ID and an owning static check. The reciprocal `Policy:` reference in each check is itself verified by `staticcheck-doc-test-links`.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TG-01 | TAP-producing test sources declare one observation, or a whole-file skip. | [tests/_static/sh/staticcheck-test-plan-single.sh](../../tests/_static/sh/staticcheck-test-plan-single.sh) |
+| TG-02 | Every shell TAP test passes ShellCheck, and global checks reject top-level `if` and shell function definitions. | [tests/_static/sh/staticcheck-shellcheck.sh](../../tests/_static/sh/staticcheck-shellcheck.sh) |
+| TG-03 | Shell TAP tests do not invoke `grep`, `awk`, or `sed`. | [tests/_static/sh/staticcheck-test-no-grep-awk.sh](../../tests/_static/sh/staticcheck-test-no-grep-awk.sh) |
+| TG-04 | Test-owned artifact directories are created lazily after TAP setup and early feature skips, while the harness does not create them. | [tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh](../../tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh) |
+| TG-05 | C test-runner sources remain synchronized with amalgamation build defines. | [tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh](../../tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh) |
+| TG-06 | Enforced policy documents and their listed tests carry reciprocal repository-relative links, and every coverage row has an owning test. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
+| TG-07 | Shell TAP tests do not use `for` or `until` loops; heredoc payloads in other languages are excluded. | [tests/_static/sh/staticcheck-test-no-for-until.sh](../../tests/_static/sh/staticcheck-test-no-for-until.sh) |
+
+### Coverage boundary
+
+These checks enforce the repository-wide invariants stated in their contract rows. Naming quality, fixture minimality, whether separate values provide genuinely distinct observations, and the necessity of file or process work still require review because they cannot be inferred reliably from syntax alone. Other syntactic rules in this guide are requirements even where the current static suite does not yet enforce them; the table must not be read as claiming broader mechanical coverage than its rows state.
 
 ## Required validation
 

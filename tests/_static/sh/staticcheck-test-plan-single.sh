@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for enforcing single-observation test plans.
+# Policy: docs/testing/guide.md
 
 set -eu
 
@@ -53,12 +54,16 @@ while IFS= read -r relpath; do
     if ! awk -v file="$relpath" '
 BEGIN {
     bad = 0
+    normal_plan_count = 0
 }
 {
     line = $0
     rest = line
     while (match(rest, /1\.\.[0-9]+/)) {
         plan = substr(rest, RSTART, RLENGTH)
+        if (plan == "1..1") {
+            normal_plan_count += 1
+        }
         if (plan != "1..1") {
             if (!(plan == "1..0" && line ~ /[Ss][Kk][Ii][Pp]/)) {
                 printf "# %s:%d: disallowed TAP plan %s (expected 1..1 or 1..0 # SKIP)\n",
@@ -84,6 +89,11 @@ BEGIN {
     }
 }
 END {
+    if (file ~ /\.t$/ && normal_plan_count != 1) {
+        printf "# %s: found %d normal TAP plans (expected exactly one)\n", \
+            file, normal_plan_count
+        bad = 1
+    }
     exit bad ? 1 : 0
 }
 ' "$file"; then

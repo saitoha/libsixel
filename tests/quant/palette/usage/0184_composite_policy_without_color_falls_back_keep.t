@@ -15,6 +15,7 @@ set +x
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-minimal-1x1-rgba.png"
 esc="$(printf '\033')"
+expected="${esc}P0;1q\"1;1;1;1#0;2;1;1;1${esc}\\"
 
 composite_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=composite \
@@ -23,11 +24,10 @@ composite_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "composite alpha-policy render failed"
     exit 0
 }
-test "${composite_output#"${esc}P0;1q"}" != \
-    "${composite_output}" || {
-    echo "not ok" 1 - "composite policy did not use the P2=1 fallback"
+test "${composite_output}" = "${expected}" || {
+    echo "not ok" 1 - "composite fallback painted the alpha-zero pixel"
     exit 0
 }
 
-echo "ok" 1 - "composite policy uses P2=1 without a resolved color"
+echo "ok" 1 - "composite fallback omits alpha zero and emits P2=1"
 exit 0

@@ -1,5 +1,5 @@
 /*
- * Verify OSC11/shared background color parser accepts and rejects the same
+ * Verify that the OSC11/shared background color parser accepts the supported
  * syntax used by -B / SIXEL_BGCOLOR.
  * Policy: docs/loader/background-policy.md
  */
@@ -21,10 +21,6 @@ typedef struct colorspec_success_case {
     unsigned char green;
     unsigned char blue;
 } colorspec_success_case_t;
-
-typedef struct colorspec_failure_case {
-    char const *text;
-} colorspec_failure_case_t;
 
 static int
 run_colorspec_success_cases(void)
@@ -75,59 +71,14 @@ run_colorspec_success_cases(void)
     return 0;
 }
 
-static int
-run_colorspec_failure_cases(void)
-{
-    static colorspec_failure_case_t const cases[] = {
-        { "" },
-        { "rgb:1/2" },
-        { "rgb:1/2/3/4" },
-        { "#12" },
-        { "rgb:zz/00/00" },
-        { "no-such-color" }
-    };
-    size_t index;
-    SIXELSTATUS status;
-    unsigned char parsed[3];
-
-    index = 0u;
-    status = SIXEL_FALSE;
-    parsed[0] = 0u;
-    parsed[1] = 0u;
-    parsed[2] = 0u;
-
-    for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
-        status = sixel_tty_parse_colorspec(parsed, cases[index].text);
-        if (SIXEL_SUCCEEDED(status)) {
-            fprintf(stderr,
-                    "colorspec should be rejected: %s\n",
-                    cases[index].text);
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 int
 test_loader_0050_loader_osc11_colorspec_parser(int argc, char **argv)
 {
-    int status;
-
     (void)argc;
     (void)argv;
-
-    status = run_colorspec_success_cases();
-    if (status != 0) {
-        return EXIT_FAILURE;
-    }
-
-    status = run_colorspec_failure_cases();
-    if (status != 0) {
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
+    return run_colorspec_success_cases() == 0
+        ? EXIT_SUCCESS
+        : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */

@@ -132,6 +132,16 @@ int test_filter_0038_filter_binning_stream_empty(int argc, char **argv);
 int test_filter_0039_filter_binning_stream_none(int argc, char **argv);
 int test_filter_0040_filter_binning_stream_exact(int argc, char **argv);
 int test_filter_0041_filter_binning_uniform_256(int argc, char **argv);
+int test_filter_0042_filter_binning_stream_alpha_zero(int argc, char **argv);
+int test_filter_0043_filter_dither_transparent_mask_fence_serial(
+    int argc,
+    char **argv);
+int test_filter_0044_filter_dither_transparent_mask_fence_parallel(
+    int argc,
+    char **argv);
+int test_filter_0045_filter_binning_stream_alpha_zero_disabled(
+    int argc,
+    char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
@@ -148,6 +158,9 @@ test_encoder_core_0006_ormode_body_skip_empty_planes(int argc, char **argv);
 int test_sixel_writer_0001_sixel_writer_factory(int argc, char **argv);
 int test_frame_0001_frame_factory(int argc, char **argv);
 int test_frame_0002_float_request(int argc, char **argv);
+int test_frame_0003_transparent_mask_clip(int argc, char **argv);
+int test_frame_0004_transparent_mask_resize(int argc, char **argv);
+int test_frame_0005_transparent_mask_resize_bilinear(int argc, char **argv);
 int test_plan_0001_resize_linear_float32(int argc, char **argv);
 int test_plan_0002_resize_alloc_failure(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
@@ -322,7 +335,18 @@ int test_loader_0060_loader_builtin_webp_anim_policy_limits_plan(int argc,
 int test_loader_0061_loader_tty_cpr_parser(int argc, char **argv);
 int test_loader_0062_loader_animation_hide_cursor_environment(int argc,
                                                                char **argv);
+int test_loader_0063_loader_builtin_rgba_alpha_mask(int argc, char **argv);
 int test_loader_0064_loader_tty_response_dispatcher(int argc, char **argv);
+int test_loader_0065_loader_osc11_colorspec_reject(int argc, char **argv);
+int test_loader_0066_loader_osc11_response_reject(int argc, char **argv);
+int test_loader_0067_loader_wait_for_condition(int argc, char **argv);
+int test_loader_0068_loader_background_colorspace_gamma(int argc,
+                                                         char **argv);
+int test_loader_0069_loader_background_colorspace_reset(int argc,
+                                                         char **argv);
+int test_loader_0070_loader_gif_bgcolor_canvas_fill_explicit_first(
+    int argc,
+    char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -331,6 +355,10 @@ int test_loader_0022_loader_libpng_indexed_png_reqcolors_fallback(int argc,
                                                                    char **argv);
 int test_loader_0023_loader_librsvg_pixelformat(int argc, char **argv);
 int test_loader_0025_loader_librsvg_decode_mode(int argc, char **argv);
+int test_loader_0026_loader_librsvg_setopt_compat(int argc, char **argv);
+int test_loader_0032_loader_librsvg_setopt_ignored_diag(int argc, char **argv);
+int test_loader_0033_loader_librsvg_bgcolor_pixelformat(int argc,
+                                                        char **argv);
 
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
 int test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader(int argc, char **argv);
@@ -423,6 +451,14 @@ static test_entry_t const test_entries[] = {
       test_filter_0040_filter_binning_stream_exact },
     { "filter/0041_filter_binning_uniform_256",
       test_filter_0041_filter_binning_uniform_256 },
+    { "filter/0042_filter_binning_stream_alpha_zero",
+      test_filter_0042_filter_binning_stream_alpha_zero },
+    { "filter/0043_filter_dither_transparent_mask_fence_serial",
+      test_filter_0043_filter_dither_transparent_mask_fence_serial },
+    { "filter/0044_filter_dither_transparent_mask_fence_parallel",
+      test_filter_0044_filter_dither_transparent_mask_fence_parallel },
+    { "filter/0045_filter_binning_stream_alpha_zero_disabled",
+      test_filter_0045_filter_binning_stream_alpha_zero_disabled },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
       test_gpupal_0001_strtoul },
     { "gpu-dequant/0001_gpu_dequant_threshold_strtoul",
@@ -445,6 +481,12 @@ static test_entry_t const test_entries[] = {
       test_sixel_writer_0001_sixel_writer_factory },
     { "frame/0001_frame_factory", test_frame_0001_frame_factory },
     { "frame/0002_frame_float_request", test_frame_0002_float_request },
+    { "frame/0003_frame_transparent_mask_clip",
+      test_frame_0003_transparent_mask_clip },
+    { "frame/0004_frame_transparent_mask_resize",
+      test_frame_0004_transparent_mask_resize },
+    { "frame/0005_frame_transparent_mask_resize_bilinear",
+      test_frame_0005_transparent_mask_resize_bilinear },
     { "planner/0001_resize_linear_float32",
       test_plan_0001_resize_linear_float32 },
     { "planner/0002_resize_allocation_failure",
@@ -693,8 +735,22 @@ static test_entry_t const test_entries[] = {
       test_loader_0061_loader_tty_cpr_parser },
     { "loader/0062_loader_animation_hide_cursor_environment",
       test_loader_0062_loader_animation_hide_cursor_environment },
+    { "loader/0063_loader_builtin_rgba_alpha_mask",
+      test_loader_0063_loader_builtin_rgba_alpha_mask },
     { "loader/0064_loader_tty_response_dispatcher",
       test_loader_0064_loader_tty_response_dispatcher },
+    { "loader/0065_loader_osc11_colorspec_reject",
+      test_loader_0065_loader_osc11_colorspec_reject },
+    { "loader/0066_loader_osc11_response_reject",
+      test_loader_0066_loader_osc11_response_reject },
+    { "loader/0067_loader_wait_for_condition",
+      test_loader_0067_loader_wait_for_condition },
+    { "loader/0068_loader_background_colorspace_gamma",
+      test_loader_0068_loader_background_colorspace_gamma },
+    { "loader/0069_loader_background_colorspace_reset",
+      test_loader_0069_loader_background_colorspace_reset },
+    { "loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first",
+      test_loader_0070_loader_gif_bgcolor_canvas_fill_explicit_first },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
@@ -705,6 +761,12 @@ static test_entry_t const test_entries[] = {
       test_loader_0023_loader_librsvg_pixelformat },
     { "loader/0025_loader_librsvg_decode_mode",
       test_loader_0025_loader_librsvg_decode_mode },
+    { "loader/0026_loader_librsvg_setopt_compat",
+      test_loader_0026_loader_librsvg_setopt_compat },
+    { "loader/0032_loader_librsvg_setopt_ignored_diag",
+      test_loader_0032_loader_librsvg_setopt_ignored_diag },
+    { "loader/0033_loader_librsvg_bgcolor_pixelformat",
+      test_loader_0033_loader_librsvg_bgcolor_pixelformat },
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
     { "gdk-pixbuf-loader/0001_gdk_pixbuf_loader",
       test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader },

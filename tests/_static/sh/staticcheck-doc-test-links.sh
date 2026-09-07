@@ -1,11 +1,13 @@
 #!/bin/sh
 # Verify reciprocal links between enforced policy documents and owning tests.
+# Policy: docs/AGENTS.md
+# Policy: docs/testing/guide.md
 
 set -eu
 
 echo "1..1"
 
-src_root=$1
+src_root=$(CDPATH='' cd -- "$1" && pwd -P)
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-doc-test-links-XXXXXX")
 
 # shellcheck disable=SC2329
@@ -34,9 +36,22 @@ errors="$tmpdir/errors"
 
 find "$docs_root" -type f -name '*.md' -exec \
     awk -v src_root="$src_root/" \
-    -v marked_docs="$marked_docs" -v doc_links="$doc_links" '
-    FNR == 1 { enforced = 0 }
+    -v marked_docs="$marked_docs" -v doc_links="$doc_links" \
+    -v errors="$errors" '
+    FNR == 1 {
+        enforced = 0
+        coverage_heading = 0
+        delete coverage_ids
+    }
+    $0 == "## Test coverage" {
+        coverage_heading = 1
+    }
     $0 == "<!-- test-coverage: enforced -->" {
+        if (coverage_heading == 0) {
+            print FILENAME \
+                ": enforced marker must follow a Test coverage heading" \
+                >> errors
+        }
         enforced = 1
         doc = substr(FILENAME, length(src_root) + 1)
         print doc >> marked_docs
@@ -45,6 +60,21 @@ find "$docs_root" -type f -name '*.md' -exec \
     enforced != 0 {
         doc = substr(FILENAME, length(src_root) + 1)
         line = $0
+        coverage_row = 0
+        row_link_count = 0
+        if (line ~ /^\| [^|]+ \|/ &&
+            line !~ /^\| (ID|---) \|/) {
+            coverage_row = 1
+            split(line, fields, "|")
+            coverage_id = fields[2]
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", coverage_id)
+            if (coverage_id !~ /^[A-Z][A-Z0-9]*-[0-9]+$/) {
+                print doc ": invalid coverage ID: " coverage_id >> errors
+            } else if (coverage_ids[coverage_id] != 0) {
+                print doc ": duplicate coverage ID: " coverage_id >> errors
+            }
+            coverage_ids[coverage_id] = 1
+        }
         while (match(line,
                      /\[tests\/[A-Za-z0-9_.\/-]+\]\([^()[:space:]]+\)/)) {
             token = substr(line, RSTART, RLENGTH)
@@ -53,7 +83,12 @@ find "$docs_root" -type f -name '*.md' -exec \
             target = substr(token, separator + 2,
                             length(token) - separator - 2)
             print doc "|" test_path "|" target >> doc_links
+            row_link_count += 1
             line = substr(line, RSTART + RLENGTH)
+        }
+        if (coverage_row != 0 && row_link_count == 0) {
+            print doc ": coverage row has no owning test: " coverage_id \
+                >> errors
         }
     }
 ' {} +
@@ -73,9 +108,18 @@ while IFS='|' read -r doc_rel test_rel target; do
             "$doc_rel" "$test_rel" >> "$errors"
     }
     doc_dir=${doc_rel%/*}
-    test -f "$src_root/$doc_dir/$target" || {
+    target_path="$src_root/$doc_dir/$target"
+    test -f "$target_path" || {
         printf '%s: Markdown target does not exist: %s\n' \
             "$doc_rel" "$target" >> "$errors"
+        continue
+    }
+    target_dir=${target_path%/*}
+    target_base=${target_path##*/}
+    resolved_target=$(CDPATH='' cd -- "$target_dir" && pwd -P)/$target_base
+    test "$resolved_target" = "$src_root/$test_rel" || {
+        printf '%s: test label %s resolves to a different target: %s\n' \
+            "$doc_rel" "$test_rel" "$target" >> "$errors"
     }
 done < "$doc_links"
 
@@ -83,13 +127,18 @@ find "$tests_root" -type f \
     \( -name '*.t' -o -name '*.c' -o -name '*.sh' -o \
        -name '*.py' -o -name '*.rb' -o -name '*.pl' -o \
        -name '*.php' \) \
-    ! -path "$tests_root/_static/sh/staticcheck-doc-test-links.sh" \
-    -exec awk -v src_root="$src_root/" -v test_links="$test_links" '
+    -exec awk -v src_root="$src_root/" -v test_links="$test_links" \
+    -v errors="$errors" '
     {
         test_path = substr(FILENAME, length(src_root) + 1)
         line = $0
         while (match(line,
                      /Policy:[[:space:]]+docs\/[A-Za-z0-9_.\/-]+\.md/)) {
+            if (FNR > 20 ||
+                line !~ /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Policy:/) {
+                print test_path ": Policy reference must be a source " \
+                    "comment within the first 20 lines" >> errors
+            }
             policy = substr(line, RSTART, RLENGTH)
             sub(/^Policy:[[:space:]]+/, "", policy)
             print policy "|" test_path >> test_links

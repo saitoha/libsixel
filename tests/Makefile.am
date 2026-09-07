@@ -248,6 +248,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0039_FILTER_BINNING_STREAM_NONE \
     -DBUILD_TEST_0040_FILTER_BINNING_STREAM_EXACT \
     -DBUILD_TEST_0041_FILTER_BINNING_UNIFORM_256 \
+    -DBUILD_TEST_0042_FILTER_BINNING_STREAM_ALPHA_ZERO \
+    -DBUILD_TEST_0043_FILTER_DITHER_TRANSPARENT_MASK_FENCE_SERIAL \
+    -DBUILD_TEST_0044_FILTER_DITHER_TRANSPARENT_MASK_FENCE_PARALLEL \
+    -DBUILD_TEST_0045_FILTER_BINNING_STREAM_ALPHA_ZERO_DISABLED \
     -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
     -DBUILD_TEST_0025_SAMPLE_STREAM \
     -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -275,6 +279,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_SIXEL_WRITER_FACTORY \
     -DBUILD_TEST_0001_FRAME_FACTORY \
     -DBUILD_TEST_0002_FRAME_FLOAT_REQUEST \
+    -DBUILD_TEST_0003_FRAME_TRANSPARENT_MASK_CLIP \
+    -DBUILD_TEST_0004_FRAME_TRANSPARENT_MASK_RESIZE \
+    -DBUILD_TEST_0005_FRAME_TRANSPARENT_MASK_RESIZE_BILINEAR \
     -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
     -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
@@ -334,6 +341,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_LOADER_LIBPNG_INDEXED_PNG_REQCOLORS_FALLBACK \
     -DBUILD_TEST_0023_LOADER_LIBRSVG_PIXELFORMAT \
     -DBUILD_TEST_0025_LOADER_LIBRSVG_DECODE_MODE \
+    -DBUILD_TEST_0026_LOADER_LIBRSVG_SETOPT_COMPAT \
+    -DBUILD_TEST_0032_LOADER_LIBRSVG_SETOPT_IGNORED_DIAG \
+    -DBUILD_TEST_0033_LOADER_LIBRSVG_BGCOLOR_PIXELFORMAT \
     -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
     -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
     -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
@@ -354,7 +364,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
     -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
     -DBUILD_TEST_0062_LOADER_ANIMATION_HIDE_CURSOR_ENVIRONMENT \
+    -DBUILD_TEST_0063_LOADER_BUILTIN_RGBA_ALPHA_MASK \
     -DBUILD_TEST_0064_LOADER_TTY_RESPONSE_DISPATCHER \
+    -DBUILD_TEST_0065_LOADER_OSC11_COLORSPEC_REJECT \
+    -DBUILD_TEST_0066_LOADER_OSC11_RESPONSE_REJECT \
+    -DBUILD_TEST_0067_LOADER_WAIT_FOR_CONDITION \
+    -DBUILD_TEST_0068_LOADER_BACKGROUND_COLORSPACE_GAMMA \
+    -DBUILD_TEST_0069_LOADER_BACKGROUND_COLORSPACE_RESET \
+    -DBUILD_TEST_0070_LOADER_GIF_BGCOLOR_CANVAS_FILL_EXPLICIT_FIRST \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -426,6 +443,14 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0039_filter_binning_stream_none.c \
     processing/filter/0040_filter_binning_stream_exact.c \
     processing/filter/0041_filter_binning_uniform_256.c \
+    processing/filter/0042_filter_binning_stream_alpha_zero.c \
+    processing/filter/0043_filter_dither_transparent_mask_fence_serial.c \
+    processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c \
+    processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c \
+    processing/filter/filter_binning_stream_alpha_zero_test_common.c \
+    processing/filter/filter_binning_stream_alpha_zero_test_common.h \
+    processing/filter/filter_transparent_mask_fence_test_common.c \
+    processing/filter/filter_transparent_mask_fence_test_common.h \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
@@ -437,6 +462,11 @@ test_runner_SOURCES = test_runner.c \
     processing/sixel-writer/0001_sixel_writer_factory.c \
     processing/frame/0001_frame_factory.c \
     processing/frame/0002_frame_float_request.c \
+    processing/frame/0003_frame_transparent_mask_clip.c \
+    processing/frame/0004_frame_transparent_mask_resize.c \
+    processing/frame/0005_frame_transparent_mask_resize_bilinear.c \
+    processing/frame/frame_transparent_mask_resize_test_common.c \
+    processing/frame/frame_transparent_mask_resize_test_common.h \
     processing/planner/0001_resize_linear_float32.c \
     processing/planner/0002_resize_allocation_failure.c \
     processing/chunk/0001_chunk_factory.c \
@@ -499,6 +529,9 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
     loader/librsvg/0023_loader_librsvg_pixelformat.c \
     loader/librsvg/0025_loader_librsvg_decode_mode.c \
+    loader/librsvg/0026_loader_librsvg_setopt_compat.c \
+    loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c \
+    loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c \
     loader/0050_loader_osc11_colorspec_parser.c \
     loader/0051_loader_osc11_response_parser.c \
     loader/0052_loader_osc11_query_control.c \
@@ -511,9 +544,18 @@ test_runner_SOURCES = test_runner.c \
     loader/0059_loader_gd_pixelpolicy_detail.c \
     loader/0061_loader_tty_cpr_parser.c \
     loader/0062_loader_animation_hide_cursor_environment.c \
+    loader/0063_loader_builtin_rgba_alpha_mask.c \
     loader/0064_loader_tty_response_dispatcher.c \
+    loader/0065_loader_osc11_colorspec_reject.c \
+    loader/0066_loader_osc11_response_reject.c \
+    loader/0067_loader_wait_for_condition.c \
+    loader/0068_loader_background_colorspace_gamma.c \
+    loader/0069_loader_background_colorspace_reset.c \
+    loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c \
     loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
     loader/chunk_test_common.h \
+    loader/gif_bgcolor_canvas_fill_test_common.c \
+    loader/gif_bgcolor_canvas_fill_test_common.h \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     quant/palette/0002_kmedoids_constraints.c \
@@ -656,6 +698,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-plan-single \
 	staticcheck-test-webp-serial-unique \
 	staticcheck-test-no-grep-awk \
+	staticcheck-test-no-for-until \
 	staticcheck-artifact-local-dir-mkdir \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-binding-constants-sync \
@@ -720,6 +763,7 @@ staticcheck-interframe-no-compat-getenv-symbol \
 staticcheck-test-plan-single \
 staticcheck-test-webp-serial-unique \
 staticcheck-test-no-grep-awk \
+staticcheck-test-no-for-until \
 staticcheck-artifact-local-dir-mkdir \
 staticcheck-binding-loader-setopt-sync \
 staticcheck-binding-constants-sync \
@@ -1236,6 +1280,16 @@ staticcheck-test-no-grep-awk:
 		--trs-file staticcheck-test-no-grep-awk.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-no-grep-awk.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-test-no-for-until:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-no-for-until" \
+		--log-file staticcheck-test-no-for-until.log \
+		--trs-file staticcheck-test-no-for-until.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-no-for-until.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-artifact-local-dir-mkdir:
@@ -2259,6 +2313,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-webp-serial-unique.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \
+    _static/sh/staticcheck-test-no-for-until.sh \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \

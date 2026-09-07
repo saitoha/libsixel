@@ -159,6 +159,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0039_filter_binning_stream_none.c \
 	processing/filter/0040_filter_binning_stream_exact.c \
 	processing/filter/0041_filter_binning_uniform_256.c \
+	processing/filter/0042_filter_binning_stream_alpha_zero.c \
+	processing/filter/0043_filter_dither_transparent_mask_fence_serial.c \
+	processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c \
+	processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c \
+	processing/filter/filter_binning_stream_alpha_zero_test_common.c \
+	processing/filter/filter_binning_stream_alpha_zero_test_common.h \
+	processing/filter/filter_transparent_mask_fence_test_common.c \
+	processing/filter/filter_transparent_mask_fence_test_common.h \
 	processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
@@ -170,6 +178,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/sixel-writer/0001_sixel_writer_factory.c \
 	processing/frame/0001_frame_factory.c \
 	processing/frame/0002_frame_float_request.c \
+	processing/frame/0003_frame_transparent_mask_clip.c \
+	processing/frame/0004_frame_transparent_mask_resize.c \
+	processing/frame/0005_frame_transparent_mask_resize_bilinear.c \
+	processing/frame/frame_transparent_mask_resize_test_common.c \
+	processing/frame/frame_transparent_mask_resize_test_common.h \
 	processing/planner/0001_resize_linear_float32.c \
 	processing/planner/0002_resize_allocation_failure.c \
 	processing/chunk/0001_chunk_factory.c \
@@ -232,6 +245,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
 	loader/librsvg/0023_loader_librsvg_pixelformat.c \
 	loader/librsvg/0025_loader_librsvg_decode_mode.c \
+	loader/librsvg/0026_loader_librsvg_setopt_compat.c \
+	loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c \
+	loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c \
 	loader/0050_loader_osc11_colorspec_parser.c \
 	loader/0051_loader_osc11_response_parser.c \
 	loader/0052_loader_osc11_query_control.c \
@@ -244,9 +260,19 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/0059_loader_gd_pixelpolicy_detail.c \
 	loader/0061_loader_tty_cpr_parser.c \
 	loader/0062_loader_animation_hide_cursor_environment.c \
+	loader/0063_loader_builtin_rgba_alpha_mask.c \
 	loader/0064_loader_tty_response_dispatcher.c \
+	loader/0065_loader_osc11_colorspec_reject.c \
+	loader/0066_loader_osc11_response_reject.c \
+	loader/0067_loader_wait_for_condition.c \
+	loader/0068_loader_background_colorspace_gamma.c \
+	loader/0069_loader_background_colorspace_reset.c \
+	loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c \
 	loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
-	loader/chunk_test_common.h loader/pixelformat_test_common.h \
+	loader/chunk_test_common.h \
+	loader/gif_bgcolor_canvas_fill_test_common.c \
+	loader/gif_bgcolor_canvas_fill_test_common.h \
+	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	quant/palette/0002_kmedoids_constraints.c \
 	quant/palette/0003_kcenter_constraints.c \
@@ -340,6 +366,12 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0039_filter_binning_stream_none.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0040_filter_binning_stream_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0041_filter_binning_uniform_256.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
@@ -351,6 +383,10 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/sixel-writer/test_runner-0001_sixel_writer_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0001_frame_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0002_frame_float_request.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0003_frame_transparent_mask_clip.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0004_frame_transparent_mask_resize.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-frame_transparent_mask_resize_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/planner/test_runner-0001_resize_linear_float32.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/planner/test_runner-0002_resize_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
@@ -411,6 +447,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0023_loader_librsvg_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0050_loader_osc11_colorspec_parser.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0051_loader_osc11_response_parser.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0052_loader_osc11_query_control.$(OBJEXT) \
@@ -423,8 +462,16 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0059_loader_gd_pixelpolicy_detail.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0061_loader_tty_cpr_parser.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0062_loader_animation_hide_cursor_environment.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0063_loader_builtin_rgba_alpha_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0064_loader_tty_response_dispatcher.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0065_loader_osc11_colorspec_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0066_loader_osc11_response_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0067_loader_wait_for_condition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0068_loader_background_colorspace_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0069_loader_background_colorspace_reset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-gif_bgcolor_canvas_fill_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT) \
@@ -571,7 +618,15 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po \
 	loader/$(DEPDIR)/test_runner-0061_loader_tty_cpr_parser.Po \
 	loader/$(DEPDIR)/test_runner-0062_loader_animation_hide_cursor_environment.Po \
+	loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Po \
 	loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po \
+	loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Po \
+	loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Po \
+	loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Po \
+	loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Po \
+	loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Po \
+	loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Po \
+	loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po \
@@ -585,6 +640,9 @@ am__depfiles_remade =  \
 	loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po \
+	loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po \
+	loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po \
+	loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po \
@@ -666,8 +724,18 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po \
 	processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po \
 	processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po \
+	processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Po \
+	processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Po \
+	processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po \
+	processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po \
+	processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po \
+	processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po \
+	processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Po \
+	processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po \
+	processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po \
+	processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po \
 	processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
@@ -1437,6 +1505,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_FILTER_BINNING_STREAM_NONE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_FILTER_BINNING_STREAM_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_FILTER_BINNING_UNIFORM_256 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_FILTER_BINNING_STREAM_ALPHA_ZERO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_FILTER_DITHER_TRANSPARENT_MASK_FENCE_SERIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_FILTER_DITHER_TRANSPARENT_MASK_FENCE_PARALLEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_FILTER_BINNING_STREAM_ALPHA_ZERO_DISABLED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_SAMPLE_STREAM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -1464,6 +1536,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SIXEL_WRITER_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_FRAME_FLOAT_REQUEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_FRAME_TRANSPARENT_MASK_CLIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_FRAME_TRANSPARENT_MASK_RESIZE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_FRAME_TRANSPARENT_MASK_RESIZE_BILINEAR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
@@ -1523,6 +1598,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_LOADER_LIBPNG_INDEXED_PNG_REQCOLORS_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_LOADER_LIBRSVG_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_LOADER_LIBRSVG_DECODE_MODE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_LOADER_LIBRSVG_SETOPT_COMPAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_LOADER_LIBRSVG_SETOPT_IGNORED_DIAG \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_LOADER_LIBRSVG_BGCOLOR_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
@@ -1543,7 +1621,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_LOADER_ANIMATION_HIDE_CURSOR_ENVIRONMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_LOADER_BUILTIN_RGBA_ALPHA_MASK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_LOADER_TTY_RESPONSE_DISPATCHER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_LOADER_OSC11_COLORSPEC_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_LOADER_OSC11_RESPONSE_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_LOADER_WAIT_FOR_CONDITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_LOADER_BACKGROUND_COLORSPACE_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_LOADER_BACKGROUND_COLORSPACE_RESET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_LOADER_GIF_BGCOLOR_CANVAS_FILL_EXPLICIT_FIRST \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -1640,6 +1725,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0039_filter_binning_stream_none.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0040_filter_binning_stream_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0041_filter_binning_uniform_256.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0042_filter_binning_stream_alpha_zero.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0043_filter_dither_transparent_mask_fence_serial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_binning_stream_alpha_zero_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_binning_stream_alpha_zero_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_transparent_mask_fence_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_transparent_mask_fence_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
@@ -1651,6 +1744,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/sixel-writer/0001_sixel_writer_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0001_frame_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0002_frame_float_request.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0003_frame_transparent_mask_clip.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0004_frame_transparent_mask_resize.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0005_frame_transparent_mask_resize_bilinear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/frame_transparent_mask_resize_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/frame_transparent_mask_resize_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/planner/0001_resize_linear_float32.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/planner/0002_resize_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
@@ -1713,6 +1811,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0023_loader_librsvg_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0025_loader_librsvg_decode_mode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0026_loader_librsvg_setopt_compat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0050_loader_osc11_colorspec_parser.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0051_loader_osc11_response_parser.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0052_loader_osc11_query_control.c \
@@ -1725,9 +1826,18 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0059_loader_gd_pixelpolicy_detail.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0061_loader_tty_cpr_parser.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0062_loader_animation_hide_cursor_environment.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0063_loader_builtin_rgba_alpha_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0064_loader_tty_response_dispatcher.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0065_loader_osc11_colorspec_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0066_loader_osc11_response_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0067_loader_wait_for_condition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0068_loader_background_colorspace_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0069_loader_background_colorspace_reset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/chunk_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/gif_bgcolor_canvas_fill_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/gif_bgcolor_canvas_fill_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0002_kmedoids_constraints.c \
@@ -1862,6 +1972,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-webp-serial-unique.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \
+    _static/sh/staticcheck-test-no-for-until.sh \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
@@ -2078,6 +2189,24 @@ processing/filter/test_runner-0040_filter_binning_stream_exact.$(OBJEXT):  \
 processing/filter/test_runner-0041_filter_binning_uniform_256.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/$(am__dirstamp):
 	@$(MKDIR_P) processing/gpu-palette
 	@: >>processing/gpu-palette/$(am__dirstamp)
@@ -2139,6 +2268,18 @@ processing/frame/test_runner-0001_frame_factory.$(OBJEXT):  \
 	processing/frame/$(am__dirstamp) \
 	processing/frame/$(DEPDIR)/$(am__dirstamp)
 processing/frame/test_runner-0002_frame_float_request.$(OBJEXT):  \
+	processing/frame/$(am__dirstamp) \
+	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/frame/test_runner-0003_frame_transparent_mask_clip.$(OBJEXT):  \
+	processing/frame/$(am__dirstamp) \
+	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/frame/test_runner-0004_frame_transparent_mask_resize.$(OBJEXT):  \
+	processing/frame/$(am__dirstamp) \
+	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.$(OBJEXT):  \
+	processing/frame/$(am__dirstamp) \
+	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/frame/test_runner-frame_transparent_mask_resize_test_common.$(OBJEXT):  \
 	processing/frame/$(am__dirstamp) \
 	processing/frame/$(DEPDIR)/$(am__dirstamp)
 processing/planner/$(am__dirstamp):
@@ -2434,6 +2575,15 @@ loader/librsvg/test_runner-0023_loader_librsvg_pixelformat.$(OBJEXT):  \
 loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.$(OBJEXT):  \
 	loader/librsvg/$(am__dirstamp) \
 	loader/librsvg/$(DEPDIR)/$(am__dirstamp)
+loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.$(OBJEXT):  \
+	loader/librsvg/$(am__dirstamp) \
+	loader/librsvg/$(DEPDIR)/$(am__dirstamp)
+loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.$(OBJEXT):  \
+	loader/librsvg/$(am__dirstamp) \
+	loader/librsvg/$(DEPDIR)/$(am__dirstamp)
+loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.$(OBJEXT):  \
+	loader/librsvg/$(am__dirstamp) \
+	loader/librsvg/$(DEPDIR)/$(am__dirstamp)
 loader/$(am__dirstamp):
 	@$(MKDIR_P) loader
 	@: >>loader/$(am__dirstamp)
@@ -2464,11 +2614,27 @@ loader/test_runner-0061_loader_tty_cpr_parser.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-0062_loader_animation_hide_cursor_environment.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0063_loader_builtin_rgba_alpha_mask.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-0064_loader_tty_response_dispatcher.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0065_loader_osc11_colorspec_reject.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0066_loader_osc11_response_reject.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0067_loader_wait_for_condition.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0068_loader_background_colorspace_gamma.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0069_loader_background_colorspace_reset.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-gif_bgcolor_canvas_fill_test_common.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
@@ -2744,7 +2910,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0061_loader_tty_cpr_parser.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0062_loader_animation_hide_cursor_environment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po@am__quote@ # am--include-marker
@@ -2758,6 +2932,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
@@ -2839,8 +3016,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
@@ -3612,6 +3799,90 @@ processing/filter/test_runner-0041_filter_binning_uniform_256.obj: processing/fi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0041_filter_binning_uniform_256.obj `if test -f 'processing/filter/0041_filter_binning_uniform_256.c'; then $(CYGPATH_W) 'processing/filter/0041_filter_binning_uniform_256.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0041_filter_binning_uniform_256.c'; fi`
 
+processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.o: processing/filter/0042_filter_binning_stream_alpha_zero.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Tpo -c -o processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.o `test -f 'processing/filter/0042_filter_binning_stream_alpha_zero.c' || echo '$(srcdir)/'`processing/filter/0042_filter_binning_stream_alpha_zero.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Tpo processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0042_filter_binning_stream_alpha_zero.c' object='processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.o `test -f 'processing/filter/0042_filter_binning_stream_alpha_zero.c' || echo '$(srcdir)/'`processing/filter/0042_filter_binning_stream_alpha_zero.c
+
+processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.obj: processing/filter/0042_filter_binning_stream_alpha_zero.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Tpo -c -o processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.obj `if test -f 'processing/filter/0042_filter_binning_stream_alpha_zero.c'; then $(CYGPATH_W) 'processing/filter/0042_filter_binning_stream_alpha_zero.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0042_filter_binning_stream_alpha_zero.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Tpo processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0042_filter_binning_stream_alpha_zero.c' object='processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0042_filter_binning_stream_alpha_zero.obj `if test -f 'processing/filter/0042_filter_binning_stream_alpha_zero.c'; then $(CYGPATH_W) 'processing/filter/0042_filter_binning_stream_alpha_zero.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0042_filter_binning_stream_alpha_zero.c'; fi`
+
+processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.o: processing/filter/0043_filter_dither_transparent_mask_fence_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Tpo -c -o processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.o `test -f 'processing/filter/0043_filter_dither_transparent_mask_fence_serial.c' || echo '$(srcdir)/'`processing/filter/0043_filter_dither_transparent_mask_fence_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Tpo processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0043_filter_dither_transparent_mask_fence_serial.c' object='processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.o `test -f 'processing/filter/0043_filter_dither_transparent_mask_fence_serial.c' || echo '$(srcdir)/'`processing/filter/0043_filter_dither_transparent_mask_fence_serial.c
+
+processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.obj: processing/filter/0043_filter_dither_transparent_mask_fence_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Tpo -c -o processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.obj `if test -f 'processing/filter/0043_filter_dither_transparent_mask_fence_serial.c'; then $(CYGPATH_W) 'processing/filter/0043_filter_dither_transparent_mask_fence_serial.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0043_filter_dither_transparent_mask_fence_serial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Tpo processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0043_filter_dither_transparent_mask_fence_serial.c' object='processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.obj `if test -f 'processing/filter/0043_filter_dither_transparent_mask_fence_serial.c'; then $(CYGPATH_W) 'processing/filter/0043_filter_dither_transparent_mask_fence_serial.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0043_filter_dither_transparent_mask_fence_serial.c'; fi`
+
+processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.o: processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Tpo -c -o processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.o `test -f 'processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c' || echo '$(srcdir)/'`processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Tpo processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c' object='processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.o `test -f 'processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c' || echo '$(srcdir)/'`processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c
+
+processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.obj: processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Tpo -c -o processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.obj `if test -f 'processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c'; then $(CYGPATH_W) 'processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Tpo processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c' object='processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.obj `if test -f 'processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c'; then $(CYGPATH_W) 'processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c'; fi`
+
+processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.o: processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Tpo -c -o processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.o `test -f 'processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c' || echo '$(srcdir)/'`processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Tpo processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c' object='processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.o `test -f 'processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c' || echo '$(srcdir)/'`processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c
+
+processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.obj: processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Tpo -c -o processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.obj `if test -f 'processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c'; then $(CYGPATH_W) 'processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Tpo processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c' object='processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.obj `if test -f 'processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c'; then $(CYGPATH_W) 'processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c'; fi`
+
+processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o: processing/filter/filter_binning_stream_alpha_zero_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Tpo -c -o processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o `test -f 'processing/filter/filter_binning_stream_alpha_zero_test_common.c' || echo '$(srcdir)/'`processing/filter/filter_binning_stream_alpha_zero_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Tpo processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/filter_binning_stream_alpha_zero_test_common.c' object='processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o `test -f 'processing/filter/filter_binning_stream_alpha_zero_test_common.c' || echo '$(srcdir)/'`processing/filter/filter_binning_stream_alpha_zero_test_common.c
+
+processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.obj: processing/filter/filter_binning_stream_alpha_zero_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Tpo -c -o processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.obj `if test -f 'processing/filter/filter_binning_stream_alpha_zero_test_common.c'; then $(CYGPATH_W) 'processing/filter/filter_binning_stream_alpha_zero_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/filter_binning_stream_alpha_zero_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Tpo processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/filter_binning_stream_alpha_zero_test_common.c' object='processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.obj `if test -f 'processing/filter/filter_binning_stream_alpha_zero_test_common.c'; then $(CYGPATH_W) 'processing/filter/filter_binning_stream_alpha_zero_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/filter_binning_stream_alpha_zero_test_common.c'; fi`
+
+processing/filter/test_runner-filter_transparent_mask_fence_test_common.o: processing/filter/filter_transparent_mask_fence_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-filter_transparent_mask_fence_test_common.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Tpo -c -o processing/filter/test_runner-filter_transparent_mask_fence_test_common.o `test -f 'processing/filter/filter_transparent_mask_fence_test_common.c' || echo '$(srcdir)/'`processing/filter/filter_transparent_mask_fence_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Tpo processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/filter_transparent_mask_fence_test_common.c' object='processing/filter/test_runner-filter_transparent_mask_fence_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-filter_transparent_mask_fence_test_common.o `test -f 'processing/filter/filter_transparent_mask_fence_test_common.c' || echo '$(srcdir)/'`processing/filter/filter_transparent_mask_fence_test_common.c
+
+processing/filter/test_runner-filter_transparent_mask_fence_test_common.obj: processing/filter/filter_transparent_mask_fence_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-filter_transparent_mask_fence_test_common.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Tpo -c -o processing/filter/test_runner-filter_transparent_mask_fence_test_common.obj `if test -f 'processing/filter/filter_transparent_mask_fence_test_common.c'; then $(CYGPATH_W) 'processing/filter/filter_transparent_mask_fence_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/filter_transparent_mask_fence_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Tpo processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/filter_transparent_mask_fence_test_common.c' object='processing/filter/test_runner-filter_transparent_mask_fence_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-filter_transparent_mask_fence_test_common.obj `if test -f 'processing/filter/filter_transparent_mask_fence_test_common.c'; then $(CYGPATH_W) 'processing/filter/filter_transparent_mask_fence_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/filter_transparent_mask_fence_test_common.c'; fi`
+
 processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o: processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo -c -o processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.o `test -f 'processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
@@ -3765,6 +4036,62 @@ processing/frame/test_runner-0002_frame_float_request.obj: processing/frame/0002
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0002_frame_float_request.c' object='processing/frame/test_runner-0002_frame_float_request.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0002_frame_float_request.obj `if test -f 'processing/frame/0002_frame_float_request.c'; then $(CYGPATH_W) 'processing/frame/0002_frame_float_request.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0002_frame_float_request.c'; fi`
+
+processing/frame/test_runner-0003_frame_transparent_mask_clip.o: processing/frame/0003_frame_transparent_mask_clip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0003_frame_transparent_mask_clip.o -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Tpo -c -o processing/frame/test_runner-0003_frame_transparent_mask_clip.o `test -f 'processing/frame/0003_frame_transparent_mask_clip.c' || echo '$(srcdir)/'`processing/frame/0003_frame_transparent_mask_clip.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Tpo processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0003_frame_transparent_mask_clip.c' object='processing/frame/test_runner-0003_frame_transparent_mask_clip.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0003_frame_transparent_mask_clip.o `test -f 'processing/frame/0003_frame_transparent_mask_clip.c' || echo '$(srcdir)/'`processing/frame/0003_frame_transparent_mask_clip.c
+
+processing/frame/test_runner-0003_frame_transparent_mask_clip.obj: processing/frame/0003_frame_transparent_mask_clip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0003_frame_transparent_mask_clip.obj -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Tpo -c -o processing/frame/test_runner-0003_frame_transparent_mask_clip.obj `if test -f 'processing/frame/0003_frame_transparent_mask_clip.c'; then $(CYGPATH_W) 'processing/frame/0003_frame_transparent_mask_clip.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0003_frame_transparent_mask_clip.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Tpo processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0003_frame_transparent_mask_clip.c' object='processing/frame/test_runner-0003_frame_transparent_mask_clip.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0003_frame_transparent_mask_clip.obj `if test -f 'processing/frame/0003_frame_transparent_mask_clip.c'; then $(CYGPATH_W) 'processing/frame/0003_frame_transparent_mask_clip.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0003_frame_transparent_mask_clip.c'; fi`
+
+processing/frame/test_runner-0004_frame_transparent_mask_resize.o: processing/frame/0004_frame_transparent_mask_resize.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0004_frame_transparent_mask_resize.o -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Tpo -c -o processing/frame/test_runner-0004_frame_transparent_mask_resize.o `test -f 'processing/frame/0004_frame_transparent_mask_resize.c' || echo '$(srcdir)/'`processing/frame/0004_frame_transparent_mask_resize.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Tpo processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0004_frame_transparent_mask_resize.c' object='processing/frame/test_runner-0004_frame_transparent_mask_resize.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0004_frame_transparent_mask_resize.o `test -f 'processing/frame/0004_frame_transparent_mask_resize.c' || echo '$(srcdir)/'`processing/frame/0004_frame_transparent_mask_resize.c
+
+processing/frame/test_runner-0004_frame_transparent_mask_resize.obj: processing/frame/0004_frame_transparent_mask_resize.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0004_frame_transparent_mask_resize.obj -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Tpo -c -o processing/frame/test_runner-0004_frame_transparent_mask_resize.obj `if test -f 'processing/frame/0004_frame_transparent_mask_resize.c'; then $(CYGPATH_W) 'processing/frame/0004_frame_transparent_mask_resize.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0004_frame_transparent_mask_resize.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Tpo processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0004_frame_transparent_mask_resize.c' object='processing/frame/test_runner-0004_frame_transparent_mask_resize.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0004_frame_transparent_mask_resize.obj `if test -f 'processing/frame/0004_frame_transparent_mask_resize.c'; then $(CYGPATH_W) 'processing/frame/0004_frame_transparent_mask_resize.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0004_frame_transparent_mask_resize.c'; fi`
+
+processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.o: processing/frame/0005_frame_transparent_mask_resize_bilinear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.o -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Tpo -c -o processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.o `test -f 'processing/frame/0005_frame_transparent_mask_resize_bilinear.c' || echo '$(srcdir)/'`processing/frame/0005_frame_transparent_mask_resize_bilinear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Tpo processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0005_frame_transparent_mask_resize_bilinear.c' object='processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.o `test -f 'processing/frame/0005_frame_transparent_mask_resize_bilinear.c' || echo '$(srcdir)/'`processing/frame/0005_frame_transparent_mask_resize_bilinear.c
+
+processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.obj: processing/frame/0005_frame_transparent_mask_resize_bilinear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.obj -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Tpo -c -o processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.obj `if test -f 'processing/frame/0005_frame_transparent_mask_resize_bilinear.c'; then $(CYGPATH_W) 'processing/frame/0005_frame_transparent_mask_resize_bilinear.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0005_frame_transparent_mask_resize_bilinear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Tpo processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0005_frame_transparent_mask_resize_bilinear.c' object='processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.obj `if test -f 'processing/frame/0005_frame_transparent_mask_resize_bilinear.c'; then $(CYGPATH_W) 'processing/frame/0005_frame_transparent_mask_resize_bilinear.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0005_frame_transparent_mask_resize_bilinear.c'; fi`
+
+processing/frame/test_runner-frame_transparent_mask_resize_test_common.o: processing/frame/frame_transparent_mask_resize_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-frame_transparent_mask_resize_test_common.o -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Tpo -c -o processing/frame/test_runner-frame_transparent_mask_resize_test_common.o `test -f 'processing/frame/frame_transparent_mask_resize_test_common.c' || echo '$(srcdir)/'`processing/frame/frame_transparent_mask_resize_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Tpo processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/frame_transparent_mask_resize_test_common.c' object='processing/frame/test_runner-frame_transparent_mask_resize_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-frame_transparent_mask_resize_test_common.o `test -f 'processing/frame/frame_transparent_mask_resize_test_common.c' || echo '$(srcdir)/'`processing/frame/frame_transparent_mask_resize_test_common.c
+
+processing/frame/test_runner-frame_transparent_mask_resize_test_common.obj: processing/frame/frame_transparent_mask_resize_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-frame_transparent_mask_resize_test_common.obj -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Tpo -c -o processing/frame/test_runner-frame_transparent_mask_resize_test_common.obj `if test -f 'processing/frame/frame_transparent_mask_resize_test_common.c'; then $(CYGPATH_W) 'processing/frame/frame_transparent_mask_resize_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/frame_transparent_mask_resize_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Tpo processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/frame_transparent_mask_resize_test_common.c' object='processing/frame/test_runner-frame_transparent_mask_resize_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-frame_transparent_mask_resize_test_common.obj `if test -f 'processing/frame/frame_transparent_mask_resize_test_common.c'; then $(CYGPATH_W) 'processing/frame/frame_transparent_mask_resize_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/frame_transparent_mask_resize_test_common.c'; fi`
 
 processing/planner/test_runner-0001_resize_linear_float32.o: processing/planner/0001_resize_linear_float32.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/planner/test_runner-0001_resize_linear_float32.o -MD -MP -MF processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Tpo -c -o processing/planner/test_runner-0001_resize_linear_float32.o `test -f 'processing/planner/0001_resize_linear_float32.c' || echo '$(srcdir)/'`processing/planner/0001_resize_linear_float32.c
@@ -4606,6 +4933,48 @@ loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj: loader/librsvg/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj `if test -f 'loader/librsvg/0025_loader_librsvg_decode_mode.c'; then $(CYGPATH_W) 'loader/librsvg/0025_loader_librsvg_decode_mode.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0025_loader_librsvg_decode_mode.c'; fi`
 
+loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.o: loader/librsvg/0026_loader_librsvg_setopt_compat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.o -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Tpo -c -o loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.o `test -f 'loader/librsvg/0026_loader_librsvg_setopt_compat.c' || echo '$(srcdir)/'`loader/librsvg/0026_loader_librsvg_setopt_compat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Tpo loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0026_loader_librsvg_setopt_compat.c' object='loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.o `test -f 'loader/librsvg/0026_loader_librsvg_setopt_compat.c' || echo '$(srcdir)/'`loader/librsvg/0026_loader_librsvg_setopt_compat.c
+
+loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.obj: loader/librsvg/0026_loader_librsvg_setopt_compat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.obj -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Tpo -c -o loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.obj `if test -f 'loader/librsvg/0026_loader_librsvg_setopt_compat.c'; then $(CYGPATH_W) 'loader/librsvg/0026_loader_librsvg_setopt_compat.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0026_loader_librsvg_setopt_compat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Tpo loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0026_loader_librsvg_setopt_compat.c' object='loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0026_loader_librsvg_setopt_compat.obj `if test -f 'loader/librsvg/0026_loader_librsvg_setopt_compat.c'; then $(CYGPATH_W) 'loader/librsvg/0026_loader_librsvg_setopt_compat.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0026_loader_librsvg_setopt_compat.c'; fi`
+
+loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.o: loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.o -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Tpo -c -o loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.o `test -f 'loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c' || echo '$(srcdir)/'`loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Tpo loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c' object='loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.o `test -f 'loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c' || echo '$(srcdir)/'`loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c
+
+loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.obj: loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.obj -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Tpo -c -o loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.obj `if test -f 'loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c'; then $(CYGPATH_W) 'loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Tpo loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c' object='loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0032_loader_librsvg_setopt_ignored_diag.obj `if test -f 'loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c'; then $(CYGPATH_W) 'loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0032_loader_librsvg_setopt_ignored_diag.c'; fi`
+
+loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.o: loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.o -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Tpo -c -o loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.o `test -f 'loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c' || echo '$(srcdir)/'`loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Tpo loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c' object='loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.o `test -f 'loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c' || echo '$(srcdir)/'`loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c
+
+loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.obj: loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.obj -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Tpo -c -o loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.obj `if test -f 'loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c'; then $(CYGPATH_W) 'loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Tpo loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c' object='loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0033_loader_librsvg_bgcolor_pixelformat.obj `if test -f 'loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c'; then $(CYGPATH_W) 'loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0033_loader_librsvg_bgcolor_pixelformat.c'; fi`
+
 loader/test_runner-0050_loader_osc11_colorspec_parser.o: loader/0050_loader_osc11_colorspec_parser.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0050_loader_osc11_colorspec_parser.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Tpo -c -o loader/test_runner-0050_loader_osc11_colorspec_parser.o `test -f 'loader/0050_loader_osc11_colorspec_parser.c' || echo '$(srcdir)/'`loader/0050_loader_osc11_colorspec_parser.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Tpo loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Po
@@ -4774,6 +5143,20 @@ loader/test_runner-0062_loader_animation_hide_cursor_environment.obj: loader/006
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0062_loader_animation_hide_cursor_environment.obj `if test -f 'loader/0062_loader_animation_hide_cursor_environment.c'; then $(CYGPATH_W) 'loader/0062_loader_animation_hide_cursor_environment.c'; else $(CYGPATH_W) '$(srcdir)/loader/0062_loader_animation_hide_cursor_environment.c'; fi`
 
+loader/test_runner-0063_loader_builtin_rgba_alpha_mask.o: loader/0063_loader_builtin_rgba_alpha_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0063_loader_builtin_rgba_alpha_mask.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Tpo -c -o loader/test_runner-0063_loader_builtin_rgba_alpha_mask.o `test -f 'loader/0063_loader_builtin_rgba_alpha_mask.c' || echo '$(srcdir)/'`loader/0063_loader_builtin_rgba_alpha_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Tpo loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0063_loader_builtin_rgba_alpha_mask.c' object='loader/test_runner-0063_loader_builtin_rgba_alpha_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0063_loader_builtin_rgba_alpha_mask.o `test -f 'loader/0063_loader_builtin_rgba_alpha_mask.c' || echo '$(srcdir)/'`loader/0063_loader_builtin_rgba_alpha_mask.c
+
+loader/test_runner-0063_loader_builtin_rgba_alpha_mask.obj: loader/0063_loader_builtin_rgba_alpha_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0063_loader_builtin_rgba_alpha_mask.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Tpo -c -o loader/test_runner-0063_loader_builtin_rgba_alpha_mask.obj `if test -f 'loader/0063_loader_builtin_rgba_alpha_mask.c'; then $(CYGPATH_W) 'loader/0063_loader_builtin_rgba_alpha_mask.c'; else $(CYGPATH_W) '$(srcdir)/loader/0063_loader_builtin_rgba_alpha_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Tpo loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0063_loader_builtin_rgba_alpha_mask.c' object='loader/test_runner-0063_loader_builtin_rgba_alpha_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0063_loader_builtin_rgba_alpha_mask.obj `if test -f 'loader/0063_loader_builtin_rgba_alpha_mask.c'; then $(CYGPATH_W) 'loader/0063_loader_builtin_rgba_alpha_mask.c'; else $(CYGPATH_W) '$(srcdir)/loader/0063_loader_builtin_rgba_alpha_mask.c'; fi`
+
 loader/test_runner-0064_loader_tty_response_dispatcher.o: loader/0064_loader_tty_response_dispatcher.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0064_loader_tty_response_dispatcher.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Tpo -c -o loader/test_runner-0064_loader_tty_response_dispatcher.o `test -f 'loader/0064_loader_tty_response_dispatcher.c' || echo '$(srcdir)/'`loader/0064_loader_tty_response_dispatcher.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Tpo loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po
@@ -4788,6 +5171,90 @@ loader/test_runner-0064_loader_tty_response_dispatcher.obj: loader/0064_loader_t
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0064_loader_tty_response_dispatcher.obj `if test -f 'loader/0064_loader_tty_response_dispatcher.c'; then $(CYGPATH_W) 'loader/0064_loader_tty_response_dispatcher.c'; else $(CYGPATH_W) '$(srcdir)/loader/0064_loader_tty_response_dispatcher.c'; fi`
 
+loader/test_runner-0065_loader_osc11_colorspec_reject.o: loader/0065_loader_osc11_colorspec_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0065_loader_osc11_colorspec_reject.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Tpo -c -o loader/test_runner-0065_loader_osc11_colorspec_reject.o `test -f 'loader/0065_loader_osc11_colorspec_reject.c' || echo '$(srcdir)/'`loader/0065_loader_osc11_colorspec_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Tpo loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0065_loader_osc11_colorspec_reject.c' object='loader/test_runner-0065_loader_osc11_colorspec_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0065_loader_osc11_colorspec_reject.o `test -f 'loader/0065_loader_osc11_colorspec_reject.c' || echo '$(srcdir)/'`loader/0065_loader_osc11_colorspec_reject.c
+
+loader/test_runner-0065_loader_osc11_colorspec_reject.obj: loader/0065_loader_osc11_colorspec_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0065_loader_osc11_colorspec_reject.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Tpo -c -o loader/test_runner-0065_loader_osc11_colorspec_reject.obj `if test -f 'loader/0065_loader_osc11_colorspec_reject.c'; then $(CYGPATH_W) 'loader/0065_loader_osc11_colorspec_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/0065_loader_osc11_colorspec_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Tpo loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0065_loader_osc11_colorspec_reject.c' object='loader/test_runner-0065_loader_osc11_colorspec_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0065_loader_osc11_colorspec_reject.obj `if test -f 'loader/0065_loader_osc11_colorspec_reject.c'; then $(CYGPATH_W) 'loader/0065_loader_osc11_colorspec_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/0065_loader_osc11_colorspec_reject.c'; fi`
+
+loader/test_runner-0066_loader_osc11_response_reject.o: loader/0066_loader_osc11_response_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0066_loader_osc11_response_reject.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Tpo -c -o loader/test_runner-0066_loader_osc11_response_reject.o `test -f 'loader/0066_loader_osc11_response_reject.c' || echo '$(srcdir)/'`loader/0066_loader_osc11_response_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Tpo loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0066_loader_osc11_response_reject.c' object='loader/test_runner-0066_loader_osc11_response_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0066_loader_osc11_response_reject.o `test -f 'loader/0066_loader_osc11_response_reject.c' || echo '$(srcdir)/'`loader/0066_loader_osc11_response_reject.c
+
+loader/test_runner-0066_loader_osc11_response_reject.obj: loader/0066_loader_osc11_response_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0066_loader_osc11_response_reject.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Tpo -c -o loader/test_runner-0066_loader_osc11_response_reject.obj `if test -f 'loader/0066_loader_osc11_response_reject.c'; then $(CYGPATH_W) 'loader/0066_loader_osc11_response_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/0066_loader_osc11_response_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Tpo loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0066_loader_osc11_response_reject.c' object='loader/test_runner-0066_loader_osc11_response_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0066_loader_osc11_response_reject.obj `if test -f 'loader/0066_loader_osc11_response_reject.c'; then $(CYGPATH_W) 'loader/0066_loader_osc11_response_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/0066_loader_osc11_response_reject.c'; fi`
+
+loader/test_runner-0067_loader_wait_for_condition.o: loader/0067_loader_wait_for_condition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0067_loader_wait_for_condition.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Tpo -c -o loader/test_runner-0067_loader_wait_for_condition.o `test -f 'loader/0067_loader_wait_for_condition.c' || echo '$(srcdir)/'`loader/0067_loader_wait_for_condition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Tpo loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0067_loader_wait_for_condition.c' object='loader/test_runner-0067_loader_wait_for_condition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0067_loader_wait_for_condition.o `test -f 'loader/0067_loader_wait_for_condition.c' || echo '$(srcdir)/'`loader/0067_loader_wait_for_condition.c
+
+loader/test_runner-0067_loader_wait_for_condition.obj: loader/0067_loader_wait_for_condition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0067_loader_wait_for_condition.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Tpo -c -o loader/test_runner-0067_loader_wait_for_condition.obj `if test -f 'loader/0067_loader_wait_for_condition.c'; then $(CYGPATH_W) 'loader/0067_loader_wait_for_condition.c'; else $(CYGPATH_W) '$(srcdir)/loader/0067_loader_wait_for_condition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Tpo loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0067_loader_wait_for_condition.c' object='loader/test_runner-0067_loader_wait_for_condition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0067_loader_wait_for_condition.obj `if test -f 'loader/0067_loader_wait_for_condition.c'; then $(CYGPATH_W) 'loader/0067_loader_wait_for_condition.c'; else $(CYGPATH_W) '$(srcdir)/loader/0067_loader_wait_for_condition.c'; fi`
+
+loader/test_runner-0068_loader_background_colorspace_gamma.o: loader/0068_loader_background_colorspace_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0068_loader_background_colorspace_gamma.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Tpo -c -o loader/test_runner-0068_loader_background_colorspace_gamma.o `test -f 'loader/0068_loader_background_colorspace_gamma.c' || echo '$(srcdir)/'`loader/0068_loader_background_colorspace_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Tpo loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0068_loader_background_colorspace_gamma.c' object='loader/test_runner-0068_loader_background_colorspace_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0068_loader_background_colorspace_gamma.o `test -f 'loader/0068_loader_background_colorspace_gamma.c' || echo '$(srcdir)/'`loader/0068_loader_background_colorspace_gamma.c
+
+loader/test_runner-0068_loader_background_colorspace_gamma.obj: loader/0068_loader_background_colorspace_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0068_loader_background_colorspace_gamma.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Tpo -c -o loader/test_runner-0068_loader_background_colorspace_gamma.obj `if test -f 'loader/0068_loader_background_colorspace_gamma.c'; then $(CYGPATH_W) 'loader/0068_loader_background_colorspace_gamma.c'; else $(CYGPATH_W) '$(srcdir)/loader/0068_loader_background_colorspace_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Tpo loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0068_loader_background_colorspace_gamma.c' object='loader/test_runner-0068_loader_background_colorspace_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0068_loader_background_colorspace_gamma.obj `if test -f 'loader/0068_loader_background_colorspace_gamma.c'; then $(CYGPATH_W) 'loader/0068_loader_background_colorspace_gamma.c'; else $(CYGPATH_W) '$(srcdir)/loader/0068_loader_background_colorspace_gamma.c'; fi`
+
+loader/test_runner-0069_loader_background_colorspace_reset.o: loader/0069_loader_background_colorspace_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0069_loader_background_colorspace_reset.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Tpo -c -o loader/test_runner-0069_loader_background_colorspace_reset.o `test -f 'loader/0069_loader_background_colorspace_reset.c' || echo '$(srcdir)/'`loader/0069_loader_background_colorspace_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Tpo loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0069_loader_background_colorspace_reset.c' object='loader/test_runner-0069_loader_background_colorspace_reset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0069_loader_background_colorspace_reset.o `test -f 'loader/0069_loader_background_colorspace_reset.c' || echo '$(srcdir)/'`loader/0069_loader_background_colorspace_reset.c
+
+loader/test_runner-0069_loader_background_colorspace_reset.obj: loader/0069_loader_background_colorspace_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0069_loader_background_colorspace_reset.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Tpo -c -o loader/test_runner-0069_loader_background_colorspace_reset.obj `if test -f 'loader/0069_loader_background_colorspace_reset.c'; then $(CYGPATH_W) 'loader/0069_loader_background_colorspace_reset.c'; else $(CYGPATH_W) '$(srcdir)/loader/0069_loader_background_colorspace_reset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Tpo loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0069_loader_background_colorspace_reset.c' object='loader/test_runner-0069_loader_background_colorspace_reset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0069_loader_background_colorspace_reset.obj `if test -f 'loader/0069_loader_background_colorspace_reset.c'; then $(CYGPATH_W) 'loader/0069_loader_background_colorspace_reset.c'; else $(CYGPATH_W) '$(srcdir)/loader/0069_loader_background_colorspace_reset.c'; fi`
+
+loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.o: loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Tpo -c -o loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.o `test -f 'loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c' || echo '$(srcdir)/'`loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Tpo loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c' object='loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.o `test -f 'loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c' || echo '$(srcdir)/'`loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c
+
+loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.obj: loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Tpo -c -o loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.obj `if test -f 'loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c'; then $(CYGPATH_W) 'loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c'; else $(CYGPATH_W) '$(srcdir)/loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Tpo loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c' object='loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.obj `if test -f 'loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c'; then $(CYGPATH_W) 'loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c'; else $(CYGPATH_W) '$(srcdir)/loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first.c'; fi`
+
 loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o: loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Tpo -c -o loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o `test -f 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c' || echo '$(srcdir)/'`loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Tpo loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
@@ -4801,6 +5268,20 @@ loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.obj:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c' object='loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.obj `if test -f 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c'; then $(CYGPATH_W) 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c'; fi`
+
+loader/test_runner-gif_bgcolor_canvas_fill_test_common.o: loader/gif_bgcolor_canvas_fill_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-gif_bgcolor_canvas_fill_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Tpo -c -o loader/test_runner-gif_bgcolor_canvas_fill_test_common.o `test -f 'loader/gif_bgcolor_canvas_fill_test_common.c' || echo '$(srcdir)/'`loader/gif_bgcolor_canvas_fill_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Tpo loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gif_bgcolor_canvas_fill_test_common.c' object='loader/test_runner-gif_bgcolor_canvas_fill_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-gif_bgcolor_canvas_fill_test_common.o `test -f 'loader/gif_bgcolor_canvas_fill_test_common.c' || echo '$(srcdir)/'`loader/gif_bgcolor_canvas_fill_test_common.c
+
+loader/test_runner-gif_bgcolor_canvas_fill_test_common.obj: loader/gif_bgcolor_canvas_fill_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-gif_bgcolor_canvas_fill_test_common.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Tpo -c -o loader/test_runner-gif_bgcolor_canvas_fill_test_common.obj `if test -f 'loader/gif_bgcolor_canvas_fill_test_common.c'; then $(CYGPATH_W) 'loader/gif_bgcolor_canvas_fill_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/gif_bgcolor_canvas_fill_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Tpo loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gif_bgcolor_canvas_fill_test_common.c' object='loader/test_runner-gif_bgcolor_canvas_fill_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-gif_bgcolor_canvas_fill_test_common.obj `if test -f 'loader/gif_bgcolor_canvas_fill_test_common.c'; then $(CYGPATH_W) 'loader/gif_bgcolor_canvas_fill_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/gif_bgcolor_canvas_fill_test_common.c'; fi`
 
 quant/palette/test_runner-0001_kmeans_init.o: quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o quant/palette/test_runner-0001_kmeans_init.o `test -f 'quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`quant/palette/0001_kmeans_init.c
@@ -5846,7 +6327,15 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0061_loader_tty_cpr_parser.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0062_loader_animation_hide_cursor_environment.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Po
+	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
@@ -5860,6 +6349,9 @@ distclean: distclean-am
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
@@ -5941,8 +6433,18 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
@@ -6068,7 +6570,15 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0061_loader_tty_cpr_parser.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0062_loader_animation_hide_cursor_environment.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0063_loader_builtin_rgba_alpha_mask.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0064_loader_tty_response_dispatcher.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0065_loader_osc11_colorspec_reject.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0066_loader_osc11_response_reject.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0067_loader_wait_for_condition.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0068_loader_background_colorspace_gamma.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0069_loader_background_colorspace_reset.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0070_loader_gif_bgcolor_canvas_fill_explicit_first.Po
+	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
@@ -6082,6 +6592,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
@@ -6163,8 +6676,18 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0039_filter_binning_stream_none.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0040_filter_binning_stream_exact.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0041_filter_binning_uniform_256.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0042_filter_binning_stream_alpha_zero.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
@@ -6297,6 +6820,7 @@ SIXEL_INSTALLCHECK ?= 0
 	staticcheck-test-plan-single \
 	staticcheck-test-webp-serial-unique \
 	staticcheck-test-no-grep-awk \
+	staticcheck-test-no-for-until \
 	staticcheck-artifact-local-dir-mkdir \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-binding-constants-sync \
@@ -6361,6 +6885,7 @@ staticcheck-interframe-no-compat-getenv-symbol \
 staticcheck-test-plan-single \
 staticcheck-test-webp-serial-unique \
 staticcheck-test-no-grep-awk \
+staticcheck-test-no-for-until \
 staticcheck-artifact-local-dir-mkdir \
 staticcheck-binding-loader-setopt-sync \
 staticcheck-binding-constants-sync \
@@ -6877,6 +7402,16 @@ staticcheck-test-no-grep-awk:
 		--trs-file staticcheck-test-no-grep-awk.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-no-grep-awk.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-test-no-for-until:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-no-for-until" \
+		--log-file staticcheck-test-no-for-until.log \
+		--trs-file staticcheck-test-no-for-until.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-no-for-until.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-artifact-local-dir-mkdir:

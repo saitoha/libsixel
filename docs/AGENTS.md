@@ -56,3 +56,15 @@ The [`staticcheck-doc-test-links`](../tests/_static/sh/staticcheck-doc-test-link
 ## Adding a document
 
 Add a document only when the topic is durable and materially distinct from the existing references. Give it a stable subject-oriented name, place it in the owning subject directory, and add it to `README.md` when users or contributors should discover it. Add a repository-level link only when contributors must read it before working in that area.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| DG-01 | Enforced policy documents and their owning tests carry complete reciprocal links, and one-sided references fail the static suite. | [tests/_static/sh/staticcheck-doc-test-links.sh](../tests/_static/sh/staticcheck-doc-test-links.sh) |
+
+### Coverage boundary
+
+The static check validates paths and the completeness of the two link inventories. It does not decide whether a policy contract is decomposed at the correct granularity or whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.

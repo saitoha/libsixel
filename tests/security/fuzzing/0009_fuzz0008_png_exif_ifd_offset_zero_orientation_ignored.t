@@ -52,15 +52,21 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 dims_on=''
-for token in $(od -tx1 -j16 -N8 "${output_on}"); do
-    test "${token#??}" = "" || continue
-    dims_on="${dims_on}${token}"
-done
+# shellcheck disable=SC2046 # Split the eight hexadecimal byte fields.
+set -- $(od -An -tx1 -j16 -N8 "${output_on}")
+test "$#" -eq 8 || {
+    echo "not ok" 1 - "fuzz0008 orientation-on PNG header is truncated"
+    exit 0
+}
+dims_on="$1$2$3$4$5$6$7$8"
 dims_off=''
-for token in $(od -tx1 -j16 -N8 "${output_off}"); do
-    test "${token#??}" = "" || continue
-    dims_off="${dims_off}${token}"
-done
+# shellcheck disable=SC2046 # Split the eight hexadecimal byte fields.
+set -- $(od -An -tx1 -j16 -N8 "${output_off}")
+test "$#" -eq 8 || {
+    echo "not ok" 1 - "fuzz0008 orientation-off PNG header is truncated"
+    exit 0
+}
+dims_off="$1$2$3$4$5$6$7$8"
 
 test "${dims_on}" = "0000000c00000008" || {
     echo "not ok" 1 - "fuzz0008 malformed eXIf was incorrectly applied"

@@ -980,6 +980,11 @@ staticcheck_cases = [
     [meson.current_source_dir() / '_static/sh/staticcheck-test-no-grep-awk.sh',
       meson.project_source_root()],
   ],
+  [
+    'staticcheck-test-no-for-until',
+    [meson.current_source_dir() / '_static/sh/staticcheck-test-no-for-until.sh',
+      meson.project_source_root()],
+  ],
 ]
 
 foreach static_case : staticcheck_cases

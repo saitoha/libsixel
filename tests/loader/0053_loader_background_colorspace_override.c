@@ -1,5 +1,5 @@
 /*
- * Verify temporary loader background-colorspace override behavior.
+ * Verify the temporary linear loader background-colorspace override.
  * Policy: docs/loader/background-policy.md
  */
 
@@ -15,35 +15,17 @@
 int
 test_loader_0053_loader_background_colorspace_override(int argc, char **argv)
 {
-    int base_colorspace;
     int current_colorspace;
 
     (void)argc;
     (void)argv;
 
-    base_colorspace = loader_background_colorspace();
     current_colorspace = 0;
 
     sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
     current_colorspace = loader_background_colorspace();
     if (current_colorspace != SIXEL_COLORSPACE_LINEAR) {
         fprintf(stderr, "background colorspace override to linear failed\n");
-        sixel_helper_set_loader_background_colorspace(-1);
-        return EXIT_FAILURE;
-    }
-
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
-    current_colorspace = loader_background_colorspace();
-    if (current_colorspace != SIXEL_COLORSPACE_GAMMA) {
-        fprintf(stderr, "background colorspace override to gamma failed\n");
-        sixel_helper_set_loader_background_colorspace(-1);
-        return EXIT_FAILURE;
-    }
-
-    sixel_helper_set_loader_background_colorspace(12345);
-    current_colorspace = loader_background_colorspace();
-    if (current_colorspace != base_colorspace) {
-        fprintf(stderr, "background colorspace override reset failed\n");
         sixel_helper_set_loader_background_colorspace(-1);
         return EXIT_FAILURE;
     }

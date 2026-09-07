@@ -147,7 +147,7 @@ The diagnostics policy controls these additions independently: `prefix_suggestio
 
 The `clipboard:` marker must terminate the operand and is interpreted as a pseudo target rather than a filesystem path or remote URL. It is distinct from the `-` stdin/stdout sentinel. Clipboard backend policy is configured by `-y`/`--clipboard-policy`, its typed suboptions, and their corresponding environment variables.
 
-## Automated coverage
+## Test coverage
 
 <!-- test-coverage: enforced -->
 
@@ -179,7 +179,7 @@ Each automated contract has a stable ID and a corresponding static check or test
 | CLI-22 | `clipboard:` and `png:clipboard:` work as input and output pseudo targets. | [tests/io/clipboard/0002_clipboard_file_backend.t](../../tests/io/clipboard/0002_clipboard_file_backend.t) |
 | CLI-23 | Typed scalar options and suboptions register environment names, and public environment controls remain synchronized with help. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh), [tests/_static/sh/staticcheck-docs-envvars-help-table.sh](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) |
 | CLI-24 | A close suboption-key typo is rejected with its canonical key as a `Did you mean:` suggestion. | [tests/cli/options/matching/0276_option_matching_suboption_key_typo_suggestion.t](../../tests/cli/options/matching/0276_option_matching_suboption_key_typo_suggestion.t) |
-| CLI-25 | Every registered lookup policy is accepted by its single-character initial. | [tests/cli/0035_cli_lookup_policy_initial_prefixes.c](../../tests/cli/0035_cli_lookup_policy_initial_prefixes.c) |
+| CLI-25 | Every registered lookup policy is accepted by its single-character initial. | [tests/cli/0035_cli_lookup_policy_initial_prefixes.c](../../tests/cli/0035_cli_lookup_policy_initial_prefixes.c), [tests/cli/options/matching/0278_option_matching_lookup_registry_initials.t](../../tests/cli/options/matching/0278_option_matching_lookup_registry_initials.t) |
 
 ### Coverage boundary
 

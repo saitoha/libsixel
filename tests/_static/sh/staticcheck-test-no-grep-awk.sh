@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for enforcing grep/awk/sed ban in shell TAP test scripts.
+# Policy: docs/testing/guide.md
 
 set -eu
 

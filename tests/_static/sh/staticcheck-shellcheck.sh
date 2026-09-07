@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for shellcheck static check.
+# Policy: docs/testing/guide.md
 
 set -eu
 

@@ -61,6 +61,7 @@ typedef struct loader_probe_context {
     int alpha_zero_is_transparent;
     int has_transparent_mask;
     size_t transparent_mask_size;
+    int transparent_mask_first;
 } loader_probe_context_t;
 
 /*
@@ -88,6 +89,7 @@ typedef struct loader_component_case_expect {
     int transparent;
     int multiframe;
     int mask_present;
+    int mask_first;
     int alpha_zero_is_transparent;
     int colorspace;
     int check_colorspace;
@@ -113,6 +115,7 @@ typedef struct loader_component_case_spec {
 #define FRAME_METADATA_ANY INT_MIN
 #define FRAME_TRANSPARENT_NONNEG (INT_MIN + 1)
 #define FRAME_MASK_ANY INT_MIN
+#define FRAME_MASK_VALUE_ANY INT_MIN
 #define FRAME_ALPHA_ZERO_ANY INT_MIN
 #define SIXEL_TEST_SKIP 77
 
@@ -174,6 +177,11 @@ capture_frame(sixel_frame_t *frame, void *data)
     context->has_transparent_mask =
         transparency.transparent_mask != NULL ? 1 : 0;
     context->transparent_mask_size = transparency.transparent_mask_size;
+    context->transparent_mask_first = FRAME_MASK_VALUE_ANY;
+    if (transparency.transparent_mask != NULL &&
+        transparency.transparent_mask_size != 0u) {
+        context->transparent_mask_first = transparency.transparent_mask[0];
+    }
 
     return SIXEL_OK;
 }
@@ -310,6 +318,7 @@ run_loader_case_with_options(char const *label,
     context.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
     context.has_transparent_mask = FRAME_MASK_ANY;
     context.transparent_mask_size = 0u;
+    context.transparent_mask_first = FRAME_MASK_VALUE_ANY;
     callback_state.loader = NULL;
     callback_state.fn = capture_frame;
     callback_state.context = &context;
@@ -475,6 +484,7 @@ run_loader_component_case_with_options_full(
     int expected_transparent;
     int expected_multiframe;
     int expected_mask_present;
+    int expected_mask_first;
     int expected_alpha_zero_is_transparent;
     int require_static;
     int use_palette;
@@ -497,6 +507,7 @@ run_loader_component_case_with_options_full(
     expected_transparent = FRAME_METADATA_ANY;
     expected_multiframe = FRAME_METADATA_ANY;
     expected_mask_present = FRAME_MASK_ANY;
+    expected_mask_first = FRAME_MASK_VALUE_ANY;
     expected_alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
     require_static = 1;
     use_palette = 0;
@@ -512,6 +523,7 @@ run_loader_component_case_with_options_full(
         expected_transparent = expect->transparent;
         expected_multiframe = expect->multiframe;
         expected_mask_present = expect->mask_present;
+        expected_mask_first = expect->mask_first;
         expected_alpha_zero_is_transparent
             = expect->alpha_zero_is_transparent;
     }
@@ -588,6 +600,7 @@ run_loader_component_case_with_options_full(
     context.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
     context.has_transparent_mask = FRAME_MASK_ANY;
     context.transparent_mask_size = 0u;
+    context.transparent_mask_first = FRAME_MASK_VALUE_ANY;
     callback_state.loader = NULL;
     callback_state.fn = capture_frame;
     callback_state.context = &context;
@@ -735,6 +748,16 @@ run_loader_component_case_with_options_full(
                 expected_mask_present);
         goto cleanup;
     }
+    if (expected_mask_first != FRAME_MASK_VALUE_ANY &&
+        context.transparent_mask_first != expected_mask_first) {
+        fprintf(stderr,
+                "%s: first transparent mask value mismatch "
+                "(%d expected=%d)\n",
+                label,
+                context.transparent_mask_first,
+                expected_mask_first);
+        goto cleanup;
+    }
     if (expected_alpha_zero_is_transparent != FRAME_ALPHA_ZERO_ANY &&
         context.alpha_zero_is_transparent
             != expected_alpha_zero_is_transparent) {
@@ -789,6 +812,7 @@ run_loader_component_case_with_options_ex(
     expect.transparent = expected_transparent;
     expect.multiframe = expected_multiframe;
     expect.mask_present = FRAME_MASK_ANY;
+    expect.mask_first = FRAME_MASK_VALUE_ANY;
     expect.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
     expect.colorspace = FRAME_METADATA_ANY;
     expect.check_colorspace = 0;
@@ -815,6 +839,7 @@ run_loader_component_case_with_options_mask_ex(
     int expected_transparent,
     int expected_multiframe,
     int expected_mask_present,
+    int expected_mask_first,
     int expected_alpha_zero_is_transparent,
     int require_static,
     int use_palette,
@@ -833,6 +858,7 @@ run_loader_component_case_with_options_mask_ex(
     expect.transparent = expected_transparent;
     expect.multiframe = expected_multiframe;
     expect.mask_present = expected_mask_present;
+    expect.mask_first = expected_mask_first;
     expect.alpha_zero_is_transparent = expected_alpha_zero_is_transparent;
     expect.colorspace = FRAME_METADATA_ANY;
     expect.check_colorspace = 0;

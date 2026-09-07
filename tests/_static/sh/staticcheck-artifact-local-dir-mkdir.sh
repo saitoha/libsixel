@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for test-owned ARTIFACT_LOCAL_DIR directory bootstrap policy.
+# Policy: docs/testing/guide.md
 #
 # Runners export an isolated path but do not create it. A TAP test that needs
 # artifacts creates its directory lazily after any early feature skips.
@@ -79,7 +80,7 @@ END {
     }
     exit failed ? 1 : 0
 }
-' "$tests_root"/cli/options/regression/*.t || failed=1
+' "$tests_root"/cli/options/regression/*_image_regression.t || failed=1
 
 test "$failed" -eq 0 || {
     echo "not ok 1 - tests own lazy ARTIFACT_LOCAL_DIR creation"

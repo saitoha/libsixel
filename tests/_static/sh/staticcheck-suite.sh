@@ -631,6 +631,10 @@ run_case_tap "staticcheck-test-no-grep-awk" \
     "$src_root/tests/_static/sh/staticcheck-test-no-grep-awk.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-no-for-until" \
+    "$src_root/tests/_static/sh/staticcheck-test-no-for-until.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-c-header-modeline" \
     "$src_root/tests/_static/sh/staticcheck-c-header-modeline.sh" \
     "$src_root" || fail_and_exit $?

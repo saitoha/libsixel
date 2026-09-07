@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying -L accepts cms_engine=none.
 
-set -euxv
+set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
@@ -9,6 +9,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 echo "1..1"
+set -v
 
 probe_output=$(
     set +xv

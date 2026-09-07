@@ -12,18 +12,17 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "loader/0023_loader_librsvg_pixelformat" \
-    "setopt" || rc="$?"
+    "loader/0026_loader_librsvg_setopt_compat" || rc="$?"
 
 test "${rc-}" = 77 && {
-    echo "ok 1 - loader/0023_loader_librsvg_pixelformat setopt # SKIP unavailable"
+    echo "ok 1 - loader/0026_loader_librsvg_setopt_compat # SKIP unavailable"
     exit 0
 }
 
 test -n "${rc-}" && {
-    echo "not ok 1 - loader/0023_loader_librsvg_pixelformat setopt"
+    echo "not ok 1 - loader/0026_loader_librsvg_setopt_compat"
     exit 0
 }
 
-echo "ok 1 - loader/0023_loader_librsvg_pixelformat setopt"
+echo "ok 1 - loader/0026_loader_librsvg_setopt_compat"
 exit 0

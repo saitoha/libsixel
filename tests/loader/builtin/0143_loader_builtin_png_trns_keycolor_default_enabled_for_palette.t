@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn3p08.png"
+input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tp1n3p08.png"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin_trns_keycolor_palette_default.six"
 out_off="${ARTIFACT_LOCAL_DIR}/builtin_trns_keycolor_palette_env0.six"
 

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for test runner source coverage in amalgamation define list.
+# Policy: docs/testing/guide.md
 
 set -eu
 

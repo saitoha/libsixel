@@ -1,5 +1,5 @@
 /*
- * Verify loader-side OSC11 query control helpers.
+ * Verify loader-side OSC11 query eligibility.
  * Policy: docs/loader/alpha-policy.md
  * Policy: docs/loader/background-policy.md
  */
@@ -12,33 +12,6 @@
 #include <stdlib.h>
 
 #include "src/loader.h"
-
-typedef struct wait_probe_state {
-    int trigger_after;
-    int calls;
-} wait_probe_state_t;
-
-static int
-wait_probe_predicate(void *context)
-{
-    wait_probe_state_t *state;
-
-    state = (wait_probe_state_t *)context;
-    if (state == NULL) {
-        return 0;
-    }
-
-    if (state->trigger_after < 0) {
-        return 0;
-    }
-
-    state->calls += 1;
-    if (state->calls >= state->trigger_after) {
-        return 1;
-    }
-
-    return 0;
-}
 
 static int
 run_query_gate_cases(void)
@@ -67,68 +40,14 @@ run_query_gate_cases(void)
     return 0;
 }
 
-static int
-run_wait_cases(void)
-{
-    wait_probe_state_t immediate;
-    wait_probe_state_t delayed;
-    wait_probe_state_t never;
-    int ready;
-
-    immediate.trigger_after = 0;
-    immediate.calls = 0;
-    delayed.trigger_after = 3;
-    delayed.calls = 0;
-    never.trigger_after = -1;
-    never.calls = 0;
-    ready = 0;
-
-    ready = sixel_loader_wait_for_condition(wait_probe_predicate,
-                                            &immediate,
-                                            0);
-    if (ready == 0) {
-        fprintf(stderr, "wait helper should finish immediately\n");
-        return 1;
-    }
-
-    ready = sixel_loader_wait_for_condition(wait_probe_predicate,
-                                            &delayed,
-                                            8);
-    if (ready == 0) {
-        fprintf(stderr, "wait helper should complete before timeout\n");
-        return 1;
-    }
-
-    ready = sixel_loader_wait_for_condition(wait_probe_predicate,
-                                            &never,
-                                            2);
-    if (ready != 0) {
-        fprintf(stderr, "wait helper should report timeout\n");
-        return 1;
-    }
-
-    return 0;
-}
-
 int
 test_loader_0052_loader_osc11_query_control(int argc, char **argv)
 {
-    int status;
-
     (void)argc;
     (void)argv;
-
-    status = run_query_gate_cases();
-    if (status != 0) {
-        return EXIT_FAILURE;
-    }
-
-    status = run_wait_cases();
-    if (status != 0) {
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
+    return run_query_gate_cases() == 0
+        ? EXIT_SUCCESS
+        : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */

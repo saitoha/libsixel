@@ -13,8 +13,8 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
-out="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-repeated-long-last1-tbbn0g04.six"
+input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tp1n3p08.png"
+out="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-repeated-long-last1-tp1n3p08.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -A composite -Lbuiltin:cms_engine=none! \

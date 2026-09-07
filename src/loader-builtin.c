@@ -1879,7 +1879,8 @@ sixel_builtin_parse_png_transparency_info(
     sixel_chunk_t const *pchunk,
     int *color_type_out,
     int *has_alpha_chunk_out,
-    int *has_trns_chunk_out)
+    int *has_trns_chunk_out,
+    int *has_bkgd_chunk_out)
 {
     static unsigned char const png_signature[8] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
@@ -1892,11 +1893,13 @@ sixel_builtin_parse_png_transparency_info(
     unsigned char const *chunk_type;
     int color_type;
     int has_trns_chunk;
+    int has_bkgd_chunk;
 
     if (pchunk == NULL ||
         color_type_out == NULL ||
         has_alpha_chunk_out == NULL ||
-        has_trns_chunk_out == NULL) {
+        has_trns_chunk_out == NULL ||
+        has_bkgd_chunk_out == NULL) {
         return 0;
     }
 
@@ -1920,6 +1923,7 @@ sixel_builtin_parse_png_transparency_info(
 
     color_type = (int)buffer[25u];
     has_trns_chunk = 0;
+    has_bkgd_chunk = 0;
     offset = 8u;
     while (offset + 12u <= size) {
         length = ((uint32_t)buffer[offset + 0u] << 24)
@@ -1933,6 +1937,8 @@ sixel_builtin_parse_png_transparency_info(
         chunk_type = buffer + offset + 4u;
         if (memcmp(chunk_type, "tRNS", 4u) == 0) {
             has_trns_chunk = 1;
+        } else if (memcmp(chunk_type, "bKGD", 4u) == 0) {
+            has_bkgd_chunk = 1;
         } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
             break;
         }
@@ -1943,6 +1949,7 @@ sixel_builtin_parse_png_transparency_info(
     *has_alpha_chunk_out =
         (color_type & SIXEL_BUILTIN_PNG_COLOR_MASK_ALPHA) != 0 ? 1 : 0;
     *has_trns_chunk_out = has_trns_chunk;
+    *has_bkgd_chunk_out = has_bkgd_chunk;
 
     return 1;
 }
@@ -1957,11 +1964,13 @@ sixel_builtin_png_keycolor_mode_enabled(
     int color_type;
     int has_alpha_chunk;
     int has_trns_chunk;
+    int has_bkgd_chunk;
 
     trns_keycolor_mode = 0;
     color_type = (-1);
     has_alpha_chunk = 0;
     has_trns_chunk = 0;
+    has_bkgd_chunk = 0;
 
     trns_keycolor_mode = loader_png_trns_keycolor_mode();
     if (trns_keycolor_mode == 0) {
@@ -1974,7 +1983,8 @@ sixel_builtin_png_keycolor_mode_enabled(
             pchunk,
             &color_type,
             &has_alpha_chunk,
-            &has_trns_chunk)) {
+            &has_trns_chunk,
+            &has_bkgd_chunk)) {
         return 0;
     }
 
@@ -1982,6 +1992,29 @@ sixel_builtin_png_keycolor_mode_enabled(
             || (has_alpha_chunk && trns_keycolor_mode == 2))
         ? 1
         : 0;
+}
+
+static int
+sixel_builtin_png_has_bkgd_chunk(sixel_chunk_t const *pchunk)
+{
+    int color_type;
+    int has_alpha_chunk;
+    int has_trns_chunk;
+    int has_bkgd_chunk;
+
+    color_type = (-1);
+    has_alpha_chunk = 0;
+    has_trns_chunk = 0;
+    has_bkgd_chunk = 0;
+    if (!sixel_builtin_parse_png_transparency_info(
+            pchunk,
+            &color_type,
+            &has_alpha_chunk,
+            &has_trns_chunk,
+            &has_bkgd_chunk)) {
+        return 0;
+    }
+    return has_bkgd_chunk;
 }
 
 static SIXELSTATUS
@@ -4911,6 +4944,7 @@ sixel_builtin_load_png_single_frame(
     int reqcolors,
     int enable_cms,
     int png_keycolor_mode,
+    int has_bkgd_chunk,
     unsigned char *bgcolor,
     int bgcolor_source)
 {
@@ -4926,6 +4960,20 @@ sixel_builtin_load_png_single_frame(
         allocator == NULL ||
         ri == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * Both indexed PNG fast paths accept only an explicit background pointer.
+     * A bKGD chunk must use frompng so source priority, colorspace conversion,
+     * partial alpha, and the alpha-zero mask are resolved together.
+     */
+    if (has_bkgd_chunk != 0) {
+        return sixel_frompng_load_nonindexed(chunk,
+                                             allocator,
+                                             frame,
+                                             enable_cms,
+                                             bgcolor,
+                                             bgcolor_source);
     }
 
     if (fuse_palette && !png_keycolor_mode) {
@@ -6339,6 +6387,7 @@ sixel_builtin_load_stbi_png_path(
     stbi__context *stb_context,
     stbi__result_info *ri,
     int png_keycolor_mode,
+    int has_bkgd_chunk,
     int *animation_handled)
 {
     SIXELSTATUS status;
@@ -6396,6 +6445,7 @@ sixel_builtin_load_stbi_png_path(
                                                  load_request->reqcolors,
                                                  load_request->enable_cms,
                                                  png_keycolor_mode,
+                                                 has_bkgd_chunk,
                                                  load_request->bgcolor,
                                                  load_request->bgcolor_source);
     return status;
@@ -6426,10 +6476,12 @@ sixel_builtin_load_stbi_path(
     SIXELSTATUS status;
     int chunk_size;
     int png_keycolor_mode;
+    int has_bkgd_chunk;
 
     status = SIXEL_FALSE;
     chunk_size = 0;
     png_keycolor_mode = 0;
+    has_bkgd_chunk = 0;
     if (load_request == NULL ||
         load_request->chunk == NULL ||
         load_request->allocator == NULL ||
@@ -6457,6 +6509,8 @@ sixel_builtin_load_stbi_path(
 
     stbi_allocator = load_request->allocator;
     if (route->is_png) {
+        has_bkgd_chunk = sixel_builtin_png_has_bkgd_chunk(
+            load_request->chunk);
         png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
             load_request->chunk,
             load_request->bgcolor,
@@ -6468,6 +6522,7 @@ sixel_builtin_load_stbi_path(
                                                 stb_context,
                                                 ri,
                                                 png_keycolor_mode,
+                                                has_bkgd_chunk,
                                                 route->animation_handled);
     }
     /*

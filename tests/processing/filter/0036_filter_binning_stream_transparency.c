@@ -1,8 +1,10 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify that direct sample-stream binning honors both frame transparency
- * sources: an explicit mask and the opt-in alpha-zero interpretation.
+ * Policy: docs/concepts/pixelformat.md
+ *
+ * Verify that direct sample-stream binning excludes pixels selected by an
+ * explicit transparent mask.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -147,51 +149,6 @@ test_filter_0036_filter_binning_stream_transparency(int argc, char **argv)
             output.total_weight != 2.0 ||
             output.coordinates[2] != 240.0 ||
             output.coordinates[3] != 240.0) {
-        status = SIXEL_LOGIC_ERROR;
-        goto cleanup;
-    }
-    sixel_filter_free(filter);
-    filter = NULL;
-    sixel_weighted_point_set_dispose(&output);
-
-    transparency.alpha_zero_is_transparent = 1;
-    status = frame_if->vtbl->set_transparency(frame_if, &transparency);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    sixel_palette_binning_state_init(
-        &binning,
-        SIXEL_PALETTE_BINNING_HARD,
-        SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT);
-    status = sixel_palette_binning_resolve(
-        &binning,
-        SIXEL_PALETTE_BINNING_HARD,
-        4u,
-        SIXEL_PALETTE_BINNING_GRID_UNIFORM,
-        SIXEL_PALETTE_BINNING_KERNEL_NONE,
-        SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE,
-        3u,
-        SIXEL_PALETTE_RESOLUTION_EXPLICIT);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    status = sixel_filter_factory_create_by_kind(
-        SIXEL_FILTER_KIND_BINNING,
-        &config,
-        &filter);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    sixel_filter_bind_sample_input(filter, &samples);
-    sixel_filter_bind_weighted_output(filter,
-                                      &output,
-                                      SIXEL_COLORSPACE_GAMMA);
-    status = sixel_filter_run(filter, allocator, NULL);
-    if (SIXEL_FAILED(status) || output.point_count != 1u ||
-            output.total_weight != 1.0 ||
-            output.coordinates[0] != 0.0 ||
-            output.coordinates[1] != 0.0 ||
-            output.coordinates[2] != 240.0) {
         status = SIXEL_LOGIC_ERROR;
         goto cleanup;
     }

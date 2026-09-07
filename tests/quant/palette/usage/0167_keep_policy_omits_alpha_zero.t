@@ -1,6 +1,7 @@
 #!/bin/sh
-# Verify keep policy preserves alpha zero even when -B is present.
+# Verify keep policy omits an alpha-zero pixel even when -B is present.
 # Policy: docs/loader/alpha-policy.md
+# Policy: docs/concepts/pixelformat.md
 
 set -eux
 
@@ -15,6 +16,7 @@ set +x
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-minimal-1x1-rgba.png"
 esc="$(printf '\033')"
+expected="${esc}P0;1q\"1;1;1;1#0;2;9;9;9${esc}\\"
 
 keep_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep -B '#ffffff' \
@@ -22,10 +24,10 @@ keep_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "keep alpha-policy render failed"
     exit 0
 }
-test "${keep_output#"${esc}P0;1q"}" != "${keep_output}" || {
-    echo "not ok" 1 - "keep policy did not emit P2=1"
+test "${keep_output}" = "${expected}" || {
+    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
     exit 0
 }
 
-echo "ok" 1 - "keep policy preserves alpha zero with -B"
+echo "ok" 1 - "keep policy omits alpha zero and emits P2=1"
 exit 0
