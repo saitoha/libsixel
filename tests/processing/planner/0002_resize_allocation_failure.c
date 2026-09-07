@@ -20,32 +20,88 @@
 #define PRAF_FLOAT_BYTES \
     ((size_t)PRAF_WIDTH * PRAF_HEIGHT * 3u * sizeof(float))
 
+/*
+ * Public allocator callbacks have no userdata argument. The test runner
+ * dispatches one test at a time, so this namespaced state can arm one exact
+ * allocation without changing the allocator API or affecting setup.
+ */
+static size_t praf_failure_size;
+static unsigned int praf_failure_count;
+static unsigned int praf_live_allocation_count;
+
+static int
+praf_should_fail(size_t size)
+{
+    if (praf_failure_size != 0u && size == praf_failure_size) {
+        praf_failure_size = 0u;
+        ++praf_failure_count;
+        return 1;
+    }
+    return 0;
+}
+
 static void *
 praf_malloc(size_t size)
 {
-    if (size == PRAF_FLOAT_BYTES) {
+    void *ptr;
+
+    ptr = NULL;
+    if (praf_should_fail(size)) {
         return NULL;
     }
-    return malloc(size);
+    ptr = malloc(size);
+    if (ptr != NULL) {
+        ++praf_live_allocation_count;
+    }
+    return ptr;
 }
 
 static void *
 praf_calloc(size_t count, size_t size)
 {
-    if (size != 0u && count == PRAF_FLOAT_BYTES / size
-        && count * size == PRAF_FLOAT_BYTES) {
+    size_t bytes;
+    void *ptr;
+
+    bytes = 0u;
+    ptr = NULL;
+    if (size != 0u && count <= (size_t)-1 / size) {
+        bytes = count * size;
+    }
+    if (praf_should_fail(bytes)) {
         return NULL;
     }
-    return calloc(count, size);
+    ptr = calloc(count, size);
+    if (ptr != NULL) {
+        ++praf_live_allocation_count;
+    }
+    return ptr;
 }
 
 static void *
 praf_realloc(void *ptr, size_t size)
 {
-    if (size == PRAF_FLOAT_BYTES) {
+    void *resized;
+    int had_allocation;
+
+    resized = NULL;
+    had_allocation = ptr != NULL;
+    if (praf_should_fail(size)) {
         return NULL;
     }
-    return realloc(ptr, size);
+    resized = realloc(ptr, size);
+    if (!had_allocation && resized != NULL) {
+        ++praf_live_allocation_count;
+    }
+    return resized;
+}
+
+static void
+praf_free(void *ptr)
+{
+    if (ptr != NULL && praf_live_allocation_count != 0u) {
+        --praf_live_allocation_count;
+    }
+    free(ptr);
 }
 
 static int
@@ -57,19 +113,24 @@ resize_allocation_failure_valid(void)
     sixel_allocator_t *allocator;
     sixel_encoder_t *encoder;
     unsigned char pixels[PRAF_WIDTH * PRAF_HEIGHT * 3];
+    unsigned int live_allocation_baseline;
 
     status = SIXEL_FALSE;
     message = NULL;
     sink_path = NULL;
     allocator = NULL;
     encoder = NULL;
+    live_allocation_baseline = 0u;
+    praf_failure_size = 0u;
+    praf_failure_count = 0u;
+    praf_live_allocation_count = 0u;
     memset(pixels, 0x7f, sizeof(pixels));
 
     status = sixel_allocator_new(&allocator,
                                  praf_malloc,
                                  praf_calloc,
                                  praf_realloc,
-                                 free);
+                                 praf_free);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -96,6 +157,9 @@ resize_allocation_failure_valid(void)
         goto end;
     }
 
+    /* Arm only the operation under test and consume exactly one failure. */
+    live_allocation_baseline = praf_live_allocation_count;
+    praf_failure_size = PRAF_FLOAT_BYTES;
     status = sixel_encoder_encode_bytes(encoder,
                                         pixels,
                                         PRAF_WIDTH,
@@ -103,7 +167,10 @@ resize_allocation_failure_valid(void)
                                         SIXEL_PIXELFORMAT_RGB888,
                                         NULL,
                                         0);
-    if (status != SIXEL_BAD_ALLOCATION) {
+    praf_failure_size = 0u;
+    if (status != SIXEL_BAD_ALLOCATION
+        || praf_failure_count != 1u
+        || praf_live_allocation_count != live_allocation_baseline) {
         status = SIXEL_LOGIC_ERROR;
         goto end;
     }
@@ -143,12 +210,20 @@ resize_allocation_failure_valid(void)
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    if (praf_failure_count != 1u) {
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
 
     status = SIXEL_OK;
 
 end:
+    praf_failure_size = 0u;
     sixel_encoder_unref(encoder);
     sixel_allocator_unref(allocator);
+    if (praf_live_allocation_count != 0u) {
+        status = SIXEL_LOGIC_ERROR;
+    }
     return SIXEL_SUCCEEDED(status);
 }
 
