@@ -7220,20 +7220,19 @@ sixel_encoder_prepare_palette(
     {
         sixel_palette_snap_options_t snap_options;
 
-        snap_options.target_override =
-            encoder->cover_policy_snap_target_override;
-        snap_options.target = encoder->cover_policy_snap_target;
+        snap_options.policy_override = encoder->snap_policy_override;
+        snap_options.policy = encoder->snap_policy;
         snap_options.timing_override =
-            encoder->cover_policy_snap_timing_override;
-        snap_options.timing = encoder->cover_policy_snap_timing;
+            encoder->snap_policy_timing_override;
+        snap_options.timing = encoder->snap_policy_timing;
         snap_options.approach_rate_override =
-            encoder->cover_policy_snap_approach_rate_override;
+            encoder->snap_policy_approach_rate_override;
         snap_options.approach_rate =
-            encoder->cover_policy_snap_approach_rate;
+            encoder->snap_policy_approach_rate;
         snap_options.channel_factor_l_override =
-            encoder->cover_policy_snap_channel_factor_l_override;
+            encoder->snap_policy_channel_factor_l_override;
         snap_options.channel_factor_l =
-            encoder->cover_policy_snap_channel_factor_l;
+            encoder->snap_policy_channel_factor_l;
         sixel_set_palette_snap_override(&snap_options);
     }
     sixel_set_kcenter_algo_override(
@@ -8887,16 +8886,16 @@ sixel_encoder_new(
     (*ppencoder)->cover_policy_mode_override = 0;
     (*ppencoder)->cover_policy_mode = SIXEL_PALETTE_COVER_MODE_SOFT;
     (*ppencoder)->cover_policy = SIXEL_PALETTE_COVER_AUTO;
-    (*ppencoder)->cover_policy_snap_target_override = 0;
-    (*ppencoder)->cover_policy_snap_target =
+    (*ppencoder)->snap_policy_override = 0;
+    (*ppencoder)->snap_policy =
         SIXEL_PALETTE_SNAP_POLICY_NEAREST;
-    (*ppencoder)->cover_policy_snap_timing_override = 0;
-    (*ppencoder)->cover_policy_snap_timing =
+    (*ppencoder)->snap_policy_timing_override = 0;
+    (*ppencoder)->snap_policy_timing =
         SIXEL_PALETTE_SNAP_TIMING_ONCE;
-    (*ppencoder)->cover_policy_snap_approach_rate_override = 0;
-    (*ppencoder)->cover_policy_snap_approach_rate = 1.0;
-    (*ppencoder)->cover_policy_snap_channel_factor_l_override = 0;
-    (*ppencoder)->cover_policy_snap_channel_factor_l = 0.85;
+    (*ppencoder)->snap_policy_approach_rate_override = 0;
+    (*ppencoder)->snap_policy_approach_rate = 1.0;
+    (*ppencoder)->snap_policy_channel_factor_l_override = 0;
+    (*ppencoder)->snap_policy_channel_factor_l = 0.85;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->lut_policy_override   = 0;
     (*ppencoder)->lut_policy_shared_instance_override = 0;
@@ -9136,6 +9135,22 @@ sixel_encoder_new(
             &policy_value)) {
         (*ppencoder)->cover_policy = policy_value;
         (*ppencoder)->cover_policy_override = 1;
+    }
+
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_SNAP_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &policy_value)) {
+        (*ppencoder)->snap_policy = policy_value;
+        (*ppencoder)->snap_policy_override = 1;
     }
 
     env_default_bgcolor = sixel_option_resolve_argument_environment(
@@ -11508,6 +11523,19 @@ sixel_encoder_setopt(
             value,
             &encoder->cover_policy,
             &encoder->cover_policy_override,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_SNAP_POLICY:  /* _ */
+        status = sixel_encoder_apply_registered_policy_argument(
+            encoder,
+            SIXEL_OPTION_SCHEMA_SNAP_POLICY,
+            value,
+            &encoder->snap_policy,
+            &encoder->snap_policy_override,
             match_detail,
             sizeof(match_detail));
         if (SIXEL_FAILED(status)) {

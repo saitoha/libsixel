@@ -66,8 +66,8 @@ enum sixel_palette_snap_timing_policy {
 };
 
 typedef struct sixel_palette_snap_options {
-    int target_override;
-    int target;
+    int policy_override;
+    int policy;
     int timing_override;
     int timing;
     int approach_rate_override;

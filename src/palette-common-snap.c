@@ -81,18 +81,18 @@ void
 sixel_set_palette_snap_override(
     sixel_palette_snap_options_t const *options)
 {
-    char const *target_name;
+    char const *policy_name;
     char const *timing_name;
 
-    target_name = "nearest";
+    policy_name = "nearest";
     timing_name = "once";
     if (options == NULL) {
         memset(&g_snap_options, 0, sizeof(g_snap_options));
         return;
     }
     g_snap_options = *options;
-    if (options->target == SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE) {
-        target_name = "reversible";
+    if (options->policy == SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE) {
+        policy_name = "reversible";
     }
     switch (options->timing) {
     case SIXEL_PALETTE_SNAP_TIMING_POLISH:
@@ -111,11 +111,11 @@ sixel_set_palette_snap_override(
     default:
         break;
     }
-    if (options->target_override) {
+    if (options->policy_override) {
         sixel_trace_topic_message(
             "palette_contract",
-            "LSXSNP1|target=%s",
-            target_name);
+            "LSXSNP1|policy=%s",
+            policy_name);
     }
     if (options->timing_override) {
         sixel_trace_topic_message(
@@ -143,15 +143,12 @@ sixel_palette_get_snap_policy(void)
     int value;
 
     value = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
-    if (g_snap_options.target_override) {
-        return (enum sixel_palette_snap_policy)g_snap_options.target;
+    if (g_snap_options.policy_override) {
+        return (enum sixel_palette_snap_policy)g_snap_options.policy;
     }
-    (void)sixel_option_resolve_registered_int_binding(
-        SIXEL_OPTION_SCHEMA_COVER_POLICY,
-        NULL,
-        SIXEL_SUBOPTION_BINDING_ID_2(
-            cover_policy_snap_target,
-            cover_policy_snap_target_override),
+    (void)sixel_option_resolve_registered_base_environment(
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER,
         &value);
     return (enum sixel_palette_snap_policy)value;
 }
@@ -166,11 +163,11 @@ sixel_palette_get_snap_timing(void)
         return (enum sixel_palette_snap_timing_policy)g_snap_options.timing;
     }
     (void)sixel_option_resolve_registered_int_binding(
-        SIXEL_OPTION_SCHEMA_COVER_POLICY,
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY,
         NULL,
         SIXEL_SUBOPTION_BINDING_ID_2(
-            cover_policy_snap_timing,
-            cover_policy_snap_timing_override),
+            snap_policy_timing,
+            snap_policy_timing_override),
         &value);
     return (enum sixel_palette_snap_timing_policy)value;
 }
@@ -185,11 +182,11 @@ sixel_palette_get_snap_approach_rate(void)
         return g_snap_options.approach_rate;
     }
     (void)sixel_option_resolve_registered_double_binding(
-        SIXEL_OPTION_SCHEMA_COVER_POLICY,
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY,
         NULL,
         SIXEL_SUBOPTION_BINDING_ID_2(
-            cover_policy_snap_approach_rate,
-            cover_policy_snap_approach_rate_override),
+            snap_policy_approach_rate,
+            snap_policy_approach_rate_override),
         &value);
     return value;
 }
@@ -204,11 +201,11 @@ sixel_palette_get_snap_channel_factor(void)
         return g_snap_options.channel_factor_l;
     }
     (void)sixel_option_resolve_registered_double_binding(
-        SIXEL_OPTION_SCHEMA_COVER_POLICY,
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY,
         NULL,
         SIXEL_SUBOPTION_BINDING_ID_2(
-            cover_policy_snap_channel_factor_l,
-            cover_policy_snap_channel_factor_l_override),
+            snap_policy_channel_factor_l,
+            snap_policy_channel_factor_l_override),
         &value);
     return value;
 }

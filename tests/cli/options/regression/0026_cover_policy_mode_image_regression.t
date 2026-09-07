@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/cover-policy.md
 # Verify cover-policy mode preserves image output through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_COVER_POLICY|NULL|cover_mode
 # Registry binding: cover_policy_mode|cover_policy_mode_override

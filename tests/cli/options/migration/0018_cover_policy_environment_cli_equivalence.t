@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/cover-policy.md
 # Preserve SIXEL_PALETTE_COVER equivalence with -a during migration.
 
 set -eux

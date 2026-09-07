@@ -91,6 +91,8 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-threshold-run.json \
 	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-threshold-summary.csv \
 	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-thresholds.csv \
+	docs/functionality/cover-policy.md \
+	docs/functionality/snap-policy.md \
 	docs/functionality/dithering.md \
 	docs/functionality/dither-policies/measurements/dither-policy-delta-e00.png \
 	docs/functionality/dither-policies/measurements/dither-policy-ms-ssim.png \

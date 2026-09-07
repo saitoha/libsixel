@@ -41,6 +41,8 @@ Use the [documentation index](docs/README.md) to find durable project references
 - [Pixel formats and alpha representation](docs/concepts/pixelformat.md)
 - [Functional overview](docs/functionality/overview.md)
 - [Palette clustering color space](docs/functionality/clustering-colorspace.md)
+- [Palette cover policy](docs/functionality/cover-policy.md)
+- [Palette snap policy](docs/functionality/snap-policy.md)
 - [Encoder working precision](docs/functionality/precision.md)
 - [Alpha policy](docs/loader/alpha-policy.md)
 - [Background policy](docs/loader/background-policy.md)

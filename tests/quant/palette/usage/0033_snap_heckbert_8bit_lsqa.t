@@ -17,7 +17,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-8bit.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PALETTE_SNAP_POLICY=reversible \
               --env SIXEL_PALETTE_SNAP_TIMING_POLICY=all \
               --env SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
               --env SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \

@@ -563,17 +563,24 @@ typedef int SIXELSTATUS;
                                                       (or Vvalue): 0 or 1
                                                     cover_mode
                                                       (or Wvalue): soft, hard
-                                                    snap_target
-                                                      (or Tvalue): auto,
-                                                      nearest, reversible
-                                                    snap_timing
+                                                */
+#define SIXEL_OPTFLAG_SNAP_POLICY       ('_')  /*
+                                                  -_ POLICY,
+                                                  --snap-policy=POLICY:
+                                                  configure reversible tone
+                                                  snapping independently of
+                                                  palette coverage
+                                                  POLICY is one of:
+                                                    auto, nearest, reversible
+                                                  suboptions:
+                                                    timing
                                                       (or Ivalue): once,
                                                       polish, merge, resolve,
                                                       all
-                                                    snap_rate
+                                                    rate
                                                       (or Avalue):
                                                       float in 0.0-1.0
-                                                    snap_channel_l
+                                                    channel_l
                                                       (or Lvalue):
                                                       float in 0.0-1.0
                                                 */

@@ -800,39 +800,13 @@ _coverpolicy() {
         elif [[ ${key} == cover_mode ]]; then
           compadd -- "${prefix}${key}=soft" "${prefix}${key}=hard"
           return 0
-        elif [[ ${key} == snap_target ]]; then
-          compadd -- "${prefix}${key}=auto" \
-                     "${prefix}${key}=nearest" \
-                     "${prefix}${key}=reversible"
-          return 0
-        elif [[ ${key} == snap_timing ]]; then
-          compadd -- "${prefix}${key}=once" \
-                     "${prefix}${key}=polish" \
-                     "${prefix}${key}=merge" \
-                     "${prefix}${key}=resolve" \
-                     "${prefix}${key}=all"
-          return 0
-        elif [[ ${key} == snap_rate || ${key} == snap_channel_l ]]; then
-          compadd -- "${prefix}${key}=0" \
-                     "${prefix}${key}=0.25" \
-                     "${prefix}${key}=0.5" \
-                     "${prefix}${key}=0.75" \
-                     "${prefix}${key}=1"
-          return 0
         fi
       else
         prefix=${current%"${segment}"}
         compadd -- "${prefix}V0" "${prefix}V1" \
                    "${prefix}Wsoft" "${prefix}Whard" \
-                   "${prefix}Tnearest" "${prefix}Treversible" \
-                   "${prefix}Ionce" "${prefix}Iall" \
-                   "${prefix}A0.5" "${prefix}L0.85" \
                    "${prefix}cover_grow=" \
-                   "${prefix}cover_mode=" \
-                   "${prefix}snap_target=" \
-                   "${prefix}snap_timing=" \
-                   "${prefix}snap_rate=" \
-                   "${prefix}snap_channel_l="
+                   "${prefix}cover_mode="
         return 0
       fi
     fi
@@ -846,6 +820,51 @@ _coverpolicy() {
     'faces[anchor color-cube faces]' \
     'edges[anchor color-cube edges]' \
     'all[anchor corners, faces, and edges]'
+}
+
+_snappolicy() {
+  local current base segment key prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    base=${current%%:*}
+    segment=${current##*:}
+    if [[ ${base} == auto || ${base} == nearest || \
+          ${base} == reversible ]]; then
+      if [[ ${segment} == *=* ]]; then
+        key=${segment%%=*}
+        prefix=${current%"${segment}"}
+        if [[ ${key} == timing ]]; then
+          compadd -- "${prefix}${key}=once" \
+                     "${prefix}${key}=polish" \
+                     "${prefix}${key}=merge" \
+                     "${prefix}${key}=resolve" \
+                     "${prefix}${key}=all"
+          return 0
+        elif [[ ${key} == rate || ${key} == channel_l ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=0.25" \
+                     "${prefix}${key}=0.5" \
+                     "${prefix}${key}=0.75" \
+                     "${prefix}${key}=1"
+          return 0
+        fi
+      else
+        prefix=${current%"${segment}"}
+        compadd -- "${prefix}Ionce" "${prefix}Iall" \
+                   "${prefix}A0.5" "${prefix}L0.85" \
+                   "${prefix}timing=" "${prefix}rate=" \
+                   "${prefix}channel_l="
+        return 0
+      fi
+    fi
+  fi
+
+  _values \
+    'SNAPPOLICY' \
+    'auto[choose the nearest reversible tone in the working space]' \
+    'nearest[choose the nearest reversible tone in the working space]' \
+    'reversible[use the legacy per-channel reversible mapping]'
 }
 
 _runtimepolicy() {
@@ -1051,6 +1070,7 @@ _arguments -S -s -A "-*" -S \
   {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
   {-F,--merge-policy=}'[choose final palette merge policy]':mergepolicy:_mergepolicy \
   {-a,--cover-policy=}'[choose palette coverage policy]':coverpolicy:_coverpolicy \
+  {-_,--snap-policy=}'[choose reversible tone snap policy]':snappolicy:_snappolicy \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \
   {-M,--mapfile-output=}'[export the computed palette; TYPE:PATH (TYPE:- for stdout) or .act/.pal/.gpl extensions choose the format]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \

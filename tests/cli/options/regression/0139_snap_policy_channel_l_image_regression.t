@@ -1,7 +1,8 @@
 #!/bin/sh
-# Verify cover snap channel weight through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_COVER_POLICY|NULL|snap_channel_l
-# Registry binding: cover_policy_snap_channel_factor_l|cover_policy_snap_channel_factor_l_override
+# Policy: docs/functionality/snap-policy.md
+# Verify snap channel weight through short and environment paths.
+# Registry row: SIXEL_OPTION_SCHEMA_SNAP_POLICY|NULL|channel_l
+# Registry binding: snap_policy_channel_factor_l|snap_policy_channel_factor_l_override
 # Environment range: clamp-both
 # Palette contract: channel_l=0.75
 
@@ -23,11 +24,11 @@ env_output="${artifact_dir}/0139-snap-channel-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -6 -Woklab \
-    "-aauto:L0.75" "${input_image}" 2>&1 >"${short_output}") || {
+    "-_nearest:L0.75" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "snap channel short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=snap_channel_l|stored=1|binding=cover_policy_snap_channel_factor_l,cover_policy_snap_channel_factor_l_override|value=0.75*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=channel_l|stored=1|binding=snap_policy_channel_factor_l,snap_policy_channel_factor_l_override|value=0.75*}" != "${short_trace}" || {
     echo "not ok" 1 - "snap channel short value was not stored"
     exit 0
 }
@@ -39,12 +40,12 @@ test "${short_trace#*LSXSNP1|*channel_l=0.75*}" != "${short_trace}" || {
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.75" \
-    -p 16 -Qkmeans -6 -Woklab -aauto \
+    -p 16 -Qkmeans -6 -Woklab -_nearest \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "snap channel environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=snap_channel_l|stored=1|binding=cover_policy_snap_channel_factor_l,cover_policy_snap_channel_factor_l_override|value=0.75*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=channel_l|stored=1|binding=snap_policy_channel_factor_l,snap_policy_channel_factor_l_override|value=0.75*}" != "${env_trace}" || {
     echo "not ok" 1 - "snap channel environment value was not stored"
     exit 0
 }
@@ -52,11 +53,11 @@ test "${env_trace#*LSXSUB1|*key=snap_channel_l|stored=1|binding=cover_policy_sna
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=-1" \
-    -p 16 -Qkmeans -aauto "${input_image}" 2>&1 >/dev/null) || {
+    -p 16 -Qkmeans -_nearest "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "snap channel lower conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1|*key=snap_channel_l|stored=1|binding=cover_policy_snap_channel_factor_l,cover_policy_snap_channel_factor_l_override|value=0*}" != "${range_trace}" || {
+test "${range_trace#*LSXSUB1|*key=channel_l|stored=1|binding=snap_policy_channel_factor_l,snap_policy_channel_factor_l_override|value=0*}" != "${range_trace}" || {
     echo "not ok" 1 - "snap channel lower endpoint was not clamped"
     exit 0
 }
@@ -74,5 +75,5 @@ test "${lsqa_status:-0}" -eq 0 || {
     exit 0
 }
 
-echo "ok" 1 - "cover snap channel weight preserves image output"
+echo "ok" 1 - "snap channel weight preserves image output"
 exit 0

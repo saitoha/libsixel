@@ -1,7 +1,8 @@
 #!/bin/sh
-# Verify cover snap timing through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_COVER_POLICY|NULL|snap_timing
-# Registry binding: cover_policy_snap_timing|cover_policy_snap_timing_override
+# Policy: docs/functionality/snap-policy.md
+# Verify snap timing through short and environment paths.
+# Registry row: SIXEL_OPTION_SCHEMA_SNAP_POLICY|NULL|timing
+# Registry binding: snap_policy_timing|snap_policy_timing_override
 # Palette contract: timing=all
 
 set -eux
@@ -22,11 +23,11 @@ env_output="${artifact_dir}/0137-snap-timing-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -6 -Woklab \
-    "-aauto:Iall" "${input_image}" 2>&1 >"${short_output}") || {
+    "-_nearest:Iall" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "snap timing short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=snap_timing|stored=1|binding=cover_policy_snap_timing,cover_policy_snap_timing_override|value=4*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1|*key=timing|stored=1|binding=snap_policy_timing,snap_policy_timing_override|value=4*}" != "${short_trace}" || {
     echo "not ok" 1 - "snap timing short value was not stored"
     exit 0
 }
@@ -38,12 +39,12 @@ test "${short_trace#*LSXSNP1|*timing=all*}" != "${short_trace}" || {
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_SNAP_TIMING_POLICY=all" \
-    -p 16 -Qkmeans -6 -Woklab -aauto \
+    -p 16 -Qkmeans -6 -Woklab -_nearest \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "snap timing environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=snap_timing|stored=1|binding=cover_policy_snap_timing,cover_policy_snap_timing_override|value=4*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1|*key=timing|stored=1|binding=snap_policy_timing,snap_policy_timing_override|value=4*}" != "${env_trace}" || {
     echo "not ok" 1 - "snap timing environment value was not stored"
     exit 0
 }
@@ -61,5 +62,5 @@ test "${lsqa_status:-0}" -eq 0 || {
     exit 0
 }
 
-echo "ok" 1 - "cover snap timing preserves image output"
+echo "ok" 1 - "snap timing preserves image output"
 exit 0

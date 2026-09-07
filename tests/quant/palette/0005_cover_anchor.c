@@ -1,6 +1,8 @@
 /*
  * SPDX-License-Identifier: MIT
  *
+ * Policy: docs/functionality/cover-policy.md
+ *
  * Pin the gamut-corner anchoring contract.
  *
  * A saturated region worth a fraction of a percent of the frame is always

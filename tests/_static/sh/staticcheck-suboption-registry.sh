@@ -1077,6 +1077,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     }
     if (option_id == "SIXEL_OPTION_SCHEMA_MERGE_POLICY" ||
             option_id == "SIXEL_OPTION_SCHEMA_COVER_POLICY" ||
+            option_id == "SIXEL_OPTION_SCHEMA_SNAP_POLICY" ||
             (option_id == "SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL" &&
              name == "sample_target")) {
         expected_palette_contract[key] = 1

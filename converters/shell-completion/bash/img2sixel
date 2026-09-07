@@ -561,9 +561,6 @@ _img2sixel()
             case "${key}" in
             cover_grow) candidates='0 1' ;;
             cover_mode) candidates='soft hard' ;;
-            snap_target) candidates='auto nearest reversible' ;;
-            snap_timing) candidates='once polish merge resolve all' ;;
-            snap_rate|snap_channel_l) candidates='0 0.25 0.5 0.75 1' ;;
             *) candidates='' ;;
             esac
             for candidate in ${candidates}; do
@@ -574,9 +571,8 @@ _img2sixel()
         fi
         if [[ ${cur} == *:* ]]; then
             prefix="${cur%"${item}"}"
-            for candidate in V0 V1 Wsoft Whard Tnearest Treversible \
-                Ionce Iall A0.5 L0.85 cover_grow= cover_mode= \
-                snap_target= snap_timing= snap_rate= snap_channel_l=; do
+            for candidate in V0 V1 Wsoft Whard \
+                cover_grow= cover_mode=; do
                 [[ ${candidate} == ${item}* ]] || continue
                 COMPREPLY+=("${prefix}${candidate}")
             done
@@ -584,6 +580,39 @@ _img2sixel()
         fi
         COMPREPLY=( $( compgen -W 'auto off corners faces edges all' \
             -- "${base}" ) )
+    }
+
+    _img2sixel_complete_snap_policy()
+    {
+        local base item key value prefix candidate candidates
+
+        base="${cur%%:*}"
+        item="${cur##*:}"
+        if [[ ${cur} == *:* && ${item} == *=* ]]; then
+            key="${item%%=*}"
+            value="${item#*=}"
+            prefix="${cur%"${value}"}"
+            case "${key}" in
+            timing) candidates='once polish merge resolve all' ;;
+            rate|channel_l) candidates='0 0.25 0.5 0.75 1' ;;
+            *) candidates='' ;;
+            esac
+            for candidate in ${candidates}; do
+                [[ ${candidate} == ${value}* ]] || continue
+                COMPREPLY+=("${prefix}${candidate}")
+            done
+            return 0
+        fi
+        if [[ ${cur} == *:* ]]; then
+            prefix="${cur%"${item}"}"
+            for candidate in Ionce Iall A0.5 L0.85 \
+                timing= rate= channel_l=; do
+                [[ ${candidate} == ${item}* ]] || continue
+                COMPREPLY+=("${prefix}${candidate}")
+            done
+            return 0
+        fi
+        COMPREPLY=( $( compgen -W 'auto nearest reversible' -- "${base}" ) )
     }
 
     _img2sixel_complete_runtime_policy()
@@ -732,6 +761,10 @@ _img2sixel()
         ;;
     -a|--cover-policy)
         _img2sixel_complete_cover_policy
+        return 0
+        ;;
+    '-_'|--snap-policy)
+        _img2sixel_complete_snap_policy
         return 0
         ;;
     -m|--mapfile|-M|--mapfile-output|-J|--log-path)
@@ -1016,6 +1049,7 @@ _img2sixel()
                                    -Q --quantize-model \
                                    -F --merge-policy \
                                    -a --cover-policy \
+                                   -_ --snap-policy \
                                    -m --mapfile \
                                    -M --mapfile-output \
                                    -e --monochrome \

@@ -56,7 +56,7 @@ explicit preference, while filesystem suggestions remain opt-in.
 Additional palette snap controls allow fine-tuning of the reversible grid
 handling used by `-6`:
 
-* `SIXEL_PALETTE_SNAP_TARGET_POLICY` — choose "reversible" to force legacy
+* `SIXEL_PALETTE_SNAP_POLICY` — choose "reversible" to force legacy
   fixed points or "nearest"/"auto" (default) to pick the nearest fixed point
   in the working colorspace.
 * `SIXEL_PALETTE_SNAP_TIMING_POLICY` — decide when snaps run: "once", "polish",

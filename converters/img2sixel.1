@@ -337,19 +337,25 @@ Supported suboptions:
 .br
 \fBcover_mode\fP (short form \fBWMODE\fP): \fBsoft\fP or \fBhard\fP.
 .br
-\fBsnap_target\fP (short form \fBTVALUE\fP): \fBauto\fP,
-\fBnearest\fP, or \fBreversible\fP.
+The corresponding environments are \fBSIXEL_PALETTE_COVER\fP,
+\fBSIXEL_PALETTE_COVER_GROW\fP, and \fBSIXEL_PALETTE_COVER_MODE\fP.
+.TP 5
+.B \-_ \fIPOLICY\fP, \-\-snap\-policy=\fIPOLICY\fP
+configure how \fB-6\fP snaps palette channels to the 101 reversible SIXEL
+tone levels independently of palette coverage.
+\fIPOLICY\fP accepts \fBauto\fP, \fBnearest\fP, or \fBreversible\fP.
 .br
-\fBsnap_timing\fP (short form \fBIVALUE\fP): \fBonce\fP,
+Supported suboptions:
+.br
+\fBtiming\fP (short form \fBIVALUE\fP): \fBonce\fP,
 \fBpolish\fP, \fBmerge\fP, \fBresolve\fP, or \fBall\fP.
 .br
-\fBsnap_rate\fP (short form \fBAFACTOR\fP): floating value in 0.0-1.0.
+\fBrate\fP (short form \fBAFACTOR\fP): floating value in 0.0-1.0.
 .br
-\fBsnap_channel_l\fP (short form \fBLFACTOR\fP): floating value in
+\fBchannel_l\fP (short form \fBLFACTOR\fP): floating value in
 0.0-1.0.
 .br
-The corresponding \fBSIXEL_PALETTE_COVER_*\fP and
-\fBSIXEL_PALETTE_SNAP_*\fP environments provide defaults.
+The corresponding \fBSIXEL_PALETTE_SNAP_*\fP environments provide defaults.
 .TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
 transform image colors to match this set of colors. Accepts image files
@@ -2150,7 +2156,7 @@ emphasise L* weight in Lab-family distances before snapping (0.0-1.0).
 emphasise L* weight during final merge distances independently of snap tuning
 (0.0-1.0).
 .TP 5
-.B SIXEL_PALETTE_SNAP_TARGET_POLICY
+.B SIXEL_PALETTE_SNAP_POLICY
 .br
 control palette snap target search. Accepts "reversible" for legacy fixed
 points or "nearest"/"auto" for nearby fixed points in the working colorspace.

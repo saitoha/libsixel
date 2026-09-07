@@ -28,6 +28,8 @@ output contract of each stage and how these three controls cooperate:
 
 - [Palette Quantization](quantization.md), selected by `-Q`, determines which
   palette colors are available and documents each solver's objective and cost;
+- [Palette Cover Policy](cover-policy.md), selected by `-a` or `--cover-policy`, repairs reachability after quantization;
+- [Palette Snap Policy](snap-policy.md), selected by `-_` or `--snap-policy`, configures the reversible safe-tone mapping enabled by `-6`;
 - [Palette Clustering Color Space](clustering-colorspace.md), selected by `-X`,
   determines the coordinate geometry used to construct those palette colors;
 - [Encoder Working Precision](precision.md), selected by `--precision`,

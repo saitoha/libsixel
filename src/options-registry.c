@@ -1082,6 +1082,21 @@ static sixel_option_value_schema_t const g_cover_policy_values[] = {
     { "1", SIXEL_PALETTE_COVER_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
 };
 
+static sixel_option_value_schema_t const g_snap_policy_values[] = {
+    {
+        "auto", SIXEL_PALETTE_SNAP_POLICY_NEAREST, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "nearest", SIXEL_PALETTE_SNAP_POLICY_NEAREST, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "reversible", SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    }
+};
+
 enum {
     SIXEL_LOOKUP_BASE_AUTO = 0,
     SIXEL_LOOKUP_BASE_5BIT,
@@ -1500,12 +1515,6 @@ static sixel_suboption_choice_t const g_kcenter_swap_update_choices[] = {
 static sixel_suboption_choice_t const g_palette_cover_mode_choices[] = {
     { "hard", SIXEL_PALETTE_COVER_MODE_HARD },
     { "soft", SIXEL_PALETTE_COVER_MODE_SOFT }
-};
-
-static sixel_suboption_choice_t const g_palette_snap_target_choices[] = {
-    { "auto", SIXEL_PALETTE_SNAP_POLICY_NEAREST },
-    { "nearest", SIXEL_PALETTE_SNAP_POLICY_NEAREST },
-    { "reversible", SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE }
 };
 
 static sixel_suboption_choice_t const g_palette_snap_timing_choices[] = {
@@ -1956,28 +1965,23 @@ static sixel_suboption_key_t const g_suboptions[] = {
         g_palette_cover_mode_choices,
         cover_policy_mode, cover_policy_mode_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
-        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
-        "snap_target", 'T', "SIXEL_PALETTE_SNAP_TARGET_POLICY", NULL, NULL,
-        g_palette_snap_target_choices,
-        cover_policy_snap_target, cover_policy_snap_target_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
-        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
-        "snap_timing", 'I', "SIXEL_PALETTE_SNAP_TIMING_POLICY", NULL, NULL,
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY, NULL,
+        "timing", 'I', "SIXEL_PALETTE_SNAP_TIMING_POLICY", NULL, NULL,
         g_palette_snap_timing_choices,
-        cover_policy_snap_timing, cover_policy_snap_timing_override),
+        snap_policy_timing, snap_policy_timing_override),
     SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
-        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
-        "snap_rate", 'A', "SIXEL_PALETTE_SNAP_APPROACH_RATE", NULL, NULL,
-        0.0, 1.0, "-a snap_rate must be in range 0.0-1.0.",
-        cover_policy_snap_approach_rate,
-        cover_policy_snap_approach_rate_override),
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY, NULL,
+        "rate", 'A', "SIXEL_PALETTE_SNAP_APPROACH_RATE", NULL, NULL,
+        0.0, 1.0, "-_ rate must be in range 0.0-1.0.",
+        snap_policy_approach_rate,
+        snap_policy_approach_rate_override),
     SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
-        SIXEL_OPTION_SCHEMA_COVER_POLICY, NULL,
-        "snap_channel_l", 'L', "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L",
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY, NULL,
+        "channel_l", 'L', "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L",
         NULL, NULL, 0.0, 1.0,
-        "-a snap_channel_l must be in range 0.0-1.0.",
-        cover_policy_snap_channel_factor_l,
-        cover_policy_snap_channel_factor_l_override),
+        "-_ channel_l must be in range 0.0-1.0.",
+        snap_policy_channel_factor_l,
+        snap_policy_channel_factor_l_override),
 
     SIXEL_REGISTRY_ENCODER_POSITIVE_SIZE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
@@ -2908,6 +2912,16 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_PALETTE_COVER_AUTO,
         g_cover_policy_values,
         "SIXEL_PALETTE_COVER"),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_SNAP_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        SIXEL_OPTFLAG_SNAP_POLICY,
+        "snap-policy",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_PALETTE_SNAP_POLICY_NEAREST,
+        g_snap_policy_values,
+        "SIXEL_PALETTE_SNAP_POLICY"),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
         SIXEL_OPTION_SCOPE_ENCODER,

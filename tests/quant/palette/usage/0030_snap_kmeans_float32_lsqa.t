@@ -17,7 +17,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-kmeans-float32.six"
 
-SIXEL_PALETTE_SNAP_TARGET_POLICY=nearest \
+SIXEL_PALETTE_SNAP_POLICY=nearest \
         SIXEL_PALETTE_SNAP_TIMING_POLICY=all \
         SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
         SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \

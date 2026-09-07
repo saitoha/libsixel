@@ -404,12 +404,22 @@ static cli_option_help_t const g_option_help_table[] = {
         "    sub-option:\n"
         "      :cover_grow=0|1 (:V0 or :V1)\n"
         "      :cover_mode=soft|hard (:Wsoft or :Whard)\n"
-        "      :snap_target=auto|nearest|reversible (:Tvalue)\n"
-        "      :snap_timing=once|polish|merge|resolve|all (:Ivalue)\n"
-        "      :snap_rate=FACTOR (:AFACTOR), 0.0-1.0\n"
-        "      :snap_channel_l=FACTOR (:LFACTOR), 0.0-1.0\n"
-        "    The corresponding SIXEL_PALETTE_COVER_* and\n"
-        "    SIXEL_PALETTE_SNAP_* environments provide defaults.\n"
+        "    SIXEL_PALETTE_COVER and SIXEL_PALETTE_COVER_*\n"
+        "    environments provide defaults.\n"
+    },
+    {
+        '_',
+        "snap-policy",
+        "-_ POLICY, --snap-policy=POLICY\n"
+        "    choose how -6 snaps palette channels to the 101 reversible\n"
+        "    SIXEL tone levels. POLICY is one of:\n"
+        "      auto, nearest, reversible\n"
+        "    sub-option:\n"
+        "      :timing=once|polish|merge|resolve|all (:Ivalue)\n"
+        "      :rate=FACTOR (:AFACTOR), 0.0-1.0\n"
+        "      :channel_l=FACTOR (:LFACTOR), 0.0-1.0\n"
+        "    The corresponding SIXEL_PALETTE_SNAP_* environments\n"
+        "    provide defaults.\n"
     },
     {
         'm',
@@ -2051,7 +2061,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "Accepts 0.0-8.0, default 0.0."
     },
     {
-        "SIXEL_PALETTE_SNAP_TARGET_POLICY",
+        "SIXEL_PALETTE_SNAP_POLICY",
         "Control palette snap target search. Accepts 'reversible' for\n"
         "legacy fixed points or 'nearest'/'auto' for nearby fixed points\n"
         "in the working colorspace."
@@ -2217,7 +2227,8 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:J:y:z:K:kil:T:t:ugvSn:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:_:~:G:j:x:J:y:z:K:"
+    "kil:T:t:ugvSn:"
     "PE:U:B:N:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
@@ -3223,6 +3234,7 @@ img2sixel_main(int argc, char *argv[])
         {"quantize-model",        required_argument,  &long_opt, 'Q'},
         {"merge-policy",          required_argument,  &long_opt, 'F'},
         {"cover-policy",          required_argument,  &long_opt, 'a'},
+        {"snap-policy",           required_argument,  &long_opt, '_'},
         {"mapfile",               required_argument,  &long_opt, 'm'},
         {"mapfile-output",        required_argument,  &long_opt, 'M'},
         {"monochrome",            no_argument,        &long_opt, 'e'},
