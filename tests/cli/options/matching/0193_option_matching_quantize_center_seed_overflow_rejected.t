@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying -Q rejects center seed values larger than uint32.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

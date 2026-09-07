@@ -41,15 +41,17 @@ first:
 
 1. the loader `background_policy` suboption, including short form
    `Pfile_first|Pexplicit_first`;
-2. `--background-policy=file_first|explicit_first`;
+2. `-N file_first|explicit_first` or
+   `--background-policy=file_first|explicit_first`;
 3. `SIXEL_BACKGROUND_POLICY`;
 4. the built-in default, `file_first`.
 
 The loader suboption is request-specific and therefore overrides the global
-dedicated option. The dedicated option is deliberately long-only and
-overrides the environment value. Invalid command-line values are rejected.
-Invalid or empty environment values fall back to `file_first`. See
-`img2sixel -H` for loader-suboption syntax and environment injection.
+dedicated option. The dedicated option follows the CLI-wide requirement to
+provide both short and long forms, and overrides the environment value.
+Invalid command-line values are rejected. Invalid or empty environment values
+fall back to `file_first`. See `img2sixel -H` for loader-suboption syntax and
+environment injection.
 
 ## Colorspace
 
@@ -81,7 +83,7 @@ Each automated contract has a stable ID and an owning test. The reciprocal
 | BP-04 | GIF default, invalid-value fallback, and `explicit_first` selection are stable. | [tests/loader/builtin/1499_loader_builtin_background_policy_gif_priority.t](../../tests/loader/builtin/1499_loader_builtin_background_policy_gif_priority.t) |
 | BP-05 | GIF canvas fill chooses between logical-screen and explicit backgrounds according to policy. | [tests/loader/0054_loader_gif_bgcolor_canvas_fill.c](../../tests/loader/0054_loader_gif_bgcolor_canvas_fill.c) |
 | BP-06 | Loader suboption and environment forms are equivalent, and an explicit loader suboption wins a conflicting environment value. | [tests/cli/options/regression/0097_loader_background_policy_image_regression.t](../../tests/cli/options/regression/0097_loader_background_policy_image_regression.t) |
-| BP-07 | Dedicated `--background-policy` overrides a conflicting environment value. | [tests/cli/options/matching/0275_option_matching_background_policy_cli_precedence.t](../../tests/cli/options/matching/0275_option_matching_background_policy_cli_precedence.t) |
+| BP-07 | Dedicated `-N`/`--background-policy` overrides a conflicting environment value. | [tests/cli/options/matching/0275_option_matching_background_policy_cli_precedence.t](../../tests/cli/options/matching/0275_option_matching_background_policy_cli_precedence.t) |
 | BP-08 | An explicit loader suboption overrides both the dedicated option and environment. | [tests/quant/palette/usage/0188_background_policy_loader_priority.t](../../tests/quant/palette/usage/0188_background_policy_loader_priority.t) |
 | BP-09 | An unknown dedicated option value is rejected and reports the valid values. | [tests/cli/options/matching/0273_option_matching_background_policy_unknown_value.t](../../tests/cli/options/matching/0273_option_matching_background_policy_unknown_value.t) |
 | BP-10 | Gamma and linear background colorspace paths produce their documented image result. | [tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t](../../tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t) |

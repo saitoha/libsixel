@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for help/manpage option set and alpha-policy parity.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

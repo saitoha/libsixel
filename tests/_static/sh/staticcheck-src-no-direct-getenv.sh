@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for banning raw and registered direct environment reads in src.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

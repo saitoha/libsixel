@@ -1053,44 +1053,6 @@ static sixel_option_value_schema_t const g_quantize_values[] = {
     }
 };
 
-static sixel_option_value_schema_t const g_palette_sampling_values[] = {
-    {
-        "auto", SIXEL_PALETTE_SAMPLING_AUTO, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "full-frame", SIXEL_PALETTE_SAMPLING_FULL_FRAME, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "adaptive-grid", SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    }
-};
-
-static sixel_option_value_schema_t const g_palette_binning_values[] = {
-    {
-        "auto", SIXEL_PALETTE_BINNING_AUTO, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "none", SIXEL_PALETTE_BINNING_NONE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "exact", SIXEL_PALETTE_BINNING_EXACT, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "hard", SIXEL_PALETTE_BINNING_HARD, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    },
-    {
-        "soft", SIXEL_PALETTE_BINNING_SOFT, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
-    }
-};
-
 static sixel_option_value_schema_t const g_merge_policy_values[] = {
     { "auto", SIXEL_FINAL_MERGE_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
     { "none", SIXEL_FINAL_MERGE_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
@@ -1644,6 +1606,20 @@ static sixel_suboption_choice_t const g_loader_hdr_tonemap_choices[] = {
     { "reinhard", SIXEL_BUILTIN_HDR_TONEMAP_REINHARD }
 };
 
+static sixel_suboption_choice_t const g_palette_sampling_choices[] = {
+    { "auto", SIXEL_PALETTE_SAMPLING_AUTO },
+    { "full-frame", SIXEL_PALETTE_SAMPLING_FULL_FRAME },
+    { "adaptive-grid", SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID }
+};
+
+static sixel_suboption_choice_t const g_palette_binning_choices[] = {
+    { "auto", SIXEL_PALETTE_BINNING_AUTO },
+    { "none", SIXEL_PALETTE_BINNING_NONE },
+    { "exact", SIXEL_PALETTE_BINNING_EXACT },
+    { "hard", SIXEL_PALETTE_BINNING_HARD },
+    { "soft", SIXEL_PALETTE_BINNING_SOFT }
+};
+
 /*
  * This is the sole authoritative suboption registry.  A NULL base pointer
  * means that the row is shared by every base value of the owning option.
@@ -2008,6 +1984,16 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "sample_target", 'C', "SIXEL_PALETTE_SAMPLE_TARGET", NULL, NULL,
         "-Q sample_target must be a positive integer.",
         palette_sample_target, palette_sample_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
+        "sampling_policy", 'G', "SIXEL_SAMPLING_POLICY", NULL, NULL,
+        g_palette_sampling_choices,
+        palette_sampling_policy, palette_sampling_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, NULL,
+        "binning_policy", 'W', "SIXEL_BINNING_POLICY", NULL, NULL,
+        g_palette_binning_choices,
+        palette_binning_policy, palette_binning_override),
     SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         g_quantize_values + SIXEL_QUANTIZE_BASE_HECKBERT,
@@ -2902,26 +2888,6 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_QUANTIZE_MODEL_AUTO,
         g_quantize_values,
         NULL),
-    SIXEL_REGISTRY_OPTION_SCHEMA(
-        SIXEL_OPTION_SCHEMA_SAMPLING_POLICY,
-        SIXEL_OPTION_SCOPE_ENCODER,
-        SIXEL_OPTFLAG_SAMPLING_POLICY,
-        "sampling-policy",
-        SIXEL_OPTION_ARGUMENT_SINGLE,
-        SIXEL_OPTION_DEFAULT_FIXED,
-        SIXEL_PALETTE_SAMPLING_AUTO,
-        g_palette_sampling_values,
-        "SIXEL_SAMPLING_POLICY"),
-    SIXEL_REGISTRY_OPTION_SCHEMA(
-        SIXEL_OPTION_SCHEMA_BINNING_POLICY,
-        SIXEL_OPTION_SCOPE_ENCODER,
-        SIXEL_OPTFLAG_BINNING_POLICY,
-        "binning-policy",
-        SIXEL_OPTION_ARGUMENT_SINGLE,
-        SIXEL_OPTION_DEFAULT_FIXED,
-        SIXEL_PALETTE_BINNING_AUTO,
-        g_palette_binning_values,
-        "SIXEL_BINNING_POLICY"),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_MERGE_POLICY,
         SIXEL_OPTION_SCOPE_ENCODER,

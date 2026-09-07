@@ -170,8 +170,6 @@ final class Constants
     public const SIXEL_OPTFLAG_FIND_LARGEST = 'f';
     public const SIXEL_OPTFLAG_SELECT_COLOR = 's';
     public const SIXEL_OPTFLAG_QUANTIZE_MODEL = 'Q';
-    public const SIXEL_OPTFLAG_SAMPLING_POLICY = 0x100;
-    public const SIXEL_OPTFLAG_BINNING_POLICY = 0x101;
     public const SIXEL_OPTFLAG_CROP = 'c';
     public const SIXEL_OPTFLAG_WIDTH = 'w';
     public const SIXEL_OPTFLAG_HEIGHT = 'h';
@@ -191,7 +189,7 @@ final class Constants
     public const SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U';
     public const SIXEL_OPTFLAG_ORMODE = 'O';
     public const SIXEL_OPTFLAG_ALPHA_POLICY = 'A';
-    public const SIXEL_OPTFLAG_BACKGROUND_POLICY = 0x102;
+    public const SIXEL_OPTFLAG_BACKGROUND_POLICY = 'N';
     public const SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+';
     public const SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z';
     public const SIXEL_OPTFLAG_6DELTA_ERROR = 'Y';

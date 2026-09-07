@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans \
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --binning-policy=hard \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qauto:binning_policy=hard \
     -p 16 -Qkmeans "${input_image}" >"${hard_output}" || {
     echo "not ok" 1 - "explicit hard Kmeans binning conversion failed"
     exit 0

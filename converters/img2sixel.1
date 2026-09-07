@@ -154,6 +154,15 @@ Long suboption keys use \fBkey=value\fP. Uppercase short keys use
 Every base accepts \fBsample_target\fP (short form \fBCCOUNT\fP), a
 positive palette sampling count.
 .br
+Every base also accepts the independent palette-pipeline policies
+\fBsampling_policy\fP (short form \fBGPOLICY\fP) and
+\fBbinning_policy\fP (short form \fBWPOLICY\fP).
+\fBsampling_policy\fP accepts \fBauto\fP, \fBfull-frame\fP, or
+\fBadaptive-grid\fP. \fBbinning_policy\fP accepts \fBauto\fP,
+\fBnone\fP, \fBexact\fP, \fBhard\fP, or \fBsoft\fP. The
+\fBSIXEL_SAMPLING_POLICY\fP and \fBSIXEL_BINNING_POLICY\fP environments
+provide their defaults.
+.br
 The \fBcenter\fP base value accepts suboptions using
 \fBcenter:key=value[:key=value...]\fP.
 .br
@@ -280,7 +289,7 @@ Supported k-medoids suboptions:
 .br
 Compact suboption names use one uppercase letter followed by the value:
 .br
-all models: sample_target=C;
+all models: sample_target=C, sampling_policy=G, binning_policy=W;
 .br
 heckbert: profile=P;
 .br
@@ -299,28 +308,6 @@ auto_fft_threshold=F, space_policy=E, candidate_policy=Z, restarts=X,
 init_seeds=N, iter=I, histbits=H, point_budget=B, rare_keep=R,
 prune_mass=U, budget_policy=D, budget_scale=Y, swap_topk=K,
 swap_update=M, swap_patience=T, swap_min_gain=J.
-.TP 5
-.B \-\-sampling\-policy=\fIPOLICY\fP
-choose which pixels feed palette construction.
-\fIPOLICY\fP accepts \fBauto\fP, \fBfull\-frame\fP, or
-\fBadaptive\-grid\fP. \fBfull\-frame\fP uses the preprocessed output
-frame. \fBadaptive\-grid\fP samples the configured crop range directly from
-loaded-frame coordinates before resize and colorspace preprocessing. Thread
-availability may overlap adaptive sampling with other work, but does not
-change an explicitly selected policy.
-The \fBSIXEL_SAMPLING_POLICY\fP environment provides the default.
-.TP 5
-.B \-\-binning\-policy=\fIPOLICY\fP
-choose how sampled colors become weighted quantizer input.
-\fIPOLICY\fP accepts \fBauto\fP, \fBnone\fP, \fBexact\fP,
-\fBhard\fP, or \fBsoft\fP. \fBnone\fP preserves the raw sample sequence;
-\fBexact\fP combines only identical colors at full precision; \fBhard\fP
-assigns each color to one finite grid bin; and \fBsoft\fP distributes its mass
-to neighboring bins with trilinear weights. Explicit \fBexact\fP,
-\fBhard\fP, or \fBsoft\fP selects k-means when \fB\-Q auto\fP is active.
-\fBauto\fP selects hard binning for a compatible weighted-point quantizer;
-other quantizers select a compatible input form.
-The \fBSIXEL_BINNING_POLICY\fP environment provides the default.
 .TP 5
 .B \-F \fIPOLICY\fP, \-\-merge\-policy=\fIPOLICY\fP
 configure final palette merging independently of the quantizer.
@@ -931,7 +918,7 @@ rgb:rrr/ggg/bbb
 .br
 rgb:rrrr/gggg/bbbb
 .TP 5
-.B \-\-background\-policy=\fIPOLICY\fP
+.B \-N \fIPOLICY\fP, \-\-background\-policy=\fIPOLICY\fP
 choose the background source used for alpha composition.
 .br
 file_first -> prefer PNG bKGD or the GIF logical-screen background (default).
@@ -1699,7 +1686,7 @@ choose background priority for builtin PNG/APNG/GIF composition.
 \fBSIXEL_BGCOLOR\fP, or OSC 11.
 "explicit_first" gives those external sources priority over file background.
 Invalid or empty values fall back to "file_first".
-The \fB--background-policy\fP option takes precedence unless an explicit
+The \fB-N\fP/\fB--background-policy\fP option takes precedence unless an explicit
 loader \fBbackground_policy\fP suboption is present.
 .TP 5
 .B SIXEL_ALPHA_POLICY
@@ -1880,6 +1867,17 @@ legacy alias for \fBSIXEL_LOADER_WIC_ICO_MINSIZE\fP.
 .br
 request a specific sample count for palette estimation. Positive integers
 override automatic sizing. The \fB-Q :sample_target\fP suboption takes
+precedence.
+.TP 5
+.B SIXEL_SAMPLING_POLICY
+.br
+select pixels used for palette construction. Accepts auto, full-frame, or
+adaptive-grid. The \fB-Q :sampling_policy\fP suboption takes precedence.
+.TP 5
+.B SIXEL_BINNING_POLICY
+.br
+select how sampled colors become weighted quantizer input. Accepts auto,
+none, exact, hard, or soft. The \fB-Q :binning_policy\fP suboption takes
 precedence.
 .TP 5
 .B SIXEL_PALETTE_FINAL_MERGE

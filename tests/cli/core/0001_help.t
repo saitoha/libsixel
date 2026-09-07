@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test ensuring img2sixel help command executes successfully.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

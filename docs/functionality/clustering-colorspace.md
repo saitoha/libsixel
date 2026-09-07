@@ -301,8 +301,8 @@ The checked-in experiment compares all five spaces at
 
 ```text
 img2sixel --threads=1 --precision=float32 --quality=full \
-  --loaders=builtin! --sampling-policy=full-frame \
-  --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
+  --loaders=builtin! \
+  --quantize-model=kmeans:seed=1:binbits=6:sampling_policy=full-frame:binning_policy=hard \
   -F none -a off -X COLORSPACE -Wgamma --diffusion=none \
   --gpu-policy=off --lookup-policy=none --palette-type=rgb \
   -p K images/snake.png

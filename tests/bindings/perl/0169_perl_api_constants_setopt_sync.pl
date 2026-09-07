@@ -48,9 +48,7 @@ for $name (@expected) {
 }
 
 $constants_ok = @missing == 0 &&
-    Image::LibSIXEL::Constants::SIXEL_OPTFLAG_SAMPLING_POLICY() == 0x100 &&
-    Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BINNING_POLICY() == 0x101 &&
-    Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BACKGROUND_POLICY() == 0x102;
+    Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BACKGROUND_POLICY() eq 'N';
 
 $ok_loader = eval {
     $loader = Image::LibSIXEL::sixel_loader_new(undef);
@@ -71,10 +69,6 @@ ok(
 );
 
 diag('missing constants: ' . join(', ', @missing)) if !$constants_ok && @missing;
-diag('SIXEL_OPTFLAG_SAMPLING_POLICY value mismatch')
-    if Image::LibSIXEL::Constants::SIXEL_OPTFLAG_SAMPLING_POLICY() != 0x100;
-diag('SIXEL_OPTFLAG_BINNING_POLICY value mismatch')
-    if Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BINNING_POLICY() != 0x101;
 diag('SIXEL_OPTFLAG_BACKGROUND_POLICY value mismatch')
-    if Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BACKGROUND_POLICY() != 0x102;
+    if Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BACKGROUND_POLICY() ne 'N';
 diag($loader_err) if !$ok_loader && $loader_err ne '';

@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify explicit sampling-policy keeps command-line priority over environment.
+# Verify explicit sampling_policy keeps command-line priority over environment.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 
@@ -14,7 +15,7 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
     --env SIXEL_SAMPLING_POLICY=full-frame \
-    --sampling-policy=adaptive-grid \
+    -Qauto:sampling_policy=adaptive-grid \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - sampling-policy precedence encode failed"

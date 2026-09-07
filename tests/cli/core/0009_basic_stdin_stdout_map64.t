@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test converting map64.six using explicit stdin/stdout arguments.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

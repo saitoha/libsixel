@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify --background-policy rejects an unknown value.
+# Verify -N/--background-policy rejects an unknown value.
 # Policy: docs/loader/background-policy.md
 
 set -eux
@@ -15,7 +15,7 @@ set +e
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --background-policy=unknown -o /dev/null \
+    -N unknown -o /dev/null \
     "${input_image}" 2>&1)
 status=$?
 set -e

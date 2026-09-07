@@ -9,31 +9,13 @@ surface, not a thin test wrapper around the C library.
 Accepted spellings, defaults, precedence, diagnostics, output streams, and exit
 status are part of the interface contract.
 
-## Ownership and sources of truth
+## Option structure
 
-- Extend the existing option and suboption registries instead of creating an
-  independent parser or duplicate option table.
-- Prefer one typed definition for names, aliases, value domains, defaults, and
-  validation. Derive other surfaces from it or add static checks against drift.
-- Keep public option constants, converter parsing, help text, manual pages,
-  shell completion, environment variables, bindings, and tests synchronized.
-- Require every public environment control to have exactly one registry owner.
-  Consumers select typed bindings or accessors and do not copy environment
-  variable spellings or call a generic name-based resolver.
-- Preserve Autotools, Meson, and amalgamation parity when an option needs a new
-  source file, public constant, test define, or generated input.
-
-Before adding an option, identify which layer owns the behavior. Process-level
-policy belongs in a converter. Reusable image or protocol behavior belongs in a
-library abstraction. Loader-specific behavior belongs in a typed loader
-suboption rather than a global special case.
-
-Library option scopes describe semantic encoder or decoder consumers only.
-They must not name concrete executables such as `img2sixel` or `sixel2png`.
-Each converter owns the projection from those semantic options to its getopt,
-help, manual, and shell-completion surfaces. This keeps intentional short-name
-reuse, such as encoder and decoder `-d`, separate without teaching the library
-which executable exposes either option.
+The converters expose two levels of controls. Top-level options select major
+operations or broadly applicable behavior. Typed suboptions group controls
+that belong to a loader, quantizer, diffusion method, lookup method, or another
+named subsystem. Choose the level from the user's mental model of the feature,
+then apply the naming and compatibility rules below.
 
 ## Naming
 
@@ -47,44 +29,53 @@ which executable exposes either option.
 
 ### Short options
 
-Add a short option only when it is memorable, unambiguous, and worth preserving
-indefinitely. The short-option namespace is scarce and compatibility-sensitive.
-Do not copy a flag from another tool without verifying its current meaning in
-this repository.
+Every public top-level option of `img2sixel` and `sixel2png` must have both a
+one-character short form and a long form. Long-only top-level options are not
+permitted. Keep every top-level option within the short-option namespace, and
+choose a memorable, unambiguous character that is worth preserving
+indefinitely. Do not copy a flag from another tool without verifying its
+current meaning in this repository.
+
+Requiring a short form is a libsixel compatibility convention, not a
+limitation of the current parser. The repository provides a local
+`getopt_long()` fallback where the platform does not provide one. The rule is
+retained so that the public CLI remains expressible with traditional
+single-character option syntax.
+
+The namespace is converter-local because encoder and decoder flags are parsed
+by different programs. If no suitable character remains in that converter,
+first consider expressing the behavior as a typed suboption of an existing
+top-level option. Do not bypass namespace exhaustion by assigning a synthetic
+integer flag to a long-only option.
 
 ### Suboptions
 
-Use suboptions for policy owned by a named loader, quantizer, diffusion method,
+Use suboptions for policy specific to a named loader, quantizer, diffusion method,
 lookup policy, colorspace component, or similar subsystem. A suboption should
 have a typed domain, one canonical name, documented aliases only when needed,
 and an explicit environment representation if environment configuration is
 supported.
 
 Every public suboption must define both an uppercase ASCII one-letter short
-form and an environment variable in the owning registry row. If the short-form
+form and an environment variable in its registered definition. If the short-form
 namespace cannot represent another setting, reduce or separate the option axis
 instead of introducing a long-only suboption.
 
-`SIXEL_OPTION_ARGUMENT_LIST` defines argument cardinality. The option value
-schema and suboption registry together define the list item type. Consumers
-must enumerate that existing schema instead of introducing a parallel list
-option table.
+List-valued options must define the type of every item they accept. Their help
+and diagnostics must describe the same base values and suboptions.
 
 When one option exposes suboptions for multiple named bases, `--help` and the
 manual must show the exact primary environment mapping as
-`scope:suboption=VARIABLE`. Derive the expected pairs from the typed registry;
-do not infer environment names from a prefix convention. This is especially
-important for list options, where each item can select a different base and
-therefore a different environment namespace.
+`scope:suboption=VARIABLE`. This is especially important for list options,
+where each item can select a different base and therefore a different
+environment namespace.
 
 ### Internal test controls
 
 Fault injection and test-only implementation switches are not public options
-or public environment contracts. Put them in the `_SIXEL_TEST_*` namespace,
-declare their value kind in the typed internal environment broker, and expose
-only semantic accessors to consumers. Keep these names out of public help,
-manual pages, shell completion, and language bindings. Do not add a generic
-consumer API that accepts an arbitrary environment variable name.
+or public environment contracts. Their names use the `_SIXEL_TEST_*`
+namespace and do not appear in public help, manual pages, shell completion, or
+language bindings.
 
 ## Compatibility
 
@@ -102,18 +93,13 @@ migration path, and which releases or interfaces are affected.
 
 ## Parsing and validation
 
-- Reuse the common choice matching, numeric parsing, validation, and diagnostic
-  machinery.
-- Avoid one-off `strtol`, prefix matching, fuzzy matching, or value-list code
-  when a shared parser already owns the contract.
+- Apply consistent rules for choice matching, numeric syntax, validation, and
+  diagnostics across options.
 - Reject trailing garbage, overflow, underflow, out-of-range values, invalid
   combinations, and unavailable backend choices deterministically.
 - Validate at the layer that has enough context to report the responsible
   option and invalid value.
 - Never continue with partially initialized option state after a parse error.
-
-Test exact names, supported aliases, unique-prefix behavior where applicable,
-invalid values, ambiguous values, duplicates, and conflicts.
 
 ## Defaults and precedence
 
@@ -128,10 +114,8 @@ An empty public environment value is equivalent to an unset value unless an
 older documented contract explicitly requires otherwise. Public boolean
 suboptions accept only `0` and `1` in both CLI and environment forms.
 
-Cover precedence with focused tests. A test should distinguish an explicit
-default from an unset value when downstream behavior treats them differently.
-Do not distribute the same default among the parser, help text, manual page,
-and backend implementation without a synchronization mechanism.
+An explicit value equal to the default remains distinct from an unset value
+when downstream behavior depends on whether the user made a choice.
 
 ## Diagnostics and suggestions
 
@@ -157,34 +141,41 @@ defaults. Preserve that boundary.
 - Treat file overwriting, output creation, partial-output cleanup, and broken
   pipes as designed behaviors.
 - Keep `--help`, `--version`, and error exit statuses stable and scriptable.
-- Redirect helper output away from TAP when a CLI is invoked by a test.
 
-## Documentation synchronization
+## Automated coverage
 
-A public CLI change may require updates to:
+<!-- test-coverage: enforced -->
 
-- the owning option or suboption registry;
-- converter parsing and help generation;
-- installed public headers;
-- `converters/*.1` manual pages;
-- `converters/shell-completion/`;
-- documented environment variables;
-- language-binding constants or wrappers;
-- Autotools, Meson, and amalgamation inputs;
-- matching, rejection, precedence, and regression tests;
-- static checks that compare these surfaces.
+Each automated contract has a stable ID and a corresponding static check or
+test.
+The reciprocal `Policy:` reference in each check or test is enforced by
+`staticcheck-doc-test-links`.
 
-Do not assume all surfaces are generated. Inspect the current build and static
-checks before deciding which files are authoritative and which are derived.
+| ID | Design contract | Static check or test |
+| --- | --- | --- |
+| CLI-01 | Every public top-level option has a one-character short form and a long form with the same argument shape. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh) |
+| CLI-02 | Public suboptions have typed values, uppercase one-letter forms, environment forms, and image-level coverage. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh) |
+| CLI-03 | `img2sixel -H` and the manual expose the same top-level option declarations. | [tests/_static/sh/staticcheck-docs-help-vs-man.sh](../../tests/_static/sh/staticcheck-docs-help-vs-man.sh) |
+| CLI-04 | The manual and Bash completion expose the same top-level option declarations. | [tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh](../../tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh) |
+| CLI-05 | Public environment controls are represented in the generated help inventory. | [tests/_static/sh/staticcheck-docs-envvars-help-table.sh](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) |
+| CLI-06 | Internal test environment controls remain behind the internal environment interface. | [tests/_static/sh/staticcheck-src-no-direct-getenv.sh](../../tests/_static/sh/staticcheck-src-no-direct-getenv.sh) |
+| CLI-07 | A unique accepted value prefix succeeds without an error diagnostic. | [tests/cli/options/matching/0001_option_matching_prefix_unique.t](../../tests/cli/options/matching/0001_option_matching_prefix_unique.t) |
+| CLI-08 | An ambiguous value prefix is rejected with exit status 2 and a precise diagnostic. | [tests/cli/options/matching/0002_option_matching_prefix_ambiguous.t](../../tests/cli/options/matching/0002_option_matching_prefix_ambiguous.t) |
+| CLI-09 | A numeric value outside its declared range is rejected. | [tests/cli/options/matching/0193_option_matching_quantize_center_seed_overflow_rejected.t](../../tests/cli/options/matching/0193_option_matching_quantize_center_seed_overflow_rejected.t) |
+| CLI-10 | An explicit command-line value takes precedence over its environment default. | [tests/cli/options/matching/0246_option_matching_sampling_policy_env_cli_precedence.t](../../tests/cli/options/matching/0246_option_matching_sampling_policy_env_cli_precedence.t) |
+| CLI-11 | Missing required arguments are detected before option dispatch. | [tests/cli/argument-shift/0007_cli_guard_missing_argument.t](../../tests/cli/argument-shift/0007_cli_guard_missing_argument.t) |
+| CLI-12 | Fuzzy suggestions are diagnostic output and do not make invalid input succeed. | [tests/cli/options/matching/0014_option_matching_fuzzy_suggestions_default_enabled.t](../../tests/cli/options/matching/0014_option_matching_fuzzy_suggestions_default_enabled.t) |
+| CLI-13 | Explicit standard input and standard output form a working binary conversion path. | [tests/cli/core/0009_basic_stdin_stdout_map64.t](../../tests/cli/core/0009_basic_stdin_stdout_map64.t) |
+| CLI-14 | `png:-` writes PNG data to standard output. | [tests/cli/core/0014_basic_png_stdout.t](../../tests/cli/core/0014_basic_png_stdout.t) |
+| CLI-15 | The help command remains available. | [tests/cli/core/0001_help.t](../../tests/cli/core/0001_help.t) |
+| CLI-16 | The version command remains available. | [tests/cli/core/0002_version.t](../../tests/cli/core/0002_version.t) |
 
-## Change checklist
+### Coverage boundary
 
-1. Identify the owning layer and current source of truth.
-2. Define the name, type, domain, default, precedence, and failure behavior.
-3. Decide compatibility and migration behavior.
-4. Update parsing and the library-facing implementation.
-5. Update help, manuals, completion, environment documentation, and bindings.
-6. Add focused success, rejection, ambiguity, duplicate, precedence, and
-   regression tests as applicable.
-7. Synchronize both build systems and tracked generated inputs.
-8. Run option/documentation static checks, then the full test suite.
+The structural checks cover the option hierarchy, short and long forms,
+argument shape, typed suboptions, environment exposure, help, the manual, and
+completion. Behavioral tests cover representative parsing, precedence,
+diagnostics, and binary I/O contracts. Decisions about whether a released
+name may be removed, whether a new name is clear, and whether a short form is
+memorable require design review because they cannot be inferred from the
+current source tree alone.

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify --background-policy takes precedence over SIXEL_BACKGROUND_POLICY.
+# Verify -N/--background-policy takes precedence over its environment.
 # Policy: docs/loader/background-policy.md
 
 set -eux

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for environment-variable docs consistency static check.
+# Policy: docs/cli/design-policy.md
 
 set -eu
 
@@ -13,7 +14,8 @@ if test ! -f "$checker"; then
     exit 0
 fi
 
-tmpout=`mktemp "${TMPDIR:-/tmp}/libsixel-staticcheck-envvars-XXXXXX"`
+tmpout=$(mktemp "${TMPDIR:-/tmp}/libsixel-staticcheck-envvars-XXXXXX")
+# shellcheck disable=SC2329
 cleanup() {
     rm -f "$tmpout"
 }

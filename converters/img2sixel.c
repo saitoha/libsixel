@@ -233,6 +233,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "Kvalue.\n"
         "      every model accepts :sample_target=COUNT (:CCOUNT), which\n"
         "      overrides automatic palette sampling with a positive count.\n"
+        "      every model also accepts these independent pipeline policies:\n"
+        "        :sampling_policy=POLICY (:GPOLICY) chooses source pixels:\n"
+        "          auto, full-frame, or adaptive-grid.\n"
+        "        :binning_policy=POLICY (:WPOLICY) chooses point weighting:\n"
+        "          auto, none, exact, hard, or soft.\n"
+        "        Explicit exact, hard, or soft selects k-means when MODEL is\n"
+        "        auto. SIXEL_SAMPLING_POLICY and SIXEL_BINNING_POLICY provide\n"
+        "        the corresponding environment defaults.\n"
         "      auto     -> choose quantize model automatically (default) auto maps to the heckbert\n"
         "      heckbert -> traditional Heckbert median-cut implementation. auto/heckbert\n"
         "      sub-option:\n"
@@ -270,7 +278,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "          default 1).\n"
         "          :feedback_interval=COUNT run feedback every N iterations (1-64, default 1).\n"
         "      compact suboption names (uppercase letter + value):\n"
-        "        all models: sample_target=C\n"
+        "        all models: sample_target=C, sampling_policy=G,\n"
+        "          binning_policy=W\n"
         "        heckbert: profile=P\n"
         "        kmeans: inittype=I, threshold=T, binbits=N, mapping=M,\n"
         "          softdist=D, feedback=F,\n"
@@ -366,31 +375,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "          swap iterations (0 or 1-8, default 0).\n"
         "          :swap_min_gain=VALUE minimum radius gain per accepted swap\n"
         "          (0.0-8.0, default 0.0).\n"
-    },
-    {
-        SIXEL_OPTFLAG_SAMPLING_POLICY,
-        "sampling-policy",
-        "--sampling-policy=POLICY\n"
-        "    choose which pixels feed palette construction:\n"
-        "      auto          -> preserve the resource-aware default.\n"
-        "      full-frame    -> use the preprocessed output frame.\n"
-        "      adaptive-grid -> sample the loaded frame before preprocessing.\n"
-        "    Thread availability may overlap adaptive sampling with other "
-        "work,\n"
-        "    but does not change an explicitly selected policy.\n"
-    },
-    {
-        SIXEL_OPTFLAG_BINNING_POLICY,
-        "binning-policy",
-        "--binning-policy=POLICY\n"
-        "    choose how sampled colors become weighted quantizer input:\n"
-        "      auto  -> use hard when supported; otherwise use a compatible "
-        "form.\n"
-        "      none  -> pass every sampled color through unchanged.\n"
-        "      exact -> combine only identical colors at full precision.\n"
-        "      hard  -> assign each color to one finite grid bin.\n"
-        "      soft  -> distribute color mass with trilinear weights.\n"
-        "    Explicit exact, hard, or soft selects k-means when -Q is auto.\n"
     },
     {
         'F',
@@ -889,9 +873,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "    #rrrgggbbb #rrrrggggbbbb rgb:r/g/b rgb:rr/gg/bb rgb:rrr/ggg/bbb rgb:rrrr/gggg/bbbb\n"
     },
     {
-        SIXEL_OPTFLAG_BACKGROUND_POLICY,
+        'N',
         "background-policy",
-        "--background-policy=POLICY\n"
+        "-N POLICY, --background-policy=POLICY\n"
         "    choose the background source used for alpha composition\n"
         "      file_first     -> prefer PNG bKGD or the GIF background\n"
         "                        (default)\n"
@@ -1448,14 +1432,14 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_SAMPLING_POLICY",
         "select pixels used for palette construction. Accepts auto,\n"
-        "full-frame, or adaptive-grid. The --sampling-policy option takes\n"
-        "precedence."
+        "full-frame, or adaptive-grid. The -Q sampling_policy suboption\n"
+        "takes precedence."
     },
     {
         "SIXEL_BINNING_POLICY",
         "select how sampled colors become weighted quantizer input. Accepts\n"
-        "auto, none, exact, hard, or soft. The --binning-policy option takes\n"
-        "precedence."
+        "auto, none, exact, hard, or soft. The -Q binning_policy suboption\n"
+        "takes precedence."
     },
     {
         "SIXEL_DITHER_PIN_THREADS",
@@ -1577,7 +1561,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "file_first (default) prefers file background over -B, environment,\n"
         "or OSC 11. explicit_first prefers those external sources.\n"
         "Invalid or empty values fall back to file_first.\n"
-        "--background-policy takes precedence unless an explicit loader\n"
+        "-N/--background-policy takes precedence unless an explicit loader\n"
         "background_policy suboption is present."
     },
     {
@@ -2234,7 +2218,7 @@ static char const g_img2sixel_optstring[] =
     "=:"
     ".:"
     "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:~:G:j:x:J:y:z:K:kil:T:t:ugvSn:"
-    "PE:U:B:A:+:Z:Y:C:D@:"
+    "PE:U:B:N:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
 static int
@@ -2529,22 +2513,13 @@ img2sixel_format_invalid_argument_message(char *buffer,
     }
 
     buffer[0] = '\0';
-    if (short_opt > UCHAR_MAX) {
-        written = snprintf(buffer,
-                           buffer_size,
-                           "\\fW'%s'\\fP is invalid argument for "
-                           "\\fB--%s\\fP option:\n\n",
-                           argument_text,
-                           long_opt);
-    } else {
-        written = snprintf(buffer,
-                           buffer_size,
-                           "\\fW'%s'\\fP is invalid argument for "
-                           "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
-                           argument_text,
-                           (char)short_opt,
-                           long_opt);
-    }
+    written = snprintf(buffer,
+                       buffer_size,
+                       "\\fW'%s'\\fP is invalid argument for "
+                       "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
+                       argument_text,
+                       (char)short_opt,
+                       long_opt);
     if (written < 0) {
         return;
     }
@@ -2772,41 +2747,22 @@ img2sixel_report_invalid_argument(int short_opt,
 
     if (img2sixel_diag_mode_is_quiet() != 0) {
         if (detail != NULL && detail[0] != '\0') {
-            if (short_opt > UCHAR_MAX) {
-                (void)snprintf(
-                    fallback_buffer,
-                    sizeof(fallback_buffer),
-                    "'%s' is invalid argument for --%s option:\n\n%s",
-                    argument_copy,
-                    long_opt,
-                    detail);
-            } else {
-                (void)snprintf(
-                    fallback_buffer,
-                    sizeof(fallback_buffer),
-                    "'%s' is invalid argument for -%c,--%s option:\n\n%s",
-                    argument_copy,
-                    (char)short_opt,
-                    long_opt,
-                    detail);
-            }
+            (void)snprintf(
+                fallback_buffer,
+                sizeof(fallback_buffer),
+                "'%s' is invalid argument for -%c,--%s option:\n\n%s",
+                argument_copy,
+                (char)short_opt,
+                long_opt,
+                detail);
         } else {
-            if (short_opt > UCHAR_MAX) {
-                (void)snprintf(
-                    fallback_buffer,
-                    sizeof(fallback_buffer),
-                    "'%s' is invalid argument for --%s option.",
-                    argument_copy,
-                    long_opt);
-            } else {
-                (void)snprintf(
-                    fallback_buffer,
-                    sizeof(fallback_buffer),
-                    "'%s' is invalid argument for -%c,--%s option.",
-                    argument_copy,
-                    (char)short_opt,
-                    long_opt);
-            }
+            (void)snprintf(
+                fallback_buffer,
+                sizeof(fallback_buffer),
+                "'%s' is invalid argument for -%c,--%s option.",
+                argument_copy,
+                (char)short_opt,
+                long_opt);
         }
         sixel_helper_set_additional_message(fallback_buffer);
         return;
@@ -3265,10 +3221,6 @@ img2sixel_main(int argc, char *argv[])
         {"6reversible",           no_argument,        &long_opt, '6'},
         {"colors",                required_argument,  &long_opt, 'p'},
         {"quantize-model",        required_argument,  &long_opt, 'Q'},
-        {"sampling-policy", required_argument, &long_opt,
-         SIXEL_OPTFLAG_SAMPLING_POLICY},
-        {"binning-policy", required_argument, &long_opt,
-         SIXEL_OPTFLAG_BINNING_POLICY},
         {"merge-policy",          required_argument,  &long_opt, 'F'},
         {"cover-policy",          required_argument,  &long_opt, 'a'},
         {"mapfile",               required_argument,  &long_opt, 'm'},
@@ -3310,8 +3262,7 @@ img2sixel_main(int argc, char *argv[])
         {"clustering-colorspace", required_argument,  &long_opt, 'X'},
         {"working-colorspace",    required_argument,  &long_opt, 'W'},
         {"bgcolor",               required_argument,  &long_opt, 'B'},
-        {"background-policy", required_argument, &long_opt,
-         SIXEL_OPTFLAG_BACKGROUND_POLICY},
+        {"background-policy", required_argument, &long_opt, 'N'},
         {"alpha-policy",          required_argument,  &long_opt, 'A'},
         {"transparent-offset",    required_argument,  &long_opt, '+'},
         {"6delta-threshold",      required_argument,  &long_opt, 'Z'},
@@ -3702,7 +3653,7 @@ unknown_option_error:
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-X clusteringcolorspace]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace]\n"
-            "                 [-B bgcolor] [--background-policy policy]\n"
+            "                 [-B bgcolor] [-N backgroundpolicy]\n"
             "                 [-A alphapolicy]\n"
             "                 [-+ left,top]\n"
             "                 [-Z delta]\n"

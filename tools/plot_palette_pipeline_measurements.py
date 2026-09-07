@@ -146,9 +146,9 @@ def make_command(img2sixel: str,
         "--precision=8bit",
         "--quality=full",
         f"--loaders={loader_order}",
-        f"--sampling-policy={record['sampling_policy']}",
-        f"--binning-policy={record['binning_policy']}",
-        f"--quantize-model={QUANTIZE_OPTION}",
+        f"--quantize-model={QUANTIZE_OPTION}:"
+        f"sampling_policy={record['sampling_policy']}:"
+        f"binning_policy={record['binning_policy']}",
         "-Xoklab",
         "-Wgamma",
         "--diffusion=none",

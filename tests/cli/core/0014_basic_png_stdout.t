@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying png:- writes PNG data to stdout.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

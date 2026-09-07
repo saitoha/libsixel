@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test for cli_guard_missing_argument handling of missing and leading dash.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

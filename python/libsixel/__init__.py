@@ -526,9 +526,7 @@ SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
                                       #            trilinear
                                       #          feedback (or f):
                                       #            off, on
-SIXEL_OPTFLAG_SAMPLING_POLICY = 0x100  # --sampling-policy=POLICY
-SIXEL_OPTFLAG_BINNING_POLICY  = 0x101  # --binning-policy=POLICY
-SIXEL_OPTFLAG_BACKGROUND_POLICY = 0x102  # --background-policy=POLICY
+SIXEL_OPTFLAG_BACKGROUND_POLICY = 'N'  # -N POLICY, --background-policy=POLICY
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:
                                       #        crop source image to fit the
                                       #        specified geometry. REGION should

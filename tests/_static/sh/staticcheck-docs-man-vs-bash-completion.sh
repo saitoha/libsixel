@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for manpage vs bash completion option parity.
+# Policy: docs/cli/design-policy.md
 
 set -eu
 

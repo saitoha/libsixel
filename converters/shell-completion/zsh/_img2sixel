@@ -257,6 +257,30 @@ _quantizemodel() {
   if [[ ${current} == *:* ]]; then
     base=${current%%:*}
     segment=${current##*:}
+    prefix=${current%"${segment}"}
+    if [[ ${segment} == *=* ]]; then
+      key=${segment%%=*}
+      if [[ ${key} == sampling_policy ]]; then
+        compadd -- "${prefix}${key}=auto" \
+                   "${prefix}${key}=full-frame" \
+                   "${prefix}${key}=adaptive-grid"
+        return 0
+      elif [[ ${key} == binning_policy ]]; then
+        compadd -- "${prefix}${key}=auto" \
+                   "${prefix}${key}=none" \
+                   "${prefix}${key}=exact" \
+                   "${prefix}${key}=hard" \
+                   "${prefix}${key}=soft"
+        return 0
+      fi
+    else
+      compadd -- "${prefix}Gauto" "${prefix}Gfull-frame" \
+                 "${prefix}Gadaptive-grid" \
+                 "${prefix}sampling_policy=" \
+                 "${prefix}Wauto" "${prefix}Wnone" \
+                 "${prefix}Wexact" "${prefix}Whard" \
+                 "${prefix}Wsoft" "${prefix}binning_policy="
+    fi
     if [[ ${base} == auto || ${base} == auto* || \
           ${base} == heckbert || ${base} == heckbert* ]]; then
       if [[ ${segment} == *=* ]]; then
@@ -1014,24 +1038,6 @@ _precisionmode() {
     'float32[opt into the experimental high-precision pipeline]'
 }
 
-_samplingpolicy() {
-  _values \
-    'SAMPLINGPOLICY' \
-    'auto[choose from the current resource profile]' \
-    'full-frame[sample the preprocessed output frame]' \
-    'adaptive-grid[sample the loaded frame before preprocessing]'
-}
-
-_binningpolicy() {
-  _values \
-    'BINNINGPOLICY' \
-    'auto[select hard when supported or another compatible form]' \
-    'none[pass sampled colors through unchanged]' \
-    'exact[combine identical colors at full precision]' \
-    'hard[assign each color to one finite grid bin]' \
-    'soft[distribute color mass with trilinear weights]'
-}
-
 # Keep the following option order synchronized with `img2sixel -H`.
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
@@ -1043,10 +1049,6 @@ _arguments -S -s -A "-*" -S \
   {-6,--6reversible}'[snap the palette to SIXEL-reversible tones]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
-  '--sampling-policy='\
-'[choose pixels for palette construction]':samplingpolicy:_samplingpolicy \
-  '--binning-policy='\
-'[choose weighted-point aggregation]':binningpolicy:_binningpolicy \
   {-F,--merge-policy=}'[choose final palette merge policy]':mergepolicy:_mergepolicy \
   {-a,--cover-policy=}'[choose palette coverage policy]':coverpolicy:_coverpolicy \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \
@@ -1082,7 +1084,7 @@ _arguments -S -s -A "-*" -S \
   {-b,--builtin-palette=}'[select built-in palette type]':builtinpalette:_builtinpalette \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
   {-B,--bgcolor=}'[select background color]' \
-  '--background-policy='\
+  {-N,--background-policy=}\
 '[select background source priority]':backgroundpolicy:_backgroundpolicy \
   {-A,--alpha-policy=}'[select alpha policy]':alphapolicy:_alphapolicy \
   {-+,--transparent-offset=}'[add transparent left/top pixel offset]' \

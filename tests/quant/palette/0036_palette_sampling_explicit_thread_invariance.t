@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 serial_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    --sampling-policy=adaptive-grid \
+    -Qauto:sampling_policy=adaptive-grid \
     -w 64 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     -M gpl:- -o /dev/null "${TOP_SRCDIR}/images/snake.png") || {
@@ -21,7 +21,7 @@ serial_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
 }
 
 parallel_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=4 \
-    --sampling-policy=adaptive-grid \
+    -Qauto:sampling_policy=adaptive-grid \
     -w 64 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     -M gpl:- -o /dev/null "${TOP_SRCDIR}/images/snake.png") || {

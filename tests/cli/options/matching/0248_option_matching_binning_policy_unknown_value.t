@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify binning-policy rejects an unknown policy name.
+# Verify the quantize binning_policy suboption rejects an unknown value.
 
 set -eux
 
@@ -13,7 +13,7 @@ set -v
 
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --binning-policy=unknown \
+    -Qauto:binning_policy=unknown \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || status=$?
 
@@ -22,10 +22,10 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-test "${message#*--binning-policy*}" != "${message}" || {
+test "${message#*binning_policy*}" != "${message}" || {
     echo "not ok 1 - unknown binning-policy diagnostic is missing"
     exit 0
 }
 
-echo "ok 1 - binning-policy rejects an unknown policy"
+echo "ok 1 - quantize binning_policy rejects an unknown value"
 exit 0

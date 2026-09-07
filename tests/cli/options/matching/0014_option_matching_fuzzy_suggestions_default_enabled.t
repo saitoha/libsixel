@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying fuzzy suggestions are enabled by default for the CLI.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

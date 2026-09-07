@@ -532,28 +532,6 @@ typedef int SIXELSTATUS;
                                                     swap_min_gain:
                                                       float in 0.0-8.0
                                                 */
-#define SIXEL_OPTFLAG_SAMPLING_POLICY   (0x100) /* --sampling-policy=POLICY:
-                                                   choose which pixels feed
-                                                   palette construction:
-                                                     auto
-                                                     full-frame
-                                                     adaptive-grid
-                                                   This option intentionally
-                                                   has no short form. */
-#define SIXEL_OPTFLAG_BINNING_POLICY    (0x101) /* --binning-policy=POLICY:
-                                                   choose how sampled colors
-                                                   become weighted points:
-                                                     auto (hard when
-                                                           supported)
-                                                     none
-                                                     exact
-                                                     hard
-                                                     soft
-                                                   This option intentionally
-                                                   has no short form. */
-#define SIXEL_OPTFLAG_BACKGROUND_POLICY (0x102) /* --background-policy=POLICY:
-                                                   select background source
-                                                   priority; no short form */
 #define SIXEL_OPTFLAG_MERGE_POLICY      ('F')  /*
                                                   -F POLICY,
                                                   --merge-policy=POLICY:
@@ -794,6 +772,9 @@ typedef int SIXELSTATUS;
 /* --alpha-policy=ALPHAPOLICY */
 /* choose source alpha and omitted pixel policy: auto, composite, clear, keep */
 #define SIXEL_OPTFLAG_ALPHA_POLICY ('A')
+/* -N POLICY, --background-policy=POLICY */
+/* select the background source priority used for alpha composition */
+#define SIXEL_OPTFLAG_BACKGROUND_POLICY ('N')
 /* -+ LEFT,TOP, --transparent-offset=LEFT,TOP */
 /* add transparent left/top pixel offset for P2=1 image-plane reuse */
 #define SIXEL_OPTFLAG_TRANSPARENT_OFFSET ('+')

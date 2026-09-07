@@ -27,15 +27,16 @@ palette index to every pixel; dithering and lookup perform that later step.
 suboptions. `-p COLORS` sets the requested palette size and normally defaults
 to 256 colors.
 
-All models accept `sample_target=COUNT`. The independent
-`--sampling-policy=POLICY` option chooses how source pixels are sampled, while
-`COUNT` bounds the adaptive sample population. In the notation below, `N` is
-the number of pixels after that sampling step and `S` is the number of weighted
-samples or occupied histogram bins retained by preprocessing.
+All models accept the independent `sampling_policy=POLICY`,
+`binning_policy=POLICY`, and `sample_target=COUNT` suboptions. The sampling
+policy chooses how source pixels are sampled, while `COUNT` bounds the
+adaptive sample population. In the notation below, `N` is the number of pixels
+after that sampling step and `S` is the number of weighted samples or occupied
+histogram bins retained by preprocessing.
 
-`--binning-policy=POLICY` independently chooses how sampled colors become the
-weighted point set consumed by the solver. The two policies and their staged
-resolution are described in the
+The binning policy chooses how sampled colors become the weighted point set
+consumed by the solver. The two policies and their staged resolution are
+described in the
 [Palette Construction Pipeline Architecture](palette-pipeline.md). Quantizer
 suboptions may parameterize a supported binning implementation, but they do
 not select the binning policy.
@@ -66,8 +67,8 @@ as a stable default and compatibility spelling, not as a promise that
 libsixel will compare all quantizers and choose the fastest or highest-quality
 one for each image.
 
-Only the common `sample_target` suboption belongs to `auto`. A Heckbert preset
-must be requested explicitly, for example:
+Only the common pipeline suboptions belong to `auto`. A Heckbert preset must
+be requested explicitly, for example:
 
 ```text
 -Q heckbert:profile=quality
@@ -173,10 +174,10 @@ usually called D-squared or k-means++ seeding, introduced in
 sorts them, and initializes centers from equal-weight intervals on that axis;
 it falls back to the legacy initializer if PCA seeding cannot complete.
 
-`--binning-policy=hard` replaces colors by individual histogram cells, while
-`--binning-policy=soft` distributes a color over as many as eight neighboring
-cells with trilinear weights. `--binning-policy=auto` currently selects hard
-binning when the solver can consume its weighted point set. The K-means
+`-Q kmeans:binning_policy=hard` replaces colors by individual histogram cells,
+while `-Q kmeans:binning_policy=soft` distributes a color over as many as eight
+neighboring cells with trilinear weights. `binning_policy=auto` currently
+selects hard binning when the solver can consume its weighted point set. The K-means
 `binbits` suboption controls histogram resolution, and
 `mapping=uniform|srgb` controls how coordinates address that histogram.
 `softdist` selects the distribution kernel for soft binning. None of these
