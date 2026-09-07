@@ -64,10 +64,42 @@ indefinitely. Do not copy a flag from another tool without verifying its
 current meaning in this repository.
 
 Requiring a short form is a libsixel compatibility convention, not a
-limitation of the current parser. The repository provides a local
-`getopt_long()` fallback where the platform does not provide one. The rule is
-retained so that the public CLI remains expressible with traditional
-single-character option syntax.
+limitation of the current parser. Its reason follows from the development of
+the CLI and public library API.
+
+#### Historical development
+
+During libsixel's initial development in 2014, long options were implemented
+by mapping each long name back to the character used by its short option.
+Interix support later that year exposed a Unix environment that provided
+`getopt()` but not `getopt_long()`. The short form was consequently the only
+portable option interface and became the canonical identifier used for
+option dispatch.
+
+In 2015, those character identities became the public
+[`SIXEL_OPTFLAG_*`](../../include/sixel.h.in) macros. The library `setopt`
+functions accept these macro values, so the short-option namespace ceased to
+be only converter syntax and became part of the public C interface.
+
+The later MSVC and OpenVMS ports led libsixel to provide its own
+[`getopt_long()` fallback](../../converters/getopt_stub.h). A platform no
+longer needs a system implementation of `getopt_long()` to use the long
+forms. That removed the original portability constraint, but it did not make
+the published `SIXEL_OPTFLAG_*` values replaceable. Changing their character
+identities, or allowing top-level settings that cannot be addressed through
+that interface, would break the established converter and library contract.
+Short forms therefore remain mandatory for compatibility rather than parser
+availability.
+
+As the interface grew, letters and digits were no longer enough. Current
+public flags consume punctuation such as `~`, `=`, and `+`, demonstrating the
+limit of a finite one-character namespace. Continuing to allocate arbitrary
+punctuation would also make the CLI progressively harder to understand.
+Typed suboptions were introduced so that a major operation keeps one stable
+top-level flag while related controls grow beneath it. This evolution is the
+basis of the current rule: add a top-level option only when it deserves a
+permanent short identifier; otherwise, prefer a suboption in the appropriate
+existing scope.
 
 The namespace is converter-local because encoder and decoder flags are parsed
 by different programs. If no suitable character remains in that converter,
@@ -87,6 +119,16 @@ Every public suboption must define both an uppercase ASCII one-letter short
 form and an environment variable in its registered definition. If the short-form
 namespace cannot represent another setting, reduce or separate the option axis
 instead of introducing a long-only suboption.
+
+Unlike the top-level short-form rule, the compact-suboption requirement does
+not come from platform or C API compatibility. It is an intentional ergonomic
+preference. Combining several `name=value` suboptions can produce a very long
+command line: the long spelling is useful while learning the interface and in
+self-explanatory commands, but becomes repetitive in practiced interactive
+use. The design therefore provides a progression from descriptive long forms
+for new users to concise compact forms for experienced users. Both spellings
+must select exactly the same setting; the compact form is a fluent spelling,
+not a separate behavior.
 
 Long suboption names require exact `name=value` spelling. Do not accept a
 prefix of a long key because it could become ambiguous when another setting is
