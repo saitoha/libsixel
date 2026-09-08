@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 790" role="img" aria-labelledby="title desc">
+<title id="title">Error clamping at RGB faces and corners</title>
+<desc id="desc">Two local gamut slices show a corrected lookup query crossing an RGB face and a corner. Magenta outward residuals are projected back to the boundary by clamping.</desc>
+<defs>
+  <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#2563EB"/></marker>
+  <marker id="arrow-gold" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#D97706"/></marker>
+  <marker id="arrow-magenta" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#BE185D"/></marker>
+  <marker id="arrow-teal" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#0F766E"/></marker>
+  <pattern id="outside-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="12" stroke="#E2E8F0" stroke-width="5"/></pattern>
+</defs>
+<rect x="0.0" y="0.0" width="1200.0" height="790.0" fill="#FFFFFF" stroke="none" opacity="1.000"/>
+<text x="60.0" y="60.0" fill="#172033" font-size="34" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">Clamping makes faces fail as well as corners</text>
+<text x="60.0" y="98.0" fill="#556176" font-size="19" font-weight="400" font-family="system-ui, sans-serif" text-anchor="start">Each panel is a local 2D slice. Dashed magenta is the desired error correction; green is what remains after RGB clamping.</text>
+<rect x="60.0" y="135.0" width="520.0" height="500.0" rx="16.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="90.0" y="183.0" fill="#172033" font-size="24" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">Face: one channel pinned</text>
+<rect x="114.0" y="233.0" width="408.0" height="328.0" fill="#FFFFFF" stroke="#172033" stroke-width="1.8" opacity="1.000"/>
+<rect x="522.0" y="233.0" width="66.0" height="328.0" fill="url(#outside-hatch)" stroke="none" opacity="1.000"/>
+<text x="556.0" y="221.0" fill="#556176" font-size="15" font-weight="600" font-family="system-ui, sans-serif" text-anchor="middle">outside</text>
+<text x="522.0" y="597.0" fill="#556176" font-size="16" font-weight="600" font-family="system-ui, sans-serif" text-anchor="middle">channel maximum</text>
+<line x1="114.0" y1="561.0" x2="582.0" y2="561.0" stroke="#172033" stroke-width="2.0" marker-end="url(#arrow-blue)" opacity="1.000" stroke-linecap="round"/>
+<line x1="114.0" y1="561.0" x2="114.0" y2="205.0" stroke="#172033" stroke-width="2.0" marker-end="url(#arrow-blue)" opacity="1.000" stroke-linecap="round"/>
+<circle cx="415.9" cy="413.4" r="10.0" fill="#2563EB" stroke="#FFFFFF" stroke-width="2.0" opacity="1.000"/>
+<text x="403.9" y="443.4" fill="#2563EB" font-size="16" font-weight="600" font-family="system-ui, sans-serif" text-anchor="end">chosen palette color</text>
+<polygon points="522.0,358.8 534.0,370.8 522.0,382.8 510.0,370.8" fill="#D97706" stroke="#FFFFFF" stroke-width="2.0" opacity="1.000" stroke-linejoin="round"/>
+<text x="508.0" y="408.8" fill="#D97706" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="end">source on face</text>
+<line x1="415.9" y1="413.4" x2="572.0" y2="328.1" stroke="#BE185D" stroke-width="3.0" stroke-dasharray="8 6" marker-end="url(#arrow-magenta)" opacity="1.000" stroke-linecap="round"/>
+<circle cx="572.0" cy="328.1" r="7.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="2.5" opacity="1.000"/>
+<line x1="572.0" y1="328.1" x2="522.0" y2="328.1" stroke="#0F766E" stroke-width="3.0" stroke-dasharray="5 5" marker-end="url(#arrow-teal)" opacity="1.000" stroke-linecap="round"/>
+<circle cx="522.0" cy="328.1" r="8.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="3.0" opacity="1.000"/>
+<text x="562.0" y="304.1" fill="#BE185D" font-size="16" font-weight="600" font-family="system-ui, sans-serif" text-anchor="end">raw corrected query</text>
+<text x="510.0" y="363.1" fill="#0F766E" font-size="16" font-weight="700" font-family="system-ui, sans-serif" text-anchor="end">after clamp</text>
+<text x="149.0" y="271.0" fill="#172033" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">Tangential error survives; the</text>
+<text x="149.0" y="295.0" fill="#172033" font-size="16" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">outward channel component does not.</text>
+<rect x="620.0" y="135.0" width="520.0" height="500.0" rx="16.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="650.0" y="183.0" fill="#172033" font-size="24" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">Corner: three channels pinned</text>
+<rect x="674.0" y="233.0" width="408.0" height="328.0" fill="#FFFFFF" stroke="#172033" stroke-width="1.8" opacity="1.000"/>
+<rect x="1082.0" y="233.0" width="66.0" height="328.0" fill="url(#outside-hatch)" stroke="none" opacity="1.000"/>
+<text x="1116.0" y="221.0" fill="#556176" font-size="15" font-weight="600" font-family="system-ui, sans-serif" text-anchor="middle">outside</text>
+<text x="1082.0" y="597.0" fill="#556176" font-size="16" font-weight="600" font-family="system-ui, sans-serif" text-anchor="middle">channel maximum</text>
+<line x1="674.0" y1="561.0" x2="1142.0" y2="561.0" stroke="#172033" stroke-width="2.0" marker-end="url(#arrow-blue)" opacity="1.000" stroke-linecap="round"/>
+<line x1="674.0" y1="561.0" x2="674.0" y2="205.0" stroke="#172033" stroke-width="2.0" marker-end="url(#arrow-blue)" opacity="1.000" stroke-linecap="round"/>
+<circle cx="975.9" cy="488.8" r="10.0" fill="#2563EB" stroke="#FFFFFF" stroke-width="2.0" opacity="1.000"/>
+<text x="963.9" y="470.8" fill="#2563EB" font-size="16" font-weight="600" font-family="system-ui, sans-serif" text-anchor="end">chosen palette color</text>
+<polygon points="1082.0,549.0 1094.0,561.0 1082.0,573.0 1070.0,561.0" fill="#D97706" stroke="#FFFFFF" stroke-width="2.0" opacity="1.000" stroke-linejoin="round"/>
+<text x="1064.0" y="535.0" fill="#D97706" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="end">pure primary</text>
+<line x1="975.9" y1="488.8" x2="1134.0" y2="603.0" stroke="#BE185D" stroke-width="3.0" stroke-dasharray="8 6" marker-end="url(#arrow-magenta)" opacity="1.000" stroke-linecap="round"/>
+<line x1="1134.0" y1="603.0" x2="1082.0" y2="561.0" stroke="#0F766E" stroke-width="3.0" stroke-dasharray="5 5" marker-end="url(#arrow-teal)" opacity="1.000" stroke-linecap="round"/>
+<text x="716.0" y="270.0" fill="#BE185D" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">residual asks for more of the</text>
+<text x="716.0" y="294.0" fill="#BE185D" font-size="16" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">maximum and less of the minima</text>
+<text x="1010.0" y="551.0" fill="#0F766E" font-size="16" font-weight="700" font-family="system-ui, sans-serif" text-anchor="end">clamps back to the same corner</text>
+<rect x="175.0" y="662.0" width="850.0" height="58.0" rx="12.0" fill="#FCE7F3" stroke="none" opacity="1.000"/>
+<text x="600.0" y="699.0" fill="#BE185D" font-size="19" font-weight="700" font-family="system-ui, sans-serif" text-anchor="middle">A face needs a nearby partner that shares its pinned channel; distant corners are often never selected.</text>
+<text x="60.0" y="755.0" fill="#556176" font-size="16" font-weight="400" font-family="system-ui, sans-serif" text-anchor="start">Schematic local sections • arrows explain the sign of the residual, not a particular diffusion kernel</text>
+</svg>

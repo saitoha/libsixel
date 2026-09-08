@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1025" role="img" aria-labelledby="title desc">
+<title id="title">Why convex-hull inclusion does not guarantee dither convergence</title>
+<desc id="desc">Three stacked panels distinguish a target inside the full palette hull, a lookup trace that visits only a palette subset, and diffusion error leaving a small saturated region.</desc>
+<defs>
+  <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#2563EB"/></marker>
+  <marker id="arrow-gold" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#D97706"/></marker>
+  <marker id="arrow-magenta" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#BE185D"/></marker>
+  <marker id="arrow-teal" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#0F766E"/></marker>
+  <pattern id="outside-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="12" stroke="#E2E8F0" stroke-width="5"/></pattern>
+</defs>
+<rect x="0.0" y="0.0" width="1200.0" height="1025.0" fill="#FFFFFF" stroke="none" opacity="1.000"/>
+<text x="60.0" y="58.0" fill="#172033" font-size="33" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">Hull inclusion is necessary—but the algorithm must realize the mix</text>
+<text x="60.0" y="95.0" fill="#556176" font-size="19" font-weight="400" font-family="system-ui, sans-serif" text-anchor="start">Geometry describes what is possible. Lookup, diffusion state, clipping, and finite regions determine what is actually visited.</text>
+<rect x="60.0" y="135.0" width="1080.0" height="238.0" rx="16.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="90.0" y="178.0" fill="#172033" font-size="23" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">1  Geometry permits a mixture</text>
+<rect x="60.0" y="420.0" width="1080.0" height="238.0" rx="16.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="90.0" y="463.0" fill="#172033" font-size="23" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">2  Lookup may visit only a subset</text>
+<rect x="60.0" y="705.0" width="1080.0" height="238.0" rx="16.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="90.0" y="748.0" fill="#172033" font-size="23" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">3  Diffused error may leave a small region</text>
+<polygon points="155.0,328.0 430.0,328.0 300.0,190.0" fill="#DBEAFE" stroke="#2563EB" stroke-width="3.0" opacity="0.880" stroke-linejoin="round"/>
+<circle cx="155.0" cy="328.0" r="11.0" fill="#334155" stroke="#FFFFFF" stroke-width="2.0" opacity="1.000"/>
+<circle cx="430.0" cy="328.0" r="11.0" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2.0" opacity="1.000"/>
+<circle cx="300.0" cy="190.0" r="11.0" fill="#38BDF8" stroke="#FFFFFF" stroke-width="2.0" opacity="1.000"/>
+<line x1="308.0" y1="274.0" x2="155.0" y2="328.0" stroke="#556176" stroke-width="1.5" stroke-dasharray="5 5" opacity="1.000" stroke-linecap="round"/>
+<line x1="308.0" y1="274.0" x2="430.0" y2="328.0" stroke="#556176" stroke-width="1.5" stroke-dasharray="5 5" opacity="1.000" stroke-linecap="round"/>
+<line x1="308.0" y1="274.0" x2="300.0" y2="190.0" stroke="#556176" stroke-width="1.5" stroke-dasharray="5 5" opacity="1.000" stroke-linecap="round"/>
+<polygon points="308.0,264.0 318.0,274.0 308.0,284.0 298.0,274.0" fill="#D97706" stroke="#FFFFFF" stroke-width="1.5" opacity="1.000" stroke-linejoin="round"/>
+<text x="486.0" y="212.0" fill="#172033" font-size="20" font-weight="600" font-family="system-ui, sans-serif" text-anchor="start">The target lies inside hull(P₁, P₂, P₃).</text>
+<text x="486.0" y="252.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">Some non-negative weights can reproduce it:</text>
+<text x="486.0" y="301.0" fill="#2563EB" font-size="24" font-weight="700" font-family="Georgia, serif" text-anchor="start">target = w₁P₁ + w₂P₂ + w₃P₃</text>
+<text x="486.0" y="335.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">This is a possibility statement, not an execution trace.</text>
+<polygon points="155.0,612.0 430.0,612.0 300.0,500.0" fill="none" stroke="#CBD5E1" stroke-width="2.0" opacity="1.000" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<line x1="155.0" y1="612.0" x2="430.0" y2="612.0" stroke="#2563EB" stroke-width="8.0" opacity="1.000" stroke-linecap="round"/>
+<circle cx="155.0" cy="612.0" r="11.0" fill="#334155" stroke="#FFFFFF" stroke-width="2.0" opacity="1.000"/>
+<circle cx="430.0" cy="612.0" r="11.0" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2.0" opacity="1.000"/>
+<circle cx="300.0" cy="500.0" r="11.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3.0" opacity="1.000"/>
+<polygon points="308.0,546.0 318.0,556.0 308.0,566.0 298.0,556.0" fill="#D97706" stroke="#FFFFFF" stroke-width="1.5" opacity="1.000" stroke-linejoin="round"/>
+<text x="486.0" y="490.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">Approximate lookup, cache thresholds, or a</text>
+<text x="486.0" y="521.0" fill="#172033" font-size="18" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">clamped query can keep P₃ out of the trace.</text>
+<text x="486.0" y="568.0" fill="#2563EB" font-size="20" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">Then the realized hull is only hull(P₁, P₂).</text>
+<text x="486.0" y="607.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">The original target is outside that smaller set.</text>
+<rect x="132.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="155.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="178.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="201.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="224.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="247.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="270.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="293.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="316.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="339.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="362.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="385.0" y="768.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="132.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="155.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="178.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="201.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="224.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="247.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="270.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="293.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="316.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="339.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="362.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="385.0" y="791.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="132.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="155.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="178.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="201.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="224.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="247.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="270.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="293.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="316.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="339.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="362.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="385.0" y="814.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="132.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="155.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="178.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="201.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="224.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="247.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="270.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="293.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="316.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="339.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="362.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="385.0" y="837.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="132.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="155.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="178.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="201.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="224.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="247.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="270.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="293.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="316.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#DF493F" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="339.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="362.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="385.0" y="860.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="132.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="155.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="178.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="201.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="224.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="247.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="270.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="293.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="316.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="339.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="362.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<rect x="385.0" y="883.0" width="21.0" height="21.0" rx="2.0" fill="#E2E8F0" stroke="#FFFFFF" stroke-width="0.8" opacity="1.000"/>
+<line x1="327.5" y1="802.5" x2="410.5" y2="802.5" stroke="#BE185D" stroke-width="2.2" stroke-dasharray="5 4" marker-end="url(#arrow-magenta)" opacity="1.000" stroke-linecap="round"/>
+<line x1="327.5" y1="825.5" x2="410.5" y2="839.5" stroke="#BE185D" stroke-width="2.2" stroke-dasharray="5 4" marker-end="url(#arrow-magenta)" opacity="1.000" stroke-linecap="round"/>
+<line x1="327.5" y1="848.5" x2="410.5" y2="841.5" stroke="#BE185D" stroke-width="2.2" stroke-dasharray="5 4" marker-end="url(#arrow-magenta)" opacity="1.000" stroke-linecap="round"/>
+<line x1="327.5" y1="871.5" x2="410.5" y2="878.5" stroke="#BE185D" stroke-width="2.2" stroke-dasharray="5 4" marker-end="url(#arrow-magenta)" opacity="1.000" stroke-linecap="round"/>
+<text x="270.0" y="928.0" fill="#D97706" font-size="16" font-weight="700" font-family="system-ui, sans-serif" text-anchor="middle">small saturated region</text>
+<text x="486.0" y="775.0" fill="#172033" font-size="20" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">Error diffusion is spatial transport.</text>
+<text x="486.0" y="815.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">A finite patch may export its residual to neighbors</text>
+<text x="486.0" y="846.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">or the image boundary before its own average converges.</text>
+<text x="486.0" y="893.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">Cover repair improves the available palette geometry;</text>
+<text x="486.0" y="924.0" fill="#BE185D" font-size="18" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">it cannot promise every lookup/dither trajectory.</text>
+<text x="60.0" y="990.0" fill="#556176" font-size="16" font-weight="400" font-family="system-ui, sans-serif" text-anchor="start">Schematic execution model • actual trajectories depend on lookup policy, diffusion policy, scan order, and region extent</text>
+</svg>

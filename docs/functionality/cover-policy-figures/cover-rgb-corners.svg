@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+<title id="title">RGB primaries at cube corners</title>
+<desc id="desc">An oblique RGB cube labels red, green, and blue as corners. A side explanation shows why quantization residuals at pure red point outside all three channel bounds.</desc>
+<defs>
+  <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#2563EB"/></marker>
+  <marker id="arrow-gold" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#D97706"/></marker>
+  <marker id="arrow-magenta" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#BE185D"/></marker>
+  <marker id="arrow-teal" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#0F766E"/></marker>
+  <pattern id="outside-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="12" stroke="#E2E8F0" stroke-width="5"/></pattern>
+</defs>
+<rect x="0.0" y="0.0" width="1200.0" height="720.0" fill="#FFFFFF" stroke="none" opacity="1.000"/>
+<text x="60.0" y="60.0" fill="#172033" font-size="34" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">Pure RGB primaries are corners, not ordinary interior colors</text>
+<text x="60.0" y="98.0" fill="#556176" font-size="20" font-weight="400" font-family="system-ui, sans-serif" text-anchor="start">A corner pins every channel to an extreme. There is no room to compensate farther outward.</text>
+<polygon points="450.0,640.0 714.0,538.0 480.0,448.0 216.0,550.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4" opacity="0.450" stroke-linejoin="round"/>
+<polygon points="450.0,364.0 714.0,262.0 480.0,172.0 216.0,274.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4" opacity="0.450" stroke-linejoin="round"/>
+<polygon points="450.0,640.0 216.0,550.0 216.0,274.0 450.0,364.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4" opacity="0.450" stroke-linejoin="round"/>
+<polygon points="714.0,538.0 480.0,448.0 480.0,172.0 714.0,262.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4" opacity="0.450" stroke-linejoin="round"/>
+<polygon points="450.0,640.0 714.0,538.0 714.0,262.0 450.0,364.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4" opacity="0.450" stroke-linejoin="round"/>
+<polygon points="216.0,550.0 480.0,448.0 480.0,172.0 216.0,274.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4" opacity="0.450" stroke-linejoin="round"/>
+<line x1="450.0" y1="640.0" x2="714.0" y2="538.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="450.0" y1="640.0" x2="216.0" y2="550.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="450.0" y1="640.0" x2="450.0" y2="364.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="714.0" y1="538.0" x2="480.0" y2="448.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="714.0" y1="538.0" x2="714.0" y2="262.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="216.0" y1="550.0" x2="480.0" y2="448.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="216.0" y1="550.0" x2="216.0" y2="274.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="480.0" y1="448.0" x2="480.0" y2="172.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="450.0" y1="364.0" x2="714.0" y2="262.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="450.0" y1="364.0" x2="216.0" y2="274.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="714.0" y1="262.0" x2="480.0" y2="172.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<line x1="216.0" y1="274.0" x2="480.0" y2="172.0" stroke="#556176" stroke-width="2.0" opacity="1.000" stroke-linecap="round"/>
+<circle cx="450.0" cy="640.0" r="14.0" fill="#000000" stroke="#172033" stroke-width="2.2" opacity="1.000"/>
+<line x1="450.0" y1="640.0" x2="415.4" y2="663.0" stroke="#556176" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="402.0" y="672.0" fill="#172033" font-size="17" font-weight="500" font-family="system-ui, sans-serif" text-anchor="end">black</text>
+<circle cx="714.0" cy="538.0" r="14.0" fill="#FF0000" stroke="#172033" stroke-width="2.2" opacity="1.000"/>
+<line x1="714.0" y1="538.0" x2="698.2" y2="555.3" stroke="#556176" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="692.0" y="562.0" fill="#FF0000" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="end">red — primary</text>
+<circle cx="216.0" cy="550.0" r="14.0" fill="#00FF00" stroke="#172033" stroke-width="2.2" opacity="1.000"/>
+<line x1="216.0" y1="550.0" x2="229.0" y2="575.9" stroke="#556176" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="234.0" y="586.0" fill="#00FF00" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">green — primary</text>
+<circle cx="480.0" cy="448.0" r="14.0" fill="#FFFF00" stroke="#172033" stroke-width="2.2" opacity="1.000"/>
+<line x1="480.0" y1="448.0" x2="500.2" y2="448.0" stroke="#556176" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="508.0" y="448.0" fill="#172033" font-size="17" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">yellow</text>
+<circle cx="450.0" cy="364.0" r="14.0" fill="#0000FF" stroke="#172033" stroke-width="2.2" opacity="1.000"/>
+<line x1="450.0" y1="364.0" x2="435.6" y2="349.6" stroke="#556176" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="430.0" y="344.0" fill="#0000FF" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="end">blue — primary</text>
+<circle cx="714.0" cy="262.0" r="14.0" fill="#FF00FF" stroke="#172033" stroke-width="2.2" opacity="1.000"/>
+<line x1="714.0" y1="262.0" x2="698.2" y2="256.2" stroke="#556176" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="692.0" y="254.0" fill="#172033" font-size="17" font-weight="500" font-family="system-ui, sans-serif" text-anchor="end">magenta</text>
+<circle cx="216.0" cy="274.0" r="14.0" fill="#00FFFF" stroke="#172033" stroke-width="2.2" opacity="1.000"/>
+<line x1="216.0" y1="274.0" x2="195.8" y2="265.4" stroke="#556176" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="188.0" y="262.0" fill="#172033" font-size="17" font-weight="500" font-family="system-ui, sans-serif" text-anchor="end">cyan</text>
+<circle cx="480.0" cy="172.0" r="14.0" fill="#FFFFFF" stroke="#172033" stroke-width="2.2" opacity="1.000"/>
+<line x1="480.0" y1="172.0" x2="498.0" y2="195.0" stroke="#556176" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="505.0" y="204.0" fill="#172033" font-size="17" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">white</text>
+<rect x="800.0" y="170.0" width="335.0" height="424.0" rx="18.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="837.0" y="220.0" fill="#172033" font-size="24" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">Why a corner miss is severe</text>
+<text x="837.0" y="268.0" fill="#C81E1E" font-size="20" font-weight="650" font-family="system-ui, sans-serif" text-anchor="start">Pure red is (1, 0, 0).</text>
+<text x="837.0" y="306.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">If the nearest palette red is</text>
+<text x="837.0" y="334.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">duller, its residual asks for:</text>
+<text x="837.0" y="382.0" fill="#BE185D" font-size="22" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">more R, less G, less B</text>
+<text x="837.0" y="426.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">All three directions point</text>
+<text x="837.0" y="454.0" fill="#172033" font-size="18" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">outside the valid RGB cube.</text>
+<line x1="837.0" y1="482.0" x2="1098.0" y2="482.0" stroke="#CBD5E1" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="837.0" y="523.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">Clamping removes that signal</text>
+<text x="837.0" y="551.0" fill="#172033" font-size="18" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">before lookup can choose a</text>
+<text x="837.0" y="579.0" fill="#172033" font-size="18" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">compensating palette entry.</text>
+<text x="60.0" y="682.0" fill="#556176" font-size="16" font-weight="400" font-family="system-ui, sans-serif" text-anchor="start">RGB cube schematic • coordinates are normalized to 0…1</text>
+</svg>

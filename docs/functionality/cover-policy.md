@@ -31,15 +31,107 @@ The implementation currently applies cover repair only when the completed palett
 
 ## Why palette coverage matters
 
+Color quantization is usually introduced as a search for representative colors, but representation is only half of the problem. The resulting palette is also geometry: every palette entry is a point in a three-dimensional color space, and every spatial mixture of those entries remains inside their convex hull.
+
+![A three-dimensional RGB sample cloud enclosed by its convex hull](cover-policy-figures/cover-convex-hull-3d.svg)
+
+*Figure 1. Schematic RGB geometry. The translucent surface is the smallest convex polyhedron containing the sample points. It is generated from deterministic synthetic data, not measured from a particular image.*
+
 Let the final palette be a set of colors $P = \{p_1, \ldots, p_K\}$. If dithering represents a source color by spatially mixing palette entries, the average reconstructed color can only lie in the convex hull of the entries that lookup actually selects:
 
 $$
 \bar{p} = \sum_{i=1}^{K} w_i p_i, \qquad w_i \ge 0, \qquad \sum_i w_i = 1.
 $$
 
-A source color outside that reachable hull cannot be recovered by changing the diffusion kernel. Gamut-boundary colors are especially fragile because an accumulated error that points outside the RGB cube is clipped instead of creating a useful compensating lookup query. A small saturated UI element can consequently lock onto one nearby palette entry even when a global quantization metric judged the element too rare to preserve.
+A source color outside that reachable hull cannot be recovered by changing the diffusion kernel. Projecting the geometry onto two dimensions makes the failure easier to see: the source-color cloud can extend beyond the palette's mixture hull even when every palette entry looks individually reasonable.
 
-Convex-hull inclusion is necessary but not sufficient. Lookup is discrete and stateful under error diffusion, so the corrected samples must also visit entries that form the intended mixture. Cover repair does not compute an exact hull and does not guarantee exact reproduction. It adds a bounded set of anchors chosen as practical reachability proxies, then leaves lookup and diffusion to use them.
+![A source color outside the projected palette mixture hull](cover-policy-figures/cover-hull-projection.svg)
+
+*Figure 2. Schematic two-dimensional projection. The orange source color is inside the source-color hull but outside the blue palette hull. The dashed gap is irreducible mean error for that palette; it is not a Delta E measurement.*
+
+This is a **cover miss**. Dithering can redistribute the error spatially, but it cannot make the average cross the blue boundary. A different diffusion kernel may change the texture of the mistake without removing its color bias.
+
+### Why saturated primaries fail first
+
+The valid RGB domain is a cube. Pure red, green, and blue are not typical colors near its middle: they are three of its eight corners. A pure primary pins all three channel coordinates to either 0 or 1, leaving no valid RGB direction farther outward.
+
+![The additive RGB primaries labeled at cube corners](cover-policy-figures/cover-rgb-corners.svg)
+
+*Figure 3. Normalized RGB cube. Pure red is $(1,0,0)$, pure green is $(0,1,0)$, and pure blue is $(0,0,1)$. The same corner geometry applies to black, white, cyan, magenta, and yellow.*
+
+Suppose the source is pure red but the nearest palette entry is duller: it has less red and nonzero green or blue. The quantization residual asks the next lookup for still more red and less green and blue. All three corrections point outside the RGB cube. Clamping turns that impossible query back into a boundary value, so it cannot necessarily cross into the Voronoi region of a compensating palette entry. This is why a rare saturated badge, cursor, graph highlight, or game sprite can remain flat and visibly wrong even under error diffusion.
+
+### Why faces fail too
+
+Corners are the strongest case, but not the only case. A color on an RGB face pins one channel at 0 or 1 while allowing the other two to vary. Error tangential to the face survives; the outward component of the residual is still discarded by clamping.
+
+![Local cross-sections of residual clamping at an RGB face and corner](cover-policy-figures/cover-boundary-clamping.svg)
+
+*Figure 4. Schematic local slices. Magenta shows the raw corrected query and green shows the valid query after channel clamping. On a face, one residual component is lost; at a corner, three components can point outward at once.*
+
+This explains why the hard-policy ladder adds face centers before edge midpoints. A source color on the face $R=1$, for example, often needs another palette entry with $R=1$ and nearby $G,B$ coordinates. The four distant corners of that face exist mathematically, but lookup may never select them from the corrected samples actually produced. A nearby face partner can break that lock with fewer and smaller excursions.
+
+### Convex containment is necessary, not sufficient
+
+Even $c \in \operatorname{conv}(P)$ does not guarantee that one finite image region will average to $c$. Let $V_R \subseteq P$ be the palette entries that lookup actually visits while processing region $R$. The output average belongs to $\operatorname{conv}(V_R)$, which may be much smaller than the hull of the full palette.
+
+![Three stages showing the gap between geometric and realized reachability](cover-policy-figures/cover-reachability-limits.svg)
+
+*Figure 5. Schematic execution model. The full palette permits the target mixture, but a lookup trace can visit only a subset, and spatial diffusion can transport residual error out of a small region before its local average converges.*
+
+A useful conceptual recurrence is
+
+$$
+q_n = \operatorname{clamp}(c_n + e_n), \qquad p_n = L(q_n), \qquad e'_n = q_n - p_n,
+$$
+
+where $L$ is the lookup policy and the dither policy distributes $e'_n$ to later pixels. Three implementation properties separate this recurrence from the convex-hull existence proof:
+
+- **Lookup is discrete.** Even exact nearest-color lookup selects one palette entry per pixel. The corrected query must cross a decision boundary before another entry participates. Approximate lookup, cache reuse, or a threshold can reduce the visited set further, but exact lookup alone does not force the desired barycentric weights.
+- **Clamping is lossy.** The difference between $c_n+e_n$ and $q_n$ is discarded before lookup. At a gamut face or corner, this is precisely the outward signal that would request a compensating color.
+- **Diffusion is local and finite.** Error can leave a small feature, reach an image boundary, or be interrupted by scan order and transparency. The full-frame mean can improve while a rare saturated region remains biased.
+
+Cover repair therefore does not claim to compute an exact hull or guarantee exact reproduction. It changes the palette so useful boundary partners are closer and more likely to enter the realized lookup path. The actual result still depends on lookup policy, dither policy, scan order, region size, and whether the working path clamps or otherwise limits corrected samples.
+
+### What a cover miss looks like in animation
+
+A static cover miss is a color bias. In animation it can become much more distracting: a small source region stays at the same saturated color while the rest of the frame changes, each frame's palette gives that region a different nearest reachable color, and the region flashes between those approximations.
+
+![Animated schematic comparing a stable source red with cover-disabled and cover-protected output](cover-policy-figures/cover-flicker.png)
+
+*Figure 6. Looping schematic APNG. The source badge remains pure red during a cross-dissolve. The cover-disabled column cycles through nearby reds as its illustrative palette changes; the protected column represents a pass that selected a red anchor, either as a hard corner or a source-supported soft candidate. These pixels are explanatory synthetic data, not captured `img2sixel` output.*
+
+The same sequence is available as static key frames for readers that disable animation or view a renderer that shows only the first APNG frame:
+
+![Static key frames comparing an uncovered and protected saturated color](cover-policy-figures/cover-flicker-keyframes.svg)
+
+*Figure 7. Reduced-motion fallback for Figure 6. Shape, labels, hexadecimal values, and row position repeat the distinction without depending on color or motion alone.*
+
+The key distinction is between **source motion** and **palette-neighborhood motion**. The red feature in the example does not change. Its representation changes because the palette geometry around it changes. Cover repair is intended to keep important source-supported boundary regions reachable; it is not a general temporal denoiser and does not freeze the entire palette.
+
+### Historical detour: why palette locking was not enough
+
+An early explanation for SIXEL-video flicker focused on frame-to-frame instability in median-cut results: nearly identical frames could split boxes or order representatives differently, so the chosen palette moved. libsixel consequently made Heckbert splitting deterministic in [`9ef82ab74`](https://github.com/saitoha/libsixel/commit/9ef82ab74041865f67e6097a672ce31105a471aa), added an animation mode with a scene-cut threshold in [`bd32b37ec`](https://github.com/saitoha/libsixel/commit/bd32b37ecdf82e97f1f391e6cce62c8bf60bff6f), and then held the previous palette until that detector declared a cut in [`967e9ef21`](https://github.com/saitoha/libsixel/commit/967e9ef21b94b81ab3c32d847c1a7d098041157c).
+
+That approach attacks temporal palette motion, but a scalar scene threshold is not a universal model of animation. Noise, camera motion, subtitles, or a bright overlay can trigger a false cut; a small but important local change can remain below the threshold; and a cross-dissolve has no single discontinuity to detect. More fundamentally, a fixed palette can remain stably wrong when the saturated region was never inside its reachable hull.
+
+The sticky-palette mechanism was later removed in [`f4934fcfd`](https://github.com/saitoha/libsixel/commit/f4934fcfd4d4d6e15e4513a42e4bf86965baf454). The cover work began by anchoring gamut corners in [`378b1162e`](https://github.com/saitoha/libsixel/commit/378b1162eb3070c66ef32730fd8e36e9b30abfe7), then evolved toward source-supported soft candidates. This history is useful because deterministic quantization, scene detection, palette locking, temporal dithering, and palette coverage address different failure modes. None should be presented as a complete substitute for the others.
+
+### Reproducing the explanatory figures
+
+All figures in this section are generated by [`plot_cover_policy_figures.py`](../../tools/plot_cover_policy_figures.py) using only the Python standard library. The source coordinates, seeds, labels, APNG frames, and caveat text are versioned with the generator. Regenerate every asset with one command:
+
+```sh
+tools/reproduce_cover_policy_figures.sh
+```
+
+Use the byte-for-byte check mode after changing the generator or documentation:
+
+```sh
+tools/reproduce_cover_policy_figures.sh --check
+```
+
+[`cover-policy-figures.json`](cover-policy-figures/cover-policy-figures.json) records the generator, schematic/measurement distinction, deterministic seeds, asset roles, and animation timing. These figures explain mechanisms; they must not be cited as quality measurements or evidence for a default-policy threshold.
 
 ## Policy values
 

@@ -1,0 +1,45 @@
+{
+  "animation": {
+    "delay": "1/8 second",
+    "frames": 24,
+    "loop_count": 0
+  },
+  "assets": [
+    {
+      "path": "cover-convex-hull-3d.svg",
+      "role": "3D sample hull"
+    },
+    {
+      "path": "cover-hull-projection.svg",
+      "role": "2D cover miss"
+    },
+    {
+      "path": "cover-rgb-corners.svg",
+      "role": "RGB corner geometry"
+    },
+    {
+      "path": "cover-boundary-clamping.svg",
+      "role": "face and corner clamping"
+    },
+    {
+      "path": "cover-reachability-limits.svg",
+      "role": "lookup and dither limits"
+    },
+    {
+      "path": "cover-flicker-keyframes.svg",
+      "role": "static animation fallback"
+    },
+    {
+      "path": "cover-flicker.png",
+      "role": "24-frame looping APNG"
+    }
+  ],
+  "generator": "tools/plot_cover_policy_figures.py",
+  "kind": "deterministic schematic",
+  "measurement": false,
+  "random_seeds": {
+    "convex_hull_3d": "0x51A3E1",
+    "hull_projection": "0xC0FEB0"
+  },
+  "schema": 1
+}

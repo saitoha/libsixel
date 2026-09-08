@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 738" role="img" aria-labelledby="title desc">
+<title id="title">Static key frames for palette coverage flicker</title>
+<desc id="desc">Four time steps compare an uncovered red badge whose displayed color changes with a cover-protected badge that stays pure red.</desc>
+<defs>
+  <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#2563EB"/></marker>
+  <marker id="arrow-gold" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#D97706"/></marker>
+  <marker id="arrow-magenta" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#BE185D"/></marker>
+  <marker id="arrow-teal" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 Z" fill="#0F766E"/></marker>
+  <pattern id="outside-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="12" stroke="#E2E8F0" stroke-width="5"/></pattern>
+</defs>
+<rect x="0.0" y="0.0" width="1200.0" height="738.0" fill="#FFFFFF" stroke="none" opacity="1.000"/>
+<text x="60.0" y="58.0" fill="#172033" font-size="32" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">A stable source color can flicker when its palette neighborhood moves</text>
+<text x="60.0" y="95.0" fill="#556176" font-size="19" font-weight="400" font-family="system-ui, sans-serif" text-anchor="start">Four schematic frames from a cross-dissolve. The red badge is constant in the source.</text>
+<rect x="70.0" y="135.0" width="250.0" height="440.0" rx="16.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="195.0" y="174.0" fill="#556176" font-size="19" font-weight="700" font-family="system-ui, sans-serif" text-anchor="middle">frame 1</text>
+<text x="98.0" y="215.0" fill="#BE185D" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">cover off</text>
+<circle cx="152.0" cy="283.0" r="42.0" fill="#D94732" stroke="#172033" stroke-width="2.0" opacity="1.000"/>
+<text x="213.0" y="278.0" fill="#D94732" font-size="16" font-weight="600" font-family="ui-monospace, monospace" text-anchor="start">#D94732</text>
+<text x="213.0" y="304.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">changes</text>
+<line x1="98.0" y1="342.0" x2="292.0" y2="342.0" stroke="#CBD5E1" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="98.0" y="383.0" fill="#0F766E" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">cover protected</text>
+<circle cx="152.0" cy="451.0" r="42.0" fill="#FF0000" stroke="#172033" stroke-width="2.0" opacity="1.000"/>
+<text x="213.0" y="446.0" fill="#0F766E" font-size="16" font-weight="600" font-family="ui-monospace, monospace" text-anchor="start">#FF0000</text>
+<text x="213.0" y="472.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">stays</text>
+<rect x="100.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#334155" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="146.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#38BDF8" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="192.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#FBBF24" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="238.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#D94732" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="350.0" y="135.0" width="250.0" height="440.0" rx="16.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="475.0" y="174.0" fill="#556176" font-size="19" font-weight="700" font-family="system-ui, sans-serif" text-anchor="middle">frame 2</text>
+<text x="378.0" y="215.0" fill="#BE185D" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">cover off</text>
+<circle cx="432.0" cy="283.0" r="42.0" fill="#F12F67" stroke="#172033" stroke-width="2.0" opacity="1.000"/>
+<text x="493.0" y="278.0" fill="#F12F67" font-size="16" font-weight="600" font-family="ui-monospace, monospace" text-anchor="start">#F12F67</text>
+<text x="493.0" y="304.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">changes</text>
+<line x1="378.0" y1="342.0" x2="572.0" y2="342.0" stroke="#CBD5E1" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="378.0" y="383.0" fill="#0F766E" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">cover protected</text>
+<circle cx="432.0" cy="451.0" r="42.0" fill="#FF0000" stroke="#172033" stroke-width="2.0" opacity="1.000"/>
+<text x="493.0" y="446.0" fill="#0F766E" font-size="16" font-weight="600" font-family="ui-monospace, monospace" text-anchor="start">#FF0000</text>
+<text x="493.0" y="472.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">stays</text>
+<rect x="380.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#334155" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="426.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#38BDF8" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="472.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#FBBF24" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="518.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#F12F67" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="630.0" y="135.0" width="250.0" height="440.0" rx="16.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="755.0" y="174.0" fill="#556176" font-size="19" font-weight="700" font-family="system-ui, sans-serif" text-anchor="middle">frame 3</text>
+<text x="658.0" y="215.0" fill="#BE185D" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">cover off</text>
+<circle cx="712.0" cy="283.0" r="42.0" fill="#C85B24" stroke="#172033" stroke-width="2.0" opacity="1.000"/>
+<text x="773.0" y="278.0" fill="#C85B24" font-size="16" font-weight="600" font-family="ui-monospace, monospace" text-anchor="start">#C85B24</text>
+<text x="773.0" y="304.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">changes</text>
+<line x1="658.0" y1="342.0" x2="852.0" y2="342.0" stroke="#CBD5E1" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="658.0" y="383.0" fill="#0F766E" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">cover protected</text>
+<circle cx="712.0" cy="451.0" r="42.0" fill="#FF0000" stroke="#172033" stroke-width="2.0" opacity="1.000"/>
+<text x="773.0" y="446.0" fill="#0F766E" font-size="16" font-weight="600" font-family="ui-monospace, monospace" text-anchor="start">#FF0000</text>
+<text x="773.0" y="472.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">stays</text>
+<rect x="660.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#334155" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="706.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#38BDF8" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="752.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#FBBF24" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="798.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#C85B24" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="910.0" y="135.0" width="250.0" height="440.0" rx="16.0" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" opacity="1.000"/>
+<text x="1035.0" y="174.0" fill="#556176" font-size="19" font-weight="700" font-family="system-ui, sans-serif" text-anchor="middle">frame 4</text>
+<text x="938.0" y="215.0" fill="#BE185D" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">cover off</text>
+<circle cx="992.0" cy="283.0" r="42.0" fill="#E32652" stroke="#172033" stroke-width="2.0" opacity="1.000"/>
+<text x="1053.0" y="278.0" fill="#E32652" font-size="16" font-weight="600" font-family="ui-monospace, monospace" text-anchor="start">#E32652</text>
+<text x="1053.0" y="304.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">changes</text>
+<line x1="938.0" y1="342.0" x2="1132.0" y2="342.0" stroke="#CBD5E1" stroke-width="1.2" opacity="1.000" stroke-linecap="round"/>
+<text x="938.0" y="383.0" fill="#0F766E" font-size="17" font-weight="700" font-family="system-ui, sans-serif" text-anchor="start">cover protected</text>
+<circle cx="992.0" cy="451.0" r="42.0" fill="#FF0000" stroke="#172033" stroke-width="2.0" opacity="1.000"/>
+<text x="1053.0" y="446.0" fill="#0F766E" font-size="16" font-weight="600" font-family="ui-monospace, monospace" text-anchor="start">#FF0000</text>
+<text x="1053.0" y="472.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, sans-serif" text-anchor="start">stays</text>
+<rect x="940.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#334155" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="986.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#38BDF8" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="1032.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#FBBF24" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="1078.0" y="516.0" width="36.0" height="22.0" rx="3.0" fill="#E32652" stroke="#FFFFFF" stroke-width="1.0" opacity="1.000"/>
+<rect x="175.0" y="605.0" width="850.0" height="58.0" rx="12.0" fill="#FEF3C7" stroke="none" opacity="1.000"/>
+<text x="600.0" y="642.0" fill="#D97706" font-size="19" font-weight="700" font-family="system-ui, sans-serif" text-anchor="middle">A moving nearest color is especially visible on a small, high-saturation region.</text>
+<text x="60.0" y="704.0" fill="#556176" font-size="16" font-weight="400" font-family="system-ui, sans-serif" text-anchor="start">Schematic key frames • color values illustrate the mechanism and are not captured encoder output</text>
+</svg>

@@ -608,6 +608,14 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-threshold-summary.csv \
 	docs/functionality/clustering-color-spaces/threshold-measurements/clustering-binning-thresholds.csv \
 	docs/functionality/cover-policy.md \
+	docs/functionality/cover-policy-figures/cover-boundary-clamping.svg \
+	docs/functionality/cover-policy-figures/cover-convex-hull-3d.svg \
+	docs/functionality/cover-policy-figures/cover-flicker-keyframes.svg \
+	docs/functionality/cover-policy-figures/cover-flicker.png \
+	docs/functionality/cover-policy-figures/cover-hull-projection.svg \
+	docs/functionality/cover-policy-figures/cover-policy-figures.json \
+	docs/functionality/cover-policy-figures/cover-reachability-limits.svg \
+	docs/functionality/cover-policy-figures/cover-rgb-corners.svg \
 	docs/functionality/snap-policy.md \
 	docs/functionality/dithering.md \
 	docs/functionality/dither-policies/measurements/dither-policy-delta-e00.png \
@@ -725,6 +733,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_lookup_policy_acceleration.py \
 	tools/plot_clustering_binning_threshold_measurements.py \
 	tools/plot_clustering_colorspace_measurements.py \
+	tools/plot_cover_policy_figures.py \
 	tools/plot_dither_policy_measurements.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
@@ -736,6 +745,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_lookup_policy_acceleration.sh \
 	tools/reproduce_clustering_binning_threshold_measurements.sh \
 	tools/reproduce_clustering_colorspace_measurements.sh \
+	tools/reproduce_cover_policy_figures.sh \
 	tools/reproduce_dither_policy_measurements.sh \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \
