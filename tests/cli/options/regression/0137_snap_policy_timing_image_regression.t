@@ -22,7 +22,7 @@ short_output="${artifact_dir}/0137-snap-timing-short-$$.six"
 env_output="${artifact_dir}/0137-snap-timing-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -6 -Woklab \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -Woklab \
     "-_nearest:Iall" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "snap timing short conversion failed"
     exit 0
@@ -39,7 +39,7 @@ test "${short_trace#*LSXSNP1|*timing=all*}" != "${short_trace}" || {
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_SNAP_TIMING_POLICY=all" \
-    -p 16 -Qkmeans -6 -Woklab -_nearest \
+    -p 16 -Qkmeans -Woklab -_nearest \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "snap timing environment conversion failed"
     exit 0

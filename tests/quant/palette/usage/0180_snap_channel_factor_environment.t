@@ -18,7 +18,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/0180-snap-channel-factor-$$.six"
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.75 \
-    -p 16 -Qkmeans -6 -W oklab \
+    -p 16 -Qkmeans -_nearest -W oklab \
     "${input_image}" 2>&1 >"${output_sixel}") || {
     echo "not ok 1 - snap channel factor conversion failed"
     exit 0

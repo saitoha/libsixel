@@ -23,7 +23,7 @@ short_output="${artifact_dir}/0139-snap-channel-short-$$.six"
 env_output="${artifact_dir}/0139-snap-channel-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -6 -Woklab \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -Woklab \
     "-_nearest:L0.75" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "snap channel short conversion failed"
     exit 0
@@ -40,7 +40,7 @@ test "${short_trace#*LSXSNP1|*channel_l=0.75*}" != "${short_trace}" || {
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.75" \
-    -p 16 -Qkmeans -6 -Woklab -_nearest \
+    -p 16 -Qkmeans -Woklab -_nearest \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "snap channel environment conversion failed"
     exit 0

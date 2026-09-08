@@ -23,7 +23,7 @@ short_output="${artifact_dir}/0138-snap-rate-short-$$.six"
 env_output="${artifact_dir}/0138-snap-rate-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -6 -Woklab \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -Woklab \
     "-_nearest:A0.5" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "snap rate short conversion failed"
     exit 0
@@ -40,7 +40,7 @@ test "${short_trace#*LSXSNP1|*approach=0.5*}" != "${short_trace}" || {
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_SNAP_APPROACH_RATE=0.5" \
-    -p 16 -Qkmeans -6 -Woklab -_nearest \
+    -p 16 -Qkmeans -Woklab -_nearest \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "snap rate environment conversion failed"
     exit 0
