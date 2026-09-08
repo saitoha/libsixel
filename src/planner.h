@@ -94,13 +94,16 @@ typedef struct sixel_encoding_planner {
     sixel_planner_edge_t dag_edges[SIXEL_PLANNER_DAG_EDGE_MAX];
 } sixel_encoding_planner_t;
 
-void sixel_encoding_planner_init(sixel_encoding_planner_t *planner);
+SIXEL_INTERNAL_API void
+sixel_encoding_planner_init(sixel_encoding_planner_t *planner);
 void sixel_encoding_planner_reset_for_frame(
     sixel_encoding_planner_t *planner);
-void sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
-                                    struct sixel_encoder *encoder,
-                                    sixel_frame_t *frame);
-SIXELSTATUS sixel_encoding_planner_schedule(
+SIXEL_INTERNAL_API void
+sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
+                               struct sixel_encoder *encoder,
+                               sixel_frame_t *frame);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encoding_planner_schedule(
     sixel_encoding_planner_t *planner,
     struct sixel_encoder *encoder,
     sixel_frame_t *frame,

@@ -36,6 +36,8 @@ endif
 libwicsixel_la_CPPFLAGS = $(AM_CPPFLAGS) \
                           -I$(top_builddir)/include/ \
                           -I$(top_srcdir)/include/ \
+                          -I$(top_builddir)/src/ \
+                          -I$(top_srcdir)/src/ \
                           -DSIXEL_STATUS_HAVE_TTY_HELPERS=0 \
                           -DSIXEL_DECODE_PIXELS_NO_FAST4=1
 libwicsixel_la_CFLAGS = $(CFLAGS) \

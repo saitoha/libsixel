@@ -279,6 +279,23 @@ typedef struct sixel_kcenter_dispersion_rank {
     double score;
 } sixel_kcenter_dispersion_rank_t;
 
+/* Keep full-assignment calls compact for strict C compiler backends. */
+typedef struct sixel_kcenter_assignment {
+    double const *points;
+    double const *weights;
+    unsigned int point_count;
+    unsigned int const *centers;
+    unsigned int k;
+    unsigned int *nearest_slot;
+    double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
+    double *radius2_out;
+    double *sse_out;
+    double *cluster_weights;
+    double *cluster_sums;
+} sixel_kcenter_assignment_t;
+
 /* Keep solver call signatures compact for strict C compilers. */
 typedef struct sixel_kcenter_swap_ctx {
     double const *points;
@@ -3169,20 +3186,21 @@ sixel_kcenter_assign_points_with_cutoff(
 
 static void
 sixel_kcenter_assign_points_with_second(
-    double const *points,
-    double const *weights,
-    unsigned int point_count,
-    unsigned int const *centers,
-    unsigned int k,
-    unsigned int *nearest_slot,
-    double *nearest_dist,
-    unsigned int *second_slot,
-    double *second_dist,
-    double *radius2_out,
-    double *sse_out,
-    double *cluster_weights,
-    double *cluster_sums)
+    sixel_kcenter_assignment_t const *assignment)
 {
+    double const *points;
+    double const *weights;
+    unsigned int point_count;
+    unsigned int const *centers;
+    unsigned int k;
+    unsigned int *nearest_slot;
+    double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
+    double *radius2_out;
+    double *sse_out;
+    double *cluster_weights;
+    double *cluster_sums;
     unsigned int index;
     unsigned int slot;
     unsigned int best_slot;
@@ -3195,6 +3213,19 @@ sixel_kcenter_assign_points_with_second(
     double sse;
     double weight_value;
 
+    points = NULL;
+    weights = NULL;
+    point_count = 0u;
+    centers = NULL;
+    k = 0u;
+    nearest_slot = NULL;
+    nearest_dist = NULL;
+    second_slot = NULL;
+    second_dist = NULL;
+    radius2_out = NULL;
+    sse_out = NULL;
+    cluster_weights = NULL;
+    cluster_sums = NULL;
     index = 0u;
     slot = 0u;
     best_slot = 0u;
@@ -3206,6 +3237,23 @@ sixel_kcenter_assign_points_with_second(
     radius2 = 0.0;
     sse = 0.0;
     weight_value = 0.0;
+
+    if (assignment == NULL) {
+        return;
+    }
+    points = assignment->points;
+    weights = assignment->weights;
+    point_count = assignment->point_count;
+    centers = assignment->centers;
+    k = assignment->k;
+    nearest_slot = assignment->nearest_slot;
+    nearest_dist = assignment->nearest_dist;
+    second_slot = assignment->second_slot;
+    second_dist = assignment->second_dist;
+    radius2_out = assignment->radius2_out;
+    sse_out = assignment->sse_out;
+    cluster_weights = assignment->cluster_weights;
+    cluster_sums = assignment->cluster_sums;
 
     if (cluster_weights != NULL) {
         memset(cluster_weights, 0, (size_t)k * sizeof(double));
@@ -3289,48 +3337,28 @@ sixel_kcenter_assign_points_with_second(
  */
 static void
 sixel_kcenter_assign_points_dispatch(
-    double const *points,
-    double const *weights,
-    unsigned int point_count,
-    unsigned int const *centers,
-    unsigned int k,
-    unsigned int *nearest_slot,
-    double *nearest_dist,
-    unsigned int *second_slot,
-    double *second_dist,
-    double *radius2_out,
-    double *sse_out,
-    double *cluster_weights,
-    double *cluster_sums)
+    sixel_kcenter_assignment_t const *assignment)
 {
-    if (second_slot != NULL && second_dist != NULL) {
-        sixel_kcenter_assign_points_with_second(points,
-                                                weights,
-                                                point_count,
-                                                centers,
-                                                k,
-                                                nearest_slot,
-                                                nearest_dist,
-                                                second_slot,
-                                                second_dist,
-                                                radius2_out,
-                                                sse_out,
-                                                cluster_weights,
-                                                cluster_sums);
+    if (assignment == NULL) {
+        return;
+    }
+    if (assignment->second_slot != NULL
+            && assignment->second_dist != NULL) {
+        sixel_kcenter_assign_points_with_second(assignment);
         return;
     }
 
-    sixel_kcenter_assign_points(points,
-                                weights,
-                                point_count,
-                                centers,
-                                k,
-                                nearest_slot,
-                                nearest_dist,
-                                radius2_out,
-                                sse_out,
-                                cluster_weights,
-                                cluster_sums);
+    sixel_kcenter_assign_points(assignment->points,
+                                assignment->weights,
+                                assignment->point_count,
+                                assignment->centers,
+                                assignment->k,
+                                assignment->nearest_slot,
+                                assignment->nearest_dist,
+                                assignment->radius2_out,
+                                assignment->sse_out,
+                                assignment->cluster_weights,
+                                assignment->cluster_sums);
 }
 
 /*
@@ -3376,6 +3404,7 @@ sixel_kcenter_polish_sse_with_radius_guard(
     double trial_sse;
     unsigned int updates;
     int accepted;
+    sixel_kcenter_assignment_t assignment;
 
     points = NULL;
     weights = NULL;
@@ -3411,6 +3440,7 @@ sixel_kcenter_polish_sse_with_radius_guard(
     trial_sse = 0.0;
     updates = 0u;
     accepted = 0;
+    memset(&assignment, 0, sizeof(assignment));
 
     if (ctx == NULL) {
         if (updates_io != NULL) {
@@ -3454,6 +3484,11 @@ sixel_kcenter_polish_sse_with_radius_guard(
 
     radius_limit2 = *radius2_io;
     best_sse = *sse_io;
+    assignment.points = points;
+    assignment.weights = weights;
+    assignment.point_count = point_count;
+    assignment.centers = centers;
+    assignment.k = k;
     for (slot = 0u; slot < k; ++slot) {
         weight_value = cluster_weights[slot];
         if (weight_value <= 0.0) {
@@ -3494,19 +3529,15 @@ sixel_kcenter_polish_sse_with_radius_guard(
 
         old_center = centers[slot];
         centers[slot] = candidate;
-        sixel_kcenter_assign_points_with_second(points,
-                                                weights,
-                                                point_count,
-                                                centers,
-                                                k,
-                                                scratch_slot,
-                                                scratch_dist,
-                                                scratch_second_slot,
-                                                scratch_second_dist,
-                                                &trial_radius2,
-                                                &trial_sse,
-                                                NULL,
-                                                NULL);
+        assignment.nearest_slot = scratch_slot;
+        assignment.nearest_dist = scratch_dist;
+        assignment.second_slot = scratch_second_slot;
+        assignment.second_dist = scratch_second_dist;
+        assignment.radius2_out = &trial_radius2;
+        assignment.sse_out = &trial_sse;
+        assignment.cluster_weights = NULL;
+        assignment.cluster_sums = NULL;
+        sixel_kcenter_assign_points_with_second(&assignment);
         if (trial_radius2 <= radius_limit2 + 1.0e-12
                 && trial_sse < best_sse - 1.0e-9) {
             center_mask[old_center] = 0u;
@@ -3528,19 +3559,13 @@ sixel_kcenter_polish_sse_with_radius_guard(
             best_sse = trial_sse;
             ++updates;
             accepted = 1;
-            sixel_kcenter_assign_points_with_second(points,
-                                                    weights,
-                                                    point_count,
-                                                    centers,
-                                                    k,
-                                                    nearest_slot,
-                                                    nearest_dist,
-                                                    second_slot,
-                                                    second_dist,
-                                                    &trial_radius2,
-                                                    &trial_sse,
-                                                    cluster_weights,
-                                                    cluster_sums);
+            assignment.nearest_slot = nearest_slot;
+            assignment.nearest_dist = nearest_dist;
+            assignment.second_slot = second_slot;
+            assignment.second_dist = second_dist;
+            assignment.cluster_weights = cluster_weights;
+            assignment.cluster_sums = cluster_sums;
+            sixel_kcenter_assign_points_with_second(&assignment);
             continue;
         }
         centers[slot] = old_center;
@@ -3869,21 +3894,23 @@ sixel_kcenter_swap_candidate_is_better(double candidate_radius2,
  */
 static int
 sixel_kcenter_swap_eval_with_cutoff(
-    double const *points,
-    double const *weights,
-    unsigned int point_count,
+    sixel_kcenter_swap_ctx_t const *ctx,
+    sixel_kcenter_swap_step_t const *step,
     unsigned int slot,
     unsigned int candidate,
-    unsigned int const *nearest_slot,
-    double const *nearest_dist,
-    double const *second_dist,
-    double allowed_radius2,
-    double best_radius2,
-    double best_sse,
     double *distance_to_new_out,
     double *radius2_out,
     double *sse_out)
 {
+    double const *points;
+    double const *weights;
+    unsigned int point_count;
+    unsigned int const *nearest_slot;
+    double const *nearest_dist;
+    double const *second_dist;
+    double allowed_radius2;
+    double best_radius2;
+    double best_sse;
     unsigned int index;
     double radius2;
     double sse;
@@ -3893,6 +3920,15 @@ sixel_kcenter_swap_eval_with_cutoff(
     double distance_to_new;
     double lhs_weight;
 
+    points = NULL;
+    weights = NULL;
+    point_count = 0u;
+    nearest_slot = NULL;
+    nearest_dist = NULL;
+    second_dist = NULL;
+    allowed_radius2 = 0.0;
+    best_radius2 = 0.0;
+    best_sse = 0.0;
     index = 0u;
     radius2 = 0.0;
     sse = 0.0;
@@ -3901,6 +3937,19 @@ sixel_kcenter_swap_eval_with_cutoff(
     new_distance = 0.0;
     distance_to_new = 0.0;
     lhs_weight = 0.0;
+
+    if (ctx == NULL || step == NULL) {
+        return 0;
+    }
+    points = ctx->points;
+    weights = ctx->weights;
+    point_count = ctx->point_count;
+    nearest_slot = ctx->nearest_slot;
+    nearest_dist = ctx->nearest_dist;
+    second_dist = ctx->second_dist;
+    allowed_radius2 = step->allowed_radius2;
+    best_radius2 = step->best_radius2;
+    best_sse = step->best_sse;
 
     if (points == NULL
             || nearest_slot == NULL
@@ -5117,17 +5166,10 @@ sixel_kcenter_swap_eval_full_stage(sixel_kcenter_swap_ctx_t *ctx,
         }
 
         if (second_dist != NULL) {
-            if (!sixel_kcenter_swap_eval_with_cutoff(points,
-                                                     weights,
-                                                     point_count,
+            if (!sixel_kcenter_swap_eval_with_cutoff(ctx,
+                                                     step,
                                                      slot,
                                                      candidate,
-                                                     nearest_slot,
-                                                     nearest_dist,
-                                                     second_dist,
-                                                     step->allowed_radius2,
-                                                     step->best_radius2,
-                                                     step->best_sse,
                                                      trial_new_dist,
                                                      &radius2,
                                                      &sse)) {
@@ -5199,6 +5241,7 @@ sixel_kcenter_swap_apply_stage(sixel_kcenter_swap_ctx_t *ctx,
     double sse;
     int used_cached_apply;
     sixel_kcenter_swap_apply_ctx_t apply_ctx;
+    sixel_kcenter_assignment_t assignment;
 
     points = NULL;
     weights = NULL;
@@ -5219,6 +5262,7 @@ sixel_kcenter_swap_apply_stage(sixel_kcenter_swap_ctx_t *ctx,
     sse = 0.0;
     used_cached_apply = 0;
     sixel_kcenter_swap_apply_ctx_clear(&apply_ctx);
+    memset(&assignment, 0, sizeof(assignment));
 
     if (ctx == NULL || step == NULL || !step->found) {
         return 0;
@@ -5262,19 +5306,18 @@ sixel_kcenter_swap_apply_stage(sixel_kcenter_swap_ctx_t *ctx,
          * Fallback keeps nearest/second assignment coherent by rebuilding
          * from the same center set with the shared dispatcher.
          */
-        sixel_kcenter_assign_points_dispatch(points,
-                                             weights,
-                                             point_count,
-                                             centers,
-                                             k,
-                                             nearest_slot,
-                                             nearest_dist,
-                                             second_slot,
-                                             second_dist,
-                                             &radius2,
-                                             &sse,
-                                             NULL,
-                                             NULL);
+        assignment.points = points;
+        assignment.weights = weights;
+        assignment.point_count = point_count;
+        assignment.centers = centers;
+        assignment.k = k;
+        assignment.nearest_slot = nearest_slot;
+        assignment.nearest_dist = nearest_dist;
+        assignment.second_slot = second_slot;
+        assignment.second_dist = second_dist;
+        assignment.radius2_out = &radius2;
+        assignment.sse_out = &sse;
+        sixel_kcenter_assign_points_dispatch(&assignment);
     }
     *radius2_io = radius2;
     *sse_io = sse;
@@ -5370,19 +5413,21 @@ sixel_kcenter_solver_assign_current(double const *points,
                                     double *radius2_out,
                                     double *sse_out)
 {
-    sixel_kcenter_assign_points_dispatch(points,
-                                         weights,
-                                         point_count,
-                                         centers,
-                                         k,
-                                         nearest_slot,
-                                         nearest_dist,
-                                         second_slot,
-                                         second_dist,
-                                         radius2_out,
-                                         sse_out,
-                                         NULL,
-                                         NULL);
+    sixel_kcenter_assignment_t assignment;
+
+    memset(&assignment, 0, sizeof(assignment));
+    assignment.points = points;
+    assignment.weights = weights;
+    assignment.point_count = point_count;
+    assignment.centers = centers;
+    assignment.k = k;
+    assignment.nearest_slot = nearest_slot;
+    assignment.nearest_dist = nearest_dist;
+    assignment.second_slot = second_slot;
+    assignment.second_dist = second_dist;
+    assignment.radius2_out = radius2_out;
+    assignment.sse_out = sse_out;
+    sixel_kcenter_assign_points_dispatch(&assignment);
 }
 
 static void
@@ -6720,6 +6765,9 @@ sixel_kcenter_build_solve_run_restarts(sixel_kcenter_build_runtime_t *rt,
 static void
 sixel_kcenter_build_solve_assign_best(sixel_kcenter_build_runtime_t *rt)
 {
+    sixel_kcenter_assignment_t assignment;
+
+    memset(&assignment, 0, sizeof(assignment));
     if (rt == NULL) {
         return;
     }
@@ -6729,19 +6777,20 @@ sixel_kcenter_build_solve_assign_best(sixel_kcenter_build_runtime_t *rt)
            (size_t)rt->k * sizeof(unsigned int));
     rt->total_iterations = rt->best_iterations;
 
-    sixel_kcenter_assign_points_with_second(rt->points,
-                                            rt->weights,
-                                            rt->point_count,
-                                            rt->centers,
-                                            rt->k,
-                                            rt->nearest_slot,
-                                            rt->nearest_dist,
-                                            rt->second_slot,
-                                            rt->second_dist,
-                                            &rt->radius2,
-                                            &rt->sse,
-                                            rt->cluster_weights,
-                                            rt->cluster_sums);
+    assignment.points = rt->points;
+    assignment.weights = rt->weights;
+    assignment.point_count = rt->point_count;
+    assignment.centers = rt->centers;
+    assignment.k = rt->k;
+    assignment.nearest_slot = rt->nearest_slot;
+    assignment.nearest_dist = rt->nearest_dist;
+    assignment.second_slot = rt->second_slot;
+    assignment.second_dist = rt->second_dist;
+    assignment.radius2_out = &rt->radius2;
+    assignment.sse_out = &rt->sse;
+    assignment.cluster_weights = rt->cluster_weights;
+    assignment.cluster_sums = rt->cluster_sums;
+    sixel_kcenter_assign_points_with_second(&assignment);
 }
 
 static void

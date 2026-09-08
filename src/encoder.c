@@ -7009,7 +7009,10 @@ sixel_encoder_prepare_palette(
     }
 
     status = sixel_dither_new(dither, palette_reqcolors, encoder->allocator);
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_FAILED(status) || *dither == NULL) {
+        if (SIXEL_SUCCEEDED(status)) {
+            status = SIXEL_BAD_ALLOCATION;
+        }
         goto end;
     }
     if (reserve_alpha_key) {

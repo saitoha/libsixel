@@ -345,7 +345,7 @@ sixel_option_resolve_registered_boolean_binding(
     char const *binding_identifier,
     int fallback);
 
-int
+SIXEL_INTERNAL_API int
 sixel_option_resolve_registered_int_binding(
     sixel_option_schema_id_t option_id,
     char const *base_name,

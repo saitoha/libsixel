@@ -49,6 +49,7 @@ extension_objc_args = common_objc_args + ['-fapplication-extension']
 # the portability helpers used by both components.
 
 srcs = files(
+  'Sources/SixelQuickLookStub.c',
   '../src/status.c',
   '../src/allocator.c',
   '../src/fromsixel.c',

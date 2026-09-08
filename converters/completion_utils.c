@@ -578,6 +578,7 @@ img2sixel_completion_policy_apply(
     char *entry_end;
     char *equal_pos;
     char const *value;
+    char const *staged_values[IMG2SIXEL_COMPLETION_POLICY_KEY_COUNT];
     char *values[IMG2SIXEL_COMPLETION_POLICY_KEY_COUNT];
     int assigned[IMG2SIXEL_COMPLETION_POLICY_KEY_COUNT];
     size_t base_length;
@@ -591,6 +592,7 @@ img2sixel_completion_policy_apply(
     entry_end = NULL;
     equal_pos = NULL;
     value = NULL;
+    memset(staged_values, 0, sizeof(staged_values));
     memset(values, 0, sizeof(values));
     memset(assigned, 0, sizeof(assigned));
     base_length = 0u;
@@ -659,9 +661,24 @@ img2sixel_completion_policy_apply(
                 "unknown completion policy suboption.");
             goto invalid;
         }
-        free(values[key_index]);
-        values[key_index] = (char *)malloc(strlen(value) + 1u);
-        if (values[key_index] == NULL) {
+        staged_values[key_index] = value;
+        assigned[key_index] = 1;
+        if (entry_end == NULL) {
+            cursor = NULL;
+        } else {
+            cursor = entry_end + 1;
+        }
+    }
+
+    /* Allocate after parsing so the unbounded token loop owns no memory. */
+    index = 0u;
+    while (index < IMG2SIXEL_ARRAY_LENGTH(values)) {
+        if (assigned[index]) {
+            values[index] = (char *)malloc(
+                strlen(staged_values[index]) + 1u);
+        }
+        if (assigned[index] && values[index] == NULL) {
+            index = 0u;
             while (index < IMG2SIXEL_ARRAY_LENGTH(values)) {
                 free(values[index]);
                 ++index;
@@ -669,13 +686,12 @@ img2sixel_completion_policy_apply(
             free(work);
             return SIXEL_BAD_ALLOCATION;
         }
-        memcpy(values[key_index], value, strlen(value) + 1u);
-        assigned[key_index] = 1;
-        if (entry_end == NULL) {
-            cursor = NULL;
-        } else {
-            cursor = entry_end + 1;
+        if (assigned[index]) {
+            memcpy(values[index],
+                   staged_values[index],
+                   strlen(staged_values[index]) + 1u);
         }
+        ++index;
     }
 
     index = 0u;
@@ -700,6 +716,11 @@ img2sixel_completion_policy_apply(
                 values[index]);
             values[index] = NULL;
         }
+        ++index;
+    }
+    index = 0u;
+    while (index < IMG2SIXEL_ARRAY_LENGTH(values)) {
+        free(values[index]);
         ++index;
     }
     free(work);

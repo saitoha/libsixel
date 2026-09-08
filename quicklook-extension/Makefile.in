@@ -129,7 +129,8 @@ am__v_AR_1 =
 libsixelquicklookcore_a_AR = $(AR) $(ARFLAGS)
 libsixelquicklookcore_a_RANLIB = $(RANLIB)
 libsixelquicklookcore_a_LIBADD =
-am__libsixelquicklookcore_a_SOURCES_DIST = $(top_srcdir)/src/status.c \
+am__libsixelquicklookcore_a_SOURCES_DIST =  \
+	Sources/SixelQuickLookStub.c $(top_srcdir)/src/status.c \
 	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/fromsixel.c \
 	$(top_srcdir)/src/timer.c $(top_srcdir)/src/timeline-logger.c \
 	$(top_srcdir)/src/timeline-writer.c \
@@ -142,6 +143,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @SIXEL_ENABLE_THREADS_TRUE@am__objects_1 = $(top_builddir)/src/libsixelquicklookcore_a-decoder-parallel.$(OBJEXT) \
 @SIXEL_ENABLE_THREADS_TRUE@	$(top_builddir)/src/libsixelquicklookcore_a-threadpool.$(OBJEXT)
 am_libsixelquicklookcore_a_OBJECTS =  \
+	Sources/libsixelquicklookcore_a-SixelQuickLookStub.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-status.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-allocator.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-fromsixel.$(OBJEXT) \
@@ -250,7 +252,8 @@ am__depfiles_remade = $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allo
 	Sources/$(DEPDIR)/SixelQuickLookHost-SixelQuickLookHost.Po \
 	Sources/$(DEPDIR)/SixelThumbnail-SixelQuickLookShared.Po \
 	Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailMain.Po \
-	Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailProvider.Po
+	Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailProvider.Po \
+	Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -626,9 +629,10 @@ noinst_LIBRARIES = libsixelquicklookcore.a
 # archive self-contained we avoid undefined
 # references when the Objective-C targets link it.
 #
-libsixelquicklookcore_a_SOURCES = $(top_srcdir)/src/status.c \
-	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/fromsixel.c \
-	$(top_srcdir)/src/timer.c $(top_srcdir)/src/timeline-logger.c \
+libsixelquicklookcore_a_SOURCES = Sources/SixelQuickLookStub.c \
+	$(top_srcdir)/src/status.c $(top_srcdir)/src/allocator.c \
+	$(top_srcdir)/src/fromsixel.c $(top_srcdir)/src/timer.c \
+	$(top_srcdir)/src/timeline-logger.c \
 	$(top_srcdir)/src/timeline-writer.c \
 	$(top_srcdir)/src/compat_stub.c \
 	$(top_srcdir)/src/options-registry.c \
@@ -724,6 +728,14 @@ clean-noinstPROGRAMS:
 
 clean-noinstLIBRARIES:
 	-$(am__rm_f) $(noinst_LIBRARIES)
+Sources/$(am__dirstamp):
+	@$(MKDIR_P) Sources
+	@: >>Sources/$(am__dirstamp)
+Sources/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) Sources/$(DEPDIR)
+	@: >>Sources/$(DEPDIR)/$(am__dirstamp)
+Sources/libsixelquicklookcore_a-SixelQuickLookStub.$(OBJEXT):  \
+	Sources/$(am__dirstamp) Sources/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/src
 	@: >>$(top_builddir)/src/$(am__dirstamp)
@@ -771,12 +783,6 @@ libsixelquicklookcore.a: $(libsixelquicklookcore_a_OBJECTS) $(libsixelquicklookc
 	$(AM_V_at)-rm -f libsixelquicklookcore.a
 	$(AM_V_AR)$(libsixelquicklookcore_a_AR) libsixelquicklookcore.a $(libsixelquicklookcore_a_OBJECTS) $(libsixelquicklookcore_a_LIBADD)
 	$(AM_V_at)$(libsixelquicklookcore_a_RANLIB) libsixelquicklookcore.a
-Sources/$(am__dirstamp):
-	@$(MKDIR_P) Sources
-	@: >>Sources/$(am__dirstamp)
-Sources/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) Sources/$(DEPDIR)
-	@: >>Sources/$(DEPDIR)/$(am__dirstamp)
 Sources/SixelPreview-SixelPreviewMain.$(OBJEXT):  \
 	Sources/$(am__dirstamp) Sources/$(DEPDIR)/$(am__dirstamp)
 Sources/SixelPreview-SixelPreviewProvider.$(OBJEXT):  \
@@ -856,6 +862,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/SixelThumbnail-SixelQuickLookShared.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailMain.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailProvider.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -886,6 +893,20 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+Sources/libsixelquicklookcore_a-SixelQuickLookStub.o: Sources/SixelQuickLookStub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT Sources/libsixelquicklookcore_a-SixelQuickLookStub.o -MD -MP -MF Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Tpo -c -o Sources/libsixelquicklookcore_a-SixelQuickLookStub.o `test -f 'Sources/SixelQuickLookStub.c' || echo '$(srcdir)/'`Sources/SixelQuickLookStub.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Tpo Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='Sources/SixelQuickLookStub.c' object='Sources/libsixelquicklookcore_a-SixelQuickLookStub.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Sources/libsixelquicklookcore_a-SixelQuickLookStub.o `test -f 'Sources/SixelQuickLookStub.c' || echo '$(srcdir)/'`Sources/SixelQuickLookStub.c
+
+Sources/libsixelquicklookcore_a-SixelQuickLookStub.obj: Sources/SixelQuickLookStub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT Sources/libsixelquicklookcore_a-SixelQuickLookStub.obj -MD -MP -MF Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Tpo -c -o Sources/libsixelquicklookcore_a-SixelQuickLookStub.obj `if test -f 'Sources/SixelQuickLookStub.c'; then $(CYGPATH_W) 'Sources/SixelQuickLookStub.c'; else $(CYGPATH_W) '$(srcdir)/Sources/SixelQuickLookStub.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Tpo Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='Sources/SixelQuickLookStub.c' object='Sources/libsixelquicklookcore_a-SixelQuickLookStub.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Sources/libsixelquicklookcore_a-SixelQuickLookStub.obj `if test -f 'Sources/SixelQuickLookStub.c'; then $(CYGPATH_W) 'Sources/SixelQuickLookStub.c'; else $(CYGPATH_W) '$(srcdir)/Sources/SixelQuickLookStub.c'; fi`
 
 $(top_builddir)/src/libsixelquicklookcore_a-status.o: $(top_builddir)/src/status.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-status.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-status.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-status.o `test -f '$(top_builddir)/src/status.c' || echo '$(srcdir)/'`$(top_builddir)/src/status.c
@@ -1379,6 +1400,7 @@ distclean: distclean-am
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelQuickLookShared.Po
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailMain.Po
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailProvider.Po
+	-rm -f Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1446,6 +1468,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelQuickLookShared.Po
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailMain.Po
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailProvider.Po
+	-rm -f Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

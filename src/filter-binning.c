@@ -67,6 +67,27 @@ typedef struct sixel_filter_exact_table {
 
 #define SIXEL_FILTER_EXACT_INITIAL_ENTRY_LIMIT 64u
 
+static int
+sixel_filter_binning_allocation_size(size_t count,
+                                     size_t factor,
+                                     size_t entry_size,
+                                     size_t *allocation_size)
+{
+    size_t item_count;
+
+    item_count = 0u;
+    if (allocation_size == NULL || factor == 0u || entry_size == 0u
+            || count > SIZE_MAX / factor) {
+        return 0;
+    }
+    item_count = count * factor;
+    if (item_count > SIZE_MAX / entry_size) {
+        return 0;
+    }
+    *allocation_size = item_count * entry_size;
+    return 1;
+}
+
 static SIXELSTATUS
 sixel_filter_binning_apply(sixel_filter_t *filter,
                            sixel_allocator_t *allocator,
@@ -106,11 +127,13 @@ sixel_filter_exact_table_prepare(sixel_filter_exact_table_t *table,
     size_t initial_entries;
     size_t threshold;
     size_t index;
+    size_t allocation_size;
 
     capacity = 8u;
     initial_entries = 0u;
     threshold = 0u;
     index = 0u;
+    allocation_size = 0u;
     if (table == NULL || expected_entries == 0u || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -126,13 +149,17 @@ sixel_filter_exact_table_prepare(sixel_filter_exact_table_t *table,
         }
         capacity <<= 1u;
     }
-    if ((size_t)capacity > SIZE_MAX / sizeof(*table->entries)) {
+    if (!sixel_filter_binning_allocation_size(
+            (size_t)capacity,
+            1u,
+            sizeof(*table->entries),
+            &allocation_size)) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     table->entries =
         (sixel_filter_exact_entry_t *)sixel_allocator_malloc(
             allocator,
-            (size_t)capacity * sizeof(*table->entries));
+            allocation_size);
     if (table->entries == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -172,6 +199,7 @@ sixel_filter_exact_table_grow(sixel_filter_exact_table_t *table,
     unsigned int new_mask;
     unsigned int index;
     unsigned int slot;
+    size_t allocation_size;
 
     grown = NULL;
     old_capacity = 0u;
@@ -179,6 +207,7 @@ sixel_filter_exact_table_grow(sixel_filter_exact_table_t *table,
     new_mask = 0u;
     index = 0u;
     slot = 0u;
+    allocation_size = 0u;
     if (table == NULL || table->entries == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -188,12 +217,16 @@ sixel_filter_exact_table_grow(sixel_filter_exact_table_t *table,
     }
     new_capacity = old_capacity << 1u;
     new_mask = new_capacity - 1u;
-    if ((size_t)new_capacity > SIZE_MAX / sizeof(*grown)) {
+    if (!sixel_filter_binning_allocation_size(
+            (size_t)new_capacity,
+            1u,
+            sizeof(*grown),
+            &allocation_size)) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     grown = (sixel_filter_exact_entry_t *)sixel_allocator_malloc(
         allocator,
-        (size_t)new_capacity * sizeof(*grown));
+        allocation_size);
     if (grown == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -888,6 +921,9 @@ sixel_filter_binning_publish(
     double *weights;
     sixel_palette_bin_entry_t const **ordered_entries;
     sixel_palette_bin_entry_t const *entry;
+    size_t coordinates_size;
+    size_t weights_size;
+    size_t ordered_entries_size;
 
     status = SIXEL_FALSE;
     index = 0u;
@@ -897,19 +933,36 @@ sixel_filter_binning_publish(
     weights = NULL;
     ordered_entries = NULL;
     entry = NULL;
+    coordinates_size = 0u;
+    weights_size = 0u;
+    ordered_entries_size = 0u;
     if (histogram == NULL || output == NULL || binning == NULL ||
             allocator == NULL || histogram->size == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if ((size_t)histogram->size > SIZE_MAX / 3u / sizeof(double)) {
+    if (!sixel_filter_binning_allocation_size(
+            (size_t)histogram->size,
+            3u,
+            sizeof(double),
+            &coordinates_size)
+            || !sixel_filter_binning_allocation_size(
+                (size_t)histogram->size,
+                1u,
+                sizeof(double),
+                &weights_size)
+            || !sixel_filter_binning_allocation_size(
+                (size_t)histogram->size,
+                1u,
+                sizeof(*ordered_entries),
+                &ordered_entries_size)) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     coordinates = (double *)sixel_allocator_malloc(
         allocator,
-        (size_t)histogram->size * 3u * sizeof(double));
+        coordinates_size);
     weights = (double *)sixel_allocator_malloc(
         allocator,
-        (size_t)histogram->size * sizeof(double));
+        weights_size);
     if (coordinates == NULL || weights == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
@@ -920,7 +973,7 @@ sixel_filter_binning_publish(
         ordered_entries =
             (sixel_palette_bin_entry_t const **)sixel_allocator_malloc(
                 allocator,
-                (size_t)histogram->size * sizeof(*ordered_entries));
+                ordered_entries_size);
         if (ordered_entries == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto cleanup;
@@ -1011,6 +1064,8 @@ sixel_filter_binning_publish_exact(
     double *coordinates;
     double *weights;
     sixel_filter_exact_entry_t const *entry;
+    size_t coordinates_size;
+    size_t weights_size;
 
     status = SIXEL_FALSE;
     index = 0u;
@@ -1018,19 +1073,30 @@ sixel_filter_binning_publish_exact(
     coordinates = NULL;
     weights = NULL;
     entry = NULL;
+    coordinates_size = 0u;
+    weights_size = 0u;
     if (table == NULL || output == NULL || binning == NULL ||
             allocator == NULL || table->size == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if ((size_t)table->size > SIZE_MAX / 3u / sizeof(double)) {
+    if (!sixel_filter_binning_allocation_size(
+            (size_t)table->size,
+            3u,
+            sizeof(double),
+            &coordinates_size)
+            || !sixel_filter_binning_allocation_size(
+                (size_t)table->size,
+                1u,
+                sizeof(double),
+                &weights_size)) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     coordinates = (double *)sixel_allocator_malloc(
         allocator,
-        (size_t)table->size * 3u * sizeof(double));
+        coordinates_size);
     weights = (double *)sixel_allocator_malloc(
         allocator,
-        (size_t)table->size * sizeof(double));
+        weights_size);
     if (coordinates == NULL || weights == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;

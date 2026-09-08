@@ -1441,6 +1441,8 @@ typedef struct sixel_tty_response_dispatcher {
     int reader_active;
     int animation_guard_active;
     struct termios old_termios;
+    sixel_tty_response_request_t osc11_storage;
+    sixel_tty_response_request_t cpr_storage;
     sixel_tty_response_request_t *osc11_request;
     sixel_tty_response_request_t *cpr_request;
     size_t response_size;
@@ -1515,6 +1517,18 @@ sixel_tty_response_dispatcher_slot(int kind)
     }
     if (kind == SIXEL_TTY_RESPONSE_CPR) {
         return &g_tty_response_dispatcher.cpr_request;
+    }
+    return NULL;
+}
+
+static sixel_tty_response_request_t *
+sixel_tty_response_dispatcher_storage(int kind)
+{
+    if (kind == SIXEL_TTY_RESPONSE_OSC11) {
+        return &g_tty_response_dispatcher.osc11_storage;
+    }
+    if (kind == SIXEL_TTY_RESPONSE_CPR) {
+        return &g_tty_response_dispatcher.cpr_storage;
     }
     return NULL;
 }
@@ -1703,29 +1717,26 @@ sixel_tty_response_dispatcher_close_locked(void)
 }
 
 static SIXELSTATUS
-sixel_tty_response_dispatcher_begin(sixel_tty_response_request_t *request,
+sixel_tty_response_dispatcher_begin(sixel_tty_response_request_t **request_out,
                                     int kind,
                                     int timeout_ms,
                                     int keep_draining)
 {
     sixel_tty_response_request_t **slot;
+    sixel_tty_response_request_t *request;
     SIXELSTATUS status;
 
     slot = NULL;
+    request = NULL;
     status = SIXEL_FALSE;
 
-    if (request == NULL) {
+    if (request_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    *request_out = NULL;
     if (timeout_ms < 0) {
         timeout_ms = 0;
     }
-    memset(request, 0, sizeof(*request));
-    request->kind = kind;
-    request->keep_draining = keep_draining != 0;
-    request->status = SIXEL_FALSE;
-    request->deadline = sixel_timer_now()
-        + (double)timeout_ms / 1000.0;
 
     if (!sixel_tty_response_dispatcher_lock()) {
         return SIXEL_RUNTIME_ERROR;
@@ -1739,6 +1750,11 @@ sixel_tty_response_dispatcher_begin(sixel_tty_response_request_t *request,
         status = SIXEL_FALSE;
         goto unlock;
     }
+    request = sixel_tty_response_dispatcher_storage(kind);
+    if (request == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto unlock;
+    }
 
     if (g_tty_response_dispatcher.user_count == 0) {
         status = sixel_tty_response_dispatcher_open_locked();
@@ -1747,8 +1763,16 @@ sixel_tty_response_dispatcher_begin(sixel_tty_response_request_t *request,
         }
     }
 
+    /* Dispatcher-owned storage remains valid even if cleanup cannot lock. */
+    memset(request, 0, sizeof(*request));
+    request->kind = kind;
+    request->keep_draining = keep_draining != 0;
+    request->status = SIXEL_FALSE;
+    request->deadline = sixel_timer_now()
+        + (double)timeout_ms / 1000.0;
     request->response_start = g_tty_response_dispatcher.response_size;
     *slot = request;
+    *request_out = request;
     ++g_tty_response_dispatcher.user_count;
     status = SIXEL_OK;
 
@@ -1936,13 +1960,13 @@ sixel_tty_query_cursor_position(sixel_write_function f_write,
                                 int *col)
 {
 #if SIXEL_TTY_HAVE_RESPONSE_DISPATCHER
-    sixel_tty_response_request_t request;
+    sixel_tty_response_request_t *request;
     SIXELSTATUS status;
     int nwrite;
 
+    request = NULL;
     status = SIXEL_FALSE;
     nwrite = 0;
-    memset(&request, 0, sizeof(request));
 
     if (f_write == NULL || row == NULL || col == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1962,14 +1986,14 @@ sixel_tty_query_cursor_position(sixel_write_function f_write,
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         goto end;
     }
-    status = sixel_tty_response_dispatcher_wait(&request, NULL, NULL);
+    status = sixel_tty_response_dispatcher_wait(request, NULL, NULL);
     if (SIXEL_SUCCEEDED(status)) {
-        *row = request.row;
-        *col = request.col;
+        *row = request->row;
+        *col = request->col;
     }
 
 end:
-    sixel_tty_response_dispatcher_end(&request);
+    sixel_tty_response_dispatcher_end(request);
     return status;
 #else
     SIXELSTATUS status;
@@ -2085,17 +2109,17 @@ sixel_tty_query_osc11_bgcolor_with_drain(
 {
 #if SIXEL_TTY_HAVE_RESPONSE_DISPATCHER
     static char const query[] = "\033]11;?\007";
-    sixel_tty_response_request_t request;
+    sixel_tty_response_request_t *request;
     SIXELSTATUS status;
     int ttyfd;
     ssize_t written;
     int keep_draining;
 
+    request = NULL;
     status = SIXEL_FALSE;
     ttyfd = -1;
     written = 0;
     keep_draining = 0;
-    memset(&request, 0, sizeof(request));
 
     if (bgcolor == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -2124,17 +2148,17 @@ sixel_tty_query_osc11_bgcolor_with_drain(
         goto end;
     }
 
-    status = sixel_tty_response_dispatcher_wait(&request,
+    status = sixel_tty_response_dispatcher_wait(request,
                                                 should_stop,
                                                 context);
     if (SIXEL_SUCCEEDED(status)) {
-        bgcolor[0] = request.bgcolor[0];
-        bgcolor[1] = request.bgcolor[1];
-        bgcolor[2] = request.bgcolor[2];
+        bgcolor[0] = request->bgcolor[0];
+        bgcolor[1] = request->bgcolor[1];
+        bgcolor[2] = request->bgcolor[2];
     }
 
 end:
-    sixel_tty_response_dispatcher_end(&request);
+    sixel_tty_response_dispatcher_end(request);
     return status;
 #else
     (void)bgcolor;

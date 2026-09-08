@@ -55,6 +55,7 @@
 #include "cpu.h"
 #include "timeline-logger.h"
 #include "compat_stub.h"
+#include "scale.h"
 #include "threading.h"
 
 #if SIXEL_ENABLE_THREADS

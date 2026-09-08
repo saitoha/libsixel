@@ -56,6 +56,7 @@ noinst_LIBRARIES = libsixelquicklookcore.a
 # references when the Objective-C targets link it.
 #
 libsixelquicklookcore_a_SOURCES = \
+    Sources/SixelQuickLookStub.c \
     $(top_srcdir)/src/status.c \
     $(top_srcdir)/src/allocator.c \
     $(top_srcdir)/src/fromsixel.c \
