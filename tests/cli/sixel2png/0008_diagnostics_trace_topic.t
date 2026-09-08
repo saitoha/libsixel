@@ -16,7 +16,7 @@ trace_message=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env SIXEL_TRACE_TOPIC=suboption_contract \
     -xhuman:Tsuboption_contract -d k_undithr 2>&1) || trace_status=$?
 
-test "${trace_status}" -eq 255 || {
+test "${trace_status}" -eq 2 || {
     echo "not ok" 1 - "trace topic diagnostics exit status mismatch"
     exit 0
 }

@@ -18,7 +18,7 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${issue220}" -o /dev/null
 command_status=$?
 set -e
 
-test "${command_status}" = 255 -o "${command_status}" = 127 || {
+test "${command_status}" = 1 || {
     echo "not ok" 1 - "issue #220 item2 did not return mapped overflow status"
     exit 0
 }

@@ -21,17 +21,17 @@ code_message=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
 env_message=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env SIXEL_DIAG_MODE=code -d k_undithr 2>&1) || env_status=$?
 
-test "${human_status}" -eq 255 || {
+test "${human_status}" -eq 2 || {
     echo "not ok" 1 - "human diagnostics exit status mismatch"
     exit 0
 }
 
-test "${code_status}" -eq 255 || {
+test "${code_status}" -eq 2 || {
     echo "not ok" 1 - "code diagnostics exit status mismatch"
     exit 0
 }
 
-test "${env_status}" -eq 255 || {
+test "${env_status}" -eq 2 || {
     echo "not ok" 1 - "environment diagnostics exit status mismatch"
     exit 0
 }

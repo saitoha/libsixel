@@ -1970,15 +1970,15 @@ sixel_frame_resize_transparent_mask(
 {
     SIXELSTATUS status;
     unsigned char *src_mask;
-    unsigned char *src_rgb;
-    unsigned char *dst_rgb;
+    float *src_rgb;
+    float *dst_rgb;
     unsigned char *dst_mask;
     size_t src_pixel_count;
     size_t dst_pixel_count;
     size_t src_rgb_size;
     size_t dst_rgb_size;
     size_t index;
-    unsigned char value;
+    float value;
     int has_transparent;
 
     status = SIXEL_OK;
@@ -1991,7 +1991,7 @@ sixel_frame_resize_transparent_mask(
     src_rgb_size = 0u;
     dst_rgb_size = 0u;
     index = 0u;
-    value = 0u;
+    value = 0.0f;
     has_transparent = 0;
 
     if (pmask_out == NULL || pmask_size_out == NULL
@@ -2033,15 +2033,18 @@ sixel_frame_resize_transparent_mask(
         frame->alpha_zero_is_transparent = 0;
         return SIXEL_OK;
     }
-    if (src_pixel_count > SIZE_MAX / 3u || dst_pixel_count > SIZE_MAX / 3u) {
+    if (src_pixel_count > SIZE_MAX / (3u * sizeof(float)) ||
+        dst_pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
     src_rgb_size = src_pixel_count * 3u;
     dst_rgb_size = dst_pixel_count * 3u;
 
-    src_rgb = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                      src_rgb_size);
+    src_rgb_size *= sizeof(float);
+    dst_rgb_size *= sizeof(float);
+    src_rgb = (float *)sixel_allocator_malloc(frame->allocator,
+                                               src_rgb_size);
     if (src_rgb == NULL) {
         sixel_helper_set_additional_message(
             "sixel_frame_resize_transparent_mask: "
@@ -2049,8 +2052,8 @@ sixel_frame_resize_transparent_mask(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    dst_rgb = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                      dst_rgb_size);
+    dst_rgb = (float *)sixel_allocator_malloc(frame->allocator,
+                                               dst_rgb_size);
     if (dst_rgb == NULL) {
         sixel_helper_set_additional_message(
             "sixel_frame_resize_transparent_mask: "
@@ -2070,28 +2073,30 @@ sixel_frame_resize_transparent_mask(
 
     src_mask = frame->transparent_mask;
     for (index = 0u; index < src_pixel_count; ++index) {
-        value = src_mask[index] != 0u ? 0xffu : 0u;
+        value = src_mask[index] != 0u ? 1.0f : 0.0f;
         src_rgb[index * 3u + 0u] = value;
         src_rgb[index * 3u + 1u] = value;
         src_rgb[index * 3u + 2u] = value;
     }
 
-    status = sixel_helper_scale_image(dst_rgb,
-                                      src_rgb,
-                                      src_width,
-                                      src_height,
-                                      SIXEL_PIXELFORMAT_RGB888,
-                                      dst_width,
-                                      dst_height,
-                                      method_for_resampling,
-                                      frame->allocator);
+    status = sixel_helper_scale_image_float32(
+        dst_rgb,
+        src_rgb,
+        src_width,
+        src_height,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        dst_width,
+        dst_height,
+        method_for_resampling,
+        frame->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     for (index = 0u; index < dst_pixel_count; ++index) {
         value = dst_rgb[index * 3u + 0u];
-        if (value >= 128u) {
+        /* Keep exact half coverage independent of byte SIMD rounding. */
+        if (value >= 0.5f) {
             dst_mask[index] = 1u;
             has_transparent = 1;
         } else {

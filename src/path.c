@@ -711,19 +711,9 @@ sixel_path_to_libc_buffer_size(char const *path)
 #elif defined(_WIN32)
     /*
      * Priority order for Windows-hosted environments:
-     * 1. Use cygpath -wa if available on PATH.
-     * 2. Fall back to explicit drive/cygdrive parsing.
+     * 1. Parse unambiguous drive/cygdrive spellings without a subprocess.
+     * 2. Use cygpath -wa for paths that depend on the MSYS mount table.
      */
-#if defined(SIXEL_PATH_USE_CYGPATH)
-    {
-        size_t cygpath_needed;
-
-        cygpath_needed = sixel_path_cygpath_needed(path);
-        if (cygpath_needed > 0u) {
-            return cygpath_needed;
-        }
-    }
-#endif
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return 0u;
     }
@@ -736,6 +726,16 @@ sixel_path_to_libc_buffer_size(char const *path)
     if (sixel_path_parse_msys_drive(path, &drive, &rest)) {
         return strlen(rest) + 3u;
     }
+#if defined(SIXEL_PATH_USE_CYGPATH)
+    {
+        size_t cygpath_needed;
+
+        cygpath_needed = sixel_path_cygpath_needed(path);
+        if (cygpath_needed > 0u) {
+            return cygpath_needed;
+        }
+    }
+#endif
     return 0u;
 #elif defined(__COSMOPOLITAN__)
     if (!sixel_path_cosmo_is_windows()) {
@@ -885,24 +885,6 @@ sixel_path_to_libc(char const *path,
     return path;
 #elif defined(_WIN32)
     (void)prefix_len;
-# if defined(SIXEL_PATH_USE_CYGPATH)
-    {
-        char *converted;
-        size_t length;
-
-        converted = sixel_path_cygpath_convert(path);
-        if (converted != NULL) {
-            length = strlen(converted) + 1u;
-            if (length > buffer_size) {
-                free(converted);
-                return NULL;
-            }
-            memcpy(buffer, converted, length);
-            free(converted);
-            return buffer;
-        }
-    }
-# endif
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return path;
     }
@@ -922,6 +904,24 @@ sixel_path_to_libc(char const *path,
         buffer[out_index] = '\0';
         return buffer;
     }
+# if defined(SIXEL_PATH_USE_CYGPATH)
+    {
+        char *converted;
+        size_t length;
+
+        converted = sixel_path_cygpath_convert(path);
+        if (converted != NULL) {
+            length = strlen(converted) + 1u;
+            if (length > buffer_size) {
+                free(converted);
+                return NULL;
+            }
+            memcpy(buffer, converted, length);
+            free(converted);
+            return buffer;
+        }
+    }
+# endif
     return path;
 #elif defined(__COSMOPOLITAN__)
     (void)prefix_len;

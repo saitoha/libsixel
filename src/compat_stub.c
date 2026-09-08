@@ -842,13 +842,15 @@ sixel_compat_getenv(const char *name)
         entry = entry->next;
     }
 
+    /* WinAPI reports an empty value as a zero-length successful read. */
+    SetLastError(ERROR_SUCCESS);
     required_size = GetEnvironmentVariableA(name, NULL, 0);
     if (required_size == 0) {
         last_error = GetLastError();
-        if (last_error == ERROR_ENVVAR_NOT_FOUND) {
+        if (last_error != ERROR_SUCCESS) {
             goto end;
         }
-        goto end;
+        required_size = 1;
     }
 
     required_length = (size_t)required_size;
@@ -858,16 +860,19 @@ sixel_compat_getenv(const char *name)
     }
 
     for (;;) {
+        /* Clear the prior error so zero can distinguish empty from absent. */
+        SetLastError(ERROR_SUCCESS);
         actual_size = GetEnvironmentVariableA(name,
                                               value_copy,
                                               required_size);
         if (actual_size == 0) {
             last_error = GetLastError();
-            free(value_copy);
-            if (last_error == ERROR_ENVVAR_NOT_FOUND) {
+            if (last_error != ERROR_SUCCESS) {
+                free(value_copy);
                 goto end;
             }
-            goto end;
+            value_copy[0] = '\0';
+            break;
         }
         if (actual_size < required_size) {
             break;

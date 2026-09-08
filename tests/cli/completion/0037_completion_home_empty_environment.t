@@ -18,7 +18,7 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     echo "not ok" 1 - "empty completion home fallback failed"
     exit 0
 }
-test "${msg#*missing "${ARTIFACT_LOCAL_DIR}"/.zfunc/_img2sixel*}" != \
+test "${msg#*missing *"${ARTIFACT_LOCAL_DIR##*/}"/.zfunc/_img2sixel*}" != \
     "${msg}" || {
     echo "not ok" 1 - "empty completion home did not fall back to HOME"
     exit 0

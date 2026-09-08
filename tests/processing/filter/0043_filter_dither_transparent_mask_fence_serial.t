@@ -4,7 +4,7 @@
 
 set -eux
 
-test "${RUNTIME_ENV_BUILD_OS-}" != windows || {
+test "${TEST_RUNNER_PATH##*.}" != exe || {
     printf "1..0 # SKIP transparent-mask fence probe is unavailable on Windows\n"
     exit 0
 }

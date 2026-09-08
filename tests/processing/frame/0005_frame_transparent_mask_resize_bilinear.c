@@ -22,7 +22,7 @@ int
 test_frame_0005_transparent_mask_resize_bilinear(int argc, char **argv)
 {
     static unsigned char const expected_mask[7] = {
-        1u, 1u, 1u, 0u, 0u, 0u, 0u
+        1u, 1u, 1u, 1u, 0u, 0u, 0u
     };
 
     (void)argc;

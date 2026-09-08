@@ -497,6 +497,37 @@ sixel2png_show_help(void)
     sixel2png_print_option_help(stdout);
 }
 
+static int
+sixel2png_exit_code(SIXELSTATUS status)
+{
+#if defined(LIBSIXEL_OPENVMS)
+    enum { SIXEL2PNG_OPENVMS_INHIBIT_MSG = 0x10000000 };
+
+    switch (status) {
+    case SIXEL_OK:
+        return 0;
+    case SIXEL_BAD_ARGUMENT:
+        return SIXEL2PNG_OPENVMS_INHIBIT_MSG | 2;
+    case SIXEL_BAD_CLIPBOARD:
+        return SIXEL2PNG_OPENVMS_INHIBIT_MSG | 4;
+    default:
+        return SIXEL2PNG_OPENVMS_INHIBIT_MSG | 4;
+    }
+#else
+    /* Keep process statuses stable instead of returning a negative value. */
+    switch (status) {
+    case SIXEL_OK:
+        return 0;
+    case SIXEL_BAD_ARGUMENT:
+        return 2;
+    case SIXEL_BAD_CLIPBOARD:
+        return 3;
+    default:
+        return 1;
+    }
+#endif
+}
+
 
 int
 main(int argc, char *argv[])
@@ -751,8 +782,6 @@ error:
         sixel2png_print_clipboard_hint();
         fprintf(stderr, "\n");
     }
-    status = (-1);
-
 end:
     if (decoder != NULL) {
         sixel_decoder_unref(decoder);
@@ -761,7 +790,7 @@ end:
         free(parsed_options);
         parsed_options = NULL;
     }
-    return status;
+    return sixel2png_exit_code(status);
 }
 
 /* emacs Local Variables:      */

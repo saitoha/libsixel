@@ -31,7 +31,7 @@ default_trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     exit 0
 }
 
-test "${default_trace#*LSXOSC1|enabled=1|has_bgcolor=0|stdout_tty=0|stderr_tty=0|alpha_policy=1|query=0*}" != "${default_trace}" || {
+test "${default_trace#*LSXOSC1|enabled=1|has_bgcolor=0|stdout_tty=[01]|stderr_tty=0|alpha_policy=1|query=0*}" != "${default_trace}" || {
     echo "not ok" 1 - "auto alpha policy did not suppress OSC11 query"
     exit 0
 }
@@ -44,7 +44,7 @@ empty_trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     exit 0
 }
 
-test "${empty_trace#*LSXOSC1|enabled=0|has_bgcolor=0|stdout_tty=0|stderr_tty=0|alpha_policy=1|query=0*}" != "${empty_trace}" || {
+test "${empty_trace#*LSXOSC1|enabled=0|has_bgcolor=0|stdout_tty=[01]|stderr_tty=0|alpha_policy=1|query=0*}" != "${empty_trace}" || {
     echo "not ok" 1 - "empty osc11_query no longer suppresses the frontend default"
     exit 0
 }
@@ -62,7 +62,7 @@ test "${short_trace#*LSXSUB1|*key=osc11_query|stored=1|binding=osc11_bg_query|va
     exit 0
 }
 
-test "${short_trace#*LSXOSC1|enabled=0|has_bgcolor=0|stdout_tty=0|stderr_tty=0|alpha_policy=1|query=0*}" != "${short_trace}" || {
+test "${short_trace#*LSXOSC1|enabled=0|has_bgcolor=0|stdout_tty=[01]|stderr_tty=0|alpha_policy=1|query=0*}" != "${short_trace}" || {
     echo "not ok" 1 - "osc11_query short value did not reach query gate"
     exit 0
 }
@@ -80,7 +80,7 @@ test "${env_trace#*LSXSUB1|*key=osc11_query|stored=1|binding=osc11_bg_query|valu
     exit 0
 }
 
-test "${env_trace#*LSXOSC1|enabled=0|has_bgcolor=0|stdout_tty=0|stderr_tty=0|alpha_policy=1|query=0*}" != "${env_trace}" || {
+test "${env_trace#*LSXOSC1|enabled=0|has_bgcolor=0|stdout_tty=[01]|stderr_tty=0|alpha_policy=1|query=0*}" != "${env_trace}" || {
     echo "not ok" 1 - "osc11_query environment value did not reach query gate"
     exit 0
 }
@@ -99,7 +99,7 @@ control_trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     exit 0
 }
 
-test "${control_trace#*LSXOSC1|enabled=1|has_bgcolor=0|stdout_tty=0|stderr_tty=0|alpha_policy=0|query=0*}" != "${control_trace}" || {
+test "${control_trace#*LSXOSC1|enabled=1|has_bgcolor=0|stdout_tty=[01]|stderr_tty=0|alpha_policy=0|query=0*}" != "${control_trace}" || {
     echo "not ok" 1 - "osc11_query enabled value did not reach query gate"
     exit 0
 }

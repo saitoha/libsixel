@@ -443,13 +443,15 @@ img2sixel_compat_getenv(const char *name)
         entry = entry->next;
     }
 
+    /* WinAPI reports an empty value as a zero-length successful read. */
+    SetLastError(ERROR_SUCCESS);
     required_size = GetEnvironmentVariableA(name, NULL, 0);
     if (required_size == 0) {
         last_error = GetLastError();
-        if (last_error == ERROR_ENVVAR_NOT_FOUND) {
+        if (last_error != ERROR_SUCCESS) {
             return NULL;
         }
-        return NULL;
+        required_size = 1;
     }
 
     required_length = (size_t)required_size;
@@ -459,16 +461,19 @@ img2sixel_compat_getenv(const char *name)
     }
 
     for (;;) {
+        /* Clear the prior error so zero can distinguish empty from absent. */
+        SetLastError(ERROR_SUCCESS);
         actual_size = GetEnvironmentVariableA(name,
                                               value_copy,
                                               required_size);
         if (actual_size == 0) {
             last_error = GetLastError();
-            free(value_copy);
-            if (last_error == ERROR_ENVVAR_NOT_FOUND) {
+            if (last_error != ERROR_SUCCESS) {
+                free(value_copy);
                 return NULL;
             }
-            return NULL;
+            value_copy[0] = '\0';
+            break;
         }
         if (actual_size < required_size) {
             break;
@@ -490,7 +495,7 @@ img2sixel_compat_getenv(const char *name)
     }
 
     if (entry != NULL) {
-        free(entry->value);
+        /* Keep previously returned snapshots alive across refreshes. */
         entry->value = value_copy;
         return entry->value;
     }
@@ -935,7 +940,7 @@ safe__win32_error_to_errno(DWORD e)
 # endif
 
 static int
-safe_stat64W(const wchar_t *path, struct stat *st)
+safe_statW(const wchar_t *path, struct stat *st)
 {
     DWORD attr, ge;
     int result;
@@ -951,15 +956,8 @@ safe_stat64W(const wchar_t *path, struct stat *st)
         return (-1);
     }
 
-    /*
-     * Mirror the library-side stat wrapper so /WX builds avoid
-     * mismatched time_t warnings.
-     */
-# if defined(_USE_32BIT_TIME_T)
-    result = _wstat64i32(path, (struct _stat64i32 *)st);
-# else
-    result = _wstat64(path, (struct _stat64 *)st);
-# endif
+    /* Match the exact layout exposed through the caller's struct stat. */
+    result = _wstat(path, st);
     if (result == 0) {
         return 0;
     }
@@ -973,7 +971,7 @@ safe_stat64W(const wchar_t *path, struct stat *st)
 }
 
 static int
-safe_stat64A(const char *path, struct stat *st)
+safe_statA(const char *path, struct stat *st)
 {
     int wlen;
     int rc;
@@ -1002,7 +1000,7 @@ safe_stat64A(const char *path, struct stat *st)
     (void)MultiByteToWideChar(SAFE_STAT64_CODEPAGE, MB_ERR_INVALID_CHARS,
                               path, -1, w, wlen);
 
-    rc = safe_stat64W(w, st);
+    rc = safe_statW(w, st);
     free(w);
 
     return rc;
@@ -1067,7 +1065,7 @@ img2sixel_compat_stat(const char *path, struct stat *stat_buffer)
     }
 
 #if defined(_MSC_VER)
-    result = safe_stat64A(libc_path, stat_buffer);
+    result = safe_statA(libc_path, stat_buffer);
 #else
     result = stat(libc_path, stat_buffer);
 #endif

@@ -4320,11 +4320,11 @@ sixel_option_registry_validate_uncached(void)
             (schema->argument_form != SIXEL_OPTION_ARGUMENT_SINGLE &&
              schema->argument_form != SIXEL_OPTION_ARGUMENT_LIST) ||
             (schema->argument_match_flags &
-             ~(SIXEL_OPTION_MATCH_PREFIX |
-               SIXEL_OPTION_MATCH_CASE_INSENSITIVE)) != 0u ||
+             ~(unsigned int)(SIXEL_OPTION_MATCH_PREFIX |
+                             SIXEL_OPTION_MATCH_CASE_INSENSITIVE)) != 0u ||
             (schema->environment_match_flags &
-             ~(SIXEL_OPTION_MATCH_PREFIX |
-               SIXEL_OPTION_MATCH_CASE_INSENSITIVE)) != 0u ||
+             ~(unsigned int)(SIXEL_OPTION_MATCH_PREFIX |
+                             SIXEL_OPTION_MATCH_CASE_INSENSITIVE)) != 0u ||
             !sixel_option_registry_environment_name_is_valid(
                 schema->env_name,
                 0) ||

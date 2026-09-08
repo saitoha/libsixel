@@ -17,7 +17,7 @@ msg=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "completion policy long form was rejected"
     exit 0
 }
-test "${msg#*LSXSUB1|*key=bash_path|stored=1|binding=bash_path,bash_path_override|value=/missing-completion-source*}" != "${msg}" || {
+test "${msg#*LSXSUB1|*key=bash_path|stored=1|binding=bash_path,bash_path_override|value=*missing-completion-source*}" != "${msg}" || {
     echo "not ok" 1 - "completion policy long form was not stored"
     exit 0
 }

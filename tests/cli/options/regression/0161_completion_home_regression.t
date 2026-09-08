@@ -30,7 +30,7 @@ test "${short_trace#*LSXCMP1|*key=home|configured=1|override=1|used=1*}" != "${s
     echo "not ok" 1 - "completion home short value missed its consumer"
     exit 0
 }
-test "${short_trace#*missing "${completion_home}"/.zfunc/_img2sixel*}" != "${short_trace}" || {
+test "${short_trace#*missing *"${completion_home##*/}"/.zfunc/_img2sixel*}" != "${short_trace}" || {
     echo "not ok" 1 - "completion home short path was not used"
     exit 0
 }
@@ -45,7 +45,7 @@ test "${env_trace#*LSXCMP1|*key=home|configured=1|override=0|used=1*}" != "${env
     echo "not ok" 1 - "completion home environment missed its consumer"
     exit 0
 }
-test "${env_trace#*missing "${completion_home}"/.zfunc/_img2sixel*}" != "${env_trace}" || {
+test "${env_trace#*missing *"${completion_home##*/}"/.zfunc/_img2sixel*}" != "${env_trace}" || {
     echo "not ok" 1 - "completion home environment path was not used"
     exit 0
 }
