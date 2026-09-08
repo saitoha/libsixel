@@ -700,6 +700,14 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-speed.png \
 	docs/functionality/overview.md \
+	docs/functionality/precision.md \
+	docs/functionality/precision/measurements/precision-clustering-colorspace.png \
+	docs/functionality/precision/measurements/precision-comparison.csv \
+	docs/functionality/precision/measurements/precision-dither.png \
+	docs/functionality/precision/measurements/precision-lookup.png \
+	docs/functionality/precision/measurements/precision-palette-pipeline.png \
+	docs/functionality/precision/measurements/precision-quantizer.png \
+	docs/functionality/precision/measurements/precision-run.json \
 	docs/functionality/quantize-models/measurements/quantize-model-quality.csv \
 	docs/functionality/quantize-models/measurements/quantize-model-quality.png \
 	docs/functionality/quantize-models/measurements/quantize-model-run.json \
@@ -749,6 +757,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/check_palette_pipeline_measurements.py \
 	tools/check_palette_pipeline_suite_measurements.py \
 	tools/check_pixelformat_precision_measurements.py \
+	tools/check_precision_measurements.py \
 	tools/check_quantize_model_measurements.py \
 	tools/check_snap_policy_measurements.py \
 	tools/check_threading_measurements.py \
@@ -769,6 +778,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_palette_pipeline_suite_measurements.py \
 	tools/plot_quality_curve.py \
 	tools/plot_pixelformat_precision_measurements.py \
+	tools/plot_precision_measurements.py \
 	tools/plot_quantize_model_measurements.py \
 	tools/plot_snap_policy_measurements.py \
 	tools/plot_threading_measurements.py \
@@ -782,6 +792,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_palette_pipeline_measurements.sh \
 	tools/reproduce_palette_pipeline_suite_measurements.sh \
 	tools/reproduce_pixelformat_precision_measurements.sh \
+	tools/reproduce_precision_measurements.sh \
 	tools/reproduce_quantize_model_measurements.sh \
 	tools/reproduce_snap_policy_measurements.sh \
 	tools/reproduce_threading_measurements.sh \
