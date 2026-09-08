@@ -1,6 +1,8 @@
 {
   "artifacts": {
     "control_row_count": 173,
+    "high_k_row_count": 725,
+    "high_k_speed_row_count": 200,
     "main_row_count": 150,
     "plots": [
       "snap-policy-quality.png",
@@ -8,13 +10,17 @@
       "snap-policy-size.png",
       "snap-policy-speed.png",
       "snap-policy-controls.png",
-      "snap-policy-fixture-summary.png"
+      "snap-policy-fixture-summary.png",
+      "snap-policy-high-k-quality.png",
+      "snap-policy-high-k-size-speed.png"
     ],
     "speed_row_count": 150,
     "tables": [
       "snap-policy-quality.csv",
       "snap-policy-speed.csv",
-      "snap-policy-controls.csv"
+      "snap-policy-controls.csv",
+      "snap-policy-high-k.csv",
+      "snap-policy-high-k-speed.csv"
     ]
   },
   "build": {
@@ -73,18 +79,18 @@
       "width": 600
     }
   ],
-  "generated_at_utc": "2026-09-08T10:52:33.776070+00:00",
+  "generated_at_utc": "2026-09-08T12:19:31.380700+00:00",
   "measurement_mode": "durable",
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "aebde20bf3b665e886fb3b5cb4c1a0f2dba5d0ed6224768d06dc669afe01cc83",
+      "launcher_sha256": "afb59207a35910194756f094bdd62c1b37a9c8ff116c578a68db8d31fcf814e6",
       "payload": "converters/.libs/img2sixel",
       "payload_sha256": "e13b9a63375c7923ecb6afb5ddb6bfd0cebbac53f1295875d895c0c04fbdae4e"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "21f1f4c14cd361222d700137465cd7080c67b640d4203acbd53147496599a042",
+      "launcher_sha256": "fcfa66e7988a0c0d21c2d76b5ac8b796c68be5db19223b1004853e17b561cfba",
       "payload": "assessment/.libs/lsqa",
       "payload_sha256": "4e00a07c17523529fd186549afa02c96dbedc94d1a7878c3c27b4b12eeed9408"
     }
@@ -190,6 +196,47 @@
     "diffusion": "fs:scan=raster",
     "fixed_point_measurement": "ACT palette channels changed by one SIXEL percentage encode/decode round trip",
     "gpu_policy": "off",
+    "high_k_colors": [
+      200,
+      202,
+      204,
+      206,
+      208,
+      210,
+      212,
+      214,
+      216,
+      218,
+      220,
+      222,
+      224,
+      226,
+      228,
+      230,
+      232,
+      234,
+      236,
+      238,
+      240,
+      242,
+      244,
+      246,
+      248,
+      250,
+      252,
+      254,
+      256
+    ],
+    "high_k_speed_colors": [
+      200,
+      208,
+      216,
+      224,
+      232,
+      240,
+      248,
+      256
+    ],
     "loader": "builtin!",
     "lookup_policy": "none",
     "main_merge_policy": "none",
@@ -223,14 +270,14 @@
       "all"
     ]
   },
-  "schema_version": 1,
+  "schema_version": 2,
   "source": {
     "machine": "arm64",
     "manifest": "tools/snap_policy_suite.json",
     "manifest_sha256": "1b6dda1f4ae3d9b28cff59672508f53bcdb867a97660ee00fbf4c2bb6853afe1",
     "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
     "python": "3.14.5",
-    "revision": "c5acbeadb10ac2d1556fb8d3a6aee0ffe589b2bd",
+    "revision": "bd00a0a034ff1e8fd4f233911f686a4aed0ea9ac",
     "tracked_worktree_state_at_start": "clean"
   }
 }

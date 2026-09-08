@@ -105,6 +105,10 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/snap-policies/measurements/snap-policy-controls.png \
 	docs/functionality/snap-policies/measurements/snap-policy-fixed-point.png \
 	docs/functionality/snap-policies/measurements/snap-policy-fixture-summary.png \
+	docs/functionality/snap-policies/measurements/snap-policy-high-k.csv \
+	docs/functionality/snap-policies/measurements/snap-policy-high-k-quality.png \
+	docs/functionality/snap-policies/measurements/snap-policy-high-k-size-speed.png \
+	docs/functionality/snap-policies/measurements/snap-policy-high-k-speed.csv \
 	docs/functionality/snap-policies/measurements/snap-policy-quality.csv \
 	docs/functionality/snap-policies/measurements/snap-policy-quality.png \
 	docs/functionality/snap-policies/measurements/snap-policy-run.json \
