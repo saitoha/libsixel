@@ -1,6 +1,6 @@
 # Palette Cover Policy
 
-`-a POLICY` and `--cover-policy=POLICY` control a final palette-repair pass that runs after palette construction. The pass is independent of the quantizer selected by `-Q`: the quantizer chooses representative colors, while cover repair tries to keep colors near important parts of the source gamut reachable during palette application and dithering. Reversible 101-level tone mapping is a different transformation configured by [`--snap-policy`](snap-policy.md).
+`-a POLICY` and `--cover-policy=POLICY` control a final palette-repair pass that runs after palette construction. The pass is independent of the quantizer selected by `-Q`: the quantizer chooses representative colors, while cover repair tries to keep colors near important parts of the source gamut reachable during palette application and dithering.
 
 ## Pipeline position
 
@@ -11,9 +11,6 @@ sampling -> palette-space transform -> binning -> quantizer (-Q)
                                                     |
                                                     v
                   solver refinement and final merge (-F)
-                                                    |
-                                                    v
-                         reversible snapping when -6 is active
                                                     |
                                                     v
                               palette cover repair (-a)
@@ -165,8 +162,6 @@ The lowest rung is disabled below 32 colors because eight anchors would consume 
 
 `off` is the control arm for quantizer, merge, lookup, and diffusion experiments. It is also appropriate when a caller supplies a deliberately constrained palette and any post-quantizer mutation would violate that external contract.
 
-`off` affects only cover repair. Reversible safe-tone snapping still runs when `-6` requests it and is configured independently by `--snap-policy`.
-
 ### `corners`
 
 In hard mode, `corners` targets the eight points in $\{0,255\}^3$. These anchors expand reach toward fully saturated combinations and black and white. In soft mode, the name denotes an eight-anchor budget rather than cube geometry.
@@ -282,7 +277,7 @@ img2sixel -p 128 -a edges:Wsoft:V1 image.png
 
 ## Implementation references
 
-The option schema and environment bindings are defined in [`options-registry.c`](../../src/options-registry.c). Cover policy resolution, fixed anchors, soft candidate selection, thresholds, and placement are implemented in [`palette-common-cover.c`](../../src/palette-common-cover.c) with shared constants and rationale in [`palette-common-cover.h`](../../src/palette-common-cover.h). [`palette.c`](../../src/palette.c) owns the final ordering and applies cover repair after every successful byte-palette solver. Safe-tone behavior is owned by the separate [Palette Snap Policy](snap-policy.md).
+The option schema and environment bindings are defined in [`options-registry.c`](../../src/options-registry.c). Cover policy resolution, fixed anchors, soft candidate selection, thresholds, and placement are implemented in [`palette-common-cover.c`](../../src/palette-common-cover.c) with shared constants and rationale in [`palette-common-cover.h`](../../src/palette-common-cover.h). [`palette.c`](../../src/palette.c) owns the final ordering and applies cover repair after every successful byte-palette solver.
 
 For the stages before and after this pass, see [Palette Construction Pipeline](palette-pipeline.md), [Palette Quantization](quantization.md), [Encoder Working Precision](precision.md), [Dithering](dithering.md), and [Lookup Policy](lookup-policy.md).
 
@@ -301,4 +296,4 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 
 ### Coverage audit boundary
 
-The focused suite covers the core policy ladder, `auto` boundaries, explicit override precedence, hard and soft modes, fixed and growing palettes, every quantizer, and each registered suboption consumer. It does not yet directly test every top-level spelling (`off`, `faces`, `edges`, `all`, `0`, and `1`), invalid or empty top-level values, repeated-option last-wins behavior, float32 bypass and unsupported-soft fallback, multi-frame state, or the ordering interaction with `--6reversible`. Quality tests enforce a broad MS-SSIM floor on one small fixture but do not replace the missing reproducible cover-policy quality, speed, and size measurement suite described above.
+The focused suite covers the core policy ladder, `auto` boundaries, explicit override precedence, hard and soft modes, fixed and growing palettes, every quantizer, and each registered suboption consumer. It does not yet directly test every top-level spelling (`off`, `faces`, `edges`, `all`, `0`, and `1`), invalid or empty top-level values, repeated-option last-wins behavior, float32 bypass and unsupported-soft fallback, or multi-frame state. Quality tests enforce a broad MS-SSIM floor on one small fixture but do not replace the missing reproducible cover-policy quality, speed, and size measurement suite described above.
