@@ -101,6 +101,16 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/cover-policy-figures/cover-reachability-limits.svg \
 	docs/functionality/cover-policy-figures/cover-rgb-corners.svg \
 	docs/functionality/snap-policy.md \
+	docs/functionality/snap-policies/measurements/snap-policy-controls.csv \
+	docs/functionality/snap-policies/measurements/snap-policy-controls.png \
+	docs/functionality/snap-policies/measurements/snap-policy-fixed-point.png \
+	docs/functionality/snap-policies/measurements/snap-policy-fixture-summary.png \
+	docs/functionality/snap-policies/measurements/snap-policy-quality.csv \
+	docs/functionality/snap-policies/measurements/snap-policy-quality.png \
+	docs/functionality/snap-policies/measurements/snap-policy-run.json \
+	docs/functionality/snap-policies/measurements/snap-policy-size.png \
+	docs/functionality/snap-policies/measurements/snap-policy-speed.csv \
+	docs/functionality/snap-policies/measurements/snap-policy-speed.png \
 	docs/functionality/dithering.md \
 	docs/functionality/dither-policies/measurements/dither-policy-delta-e00.png \
 	docs/functionality/dither-policies/measurements/dither-policy-ms-ssim.png \
@@ -218,6 +228,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/check_palette_pipeline_suite_measurements.py \
 	tools/check_precision_measurements.py \
 	tools/check_quantize_model_measurements.py \
+	tools/check_snap_policy_measurements.py \
 	tools/check_threading_measurements.py \
 	tools/generate_palette_pipeline_suite_fixtures.py \
 	tools/gen_perl_constants.pl \
@@ -236,6 +247,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_quality_curve.py \
 	tools/plot_precision_measurements.py \
 	tools/plot_quantize_model_measurements.py \
+	tools/plot_snap_policy_measurements.py \
 	tools/plot_threading_measurements.py \
 	tools/reproduce_lookup_policy_acceleration.sh \
 	tools/reproduce_clustering_binning_threshold_measurements.sh \
@@ -247,7 +259,9 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_palette_pipeline_suite_measurements.sh \
 	tools/reproduce_precision_measurements.sh \
 	tools/reproduce_quantize_model_measurements.sh \
+	tools/reproduce_snap_policy_measurements.sh \
 	tools/reproduce_threading_measurements.sh \
+	tools/snap_policy_suite.json \
 	tools/timeline.py
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.

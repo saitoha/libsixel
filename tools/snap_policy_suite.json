@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "description": "Palette snap policy measurement fixtures",
+  "fixtures": [
+    {
+      "id": "natural-snake",
+      "label": "natural photograph",
+      "class": "natural",
+      "path": "images/snake.png",
+      "width": 600,
+      "height": 450
+    },
+    {
+      "id": "flat-artwork",
+      "label": "flat artwork",
+      "class": "flat-artwork",
+      "path": "images/vimperator3.png",
+      "width": 582,
+      "height": 746
+    },
+    {
+      "id": "smooth-gradient",
+      "label": "smooth gradient",
+      "class": "gradient",
+      "path": "images/measurements/palette-pipeline/smooth-gradient-600x450.png",
+      "width": 600,
+      "height": 450
+    },
+    {
+      "id": "rare-colors",
+      "label": "sparse rare colors",
+      "class": "rare-color",
+      "path": "images/measurements/palette-pipeline/rare-colors-600x450.png",
+      "width": 600,
+      "height": 450
+    },
+    {
+      "id": "a98-gamut",
+      "label": "Adobe RGB gamut ramps",
+      "class": "broad-gamut",
+      "path": "images/measurements/palette-pipeline/a98-gamut-600x450.png",
+      "width": 600,
+      "height": 450
+    }
+  ]
+}

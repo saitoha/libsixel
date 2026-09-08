@@ -39,6 +39,7 @@ EXTRA_DIST = libsixel-config.in \
              check_lookup_policy_measurements.py \
              check_precision_measurements.py \
              check_quantize_model_measurements.py \
+             check_snap_policy_measurements.py \
              check_threading_measurements.py \
              plot_cover_policy_figures.py \
              plot_dither_policy_measurements.py \
@@ -49,6 +50,7 @@ EXTRA_DIST = libsixel-config.in \
              plot_lookup_policy_speed.py \
              plot_precision_measurements.py \
              plot_quantize_model_measurements.py \
+             plot_snap_policy_measurements.py \
              plot_threading_measurements.py \
              reproduce_lookup_policy_acceleration.sh \
              reproduce_cover_policy_figures.sh \
@@ -57,7 +59,9 @@ EXTRA_DIST = libsixel-config.in \
              reproduce_lookup_policy_measurements.sh \
              reproduce_precision_measurements.sh \
              reproduce_quantize_model_measurements.sh \
+             reproduce_snap_policy_measurements.sh \
              reproduce_threading_measurements.sh \
+             snap_policy_suite.json \
              timeline.py
 
 if HAVE_JPEG
