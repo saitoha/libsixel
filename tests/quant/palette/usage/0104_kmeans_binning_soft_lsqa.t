@@ -19,7 +19,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/kmeans-binning-soft.six"
 lsqa_run_status=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qauto:binning_policy=soft \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --binning-policy=soft \
     -Qk:N6:Msrgb:Dtrilinear \
     -p 64 \
     -o "${output_sixel}" \

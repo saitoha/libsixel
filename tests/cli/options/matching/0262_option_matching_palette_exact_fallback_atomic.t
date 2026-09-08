@@ -15,7 +15,7 @@ status=0
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_QUANTIZER_FAILURE=kmeans \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    -Qauto:binning_policy=exact -Qkmeans \
+    --binning-policy=exact -Qkmeans \
     -dnone -p16 "-~none" -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || status=$?
 

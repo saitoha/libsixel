@@ -108,10 +108,9 @@ indexed_adaptive_encode_is_valid(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    status = sixel_encoder_setopt(
-        encoder,
-        SIXEL_OPTFLAG_QUANTIZE_MODEL,
-        "auto:sampling_policy=adaptive-grid");
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_SAMPLING_POLICY,
+                                  "adaptive-grid");
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }

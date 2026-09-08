@@ -71,7 +71,9 @@ timelines fix the following non-threading choices:
 ```text
 --precision=8bit
 --quality=full
---quantize-model=kmeans:seed=1:sampling_policy=full-frame:binning_policy=hard
+--sampling-policy=full-frame
+--binning-policy=hard
+--quantize-model=kmeans:seed=1
 --merge-policy=ward
 -Xoklab
 -Wgamma

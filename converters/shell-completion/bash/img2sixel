@@ -127,25 +127,6 @@ _img2sixel()
         quant_tail="${cur#*:}"
         quant_item="${quant_tail##*:}"
 
-        if [[ ${cur} == *:* && ${quant_item} == *=* ]]; then
-            quant_key="${quant_item%%=*}"
-            quant_value="${quant_item#*=}"
-            quant_prefix="${cur%${quant_value}}"
-            if [[ ${quant_key} == sampling_policy ]]; then
-                for quant_candidate in auto full-frame adaptive-grid; do
-                    [[ ${quant_candidate} == ${quant_value}* ]] || continue
-                    COMPREPLY+=("${quant_prefix}${quant_candidate}")
-                done
-                return 0
-            elif [[ ${quant_key} == binning_policy ]]; then
-                for quant_candidate in auto none exact hard soft; do
-                    [[ ${quant_candidate} == ${quant_value}* ]] || continue
-                    COMPREPLY+=("${quant_prefix}${quant_candidate}")
-                done
-                return 0
-            fi
-        fi
-
         if [[ ${cur} == *:* && ( ${quant_base} == auto || \
             ${quant_base} == auto* || \
             ${quant_base} == heckbert || \
@@ -164,9 +145,7 @@ _img2sixel()
             fi
 
             quant_prefix="${cur%${quant_item}}"
-            for quant_candidate in C64 C128 C256 sample_target= \
-                Gauto Gfull-frame Gadaptive-grid sampling_policy= \
-                Wauto Wnone Wexact Whard Wsoft binning_policy=; do
+            for quant_candidate in C64 C128 C256 sample_target=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
@@ -261,9 +240,7 @@ _img2sixel()
                 S1 S42 seed= restarts= \
                 iter= iter_max= miniter= polish_iter= \
                 feedback_slots= feedback_interval= \
-                C64 C128 C256 sample_target= \
-                Gauto Gfull-frame Gadaptive-grid sampling_policy= \
-                Wauto Wnone Wexact Whard Wsoft binning_policy=; do
+                C64 C128 C256 sample_target=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
@@ -364,9 +341,7 @@ _img2sixel()
                 clara_trials= clara_sample= \
                 clarans_local= clarans_neighbors= \
                 bandit_iter= bandit_candidates= bandit_batch= \
-                C64 C128 C256 sample_target= \
-                Gauto Gfull-frame Gadaptive-grid sampling_policy= \
-                Wauto Wnone Wexact Whard Wsoft binning_policy=; do
+                C64 C128 C256 sample_target=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
@@ -497,9 +472,7 @@ _img2sixel()
                 histbits= point_budget= rare_keep= prune_mass= \
                 budget_policy= budget_scale= swap_topk= \
                 swap_update= swap_patience= swap_min_gain= \
-                C64 C128 C256 sample_target= \
-                Gauto Gfull-frame Gadaptive-grid sampling_policy= \
-                Wauto Wnone Wexact Whard Wsoft binning_policy=; do
+                C64 C128 C256 sample_target=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
@@ -753,6 +726,14 @@ _img2sixel()
         ;;
     -Q|--quantize-model)
         _img2sixel_complete_quantize_model
+        return 0
+        ;;
+    -4|--sampling-policy)
+        COMPREPLY=( $( compgen -W 'auto full-frame adaptive-grid' -- "$cur" ) )
+        return 0
+        ;;
+    -5|--binning-policy)
+        COMPREPLY=( $( compgen -W 'auto none exact hard soft' -- "$cur" ) )
         return 0
         ;;
     -F|--merge-policy)
@@ -1047,6 +1028,8 @@ _img2sixel()
                                    -6 --6reversible \
                                    -p --colors \
                                    -Q --quantize-model \
+                                   -4 --sampling-policy \
+                                   -5 --binning-policy \
                                    -F --merge-policy \
                                    -a --cover-policy \
                                    -_ --snap-policy \

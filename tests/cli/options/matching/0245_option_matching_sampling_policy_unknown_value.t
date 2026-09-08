@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify the quantize sampling_policy suboption rejects an unknown value.
+# Verify sampling-policy rejects an unknown policy name.
 
 set -eux
 
@@ -13,7 +13,7 @@ set -v
 
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qauto:sampling_policy=unknown \
+    --sampling-policy=unknown \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || status=$?
 
@@ -22,10 +22,10 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-test "${message#*sampling_policy*}" != "${message}" || {
+test "${message#*--sampling-policy*}" != "${message}" || {
     echo "not ok 1 - unknown sampling-policy diagnostic is missing"
     exit 0
 }
 
-echo "ok 1 - quantize sampling_policy rejects an unknown value"
+echo "ok 1 - sampling-policy rejects an unknown policy"
 exit 0

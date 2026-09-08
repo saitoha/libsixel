@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qauto:binning_policy=soft \
+    --binning-policy=soft \
     -Qkmeans:binbits=6:mapping=srgb:softdist=trilinear:feedback=1 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {

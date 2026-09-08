@@ -99,11 +99,7 @@ performance.
 The migration names the two successful paths and temporarily preserves their
 selection thresholds:
 
-The common `-Q MODEL:sampling_policy=auto|full-frame|adaptive-grid`
-suboption exposes this choice as an independent palette-pipeline policy.
-`SIXEL_SAMPLING_POLICY` supplies the same policy through the environment, and
-an explicit suboption value takes precedence. `auto` retains the
-resource-aware selection described below.
+`-4`/`--sampling-policy=auto|full-frame|adaptive-grid` exposes this choice as an independent top-level encoder policy. `SIXEL_SAMPLING_POLICY` supplies the same policy through the environment, and an explicit command-line value takes precedence. `auto` retains the resource-aware selection described below.
 `full-frame` consumes the frame after clipping, resizing, and colorspace
 preprocessing. `adaptive-grid` consumes the loader output and constructs its
 owned sample before preprocessing begins. The latter may run on a palette
@@ -195,7 +191,7 @@ Binning consumes points after their palette-space coordinates are known. It
 controls how sample mass is aggregated, independently of the quantizer that
 will consume the result.
 
-The common `-Q MODEL:binning_policy=POLICY` suboption and its
+The top-level `-5`/`--binning-policy=POLICY` option and its
 `SIXEL_BINNING_POLICY` environment default distinguish:
 
 ```text
@@ -205,10 +201,7 @@ kernel = trilinear
 grid-map = POLICY
 ```
 
-The binning policy has one typed suboption spelling and one environment
-spelling. Model-specific suboptions do not select the binning policy.
-Diagnostics retain `environment`, `explicit`, or `auto` provenance after
-precedence is applied.
+The binning policy has one command-line spelling and one environment spelling. Quantizer suboptions do not select the binning policy. Diagnostics retain `environment`, `explicit`, or `auto` provenance after precedence is applied.
 
 The modes have these intended meanings:
 
@@ -318,12 +311,11 @@ K-means. Other quantizers remain unsupported until their palette-builder
 boundaries consume the shared weighted-point-set artifact. Resolver failure
 never triggers an allocation-time or execution-time algorithm fallback.
 
-Wave 7b exposes the common suboption at the encoder boundary. Palette
+Wave 7b exposes the top-level option at the encoder boundary. Palette
 construction preflights compatibility without committing the quantizer to the
 per-frame lifecycle state. The palette builder resolves the concrete consumer
 only when it is ready to construct the palette. Thus
-`-Qauto:binning_policy=hard` and `-Qauto:binning_policy=exact`, `hard`, or
-`soft` select K-means, while an
+`-Qauto --binning-policy=hard` and `-Qauto --binning-policy=exact`, `hard`, or `soft` select K-means, while an
 incompatible explicit quantizer is rejected. This capability preflight runs
 before sampling and scheduler allocation, so a known policy error cannot be
 misclassified as a worker failure or enter the full-frame sampling fallback.

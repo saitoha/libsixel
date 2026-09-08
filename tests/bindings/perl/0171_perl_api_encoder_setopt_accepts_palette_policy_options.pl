@@ -19,8 +19,12 @@ plan tests => 1;
 my $ok = eval {
     my $encoder = Image::LibSIXEL::Encoder->new();
     $encoder->setopt(
-        Image::LibSIXEL::Constants::SIXEL_OPTFLAG_QUANTIZE_MODEL(),
-        'auto:sampling_policy=adaptive-grid:binning_policy=hard'
+        Image::LibSIXEL::Constants::SIXEL_OPTFLAG_SAMPLING_POLICY(),
+        'adaptive-grid'
+    );
+    $encoder->setopt(
+        Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BINNING_POLICY(),
+        'hard'
     );
     $encoder->setopt(
         Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BACKGROUND_POLICY(),
@@ -29,5 +33,5 @@ my $ok = eval {
     1;
 };
 
-ok($ok, 'encoder accepts nested palette policy suboptions');
+ok($ok, 'encoder accepts top-level palette policy option flags');
 diag($@) if !$ok && $@ ne '';

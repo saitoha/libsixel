@@ -14,7 +14,7 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_QUANTIZER_POST_BUILD_FAILURE=kcenter-float32 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    -Qauto:binning_policy=hard -Qcenter --precision=float32 \
+    --binning-policy=hard -Qcenter --precision=float32 \
     -dnone -p16 "-~none" -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || {
     echo "not ok 1 - legacy K-center retry failed"

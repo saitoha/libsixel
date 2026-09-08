@@ -52,6 +52,8 @@ try {
         'SIXEL_LUT_POLICY_RBC' => 0x9,
         'SIXEL_LUT_POLICY_MAHALANOBIS' => 0xa,
         'SIXEL_OPTFLAG_WORKING_COLORSPACE' => 'W',
+        'SIXEL_OPTFLAG_SAMPLING_POLICY' => '4',
+        'SIXEL_OPTFLAG_BINNING_POLICY' => '5',
         'SIXEL_OPTFLAG_BACKGROUND_POLICY' => 'N',
     ];
     foreach ($checks as $name => $expectedValue) {

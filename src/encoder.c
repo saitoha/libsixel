@@ -9100,7 +9100,36 @@ sixel_encoder_new(
         SIXEL_OPTION_SCOPE_ENCODER,
         *ppencoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
-    if ((*ppencoder)->palette_binning_override != 0) {
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_SAMPLING_POLICY);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_SAMPLING_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &policy_value)) {
+        (*ppencoder)->palette_sampling_policy = policy_value;
+        (*ppencoder)->palette_sampling_override = 1;
+    }
+
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_BINNING_POLICY);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_BINNING_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &policy_value)) {
+        (*ppencoder)->palette_binning_policy = policy_value;
+        (*ppencoder)->palette_binning_override = 1;
         (*ppencoder)->palette_binning_origin =
             SIXEL_PALETTE_POLICY_ORIGIN_ENVIRONMENT;
     }
@@ -9841,14 +9870,6 @@ sixel_encoder_apply_quantize_resolution(
 {
     SIXELSTATUS status;
     sixel_option_argument_schema_t const *schema;
-    size_t assignment_index;
-    int sampling_policy;
-    int sampling_override;
-    int binning_policy;
-    int binning_override;
-    int binning_origin;
-    int sampling_assigned;
-    int binning_assigned;
 
     status = SIXEL_OK;
     schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL);
@@ -9856,11 +9877,6 @@ sixel_encoder_apply_quantize_resolution(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sampling_policy = encoder->palette_sampling_policy;
-    sampling_override = encoder->palette_sampling_override;
-    binning_policy = encoder->palette_binning_policy;
-    binning_override = encoder->palette_binning_override;
-    binning_origin = encoder->palette_binning_origin;
     encoder->quantize_model = resolution->resolved_base_value;
     encoder->quantize_model_heckbert_profile =
         SIXEL_HECKBERT_PROFILE_COMPAT;
@@ -9875,48 +9891,6 @@ sixel_encoder_apply_quantize_resolution(
         resolution);
     if (SIXEL_FAILED(status)) {
         return status;
-    }
-    sampling_assigned = 0;
-    binning_assigned = 0;
-    assignment_index = 0u;
-    while (assignment_index < resolution->assignment_count) {
-        if (resolution->assignments[assignment_index].key_def != NULL &&
-            resolution->assignments[assignment_index].key_def->
-                binding.identifier != NULL) {
-            if (strcmp(resolution->assignments[assignment_index].key_def->
-                           binding.identifier,
-                       SIXEL_SUBOPTION_BINDING_ID_2(
-                           palette_sampling_policy,
-                           palette_sampling_override)) == 0) {
-                sampling_assigned = 1;
-            }
-            if (strcmp(resolution->assignments[assignment_index].key_def->
-                           binding.identifier,
-                       SIXEL_SUBOPTION_BINDING_ID_2(
-                           palette_binning_policy,
-                           palette_binning_override)) == 0) {
-                binning_assigned = 1;
-            }
-        }
-        ++assignment_index;
-    }
-    /*
-     * Sampling and binning remain independent pipeline policies even though
-     * their CLI syntax lives under -Q. A later -Q must retain either an
-     * earlier explicit selection or the environment-derived initial state
-     * when it does not assign that common suboption itself.
-     */
-    if (sampling_assigned == 0) {
-        encoder->palette_sampling_policy = sampling_policy;
-        encoder->palette_sampling_override = sampling_override;
-    }
-    if (binning_assigned == 0) {
-        encoder->palette_binning_policy = binning_policy;
-        encoder->palette_binning_override = binning_override;
-        encoder->palette_binning_origin = binning_origin;
-    } else {
-        encoder->palette_binning_origin =
-            SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT;
     }
     sixel_encoder_apply_heckbert_profile_defaults(encoder);
     return SIXEL_OK;
@@ -11502,6 +11476,35 @@ sixel_encoder_setopt(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        break;
+    case SIXEL_OPTFLAG_SAMPLING_POLICY:
+        status = sixel_encoder_apply_registered_policy_argument(
+            encoder,
+            SIXEL_OPTION_SCHEMA_SAMPLING_POLICY,
+            value,
+            &encoder->palette_sampling_policy,
+            &encoder->palette_sampling_override,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_BINNING_POLICY:
+        status = sixel_option_parse_scalar_argument(
+            SIXEL_OPTION_SCHEMA_BINNING_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            value,
+            &scalar_value,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        encoder->palette_binning_policy = scalar_value.int_value;
+        encoder->palette_binning_override = 1;
+        encoder->palette_binning_origin =
+            SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT;
         break;
     case SIXEL_OPTFLAG_MERGE_POLICY:  /* F */
         status = sixel_encoder_apply_registered_policy_argument(

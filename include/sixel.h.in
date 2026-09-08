@@ -532,6 +532,27 @@ typedef int SIXELSTATUS;
                                                     swap_min_gain:
                                                       float in 0.0-8.0
                                                 */
+#define SIXEL_OPTFLAG_SAMPLING_POLICY   ('4')  /*
+                                                   -4 POLICY,
+                                                   --sampling-policy=POLICY:
+                                                   choose which pixels feed
+                                                   palette construction:
+                                                     auto
+                                                     full-frame
+                                                     adaptive-grid
+                                                */
+#define SIXEL_OPTFLAG_BINNING_POLICY    ('5')  /*
+                                                   -5 POLICY,
+                                                   --binning-policy=POLICY:
+                                                   choose how sampled colors
+                                                   become weighted points:
+                                                     auto (hard when
+                                                           supported)
+                                                     none
+                                                     exact
+                                                     hard
+                                                     soft
+                                                */
 #define SIXEL_OPTFLAG_MERGE_POLICY      ('F')  /*
                                                   -F POLICY,
                                                   --merge-policy=POLICY:

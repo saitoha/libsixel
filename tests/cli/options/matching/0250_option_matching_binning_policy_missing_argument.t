@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify the quantize binning_policy suboption requires a value.
+# Verify the long binning-policy option requires an argument.
 
 set -eux
 
@@ -13,17 +13,17 @@ set -v
 
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qauto:binning_policy= --threads=1 2>&1) || status=$?
+    --binning-policy --threads=1 2>&1) || status=$?
 
 test "${status}" -eq 2 || {
     echo "not ok 1 - missing binning-policy argument exit status mismatch"
     exit 0
 }
 
-test "${message#*binning_policy*}" != "${message}" || {
-    echo "not ok 1 - missing binning_policy value diagnostic is missing"
+test "${message#*--binning-policy*}" != "${message}" || {
+    echo "not ok 1 - missing binning-policy diagnostic is missing"
     exit 0
 }
 
-echo "ok 1 - quantize binning_policy requires a value"
+echo "ok 1 - binning-policy requires an argument"
 exit 0

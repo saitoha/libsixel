@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qauto:binning_policy=soft -Qk:N6:Msrgb:Dtrilinear:F1 \
+    -5soft -Qk:N6:Msrgb:Dtrilinear:F1 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
     echo "not ok" 1 - "-Q kmeans short histogram suboptions were rejected"

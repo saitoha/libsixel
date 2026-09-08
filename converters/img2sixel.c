@@ -233,14 +233,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "Kvalue.\n"
         "      every model accepts :sample_target=COUNT (:CCOUNT), which\n"
         "      overrides automatic palette sampling with a positive count.\n"
-        "      every model also accepts these independent pipeline policies:\n"
-        "        :sampling_policy=POLICY (:GPOLICY) chooses source pixels:\n"
-        "          auto, full-frame, or adaptive-grid.\n"
-        "        :binning_policy=POLICY (:WPOLICY) chooses point weighting:\n"
-        "          auto, none, exact, hard, or soft.\n"
-        "        Explicit exact, hard, or soft selects k-means when MODEL is\n"
-        "        auto. SIXEL_SAMPLING_POLICY and SIXEL_BINNING_POLICY provide\n"
-        "        the corresponding environment defaults.\n"
         "      auto     -> choose quantize model automatically (default) auto maps to the heckbert\n"
         "      heckbert -> traditional Heckbert median-cut implementation. auto/heckbert\n"
         "      sub-option:\n"
@@ -278,8 +270,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          default 1).\n"
         "          :feedback_interval=COUNT run feedback every N iterations (1-64, default 1).\n"
         "      compact suboption names (uppercase letter + value):\n"
-        "        all models: sample_target=C, sampling_policy=G,\n"
-        "          binning_policy=W\n"
+        "        all models: sample_target=C\n"
         "        heckbert: profile=P\n"
         "        kmeans: inittype=I, threshold=T, binbits=N, mapping=M,\n"
         "          softdist=D, feedback=F,\n"
@@ -375,6 +366,31 @@ static cli_option_help_t const g_option_help_table[] = {
         "          swap iterations (0 or 1-8, default 0).\n"
         "          :swap_min_gain=VALUE minimum radius gain per accepted swap\n"
         "          (0.0-8.0, default 0.0).\n"
+    },
+    {
+        '4',
+        "sampling-policy",
+        "-4 POLICY, --sampling-policy=POLICY\n"
+        "    choose which pixels feed palette construction:\n"
+        "      auto          -> preserve the resource-aware default.\n"
+        "      full-frame    -> use the preprocessed output frame.\n"
+        "      adaptive-grid -> sample the loaded frame before preprocessing.\n"
+        "    Thread availability may overlap adaptive sampling with other "
+        "work,\n"
+        "    but does not change an explicitly selected policy.\n"
+    },
+    {
+        '5',
+        "binning-policy",
+        "-5 POLICY, --binning-policy=POLICY\n"
+        "    choose how sampled colors become weighted quantizer input:\n"
+        "      auto  -> use hard when supported; otherwise use a compatible "
+        "form.\n"
+        "      none  -> pass every sampled color through unchanged.\n"
+        "      exact -> combine only identical colors at full precision.\n"
+        "      hard  -> assign each color to one finite grid bin.\n"
+        "      soft  -> distribute color mass with trilinear weights.\n"
+        "    Explicit exact, hard, or soft selects k-means when -Q is auto.\n"
     },
     {
         'F',
@@ -1442,13 +1458,13 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_SAMPLING_POLICY",
         "select pixels used for palette construction. Accepts auto,\n"
-        "full-frame, or adaptive-grid. The -Q sampling_policy suboption\n"
+        "full-frame, or adaptive-grid. The -4/--sampling-policy option\n"
         "takes precedence."
     },
     {
         "SIXEL_BINNING_POLICY",
         "select how sampled colors become weighted quantizer input. Accepts\n"
-        "auto, none, exact, hard, or soft. The -Q binning_policy suboption\n"
+        "auto, none, exact, hard, or soft. The -5/--binning-policy option\n"
         "takes precedence."
     },
     {
@@ -2230,7 +2246,7 @@ static char const g_img2sixel_optstring[] =
     "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:_:~:G:j:x:J:y:z:K:"
     "kil:T:t:ugvSn:"
     "PE:U:B:N:A:+:Z:Y:C:D@:"
-    "OVX:W:H%:1:2:3:";
+    "OVX:W:H%:1:2:3:4:5:";
 
 static int
 img2sixel_option_allows_leading_dash(int short_opt)
@@ -3232,6 +3248,8 @@ img2sixel_main(int argc, char *argv[])
         {"6reversible",           no_argument,        &long_opt, '6'},
         {"colors",                required_argument,  &long_opt, 'p'},
         {"quantize-model",        required_argument,  &long_opt, 'Q'},
+        {"sampling-policy",       required_argument,  &long_opt, '4'},
+        {"binning-policy",        required_argument,  &long_opt, '5'},
         {"merge-policy",          required_argument,  &long_opt, 'F'},
         {"cover-policy",          required_argument,  &long_opt, 'a'},
         {"snap-policy",           required_argument,  &long_opt, '_'},
@@ -3653,6 +3671,7 @@ unknown_option_error:
             "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-. precision] [-p colors] [-m file]\n"
             "                 [-d diffusiontype] [-Q model]\n"
+            "                 [-4 samplingpolicy] [-5 binningpolicy]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality]\n"
             "                 [-F mergepolicy] [-a coverpolicy]\n"

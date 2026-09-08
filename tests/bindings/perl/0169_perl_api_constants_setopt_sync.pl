@@ -48,6 +48,8 @@ for $name (@expected) {
 }
 
 $constants_ok = @missing == 0 &&
+    Image::LibSIXEL::Constants::SIXEL_OPTFLAG_SAMPLING_POLICY() eq '4' &&
+    Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BINNING_POLICY() eq '5' &&
     Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BACKGROUND_POLICY() eq 'N';
 
 $ok_loader = eval {
@@ -69,6 +71,10 @@ ok(
 );
 
 diag('missing constants: ' . join(', ', @missing)) if !$constants_ok && @missing;
+diag('SIXEL_OPTFLAG_SAMPLING_POLICY value mismatch')
+    if Image::LibSIXEL::Constants::SIXEL_OPTFLAG_SAMPLING_POLICY() ne '4';
+diag('SIXEL_OPTFLAG_BINNING_POLICY value mismatch')
+    if Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BINNING_POLICY() ne '5';
 diag('SIXEL_OPTFLAG_BACKGROUND_POLICY value mismatch')
     if Image::LibSIXEL::Constants::SIXEL_OPTFLAG_BACKGROUND_POLICY() ne 'N';
 diag($loader_err) if !$ok_loader && $loader_err ne '';
