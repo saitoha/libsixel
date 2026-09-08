@@ -13,6 +13,8 @@ from typing import Dict, List, Sequence, Set, Tuple
 
 
 COLORS = (8, 16, 32, 64, 128, 256)
+HIGH_K_COLORS = tuple(range(200, 257, 2))
+HIGH_K_SPEED_COLORS = (200, 208, 216, 224, 232, 240, 248, 256)
 CONTROL_COLORS = 64
 COLORSPACES = ("gamma", "linear", "oklab", "cielab", "din99d")
 WORK_FORMATS = (
@@ -40,6 +42,8 @@ PLOTS = (
     "snap-policy-speed.png",
     "snap-policy-controls.png",
     "snap-policy-fixture-summary.png",
+    "snap-policy-high-k-quality.png",
+    "snap-policy-high-k-size-speed.png",
 )
 
 
@@ -65,7 +69,7 @@ def read_metadata(path: Path, mode: str) -> Dict[str, object]:
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
         metadata = json.load(handle)
-    if not isinstance(metadata, dict) or metadata.get("schema_version") != 1:
+    if not isinstance(metadata, dict) or metadata.get("schema_version") != 2:
         fail("unsupported snap measurement metadata schema")
     if metadata.get("measurement_mode") != mode:
         fail("snap measurement mode differs from checker mode")
@@ -106,6 +110,8 @@ def read_metadata(path: Path, mode: str) -> Dict[str, object]:
     expected_protocol = {
         "primary_fixture": "natural-snake",
         "colors": list(COLORS),
+        "high_k_colors": list(HIGH_K_COLORS),
+        "high_k_speed_colors": list(HIGH_K_SPEED_COLORS),
         "control_colors": CONTROL_COLORS,
         "threads": 1,
         "precision": "float32",
@@ -157,7 +163,9 @@ def read_metadata(path: Path, mode: str) -> Dict[str, object]:
     if artifacts.get("tables") != [
             "snap-policy-quality.csv",
             "snap-policy-speed.csv",
-            "snap-policy-controls.csv"]:
+            "snap-policy-controls.csv",
+            "snap-policy-high-k.csv",
+            "snap-policy-high-k-speed.csv"]:
         fail("snap table manifest is stale")
     return metadata
 
@@ -294,16 +302,24 @@ def require_snap_state(
 def validate_main(
         path: Path,
         metadata: Dict[str, object],
+        colors_values: Sequence[int] = COLORS,
+        table_name: str = "main",
 ) -> List[Dict[str, str]]:
-    """Validate the full K-by-space-by-configuration table."""
+    """Validate one complete K-by-space-by-configuration table."""
     rows = read_csv(path)
-    expected_count = len(COLORS) * len(COLORSPACES) * len(CONFIGS)
+    expected_count = len(colors_values) * len(COLORSPACES) * len(CONFIGS)
     if len(rows) != expected_count:
-        fail(f"main snap table has {len(rows)} rows, expected {expected_count}")
+        fail(
+            f"{table_name} snap table has {len(rows)} rows, "
+            f"expected {expected_count}"
+        )
     revision = str(metadata["source"]["revision"])
     seen: Set[Tuple[int, str, str]] = set()
     for row in rows:
-        context = f"main/{row.get('colors')}/{row.get('colorspace')}/{row.get('config')}"
+        context = (
+            f"{table_name}/{row.get('colors')}/{row.get('colorspace')}/"
+            f"{row.get('config')}"
+        )
         colors = int(row["colors"])
         colorspace = row["colorspace"]
         config = row["config"]
@@ -311,8 +327,8 @@ def validate_main(
         if key in seen:
             fail(f"duplicate main snap row: {context}")
         seen.add(key)
-        if colors not in COLORS or colorspace not in COLORSPACES:
-            fail(f"unexpected main axis value in {context}")
+        if colors not in colors_values or colorspace not in COLORSPACES:
+            fail(f"unexpected {table_name} axis value in {context}")
         if config not in CONFIGS:
             fail(f"unexpected main configuration in {context}")
         if row["revision"] != revision or row["fixture_id"] != "natural-snake":
@@ -321,29 +337,37 @@ def validate_main(
         require_command(row, context, False)
         require_snap_state(row, context, row["enabled"] == "True")
     if len(seen) != expected_count:
-        fail("main snap table is incomplete")
+        fail(f"{table_name} snap table is incomplete")
     return rows
 
 
 def validate_speed(
         path: Path,
         metadata: Dict[str, object],
+        colors_values: Sequence[int] = COLORS,
+        table_name: str = "speed",
 ) -> List[Dict[str, str]]:
     """Validate fresh-process timing coverage and statistics."""
     rows = read_csv(path)
-    expected_count = len(COLORS) * len(COLORSPACES) * len(CONFIGS)
+    expected_count = len(colors_values) * len(COLORSPACES) * len(CONFIGS)
     if len(rows) != expected_count:
-        fail(f"snap speed table has {len(rows)} rows, expected {expected_count}")
+        fail(
+            f"snap {table_name} table has {len(rows)} rows, "
+            f"expected {expected_count}"
+        )
     revision = str(metadata["source"]["revision"])
     expected_runs = int(metadata["protocol"]["speed_runs"])
     seen: Set[Tuple[int, str, str]] = set()
     for row in rows:
-        context = f"speed/{row.get('colors')}/{row.get('colorspace')}/{row.get('config')}"
+        context = (
+            f"{table_name}/{row.get('colors')}/{row.get('colorspace')}/"
+            f"{row.get('config')}"
+        )
         key = (int(row["colors"]), row["colorspace"], row["config"])
         if key in seen:
             fail(f"duplicate snap speed row: {context}")
         seen.add(key)
-        if key[0] not in COLORS or key[1] not in COLORSPACES:
+        if key[0] not in colors_values or key[1] not in COLORSPACES:
             fail(f"unexpected snap speed axis in {context}")
         if key[2] not in CONFIGS:
             fail(f"unexpected snap speed configuration in {context}")
@@ -375,7 +399,7 @@ def validate_speed(
         require_command(row, context, True)
         require_snap_state(row, context, row["enabled"] == "True")
     if len(seen) != expected_count:
-        fail("snap speed table is incomplete")
+        fail(f"snap {table_name} table is incomplete")
     return rows
 
 
@@ -477,6 +501,18 @@ def main() -> int:
         directory / "snap-policy-controls.csv",
         metadata,
     )
+    high_k_rows = validate_main(
+        directory / "snap-policy-high-k.csv",
+        metadata,
+        HIGH_K_COLORS,
+        "high-K",
+    )
+    high_k_speed_rows = validate_speed(
+        directory / "snap-policy-high-k-speed.csv",
+        metadata,
+        HIGH_K_SPEED_COLORS,
+        "high-K-speed",
+    )
     artifacts = metadata["artifacts"]
     if int(artifacts["main_row_count"]) != len(main_rows):
         fail("snap metadata main row count is stale")
@@ -484,11 +520,16 @@ def main() -> int:
         fail("snap metadata speed row count is stale")
     if int(artifacts["control_row_count"]) != len(control_rows):
         fail("snap metadata control row count is stale")
+    if int(artifacts["high_k_row_count"]) != len(high_k_rows):
+        fail("snap metadata high-K row count is stale")
+    if int(artifacts["high_k_speed_row_count"]) != len(high_k_speed_rows):
+        fail("snap metadata high-K speed row count is stale")
     for name in PLOTS:
         validate_png(directory / name)
     print(
         f"validated {len(main_rows)} main, {len(speed_rows)} speed, "
-        f"and {len(control_rows)} control rows"
+        f"{len(control_rows)} control, {len(high_k_rows)} high-K, and "
+        f"{len(high_k_speed_rows)} high-K speed rows"
     )
     return 0
 

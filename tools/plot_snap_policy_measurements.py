@@ -37,6 +37,8 @@ from plot_lookup_policy_speed import (
 
 
 COLORS = (8, 16, 32, 64, 128, 256)
+HIGH_K_COLORS = tuple(range(200, 257, 2))
+HIGH_K_SPEED_COLORS = (200, 208, 216, 224, 232, 240, 248, 256)
 CONTROL_COLORS = 64
 COLORSPACES: Tuple[Tuple[str, str, str], ...] = (
     ("gamma", "sRGB gamma", "rgb-f32"),
@@ -381,17 +383,21 @@ def measure_main_quality(
         revision: str,
         command_env: Dict[str, str],
         temporary: Path,
+        colors_values: Sequence[int] = COLORS,
+        measurement_name: str = "main",
 ) -> List[Dict[str, object]]:
-    """Measure the main palette-size and colorspace comparison."""
+    """Measure one palette-size and colorspace comparison grid."""
     rows: List[Dict[str, object]] = []
     input_image = Path(fixture["resolved_path"])
     records = config_records()
-    for colors in COLORS:
-        print(f"main quality: K={colors}", flush=True)
+    for colors in colors_values:
+        print(f"{measurement_name} quality: K={colors}", flush=True)
         for colorspace, space_label, _work_format in COLORSPACES:
             for record in records:
                 config = str(record["config"])
-                palette = temporary / f"main-{colors}-{colorspace}-{config}.act"
+                palette = temporary / (
+                    f"{measurement_name}-{colors}-{colorspace}-{config}.act"
+                )
                 command = make_command(
                     img2sixel,
                     input_image,
@@ -413,7 +419,10 @@ def measure_main_quality(
                     input_image,
                     command_env,
                     palette,
-                    temporary / f"lsqa-main-{colors}-{colorspace}-{config}",
+                    temporary / (
+                        f"lsqa-{measurement_name}-{colors}-{colorspace}-"
+                        f"{config}"
+                    ),
                 )
                 rows.append(
                     {
@@ -438,13 +447,15 @@ def measure_speed(
         command_env: Dict[str, str],
         warmups: int,
         runs: int,
+        colors_values: Sequence[int] = COLORS,
+        measurement_name: str = "speed",
 ) -> List[Dict[str, object]]:
     """Measure fresh-process latency with rotating configuration order."""
     rows: List[Dict[str, object]] = []
     input_image = Path(fixture["resolved_path"])
     records = config_records()
-    for colors in COLORS:
-        print(f"speed: K={colors}", flush=True)
+    for colors in colors_values:
+        print(f"{measurement_name}: K={colors}", flush=True)
         points = [
             (colorspace, space_label, record)
             for colorspace, space_label, _work_format in COLORSPACES
@@ -972,6 +983,255 @@ def plot_speed(path: Path, rows: Sequence[Dict[str, object]], runs: int) -> None
     plt.close(figure)
 
 
+def plot_high_k_quality(
+        path: Path,
+        rows: Sequence[Dict[str, object]],
+) -> None:
+    """Plot small quality deltas in the 200--256 color interval."""
+    figure, axes = plt.subplots(
+        4,
+        2,
+        figsize=(12.0, 11.5),
+        sharex=True,
+        sharey="col",
+    )
+    labels = {record["config"]: record["label"] for record in config_records()}
+    baselines = {
+        (str(row["colorspace"]), int(row["colors"])): row
+        for row in rows
+        if row["config"] == "off"
+    }
+    enabled_configs = [
+        config for config, _label, _enabled, _policy, _timing, _rate, _factor
+        in MAIN_CONFIGS if config != "off"
+    ]
+    for row_index, config in enumerate(enabled_configs):
+        for space, space_label, _format in COLORSPACES:
+            selected = sorted(
+                (
+                    row for row in rows
+                    if row["colorspace"] == space
+                    and row["config"] == config
+                ),
+                key=lambda row: int(row["colors"]),
+            )
+            x = [int(row["colors"]) for row in selected]
+            ms_ssim = [
+                1000.0 * (
+                    float(row["MS-SSIM"])
+                    - float(baselines[(space, int(row["colors"]))]["MS-SSIM"])
+                )
+                for row in selected
+            ]
+            delta_e00 = [
+                float(row["Delta E00_mean"])
+                - float(
+                    baselines[(space, int(row["colors"]))]["Delta E00_mean"]
+                )
+                for row in selected
+            ]
+            color, marker, linestyle = SPACE_STYLES[space]
+            axes[row_index, 0].plot(
+                x,
+                ms_ssim,
+                color=color,
+                marker=marker,
+                markevery=4,
+                linestyle=linestyle,
+                linewidth=1.6,
+                markersize=4.5,
+                label=space_label,
+            )
+            axes[row_index, 1].plot(
+                x,
+                delta_e00,
+                color=color,
+                marker=marker,
+                markevery=4,
+                linestyle=linestyle,
+                linewidth=1.6,
+                markersize=4.5,
+            )
+        axes[row_index, 0].set_ylabel(
+            f"{labels[config]}\nDelta MS-SSIM x 1,000"
+        )
+        axes[row_index, 1].set_ylabel("Delta mean Delta E00")
+        for axis in axes[row_index]:
+            axis.axhline(0.0, color="#4D4D4D", linewidth=1.0)
+            axis.set_xticks(HIGH_K_SPEED_COLORS)
+            setup_axis(axis)
+    axes[0, 0].set_title("Spatial similarity change (higher is better)")
+    axes[0, 1].set_title("Mean color-error change (lower is better)")
+    axes[-1, 0].set_xlabel("Palette size K")
+    axes[-1, 1].set_xlabel("Palette size K")
+    handles, legend_labels = axes[0, 0].get_legend_handles_labels()
+    legend = figure.legend(
+        handles,
+        legend_labels,
+        loc="upper center",
+        ncol=5,
+        frameon=False,
+        bbox_to_anchor=(0.5, 0.965),
+    )
+    legend.set_in_layout(False)
+    figure.suptitle(
+        "Snap policy quality in the high-K interval",
+        y=0.997,
+        fontsize=15,
+    )
+    figure.text(
+        0.5,
+        0.012,
+        "K=200--256 in steps of 2; each value is relative to snap off at "
+        "the same K and color space",
+        ha="center",
+        fontsize=8.5,
+        color="#555555",
+    )
+    figure.tight_layout(rect=(0.0, 0.035, 1.0, 0.92))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(path, dpi=170)
+    plt.close(figure)
+
+
+def plot_high_k_size_speed(
+        path: Path,
+        quality_rows: Sequence[Dict[str, object]],
+        speed_rows: Sequence[Dict[str, object]],
+        runs: int,
+) -> None:
+    """Plot stream-size and latency deltas in the high-K interval."""
+    figure, axes = plt.subplots(
+        4,
+        2,
+        figsize=(12.0, 11.5),
+        sharex="col",
+        sharey="col",
+    )
+    labels = {record["config"]: record["label"] for record in config_records()}
+    size_baselines = {
+        (str(row["colorspace"]), int(row["colors"])): row
+        for row in quality_rows
+        if row["config"] == "off"
+    }
+    speed_baselines = {
+        (str(row["colorspace"]), int(row["colors"])):
+            float(row["median_seconds"])
+        for row in speed_rows
+        if row["config"] == "off"
+    }
+    enabled_configs = [
+        config for config, _label, _enabled, _policy, _timing, _rate, _factor
+        in MAIN_CONFIGS if config != "off"
+    ]
+    for row_index, config in enumerate(enabled_configs):
+        for space, space_label, _format in COLORSPACES:
+            selected_quality = sorted(
+                (
+                    row for row in quality_rows
+                    if row["colorspace"] == space
+                    and row["config"] == config
+                ),
+                key=lambda row: int(row["colors"]),
+            )
+            size_x = [int(row["colors"]) for row in selected_quality]
+            size_delta = [
+                100.0 * (
+                    float(row["encoded_bytes"])
+                    / float(
+                        size_baselines[
+                            (space, int(row["colors"]))
+                        ]["encoded_bytes"]
+                    )
+                    - 1.0
+                )
+                for row in selected_quality
+            ]
+            selected_speed = sorted(
+                (
+                    row for row in speed_rows
+                    if row["colorspace"] == space
+                    and row["config"] == config
+                ),
+                key=lambda row: int(row["colors"]),
+            )
+            speed_x = [int(row["colors"]) for row in selected_speed]
+            speed_delta = []
+            speed_lower = []
+            speed_upper = []
+            for row in selected_speed:
+                baseline = speed_baselines[(space, int(row["colors"]))]
+                median = 100.0 * (float(row["median_seconds"]) / baseline - 1.0)
+                q1 = 100.0 * (float(row["q1_seconds"]) / baseline - 1.0)
+                q3 = 100.0 * (float(row["q3_seconds"]) / baseline - 1.0)
+                speed_delta.append(median)
+                speed_lower.append(median - q1)
+                speed_upper.append(q3 - median)
+            color, marker, linestyle = SPACE_STYLES[space]
+            axes[row_index, 0].plot(
+                size_x,
+                size_delta,
+                color=color,
+                marker=marker,
+                markevery=4,
+                linestyle=linestyle,
+                linewidth=1.6,
+                markersize=4.5,
+                label=space_label,
+            )
+            axes[row_index, 1].errorbar(
+                speed_x,
+                speed_delta,
+                yerr=[speed_lower, speed_upper],
+                color=color,
+                marker=marker,
+                linestyle=linestyle,
+                linewidth=1.6,
+                markersize=4.5,
+                capsize=2.0,
+            )
+        axes[row_index, 0].set_ylabel(
+            f"{labels[config]}\nEncoded bytes change (%)"
+        )
+        axes[row_index, 1].set_ylabel("Wall-time change (%)")
+        for axis in axes[row_index]:
+            axis.axhline(0.0, color="#4D4D4D", linewidth=1.0)
+            axis.set_xticks(HIGH_K_SPEED_COLORS)
+            setup_axis(axis)
+    axes[0, 0].set_title("SIXEL stream-size change (lower is smaller)")
+    axes[0, 1].set_title("End-to-end latency change (lower is faster)")
+    axes[-1, 0].set_xlabel("Palette size K")
+    axes[-1, 1].set_xlabel("Palette size K")
+    handles, legend_labels = axes[0, 0].get_legend_handles_labels()
+    legend = figure.legend(
+        handles,
+        legend_labels,
+        loc="upper center",
+        ncol=5,
+        frameon=False,
+        bbox_to_anchor=(0.5, 0.965),
+    )
+    legend.set_in_layout(False)
+    figure.suptitle(
+        "Snap policy size and speed in the high-K interval",
+        y=0.997,
+        fontsize=15,
+    )
+    figure.text(
+        0.5,
+        0.012,
+        f"Size: K=200--256 in steps of 2; speed: K=200--256 in steps "
+        f"of 8, median of {runs}, IQR bars; all values are relative to snap off",
+        ha="center",
+        fontsize=8.5,
+        color="#555555",
+    )
+    figure.tight_layout(rect=(0.0, 0.035, 1.0, 0.92))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(path, dpi=170)
+    plt.close(figure)
+
+
 def baseline_for(
         rows: Sequence[Dict[str, object]],
         sweep: str,
@@ -1232,6 +1492,8 @@ def write_metadata(
         main_count: int,
         speed_count: int,
         control_count: int,
+        high_k_count: int,
+        high_k_speed_count: int,
 ) -> None:
     """Record complete provenance and protocol metadata."""
     fixture_records = []
@@ -1246,7 +1508,7 @@ def write_metadata(
             }
         )
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_utc": datetime.datetime.now(
             datetime.timezone.utc
         ).isoformat(),
@@ -1269,6 +1531,8 @@ def write_metadata(
         "protocol": {
             "primary_fixture": "natural-snake",
             "colors": list(COLORS),
+            "high_k_colors": list(HIGH_K_COLORS),
+            "high_k_speed_colors": list(HIGH_K_SPEED_COLORS),
             "control_colors": CONTROL_COLORS,
             "colorspaces": [
                 {
@@ -1315,10 +1579,14 @@ def write_metadata(
             "main_row_count": main_count,
             "speed_row_count": speed_count,
             "control_row_count": control_count,
+            "high_k_row_count": high_k_count,
+            "high_k_speed_row_count": high_k_speed_count,
             "tables": [
                 "snap-policy-quality.csv",
                 "snap-policy-speed.csv",
                 "snap-policy-controls.csv",
+                "snap-policy-high-k.csv",
+                "snap-policy-high-k-speed.csv",
             ],
             "plots": [
                 "snap-policy-quality.png",
@@ -1327,6 +1595,8 @@ def write_metadata(
                 "snap-policy-speed.png",
                 "snap-policy-controls.png",
                 "snap-policy-fixture-summary.png",
+                "snap-policy-high-k-quality.png",
+                "snap-policy-high-k-size-speed.png",
             ],
         },
     }
@@ -1406,6 +1676,26 @@ def main() -> int:
             args.warmups,
             args.runs,
         )
+        high_k_rows = measure_main_quality(
+            img2sixel,
+            lsqa,
+            primary,
+            args.revision,
+            command_env,
+            temporary,
+            HIGH_K_COLORS,
+            "high-K",
+        )
+        high_k_speed_rows = measure_speed(
+            img2sixel,
+            primary,
+            args.revision,
+            command_env,
+            args.warmups,
+            args.runs,
+            HIGH_K_SPEED_COLORS,
+            "high-K speed",
+        )
         control_rows = measure_controls(
             img2sixel,
             lsqa,
@@ -1418,9 +1708,13 @@ def main() -> int:
     quality_path = output_dir / "snap-policy-quality.csv"
     speed_path = output_dir / "snap-policy-speed.csv"
     controls_path = output_dir / "snap-policy-controls.csv"
+    high_k_path = output_dir / "snap-policy-high-k.csv"
+    high_k_speed_path = output_dir / "snap-policy-high-k-speed.csv"
     write_csv(quality_path, main_rows, main_quality_fields())
     write_csv(speed_path, speed_rows, speed_fields())
     write_csv(controls_path, control_rows, control_fields())
+    write_csv(high_k_path, high_k_rows, main_quality_fields())
+    write_csv(high_k_speed_path, high_k_speed_rows, speed_fields())
     plot_quality(output_dir / "snap-policy-quality.png", main_rows)
     plot_small_multiples(
         output_dir / "snap-policy-fixed-point.png",
@@ -1445,6 +1739,16 @@ def main() -> int:
         control_rows,
         fixtures,
     )
+    plot_high_k_quality(
+        output_dir / "snap-policy-high-k-quality.png",
+        high_k_rows,
+    )
+    plot_high_k_size_speed(
+        output_dir / "snap-policy-high-k-size-speed.png",
+        high_k_rows,
+        high_k_speed_rows,
+        args.runs,
+    )
     write_metadata(
         output_dir / "snap-policy-run.json",
         source_root,
@@ -1461,6 +1765,8 @@ def main() -> int:
         len(main_rows),
         len(speed_rows),
         len(control_rows),
+        len(high_k_rows),
+        len(high_k_speed_rows),
     )
     return 0
 
