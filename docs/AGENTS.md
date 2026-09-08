@@ -35,6 +35,7 @@ Start from the [documentation index](README.md). Read the relevant document befo
 
 - Write documentation in English.
 - Do not hard-wrap Markdown prose at a fixed column width. Keep each paragraph or list item on one source line unless Markdown syntax requires a line break. Fixed-width wrapping can split content into misleading translation segments and cause avoidable errors for non-English readers.
+- Keep TeX commands in GitHub-rendered Markdown math within the conservative [GitHub math allowlist](../tests/_static/data/github-math-macros.txt). GitHub does not publish a stable complete command list, so verify a new command on a committed GitHub.com Markdown page before adding it to the allowlist. Prefer alphabetic commands such as `\lbrace` and `\rbrace`; Markdown can consume backslash-punctuation forms such as `\{` before math rendering.
 - Keep project-wide entry documents intended for users, such as project history, format, and platform support references, directly under `docs/`.
 - Keep one major concern per file and one broad subject per directory. Link related documents instead of merging their full contents into one large guide.
 - Describe current contracts and durable rationale, not a transcript of a single debugging session.
@@ -67,6 +68,7 @@ Add a document only when the topic is durable and materially distinct from the e
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | DG-01 | Enforced policy documents and their owning tests carry complete reciprocal links, and one-sided references fail the static suite. | [tests/_static/sh/staticcheck-doc-test-links.sh](../tests/_static/sh/staticcheck-doc-test-links.sh) |
+| DG-02 | Documentation math uses only TeX commands verified to render on GitHub.com. | [tests/_static/sh/staticcheck-docs-github-math.sh](../tests/_static/sh/staticcheck-docs-github-math.sh) |
 
 ### Coverage boundary
 

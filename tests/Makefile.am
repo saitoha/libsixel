@@ -710,6 +710,7 @@ AM_LOG_FLAGS =
 	staticcheck-docs-help-vs-man \
 	staticcheck-docs-man-vs-bash-completion \
 	staticcheck-docs-envvars-help-table \
+	staticcheck-docs-github-math \
 	staticcheck-doc-test-links \
 	staticcheck-c-header-modeline
 
@@ -776,6 +777,7 @@ staticcheck-help-sixel2png-source-contract \
 staticcheck-docs-help-vs-man \
 staticcheck-docs-man-vs-bash-completion \
 staticcheck-docs-envvars-help-table \
+staticcheck-docs-github-math \
 staticcheck-doc-test-links \
 staticcheck-c-header-modeline: \
 	T_LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS) --enable-hard-errors
@@ -1382,6 +1384,16 @@ staticcheck-docs-envvars-help-table:
 		--trs-file staticcheck-docs-envvars-help-table.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-envvars-help-table.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-docs-github-math:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-docs-github-math" \
+		--log-file staticcheck-docs-github-math.log \
+		--trs-file staticcheck-docs-github-math.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-github-math.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-doc-test-links:
@@ -2335,7 +2347,10 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-docs-help-vs-man.sh \
     _static/sh/staticcheck-docs-man-vs-bash-completion.sh \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
+    _static/sh/staticcheck-docs-github-math.sh \
     _static/sh/staticcheck-doc-test-links.sh \
+    _static/awk/docs-github-math.awk \
+    _static/data/github-math-macros.txt \
     _static/sh/staticcheck-c-header-modeline.sh \
     check-test-exports.list \
     $(TEST_DATA_DIRS)

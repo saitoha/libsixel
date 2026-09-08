@@ -34,7 +34,7 @@ Color quantization is usually introduced as a search for representative colors, 
 
 *Figure 1. Schematic RGB geometry. The translucent surface is the smallest convex polyhedron containing the sample points. It is generated from deterministic synthetic data, not measured from a particular image.*
 
-Let the final palette be a set of colors $P = \{p_1, \ldots, p_K\}$. If dithering represents a source color by spatially mixing palette entries, the average reconstructed color can only lie in the convex hull of the entries that lookup actually selects:
+Let the final palette be a set of colors $P = \lbrace p_1, \ldots, p_K \rbrace$. If dithering represents a source color by spatially mixing palette entries, the average reconstructed color can only lie in the convex hull of the entries that lookup actually selects:
 
 $$
 \bar{p} = \sum_{i=1}^{K} w_i p_i, \qquad w_i \ge 0, \qquad \sum_i w_i = 1.
@@ -70,7 +70,7 @@ This explains why the hard-policy ladder adds face centers before edge midpoints
 
 ### Convex containment is necessary, not sufficient
 
-Even $c \in \operatorname{conv}(P)$ does not guarantee that one finite image region will average to $c$. Let $V_R \subseteq P$ be the palette entries that lookup actually visits while processing region $R$. The output average belongs to $\operatorname{conv}(V_R)$, which may be much smaller than the hull of the full palette.
+Even $c \in \mathrm{conv}(P)$ does not guarantee that one finite image region will average to $c$. Let $V_R \subseteq P$ be the palette entries that lookup actually visits while processing region $R$. The output average belongs to $\mathrm{conv}(V_R)$, which may be much smaller than the hull of the full palette.
 
 ![Three stages showing the gap between geometric and realized reachability](cover-policy-figures/cover-reachability-limits.svg)
 
@@ -79,7 +79,7 @@ Even $c \in \operatorname{conv}(P)$ does not guarantee that one finite image reg
 A useful conceptual recurrence is
 
 $$
-q_n = \operatorname{clamp}(c_n + e_n), \qquad p_n = L(q_n), \qquad e'_n = q_n - p_n,
+q_n = \mathrm{clamp}(c_n + e_n), \qquad p_n = L(q_n), \qquad e'_n = q_n - p_n,
 $$
 
 where $L$ is the lookup policy and the dither policy distributes $e'_n$ to later pixels. Three implementation properties separate this recurrence from the convex-hull existence proof:
@@ -164,7 +164,7 @@ The lowest rung is disabled below 32 colors because eight anchors would consume 
 
 ### `corners`
 
-In hard mode, `corners` targets the eight points in $\{0,255\}^3$. These anchors expand reach toward fully saturated combinations and black and white. In soft mode, the name denotes an eight-anchor budget rather than cube geometry.
+In hard mode, `corners` targets the eight points in $\lbrace 0,255 \rbrace^3$. These anchors expand reach toward fully saturated combinations and black and white. In soft mode, the name denotes an eight-anchor budget rather than cube geometry.
 
 ### `faces`
 

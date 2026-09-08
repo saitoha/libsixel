@@ -821,6 +821,10 @@ run_case_tap "staticcheck-docs-envvars-help-table" \
     "$src_root/tests/_static/sh/staticcheck-docs-envvars-help-table.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-docs-github-math" \
+    "$src_root/tests/_static/sh/staticcheck-docs-github-math.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-doc-test-links" \
     "$src_root/tests/_static/sh/staticcheck-doc-test-links.sh" \
     "$src_root" || fail_and_exit $?

@@ -9,10 +9,10 @@
 SIXEL RGB palette definitions carry integer percentages from 0 through 100. The decoder reconstructs an 8-bit channel from percentage $q$ as
 
 $$
-s_q = \left\lfloor\frac{255q + 50}{100}\right\rfloor, \qquad q \in \{0,\ldots,100\}.
+s_q = \left\lfloor\frac{255q + 50}{100}\right\rfloor, \qquad q \in \lbrace 0,\ldots,100 \rbrace.
 $$
 
-The resulting set $S=\{s_0,\ldots,s_{100}\}$ has 101 distinct byte values. The encoder converts a byte channel $x$ back to a SIXEL percentage as
+The resulting set $S=\lbrace s_0,\ldots,s_{100} \rbrace$ has 101 distinct byte values. The encoder converts a byte channel $x$ back to a SIXEL percentage as
 
 $$
 q(x) = \left\lfloor\frac{100x + 127}{255}\right\rfloor.

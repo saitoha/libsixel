@@ -957,6 +957,11 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-docs-github-math',
+    [meson.current_source_dir() / '_static/sh/staticcheck-docs-github-math.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-doc-test-links',
     [meson.current_source_dir() / '_static/sh/staticcheck-doc-test-links.sh',
       meson.project_source_root()],

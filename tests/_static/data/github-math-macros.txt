@@ -1,0 +1,35 @@
+# Conservative TeX command subset verified to render on GitHub.com.
+#
+# Last live verification: 2026-09-09
+# GitHub does not publish a stable complete command allowlist. Add a command
+# only after a committed Markdown page has rendered it successfully on
+# GitHub.com. The static check deliberately rejects unverified commands.
+# Commands in successful existing expressions were verified at libsixel commit
+# 72c052593aa8d0cb08ddd8c1b8107718901f2d51; its rejected \operatorname
+# expressions are deliberately excluded.
+# The \mathrm command was verified at InternScience/ResearchClawBench-Home
+# commit c559cf52e70ff62ce657c7267e661453a277e467. The \lbrace and \rbrace
+# commands were verified at oneapi-src/oneAPI-samples commit
+# 9ddf63720937c3f8a638022499394d3522f65f9b.
+
+Delta
+bar
+cdot
+frac
+ge
+in
+lambda
+lbrace
+ldots
+le
+left
+lfloor
+max
+qquad
+rbrace
+right
+rfloor
+rho
+mathrm
+subseteq
+sum
