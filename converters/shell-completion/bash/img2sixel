@@ -585,7 +585,8 @@ _img2sixel()
             done
             return 0
         fi
-        COMPREPLY=( $( compgen -W 'auto nearest reversible' -- "${base}" ) )
+        COMPREPLY=( $( compgen -W 'none auto nearest reversible' \
+            -- "${base}" ) )
     }
 
     _img2sixel_complete_runtime_policy()
@@ -1025,7 +1026,6 @@ _img2sixel()
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \
                                    -R --gri-limit \
-                                   -6 --6reversible \
                                    -p --colors \
                                    -Q --quantize-model \
                                    -4 --sampling-policy \

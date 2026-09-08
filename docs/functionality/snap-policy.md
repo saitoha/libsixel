@@ -1,8 +1,8 @@
 # Palette Snap Policy
 
-`-_ POLICY` and `--snap-policy=POLICY` configure how the encoder maps palette channels onto the 101 RGB percentages that SIXEL can represent reversibly. This is a numeric stabilization transform, not gamut coverage repair: [`--cover-policy`](cover-policy.md) chooses or inserts palette anchors, while `--snap-policy` chooses the reversible target used when `-6` or `--6reversible` enables snapping.
+`-_ POLICY` and `--snap-policy=POLICY` control whether and how the encoder maps palette channels onto the 101 RGB percentages that SIXEL can represent reversibly. This is a numeric stabilization transform, not gamut coverage repair: [`--cover-policy`](cover-policy.md) chooses or inserts palette anchors, while `--snap-policy` enables snapping and chooses its reversible target.
 
-Selecting a snap policy does not enable `-6`. This separation keeps two decisions independent: `-6` requests a reversible palette pipeline, and `--snap-policy` chooses how eligible colors approach that pipeline's safe tones.
+`none` disables the transform. `auto`, `nearest`, and `reversible` enable it. There is no separate enable switch.
 
 ## Why there are 101 safe tones
 
@@ -20,6 +20,24 @@ $$
 
 For every $s_q \in S$, decoding the emitted percentage returns the same byte value. Arbitrary bytes outside $S$ generally move to a neighboring member of $S$ after one encode/decode cycle. Snapping the palette to $S^3$ before emission therefore removes that palette drift.
 
+The concrete 8-bit tone set is:
+
+```c
+static unsigned char const sixel_reversible_tones[101] = {
+      0,   3,   5,   8,  10,  13,  15,  18,  20,  23,
+     26,  28,  31,  33,  36,  38,  41,  43,  46,  48,
+     51,  54,  56,  59,  61,  64,  66,  69,  71,  74,
+     77,  79,  82,  84,  87,  89,  92,  94,  97,  99,
+    102, 105, 107, 110, 112, 115, 117, 120, 122, 125,
+    128, 130, 133, 135, 138, 140, 143, 145, 148, 150,
+    153, 156, 158, 161, 163, 166, 168, 171, 173, 176,
+    179, 181, 184, 186, 189, 191, 194, 196, 199, 201,
+    204, 207, 209, 212, 214, 217, 219, 222, 224, 227,
+    230, 232, 235, 237, 240, 242, 245, 247, 250, 252,
+    255
+};
+```
+
 The 101 levels are per channel. This mechanism does not limit the palette to 101 colors; a palette entry is an RGB triplet whose three channels independently belong to the safe set.
 
 ## Pipeline position
@@ -35,7 +53,7 @@ sampling -> palette-space transform -> binning -> quantizer (-Q)
                                   final palette merge (-F)
                                                     |
                                                     v
-                              mandatory final snap when -6 is active
+                         mandatory final snap when policy is not none
                                                     |
                                                     v
                                   palette cover repair (-a)
@@ -47,11 +65,15 @@ sampling -> palette-space transform -> binning -> quantizer (-Q)
                                             SIXEL encoding
 ```
 
-The final snap runs whenever `-6` is active, independently of `timing`. The timing policy only adds earlier solver hooks. The current byte-palette ordering places cover repair after the final snap; a merge-funded cover replacement or image-derived soft anchor can therefore introduce a value outside the safe set. Until this interaction is given an ordering fix and a dedicated regression, use `--cover-policy=off` when the fixed-point guarantee is more important than gamut coverage.
+The final snap runs whenever the policy is not `none`, independently of `timing`. The timing policy only adds earlier solver hooks. The current byte-palette ordering places cover repair after the final snap; a merge-funded cover replacement or image-derived soft anchor can therefore introduce a value outside the safe set. Until this interaction is given an ordering fix and a dedicated regression, use `--cover-policy=off` when the fixed-point guarantee is more important than gamut coverage.
 
 ## Policy values
 
-The default is `auto`, which currently has exactly the same behavior as `nearest`.
+The default is `none`, preserving the unconstrained palette pipeline unless snapping is requested explicitly.
+
+### `none`
+
+`none` disables all snap stages. Snap suboptions may still be parsed, but they have no effect until an enabling policy is selected.
 
 ### `auto`
 
@@ -112,14 +134,14 @@ The top-level environment variable is `SIXEL_PALETTE_SNAP_POLICY`; explicit `-_`
 Examples:
 
 ```sh
-# Use the default nearest-target policy and snap only final output.
-img2sixel -6 --snap-policy=nearest image.png
+# Use the nearest-target policy and snap only final output.
+img2sixel --snap-policy=nearest image.png
 
 # Constrain every eligible Oklab solver stage to exact safe tones.
-img2sixel -6 -Woklab -_nearest:Iall:A1:L0.85 image.png
+img2sixel -Woklab -_nearest:Iall:A1:L0.85 image.png
 
 # Use the legacy independent-channel mapping and disable cover mutation.
-img2sixel -6 --snap-policy=reversible --cover-policy=off image.png
+img2sixel --snap-policy=reversible --cover-policy=off image.png
 ```
 
 ## Cost and measurement policy
@@ -144,7 +166,7 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| SP-01 | `reversible` has equivalent top-level short-option and environment behavior and reaches the snap consumer independently of cover policy. | [tests/cli/options/regression/0024_snap_policy_reversible_image_regression.t](../../tests/cli/options/regression/0024_snap_policy_reversible_image_regression.t) |
+| SP-01 | `reversible` has equivalent top-level short-option and environment behavior, materially enables snapping relative to `none`, and reaches the snap consumer independently of cover policy. | [tests/cli/options/regression/0024_snap_policy_reversible_image_regression.t](../../tests/cli/options/regression/0024_snap_policy_reversible_image_regression.t) |
 | SP-02 | `timing=all` has equivalent short-suboption and environment behavior and reaches the snap consumer. | [tests/cli/options/regression/0137_snap_policy_timing_image_regression.t](../../tests/cli/options/regression/0137_snap_policy_timing_image_regression.t) |
 | SP-03 | `rate` has equivalent short-suboption and environment behavior, reaches the snap consumer, clamps the environment value at the upper bound, and preserves the image-quality floor. | [tests/cli/options/regression/0138_snap_policy_rate_image_regression.t](../../tests/cli/options/regression/0138_snap_policy_rate_image_regression.t) |
 | SP-04 | `channel_l` has equivalent short-suboption and environment behavior, reaches the snap consumer, clamps the environment value at the lower bound, and preserves the image-quality floor. | [tests/cli/options/regression/0139_snap_policy_channel_l_image_regression.t](../../tests/cli/options/regression/0139_snap_policy_channel_l_image_regression.t) |
@@ -152,4 +174,4 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 
 ### Coverage audit boundary
 
-The focused suite covers the new top-level policy path and every registered suboption consumer. It does not yet directly test every policy spelling, invalid or empty top-level values, repeated-option last-wins behavior, multi-frame state, exact membership of all 101 tones, byte-for-byte re-encoding, or the ordering interaction with cover repair. The image tests enforce a broad MS-SSIM floor on one small fixture but do not replace the reproducible measurement suite described above.
+The focused suite covers the top-level enable/disable path and every registered suboption consumer. It does not yet directly test every policy spelling, invalid or empty top-level values, repeated-option last-wins behavior, multi-frame state, exact membership of all 101 tones, byte-for-byte re-encoding, or the ordering interaction with cover repair. The image tests enforce a broad MS-SSIM floor on one small fixture but do not replace the reproducible measurement suite described above.

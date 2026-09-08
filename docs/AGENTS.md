@@ -17,7 +17,7 @@ Start from the [documentation index](README.md). Read the relevant document befo
 - [Functionality](functionality/overview.md): capabilities, components, data flow, and architectural boundaries.
 - [Palette clustering color space](functionality/clustering-colorspace.md): `-X` geometry, normalization, interactions, and reproducible measurements.
 - [Palette cover policy](functionality/cover-policy.md): post-quantizer gamut reachability repair, soft and hard anchors, and growth.
-- [Palette snap policy](functionality/snap-policy.md): reversible 101-level tone mapping, timing, approach rate, and working-space target selection.
+- [Palette snap policy](functionality/snap-policy.md): enablement, reversible 101-level tone mapping, timing, approach rate, and working-space target selection.
 - [Encoder working precision](functionality/precision.md): requested and effective `--precision` paths and cross-policy measurement controls.
 - [Alpha policy](loader/alpha-policy.md): source-alpha treatment, omitted SIXEL pixels, and `P2` selection.
 - [Background policy](loader/background-policy.md): background-source priority, colorspace, and OSC 11 interaction.

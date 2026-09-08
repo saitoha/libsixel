@@ -21,7 +21,7 @@ SIXEL_PALETTE_SNAP_POLICY=nearest \
         SIXEL_PALETTE_SNAP_TIMING_POLICY=all \
         SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
         SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Q kmeans -6 -W oklab \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Q kmeans -W oklab \
     -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel snap kmeans float32 failed"
     exit 0

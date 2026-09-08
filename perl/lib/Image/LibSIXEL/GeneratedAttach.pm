@@ -50,7 +50,6 @@ sub attach_all {
     $ffi->attach(['sixel_dither_set_body_only' => 'Image::LibSIXEL::sixel_dither_set_body_only'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_optimize_palette' => 'Image::LibSIXEL::sixel_dither_set_optimize_palette'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_pixelformat' => 'Image::LibSIXEL::sixel_dither_set_pixelformat'] => ['opaque', 'int'] => 'void');
-    $ffi->attach(['sixel_dither_set_sixel_reversible' => 'Image::LibSIXEL::sixel_dither_set_sixel_reversible'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_final_merge' => 'Image::LibSIXEL::sixel_dither_set_final_merge'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_transparent' => 'Image::LibSIXEL::sixel_dither_set_transparent'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_encode' => 'Image::LibSIXEL::sixel_encode'] => ['opaque', 'int', 'int', 'int', 'opaque', 'opaque'] => 'int');

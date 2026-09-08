@@ -201,7 +201,6 @@ struct sixel_dither {
     sixel_lookup_policy_interface_t *lookup_policy; /* prepared lookup cache */
     struct sixel_dither_policy_interface *dither_policy; /* apply strategy */
     char const *dither_policy_class_name; /* selected class id cache */
-    int sixel_reversible;           /* restrict palette to reversible tones */
     int quantize_model;             /* palette solver selector */
     int final_merge_mode;           /* final merge policy */
     sixel_dither_pipeline_row_fn pipeline_row_callback; /* producer hook */

@@ -1122,6 +1122,10 @@ static sixel_option_value_schema_t const g_cover_policy_values[] = {
 
 static sixel_option_value_schema_t const g_snap_policy_values[] = {
     {
+        "none", SIXEL_PALETTE_SNAP_POLICY_NONE, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
         "auto", SIXEL_PALETTE_SNAP_POLICY_NEAREST, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
@@ -2953,7 +2957,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         "snap-policy",
         SIXEL_OPTION_ARGUMENT_SINGLE,
         SIXEL_OPTION_DEFAULT_FIXED,
-        SIXEL_PALETTE_SNAP_POLICY_NEAREST,
+        SIXEL_PALETTE_SNAP_POLICY_NONE,
         g_snap_policy_values,
         "SIXEL_PALETTE_SNAP_POLICY"),
     SIXEL_REGISTRY_OPTION_SCHEMA(

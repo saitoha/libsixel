@@ -38,7 +38,7 @@ are grouped by domain so each area can grow without overloading one document.
   solver objectives, asymptotic costs, and the boundary between palette
   generation and use.
 - [Palette cover policy](functionality/cover-policy.md) explains `-a` / `--cover-policy`, post-quantizer gamut reachability repair, soft and hard anchor selection, growth, and cost.
-- [Palette snap policy](functionality/snap-policy.md) explains `-_` / `--snap-policy`, the 101 reversible SIXEL tone levels, working-space target selection, timing, and approach rate.
+- [Palette snap policy](functionality/snap-policy.md) explains how `-_` / `--snap-policy` enables and configures the 101 reversible SIXEL tone levels, working-space target selection, timing, and approach rate.
 - [Palette clustering color space](functionality/clustering-colorspace.md)
   explains `-X`, its coordinate geometry and normalization, option
   interactions, and measured quality, speed, and size tradeoffs.

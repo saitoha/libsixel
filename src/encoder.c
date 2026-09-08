@@ -7069,8 +7069,6 @@ sixel_encoder_prepare_palette(
     sixel_dither_set_lut_policy(*dither, effective_lut_policy);
     (*dither)->gpu_policy = encoder->gpu_policy;
     (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
-    sixel_dither_set_sixel_reversible(*dither,
-                                      encoder->sixel_reversible);
     memset(&merge_config, 0, sizeof(merge_config));
     merge_config.dither = *dither;
     merge_config.final_merge_mode = effective_final_merge_mode;
@@ -8888,7 +8886,7 @@ sixel_encoder_new(
     (*ppencoder)->cover_policy = SIXEL_PALETTE_COVER_AUTO;
     (*ppencoder)->snap_policy_override = 0;
     (*ppencoder)->snap_policy =
-        SIXEL_PALETTE_SNAP_POLICY_NEAREST;
+        SIXEL_PALETTE_SNAP_POLICY_NONE;
     (*ppencoder)->snap_policy_timing_override = 0;
     (*ppencoder)->snap_policy_timing =
         SIXEL_PALETTE_SNAP_TIMING_ONCE;
@@ -8924,7 +8922,6 @@ sixel_encoder_new(
     (*ppencoder)->gpu_palette_threshold_override = 0;
     (*ppencoder)->gpu_palette_threshold =
         (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
-    (*ppencoder)->sixel_reversible      = 0;
     (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
     (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
     (*ppencoder)->palette_type          = SIXEL_PALETTETYPE_AUTO;
@@ -11269,9 +11266,6 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_8BIT_MODE:  /* 8 */
         encoder->f8bit = 1;
-        break;
-    case SIXEL_OPTFLAG_6REVERSIBLE:  /* 6 */
-        encoder->sixel_reversible = 1;
         break;
     case SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT:  /* R */
         encoder->has_gri_arg_limit = 1;

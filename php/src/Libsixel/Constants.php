@@ -150,7 +150,6 @@ final class Constants
     public const SIXEL_OPTFLAG_OUTFILE = 'o';
     public const SIXEL_OPTFLAG_7BIT_MODE = '7';
     public const SIXEL_OPTFLAG_8BIT_MODE = '8';
-    public const SIXEL_OPTFLAG_6REVERSIBLE = '6';
     public const SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT = 'R';
     public const SIXEL_OPTFLAG_PRECISION = '.';
     public const SIXEL_OPTFLAG_THREADS = '=';

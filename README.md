@@ -53,12 +53,11 @@ explicit preference, while filesystem suggestions remain opt-in.
   suggestions that explain why a path could not be resolved. Disabled by
   default for the converter frontends and for library embedders.
 
-Additional palette snap controls allow fine-tuning of the reversible grid
-handling used by `-6`:
+Additional palette snap controls enable and tune reversible-grid handling:
 
-* `SIXEL_PALETTE_SNAP_POLICY` — choose "reversible" to force legacy
-  fixed points or "nearest"/"auto" (default) to pick the nearest fixed point
-  in the working colorspace.
+* `SIXEL_PALETTE_SNAP_POLICY` — choose "none" (default) to disable snapping,
+  "reversible" to force legacy fixed points, or "nearest"/"auto" to pick the
+  nearest fixed point in the working colorspace.
 * `SIXEL_PALETTE_SNAP_TIMING_POLICY` — decide when snaps run: "once", "polish",
   "merge", "resolve", or "all" (default "once").
 * `SIXEL_PALETTE_SNAP_APPROACH_RATE` — blend factor (0.0-1.0) toward the snap

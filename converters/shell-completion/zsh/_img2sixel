@@ -805,7 +805,7 @@ _snappolicy() {
   if [[ ${current} == *:* ]]; then
     base=${current%%:*}
     segment=${current##*:}
-    if [[ ${base} == auto || ${base} == nearest || \
+    if [[ ${base} == none || ${base} == auto || ${base} == nearest || \
           ${base} == reversible ]]; then
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
@@ -838,6 +838,7 @@ _snappolicy() {
 
   _values \
     'SNAPPOLICY' \
+    'none[disable reversible tone snapping]' \
     'auto[choose the nearest reversible tone in the working space]' \
     'nearest[choose the nearest reversible tone in the working space]' \
     'reversible[use the legacy per-channel reversible mapping]'
@@ -1059,7 +1060,6 @@ _arguments -S -s -A "-*" -S \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
   {-R,--gri-limit}'[limit arguments of DECGRI(!) to 255]' \
-  {-6,--6reversible}'[snap the palette to SIXEL-reversible tones]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
   {-4,--sampling-policy=}\

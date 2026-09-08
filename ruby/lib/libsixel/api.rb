@@ -127,7 +127,6 @@ module Libsixel
     SIXEL_OPTFLAG_PRECISION = '.' unless const_defined?(:SIXEL_OPTFLAG_PRECISION)
     # Thread override mirrors img2sixel's -= switch for bindings.
     SIXEL_OPTFLAG_THREADS = '=' unless const_defined?(:SIXEL_OPTFLAG_THREADS)
-    SIXEL_OPTFLAG_6REVERSIBLE = '6' unless const_defined?(:SIXEL_OPTFLAG_6REVERSIBLE)
     SIXEL_OPTFLAG_LUT_POLICY = '~' unless const_defined?(:SIXEL_OPTFLAG_LUT_POLICY)
     SIXEL_OPTFLAG_GPU_POLICY = 'G' unless const_defined?(:SIXEL_OPTFLAG_GPU_POLICY)
     SIXEL_OPTFLAG_RUNTIME_POLICY = 'j' unless const_defined?(:SIXEL_OPTFLAG_RUNTIME_POLICY)

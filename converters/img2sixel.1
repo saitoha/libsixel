@@ -134,11 +134,6 @@ generate a sixel image for 8bit terminals or printers.
 .B \-R, \-\-gri-limit
 limit arguments of DECGRI('!') to 255.
 .TP 5
-.B \-6, \-\-6reversible
-quantize every channel through the SIXEL reversible tone set so a decoded
-image re-encoded with the same settings produces identical SIXEL bytes. Any
-rounding error is pushed into the dithering stage.
-.TP 5
 .B \-p \fICOLORS\fP, \-\-colors=\fICOLORS\fP
 specify number of colors to reduce the image to (default=256).
 .TP 5
@@ -354,9 +349,10 @@ The corresponding environments are \fBSIXEL_PALETTE_COVER\fP,
 \fBSIXEL_PALETTE_COVER_GROW\fP, and \fBSIXEL_PALETTE_COVER_MODE\fP.
 .TP 5
 .B \-_ \fIPOLICY\fP, \-\-snap\-policy=\fIPOLICY\fP
-configure how \fB-6\fP snaps palette channels to the 101 reversible SIXEL
-tone levels independently of palette coverage.
-\fIPOLICY\fP accepts \fBauto\fP, \fBnearest\fP, or \fBreversible\fP.
+control whether and how palette channels approach the 101 reversible SIXEL
+tone levels independently of palette coverage. \fBnone\fP disables snapping.
+\fIPOLICY\fP accepts \fBnone\fP, \fBauto\fP, \fBnearest\fP, or
+\fBreversible\fP.
 .br
 Supported suboptions:
 .br
@@ -2172,7 +2168,8 @@ emphasise L* weight during final merge distances independently of snap tuning
 .B SIXEL_PALETTE_SNAP_POLICY
 .br
 control palette snap target search. Accepts "reversible" for legacy fixed
-points or "nearest"/"auto" for nearby fixed points in the working colorspace.
+points, "nearest"/"auto" for nearby fixed points in the working colorspace,
+or "none" to disable snapping.
 .TP 5
 .B SIXEL_PALETTE_SNAP_TIMING_POLICY
 .br

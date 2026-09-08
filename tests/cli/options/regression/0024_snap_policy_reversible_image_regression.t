@@ -20,9 +20,10 @@ reference_image="${input_image}"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0024-snap-policy-short-$$.six"
 env_output="${artifact_dir}/0024-snap-policy-env-$$.six"
+none_output="${artifact_dir}/0024-snap-policy-none-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -6 -Woklab \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -Woklab \
     "-_reversible" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "snap policy short conversion failed"
     exit 0
@@ -35,7 +36,7 @@ test "${short_trace#*LSXSNP1|*policy=reversible*}" != "${short_trace}" || {
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_SNAP_POLICY=reversible" \
-    -p 16 -Qkmeans -6 -Woklab \
+    -p 16 -Qkmeans -Woklab \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "snap policy environment conversion failed"
     exit 0
@@ -47,6 +48,15 @@ test "${env_trace#*LSXSNP1|*policy=reversible*}" != "${env_trace}" || {
 
 cmp -s "${short_output}" "${env_output}" || {
     echo "not ok" 1 - "snap policy short and environment output differ"
+    exit 0
+}
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans -Woklab \
+    --snap-policy=none "${input_image}" >"${none_output}" || {
+    echo "not ok" 1 - "disabled snap policy conversion failed"
+    exit 0
+}
+cmp -s "${short_output}" "${none_output}" && {
+    echo "not ok" 1 - "reversible snap policy did not alter output"
     exit 0
 }
 lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \

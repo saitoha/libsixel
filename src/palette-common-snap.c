@@ -84,14 +84,17 @@ sixel_set_palette_snap_override(
     char const *policy_name;
     char const *timing_name;
 
-    policy_name = "nearest";
+    policy_name = "none";
     timing_name = "once";
     if (options == NULL) {
         memset(&g_snap_options, 0, sizeof(g_snap_options));
         return;
     }
     g_snap_options = *options;
-    if (options->policy == SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE) {
+    if (options->policy == SIXEL_PALETTE_SNAP_POLICY_NEAREST) {
+        policy_name = "nearest";
+    } else if (options->policy
+               == SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE) {
         policy_name = "reversible";
     }
     switch (options->timing) {
@@ -142,7 +145,7 @@ sixel_palette_get_snap_policy(void)
 {
     int value;
 
-    value = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
+    value = SIXEL_PALETTE_SNAP_POLICY_NONE;
     if (g_snap_options.policy_override) {
         return (enum sixel_palette_snap_policy)g_snap_options.policy;
     }
@@ -151,6 +154,13 @@ sixel_palette_get_snap_policy(void)
         SIXEL_OPTION_SCOPE_ENCODER,
         &value);
     return (enum sixel_palette_snap_policy)value;
+}
+
+int
+sixel_palette_snap_is_enabled(void)
+{
+    return sixel_palette_get_snap_policy()
+        != SIXEL_PALETTE_SNAP_POLICY_NONE;
 }
 
 static enum sixel_palette_snap_timing_policy

@@ -212,13 +212,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "    limit arguments of DECGRI('!') to 255\n"
     },
     {
-        '6',
-        "6reversible",
-        "-6, --6reversible\n"
-        "    quantize via the SIXEL reversible tone set so decoding and re-encoding keeps the\n"
-        "    palette stable; diffusion carries the small residuals.\n"
-    },
-    {
         'p',
         "colors",
         "-p COLORS, --colors=COLORS\n"
@@ -427,9 +420,9 @@ static cli_option_help_t const g_option_help_table[] = {
         '_',
         "snap-policy",
         "-_ POLICY, --snap-policy=POLICY\n"
-        "    choose how -6 snaps palette channels to the 101 reversible\n"
-        "    SIXEL tone levels. POLICY is one of:\n"
-        "      auto, nearest, reversible\n"
+        "    control whether and how palette channels approach the 101\n"
+        "    reversible SIXEL tone levels. POLICY is one of:\n"
+        "      none, auto, nearest, reversible\n"
         "    sub-option:\n"
         "      :timing=once|polish|merge|resolve|all (:Ivalue)\n"
         "      :rate=FACTOR (:AFACTOR), 0.0-1.0\n"
@@ -3245,7 +3238,6 @@ img2sixel_main(int argc, char *argv[])
         {"7bit-mode",             no_argument,        &long_opt, '7'},
         {"8bit-mode",             no_argument,        &long_opt, '8'},
         {"gri-limit",             no_argument,        &long_opt, 'R'},
-        {"6reversible",           no_argument,        &long_opt, '6'},
         {"colors",                required_argument,  &long_opt, 'p'},
         {"quantize-model",        required_argument,  &long_opt, 'Q'},
         {"sampling-policy",       required_argument,  &long_opt, '4'},

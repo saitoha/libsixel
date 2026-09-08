@@ -61734,16 +61734,6 @@
 
 2025-11-03  Hayaki Saito <saitoha@me.com>
 
-	* converters/img2sixel.1, converters/img2sixel.c,
-	converters/shell-completion/bash/img2sixel,
-	converters/shell-completion/zsh/_img2sixel, include/sixel.h.in,
-	python/libsixel/__init__.py, ruby/lib/libsixel/api.rb,
-	src/dither.c, src/dither.h, src/encoder.c, src/encoder.h,
-	src/quant.c, src/quant.h: feat: add -6,--6reversible option for
-	palette generation
-
-2025-11-03  Hayaki Saito <saitoha@me.com>
-
 	* src/quant.c: perf: fixed slowdown in LUT palette application using
 	Robin Hood and Hopscotch methods when the color count is low (p <
 	32)
@@ -76874,4 +76864,3 @@
 2013-08-20  Hayaki Saito <user@zuse.jp>
 
 	* Initial commit
-

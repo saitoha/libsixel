@@ -47,6 +47,7 @@
 
 #include "dither.h"
 #include "dither-interframe-method.h"
+#include "palette-common-snap.h"
 #include "palette-factory.h"
 #include "compat_stub.h"
 #include <6cells.h>
@@ -2034,7 +2035,6 @@ sixel_dither_new(
     (*ppdither)->lookup_policy = NULL;
     (*ppdither)->dither_policy = NULL;
     (*ppdither)->dither_policy_class_name = NULL;
-    (*ppdither)->sixel_reversible = 0;
     (*ppdither)->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     (*ppdither)->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
     (*ppdither)->pipeline_row_callback = NULL;
@@ -2517,7 +2517,7 @@ sixel_dither_initialize_internal(
     palette_request.method_for_rep = dither->method_for_rep;
     palette_request.quality_mode = dither->quality_mode;
     palette_request.force_palette = dither->force_palette;
-    palette_request.use_reversible = dither->sixel_reversible;
+    palette_request.use_reversible = sixel_palette_snap_is_enabled();
     palette_request.quantize_model = dither->quantize_model;
     palette_request.final_merge_mode = dither->final_merge_mode;
     palette_request.lut_policy = dither->lut_policy;
@@ -2870,29 +2870,6 @@ sixel_dither_set_pixelformat(
         SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ? 1 : 0;
 }
 
-
-/* toggle SIXEL reversible palette mode */
-SIXELAPI void
-sixel_dither_set_sixel_reversible(
-    sixel_dither_t /* in */ *dither,
-    int            /* in */ enable)
-{
-    /*
-     * The diagram below shows how the flag routes palette generation:
-     *
-     *   pixels --> [histogram]
-     *                  |
-     *                  v
-     *           (optional reversible snap)
-     *                  |
-     *                  v
-     *               palette
-     */
-    if (dither == NULL) {
-        return;
-    }
-    dither->sixel_reversible = enable ? 1 : 0;
-}
 
 /* select final merge policy */
 SIXELAPI void

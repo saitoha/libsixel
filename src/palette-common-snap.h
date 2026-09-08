@@ -53,7 +53,8 @@ enum sixel_palette_snap_stage {
 };
 
 enum sixel_palette_snap_policy {
-    SIXEL_PALETTE_SNAP_POLICY_NEAREST = 0,
+    SIXEL_PALETTE_SNAP_POLICY_NONE = 0,
+    SIXEL_PALETTE_SNAP_POLICY_NEAREST,
     SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE
 };
 
@@ -79,6 +80,9 @@ typedef struct sixel_palette_snap_options {
 void
 sixel_set_palette_snap_override(
     sixel_palette_snap_options_t const *options);
+
+int
+sixel_palette_snap_is_enabled(void);
 
 int
 sixel_palette_should_snap(enum sixel_palette_snap_stage stage);
