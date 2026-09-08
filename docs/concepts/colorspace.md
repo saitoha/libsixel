@@ -4,7 +4,7 @@
 
 A three-component pixel value is not a complete color description. The same numeric triplet can represent different light depending on its primaries, white point, transfer function, and any attached device profile. libsixel therefore keeps color interpretation separate from pixel storage and uses color spaces at several different pipeline boundaries.
 
-This document explains the shared color-space model, the roles of `-X`, `-W`, and `-U`, and the color-management behavior of image loaders. The storage types and implicit promotion boundaries are defined in [Pixel-format precision](pixelformat-precision.md); broader quantizer, dither, lookup, speed, and size effects are measured in [Encoder working precision](../functionality/precision.md); and palette geometry is measured in [Palette clustering color space](../functionality/clustering-colorspace.md).
+This document explains the shared color-space model, the roles of `-X`, `-W`, and `-U`, and the color-management behavior of image loaders. The storage types and implicit promotion boundaries are defined in [Pixel-format precision](pixelformat-precision.md); broader quantizer, dither, lookup, speed, and size effects are measured in [Encoder working precision](../functionality/precision.md); palette-construction geometry is measured in [Palette clustering color space](../functionality/clustering-colorspace.md); and palette-application geometry is measured in [Working color space](../functionality/working-colorspace.md).
 
 ## Four concepts that must remain separate
 
@@ -113,6 +113,8 @@ An explicit `-X` is authoritative regardless of whether it appears before or aft
 `-W` selects the shared working coordinates for the main image and the generated palette. Lookup policies compare pixels with palette entries in this space, and dithering propagates its error in this space. Changing `-W` can therefore change selected indices even when the palette itself was generated in another space.
 
 `-Wgamma` can use either the 8-bit or float32 precision path. `linear`, `oklab`, `cielab`, and `din99d` require float32 working storage. This is why a non-gamma `-W` can change memory use and runtime as well as color geometry.
+
+The mathematical role of each accepted space and the controlled quality, runtime, and stream-size comparison are documented in [Working color space](../functionality/working-colorspace.md).
 
 ### `-U`: serialized palette coordinates
 

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify a float-only working space overrides the 8-bit base preference.
+# Policy: docs/functionality/working-colorspace.md
 
 set -eux
 

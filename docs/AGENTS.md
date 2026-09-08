@@ -18,6 +18,7 @@ Start from the [documentation index](README.md). Read the relevant document befo
 - [Pixel formats and alpha representation](concepts/pixelformat.md): input memory layouts, frame storage, transparency metadata, and the SIXEL wire boundary.
 - [Functionality](functionality/overview.md): capabilities, components, data flow, and architectural boundaries.
 - [Palette clustering color space](functionality/clustering-colorspace.md): `-X` geometry, normalization, interactions, and reproducible measurements.
+- [Palette working color space](functionality/working-colorspace.md): `-W` palette-application geometry, lookup and dither interactions, precision, and reproducible quality, speed, and size measurements.
 - [Palette cover policy](functionality/cover-policy.md): post-quantizer gamut reachability repair, soft and hard anchors, and growth.
 - [Palette snap policy](functionality/snap-policy.md): enablement, reversible 101-level tone mapping, timing, approach rate, and working-space target selection.
 - [Encoder working precision](functionality/precision.md): requested and effective `--precision` paths and cross-policy measurement controls.

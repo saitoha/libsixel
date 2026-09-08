@@ -28,8 +28,8 @@ decisions; it does not choose the colors again.
 | --- | --- | --- | --- |
 | Loading | Encoded image or caller pixels | Frames, pixels, dimensions, format, alpha, timing, and metadata | Loader choice and loader suboptions |
 | Normalization | Loader frames | Pixels in the processing size, format, and colorspace | Resize, crop, alpha, and colorspace options |
-| Palette construction | Normalized color samples | A bounded set of palette entries | `-p`, `-Q`, precision, and clustering colorspace |
-| Palette application | Pixels and a completed palette | One palette index per output pixel | `-d`, `-~`, precision, transparency, and inter-frame policy |
+| Palette construction | Normalized color samples | A bounded set of palette entries | `-p`, `-Q`, `-X`, precision, sampling, and binning |
+| Palette application | Pixels and a completed palette | One palette index per output pixel | `-W`, `-d`, `-~`, precision, transparency, and inter-frame policy |
 | SIXEL encoding | Indexed pixels, palette, and frame metadata | SIXEL control sequences and image data | Encoding, 7-bit/8-bit, and output policies |
 
 The loader contract ends when it has described the source image correctly.
@@ -116,6 +116,8 @@ Consequently:
   directly, but it does not disable dithering or palette application;
 - changing `-Q` can change the palette itself, while changing `-d` or `-~`
   changes how that completed palette is applied.
+
+The candidate and palette are expressed in the coordinates selected by `-W`; see [Working Color Space](working-colorspace.md) for its geometry, precision requirements, and measured cost.
 
 See [Dithering](dithering.md) and [Lookup Policy](lookup-policy.md) for the two
 parts of this stage.

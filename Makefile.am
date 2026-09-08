@@ -80,6 +80,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/loader/assets/alpha-policy-comparison.gif \
 	docs/loader/assets/alpha-policy-comparison.png \
 	docs/functionality/clustering-colorspace.md \
+	docs/functionality/working-colorspace.md \
+	docs/functionality/working-colorspaces/measurements/working-colorspace-comparison.csv \
+	docs/functionality/working-colorspaces/measurements/working-colorspace-performance.png \
+	docs/functionality/working-colorspaces/measurements/working-colorspace-quality.png \
+	docs/functionality/working-colorspaces/measurements/working-colorspace-run.json \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-quality.csv \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-quality.png \
 	docs/functionality/clustering-color-spaces/measurements/clustering-colorspace-binning-occupancy.csv \

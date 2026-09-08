@@ -42,6 +42,7 @@ EXTRA_DIST = libsixel-config.in \
              check_quantize_model_measurements.py \
              check_snap_policy_measurements.py \
              check_threading_measurements.py \
+             check_working_colorspace_measurements.py \
              plot_cover_policy_figures.py \
              plot_dither_policy_measurements.py \
              plot_dither_spectrum_measurements.py \
@@ -54,6 +55,7 @@ EXTRA_DIST = libsixel-config.in \
              plot_quantize_model_measurements.py \
              plot_snap_policy_measurements.py \
              plot_threading_measurements.py \
+             plot_working_colorspace_measurements.py \
              reproduce_lookup_policy_acceleration.sh \
              reproduce_cover_policy_figures.sh \
              reproduce_dither_policy_measurements.sh \
@@ -64,6 +66,7 @@ EXTRA_DIST = libsixel-config.in \
              reproduce_quantize_model_measurements.sh \
              reproduce_snap_policy_measurements.sh \
              reproduce_threading_measurements.sh \
+             reproduce_working_colorspace_measurements.sh \
              snap_policy_suite.json \
              timeline.py
 
