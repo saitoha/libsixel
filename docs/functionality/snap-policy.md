@@ -150,7 +150,79 @@ The safe-tone table has 256 entries and fixed construction cost. A final byte-pa
 
 Snap quality is not monotonic. Exact snapping removes palette round-trip drift but perturbs solver output, and an intermediate `rate` can improve a one-generation metric while losing reversibility. A reproducible comparison should report palette fixed-point failures after encode/decode/re-encode, Delta E or MSE for channel perturbation, MS-SSIM for spatial impact, palette-build and end-to-end time, and exact SIXEL byte size. It should hold `-Q`, `-F`, `-a`, `-X`, precision, lookup, diffusion, and thread count fixed while sweeping policy, timing, rate, and palette size.
 
-The source tree does not yet contain a one-command snap-policy quality, speed, size, and reversibility measurement suite. Until such a suite records commands, fixtures, host/build provenance, raw data, and plots, no policy comparison should be treated as a refreshed default-selection result.
+## Measured snapshot
+
+The checked-in snapshot was produced from revision `c5acbeadb10ac2d1556fb8d3a6aee0ffe589b2bd` on arm64 macOS with Apple clang, `-O3`, and one encoder thread. The main comparison uses `images/snake.png`, palette sizes 8 through 256, matched clustering and working spaces (`-X` equals `-W`), the float32 pipeline, full-frame sampling, hard binning, seeded K-means, no final merge, cover off, exact lookup, GPU off, and Floyd--Steinberg dithering with raster scan. Holding these controls fixed isolates snap behavior but does not describe every possible encoder configuration.
+
+The raw tables contain the complete command template for every point. [`snap-policy-run.json`](snap-policies/measurements/snap-policy-run.json) records compiler, build, fixture hashes, executable hashes, environment cleanup, and timing protocol.
+
+### Palette fixed points
+
+![Unsafe exported palette channels by policy, color space, and palette size](snap-policies/measurements/snap-policy-fixed-point.png)
+
+Figure: Percentage of ACT-exported palette channels that change after conversion to a SIXEL integer percentage and back. Lower is better; zero means every exported channel is a fixed point. Cover is disabled so a later cover mutation cannot invalidate the result.
+
+With snap disabled, 41.7% to 68.8% of exported channels were outside the safe set. Every measured `rate=1` configuration reached zero failures for every palette size and color space. `rate=0.25` did not: its median unsafe-channel rate was 57.6%, and the observed range was 33.3% to 75.0%. An intermediate approach can accidentally converge to safe tones in a particular run, but only `rate=1` is the configuration-level guarantee.
+
+### One-generation quality
+
+![MS-SSIM and mean Delta E00 by snap configuration](snap-policies/measurements/snap-policy-quality.png)
+
+Figure: Decoded-image quality for the natural fixture. MS-SSIM is the primary spatial metric; mean Delta E00 is a supporting color-error metric. Each point is one deterministic encode and decode with Floyd--Steinberg dithering enabled.
+
+The following summary pools the 30 combinations of six palette sizes and five matched color spaces. Delta values compare each row with snap disabled at the same palette size and color space; time is the median of nine fresh processes after two warm-ups per point.
+
+| Configuration | Exact palette fixed point | Median MS-SSIM change | MS-SSIM improvements | Median mean Delta E00 change | Median size change | Median time change |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `nearest:timing=all:rate=0.25` | No | +0.000388 | 19 / 30 | -0.0174 | -0.23% | +0.45% |
+| `nearest:timing=once:rate=1` | Yes | -0.000327 | 13 / 30 | +0.1313 | +2.55% | -0.32% |
+| `nearest:timing=all:rate=1` | Yes | -0.001541 | 9 / 30 | +0.2147 | +2.56% | +0.89% |
+| `reversible:timing=all:rate=1` | Yes | -0.000729 | 12 / 30 | +0.2844 | +3.22% | +0.48% |
+
+Exact snapping is therefore a stability feature with a measurable but image-dependent one-generation cost, not a general quality optimization. The partial `rate=0.25` setting improved the median quality result but did not preserve palette fixed points. Neither observation justifies silently enabling snapping by default.
+
+### Size and speed
+
+![SIXEL byte size relative to snap disabled](snap-policies/measurements/snap-policy-size.png)
+
+Figure: Exact byte length of the same SIXEL stream assessed for quality, divided by the snap-disabled length. A ratio below one is smaller. Exact settings increased the pooled median by 2.55% to 3.22%, although individual points ranged from reductions to increases.
+
+![End-to-end img2sixel latency relative to snap disabled](snap-policies/measurements/snap-policy-speed.png)
+
+Figure: End-to-end `img2sixel` wall time, including load, palette construction, palette application, dithering, and encoding. Each marker is a nine-run median, bars are the interquartile range, and each run starts a fresh process. The pooled median ratios ranged from 0.997 to 1.009; the largest observed ratio was 1.068. These small differences overlap process-level variation in several panels, so this snapshot supports “low overhead” rather than a claim that snapping accelerates encoding.
+
+### Rate, timing, color-space, and fixture dependence
+
+![Approach rate, timing, and channel_l control sweeps](snap-policies/measurements/snap-policy-controls.png)
+
+Figure: K=64 control sweeps. The rate and `channel_l` panels use the natural fixture with no final merge. The timing panel enables Ward merge so merge-stage hooks are eligible. All quality deltas are relative to snap disabled under the same controls.
+
+On the natural fixture, `rate=0.25` improved MS-SSIM in all five tested spaces by 0.000362 to 0.001744. The earlier hypothesis that MS-SSIM improvement occurs only in sRGB is not supported by this snapshot. The effect is not universal: the multi-fixture sweep below contains negative cells, and exact snapping often reverses a partial-rate improvement.
+
+The timing ladder has no uniformly best early-hook level. On this K=64 Ward case, `once`, `polish`, and `merge` produced identical decoded metrics within each space, while `resolve` and `all` changed the solver result in space-dependent directions. The `channel_l` sweep was also space-dependent: this single fixture favored 0 for Oklab and 1 for CIELAB and DIN99d. That is evidence against selecting a universal tuning value from one image, not evidence for changing those defaults to endpoints.
+
+![Best measured nonzero rate by fixture and color space](snap-policies/measurements/snap-policy-fixture-summary.png)
+
+Figure: Best MS-SSIM change among rates 0.25, 0.5, 0.75, and 1 at K=64. A negative cell means every measured nonzero rate was worse than snap disabled. Nineteen of 25 fixture/space cells were positive, but the selected rate and benefit varied substantially; the flat-artwork Oklab cell is a particularly strong partial-rate result and should not be generalized to exact snapping.
+
+### Reproduction and validation
+
+From a clean tracked worktree with Matplotlib available to the selected Python interpreter, one command rebuilds the programs, verifies generated fixtures, removes `SIXEL_*` variables from the measurement environment, records the data, draws every figure, and validates row coverage and provenance:
+
+```sh
+tools/reproduce_snap_policy_measurements.sh
+```
+
+Use `PYTHON=/path/to/python` to select an interpreter with Matplotlib. Durable output requires exactly two warm-ups and nine recorded timing runs and refuses a dirty tracked worktree. An explicitly named non-documentation output directory can be used for a shorter exploratory run:
+
+```sh
+SNAP_POLICY_EXPLORATORY=1 SNAP_POLICY_WARMUPS=0 SNAP_POLICY_RUNS=1 \
+    tools/reproduce_snap_policy_measurements.sh /tmp/libsixel-snap-policy
+```
+
+The checked-in raw data are [`snap-policy-quality.csv`](snap-policies/measurements/snap-policy-quality.csv), [`snap-policy-speed.csv`](snap-policies/measurements/snap-policy-speed.csv), and [`snap-policy-controls.csv`](snap-policies/measurements/snap-policy-controls.csv). Run `tools/check_snap_policy_measurements.py docs/functionality/snap-policies/measurements` to audit an existing durable snapshot without remeasuring it.
+
+This snapshot measures one machine, one thread count, one quantizer family, and one dithering policy. It measures palette fixed-point membership directly but does not yet measure repeated full-image encode/decode cycles, animation flicker, cover-after-snap interaction, or statistical significance across hosts. Re-run the suite after changing snap, quantizer, colorspace, palette export, or percentage-conversion code; do not carry these numerical conclusions across such changes without refreshing the artifacts.
 
 ## Implementation references
 

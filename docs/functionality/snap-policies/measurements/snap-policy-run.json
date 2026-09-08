@@ -1,0 +1,236 @@
+{
+  "artifacts": {
+    "control_row_count": 173,
+    "main_row_count": 150,
+    "plots": [
+      "snap-policy-quality.png",
+      "snap-policy-fixed-point.png",
+      "snap-policy-size.png",
+      "snap-policy-speed.png",
+      "snap-policy-controls.png",
+      "snap-policy-fixture-summary.png"
+    ],
+    "speed_row_count": 150,
+    "tables": [
+      "snap-policy-quality.csv",
+      "snap-policy-speed.csv",
+      "snap-policy-controls.csv"
+    ]
+  },
+  "build": {
+    "cc": "gcc",
+    "cflags": "-O3 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": ""
+  },
+  "fixtures": [
+    {
+      "class": "natural",
+      "height": 450,
+      "id": "natural-snake",
+      "label": "natural photograph",
+      "path": "images/snake.png",
+      "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+      "width": 600
+    },
+    {
+      "class": "flat-artwork",
+      "height": 746,
+      "id": "flat-artwork",
+      "label": "flat artwork",
+      "path": "images/vimperator3.png",
+      "sha256": "469db2a68010522cde29cc1dce7617743cb5a293ad2874cde6744f5ebb23bd33",
+      "width": 582
+    },
+    {
+      "class": "gradient",
+      "height": 450,
+      "id": "smooth-gradient",
+      "label": "smooth gradient",
+      "path": "images/measurements/palette-pipeline/smooth-gradient-600x450.png",
+      "sha256": "47de1f7508b0bb9d1ebdf6b0b2278cb5ccd1db1ad82ff2fbee365dab40510a93",
+      "width": 600
+    },
+    {
+      "class": "rare-color",
+      "height": 450,
+      "id": "rare-colors",
+      "label": "sparse rare colors",
+      "path": "images/measurements/palette-pipeline/rare-colors-600x450.png",
+      "sha256": "93f0f2284086e1db61d5d2d702b1e67a5d73063ce63c5df726dd5f2bf22ab5c7",
+      "width": 600
+    },
+    {
+      "class": "broad-gamut",
+      "height": 450,
+      "id": "a98-gamut",
+      "label": "Adobe RGB gamut ramps",
+      "path": "images/measurements/palette-pipeline/a98-gamut-600x450.png",
+      "sha256": "3a025f519c2107ae6286d1807a0b100948550025eec547c5bde94e932270a133",
+      "width": 600
+    }
+  ],
+  "generated_at_utc": "2026-09-08T10:52:33.776070+00:00",
+  "measurement_mode": "durable",
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "aebde20bf3b665e886fb3b5cb4c1a0f2dba5d0ed6224768d06dc669afe01cc83",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "e13b9a63375c7923ecb6afb5ddb6bfd0cebbac53f1295875d895c0c04fbdae4e"
+    },
+    "lsqa": {
+      "launcher": "assessment/lsqa",
+      "launcher_sha256": "21f1f4c14cd361222d700137465cd7080c67b640d4203acbd53147496599a042",
+      "payload": "assessment/.libs/lsqa",
+      "payload_sha256": "4e00a07c17523529fd186549afa02c96dbedc94d1a7878c3c27b4b12eeed9408"
+    }
+  },
+  "protocol": {
+    "binning_policy": "hard",
+    "channel_l_colorspaces": [
+      "oklab",
+      "cielab",
+      "din99d"
+    ],
+    "channel_l_sweep": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "colors": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "colorspaces": [
+      {
+        "label": "sRGB gamma",
+        "name": "gamma",
+        "working_format": "rgb-f32"
+      },
+      {
+        "label": "linear RGB",
+        "name": "linear",
+        "working_format": "linear-f32"
+      },
+      {
+        "label": "OKLab",
+        "name": "oklab",
+        "working_format": "oklab-f32"
+      },
+      {
+        "label": "CIELAB",
+        "name": "cielab",
+        "working_format": "cielab-f32"
+      },
+      {
+        "label": "DIN99d",
+        "name": "din99d",
+        "working_format": "din99d-f32"
+      }
+    ],
+    "configurations": [
+      {
+        "channel_l": 0.85,
+        "config": "off",
+        "enabled": false,
+        "label": "snap off",
+        "policy": "none",
+        "rate": 0.0,
+        "timing": "off"
+      },
+      {
+        "channel_l": 0.85,
+        "config": "nearest-quarter",
+        "enabled": true,
+        "label": "nearest / all / rate 0.25",
+        "policy": "nearest",
+        "rate": 0.25,
+        "timing": "all"
+      },
+      {
+        "channel_l": 0.85,
+        "config": "nearest-once",
+        "enabled": true,
+        "label": "nearest / once / rate 1",
+        "policy": "nearest",
+        "rate": 1.0,
+        "timing": "once"
+      },
+      {
+        "channel_l": 0.85,
+        "config": "nearest-all",
+        "enabled": true,
+        "label": "nearest / all / rate 1",
+        "policy": "nearest",
+        "rate": 1.0,
+        "timing": "all"
+      },
+      {
+        "channel_l": 0.85,
+        "config": "reversible-all",
+        "enabled": true,
+        "label": "reversible / all / rate 1",
+        "policy": "reversible",
+        "rate": 1.0,
+        "timing": "all"
+      }
+    ],
+    "control_colors": 64,
+    "cover_policy": "off",
+    "diffusion": "fs:scan=raster",
+    "fixed_point_measurement": "ACT palette channels changed by one SIXEL percentage encode/decode round trip",
+    "gpu_policy": "off",
+    "loader": "builtin!",
+    "lookup_policy": "none",
+    "main_merge_policy": "none",
+    "matched_working_and_clustering_spaces": true,
+    "palette_type": "rgb",
+    "precision": "float32",
+    "primary_fixture": "natural-snake",
+    "quality": "full",
+    "quantize_model": "kmeans:seed=1:binbits=6",
+    "rate_sweep": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "sampling_policy": "full-frame",
+    "sixel_environment_removed": true,
+    "size_measurement": "quality-pass SIXEL stdout byte length",
+    "speed_order_rotated_each_round": true,
+    "speed_runs": 9,
+    "speed_warmups": 2,
+    "threads": 1,
+    "timing_measurement": "uninstrumented fresh-process monotonic wall time",
+    "timing_merge_policy": "ward",
+    "timing_sweep": [
+      "once",
+      "polish",
+      "merge",
+      "resolve",
+      "all"
+    ]
+  },
+  "schema_version": 1,
+  "source": {
+    "machine": "arm64",
+    "manifest": "tools/snap_policy_suite.json",
+    "manifest_sha256": "1b6dda1f4ae3d9b28cff59672508f53bcdb867a97660ee00fbf4c2bb6853afe1",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "python": "3.14.5",
+    "revision": "c5acbeadb10ac2d1556fb8d3a6aee0ffe589b2bd",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}
