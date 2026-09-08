@@ -68,6 +68,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/ci/local-jobs.tsv \
 	docs/ci/support-matrix.md \
 	docs/cli/design-policy.md \
+	docs/concepts/colorspace.md \
 	docs/concepts/pixelformat.md \
 	docs/loader/alpha-policy.md \
 	docs/loader/background-policy.md \

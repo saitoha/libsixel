@@ -20,6 +20,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Concepts
 
+- [Color spaces and loader color management](concepts/colorspace.md) separates color values, pixel formats, color-space interpretation, and ICC/CMS conversion, then connects loader output with the `-X`, `-W`, and `-U` encoder boundaries.
 - [Pixel formats and alpha representation](concepts/pixelformat.md) separates
   input memory layouts, frame storage, alpha-zero metadata, and what can be
   represented in a SIXEL stream.
