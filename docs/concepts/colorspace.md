@@ -4,7 +4,7 @@
 
 A three-component pixel value is not a complete color description. The same numeric triplet can represent different light depending on its primaries, white point, transfer function, and any attached device profile. libsixel therefore keeps color interpretation separate from pixel storage and uses color spaces at several different pipeline boundaries.
 
-This document explains the shared color-space model, the roles of `-X`, `-W`, and `-U`, and the color-management behavior of image loaders. Detailed measurements of palette geometry belong in [Palette clustering color space](../functionality/clustering-colorspace.md), while storage precision and resize behavior belong in [Encoder working precision](../functionality/precision.md).
+This document explains the shared color-space model, the roles of `-X`, `-W`, and `-U`, and the color-management behavior of image loaders. The storage types and implicit promotion boundaries are defined in [Pixel-format precision](pixelformat-precision.md); broader quantizer, dither, lookup, speed, and size effects are measured in [Encoder working precision](../functionality/precision.md); and palette geometry is measured in [Palette clustering color space](../functionality/clustering-colorspace.md).
 
 ## Four concepts that must remain separate
 

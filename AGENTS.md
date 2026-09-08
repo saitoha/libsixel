@@ -39,6 +39,7 @@ Use the [documentation index](docs/README.md) to find durable project references
 - [SIXEL format](docs/sixel-format.md)
 - [Build, runtime, and platform support](docs/platform-support.md)
 - [Color spaces and loader color management](docs/concepts/colorspace.md)
+- [Pixel-format precision](docs/concepts/pixelformat-precision.md)
 - [Pixel formats and alpha representation](docs/concepts/pixelformat.md)
 - [Functional overview](docs/functionality/overview.md)
 - [Palette clustering color space](docs/functionality/clustering-colorspace.md)

@@ -23,6 +23,8 @@ The `SIXEL_PIXELFORMAT_*` constants describe how samples are arranged in a memor
 
 The pixel-format tag describes layout. Colorspace metadata describes how the stored color values are interpreted. Neither property by itself states how the terminal will treat an unpainted SIXEL position.
 
+The distinction between three-channel byte storage and typed float32 storage, including implicit promotion by resize, CMS, and color-space conversion, is documented in [Pixel-format precision](pixelformat-precision.md).
+
 ## Frame representation
 
 A frame owns or borrows a pixel buffer and can also carry a palette, dimensions, colorspace, animation timing, and transparency metadata. The transparency metadata has three relevant forms:

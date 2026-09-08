@@ -10,6 +10,8 @@ dither error state, selected palette indices, and the resulting SIXEL stream.
 It also changes memory traffic and the amount of work available to threaded or
 GPU execution paths.
 
+The underlying `RGB888` and typed float32 storage contracts, implicit promotion by resize and CMS, and an isolated linear-light resize quality measurement are documented in [Pixel-format precision](../concepts/pixelformat-precision.md).
+
 Precision is therefore a cross-cutting measurement axis. Results for
 [palette quantization](quantization.md), [dithering](dithering.md),
 [lookup policy](lookup-policy.md),
@@ -26,10 +28,7 @@ With `-Wgamma`, the two explicit base modes have distinct planner contracts:
 | `--precision=8bit` | `rgb888` | three unsigned 8-bit gamma-sRGB channels |
 | `--precision=float32` | `rgb-f32` | three float32 gamma-sRGB channels |
 
-A non-gamma working color space such as `-Wlinear` or `-Woklab` requires
-floating-point samples. It promotes the effective shared path to `rgb-f32`
-even when the base request is `--precision=8bit`. Such a command is useful,
-but it is not an 8-bit-versus-float32 experiment.
+A non-gamma working color space such as `-Wlinear` or `-Woklab` requires floating-point samples. It promotes the effective shared path to the matching typed format, such as `linear-f32` or `oklab-f32`, even when the base request is `--precision=8bit`. Such a command is useful, but it is not an 8-bit-versus-float32 experiment.
 
 `-X` has a different role. It selects the coordinates used to construct the
 palette. Gamma RGB can be clustered in either 8-bit or float32 coordinates, so
