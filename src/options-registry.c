@@ -3164,6 +3164,10 @@ static sixel_option_argument_schema_t const g_options[] = {
         g_terminal_policy_values),
 };
 
+typedef char sixel_option_count_check[
+    SIXEL_REGISTRY_ARRAY_LENGTH(g_options) ==
+        (size_t)SIXEL_OPTION_SCHEMA_COUNT ? 1 : -1];
+
 static int
 sixel_option_registry_base_index(
     sixel_option_argument_schema_t const *schema,
@@ -4259,11 +4263,6 @@ sixel_option_registry_validate_uncached(void)
     default_found = 0;
     environment_choice_value_found = 0;
 
-    if (SIXEL_REGISTRY_ARRAY_LENGTH(g_options) !=
-        (size_t)SIXEL_OPTION_SCHEMA_COUNT) {
-        return 0;
-    }
-
     while (suboption_index <
            SIXEL_REGISTRY_ARRAY_LENGTH(g_suboptions)) {
         key = g_suboptions + suboption_index;
@@ -4313,7 +4312,8 @@ sixel_option_registry_validate_uncached(void)
                 (unsigned int)SIXEL_OPTION_SCHEMA_COUNT ||
             (size_t)schema->option_id != option_index ||
             schema->scope == 0u ||
-            (schema->scope & ~SIXEL_OPTION_SCOPE_ALL) != 0u ||
+            (schema->scope &
+             ~(unsigned int)SIXEL_OPTION_SCOPE_ALL) != 0u ||
             schema->optflag <= 0 ||
             !sixel_option_registry_option_name_is_valid(
                 schema->option_name) ||

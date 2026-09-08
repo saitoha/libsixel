@@ -406,6 +406,10 @@ run_case_tap "staticcheck-src-makefile-dist-sources-sync" \
     "$src_root/tests/_static/sh/staticcheck-src-makefile-dist-sources-sync.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-wic-option-sources" \
+    "$src_root/tests/_static/sh/staticcheck-wic-option-sources.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-inc-extra-dist-sync" \
     "$src_root/tests/_static/sh/staticcheck-test-inc-extra-dist-sync.sh" \
     "$src_root" || fail_and_exit $?

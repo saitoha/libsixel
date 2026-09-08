@@ -23,7 +23,7 @@ bg_sixel="${ARTIFACT_LOCAL_DIR}/quicklook-transparent-bg.six"
 header_alpha="${ARTIFACT_LOCAL_DIR}/quicklook-header-alpha.bin"
 header_opaque="${ARTIFACT_LOCAL_DIR}/quicklook-header-opaque.bin"
 
-printf '\033P0;1q' >"${header_alpha}"
+printf '\033P0;0q' >"${header_alpha}"
 printf '\033Pq' >"${header_opaque}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L quicklook! "${svg_path}" >"${default_sixel}" || {
@@ -31,13 +31,14 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L quicklook! "${svg_path}" >"${default_si
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L quicklook! -B '#ffffff' "${svg_path}" >"${bg_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite \
+    -L quicklook! -B '#ffffff' "${svg_path}" >"${bg_sixel}" || {
     echo "not ok" 1 - "background-composited SVG conversion failed"
     exit 0
 }
 
 dd if="${default_sixel}" bs=1 count=6 2>/dev/null | cmp -s - "${header_alpha}" || {
-    echo "not ok" 1 - "transparent SVG did not emit ESC P0;1q header"
+    echo "not ok" 1 - "transparent SVG did not emit ESC P0;0q header"
     exit 0
 }
 
@@ -47,7 +48,7 @@ dd if="${bg_sixel}" bs=1 count=3 2>/dev/null | cmp -s - "${header_opaque}" || {
 }
 
 dd if="${bg_sixel}" bs=1 count=6 2>/dev/null | cmp -s - "${header_alpha}" && {
-    echo "not ok" 1 - "background SVG unexpectedly kept ESC P0;1q header"
+    echo "not ok" 1 - "background SVG unexpectedly kept ESC P0;0q header"
     exit 0
 }
 

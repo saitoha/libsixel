@@ -24,7 +24,7 @@ keycolor_header="$(printf '\033P0;1q')"
 out_payload=''
 has_header=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {

@@ -248,8 +248,13 @@ typedef enum img2sixel_completion_policy_key_index {
     IMG2SIXEL_COMPLETION_POLICY_BASH = 0,
     IMG2SIXEL_COMPLETION_POLICY_ZSH,
     IMG2SIXEL_COMPLETION_POLICY_DIRECTORY,
-    IMG2SIXEL_COMPLETION_POLICY_HOME
+    IMG2SIXEL_COMPLETION_POLICY_HOME,
+    IMG2SIXEL_COMPLETION_POLICY_KEY_COUNT
 } img2sixel_completion_policy_key_index_t;
+
+typedef char img2sixel_key_count_check[
+    IMG2SIXEL_ARRAY_LENGTH(g_img2sixel_completion_policy_keys) ==
+        IMG2SIXEL_COMPLETION_POLICY_KEY_COUNT ? 1 : -1];
 
 static void img2sixel_log_errno_impl(int saved_errno, const char *fmt, ...);
 #define img2sixel_log_errno(...) \
@@ -401,9 +406,6 @@ img2sixel_completion_policy_registry_is_valid(void)
     other = 0u;
     key = NULL;
     candidate = NULL;
-    if (IMG2SIXEL_ARRAY_LENGTH(g_img2sixel_completion_policy_keys) != 4u) {
-        return 0;
-    }
     while (index < IMG2SIXEL_ARRAY_LENGTH(
             g_img2sixel_completion_policy_keys)) {
         key = g_img2sixel_completion_policy_keys + index;
@@ -576,8 +578,8 @@ img2sixel_completion_policy_apply(
     char *entry_end;
     char *equal_pos;
     char const *value;
-    char *values[4];
-    int assigned[4];
+    char *values[IMG2SIXEL_COMPLETION_POLICY_KEY_COUNT];
+    int assigned[IMG2SIXEL_COMPLETION_POLICY_KEY_COUNT];
     size_t base_length;
     size_t index;
     size_t key_index;

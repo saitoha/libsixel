@@ -22,12 +22,12 @@ out_default="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-alpha0-default.six"
 out_black="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-alpha0-black.six"
 keycolor_header="$(printf '\033P0;1q')"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "libwebp animation decode without -B failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S -B#000 "${input_webp}" >"${out_black}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S -B#000 "${input_webp}" >"${out_black}" || {
     echo "not ok" 1 - "libwebp animation decode with -B#000 failed"
     exit 0
 }

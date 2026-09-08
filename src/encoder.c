@@ -4962,6 +4962,7 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         return SIXEL_BAD_ARGUMENT;
     }
 
+    status = SIXEL_OK;
     histogram_colors = 0;
     method_for_diffuse = SIXEL_DIFFUSE_NONE;
     skip_palette_diffusion = 0;

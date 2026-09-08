@@ -744,6 +744,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-wic-option-sources',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-wic-option-sources.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-meson-palette-sources',
     [meson.current_source_dir() / '_static/sh/staticcheck-meson-palette-sources.sh',
       meson.project_source_root()],

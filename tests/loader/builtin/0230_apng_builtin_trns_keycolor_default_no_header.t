@@ -19,7 +19,7 @@ keycolor_header="$(printf '\033P0;1q')"
 out_payload=''
 has_header=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Lbuiltin! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
     echo "not ok 1 - builtin APNG default render failed"

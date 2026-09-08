@@ -138,9 +138,10 @@ if get_option('analyzer')
     add_project_arguments(['-O2', '-fanalyzer'], language: 'c')
     analyzer_summary = 'gcc(-O2 -fanalyzer)'
   elif cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
-    add_project_arguments(['/W4', '/analyze', '/wd28253', '/wd6262'],
+    add_project_arguments(
+      ['/W4', '/analyze', '/wd28253', '/wd28301', '/wd6262'],
                           language: 'c')
-    analyzer_summary = 'msvc(/W4 /analyze /wd28253 /wd6262)'
+    analyzer_summary = 'msvc(/W4 /analyze /wd28253 /wd28301 /wd6262)'
   else
     error('analyzer=true is unsupported for C compiler: ' + cc.get_id())
   endif

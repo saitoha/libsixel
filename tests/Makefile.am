@@ -685,6 +685,7 @@ AM_LOG_FLAGS =
 	staticcheck-makefile-recipes \
 	staticcheck-psb-large-fixture-clean-sync \
 	staticcheck-src-makefile-dist-sources-sync \
+	staticcheck-wic-option-sources \
 	staticcheck-test-inc-extra-dist-sync \
 	staticcheck-meson-palette-sources \
 	staticcheck-metal-source-literal-length \
@@ -749,6 +750,7 @@ staticcheck-gperf-generated-undefs \
 staticcheck-makefile-recipes \
 staticcheck-psb-large-fixture-clean-sync \
 staticcheck-src-makefile-dist-sources-sync \
+staticcheck-wic-option-sources \
 staticcheck-test-inc-extra-dist-sync \
 staticcheck-meson-palette-sources \
 staticcheck-metal-source-literal-length \
@@ -1139,6 +1141,16 @@ staticcheck-src-makefile-dist-sources-sync:
 		--trs-file staticcheck-src-makefile-dist-sources-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-src-makefile-dist-sources-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-wic-option-sources:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-wic-option-sources" \
+		--log-file staticcheck-wic-option-sources.log \
+		--trs-file staticcheck-wic-option-sources.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-wic-option-sources.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-inc-extra-dist-sync:
@@ -2298,6 +2310,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-psb-large-fixture-clean-sync.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
+    _static/sh/staticcheck-wic-option-sources.sh \
     _static/sh/staticcheck-test-inc-extra-dist-sync.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-metal-source-literal-length.sh \

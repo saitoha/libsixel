@@ -216,6 +216,7 @@ fuzz_verify_roundtrip(char const *argument)
     status = sixel_option_parse_argument_list_with_suboptions(
         argument,
         schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
         &resolution,
         diagnostic,
         sizeof(diagnostic));
@@ -232,6 +233,7 @@ fuzz_verify_roundtrip(char const *argument)
     status = sixel_option_parse_argument_list_with_suboptions(
         resolution.canonical_argument,
         schema,
+        SIXEL_OPTION_SCOPE_ENCODER,
         &reparsed,
         diagnostic,
         sizeof(diagnostic));

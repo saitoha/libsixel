@@ -27,7 +27,7 @@ out_off_payload=''
 out_on_has_header=0
 out_off_has_header=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -I \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${out_on}" || {
@@ -35,7 +35,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I \
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -I \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${out_off}" || {

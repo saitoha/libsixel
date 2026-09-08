@@ -27,7 +27,7 @@ test_filter_0044_filter_dither_transparent_mask_fence_parallel(
     (void)argv;
 
 #if defined(_WIN32) || !SIXEL_ENABLE_THREADS
-    return SIXEL_TEST_SKIP;
+    return 77;
 #else
     if (!filter_dither_transparent_mask_fence_run(1)) {
         fprintf(stderr, "transparent mask fence parallel path failed\n");

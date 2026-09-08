@@ -81,6 +81,22 @@ sixel_palette_bin_recommended_capacity(size_t expected)
     return capacity;
 }
 
+static int
+sixel_palette_bin_allocation_size(unsigned int capacity,
+                                  size_t entry_size,
+                                  size_t *allocation_size)
+{
+    size_t count;
+
+    count = (size_t)capacity;
+    if (allocation_size == NULL || entry_size == 0u ||
+            count > SIZE_MAX / entry_size) {
+        return 0;
+    }
+    *allocation_size = count * entry_size;
+    return 1;
+}
+
 SIXELSTATUS
 sixel_palette_bin_histogram_init(
     sixel_palette_bin_histogram_t *histogram,
@@ -89,9 +105,11 @@ sixel_palette_bin_histogram_init(
     sixel_allocator_t *allocator)
 {
     size_t index;
+    size_t allocation_size;
     unsigned int capacity;
 
     index = 0u;
+    allocation_size = 0u;
     capacity = 0u;
     if (histogram == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -106,13 +124,16 @@ sixel_palette_bin_histogram_init(
     histogram->bin_count = 1u << bits_per_axis;
 
     capacity = sixel_palette_bin_recommended_capacity(expected_entries);
-    if ((size_t)capacity > SIZE_MAX / sizeof(*histogram->entries)) {
+    if (!sixel_palette_bin_allocation_size(
+            capacity,
+            sizeof(*histogram->entries),
+            &allocation_size)) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     histogram->entries =
         (sixel_palette_bin_entry_t *)sixel_allocator_malloc(
             allocator,
-            (size_t)capacity * sizeof(sixel_palette_bin_entry_t));
+            allocation_size);
     if (histogram->entries == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -154,6 +175,7 @@ sixel_palette_bin_histogram_grow(
     unsigned int new_mask;
     unsigned int slot;
     unsigned int index;
+    size_t allocation_size;
 
     grown = NULL;
     old_capacity = 0u;
@@ -161,6 +183,7 @@ sixel_palette_bin_histogram_grow(
     new_mask = 0u;
     slot = 0u;
     index = 0u;
+    allocation_size = 0u;
     if (histogram == NULL || allocator == NULL ||
             histogram->entries == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -172,12 +195,14 @@ sixel_palette_bin_histogram_grow(
     }
     new_capacity = old_capacity << 1u;
     new_mask = new_capacity - 1u;
-    if ((size_t)new_capacity > SIZE_MAX / sizeof(*grown)) {
+    if (!sixel_palette_bin_allocation_size(new_capacity,
+                                           sizeof(*grown),
+                                           &allocation_size)) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     grown = (sixel_palette_bin_entry_t *)sixel_allocator_malloc(
         allocator,
-        (size_t)new_capacity * sizeof(sixel_palette_bin_entry_t));
+        allocation_size);
     if (grown == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }

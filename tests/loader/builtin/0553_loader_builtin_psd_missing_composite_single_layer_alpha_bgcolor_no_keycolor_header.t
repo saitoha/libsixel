@@ -16,7 +16,7 @@ keycolor_header="$(printf '\033P0;1q')"
 output_bg=''
 status_bg=0
 
-output_bg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
+output_bg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Lbuiltin! \
     -d fs:scan=raster -B "#000000" "${input_psd}" 2>&1) || status_bg=$?
 
 test "${status_bg}" -eq 0 || {

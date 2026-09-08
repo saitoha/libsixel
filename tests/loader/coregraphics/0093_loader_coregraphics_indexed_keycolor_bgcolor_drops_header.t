@@ -20,7 +20,7 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/pal8-trns-key0.png"
 keycolor_header="$(printf '\033P0;1q')"
 output_text=''
 
-output_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+output_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite \
     -L coregraphics! \
     -B#ffffff \
     -d fs:scan=raster \

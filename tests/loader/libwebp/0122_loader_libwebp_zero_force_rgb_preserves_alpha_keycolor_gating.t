@@ -23,19 +23,19 @@ out_zero="${ARTIFACT_LOCAL_DIR}/webp-static-lossy-alpha-keycolor-zero-force-rgb.
 out_zero_bg="${ARTIFACT_LOCAL_DIR}/webp-static-lossy-alpha-keycolor-zero-force-rgb-bg.six"
 keycolor_header="$(printf '\033P0;1q')"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${input_webp}" >"${out_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -L libwebp! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "baseline static lossy-alpha decode failed"
     exit 0
 }
 
 _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${input_webp}" >"${out_zero}" || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -L libwebp! -S "${input_webp}" >"${out_zero}" || {
     echo "not ok" 1 - "zero-force-rgb static lossy-alpha decode failed"
     exit 0
 }
 
 _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S -B#000 "${input_webp}" >"${out_zero_bg}" || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -L libwebp! -S -B#000 "${input_webp}" >"${out_zero_bg}" || {
     echo "not ok" 1 - "zero-force-rgb lossy-alpha decode with -B#000 failed"
     exit 0
 }

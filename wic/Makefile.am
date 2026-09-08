@@ -21,12 +21,13 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(top_builddir)/src/status.c \
                          $(top_builddir)/src/probe.c \
                          $(top_builddir)/src/compat_stub.c \
-                         $(top_builddir)/src/path.c
+                         $(top_builddir)/src/path.c \
+                         $(top_builddir)/src/threading.c \
+                         $(top_builddir)/src/options-registry.c
 
 if SIXEL_ENABLE_THREADS
 libwicsixel_la_SOURCES += \
     $(top_srcdir)/src/decoder-parallel.c \
-    $(top_srcdir)/src/threading.c \
     $(top_srcdir)/src/threading.h \
     $(top_srcdir)/src/threadpool.c \
     $(top_srcdir)/src/threadpool.h

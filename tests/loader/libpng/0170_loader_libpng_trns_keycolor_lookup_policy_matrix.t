@@ -20,7 +20,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 out="${ARTIFACT_LOCAL_DIR}/trns-keycolor-lookup-bogus-on-tbbn0g04.six"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DITHER_LOOKUP_POLICY=bogus \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --env SIXEL_DITHER_LOOKUP_POLICY=bogus \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \

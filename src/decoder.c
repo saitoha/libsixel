@@ -3647,7 +3647,7 @@ sixel_decoder_decode(
                     SIXEL_FAILED(status) ? "abort" : "finish",
                     0);
             }
-            if (SIXEL_FAILED(status)) {
+            if (status != SIXEL_FALSE && SIXEL_FAILED(status)) {
                 goto end;
             }
         }

@@ -17,7 +17,7 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-index-oob-sta
 out_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_index_oob.six"
 keycolor_header="$(printf '\033P0;1q')"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --env SIXEL_THREADS=4 \
               -Lbuiltin! -ldisable -d fs:scan=raster \
               "${input_gif}" >"${out_six}" || {
     echo "not ok" 1 - "transparent-index-oob GIF decode failed"

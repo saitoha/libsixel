@@ -24,7 +24,7 @@ keycolor_header="$(printf '\033P0;1q')"
 out_payload=''
 out_has_header=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=auto! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibpng:cms_engine=auto! \
               -B#ffffff \
               -d fs:scan=raster \
               "${input_png}" >"${out}" || {

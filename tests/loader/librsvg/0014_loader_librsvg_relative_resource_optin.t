@@ -32,7 +32,7 @@ test -n "${sixel_line-}" || {
     exit 0
 }
 case "${sixel_line}" in
-    "${esc}P0;1q"*)
+    "${esc}P0;0q"*)
         ;;
     *)
         echo "not ok" 1 - "default path unexpectedly resolved relative resource"

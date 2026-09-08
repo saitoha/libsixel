@@ -22,13 +22,13 @@ out_default="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-default-path.six"
 out_forced_rgb="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-forced-rgb-path.six"
 keycolor_header="$(printf '\033P0;1q')"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "libwebp static alpha decode with default path failed"
     exit 0
 }
 
 _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_forced_rgb}" || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_forced_rgb}" || {
     echo "not ok" 1 - "libwebp static alpha decode with forced RGB path failed"
     exit 0
 }

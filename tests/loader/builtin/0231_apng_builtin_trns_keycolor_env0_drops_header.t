@@ -19,7 +19,7 @@ keycolor_header="$(printf '\033P0;1q')"
 out_payload=''
 has_header=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Lbuiltin! \
               -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {

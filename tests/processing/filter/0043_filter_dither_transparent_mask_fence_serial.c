@@ -27,7 +27,7 @@ test_filter_0043_filter_dither_transparent_mask_fence_serial(
     (void)argv;
 
 #if defined(_WIN32)
-    return SIXEL_TEST_SKIP;
+    return 77;
 #else
     if (!filter_dither_transparent_mask_fence_run(0)) {
         fprintf(stderr, "transparent mask fence serial path failed\n");

@@ -19,6 +19,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#if defined(HAVE_CONFIG_H)
+# include "config.h"
+#endif
+
 #ifndef _MSC_VER
 /*
  * MinGW builds need GUID emitters locally, so enable INITGUID and pull in the
@@ -30,6 +34,17 @@
 #endif
 
 #include "wic_stub.h"
+#include <sixel.h>
+#include "compat_stub.h"
+#include "options.h"
+
+/* Keep the standalone codec's decoder-only failure hook self-contained. */
+char const *
+sixel_test_environment_decoder_paint_thread_create_failure(void)
+{
+    return sixel_compat_getenv(
+        "_SIXEL_TEST_DECODER_PAINT_THREAD_CREATE_FAILURE");
+}
 
 /* custom malloc */
 void *

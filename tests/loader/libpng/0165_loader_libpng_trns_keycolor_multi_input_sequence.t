@@ -28,7 +28,7 @@ out_off_payload=''
 out_on_has_header=0
 out_off_has_header=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! -d fs:scan=raster \
               "${input_a}" "${input_b}" >"${out_on}" || {
@@ -36,7 +36,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! -d fs:scan=raster \
               "${input_a}" "${input_b}" >"${out_off}" || {

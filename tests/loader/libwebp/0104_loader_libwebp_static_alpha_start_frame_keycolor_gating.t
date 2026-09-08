@@ -23,18 +23,18 @@ out_start1="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-start-frame-1.six"
 out_start1_bg="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-start-frame-1-bg.six"
 keycolor_header="$(printf '\033P0;1q')"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "baseline static alpha decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -Llibwebp:cms_engine=none! -S \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --start-frame=1 -Llibwebp:cms_engine=none! -S \
     "${input_webp}" >"${out_start1}" || {
     echo "not ok" 1 - "static alpha decode with --start-frame=1 failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -Llibwebp:cms_engine=none! -S -B#000 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --start-frame=1 -Llibwebp:cms_engine=none! -S -B#000 \
     "${input_webp}" >"${out_start1_bg}" || {
     echo "not ok" 1 - "static alpha decode with --start-frame=1 -B#000 failed"
     exit 0
