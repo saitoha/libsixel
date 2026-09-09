@@ -678,6 +678,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	images/measurements/palette-pipeline/smooth-gradient-128x96.png \
 	images/measurements/palette-pipeline/smooth-gradient-600x450.png \
 	images/measurements/palette-pipeline/smooth-gradient-900x675.png \
+	images/measurements/palette-pipeline/smooth-gradient-1920x1080.png \
 	docs/functionality/lookup-policy.md \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.csv \
 	docs/functionality/lookup-policies/measurements/lookup-policy-color-error.png \
