@@ -359,7 +359,7 @@ def verify_shared_outputs(img2sixel: str,
                           colors: int,
                           threads: int,
                           command_env: Dict[str, str]) -> Dict[str, object]:
-    """Require byte-identical private and shared lookup results."""
+    """Require each policy's intended private/shared output relation."""
     records: Dict[str, object] = {}
     for policy in SHARED_POLICIES:
         private = Variant(f"{policy} S0", policy, threads, "off", 0)
@@ -372,16 +372,30 @@ def verify_shared_outputs(img2sixel: str,
             make_command(img2sixel, input_image, colors, shared, None),
             command_env,
         )
-        if private_bytes != shared_bytes:
+        byte_identical = private_bytes == shared_bytes
+        expected_identical = policy == "certlut"
+        if byte_identical != expected_identical:
             raise RuntimeError(
-                f"Private and shared output differ for {policy} at K={colors}."
+                f"Private/shared output relation is wrong for {policy} "
+                f"at K={colors}: byte_identical={byte_identical}."
             )
-        records[policy] = {
+        record = {
             "colors": colors,
-            "byte_identical": True,
-            "output_size": len(private_bytes),
-            "sha256": hashlib.sha256(private_bytes).hexdigest(),
+            "byte_identical": byte_identical,
         }
+        if byte_identical:
+            record["output_size"] = len(private_bytes)
+            record["sha256"] = hashlib.sha256(private_bytes).hexdigest()
+        else:
+            record["private_output_size"] = len(private_bytes)
+            record["private_sha256"] = hashlib.sha256(
+                private_bytes
+            ).hexdigest()
+            record["shared_output_size"] = len(shared_bytes)
+            record["shared_sha256"] = hashlib.sha256(
+                shared_bytes
+            ).hexdigest()
+        records[policy] = record
     return records
 
 

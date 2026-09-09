@@ -84,6 +84,7 @@ typedef struct sixel_lookup_policy_bit5_object {
         sixel_allocator_t *allocator;
     } state_float;
     int parallel_dither_active;
+    int shared_instance_enabled;
 } sixel_lookup_policy_bit5_object_t;
 
 static sixel_lookup_policy_bit5_object_t *
@@ -706,10 +707,16 @@ sixel_lookup_policy_bit5_map_8bit(
         }
     }
 
+    /*
+     * Parallel workers may memoize only when each worker owns this object.
+     * Shared dense slots are plain int32_t values, so concurrent writes would
+     * be a data race.  Existing entries remain safe to read in either mode.
+     */
     if (object->state_8bit.dense_ready != 0
             && object->state_8bit.dense != NULL
             && result >= 0
-            && object->parallel_dither_active == 0
+            && (object->parallel_dither_active == 0
+                || object->shared_instance_enabled == 0)
             && (size_t)bucket < object->state_8bit.dense_size) {
         object->state_8bit.dense[bucket] = result;
     }
@@ -826,6 +833,7 @@ sixel_lookup_policy_bit5_reset_state(
     sixel_lookup_policy_bit5_clear_8bit_state(object);
     object->prepared = 0;
     object->parallel_dither_active = 0;
+    object->shared_instance_enabled = 0;
 }
 
 static void
@@ -893,6 +901,8 @@ sixel_lookup_policy_bit5_prepare_8bit(
     object = sixel_lookup_policy_bit5_from_base(policy);
     sixel_lookup_policy_bit5_reset_state(object);
     object->parallel_dither_active = (request->parallel_dither_active != 0);
+    object->shared_instance_enabled =
+        (request->shared_instance_enabled != 0);
 
     if (request->depth != 3) {
         sixel_helper_set_additional_message(
@@ -916,6 +926,8 @@ sixel_lookup_policy_bit5_prepare_8bit(
             object->prepared = reuse_object->prepared;
             object->parallel_dither_active =
                 (request->parallel_dither_active != 0);
+            object->shared_instance_enabled =
+                (request->shared_instance_enabled != 0);
             reuse_object->state_8bit.palette = NULL;
             reuse_object->state_8bit.allocator = NULL;
             reuse_object->state_8bit.dense = NULL;
@@ -975,6 +987,8 @@ sixel_lookup_policy_bit5_prepare_float32(
     object = sixel_lookup_policy_bit5_from_base(policy);
     sixel_lookup_policy_bit5_reset_state(object);
     object->parallel_dither_active = (request->parallel_dither_active != 0);
+    object->shared_instance_enabled =
+        (request->shared_instance_enabled != 0);
 
     if (request->depth != 3) {
         sixel_helper_set_additional_message(
@@ -998,6 +1012,8 @@ sixel_lookup_policy_bit5_prepare_float32(
             object->prepared = reuse_object->prepared;
             object->parallel_dither_active =
                 (request->parallel_dither_active != 0);
+            object->shared_instance_enabled =
+                (request->shared_instance_enabled != 0);
             reuse_object->state_8bit.palette = NULL;
             reuse_object->state_8bit.allocator = NULL;
             reuse_object->state_8bit.dense = NULL;

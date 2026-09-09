@@ -134,8 +134,8 @@ is globally optimal.
 | Policy and representation | Default guarantee | Important qualification |
 | --- | --- | --- |
 | `none` | Scan-index exact on its direct path | Canonical two-entry black/white palettes select an internal threshold policy first |
-| `5bit` / `6bit`, serial 8-bit | Approximate after a bucket is cached | The first query is exact; later colors in the bucket reuse its index |
-| `5bit` / `6bit`, parallel 8-bit | Scan-index exact | The current parallel path does not populate the shared table |
+| `5bit` / `6bit`, serial or worker-local parallel 8-bit | Approximate after a bucket is cached | The first query is exact; later colors in the bucket reuse its index |
+| `5bit` / `6bit`, shared parallel 8-bit | Scan-index exact for uncached queries | The plain shared table remains read-only during parallel mapping to avoid data races |
 | `5bit` / `6bit`, float32 | Scan-index exact | Exhaustive scan in the normalized policy metric |
 | `certlut`, 8-bit | Approximate | The current cube test checks only the center's second-nearest competitor, not every possible boundary competitor |
 | `certlut`, float32 | Nearest-distance exact | kd-tree pruning preserves the normalized policy minimum |
@@ -405,26 +405,21 @@ The later answer can be approximate, and it depends on traversal history. The
 maximum component separation inside one rounded bucket is small, but a palette
 Voronoi boundary can still cross the bucket.
 
-The current parallel-dither path does not write the shared dense table. It
-therefore performs a full scan for each query and is scan-index exact, at the
-cost of losing memoized hits. The float32 backend also performs an exhaustive
-scan, using the normalized weighted metric described in the index.
+During parallel dithering, a worker-local instance (`shared_instance=0`) populates its private dense table and has the same history-dependent approximation as the serial path. A shared instance (`shared_instance=1`) leaves the plain non-atomic table read-only, so an uncached query performs a full scan and remains scan-index exact. The float32 backend also performs an exhaustive scan, using the normalized weighted metric described in the index.
 
 ### Cost
 
 Let `U` be the number of distinct buckets first encountered:
 
 ```text
-table initialization       Theta(32^3)
-serial cache hit           Theta(1)
-serial first-bucket miss   Theta(K)
-serial whole image         Theta(32^3 + P + U K)
-parallel or float32 query  Theta(K)
+table initialization              Theta(32^3)
+private cache hit                 Theta(1)
+private first-bucket miss         Theta(K)
+serial whole image                Theta(32^3 + P + U K)
+shared parallel or float32 query  Theta(K)
 ```
 
-The `shared_instance` suboption controls whether workers receive a shared
-instance; its default is enabled for `5bit`. Sharing is a lifecycle and race
-policy as well as a memory choice.
+The `shared_instance` suboption controls whether workers receive a shared instance; its default is enabled for `5bit`. Worker-local instances spend additional initialization and memory per active instance but retain memoized lookup speed. A shared plain dense table remains read-only during parallel mapping. Sharing is therefore a lifecycle, race, memory, output, and speed policy.
 
 ### Name, lineage, and comparisons
 
@@ -539,25 +534,21 @@ later candidate in bucket   approximate if its nearest entry differs
 The approximation is query-history dependent. Smaller buckets reduce, but do
 not eliminate, the possibility that a nearest-color boundary crosses a bucket.
 
-The current parallel-dither path suppresses writes to the table and scans the
-palette for every candidate, preserving scan-index exactness. The float32
-backend is also a normalized-distance exhaustive scan; the `6bit` name does not
-describe a float32 grid in that path.
+During parallel dithering, a worker-local instance (`shared_instance=0`) populates its private table. A shared instance (`shared_instance=1`) suppresses writes to its plain non-atomic table and scans the palette for each uncached candidate, preserving scan-index exactness. The float32 backend is also a normalized-distance exhaustive scan; the `6bit` name does not describe a float32 grid in that path.
 
 ### Cost
 
 With `U` distinct first-use buckets:
 
 ```text
-table initialization       Theta(64^3)
-serial cache hit           Theta(1)
-serial first-bucket miss   Theta(K)
-serial whole image         Theta(64^3 + P + U K)
-parallel or float32 query  Theta(K)
+table initialization              Theta(64^3)
+private cache hit                 Theta(1)
+private first-bucket miss         Theta(K)
+serial whole image                Theta(64^3 + P + U K)
+shared parallel or float32 query  Theta(K)
 ```
 
-The `shared_instance` suboption defaults to enabled. The larger table makes
-worker-local duplication especially relevant to memory and cache pressure.
+The `shared_instance` suboption defaults to enabled. The larger table makes worker-local duplication especially relevant to memory and cache pressure, while choosing worker-local instances is required to retain lazy-cache writes during parallel mapping.
 
 ### Name and source
 
@@ -1791,18 +1782,9 @@ At `K = 256`, the result is:
 | `6bit` | 59.6 ms | 59.5 ms | -0.04% |
 | `certlut` | 59.9 ms | 59.9 ms | -0.1% |
 
-Across this fixture and palette-size sweep, the private and shared curves are
-mostly within each other's interquartile ranges. This run does not establish a
-material end-to-end latency benefit for either setting. That is compatible
-with the implementation: sharing `5bit` and `6bit` primarily avoids duplicate
-dense-table storage, while the parallel path suppresses writes to those lazy
-tables; shared `certlut` trades worker-local state for mutex-protected reuse.
-Latency alone does not measure the memory benefit.
+These checked artifacts were recorded at source revision `f2c138d8f6aa0a90c89d019f85eaf9bb3efa5edb`, before worker-local `5bit` and `6bit` instances populated their dense tables during parallel mapping. At that revision, the private and shared curves were mostly within each other's interquartile ranges, so the run did not establish a material end-to-end latency benefit for either setting.
 
-The runner also required `S0` and `S1` to produce byte-identical SIXEL at
-`K = 256` for all three policies. Diffusion was disabled and band overlap was
-fixed at zero. This is intentionally not a thread-scaling benchmark and does
-not measure the quality effect of parallel-band error diffusion.
+The old runner also required `S0` and `S1` to produce byte-identical SIXEL at `K = 256` for all three policies. That equality was evidence of the worker-local cache-write defect, not a contract. The current reproduction runner requires `S0` and `S1` to differ for `5bit` and `6bit`, while `certlut` remains byte-identical. Diffusion is disabled and band overlap is fixed at zero. Regenerate these artifacts before using the recorded table to characterize current private-cache performance. This is intentionally not a thread-scaling benchmark and does not measure the quality effect of parallel-band error diffusion.
 
 ### Metal PaletteApply performance
 
@@ -2028,14 +2010,7 @@ On a macOS Metal host, reproduce the focused execution-mode comparisons with:
 PYTHON=.venv/bin/python tools/reproduce_lookup_policy_acceleration.sh
 ```
 
-The Python override is only an example; use an interpreter with Matplotlib.
-The runner rebuilds the project, measures both fixed matrices, forces Metal,
-checks CPU/Metal output equivalence, checks `S0`/`S1` output equivalence, writes
-[`lookup-policy-acceleration-run.json`](lookup-policies/measurements/lookup-policy-acceleration-run.json),
-and invokes the common artifact validator. The default shared-instance thread
-limit is eight and can be changed with `LOOKUP_POLICY_SHARED_THREADS`; such a
-run is a different protocol and should not overwrite the checked-in results
-without updating their interpretation.
+The Python override is only an example; use an interpreter with Matplotlib. The runner rebuilds the project, measures both fixed matrices, forces Metal, checks CPU/Metal output equivalence, checks the required `S0`/`S1` output relation, writes [`lookup-policy-acceleration-run.json`](lookup-policies/measurements/lookup-policy-acceleration-run.json), and invokes the common artifact validator. The default shared-instance thread limit is eight and can be changed with `LOOKUP_POLICY_SHARED_THREADS`; such a run is a different protocol and should not overwrite the checked-in results without updating their interpretation.
 
 The quality wrapper regenerates the broad and focused controlled K-means
 comparisons and the broad and focused current-Heckbert compatibility

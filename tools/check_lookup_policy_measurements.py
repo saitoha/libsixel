@@ -270,11 +270,21 @@ def validate_acceleration_metadata(path: Path) -> Dict[str, object]:
         fail("shared-instance metadata lacks output-equivalence records")
     for policy in SHARED_POLICIES:
         record = shared_equivalence.get(policy)
-        if not isinstance(record, dict) or record.get("byte_identical") is not True:
-            fail(f"shared-instance output equivalence is absent for {policy}")
-        digest = record.get("sha256")
-        if not isinstance(digest, str) or len(digest) != 64:
-            fail(f"invalid shared-instance output digest for {policy}")
+        if not isinstance(record, dict):
+            fail(f"shared-instance output relation is absent for {policy}")
+        byte_identical = record.get("byte_identical")
+        if not isinstance(byte_identical, bool):
+            fail(f"invalid shared-instance output relation for {policy}")
+        digest_names = ("sha256",) if byte_identical else (
+            "private_sha256",
+            "shared_sha256",
+        )
+        for digest_name in digest_names:
+            digest = record.get(digest_name)
+            if not isinstance(digest, str) or len(digest) != 64:
+                fail(
+                    f"invalid shared-instance {digest_name} for {policy}"
+                )
     if tuple(metal.get("policies", [])) != METAL_POLICIES:
         fail("acceleration metadata has unexpected Metal policies")
     if tuple(metal.get("cpu_gpu_policies", [])) != ("off", "force"):
