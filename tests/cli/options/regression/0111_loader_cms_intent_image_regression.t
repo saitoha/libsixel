@@ -29,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_RENDERING_INTENT=invalid" \
     --env "SIXEL_CMS_RENDERING_INTENT=perceptual!" \
-    --cms-engine=builtin "-Llibpng:Rrelative+saturation!" \
+    --cms-engine=builtin "-Llibwebp:Rrelative+saturation!" \
     "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "cms_intent short conversion failed"
     exit 0
@@ -49,7 +49,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_RENDERING_INTENT=relative,saturation!" \
     --env "SIXEL_CMS_RENDERING_INTENT=perceptual!" \
-    --cms-engine=builtin -Llibpng "${input_image}" \
+    --cms-engine=builtin -Llibwebp "${input_image}" \
     2>&1 >"${env_output}") || {
     echo "not ok" 1 - "cms_intent environment conversion failed"
     exit 0
