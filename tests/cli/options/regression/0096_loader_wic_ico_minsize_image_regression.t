@@ -24,7 +24,8 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
-reference_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm"
+# INT_MAX cannot be met by any frame, so WIC selects the 64-pixel fallback.
+reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0096-loader-wic-ico_minsize-short-$$.six"
 env_output="${artifact_dir}/0096-loader-wic-ico_minsize-env-$$.six"

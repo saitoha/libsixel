@@ -677,11 +677,22 @@ img2sixel_completion_policy_apply(
     /* Allocate after parsing so the unbounded token loop owns no memory. */
     index = 0u;
     while (index < IMG2SIXEL_ARRAY_LENGTH(values)) {
-        if (assigned[index]) {
-            values[index] = (char *)malloc(
-                strlen(staged_values[index]) + 1u);
+        if (!assigned[index]) {
+            ++index;
+            continue;
         }
-        if (assigned[index] && values[index] == NULL) {
+        value = staged_values[index];
+        if (value == NULL) {
+            index = 0u;
+            while (index < IMG2SIXEL_ARRAY_LENGTH(values)) {
+                free(values[index]);
+                ++index;
+            }
+            free(work);
+            return SIXEL_LOGIC_ERROR;
+        }
+        values[index] = (char *)malloc(strlen(value) + 1u);
+        if (values[index] == NULL) {
             index = 0u;
             while (index < IMG2SIXEL_ARRAY_LENGTH(values)) {
                 free(values[index]);
@@ -690,11 +701,7 @@ img2sixel_completion_policy_apply(
             free(work);
             return SIXEL_BAD_ALLOCATION;
         }
-        if (assigned[index]) {
-            memcpy(values[index],
-                   staged_values[index],
-                   strlen(staged_values[index]) + 1u);
-        }
+        memcpy(values[index], value, strlen(value) + 1u);
         ++index;
     }
 

@@ -4028,8 +4028,9 @@ sixel_option_registry_binding_scope_is_valid(
 
     allowed_scope = 0u;
     if (key == NULL || schema == NULL || key->consumer_scope == 0u ||
-        (key->consumer_scope & ~SIXEL_OPTION_SCOPE_ALL) != 0u ||
-        (key->consumer_scope & ~schema->scope) != 0u) {
+        (key->consumer_scope &
+         ~(unsigned int)SIXEL_OPTION_SCOPE_ALL) != 0u ||
+        (key->consumer_scope & ~(unsigned int)schema->scope) != 0u) {
         return 0;
     }
 

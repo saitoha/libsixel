@@ -272,7 +272,7 @@ _CRTIMP errno_t __cdecl _dupenv_s(char **buffer,
                                   const char *name);
 #endif
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 struct sixel_env_cache {
     char *name;
     char *value;
@@ -812,7 +812,7 @@ sixel_compat_fopen(const char *filename, const char *mode)
 SIXEL_COMPAT_API const char *
 sixel_compat_getenv(const char *name)
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     struct sixel_env_cache *entry;
     struct sixel_env_cache *new_entry;
     const char *result;
@@ -1084,25 +1084,13 @@ sixel_compat_gettimeofday(struct timeval *tv)
 SIXEL_COMPAT_API int
 sixel_compat_setenv(const char *name, const char *value)
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     if (name == NULL || value == NULL) {
         errno = EINVAL;
         return (-1);
     }
 
     if (SetEnvironmentVariableA(name, value) == 0) {
-        errno = EINVAL;
-        return (-1);
-    }
-
-    return 0;
-#elif defined(_WIN32) && defined(HAVE__PUTENV_S) && HAVE__PUTENV_S
-    if (name == NULL || value == NULL) {
-        errno = EINVAL;
-        return (-1);
-    }
-
-    if (_putenv_s(name, value) != 0) {
         errno = EINVAL;
         return (-1);
     }

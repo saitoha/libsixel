@@ -41,7 +41,7 @@
 #if HAVE_GETOPT_H
 # include <getopt.h>
 #endif
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 # if !defined(WIN32_LEAN_AND_MEAN)
 #  define WIN32_LEAN_AND_MEAN
 # endif
@@ -110,25 +110,13 @@ cli_openvms_setenv(char const *name, char const *value)
 static int
 cli_setenv_portable(char const *name, char const *value)
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     if (name == NULL || value == NULL) {
         errno = EINVAL;
         return -1;
     }
 
     if (SetEnvironmentVariableA(name, value) == 0) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    return 0;
-#elif defined(_WIN32) && defined(HAVE__PUTENV_S) && HAVE__PUTENV_S
-    if (name == NULL || value == NULL) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    if (_putenv_s(name, value) != 0) {
         errno = EINVAL;
         return -1;
     }
@@ -149,7 +137,7 @@ cli_setenv_portable(char const *name, char const *value)
 static int
 cli_env_has_nonempty_value(char const *name)
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     DWORD length;
 
     if (name == NULL) {

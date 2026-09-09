@@ -526,8 +526,9 @@ loader_can_query_osc11_bgcolor(sixel_loader_t const *loader,
     if (loader == NULL) {
         return 0;
     }
-    stdout_is_tty = sixel_compat_isatty(STDOUT_FILENO);
-    stderr_is_tty = sixel_compat_isatty(STDERR_FILENO);
+    /* Windows reports NUL as a TTY, but it cannot answer OSC queries. */
+    stdout_is_tty = sixel_compat_is_console(STDOUT_FILENO);
+    stderr_is_tty = sixel_compat_is_console(STDERR_FILENO);
     alpha_policy = loader_transparent_policy();
     should_query = sixel_loader_should_query_osc11_bgcolor(
         enabled,

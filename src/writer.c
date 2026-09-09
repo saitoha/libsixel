@@ -39,6 +39,9 @@
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif  /* HAVE_ERRNO_H */
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif  /* HAVE_FCNTL_H */
 #include "compat_stub.h"
 #if HAVE_LIBPNG
 # include <png.h>

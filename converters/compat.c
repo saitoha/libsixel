@@ -62,7 +62,7 @@
 #if HAVE_IO_H
 # include <io.h>
 #endif  /* HAVE_IO_H */
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 # if !defined(WIN32_LEAN_AND_MEAN)
 #  define WIN32_LEAN_AND_MEAN
 # endif
@@ -153,7 +153,7 @@ int fchmod(int, mode_t);
 /* prefix.                                                                  */
 /* ------------------------------------------------------------------------ */
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 static int img2sixel_compat_strcpy(char *destination,
                                    size_t destination_size,
                                    const char *source);
@@ -413,7 +413,7 @@ img2sixel_compat_fopen(const char *filename, const char *mode)
 const char *
 img2sixel_compat_getenv(const char *name)
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     struct img2sixel_env_cache {
         char *name;
         char *value;
@@ -542,25 +542,13 @@ img2sixel_compat_getenv(const char *name)
 int
 img2sixel_compat_setenv(const char *name, const char *value)
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     if (name == NULL || value == NULL) {
         errno = EINVAL;
         return -1;
     }
 
     if (SetEnvironmentVariableA(name, value) == 0) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    return 0;
-#elif defined(_WIN32) && defined(HAVE__PUTENV_S) && HAVE__PUTENV_S
-    if (name == NULL || value == NULL) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    if (_putenv_s(name, value) != 0) {
         errno = EINVAL;
         return -1;
     }
@@ -578,10 +566,10 @@ img2sixel_compat_setenv(const char *name, const char *value)
 #endif
 }
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 /*
- * Provide a local copy helper so MSVC builds can use strcpy_s()
- * without sprinkling deprecation warnings through the code.
+ * Provide a local copy helper so Windows builds can use strcpy_s() when
+ * available without sprinkling deprecation warnings through the code.
  */
 static int
 img2sixel_compat_strcpy(char *destination,
