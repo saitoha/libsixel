@@ -33,11 +33,35 @@ red="${palette%%;*}"
 green_blue="${palette#*;}"
 green="${green_blue%%;*}"
 blue="${green_blue#*;}"
-test "${green_blue}" != "${palette}" &&
-    test "${blue}" != "${green_blue}" &&
-    test "${red}" -ge 0 && test "${red}" -le 100 &&
-    test "${green}" -ge 0 && test "${green}" -le 100 &&
-    test "${blue}" -ge 0 && test "${blue}" -le 100 || {
+test "${green_blue}" != "${palette}" || {
+    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    exit 0
+}
+test "${blue}" != "${green_blue}" || {
+    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    exit 0
+}
+test "${red}" -ge 0 || {
+    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    exit 0
+}
+test "${red}" -le 100 || {
+    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    exit 0
+}
+test "${green}" -ge 0 || {
+    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    exit 0
+}
+test "${green}" -le 100 || {
+    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    exit 0
+}
+test "${blue}" -ge 0 || {
+    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    exit 0
+}
+test "${blue}" -le 100 || {
     echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
     exit 0
 }
