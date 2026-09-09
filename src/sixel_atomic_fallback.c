@@ -193,6 +193,27 @@ sixel_atomic_fallback_fetch_sub_u32(sixel_atomic_u32_t *ptr,
     return previous;
 }
 
+int
+sixel_atomic_fallback_load_relaxed_i32(sixel_atomic_i32_t const *ptr)
+{
+    int value;
+
+    value = 0;
+    sixel_atomic_fallback_lock();
+    value = *ptr;
+    sixel_atomic_fallback_unlock();
+
+    return value;
+}
+
+void
+sixel_atomic_fallback_store_relaxed_i32(sixel_atomic_i32_t *ptr, int value)
+{
+    sixel_atomic_fallback_lock();
+    *ptr = value;
+    sixel_atomic_fallback_unlock();
+}
+
 #endif
 
 /* emacs Local Variables:      */

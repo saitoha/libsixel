@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 /*
- * Lightweight fences for producer/consumer coordination.
+ * Lightweight atomic operations and fences for thread coordination.
  */
 #ifndef LIBSIXEL_SIXEL_ATOMIC_H
 #define LIBSIXEL_SIXEL_ATOMIC_H
@@ -46,6 +46,18 @@ sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
                            unsigned int value)
 {
     return __atomic_fetch_sub(ptr, value, __ATOMIC_ACQ_REL);
+}
+
+static inline int
+sixel_atomic_load_relaxed_i32(sixel_atomic_i32_t const *ptr)
+{
+    return __atomic_load_n(ptr, __ATOMIC_RELAXED);
+}
+
+static inline void
+sixel_atomic_store_relaxed_i32(sixel_atomic_i32_t *ptr, int value)
+{
+    __atomic_store_n(ptr, value, __ATOMIC_RELAXED);
 }
 # elif defined(_MSC_VER)
 #  if !defined(UNICODE)
@@ -75,11 +87,23 @@ sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
     return (unsigned int)InterlockedExchangeAdd(
         (volatile LONG *)ptr, -(LONG)value);
 }
+
+static inline int
+sixel_atomic_load_relaxed_i32(sixel_atomic_i32_t const *ptr)
+{
+    return (int)*(volatile long const *)(void const *)ptr;
+}
+
+static inline void
+sixel_atomic_store_relaxed_i32(sixel_atomic_i32_t *ptr, int value)
+{
+    *(volatile long *)(void *)ptr = (long)value;
+}
 # else
 #  if defined(SIXEL_ENABLE_THREADS) && SIXEL_ENABLE_THREADS
 /*
  * When native atomics are unavailable but thread support is enabled, route
- * fetch_add/fetch_sub through a process-wide mutex implementation provided by
+ * atomic operations through a process-wide mutex implementation provided by
  * sixel_atomic_fallback.c.
  */
 unsigned int
@@ -89,6 +113,13 @@ sixel_atomic_fallback_fetch_add_u32(sixel_atomic_u32_t *ptr,
 unsigned int
 sixel_atomic_fallback_fetch_sub_u32(sixel_atomic_u32_t *ptr,
                                     unsigned int value);
+
+int
+sixel_atomic_fallback_load_relaxed_i32(sixel_atomic_i32_t const *ptr);
+
+void
+sixel_atomic_fallback_store_relaxed_i32(sixel_atomic_i32_t *ptr,
+                                        int value);
 
 void
 sixel_atomic_fallback_fence_release(void);
@@ -110,6 +141,18 @@ sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
                            unsigned int value)
 {
     return sixel_atomic_fallback_fetch_sub_u32(ptr, value);
+}
+
+static inline int
+sixel_atomic_load_relaxed_i32(sixel_atomic_i32_t const *ptr)
+{
+    return sixel_atomic_fallback_load_relaxed_i32(ptr);
+}
+
+static inline void
+sixel_atomic_store_relaxed_i32(sixel_atomic_i32_t *ptr, int value)
+{
+    sixel_atomic_fallback_store_relaxed_i32(ptr, value);
 }
 #  else
 #   define sixel_fence_release() do { } while (0)
@@ -137,6 +180,18 @@ sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
 
     return previous;
 }
+
+static inline int
+sixel_atomic_load_relaxed_i32(sixel_atomic_i32_t const *ptr)
+{
+    return *ptr;
+}
+
+static inline void
+sixel_atomic_store_relaxed_i32(sixel_atomic_i32_t *ptr, int value)
+{
+    *ptr = value;
+}
 #  endif
 # endif
 #else
@@ -157,6 +212,18 @@ sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
                            unsigned int value)
 {
     return atomic_fetch_sub_explicit(ptr, value, memory_order_acq_rel);
+}
+
+static inline int
+sixel_atomic_load_relaxed_i32(sixel_atomic_i32_t const *ptr)
+{
+    return atomic_load_explicit(ptr, memory_order_relaxed);
+}
+
+static inline void
+sixel_atomic_store_relaxed_i32(sixel_atomic_i32_t *ptr, int value)
+{
+    atomic_store_explicit(ptr, value, memory_order_relaxed);
 }
 #endif
 
