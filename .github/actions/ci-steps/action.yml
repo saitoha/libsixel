@@ -46,24 +46,22 @@ runs:
             && fromJSON(inputs.matrix_json).extra_packages != '' }}
       shell: bash
       run: |
-        apt_log=$(mktemp)
-        trap 'rm -f "$apt_log"' EXIT
-
-        disable_hosted_runner_microsoft_sources() {
+        disable_hosted_runner_unused_sources() {
           local source
-          local -a microsoft_sources
+          local -a unused_sources
 
-          # GitHub-hosted Ubuntu images include Microsoft package sources that
-          # this project does not use. A transient 403 from those sources makes
-          # apt-get update fail before Ubuntu packages can be installed.
-          mapfile -t microsoft_sources < <(
-            sudo grep -rl 'packages\.microsoft\.com' \
+          # GitHub-hosted Ubuntu images include third-party package sources
+          # that this project does not use. Their transient metadata failures
+          # can make apt-get update fail before Ubuntu packages are installed.
+          mapfile -t unused_sources < <(
+            sudo grep -rlE \
+              'packages\.microsoft\.com|dl\.google\.com/linux/chrome' \
               /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null \
               || true
           )
-          for source in "${microsoft_sources[@]}"; do
+          for source in "${unused_sources[@]}"; do
             if [ -f "$source" ]; then
-              echo "Disabling hosted-runner Microsoft apt source: $source"
+              echo "Disabling unused hosted-runner apt source: $source"
               sudo mv "$source" "$source.disabled"
             fi
           done
@@ -98,11 +96,8 @@ runs:
 
           for attempt in 1 2 3; do
             if sudo apt-get -o Acquire::Retries=3 \
-                -o Acquire::ForceIPv4=true update 2>&1 | tee "$apt_log"; then
+                -o Acquire::ForceIPv4=true update; then
               return 0
-            fi
-            if grep -Eq 'packages\.microsoft\.com.*(403|Forbidden|no longer signed)' "$apt_log"; then
-              disable_hosted_runner_microsoft_sources
             fi
             sleep $((attempt * 10))
           done
@@ -124,6 +119,7 @@ runs:
           return 1
         }
 
+        disable_hosted_runner_unused_sources
         prefer_https_ubuntu_sources
         retry_apt_update
         retry_apt_install
