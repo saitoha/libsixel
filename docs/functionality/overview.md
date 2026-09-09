@@ -27,6 +27,7 @@ The detailed [Encoding Pipeline](encoding-pipeline.md) explains the input and ou
 
 - [Palette Quantization](quantization.md), selected by `-Q`, determines which
   palette colors are available and documents each solver's objective and cost;
+- [Final Palette Merge Policy](merge-policy.md), selected by `-F`, optionally builds an oversplit provisional palette, reduces it with Ward's criterion, and applies supported Lloyd polishing;
 - [Palette Cover Policy](cover-policy.md), selected by `-a` or `--cover-policy`, repairs reachability after quantization;
 - [Palette Snap Policy](snap-policy.md), selected by `-_` or `--snap-policy`, enables and configures reversible safe-tone mapping;
 - [Palette Clustering Color Space](clustering-colorspace.md), selected by `-X`,

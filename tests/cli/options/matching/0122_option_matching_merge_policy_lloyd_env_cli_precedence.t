@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying merge_lloyd follows env/CLI precedence.
+# Policy: docs/functionality/merge-policy.md
 
 set -eux
 

@@ -118,6 +118,8 @@ splitting and may create more than `K` intermediate leaves before Ward merging
 them. Explicit split, representative, and final-merge options override the
 corresponding profile defaults.
 
+The independent [`-F` final merge policy](merge-policy.md) explains the oversplit size, Ward reduction criterion, optional Lloyd polishing, quantizer interactions, and measured cost and quality. It is a post-solver policy even when a `-Q` profile supplies its defaults.
+
 If splits remain reasonably balanced, each occupied histogram cell
 participates in approximately `log K` partition levels, giving usual
 `O(S log K)` splitting work. Repeatedly peeling off a very small box can reach

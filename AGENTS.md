@@ -44,6 +44,7 @@ Use the [documentation index](docs/README.md) to find durable project references
 - [Functional overview](docs/functionality/overview.md)
 - [Palette clustering color space](docs/functionality/clustering-colorspace.md)
 - [Palette working color space](docs/functionality/working-colorspace.md)
+- [Final palette merge policy](docs/functionality/merge-policy.md)
 - [Palette cover policy](docs/functionality/cover-policy.md)
 - [Palette snap policy](docs/functionality/snap-policy.md)
 - [Encoder working precision](docs/functionality/precision.md)

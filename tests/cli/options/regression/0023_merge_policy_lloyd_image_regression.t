@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify merge-policy Lloyd passes preserve output through short and env paths.
+# Policy: docs/functionality/merge-policy.md
 # Registry row: SIXEL_OPTION_SCHEMA_MERGE_POLICY|NULL|merge_lloyd
 # Registry binding: merge_policy_lloyd|merge_policy_lloyd_override
 # Environment range: clamp-signed-uint

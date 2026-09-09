@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying merge-policy short suboptions are accepted.
+# Policy: docs/functionality/merge-policy.md
 
 set -eux
 

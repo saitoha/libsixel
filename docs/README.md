@@ -39,6 +39,7 @@ are grouped by domain so each area can grow without overloading one document.
 - [Palette quantization](functionality/quantization.md) explains `-Q`, palette
   solver objectives, asymptotic costs, and the boundary between palette
   generation and use.
+- [Final palette merge policy](functionality/merge-policy.md) explains `-F`, Ward oversplit-and-reduce processing, optional Lloyd polishing, objective tradeoffs, and measured quality, speed, and size.
 - [Palette cover policy](functionality/cover-policy.md) explains `-a` / `--cover-policy`, post-quantizer gamut reachability repair, soft and hard anchor selection, growth, and cost.
 - [Palette snap policy](functionality/snap-policy.md) explains how `-_` / `--snap-policy` enables and configures the 101 reversible SIXEL tone levels, working-space target selection, timing, and approach rate.
 - [Palette clustering color space](functionality/clustering-colorspace.md)

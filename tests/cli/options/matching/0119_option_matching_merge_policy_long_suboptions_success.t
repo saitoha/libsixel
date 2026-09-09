@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying merge-policy long suboptions work independently of -Q.
+# Policy: docs/functionality/merge-policy.md
 
 set -eux
 

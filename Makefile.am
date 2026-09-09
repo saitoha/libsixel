@@ -81,6 +81,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/loader/assets/alpha-policy-comparison.png \
 	docs/functionality/clustering-colorspace.md \
 	docs/functionality/working-colorspace.md \
+	docs/functionality/merge-policy.md \
+	docs/functionality/merge-policies/measurements/merge-policy-comparison.csv \
+	docs/functionality/merge-policies/measurements/merge-policy-performance.png \
+	docs/functionality/merge-policies/measurements/merge-policy-quality.png \
+	docs/functionality/merge-policies/measurements/merge-policy-run.json \
 	docs/functionality/working-colorspaces/measurements/working-colorspace-comparison.csv \
 	docs/functionality/working-colorspaces/measurements/working-colorspace-performance.png \
 	docs/functionality/working-colorspaces/measurements/working-colorspace-quality.png \

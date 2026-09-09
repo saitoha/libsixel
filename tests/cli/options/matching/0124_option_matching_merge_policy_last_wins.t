@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying repeated -F options follow argument-order last-wins.
+# Policy: docs/functionality/merge-policy.md
 
 set -eux
 

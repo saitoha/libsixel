@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify merge channel weight through short and environment paths.
+# Policy: docs/functionality/merge-policy.md
 # Registry row: SIXEL_OPTION_SCHEMA_MERGE_POLICY|NULL|channel_l
 # Registry binding: merge_policy_channel_factor_l|merge_policy_channel_factor_l_override
 # Environment range: clamp-both
