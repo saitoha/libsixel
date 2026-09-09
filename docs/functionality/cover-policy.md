@@ -90,19 +90,103 @@ where $L$ is the lookup policy and the dither policy distributes $e'_n$ to later
 
 Cover repair therefore does not claim to compute an exact hull or guarantee exact reproduction. It changes the palette so useful boundary partners are closer and more likely to enter the realized lookup path. The actual result still depends on lookup policy, dither policy, scan order, region size, and whether the working path clamps or otherwise limits corrected samples.
 
+## Three histories meet at palette reachability
+
+The difficulty is not that color science lacks relevant models. Three mature fields each contain one necessary part, but none by itself describes a sparse SIXEL palette driven by nearest-color lookup and finite error diffusion.
+
+### Gamut mapping measures volume and image area
+
+[CIE 156:2004, *Guidelines for the Evaluation of Gamut Mapping Algorithms*](https://www.cie.co.at/publications/guidelines-evaluation-gamut-mapping-algorithms) established a framework that separates image selection, gamut-boundary description, color space, objective measurement, viewing conditions, and psychophysical evaluation. Image-dependent evaluation already asks how many source pixels are out of gamut. [Barańczuk et al.](https://www.imaging.org/common/uploaded%20files/pdfs/Reporter/Articles/2010_25/REP25_1_CIC17_BARANCZUK_PG21.pdf) compare objective image-quality predictions with paired observer choices, while [*Perceptual Evaluation of Color Gamut Mapping Algorithms*](https://ntnuopen.ntnu.no/ntnu-xmlui/bitstream/handle/11250/2461840/CR%26A_article_v2.pdf?sequence=1) by Dugay, Farup, and Hardeberg reports statistically significant correlations between the percentage of out-of-gamut pixels and both the number of algorithm pairs observers could distinguish and the perceived difficulty of the image. The second result is the direct precedent for treating pixel-area weighting as more than a convenient engineering score.
+
+Volume and coverage measurements provide the complementary geometric view. They say how much of a declared color solid lies outside the destination gamut, independently of how frequently a particular image uses each location. The missing piece for SIXEL is the destination object. Conventional gamut mapping normally treats it as a device gamut with a continuous boundary. A palette of 32 or 128 isolated points plus a stateful dither loop is neither continuous nor adequately described by one smooth solid.
+
+### Printing supplies the convex-mixture model
+
+The Neugebauer model treats a halftone color as an area-weighted mixture of Neugebauer primaries. A modern description of [Neugebauer-primary convex hulls and barycentric area coverages](https://library.imaging.org/admin/apis/public/api/ist/website/downloadArticle/cic/19/1/art00046) makes the geometric connection explicit: mixtures lie in convex cells, and target colors can be expressed by primary-area fractions. SIXEL palette entries play an analogous role to those primaries, although they are emitted terminal colors rather than physical ink-overprint states.
+
+Printing also records why a mathematically neat mixture law is not automatically a perceptual prediction. The [Yule-Nielsen modified Neugebauer model](https://opg.optica.org/ao/abstract.cfm?uri=ao-17-21-3376) introduces a fitted factor to account for optical dot gain and other departures from simple linear reflectance averaging. The corresponding lesson for SIXEL is not to copy the Yule-Nielsen formula, but to name the space in which samples are mixed and to verify the result perceptually. Linear-light averaging, gamma-coded arithmetic, and visual integration are different operations.
+
+The missing piece is control dynamics. The Neugebauer relation maps prescribed area fractions to a predicted color. It does not prove that a greedy nearest-color feedback loop will visit the required entries at those fractions.
+
+### Error-diffusion theory supplies the closed loop
+
+Error diffusion is a nonlinear feedback system, not a direct convex optimizer. The [UT Austin review of error-diffusion stability](https://users.ece.utexas.edu/~bevans/papers/2003/errorDiffusion/spie2003ElectImagingTalk.pdf) surveys boundedness, periodic artifacts and limit cycles, and threshold modulation as a classical way to disrupt those cycles. Work on [vector error-diffusion limit-cycle reduction](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7719718) extends the problem to multichannel color decisions.
+
+This literature supplies a name for the single-entry lock observed by libsixel: it is a degenerate limit cycle of the lookup-and-diffusion recurrence. Its usual concern, however, is the texture and stability of a halftone process. It does not normally combine sparse-palette geometry, source-image area, perceptual color distance, and finite feature size into one coverage measurement.
+
+| Lineage | Useful component | Assumption that breaks for SIXEL palette reachability |
+| --- | --- | --- |
+| Gamut mapping | color-volume and out-of-gamut pixel-area evaluation | destination gamut is treated as a continuous device solid |
+| Neugebauer printing | convex mixtures and explicit area fractions | required fractions are prescribed rather than discovered by a greedy lookup loop |
+| Error-diffusion stability | nonlinear feedback, limit cycles, and finite-state behavior | failures are usually treated as texture defects rather than image-weighted sparse-gamut loss |
+
+The intersection is the interesting part: a geometrically legal mixture may not be dynamically realized, and a dynamically realizable mixture may need more pixels than a small image feature contains. We have not found an established metric that combines all three constraints for an indexed terminal palette. The measurement model below is therefore a scoped proposal assembled from established components, not a claim that the components themselves are new.
+
+## Three layers of reachability
+
+It is useful to reserve the word **reachable** for a statement that names its layer:
+
+| Layer | Question | Role |
+| --- | --- | --- |
+| Convex-hull reachability | Is the target inside the palette hull in the declared linear mixing space? | Necessary geometric upper bound |
+| Closed-loop reachability | Does frozen-palette lookup plus the actual dither recurrence converge to the target mixture? | Implementation-dependent realized set, potentially smaller than the hull |
+| Finite-area reachability | Can the recurrence realize the mixture within the width, height, boundary, transparency, and scan order of the feature? | Image-region constraint, potentially smaller again |
+
+These layers suggest three complementary measurements rather than one overloaded coverage number:
+
+| Working metric name | Weighting | What it should report |
+| --- | --- | --- |
+| `Gamut_unreachable_vol` | equal measure over a declared probe volume | fraction outside the hull or a separately defined realized set |
+| `Gamut_unreachable_area` | source pixel population | fraction of the image assigned to colors that fail the declared reachability test |
+| `Gamut_unreachable_dE` | the unreachable population, with both cell and pixel weights available | mean and p95 Delta E00 between the target and its realized flat-patch mean or a stated geometric projection |
+
+The denominator is part of the definition. Counting occupied one-unit CIELAB cells approximates the diversity of colors in one image, but it is not an image-independent gamut volume. A true image-independent volume result must declare a dense probe solid, integration space, boundary sampling rule, and rendering transform. Likewise, area percentage is not geometry: it deliberately gives a common background more weight than a rare saturated badge. Both views are needed because a local failure can vanish in a whole-image mean.
+
+A reproducible closed-loop probe needs to preserve the system being measured:
+
+1. Freeze the exact palette after quantization, final merge, cover, and snap stages selected by the experiment.
+2. Choose representative colors with recorded weights, either from a declared volume lattice or from unique/clustered image colors.
+3. Render a flat patch for each representative with the production lookup policy, dither kernel, scan order, clamping, precision, and transparency boundaries.
+4. Average the rendered patch in the declared physical mixing space, then calculate Delta E00 and any residual classifier.
+5. Repeat across feature sizes. Report color-volume, image-area, mean, p95, and ambiguous-class mass separately.
+
+The distinction between a residual observation and a reachability classification matters. Let the nearest-entry distance be the error obtained when diffusion contributes no useful mixture. The ratio between the measured flat-patch residual and that distance is near zero for an accurate mixture and near one for a single-entry lock. A threshold is defensible only if the observed distribution leaves little probability mass between those modes.
+
+### A useful negative result
+
+The design experiment recorded in [`palette-common-cover.h`](../../src/palette-common-cover.h) found an almost binary residual distribution for its fixed K=64 synthetic probe set. That finding motivated the `corners -> faces -> edges` anchor ladder. Its original generator and exact probe corpus were not retained, however, so the table is historical design evidence rather than a fully reproducible benchmark.
+
+The new checked-in replay deliberately uses a broader population: all 31,966 occupied one-unit CIELAB cells in `snake.png`, three frozen K=32 Heckbert palettes, exact lookup, actual Floyd-Steinberg raster diffusion, and 32 by 32 flat patches. It tests the bimodality assumption rather than building it into the metric.
+
+![Residual-ratio distributions for hull-interior source-derived probes](merge-policies/measurements/merge-policy-reachability-bimodality.png)
+
+*Figure 6. The shaded 0.2-0.8 interval is not empty: it contains 59.6-70.6% of occupied cells and 51.7-71.3% of source-pixel weight, depending on final merge. The broad middle falsifies a general bimodality claim for this corpus. A 0.5 residual-ratio threshold can still visualize candidates, but it is not yet a stable definition of closed-loop reachability.*
+
+This is exactly the kind of result a durable measurement should preserve. Treating every hull-interior probe above 0.5 as unreachable would manufacture a precise-looking area percentage from an ambiguous distribution. The current artifact labels that view **ratio-classified** and keeps geometric hull exclusion and perceptual Delta E00 thresholds separate.
+
+![Geometric, experimental closed-loop, finite-area, perceptual, and palette-spacing measurements](merge-policies/measurements/merge-policy-reachability.png)
+
+*Figure 7. Cover and snap are disabled here; final merge is varied as a control. Ward improves the source area reconstructed within Delta E00 2 and 5 while increasing the area and occupied-cell volume outside the linear-light palette hull. The result demonstrates that population-fit quality and boundary coverage are distinct objectives. Orange, dotted-blue, and finite-area series use the experimental ratio classifier.*
+
+![Source-image locations selected by the experimental reachability classifier](merge-policies/measurements/merge-policy-reachability-hotspots.png)
+
+*Figure 8. Magenta maps hull-exterior cells plus hull-interior cells above the 0.5 residual ratio back onto `snake.png`. The map is useful for locating a failure hypothesis, but the broad ambiguous band in Figure 6 prevents interpreting all magenta pixels as proven failures in their original neighborhoods.*
+
+This control answers one question already: final merge is not cover repair. At K=32, no merge, Ward, and Ward plus three Lloyd passes leave 44.9%, 59.7%, and 56.8% of source pixels outside their respective palette hulls, even as area-weighted mean Delta E00 falls from 3.06 to 2.66 and 2.22. A dedicated cover-policy sweep must next hold the pre-cover palette fixed and vary `off`, `corners`, `faces`, and `edges` in both soft and hard modes. Until that experiment exists, the source-header table should not be presented as a refreshed default-policy benchmark, and the experimental residual classifier should not be added to `lsqa`.
+
 ### What a cover miss looks like in animation
 
 A static cover miss is a color bias. In animation it can become much more distracting: a small source region stays at the same saturated color while the rest of the frame changes, each frame's palette gives that region a different nearest reachable color, and the region flashes between those approximations.
 
 ![Animated schematic comparing a stable source red with cover-disabled and cover-protected output](cover-policy-figures/cover-flicker.png)
 
-*Figure 6. Looping schematic APNG. The source badge remains pure red during a cross-dissolve. The cover-disabled column cycles through nearby reds as its illustrative palette changes; the protected column represents a pass that selected a red anchor, either as a hard corner or a source-supported soft candidate. These pixels are explanatory synthetic data, not captured `img2sixel` output.*
+*Figure 9. Looping schematic APNG. The source badge remains pure red during a cross-dissolve. The cover-disabled column cycles through nearby reds as its illustrative palette changes; the protected column represents a pass that selected a red anchor, either as a hard corner or a source-supported soft candidate. These pixels are explanatory synthetic data, not captured `img2sixel` output.*
 
 The same sequence is available as static key frames for readers that disable animation or view a renderer that shows only the first APNG frame:
 
 ![Static key frames comparing an uncovered and protected saturated color](cover-policy-figures/cover-flicker-keyframes.svg)
 
-*Figure 7. Reduced-motion fallback for Figure 6. Shape, labels, hexadecimal values, and row position repeat the distinction without depending on color or motion alone.*
+*Figure 10. Reduced-motion fallback for Figure 9. Shape, labels, hexadecimal values, and row position repeat the distinction without depending on color or motion alone.*
 
 The key distinction is between **source motion** and **palette-neighborhood motion**. The red feature in the example does not change. Its representation changes because the palette geometry around it changes. Cover repair is intended to keep important source-supported boundary regions reachable; it is not a general temporal denoiser and does not freeze the entire palette.
 
@@ -239,7 +323,7 @@ Because $A$, $H$, $R$, and $K$ are capped by the format-facing implementation, s
 
 Cover repair is deliberately not monotonic under a global image metric. Preserving a rare saturated region can improve its local error while the merge used to fund an anchor slightly worsens common colors. Soft mode reduces this risk by choosing populated source regions; hard mode trades more image-specific accuracy for predictable gamut coverage. `cover_grow=1` avoids an existing-entry merge when room is available, but spends additional palette registers.
 
-The following design measurement used a frozen 64-entry palette and equal merge funding for each hard anchor set. A probe was counted as stuck when diffusion failed to form the intended mixture and remained at essentially the full nearest-entry residual. The table explains the non-geometric `corners -> faces -> edges` ladder; it is not a broad image-quality benchmark.
+The following historical design measurement used a frozen 64-entry palette and equal merge funding for each hard anchor set. Its selected probe population produced the near-zero/full-nearest-entry residual split discussed above, and a probe in the latter group was counted as stuck. The table explains the non-geometric `corners -> faces -> edges` ladder, but the missing original generator and probe corpus mean it is neither a broad image-quality benchmark nor a result that can currently be rerun exactly.
 
 | Hard anchors | Interior probes stuck | Face probes stuck | Edge probes stuck | Corner probes stuck | All probes stuck |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -248,9 +332,24 @@ The following design measurement used a frozen 64-entry palette and equal merge 
 | corners plus face centers, 14 | 0% | 12% | 15% | 12% | 9% |
 | previous plus edge midpoints, 26 | 0% | 4% | 10% | 12% | 5% |
 
-Global mean Delta E or MSE alone can hide the defect this option targets. A durable comparison should report region-specific and tail color error for rare saturated patches, MS-SSIM for spatial impact, palette-build and end-to-end time, actual palette entry count, and exact SIXEL byte size. It should sweep palette sizes across the `auto` boundaries, compare `soft` and `hard`, keep `-Q`, `-F`, `-X`, `--precision`, lookup, and thread count fixed, and show both `-d none` and an error-diffusion control such as `-d fs`.
+Global mean Delta E or MSE alone can hide the defect this option targets. A durable comparison should report region-specific and tail color error for rare saturated patches, MS-SSIM for spatial impact, palette-build and end-to-end time, actual palette entry count, exact SIXEL byte size, hull-exterior volume and area, and closed-loop probe ambiguity. It should sweep palette sizes across the `auto` boundaries, compare `soft` and `hard`, keep `-Q`, `-F`, `-X`, `--precision`, lookup, and thread count fixed, and show both `-d none` and an error-diffusion control such as `-d fs`.
 
-The source tree does not yet contain a one-command cover-policy quality, speed, and size benchmark comparable to the quantizer and lookup-policy measurement suites. Until such a suite records commands, fixtures, host/build provenance, raw CSV, and plots, the table above should be treated as implementation-design evidence rather than a continuously refreshed default-selection result.
+The source tree now contains a one-command **measurement-definition control** for the geometry, flat-patch, finite-area, Delta E00, palette-spacing, and hotspot views used in Figures 6-8:
+
+```sh
+PYTHON=.local/measurement-env/bin/python \
+tools/reproduce_merge_policy_reachability.sh
+```
+
+Its source revision, executable and library hashes, controlled commands, fixture hash, color-cell definition, patch sizes, thresholds, and batch-isolation validation are recorded in [`merge-policy-reachability-run.json`](merge-policies/measurements/merge-policy-reachability-run.json). Validate checked-in artifacts without rerunning the probes with:
+
+```sh
+.local/measurement-env/bin/python \
+tools/check_merge_policy_reachability.py \
+docs/functionality/merge-policies/measurements
+```
+
+This workflow varies final merge with cover disabled, so it is not yet the one-command cover-policy quality, speed, and size benchmark required to choose defaults. That future suite should reuse the now-explicit reachability definitions while holding the pre-cover palette fixed. Until it exists, the K=64 table above remains scoped implementation-design evidence rather than a continuously refreshed policy result.
 
 ## Configuration and precedence
 

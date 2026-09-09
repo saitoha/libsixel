@@ -83,8 +83,16 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/working-colorspace.md \
 	docs/functionality/merge-policy.md \
 	docs/functionality/merge-policies/measurements/merge-policy-comparison.csv \
+	docs/functionality/merge-policies/measurements/merge-policy-mechanics.png \
 	docs/functionality/merge-policies/measurements/merge-policy-performance.png \
 	docs/functionality/merge-policies/measurements/merge-policy-quality.png \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-bimodality.png \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-hotspots.png \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-patch-size.csv \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-run.json \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-summary.csv \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability.png \
+	docs/functionality/merge-policies/measurements/merge-policy-visual-comparison.png \
 	docs/functionality/merge-policies/measurements/merge-policy-run.json \
 	docs/functionality/working-colorspaces/measurements/working-colorspace-comparison.csv \
 	docs/functionality/working-colorspaces/measurements/working-colorspace-performance.png \

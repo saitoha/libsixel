@@ -19,8 +19,8 @@ Start from the [documentation index](README.md). Read the relevant document befo
 - [Functionality](functionality/overview.md): capabilities, components, data flow, and architectural boundaries.
 - [Palette clustering color space](functionality/clustering-colorspace.md): `-X` geometry, normalization, interactions, and reproducible measurements.
 - [Palette working color space](functionality/working-colorspace.md): `-W` palette-application geometry, lookup and dither interactions, precision, and reproducible quality, speed, and size measurements.
-- [Final palette merge policy](functionality/merge-policy.md): `-F` Ward reduction, optional Lloyd polishing, objective tradeoffs, and reproducible quality, speed, and size measurements.
-- [Palette cover policy](functionality/cover-policy.md): post-quantizer gamut reachability repair, soft and hard anchors, and growth.
+- [Final palette merge policy](functionality/merge-policy.md): `-F` Ward reduction, optional Lloyd polishing, objective tradeoffs, and reproducible quality, speed, size, geometry, and flat-patch measurements.
+- [Palette cover policy](functionality/cover-policy.md): post-quantizer gamut reachability repair, soft and hard anchors, historical color-model connections, growth, and layered reachability measurement.
 - [Palette snap policy](functionality/snap-policy.md): enablement, reversible 101-level tone mapping, timing, approach rate, and working-space target selection.
 - [Encoder working precision](functionality/precision.md): requested and effective `--precision` paths and cross-policy measurement controls.
 - [Alpha policy](loader/alpha-policy.md): source-alpha treatment, omitted SIXEL pixels, and `P2` selection.

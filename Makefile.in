@@ -599,8 +599,16 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/working-colorspace.md \
 	docs/functionality/merge-policy.md \
 	docs/functionality/merge-policies/measurements/merge-policy-comparison.csv \
+	docs/functionality/merge-policies/measurements/merge-policy-mechanics.png \
 	docs/functionality/merge-policies/measurements/merge-policy-performance.png \
 	docs/functionality/merge-policies/measurements/merge-policy-quality.png \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-bimodality.png \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-hotspots.png \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-patch-size.csv \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-run.json \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability-summary.csv \
+	docs/functionality/merge-policies/measurements/merge-policy-reachability.png \
+	docs/functionality/merge-policies/measurements/merge-policy-visual-comparison.png \
 	docs/functionality/merge-policies/measurements/merge-policy-run.json \
 	docs/functionality/working-colorspaces/measurements/working-colorspace-comparison.csv \
 	docs/functionality/working-colorspaces/measurements/working-colorspace-performance.png \
@@ -767,7 +775,6 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/check_quantize_model_measurements.py \
 	tools/check_snap_policy_measurements.py \
 	tools/check_threading_measurements.py \
-	tools/check_working_colorspace_measurements.py \
 	tools/generate_palette_pipeline_suite_fixtures.py \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \
@@ -790,7 +797,6 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_quantize_model_measurements.py \
 	tools/plot_snap_policy_measurements.py \
 	tools/plot_threading_measurements.py \
-	tools/plot_working_colorspace_measurements.py \
 	tools/reproduce_lookup_policy_acceleration.sh \
 	tools/reproduce_clustering_binning_threshold_measurements.sh \
 	tools/reproduce_clustering_colorspace_measurements.sh \
@@ -805,7 +811,6 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_quantize_model_measurements.sh \
 	tools/reproduce_snap_policy_measurements.sh \
 	tools/reproduce_threading_measurements.sh \
-	tools/reproduce_working_colorspace_measurements.sh \
 	tools/snap_policy_suite.json \
 	tools/timeline.py
 

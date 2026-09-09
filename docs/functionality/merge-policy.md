@@ -71,6 +71,10 @@ Ward and Lloyd are not two interchangeable values of `--merge-policy`. Ward is t
 
 Lloyd's nearest-center and weighted-mean iteration is described in [Least Squares Quantization in PCM](https://doi.org/10.1109/TIT.1982.1056489). A direct K-means run at `K` and an oversplit K-means run followed by Ward and Lloyd are not equivalent: they start with different numbers of centers, take different irreversible decisions, and may finish in different local minima.
 
+![Point motion during oversplitting, Ward reduction, and Lloyd refinement](merge-policies/measurements/merge-policy-mechanics.png)
+
+*Figure 1. Conceptual two-dimensional projection of the three operations. Oversplitting creates more provisional representatives than the output can retain. Ward repeatedly replaces the least costly pair by one weighted center, so the number of centers falls. Lloyd keeps the final count fixed and moves each center to the weighted mean of the samples assigned to it. The source points and trajectories are explanatory synthetic data, not colors sampled from `snake.png`.*
+
 ## Why measured quality can improve
 
 Oversplitting gives the first solver room to preserve local color groups before it must spend exactly `K` entries. Ward then reduces that richer representation while explicitly minimizing the immediate increase in the same family of squared-distance loss. This is particularly helpful for median cut: its box-splitting decisions target range, population, or a principal direction, but do not directly minimize the final `K`-center squared error. Ward can keep useful subdivisions long enough to decide globally which pair is cheapest to collapse.
@@ -128,11 +132,11 @@ The checked-in experiment compares no final merge, Ward without Lloyd, and Ward 
 
 ![MS-SSIM and mean Delta E00 by merge configuration, quantizer, and palette size](merge-policies/measurements/merge-policy-quality.png)
 
-*Figure 1. Quality measured by `lsqa` after decoding `img2sixel` output for the 600 by 450 `images/snake.png` fixture. Higher MS-SSIM and lower mean Delta E00 are better. Dithering is disabled, lookup is exact, and cover and snap are disabled so the comparison isolates the palette change.*
+*Figure 2. Quality measured by `lsqa` after decoding `img2sixel` output for the 600 by 450 `images/snake.png` fixture. Higher MS-SSIM and lower mean Delta E00 are better. Dithering is disabled, lookup is exact, and cover and snap are disabled so the comparison isolates the palette change.*
 
 ![Palette-build time, end-to-end time, and SIXEL size by merge configuration, quantizer, and palette size](merge-policies/measurements/merge-policy-performance.png)
 
-*Figure 2. Single-threaded `img2sixel` measurements on Apple Silicon macOS. Palette-build and fresh-process end-to-end values are medians of seven runs; bars show the interquartile range. Stream size is the exact encoded SIXEL byte length. The palette-build span is the more direct cost measure; loader, palette application, and process startup add variance to end-to-end time.*
+*Figure 3. Single-threaded `img2sixel` measurements on Apple Silicon macOS. Palette-build and fresh-process end-to-end values are medians of seven runs; bars show the interquartile range. Stream size is the exact encoded SIXEL byte length. The palette-build span is the more direct cost measure; loader, palette application, and process startup add variance to end-to-end time.*
 
 The following selected points show the change from no merge. `Ward` means no Lloyd passes; `Ward+L3` means three passes. Positive MS-SSIM is better, negative Delta E00 is better, and the time and size columns are ratios where 1.0 means unchanged.
 
@@ -155,6 +159,46 @@ For this fixture, Ward is a compelling quality option for Heckbert through the m
 
 The size result is equally important: better palette error did not imply smaller output. With dithering disabled, Ward increased the Heckbert stream by 11-45% at the selected points and usually increased K-means size at low and medium `K`. Different centroids change palette declarations, selected indices, and run structure. Compression must therefore be measured rather than inferred from a quality objective.
 
+![Natural-image crop and full-frame Delta E00 maps for three final-merge configurations](merge-policies/measurements/merge-policy-visual-comparison.png)
+
+*Figure 4. `snake.png` at K=32 with Heckbert, exact lookup, no dithering, and cover and snap disabled. The upper row magnifies an automatically selected high-change region; the lower row maps per-pixel Delta E00 over the full frame. Ward removes the broad background error left by the oversplit-but-unmerged control. Lloyd further changes the fitted colors, especially along the head and scale boundaries. Every error map uses the same color scale.*
+
+### A better fit can have a smaller reachable gamut
+
+Final merge optimizes the distribution of representatives around sampled colors. It does not preserve the convex hull of the provisional palette and does not optimize the closed-loop behavior of lookup plus error diffusion. A merge can therefore improve the usual image-error metrics while making colors near the source-gamut boundary harder to reproduce.
+
+The following K=32 experiment freezes each resulting palette and evaluates the 31,966 occupied one-unit CIELAB cells of `snake.png` in three different ways. The **volume** view gives one vote to each occupied cell; it is an image-dependent occupied-cell approximation, not the volume of all CIELAB. The **area** view weights the same cells by their source-pixel populations. Convex-hull exclusion is computed in linear-light RGB. The spatial result encodes a 32 by 32 flat patch with the actual Floyd-Steinberg raster path and exact lookup, then measures the arithmetic mean in linear light.
+
+![Geometric, spatial, perceptual, finite-area, and palette-spacing views of final merge](merge-policies/measurements/merge-policy-reachability.png)
+
+*Figure 5. The same palettes support two apparently contrary conclusions. Ward and Lloyd increase the fraction of source pixels reconstructed within a given Delta E00 threshold, yet they also increase the fraction outside the palette's linear-light convex hull. The orange and dotted-blue bars and the finite-area panel use an experimental residual-ratio classifier discussed below; they are not established reachability measures.*
+
+| K=32 Heckbert result | No merge | Ward | Ward + L3 |
+| --- | ---: | ---: | ---: |
+| Hull-exterior occupied-cell volume | 59.5% | 73.1% | 67.6% |
+| Hull-exterior source-image area | 44.9% | 59.7% | 56.8% |
+| Source area reconstructed within Delta E00 2 | 40.6% | 57.3% | 60.7% |
+| Source area reconstructed within Delta E00 5 | 84.6% | 88.6% | 93.3% |
+| Area-weighted mean Delta E00, all cells | 3.06 | 2.66 | 2.22 |
+| Palette nearest-neighbor Delta E00 mean | 6.58 | 4.68 | 4.87 |
+| Palette nearest-neighbor Delta E00 coefficient of variation | 0.37 | 0.30 | 0.48 |
+
+Ward moves entries toward populated regions, so it can reduce common-color error while abandoning some extreme colors. That is why its Delta E00 threshold coverage improves even though its geometric hull coverage worsens. The nearest-neighbor statistic adds another warning: Ward alone makes the palette more tightly and relatively evenly spaced, but the Lloyd-polished palette has the best image error and the least uniform spacing of the three. Palette uniformity is descriptive, not a stand-alone quality objective.
+
+The spatial classifier starts from the ratio between the flat patch's remaining color distance and the source color's distance to its nearest palette entry. A ratio near zero is consistent with successful spatial mixing; a ratio near one is consistent with selecting one entry without useful diffusion. The implementation-design probe recorded in [`palette-common-cover.h`](../../src/palette-common-cover.h) showed an almost binary split, but this broader occupied-cell experiment does not reproduce that distribution:
+
+![Residual-ratio distributions inside each palette convex hull](merge-policies/measurements/merge-policy-reachability-bimodality.png)
+
+*Figure 6. Residual ratios for hull-interior K=32 probes after actual Floyd-Steinberg diffusion. The shaded interval from 0.2 to 0.8 contains 59.6%, 70.6%, and 68.1% of occupied cells for no merge, Ward, and Ward plus L3; image-area weights place 51.7%, 71.3%, and 62.7% there. The intended near-zero/near-one bimodality is therefore not a general property of these source-derived probes.*
+
+Using 0.5 as a dividing line still produces a useful diagnostic map, but the large ambiguous population means it must not be promoted to a stable `lsqa` metric yet:
+
+![Experimental map of source regions marked by hull exclusion or a high residual ratio](merge-policies/measurements/merge-policy-reachability-hotspots.png)
+
+*Figure 7. Magenta marks source pixels whose occupied CIELAB cell is either outside the frozen palette's linear-light hull or retains at least half of its nearest-entry distance after a 32 by 32 flat-patch probe. This is an experimental classifier visualization, not proof that every marked pixel is unreachable in its real image neighborhood.*
+
+The robust conclusion is narrower and more useful: final merge improves the central, high-population fit on this fixture, while it does not act as cover repair and can shrink the geometric upper bound. [Palette Cover Policy](cover-policy.md) develops the separate geometry, closed-loop, and finite-area model. The residual-ratio ambiguity is a negative result that the checked-in workflow preserves so a later classifier cannot silently assume the earlier bimodality.
+
 ### Should users enable it?
 
 - Use `-Fward:L0` as the first deliberate tradeoff to test with Heckbert when low- or medium-color quality matters. It obtained most of the measured quality improvement at much lower cost than three Lloyd passes.
@@ -172,6 +216,13 @@ PYTHON=.local/measurement-env/bin/python \
 tools/reproduce_merge_policy_measurements.sh
 ```
 
+The frozen-palette geometry and flat-patch experiment, including its five figures, two CSV files, command provenance, batch-versus-isolated probe check, and artifact validation, runs separately:
+
+```sh
+PYTHON=.local/measurement-env/bin/python \
+tools/reproduce_merge_policy_reachability.sh
+```
+
 The Python environment needs Matplotlib. Override `PYTHON` if it is installed elsewhere. The script refuses to record durable results from a dirty tracked worktree and removes inherited `SIXEL_*` settings from measurement subprocesses. [`merge-policy-run.json`](merge-policies/measurements/merge-policy-run.json) records the source revision, compiler, host, input hash, executable hashes, complete protocol, warmups, run count, and command templates. [`merge-policy-comparison.csv`](merge-policies/measurements/merge-policy-comparison.csv) contains every raw summary point and derived baseline ratio.
 
 Regenerate the plots directly from a compatible build with [`plot_merge_policy_measurements.py`](../../tools/plot_merge_policy_measurements.py). Validate an existing artifact directory without rerunning the benchmark with:
@@ -179,6 +230,14 @@ Regenerate the plots directly from a compatible build with [`plot_merge_policy_m
 ```sh
 .local/measurement-env/bin/python \
 tools/check_merge_policy_measurements.py \
+docs/functionality/merge-policies/measurements
+```
+
+Validate the reachability artifacts without rerunning their probes with:
+
+```sh
+.local/measurement-env/bin/python \
+tools/check_merge_policy_reachability.py \
 docs/functionality/merge-policies/measurements
 ```
 

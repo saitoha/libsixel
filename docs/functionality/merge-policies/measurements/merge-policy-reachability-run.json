@@ -1,0 +1,112 @@
+{
+  "build": {
+    "cc": "gcc",
+    "cflags": "-O3 -std=c99",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "directory": ".",
+    "ldflags": ""
+  },
+  "chart_contract": {
+    "bimodality": "test, rather than assume, residual-ratio bimodality inside each palette hull with cell and pixel weights",
+    "hotspots": "map ratio-classified occupied cells back to source pixels",
+    "mechanics": "explain that Ward reduces Q to K while Lloyd moves K means",
+    "non_color_distinction": "line style, marker shape, hatch, labels, and panel position",
+    "reachability": "separate the convex-hull upper bound, experimental residual classifier, perceptual threshold, finite area, and palette spacing",
+    "visual_comparison": "locate and show image regions whose per-pixel color error changes after final merge"
+  },
+  "generated_at_utc": "2026-09-09T05:48:47.400620+00:00",
+  "host": {
+    "matplotlib": "3.11.1",
+    "numpy": "2.5.3",
+    "pillow": "12.3.0",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.5"
+  },
+  "input": {
+    "path": "images/snake.png",
+    "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4"
+  },
+  "programs": {
+    "img2sixel": {
+      "launcher": "converters/img2sixel",
+      "launcher_sha256": "c43004431c250874dce8444644e17ce5a82a5bc5b03a016c24b876448e21b618",
+      "payload": "converters/.libs/img2sixel",
+      "payload_sha256": "e7b6d33debb9837169a9c8ceb348e458260400bbb3918f4bc7fce8791378a22b"
+    },
+    "libsixel": {
+      "path": "src/.libs/libsixel.1.dylib",
+      "sha256": "10b571ddb06fc3a3a38f1d052c96d4563bf587be66aba14009f748e0fe48708f"
+    }
+  },
+  "protocol": {
+    "ambiguous_ratio_band": [
+      0.2,
+      0.8
+    ],
+    "batch_fence": "one alpha-zero row and column between RGBA patches, using the production transparent-mask diffusion fence",
+    "batch_fence_isolated_validation_count": 3,
+    "ciede2000_sharma_pair_1": 2.0424596801565738,
+    "clustering_colorspace": "oklab",
+    "colors": 32,
+    "commands": {
+      "none": "{img2sixel} --threads=1 --precision=8bit --quality=full '--loaders=builtin!' --sampling-policy=full-frame --binning-policy=none --quantize-model=heckbert:profile=compat --merge-policy=none:merge_oversplit=1.81:merge_lloyd=0:channel_l=0.3333333333333333 --cover-policy=off --snap-policy=none -Xoklab -Wgamma -Ugamma --diffusion=none --gpu-policy=off --lookup-policy=none --palette-type=rgb --encode-policy=fast -p 32 -M act:{palette} {input}",
+      "ward-l0": "{img2sixel} --threads=1 --precision=8bit --quality=full '--loaders=builtin!' --sampling-policy=full-frame --binning-policy=none --quantize-model=heckbert:profile=compat --merge-policy=ward:merge_oversplit=1.81:merge_lloyd=0:channel_l=0.3333333333333333 --cover-policy=off --snap-policy=none -Xoklab -Wgamma -Ugamma --diffusion=none --gpu-policy=off --lookup-policy=none --palette-type=rgb --encode-policy=fast -p 32 -M act:{palette} {input}",
+      "ward-l3": "{img2sixel} --threads=1 --precision=8bit --quality=full '--loaders=builtin!' --sampling-policy=full-frame --binning-policy=none --quantize-model=heckbert:profile=compat --merge-policy=ward:merge_oversplit=1.81:merge_lloyd=3:channel_l=0.3333333333333333 --cover-policy=off --snap-policy=none -Xoklab -Wgamma -Ugamma --diffusion=none --gpu-policy=off --lookup-policy=none --palette-type=rgb --encode-policy=fast -p 32 -M act:{palette} {input}"
+    },
+    "cover_policy": "off",
+    "delta_e00_thresholds": [
+      1.0,
+      2.0,
+      5.0,
+      10.0
+    ],
+    "empirical_diffusion": "fs",
+    "empirical_scan": "raster",
+    "geometric_domain": "equal-volume occupied 1-unit CIELAB cells of this image; not the continuous RGB-cube volume",
+    "geometric_space": "linear-light sRGB",
+    "gpu_policy": "off",
+    "lab_cell_width": 1.0,
+    "lookup_policy": "none",
+    "merge_configurations": [
+      "none",
+      "ward-l0",
+      "ward-l3"
+    ],
+    "occupied_lab_cells": 31966,
+    "output_colorspace": "gamma",
+    "palette_build_diffusion": "none",
+    "patch_size": 32,
+    "patch_sizes": [
+      8,
+      16,
+      32,
+      64
+    ],
+    "precision": "8bit",
+    "probe_representative": "pixel-mass mean RGB rounded to uint8",
+    "purpose": "compare geometric palette reachability with closed-loop FS reachability after final merge",
+    "quantizer": "heckbert:profile=compat",
+    "ratio_classified_unreachable_definition": "outside the linear-light palette hull, or inside the hull with residual divided by nearest-entry distance at least 0.5",
+    "ratio_classifier_status": "experimental; ambiguity is measured and must be small before treating the threshold as a stable reachability metric",
+    "sensitivity_probe_count": 512,
+    "sensitivity_sample": "union of 256 Lab-lexicographic evenly spaced cells and 256 highest-source-area cells",
+    "snap_policy": "none",
+    "spatial_mean": "arithmetic mean of emitted palette entries in linear-light sRGB, then CIELAB D65",
+    "stuck_ratio_threshold": 0.5,
+    "supporting_plane_counts": {
+      "none": 32,
+      "ward-l0": 36,
+      "ward-l3": 30
+    },
+    "threads": 1,
+    "working_colorspace": "gamma"
+  },
+  "schema_version": 1,
+  "source": {
+    "revision": "837e6ce0cada8d2a903cd3332321eed57c500773",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}

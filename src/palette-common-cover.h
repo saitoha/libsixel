@@ -37,11 +37,11 @@ extern "C" {
  * Anchor sets, in increasing order of coverage.  Each contains the previous.
  *
  * Error diffusion reproduces a color the palette lacks by mixing entries that
- * the nearest-color lookup actually selects, and it either finds that mixture
- * or it does not: measured on a frozen palette, the residual error of a flat
- * patch is bimodal, sitting either at zero or at the full distance to the
- * nearest entry, with almost nothing in between.  The second case is diffusion
- * never happening at all -- the pixel resolves to one entry and stays there.
+ * the nearest-color lookup actually selects.  In the controlled frozen-palette
+ * probes used to choose this ladder, the residual error of a flat patch was
+ * bimodal: it sat near zero or near the full distance to the nearest entry,
+ * with almost nothing in between.  The second case was diffusion never
+ * happening at all -- the pixel resolved to one entry and stayed there.
  *
  * Percentage of probe colors stuck that way, palette held fixed at 64 entries
  * and each set funded by the same merge, so only the choice of anchors differs:
@@ -51,6 +51,11 @@ extern "C" {
  *   corners       (8)        34%    74%   15%     12%   47%
  *   + face centres (14)       0%    12%   15%     12%    9%
  *   + edge mids    (26)       0%     4%   10%     12%    5%
+ *
+ * These are historical design measurements.  Their original generator and
+ * exact probe corpus were not retained.  The documented measurement workflow
+ * tests the bimodality assumption on broader source-derived probes rather than
+ * treating this table as a distribution-independent result.
  *
  * The face centres are what matter, and they are why this ladder is not the
  * geometric one: anchoring the twelve edge midpoints instead costs six more
