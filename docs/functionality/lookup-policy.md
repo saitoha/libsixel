@@ -134,8 +134,7 @@ is globally optimal.
 | Policy and representation | Default guarantee | Important qualification |
 | --- | --- | --- |
 | `none` | Scan-index exact on its direct path | Canonical two-entry black/white palettes select an internal threshold policy first |
-| `5bit` / `6bit`, serial or worker-local parallel 8-bit | Approximate after a bucket is cached | The first query is exact; later colors in the bucket reuse its index |
-| `5bit` / `6bit`, shared parallel 8-bit | Scan-index exact for uncached queries | The plain shared table remains read-only during parallel mapping to avoid data races |
+| `5bit` / `6bit`, 8-bit | Approximate after a bucket is cached | The first completed query is exact; shared parallel writers can choose different valid representatives, so repeated runs need not be byte-reproducible |
 | `5bit` / `6bit`, float32 | Scan-index exact | Exhaustive scan in the normalized policy metric |
 | `certlut`, 8-bit | Approximate | The current cube test checks only the center's second-nearest competitor, not every possible boundary competitor |
 | `certlut`, float32 | Nearest-distance exact | kd-tree pruning preserves the normalized policy minimum |
@@ -153,7 +152,7 @@ is globally optimal.
 
 `auto` inherits the concrete backend's guarantee. Configuration can matter as
 much as the base policy name. For example, an optional FHEDT cache remembers a
-voxel result, while the serial dense-bucket policies remember the result of the
+voxel result, while the dense-bucket policies remember the result of the
 first actual color that entered a bucket.
 
 ## Cost model
@@ -174,7 +173,7 @@ and whole-image cost must be kept separate.
 | Policy | Preparation | One query | Extra space |
 | --- | --- | --- | --- |
 | `none` | `O(1)` | `Theta(K)` | `O(1)` |
-| `5bit` / `6bit`, serial 8-bit | `Theta(G)` initialization | hit `Theta(1)`; first-bucket miss `Theta(K)` | `Theta(G)` |
+| `5bit` / `6bit`, 8-bit | `Theta(G)` initialization | hit `Theta(1)`; first-bucket miss `Theta(K)` | `Theta(G)` |
 | `certlut`, 8-bit | `O(64^3 + K^2)` in the current builder | warm fixed-depth lookup `Theta(1)`; cold refinement worst `O(K)` | initial `Theta(64^3 + K)`; fully refined worst `O(256^3 + K)` |
 | `certlut`, float32 | current kd-tree build conservatively `O(K^2)` | typical `O(log K)`; worst `Theta(K)` | `Theta(K)` |
 | `eytzinger` | `Theta(K log K)` | 8-bit `Theta(log K)`; float32 `O(log K + V)`, worst `Theta(K)` | `Theta(K)` |
@@ -183,12 +182,13 @@ and whole-image cost must be kept separate.
 | `rbc`, float32 | `Theta(K J)` | `O(J + V)`; worst `Theta(K)` | `Theta(K + J)` |
 | `mahalanobis`, float32 | `Theta(K J)` | `Theta(K)` currently | `Theta(K + J)` |
 
-Direct lookup over an image is `Theta(P K)`. The serial `5bit` and `6bit`
-implementations instead have whole-image work:
+Direct lookup over an image is `Theta(P K)`. Ignoring concurrent duplicate misses, the 8-bit `5bit` and `6bit` implementations instead have whole-image work:
 
 ```text
 Theta(G + P + U K)
 ```
+
+A shared parallel table can make more than one worker scan the same cold bucket before any store becomes visible, adding up to the number of active mapping workers to that bucket's miss cost without changing the cache-hit bound.
 
 FHEDT has the clearest fixed-build-plus-linear-application form:
 
@@ -392,9 +392,7 @@ manual contract. Packing changes memory order, not which colors share a bucket.
 
 ### Guarantee
 
-On an empty serial bucket, the policy scans the actual candidate against all
-palette entries, so that first answer is scan-index exact in byte RGB distance.
-Afterwards every candidate with the same `bucket(x)` receives the stored index:
+On an empty bucket, the policy scans the actual candidate against all palette entries, so that answer is scan-index exact in byte RGB distance. Afterwards every candidate with the same `bucket(x)` receives the stored index:
 
 ```text
 lookup(x_first) = argmin_i D(i, x_first)
@@ -405,21 +403,21 @@ The later answer can be approximate, and it depends on traversal history. The
 maximum component separation inside one rounded bucket is small, but a palette
 Voronoi boundary can still cross the bucket.
 
-During parallel dithering, a worker-local instance (`shared_instance=0`) populates its private dense table and has the same history-dependent approximation as the serial path. A shared instance (`shared_instance=1`) leaves the plain non-atomic table read-only, so an uncached query performs a full scan and remains scan-index exact. The float32 backend also performs an exhaustive scan, using the normalized weighted metric described in the index.
+Serial, worker-local parallel (`shared_instance=0`), and shared parallel (`shared_instance=1`) 8-bit paths all populate their dense tables. With a shared instance, multiple workers can observe the same empty bucket, scan different candidate colors, and store different valid palette indices; whichever write becomes visible determines the cached representative, so repeated runs need not be byte-reproducible. Relaxed atomic loads and stores make those accesses well-defined without ordering surrounding work. The float32 backend still performs an exhaustive scan using the normalized weighted metric described in the index.
 
 ### Cost
 
 Let `U` be the number of distinct buckets first encountered:
 
 ```text
-table initialization              Theta(32^3)
-private cache hit                 Theta(1)
-private first-bucket miss         Theta(K)
-serial whole image                Theta(32^3 + P + U K)
-shared parallel or float32 query  Theta(K)
+table initialization        Theta(32^3)
+cache hit                   Theta(1)
+first-bucket miss           Theta(K)
+8-bit whole image           Theta(32^3 + P + U K)
+float32 query               Theta(K)
 ```
 
-The `shared_instance` suboption controls whether workers receive a shared instance; its default is enabled for `5bit`. Worker-local instances spend additional initialization and memory per active instance but retain memoized lookup speed. A shared plain dense table remains read-only during parallel mapping. Sharing is therefore a lifecycle, race, memory, output, and speed policy.
+The `shared_instance` suboption controls whether workers receive a shared instance; its default is enabled for `5bit`. Worker-local instances spend additional initialization and memory per active instance. A shared instance aggregates memoized buckets across workers and can repeat an exhaustive scan when workers miss the same bucket concurrently, while racing first writers make its output schedule-dependent. Sharing is therefore a lifecycle, race, memory, output, and speed policy.
 
 ### Name, lineage, and comparisons
 
@@ -482,9 +480,7 @@ spelling is documented in the [`img2sixel(1)` manual](../../converters/img2sixel
 
 ### Purpose and intuition
 
-`6bit` is the finer sibling of `5bit`. It partitions byte RGB space into
-`64^3` buckets, performs an exhaustive scan for the first serial query in a
-bucket, and memoizes that index.
+`6bit` is the finer sibling of `5bit`. It partitions byte RGB space into `64^3` buckets, performs an exhaustive scan for a query that finds an empty bucket, and memoizes that index.
 
 ```text
 8-bit RGB candidate
@@ -524,7 +520,7 @@ only changes address layout.
 
 ### Guarantee
 
-The serial 8-bit guarantee has two phases:
+The 8-bit guarantee has two phases:
 
 ```text
 first candidate in bucket   scan-index exact
@@ -534,21 +530,21 @@ later candidate in bucket   approximate if its nearest entry differs
 The approximation is query-history dependent. Smaller buckets reduce, but do
 not eliminate, the possibility that a nearest-color boundary crosses a bucket.
 
-During parallel dithering, a worker-local instance (`shared_instance=0`) populates its private table. A shared instance (`shared_instance=1`) suppresses writes to its plain non-atomic table and scans the palette for each uncached candidate, preserving scan-index exactness. The float32 backend is also a normalized-distance exhaustive scan; the `6bit` name does not describe a float32 grid in that path.
+Serial, worker-local parallel (`shared_instance=0`), and shared parallel (`shared_instance=1`) 8-bit paths all populate their dense tables. With a shared instance, racing first writers can select different valid representatives for one bucket, making later hits and the resulting output schedule-dependent. Relaxed atomic accesses prevent a C data race without imposing ordering on the surrounding lookup. The float32 backend remains a normalized-distance exhaustive scan; the `6bit` name does not describe a float32 grid in that path.
 
 ### Cost
 
 With `U` distinct first-use buckets:
 
 ```text
-table initialization              Theta(64^3)
-private cache hit                 Theta(1)
-private first-bucket miss         Theta(K)
-serial whole image                Theta(64^3 + P + U K)
-shared parallel or float32 query  Theta(K)
+table initialization        Theta(64^3)
+cache hit                   Theta(1)
+first-bucket miss           Theta(K)
+8-bit whole image           Theta(64^3 + P + U K)
+float32 query               Theta(K)
 ```
 
-The `shared_instance` suboption defaults to enabled. The larger table makes worker-local duplication especially relevant to memory and cache pressure, while choosing worker-local instances is required to retain lazy-cache writes during parallel mapping.
+The `shared_instance` suboption defaults to enabled. The larger table makes worker-local duplication especially relevant to memory and cache pressure; sharing avoids that duplication and lets workers reuse one memoized table at the cost of schedule-dependent representatives when first writes race.
 
 ### Name and source
 
@@ -1778,13 +1774,15 @@ At `K = 256`, the result is:
 
 | Policy | `S0` median | `S1` median | `S1` change from `S0` |
 | --- | ---: | ---: | ---: |
-| `5bit` | 59.3 ms | 59.0 ms | -0.5% |
-| `6bit` | 59.6 ms | 59.5 ms | -0.04% |
+| `5bit` | 59.3 ms | TODO(remeasure) | TODO(remeasure) |
+| `6bit` | 59.6 ms | TODO(remeasure) | TODO(remeasure) |
 | `certlut` | 59.9 ms | 59.9 ms | -0.1% |
 
 These checked artifacts were recorded at source revision `f2c138d8f6aa0a90c89d019f85eaf9bb3efa5edb`, before worker-local `5bit` and `6bit` instances populated their dense tables during parallel mapping. At that revision, the private and shared curves were mostly within each other's interquartile ranges, so the run did not establish a material end-to-end latency benefit for either setting.
 
-The old runner also required `S0` and `S1` to produce byte-identical SIXEL at `K = 256` for all three policies. That equality was evidence of the worker-local cache-write defect, not a contract. The current reproduction runner requires `S0` and `S1` to differ for `5bit` and `6bit`, while `certlut` remains byte-identical. Diffusion is disabled and band overlap is fixed at zero. Regenerate these artifacts before using the recorded table to characterize current private-cache performance. This is intentionally not a thread-scaling benchmark and does not measure the quality effect of parallel-band error diffusion.
+The shared `5bit` and `6bit` values are `TODO(remeasure)` because shared instances now populate their dense tables with relaxed atomic accesses. The checked graph and CSV still describe the older read-only shared-cache implementation and must not be used to characterize the new shared path.
+
+The old runner also required `S0` and `S1` to produce byte-identical SIXEL at `K = 256` for all three policies. That equality was evidence of the worker-local cache-write defect, not a contract. The current reproduction runner requires `S0` and `S1` to differ for `5bit` and `6bit`, while `certlut` remains byte-identical. Diffusion is disabled and band overlap is fixed at zero. Regenerate these artifacts before using the recorded table to characterize current dense-cache performance. Shared `5bit` and `6bit` output can also vary between runs because competing first writers can memoize different valid representatives. This is intentionally not a thread-scaling benchmark and does not measure the quality effect of parallel-band error diffusion.
 
 ### Metal PaletteApply performance
 

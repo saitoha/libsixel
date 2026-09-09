@@ -72,7 +72,7 @@ typedef struct sixel_lookup_policy_bit5_object {
         unsigned char const *palette;
         sixel_allocator_t *allocator;
         sixel_lookup_policy_bit5_quantization_t quant;
-        int32_t *dense;
+        sixel_atomic_i32_t *dense;
         size_t dense_size;
         int dense_ready;
     } state_8bit;
@@ -410,7 +410,7 @@ sixel_lookup_policy_bit5_prepare_cache(sixel_lookup_policy_bit5_object_t
     if (expected == 0U) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (expected > SIZE_MAX / sizeof(int32_t)) {
+    if (expected > SIZE_MAX / sizeof(sixel_atomic_i32_t)) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_5bit: dense cache too large.");
         return SIXEL_BAD_ALLOCATION;
@@ -422,10 +422,11 @@ sixel_lookup_policy_bit5_prepare_cache(sixel_lookup_policy_bit5_object_t
         return SIXEL_BAD_ARGUMENT;
     }
     if (object->state_8bit.dense == NULL) {
-        bytes = expected * sizeof(int32_t);
-        object->state_8bit.dense = (int32_t *)sixel_allocator_malloc(
-            object->state_8bit.allocator,
-            bytes);
+        bytes = expected * sizeof(sixel_atomic_i32_t);
+        object->state_8bit.dense =
+            (sixel_atomic_i32_t *)sixel_allocator_malloc(
+                object->state_8bit.allocator,
+                bytes);
         if (object->state_8bit.dense == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_lookup_policy_5bit: cache allocation failed.");
@@ -434,7 +435,8 @@ sixel_lookup_policy_bit5_prepare_cache(sixel_lookup_policy_bit5_object_t
     }
 
     for (index = 0U; index < expected; ++index) {
-        object->state_8bit.dense[index] = SIXEL_LUT_DENSE_EMPTY;
+        sixel_atomic_store_relaxed_i32(
+            &object->state_8bit.dense[index], SIXEL_LUT_DENSE_EMPTY);
     }
     object->state_8bit.dense_size = expected;
     object->state_8bit.dense_ready = 1;
@@ -679,7 +681,8 @@ sixel_lookup_policy_bit5_map_8bit(
             && object->state_8bit.dense != NULL) {
         bucket = sixel_lookup_policy_bit5_pack(object, pixel);
         if ((size_t)bucket < object->state_8bit.dense_size) {
-            cached = object->state_8bit.dense[bucket];
+            cached = sixel_atomic_load_relaxed_i32(
+                &object->state_8bit.dense[bucket]);
             if (cached >= 0) {
                 return cached;
             }
@@ -708,17 +711,17 @@ sixel_lookup_policy_bit5_map_8bit(
     }
 
     /*
-     * Parallel workers may memoize only when each worker owns this object.
-     * Shared dense slots are plain int32_t values, so concurrent writes would
-     * be a data race.  Existing entries remain safe to read in either mode.
+     * Concurrent workers can disagree about which valid palette index should
+     * represent a bucket.  Every stored index still comes from an exhaustive
+     * lookup for a color in that bucket.  Relaxed atomic access makes this
+     * race well-defined without ordering any surrounding work.
      */
     if (object->state_8bit.dense_ready != 0
             && object->state_8bit.dense != NULL
             && result >= 0
-            && (object->parallel_dither_active == 0
-                || object->shared_instance_enabled == 0)
             && (size_t)bucket < object->state_8bit.dense_size) {
-        object->state_8bit.dense[bucket] = result;
+        sixel_atomic_store_relaxed_i32(
+            &object->state_8bit.dense[bucket], result);
     }
 
     if (result < 0) {

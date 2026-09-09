@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify private dense lookup policies cache during parallel dithering.
+ * Verify dense lookup policies cache during parallel dithering.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -18,7 +18,7 @@
 #include "src/factory.h"
 
 static int
-private_dense_cache_populates(char const *class_name)
+dense_cache_populates(char const *class_name, int shared_instance_enabled)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -50,7 +50,7 @@ private_dense_cache_populates(char const *class_name)
      * Values 100 and 101 occupy the same rounded RGB555 and RGB666 bucket,
      * while each is nearest to a different palette entry.  Reusing index 0
      * for the second query therefore proves that the first query populated
-     * the private dense cache instead of performing two exhaustive scans.
+     * the dense cache instead of performing two exhaustive scans.
      */
     palette[0] = 100;
     palette[3] = 101;
@@ -81,7 +81,7 @@ private_dense_cache_populates(char const *class_name)
     request.reqcolor = 2;
     request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
     request.parallel_dither_active = 1;
-    request.shared_instance_enabled = 0;
+    request.shared_instance_enabled = shared_instance_enabled;
     request.allocator = allocator;
     status = policy->vtbl->prepare(policy, &request);
     if (SIXEL_FAILED(status)) {
@@ -92,9 +92,10 @@ private_dense_cache_populates(char const *class_name)
     second_result = policy->vtbl->map_pixel(policy, second_pixel);
     if (first_result != 0 || second_result != 0) {
         fprintf(stderr,
-                "%s did not populate its parallel private dense cache "
-                "(%d, %d)\n",
+                "%s did not populate its parallel dense cache with "
+                "shared_instance=%d (%d, %d)\n",
                 class_name,
+                shared_instance_enabled,
                 first_result,
                 second_result);
         goto cleanup;
@@ -116,15 +117,21 @@ cleanup:
 }
 
 int
-test_lookup_0013_parallel_private_dense_cache(int argc, char **argv)
+test_lookup_0013_parallel_dense_cache(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
 
-    if (private_dense_cache_populates("lookup/5bit.8bit") != EXIT_SUCCESS) {
+    if (dense_cache_populates("lookup/5bit.8bit", 0) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
-    if (private_dense_cache_populates("lookup/6bit.8bit") != EXIT_SUCCESS) {
+    if (dense_cache_populates("lookup/6bit.8bit", 0) != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    if (dense_cache_populates("lookup/5bit.8bit", 1) != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    if (dense_cache_populates("lookup/6bit.8bit", 1) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 

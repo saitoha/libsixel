@@ -26,7 +26,7 @@ short_output="${artifact_dir}/0145-scale-min-bytes-short-$$.six"
 env_output="${artifact_dir}/0145-scale-min-bytes-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=2 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=2 --lookup-policy=none \
     "-jauto:B17" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "scale threshold short conversion failed"
     exit 0
@@ -37,7 +37,7 @@ test "${short_trace#*LSXSUB1|*key=scale_min_bytes|stored=1|binding=scale_paralle
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=2 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=2 --lookup-policy=none \
     --env "SIXEL_SCALE_PARALLEL_MIN_BYTES=17" -jauto \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "scale threshold environment conversion failed"
