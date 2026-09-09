@@ -174,8 +174,9 @@ sixel_lookup_policy_normalize_fast_lut_policy(int lut_policy)
 }
 
 char const *
-sixel_lookup_policy_select_name(
-    sixel_lookup_policy_select_request_t const *request)
+sixel_lookup_policy_select_name_with_override(
+    sixel_lookup_policy_select_request_t const *request,
+    int lut_policy_override)
 {
     int sum1;
     int sum2;
@@ -192,7 +193,14 @@ sixel_lookup_policy_select_name(
         return g_lookup_policy_name_none_8bit;
     }
 
-    if (request->reqcolor == 2 && request->palette != NULL
+    /*
+     * Preserve the automatic monochrome fast path, but never replace a
+     * concrete policy explicitly requested by the caller.  Explicit AUTO
+     * remains a dispatch request and may therefore select monochrome.
+     */
+    if ((lut_policy_override == 0
+            || request->lut_policy == SIXEL_LUT_POLICY_AUTO)
+            && request->reqcolor == 2 && request->palette != NULL
             && request->depth > 0) {
         for (n = 0; n < request->depth; ++n) {
             sum1 += request->palette[n];
@@ -229,6 +237,13 @@ sixel_lookup_policy_select_name(
         request->lut_policy);
     return sixel_lookup_policy_name_from_lut_policy(normalized_lut_policy,
                                                     prefer_float32);
+}
+
+char const *
+sixel_lookup_policy_select_name(
+    sixel_lookup_policy_select_request_t const *request)
+{
+    return sixel_lookup_policy_select_name_with_override(request, 0);
 }
 
 /* emacs Local Variables:      */

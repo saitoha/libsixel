@@ -54,6 +54,7 @@
 
 #include "factory.h"
 #include "gpu-palette.h"
+#include "loader-common.h"
 #include "lookup-policy.h"
 #include "oklch-lattice256.h"
 #include "dither-policy.h"
@@ -596,6 +597,8 @@ sixel_dither_prepare_lookup_policy(
     sixel_factory_t *factory;
     void *service;
     char const *policy_name;
+    int optimize_lookup;
+    int lut_policy_override;
 
     status = SIXEL_FALSE;
     memset(&select_request, 0, sizeof(select_request));
@@ -604,6 +607,8 @@ sixel_dither_prepare_lookup_policy(
     factory = NULL;
     service = NULL;
     policy_name = NULL;
+    optimize_lookup = foptimize;
+    lut_policy_override = 0;
 
     if (lookup_policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -618,6 +623,11 @@ sixel_dither_prepare_lookup_policy(
     request.parallel_dither_active = parallel_dither_active;
     request.shared_instance_enabled = (shared_instance_enabled != 0) ? 1 : 0;
     if (dither != NULL) {
+        lut_policy_override = dither->lut_policy_override;
+        if (lut_policy_override != 0) {
+            /* Explicit lookup policies also apply to supplied palettes. */
+            optimize_lookup = 1;
+        }
         request.lut_policy_packing = dither->lut_policy_packing;
         request.lut_policy_packing_override =
             dither->lut_policy_packing_override;
@@ -656,13 +666,21 @@ sixel_dither_prepare_lookup_policy(
     select_request.palette = palette;
     select_request.depth = depth;
     select_request.reqcolor = reqcolor;
-    select_request.optimize_lookup = foptimize;
+    select_request.optimize_lookup = optimize_lookup;
     select_request.lut_policy = lut_policy;
     select_request.pixelformat = pixelformat;
 
-    policy_name = sixel_lookup_policy_select_name(&select_request);
+    policy_name = sixel_lookup_policy_select_name_with_override(
+        &select_request,
+        lut_policy_override);
     if (policy_name == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (sixel_trace_topic_is_enabled("lookup_contract")) {
+        fprintf(stderr,
+                "LSXLUT2|phase=palette-apply|selected=%s|explicit=%d\n",
+                policy_name,
+                lut_policy_override != 0 ? 1 : 0);
     }
 
     status = sixel_components_getservice("services/factory", &service);
@@ -2007,6 +2025,7 @@ sixel_dither_new(
     (*ppdither)->prefer_float32 = 0;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
+    (*ppdither)->lut_policy_override = 0;
     (*ppdither)->lut_policy_shared_instance_override = 0;
     (*ppdither)->lut_policy_shared_instance = 0;
     (*ppdither)->lut_policy_packing_override = 0;
@@ -2642,14 +2661,14 @@ sixel_dither_initialize(
 }
 
 
-/* set lookup table policy */
-SIXELAPI void
-sixel_dither_set_lut_policy(
-    sixel_dither_t  /* in */ *dither,
-    int             /* in */ lut_policy)
+void
+sixel_dither_set_lut_policy_with_override(sixel_dither_t *dither,
+                                           int lut_policy,
+                                           int lut_policy_override)
 {
     int normalized;
     int previous_policy;
+    int previous_override;
 
     if (dither == NULL) {
         return;
@@ -2668,7 +2687,11 @@ sixel_dither_set_lut_policy(
         normalized = lut_policy;
     }
     previous_policy = dither->lut_policy;
-    if (previous_policy == normalized) {
+    previous_override = dither->lut_policy_override;
+    dither->lut_policy = normalized;
+    dither->lut_policy_override = lut_policy_override != 0 ? 1 : 0;
+    if (previous_policy == normalized
+            && previous_override == dither->lut_policy_override) {
         return;
     }
 
@@ -2676,11 +2699,20 @@ sixel_dither_set_lut_policy(
      * Policy transitions invalidate prepared lookup policy caches so the
      * next apply call rebuilds under the new class.
      */
-    dither->lut_policy = normalized;
     if (dither->lookup_policy != NULL) {
         dither->lookup_policy->vtbl->unref(dither->lookup_policy);
         dither->lookup_policy = NULL;
     }
+}
+
+
+/* set lookup table policy */
+SIXELAPI void
+sixel_dither_set_lut_policy(
+    sixel_dither_t  /* in */ *dither,
+    int             /* in */ lut_policy)
+{
+    sixel_dither_set_lut_policy_with_override(dither, lut_policy, 1);
 }
 
 

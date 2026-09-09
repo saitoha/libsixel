@@ -680,7 +680,10 @@ sixel_palette_parse_act(unsigned char const *data,
         return status;
     }
 
-    sixel_dither_set_lut_policy(local, encoder->lut_policy);
+    sixel_dither_set_lut_policy_with_override(
+        local,
+        encoder->lut_policy,
+        encoder->lut_policy_override);
     local->gpu_policy = encoder->gpu_policy;
 
     status = sixel_palette_import_dither_entries(
@@ -866,7 +869,10 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
             if (SIXEL_FAILED(status)) {
                 goto cleanup;
             }
-            sixel_dither_set_lut_policy(local, encoder->lut_policy);
+            sixel_dither_set_lut_policy_with_override(
+                local,
+                encoder->lut_policy,
+                encoder->lut_policy_override);
             local->gpu_policy = encoder->gpu_policy;
             stage = 3;
             continue;
@@ -1105,7 +1111,10 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    sixel_dither_set_lut_policy(local, encoder->lut_policy);
+    sixel_dither_set_lut_policy_with_override(
+        local,
+        encoder->lut_policy,
+        encoder->lut_policy_override);
     local->gpu_policy = encoder->gpu_policy;
     palette_buffer = (unsigned char *)sixel_allocator_malloc(
         encoder->allocator,
@@ -1350,7 +1359,10 @@ sixel_palette_parse_gpl(unsigned char const *data,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    sixel_dither_set_lut_policy(local, encoder->lut_policy);
+    sixel_dither_set_lut_policy_with_override(
+        local,
+        encoder->lut_policy,
+        encoder->lut_policy_override);
     local->gpu_policy = encoder->gpu_policy;
     status = sixel_palette_import_dither_entries(
         local,

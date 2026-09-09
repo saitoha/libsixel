@@ -50,9 +50,9 @@ whether they hold the palette fixed or measure this end-to-end behavior.
 --lookup-policy=POLICY
 ```
 
-The short option is the two-character spelling `-~`; there is no `--~` long
-option. The encoder default is currently `certlut`. An explicit `auto` value is
-a dispatch request and is not another search algorithm.
+The short option is the two-character spelling `-~`; there is no `--~` long option. The encoder default is currently `certlut`. An explicit `auto` value is a dispatch request and is not another search algorithm.
+
+An explicit lookup policy applies during palette application with generated palettes and with all three fixed-palette selectors: mapfiles selected by `-m`, built-in palettes selected by `-b`, and monochrome selected by `-e`. A text mapfile retains its historical direct-scan behavior when no lookup policy is explicitly supplied; explicit lookup is the opt-in that enables the selected backend for that already completed palette.
 
 RGB666 became the fast lookup baseline during development of the 1.11 line,
 when commit
@@ -221,6 +221,10 @@ The current selector behaves as follows:
 completed palette and pixel format
               |
               v
+ explicit concrete policy? -- yes --> named policy
+              |
+              no
+              v
  canonical two-color black/white palette? -- yes --> internal mono policy
               |
               no
@@ -304,11 +308,7 @@ stored-coordinate metric, not for every other policy's normalized metric.
 The ordinary direct path is scan-index exact by definition. It evaluates every
 entry and preserves the first-index tie rule.
 
-There is one selector-level exception: a completed palette containing exactly
-black then white, or white then black, activates an internal monochrome
-threshold policy before the selector checks `none`. Tests that specifically
-need the exhaustive implementation must avoid that canonical two-entry shape
-or instantiate the policy class directly.
+When lookup selection is automatic, a completed palette containing exactly black then white, or white then black, activates an internal monochrome threshold policy. An explicit `none` request is honored before this automatic specialization and therefore selects the exhaustive implementation even for that canonical two-entry shape.
 
 ### Cost
 
@@ -1605,12 +1605,7 @@ faster at 82.3 ms but reaches 2.003165 mean Delta E00; Eytzinger is similarly
 fast at 83.1 ms but reaches 2.186592. The result exposes several distinct
 quality/speed tradeoffs rather than one uniformly best accelerated policy.
 
-A previously generated fixed-palette figure is intentionally not retained.
-The current CLI disables optimized lookup for an external `-m` palette, so
-each named policy followed the direct-scan path and the overlapping curves did
-not constitute a policy comparison. Direct component-level benchmarks are the
-right way to hold a palette fixed; these CLI curves instead measure the normal
-user path and say so explicitly.
+A previously generated fixed-palette figure is intentionally not retained because it was produced while the CLI discarded explicit lookup policies for a text `-m` palette, so its overlapping curves did not constitute a policy comparison. The current CLI applies an explicit policy to the supplied palette; any replacement measurement must be regenerated from the corrected path rather than reusing that invalid figure.
 
 ### Legacy RGB555 context in current Heckbert mode
 
@@ -2097,10 +2092,7 @@ another revision.
 
 ## Implementation and tests
 
-Selection is in [`lookup-policy.c`](../../src/lookup-policy.c). Concrete policy
-classes are the `src/lookup-policy-*.c` translation units, with some larger
-backends split into `src/lookup-*.c`. Their interface is declared in
-[`6cells.h`](../../include/6cells.h).
+Selection is in [`lookup-policy.c`](../../src/lookup-policy.c). Concrete policy classes are the `src/lookup-policy-*.c` translation units, with some larger backends split into `src/lookup-*.c`. Their interface is declared in [`6cells.h`](../../include/6cells.h). With `SIXEL_TRACE_TOPIC=lookup_contract`, `LSXLUT2|phase=palette-apply` reports the class selected by the actual palette-application consumer; preparation-only `LSXLUT1` records are not sufficient evidence that the same class mapped pixels.
 
 Direct and end-to-end coverage is under
 [`tests/quant/palette/usage/`](../../tests/quant/palette/usage/). For the caller

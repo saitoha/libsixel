@@ -174,6 +174,7 @@ struct sixel_dither {
     int prefer_float32;             /* opt-in flag for float32 internals */
     sixel_allocator_t *allocator;   /* allocator */
     int lut_policy;                 /* histogram LUT policy */
+    int lut_policy_override;        /* explicit lookup policy flag */
     int lut_policy_shared_instance_override; /* CLI shared override flag */
     int lut_policy_shared_instance; /* parsed shared instance setting */
     int lut_policy_packing_override; /* CLI dense packing override flag */
@@ -286,6 +287,16 @@ sixel_dither_set_frame_context(sixel_dither_t *dither,
 
 SIXEL_INTERNAL_API void
 sixel_dither_clear_frame_context(sixel_dither_t *dither);
+
+/*
+ * Set the effective lookup policy together with its request origin.  The
+ * origin distinguishes an encoder default from a policy explicitly selected
+ * by the caller, which matters for fixed palettes that normally bypass LUTs.
+ */
+SIXEL_INTERNAL_API void
+sixel_dither_set_lut_policy_with_override(sixel_dither_t *dither,
+                                           int lut_policy,
+                                           int lut_policy_override);
 
 SIXEL_INTERNAL_API void
 sixel_dither_note_interframe_reset_reason(sixel_dither_t *dither,

@@ -4,7 +4,7 @@
 
 ## Pipeline position
 
-The normal fixed-palette path is:
+The generated-palette construction path is:
 
 ```text
 sampling -> palette-space transform -> binning -> quantizer (-Q)
@@ -23,6 +23,8 @@ sampling -> palette-space transform -> binning -> quantizer (-Q)
 ```
 
 Cover repair therefore changes the palette consumed by lookup and dithering, but it does not select a quantizer, clustering color space, lookup data structure, or diffusion kernel. Use `--cover-policy=off` when benchmarking one of those stages in isolation.
+
+The fixed-palette selectors `-m`, `-b`, and `-e` bypass palette construction and therefore have no cover-repair stage. Combining any of them with an explicit `--cover-policy` or `-a`, including `off`, is rejected while arguments are applied instead of silently ignoring the cover request. A top-level `SIXEL_PALETTE_COVER` environment override has the same conflict; omit the cover policy when supplying one of these fixed palettes.
 
 The implementation currently applies cover repair only when the completed palette is stored as byte RGB entries. A native float32 palette bypasses the pass. If a byte palette was produced from an input format that the soft candidate reader cannot inspect, soft mode falls back to hard anchors. These are implementation boundaries, not a promise that float32 or every input layout needs no coverage repair.
 
@@ -244,7 +246,7 @@ The lowest rung is disabled below 32 colors because eight anchors would consume 
 
 ### `off`
 
-`off` is the control arm for quantizer, merge, lookup, and diffusion experiments. It is also appropriate when a caller supplies a deliberately constrained palette and any post-quantizer mutation would violate that external contract.
+`off` is the control arm for quantizer, merge, lookup, and diffusion experiments on a generated palette. A supplied fixed palette has no cover stage, so its CLI must omit the cover option rather than selecting `off`.
 
 ### `corners`
 
@@ -392,7 +394,13 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | CP-02 | The top-level `corners` CLI and `SIXEL_PALETTE_COVER` environment forms produce equivalent output. | [tests/cli/options/migration/0018_cover_policy_environment_cli_equivalence.t](../../tests/cli/options/migration/0018_cover_policy_environment_cli_equivalence.t) |
 | CP-03 | `cover_grow=1` has equivalent short-suboption and environment behavior, reaches the cover consumer, and preserves the image-quality floor. | [tests/cli/options/regression/0025_cover_policy_grow_image_regression.t](../../tests/cli/options/regression/0025_cover_policy_grow_image_regression.t) |
 | CP-04 | `cover_mode=hard` has equivalent short-suboption and environment behavior, reaches the cover consumer, and preserves the image-quality floor. | [tests/cli/options/regression/0026_cover_policy_mode_image_regression.t](../../tests/cli/options/regression/0026_cover_policy_mode_image_regression.t) |
+| CP-05 | A mapfile followed by an explicit cover policy is rejected during option application. | [tests/cli/options/invalid/0038_invalid_option_combinations_mapfile_then_cover_policy.t](../../tests/cli/options/invalid/0038_invalid_option_combinations_mapfile_then_cover_policy.t) |
+| CP-06 | An explicit cover policy followed by a mapfile is rejected during option application. | [tests/cli/options/invalid/0039_invalid_option_combinations_cover_policy_then_mapfile.t](../../tests/cli/options/invalid/0039_invalid_option_combinations_cover_policy_then_mapfile.t) |
+| CP-07 | A built-in palette followed by an explicit cover policy is rejected during option application. | [tests/cli/options/invalid/0040_invalid_option_combinations_builtin_palette_then_cover_policy.t](../../tests/cli/options/invalid/0040_invalid_option_combinations_builtin_palette_then_cover_policy.t) |
+| CP-08 | An explicit cover policy followed by a built-in palette is rejected during option application. | [tests/cli/options/invalid/0041_invalid_option_combinations_cover_policy_then_builtin_palette.t](../../tests/cli/options/invalid/0041_invalid_option_combinations_cover_policy_then_builtin_palette.t) |
+| CP-09 | Monochrome followed by an explicit cover policy is rejected during option application. | [tests/cli/options/invalid/0042_invalid_option_combinations_monochrome_then_cover_policy.t](../../tests/cli/options/invalid/0042_invalid_option_combinations_monochrome_then_cover_policy.t) |
+| CP-10 | An explicit cover policy followed by monochrome is rejected during option application. | [tests/cli/options/invalid/0043_invalid_option_combinations_cover_policy_then_monochrome.t](../../tests/cli/options/invalid/0043_invalid_option_combinations_cover_policy_then_monochrome.t) |
 
 ### Coverage audit boundary
 
-The focused suite covers the core policy ladder, `auto` boundaries, explicit override precedence, hard and soft modes, fixed and growing palettes, every quantizer, and each registered suboption consumer. It does not yet directly test every top-level spelling (`off`, `faces`, `edges`, `all`, `0`, and `1`), invalid or empty top-level values, repeated-option last-wins behavior, float32 bypass and unsupported-soft fallback, or multi-frame state. Quality tests enforce a broad MS-SSIM floor on one small fixture but do not replace the missing reproducible cover-policy quality, speed, and size measurement suite described above.
+The focused suite covers the core policy ladder, `auto` boundaries, explicit override precedence, hard and soft modes, fixed and growing palettes, every quantizer, each registered suboption consumer, and both option orders for all three fixed-palette conflicts. It does not yet directly test every top-level spelling (`faces`, `edges`, `all`, `0`, and `1`), invalid or empty top-level values, repeated-option last-wins behavior, float32 bypass and unsupported-soft fallback, the top-level environment conflict with fixed palettes, or multi-frame state. Quality tests enforce a broad MS-SSIM floor on one small fixture but do not replace the missing reproducible cover-policy quality, speed, and size measurement suite described above.

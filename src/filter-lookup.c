@@ -141,7 +141,9 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     select_request.optimize_lookup = optimize_lookup;
     select_request.lut_policy = config->lut_policy;
     select_request.pixelformat = config->pixelformat;
-    policy_name = sixel_lookup_policy_select_name(&select_request);
+    policy_name = sixel_lookup_policy_select_name_with_override(
+        &select_request,
+        config->lut_policy_override);
     if (policy_name == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }

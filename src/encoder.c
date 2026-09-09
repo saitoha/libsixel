@@ -4303,7 +4303,10 @@ sixel_encoder_copy_lookup_options(sixel_encoder_t const *encoder,
         return;
     }
 
-    sixel_dither_set_lut_policy(dither, encoder->lut_policy);
+    sixel_dither_set_lut_policy_with_override(
+        dither,
+        encoder->lut_policy,
+        encoder->lut_policy_override);
     dither->lut_policy_shared_instance_override =
         encoder->lut_policy_shared_instance_override;
     dither->lut_policy_shared_instance =
@@ -7070,7 +7073,10 @@ sixel_encoder_prepare_palette(
     }
 
     sixel_encoder_copy_lookup_options(encoder, *dither);
-    sixel_dither_set_lut_policy(*dither, effective_lut_policy);
+    sixel_dither_set_lut_policy_with_override(
+        *dither,
+        effective_lut_policy,
+        effective_lut_policy_override);
     (*dither)->gpu_policy = encoder->gpu_policy;
     (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
     memset(&merge_config, 0, sizeof(merge_config));
@@ -7668,6 +7674,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.float_depth = float32_view.depth;
     lookup_config.ncolors = (int)entries_view.entry_count;
     lookup_config.lut_policy = policy;
+    lookup_config.lut_policy_override = dither->lut_policy_override;
     lookup_config.lut_policy_packing = dither->lut_policy_packing;
     lookup_config.lut_policy_packing_override =
         dither->lut_policy_packing_override;
@@ -10618,33 +10625,22 @@ sixel_encoder_get_palette_option_name(
 }
 
 
+static int
+sixel_encoder_color_option_uses_fixed_palette(int color_option)
+{
+    return color_option == SIXEL_COLOR_OPTION_MAPFILE
+        || color_option == SIXEL_COLOR_OPTION_MONOCHROME
+        || color_option == SIXEL_COLOR_OPTION_BUILTIN;
+}
+
+
 static SIXELSTATUS
-sixel_encoder_check_palette_option_conflict(
-    sixel_encoder_t *encoder,
-    int new_color_option,
-    char const *new_option_name)
+sixel_encoder_report_option_conflict(char const *new_option_name,
+                                     char const *current_option_name)
 {
     char message[128];
-    char const *current_option_name;
 
     message[0] = '\0';
-    current_option_name = NULL;
-    if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT ||
-        encoder->color_option == new_color_option) {
-        return SIXEL_OK;
-    }
-
-    /*
-     * Fixed palette and high-color options select mutually exclusive encoder
-     * output modes.  Reject the second selector immediately so option order
-     * never reinterprets colors by silently replacing the first selector.
-     */
-    current_option_name = sixel_encoder_get_palette_option_name(
-        encoder->color_option);
-    if (current_option_name == NULL) {
-        return SIXEL_OK;
-    }
-
     (void)sixel_compat_snprintf(message,
                                 sizeof(message),
                                 "option %s conflicts with %s.",
@@ -10652,6 +10648,63 @@ sixel_encoder_check_palette_option_conflict(
                                 current_option_name);
     sixel_helper_set_additional_message(message);
     return SIXEL_BAD_ARGUMENT;
+}
+
+
+static SIXELSTATUS
+sixel_encoder_check_cover_policy_conflict(sixel_encoder_t const *encoder)
+{
+    char const *current_option_name;
+
+    current_option_name = NULL;
+    if (encoder == NULL
+            || !sixel_encoder_color_option_uses_fixed_palette(
+                encoder->color_option)) {
+        return SIXEL_OK;
+    }
+
+    current_option_name = sixel_encoder_get_palette_option_name(
+        encoder->color_option);
+    return sixel_encoder_report_option_conflict(
+        "-a, --cover-policy",
+        current_option_name);
+}
+
+
+static SIXELSTATUS
+sixel_encoder_check_palette_option_conflict(
+    sixel_encoder_t *encoder,
+    int new_color_option,
+    char const *new_option_name)
+{
+    char const *current_option_name;
+
+    current_option_name = NULL;
+    if (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT
+            && encoder->color_option != new_color_option) {
+        /*
+         * Fixed palette and high-color options select mutually exclusive
+         * encoder output modes. Reject the second selector immediately so
+         * option order never silently replaces the first selector.
+         */
+        current_option_name = sixel_encoder_get_palette_option_name(
+            encoder->color_option);
+        if (current_option_name != NULL) {
+            return sixel_encoder_report_option_conflict(
+                new_option_name,
+                current_option_name);
+        }
+    }
+
+    /* Cover repair has no construction stage on supplied fixed palettes. */
+    if (sixel_encoder_color_option_uses_fixed_palette(new_color_option)
+            && encoder->cover_policy_override != 0) {
+        return sixel_encoder_report_option_conflict(
+            new_option_name,
+            "-a, --cover-policy");
+    }
+
+    return SIXEL_OK;
 }
 
 
@@ -11518,6 +11571,10 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_COVER_POLICY:  /* a */
+        status = sixel_encoder_check_cover_policy_conflict(encoder);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         status = sixel_encoder_apply_registered_policy_argument(
             encoder,
             SIXEL_OPTION_SCHEMA_COVER_POLICY,

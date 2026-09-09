@@ -46,6 +46,11 @@ SIXEL_INTERNAL_API char const *
 sixel_lookup_policy_select_name(
     sixel_lookup_policy_select_request_t const *request);
 
+SIXEL_INTERNAL_API char const *
+sixel_lookup_policy_select_name_with_override(
+    sixel_lookup_policy_select_request_t const *request,
+    int lut_policy_override);
+
 SIXEL_INTERNAL_API int
 sixel_lookup_policy_certlut_shared_instance_enabled(void);
 
