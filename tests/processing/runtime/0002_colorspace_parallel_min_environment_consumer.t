@@ -3,6 +3,11 @@
 
 set -eux
 
+test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
+    printf "1..0 # SKIP thread backend is unavailable\\n"
+    exit 0
+}
+
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     echo "1..0 # SKIP img2sixel is disabled in this build"
     exit 0

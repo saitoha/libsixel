@@ -18,6 +18,7 @@ out_default="${ARTIFACT_LOCAL_DIR}/builtin_alpha_keycolor_rgba_default.six"
 out_optin="${ARTIFACT_LOCAL_DIR}/builtin_alpha_keycolor_rgba_optin.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+              -4adaptive-grid \
               -Lbuiltin:cms_engine=none! \
               "${input_png}" >"${out_default}" || {
     echo "not ok" 1 - "builtin default grayscale16+tRNS decode failed"
@@ -25,6 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
+              -4adaptive-grid \
               -Lbuiltin:cms_engine=none! \
               "${input_png}" >"${out_optin}" || {
     echo "not ok" 1 - "builtin opt-in RGBA decode failed"

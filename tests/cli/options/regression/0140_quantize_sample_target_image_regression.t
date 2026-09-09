@@ -22,7 +22,8 @@ short_output="${artifact_dir}/0140-sample-target-short-$$.six"
 env_output="${artifact_dir}/0140-sample-target-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 64 "-Qauto:C128" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 64 -4adaptive-grid \
+    "-Qauto:C128" \
     "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "sample target short conversion failed"
     exit 0
@@ -38,7 +39,8 @@ test "${short_trace#*LSXSMP1\|*target=128*}" != "${short_trace}" || {
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_PALETTE_SAMPLE_TARGET=128" -p 64 -Qauto \
+    --env "SIXEL_PALETTE_SAMPLE_TARGET=128" -p 64 -4adaptive-grid \
+    -Qauto \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "sample target environment conversion failed"
     exit 0

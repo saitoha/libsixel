@@ -18,6 +18,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/0181-sample-target-$$.six"
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_PALETTE_SAMPLE_TARGET=128 \
+    --sampling-policy=adaptive-grid \
     "${input_image}" 2>&1 >"${output_sixel}") || {
     echo "not ok 1 - sample target conversion failed"
     exit 0
