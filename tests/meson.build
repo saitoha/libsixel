@@ -738,6 +738,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-makefile-generated-pairs',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-makefile-generated-pairs.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-src-makefile-dist-sources-sync',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-src-makefile-dist-sources-sync.sh',

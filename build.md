@@ -421,13 +421,9 @@ SCAN_BUILD="$(command -v scan-build || command -v scan-build-18 || command -v sc
 
 ## Git hooks
 
-Developers can opt into the repository-provided Git hooks to catch common
-mistakes before they land in a commit.  The pre-commit hook currently rejects
-any staged file that tries to include private headers located under `src/`
-because public tools such as the CLI converters must restrict themselves to
-the installed headers in `include/`.  It also inspects any staged
-`Makefile.am`/`Makefile.in` to ensure recipe lines remain tab-indented, which
-prevents accidental replacement of tabs with spaces.
+Developers can opt into the repository-provided Git hooks to catch common mistakes before they land in a commit.  The pre-commit hook currently rejects any staged file that tries to include private headers located under `src/` because public tools such as the CLI converters must restrict themselves to the installed headers in `include/`.  It also inspects any staged `Makefile.am`/`Makefile.in` to ensure recipe lines remain tab-indented, which prevents accidental replacement of tabs with spaces.  Finally, staging a `Makefile.am` requires its generated `Makefile.in` to be staged without unstaged hunks in either half of the pair.
+
+The source/generated check uses the Git index rather than file timestamps. `config.status`, Git checkout, and filesystem timestamp resolution can leave a stale `Makefile.in` with the same mtime as its `Makefile.am`, so an mtime comparison cannot prove that the commit contains a synchronized pair.
 
 Enable the hooks once per clone by pointing Git at the bundled hook directory:
 
@@ -443,6 +439,8 @@ from CI to enforce tab-indented recipes:
 ```sh
 tools/check_makefile_recipes.sh path/to/Makefile.am
 ```
+
+`tools/check_makefile_generated_pairs.sh` checks the staged snapshot and is therefore intended to run without path arguments.
 
 ### macOS Quick Look (Meson)
 

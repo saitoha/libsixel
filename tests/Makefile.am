@@ -683,6 +683,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-gperf-generated-undefs \
 	staticcheck-makefile-recipes \
+	staticcheck-makefile-generated-pairs \
 	staticcheck-psb-large-fixture-clean-sync \
 	staticcheck-src-makefile-dist-sources-sync \
 	staticcheck-wic-option-sources \
@@ -749,6 +750,7 @@ staticcheck-dither-policy-no-backend-dispatch \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-gperf-generated-undefs \
 staticcheck-makefile-recipes \
+staticcheck-makefile-generated-pairs \
 staticcheck-psb-large-fixture-clean-sync \
 staticcheck-src-makefile-dist-sources-sync \
 staticcheck-wic-option-sources \
@@ -1123,6 +1125,16 @@ staticcheck-makefile-recipes:
 		--trs-file staticcheck-makefile-recipes.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-makefile-recipes.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-makefile-generated-pairs:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-makefile-generated-pairs" \
+		--log-file staticcheck-makefile-generated-pairs.log \
+		--trs-file staticcheck-makefile-generated-pairs.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-makefile-generated-pairs.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-psb-large-fixture-clean-sync:
@@ -2320,6 +2332,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
 	_static/sh/staticcheck-gperf-generated-undefs.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
+    _static/sh/staticcheck-makefile-generated-pairs.sh \
     _static/sh/staticcheck-psb-large-fixture-clean-sync.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
     _static/sh/staticcheck-wic-option-sources.sh \

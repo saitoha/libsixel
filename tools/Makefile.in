@@ -498,6 +498,7 @@ EXTRA_DIST = libsixel-config.in \
              ls-summarize \
              check_dither_policy_measurements.py \
              check_dither_spectrum_measurements.py \
+             check_makefile_generated_pairs.sh \
              check_lookup_policy_measurements.py \
              check_merge_policy_measurements.py \
              check_pixelformat_precision_measurements.py \
