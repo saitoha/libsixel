@@ -957,7 +957,11 @@ safe_statW(const wchar_t *path, struct stat *st)
     }
 
     /* Match the exact layout exposed through the caller's struct stat. */
-    result = _wstat(path, st);
+#  if defined(_USE_32BIT_TIME_T)
+    result = _wstat32(path, (struct _stat32 *)st);
+#  else
+    result = _wstat64i32(path, (struct _stat64i32 *)st);
+#  endif
     if (result == 0) {
         return 0;
     }

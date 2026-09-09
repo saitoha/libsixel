@@ -33,12 +33,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=pin_threads|stored=1|binding=dither_pin_threads,dither_pin_threads_override|value=0*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=pin_threads\|stored=1\|binding=dither_pin_threads,dither_pin_threads_override\|value=0*}" != "${short_trace}" || {
     echo "not ok" 1 - "pin_threads short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*diffuse=fs|*pin_threads=0|pin_threads_override=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXDTH1\|*diffuse=fs\|*pin_threads=0\|pin_threads_override=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "pin_threads short value was not effective"
     exit 0
 }
@@ -51,12 +51,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=pin_threads|stored=1|binding=dither_pin_threads,dither_pin_threads_override|value=0*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=pin_threads\|stored=1\|binding=dither_pin_threads,dither_pin_threads_override\|value=0*}" != "${env_trace}" || {
     echo "not ok" 1 - "pin_threads environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXDTH1|*diffuse=fs|*pin_threads=0|pin_threads_override=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXDTH1\|*diffuse=fs\|*pin_threads=0\|pin_threads_override=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "pin_threads environment value was not effective"
     exit 0
 }
@@ -74,13 +74,13 @@ invalid_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${invalid_trace#*LSXSUB1|*key=pin_threads|stored=1*}" = \
+test "${invalid_trace#*LSXSUB1\|*key=pin_threads\|stored=1*}" = \
     "${invalid_trace}" || {
     echo "not ok" 1 - "pin_threads accepted a nonnumeric boolean"
     exit 0
 }
 
-test "${invalid_trace#*LSXDTH1|*pin_threads=1|pin_threads_override=0*}" != "${invalid_trace}" || {
+test "${invalid_trace#*LSXDTH1\|*pin_threads=1\|pin_threads_override=0*}" != "${invalid_trace}" || {
     echo "not ok" 1 - "invalid pin_threads changed the default"
     exit 0
 }

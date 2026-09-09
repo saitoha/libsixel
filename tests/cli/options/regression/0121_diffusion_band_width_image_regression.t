@@ -34,12 +34,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=band_width|stored=1|binding=dither_parallel_band_width,dither_parallel_band_width_override|value=9*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=band_width\|stored=1\|binding=dither_parallel_band_width,dither_parallel_band_width_override\|value=9*}" != "${short_trace}" || {
     echo "not ok" 1 - "band_width short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*diffuse=fs|*band_height=12|*band_width=9|band_width_override=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXDTH1\|*diffuse=fs\|*band_height=12\|*band_width=9\|band_width_override=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "band_width short value was not effective"
     exit 0
 }
@@ -52,12 +52,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=band_width|stored=1|binding=dither_parallel_band_width,dither_parallel_band_width_override|value=9*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=band_width\|stored=1\|binding=dither_parallel_band_width,dither_parallel_band_width_override\|value=9*}" != "${env_trace}" || {
     echo "not ok" 1 - "band_width environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXDTH1|*diffuse=fs|*band_height=12|*band_width=9|band_width_override=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXDTH1\|*diffuse=fs\|*band_height=12\|*band_width=9\|band_width_override=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "band_width environment value was not effective"
     exit 0
 }
@@ -75,12 +75,12 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=band_width|stored=1*}" = "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=band_width\|stored=1*}" = "${range_trace}" || {
     echo "not ok" 1 - "band_width accepted a negative environment value"
     exit 0
 }
 
-test "${range_trace#*LSXDTH1|*band_height=18|*band_width=0|band_width_override=0*}" != "${range_trace}" || {
+test "${range_trace#*LSXDTH1\|*band_height=18\|*band_width=0\|band_width_override=0*}" != "${range_trace}" || {
     echo "not ok" 1 - "negative band_width changed the default"
     exit 0
 }
@@ -93,13 +93,13 @@ zero_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${zero_trace#*LSXSUB1|*key=band_width|stored=1*}" = \
+test "${zero_trace#*LSXSUB1\|*key=band_width\|stored=1*}" = \
     "${zero_trace}" || {
     echo "not ok" 1 - "band_width accepted a zero environment value"
     exit 0
 }
 
-test "${zero_trace#*LSXDTH1|*band_height=18|*band_width=0|band_width_override=0*}" != "${zero_trace}" || {
+test "${zero_trace#*LSXDTH1\|*band_height=18\|*band_width=0\|band_width_override=0*}" != "${zero_trace}" || {
     echo "not ok" 1 - "zero band_width changed the default"
     exit 0
 }

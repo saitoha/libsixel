@@ -35,12 +35,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=cms_intent|stored=1|binding=cms_rendering_intent_order|value=relative+saturation!*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=cms_intent\|stored=1\|binding=cms_rendering_intent_order\|value=relative+saturation!*}" != "${short_trace}" || {
     echo "not ok" 1 - "cms_intent short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXCMS1|intent_order=relative+saturation|exclusive=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXCMS1\|intent_order=relative+saturation\|exclusive=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "cms_intent short value did not reach CMS"
     exit 0
 }
@@ -55,12 +55,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=cms_intent|stored=1|binding=cms_rendering_intent_order|value=relative+saturation!*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=cms_intent\|stored=1\|binding=cms_rendering_intent_order\|value=relative+saturation!*}" != "${env_trace}" || {
     echo "not ok" 1 - "cms_intent environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXCMS1|intent_order=relative+saturation|exclusive=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXCMS1\|intent_order=relative+saturation\|exclusive=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "cms_intent environment value did not reach CMS"
     exit 0
 }

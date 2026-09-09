@@ -29,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=clarans_neighbors|stored=1|binding=quantize_model_kmedoids_clarans_neighbors,quantize_model_kmedoids_clarans_neighbors_override|value=5000000*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=clarans_neighbors\|stored=1\|binding=quantize_model_kmedoids_clarans_neighbors,quantize_model_kmedoids_clarans_neighbors_override\|value=5000000*}" != "${short_trace}" || {
     echo "not ok" 1 - "clarans_neighbors short value was not stored"
     exit 0
 }
@@ -42,7 +42,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=clarans_neighbors|stored=1|binding=quantize_model_kmedoids_clarans_neighbors,quantize_model_kmedoids_clarans_neighbors_override|value=5000000*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=clarans_neighbors\|stored=1\|binding=quantize_model_kmedoids_clarans_neighbors,quantize_model_kmedoids_clarans_neighbors_override\|value=5000000*}" != "${env_trace}" || {
     echo "not ok" 1 - "clarans_neighbors environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=clarans_neighbors|stored=1|binding=quantize_model_kmedoids_clarans_neighbors,quantize_model_kmedoids_clarans_neighbors_override|value=0*}" != "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=clarans_neighbors\|stored=1\|binding=quantize_model_kmedoids_clarans_neighbors,quantize_model_kmedoids_clarans_neighbors_override\|value=0*}" != "${range_trace}" || {
     echo "not ok" 1 - "medoids clarans_neighbors rejected zero"
     exit 0
 }
@@ -68,7 +68,7 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${width_trace#*LSXSUB1|*key=clarans_neighbors|stored=1}" = "${width_trace}" || {
+test "${width_trace#*LSXSUB1\|*key=clarans_neighbors\|stored=1}" = "${width_trace}" || {
     echo "not ok" 1 - "medoids clarans_neighbors accepted an over-width value"
     exit 0
 }

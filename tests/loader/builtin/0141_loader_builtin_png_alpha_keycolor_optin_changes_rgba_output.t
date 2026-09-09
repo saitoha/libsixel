@@ -31,7 +31,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-cmp -s "${out_default}" "${out_optin}" && {
+! cmp -s "${out_default}" "${out_optin}" || {
     echo "not ok" 1 - "builtin alpha-keycolor opt-in did not change RGBA output"
     exit 0
 }

@@ -29,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=swap_patience|stored=1|binding=quantize_model_kcenter_swap_patience,quantize_model_kcenter_swap_patience_override|value=2*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=swap_patience\|stored=1\|binding=quantize_model_kcenter_swap_patience,quantize_model_kcenter_swap_patience_override\|value=2*}" != "${short_trace}" || {
     echo "not ok" 1 - "swap_patience short value was not stored"
     exit 0
 }
@@ -42,7 +42,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=swap_patience|stored=1|binding=quantize_model_kcenter_swap_patience,quantize_model_kcenter_swap_patience_override|value=2*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=swap_patience\|stored=1\|binding=quantize_model_kcenter_swap_patience,quantize_model_kcenter_swap_patience_override\|value=2*}" != "${env_trace}" || {
     echo "not ok" 1 - "swap_patience environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=swap_patience|stored=1|binding=quantize_model_kcenter_swap_patience,quantize_model_kcenter_swap_patience_override|value=0*}" != "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=swap_patience\|stored=1\|binding=quantize_model_kcenter_swap_patience,quantize_model_kcenter_swap_patience_override\|value=0*}" != "${range_trace}" || {
     echo "not ok" 1 - "center swap_patience did not preserve unsigned-long parsing"
     exit 0
 }
@@ -68,7 +68,7 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${width_trace#*LSXSUB1|*key=swap_patience|stored=1}" = "${width_trace}" || {
+test "${width_trace#*LSXSUB1\|*key=swap_patience\|stored=1}" = "${width_trace}" || {
     echo "not ok" 1 - "center swap_patience accepted an over-width value"
     exit 0
 }

@@ -29,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=init_seeds|stored=1|binding=quantize_model_kcenter_init_seeds,quantize_model_kcenter_init_seeds_override|value=2*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=init_seeds\|stored=1\|binding=quantize_model_kcenter_init_seeds,quantize_model_kcenter_init_seeds_override\|value=2*}" != "${short_trace}" || {
     echo "not ok" 1 - "init_seeds short value was not stored"
     exit 0
 }
@@ -42,7 +42,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=init_seeds|stored=1|binding=quantize_model_kcenter_init_seeds,quantize_model_kcenter_init_seeds_override|value=2*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=init_seeds\|stored=1\|binding=quantize_model_kcenter_init_seeds,quantize_model_kcenter_init_seeds_override\|value=2*}" != "${env_trace}" || {
     echo "not ok" 1 - "init_seeds environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${width_trace#*LSXSUB1|*key=init_seeds|stored=1}" = "${width_trace}" || {
+test "${width_trace#*LSXSUB1\|*key=init_seeds\|stored=1}" = "${width_trace}" || {
     echo "not ok" 1 - "center init_seeds accepted an over-width value"
     exit 0
 }

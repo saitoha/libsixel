@@ -27,7 +27,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,psd_decode \
     echo "not ok" 1 - "PSD header-only short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=psd_header_only|stored=1|binding=psd_header_only,psd_header_only_override|value=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=psd_header_only\|stored=1\|binding=psd_header_only,psd_header_only_override\|value=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "PSD header-only short value was not stored"
     exit 0
 }
@@ -39,12 +39,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,psd_decode \
     echo "not ok" 1 - "PSD header-only environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=psd_header_only|stored=1|binding=psd_header_only,psd_header_only_override|value=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=psd_header_only\|stored=1\|binding=psd_header_only,psd_header_only_override\|value=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "PSD header-only environment value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXPSD1|*}" != "${short_trace}" || {
+test "${short_trace#*LSXPSD1\|*}" != "${short_trace}" || {
     echo "not ok" 1 - "PSD header-only trace omitted its summary"
     exit 0
 }

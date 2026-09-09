@@ -34,12 +34,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=threads_max|stored=1|binding=dither_parallel_threads_max,dither_parallel_threads_max_override|value=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=threads_max\|stored=1\|binding=dither_parallel_threads_max,dither_parallel_threads_max_override\|value=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "threads_max short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*diffuse=fs|*dither_threads=1|encode_threads=5|threads_max=1|threads_max_override=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXDTH1\|*diffuse=fs\|*dither_threads=1\|encode_threads=5\|threads_max=1\|threads_max_override=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "threads_max short value was not effective"
     exit 0
 }
@@ -52,12 +52,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=threads_max|stored=1|binding=dither_parallel_threads_max,dither_parallel_threads_max_override|value=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=threads_max\|stored=1\|binding=dither_parallel_threads_max,dither_parallel_threads_max_override\|value=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "threads_max environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXDTH1|*diffuse=fs|*dither_threads=1|encode_threads=5|threads_max=1|threads_max_override=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXDTH1\|*diffuse=fs\|*dither_threads=1\|encode_threads=5\|threads_max=1\|threads_max_override=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "threads_max environment value was not effective"
     exit 0
 }
@@ -75,12 +75,12 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=threads_max|stored=1*}" = "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=threads_max\|stored=1*}" = "${range_trace}" || {
     echo "not ok" 1 - "threads_max accepted a negative environment value"
     exit 0
 }
 
-test "${range_trace#*LSXDTH1|*dither_threads=4|encode_threads=2|threads_max=0|threads_max_override=0*}" != "${range_trace}" || {
+test "${range_trace#*LSXDTH1\|*dither_threads=4\|encode_threads=2\|threads_max=0\|threads_max_override=0*}" != "${range_trace}" || {
     echo "not ok" 1 - "negative threads_max changed the default"
     exit 0
 }
@@ -93,13 +93,13 @@ zero_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${zero_trace#*LSXSUB1|*key=threads_max|stored=1*}" = \
+test "${zero_trace#*LSXSUB1\|*key=threads_max\|stored=1*}" = \
     "${zero_trace}" || {
     echo "not ok" 1 - "threads_max accepted a zero environment value"
     exit 0
 }
 
-test "${zero_trace#*LSXDTH1|*dither_threads=4|encode_threads=2|threads_max=0|threads_max_override=0*}" != "${zero_trace}" || {
+test "${zero_trace#*LSXDTH1\|*dither_threads=4\|encode_threads=2\|threads_max=0\|threads_max_override=0*}" != "${zero_trace}" || {
     echo "not ok" 1 - "zero threads_max changed the default"
     exit 0
 }

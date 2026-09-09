@@ -31,12 +31,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=osc11_timeout|stored=1|binding=osc11_bg_query_timeout_ms|value=0*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=osc11_timeout\|stored=1\|binding=osc11_bg_query_timeout_ms\|value=0*}" != "${short_trace}" || {
     echo "not ok" 1 - "osc11_timeout short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXOSC1|*query=0|timeout_ms=0*}" != "${short_trace}" || {
+test "${short_trace#*LSXOSC1\|*query=0\|timeout_ms=0*}" != "${short_trace}" || {
     echo "not ok" 1 - "osc11_timeout short value did not reach query gate"
     exit 0
 }
@@ -51,12 +51,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=osc11_timeout|stored=1|binding=osc11_bg_query_timeout_ms|value=0*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=osc11_timeout\|stored=1\|binding=osc11_bg_query_timeout_ms\|value=0*}" != "${env_trace}" || {
     echo "not ok" 1 - "osc11_timeout environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXOSC1|*query=0|timeout_ms=0*}" != "${env_trace}" || {
+test "${env_trace#*LSXOSC1\|*query=0\|timeout_ms=0*}" != "${env_trace}" || {
     echo "not ok" 1 - "osc11_timeout environment value did not reach query gate"
     exit 0
 }
@@ -75,12 +75,12 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=osc11_timeout|stored=1*}" = "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=osc11_timeout\|stored=1*}" = "${range_trace}" || {
     echo "not ok" 1 - "osc11_timeout accepted an out-of-range environment"
     exit 0
 }
 
-test "${range_trace#*LSXOSC1|*query=0|timeout_ms=50*}" != "${range_trace}" || {
+test "${range_trace#*LSXOSC1\|*query=0\|timeout_ms=50*}" != "${range_trace}" || {
     echo "not ok" 1 - "osc11_timeout did not retain its default"
     exit 0
 }

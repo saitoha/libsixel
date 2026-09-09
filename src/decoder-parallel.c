@@ -40,10 +40,10 @@
 #include "decoder-parallel.h"
 #if SIXEL_ENABLE_THREADS
 # include "timeline-logger.h"
-# include "threading.h"
 #endif
 #include "compat_stub.h"
 #include "options.h"
+#include "threading.h"
 
 /*
  * Parallel decoding starts only after the serial parser has established
@@ -228,6 +228,7 @@ static void
 sixel_decoder_parallel_fill_spans(int payload_len,
                                   int threads,
                                   int *spans);
+#endif /* SIXEL_ENABLE_THREADS */
 
 int
 sixel_decoder_parallel_skew_percent(void)
@@ -240,6 +241,7 @@ sixel_decoder_parallel_skew_percent(void)
     return sixel_runtime_policy_parallel_skew(0);
 }
 
+#if SIXEL_ENABLE_THREADS
 static void
 sixel_decoder_parallel_fill_spans(int payload_len,
                                   int threads,

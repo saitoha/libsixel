@@ -29,7 +29,7 @@ invalid_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${header_trace#*LSXPSD1|*}" != "${header_trace}" || {
+test "${header_trace#*LSXPSD1\|*}" != "${header_trace}" || {
     echo "not ok" 1 - "PSD header-only mode omitted its header"
     exit 0
 }

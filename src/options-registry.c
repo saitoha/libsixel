@@ -4441,7 +4441,8 @@ sixel_option_registry_validate_uncached(void)
             ++choice_index;
         }
         if ((schema->environment_range_policy &
-             ~(SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
+             ~(unsigned int)(
+               SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
                SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM |
                SIXEL_SUBOPTION_ENV_RANGE_CLAMP_POSITIVE_MINIMUM |
                SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
@@ -4624,7 +4625,8 @@ sixel_option_registry_validate_uncached(void)
                     return 0;
                 }
                 if ((key->environment_range_policy &
-                     ~(SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
+                     ~(unsigned int)(
+                       SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
                        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM |
                        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_POSITIVE_MINIMUM |
                        SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG |
@@ -4692,14 +4694,16 @@ sixel_option_registry_validate_uncached(void)
                 if ((key->environment_range_policy &
                      SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH) != 0 &&
                     (key->environment_range_policy &
-                     ~SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH) != 0) {
+                     ~(unsigned int)
+                        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH) != 0) {
                     return 0;
                 }
                 if ((key->environment_range_policy &
                      SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX) !=
                         0 &&
                     (key->environment_range_policy &
-                     ~(SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX |
+                     ~(unsigned int)(
+                       SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG_PREFIX |
                        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
                        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM)) != 0) {
                     return 0;

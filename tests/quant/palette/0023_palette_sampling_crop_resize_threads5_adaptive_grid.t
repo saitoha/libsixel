@@ -15,11 +15,11 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=auto|effective=adaptive-grid|source=loaded-frame|origin=auto|phase=executed|reason=resource-profile|threads=5|heavy=3|budget_async=1|job_ready=1*}" != "${trace}" || {
+test "${trace#*LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=5\|heavy=3\|budget_async=1\|job_ready=1*}" != "${trace}" || {
     echo "not ok 1 - cropped resize five-thread sampling plan changed"
     exit 0
 }
-test "${trace#*LSXSMP1|*}" != "${trace}" || {
+test "${trace#*LSXSMP1\|*}" != "${trace}" || {
     echo "not ok 1 - cropped resize five-thread path skipped sampling"
     exit 0
 }

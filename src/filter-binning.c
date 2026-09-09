@@ -256,8 +256,12 @@ sixel_filter_exact_table_grow(sixel_filter_exact_table_t *table,
 }
 
 static uint64_t
+#if defined(__clang__)
+__attribute__((no_sanitize("unsigned-integer-overflow")))
+#endif
 sixel_filter_exact_mix(uint64_t value)
 {
+    /* SplitMix64 depends on multiplication modulo 2^64. */
     value ^= value >> 30;
     value *= UINT64_C(0xbf58476d1ce4e5b9);
     value ^= value >> 27;

@@ -27,11 +27,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "sample target short conversion failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=sample_target|stored=1|binding=palette_sample_target,palette_sample_override|value=128*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=sample_target\|stored=1\|binding=palette_sample_target,palette_sample_override\|value=128*}" != "${short_trace}" || {
     echo "not ok" 1 - "sample target short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXSMP1|*target=128*}" != "${short_trace}" || {
+test "${short_trace#*LSXSMP1\|*target=128*}" != "${short_trace}" || {
     echo "not ok" 1 - "sample target missed its consumer"
     exit 0
 }
@@ -43,7 +43,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,palette_contract \
     echo "not ok" 1 - "sample target environment conversion failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=sample_target|stored=1|binding=palette_sample_target,palette_sample_override|value=128*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=sample_target\|stored=1\|binding=palette_sample_target,palette_sample_override\|value=128*}" != "${env_trace}" || {
     echo "not ok" 1 - "sample target environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "sample target zero conversion failed"
     exit 0
 }
-test "${range_trace#*LSXSUB1|*key=sample_target|stored=1*}" = "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=sample_target\|stored=1*}" = "${range_trace}" || {
     echo "not ok" 1 - "sample target zero was not rejected"
     exit 0
 }
@@ -67,7 +67,7 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     echo "not ok" 1 - "sample target overflow conversion failed"
     exit 0
 }
-test "${width_trace#*LSXSUB1|*key=sample_target|stored=1*}" = "${width_trace}" || {
+test "${width_trace#*LSXSUB1\|*key=sample_target\|stored=1*}" = "${width_trace}" || {
     echo "not ok" 1 - "sample target overflow was not rejected"
     exit 0
 }

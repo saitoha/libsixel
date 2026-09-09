@@ -1841,6 +1841,32 @@ sixel_option_reset_argument_resolution(
 }
 
 /*
+ * Some supported C libraries saturate strtoul() without advancing endptr on
+ * ERANGE. Validate the accepted decimal grammar ourselves so saturation does
+ * not become a platform-dependent parse failure.
+ */
+static int
+sixel_option_is_decimal_integer(char const *text)
+{
+    char const *cursor;
+    int has_digit;
+
+    cursor = text;
+    has_digit = 0;
+    while (isspace((unsigned char)*cursor)) {
+        ++cursor;
+    }
+    if (*cursor == '+' || *cursor == '-') {
+        ++cursor;
+    }
+    while (*cursor >= '0' && *cursor <= '9') {
+        has_digit = 1;
+        ++cursor;
+    }
+    return has_digit && *cursor == '\0';
+}
+
+/*
  * Parse every non-enumerated suboption value through metadata in the
  * registry.  Callers may suppress diagnostics when probing environment
  * defaults.  Ordered choice lists retain their comma-separated environment
@@ -2066,6 +2092,13 @@ sixel_option_parse_typed_suboption_value(
         }
         valid = endptr != text && endptr != NULL &&
             endptr[0] == '\0';
+        if (!valid && errno == ERANGE &&
+            (range_policy &
+             SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG) != 0 &&
+            sixel_option_is_decimal_integer(text)) {
+            parsed_uint = (unsigned long long)ULONG_MAX;
+            valid = 1;
+        }
         if (valid && errno == ERANGE &&
             (range_policy &
              SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG) == 0) {

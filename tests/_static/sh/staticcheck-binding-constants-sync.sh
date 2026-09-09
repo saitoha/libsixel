@@ -1,5 +1,5 @@
 #!/bin/sh
-# Emit TAP for generated ruby/perl constant module parity check.
+# Emit TAP for public binding constant parity checks.
 
 set -eu
 
@@ -52,11 +52,6 @@ resolve_tool() {
 
 ruby_bin=$(resolve_tool "$ruby_bin" ruby || :)
 perl_bin=$(resolve_tool "$perl_bin" perl || :)
-
-if test -z "$ruby_bin" && test -z "$perl_bin"; then
-    echo "ok 1 # SKIP neither ruby nor perl is available"
-    exit 0
-fi
 
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-binding-constants-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
@@ -113,6 +108,49 @@ if test -n "$perl_bin"; then
         "$src_root/tools/gen_perl_constants.pl" \
         "$src_root/perl/lib/Image/LibSIXEL/Constants.pm" \
         perl || status=1
+fi
+
+expected_optflags=$tmpdir/expected-optflags
+python_optflags=$tmpdir/python-optflags
+php_optflags=$tmpdir/php-optflags
+
+awk '$1 == "#define" && $2 ~ /^SIXEL_OPTFLAG_/ { print $2 }' \
+    "$header_root/include/sixel.h" | sort -u > "$expected_optflags"
+
+if test -f "$src_root/python/libsixel/__init__.py"; then
+    awk -F= '
+        /^SIXEL_OPTFLAG_[A-Z0-9_]*[[:space:]]*=/ {
+            name = $1
+            gsub(/[[:space:]]/, "", name)
+            print name
+        }
+    ' "$src_root/python/libsixel/__init__.py" | sort -u > "$python_optflags"
+    if ! comm -23 "$expected_optflags" "$python_optflags" > "$tmpdir/python-missing" ||
+       test -s "$tmpdir/python-missing"; then
+        echo "python optflag constants are stale; missing names:" >> "$report"
+        sed 's/^/  /' "$tmpdir/python-missing" >> "$report"
+        status=1
+    fi
+else
+    echo "missing python constant module" >> "$report"
+    status=1
+fi
+
+if test -f "$src_root/php/src/Libsixel/Constants.php"; then
+    awk '
+        $1 == "public" && $2 == "const" && $3 ~ /^SIXEL_OPTFLAG_/ {
+            print $3
+        }
+    ' "$src_root/php/src/Libsixel/Constants.php" | sort -u > "$php_optflags"
+    if ! comm -23 "$expected_optflags" "$php_optflags" > "$tmpdir/php-missing" ||
+       test -s "$tmpdir/php-missing"; then
+        echo "php optflag constants are stale; missing names:" >> "$report"
+        sed 's/^/  /' "$tmpdir/php-missing" >> "$report"
+        status=1
+    fi
+else
+    echo "missing php constant module" >> "$report"
+    status=1
 fi
 
 if test "$status" -ne 0; then

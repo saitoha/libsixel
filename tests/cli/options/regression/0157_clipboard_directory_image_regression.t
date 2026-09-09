@@ -39,11 +39,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,clipboard_contract \
     echo "not ok" 1 - "clipboard directory short read failed"
     exit 0
 }
-test "${short_trace#*LSXSUB1|*key=directory|stored=1|binding=directory,directory_override|value=*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=directory\|stored=1\|binding=directory,directory_override\|value=*}" != "${short_trace}" || {
     echo "not ok" 1 - "clipboard directory short value was not stored"
     exit 0
 }
-test "${short_trace#*LSXCLP1|*backend=file|directory=1*}" != \
+test "${short_trace#*LSXCLP1\|*backend=file\|directory=1*}" != \
     "${short_trace}" || {
     echo "not ok" 1 - "clipboard directory short value missed its consumer"
     exit 0
@@ -63,11 +63,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,clipboard_contract \
     echo "not ok" 1 - "clipboard directory environment read failed"
     exit 0
 }
-test "${env_trace#*LSXSUB1|*key=directory|stored=1|binding=directory,directory_override|value=*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=directory\|stored=1\|binding=directory,directory_override\|value=*}" != "${env_trace}" || {
     echo "not ok" 1 - "clipboard directory environment value was not stored"
     exit 0
 }
-test "${env_trace#*LSXCLP1|*backend=file|directory=1*}" != \
+test "${env_trace#*LSXCLP1\|*backend=file\|directory=1*}" != \
     "${env_trace}" || {
     echo "not ok" 1 - "clipboard directory environment missed its consumer"
     exit 0
@@ -78,7 +78,8 @@ cmp -s "${short_output}" "${env_output}" || {
     exit 0
 }
 lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -b "MS-SSIM:0.98" "${input_image}" "${short_output}" 2>&1) || \
+    -L builtin! -b "MS-SSIM:0.98" \
+    "${input_image}" "${short_output}" 2>&1) || \
     lsqa_status=$?
 test "${lsqa_status:-0}" -eq 0 || {
     echo "not ok" 1 - "clipboard directory image quality regressed"

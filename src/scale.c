@@ -1045,6 +1045,7 @@ scale_parallel_should_log(scale_parallel_context_t const *ctx, int index)
 
     return 1;
 }
+#endif /* SIXEL_ENABLE_THREADS */
 
 /*
  * Allow callers to raise the floor for parallel execution using
@@ -1104,6 +1105,7 @@ sixel_scale_parallel_band_span(int rows, int threads)
     return span;
 }
 
+#if SIXEL_ENABLE_THREADS
 static int
 sixel_scale_parallel_worker(sixel_thread_pool_job_t job,
                             void *userdata,

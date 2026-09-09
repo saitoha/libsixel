@@ -21,13 +21,13 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXPFB1|stage=thread-create|action=same-sample-sync|*|rc=0*}" \
+test "${trace#*LSXPFB1\|stage=thread-create\|action=same-sample-sync\|*\|rc=0*}" \
     != "${trace}" || {
     echo "not ok 1 - explicit sampling did not reuse the completed sample"
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=adaptive-grid|effective=adaptive-grid|source=loaded-frame|origin=explicit|phase=executed|reason=explicit|threads=4|heavy=0|budget_async=1|job_ready=1*}" \
+test "${trace#*LSXSPL1\|requested=adaptive-grid\|effective=adaptive-grid\|source=loaded-frame\|origin=explicit\|phase=executed\|reason=explicit\|threads=4\|heavy=0\|budget_async=1\|job_ready=1*}" \
     != "${trace}" || {
     echo "not ok 1 - explicit thread fallback changed sampling state"
     exit 0

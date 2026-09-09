@@ -29,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=rare_keep|stored=1|binding=quantize_model_kcenter_rare_keep,quantize_model_kcenter_rare_keep_override|value=8*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kcenter_rare_keep,quantize_model_kcenter_rare_keep_override\|value=8*}" != "${short_trace}" || {
     echo "not ok" 1 - "rare_keep short value was not stored"
     exit 0
 }
@@ -42,7 +42,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=rare_keep|stored=1|binding=quantize_model_kcenter_rare_keep,quantize_model_kcenter_rare_keep_override|value=8*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kcenter_rare_keep,quantize_model_kcenter_rare_keep_override\|value=8*}" != "${env_trace}" || {
     echo "not ok" 1 - "rare_keep environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=rare_keep|stored=1|binding=quantize_model_kcenter_rare_keep,quantize_model_kcenter_rare_keep_override|value=0*}" != "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kcenter_rare_keep,quantize_model_kcenter_rare_keep_override\|value=0*}" != "${range_trace}" || {
     echo "not ok" 1 - "center rare_keep did not preserve unsigned-long parsing"
     exit 0
 }
@@ -68,7 +68,7 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${width_trace#*LSXSUB1|*key=rare_keep|stored=1}" = "${width_trace}" || {
+test "${width_trace#*LSXSUB1\|*key=rare_keep\|stored=1}" = "${width_trace}" || {
     echo "not ok" 1 - "center rare_keep accepted an over-width value"
     exit 0
 }

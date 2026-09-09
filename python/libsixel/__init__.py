@@ -527,6 +527,9 @@ SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
                                       #            off, on
 SIXEL_OPTFLAG_SAMPLING_POLICY = '4'  # -4 POLICY, --sampling-policy=POLICY
 SIXEL_OPTFLAG_BINNING_POLICY  = '5'  # -5 POLICY, --binning-policy=POLICY
+SIXEL_OPTFLAG_MERGE_POLICY    = 'F'  # -F POLICY, --merge-policy=POLICY
+SIXEL_OPTFLAG_COVER_POLICY    = 'a'  # -a POLICY, --cover-policy=POLICY
+SIXEL_OPTFLAG_SNAP_POLICY     = '_'  # -_ POLICY, --snap-policy=POLICY
 SIXEL_OPTFLAG_BACKGROUND_POLICY = 'N'  # -N POLICY, --background-policy=POLICY
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:
                                       #        crop source image to fit the
@@ -661,6 +664,9 @@ SIXEL_OPTFLAG_RUNTIME_POLICY    = 'j'  # -j RUNTIMEPOLICY,
 SIXEL_OPTFLAG_DIAGNOSTICS       = 'x'  # -x DIAGNOSTICS,
                                       #   --diagnostics=MODE:
                                       #        choose diagnostic presentation
+SIXEL_OPTFLAG_LOG_PATH          = 'J'  # -J PATH, --log-path=PATH
+SIXEL_OPTFLAG_CLIPBOARD_POLICY  = 'y'  # -y POLICY, --clipboard-policy=POLICY
+SIXEL_OPTFLAG_TERMINAL_POLICY   = 'z'  # -z 0|1, --terminal-policy=0|1
 SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X'  # -X COLORSPACE, --clustering-colorspace=COLORSPACE:
                                           #        select palette clustering space.
                                           #        ignored with fixed palette options (-b, -m, -e).

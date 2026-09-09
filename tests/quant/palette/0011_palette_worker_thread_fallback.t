@@ -32,13 +32,13 @@ cmp -s "${expected}" "${actual}" || {
     exit 0
 }
 
-test "${message#*LSXPFB1|stage=thread-create|action=same-sample-sync|*|rc=0*}" \
+test "${message#*LSXPFB1\|stage=thread-create\|action=same-sample-sync\|*\|rc=0*}" \
     != "${message}" || {
     echo "not ok 1 - palette thread fallback was not traced"
     exit 0
 }
 
-test "${message#*LSXSPL1|requested=auto|effective=adaptive-grid|source=loaded-frame|origin=auto|phase=executed|reason=resource-profile|threads=4|heavy=0|budget_async=1|job_ready=1*}" \
+test "${message#*LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=4\|heavy=0\|budget_async=1\|job_ready=1*}" \
     != "${message}" || {
     echo "not ok 1 - palette thread fallback changed sampling state"
     exit 0

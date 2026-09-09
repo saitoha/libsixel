@@ -34,12 +34,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=band_overwrap|stored=1|binding=dither_parallel_band_overwrap,dither_parallel_band_overwrap_override|value=4*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=band_overwrap\|stored=1\|binding=dither_parallel_band_overwrap,dither_parallel_band_overwrap_override\|value=4*}" != "${short_trace}" || {
     echo "not ok" 1 - "band_overwrap short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXDTH1|*diffuse=fs|*band_overlap=4|band_overwrap=4|band_overwrap_override=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXDTH1\|*diffuse=fs\|*band_overlap=4\|band_overwrap=4\|band_overwrap_override=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "band_overwrap short value was not effective"
     exit 0
 }
@@ -52,12 +52,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=band_overwrap|stored=1|binding=dither_parallel_band_overwrap,dither_parallel_band_overwrap_override|value=4*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=band_overwrap\|stored=1\|binding=dither_parallel_band_overwrap,dither_parallel_band_overwrap_override\|value=4*}" != "${env_trace}" || {
     echo "not ok" 1 - "band_overwrap environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXDTH1|*diffuse=fs|*band_overlap=4|band_overwrap=4|band_overwrap_override=1*}" != "${env_trace}" || {
+test "${env_trace#*LSXDTH1\|*diffuse=fs\|*band_overlap=4\|band_overwrap=4\|band_overwrap_override=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "band_overwrap environment value was not effective"
     exit 0
 }
@@ -75,12 +75,12 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=band_overwrap|stored=1*}" = "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=band_overwrap\|stored=1*}" = "${range_trace}" || {
     echo "not ok" 1 - "band_overwrap accepted a negative environment value"
     exit 0
 }
 
-test "${range_trace#*LSXDTH1|*band_overlap=0|band_overwrap=0|band_overwrap_override=0*}" != "${range_trace}" || {
+test "${range_trace#*LSXDTH1\|*band_overlap=0\|band_overwrap=0\|band_overwrap_override=0*}" != "${range_trace}" || {
     echo "not ok" 1 - "invalid band_overwrap changed the default"
     exit 0
 }
@@ -93,12 +93,12 @@ zero_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     exit 0
 }
 
-test "${zero_trace#*LSXSUB1|*key=band_overwrap|stored=1|binding=dither_parallel_band_overwrap,dither_parallel_band_overwrap_override|value=0*}" != "${zero_trace}" || {
+test "${zero_trace#*LSXSUB1\|*key=band_overwrap\|stored=1\|binding=dither_parallel_band_overwrap,dither_parallel_band_overwrap_override\|value=0*}" != "${zero_trace}" || {
     echo "not ok" 1 - "band_overwrap did not preserve signed zero"
     exit 0
 }
 
-test "${zero_trace#*LSXDTH1|*band_overlap=0|band_overwrap=0|band_overwrap_override=1*}" != "${zero_trace}" || {
+test "${zero_trace#*LSXDTH1\|*band_overlap=0\|band_overwrap=0\|band_overwrap_override=1*}" != "${zero_trace}" || {
     echo "not ok" 1 - "signed-zero band_overwrap was not effective"
     exit 0
 }

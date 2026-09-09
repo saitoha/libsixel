@@ -171,6 +171,9 @@ final class Constants
     public const SIXEL_OPTFLAG_QUANTIZE_MODEL = 'Q';
     public const SIXEL_OPTFLAG_SAMPLING_POLICY = '4';
     public const SIXEL_OPTFLAG_BINNING_POLICY = '5';
+    public const SIXEL_OPTFLAG_MERGE_POLICY = 'F';
+    public const SIXEL_OPTFLAG_COVER_POLICY = 'a';
+    public const SIXEL_OPTFLAG_SNAP_POLICY = '_';
     public const SIXEL_OPTFLAG_CROP = 'c';
     public const SIXEL_OPTFLAG_WIDTH = 'w';
     public const SIXEL_OPTFLAG_HEIGHT = 'h';
@@ -185,6 +188,9 @@ final class Constants
     public const SIXEL_OPTFLAG_GPU_POLICY = 'G';
     public const SIXEL_OPTFLAG_RUNTIME_POLICY = 'j';
     public const SIXEL_OPTFLAG_DIAGNOSTICS = 'x';
+    public const SIXEL_OPTFLAG_LOG_PATH = 'J';
+    public const SIXEL_OPTFLAG_CLIPBOARD_POLICY = 'y';
+    public const SIXEL_OPTFLAG_TERMINAL_POLICY = 'z';
     public const SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X';
     public const SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W';
     public const SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U';

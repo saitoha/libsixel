@@ -592,7 +592,11 @@ img2sixel_completion_policy_apply(
     entry_end = NULL;
     equal_pos = NULL;
     value = NULL;
-    memset(staged_values, 0, sizeof(staged_values));
+    for (index = 0u;
+         index < IMG2SIXEL_COMPLETION_POLICY_KEY_COUNT;
+         ++index) {
+        staged_values[index] = NULL;
+    }
     memset(values, 0, sizeof(values));
     memset(assigned, 0, sizeof(assigned));
     base_length = 0u;

@@ -57,6 +57,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 1,
+                FRAME_MASK_VALUE_ANY,
                 1,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -75,6 +76,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_LINEAR,
                 1
@@ -93,6 +95,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -111,6 +114,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -129,6 +133,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -147,6 +152,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 FRAME_TRANSPARENT_NONNEG,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -165,6 +171,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 1,
+                FRAME_MASK_VALUE_ANY,
                 1,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -183,6 +190,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_LINEAR,
                 1
@@ -201,6 +209,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_LINEAR,
                 1
@@ -219,6 +228,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 1,
+                FRAME_MASK_VALUE_ANY,
                 1,
                 SIXEL_COLORSPACE_LINEAR,
                 1
@@ -237,6 +247,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 1,
+                FRAME_MASK_VALUE_ANY,
                 1,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -255,6 +266,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 FRAME_TRANSPARENT_NONNEG,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -273,6 +285,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -291,6 +304,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -309,6 +323,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_LINEAR,
                 1
@@ -327,6 +342,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_LINEAR,
                 1
@@ -345,6 +361,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_LINEAR,
                 1
@@ -363,6 +380,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 1,
+                FRAME_MASK_VALUE_ANY,
                 1,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -381,6 +399,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 FRAME_TRANSPARENT_NONNEG,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -399,6 +418,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 FRAME_TRANSPARENT_NONNEG,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -417,6 +437,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -435,6 +456,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_GAMMA,
                 1
@@ -453,6 +475,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                FRAME_MASK_VALUE_ANY,
                 0,
                 SIXEL_COLORSPACE_LINEAR,
                 1

@@ -20,12 +20,12 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-test "${trace#*LSXSPL1|requested=adaptive-grid|effective=adaptive-grid|source=loaded-frame|origin=explicit|phase=executed|reason=explicit|threads=1|heavy=0|budget_async=0|job_ready=0*}" != "${trace}" || {
+test "${trace#*LSXSPL1\|requested=adaptive-grid\|effective=adaptive-grid\|source=loaded-frame\|origin=explicit\|phase=executed\|reason=explicit\|threads=1\|heavy=0\|budget_async=0\|job_ready=0*}" != "${trace}" || {
     echo "not ok 1 - explicit sampling plan changed in single-thread mode"
     exit 0
 }
 
-test "${trace#*LSXSMP1|*}" != "${trace}" || {
+test "${trace#*LSXSMP1\|*}" != "${trace}" || {
     echo "not ok 1 - explicit adaptive sampling did not execute"
     exit 0
 }

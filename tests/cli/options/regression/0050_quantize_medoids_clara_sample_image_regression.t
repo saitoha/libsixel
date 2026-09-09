@@ -29,7 +29,7 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=clara_sample|stored=1|binding=quantize_model_kmedoids_clara_sample,quantize_model_kmedoids_clara_sample_override|value=1048576*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=clara_sample\|stored=1\|binding=quantize_model_kmedoids_clara_sample,quantize_model_kmedoids_clara_sample_override\|value=1048576*}" != "${short_trace}" || {
     echo "not ok" 1 - "clara_sample short value was not stored"
     exit 0
 }
@@ -42,7 +42,7 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=clara_sample|stored=1|binding=quantize_model_kmedoids_clara_sample,quantize_model_kmedoids_clara_sample_override|value=1048576*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=clara_sample\|stored=1\|binding=quantize_model_kmedoids_clara_sample,quantize_model_kmedoids_clara_sample_override\|value=1048576*}" != "${env_trace}" || {
     echo "not ok" 1 - "clara_sample environment value was not stored"
     exit 0
 }
@@ -55,7 +55,7 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=clara_sample|stored=1|binding=quantize_model_kmedoids_clara_sample,quantize_model_kmedoids_clara_sample_override|value=64*}" != "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=clara_sample\|stored=1\|binding=quantize_model_kmedoids_clara_sample,quantize_model_kmedoids_clara_sample_override\|value=64*}" != "${range_trace}" || {
     echo "not ok" 1 - "medoids clara_sample lower endpoint was not clamped"
     exit 0
 }
@@ -68,7 +68,7 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     exit 0
 }
 
-test "${width_trace#*LSXSUB1|*key=clara_sample|stored=1}" = "${width_trace}" || {
+test "${width_trace#*LSXSUB1\|*key=clara_sample\|stored=1}" = "${width_trace}" || {
     echo "not ok" 1 - "medoids clara_sample accepted an over-width value"
     exit 0
 }
