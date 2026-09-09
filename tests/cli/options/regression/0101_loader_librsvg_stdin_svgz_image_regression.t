@@ -28,7 +28,7 @@ env_output="${artifact_dir}/0101-loader-librsvg-stdin-svgz-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibrsvg:S1!" -w16 -h16 - <"${input_image}" \
+    "-Llibrsvg:S1!" -4adaptive-grid -w16 -h16 - <"${input_image}" \
     2>&1 >"${short_output}") || {
     echo "not ok" 1 - "stdin_svgz short conversion failed"
     exit 0
@@ -42,7 +42,7 @@ test "${short_trace#*LSXSUB1|*key=stdin_svgz|stored=1|binding=librsvg_allow_stdi
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1" \
-    "-Llibrsvg!" -w16 -h16 - <"${input_image}" \
+    "-Llibrsvg!" -4adaptive-grid -w16 -h16 - <"${input_image}" \
     2>&1 >"${env_output}") || {
     echo "not ok" 1 - "stdin_svgz environment conversion failed"
     exit 0
@@ -54,7 +54,8 @@ test "${env_trace#*LSXSUB1|*key=stdin_svgz|stored=1|binding=librsvg_allow_stdin_
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibrsvg:S0!" -w16 -h16 - <"${input_image}" >/dev/null && {
+    "-Llibrsvg:S0!" -4adaptive-grid -w16 -h16 - \
+    <"${input_image}" >/dev/null && {
     echo "not ok" 1 - "stdin_svgz disabled control unexpectedly succeeded"
     exit 0
 }
