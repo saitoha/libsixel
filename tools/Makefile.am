@@ -39,6 +39,7 @@ EXTRA_DIST = libsixel-config.in \
              check_makefile_generated_pairs.sh \
              check_lookup_policy_measurements.py \
              check_merge_policy_measurements.py \
+             check_merge_policy_reachability.py \
              check_pixelformat_precision_measurements.py \
              check_precision_measurements.py \
              check_quantize_model_measurements.py \
@@ -53,6 +54,7 @@ EXTRA_DIST = libsixel-config.in \
              plot_lookup_policy_quality.sh \
              plot_lookup_policy_speed.py \
              plot_merge_policy_measurements.py \
+             plot_merge_policy_reachability.py \
              plot_pixelformat_precision_measurements.py \
              plot_precision_measurements.py \
              plot_quantize_model_measurements.py \
@@ -65,6 +67,7 @@ EXTRA_DIST = libsixel-config.in \
              reproduce_dither_spectrum_measurements.sh \
              reproduce_lookup_policy_measurements.sh \
              reproduce_merge_policy_measurements.sh \
+             reproduce_merge_policy_reachability.sh \
              reproduce_pixelformat_precision_measurements.sh \
              reproduce_precision_measurements.sh \
              reproduce_quantize_model_measurements.sh \
