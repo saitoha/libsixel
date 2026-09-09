@@ -3278,8 +3278,9 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
 }
 
 /*
- * Recolor the generated palette into the working colorspace so dithering,
- * LUT builders, and palette emission share the same color interpretation.
+ * Recolor the generated palette into the working colorspace so dithering and
+ * LUT builders share the same color interpretation.  Serialization performs
+ * the later working-to-output conversion on a copy of these entries.
  */
 static SIXELSTATUS
 sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
@@ -4066,7 +4067,8 @@ sixel_encoder_capture_quantized_palette_only(
     sixel_dither_t *dither,
     int width,
     int height,
-    int colorspace)
+    int source_colorspace,
+    int output_colorspace)
 {
     SIXELSTATUS status;
     size_t quantized_pixels;
@@ -4157,11 +4159,31 @@ sixel_encoder_capture_quantized_palette_only(
         encoder->capture_palette_size = palette_bytes;
     }
     memcpy(encoder->capture_palette, palette_view.entries, palette_bytes);
+    /*
+     * sixel_encode() converts its private palette copy for the wire and
+     * deliberately leaves the reusable dither palette in working-space
+     * coordinates.  Mirror that boundary on this separate capture copy so
+     * palette files never receive the internal working representation.
+     */
+    if (source_colorspace != output_colorspace) {
+        status = sixel_helper_convert_colorspace(
+            encoder->capture_palette,
+            palette_bytes,
+            SIXEL_PIXELFORMAT_RGB888,
+            source_colorspace,
+            output_colorspace);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_capture_quantized_palette_only: "
+                "palette colorspace conversion failed.");
+            return status;
+        }
+    }
 
     encoder->capture_width = width;
     encoder->capture_height = height;
     encoder->capture_pixelformat = SIXEL_PIXELFORMAT_PAL8;
-    encoder->capture_colorspace = colorspace;
+    encoder->capture_colorspace = output_colorspace;
     encoder->capture_ncolors = ncolors;
     encoder->capture_valid = 1;
 
@@ -8055,6 +8077,7 @@ sixel_encoder_output_without_macro(
             dither,
             width,
             height,
+            frame_colorspace,
             output_colorspace);
         if (SIXEL_FAILED(status)) {
             goto end;

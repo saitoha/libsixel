@@ -56,6 +56,8 @@ The three encoder color-space controls own different boundaries:
 
 Fixed palettes bypass `-X`, but they do not bypass `-W`: the supplied palette and the main image must still meet in one working representation before lookup. `-U` remains a later output conversion in either case.
 
+`-M` exports the captured palette after this same `-W` to `-U` boundary. It must not write internal Oklab, CIELAB, or DIN99d working coordinates into ACT, PAL, RIFF PAL, or GPL files. With the interoperable default `-Ugamma`, the exported channels are gamma-encoded RGB values that can be consumed by ordinary palette readers, including a later `-m` invocation.
+
 ## Default and option coupling
 
 `-Wgamma` is the default working geometry. If the user specifies `-W` while never specifying `-X`, palette construction follows the selected working space as a convenience. This makes a command such as `-Woklab` use Oklab for both construction and application.
@@ -242,7 +244,8 @@ python3 tools/check_working_colorspace_measurements.py \
 | WC-06 | Explicit `-Xgamma -Woklab` produces a decoded result above the project MS-SSIM floor. | [tests/quant/palette/usage/0066_clustering_gamma_working_oklab_lsqa.t](../../tests/quant/palette/usage/0066_clustering_gamma_working_oklab_lsqa.t) |
 | WC-07 | Explicit `-Xgamma -Wcielab` produces a decoded result above the project MS-SSIM floor. | [tests/quant/palette/usage/0067_clustering_gamma_working_cielab_lsqa.t](../../tests/quant/palette/usage/0067_clustering_gamma_working_cielab_lsqa.t) |
 | WC-08 | Explicit `-Xgamma -Wdin99d` produces a decoded result above the project MS-SSIM floor. | [tests/quant/palette/usage/0068_clustering_gamma_working_din99d_lsqa.t](../../tests/quant/palette/usage/0068_clustering_gamma_working_din99d_lsqa.t) |
+| WC-09 | `-M` converts a generated CIELAB working palette to the requested gamma RGB output space before writing GPL. | [tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t](../../tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t) |
 
 ### Coverage boundary
 
-The automated tests lock the effective precision transition and a minimum decoded-quality contract for every accepted working space under explicit gamma clustering. They do not freeze exact metric rankings, timings, stream sizes, repeated-option resolution, invalid-value diagnostics, approximate lookup interactions, other dither policies, threaded execution, GPU execution, or animation. The measurement checker protects the recorded protocol and artifacts, but the benchmark is intentionally not a timing-sensitive CI regression test.
+The automated tests lock the effective precision transition, a minimum decoded-quality contract for every accepted working space under explicit gamma clustering, and the CIELAB-to-gamma palette-export boundary. They do not freeze exact metric rankings, timings, stream sizes, repeated-option resolution, invalid-value diagnostics, approximate lookup interactions, other dither policies, threaded execution, GPU execution, or animation. The measurement checker protects the recorded protocol and artifacts, but the benchmark is intentionally not a timing-sensitive CI regression test.

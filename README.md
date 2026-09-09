@@ -545,12 +545,13 @@ Options:
                            -e, and -I. Repeating -m is allowed; the
                            last mapfile wins.
 -M FILE, --mapfile-output=FILE
-                           export the computed palette. The format is
+                           export the computed palette after the -U
+                           output-colorspace conversion. The format is
                            chosen from TYPE:PATH prefixes or file
                            extensions (.act, .pal, .gpl). When TYPE is
-                           omitted for .pal the JASC text layout is
-                           used. Writing to '-' requires TYPE:PATH;
-                           TYPE:- sends the palette to standard output.
+                           omitted for .pal the JASC text layout is used.
+                           Writing to '-' requires TYPE:PATH; TYPE:- sends
+                           the palette to standard output.
 -e, --monochrome           output monochrome sixel image
                            this option assumes the terminal
                            background color is black

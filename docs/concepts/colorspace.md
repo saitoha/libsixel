@@ -120,6 +120,8 @@ The mathematical role of each accepted space and the controlled quality, runtime
 
 `-U` does not rerun palette generation or palette lookup. It converts the final palette entries from the frame's working color space to the requested output RGB space before the encoder writes SIXEL color definitions.
 
+The same boundary applies when `-M` writes ACT, PAL, RIFF PAL, or GPL output. These formats receive the `-U` representation, not the internal `-W` coordinates. In particular, the default `-Ugamma` converts a perceptual working palette back to gamma-encoded RGB before it is stored in a reusable palette file.
+
 SIXEL carries numeric palette components but does not embed an ICC profile or an explicit color-space tag. A receiving terminal therefore cannot discover from the stream whether values were prepared as sRGB, linear RGB, or SMPTE-C. `-Ugamma` is the interoperable default; alternate output spaces are meaningful only when the receiving environment is known to interpret the numeric values accordingly.
 
 ## Loader color management

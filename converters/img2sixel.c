@@ -445,7 +445,9 @@ static cli_option_help_t const g_option_help_table[] = {
         'M',
         "mapfile-output",
         "-M FILE, --mapfile-output=FILE\n"
-        "    export the computed palette. TYPE:PATH prefixes or file extensions (.act, .pal, .gpl)\n"
+        "    export the computed palette after the -U output-colorspace\n"
+        "    conversion.\n"
+        "    TYPE:PATH prefixes or file extensions (.act, .pal, .gpl)\n"
         "    choose the format. .pal defaults to JASC text; use pal-riff: for RIFF output. Writing\n"
         "    to '-' needs TYPE:PATH; TYPE:- sends the palette to stdout.\n"
     },
