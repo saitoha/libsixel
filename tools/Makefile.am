@@ -37,6 +37,7 @@ EXTRA_DIST = libsixel-config.in \
              check_dither_policy_measurements.py \
              check_dither_spectrum_measurements.py \
              check_lookup_policy_measurements.py \
+             check_merge_policy_measurements.py \
              check_pixelformat_precision_measurements.py \
              check_precision_measurements.py \
              check_quantize_model_measurements.py \
@@ -50,6 +51,7 @@ EXTRA_DIST = libsixel-config.in \
              plot_quality_curve.py \
              plot_lookup_policy_quality.sh \
              plot_lookup_policy_speed.py \
+             plot_merge_policy_measurements.py \
              plot_pixelformat_precision_measurements.py \
              plot_precision_measurements.py \
              plot_quantize_model_measurements.py \
@@ -61,6 +63,7 @@ EXTRA_DIST = libsixel-config.in \
              reproduce_dither_policy_measurements.sh \
              reproduce_dither_spectrum_measurements.sh \
              reproduce_lookup_policy_measurements.sh \
+             reproduce_merge_policy_measurements.sh \
              reproduce_pixelformat_precision_measurements.sh \
              reproduce_precision_measurements.sh \
              reproduce_quantize_model_measurements.sh \

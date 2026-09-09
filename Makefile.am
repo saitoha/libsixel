@@ -250,6 +250,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \
 	tools/check_lookup_policy_measurements.py \
+	tools/check_merge_policy_measurements.py \
 	tools/palette_pipeline_suite.json \
 	tools/plot_lookup_policy_acceleration.py \
 	tools/plot_clustering_binning_threshold_measurements.py \
@@ -258,6 +259,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_dither_policy_measurements.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
+	tools/plot_merge_policy_measurements.py \
 	tools/plot_palette_pipeline_measurements.py \
 	tools/plot_palette_pipeline_suite_measurements.py \
 	tools/plot_quality_curve.py \
@@ -272,6 +274,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_cover_policy_figures.sh \
 	tools/reproduce_dither_policy_measurements.sh \
 	tools/reproduce_lookup_policy_measurements.sh \
+	tools/reproduce_merge_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \
 	tools/reproduce_palette_pipeline_suite_measurements.sh \
 	tools/reproduce_pixelformat_precision_measurements.sh \
