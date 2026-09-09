@@ -271,6 +271,9 @@ sixel_filter_exact_mix(uint64_t value)
 }
 
 static uint64_t
+#if defined(__clang__)
+__attribute__((no_sanitize("unsigned-integer-overflow")))
+#endif
 sixel_filter_exact_coordinate_hash(double const coordinates[3])
 {
     uint64_t hash;
@@ -287,6 +290,7 @@ sixel_filter_exact_coordinate_hash(double const coordinates[3])
         } else {
             bits = 0u;
         }
+        /* Coordinate hashing also depends on arithmetic modulo 2^64. */
         hash ^= sixel_filter_exact_mix(
             bits + (uint64_t)channel * UINT64_C(0x9e3779b97f4a7c15));
         hash = sixel_filter_exact_mix(hash);
