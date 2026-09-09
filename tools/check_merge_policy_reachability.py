@@ -125,6 +125,12 @@ def validate_command(command_text: str, name: str) -> None:
         fail(f"unexpected palette size for {name}")
     if "-M" not in tokens:
         fail(f"palette capture is missing for {name}")
+    try:
+        palette_path = tokens[tokens.index("-M") + 1]
+    except IndexError as exc:
+        raise ValueError(f"invalid palette capture for {name}") from exc
+    if palette_path != "act:{palette}":
+        fail(f"palette capture path is not reproducible for {name}")
 
 
 def validate_summary(rows: List[Dict[str, str]]) -> None:

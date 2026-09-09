@@ -315,7 +315,9 @@ def run_palette_build(img2sixel: str,
             f"palette capture failed ({proc.returncode}): "
             f"{shlex.join(command)}\n{diagnostic}"
         )
-    return command_template(command, img2sixel, input_image), proc.stdout
+    template = command_template(command, img2sixel, input_image)
+    template = template.replace(str(output_act), "{palette}")
+    return template, proc.stdout
 
 
 def occupied_lab_cells(rgb_u8: np.ndarray) \
@@ -872,7 +874,9 @@ def plot_reachability(path: Path,
         )
     axes[0][0].set_xticks(x, ["None", "Ward", "Ward+L3"])
     axes[0][0].set_ylabel("Unreachable (%)")
-    axes[0][0].set_title("Convex-hull upper bound vs realized FS behavior")
+    axes[0][0].set_title(
+        "Convex-hull upper bound vs experimental residual classifier"
+    )
     axes[0][0].legend(fontsize=7.5, frameon=False, ncols=2)
     style_axis(axes[0][0])
 
@@ -986,9 +990,13 @@ def plot_hotspots(path: Path,
         axis.contour(pixel_mask.astype(np.uint8), levels=[0.5],
                      colors=["white"], linewidths=0.35)
         area = percentage(unavailable, mass)
-        axis.set_title(f"{MERGE_LABELS[name]}\nUnavailable area {area:.1f}%")
+        axis.set_title(
+            f"{MERGE_LABELS[name]}\nClassifier-marked area {area:.1f}%"
+        )
         axis.axis("off")
-    figure.suptitle("Where the frozen K=32 palette fails to realize flat source colors")
+    figure.suptitle(
+        "Candidate hard-to-realize colors under an experimental classifier"
+    )
     figure.text(
         0.5, 0.015,
         "Magenta marks hull-exterior cells plus hull-interior cells retaining at least half the nearest-entry residual",
@@ -1139,8 +1147,8 @@ def write_metadata(path: Path,
                 "changes after final merge"
             ),
             "reachability": (
-                "separate convex-hull upper bound, empirical closed-loop "
-                "reachability, perceptual threshold, finite area, and palette "
+                "separate the convex-hull upper bound, experimental residual "
+                "classifier, perceptual threshold, finite area, and palette "
                 "spacing"
             ),
             "bimodality": (
