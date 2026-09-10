@@ -3,6 +3,17 @@
 
 set -eux
 
+# The img2sixel regression suite covers this policy under Wine. The combined
+# test runner can fail to terminate after this focused policy probe returns.
+test "${SIXEL_RUNTIME-}" = "wine" && {
+    printf "1..0 # SKIP wine can hang after abort trace policy probes\n"
+    exit 0
+}
+test "${SIXEL_RUNTIME-}" = "wine64" && {
+    printf "1..0 # SKIP wine can hang after abort trace policy probes\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 
