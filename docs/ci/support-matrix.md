@@ -150,8 +150,8 @@ Configured matrix entries: **349**.
 - `freebsd: Autotools-freebsd-14.3-x86_64-amalgamated_lib`
 - `freebsd: Meson-freebsd-14.3-x86_64-amalgamated_lib`
 - `freebsd: Meson-freebsd-14.3-x86_64-unity`
-- `haiku: Autotools-haiku-r1beta5-x86-64`
-- `haiku: Meson-haiku-r1beta5-x86-64`
+- `haiku: Autotools-haiku-r1beta6-x86-64`
+- `haiku: Meson-haiku-r1beta6-x86-64`
 - `lto: Autotools-msys2-msys-msvc-lto-full`
 - `lto: Autotools-ubuntu-x86_64-clang-lto-full`
 - `lto: Autotools-ubuntu-x86_64-clang-lto-no`

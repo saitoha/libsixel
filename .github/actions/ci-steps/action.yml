@@ -136,7 +136,7 @@ runs:
         ${{ fromJSON(inputs.matrix_json).exec_type == 'cross-platform-vms'
             && fromJSON(inputs.matrix_json).cp_os == 'freebsd'
             && fromJSON(inputs.matrix_json).extra_packages != '' }}
-      uses: cross-platform-actions/action@v0.30.0
+      uses: cross-platform-actions/action@v1.5.0
       with:
         operating_system: ${{ fromJSON(inputs.matrix_json).cp_os || '' }}
         architecture: ${{ fromJSON(inputs.matrix_json).cp_arch || '' }}
@@ -152,7 +152,7 @@ runs:
         ${{ fromJSON(inputs.matrix_json).exec_type == 'cross-platform-vms'
             && fromJSON(inputs.matrix_json).cp_os == 'netbsd'
             && fromJSON(inputs.matrix_json).extra_packages != '' }}
-      uses: cross-platform-actions/action@v0.30.0
+      uses: cross-platform-actions/action@v1.5.0
       with:
         operating_system: ${{ fromJSON(inputs.matrix_json).cp_os || '' }}
         architecture: ${{ fromJSON(inputs.matrix_json).cp_arch || '' }}
@@ -171,7 +171,7 @@ runs:
         ${{ fromJSON(inputs.matrix_json).exec_type == 'cross-platform-vms'
             && fromJSON(inputs.matrix_json).cp_os == 'openbsd'
             && fromJSON(inputs.matrix_json).extra_packages != '' }}
-      uses: cross-platform-actions/action@v0.30.0
+      uses: cross-platform-actions/action@v1.5.0
       with:
         operating_system: ${{ fromJSON(inputs.matrix_json).cp_os || '' }}
         architecture: ${{ fromJSON(inputs.matrix_json).cp_arch || '' }}
@@ -186,7 +186,7 @@ runs:
         ${{ fromJSON(inputs.matrix_json).exec_type == 'cross-platform-vms'
             && fromJSON(inputs.matrix_json).cp_os == 'haiku'
             && fromJSON(inputs.matrix_json).extra_packages != '' }}
-      uses: cross-platform-actions/action@v0.30.0
+      uses: cross-platform-actions/action@v1.5.0
       with:
         operating_system: ${{ fromJSON(inputs.matrix_json).cp_os || '' }}
         architecture: ${{ fromJSON(inputs.matrix_json).cp_arch || '' }}
@@ -1085,7 +1085,7 @@ runs:
 
     - name: Build and test (Autotools, FreeBSD/OpenBSD/NetBSD/Haiku)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'cross-platform-vms' }}
-      uses: cross-platform-actions/action@v0.30.0
+      uses: cross-platform-actions/action@v1.5.0
       with:
         operating_system: ${{ fromJSON(inputs.matrix_json).cp_os || '' }}
         architecture: ${{ fromJSON(inputs.matrix_json).cp_arch || '' }}
@@ -1099,7 +1099,7 @@ runs:
 
     - name: Build and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'cross-platform-vms' }}
-      uses: cross-platform-actions/action@v0.30.0
+      uses: cross-platform-actions/action@v1.5.0
       with:
         operating_system: ${{ fromJSON(inputs.matrix_json).cp_os || '' }}
         architecture: ${{ fromJSON(inputs.matrix_json).cp_arch || '' }}

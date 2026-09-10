@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "converters/aborttrace.h"
 
@@ -32,6 +33,14 @@ test_aborttrace_0001_img2sixel_aborttrace(int argc, char **argv)
 #else
     fprintf(stderr, "aborttrace: runner triggered\n");
     sixel_aborttrace_install_if_unhandled();
+    /*
+     * Policy tests can inspect the installation decision without triggering
+     * the platform's unhandled-abort path. Headless Haiku may suspend there
+     * while waiting for its debugger service.
+     */
+    if (argc > 1 && strcmp(argv[1], "install-only") == 0) {
+        return EXIT_SUCCESS;
+    }
     abort();
 #if defined(__TINYC__)
     /*

@@ -45,17 +45,17 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=thumbnail_size|stored=1|binding=thumbnail_size_hint|value=64*}" != "${short_trace}" || {
+test "${short_trace#*LSXSUB1\|*key=thumbnail_size\|stored=1\|binding=thumbnail_size_hint\|value=64*}" != "${short_trace}" || {
     echo "not ok" 1 - "thumbnail_size short value was not stored"
     exit 0
 }
 
-test "${short_trace#*LSXTHM1|size=64|runtime_hint=0|explicit=1*}" != "${short_trace}" || {
+test "${short_trace#*LSXTHM1\|size=64\|runtime_hint=0\|explicit=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "thumbnail_size short value was not effective"
     exit 0
 }
 
-test "${short_trace#*LSXTHM2|size=64*}" != "${short_trace}" || {
+test "${short_trace#*LSXTHM2\|size=64*}" != "${short_trace}" || {
     echo "not ok" 1 - "thumbnail_size short value did not reach thumbnailer"
     exit 0
 }
@@ -71,17 +71,17 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=thumbnail_size|stored=1|binding=thumbnail_size_hint|value=64*}" != "${env_trace}" || {
+test "${env_trace#*LSXSUB1\|*key=thumbnail_size\|stored=1\|binding=thumbnail_size_hint\|value=64*}" != "${env_trace}" || {
     echo "not ok" 1 - "thumbnail_size environment value was not stored"
     exit 0
 }
 
-test "${env_trace#*LSXTHM1|size=64|runtime_hint=0|explicit=0*}" != "${env_trace}" || {
+test "${env_trace#*LSXTHM1\|size=64\|runtime_hint=0\|explicit=0*}" != "${env_trace}" || {
     echo "not ok" 1 - "thumbnail_size environment value was not effective"
     exit 0
 }
 
-test "${env_trace#*LSXTHM2|size=64*}" != "${env_trace}" || {
+test "${env_trace#*LSXTHM2\|size=64*}" != "${env_trace}" || {
     echo "not ok" 1 - "thumbnail_size environment value did not reach thumbnailer"
     exit 0
 }
@@ -99,12 +99,12 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${range_trace#*LSXSUB1|*key=thumbnail_size|stored=1|binding=thumbnail_size_hint|value=2147483647*}" != "${range_trace}" || {
+test "${range_trace#*LSXSUB1\|*key=thumbnail_size\|stored=1\|binding=thumbnail_size_hint\|value=2147483647*}" != "${range_trace}" || {
     echo "not ok" 1 - "thumbnail_size maximum was not clamped"
     exit 0
 }
 
-test "${range_trace#*LSXTHM1|size=2147483647|runtime_hint=0|explicit=0*}" != "${range_trace}" || {
+test "${range_trace#*LSXTHM1\|size=2147483647\|runtime_hint=0\|explicit=0*}" != "${range_trace}" || {
     echo "not ok" 1 - "thumbnail_size clamped value was not effective"
     exit 0
 }
@@ -117,12 +117,12 @@ zero_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     exit 0
 }
 
-test "${zero_trace#*LSXSUB1|*key=thumbnail_size|stored=1*}" = "${zero_trace}" || {
+test "${zero_trace#*LSXSUB1\|*key=thumbnail_size\|stored=1*}" = "${zero_trace}" || {
     echo "not ok" 1 - "thumbnail_size accepted zero"
     exit 0
 }
 
-test "${zero_trace#*LSXTHM1|size=512|runtime_hint=0|explicit=0*}" != "${zero_trace}" || {
+test "${zero_trace#*LSXTHM1\|size=512\|runtime_hint=0\|explicit=0*}" != "${zero_trace}" || {
     echo "not ok" 1 - "thumbnail_size zero did not retain the default"
     exit 0
 }
@@ -135,7 +135,7 @@ runtime_trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     exit 0
 }
 
-test "${runtime_trace#*LSXTHM1|size=16|runtime_hint=16|explicit=0*}" != "${runtime_trace}" || {
+test "${runtime_trace#*LSXTHM1\|size=16\|runtime_hint=16\|explicit=0*}" != "${runtime_trace}" || {
     echo "not ok" 1 - "resize hint did not override the environment"
     exit 0
 }
@@ -148,7 +148,7 @@ precedence_trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     exit 0
 }
 
-test "${precedence_trace#*LSXTHM1|size=64|runtime_hint=16|explicit=1*}" != "${precedence_trace}" || {
+test "${precedence_trace#*LSXTHM1\|size=64\|runtime_hint=16\|explicit=1*}" != "${precedence_trace}" || {
     echo "not ok" 1 - "thumbnail_size did not override the resize hint"
     exit 0
 }

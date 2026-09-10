@@ -127,7 +127,7 @@ the exact combinations.
 | OpenBSD | 7.8 | x86_64 | system C compiler | Autotools, Meson |
 | NetBSD | 10.1 | x86_64 | system C compiler | Autotools, Meson |
 | DragonFly BSD | 6.4.2 | x86_64 | system C compiler | Autotools, Meson |
-| Haiku | R1/beta5 | x86_64 | system C compiler | Autotools, Meson |
+| Haiku | R1/beta6 | x86_64 | system C compiler | Autotools, Meson |
 | Solaris | 11.4 | x86_64 | GCC | Autotools, Meson |
 | OmniOS | r151056 | x86_64 | GCC 13 | Autotools |
 | WebAssembly | Emscripten runtime profiles | wasm32 | Emscripten/Clang | Autotools, Meson |
