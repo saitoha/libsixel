@@ -2,7 +2,7 @@
 
 ## Scope and purpose
 
-This document defines the diagnostic assistance that helps a user correct an invalid libsixel command. It covers ambiguous-prefix candidate lists, fuzzy name suggestions, and nearby-path suggestions. These features are suggestions, not automatic correction: accepted syntax is defined by exact and [prefix matching](prefix-matching.md), and an invalid command remains unsuccessful even when the intended spelling appears obvious.
+This document defines the diagnostic assistance that helps a user correct an invalid invocation of the CLI tools provided with libsixel. It covers ambiguous-prefix candidate lists, fuzzy name suggestions, and nearby-path suggestions. These features are suggestions, not automatic correction: accepted syntax is defined by exact and [prefix matching](prefix-matching.md), and an invalid command remains unsuccessful even when the intended spelling appears obvious.
 
 The converter CLIs enable human-friendly name guidance because a dense image-processing vocabulary is error-prone to type and because a precise correction reduces repeated trial and error. The library does not impose that presentation on embedding applications. `lsqa` reuses parts of the shared matcher and diagnostic machinery, but it does not generally expose the converter's `-x MODE[:SUBOPTION...]` control surface.
 

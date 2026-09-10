@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document defines how libsixel CLI choice values are resolved from exact names and prefixes. The shared matcher is used by `img2sixel`, `sixel2png`, and selected finite-choice arguments in `lsqa`; it is not synonymous with the [suboption grammar](suboptions.md). A suboption key remains exact even when its choice-valued payload permits a prefix.
+This document defines how choice values in the CLI tools provided with libsixel are resolved from exact names and prefixes. The shared matcher is used by `img2sixel`, `sixel2png`, and selected finite-choice arguments in `lsqa`; it is not synonymous with the [suboption grammar](suboptions.md). A suboption key remains exact even when its choice-valued payload permits a prefix.
 
 Prefix matching is a typing convenience with compatibility consequences. It is accepted only where a schema declares a finite choice vocabulary, so the parser can prove whether an abbreviation has one semantic result.
 
