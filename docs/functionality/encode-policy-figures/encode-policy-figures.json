@@ -1,0 +1,40 @@
+{
+  "assets": [
+    {
+      "path": "encode-policy-band-wide.svg",
+      "role": "large screen"
+    },
+    {
+      "path": "encode-policy-band-mobile.svg",
+      "role": "mobile portrait"
+    },
+    {
+      "path": "encode-policy-overpaint-wide.svg",
+      "role": "large screen"
+    },
+    {
+      "path": "encode-policy-overpaint-mobile.svg",
+      "role": "mobile portrait"
+    }
+  ],
+  "color_roles": {
+    "context": "#556176",
+    "ordinary_path": "#2563EB",
+    "same_output": "#0F766E",
+    "size_policy": "#D97706",
+    "warning": "#BE185D"
+  },
+  "generator": "tools/plot_encoding_mode_figures.py",
+  "measurement": false,
+  "review": {
+    "accessibility": "no distinction relies on color alone",
+    "data_shape": "conceptual process and side-by-side comparison",
+    "encoding": "arrows show order; labels and layout repeat color roles",
+    "fallback": "adjacent prose and figure alt text",
+    "primary": "responsive SVG diagrams",
+    "qa": "wide and mobile assets reviewed after final generation",
+    "story_job": "explain the serialization boundary and overpainting"
+  },
+  "schema": 1,
+  "scope": "img2sixel -E band serialization and size-policy overpainting"
+}

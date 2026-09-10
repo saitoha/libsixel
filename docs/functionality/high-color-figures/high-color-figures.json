@@ -1,0 +1,40 @@
+{
+  "assets": [
+    {
+      "path": "high-color-register-wide.svg",
+      "role": "large screen"
+    },
+    {
+      "path": "high-color-register-mobile.svg",
+      "role": "mobile portrait"
+    },
+    {
+      "path": "high-color-passes-wide.svg",
+      "role": "large screen"
+    },
+    {
+      "path": "high-color-passes-mobile.svg",
+      "role": "mobile portrait"
+    }
+  ],
+  "color_roles": {
+    "compatible_result": "#0F766E",
+    "context": "#556176",
+    "fixed_or_source": "#2563EB",
+    "paint_pass": "#D97706",
+    "register_redefinition": "#BE185D"
+  },
+  "generator": "tools/plot_encoding_mode_figures.py",
+  "measurement": false,
+  "review": {
+    "accessibility": "no distinction relies on color alone",
+    "data_shape": "branching comparison and cyclic process",
+    "encoding": "arrows show order; labels and layout repeat color roles",
+    "fallback": "adjacent prose and figure alt text",
+    "primary": "responsive SVG diagrams",
+    "qa": "wide and mobile assets reviewed after final generation",
+    "story_job": "explain register semantics and repeated paint passes"
+  },
+  "schema": 1,
+  "scope": "img2sixel -I register semantics and repeated paint passes"
+}
