@@ -1,5 +1,6 @@
 #!/bin/sh
 # Confirm prefixed PNG output respects explicit path.
+# Policy: docs/writers/png.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

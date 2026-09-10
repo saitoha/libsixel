@@ -1,5 +1,6 @@
 #!/bin/sh
-# TAP test verifying stdin input produces valid PNG on stdout.
+# TAP test verifying stdin input produces a PNG stream on stdout.
+# Policy: docs/writers/png.md
 
 set -eux
 
@@ -20,18 +21,13 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i - <"${TOP_SRCDIR}/images/map8.six" >"${
     exit 0
 }
 
-test -s "${stdout_path}" || {
-    echo "not ok" 1 - "stdout png missing"
-    exit 0
-}
-
-# The first 33 bytes cover the PNG signature and the complete IHDR chunk,
-# including its CRC.  A signature-only check cannot detect a broken writer.
-expected_header_cksum="517916970 33"
-actual_header_cksum=$(dd bs=1 count=33 if="${stdout_path}" 2>/dev/null | cksum)
+# Keep this CLI test focused on the default stdout destination. Writer chunk
+# integrity is checked independently under tests/writer/png.
+expected_header_cksum="3308842558 4"
+actual_header_cksum=$(dd bs=1 count=4 if="${stdout_path}" 2>/dev/null | cksum)
 
 test "${actual_header_cksum}" = "${expected_header_cksum}" || {
-    echo "not ok" 1 - "stdout png IHDR or CRC is invalid"
+    echo "not ok" 1 - "stdout png signature is invalid"
     exit 0
 }
 

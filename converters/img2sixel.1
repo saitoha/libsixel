@@ -44,11 +44,12 @@ it matches both "auto" and "average".
 specify output file name (default:stdout).
 Selecting a name ending in \(dq.png\(dq, the literal \(dqpng:-\(dq, or the
 prefix \(dqpng:\(dq emits PNG data that reproduces the generated SIXEL
-stream. The PNG keeps the palette indices so that each decoded pixel
-mirrors the SIXEL quantizer. \(dqpng:-\(dq writes to standard output,
-while \(dqpng:\fIpath\fP\(dq stores the PNG alongside the SIXEL
-output. Using \(dq\-o output.png\(dq writes the PNG directly to that
-path.
+stream. For ordinary palette SIXEL, the PNG keeps the palette indices
+and mirrors the quantized and dithered output. High-color output is not
+an indexed-exact snapshot because it redefines palette registers while
+painting. \(dqpng:-\(dq writes to standard output, while
+\(dqpng:\fIpath\fP\(dq stores the PNG alongside the SIXEL output. Using
+\(dq\-o output.png\(dq writes the PNG directly to that path.
 .TP 5
 .B \-= \fICOUNT|auto\fP, \-\-threads=\fICOUNT|auto\fP
 select the encoder thread count used for band parallelism.
