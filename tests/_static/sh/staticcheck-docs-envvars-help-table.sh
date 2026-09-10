@@ -1,6 +1,7 @@
 #!/bin/sh
 # Emit TAP for environment-variable docs consistency static check.
 # Policy: docs/cli/design-policy.md
+# Policy: docs/cli/suboptions.md
 
 set -eu
 

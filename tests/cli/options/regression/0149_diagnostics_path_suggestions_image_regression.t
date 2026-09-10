@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/correction-suggestions.md
 # Verify path suggestions through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DIAGNOSTICS|NULL|path_suggestions
 # Registry binding: path_suggestions|path_suggestions_override

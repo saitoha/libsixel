@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying medoids algo accepts env/CLI values and keeps CLI priority.
+# Policy: docs/cli/suboptions.md
 
 set -eux
 

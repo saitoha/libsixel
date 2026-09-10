@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP test verifying uppercase -Q short suboptions reject key=value form.
-# Policy: docs/cli/design-policy.md
+# Policy: docs/cli/suboptions.md
 
 set -eux
 

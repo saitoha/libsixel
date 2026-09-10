@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/correction-suggestions.md
 # Verify prefix suggestions through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DIAGNOSTICS|NULL|prefix_suggestions
 # Registry binding: prefix_suggestions|prefix_suggestions_override

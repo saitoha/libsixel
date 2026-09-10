@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying path suggestions are emitted for missing files.
+# Policy: docs/cli/correction-suggestions.md
 
 set -eux
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/suboptions.md
 # Verify lsqa accepts selective_blur full and compact forms.
 
 set -eux

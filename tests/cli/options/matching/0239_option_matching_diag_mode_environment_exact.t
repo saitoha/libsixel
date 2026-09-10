@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify SIXEL_DIAG_MODE keeps its exact lowercase environment contract.
+# Policy: docs/cli/prefix-matching.md
 
 set -eux
 

@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *
  * Verify that every registered lookup policy retains a unique initial.
- * Policy: docs/cli/design-policy.md
+ * Policy: docs/cli/prefix-matching.md
  */
 
 #if defined(HAVE_CONFIG_H)

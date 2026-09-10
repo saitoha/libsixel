@@ -2,6 +2,7 @@
 # Emit TAP for the typed suboption registries and their mandatory metadata.
 # Policy: docs/cli/design-policy.md
 # Policy: docs/cli/abort-trace.md
+# Policy: docs/cli/suboptions.md
 
 set -eux
 

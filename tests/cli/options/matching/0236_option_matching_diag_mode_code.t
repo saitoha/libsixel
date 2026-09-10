@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify code diagnostics suppress human-oriented candidate lists.
+# Policy: docs/cli/correction-suggestions.md
 
 set -eux
 

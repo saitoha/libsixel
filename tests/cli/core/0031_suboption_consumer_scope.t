@@ -1,5 +1,6 @@
 #!/bin/sh
 # Run the scoped suboption registry test.
+# Policy: docs/cli/suboptions.md
 
 set -eux
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP test verifying ambiguous option prefix is rejected with a diagnostic.
-# Policy: docs/cli/design-policy.md
+# Policy: docs/cli/prefix-matching.md
 
 set -eux
 

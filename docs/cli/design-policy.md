@@ -46,9 +46,9 @@ These constraints lead to a hybrid interface: conventional executables and top-l
 | --- | --- | --- | --- |
 | Program shape | Keep `img2sixel` and `sixel2png` as separate directional utilities. | A command name states the conversion direction and composes directly in a pipeline. | Shared controls must remain synchronized across two binaries; registries and static checks enforce that synchronization. |
 | Top-level syntax | Give every public top-level option a short and a long form. | Long names teach; short names preserve established interactive and C API usage. | The short namespace is finite; independent additions require review and subsystem-specific growth moves to typed suboptions. |
-| Complex settings | Use `BASE[:SUBOPTION...]` with typed long and compact suboption forms. | The base selects an algorithm or policy family while subordinate controls stay in their owning namespace. | The colon grammar is project-specific; help, manuals, completion, exact key matching, and descriptive long forms make it learnable. |
+| Complex settings | Use `BASE[:SUBOPTION...]` with typed long and compact suboption forms where one setting owns a family of subordinate policy. | The base selects an algorithm or policy family while subordinate controls stay in their owning namespace. | The colon grammar is project-specific; help, manuals, completion, exact key matching, and descriptive long forms make it learnable. |
 | Processing order | Treat options as configuration for a fixed pipeline, except that crop and resize preserve their relative CLI order. | Most stages have one valid architectural order; crop and resize are non-commutative geometry operations for which both orders are useful. | The exception must remain narrow, documented, and directly tested. |
-| Configuration | Resolve command line, then environment, then built-in default; do not load an implicit config file. | Per-invocation behavior stays inspectable while wrappers and constrained launchers can still establish defaults. | Inherited environments are ambient state; reproducible commands should state material choices explicitly. |
+| Configuration | Give every configurable public option and suboption an explicit environment form, resolve command line before environment and built-in defaults, and do not load an implicit config file. | Interactive commands, wrappers, CI, and launchers can express the same setting without inventing parallel configuration semantics. | Inherited environments are ambient state; help must expose the mapping and reproducible commands should state material choices explicitly. |
 | Diagnostics | Offer human and stable code modes, keep suggestions diagnostic-only, and send messages to standard error. | Interactive correction and automation need different presentation stability without different error semantics. | Two modes and configurable suggestions increase implementation work; shared registries and focused tests prevent divergence. |
 | Abnormal termination | Let adopting CLI executables install a narrow, policy-controlled abort trace only for otherwise unhandled `SIGABRT`. | Immediate failure context helps reports while preserving sanitizer, debugger, and core-dump ownership. | In-process crash reporting is best-effort and may disclose symbols or addresses; the dedicated policy documents the current consumer set and these limits. |
 
@@ -61,6 +61,10 @@ A strictly POSIX surface would maximize parser portability but remove descriptiv
 ### One flat set of long options
 
 Flattening every control into names such as `--quantize-kmeans-init-type` would be easy to parse but would repeat subsystem names, flood help output, and leave no credible one-character partner for each new top-level setting. More importantly, it would obscure that some controls are valid only for a particular base algorithm. Typed suboptions keep validation and discovery in the active domain, while a descriptive long spelling remains available for scripts and documentation.
+
+This explains why the current structure remains internally coherent; it does not establish that the structure was the best clean-sheet CLI design. In hindsight, if the eventual number and depth of settings had been foreseeable in 2014, libsixel would have made descriptive long options the primary interface and reserved short forms for the most frequent operations. Interix provided `getopt()` but not `getopt_long()`, yet that limitation did not make a long-option-first design impossible: with the expected scale visible, implementing a compatibility `getopt_long()` at that point would have been a reasonable engineering choice. The later MSVC and OpenVMS fallback demonstrates the shape of the implementation that could have been introduced earlier, although it does not erase the cost and uncertainty such work would have carried in 2014.
+
+The present suboption form acquires a rational scoped grammar once learned, but the additional colon syntax and context-dependent compact letters create genuine operational surprise for first-time and occasional users. On that user-experience criterion, it is difficult to call the result the CLI-design optimum. The project retains the structure because its released spellings, environment mappings, validation scopes, manuals, completion, and C-facing option history are now compatibility surface. Future work should improve discovery and avoid unnecessary new nesting; consistency with an imperfect historical structure is evidence to weigh, not an automatic design decision.
 
 ### One umbrella executable with subcommands
 
@@ -118,17 +122,7 @@ The exception is justified because crop and resize are visibly non-commutative: 
 
 Top-level options select major operations, independent pipeline stages, or broadly applicable behavior. Typed suboptions group controls owned by a loader, quantizer, diffusion method, lookup method, runtime policy, diagnostics policy, or another named subsystem. Ownership follows the user's mental model and the processing stage, not the availability of a convenient short character.
 
-A structured option argument has this form:
-
-```text
-BASE[:SUBOPTION...]
-```
-
-The base selects the primary method or policy. The long suboption form is `name=value`. Every public suboption also has a compact form consisting of one uppercase ASCII letter followed immediately by the value: `Kvalue`. For example, `-Q kmeans:inittype=pca` and `-Q kmeans:Ipca` select the same setting. The compact form does not use `=`, and lowercase letters do not enter the compact-key namespace.
-
-Some suboptions apply to every base of the enclosing option, while others are valid only for particular bases. A compact letter therefore has meaning in the context of its top-level option and active base; the same letter may be used by unrelated options or by disjoint bases. This scoped reuse is safe because the parser always knows the owning schema before interpreting the key.
-
-List-valued options apply the same grammar to each item and must define the type and valid base/suboption set for every item. Parsing structure must not depend on undocumented implementation state.
+For example, `-Q kmeans:inittype=pca` and its compact spelling `-Q kmeans:Ipca` select the same k-means initialization policy without allocating another top-level flag. The [converter suboption architecture](suboptions.md) defines the complete grammar, registry metadata, scope rules, typed parsing, environment-variable parity, precedence, diagnostics, and implementation path. It is principally the structured option system of `img2sixel` and `sixel2png`; `lsqa` does not adopt that architecture generally, although its `-d` dequantize option deliberately reuses the decoder parser and its limited suboptions.
 
 ### Top-level short and long forms
 
@@ -142,15 +136,7 @@ The one-character namespace is converter-local because encoder and decoder flags
 
 ### Suboption forms and names
 
-Use suboptions for policy specific to a named subsystem. A public suboption has a typed domain, one canonical long name, one uppercase compact name, and an explicit environment representation. Additional aliases exist only for a released compatibility contract.
-
-The long spelling serves learning, review, and self-documenting scripts. The compact spelling serves practiced interactive use when several policies would otherwise make a command unwieldy. Both forms must select exactly the same setting; a compact form is an ergonomic spelling, not separate behavior.
-
-Long suboption names require exact `name=value` spelling. Accepting arbitrary key prefixes would make today's abbreviation block tomorrow's setting and would hide typos in a dense structured argument. The registered uppercase `Kvalue` form is the only abbreviated key. Choice values may use the narrower prefix policy described below because their ambiguity is checked within a typed, finite domain.
-
-Names describe user-visible behavior in established libsixel terminology rather than a temporary function, data structure, dependency, or optimization. Related controls use parallel names so help and completion reveal the model. A name that would become false after an implementation replacement is not a durable interface.
-
-When one option exposes suboptions for multiple bases, help and the manual show the exact primary environment mapping as `scope:suboption=VARIABLE`. The explicit scope matters especially for list options, where items may select different bases and environment namespaces.
+Use suboptions for policy specific to a named subsystem. A public suboption has a typed domain, one canonical long name, one uppercase compact name, and an explicit environment representation. Long `name=value` keys are exact, while the compact `Kvalue` form is a separately registered spelling rather than a key abbreviation. Names describe user-visible behavior in established libsixel terminology rather than a temporary function, data structure, dependency, or optimization. The detailed naming and parsing contracts belong to the [suboption architecture](suboptions.md).
 
 ### Internal controls
 
@@ -166,7 +152,7 @@ Every configurable value has one identifiable default and a documented precedenc
 
 The command line wins because it is the most local and visible expression of intent. Environment variables are useful for wrappers, CI, platform launchers, and user defaults, but inherited state must not override an explicit invocation. Built-in defaults make an unconfigured command usable and provide the final deterministic fallback.
 
-Every public option or suboption that represents a configurable setting has a corresponding environment form. Pure actions such as help and version and positional input or output targets are not settings. The environment name is part of the public interface and is listed by help and the manual rather than inferred by mechanically capitalizing the CLI name. Multiple CLI routes may share one environment variable when they intentionally configure the same state.
+Every public option or suboption that represents a configurable setting has a corresponding environment form. This is a primary design rule, not an optional convenience: a new setting is incomplete until both channels reach the same typed state. Pure actions such as help and version and positional input or output targets are not settings. The environment name is part of the public interface and is listed by help and the manual rather than inferred by mechanically capitalizing the CLI name. Multiple CLI routes may share one environment variable when they intentionally configure the same state. Registry-backed converter settings are mechanically audited today; other CLI surfaces must be reviewed against the same rule until equivalent structural coverage exists.
 
 `--env NAME=VALUE` supplies an environment-form setting for one converter invocation. It is not a second setting or a higher precedence layer: a corresponding explicit CLI setting still wins. This form is valuable to launchers and cross-platform tests that cannot rely on shell-specific leading assignment syntax.
 
@@ -182,20 +168,7 @@ Validate at the layer with enough context to identify the responsible option, ac
 
 ### Choice values and prefix abbreviations
 
-Choice names should make useful abbreviations short without sacrificing established terminology. Prefer a unique initial where natural, but do not invent an obscure name merely to reserve a letter or break a released prefix.
-
-Only arguments whose registered type permits prefix matching may be abbreviated. This includes structured-option base names and choice-valued suboption values. It does not include long suboption keys, arbitrary strings, paths, or numeric values.
-
-Choice matching follows this order:
-
-1. A complete choice name is an exact match and wins immediately.
-2. Otherwise, a nonempty prefix is accepted when every matching spelling maps to the same semantic value. Compatible aliases that share one value therefore do not create false ambiguity.
-3. A prefix matching different semantic values is ambiguous and is rejected.
-4. A token matching no accepted prefix is unknown and is rejected.
-
-For example, `-s ave` resolves to `average`, while `-d st` is rejected when it matches both `stucki` and `stbn`. Similarly, `scan=ser` may abbreviate `scan=serpentine`, but `sca=serpentine` is not a valid abbreviation of the `scan` key.
-
-Prefix matching is limited to a scoped choice domain because it trades typing efficiency for future naming constraints. Adding a choice must audit documented and tested prefixes; a new name may not silently turn an accepted unique prefix into an ambiguous command without a compatibility plan. Command-line and environment matching rules are declared separately, so a CLI prefix does not imply that the environment accepts the same prefix or alias.
+Choice values may use case-sensitive prefix matching inside a declared finite domain. For example, `-s ave` resolves to `average`, while `-d st` is rejected because it matches both `stucki` and `stbn`; `scan=ser` may abbreviate the value `serpentine`, but `sca=serpentine` may not abbreviate the suboption key `scan`. Exact values, aliases that share one semantic value, environment matching, ambiguity, and compatibility constraints are defined by the [choice prefix-matching policy](prefix-matching.md).
 
 ## Diagnostics and suggestions
 
@@ -208,11 +181,7 @@ Diagnostics are designed output, not incidental parser text. Human-readable mode
 - Avoid leaking uninitialized memory, unrelated candidate names, or platform-specific paths because helpful diagnostics must not become an information-disclosure channel.
 - Keep library and standalone-converter defaults separate because an embedding application owns its own user experience.
 
-An ambiguous accepted prefix is rejected with an `ambiguous prefix` diagnostic. Human-readable mode lists matched spellings when prefix suggestions are enabled. Unknown base names, suboption keys, and suboption values are distinct errors so the candidate list comes from the correct domain.
-
-Typo suggestions compare an invalid token with prefixes that would be valid choices. Matching uses case-insensitive normalized Levenshtein similarity. Candidates have edit distance at most two and similarity of at least 0.6; candidates of at most three characters require distance one. Results are ordered by higher similarity, lower edit distance, shorter name, and lexical order, with at most five names after `Did you mean:`. Fixed bounds keep diagnostics deterministic and prevent a large registry from flooding the terminal.
-
-Human-readable CLI diagnostics enable prefix and fuzzy guidance by default because interactive users benefit from correction. Code mode retains the stable error category but omits human-oriented candidate prose because scripts should branch on categories rather than parse an evolving sentence.
+An ambiguous accepted prefix is rejected with an `ambiguous prefix` diagnostic and may list the matching names. An unknown value or key may add `Did you mean:` candidates, but the command still fails rather than silently applying a guess. These facilities are independently controlled by `prefix_suggestions`, `fuzzy_suggestions`, and `path_suggestions`; their defaults, ranking algorithms, privacy and performance effects, diagnostic-mode behavior, and environment forms are defined by the [correction-suggestion policy](correction-suggestions.md).
 
 ### Abnormal-termination diagnostics
 
@@ -266,32 +235,20 @@ Each automated contract has a stable ID and a corresponding static check or test
 | ID | Design contract | Static check or test |
 | --- | --- | --- |
 | CLI-01 | Every public top-level option has a one-character short form and a long form with the same argument shape. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh) |
-| CLI-02 | Public suboptions have typed values, uppercase one-letter compact forms, environment forms, and image-level coverage. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh) |
 | CLI-03 | `img2sixel -H` and the manual expose the same top-level option declarations. | [tests/_static/sh/staticcheck-docs-help-vs-man.sh](../../tests/_static/sh/staticcheck-docs-help-vs-man.sh) |
 | CLI-04 | The manual and Bash completion expose the same top-level option declarations. | [tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh](../../tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh) |
 | CLI-05 | Public environment controls are represented in the generated help inventory. | [tests/_static/sh/staticcheck-docs-envvars-help-table.sh](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) |
 | CLI-06 | Internal test environment controls remain behind the internal environment interface. | [tests/_static/sh/staticcheck-src-no-direct-getenv.sh](../../tests/_static/sh/staticcheck-src-no-direct-getenv.sh) |
-| CLI-07 | A unique accepted value prefix succeeds without an error diagnostic. | [tests/cli/options/matching/0001_option_matching_prefix_unique.t](../../tests/cli/options/matching/0001_option_matching_prefix_unique.t) |
-| CLI-08 | An ambiguous value prefix is rejected with exit status 2 and a precise diagnostic. | [tests/cli/options/matching/0002_option_matching_prefix_ambiguous.t](../../tests/cli/options/matching/0002_option_matching_prefix_ambiguous.t) |
-| CLI-09 | A numeric value outside its declared range is rejected. | [tests/cli/options/matching/0193_option_matching_quantize_center_seed_overflow_rejected.t](../../tests/cli/options/matching/0193_option_matching_quantize_center_seed_overflow_rejected.t) |
 | CLI-10 | An explicit command-line value takes precedence over its environment default. | [tests/cli/options/matching/0246_option_matching_sampling_policy_env_cli_precedence.t](../../tests/cli/options/matching/0246_option_matching_sampling_policy_env_cli_precedence.t) |
 | CLI-11 | Missing required arguments are detected before option dispatch. | [tests/cli/argument-shift/0007_cli_guard_missing_argument.t](../../tests/cli/argument-shift/0007_cli_guard_missing_argument.t) |
-| CLI-12 | Fuzzy suggestions are diagnostic output and do not make invalid input succeed. | [tests/cli/options/matching/0014_option_matching_fuzzy_suggestions_default_enabled.t](../../tests/cli/options/matching/0014_option_matching_fuzzy_suggestions_default_enabled.t) |
 | CLI-13 | Explicit standard input and standard output form a working binary conversion path. | [tests/cli/core/0009_basic_stdin_stdout_map64.t](../../tests/cli/core/0009_basic_stdin_stdout_map64.t) |
 | CLI-14 | `png:-` writes PNG data to standard output. | [tests/cli/core/0014_basic_png_stdout.t](../../tests/cli/core/0014_basic_png_stdout.t) |
 | CLI-15 | The help command remains available. | [tests/cli/core/0001_help.t](../../tests/cli/core/0001_help.t) |
 | CLI-16 | The version command remains available. | [tests/cli/core/0002_version.t](../../tests/cli/core/0002_version.t) |
-| CLI-17 | Uppercase compact suboption keys are accepted without `=`. | [tests/cli/options/matching/0087_option_matching_quantize_kmeans_histogram_short_success.t](../../tests/cli/options/matching/0087_option_matching_quantize_kmeans_histogram_short_success.t) |
-| CLI-18 | Long suboption keys require exact spelling rather than prefix abbreviation. | [tests/cli/options/matching/0026_option_matching_loader_suboption_prefix_rejected.t](../../tests/cli/options/matching/0026_option_matching_loader_suboption_prefix_rejected.t) |
-| CLI-19 | A compact suboption key followed by `=` is rejected. | [tests/cli/options/matching/0233_option_matching_quantize_short_suboption_equals_rejected.t](../../tests/cli/options/matching/0233_option_matching_quantize_short_suboption_equals_rejected.t) |
-| CLI-20 | An unknown suboption key is rejected with the valid keys for the active base. | [tests/cli/options/matching/0112_option_matching_quantize_medoids_unknown_key_lists_candidates.t](../../tests/cli/options/matching/0112_option_matching_quantize_medoids_unknown_key_lists_candidates.t) |
-| CLI-21 | Fuzzy typo suggestions can be disabled without changing rejection behavior. | [tests/cli/options/matching/0009_option_matching_distance2_fuzzy_off.t](../../tests/cli/options/matching/0009_option_matching_distance2_fuzzy_off.t) |
 | CLI-22 | `clipboard:` and `png:clipboard:` work as input and output pseudo targets. | [tests/io/clipboard/0002_clipboard_file_backend.t](../../tests/io/clipboard/0002_clipboard_file_backend.t) |
 | CLI-23 | Typed scalar options and suboptions register environment names, and public environment controls remain synchronized with help. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh), [tests/_static/sh/staticcheck-docs-envvars-help-table.sh](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) |
-| CLI-24 | A close suboption-key typo is rejected with its canonical key as a `Did you mean:` suggestion. | [tests/cli/options/matching/0276_option_matching_suboption_key_typo_suggestion.t](../../tests/cli/options/matching/0276_option_matching_suboption_key_typo_suggestion.t) |
-| CLI-25 | Every registered lookup policy is accepted by its single-character initial. | [tests/cli/0035_cli_lookup_policy_initial_prefixes.c](../../tests/cli/0035_cli_lookup_policy_initial_prefixes.c), [tests/cli/options/matching/0278_option_matching_lookup_registry_initials.t](../../tests/cli/options/matching/0278_option_matching_lookup_registry_initials.t) |
 | CLI-26 | `img2sixel` preserves both crop-before-resize and resize-before-crop planner order, and the two orders remain observably distinct. | [tests/loader/builtin/1513_loader_builtin_pal8_trns_clipfirst_order_preserved.t](../../tests/loader/builtin/1513_loader_builtin_pal8_trns_clipfirst_order_preserved.t) |
 
 ### Coverage boundary
 
-Structural checks cover option hierarchy, paired top-level forms, typed suboptions, environment exposure, help, manuals, and completion. Behavioral tests cover representative parsing, precedence, diagnostics, binary I/O, and both geometry orders. Design judgment remains manual: tests cannot decide whether a name is clear, whether a new feature belongs in an existing subsystem, whether another order-sensitive exception is justified, or whether the compatibility cost of a new spelling is acceptable.
+Structural checks cover paired top-level forms, environment exposure, help, manuals, and completion. Behavioral tests cover representative precedence, binary I/O, and both geometry orders. Detailed suboption, prefix-matching, and correction-suggestion contracts and tests belong to their linked documents. Design judgment remains manual: tests cannot decide whether a name is clear, whether a new feature belongs in an existing subsystem, whether another order-sensitive exception is justified, or whether the compatibility cost of a new spelling is acceptable.

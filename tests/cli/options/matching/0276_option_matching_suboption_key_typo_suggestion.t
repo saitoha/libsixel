@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP test verifying suboption key typos suggest the canonical key.
-# Policy: docs/cli/design-policy.md
+# Policy: docs/cli/correction-suggestions.md
 
 set -eux
 

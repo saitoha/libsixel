@@ -1,6 +1,7 @@
 #!/bin/sh
 # TAP test verifying -L suboption key prefixes are rejected.
-# Policy: docs/cli/design-policy.md
+# Policy: docs/cli/suboptions.md
+# Policy: docs/cli/prefix-matching.md
 
 set -eux
 
