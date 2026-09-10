@@ -1,8 +1,8 @@
 # OpenVMS build notes
 
 This directory contains the first native OpenVMS build path for libsixel.
-For the separate GNV/Autotools bring-up notes and future plan, see
-`openvms/gnv-autotools.md`.
+For the GNV/Autotools bring-up history and the reasons behind the current
+workarounds, see [`docs/misc/platforms/openvms.md`](../docs/misc/platforms/openvms.md).
 
 The current target is intentionally small:
 

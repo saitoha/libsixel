@@ -68,6 +68,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/ci/local-jobs.tsv \
 	docs/ci/support-matrix.md \
 	docs/cli/design-policy.md \
+	docs/misc/platforms/openvms.md \
 	docs/concepts/colorspace.md \
 	docs/concepts/pixelformat-precision.md \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-paths.csv \

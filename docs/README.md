@@ -103,6 +103,10 @@ are grouped by domain so each area can grow without overloading one document.
 - [CI support matrix](ci/support-matrix.md) is the generated inventory of
   build configurations supported by GitHub Actions and local CI.
 
+## Platform porting records
+
+- [OpenVMS porting record](misc/platforms/openvms.md) explains the native DCL bootstrap, the GNV/Autotools bring-up, the GNV-specific failure modes and workarounds, and the resulting local-CI execution model.
+
 ## Documentation governance
 
 - [Documentation instructions](AGENTS.md) define the scope, organization, and
