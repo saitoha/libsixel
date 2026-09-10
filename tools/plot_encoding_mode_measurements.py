@@ -426,13 +426,16 @@ def plot_encode_policy(rows: Sequence[Mapping[str, object]], path: Path) -> None
     draw_size(axes[2], rows, "Size")
     figure.text(
         0.045,
-        0.015,
+        0.012,
         "images/snake.png • 600×450 RGB • one CPU thread • no diffusion • "
-        f"two warmups, {runs} measured fresh processes",
+        f"two warmups, {runs} measured fresh processes\n"
+        "auto and fast use the same encoder path; their median gap is "
+        "measurement noise",
         color="#556176",
         fontsize=9.5,
+        linespacing=1.35,
     )
-    figure.tight_layout(rect=(0.03, 0.07, 0.99, 0.90), w_pad=2.0)
+    figure.tight_layout(rect=(0.03, 0.12, 0.99, 0.90), w_pad=2.0)
     path.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(path, dpi=180, facecolor="white")
     plt.close(figure)
