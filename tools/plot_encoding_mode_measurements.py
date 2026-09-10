@@ -546,7 +546,7 @@ def draw_size(axis: plt.Axes, rows: Sequence[Mapping[str, object]],
     axis.invert_yaxis()
     axis.set_xlabel("SIXEL stream size (KiB)")
     axis.set_title(title, loc="left", fontweight="bold")
-    axis.set_xlim(0.0, max(values) * 1.18)
+    axis.set_xlim(0.0, max(values) * 1.24)
     style_axis(axis)
     for position, value in zip(positions, values):
         axis.annotate(f"{value:.1f} KiB", (value, position),

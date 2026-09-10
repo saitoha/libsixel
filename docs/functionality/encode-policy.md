@@ -58,19 +58,33 @@ Transparency is more nuanced than the original 2014 description. Current size-po
 
 ## Measured quality, speed, and size
 
-The controlled comparison used the repository's 600 by 450 `images/snake.png` fixture at revision `a7c9e1a819ccd1e64d682779211fc047681dbc0a`. All three runs used the builtin loader, RGB palette space, 8-bit precision, high quality, a fixed 256-color budget, no diffusion, no GPU, and one CPU thread. Each SIXEL stream was decoded through `sixel2png --direct` before assessment. Speed is fresh-process wall time with two warmups and seven measured runs; the table reports the median and interquartile range on an Apple arm64 host running macOS 26.5.1.
+The controlled comparison used the repository's `images/snake.png` fixture at revision `24e46743fd78167db78ca9d72754e50b6a834947`. All runs used the builtin loader, RGB palette space, 8-bit precision, high quality, a fixed 256-color budget, no diffusion, and no GPU. Quality and size used the original 600 by 450 image with one thread; each SIXEL stream was decoded through `sixel2png --direct` before assessment.
+
+Speed was measured separately on the same image scaled to 1920 by 1080. For every policy and every `--threads` value from 2 through 12, the harness performed two warmups and recorded 21 JSON timelines. One sample is the wall interval from the earliest `encode/worker/worker_start` event to the latest `encode/worker/worker_done` event. Image loading, palette construction, dither work before the first encode worker starts, and ordered writer work are therefore excluded. Once the first encode worker has started, however, waiting for later banded-dither results remains inside the interval. One-thread mode has no encode-worker events and is intentionally absent rather than being measured with a different boundary.
 
 ![Quality identity, runtime, and SIXEL byte size for auto, fast, and size encoding policies](encode-policies/measurements/encode-policy-results.png)
 
-*Figure 3. The dots show observed median end-to-end time and the whiskers show the interquartile range. `auto` and `fast` use the same encoder path, so their separation is measurement noise rather than a policy effect. Size bars report exact stream bytes converted to KiB.*
+*Figure 3. Thread count is the horizontal axis of the speed panel. Each box spans the interquartile range, its line is the median, whiskers extend to 1.5 times the IQR, and isolated points are outliers. `auto` and `fast` use the same encoder path, so small separations between their boxes are sampling noise rather than a policy effect. Size bars report exact stream bytes converted to KiB.*
 
-| Policy | MS-SSIM | Mean Delta E00 | Observed median time, IQR | SIXEL bytes |
-| --- | ---: | ---: | ---: | ---: |
-| `auto` | 0.986100 | 2.403138 | 58.941 ms, 58.123--61.306 | 247,009 |
-| `fast` | 0.986100 | 2.403138 | 60.758 ms, 59.548--62.056 | 247,009 |
-| `size` | 0.986100 | 2.403138 | 62.121 ms, 59.436--62.925 | 226,666 |
+| Policy | MS-SSIM | Mean Delta E00 | SIXEL bytes |
+| --- | ---: | ---: | ---: |
+| `auto` | 0.986100 | 2.403138 | 247,009 |
+| `fast` | 0.986100 | 2.403138 | 247,009 |
+| `size` | 0.986100 | 2.403138 | 226,666 |
 
-All three direct-decode PNG files had the same SHA-256 digest, so quality was pixel-identical rather than merely equal after metric rounding. `auto` and `fast` also had the same encoded-stream digest and execute the same encoder path; their 1.817 ms sample-median gap is measurement noise and must not be interpreted as a speed difference. `size` reduced the stream by 20,343 bytes, or 8.24%, while its timing distribution overlapped the other policies. This single fixture demonstrates the intended invariant and one realistic saving; it is not a universal compression ratio or speed ranking.
+| Threads | `auto` median [Q1--Q3] | `fast` median [Q1--Q3] | `size` median [Q1--Q3] |
+| ---: | ---: | ---: | ---: |
+| 2 | 13.669 [13.522--13.763] ms | 13.538 [13.461--13.789] ms | 13.178 [13.083--13.346] ms |
+| 3 | 48.003 [47.801--48.327] ms | 47.928 [47.817--48.107] ms | 47.932 [47.639--48.234] ms |
+| 4 | 35.284 [34.573--36.127] ms | 34.747 [34.400--36.277] ms | 34.700 [34.360--35.181] ms |
+| 8 | 20.740 [20.503--21.250] ms | 20.961 [20.816--21.263] ms | 20.760 [20.387--21.088] ms |
+| 12 | 17.189 [17.049--17.462] ms | 17.044 [16.648--17.547] ms | 17.133 [16.901--17.374] ms |
+
+All three direct-decode PNG files had the same SHA-256 digest, so quality was pixel-identical rather than merely equal after metric rounding. `auto` and `fast` also had the same encoded-stream digest. Across the full thread grid their median gaps were at most 0.537 ms and their boxes overlapped; the data provides no evidence that they are distinct speed modes. `size` reduced the stream by 20,343 bytes, or 8.24%, while its encode-window distribution remained interleaved with the same-path policies. Ordered writing is outside this timing boundary, so the smaller byte count does not automatically make the measured interval shorter.
+
+The 2-thread plan finishes dithering before encode workers begin, so its short interval must not be read as an end-to-end speedup over 3 threads. From 3 threads onward, dither and encode overlap and the interval includes later-band arrival waits. The boxes widen sharply when the dither side first becomes parallel at 4 threads: the observed IQR was 0.821--1.877 ms across policies, versus 0.241--0.328 ms at 2 threads. They do not then widen monotonically; at 12 threads the range was 0.413--0.899 ms. The result is consistent with uneven band completion becoming visible to encode, but this fixture does not support the stronger claim that variability continually increases with thread count.
+
+This single fixture demonstrates the intended pixel invariant, one realistic byte saving, and one host's scheduling behavior. It is not a universal compression ratio or speed ranking.
 
 ## Reproduce the comparison
 
@@ -81,7 +95,7 @@ PYTHON=/path/to/python-with-matplotlib-and-numpy \
 tools/reproduce_encoding_mode_measurements.sh
 ```
 
-The script rebuilds the selected tree, records commands and provenance, measures both this comparison and the companion [high-color comparison](high-color.md), regenerates the plots, and validates semantic invariants. The durable artifacts are the [CSV results](encode-policies/measurements/encode-policy-comparison.csv) and [JSON run record](encode-policies/measurements/encode-policy-run.json). Regenerate the conceptual figures with `tools/reproduce_encoding_mode_figures.sh`; its `--check` mode verifies byte-for-byte freshness.
+The script rebuilds the selected tree, records commands and provenance, measures both this comparison and the companion [high-color comparison](high-color.md), regenerates the plots, and validates semantic invariants. The durable artifacts are the [quality and size CSV](encode-policies/measurements/encode-policy-comparison.csv), the [raw speed samples](encode-policies/measurements/encode-policy-speed.csv), and the [JSON run record](encode-policies/measurements/encode-policy-run.json). Regenerate the explanatory figures with `tools/reproduce_encoding_mode_figures.sh`; its `--check` mode verifies byte-for-byte freshness.
 
 ## Implementation and existing coverage
 
