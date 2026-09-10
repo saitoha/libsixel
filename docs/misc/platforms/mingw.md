@@ -2,7 +2,7 @@
 
 ## Scope
 
-MinGW is a distinct platform boundary: it combines GCC or Clang language behavior with the Windows ABI and either an MSVCRT or UCRT family runtime. This document owns `__MINGW32__`, `__MINGW64__`, `__MINGW_PRINTF_FORMAT`, and `_CRTIMP`; shared Win32 rules are in [Windows compatibility](windows.md), and the overall inventory is in the [platform compatibility ledger](README.md).
+MinGW is a distinct platform boundary: it combines GCC or Clang language behavior with the Windows ABI and either an MSVCRT or UCRT family runtime. This document owns `__MINGW32__`, `__MINGW64__`, `__MINGW_PRINTF_FORMAT`, and `_CRTIMP`; shared Win32 rules are in [Windows compatibility](windows.md). The distinction between GNU-style Clang in MSYS2 `CLANG64` and MSVC-ABI Clang drivers is documented in [Windows cross-runtime and path compatibility](windows-paths.md). The overall inventory is in the [platform compatibility ledger](README.md).
 
 ## Runtime and declaration contract
 

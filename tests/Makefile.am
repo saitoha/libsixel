@@ -2335,6 +2335,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-suite.sh \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-platform-compat.sh \
+    _static/sh/staticcheck-windows-path-compat.sh \
     _static/data/platform-macro-classification.tsv \
     _static/sh/staticcheck-openvms-compat.sh \
     _static/sh/staticcheck-ci-doc-public-surface.sh \

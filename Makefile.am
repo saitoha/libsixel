@@ -77,6 +77,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/misc/platforms/openvms.md \
 	docs/misc/platforms/posix-runtimes.md \
 	docs/misc/platforms/solaris.md \
+	docs/misc/platforms/windows-paths.md \
 	docs/misc/platforms/windows.md \
 	docs/concepts/colorspace.md \
 	docs/concepts/pixelformat-precision.md \

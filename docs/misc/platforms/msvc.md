@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document owns `_MSC_VER`, `_MT`, and `_USE_32BIT_TIME_T` behavior for MSVC and clang-cl builds. Shared Win32 behavior belongs to [Windows compatibility](windows.md), and the overall mapping is in the [platform compatibility ledger](README.md).
+This document owns `_MSC_VER`, `_MT`, and `_USE_32BIT_TIME_T` behavior for MSVC and clang-cl builds. Shared Win32 behavior belongs to [Windows compatibility](windows.md). Cygwin/MSYS-driven `cl`, `clang-cl`, and `clang --driver-mode=cl` builds and their path handoffs belong to [Windows cross-runtime and path compatibility](windows-paths.md). The overall mapping is in the [platform compatibility ledger](README.md).
 
 ## Toolchain and CRT contract
 

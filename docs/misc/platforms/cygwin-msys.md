@@ -2,7 +2,7 @@
 
 ## Scope
 
-Cygwin and MSYS run on Windows but expose POSIX-oriented libc, path, process, and pthread contracts. This document owns `__CYGWIN__` and `__MSYS__`; native Win32 behavior is described in [Windows compatibility](windows.md), and the complete inventory is in the [platform compatibility ledger](README.md).
+Cygwin and MSYS run on Windows but expose POSIX-oriented libc, path, process, and pthread contracts. This document owns `__CYGWIN__` and `__MSYS__`; native Win32 behavior is described in [Windows compatibility](windows.md). A Cygwin or MSYS shell driving a native MSVC-ABI executable is a cross-runtime build rather than a Cygwin/MSYS target and is documented in [Windows cross-runtime and path compatibility](windows-paths.md). The complete inventory is in the [platform compatibility ledger](README.md).
 
 ## Runtime identity
 
@@ -16,7 +16,7 @@ Cygwin, MSYS, MinGW, and UCRT configuration sites describe different ABI and pat
 
 The `-` stdin marker and `clipboard:` pseudo-target are protocol values, not filesystem paths, and must never be rewritten. For native Windows or Cosmopolitan-on-Windows, an external `cygpath -wa` may be used when available; under Wine it is skipped because host-side Cygwin conversion can produce paths that the Wine process cannot consume.
 
-The library and converter copies of the path adapter intentionally follow the same ordering. Change both copies together until that duplication is replaced by a shared build-safe component.
+The library and converter copies of the path adapter intentionally follow the same ordering. Change both copies together until that duplication is replaced by a shared build-safe component. Their two-phase allocation contract, the test-launch boundary, and mixed Cygwin/MSYS-to-native builds are described in [Windows cross-runtime and path compatibility](windows-paths.md).
 
 ## Maintenance checklist
 
