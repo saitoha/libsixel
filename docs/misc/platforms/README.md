@@ -1,0 +1,47 @@
+# Platform Compatibility Ledger
+
+## Purpose
+
+This directory records source and build contracts that exist because a platform, ABI, C runtime, or compiler environment differs from the project's generic POSIX assumptions. A platform in this ledger is therefore not limited to an operating-system name: MSVC, MinGW, Cygwin, and MSYS are separate compatibility boundaries even when they all run on Windows.
+
+The ledger is intentionally narrower than the CI matrix in [Build, Runtime, and Platform Support](../../platform-support.md). A CI target needs a document here when the maintained source contains a platform selector, feature-test macro, runtime adapter, path rule, linker rule, shell/tool portability rule, or deliberate test-harness exception that a routine cleanup could accidentally remove. A target does not need an empty document merely because CI builds it; add one when it gains such a maintained exception.
+
+## Maintenance workflow
+
+Before changing a platform-conditioned branch, read the corresponding document and inspect the linked static check. When adding a platform macro or C-runtime exception, update the macro classification, this ledger, the platform document, and automated coverage in the same change. If the behavior cannot be validated without the target platform, retain a host-independent structural check and state the remaining live-test boundary explicitly.
+
+[`tests/_static/data/platform-macro-classification.tsv`](../../../tests/_static/data/platform-macro-classification.tsv) is the machine-readable C-macro inventory. [`tests/_static/sh/staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) rejects unclassified reserved preprocessor macros in project-owned C sources, requires every platform-classified macro to name a document, verifies that the document contains the macro, and checks representative source, build, CI, shell, and test-harness invariants. Generated amalgamations and bundled `stb` headers are excluded because their macro ownership belongs to their generators or upstream projects. The explicit non-C rows below are equally important because awk, shell, make, package-manager, and test-runner differences cannot be inferred from C preprocessing.
+
+## Compatibility ledger
+
+| Boundary | Principal selectors and runtime markers | Maintained contract | Policy document | Static checks |
+| --- | --- | --- | --- | --- |
+| OpenVMS with GNV and native DCL bootstrap | `LIBSIXEL_OPENVMS` | Early configure detection, wrapper-mediated tool status, record-oriented files, C RTL gaps, native linking, serial test boundaries | [OpenVMS compatibility](openvms.md) | [`staticcheck-openvms-compat.sh`](../../../tests/_static/sh/staticcheck-openvms-compat.sh), [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| Native Windows common layer | `_WIN32`, `_WIN32_WINNT`, `WITH_WINPTHREAD`, Windows CRT constants and guard macros | Win32 versus POSIX-runtime selection, binary descriptors, path conversion, environment, console, clock, WIC and WinHTTP | [Windows compatibility](windows.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| Microsoft C/C++ runtime | `_MSC_VER`, `_MT`, `_USE_32BIT_TIME_T` | Compiler discovery, secure CRT adapters, `stat` layout, thread startup, intrinsics and analyzer-safe initialization | [MSVC compatibility](msvc.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| MinGW runtimes | `__MINGW32__`, `__MINGW64__`, `__MINGW_PRINTF_FORMAT`, `_CRTIMP` | GNU compiler with Windows ABI, MSVCRT/UCRT formatting and declarations, DLL exports, WIC UUID linkage | [MinGW compatibility](mingw.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| Cygwin and MSYS POSIX runtimes | `__CYGWIN__`, `__MSYS__` | POSIX threading and libc semantics on Windows, authoritative path conversion, pseudo-path preservation, runtime-family isolation | [Cygwin and MSYS compatibility](cygwin-msys.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| Emscripten and Node.js | `__EMSCRIPTEN__` | Early toolchain inference, link-only settings, `NODERAWFS` path rules, Fetch API, noninteractive descriptors, split JavaScript/WebAssembly installation | [Emscripten compatibility](emscripten.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| Cosmopolitan Libc | `__COSMOPOLITAN__` | Runtime OS dispatch for one portable executable and Windows-only path conversion | [Cosmopolitan compatibility](cosmopolitan.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| macOS and Darwin SDK | `__APPLE__`, `_DARWIN_C_SOURCE` | Darwin feature namespace, SDK-specific formatting behavior, sysctl, pthread naming and Apple frameworks | [macOS compatibility](macos.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| Linux, Android, and BSD libc variants | `__linux__`, `__ANDROID__`, `__GLIBC__`, `__OpenBSD__`, `__NetBSD__`, `__FreeBSD__`, `__DragonFly__` and feature-test macros | libc declaration visibility, BSD sysctl types, libfetch API shape, spawn restrictions, CPU probing and signal context | [POSIX runtime compatibility](posix-runtimes.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| Haiku runtime and test harness | `HAVE_BACKTRACE`, `RUNTIME_ENV_BUILD_OS`, `SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE`, Meson slices | Header-independent backtrace declarations, locale fallback, narrow signal/PSD skips, serial sliced Meson execution, package retry boundary | [Haiku compatibility](haiku.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| Solaris and illumos tools | `HAVE_SYS_TTYCOM_H`, `TIOCGWINSZ`, `volatile` setjmp state, POSIX awk/shell, `gmake` | TTY declaration guards, longjmp-safe state, portable parsing, test-tool path resolution, explicit GNU make and dependency-tracking policy | [Solaris compatibility](solaris.md) | [`staticcheck-platform-compat.sh`](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+
+## Coverage audit
+
+The static check proves that currently used reserved macros are classified and that representative compatibility branches remain present. It does not prove that a classification is semantically correct, that every important runtime behavior has an assertion, or that a target toolchain still builds the code. Reviewers should therefore audit each ledger row in both directions: every documented exception should have the strongest practical automated check, and every platform branch in source should be explained by a document or explicitly classified as compiler, architecture, language, or tooling infrastructure.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| PL-01 | Every reserved preprocessor macro used by project-owned C sources is classified, and every platform-classified macro names an existing policy document that mentions it. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| PL-02 | Every policy document represented by the macro inventory appears in the human-readable ledger. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| PL-03 | Representative macro, C-runtime, path, threading, build, linker, shell-tool, and test-harness boundaries from every ledger row remain present in their owning sources. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+
+### Coverage boundary
+
+The inventory deliberately excludes generated code and bundled third-party headers. Adding a new operating-system exception through an ordinary non-reserved project macro can still evade the lexical inventory, so code review must require new platform dispatch to enter this ledger even when the static check cannot infer its meaning from the spelling alone.

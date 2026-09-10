@@ -609,6 +609,10 @@ run_case_tap "staticcheck-actionlint" \
     "$src_root/tests/_static/sh/staticcheck-actionlint.sh" \
     "$src_root" "$actionlint_bin" || fail_and_exit $?
 
+run_case_tap "staticcheck-platform-compat" \
+    "$src_root/tests/_static/sh/staticcheck-platform-compat.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-openvms-compat" \
     "$src_root/tests/_static/sh/staticcheck-openvms-compat.sh" \
     "$src_root" || fail_and_exit $?
