@@ -171,6 +171,7 @@ int test_timeline_0004_timeline_log_path_environment_probe(int argc,
                                                            char **argv);
 int test_timeline_0005_timeline_line_policy_environment(int argc,
                                                         char **argv);
+int test_platform_path_0001_path_to_libc_runtime(int argc, char **argv);
 int test_threadpool_0001_threadpool_service(int argc, char **argv);
 int test_threadpool_0002_thread_default_counts(int argc, char **argv);
 int test_scale_0001_parallel_factor_environment(int argc, char **argv);
@@ -503,6 +504,8 @@ static test_entry_t const test_entries[] = {
       test_timeline_0004_timeline_log_path_environment_probe },
     { "timeline/0005_timeline_line_policy_environment",
       test_timeline_0005_timeline_line_policy_environment },
+    { "platform/path/0001_path_to_libc_runtime",
+      test_platform_path_0001_path_to_libc_runtime },
     { "threadpool/0001_threadpool_service",
       test_threadpool_0001_threadpool_service },
     { "threadpool/0002_thread_default_counts",

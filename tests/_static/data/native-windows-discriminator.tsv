@@ -1,0 +1,18 @@
+# path	preprocessor-directive-count
+converters/path.c	1
+src/cms.c	3
+src/colorspace.c	1
+src/decoder-parallel.c	2
+src/encoder.c	3
+src/loader-common.c	3
+src/loader-gd.c	1
+src/options-registry.c	3
+src/palette-common-merge.c	3
+src/palette-kcenter.c	3
+src/palette-kmeans.c	3
+src/palette-kmedoids.c	3
+src/path.c	1
+src/sixel_atomic_fallback.c	1
+src/threading.c	1
+src/threading.h	1
+src/timeline-writer.c	3

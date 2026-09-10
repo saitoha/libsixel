@@ -32,7 +32,7 @@ The library and converter copies of the path adapter intentionally follow the sa
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | CYG-01 | Cygwin and MSYS remain excluded from the native Win32 thread backend. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
-| CYG-02 | Both path adapters retain authoritative `cygwin_conv_path` conversion and preserve `clipboard:` as a pseudo-target. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| CYG-02 | Both path adapters retain authoritative `cygwin_conv_path` conversion and preserve `clipboard:` as a pseudo-target. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
 
 ### Coverage boundary
 

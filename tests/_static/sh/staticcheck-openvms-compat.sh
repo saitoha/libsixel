@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify the source-level OpenVMS compatibility boundaries.
 # Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05
 
 set -eu
 
@@ -85,6 +86,17 @@ require_fixed '%ILINK-W-USEUNDEF' openvms/gnv-link-program.sh
 require_fixed "if test -f \"\$out\"; then" openvms/gnv-link-program.sh
 require_fixed "die \"unsupported link argument: \$arg\"" \
     openvms/gnv-link-program.sh
+if TMPDIR="${TMPDIR:-/tmp}" /bin/sh \
+        "$src_root/openvms/gnv-link-program.sh" \
+        -o libsixel-openvms-staticcheck.exe unsupported-link-input \
+        >/dev/null 2>&1; then
+    fail "gnv-link-program.sh accepted an unsupported argument"
+fi
+if TMPDIR="${TMPDIR:-/tmp}" /bin/sh \
+        "$src_root/openvms/gnv-link-program.sh" -o \
+        libsixel-openvms-staticcheck.exe >/dev/null 2>&1; then
+    fail "gnv-link-program.sh accepted a link with no inputs"
+fi
 
 require_fixed '0x10000000' converters/img2sixel.c
 require_fixed 'IMG2SIXEL_OPENVMS_INHIBIT_MSG | 2' converters/img2sixel.c

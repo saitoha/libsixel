@@ -34,7 +34,7 @@ Historical Python TAP initialization also exposed shell differences around null 
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | HAIKU-01 | Abort tracing retains symbol-specific prototypes when `execinfo.h` is absent, and Python filename encoding retains its ASCII fallback. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
-| HAIKU-02 | Haiku CI retains serial complete Meson slicing, the package refresh/install retry boundary, explicit build-OS signal skips, and the narrow PSD skip control. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| HAIKU-02 | Haiku CI retains exact Autotools and Meson matrix tuples, serial complete sixteen-part Meson slicing, the three-attempt package refresh/install retry boundary, both explicit build-OS signal skips, and all five narrow PSD skip controls. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/_static/sh/staticcheck-platform-ci-contracts.sh](../../../tests/_static/sh/staticcheck-platform-ci-contracts.sh) |
 
 ### Coverage boundary
 

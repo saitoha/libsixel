@@ -34,7 +34,7 @@ WIC image loading and WinHTTP fetching are Windows facilities selected only when
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | WIN-01 | Native Windows selects Win32 threads only after excluding Cygwin and MSYS, while `WITH_WINPTHREAD` retains precedence. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
-| WIN-02 | Binary descriptor, environment, console, clock, path, and fallback-type boundaries retain their Windows-specific adapters and macro classification. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| WIN-02 | Binary descriptor, environment, console, clock, path, and fallback-type boundaries retain their Windows-specific adapters and macro classification. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
 
 ### Coverage boundary
 

@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify Windows cross-runtime CI and path conversion boundaries.
 # Policy: docs/misc/platforms/windows-paths.md
+# Coverage: WPATH-01 WPATH-02 WPATH-03 WPATH-04 WPATH-05
 
 set -eu
 

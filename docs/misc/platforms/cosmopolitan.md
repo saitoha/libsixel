@@ -24,7 +24,7 @@ The fat-binary checks are part of release confidence because a successful build 
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| COSMO-01 | Both path adapters compile under `__COSMOPOLITAN__` and retain `IsWindows()` runtime dispatch. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| COSMO-01 | Both path adapters compile under `__COSMOPOLITAN__`, retain `IsWindows()` runtime dispatch, and agree on their target-runtime conversion result. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
 
 ### Coverage boundary
 

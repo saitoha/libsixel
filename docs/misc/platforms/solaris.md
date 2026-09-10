@@ -37,7 +37,7 @@ Coverage normalization chooses `/usr/xpg4/bin/awk`, then `nawk`, then `awk`. Sol
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | SOL-01 | The libjpeg longjmp flag remains `volatile`, and TTY use remains guarded by both `HAVE_SYS_TTYCOM_H` and `TIOCGWINSZ`. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
-| SOL-02 | Test-tool resolution remains shell-based, coverage retains the XPG4/nawk fallback, and Solaris CI retains GNU make plus disabled dependency tracking. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| SOL-02 | Test-tool resolution remains shell-based, project-owned scripts avoid GNU awk capture arrays, coverage retains the XPG4/nawk fallback, and the Solaris Autotools CI tuple retains GNU make plus disabled dependency tracking. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/_static/sh/staticcheck-platform-ci-contracts.sh](../../../tests/_static/sh/staticcheck-platform-ci-contracts.sh) |
 
 ### Coverage boundary
 
