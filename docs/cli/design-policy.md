@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document defines the design policy for libsixel command-line interfaces, principally `img2sixel` and `sixel2png`. The CLI is a public compatibility surface, not a thin test wrapper around the C library. Accepted spellings, defaults, precedence, operation order, diagnostics, output streams, and exit status are part of the interface contract.
+This document defines the design policy for libsixel command-line interfaces. The CLI-program layer includes the converters under `converters/` and specialized executable tools such as `lsqa` under `assessment/`; most detailed option contracts below concern `img2sixel` and `sixel2png`. A CLI is a public compatibility surface, not a thin test wrapper around the C library. Accepted spellings, defaults, precedence, operation order, diagnostics, output streams, and exit status are part of the interface contract.
 
 The policy begins with established command-line guidance, then identifies the constraints specific to libsixel, explains the architecture selected from those inputs, and records why common alternatives were not selected. A new CLI decision is incomplete until both its rule and its rationale are documented.
 
@@ -50,7 +50,7 @@ These constraints lead to a hybrid interface: conventional executables and top-l
 | Processing order | Treat options as configuration for a fixed pipeline, except that crop and resize preserve their relative CLI order. | Most stages have one valid architectural order; crop and resize are non-commutative geometry operations for which both orders are useful. | The exception must remain narrow, documented, and directly tested. |
 | Configuration | Resolve command line, then environment, then built-in default; do not load an implicit config file. | Per-invocation behavior stays inspectable while wrappers and constrained launchers can still establish defaults. | Inherited environments are ambient state; reproducible commands should state material choices explicitly. |
 | Diagnostics | Offer human and stable code modes, keep suggestions diagnostic-only, and send messages to standard error. | Interactive correction and automation need different presentation stability without different error semantics. | Two modes and configurable suggestions increase implementation work; shared registries and focused tests prevent divergence. |
-| Abnormal termination | Install a narrow, policy-controlled abort trace only for otherwise unhandled `SIGABRT`. | Immediate failure context helps reports while preserving sanitizer, debugger, and core-dump ownership. | In-process crash reporting is best-effort and may disclose symbols or addresses; the dedicated policy documents these limits. |
+| Abnormal termination | Let adopting CLI executables install a narrow, policy-controlled abort trace only for otherwise unhandled `SIGABRT`. | Immediate failure context helps reports while preserving sanitizer, debugger, and core-dump ownership. | In-process crash reporting is best-effort and may disclose symbols or addresses; the dedicated policy documents the current consumer set and these limits. |
 
 ## Alternatives not selected
 
@@ -85,6 +85,8 @@ Automatically accepting a likely typo feels convenient once but silently creates
 ### Directional utilities and operands
 
 `img2sixel` owns raster or supported source loading followed by SIXEL encoding. `sixel2png` owns SIXEL decoding followed by PNG output. Keeping those directions separate makes the common operation visible in the executable name and keeps each tool useful as one stage in a larger shell pipeline.
+
+`lsqa` is a separate quality-assessment CLI rather than a third conversion direction. Program-level facilities may be reused across those executables, but inclusion in the CLI layer does not imply that every facility is enabled by every program. Each shared control must identify its actual consumers; aborttrace, for example, is currently installed by the two converters and not by `lsqa`.
 
 Input and output are explicit options where needed, while `-` represents standard input or standard output in documented file positions. The CLI also has typed pseudo targets such as `clipboard:` and `png:clipboard:` when a path position needs to name a non-filesystem transport. These are explicit sentinels rather than magic filename guessing, so scripts can determine which transport is requested from the command text.
 
@@ -216,7 +218,7 @@ Human-readable CLI diagnostics enable prefix and fuzzy guidance by default becau
 
 An in-process crash diagnostic has a narrower contract than an ordinary error: it must declare which failures it handles, defer to an existing sanitizer or debugger owner, avoid contaminating standard output, preserve platform termination behavior where possible, and admit that recovery and symbolization from a failing process are best-effort.
 
-The [`img2sixel` and `sixel2png` abort-trace policy](abort-trace.md) applies those rules to otherwise unhandled `SIGABRT`. It defines the feature's purpose, build and runtime controls, installation timing, terminal recovery, output boundaries, platform limitations, performance and quality effects, comparable facilities, and reciprocal tests.
+The [CLI-program abort-trace policy](abort-trace.md) applies those rules to otherwise unhandled `SIGABRT`. It distinguishes CLI-layer ownership from the current `img2sixel` and `sixel2png` consumer set and from the non-consuming `lsqa` executable, then defines the facility's purpose, build and runtime controls, installation timing, terminal recovery, output boundaries, platform limitations, performance and quality effects, representative output, comparable facilities, and reciprocal tests.
 
 ## Input and output contracts
 

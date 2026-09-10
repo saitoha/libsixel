@@ -2,9 +2,17 @@
 
 ## Scope
 
-This document defines the abort-trace behavior of the `img2sixel` and `sixel2png` command-line tools. It covers the purpose of the feature, its runtime and build controls, platform-specific behavior, diagnostic quality, performance and user-experience tradeoffs, and its relationship to comparable crash-reporting facilities.
+This document defines the abort-trace behavior provided by the repository's standalone CLI-program layer. It covers the purpose of the facility, its current consumers, runtime and build controls, platform-specific behavior, diagnostic quality, performance and user-experience tradeoffs, and its relationship to comparable crash-reporting facilities.
 
-Abort tracing is a CLI diagnostic facility, not a public libsixel library API, a general signal logger, or a replacement for a debugger, sanitizer report, or core dump. The broader option and diagnostic conventions are defined by the [CLI design policy](design-policy.md).
+Abort tracing is a CLI diagnostic facility, not a feature of the `liblibsixel` runtime API, a general signal logger, or a replacement for a debugger, sanitizer report, or core dump. The broader option and diagnostic conventions are defined by the [CLI design policy](design-policy.md).
+
+## Ownership and current consumers
+
+The repository's CLI-program layer includes the converters under [`converters/`](../../converters/) and the image-quality assessment program implemented by [`assessment/lsqa.c`](../../assessment/lsqa.c). Aborttrace belongs conceptually to that executable layer: its implementation is [`converters/aborttrace.c`](../../converters/aborttrace.c), it is compiled into selected programs, and it is not exported by the installed library headers or linked into `liblibsixel` as a library service.
+
+The current consumers are specifically `img2sixel` and `sixel2png`. Both call `sixel_aborttrace_install_if_unhandled()` after resolving their CLI diagnostics policy. `lsqa` is a neighboring CLI program, but it does not currently compile, link, install, or expose aborttrace. Extending the facility to `lsqa` would therefore be a separate executable-level feature change requiring controls and tests; the shared CLI-layer ownership must not be read as a claim that every CLI already enables it.
+
+The setting is registered in internal `src/` option infrastructure so the two converters share parsing, environment, and precedence behavior. That implementation reuse does not make aborttrace part of image encoding, image decoding, quality assessment, or the public library contract.
 
 ## Purpose and design boundary
 
@@ -61,13 +69,19 @@ The start and completion lines help users and tests distinguish a complete trace
 
 On POSIX systems the second `SIGABRT` is delivered with the default disposition. Shells and supervisors should therefore continue to observe signal termination rather than a new libsixel-specific exit code, subject to the host operating system's normal signal and core-dump configuration.
 
+### Representative terminal output
+
+![Representative aborttrace output from an intentional abort on a macOS arm64 debug build](assets/abort-trace-macos.png)
+
+This capture was produced by the intentional-abort test runner, which installs the same `converters/aborttrace.c` helper used by the converter executables and then calls `abort()`. It demonstrates the stable delimiters and the kind of native frames a symbolized build can emit; addresses, frame count, module names, symbol names, and shell termination text vary by build and platform.
+
 ## Build and platform behavior
 
 The complete build-option inventory is in [`build.md`](../../build.md), and the environments represented in continuous integration are listed in [build, runtime, and platform support](../platform-support.md).
 
 ### POSIX-family targets
 
-When abort tracing is enabled, configuration probes for the `execinfo` interfaces `backtrace()` and `backtrace_symbols_fd()` and links `libexecinfo` when the platform supplies those interfaces in a separate library. If stack capture exists but `backtrace_symbols_fd()` does not, libsixel prints raw frame addresses. If `backtrace()` is unavailable, the handler still emits its delimiters and an availability message rather than pretending that symbolic frames were captured.
+When abort tracing is enabled, configuration probes for the `execinfo` interfaces `backtrace()` and `backtrace_symbols_fd()` and links `libexecinfo` when the platform supplies those interfaces in a separate library. If stack capture exists but `backtrace_symbols_fd()` does not, the CLI helper prints raw frame addresses. If `backtrace()` is unavailable, the handler still emits its delimiters and an availability message rather than pretending that symbolic frames were captured.
 
 The handler uses `sigaction()`. glibc, Darwin, and Android/Bionic builds use the `SA_SIGINFO` form when the selected headers expose it; other POSIX implementations use the simpler `sa_handler` form. The signal metadata is accepted to use the platform interface but is not currently included in the user-facing output.
 
@@ -87,7 +101,7 @@ A release build may therefore print addresses where a debug build prints names. 
 
 ## Performance and output quality
 
-On a normal run, the feature performs diagnostics-policy resolution, checks the current `SIGABRT` disposition, and installs one handler. It does not walk the stack, symbolize frames, or enter the image loader, quantizer, palette application, encoder, or decoder hot paths. Consequently there is no per-pixel or per-frame abort-trace cost. The enabled build does add the handler code and may add an `execinfo` link dependency; this document does not promise a fixed binary-size increment because toolchains and link modes differ.
+On a normal run of a consumer CLI, the feature performs diagnostics-policy resolution, checks the current `SIGABRT` disposition, and installs one handler. It does not walk the stack, symbolize frames, or enter the image loader, quantizer, palette application, encoder, or decoder hot paths. Consequently there is no per-pixel or per-frame abort-trace cost. Programs that do not compile and install the helper, including the current `lsqa`, have no aborttrace runtime cost. The enabled build does add the handler code and may add an `execinfo` link dependency to each consumer executable; it does not add this code to the public library contract, and this document does not promise a fixed binary-size increment because toolchains and link modes differ.
 
 The expensive work is deferred until the process is already aborting: unwinding, optional symbol lookup, and writing as many as 64 frames can delay final termination and enlarge captured logs. This is an observability-versus-crash-latency tradeoff, not a conversion-throughput tradeoff.
 
@@ -105,14 +119,14 @@ Stack traces can expose function names, executable or library paths, load addres
 
 The following systems illustrate nearby design choices; they are comparisons, not claims of implementation lineage.
 
-| Facility | Similarity | Important difference from libsixel aborttrace |
+| Facility | Similarity | Important difference from the converter aborttrace |
 | --- | --- | --- |
-| [GNU C Library `backtrace()` and `backtrace_symbols_fd()`](https://sourceware.org/glibc/manual/latest/html_node/Backtraces.html) | These are the low-level in-process capture and file-descriptor output primitives used when detected on compatible targets. | glibc provides primitives rather than libsixel's CLI policy, signal ownership rule, terminal recovery, and output delimiters. |
+| [GNU C Library `backtrace()` and `backtrace_symbols_fd()`](https://sourceware.org/glibc/manual/latest/html_node/Backtraces.html) | These are the low-level in-process capture and file-descriptor output primitives used when detected on compatible targets. | glibc provides primitives rather than the converters' CLI policy, signal ownership rule, terminal recovery, and output delimiters. |
 | [Go `GOTRACEBACK`](https://pkg.go.dev/runtime#hdr-Environment_Variables) | An environment setting controls how much failure-time stack information the runtime prints and can request an OS crash for a core dump. | The Go runtime understands goroutines and runtime frames and offers several detail levels; libsixel captures only the receiving native thread and exposes an on/off policy. |
-| [Rust standard-library backtraces](https://doc.rust-lang.org/std/backtrace/index.html) | `RUST_BACKTRACE` and `RUST_LIB_BACKTRACE` let deployments trade diagnostic capture against runtime cost. | Rust backtrace capture is integrated with Rust's panic and library facilities and is disabled by default for `Backtrace::capture`; libsixel installs a narrow `SIGABRT` handler by default but performs the costly capture only after abort. |
-| [systemd coredump handling](https://systemd.io/COREDUMP/) | It can retain crash metadata, a stack trace, and a core for later inspection. | It is an operating-system service outside the crashing process and can preserve a far richer, durable artifact. libsixel aborttrace is immediate, process-local, portable to non-systemd POSIX environments, and complementary rather than a replacement. |
+| [Rust standard-library backtraces](https://doc.rust-lang.org/std/backtrace/index.html) | `RUST_BACKTRACE` and `RUST_LIB_BACKTRACE` let deployments trade diagnostic capture against runtime cost. | Rust backtrace capture is integrated with Rust's panic and library facilities and is disabled by default for `Backtrace::capture`; the converter helper installs a narrow `SIGABRT` handler by default but performs the costly capture only after abort. |
+| [systemd coredump handling](https://systemd.io/COREDUMP/) | It can retain crash metadata, a stack trace, and a core for later inspection. | It is an operating-system service outside the crashing process and can preserve a far richer, durable artifact. The converter aborttrace is immediate, process-local, portable to non-systemd POSIX environments, and complementary rather than a replacement. |
 
-These comparisons locate the intended niche: aborttrace supplies a small default diagnostic for interactive CLI failures, while runtime-aware language facilities, sanitizers, debuggers, and system crash collectors remain responsible for deeper analysis.
+These comparisons locate the intended niche: aborttrace supplies a small default diagnostic in the CLI executables that adopt it, while runtime-aware language facilities, sanitizers, debuggers, and system crash collectors remain responsible for deeper analysis.
 
 ## Implementation map
 
@@ -121,6 +135,8 @@ These comparisons locate the intended niche: aborttrace supplies a small default
 - [`converters/img2sixel.c`](../../converters/img2sixel.c) and [`converters/sixel2png.c`](../../converters/sixel2png.c) apply the policy after parsing their options.
 - [`src/tty.c`](../../src/tty.c) owns best-effort cbreak and cursor restoration used by the abort handler.
 - [`configure.ac`](../../configure.ac), [`meson.build`](../../meson.build), and [`meson_options.txt`](../../meson_options.txt) own feature selection and platform probing.
+
+`assessment/lsqa.c` is intentionally absent from this implementation map because it is not a current consumer.
 
 ## Test coverage
 

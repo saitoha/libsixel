@@ -1498,10 +1498,7 @@ $ sixel2png < egret.sixel > egret.png
 
 ### CLI abort trace diagnostics
 
-`img2sixel` and `sixel2png` emit a compact stack trace to stderr when they
-terminate via `abort(3)` while no other handler claimed `SIGABRT`.  The feature
-helps debugging regression reports without interfering with sanitizers or
-fuzzers that already replace the handler.
+`img2sixel` and `sixel2png` use a CLI-layer helper to emit a compact stack trace to stderr when they terminate via `abort(3)` while no other handler claimed `SIGABRT`. The helper is compiled into those converter executables rather than exposed as a `liblibsixel` API. `lsqa` is another standalone CLI in this repository but is not currently an aborttrace consumer. See the [CLI abort trace diagnostics](docs/cli/abort-trace.md) for its ownership boundary, representative output, controls, and limitations.
 
 The logic is enabled by default. `SIXEL_ABORT_TRACE` accepts only `0` or `1`:
 set it to `0` to disable the handler or `1` to enable it. Unset, empty, and
