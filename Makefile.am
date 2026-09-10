@@ -159,6 +159,9 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.csv \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.png \
 	docs/functionality/encoding-pipeline.md \
+	docs/functionality/encoding-pipeline-figures/encoding-pipeline-figures.json \
+	docs/functionality/encoding-pipeline-figures/encoding-pipeline-mobile.svg \
+	docs/functionality/encoding-pipeline-figures/encoding-pipeline-wide.svg \
 	docs/functionality/palette-pipeline.md \
 	docs/functionality/palette-pipeline/measurements/palette-pipeline-quality.csv \
 	docs/functionality/palette-pipeline/measurements/palette-pipeline-quality.png \
@@ -281,6 +284,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_clustering_colorspace_measurements.py \
 	tools/plot_cover_policy_figures.py \
 	tools/plot_dither_policy_measurements.py \
+	tools/plot_encoding_pipeline_figures.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
 	tools/plot_merge_policy_measurements.py \
@@ -297,6 +301,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_clustering_colorspace_measurements.sh \
 	tools/reproduce_cover_policy_figures.sh \
 	tools/reproduce_dither_policy_measurements.sh \
+	tools/reproduce_encoding_pipeline_figures.sh \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_merge_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \

@@ -2,25 +2,18 @@
 
 ## Mental model
 
-The normal `img2sixel` path is easiest to understand as four major stages:
+The normal fixed-palette `img2sixel` path is easiest to understand first as a flow of ownership:
 
-```text
-source bytes
-    |
-    v
-loader -> normalized pixels -> palette construction -> palette application
-                                                        |
-                                                        v
-                                              indexed pixels + palette
-                                                        |
-                                                        v
-                                                  SIXEL encoding
-```
+<picture>
+  <source media="(max-width: 640px)" srcset="encoding-pipeline-figures/encoding-pipeline-mobile.svg">
+  <img alt="Source image bytes pass through loading and normalization. The normalized pixels continue to palette application while color samples branch through palette construction. Palette application produces indexed pixels and a palette, which SIXEL encoding serializes for terminal rendering." src="encoding-pipeline-figures/encoding-pipeline-wide.svg">
+</picture>
 
-Palette construction and palette application are different operations. The
-former decides which colors are available. The latter decides which available
-color represents each input pixel. SIXEL encoding then serializes those
-decisions; it does not choose the colors again.
+*Figure 1. Introductory fixed-palette mental model. Blue carries frame pixels, magenta carries palette construction data, teal marks the indexed artifact, and amber marks SIXEL output. Line shape, labels, and placement duplicate the color encoding.*
+
+Palette construction and palette application are different operations. The former decides which colors are available. The latter decides which available color represents each input pixel. SIXEL encoding then serializes those decisions; it does not choose the colors again.
+
+This figure is intentionally not an implementation map. It omits loader-candidate fallback and loader-local CMS work, preprocessing order, sampling-source selection, quantizer initialization and iteration, final palette passes, lookup preparation, per-pixel dither and lookup loops, asynchronous overlap, and serial fallback. The component documents linked below define those details without overloading the introductory view.
 
 ## Stage contracts
 

@@ -1,0 +1,34 @@
+{
+  "assets": [
+    {
+      "path": "encoding-pipeline-wide.svg",
+      "role": "large-screen introductory mental model"
+    },
+    {
+      "path": "encoding-pipeline-mobile.svg",
+      "role": "mobile portrait introductory mental model"
+    }
+  ],
+  "color_roles": {
+    "context": "#556176",
+    "frame_data": "#2563EB",
+    "indexed_artifact": "#0F766E",
+    "palette_data": "#BE185D",
+    "sixel_output": "#D97706"
+  },
+  "generator": "tools/plot_encoding_pipeline_figures.py",
+  "kind": "deterministic introductory schematic",
+  "measurement": false,
+  "schema": 1,
+  "scope": "fixed-palette mental model, not the execution DAG",
+  "stages": [
+    "source-bytes",
+    "loader",
+    "normalized-pixels",
+    "palette-construction",
+    "palette-application",
+    "indexed-pixels-and-palette",
+    "sixel-encoding",
+    "terminal-pixels"
+  ]
+}
