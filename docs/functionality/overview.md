@@ -23,7 +23,7 @@ loader -> normalized pixels -> palette construction -> palette application
        -> indexed pixels and palette -> SIXEL encoding
 ```
 
-The detailed [Encoding Pipeline](encoding-pipeline.md) explains the input and output contract of each stage and how these controls cooperate:
+The introductory [Encoding Pipeline](encoding-pipeline.md) explains the input and output contract of each stage, while the [Encoder Execution Map](encoder-execution-map.md) follows the implementation through loader fallback, preprocessing, scheduler overlap, quantizer-specific work, per-pixel application, and wire serialization. The controls cooperate as follows:
 
 - [Palette Quantization](quantization.md), selected by `-Q`, determines which
   palette colors are available and documents each solver's objective and cost;
