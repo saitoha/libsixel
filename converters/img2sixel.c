@@ -169,11 +169,19 @@ static cli_option_help_t const g_option_help_table[] = {
         'o',
         "outfile",
         "-o, --outfile\n"
-        "    specify output file name. (default:stdout) Use a name ending in \".png\" or the literal\n"
-        "    \"png:-\" or prefix a path with \"png:\" to emit PNG data recreated from the SIXEL\n"
-        "    pipeline. The PNG keeps the palette indices so every color matches the quantized\n"
-        "    SIXEL output exactly. \"png:-\" writes to stdout while \"png:<path>\" saves the PNG next\n"
-        "    to the SIXEL output. Supplying \"-o output.png\" writes the PNG directly to that path.\n"
+        "    specify output file name. (default:stdout) Use a name ending "
+        "in \".png\" or the literal\n"
+        "    \"png:-\" or prefix a path with \"png:\" to emit PNG data "
+        "recreated from the SIXEL\n"
+        "    pipeline. For ordinary palette SIXEL, the PNG keeps the "
+        "palette indices and matches\n"
+        "    the quantized and dithered output. High-color output is not "
+        "an indexed-exact\n"
+        "    snapshot because it redefines palette registers while "
+        "painting. \"png:-\" writes to\n"
+        "    stdout while \"png:<path>\" saves the PNG next to the SIXEL "
+        "output. Supplying\n"
+        "    \"-o output.png\" writes the PNG directly to that path.\n"
     },
     {
         '=',

@@ -732,6 +732,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/quantization.md \
 	docs/quality/measurement-policy.md \
 	docs/testing/guide.md \
+	docs/writers/png.md \
 	docs/threading/README.md \
 	docs/threading/animation.md \
 	docs/threading/decoder.md \

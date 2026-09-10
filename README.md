@@ -463,9 +463,12 @@ Options:
                            Use a name ending in ".png", the literal
                            "png:-", or prefix a path with "png:" to
                            emit PNG data recreated from the SIXEL
-                           pipeline. The PNG keeps the palette indices
-                           so that every color matches the quantized
-                           SIXEL output exactly.
+                           pipeline. For ordinary palette SIXEL, the PNG
+                           keeps the palette indices and matches the
+                           quantized and dithered output. High-color
+                           output is not an indexed-exact snapshot
+                           because it redefines palette registers while
+                           painting.
                            "png:-" writes to stdout while
                            "png:<path>" stores the PNG next to the
                            SIXEL output. Supplying

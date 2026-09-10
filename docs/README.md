@@ -66,6 +66,10 @@ are grouped by domain so each area can grow without overloading one document.
   APNG, and GIF loaders choose between file and external backgrounds, including
   option precedence, colorspace, and OSC 11 interaction.
 
+## Image writing
+
+- [PNG writer](writers/png.md) defines the libpng and builtin writer backends, indexed and direct 8-bit output, and the post-SIXEL PNG snapshot path used by `img2sixel`.
+
 ## Command-line interface
 
 - [CLI design policy](cli/design-policy.md) defines option design,

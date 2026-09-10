@@ -1,5 +1,6 @@
 #!/bin/sh
 # Ensure filename-driven PNG output uses correct header.
+# Policy: docs/writers/png.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
