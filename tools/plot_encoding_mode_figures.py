@@ -258,103 +258,133 @@ def band_mobile() -> str:
     )
 
 
-def overpaint_rows(fill: bool) -> tuple[str, ...]:
-    """Return the first-pass mask for the overpaint example."""
-    if fill:
-        return tuple("B" * 10 for _ in range(6))
-    return (
-        "BBBGGGGBBB",
-        "BBGGGGGBBB",
-        "BBBBGGBBBB",
-        "BBBBGGBBBB",
-        "BBGGGGGBBB",
-        "BBBGGGGBBB",
+def selected_color_rows(tokens: str) -> tuple[str, ...]:
+    """Keep selected colors from the shared four-color example."""
+    return tuple(
+        "".join(value if value in tokens else "." for value in row)
+        for row in FOUR_COLOR_ROWS
     )
 
 
-FINAL_ROWS = overpaint_rows(False)
+SOLID_UNDERPAINT_ROWS = tuple("GGGGMMMM" for _ in range(6))
 
 
 def overpaint_panel(x: float, title_value: str, size_policy: bool) -> str:
-    """Return one wide fast-or-size sequence panel."""
+    """Return one paint plan for the shared four-color example."""
     accent = GOLD if size_policy else BLUE
-    body = [card(x, 170, 610, 420, title_value, accent,
+    first_rows = (
+        SOLID_UNDERPAINT_ROWS if size_policy
+        else selected_color_rows("GM")
+    )
+    second_rows = selected_color_rows("BT")
+    first_label = (
+        "#1 / #3 solid underpaint" if size_policy
+        else "#1 / #3 exact masks"
+    )
+    second_label = (
+        "#0 / #2 repair" if size_policy
+        else "#0 / #2 exact masks"
+    )
+    literal = SIZE_EXAMPLE_BODY if size_policy else FAST_EXAMPLE_BODY
+    byte_count = 23 if size_policy else 25
+    body = [card(x, 170, 650, 520, title_value, accent,
                  GOLD_LIGHT if size_policy else PAPER)]
-    initial = overpaint_rows(size_policy)
     body.extend([
-        text(x + 38, 250, "first blue pass", 18, 700, BLUE),
-        draw_grid(x + 38, 275, initial, 25),
-        text(x + 330, 250, "repaint amber", 18, 700, GOLD),
-        draw_grid(x + 330, 275, mask_rows(FINAL_ROWS, "G"), 25, 3, True),
-        line(x + 276, 350, x + 315, 350, accent, 4, "arrow-blue"),
-        text(x + 38, 470, "result", 18, 700, TEAL),
-        draw_grid(x + 38, 455, FINAL_ROWS, 20),
+        text(x + 25, 240, first_label, 15, 700, accent),
+        draw_grid(x + 25, 258, first_rows, 20, 2, True),
+        line(x + 190, 320, x + 222, 320, accent, 4, "arrow-blue"),
+        text(x + 230, 240, second_label, 15, 700,
+             GOLD if size_policy else BLUE),
+        draw_grid(x + 230, 258, second_rows, 20, 2, True),
+        line(x + 395, 320, x + 427, 320, accent, 4, "arrow-blue"),
+        text(x + 435, 240, "decoded result", 15, 700, TEAL),
+        draw_grid(x + 435, 258, FOUR_COLOR_ROWS, 20, 2),
+        rect(x + 25, 435, 600, 62, PAPER, accent, 1.5, 10),
+        code_text(x + 42, 473, literal, 15, 650),
+        badge(x + 25, 525, f"{byte_count} bytes", accent, 112),
     ])
     if size_policy:
         body.extend([
-            text(x + 330, 505, "More solid columns", 17, 700, GOLD),
-            text(x + 330, 533, "favor repeat runs.", 17, 500, MUTED),
+            code_text(x + 160, 552, "!4~ + !4~", 18, 750, GOLD),
+            text(x + 285, 551, "makes two simple rectangles", 16, 600, MUTED),
+            text(x + 25, 620, "Blue and green safely repaint the temporary overdraw.", 16, 600, MUTED),
         ])
     else:
         body.extend([
-            text(x + 330, 505, "Never paint a pixel", 17, 700, BLUE),
-            text(x + 330, 533, "that belongs to another color.", 17, 500, MUTED),
+            text(x + 160, 551, "Every mask retains its holes.", 16, 600, MUTED),
+            text(x + 25, 620, "No pixel is temporarily painted with another color.", 16, 600, MUTED),
         ])
     return "".join(body)
 
 
 def overpaint_wide() -> str:
-    """Compare exact-mask and overpainting serialization."""
-    width = 1380
-    height = 720
+    """Compare both real paint plans for the four-color band."""
+    width = 1460
+    height = 840
     body = [rect(0, 0, width, height, PANEL)]
     body.extend([
-        text(55, 62, "Size policy spends overdraw to create simpler runs", 38, 800),
-        text(55, 100, "Later colors repair the temporary fill, so the final indexed image is unchanged.", 20, 500, MUTED),
-        overpaint_panel(55, "fast / auto: preserve every mask", False),
-        overpaint_panel(715, "size: fill first, then repaint", True),
-        rect(170, 630, 1040, 54, TEAL_LIGHT, TEAL, 1.5, 13),
-        text(690, 665, "same final pixels  •  different SIXEL byte stream", 21, 750, TEAL, "middle"),
+        text(55, 62, "Why size saves two bytes in the same four-color band", 38, 800),
+        text(55, 100, "It replaces two hole-shaped masks with solid runs, then repairs the safe overdraw.", 20, 500, MUTED),
+        overpaint_panel(55, "auto / fast: preserve every hole", False),
+        overpaint_panel(755, "size: underpaint, then repair", True),
+        rect(170, 735, 1120, 58, TEAL_LIGHT, TEAL, 1.5, 13),
+        text(730, 772, "same 8 × 6 pixels  •  25-byte body → 23-byte body", 21, 750, TEAL, "middle"),
     ])
     return svg_document(
         width,
         height,
-        "Size policy spends overdraw to create simpler runs",
-        "Two panels reach the same final blue-and-amber pixel grid. Fast policy paints exact masks; size policy first fills the blue span and then repaints amber pixels, favoring repeatable SIXEL runs.",
+        "Why size saves two bytes in the same four-color band",
+        "Two panels encode the same eight by six blue, amber, green, and pink grid. Auto and fast preserve every hole in a 25-byte paint body. Size paints solid amber and pink rectangles, repairs blue and green pixels, and uses a 23-byte paint body.",
         "\n".join(body),
     )
 
 
 def overpaint_mobile() -> str:
-    """Return the mobile layout of the overpainting explanation."""
+    """Return the mobile layout of the four-color byte-saving example."""
     width = 760
-    height = 1360
+    height = 1540
     body = [rect(0, 0, width, height, PANEL)]
     body.extend([
-        text(38, 56, "Overdraw can save bytes", 38, 800),
-        text(38, 90, "Both routes finish on the same pixels.", 18, 500, MUTED),
-        card(55, 135, 650, 455, "fast / auto: exact masks", BLUE),
-        text(90, 210, "blue pass", 17, 700, BLUE),
-        draw_grid(90, 235, overpaint_rows(False), 25),
-        text(390, 210, "amber pass", 17, 700, GOLD),
-        draw_grid(390, 235, mask_rows(FINAL_ROWS, "G"), 25, 3, True),
-        text(90, 445, "No temporary overpaint; masks retain their holes.", 17, 500, MUTED),
-        line(380, 600, 380, 645, GOLD, 5, "arrow-gold"),
-        card(55, 655, 650, 485, "size: fill, then repaint", GOLD, GOLD_LIGHT),
-        text(90, 730, "solid blue fill", 17, 700, BLUE),
-        draw_grid(90, 755, overpaint_rows(True), 25),
-        text(390, 730, "amber repair", 17, 700, GOLD),
-        draw_grid(390, 755, mask_rows(FINAL_ROWS, "G"), 25, 3, True),
-        text(90, 965, "Solid columns can compress into shorter repeat runs.", 17, 500, MUTED),
-        rect(90, 1195, 580, 82, TEAL_LIGHT, TEAL, 1.5, 14),
-        text(380, 1232, "same final pixels", 21, 800, TEAL, "middle"),
-        text(380, 1260, "different SIXEL byte stream", 17, 600, MUTED, "middle"),
+        text(38, 56, "Why size saves two bytes", 38, 800),
+        text(38, 90, "The same four-color band from Figure 1.", 18, 500, MUTED),
+        card(55, 135, 650, 535, "auto / fast: preserve every hole", BLUE),
+        text(85, 215, "#1 / #3 exact", 15, 700, GOLD),
+        draw_grid(85, 235, selected_color_rows("GM"), 18, 2, True),
+        line(235, 290, 275, 290, BLUE, 4, "arrow-blue"),
+        text(285, 215, "#0 / #2 exact", 15, 700, BLUE),
+        draw_grid(285, 235, selected_color_rows("BT"), 18, 2, True),
+        line(435, 290, 475, 290, BLUE, 4, "arrow-blue"),
+        text(485, 215, "result", 15, 700, TEAL),
+        draw_grid(485, 235, FOUR_COLOR_ROWS, 18, 2),
+        rect(85, 390, 590, 58, PAPER, BLUE, 1.5, 10),
+        code_text(102, 426, FAST_EXAMPLE_BODY, 15, 650),
+        badge(85, 485, "25 bytes", BLUE, 108),
+        text(215, 512, "All four masks retain their holes.", 16, 600, MUTED),
+        line(380, 685, 380, 730, GOLD, 5, "arrow-gold"),
+        card(55, 740, 650, 555, "size: underpaint, then repair", GOLD, GOLD_LIGHT),
+        text(85, 820, "solid #1 / #3", 15, 700, GOLD),
+        draw_grid(85, 840, SOLID_UNDERPAINT_ROWS, 18, 2, True),
+        line(235, 895, 275, 895, GOLD, 4, "arrow-gold"),
+        text(285, 820, "#0 / #2 repair", 15, 700, BLUE),
+        draw_grid(285, 840, selected_color_rows("BT"), 18, 2, True),
+        line(435, 895, 475, 895, GOLD, 4, "arrow-gold"),
+        text(485, 820, "same result", 15, 700, TEAL),
+        draw_grid(485, 840, FOUR_COLOR_ROWS, 18, 2),
+        rect(85, 995, 590, 58, PAPER, GOLD, 1.5, 10),
+        code_text(102, 1031, SIZE_EXAMPLE_BODY, 15, 650),
+        badge(85, 1090, "23 bytes", GOLD, 108),
+        code_text(215, 1118, "!4~ + !4~", 18, 750, GOLD),
+        text(345, 1117, "forms two solid blocks", 16, 600, MUTED),
+        text(85, 1190, "Blue and green safely repair the temporary overdraw.", 16, 600, MUTED),
+        rect(90, 1360, 580, 100, TEAL_LIGHT, TEAL, 1.5, 14),
+        text(380, 1400, "same decoded pixels", 21, 800, TEAL, "middle"),
+        text(380, 1433, "25-byte body → 23-byte body", 17, 600, MUTED, "middle"),
     ])
     return svg_document(
         width,
         height,
-        "Overdraw can save SIXEL bytes",
-        "Mobile comparison of exact color masks and size-policy overpainting, both ending in the same blue-and-amber pixels.",
+        "Why size saves two bytes in the same four-color band",
+        "Mobile comparison of the same four-color band. Auto and fast preserve mask holes in a 25-byte body; size paints solid amber and pink blocks, repairs blue and green, and uses 23 bytes.",
         "\n".join(body),
     )
 
