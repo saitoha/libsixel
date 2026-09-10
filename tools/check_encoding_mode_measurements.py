@@ -37,6 +37,14 @@ def validate_speed_rows(rows: List[Dict[str, str]], metadata: dict,
     timing = metadata["timing"]
     threads = [int(value) for value in timing["threads"]]
     runs = int(timing["runs"])
+    expected_boundary = (
+        "earliest encode/worker/worker_start through latest "
+        "encode/worker/worker_done"
+    )
+    if timing["boundary"] != expected_boundary:
+        raise RuntimeError(f"{family} uses the wrong timing boundary")
+    if any(value < 2 for value in threads):
+        raise RuntimeError(f"{family} speed grid includes serial mode")
     expected = len(variants) * len(threads) * runs
     if len(rows) != expected:
         raise RuntimeError(
@@ -54,6 +62,8 @@ def validate_speed_rows(rows: List[Dict[str, str]], metadata: dict,
     }
     if observed != required:
         raise RuntimeError(f"{family} speed grid is incomplete")
+    if len(metadata["speed_summary"]) != len(variants) * len(threads):
+        raise RuntimeError(f"{family} speed summary is incomplete")
     for row in rows:
         first = float(row["encode_first_worker_start_seconds"])
         last = float(row["encode_last_worker_done_seconds"])
@@ -73,6 +83,8 @@ def validate_speed_rows(rows: List[Dict[str, str]], metadata: dict,
             raise RuntimeError(f"{family} command lacks timeline logging")
         if "-w" not in tokens or "-h" not in tokens:
             raise RuntimeError(f"{family} command lacks speed dimensions")
+        if row["revision"] != metadata["revision"]:
+            raise RuntimeError(f"{family} speed revision disagrees")
 
 
 def validate_encode_policy(directory: Path) -> None:

@@ -1,7 +1,7 @@
 {
   "comparison": "img2sixel -E auto, fast, and size",
-  "configure": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension 'CFLAGS=-O3 -std=c99' BASH=/bin/sh",
-  "controls": "fixed 256-color output, no diffusion, one CPU thread",
+  "configure": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+  "controls": "fixed 256-color output and no diffusion; artifact runs use one thread and speed runs use the recorded thread grid",
   "decode": "sixel2png --direct to RGBA PNG before lsqa",
   "environment": "ambient SIXEL_* and LSQA_* variables removed",
   "input": {
@@ -12,24 +12,24 @@
   "platform": "macOS-26.5.1-arm64-arm-64bit",
   "programs": {
     "img2sixel": {
-      "path": "/private/tmp/libsixel-encode-docs.xrTCp5/worktree/converters/img2sixel",
-      "sha256": "f3bf0d57517db47b3a719446dd7607d79a3591ac718765a5ee2efc6d97af2985",
+      "path": "/Users/saitoha/repo/libsixel/converters/img2sixel",
+      "sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
       "version": "img2sixel 1.11.1-pre1"
     },
     "lsqa": {
-      "path": "/private/tmp/libsixel-encode-docs.xrTCp5/worktree/assessment/lsqa",
-      "sha256": "4e75cd9ffed5315c9381efbb7f4b5553d285c93334cae4b4a06dc8d18ff05508",
+      "path": "/Users/saitoha/repo/libsixel/assessment/lsqa",
+      "sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
       "version": "not reported by this program"
     },
     "sixel2png": {
-      "path": "/private/tmp/libsixel-encode-docs.xrTCp5/worktree/converters/sixel2png",
-      "sha256": "80f36c79ae2d662a137e49b9804ae1e0ebfd30c26d6a2dcf3257ed8d0a51febb",
+      "path": "/Users/saitoha/repo/libsixel/converters/sixel2png",
+      "sha256": "b7b512951e1e6e4dafe1bc9490e2bf82c9de8bf8cca885f3db5601f9a8bdc917",
       "version": "sixel2png 1.11.1-pre1"
     }
   },
   "python": "3.12.0",
-  "recorded_at_utc": "2026-09-10T13:22:11.117726+00:00",
-  "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
+  "recorded_at_utc": "2026-09-10T14:29:01.349136+00:00",
+  "revision": "24e46743fd78167db78ca9d72754e50b6a834947",
   "rows": [
     {
       "Delta Chroma_mean": 1.749753,
@@ -43,25 +43,9 @@
       "encoded_sha256": "9a70bba4f755dad349c55f23ec11d2bd246f084f83dbb4f366e5eb2da11cde7b",
       "input": "images/snake.png",
       "label": "auto",
-      "max_seconds": 0.0648678750731051,
-      "median_seconds": 0.0589409579988569,
-      "min_seconds": 0.05721929110586643,
       "platform": "macOS-26.5.1-arm64-arm-64bit",
       "policy": "auto",
-      "q1_seconds": 0.05812272895127535,
-      "q3_seconds": 0.06130616716109216,
-      "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
-      "runs": 7,
-      "samples_seconds": [
-        0.0589409579988569,
-        0.05721929110586643,
-        0.0577936249319464,
-        0.060852917144075036,
-        0.06175941717810929,
-        0.0584518329706043,
-        0.0648678750731051
-      ],
-      "timed_command": "'$BUILD_DIR/converters/img2sixel' --threads=1 --precision=8bit --quality=high '--loaders=builtin!' --diffusion=none --gpu-policy=off --palette-type=rgb --encode-policy auto -p 256 -o /dev/null '$TOP_SRCDIR/images/snake.png'"
+      "revision": "24e46743fd78167db78ca9d72754e50b6a834947"
     },
     {
       "Delta Chroma_mean": 1.749753,
@@ -75,25 +59,9 @@
       "encoded_sha256": "9a70bba4f755dad349c55f23ec11d2bd246f084f83dbb4f366e5eb2da11cde7b",
       "input": "images/snake.png",
       "label": "fast",
-      "max_seconds": 0.06370229204185307,
-      "median_seconds": 0.06075845891609788,
-      "min_seconds": 0.05733004189096391,
       "platform": "macOS-26.5.1-arm64-arm-64bit",
       "policy": "fast",
-      "q1_seconds": 0.05954766646027565,
-      "q3_seconds": 0.06205614539794624,
-      "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
-      "runs": 7,
-      "samples_seconds": [
-        0.05733004189096391,
-        0.058526207925751805,
-        0.0629014999140054,
-        0.06370229204185307,
-        0.060569124994799495,
-        0.06121079088188708,
-        0.06075845891609788
-      ],
-      "timed_command": "'$BUILD_DIR/converters/img2sixel' --threads=1 --precision=8bit --quality=high '--loaders=builtin!' --diffusion=none --gpu-policy=off --palette-type=rgb --encode-policy fast -p 256 -o /dev/null '$TOP_SRCDIR/images/snake.png'"
+      "revision": "24e46743fd78167db78ca9d72754e50b6a834947"
     },
     {
       "Delta Chroma_mean": 1.749753,
@@ -107,35 +75,369 @@
       "encoded_sha256": "74ff48cbebd799f788cf6f812ba47b91e23539eaae4fa92c9c1568f58b4ba757",
       "input": "images/snake.png",
       "label": "size",
-      "max_seconds": 0.06367454095743597,
-      "median_seconds": 0.06212116591632366,
-      "min_seconds": 0.05786850000731647,
       "platform": "macOS-26.5.1-arm64-arm-64bit",
       "policy": "size",
-      "q1_seconds": 0.05943614593707025,
-      "q3_seconds": 0.06292543758172542,
-      "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
-      "runs": 7,
-      "samples_seconds": [
-        0.059876207960769534,
-        0.05786850000731647,
-        0.05899608391337097,
-        0.06247345800511539,
-        0.06337741715833545,
-        0.06212116591632366,
-        0.06367454095743597
-      ],
-      "timed_command": "'$BUILD_DIR/converters/img2sixel' --threads=1 --precision=8bit --quality=high '--loaders=builtin!' --diffusion=none --gpu-policy=off --palette-type=rgb --encode-policy size -p 256 -o /dev/null '$TOP_SRCDIR/images/snake.png'"
+      "revision": "24e46743fd78167db78ca9d72754e50b6a834947"
     }
   ],
-  "schema": 1,
+  "schema": 2,
   "source_state": "clean",
+  "speed_summary": [
+    {
+      "max_seconds": 0.013836,
+      "median_seconds": 0.013669,
+      "min_seconds": 0.013196,
+      "q1_seconds": 0.013522,
+      "q3_seconds": 0.013763,
+      "samples": 21,
+      "threads": 2,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.049558,
+      "median_seconds": 0.048003,
+      "min_seconds": 0.047275,
+      "q1_seconds": 0.047801,
+      "q3_seconds": 0.048327,
+      "samples": 21,
+      "threads": 3,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.038034,
+      "median_seconds": 0.035284,
+      "min_seconds": 0.034096,
+      "q1_seconds": 0.034573,
+      "q3_seconds": 0.036127,
+      "samples": 21,
+      "threads": 4,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.028871,
+      "median_seconds": 0.026236,
+      "min_seconds": 0.025512,
+      "q1_seconds": 0.025935,
+      "q3_seconds": 0.026589,
+      "samples": 21,
+      "threads": 5,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.027531,
+      "median_seconds": 0.026152,
+      "min_seconds": 0.025025,
+      "q1_seconds": 0.025727,
+      "q3_seconds": 0.026325,
+      "samples": 21,
+      "threads": 6,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.024531,
+      "median_seconds": 0.023205,
+      "min_seconds": 0.022639,
+      "q1_seconds": 0.02295,
+      "q3_seconds": 0.023684,
+      "samples": 21,
+      "threads": 7,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.022162,
+      "median_seconds": 0.02074,
+      "min_seconds": 0.020175,
+      "q1_seconds": 0.020503,
+      "q3_seconds": 0.02125,
+      "samples": 21,
+      "threads": 8,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.020754,
+      "median_seconds": 0.019755,
+      "min_seconds": 0.018717,
+      "q1_seconds": 0.019429,
+      "q3_seconds": 0.020005,
+      "samples": 21,
+      "threads": 9,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.020067,
+      "median_seconds": 0.019065,
+      "min_seconds": 0.018536,
+      "q1_seconds": 0.01873,
+      "q3_seconds": 0.019501,
+      "samples": 21,
+      "threads": 10,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.020873,
+      "median_seconds": 0.018217,
+      "min_seconds": 0.017156,
+      "q1_seconds": 0.017995,
+      "q3_seconds": 0.018396,
+      "samples": 21,
+      "threads": 11,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.034696,
+      "median_seconds": 0.017189,
+      "min_seconds": 0.016008,
+      "q1_seconds": 0.017049,
+      "q3_seconds": 0.017462,
+      "samples": 21,
+      "threads": 12,
+      "variant": "auto"
+    },
+    {
+      "max_seconds": 0.0139,
+      "median_seconds": 0.013538,
+      "min_seconds": 0.013341,
+      "q1_seconds": 0.013461,
+      "q3_seconds": 0.013789,
+      "samples": 21,
+      "threads": 2,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.048628,
+      "median_seconds": 0.047928,
+      "min_seconds": 0.047415,
+      "q1_seconds": 0.047817,
+      "q3_seconds": 0.048107,
+      "samples": 21,
+      "threads": 3,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.037868,
+      "median_seconds": 0.034747,
+      "min_seconds": 0.033981,
+      "q1_seconds": 0.0344,
+      "q3_seconds": 0.036277,
+      "samples": 21,
+      "threads": 4,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.028664,
+      "median_seconds": 0.026533,
+      "min_seconds": 0.025564,
+      "q1_seconds": 0.026062,
+      "q3_seconds": 0.027199,
+      "samples": 21,
+      "threads": 5,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.027047,
+      "median_seconds": 0.025751,
+      "min_seconds": 0.024799,
+      "q1_seconds": 0.025425,
+      "q3_seconds": 0.026129,
+      "samples": 21,
+      "threads": 6,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.024246,
+      "median_seconds": 0.023011,
+      "min_seconds": 0.022178,
+      "q1_seconds": 0.022717,
+      "q3_seconds": 0.023362,
+      "samples": 21,
+      "threads": 7,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.022903,
+      "median_seconds": 0.020961,
+      "min_seconds": 0.020367,
+      "q1_seconds": 0.020816,
+      "q3_seconds": 0.021263,
+      "samples": 21,
+      "threads": 8,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.020763,
+      "median_seconds": 0.019701,
+      "min_seconds": 0.018774,
+      "q1_seconds": 0.019261,
+      "q3_seconds": 0.020082,
+      "samples": 21,
+      "threads": 9,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.020323,
+      "median_seconds": 0.019215,
+      "min_seconds": 0.018427,
+      "q1_seconds": 0.018906,
+      "q3_seconds": 0.019937,
+      "samples": 21,
+      "threads": 10,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.018701,
+      "median_seconds": 0.018232,
+      "min_seconds": 0.017426,
+      "q1_seconds": 0.017891,
+      "q3_seconds": 0.018549,
+      "samples": 21,
+      "threads": 11,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.017956,
+      "median_seconds": 0.017044,
+      "min_seconds": 0.016346,
+      "q1_seconds": 0.016648,
+      "q3_seconds": 0.017547,
+      "samples": 21,
+      "threads": 12,
+      "variant": "fast"
+    },
+    {
+      "max_seconds": 0.013562,
+      "median_seconds": 0.013178,
+      "min_seconds": 0.013045,
+      "q1_seconds": 0.013083,
+      "q3_seconds": 0.013346,
+      "samples": 21,
+      "threads": 2,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.051803,
+      "median_seconds": 0.047932,
+      "min_seconds": 0.047268,
+      "q1_seconds": 0.047639,
+      "q3_seconds": 0.048234,
+      "samples": 21,
+      "threads": 3,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.037024,
+      "median_seconds": 0.0347,
+      "min_seconds": 0.034061,
+      "q1_seconds": 0.03436,
+      "q3_seconds": 0.035181,
+      "samples": 21,
+      "threads": 4,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.029322,
+      "median_seconds": 0.0267,
+      "min_seconds": 0.025509,
+      "q1_seconds": 0.025917,
+      "q3_seconds": 0.027111,
+      "samples": 21,
+      "threads": 5,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.02739,
+      "median_seconds": 0.026293,
+      "min_seconds": 0.024637,
+      "q1_seconds": 0.025282,
+      "q3_seconds": 0.026472,
+      "samples": 21,
+      "threads": 6,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.024115,
+      "median_seconds": 0.023205,
+      "min_seconds": 0.022698,
+      "q1_seconds": 0.02299,
+      "q3_seconds": 0.023869,
+      "samples": 21,
+      "threads": 7,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.021835,
+      "median_seconds": 0.02076,
+      "min_seconds": 0.020065,
+      "q1_seconds": 0.020387,
+      "q3_seconds": 0.021088,
+      "samples": 21,
+      "threads": 8,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.021054,
+      "median_seconds": 0.019371,
+      "min_seconds": 0.018834,
+      "q1_seconds": 0.019255,
+      "q3_seconds": 0.019922,
+      "samples": 21,
+      "threads": 9,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.020107,
+      "median_seconds": 0.019497,
+      "min_seconds": 0.018045,
+      "q1_seconds": 0.018823,
+      "q3_seconds": 0.019796,
+      "samples": 21,
+      "threads": 10,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.018865,
+      "median_seconds": 0.018196,
+      "min_seconds": 0.0173,
+      "q1_seconds": 0.017682,
+      "q3_seconds": 0.018549,
+      "samples": 21,
+      "threads": 11,
+      "variant": "size"
+    },
+    {
+      "max_seconds": 0.018113,
+      "median_seconds": 0.017133,
+      "min_seconds": 0.016377,
+      "q1_seconds": 0.016901,
+      "q3_seconds": 0.017374,
+      "samples": 21,
+      "threads": 12,
+      "variant": "size"
+    }
+  ],
   "timing": {
-    "clock": "fresh-process wall time",
-    "ordering": "rotated and reversed within each comparison",
-    "runs": 7,
-    "summary": "median with interquartile range",
-    "warmups": 2
+    "boundary": "earliest encode/worker/worker_start through latest encode/worker/worker_done",
+    "clock": "libsixel monotonic JSON timeline timestamps",
+    "excluded": "loader, palette build, dither before the first encode worker start, and ordered writer",
+    "height": 1080,
+    "included": "encode work plus waits for later dither bands after the first encode worker starts",
+    "ordering": "rotated and reversed across the complete grid",
+    "runs": 21,
+    "summary": "standard box plot: median, IQR, 1.5-IQR whiskers",
+    "threads": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "warmups": 2,
+    "width": 1920
   },
   "visualization": {
     "accessibility": "labels duplicate color, error maps share one stated scale, and captions define directionality",

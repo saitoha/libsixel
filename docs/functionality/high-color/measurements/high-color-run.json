@@ -1,7 +1,7 @@
 {
   "comparison": "fixed 256-color output and img2sixel -I",
-  "configure": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension 'CFLAGS=-O3 -std=c99' BASH=/bin/sh",
-  "controls": "no diffusion, one CPU thread, fast encoding policy",
+  "configure": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+  "controls": "no diffusion and fast encoding policy; artifact runs use one thread and speed runs use the recorded thread grid",
   "decode": "sixel2png --direct to RGBA PNG before lsqa",
   "environment": "ambient SIXEL_* and LSQA_* variables removed",
   "high_color_note": "The current CLI bypasses palette construction and resolves palette-space diffusion to none for -I.",
@@ -13,24 +13,24 @@
   "platform": "macOS-26.5.1-arm64-arm-64bit",
   "programs": {
     "img2sixel": {
-      "path": "/private/tmp/libsixel-encode-docs.xrTCp5/worktree/converters/img2sixel",
-      "sha256": "f3bf0d57517db47b3a719446dd7607d79a3591ac718765a5ee2efc6d97af2985",
+      "path": "/Users/saitoha/repo/libsixel/converters/img2sixel",
+      "sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
       "version": "img2sixel 1.11.1-pre1"
     },
     "lsqa": {
-      "path": "/private/tmp/libsixel-encode-docs.xrTCp5/worktree/assessment/lsqa",
-      "sha256": "4e75cd9ffed5315c9381efbb7f4b5553d285c93334cae4b4a06dc8d18ff05508",
+      "path": "/Users/saitoha/repo/libsixel/assessment/lsqa",
+      "sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
       "version": "not reported by this program"
     },
     "sixel2png": {
-      "path": "/private/tmp/libsixel-encode-docs.xrTCp5/worktree/converters/sixel2png",
-      "sha256": "80f36c79ae2d662a137e49b9804ae1e0ebfd30c26d6a2dcf3257ed8d0a51febb",
+      "path": "/Users/saitoha/repo/libsixel/converters/sixel2png",
+      "sha256": "b7b512951e1e6e4dafe1bc9490e2bf82c9de8bf8cca885f3db5601f9a8bdc917",
       "version": "sixel2png 1.11.1-pre1"
     }
   },
   "python": "3.12.0",
-  "recorded_at_utc": "2026-09-10T13:22:11.117726+00:00",
-  "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
+  "recorded_at_utc": "2026-09-10T14:29:01.349136+00:00",
+  "revision": "24e46743fd78167db78ca9d72754e50b6a834947",
   "rows": [
     {
       "Delta Chroma_mean": 1.749753,
@@ -44,25 +44,9 @@
       "encoded_sha256": "9a70bba4f755dad349c55f23ec11d2bd246f084f83dbb4f366e5eb2da11cde7b",
       "input": "images/snake.png",
       "label": "fixed 256-color",
-      "max_seconds": 0.06330666597932577,
-      "median_seconds": 0.05892529198899865,
-      "min_seconds": 0.05704774986952543,
       "mode": "fixed256",
       "platform": "macOS-26.5.1-arm64-arm-64bit",
-      "q1_seconds": 0.058267979067750275,
-      "q3_seconds": 0.06151566654443741,
-      "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
-      "runs": 7,
-      "samples_seconds": [
-        0.05827283300459385,
-        0.05704774986952543,
-        0.06330666597932577,
-        0.06196929095312953,
-        0.06106204213574529,
-        0.0582631251309067,
-        0.05892529198899865
-      ],
-      "timed_command": "'$BUILD_DIR/converters/img2sixel' --threads=1 --precision=8bit --quality=high '--loaders=builtin!' --diffusion=none --gpu-policy=off --palette-type=rgb --encode-policy fast -p 256 -o /dev/null '$TOP_SRCDIR/images/snake.png'"
+      "revision": "24e46743fd78167db78ca9d72754e50b6a834947"
     },
     {
       "Delta Chroma_mean": 1.355781,
@@ -76,35 +60,259 @@
       "encoded_sha256": "be50f5cea2d2ff9e23565de0743b79661aed0c1f85518e1c1e54fb7ca728f44b",
       "input": "images/snake.png",
       "label": "high color (15bpp)",
-      "max_seconds": 0.04855412500910461,
-      "median_seconds": 0.04716958315111697,
-      "min_seconds": 0.04599966714158654,
       "mode": "high15",
       "platform": "macOS-26.5.1-arm64-arm-64bit",
-      "q1_seconds": 0.04626679187640548,
-      "q3_seconds": 0.048280042014084756,
-      "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
-      "runs": 7,
-      "samples_seconds": [
-        0.04807749995961785,
-        0.04855412500910461,
-        0.04848258406855166,
-        0.04716958315111697,
-        0.0462159588932991,
-        0.04631762485951185,
-        0.04599966714158654
-      ],
-      "timed_command": "'$BUILD_DIR/converters/img2sixel' --threads=1 --precision=8bit --quality=high '--loaders=builtin!' --diffusion=none --gpu-policy=off --palette-type=rgb --encode-policy fast -I -o /dev/null '$TOP_SRCDIR/images/snake.png'"
+      "revision": "24e46743fd78167db78ca9d72754e50b6a834947"
     }
   ],
-  "schema": 1,
+  "schema": 2,
   "source_state": "clean",
+  "speed_summary": [
+    {
+      "max_seconds": 0.014046,
+      "median_seconds": 0.013634,
+      "min_seconds": 0.013348,
+      "q1_seconds": 0.01359,
+      "q3_seconds": 0.013773,
+      "samples": 21,
+      "threads": 2,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.048517,
+      "median_seconds": 0.04787,
+      "min_seconds": 0.047365,
+      "q1_seconds": 0.047619,
+      "q3_seconds": 0.047993,
+      "samples": 21,
+      "threads": 3,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.037106,
+      "median_seconds": 0.034697,
+      "min_seconds": 0.03408,
+      "q1_seconds": 0.034415,
+      "q3_seconds": 0.035605,
+      "samples": 21,
+      "threads": 4,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.02756,
+      "median_seconds": 0.026895,
+      "min_seconds": 0.025534,
+      "q1_seconds": 0.025772,
+      "q3_seconds": 0.027186,
+      "samples": 21,
+      "threads": 5,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.027412,
+      "median_seconds": 0.026513,
+      "min_seconds": 0.024984,
+      "q1_seconds": 0.025527,
+      "q3_seconds": 0.026807,
+      "samples": 21,
+      "threads": 6,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.024884,
+      "median_seconds": 0.023233,
+      "min_seconds": 0.022405,
+      "q1_seconds": 0.022926,
+      "q3_seconds": 0.023779,
+      "samples": 21,
+      "threads": 7,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.021954,
+      "median_seconds": 0.021007,
+      "min_seconds": 0.020262,
+      "q1_seconds": 0.020548,
+      "q3_seconds": 0.021182,
+      "samples": 21,
+      "threads": 8,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.021928,
+      "median_seconds": 0.019832,
+      "min_seconds": 0.0191,
+      "q1_seconds": 0.019389,
+      "q3_seconds": 0.020479,
+      "samples": 21,
+      "threads": 9,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.020801,
+      "median_seconds": 0.019293,
+      "min_seconds": 0.018451,
+      "q1_seconds": 0.018742,
+      "q3_seconds": 0.019636,
+      "samples": 21,
+      "threads": 10,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.018953,
+      "median_seconds": 0.018102,
+      "min_seconds": 0.01733,
+      "q1_seconds": 0.017606,
+      "q3_seconds": 0.018404,
+      "samples": 21,
+      "threads": 11,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.017715,
+      "median_seconds": 0.017116,
+      "min_seconds": 0.016052,
+      "q1_seconds": 0.01679,
+      "q3_seconds": 0.017376,
+      "samples": 21,
+      "threads": 12,
+      "variant": "fixed256"
+    },
+    {
+      "max_seconds": 0.071688,
+      "median_seconds": 0.056103,
+      "min_seconds": 0.05537,
+      "q1_seconds": 0.055696,
+      "q3_seconds": 0.056462,
+      "samples": 21,
+      "threads": 2,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.055835,
+      "median_seconds": 0.054363,
+      "min_seconds": 0.053745,
+      "q1_seconds": 0.054013,
+      "q3_seconds": 0.054546,
+      "samples": 21,
+      "threads": 3,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.056787,
+      "median_seconds": 0.053838,
+      "min_seconds": 0.052328,
+      "q1_seconds": 0.053458,
+      "q3_seconds": 0.054234,
+      "samples": 21,
+      "threads": 4,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.064389,
+      "median_seconds": 0.053034,
+      "min_seconds": 0.05182,
+      "q1_seconds": 0.052581,
+      "q3_seconds": 0.053727,
+      "samples": 21,
+      "threads": 5,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.054535,
+      "median_seconds": 0.053474,
+      "min_seconds": 0.051938,
+      "q1_seconds": 0.053087,
+      "q3_seconds": 0.053904,
+      "samples": 21,
+      "threads": 6,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.055165,
+      "median_seconds": 0.053732,
+      "min_seconds": 0.052252,
+      "q1_seconds": 0.052767,
+      "q3_seconds": 0.05412,
+      "samples": 21,
+      "threads": 7,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.054143,
+      "median_seconds": 0.053341,
+      "min_seconds": 0.051781,
+      "q1_seconds": 0.052589,
+      "q3_seconds": 0.053689,
+      "samples": 21,
+      "threads": 8,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.05555,
+      "median_seconds": 0.05328,
+      "min_seconds": 0.051212,
+      "q1_seconds": 0.052499,
+      "q3_seconds": 0.053551,
+      "samples": 21,
+      "threads": 9,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.059376,
+      "median_seconds": 0.053139,
+      "min_seconds": 0.051591,
+      "q1_seconds": 0.052286,
+      "q3_seconds": 0.054095,
+      "samples": 21,
+      "threads": 10,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.062061,
+      "median_seconds": 0.053152,
+      "min_seconds": 0.051444,
+      "q1_seconds": 0.052469,
+      "q3_seconds": 0.053765,
+      "samples": 21,
+      "threads": 11,
+      "variant": "high15"
+    },
+    {
+      "max_seconds": 0.125683,
+      "median_seconds": 0.053064,
+      "min_seconds": 0.051568,
+      "q1_seconds": 0.052581,
+      "q3_seconds": 0.053567,
+      "samples": 21,
+      "threads": 12,
+      "variant": "high15"
+    }
+  ],
   "timing": {
-    "clock": "fresh-process wall time",
-    "ordering": "rotated and reversed within each comparison",
-    "runs": 7,
-    "summary": "median with interquartile range",
-    "warmups": 2
+    "boundary": "earliest encode/worker/worker_start through latest encode/worker/worker_done",
+    "clock": "libsixel monotonic JSON timeline timestamps",
+    "excluded": "loader, palette build, dither before the first encode worker start, and ordered writer",
+    "height": 1080,
+    "included": "encode work plus waits for later dither bands after the first encode worker starts",
+    "ordering": "rotated and reversed across the complete grid",
+    "runs": 21,
+    "summary": "standard box plot: median, IQR, 1.5-IQR whiskers",
+    "threads": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "warmups": 2,
+    "width": 1920
   },
   "visualization": {
     "accessibility": "labels duplicate color, error maps share one stated scale, and captions define directionality",
