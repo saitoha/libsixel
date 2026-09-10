@@ -85,7 +85,7 @@ Loader responsibilities include:
 
 Loader selection and loader suboptions are public policy surfaces. Shared
 behavior should live in the loader registry or common pipeline rather than be
-reimplemented independently by each backend.
+reimplemented independently by each backend. [Image Loader Architecture](../loader/README.md) defines the `-L` chain, fallback statuses, backend inventory, and typed frame boundary.
 
 ### Command-line tools
 

@@ -602,10 +602,17 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-resize.png \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-run.json \
 	docs/concepts/pixelformat.md \
+	docs/loader/README.md \
 	docs/loader/alpha-policy.md \
 	docs/loader/background-policy.md \
+	docs/loader/builtin.md \
 	docs/loader/assets/alpha-policy-comparison.gif \
 	docs/loader/assets/alpha-policy-comparison.png \
+	docs/loader/loader-architecture-figures/builtin-lineage-mobile.svg \
+	docs/loader/loader-architecture-figures/builtin-lineage-wide.svg \
+	docs/loader/loader-architecture-figures/loader-architecture-figures.json \
+	docs/loader/loader-architecture-figures/loader-chain-mobile.svg \
+	docs/loader/loader-architecture-figures/loader-chain-wide.svg \
 	docs/functionality/clustering-colorspace.md \
 	docs/functionality/working-colorspace.md \
 	docs/functionality/merge-policy.md \
@@ -813,6 +820,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_dither_policy_measurements.py \
 	tools/plot_encoder_execution_map_figures.py \
 	tools/plot_encoding_pipeline_figures.py \
+	tools/plot_loader_architecture_figures.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
 	tools/plot_merge_policy_measurements.py \
