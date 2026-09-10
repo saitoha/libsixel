@@ -22,7 +22,7 @@ Ward final merge (-F): Q clusters -> requested K clusters
 optional Lloyd polishing at K clusters
     |
     v
-cover repair (-a) -> snap (-_) -> lookup (-~) and dithering (-d)
+final snap (-_) -> cover repair (-a) -> lookup (-~) and dithering (-d)
     |
     v
 SIXEL encoding

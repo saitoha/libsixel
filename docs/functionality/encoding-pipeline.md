@@ -15,6 +15,8 @@ Palette construction and palette application are different operations. The forme
 
 This figure is intentionally not an implementation map. It omits loader-candidate fallback and loader-local CMS work, preprocessing order, sampling-source selection, quantizer initialization and iteration, final palette passes, lookup preparation, per-pixel dither and lookup loops, asynchronous overlap, and serial fallback. The component documents linked below define those details without overloading the introductory view.
 
+The implementation-oriented [Encoder Execution Map](encoder-execution-map.md) expands those omitted boundaries, distinguishes the six-node scheduler from the planner's descriptive graph, and identifies the actual asynchronous regions.
+
 ## Stage contracts
 
 | Stage | Input | Output | Principal controls |

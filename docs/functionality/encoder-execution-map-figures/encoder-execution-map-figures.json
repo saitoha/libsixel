@@ -1,0 +1,75 @@
+{
+  "assets": [
+    {
+      "path": "encoder-scheduler-wide.svg",
+      "role": "encoder-scheduler-wide"
+    },
+    {
+      "path": "encoder-scheduler-mobile.svg",
+      "role": "encoder-scheduler-mobile"
+    },
+    {
+      "path": "frame-preparation-wide.svg",
+      "role": "frame-preparation-wide"
+    },
+    {
+      "path": "frame-preparation-mobile.svg",
+      "role": "frame-preparation-mobile"
+    },
+    {
+      "path": "palette-build-wide.svg",
+      "role": "palette-build-wide"
+    },
+    {
+      "path": "palette-build-mobile.svg",
+      "role": "palette-build-mobile"
+    },
+    {
+      "path": "palette-apply-output-wide.svg",
+      "role": "palette-apply-output-wide"
+    },
+    {
+      "path": "palette-apply-output-mobile.svg",
+      "role": "palette-apply-output-mobile"
+    }
+  ],
+  "color_roles": {
+    "frame_and_pixel_data": "#2563EB",
+    "indexed_or_apply_state": "#0F766E",
+    "palette_data": "#BE185D",
+    "policy_or_algorithm": "#6941C6",
+    "warning_or_fallback": "#B42318",
+    "wire_output": "#D97706"
+  },
+  "generator": "tools/plot_encoder_execution_map_figures.py",
+  "implementation_anchors": {
+    "apply": [
+      "src/dither.c:sixel_dither_apply_palette",
+      "src/dither.c:sixel_dither_resolve_indexes"
+    ],
+    "loader": [
+      "src/loader-manager.c:sixel_loader_manager_load",
+      "src/loader.c:sixel_helper_load_image_file"
+    ],
+    "macro_scheduler": [
+      "src/encoder.c:sixel_encode_dag_run_nodes",
+      "src/encoder.c:sixel_encoder_encode_frame_internal"
+    ],
+    "output": [
+      "src/encoder-core-encode.c:sixel_encode_dither",
+      "src/encoder-core-encode.c:output_hls_palette_definition"
+    ],
+    "palette": [
+      "src/encoder.c:sixel_encoder_prepare_palette",
+      "src/palette.c:sixel_palette_vtbl_generate"
+    ],
+    "planner_graph": [
+      "src/planner.c:sixel_encoding_planner_build_dag",
+      "src/planner.c:sixel_encoding_planner_replan"
+    ]
+  },
+  "kind": "deterministic implementation map",
+  "measurement": false,
+  "schema": 1,
+  "scope": "normal per-frame palette path and adjacent concurrency domains"
+}
