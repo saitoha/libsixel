@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/correction-suggestions.md
 # Verify fuzzy suggestions through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_DIAGNOSTICS|NULL|fuzzy_suggestions
 # Registry binding: fuzzy_suggestions|fuzzy_suggestions_override

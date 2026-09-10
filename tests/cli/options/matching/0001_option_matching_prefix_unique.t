@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP test verifying unique option prefix is accepted without diagnostics.
-# Policy: docs/cli/design-policy.md
+# Policy: docs/cli/prefix-matching.md
 
 set -eux
 

@@ -74,6 +74,9 @@ are grouped by domain so each area can grow without overloading one document.
 
 - [CLI design policy](cli/design-policy.md) defines option design,
   compatibility, parsing, diagnostics, and documentation synchronization.
+- [Converter suboption architecture](cli/suboptions.md) defines structured option grammar, typed registry metadata, consumer scopes, environment-variable parity, precedence, and implementation flow.
+- [Choice prefix-matching policy](cli/prefix-matching.md) defines exact and unique-prefix resolution, ambiguity, CLI/environment vocabulary separation, and compatibility constraints.
+- [CLI correction-suggestion policy](cli/correction-suggestions.md) defines ambiguous-prefix, fuzzy-name, and nearby-path guidance, including defaults, ranking, diagnostics, performance, and privacy boundaries.
 - [CLI abort trace diagnostics](cli/abort-trace.md) defines the CLI-layer ownership, current converter consumers, non-consuming `lsqa` boundary, controls, platform behavior, representative output, reliability, performance, output-quality boundary, and test coverage of the `SIGABRT` stack trace.
 
 ## Quality

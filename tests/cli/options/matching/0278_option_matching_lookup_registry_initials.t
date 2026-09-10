@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Policy: docs/cli/design-policy.md
+# Policy: docs/cli/prefix-matching.md
 
 set -eux
 

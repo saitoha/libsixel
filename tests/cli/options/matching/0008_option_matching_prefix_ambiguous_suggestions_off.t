@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying prefix suggestions can be disabled for ambiguity errors.
+# Policy: docs/cli/correction-suggestions.md
 
 set -eux
 

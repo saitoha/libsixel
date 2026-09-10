@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying -Q accepts long-form kmeans histogram suboptions.
+# Policy: docs/cli/suboptions.md
 
 set -eux
 
