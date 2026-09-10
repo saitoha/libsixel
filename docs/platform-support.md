@@ -7,7 +7,7 @@ for libsixel and summarizes the environments continuously represented in CI.
 It describes support for the source tree, library, and command-line tools; it
 does not promise that the project publishes a prebuilt package for every row.
 
-The tables below are deliberately coarse summaries of the configured CI systems. The workflows under `.github/workflows/` and the companion `libsixel-ci/srv/misc/jobs.tsv` catalog are the authoritative sources for individual jobs; this repository does not duplicate them in a combined correspondence table.
+The tables below are deliberately coarse summaries of the configured CI systems. The workflows under `.github/workflows/` are the authoritative sources for individual public jobs. The Tier 2 table is the repository-visible inventory of private local-CI coverage; this repository does not duplicate either system in a combined job-by-job correspondence table.
 
 ## Support tiers
 
@@ -16,7 +16,7 @@ Support is evidence-based:
 - **Tier 1** environments have an active build or test configuration in
   GitHub Actions. Failures are visible to all contributors and are expected to
   block or qualify changes according to the owning workflow.
-- **Tier 2** environments have a build or test configuration in @saitoha's personal local CI because their platform/compiler pair is not represented in GitHub Actions. Results depend on privately operated runners, but the job catalog and definitions are version-controlled in the companion `libsixel-ci` repository.
+- **Tier 2** environments have a build or test configuration in @saitoha's personal local CI because their platform/compiler pair is not represented in GitHub Actions. Results depend on privately operated runners, and this document records only the externally relevant coverage rather than inaccessible implementation details.
 
 The tiers identify the source of CI evidence and are mutually exclusive at the platform/compiler-pair level. A configured job is evidence of intended support; the result of its latest run determines whether that support is currently healthy.
 
@@ -132,13 +132,13 @@ The local jobs run on @saitoha-operated desktop infrastructure using containers 
 
 ## Matrix maintenance
 
-The summary tables deliberately avoid enumerating sanitizer, linkage, dependency, binding, packaging, and other job-level permutations. Those exact configurations belong in the owning GitHub Actions workflows or the companion local-CI catalog.
+The summary tables deliberately avoid enumerating sanitizer, linkage, dependency, binding, packaging, and other job-level permutations. Those exact configurations belong in the owning GitHub Actions workflows or the private local-CI configuration.
 
 When a CI change adds or removes an OS, architecture, compiler family, ABI, or
 build system:
 
 1. inspect the current GitHub Actions workflows and assign the platform/compiler pair to exactly one CI system;
-2. update the owning GitHub workflow or the companion local CI catalog;
+2. update the owning GitHub workflow or use the local CI's private maintenance procedure;
 3. update the summary table in this document;
 4. run `make staticcheck` and validate the changed job in its owning CI system.
 

@@ -973,6 +973,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-ci-doc-public-surface',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-ci-doc-public-surface.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-c-header-modeline',
     [meson.current_source_dir() / '_static/sh/staticcheck-c-header-modeline.sh',
       meson.project_source_root()],

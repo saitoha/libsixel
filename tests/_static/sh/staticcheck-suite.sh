@@ -605,6 +605,10 @@ run_case_tap "staticcheck-openvms-compat" \
     "$src_root/tests/_static/sh/staticcheck-openvms-compat.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-ci-doc-public-surface" \
+    "$src_root/tests/_static/sh/staticcheck-ci-doc-public-surface.sh" \
+    "$src_root" || fail_and_exit $?
+
 if tool_is_available "$shellcheck_bin"; then
     run_case_plain "staticcheck-shellcheck" \
         env SIXEL_STATICCHECK_MODE=plain \
