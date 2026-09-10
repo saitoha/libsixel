@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify every direct paint worker reaches the barrier before paint starts.
+# Policy: docs/functionality/decoding-pipeline.md
 
 set -eux
 

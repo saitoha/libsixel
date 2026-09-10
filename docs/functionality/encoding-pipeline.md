@@ -4,6 +4,8 @@
 
 The normal fixed-palette `img2sixel` path is easiest to understand first as a flow of ownership:
 
+For the reverse wire direction, the [Decoding Pipeline](decoding-pipeline.md) explains why executing a stateful SIXEL paint program is not simply this encoder flow in reverse.
+
 <picture>
   <source media="(max-width: 640px)" srcset="encoding-pipeline-figures/encoding-pipeline-mobile.svg">
   <img alt="Source image bytes pass through loading and normalization. The normalized pixels continue to palette application while color samples branch through palette construction. Palette application produces indexed pixels and a palette, which SIXEL encoding serializes for terminal rendering." src="encoding-pipeline-figures/encoding-pipeline-wide.svg">

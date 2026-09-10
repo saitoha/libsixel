@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Compare serial and parallel decoder output at a DECGNL split boundary.
 
 set -eux

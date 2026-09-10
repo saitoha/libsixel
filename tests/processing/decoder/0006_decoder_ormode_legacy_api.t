@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify OR mode decoding through the deprecated compatibility API.
 
 set -eux

@@ -69,6 +69,8 @@ Deprecated and raw decoding entry points may expose different output contracts.
 Do not assume that a compatibility API has the same palette, alpha, or ownership
 semantics as a newer API; verify the public header and its focused tests.
 
+The [Decoding Pipeline](decoding-pipeline.md) follows those contracts from DCS framing and stateful paint execution through raster policy, output representation, reconstruction, resize, parallel fallback, and PNG writing.
+
 ### Image loading
 
 The project supports built-in and optional loaders for multiple raster and

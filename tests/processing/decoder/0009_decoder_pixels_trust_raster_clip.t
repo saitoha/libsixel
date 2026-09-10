@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify explicit raster-attribute trust clipping in sixel_decode_pixels().
 
 set -eux
