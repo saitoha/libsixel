@@ -43,7 +43,7 @@ The optimization is not a compressor applied after encoding; it changes the pain
 | `fast` | Preserves each color mask without the size-policy fill and repaint strategy. | Request the direct serialization path explicitly. |
 | `size` | Enables safe fill and repaint opportunities and skips some empty work in specialized paths. | Prefer smaller streams when the receiver or transport is the bottleneck. |
 
-`auto` is a policy name, not currently an image-adaptive choice between the other two modes. In the measurement below, `auto` and `fast` produced byte-identical streams. Code should nevertheless pass `fast` when that exact intent matters instead of relying on today's implementation of `auto`.
+`auto` is a policy name, not currently an image-adaptive choice between the other two modes. Both values take the same non-size encoder path, and the measurement below produced byte-identical streams. They are therefore not distinct performance modes in the current implementation: any observed timing difference between them is measurement noise. Code should nevertheless pass `fast` when that exact intent matters instead of relying on today's implementation of `auto`.
 
 Transparency is more nuanced than the original 2014 description. Current size-policy code checks whether a band can be filled safely and clips transparent-offset work at image boundaries; it does not categorically reject transparent input. The [alpha policy](../loader/alpha-policy.md) still owns whether a source pixel is composited or omitted, while `-E` only decides how the surviving masks are serialized.
 
@@ -53,15 +53,15 @@ The controlled comparison used the repository's 600 by 450 `images/snake.png` fi
 
 ![Quality identity, runtime, and SIXEL byte size for auto, fast, and size encoding policies](encode-policies/measurements/encode-policy-results.png)
 
-*Figure 3. The dots show median end-to-end time and the whiskers show the interquartile range. Size bars report exact stream bytes converted to KiB.*
+*Figure 3. The dots show observed median end-to-end time and the whiskers show the interquartile range. `auto` and `fast` use the same encoder path, so their separation is measurement noise rather than a policy effect. Size bars report exact stream bytes converted to KiB.*
 
-| Policy | MS-SSIM | Mean Delta E00 | Median time, IQR | SIXEL bytes |
+| Policy | MS-SSIM | Mean Delta E00 | Observed median time, IQR | SIXEL bytes |
 | --- | ---: | ---: | ---: | ---: |
 | `auto` | 0.986100 | 2.403138 | 58.941 ms, 58.123--61.306 | 247,009 |
 | `fast` | 0.986100 | 2.403138 | 60.758 ms, 59.548--62.056 | 247,009 |
 | `size` | 0.986100 | 2.403138 | 62.121 ms, 59.436--62.925 | 226,666 |
 
-All three direct-decode PNG files had the same SHA-256 digest, so quality was pixel-identical rather than merely equal after metric rounding. `auto` and `fast` also had the same encoded-stream digest. `size` reduced the stream by 20,343 bytes, or 8.24%, while its timing distribution overlapped the other policies. This single fixture demonstrates the intended invariant and one realistic saving; it is not a universal compression ratio or speed ranking.
+All three direct-decode PNG files had the same SHA-256 digest, so quality was pixel-identical rather than merely equal after metric rounding. `auto` and `fast` also had the same encoded-stream digest and execute the same encoder path; their 1.817 ms sample-median gap is measurement noise and must not be interpreted as a speed difference. `size` reduced the stream by 20,343 bytes, or 8.24%, while its timing distribution overlapped the other policies. This single fixture demonstrates the intended invariant and one realistic saving; it is not a universal compression ratio or speed ranking.
 
 ## Reproduce the comparison
 
