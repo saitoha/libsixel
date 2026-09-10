@@ -34,6 +34,7 @@ are grouped by domain so each area can grow without overloading one document.
   palette construction, palette application, SIXEL byte generation, and their
   composed cost model.
 - [Encoder execution map](functionality/encoder-execution-map.md) expands the implementation path through loader fallback, preprocessing, scheduler overlap, quantizer-specific work, lookup and dither application, and palette serialization.
+- [Crop and resize](functionality/crop-resize.md) defines geometry syntax, aspect-ratio and rounding rules, crop/resize ordering, resampling filters, precision, transparency, and public frame helpers.
 - [Encoding policy](functionality/encode-policy.md) explains `-E`, six-row mask serialization, size-policy overpainting, and measured quality, speed, and stream-size behavior.
 - [High-color output](functionality/high-color.md) explains `-I`, paint-time palette-register semantics, repeated 255-slot passes, terminal compatibility, and measured quality, speed, and size tradeoffs.
 - [Palette construction pipeline](functionality/palette-pipeline.md) defines

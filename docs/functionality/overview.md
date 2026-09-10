@@ -25,6 +25,7 @@ loader -> normalized pixels -> palette construction -> palette application
 
 The introductory [Encoding Pipeline](encoding-pipeline.md) explains the input and output contract of each stage, while the [Encoder Execution Map](encoder-execution-map.md) follows the implementation through loader fallback, preprocessing, scheduler overlap, quantizer-specific work, per-pixel application, and wire serialization. The controls cooperate as follows:
 
+- [Crop and Resize](crop-resize.md), selected by `-c`, `-w`, `-h`, and `-r`, determines output geometry, operation order, and resampling before palette application;
 - [Palette Quantization](quantization.md), selected by `-Q`, determines which
   palette colors are available and documents each solver's objective and cost;
 - [Final Palette Merge Policy](merge-policy.md), selected by `-F`, optionally builds an oversplit provisional palette, reduces it with Ward's criterion, and applies supported Lloyd polishing;
