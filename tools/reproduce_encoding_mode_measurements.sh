@@ -18,7 +18,10 @@ encode_dir=${1-${TOP_SRCDIR}/docs/functionality/encode-policies/measurements}
 high_dir=${2-${TOP_SRCDIR}/docs/functionality/high-color/measurements}
 input_image=${3-images/snake.png}
 warmups=${ENCODING_MODE_WARMUPS-2}
-runs=${ENCODING_MODE_RUNS-7}
+runs=${ENCODING_MODE_RUNS-21}
+speed_threads=${ENCODING_MODE_THREADS-2,3,4,5,6,7,8,9,10,11,12}
+speed_width=${ENCODING_MODE_WIDTH-1920}
+speed_height=${ENCODING_MODE_HEIGHT-1080}
 source_state=clean
 
 "${GIT}" -C "${TOP_SRCDIR}" diff --quiet -- || source_state=dirty
@@ -47,6 +50,9 @@ cd "${TOP_SRCDIR}"
     --source-state "${source_state}" \
     --warmups "${warmups}" \
     --runs "${runs}" \
+    --speed-threads "${speed_threads}" \
+    --speed-width "${speed_width}" \
+    --speed-height "${speed_height}" \
     --encode-output-dir "${encode_dir}" \
     --high-color-output-dir "${high_dir}"
 

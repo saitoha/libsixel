@@ -15,10 +15,19 @@ SIXEL divides an image into bands six pixels high. Within a band, a SIXEL data c
 
 <picture>
   <source media="(max-width: 640px)" srcset="encode-policy-figures/encode-policy-band-mobile.svg">
-  <img alt="An indexed grid six pixels high is split into separate blue and amber masks. The masks are serialized as palette selections, mask runs, a carriage return, and a next-band command. Encoding policy acts only at this serialization stage." src="encode-policy-figures/encode-policy-band-wide.svg">
+  <img alt="An eight by six indexed grid uses blue, amber, green, and pink. Four masks are paired with their literal SIXEL characters. The auto and fast paint body is #1o{BN#3o{BN$#0NB{o#2NB{o, while size uses #1!4~#3!4~$#0NB{o#2NB{o." src="encode-policy-figures/encode-policy-band-wide.svg">
 </picture>
 
-*Figure 1. Palette construction and palette application have finished before encoding policy takes effect. The diagram is conceptual; real mask order and run boundaries depend on the indexed image.*
+*Figure 1. Literal paint bodies emitted for the illustrated 8 by 6, four-color band. The DCS wrapper, raster attributes, palette definitions, and string terminator are omitted so the part controlled by `-E` remains visible.*
+
+For this concrete band, the current encoder emits the following paint bodies:
+
+```text
+auto / fast  #1o{BN#3o{BN$#0NB{o#2NB{o
+size         #1!4~#3!4~$#0NB{o#2NB{o
+```
+
+These are actual SIXEL characters, not pseudocode. Subtracting ASCII `?` from a data character recovers its six vertical paint bits: `o`, `{`, `B`, and `N` describe the holes in the exact masks, while `~` sets all six bits. Thus `!4~` paints four full-height columns. The size plan first lays down four amber columns and four pink columns, returns left with `$`, and repairs the blue and green pixels. Its 23-byte paint body is two bytes shorter than the 25-byte exact body, yet both decode to the same indexed pixels. A taller image would use `-` between six-row bands.
 
 This boundary is useful when diagnosing an option. If changing `-E` changes decoded pixels for the same indexed input, that is a correctness problem rather than an expected quality tradeoff.
 

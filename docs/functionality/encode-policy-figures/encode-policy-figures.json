@@ -24,6 +24,18 @@
     "size_policy": "#D97706",
     "warning": "#BE185D"
   },
+  "four_color_example": {
+    "auto_fast_paint_body": "#1o{BN#3o{BN$#0NB{o#2NB{o",
+    "dimensions": "8x6",
+    "palette": {
+      "#0": "blue",
+      "#1": "amber",
+      "#2": "green",
+      "#3": "pink"
+    },
+    "size_paint_body": "#1!4~#3!4~$#0NB{o#2NB{o",
+    "wrapper": "DCS introducer, raster attributes, palette definitions, and ST omitted"
+  },
   "generator": "tools/plot_encoding_mode_figures.py",
   "measurement": false,
   "review": {
@@ -33,8 +45,8 @@
     "fallback": "adjacent prose and figure alt text",
     "primary": "responsive SVG diagrams",
     "qa": "wide and mobile assets reviewed after final generation",
-    "story_job": "explain the serialization boundary and overpainting"
+    "story_job": "show literal four-color serialization and overpainting"
   },
   "schema": 1,
-  "scope": "img2sixel -E band serialization and size-policy overpainting"
+  "scope": "img2sixel -E literal band serialization and overpainting"
 }
