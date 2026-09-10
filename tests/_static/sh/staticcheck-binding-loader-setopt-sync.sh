@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for binding loader_setopt parity check.
+# Policy: docs/cli/design-policy.md
 
 set -eu
 

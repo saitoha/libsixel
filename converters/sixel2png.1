@@ -36,11 +36,11 @@ fall back to TIFF payloads, and finally attempt to decode UTF-8 strings.
 .SH "COMMAND-LINE OPTIONS"
 \fIsixel2png\fP has the following command-line options:
 .TP 5
-.B \-i
+.B \-i \fIFILE\fP, \-\-input=\fIFILE\fP
 Specify input file. If it is omitted or "-",
 this command accepts SIXEL data from STDIN.
 .TP 5
-.B \-o
+.B \-o \fIFILE\fP, \-\-output=\fIFILE\fP
 Specify output file. If it is omitted or "-",
 this command writes PNG data to STDOUT.  Prefixing the
 argument with "png:" keeps the CLI consistent with img2sixel so
@@ -86,21 +86,21 @@ default lso_undither variant. Set
 441 to select the default selective_blur threshold. Explicit suboptions take
 precedence over these defaults.
 .TP 5
-.B \-S
+.B \-S \fIBIAS\fP, \-\-similarity=\fIBIAS\fP
 Specify similarity bias for dequantization.
 The argument must be an integer between 0 and 1000.
-The default value is 30.
+The default value is 100.
 .TP 5
-.B \-s
+.B \-s \fISIZE\fP, \-\-size=\fISIZE\fP
 Resize the decoded image so that the longer edge becomes SIZE pixels.
 The aspect ratio is preserved.
 .TP 5
-.B \-e
+.B \-e \fIBIAS\fP, \-\-edge=\fIBIAS\fP
 Specify edge protection bias for dequantization.
 The argument must be an integer between 0 and 1000.
 The default value is 0.
 .TP 5
-.B \-D
+.B \-D, \-\-direct
 Decode the SIXEL stream into an RGBA surface.
 The alpha channel starts at zero so untouched pixels remain transparent.
 .TP 5
@@ -144,14 +144,14 @@ Choose \fBsystem\fP (default) for the desktop clipboard or \fBfile\fP for
 the file backend. The file backend accepts \fB:directory=PATH\fP
 (short form \fB:DPATH\fP).
 .TP 5
-.B \-% KEY=VALUE, \--env=KEY=VALUE
+.B \-% KEY=VALUE, \-\-env=KEY=VALUE
 Set a process environment variable before decoding.
 This option can be repeated.
 .TP 5
-.B \-V
+.B \-V, \-\-version
 Show version and license information, then exit.
 .TP 5
-.B \-H
+.B \-H, \-\-help
 Show usage information, then exit.
 
 
@@ -257,7 +257,7 @@ sixel(5) img2sixel(1)
 
 .SH AUTHORS
 \fIsixel2png\fP is maintained by Hayaki Saito.
-We imported whole code of \fIstbiw-1.01\fP, written by Sean Barrett and its contributers, for writing PNG images,
+We imported whole code of \fIstbiw-1.01\fP, written by Sean Barrett and its contributors, for writing PNG images,
 
 
 .SH COPYRIGHT

@@ -30,13 +30,14 @@ The CLI tools adopt that separation of streams, contextual help, human-readable 
 
 ## Product constraints that shape the design
 
-The CLI tools distributed with libsixel are not a clean-sheet interface. Five constraints determine which general conventions fit:
+The CLI tools distributed with libsixel are not a clean-sheet interface. Six constraints determine which general conventions fit:
 
 1. `img2sixel` and `sixel2png` already name two stable, opposite conversion directions and are widely usable as single-purpose pipeline stages.
 2. Top-level short-option characters became public [`SIXEL_OPTFLAG_*`](../../include/sixel.h.in) identifiers consumed by library `setopt` functions, so converter syntax and the public C API share compatibility history.
-3. Encoding is a staged transformation—loading, normalization, palette construction, palette application, and SIXEL serialization—rather than an arbitrary sequence of user-defined image operations. The [encoding pipeline](../functionality/encoding-pipeline.md) owns that stage model.
-4. Each stage now has multiple algorithms and policy axes. A wholly flat option namespace cannot keep growing without collisions, opaque punctuation, or duplicated names.
-5. The tools serve interactive terminal users, shell pipelines, automated quality tests, cross-platform builds, and library embedders. Human convenience cannot make byte streams or scripted failure handling unstable.
+3. One option contract is repeated across the parser, `-H` output, manual pages, and applicable shell-completion files. Those are synchronized views of one interface rather than independent places to redesign it.
+4. Encoding is a staged transformation—loading, normalization, palette construction, palette application, and SIXEL serialization—rather than an arbitrary sequence of user-defined image operations. The [encoding pipeline](../functionality/encoding-pipeline.md) owns that stage model.
+5. Each stage now has multiple algorithms and policy axes. A wholly flat option namespace cannot keep growing without collisions, opaque punctuation, or duplicated names.
+6. The tools serve interactive terminal users, shell pipelines, automated quality tests, cross-platform builds, and library embedders. Human convenience cannot make byte streams or scripted failure handling unstable.
 
 These constraints lead to a hybrid interface: conventional executables and top-level options, typed structured arguments for subsystem policy, a fixed semantic pipeline, explicit environment defaults, and separate human and machine-oriented diagnostic modes.
 
@@ -46,6 +47,7 @@ These constraints lead to a hybrid interface: conventional executables and top-l
 | --- | --- | --- | --- |
 | Program shape | Keep `img2sixel` and `sixel2png` as separate directional utilities. | A command name states the conversion direction and composes directly in a pipeline. | Shared controls must remain synchronized across two binaries; registries and static checks enforce that synchronization. |
 | Top-level syntax | Give every public top-level option a short and a long form. | Long names teach; short names preserve established interactive and C API usage. | The short namespace is finite; independent additions require review and subsystem-specific growth moves to typed suboptions. |
+| Contract propagation | Treat the CLI option contract as the change origin, then synchronize its parser, `-H` help, manual, completion, public optflag, and binding representations wherever applicable. | Historical reuse of CLI characters as C `setopt` identifiers makes a top-level option both an executable interface and potentially a public library interface. | A seemingly local CLI addition can require public-header and binding work; structural checks detect drift and review determines the intended reach. |
 | Complex settings | Use `BASE[:SUBOPTION...]` with typed long and compact suboption forms where one setting owns a family of subordinate policy. | The base selects an algorithm or policy family while subordinate controls stay in their owning namespace. | The colon grammar is project-specific; help, manuals, completion, exact key matching, and descriptive long forms make it learnable. |
 | Processing order | Treat options as configuration for a fixed pipeline, except that crop and resize preserve their relative CLI order. | Most stages have one valid architectural order; crop and resize are non-commutative geometry operations for which both orders are useful. | The exception must remain narrow, documented, and directly tested. |
 | Configuration | Give every configurable public option and suboption an explicit environment form, resolve command line before environment and built-in defaults, and do not load an implicit config file. | Interactive commands, wrappers, CI, and launchers can express the same setting without inventing parallel configuration semantics. | Inherited environments are ambient state; help must expose the mapping and reproducible commands should state material choices explicitly. |
@@ -134,6 +136,26 @@ As the interface grew, letters and digits ceased to be enough, and released flag
 
 The one-character namespace is converter-local because encoder and decoder flags are parsed by different programs. If a setting is owned by an existing structured option, add a suboption. If it is independent, allocate a reviewed top-level identifier; lack of a convenient character is evidence that the interface needs design work, not permission to misclassify the feature.
 
+### CLI-driven contract propagation
+
+For a public converter option, the CLI contract is the change origin. The repository does not treat the option parser, discovery surfaces, C optflag, and bindings as independent designs:
+
+```text
+CLI option contract
+├── parser and option registry
+├── -H runtime help
+├── manual page
+├── applicable Bash and Zsh completion
+└── include/sixel.h.in: SIXEL_OPTFLAG_*
+    └── language-binding constants and setopt paths
+```
+
+The help, manual, and completion edges are normal maintenance obligations for a public CLI: each surface must describe the same spelling, argument shape, values, defaults, environment mapping, and availability as far as that surface represents them. The public-header and binding edges are historical. The original converter architecture reused each top-level short-option character as the value of a public `SIXEL_OPTFLAG_*` macro instead of separating the CLI namespace from the library option namespace. A new or changed top-level converter option can therefore be a C API and language-binding change even when the requested behavior first appears to concern only the executable. The mechanically representable portions of this propagation are enforced by the project-wide [staticcheck layer](../testing/staticcheck.md#cli-option-propagation-as-a-staticcheck-contract).
+
+In this limited sense, the option design is CLI-option-driven: define the user-facing converter setting and its semantics first, then propagate the same identity through every applicable representation. This does not mean that libsixel itself is a CLI or that every library capability must acquire a command-line form. Library-only APIs may remain independent. It means that once a setting is published through the historical converter `setopt` route, editing only the parser is incomplete and risks divergence among executable users, C callers, and binding users.
+
+Suboptions have a narrower propagation path. They extend the value grammar of an existing top-level optflag, so adding one does not normally allocate another `SIXEL_OPTFLAG_*` character. They must still propagate through `-H`, the manual, applicable completion, environment mappings, validation, and any binding behavior that exposes the enclosing `setopt` value. The distinction is why review must determine the applicable nodes rather than mechanically assuming that every CLI edit changes every file.
+
 ### Suboption forms and names
 
 Use suboptions for policy specific to a named subsystem. A public suboption has a typed domain, one canonical long name, one uppercase compact name, and an explicit environment representation. Long `name=value` keys are exact, while the compact `Kvalue` form is a separately registered spelling rather than a key abbreviation. Names describe user-visible behavior in established project terminology rather than a temporary function, data structure, dependency, or optimization. The detailed naming and parsing contracts belong to the [suboption architecture](suboptions.md).
@@ -221,7 +243,7 @@ A public CLI change is complete only when its design, implementation, discovery 
 2. Identify the owning pipeline stage or cross-cutting policy and explain why the setting is top-level or nested.
 3. Compare the chosen form with relevant established conventions and repository alternatives; record both the benefit and accepted cost.
 4. Define the short form, long form, type, default, environment name, precedence, repetition behavior, interactions, unavailable-platform behavior, diagnostics, output effects, and exit semantics.
-5. Update help, manuals, shell completion, option registries, public headers when applicable, and subject documentation in the same change.
+5. Starting from the CLI option contract, update the parser and option registry, `-H` output, manual pages, applicable Bash and Zsh completion, public `SIXEL_OPTFLAG_*` headers, language-binding constants and `setopt` paths, and subject documentation wherever the propagation model applies.
 6. Add focused positive, negative, precedence, interaction, and output-integrity coverage, with reciprocal links when a durable policy document owns the contract.
 
 The purpose of this checklist is not uniformity for its own sake. It keeps a local convenience from becoming an unexplained permanent compatibility burden.
@@ -236,7 +258,7 @@ Each automated contract has a stable ID and a corresponding static check or test
 | --- | --- | --- |
 | CLI-01 | Every public top-level option has a one-character short form and a long form with the same argument shape. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh) |
 | CLI-03 | `img2sixel -H` and the manual expose the same top-level option declarations. | [tests/_static/sh/staticcheck-docs-help-vs-man.sh](../../tests/_static/sh/staticcheck-docs-help-vs-man.sh) |
-| CLI-04 | The manual and Bash completion expose the same top-level option declarations. | [tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh](../../tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh) |
+| CLI-04 | The `img2sixel` manual and Bash completion expose the same complete top-level option set, including punctuation short forms. | [tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh](../../tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh) |
 | CLI-05 | Public environment controls are represented in the generated help inventory. | [tests/_static/sh/staticcheck-docs-envvars-help-table.sh](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) |
 | CLI-06 | Internal test environment controls remain behind the internal environment interface. | [tests/_static/sh/staticcheck-src-no-direct-getenv.sh](../../tests/_static/sh/staticcheck-src-no-direct-getenv.sh) |
 | CLI-10 | An explicit command-line value takes precedence over its environment default. | [tests/cli/options/matching/0246_option_matching_sampling_policy_env_cli_precedence.t](../../tests/cli/options/matching/0246_option_matching_sampling_policy_env_cli_precedence.t) |
@@ -248,7 +270,11 @@ Each automated contract has a stable ID and a corresponding static check or test
 | CLI-22 | `clipboard:` and `png:clipboard:` work as input and output pseudo targets. | [tests/io/clipboard/0002_clipboard_file_backend.t](../../tests/io/clipboard/0002_clipboard_file_backend.t) |
 | CLI-23 | Typed scalar options and suboptions register environment names, and public environment controls remain synchronized with help. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../tests/_static/sh/staticcheck-suboption-registry.sh), [tests/_static/sh/staticcheck-docs-envvars-help-table.sh](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) |
 | CLI-26 | `img2sixel` preserves both crop-before-resize and resize-before-crop planner order, and the two orders remain observably distinct. | [tests/loader/builtin/1513_loader_builtin_pal8_trns_clipfirst_order_preserved.t](../../tests/loader/builtin/1513_loader_builtin_pal8_trns_clipfirst_order_preserved.t) |
+| CLI-27 | Public `SIXEL_OPTFLAG_*` names remain synchronized from the configured C header into the Ruby, Perl, Python, and PHP binding constant surfaces. | [tests/_static/sh/staticcheck-binding-constants-sync.sh](../../tests/_static/sh/staticcheck-binding-constants-sync.sh) |
+| CLI-28 | Binding test coverage for loader `setopt` cases remains synchronized across the bindings that expose each case. | [tests/_static/sh/staticcheck-binding-loader-setopt-sync.sh](../../tests/_static/sh/staticcheck-binding-loader-setopt-sync.sh) |
+| CLI-29 | The Bash and Zsh completion files expose the same complete `img2sixel` top-level option set. | [tests/_static/sh/staticcheck-docs-bash-vs-zsh-completion.sh](../../tests/_static/sh/staticcheck-docs-bash-vs-zsh-completion.sh) |
+| CLI-30 | `sixel2png -H` and its manual expose the same top-level option declarations and argument shapes. | [tests/_static/sh/staticcheck-docs-sixel2png-help-vs-man.sh](../../tests/_static/sh/staticcheck-docs-sixel2png-help-vs-man.sh) |
 
 ### Coverage boundary
 
-Structural checks cover paired top-level forms, environment exposure, help, manuals, and completion. Behavioral tests cover representative precedence, binary I/O, and both geometry orders. Detailed suboption, prefix-matching, and correction-suggestion contracts and tests belong to their linked documents. Design judgment remains manual: tests cannot decide whether a name is clear, whether a new feature belongs in an existing subsystem, whether another order-sensitive exception is justified, or whether the compatibility cost of a new spelling is acceptable.
+Structural checks cover paired top-level forms, environment exposure, help, manuals, completion, public-header-to-binding constants, and binding `setopt` case coverage. Behavioral tests cover representative precedence, binary I/O, and both geometry orders. Detailed suboption, prefix-matching, and correction-suggestion contracts and tests belong to their linked documents. Design judgment remains manual: tests cannot decide whether a name is clear, whether a new feature belongs in an existing subsystem, which propagation nodes apply, whether another order-sensitive exception is justified, or whether the compatibility cost of a new spelling is acceptable.

@@ -674,6 +674,12 @@ echo "php TAP logs exported to $artifact_root"
 
 staticcheck_cases = [
   [
+    'staticcheck-staticcheck-suite-sync',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-staticcheck-suite-sync.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-actionlint',
     [meson.current_source_dir() / '_static/sh/staticcheck-actionlint.sh',
       meson.project_source_root(),
@@ -955,6 +961,19 @@ staticcheck_cases = [
     'staticcheck-help-sixel2png-source-contract',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-help-sixel2png-source-contract.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-docs-sixel2png-help-vs-man',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-docs-sixel2png-help-vs-man.sh',
+      meson.project_source_root(),
+      meson.project_build_root()],
+  ],
+  [
+    'staticcheck-docs-bash-vs-zsh-completion',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-docs-bash-vs-zsh-completion.sh',
       meson.project_source_root()],
   ],
   [
