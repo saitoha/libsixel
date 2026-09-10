@@ -51,7 +51,7 @@ The loader/encoder multi-frame handoff and the PaletteApply/encoder band pipelin
 
 *Figure 2. Loader selection and the two sampling-source boundaries. Blue is the main frame path, magenta is palette sampling, purple is a colorspace/pixelformat conversion, and red is fallback control flow.*
 
-The loader manager constructs an ordered candidate chain. Each component has its own predicate, options, decode implementation, metadata precedence, CMS support, orientation handling, and alpha finalization. A failed candidate advances to the next component only for the explicitly recognized mismatch or decode-error statuses; allocation, argument, cancellation, and other terminal failures stop the chain. Loader CMS is consequently not one universal filter that runs after every decoder.
+The loader manager constructs an ordered candidate chain. Each component has its own predicate, options, decode implementation, metadata precedence, CMS support, orientation handling, and alpha finalization. A failed candidate advances to the next component only for the explicitly recognized mismatch or decode-error statuses; allocation, argument, cancellation, and other terminal failures stop the chain. Loader CMS is consequently not one universal filter that runs after every decoder. [Image Loader Architecture](../loader/README.md) expands the `-L` construction rule, compiled backend registry, exact fallback boundary, and backend-dependent output contract.
 
 ### The frame is not universally RGBA
 

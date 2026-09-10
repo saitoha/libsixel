@@ -2290,59 +2290,34 @@ takes precedence.
 
 .SH Image loaders
 
-\fIimg2sixel\fP includes two or more image decoder components.
+\fIimg2sixel\fP builds an ordered chain of image-decoder components. The exact
+registry is build-dependent; use \fB\-\-help\fP to print the loader names in the
+current binary. Optional components can include libpng, libjpeg, libwebp,
+libtiff, librsvg, WIC, CoreGraphics, gdk-pixbuf2, GD, Quick Look, and the
+freedesktop GNOME thumbnailer. The \fBbuiltin\fP component is always present.
 
-.TP 5
-.B stb_image
+The \fB\-L\fP option puts explicit components first and, unless the complete
+list ends in "!", appends the remaining default-enabled components in registry
+order. A component is normally predicate-gated before decode. Only recognised
+input/decode failures advance to the next component; allocation, cancellation,
+argument, overflow, and other terminal failures stop the chain.
 
-\fIlibsixel\fP includes \fIstb_image\fP, a public domain image loader.
-.br
-\fIimg2sixel\fP uses it as default built-in image decoder.
-It can decode almost all images. but a few images can not be decoded by its limitations.
+Loader output is a typed frame rather than a universal 8-bit RGBA buffer. A
+backend may return indexed pixels and a palette, byte RGB/RGBA, generic RGB
+float32, or a typed float32 colorspace, together with separate transparency,
+animation, orientation, and profile metadata. Source depth, the selected
+backend, CMS settings, and palette/alpha policy determine the concrete result.
 
-.B Supported source formats:
-   JPEG baseline & progressive (12 bpc/arithmetic not supported, same as stock IJG lib)
-   PNG 1/2/4/8/16-bit-per-channel
-   TGA (not sure what subset, if a subset)
-   BMP non-1bpp, non-RLE
-   PSD (composited view only, no extra channels)
-   PIC (Softimage PIC)
-   PNM (PPM and PGM binary only)
+The builtin component began from stb_image but now dispatches dedicated SIXEL,
+PNM/PAM, GIF, WebP, PNG/APNG, HDR, PSD/PSB, and BMP families. JPEG uses a
+modified stb-derived float path, while selected TGA, PIC, palette, and
+zlib helpers remain adapted from stb_image. This in-tree ownership improves
+control over precision, colorspace, palettes, and animation but also increases
+the parser attack surface; builtin is not a sandbox.
 
-.B Limitations:
-   no 12-bit-per-channel JPEG
-   no JPEGs with arithmetic coding / JPEG 2000
-   no 1-bit BMP
-
-.TP 5
-.B libpng
-
-   If \fIlibpng\fP library is linked at compile time, \fIimg2sixel\fP uses it for decoding PNG image.
-
-.TP 5
-.B libjpeg
-
-   If \fIlibjpeg\fP library is linked at compile time, \fIimg2sixel\fP uses it for decoding JPEG image.
-
-.TP 5
-.B libtiff
-
-   If \fIlibtiff\fP library is linked at compile time, \fIimg2sixel\fP uses it for decoding TIFF image.
-
-.TP 5
-.B gdk-pixbuf2
-
-   If \fIgdk-pixbuf2\fP library is linked at compile time, \fIimg2sixel\fP uses it automatically in some cases.
-
-.TP 5
-.B GD
-
-   If \fIGD\fP library is linked at compile time, \fIimg2sixel\fP uses it automatically in some cases.
-
-.TP 5
-.B libsixel
-
-   \fIimg2sixel\fP can load SIXEL as source image format, because it uses \fIlibsixel\fP as a SIXEL image decoder.
+See \fIdocs/loader/README.md\fP and \fIdocs/loader/builtin.md\fP in the source
+distribution for the architecture, output contracts, security tradeoffs, and
+implementation history.
 
 
 .SH HISTORY

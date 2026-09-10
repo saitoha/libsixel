@@ -1,0 +1,50 @@
+{
+  "assets": [
+    "loader-chain-wide.svg",
+    "loader-chain-mobile.svg",
+    "builtin-lineage-wide.svg",
+    "builtin-lineage-mobile.svg"
+  ],
+  "color_roles": {
+    "accepted_typed_frame": "#0F766E",
+    "backend_owned_or_dedicated_family": "#6941C6",
+    "fallback_or_security_warning": "#B42318",
+    "manager_policy_and_retained_stb": "#2563EB",
+    "palette_related": "#BE185D",
+    "quality_or_feature_pressure": "#D97706"
+  },
+  "generator": "tools/plot_loader_architecture_figures.py",
+  "sources": {
+    "builtin": [
+      "src/loader-builtin.c",
+      "src/stb_image.h",
+      "src/fromgif.c",
+      "src/frompng.c",
+      "src/frompnm.c",
+      "src/fromhdr.c",
+      "src/frompsd.c",
+      "src/frombmp.c",
+      "src/fromwebp.c"
+    ],
+    "chain": [
+      "src/loader-manager.c:g_sixel_loader_entries",
+      "src/loader-manager.c:loader_manager_build_plan_from_resolution",
+      "src/loader-manager.c:sixel_loader_manager_load_impl",
+      "src/options-registry.c:SIXEL_OPTION_SCHEMA_LOADERS"
+    ],
+    "history": [
+      "81375f0bd",
+      "30b80e140",
+      "1d92429d7",
+      "ca38e5e4a",
+      "44045c67b",
+      "158bb61ea",
+      "8517810cc",
+      "2a743d4b2",
+      "e0d479e64",
+      "4210a8a7e",
+      "379c90cf5",
+      "6e0efa0bb"
+    ]
+  }
+}
