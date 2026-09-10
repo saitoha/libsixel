@@ -71,13 +71,13 @@ Transparency is therefore more nuanced than the original 2014 description. The c
 
 ## Measured quality, speed, and size
 
-The controlled comparison used the repository's `images/snake.png` fixture at revision `24e46743fd78167db78ca9d72754e50b6a834947`. All runs used the builtin loader, RGB palette space, 8-bit precision, high quality, a fixed 256-color budget, no diffusion, and no GPU. Quality and size used the original 600 by 450 image with one thread; each SIXEL stream was decoded through `sixel2png --direct` before assessment.
+The controlled comparison used the repository's `images/snake.png` fixture at revision `a639171f5a3ab8207dbb5450edb8b0a000e1f1c0`. All runs used the builtin loader, RGB palette space, 8-bit precision, high quality, a fixed 256-color budget, no diffusion, and no GPU. Quality and size used the original 600 by 450 image with one thread; each SIXEL stream was decoded through `sixel2png --direct` before assessment.
 
-Speed was measured separately on the same image scaled to 1920 by 1080. For every policy and every `--threads` value from 2 through 12, the harness performed two warmups and recorded 21 JSON timelines. One sample is the wall interval from the earliest `encode/worker/worker_start` event to the latest `encode/worker/worker_done` event. Image loading, palette construction, dither work before the first encode worker starts, and ordered writer work are therefore excluded. Once the first encode worker has started, however, waiting for later banded-dither results remains inside the interval. One-thread mode has no encode-worker events and is intentionally absent rather than being measured with a different boundary.
+Speed was measured separately on the same image scaled to 1920 by 1080. For every policy and every `--threads` value from 1 through 12, the harness performed two warmups and recorded 21 JSON timelines. The serial sample spans the first `encode/worker/start` event through the last matching `finish`; parallel samples span the earliest `encode/worker/worker_start` through the latest matching `worker_done`. Both select the body encoder's per-band events, so image loading, palette construction, dither work before the first encode band starts, and ordered writer work are excluded. Once the first encode worker has started, however, waiting for later banded-dither results remains inside the interval.
 
 ![Quality identity, runtime, and SIXEL byte size for auto, fast, and size encoding policies](encode-policies/measurements/encode-policy-results.png)
 
-*Figure 3. Thread count is the horizontal axis of the speed panel. Each box spans the interquartile range, its line is the median, whiskers extend to 1.5 times the IQR, and isolated points are outliers. `auto` and `fast` use the same encoder path, so small separations between their boxes are sampling noise rather than a policy effect. Size bars report exact stream bytes converted to KiB.*
+*Figure 3. Thread count is the horizontal axis of the speed panel; one is the serial body path. Each box spans the interquartile range, its line is the median, whiskers extend to 1.5 times the IQR, and isolated points are outliers. `auto` and `fast` use the same encoder path, so small separations between their boxes are sampling noise rather than a policy effect. Size bars report exact stream bytes converted to KiB.*
 
 | Policy | MS-SSIM | Mean Delta E00 | SIXEL bytes |
 | --- | ---: | ---: | ---: |
@@ -87,15 +87,18 @@ Speed was measured separately on the same image scaled to 1920 by 1080. For ever
 
 | Threads | `auto` median [Q1--Q3] | `fast` median [Q1--Q3] | `size` median [Q1--Q3] |
 | ---: | ---: | ---: | ---: |
-| 2 | 13.669 [13.522--13.763] ms | 13.538 [13.461--13.789] ms | 13.178 [13.083--13.346] ms |
-| 3 | 48.003 [47.801--48.327] ms | 47.928 [47.817--48.107] ms | 47.932 [47.639--48.234] ms |
-| 4 | 35.284 [34.573--36.127] ms | 34.747 [34.400--36.277] ms | 34.700 [34.360--35.181] ms |
-| 8 | 20.740 [20.503--21.250] ms | 20.961 [20.816--21.263] ms | 20.760 [20.387--21.088] ms |
-| 12 | 17.189 [17.049--17.462] ms | 17.044 [16.648--17.547] ms | 17.133 [16.901--17.374] ms |
+| 1 | 22.294 [21.695--22.745] ms | 22.181 [21.243--22.821] ms | 21.321 [20.411--22.153] ms |
+| 2 | 14.516 [14.223--14.720] ms | 14.128 [13.902--14.518] ms | 13.987 [13.714--14.232] ms |
+| 3 | 54.443 [53.105--55.746] ms | 52.940 [52.030--54.599] ms | 52.994 [52.320--54.520] ms |
+| 4 | 39.945 [38.972--40.389] ms | 38.950 [37.775--40.335] ms | 39.779 [38.490--40.552] ms |
+| 8 | 21.900 [21.242--22.240] ms | 22.050 [21.590--22.710] ms | 21.892 [21.448--22.184] ms |
+| 12 | 17.522 [17.131--18.328] ms | 18.007 [17.637--18.263] ms | 17.951 [17.808--18.537] ms |
 
-All three direct-decode PNG files had the same SHA-256 digest, so quality was pixel-identical rather than merely equal after metric rounding. `auto` and `fast` also had the same encoded-stream digest. Across the full thread grid their median gaps were at most 0.537 ms and their boxes overlapped; the data provides no evidence that they are distinct speed modes. `size` reduced the stream by 20,343 bytes, or 8.24%, while its encode-window distribution remained interleaved with the same-path policies. Ordered writing is outside this timing boundary, so the smaller byte count does not automatically make the measured interval shorter.
+All three direct-decode PNG files had the same SHA-256 digest, so quality was pixel-identical rather than merely equal after metric rounding. `auto` and `fast` also had the same encoded-stream digest. Across the full thread grid their median gaps were at most 1.503 ms and their boxes overlapped; the data provides no evidence that they are distinct speed modes. `size` reduced the stream by 20,343 bytes, or 8.24%, while its encode-window distribution remained interleaved with the same-path policies. Ordered writing is outside this timing boundary, so the smaller byte count does not automatically make the measured interval shorter.
 
-The 2-thread plan finishes dithering before encode workers begin, so its short interval must not be read as an end-to-end speedup over 3 threads. From 3 threads onward, dither and encode overlap and the interval includes later-band arrival waits. The boxes widen sharply when the dither side first becomes parallel at 4 threads: the observed IQR was 0.821--1.877 ms across policies, versus 0.241--0.328 ms at 2 threads. They do not then widen monotonically; at 12 threads the range was 0.413--0.899 ms. The result is consistent with uneven band completion becoming visible to encode, but this fixture does not support the stronger claim that variability continually increases with thread count.
+The serial and 2-thread plans both finish dithering before body encoding begins, so they directly answer whether a small encoder worker pool helps on this input. The `fast` median falls from 22.181 ms to 14.128 ms, a 36.3% reduction; the other policies show similar 34.4--34.9% reductions. This result supports retaining encoder parallelism, at least through two workers for this 1920 by 1080 fixture.
+
+It does not show that every additional worker reduces encoder CPU time. From 3 threads onward, dither and encode overlap and this requested boundary includes later-band arrival waits, while `--threads` is a pipeline budget rather than an isolated encoder-worker count. The 3-thread point must therefore not be read as an encoder regression against two threads. The IQR widens from 0.497--0.616 ms across policies at two threads to 2.200--2.641 ms at three, consistent with uneven band completion becoming visible to encode. It does not then widen monotonically: at 12 threads the range is 0.626--1.197 ms. Deciding the best worker allocation would require a separate pre-indexed body benchmark or an end-to-end latency comparison, not this hybrid interval alone.
 
 This single fixture demonstrates the intended pixel invariant, one realistic byte saving, and one host's scheduling behavior. It is not a universal compression ratio or speed ranking.
 
