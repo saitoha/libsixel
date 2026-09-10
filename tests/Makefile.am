@@ -658,6 +658,7 @@ AM_LOG_FLAGS =
 
 .PHONY: \
 	staticcheck \
+	staticcheck-staticcheck-suite-sync \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
@@ -715,7 +716,9 @@ AM_LOG_FLAGS =
 	staticcheck-help-quantize-source-contract \
 	staticcheck-help-sixel2png-source-contract \
 	staticcheck-docs-help-vs-man \
+	staticcheck-docs-sixel2png-help-vs-man \
 	staticcheck-docs-man-vs-bash-completion \
+	staticcheck-docs-bash-vs-zsh-completion \
 	staticcheck-docs-envvars-help-table \
 	staticcheck-docs-github-math \
 	staticcheck-doc-test-links \
@@ -724,6 +727,7 @@ AM_LOG_FLAGS =
 # Keep Autotools staticcheck semantics aligned with Meson:
 # FAIL/ERROR must propagate as a non-zero exit status.
 staticcheck \
+staticcheck-staticcheck-suite-sync \
 staticcheck-actionlint \
 staticcheck-shellcheck \
 staticcheck-codespell \
@@ -783,7 +787,9 @@ staticcheck-build-doc-meson-options \
 staticcheck-help-quantize-source-contract \
 staticcheck-help-sixel2png-source-contract \
 staticcheck-docs-help-vs-man \
+staticcheck-docs-sixel2png-help-vs-man \
 staticcheck-docs-man-vs-bash-completion \
+staticcheck-docs-bash-vs-zsh-completion \
 staticcheck-docs-envvars-help-table \
 staticcheck-docs-github-math \
 staticcheck-doc-test-links \
@@ -807,6 +813,16 @@ staticcheck: staticcheck-clean
 
 staticcheck-clean:
 	@$(am__rm_f) staticcheck-*.log staticcheck-*.trs
+
+staticcheck-staticcheck-suite-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-staticcheck-suite-sync" \
+		--log-file staticcheck-staticcheck-suite-sync.log \
+		--trs-file staticcheck-staticcheck-suite-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-staticcheck-suite-sync.sh" \
+		"$(abs_top_srcdir)"
 
 staticcheck-actionlint:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -1434,6 +1450,16 @@ staticcheck-docs-help-vs-man:
 		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-help-vs-man.sh" \
 		"$(abs_top_srcdir)"
 
+staticcheck-docs-sixel2png-help-vs-man:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-docs-sixel2png-help-vs-man" \
+		--log-file staticcheck-docs-sixel2png-help-vs-man.log \
+		--trs-file staticcheck-docs-sixel2png-help-vs-man.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-sixel2png-help-vs-man.sh" \
+		"$(abs_top_srcdir)" "$(abs_top_builddir)"
+
 staticcheck-docs-man-vs-bash-completion:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
@@ -1442,6 +1468,16 @@ staticcheck-docs-man-vs-bash-completion:
 		--trs-file staticcheck-docs-man-vs-bash-completion.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-docs-bash-vs-zsh-completion:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-docs-bash-vs-zsh-completion" \
+		--log-file staticcheck-docs-bash-vs-zsh-completion.log \
+		--trs-file staticcheck-docs-bash-vs-zsh-completion.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-bash-vs-zsh-completion.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-c-header-modeline:
@@ -2345,6 +2381,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-inc-extra-dist-sync.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-metal-source-literal-length.sh \
+    _static/sh/staticcheck-staticcheck-suite-sync.sh \
     _static/sh/staticcheck-suboption-registry.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-kcenter-suboption-env-sync.sh \
@@ -2364,7 +2401,9 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-help-quantize-source-contract.sh \
     _static/sh/staticcheck-help-sixel2png-source-contract.sh \
     _static/sh/staticcheck-docs-help-vs-man.sh \
+    _static/sh/staticcheck-docs-sixel2png-help-vs-man.sh \
     _static/sh/staticcheck-docs-man-vs-bash-completion.sh \
+    _static/sh/staticcheck-docs-bash-vs-zsh-completion.sh \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
     _static/sh/staticcheck-docs-github-math.sh \
     _static/sh/staticcheck-doc-test-links.sh \

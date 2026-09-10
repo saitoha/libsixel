@@ -2,6 +2,7 @@
 # Verify reciprocal links between enforced policy documents and owning tests.
 # Policy: docs/AGENTS.md
 # Policy: docs/testing/guide.md
+# Policy: docs/testing/staticcheck.md
 
 set -eu
 

@@ -53,6 +53,7 @@ Use the [documentation index](docs/README.md) to find durable project references
 - [CLI design policy](docs/cli/design-policy.md)
 - [Quality measurement policy](docs/quality/measurement-policy.md)
 - [Testing guide](docs/testing/guide.md)
+- [Staticcheck model](docs/testing/staticcheck.md)
 - [Threading architecture](docs/threading/README.md)
 - [CI architecture and design](docs/ci/design.md)
 

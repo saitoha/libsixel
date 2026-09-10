@@ -89,6 +89,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 - [Testing guide](testing/guide.md) covers test organization, shell TAP rules,
   registration, portability, and required checks.
+- [Staticcheck](testing/staticcheck.md) defines libsixel's repository-wide invariant-verification target, its broader-than-lint scope, IDL and cross-surface checks, test meta-checks, CLI synchronization role, and extension workflow.
 
 ## Threading
 

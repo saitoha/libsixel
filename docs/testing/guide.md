@@ -2,7 +2,7 @@
 
 ## Test strategy
 
-Place a test at the narrowest boundary that owns the behavior. Use functional or unit-style tests for local contracts, regression tests for previously broken behavior, quality tests for perceptual output, static checks for repository-wide invariants, and fuzz tests for parser and state-space exploration.
+Place a test at the narrowest boundary that owns the behavior. Use functional or unit-style tests for local contracts, regression tests for previously broken behavior, quality tests for perceptual output, [staticcheck](staticcheck.md) for repository-wide invariants and test meta-checks, and fuzz tests for parser and state-space exploration.
 
 An end-to-end test is valuable when integration is the contract. It is not a substitute for a smaller test that identifies the failing layer.
 
@@ -169,7 +169,7 @@ ARTIFACT_LOCAL_DIR=$PWD TOP_SRCDIR=$PWD \
 find tests -type f -name \*.t -exec shellcheck -x -P "$PWD" {} +
 ```
 
-Run the project static suite, which checks rules generic ShellCheck does not know:
+Run the project [staticcheck suite](staticcheck.md), which is libsixel's broader-than-lint target for repository-wide invariants, cross-surface synchronization, IDL and generated artifacts, and test meta-checks:
 
 ```sh
 PATH="$PWD/.local/bin:$PATH" make staticcheck

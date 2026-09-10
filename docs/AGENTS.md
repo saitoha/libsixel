@@ -28,6 +28,7 @@ Start from the [documentation index](README.md). Read the relevant document befo
 - [CLI](cli/design-policy.md): option design, compatibility, parsing, diagnostics, and documentation synchronization.
 - [Quality](quality/measurement-policy.md): perceptual metrics, fixtures, thresholds, baselines, and performance comparisons.
 - [Testing](testing/guide.md): test organization, shell TAP rules, registration, portability, and required checks.
+- [Staticcheck](testing/staticcheck.md): the repository-wide invariant-verification target, cross-surface synchronization, generated artifacts, and test meta-checks.
 - [Threading](threading/README.md): worker budgets, band encoding and decoding, stage ordering, animation, and reproducible timeline measurements.
 - [CI](ci/design.md): workflow responsibilities, matrix design, failure triage, and CI-change validation.
 - [OpenVMS compatibility](misc/platforms/openvms.md): maintained GNV and OpenVMS build, status, linker, filesystem, test, and CI boundaries.

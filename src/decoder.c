@@ -2863,7 +2863,7 @@ sixel_decoder_setopt(
         if (endptr == value || *endptr != '\0' || errno == ERANGE ||
             parsed_value < 0L || parsed_value > 1000L) {
             sixel_helper_set_additional_message(
-                "edge bias must be between 1 and 1000.");
+                "edge bias must be between 0 and 1000.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }

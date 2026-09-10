@@ -366,6 +366,10 @@ EOF
         -c "$source_path" -o "$object_path"
 }
 
+run_case_tap "staticcheck-staticcheck-suite-sync" \
+    "$src_root/tests/_static/sh/staticcheck-staticcheck-suite-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-private-includes" \
     "$src_root/tests/_static/sh/staticcheck-private-includes.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?
@@ -520,6 +524,10 @@ run_case_tap "staticcheck-output-instantiation-boundary" \
 
 run_case_tap "staticcheck-chunk-component-boundary" \
     "$src_root/tests/_static/sh/staticcheck-chunk-component-boundary.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-palette-component-boundary" \
+    "$src_root/tests/_static/sh/staticcheck-palette-component-boundary.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-chunk-factory-vtbl-guard" \
@@ -821,8 +829,16 @@ run_case_tap "staticcheck-docs-help-vs-man" \
     "$src_root/tests/_static/sh/staticcheck-docs-help-vs-man.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-docs-sixel2png-help-vs-man" \
+    "$src_root/tests/_static/sh/staticcheck-docs-sixel2png-help-vs-man.sh" \
+    "$src_root" "$build_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-docs-man-vs-bash-completion" \
     "$src_root/tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-docs-bash-vs-zsh-completion" \
+    "$src_root/tests/_static/sh/staticcheck-docs-bash-vs-zsh-completion.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-docs-envvars-help-table" \

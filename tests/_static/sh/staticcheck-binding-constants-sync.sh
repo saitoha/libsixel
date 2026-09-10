@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for public binding constant parity checks.
+# Policy: docs/cli/design-policy.md
 
 set -eu
 
