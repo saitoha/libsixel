@@ -116,7 +116,7 @@ The following summary includes active GitHub Actions build configurations. "Syst
 | WebAssembly | Emscripten runtime profiles | wasm32 | Emscripten/Clang | Autotools, Meson |
 | Cosmopolitan APE | current toolchain profile | portable APE; x86_64 and AArch64 hosts | `cosmocc` | Autotools, Meson |
 
-The Windows rows include native MSVC-ABI builds, MinGW/UCRT variants, and cross-built Win64 binaries exercised under Wine. The WebAssembly and Cosmopolitan rows describe target formats; their host OS is recorded by each individual workflow job.
+The Windows rows include native MSVC-ABI builds, MinGW/UCRT variants, and cross-built Win64 binaries exercised under Wine. Their grouped cells are unpacked in [Windows Cross-Runtime and Path Compatibility](misc/platforms/windows-paths.md), including the distinct MSVC-ABI and MinGW-w64/UCRT Clang modes and combinations that do not yet have an active public job. The WebAssembly and Cosmopolitan rows describe target formats; their host OS is recorded by each individual workflow job. Emscripten is currently exercised from Linux and macOS, not from a Windows host.
 
 ## Tier 2: @saitoha local CI
 

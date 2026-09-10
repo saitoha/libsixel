@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document owns compatibility rules shared by native Windows builds. It covers the `_WIN32` and `_WIN32_WINNT` boundary and common Win32/CRT behavior; compiler-runtime differences belong to [MSVC](msvc.md) and [MinGW](mingw.md), while the POSIX runtimes hosted on Windows belong to [Cygwin and MSYS](cygwin-msys.md). The complete inventory is the [platform compatibility ledger](README.md).
+This document owns compatibility rules shared by native Windows builds. It covers the `_WIN32` and `_WIN32_WINNT` boundary and common Win32/CRT behavior; compiler-runtime differences belong to [MSVC](msvc.md) and [MinGW](mingw.md), while the POSIX runtimes hosted on Windows belong to [Cygwin and MSYS](cygwin-msys.md). Builds whose driver shell and produced runtime differ, including Cygwin-driven MSVC builds, are explained in [Windows cross-runtime and path compatibility](windows-paths.md). The complete inventory is the [platform compatibility ledger](README.md).
 
 ## Native Windows discriminator
 
@@ -16,7 +16,7 @@ Windows descriptors require `_O_BINARY` for image and SIXEL streams. The compati
 
 Environment access remains in the compatibility layer because `GetEnvironmentVariableA` must distinguish an absent value from an empty value and because returned storage follows the project's cache lifetime. Mutation uses `SetEnvironmentVariableA`. Console detection must use `GetConsoleMode`; the CRT can report the `NUL` device as a TTY even though it is not interactive. Wall-clock conversion starts from `FILETIME` and subtracts the Windows-to-Unix epoch offset.
 
-Path conversion must happen before passing paths to the native CRT. Preserve drive-letter, UNC, `/c/...`, and `/cygdrive/c/...` handling as well as the `-` stdin marker and `clipboard:` pseudo-target exceptions. A successful optional `cygpath` conversion is an optimization for interoperability, not the only fallback.
+Path conversion must happen before passing paths to the native CRT. Preserve drive-letter, UNC, `/c/...`, and `/cygdrive/c/...` handling as well as the `-` stdin marker and `clipboard:` pseudo-target exceptions. A successful optional `cygpath` conversion is an optimization for interoperability, not the only fallback. The conversion layers, ownership API, build-argument boundary, test launcher, and active driver/target combinations are specified in [Windows cross-runtime and path compatibility](windows-paths.md).
 
 WIC image loading and WinHTTP fetching are Windows facilities selected only when their headers and libraries are available. Their build-system gates must stay synchronized across Autotools and Meson.
 
