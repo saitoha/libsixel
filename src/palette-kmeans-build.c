@@ -1904,8 +1904,11 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         hamerly_initialized = 0u;
         elkan_initialized = 0u;
         if (seed_enabled) {
+            /* Keep the restart sequence modulo 2^32 without relying on an
+             * instrumented unsigned overflow in the multiply or add. */
             restart_seed =
-                seed_value + (uint32_t)(0x9e3779b9u * restart_index);
+                (uint32_t)((uint64_t)seed_value
+                           + (uint64_t)0x9e3779b9u * restart_index);
             if (restart_seed == 0u) {
                 restart_seed = 1u;
             }

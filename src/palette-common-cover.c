@@ -67,8 +67,23 @@ sixel_palette_cover_anchors[SIXEL_PALETTE_COVER_ANCHOR_MAX][3] = {
 static unsigned int
 sixel_palette_cover_anchor_count(int policy);
 
-static int g_sixel_palette_cover_override_enabled;
-static sixel_palette_cover_options_t g_sixel_palette_cover_override;
+#if defined(_MSC_VER)
+# define SIXEL_COVER_TLS __declspec(thread)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !defined(__PCC__)
+# define SIXEL_COVER_TLS _Thread_local
+#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
+# define SIXEL_COVER_TLS __thread
+#else
+# define SIXEL_COVER_TLS
+#endif
+
+/* Encoder overrides must remain local to the concurrent encode operation. */
+static SIXEL_COVER_TLS int g_sixel_palette_cover_override_enabled;
+static SIXEL_COVER_TLS sixel_palette_cover_options_t
+    g_sixel_palette_cover_override;
+
+#undef SIXEL_COVER_TLS
 
 SIXEL_INTERNAL_API void
 sixel_set_palette_cover_override(int enabled,
