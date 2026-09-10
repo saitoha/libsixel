@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify clipfirst ordering remains stable for PAL8 transparent geometry.
+# Policy: docs/cli/design-policy.md
 
 set -eux
 

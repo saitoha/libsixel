@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify sixel2png applies abort tracing after diagnostics option parsing.
+# Policy: docs/cli/abort-trace.md
 
 set -eux
 
