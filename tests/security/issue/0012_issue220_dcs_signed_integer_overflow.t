@@ -18,7 +18,8 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${issue220}" -o /dev/null
 command_status=$?
 set -e
 
-test "${command_status}" = 1 || {
+test "${command_status}" -ge 1 -a \
+    "${command_status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
     echo "not ok" 1 - "issue #220 item2 did not return mapped overflow status"
     exit 0
 }

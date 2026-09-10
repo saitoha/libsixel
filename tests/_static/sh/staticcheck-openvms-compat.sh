@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify the source-level OpenVMS compatibility boundaries.
 # Policy: docs/misc/platforms/openvms.md
-# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05
+# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08
 
 set -eu
 
@@ -106,6 +106,22 @@ require_fixed 'SIXEL2PNG_OPENVMS_INHIBIT_MSG | 2' converters/sixel2png.c
 require_fixed 'SIXEL2PNG_OPENVMS_INHIBIT_MSG | 4' converters/sixel2png.c
 require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS=4' \
     build-aux/lso-tap-driver.sh.in
+require_fixed "tr -d '\\n' <\"\${out_file}\" | cksum" \
+    tests/planner/pipeline/0013_pipeline_gpu_force_reject_closes_dcs.t
+require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3' \
+    tests/security/issue/0012_issue220_dcs_signed_integer_overflow.t
+for palette_test in \
+    tests/quant/palette/0009_palette_worker_init_fallback.t \
+    tests/quant/palette/0010_palette_worker_sample_fallback.t \
+    tests/quant/palette/0011_palette_worker_thread_fallback.t \
+    tests/quant/palette/0012_palette_worker_conversion_fallback.t \
+    tests/quant/palette/0013_palette_worker_build_fallback.t
+do
+    require_fixed 'tests/data/inputs/snake_64.png' "$palette_test"
+    if grep -F 'images/snake.png' "$src_root/$palette_test" >/dev/null 2>&1; then
+        fail "$palette_test uses an RMS-hostile full-size output fixture"
+    fi
+done
 
 test "$failed" -eq 0 || {
     echo "not ok 1 - OpenVMS compatibility boundaries are preserved"
