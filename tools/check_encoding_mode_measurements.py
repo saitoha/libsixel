@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import shlex
 from pathlib import Path
 from typing import Dict, List
 
@@ -30,12 +31,57 @@ def require_png(path: Path) -> None:
         raise RuntimeError(f"{path} is not a PNG file")
 
 
+def validate_speed_rows(rows: List[Dict[str, str]], metadata: dict,
+                        variants: List[str], family: str) -> None:
+    """Validate the complete thread-by-variant encode timing grid."""
+    timing = metadata["timing"]
+    threads = [int(value) for value in timing["threads"]]
+    runs = int(timing["runs"])
+    expected = len(variants) * len(threads) * runs
+    if len(rows) != expected:
+        raise RuntimeError(
+            f"{family} speed grid has {len(rows)} rows, expected {expected}"
+        )
+    observed = {
+        (row["variant"], int(row["threads"]), int(row["sample"]))
+        for row in rows
+    }
+    required = {
+        (variant, threads_value, sample)
+        for variant in variants
+        for threads_value in threads
+        for sample in range(1, runs + 1)
+    }
+    if observed != required:
+        raise RuntimeError(f"{family} speed grid is incomplete")
+    for row in rows:
+        first = float(row["encode_first_worker_start_seconds"])
+        last = float(row["encode_last_worker_done_seconds"])
+        elapsed = float(row["encode_window_seconds"])
+        if first < 0.0 or last <= first or elapsed <= 0.0:
+            raise RuntimeError(f"{family} contains an invalid encode window")
+        if abs((last - first) - elapsed) > 1e-12:
+            raise RuntimeError(f"{family} encode window arithmetic disagrees")
+        if (int(row["encode_worker_start_count"])
+                != int(row["encode_worker_done_count"])):
+            raise RuntimeError(f"{family} worker events are unpaired")
+        tokens = shlex.split(row["command"])
+        threads_token = f"--threads={row['threads']}"
+        if threads_token not in tokens:
+            raise RuntimeError(f"{family} command has the wrong thread budget")
+        if "-J" not in tokens or "{timeline}" not in tokens:
+            raise RuntimeError(f"{family} command lacks timeline logging")
+        if "-w" not in tokens or "-h" not in tokens:
+            raise RuntimeError(f"{family} command lacks speed dimensions")
+
+
 def validate_encode_policy(directory: Path) -> None:
     """Validate the complete -E comparison."""
     rows = read_rows(directory / "encode-policy-comparison.csv")
     metadata = json.loads(
         (directory / "encode-policy-run.json").read_text(encoding="utf-8")
     )
+    speed_rows = read_rows(directory / "encode-policy-speed.csv")
     if [row["policy"] for row in rows] != ["auto", "fast", "size"]:
         raise RuntimeError("encode-policy grid is incomplete or out of order")
     if metadata["source_state"] != "clean":
@@ -50,8 +96,13 @@ def validate_encode_policy(directory: Path) -> None:
     for row in rows:
         require_digest(row["encoded_sha256"], "encoded_sha256")
         require_digest(row["decoded_png_sha256"], "decoded_png_sha256")
-        if int(row["runs"]) != int(metadata["timing"]["runs"]):
-            raise RuntimeError("encode-policy timing count disagrees with metadata")
+    validate_speed_rows(
+        speed_rows, metadata, ["auto", "fast", "size"], "encode-policy"
+    )
+    for row in speed_rows:
+        tokens = shlex.split(row["command"])
+        if tokens[tokens.index("--encode-policy") + 1] != row["variant"]:
+            raise RuntimeError("encode-policy speed command has wrong policy")
     require_png(directory / "encode-policy-results.png")
 
 
@@ -61,6 +112,7 @@ def validate_high_color(directory: Path) -> None:
     metadata = json.loads(
         (directory / "high-color-run.json").read_text(encoding="utf-8")
     )
+    speed_rows = read_rows(directory / "high-color-speed.csv")
     if [row["mode"] for row in rows] != ["fixed256", "high15"]:
         raise RuntimeError("high-color grid is incomplete or out of order")
     if metadata["source_state"] != "clean":
@@ -76,8 +128,14 @@ def validate_high_color(directory: Path) -> None:
             raise RuntimeError("high-color comparison contains an empty stream")
         if not 0.0 <= float(row["MS-SSIM"]) <= 1.0:
             raise RuntimeError("MS-SSIM is outside its valid range")
-        if int(row["runs"]) != int(metadata["timing"]["runs"]):
-            raise RuntimeError("high-color timing count disagrees with metadata")
+    validate_speed_rows(
+        speed_rows, metadata, ["fixed256", "high15"], "high-color"
+    )
+    for row in speed_rows:
+        tokens = shlex.split(row["command"])
+        has_high_color = "-I" in tokens
+        if has_high_color != (row["variant"] == "high15"):
+            raise RuntimeError("high-color speed command has wrong mode")
     require_png(directory / "high-color-results.png")
     require_png(directory / "high-color-visual-comparison.png")
 

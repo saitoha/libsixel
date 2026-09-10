@@ -14,7 +14,8 @@ import platform
 import shlex
 import statistics
 import subprocess
-import time
+import tempfile
+from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
 
@@ -23,6 +24,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.patches import Patch
 
 
 ENCODE_POLICIES: Tuple[Tuple[str, str, str], ...] = (
@@ -34,6 +36,7 @@ HIGH_COLOR_MODES: Tuple[Tuple[str, str, str], ...] = (
     ("fixed256", "fixed 256-color", "#0072B2"),
     ("high15", "high color (15bpp)", "#D55E00"),
 )
+DEFAULT_SPEED_THREADS = tuple(range(2, 13))
 
 
 def file_sha256(path: Path) -> str:
@@ -58,6 +61,16 @@ def percentile(values: Sequence[float], fraction: float) -> float:
     upper = min(lower + 1, len(ordered) - 1)
     weight = position - lower
     return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
+
+
+def parse_threads(value: str) -> Tuple[int, ...]:
+    """Parse unique encode-worker budgets; serial mode has no worker events."""
+    threads = tuple(int(item) for item in value.split(","))
+    if not threads or any(item < 2 for item in threads):
+        raise argparse.ArgumentTypeError("speed threads must all be at least 2")
+    if len(threads) != len(set(threads)):
+        raise argparse.ArgumentTypeError("speed threads must be unique")
+    return threads
 
 
 def command_environment() -> Dict[str, str]:
@@ -92,11 +105,12 @@ def run_process(command: Sequence[str], env: Mapping[str, str],
     return process
 
 
-def make_base_command(img2sixel: Path, input_image: Path) -> List[str]:
+def make_base_command(img2sixel: Path, threads: int = 1,
+                      width: int = 0, height: int = 0) -> List[str]:
     """Return controls shared by both comparisons."""
-    return [
+    command = [
         str(img2sixel),
-        "--threads=1",
+        f"--threads={threads}",
         "--precision=8bit",
         "--quality=high",
         "--loaders=builtin!",
@@ -104,22 +118,33 @@ def make_base_command(img2sixel: Path, input_image: Path) -> List[str]:
         "--gpu-policy=off",
         "--palette-type=rgb",
     ]
+    if width > 0 and height > 0:
+        command.extend(("-w", str(width), "-h", str(height)))
+    return command
 
 
 def make_encode_policy_command(img2sixel: Path, input_image: Path,
-                               policy: str, discard: bool) -> List[str]:
+                               policy: str, discard: bool,
+                               threads: int = 1, width: int = 0,
+                               height: int = 0,
+                               timeline: str | None = None) -> List[str]:
     """Return one controlled encode-policy command."""
-    command = make_base_command(img2sixel, input_image)
+    command = make_base_command(img2sixel, threads, width, height)
     command.extend(("--encode-policy", policy, "-p", "256", "-o"))
     command.append(os.devnull if discard else "-")
+    if timeline is not None:
+        command.extend(("-J", timeline))
     command.append(str(input_image))
     return command
 
 
 def make_high_color_command(img2sixel: Path, input_image: Path,
-                            mode: str, discard: bool) -> List[str]:
+                            mode: str, discard: bool,
+                            threads: int = 1, width: int = 0,
+                            height: int = 0,
+                            timeline: str | None = None) -> List[str]:
     """Return one controlled fixed-palette or high-color command."""
-    command = make_base_command(img2sixel, input_image)
+    command = make_base_command(img2sixel, threads, width, height)
     command.extend(("--encode-policy", "fast"))
     if mode == "fixed256":
         command.extend(("-p", "256"))
@@ -129,6 +154,8 @@ def make_high_color_command(img2sixel: Path, input_image: Path,
         raise ValueError(f"unknown high-color comparison mode: {mode}")
     command.append("-o")
     command.append(os.devnull if discard else "-")
+    if timeline is not None:
+        command.extend(("-J", timeline))
     command.append(str(input_image))
     return command
 
@@ -187,58 +214,121 @@ def measure_artifact(command: Sequence[str], sixel2png: Path, lsqa: Path,
     }, decoded
 
 
-def elapsed_once(command: Sequence[str], env: Mapping[str, str]) -> float:
-    """Return fresh-process elapsed time for one successful encode."""
-    start = time.perf_counter()
-    process = subprocess.run(
-        list(command),
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.PIPE,
-        env=dict(env),
-        check=False,
+def load_timeline(path: Path) -> List[Dict[str, object]]:
+    """Read one JSON-lines timeline."""
+    records = []
+    with path.open("r", encoding="utf-8") as stream:
+        for line in stream:
+            if line.strip():
+                records.append(json.loads(line))
+    if not records:
+        raise RuntimeError(f"timeline is empty: {path}")
+    return records
+
+
+def encode_worker_window(path: Path) -> Dict[str, object]:
+    """Measure from the first encode worker start to the last completion."""
+    records = load_timeline(path)
+    starts = [
+        record for record in records
+        if record.get("worker") == "encode"
+        and record.get("role") == "worker"
+        and record.get("event") == "worker_start"
+    ]
+    finishes = [
+        record for record in records
+        if record.get("worker") == "encode"
+        and record.get("role") == "worker"
+        and record.get("event") == "worker_done"
+    ]
+    start_jobs = Counter(
+        (int(record.get("session_id", -1)), int(record.get("job", -1)))
+        for record in starts
     )
-    finish = time.perf_counter()
-    if process.returncode != 0:
-        diagnostic = process.stderr.decode("utf-8", errors="replace").strip()
-        raise RuntimeError(
-            f"Timed command failed ({process.returncode}): "
-            f"{shlex.join(command)}\n{diagnostic}"
-        )
-    return finish - start
-
-
-def measure_timings(commands: Mapping[str, Sequence[str]], warmups: int,
-                    runs: int, env: Mapping[str, str]) \
-        -> Dict[str, Dict[str, object]]:
-    """Measure rotated and reversed fresh-process timing samples."""
-    names = list(commands)
-    samples: Dict[str, List[float]] = {name: [] for name in names}
-    for warmup in range(warmups):
-        offset = warmup % len(names)
-        order = names[offset:] + names[:offset]
-        if warmup % 2:
-            order.reverse()
-        for name in order:
-            elapsed_once(commands[name], env)
-    for run_index in range(runs):
-        offset = run_index % len(names)
-        order = names[offset:] + names[:offset]
-        if run_index % 2:
-            order.reverse()
-        for name in order:
-            samples[name].append(elapsed_once(commands[name], env))
+    finish_jobs = Counter(
+        (int(record.get("session_id", -1)), int(record.get("job", -1)))
+        for record in finishes
+    )
+    if not starts or start_jobs != finish_jobs:
+        raise RuntimeError("encode worker timeline events are absent or unpaired")
+    first = min(float(record["ts"]) for record in starts)
+    last = max(float(record["ts"]) for record in finishes)
+    if last <= first:
+        raise RuntimeError("encode worker timeline interval is not positive")
     return {
-        name: {
-            "runs": runs,
-            "median_seconds": statistics.median(values),
-            "q1_seconds": percentile(values, 0.25),
-            "q3_seconds": percentile(values, 0.75),
-            "min_seconds": min(values),
-            "max_seconds": max(values),
-            "samples_seconds": values,
-        }
-        for name, values in samples.items()
+        "encode_first_worker_start_seconds": first,
+        "encode_last_worker_done_seconds": last,
+        "encode_window_seconds": round(last - first, 9),
+        "encode_worker_start_count": len(starts),
+        "encode_worker_done_count": len(finishes),
     }
+
+
+def timeline_once(command_template: Sequence[str], log_path: Path,
+                  env: Mapping[str, str]) -> Dict[str, object]:
+    """Run one timeline command and return its encode-worker window."""
+    command = [
+        str(log_path) if argument == "{timeline}" else argument
+        for argument in command_template
+    ]
+    run_process(command, env)
+    return encode_worker_window(log_path)
+
+
+def measure_encode_windows(
+        commands: Mapping[Tuple[str, int], Sequence[str]],
+        labels: Mapping[str, Tuple[str, str]], warmups: int, runs: int,
+        env: Mapping[str, str], revision: str, input_label: str,
+        width: int, height: int,
+        paths: Mapping[str, str]) -> List[Dict[str, object]]:
+    """Measure balanced repetitions of the encode-worker wall interval."""
+    configurations = list(commands)
+    rows: List[Dict[str, object]] = []
+    sequence = 0
+    with tempfile.TemporaryDirectory(prefix="encoding-mode-timeline-") as temp:
+        root = Path(temp)
+        for warmup in range(warmups):
+            offset = warmup % len(configurations)
+            order = configurations[offset:] + configurations[:offset]
+            if warmup % 2:
+                order.reverse()
+            for configuration in order:
+                timeline_once(
+                    commands[configuration],
+                    root / f"warmup-{sequence:05d}.jsonl",
+                    env,
+                )
+                sequence += 1
+        for sample in range(1, runs + 1):
+            offset = (sample - 1) % len(configurations)
+            order = configurations[offset:] + configurations[:offset]
+            if sample % 2 == 0:
+                order.reverse()
+            for position, configuration in enumerate(order, start=1):
+                name, threads = configuration
+                observation = timeline_once(
+                    commands[configuration],
+                    root / f"timed-{sequence:05d}.jsonl",
+                    env,
+                )
+                label, color = labels[name]
+                rows.append({
+                    "revision": revision,
+                    "platform": platform.platform(),
+                    "input": input_label,
+                    "width": width,
+                    "height": height,
+                    "variant": name,
+                    "label": label,
+                    "color": color,
+                    "threads": threads,
+                    "sample": sample,
+                    "schedule_position": position,
+                    **observation,
+                    "command": display_command(commands[configuration], paths),
+                })
+                sequence += 1
+    return rows
 
 
 def write_csv(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
@@ -253,6 +343,37 @@ def write_csv(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
         )
         writer.writeheader()
         writer.writerows(rows)
+
+
+def summarize_speed(rows: Sequence[Mapping[str, object]]) \
+        -> List[Dict[str, object]]:
+    """Return compact distribution summaries for run metadata."""
+    result = []
+    variants = []
+    for row in rows:
+        name = str(row["variant"])
+        if name not in variants:
+            variants.append(name)
+    threads_values = sorted({int(row["threads"]) for row in rows})
+    for name in variants:
+        for threads in threads_values:
+            samples = [
+                float(row["encode_window_seconds"])
+                for row in rows
+                if row["variant"] == name
+                and int(row["threads"]) == threads
+            ]
+            result.append({
+                "variant": name,
+                "threads": threads,
+                "samples": len(samples),
+                "median_seconds": statistics.median(samples),
+                "q1_seconds": percentile(samples, 0.25),
+                "q3_seconds": percentile(samples, 0.75),
+                "min_seconds": min(samples),
+                "max_seconds": max(samples),
+            })
+    return result
 
 
 def read_build_configuration(img2sixel: Path) -> str:
@@ -298,7 +419,7 @@ def common_metadata(args: argparse.Namespace, input_image: Path,
         -> Dict[str, object]:
     """Return provenance shared by the two measurement manifests."""
     return {
-        "schema": 1,
+        "schema": 2,
         "recorded_at_utc": datetime.datetime.now(
             datetime.timezone.utc
         ).isoformat(),
@@ -318,11 +439,26 @@ def common_metadata(args: argparse.Namespace, input_image: Path,
             "lsqa": program_record(lsqa, reports_version=False),
         },
         "timing": {
-            "clock": "fresh-process wall time",
+            "clock": "libsixel monotonic JSON timeline timestamps",
+            "boundary": (
+                "earliest encode/worker/worker_start through latest "
+                "encode/worker/worker_done"
+            ),
+            "excluded": (
+                "loader, palette build, dither before the first encode "
+                "worker start, and ordered writer"
+            ),
+            "included": (
+                "encode work plus waits for later dither bands after the "
+                "first encode worker starts"
+            ),
             "warmups": args.warmups,
             "runs": args.runs,
-            "summary": "median with interquartile range",
-            "ordering": "rotated and reversed within each comparison",
+            "threads": list(args.speed_threads),
+            "width": args.speed_width,
+            "height": args.speed_height,
+            "summary": "standard box plot: median, IQR, 1.5-IQR whiskers",
+            "ordering": "rotated and reversed across the complete grid",
         },
         "decode": "sixel2png --direct to RGBA PNG before lsqa",
         "environment": "ambient SIXEL_* and LSQA_* variables removed",
@@ -347,34 +483,55 @@ def style_axis(axis: plt.Axes) -> None:
     axis.tick_params(axis="y", length=0)
 
 
-def draw_runtime(axis: plt.Axes, rows: Sequence[Mapping[str, object]],
-                 title: str) -> None:
-    """Draw median runtime with interquartile whiskers."""
-    labels = [str(row["label"]) for row in rows]
-    medians = np.array([float(row["median_seconds"]) * 1000 for row in rows])
-    q1 = np.array([float(row["q1_seconds"]) * 1000 for row in rows])
-    q3 = np.array([float(row["q3_seconds"]) * 1000 for row in rows])
-    colors = [str(row["color"]) for row in rows]
-    positions = np.arange(len(rows))
-    axis.errorbar(
-        medians,
-        positions,
-        xerr=np.vstack((medians - q1, q3 - medians)),
-        fmt="none",
-        ecolor="#556176",
-        elinewidth=1.8,
-        capsize=4,
-    )
-    axis.scatter(medians, positions, c=colors, s=58, zorder=3,
-                 edgecolors="#FFFFFF", linewidths=1)
-    axis.set_yticks(positions, labels)
-    axis.invert_yaxis()
-    axis.set_xlabel("Wall time (ms), median and IQR")
+def draw_encode_boxplot(axis: plt.Axes,
+                        rows: Sequence[Mapping[str, object]],
+                        variants: Sequence[Tuple[str, str, str]],
+                        title: str) -> None:
+    """Draw grouped encode-worker interval box plots by thread budget."""
+    threads = sorted({int(row["threads"]) for row in rows})
+    offsets = np.linspace(-0.28, 0.28, len(variants))
+    widths = 0.22 if len(variants) == 3 else 0.28
+    legend = []
+    for offset, (name, label, color) in zip(offsets, variants):
+        samples = [
+            [
+                float(row["encode_window_seconds"]) * 1000.0
+                for row in rows
+                if int(row["threads"]) == threads_value
+                and row["variant"] == name
+            ]
+            for threads_value in threads
+        ]
+        boxes = axis.boxplot(
+            samples,
+            positions=np.array(threads, dtype=float) + offset,
+            widths=widths,
+            patch_artist=True,
+            manage_ticks=False,
+            showfliers=True,
+            boxprops={"facecolor": color, "alpha": 0.38,
+                      "edgecolor": color, "linewidth": 1.4},
+            medianprops={"color": color, "linewidth": 2.0},
+            whiskerprops={"color": color, "linewidth": 1.2},
+            capprops={"color": color, "linewidth": 1.2},
+            flierprops={"marker": ".", "markerfacecolor": color,
+                        "markeredgecolor": color, "alpha": 0.65,
+                        "markersize": 4},
+        )
+        for median in boxes["medians"]:
+            median.set_solid_capstyle("round")
+        legend.append(Patch(facecolor=color, edgecolor=color,
+                            alpha=0.38, label=label))
     axis.set_title(title, loc="left", fontweight="bold")
-    style_axis(axis)
-    for position, value in zip(positions, medians):
-        axis.annotate(f"{value:.2f} ms", (value, position),
-                      xytext=(7, 0), textcoords="offset points", va="center")
+    axis.set_xlabel("Configured worker budget (--threads)")
+    axis.set_ylabel("Encode-worker window (ms, lower is better)")
+    axis.set_xticks(threads)
+    axis.set_xlim(min(threads) - 0.65, max(threads) + 0.65)
+    axis.grid(axis="y", color="#D9D9D9", linewidth=0.7)
+    axis.set_axisbelow(True)
+    axis.spines[["top", "right"]].set_visible(False)
+    axis.legend(handles=legend, frameon=False, ncol=len(legend),
+                loc="upper right")
 
 
 def draw_size(axis: plt.Axes, rows: Sequence[Mapping[str, object]],
@@ -389,16 +546,25 @@ def draw_size(axis: plt.Axes, rows: Sequence[Mapping[str, object]],
     axis.invert_yaxis()
     axis.set_xlabel("SIXEL stream size (KiB)")
     axis.set_title(title, loc="left", fontweight="bold")
+    axis.set_xlim(0.0, max(values) * 1.18)
     style_axis(axis)
     for position, value in zip(positions, values):
         axis.annotate(f"{value:.1f} KiB", (value, position),
                       xytext=(7, 0), textcoords="offset points", va="center")
 
 
-def plot_encode_policy(rows: Sequence[Mapping[str, object]], path: Path) -> None:
+def plot_encode_policy(rows: Sequence[Mapping[str, object]],
+                       speed_rows: Sequence[Mapping[str, object]],
+                       warmups: int, runs: int, width: int, height: int,
+                       path: Path) -> None:
     """Plot quality identity, runtime, and size for -E."""
-    runs = int(rows[0]["runs"])
-    figure, axes = plt.subplots(1, 3, figsize=(13.2, 4.3))
+    figure = plt.figure(figsize=(13.4, 8.2), facecolor="white")
+    grid = figure.add_gridspec(
+        2, 2, height_ratios=(0.76, 1.55), hspace=0.34, wspace=0.24
+    )
+    quality_axis = figure.add_subplot(grid[0, 0])
+    size_axis = figure.add_subplot(grid[0, 1])
+    speed_axis = figure.add_subplot(grid[1, :])
     figure.patch.set_facecolor("white")
     figure.suptitle(
         "Size policy saves bytes without changing decoded pixels",
@@ -407,35 +573,44 @@ def plot_encode_policy(rows: Sequence[Mapping[str, object]], path: Path) -> None
         fontsize=17,
         fontweight="bold",
     )
-    axes[0].axis("off")
-    axes[0].set_title("Quality", loc="left", fontweight="bold")
-    axes[0].text(0.0, 0.72, "PIXEL-IDENTICAL", color="#009E73",
-                 fontsize=18, fontweight="bold", transform=axes[0].transAxes)
-    axes[0].text(0.0, 0.57, "Direct-decode SHA-256 matches\nfor auto, fast, and size.",
-                 fontsize=11, transform=axes[0].transAxes)
-    axes[0].text(
+    quality_axis.axis("off")
+    quality_axis.set_title("Quality", loc="left", fontweight="bold")
+    quality_axis.text(0.0, 0.72, "PIXEL-IDENTICAL", color="#009E73",
+                      fontsize=18, fontweight="bold",
+                      transform=quality_axis.transAxes)
+    quality_axis.text(
+        0.0, 0.53,
+        "Direct-decode SHA-256 matches for auto, fast, and size.",
+        fontsize=11, transform=quality_axis.transAxes
+    )
+    quality_axis.text(
         0.0,
-        0.31,
+        0.20,
         f"MS-SSIM  {float(rows[0]['MS-SSIM']):.6f}\n"
         f"mean ΔE00  {float(rows[0]['Delta E00_mean']):.6f}",
         family="monospace",
         fontsize=11,
-        transform=axes[0].transAxes,
+        transform=quality_axis.transAxes,
     )
-    draw_runtime(axes[1], rows, "Speed")
-    draw_size(axes[2], rows, "Size")
+    draw_size(size_axis, rows, "Size")
+    draw_encode_boxplot(
+        speed_axis, speed_rows, ENCODE_POLICIES,
+        "Speed — first encode worker start to last encode worker completion",
+    )
     figure.text(
         0.045,
         0.012,
-        "images/snake.png • 600×450 RGB • one CPU thread • no diffusion • "
-        f"two warmups, {runs} measured fresh processes\n"
-        "auto and fast use the same encoder path; their median gap is "
-        "measurement noise",
+        "Quality and size: images/snake.png at 600×450. Speed: the same "
+        f"image scaled to {width}×{height}; no diffusion; "
+        f"{warmups} warmups and {runs} timeline samples per box.\n"
+        "Loader and palette construction precede the boundary; ordered output "
+        "writing follows it. Waits for later dither bands remain inside. "
+        "Auto and fast use the same encoder path.",
         color="#556176",
-        fontsize=9.5,
+        fontsize=9.2,
         linespacing=1.35,
     )
-    figure.tight_layout(rect=(0.03, 0.12, 0.99, 0.90), w_pad=2.0)
+    figure.subplots_adjust(left=0.075, right=0.985, top=0.90, bottom=0.13)
     path.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(path, dpi=180, facecolor="white")
     plt.close(figure)
@@ -451,20 +626,39 @@ def draw_metric(axis: plt.Axes, rows: Sequence[Mapping[str, object]],
     positions = np.arange(len(rows))
     axis.scatter(values, positions, c=colors, s=68,
                  edgecolors="#FFFFFF", linewidths=1)
-    axis.set_yticks(positions, labels)
+    axis.set_yticks([])
     axis.invert_yaxis()
     axis.set_xlabel(xlabel)
     axis.set_title(title, loc="left", fontweight="bold")
     style_axis(axis)
-    for position, value in zip(positions, values):
-        axis.annotate(f"{value:.{decimals}f}", (value, position),
-                      xytext=(7, 0), textcoords="offset points", va="center")
+    span = max(float(max(values) - min(values)), abs(float(values[0])) * 0.002)
+    axis.set_xlim(float(min(values)) - span * 0.14,
+                  float(max(values)) + span * 0.72)
+    for position, value, label in zip(positions, values, labels):
+        axis.annotate(
+            f"{label}\n{value:.{decimals}f}",
+            (value, position),
+            xytext=(8, 0),
+            textcoords="offset points",
+            va="center",
+            fontsize=9.5,
+            linespacing=1.15,
+        )
 
 
-def plot_high_color(rows: Sequence[Mapping[str, object]], path: Path) -> None:
+def plot_high_color(rows: Sequence[Mapping[str, object]],
+                    speed_rows: Sequence[Mapping[str, object]],
+                    warmups: int, runs: int, width: int, height: int,
+                    path: Path) -> None:
     """Plot quality, runtime, and size for fixed and high-color modes."""
-    runs = int(rows[0]["runs"])
-    figure, axes = plt.subplots(2, 2, figsize=(11.8, 7.2))
+    figure = plt.figure(figsize=(13.4, 9.0), facecolor="white")
+    grid = figure.add_gridspec(
+        2, 3, height_ratios=(0.9, 1.55), hspace=0.34, wspace=0.30
+    )
+    structure_axis = figure.add_subplot(grid[0, 0])
+    color_axis = figure.add_subplot(grid[0, 1])
+    size_axis = figure.add_subplot(grid[0, 2])
+    speed_axis = figure.add_subplot(grid[1, :])
     figure.patch.set_facecolor("white")
     figure.suptitle(
         "On snake.png, high color buys fidelity with a larger stream",
@@ -473,19 +667,27 @@ def plot_high_color(rows: Sequence[Mapping[str, object]], path: Path) -> None:
         fontsize=17,
         fontweight="bold",
     )
-    draw_metric(axes[0, 0], rows, "MS-SSIM", "Structure", "MS-SSIM (higher is better)", 6)
-    draw_metric(axes[0, 1], rows, "Delta E00_mean", "Color error", "Mean ΔE00 (lower is better)", 6)
-    draw_runtime(axes[1, 0], rows, "Speed")
-    draw_size(axes[1, 1], rows, "Size")
+    draw_metric(structure_axis, rows, "MS-SSIM", "Structure",
+                "MS-SSIM (higher is better)", 6)
+    draw_metric(color_axis, rows, "Delta E00_mean", "Color error",
+                "Mean ΔE00 (lower is better)", 6)
+    draw_size(size_axis, rows, "Size")
+    draw_encode_boxplot(
+        speed_axis, speed_rows, HIGH_COLOR_MODES,
+        "Speed — first encode worker start to last encode worker completion",
+    )
     figure.text(
         0.06,
         0.015,
-        "images/snake.png • direct RGBA decode • one CPU thread • no diffusion • "
-        f"two warmups, {runs} measured fresh processes",
+        "Quality and size: images/snake.png at 600×450 with direct RGBA "
+        f"decode. Speed: {width}×{height}; no diffusion; "
+        f"{warmups} warmups and {runs} timeline samples per box.\n"
+        "Loader and palette construction precede the boundary; ordered output "
+        "writing follows it. Waits for later dither bands remain inside.",
         color="#556176",
-        fontsize=9.5,
+        fontsize=9.2,
     )
-    figure.tight_layout(rect=(0.04, 0.06, 0.99, 0.92), h_pad=2.2, w_pad=2.2)
+    figure.subplots_adjust(left=0.075, right=0.985, top=0.91, bottom=0.12)
     path.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(path, dpi=180, facecolor="white")
     plt.close(figure)
@@ -598,7 +800,11 @@ def parse_args() -> argparse.Namespace:
                         required=True)
     parser.add_argument("--input-label", default="images/snake.png")
     parser.add_argument("--warmups", type=int, default=2)
-    parser.add_argument("--runs", type=int, default=7)
+    parser.add_argument("--runs", type=int, default=21)
+    parser.add_argument("--speed-threads", type=parse_threads,
+                        default=DEFAULT_SPEED_THREADS)
+    parser.add_argument("--speed-width", type=int, default=1920)
+    parser.add_argument("--speed-height", type=int, default=1080)
     parser.add_argument("--encode-output-dir", type=Path, required=True)
     parser.add_argument("--high-color-output-dir", type=Path, required=True)
     return parser.parse_args()
@@ -607,6 +813,10 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     """Measure both option families and emit their artifacts."""
     args = parse_args()
+    if args.warmups < 0 or args.runs < 1:
+        raise ValueError("warmups must be nonnegative and runs must be positive")
+    if args.speed_width < 1 or args.speed_height < 1:
+        raise ValueError("speed dimensions must be positive")
     input_image = args.input_image.resolve()
     img2sixel = args.img2sixel.resolve()
     sixel2png = args.sixel2png.resolve()
@@ -621,10 +831,6 @@ def main() -> None:
 
     encode_artifacts: Dict[str, Dict[str, object]] = {}
     encode_decoded: Dict[str, bytes] = {}
-    encode_speed_commands = {
-        name: make_encode_policy_command(img2sixel, input_image, name, True)
-        for name, _, _ in ENCODE_POLICIES
-    }
     for name, label, color in ENCODE_POLICIES:
         command = make_encode_policy_command(
             img2sixel, input_image, name, False
@@ -643,26 +849,42 @@ def main() -> None:
             "command": display_command(command, paths),
         }
         encode_decoded[name] = decoded_png
-    encode_timings = measure_timings(
-        encode_speed_commands, args.warmups, args.runs, env
-    )
     encode_rows = [
-        {
-            **encode_artifacts[name],
-            **encode_timings[name],
-            "timed_command": display_command(
-                encode_speed_commands[name], paths
-            ),
-        }
+        encode_artifacts[name]
         for name, _, _ in ENCODE_POLICIES
     ]
+    encode_speed_commands = {
+        (name, threads): make_encode_policy_command(
+            img2sixel,
+            input_image,
+            name,
+            True,
+            threads,
+            args.speed_width,
+            args.speed_height,
+            "{timeline}",
+        )
+        for name, _, _ in ENCODE_POLICIES
+        for threads in args.speed_threads
+    }
+    encode_labels = {
+        name: (label, color) for name, label, color in ENCODE_POLICIES
+    }
+    encode_speed_rows = measure_encode_windows(
+        encode_speed_commands,
+        encode_labels,
+        args.warmups,
+        args.runs,
+        env,
+        args.revision,
+        args.input_label,
+        args.speed_width,
+        args.speed_height,
+        paths,
+    )
 
     high_artifacts: Dict[str, Dict[str, object]] = {}
     high_decoded: Dict[str, bytes] = {}
-    high_speed_commands = {
-        name: make_high_color_command(img2sixel, input_image, name, True)
-        for name, _, _ in HIGH_COLOR_MODES
-    }
     for name, label, color in HIGH_COLOR_MODES:
         command = make_high_color_command(
             img2sixel, input_image, name, False
@@ -681,26 +903,64 @@ def main() -> None:
             "command": display_command(command, paths),
         }
         high_decoded[name] = decoded_png
-    high_timings = measure_timings(
-        high_speed_commands, args.warmups, args.runs, env
-    )
     high_rows = [
-        {
-            **high_artifacts[name],
-            **high_timings[name],
-            "timed_command": display_command(
-                high_speed_commands[name], paths
-            ),
-        }
+        high_artifacts[name]
         for name, _, _ in HIGH_COLOR_MODES
     ]
+    high_speed_commands = {
+        (name, threads): make_high_color_command(
+            img2sixel,
+            input_image,
+            name,
+            True,
+            threads,
+            args.speed_width,
+            args.speed_height,
+            "{timeline}",
+        )
+        for name, _, _ in HIGH_COLOR_MODES
+        for threads in args.speed_threads
+    }
+    high_labels = {
+        name: (label, color) for name, label, color in HIGH_COLOR_MODES
+    }
+    high_speed_rows = measure_encode_windows(
+        high_speed_commands,
+        high_labels,
+        args.warmups,
+        args.runs,
+        env,
+        args.revision,
+        args.input_label,
+        args.speed_width,
+        args.speed_height,
+        paths,
+    )
 
     encode_dir = args.encode_output_dir
     high_dir = args.high_color_output_dir
     write_csv(encode_dir / "encode-policy-comparison.csv", encode_rows)
+    write_csv(encode_dir / "encode-policy-speed.csv", encode_speed_rows)
     write_csv(high_dir / "high-color-comparison.csv", high_rows)
-    plot_encode_policy(encode_rows, encode_dir / "encode-policy-results.png")
-    plot_high_color(high_rows, high_dir / "high-color-results.png")
+    write_csv(high_dir / "high-color-speed.csv", high_speed_rows)
+    plot_encode_policy(
+        encode_rows,
+        encode_speed_rows,
+        args.warmups,
+        args.runs,
+        args.speed_width,
+        args.speed_height,
+        encode_dir / "encode-policy-results.png",
+    )
+    plot_high_color(
+        high_rows,
+        high_speed_rows,
+        args.warmups,
+        args.runs,
+        args.speed_width,
+        args.speed_height,
+        high_dir / "high-color-results.png",
+    )
     plot_visual_comparison(
         input_image,
         high_decoded,
@@ -715,8 +975,12 @@ def main() -> None:
         {
             **shared,
             "comparison": "img2sixel -E auto, fast, and size",
-            "controls": "fixed 256-color output, no diffusion, one CPU thread",
+            "controls": (
+                "fixed 256-color output and no diffusion; artifact runs use "
+                "one thread and speed runs use the recorded thread grid"
+            ),
             "rows": encode_rows,
+            "speed_summary": summarize_speed(encode_speed_rows),
         },
     )
     write_metadata(
@@ -724,12 +988,16 @@ def main() -> None:
         {
             **shared,
             "comparison": "fixed 256-color output and img2sixel -I",
-            "controls": "no diffusion, one CPU thread, fast encoding policy",
+            "controls": (
+                "no diffusion and fast encoding policy; artifact runs use "
+                "one thread and speed runs use the recorded thread grid"
+            ),
             "high_color_note": (
                 "The current CLI bypasses palette construction and resolves "
                 "palette-space diffusion to none for -I."
             ),
             "rows": high_rows,
+            "speed_summary": summarize_speed(high_speed_rows),
         },
     )
 

@@ -72,6 +72,23 @@ def badge(x: float, y: float, value: str, fill: str,
     )
 
 
+def code_text(x: float, y: float, value: str, size: int = 19,
+              weight: int = 650, fill: str = INK,
+              anchor: str = "start") -> str:
+    """Return a monospace literal used for SIXEL stream fragments."""
+    return tag(
+        "text",
+        value,
+        x=f"{x:.1f}",
+        y=f"{y:.1f}",
+        fill=fill,
+        font_size=size,
+        font_weight=weight,
+        font_family="ui-monospace, SFMono-Regular, Menlo, monospace",
+        text_anchor=anchor,
+    )
+
+
 def card(x: float, y: float, width: float, height: float,
          title_value: str, accent: str = BLUE,
          fill: str = PAPER) -> str:
@@ -90,6 +107,7 @@ def draw_grid(x: float, y: float, rows: Sequence[str],
     colors = {
         "B": BLUE,
         "G": GOLD,
+        "T": TEAL,
         "M": MAGENTA,
         ".": PAPER,
         "#": "#334155",
@@ -121,99 +139,121 @@ def mask_rows(rows: Sequence[str], token: str) -> tuple[str, ...]:
     )
 
 
-SAMPLE_ROWS = (
-    "BBBGGGGB",
-    "BBGGGGBB",
-    "BGBBBGBB",
-    "BGGBBGBB",
-    "BBBGGGBB",
-    "BBBBBBBB",
+FOUR_COLOR_ROWS = (
+    "BBGGTTMM",
+    "BBGGTTMM",
+    "BGBGTMTM",
+    "BGBGTMTM",
+    "GGBBMMTT",
+    "GGBBMMTT",
 )
+
+FAST_EXAMPLE_BODY = "#1o{BN#3o{BN$#0NB{o#2NB{o"
+SIZE_EXAMPLE_BODY = "#1!4~#3!4~$#0NB{o#2NB{o"
+
+
+def mask_literal_row(x: float, y: float, token: str, register: str,
+                     label: str, literal: str, color: str) -> str:
+    """Return one color mask and its literal emitted characters."""
+    return (
+        draw_grid(x, y, mask_rows(FOUR_COLOR_ROWS, token), 13, 2, True)
+        + badge(x + 122, y + 12, register, color, 58)
+        + text(x + 194, y + 38, label, 16, 700, color)
+        + code_text(x + 302, y + 38, literal, 20, 750)
+    )
 
 
 def band_wide() -> str:
-    """Explain color masks inside one six-pixel-high band."""
-    width = 1440
-    height = 720
+    """Explain one real four-color SIXEL paint body."""
+    width = 1520
+    height = 860
     body = [rect(0, 0, width, height, PANEL)]
     body.extend([
-        text(55, 64, "A SIXEL band becomes one mask per color", 38, 800),
-        text(55, 102, "Each output character carries six vertical paint bits; $ returns to the band origin.", 20, 500, MUTED),
-        card(55, 155, 330, 405, "1  Indexed pixels", BLUE),
-        draw_grid(95, 225, SAMPLE_ROWS, 32),
-        text(95, 450, "One band = six pixel rows", 19, 700),
-        text(95, 480, "Blue and amber share columns", 17, 500, MUTED),
-        line(390, 355, 455, 355, BLUE, 5, "arrow-blue"),
-        card(465, 155, 425, 405, "2  Split into color masks", TEAL),
-        draw_grid(505, 225, mask_rows(SAMPLE_ROWS, "B"), 22, 3, True),
-        draw_grid(690, 225, mask_rows(SAMPLE_ROWS, "G"), 22, 3, True),
-        text(585, 430, "#0 blue", 18, 700, BLUE, "middle"),
-        text(770, 430, "#1 amber", 18, 700, GOLD, "middle"),
-        text(505, 482, "Black cells set one or more of", 17, 500, MUTED),
-        text(505, 508, "the six bits in a SIXEL character.", 17, 500, MUTED),
-        line(895, 355, 960, 355, GOLD, 5, "arrow-gold"),
-        card(970, 155, 415, 405, "3  Serialize the band", GOLD, GOLD_LIGHT),
-        badge(1015, 230, "#0", BLUE, 74),
-        badge(1105, 230, "mask run", TEAL, 122),
-        badge(1243, 230, "$", INK, 54),
-        badge(1015, 300, "#1", GOLD, 74),
-        badge(1105, 300, "mask run", TEAL, 122),
-        badge(1243, 300, "-", INK, 54),
-        text(1015, 390, "#n", 18, 800, INK),
-        text(1060, 390, "selects a palette register", 18, 500, MUTED),
-        text(1015, 430, "$", 18, 800, INK),
-        text(1060, 430, "returns to the left edge", 18, 500, MUTED),
-        text(1015, 470, "-", 18, 800, INK),
-        text(1060, 470, "moves to the next band", 18, 500, MUTED),
-        rect(145, 605, 1150, 64, PAPER, GRID, 1.5, 14),
-        text(720, 645, "The palette is already fixed here: -E only changes how these masks are serialized.", 20, 700, INK, "middle"),
+        text(55, 62, "From four indexed colors to actual SIXEL characters", 38, 800),
+        text(55, 100, "This 8 × 6 example is one complete band. The strings at right are literal encoder paint bodies.", 20, 500, MUTED),
+        card(55, 150, 350, 545, "1  Indexed pixels", BLUE),
+        draw_grid(78, 220, FOUR_COLOR_ROWS, 36),
+        circle(95, 480, 9, BLUE),
+        text(115, 487, "#0 blue", 17, 700, BLUE),
+        circle(225, 480, 9, GOLD),
+        text(245, 487, "#1 amber", 17, 700, GOLD),
+        circle(95, 525, 9, TEAL),
+        text(115, 532, "#2 green", 17, 700, TEAL),
+        circle(225, 525, 9, MAGENTA),
+        text(245, 532, "#3 pink", 17, 700, MAGENTA),
+        text(78, 595, "Each column becomes a six-bit value.", 17, 600),
+        code_text(78, 635, "? + bits = SIXEL character", 16, 650, MUTED),
+        line(410, 420, 455, 420, BLUE, 5, "arrow-blue"),
+        card(465, 150, 480, 545, "2  Exact color masks", TEAL),
+        mask_literal_row(495, 215, "G", "#1", "amber", "o{BN", GOLD),
+        mask_literal_row(495, 320, "M", "#3", "pink", "o{BN", MAGENTA),
+        mask_literal_row(495, 425, "B", "#0", "blue", "NB{o", BLUE),
+        mask_literal_row(495, 530, "T", "#2", "green", "NB{o", TEAL),
+        text(495, 650, "o, {, B, and N are data characters, not labels.", 16, 600, MUTED),
+        line(950, 420, 995, 420, GOLD, 5, "arrow-gold"),
+        card(1005, 150, 460, 545, "3  Two valid paint plans", GOLD, GOLD_LIGHT),
+        text(1040, 225, "auto / fast — exact masks", 18, 750, BLUE),
+        rect(1038, 245, 390, 58, PAPER, BLUE, 1.5, 10),
+        code_text(1055, 282, FAST_EXAMPLE_BODY, 16, 650),
+        text(1040, 350, "size — fill, then repair", 18, 750, GOLD),
+        rect(1038, 370, 390, 58, PAPER, GOLD, 1.5, 10),
+        code_text(1055, 407, SIZE_EXAMPLE_BODY, 16, 650),
+        code_text(1040, 490, "!4~", 24, 800, GOLD),
+        text(1100, 489, "means: paint ~ four times", 17, 600, MUTED),
+        code_text(1040, 535, "~", 24, 800, INK),
+        text(1075, 534, "sets all six vertical bits", 17, 600, MUTED),
+        code_text(1040, 580, "$", 24, 800, INK),
+        text(1075, 579, "returns to the band's left edge", 17, 600, MUTED),
+        text(1040, 638, "DCS wrapper and palette definitions omitted.", 15, 550, MUTED),
+        rect(145, 745, 1230, 62, TEAL_LIGHT, TEAL, 1.5, 14),
+        text(760, 784, "Both bodies decode to the same four-color pixels; size saves two bytes in this tiny example.", 20, 750, TEAL, "middle"),
     ])
     return svg_document(
         width,
         height,
-        "A SIXEL band becomes one mask per color",
-        "An eight by six indexed pixel grid is split into separate blue and amber masks, then serialized as palette selections, mask runs, a carriage return, and a next-band command.",
+        "Four indexed colors become literal SIXEL paint characters",
+        "An eight by six four-color indexed grid is split into four masks. The exact-mask body is #1o{BN#3o{BN$#0NB{o#2NB{o. The size-policy body replaces two mask runs with #1!4~#3!4~ before repairing the blue and green pixels.",
         "\n".join(body),
     )
 
 
 def band_mobile() -> str:
-    """Return the mobile layout of the band explanation."""
+    """Return the mobile layout of the literal four-color example."""
     width = 760
-    height = 1470
+    height = 1710
     body = [rect(0, 0, width, height, PANEL)]
     body.extend([
-        text(38, 58, "One band, color by color", 38, 800),
-        text(38, 92, "Each SIXEL character carries six vertical bits.", 18, 500, MUTED),
-        card(55, 135, 650, 300, "1  Indexed pixels", BLUE),
-        draw_grid(245, 200, SAMPLE_ROWS, 32),
-        text(380, 418, "six rows × eight columns", 17, 600, MUTED, "middle"),
-        line(380, 445, 380, 490, BLUE, 5, "arrow-blue"),
-        card(55, 500, 650, 370, "2  One mask per color", TEAL),
-        draw_grid(135, 585, mask_rows(SAMPLE_ROWS, "B"), 26, 3, True),
-        draw_grid(425, 585, mask_rows(SAMPLE_ROWS, "G"), 26, 3, True),
-        text(235, 770, "#0 blue", 18, 700, BLUE, "middle"),
-        text(525, 770, "#1 amber", 18, 700, GOLD, "middle"),
-        text(380, 820, "Black cells become the six paint bits.", 17, 500, MUTED, "middle"),
-        line(380, 880, 380, 925, GOLD, 5, "arrow-gold"),
-        card(55, 935, 650, 330, "3  Serialize", GOLD, GOLD_LIGHT),
-        badge(115, 1025, "#0", BLUE, 70),
-        badge(200, 1025, "mask", TEAL, 100),
-        badge(315, 1025, "$", INK, 54),
-        badge(384, 1025, "#1", GOLD, 70),
-        badge(469, 1025, "mask", TEAL, 100),
-        badge(584, 1025, "-", INK, 54),
-        text(115, 1125, "$ returns left; - advances six rows.", 18, 500, MUTED),
-        text(115, 1170, "-E changes this serialization stage,", 18, 700),
-        text(115, 1198, "not the palette or indexed pixels.", 18, 700),
-        rect(70, 1325, 620, 78, PAPER, GRID, 1.5, 14),
-        text(380, 1372, "The decoded image should remain unchanged.", 20, 700, INK, "middle"),
+        text(38, 58, "Pixels become real characters", 36, 800),
+        text(38, 92, "One 8 × 6 band with four indexed colors.", 18, 500, MUTED),
+        card(55, 135, 650, 365, "1  Four-color indexed band", BLUE),
+        draw_grid(220, 205, FOUR_COLOR_ROWS, 40),
+        text(90, 475, "#0 blue  •  #1 amber", 17, 700),
+        text(390, 475, "#2 green  •  #3 pink", 17, 700),
+        line(380, 510, 380, 555, BLUE, 5, "arrow-blue"),
+        card(55, 565, 650, 465, "2  Four masks and their characters", TEAL),
+        mask_literal_row(95, 640, "G", "#1", "amber", "o{BN", GOLD),
+        mask_literal_row(95, 735, "M", "#3", "pink", "o{BN", MAGENTA),
+        mask_literal_row(95, 830, "B", "#0", "blue", "NB{o", BLUE),
+        mask_literal_row(95, 925, "T", "#2", "green", "NB{o", TEAL),
+        line(380, 1040, 380, 1085, GOLD, 5, "arrow-gold"),
+        card(55, 1095, 650, 405, "3  Literal encoder paint bodies", GOLD, GOLD_LIGHT),
+        text(90, 1170, "auto / fast", 18, 750, BLUE),
+        code_text(90, 1208, FAST_EXAMPLE_BODY, 16, 650),
+        text(90, 1280, "size", 18, 750, GOLD),
+        code_text(90, 1318, SIZE_EXAMPLE_BODY, 16, 650),
+        code_text(90, 1380, "!4~", 22, 800, GOLD),
+        text(150, 1379, "= repeat full-height ~ four times", 16, 600, MUTED),
+        code_text(90, 1422, "$", 22, 800, INK),
+        text(125, 1421, "= return to the left edge", 16, 600, MUTED),
+        rect(70, 1550, 620, 92, TEAL_LIGHT, TEAL, 1.5, 14),
+        text(380, 1588, "same decoded pixels", 20, 800, TEAL, "middle"),
+        text(380, 1618, "size saves two bytes in this example", 17, 600, MUTED, "middle"),
     ])
     return svg_document(
         width,
         height,
-        "One SIXEL band, color by color",
-        "Mobile diagram showing indexed pixels, separate blue and amber masks, and the corresponding palette-selection and movement tokens.",
+        "Four indexed colors become literal SIXEL characters",
+        "Mobile diagram showing a four-color indexed band, each color mask and its real data characters, followed by literal auto or fast and size-policy paint bodies.",
         "\n".join(body),
     )
 
@@ -520,7 +560,19 @@ def encode_manifest() -> dict[str, object]:
         "schema": 1,
         "generator": "tools/plot_encoding_mode_figures.py",
         "measurement": False,
-        "scope": "img2sixel -E band serialization and size-policy overpainting",
+        "scope": "img2sixel -E literal band serialization and overpainting",
+        "four_color_example": {
+            "dimensions": "8x6",
+            "palette": {
+                "#0": "blue",
+                "#1": "amber",
+                "#2": "green",
+                "#3": "pink",
+            },
+            "auto_fast_paint_body": FAST_EXAMPLE_BODY,
+            "size_paint_body": SIZE_EXAMPLE_BODY,
+            "wrapper": "DCS introducer, raster attributes, palette definitions, and ST omitted",
+        },
         "assets": [
             {"path": name, "role": "mobile portrait" if "mobile" in name else "large screen"}
             for name in ENCODE_ASSETS[:-1]
@@ -533,7 +585,7 @@ def encode_manifest() -> dict[str, object]:
             "context": MUTED,
         },
         "review": {
-            "story_job": "explain the serialization boundary and overpainting",
+            "story_job": "show literal four-color serialization and overpainting",
             "data_shape": "conceptual process and side-by-side comparison",
             "primary": "responsive SVG diagrams",
             "encoding": "arrows show order; labels and layout repeat color roles",
