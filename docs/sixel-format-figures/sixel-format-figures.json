@@ -1,0 +1,127 @@
+{
+  "assets": [
+    {
+      "path": "encoder-comparison-wide.svg",
+      "role": "large screen"
+    },
+    {
+      "path": "encoder-comparison-mobile.svg",
+      "role": "mobile portrait"
+    },
+    {
+      "path": "node-scheduling-wide.svg",
+      "role": "large screen"
+    },
+    {
+      "path": "node-scheduling-mobile.svg",
+      "role": "mobile portrait"
+    }
+  ],
+  "color_roles": {
+    "classic_row_encoder": "#BE185D",
+    "context": "#556176",
+    "node_composition": "#0F766E",
+    "node_gap_heuristic": "#D97706",
+    "ordinary_encoder": "#2563EB"
+  },
+  "comparison_fixture": {
+    "dimensions": "8x6",
+    "img2sixel_fast_body": "#0o{BN#3o{BN$#2NB{o#1NB{o",
+    "img2sixel_fast_body_bytes": 25,
+    "omitted": [
+      "DCS envelope",
+      "raster attributes",
+      "palette definitions",
+      "string terminator",
+      "ppmtosixel formatting LF bytes"
+    ],
+    "palette": {
+      "#0": "amber",
+      "#1": "green",
+      "#2": "blue",
+      "#3": "pink"
+    },
+    "ppmtosixel_body_bytes_without_lf": 135,
+    "ppmtosixel_body_without_lf": "#2!2@#0!2@#1!2@#3!2@$#2!2A#0!2A#1!2A#3!2A$#2C#0C#2C#0C#1C#3C#1C#3C$#2G#0G#2G#0G#1G#3G#1G#3G$#0!2O#2!2O#3!2O#1!2O$#0!2_#2!2_#3!2_#1!2_$-",
+    "ppmtosixel_rows": [
+      "#2!2@#0!2@#1!2@#3!2@$",
+      "#2!2A#0!2A#1!2A#3!2A$",
+      "#2C#0C#2C#0C#1C#3C#1C#3C$",
+      "#2G#0G#2G#0G#1G#3G#1G#3G$",
+      "#0!2O#2!2O#3!2O#1!2O$",
+      "#0!2_#2!2_#3!2_#1!2_$"
+    ],
+    "rows": [
+      "BBAATTMM",
+      "BBAATTMM",
+      "BABATMTM",
+      "BABATMTM",
+      "AABBMMTT",
+      "AABBMMTT"
+    ]
+  },
+  "generator": "tools/plot_sixel_format_figures.py",
+  "kind": "deterministic explanatory schematic with literal bodies",
+  "measurement": false,
+  "node_fixture": {
+    "body": "#0!4@!6?!4@#1!6C$#2??!6A#3!9?!9G",
+    "dimensions": "28x6",
+    "dot": "unpainted key-color pixel",
+    "keycolor": 4,
+    "nodes": [
+      {
+        "mx": 14,
+        "palette": 0,
+        "sx": 0
+      },
+      {
+        "mx": 8,
+        "palette": 2,
+        "sx": 2
+      },
+      {
+        "mx": 20,
+        "palette": 1,
+        "sx": 14
+      },
+      {
+        "mx": 26,
+        "palette": 3,
+        "sx": 17
+      }
+    ],
+    "rows": [
+      "AAAA......AAAA..............",
+      "..BBBBBB....................",
+      "..............TTTTTT........",
+      ".................MMMMMMMMM..",
+      "............................",
+      "............................"
+    ],
+    "sweeps": [
+      [
+        0,
+        1
+      ],
+      [
+        2,
+        3
+      ]
+    ]
+  },
+  "review": {
+    "accessibility": "register labels and intervals repeat every color role",
+    "fallback": "adjacent prose, literal text blocks, and alt text",
+    "mobile": "separate portrait layouts preserve the same evidence",
+    "primary": "responsive inspectable SVG",
+    "qa": "wide and mobile assets require rendered visual review",
+    "story_job": "compare paint orders and explain node scheduling"
+  },
+  "schema": 1,
+  "scope": "ordinary SIXEL band encoding and current libsixel node scheduling",
+  "sources": {
+    "libsixel_source": "src/encoder-core-encode.c",
+    "netpbm_manual": "https://netpbm.sourceforge.net/doc/ppmtosixel.html",
+    "netpbm_source": "https://svn.code.sf.net/p/netpbm/code/stable/converter/ppm/ppmtosixel.c"
+  }
+}

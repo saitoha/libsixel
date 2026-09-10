@@ -192,6 +192,83 @@ The format does not require one particular ordering of color planes. kmiya's
 encoder and libsixel optimize ordering and repeated runs to reduce transmitted
 data while preserving the same rendered result.
 
+## Ordinary band encoding
+
+The ordinary libsixel body encoder, selected explicitly by `img2sixel -E fast`, converts each six-row band into per-color masks and schedules those masks to avoid unnecessary horizontal returns. The default `-E auto` currently selects this same non-size path. Neither name denotes a different SIXEL wire syntax: they select a serialization strategy after palette construction and pixel assignment. The separate [Encoding Policy](functionality/encode-policy.md) guide compares this exact-mask path with the fill-and-repaint optimization used by `-E size`.
+
+### A row-at-a-time baseline: Netpbm `ppmtosixel`
+
+Netpbm's `ppmtosixel` is a representative classic encoder. Its packed path visits each source row independently. Within that row it selects the palette register for each adjacent same-color run, writes one data character whose only set bit is the source row's position within the six-row band, and compresses a horizontal run with `!`. It then writes `$`; after the sixth source row it also writes `-`. This is legal and direct, but it repeatedly selects colors and revisits the same band.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="sixel-format-figures/encoder-comparison-mobile.svg">
+  <img alt="The same eight-by-six four-color indexed grid is encoded in two ways. Netpbm ppmtosixel emits six source-row streams using the single-bit characters at sign, A, C, G, O, and underscore for 135 paint and control bytes. img2sixel fast emits four six-bit color-plane masks as #0o{BN#3o{BN$#2NB{o#1NB{o for 25 paint and control bytes. DCS, palette definitions, ST, and Netpbm formatting line feeds are omitted." src="sixel-format-figures/encoder-comparison-wide.svg">
+</picture>
+
+*Figure 1. Two literal encodings of the illustrated indexed pixels. Both runs use `#0` amber, `#1` green, `#2` blue, and `#3` pink. The byte comparison deliberately excludes the DCS envelope, raster attributes, palette definitions, terminator, and formatting line feeds, because those are not the paint-order algorithm. The two decodes have the same indexed layout; palette-definition rounding can still make their RGB files differ.*
+
+For this fixture, the six `ppmtosixel` row bodies are:
+
+```text
+#2!2@#0!2@#1!2@#3!2@$
+#2!2A#0!2A#1!2A#3!2A$
+#2C#0C#2C#0C#1C#3C#1C#3C$
+#2G#0G#2G#0G#1G#3G#1G#3G$
+#0!2O#2!2O#3!2O#1!2O$
+#0!2_#2!2_#3!2_#1!2_$-
+```
+
+The characters `@`, `A`, `C`, `G`, `O`, and `_` set exactly one of the six vertical mask bits. Consequently every source row becomes another horizontal paint pass even though a SIXEL character can carry all six bits at once. The default packed mode saves bytes only when horizontally adjacent pixels in that one row have the same palette index; `-raw` disables even that repeat compression.
+
+### Six-row color planes in `img2sixel -E fast`
+
+libsixel first builds, for every active palette index, a width-element map for the whole band. Map element `x` is the OR of the six row bits whose indexed pixel at column `x` uses that palette entry. Adding ASCII `?` turns that mask into one SIXEL data character, so one left-to-right color-plane pass represents up to six source rows at once.
+
+For the same fixture, the ordinary encoder emits this 25-byte paint body:
+
+```text
+#0o{BN#3o{BN$#2NB{o#1NB{o
+```
+
+The amber node occupies columns `[0,4)` and the pink node `[4,8)`, so the encoder writes them consecutively. Blue overlaps amber, so it remains for a second sweep after `$`; green can then follow blue without another return. This exact body is much shorter than the 135-byte row-oriented body for this deliberately small example, but the ratio is content-dependent rather than a general compression guarantee.
+
+### Nodes and greedy non-overlapping sweeps
+
+libsixel calls each schedulable color span a **node**. A node is not a connected-component object and does not own a cropped copy of the pixels. The private [`sixel_node_t`](../src/encoder-core-private.h) points into the complete per-color band map and records only the interval that may need to be emitted.
+
+| Field | Meaning |
+| --- | --- |
+| `pal` | Palette register selected before painting this node. |
+| `sx` | Inclusive left edge of the node. |
+| `mx` | Exclusive right edge of the node. |
+| `map` | The complete six-bit-per-column map for this palette register. |
+| `next` | Link in the ordered node list or the reusable free list. |
+
+<picture>
+  <source media="(max-width: 640px)" srcset="sixel-format-figures/node-scheduling-mobile.svg">
+  <img alt="A twenty-eight-column six-row band with white key-color cells becomes four paint nodes: palette zero spans zero through fourteen and contains six blank columns, palette two spans two through eight, palette one spans fourteen through twenty, and palette three spans seventeen through twenty-six. Sorting by start and then farther end places them in that order. A greedy first sweep emits palettes zero and one. After a dollar carriage return, the second emits palettes two and three. The literal body is #0!4@!6?!4@#1!6C$#2??!6A#3!9?!9G." src="sixel-format-figures/node-scheduling-wide.svg">
+</picture>
+
+*Figure 2. The current node composition and scheduling heuristic. White cells are an unpainted key color, while the four visible palette registers produce the node list. Color and register labels are repeated so the order remains readable without relying on color alone.*
+
+The implementation in [`encoder-core-encode.c`](../src/encoder-core-encode.c) performs these steps for each band:
+
+1. **Build maps.** For each active palette register, accumulate the six row bits at every column.
+2. **Compose spans.** Start a node at the first nonzero map column. Keep a later run in the same node when the gap contains at most nine zero columns; a gap of ten or more starts another node, and trailing zero columns are excluded. This fixed cutoff trades `?` cursor padding against the chance to schedule a distant run separately. The amber node in Figure 2 therefore contains two painted runs and six internal `?` columns in one `[0,14)` span.
+3. **Order nodes.** Sort by increasing `sx`; when two nodes start together, place the farther `mx` first. Exact interval ties are resolved by the current list-insertion behavior. This is a deterministic left-edge ordering, not a search for geometric connectedness or a ranking by color frequency.
+4. **Pack a sweep.** Take the first remaining node, advance a cursor to its `mx`, and continue scanning the ordered list. A later node joins the same sweep only when `node.sx >= cursor`; overlapping nodes remain in the list.
+5. **Repeat after `$`.** Return to the band origin when the next remaining node overlaps the completed sweep, then apply the same greedy scan until no nodes remain. Identical output columns are coalesced, and runs longer than three characters use `!Pn`.
+
+For Figure 2, the ordered list is `#0 [0,14)`, `#2 [2,8)`, `#1 [14,20)`, `#3 [17,26)`. The first sweep takes `#0` and then the touching, non-overlapping `#1`; the second takes `#2` and then `#3`. The literal paint body is:
+
+```text
+#0!4@!6?!4@#1!6C$#2??!6A#3!9?!9G
+```
+
+This greedy interval packing reduces `$` returns, palette revisits, and long cursor moves in common images without attempting an exhaustive globally byte-minimal ordering. That distinction matters when changing the encoder: a different valid order may decode identically, but it can change stream size and deterministic output.
+
+The explanatory figures are generated from the same fixture rows, mask packing, gap rule, interval ordering, repeat threshold, and literal-body assertions documented above. Regenerate them with `tools/reproduce_sixel_format_figures.sh`; pass `--check` to verify byte-for-byte freshness.
+
 ### Minimal example
 
 The notation below uses `<ESC>` to make escape bytes visible:
@@ -289,6 +366,8 @@ failure even when the encoder already reported its original error.
 - [HTML transcription of Chapter 14, Sixel Graphics](https://manx-docs.org/mirror/vt100.net/docs/vt3xx-gp/chapter14.html).
 - [XTerm Control Sequences](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html),
   for the behavior and extensions of a widely deployed modern implementation.
+- Araki Ken, [*libsixelによるSixel Graphicsへの変換処理について*](https://qiita.com/arakiken/items/4a216af6547d2574d283), for the original illustrated explanation of the row-oriented baseline and kmiya-derived color-plane ordering.
+- [Netpbm `ppmtosixel` manual](https://netpbm.sourceforge.net/doc/ppmtosixel.html) and [current source](https://svn.code.sf.net/p/netpbm/code/stable/converter/ppm/ppmtosixel.c), for the row-at-a-time encoder and its packed horizontal-repeat mode.
 
 Where these references and a terminal emulator disagree, document the
 interoperability decision and cover the intended behavior with a focused test.

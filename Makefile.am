@@ -64,6 +64,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/platform-support.md \
 	docs/project-history.md \
 	docs/sixel-format.md \
+	docs/sixel-format-figures/encoder-comparison-mobile.svg \
+	docs/sixel-format-figures/encoder-comparison-wide.svg \
+	docs/sixel-format-figures/node-scheduling-mobile.svg \
+	docs/sixel-format-figures/node-scheduling-wide.svg \
+	docs/sixel-format-figures/sixel-format-figures.json \
 	docs/ci/design.md \
 	docs/cli/design-policy.md \
 	docs/misc/platforms/README.md \
@@ -314,6 +319,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_decoding_pipeline_figures.py \
 	tools/plot_encoder_execution_map_figures.py \
 	tools/plot_encoding_pipeline_figures.py \
+	tools/plot_sixel_format_figures.py \
 	tools/plot_loader_architecture_figures.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
@@ -334,6 +340,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_decoding_pipeline_figures.sh \
 	tools/reproduce_encoder_execution_map_figures.sh \
 	tools/reproduce_encoding_pipeline_figures.sh \
+	tools/reproduce_sixel_format_figures.sh \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_merge_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \
