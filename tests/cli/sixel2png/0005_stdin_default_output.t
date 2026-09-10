@@ -25,11 +25,13 @@ test -s "${stdout_path}" || {
     exit 0
 }
 
-expected_header_cksum="3308842558 4"
-actual_header_cksum=$(dd bs=1 count=4 if="${stdout_path}" 2>/dev/null | cksum)
+# The first 33 bytes cover the PNG signature and the complete IHDR chunk,
+# including its CRC.  A signature-only check cannot detect a broken writer.
+expected_header_cksum="517916970 33"
+actual_header_cksum=$(dd bs=1 count=33 if="${stdout_path}" 2>/dev/null | cksum)
 
 test "${actual_header_cksum}" = "${expected_header_cksum}" || {
-    echo "not ok" 1 - "stdout png signature is invalid"
+    echo "not ok" 1 - "stdout png IHDR or CRC is invalid"
     exit 0
 }
 
