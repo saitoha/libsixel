@@ -107,7 +107,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Platform compatibility
 
-- [OpenVMS compatibility](misc/platforms/openvms.md) defines the maintained compatibility contract, explains the native DCL bootstrap and GNV-specific workarounds, and links the source invariants to their static check.
+- [Platform compatibility ledger](misc/platforms/README.md) indexes the maintained OpenVMS, Windows runtime, Emscripten, Cosmopolitan, macOS, POSIX libc, Haiku, and Solaris compatibility contracts and their reciprocal static checks.
 
 ## Documentation governance
 

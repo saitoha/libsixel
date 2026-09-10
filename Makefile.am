@@ -66,7 +66,18 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/sixel-format.md \
 	docs/ci/design.md \
 	docs/cli/design-policy.md \
+	docs/misc/platforms/README.md \
+	docs/misc/platforms/cosmopolitan.md \
+	docs/misc/platforms/cygwin-msys.md \
+	docs/misc/platforms/emscripten.md \
+	docs/misc/platforms/haiku.md \
+	docs/misc/platforms/macos.md \
+	docs/misc/platforms/mingw.md \
+	docs/misc/platforms/msvc.md \
 	docs/misc/platforms/openvms.md \
+	docs/misc/platforms/posix-runtimes.md \
+	docs/misc/platforms/solaris.md \
+	docs/misc/platforms/windows.md \
 	docs/concepts/colorspace.md \
 	docs/concepts/pixelformat-precision.md \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-paths.csv \

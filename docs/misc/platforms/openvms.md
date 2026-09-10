@@ -182,6 +182,7 @@ Using top-level `make check` would re-enter the expensive library-object walk be
 | OV-03 | The compiler and archiver wrappers accept representative warning-only conditions but reject error conditions, while forced removal of an absent file remains harmless. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 | OV-04 | The native-link wrapper rejects unresolved-symbol diagnostics and unsupported arguments and verifies that the requested image exists. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 | OV-05 | Converter failures retain even OpenVMS condition severities with the inhibit-message bit, and the TAP driver accepts the documented mapped-error range. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+| OV-06 | `LIBSIXEL_OPENVMS` remains classified in the cross-platform macro ledger and this policy remains linked from the platform index. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 
 ### Coverage boundary
 

@@ -128,7 +128,7 @@ The local desktop CI catalog contains only the following platform/compiler group
 | OpenIndiana | 2025.10 image | x86_64 | GCC 13 | Autotools, Meson |
 | OpenVMS with GNV | 9.2-3 | x86_64 | GNV `cc` environment | Autotools |
 
-The local jobs run on @saitoha-operated desktop infrastructure using containers and virtual machines. OpenVMS compatibility considerations are documented in [OpenVMS Compatibility](misc/platforms/openvms.md).
+The local jobs run on @saitoha-operated desktop infrastructure using containers and virtual machines. Source, runtime, and tool exceptions are indexed in the [Platform Compatibility Ledger](misc/platforms/README.md), including the detailed [OpenVMS Compatibility](misc/platforms/openvms.md) contract.
 
 ## Matrix maintenance
 

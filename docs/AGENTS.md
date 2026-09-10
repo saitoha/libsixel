@@ -31,7 +31,7 @@ Start from the [documentation index](README.md). Read the relevant document befo
 - [Staticcheck](testing/staticcheck.md): the repository-wide invariant-verification target, cross-surface synchronization, generated artifacts, and test meta-checks.
 - [Threading](threading/README.md): worker budgets, band encoding and decoding, stage ordering, animation, and reproducible timeline measurements.
 - [CI](ci/design.md): workflow responsibilities, matrix design, failure triage, and CI-change validation.
-- [OpenVMS compatibility](misc/platforms/openvms.md): maintained GNV and OpenVMS build, status, linker, filesystem, test, and CI boundaries.
+- [Platform compatibility ledger](misc/platforms/README.md): maintained platform, ABI, C-runtime, tool, test-harness, and reciprocal staticcheck boundaries, including OpenVMS, MinGW, Haiku, and Solaris.
 
 ## Documentation rules
 
