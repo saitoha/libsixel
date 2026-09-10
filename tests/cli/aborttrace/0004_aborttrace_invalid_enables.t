@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying that invalid SIXEL_ABORT_TRACE enables abort tracing.
+# Policy: docs/cli/abort-trace.md
 
 set -eux
 

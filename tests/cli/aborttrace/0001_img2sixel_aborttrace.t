@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying abort trace output from the runner test.
+# Policy: docs/cli/abort-trace.md
 
 set -eux
 
