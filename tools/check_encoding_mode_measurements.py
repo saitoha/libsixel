@@ -38,13 +38,21 @@ def validate_speed_rows(rows: List[Dict[str, str]], metadata: dict,
     threads = [int(value) for value in timing["threads"]]
     runs = int(timing["runs"])
     expected_boundary = (
+        "serial body start/finish or earliest parallel "
+        "encode/worker/worker_start through latest "
+        "encode/worker/worker_done"
+        if family == "encode-policy" else
         "earliest encode/worker/worker_start through latest "
         "encode/worker/worker_done"
     )
     if timing["boundary"] != expected_boundary:
         raise RuntimeError(f"{family} uses the wrong timing boundary")
-    if any(value < 2 for value in threads):
-        raise RuntimeError(f"{family} speed grid includes serial mode")
+    if any(value < 1 for value in threads):
+        raise RuntimeError(f"{family} speed grid has a nonpositive budget")
+    if family == "encode-policy" and 1 not in threads:
+        raise RuntimeError("encode-policy speed grid lacks serial mode")
+    if family == "high-color" and any(value < 2 for value in threads):
+        raise RuntimeError("high-color speed grid includes serial mode")
     expected = len(variants) * len(threads) * runs
     if len(rows) != expected:
         raise RuntimeError(

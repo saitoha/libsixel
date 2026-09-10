@@ -37,12 +37,25 @@ The ordinary path preserves the holes in every color mask: it never temporarily 
 
 <picture>
   <source media="(max-width: 640px)" srcset="encode-policy-figures/encode-policy-overpaint-mobile.svg">
-  <img alt="Fast and auto paint exact blue and amber masks. Size policy first paints a solid blue region and then repaints the amber shape. Both paths end with the same blue-and-amber pixels, but size policy creates simpler runs." src="encode-policy-figures/encode-policy-overpaint-wide.svg">
+  <img alt="The same eight-by-six blue, amber, green, and pink band is encoded twice. Auto and fast preserve all four mask shapes in a 25-byte body. Size paints solid amber and pink blocks, repairs their blue and green pixels, and reaches the identical result with a 23-byte body." src="encode-policy-figures/encode-policy-overpaint-wide.svg">
 </picture>
 
-*Figure 2. A simplified overpainting example. Whether it saves bytes depends on the mask geometry and the resulting run-length encoding.*
+*Figure 2. The same four-color band and literal bodies as Figure 1, now shown as paint order. `size` replaces two masks containing holes with two `!4~` rectangles, then repairs their temporary overdraw. The decoded pixels remain identical while this paint body shrinks from 25 to 23 bytes.*
 
 The optimization is not a compressor applied after encoding; it changes the paint plan itself. It is therefore content-dependent. Large spans with reusable fills tend to help, while noisy masks may provide little benefit and can occasionally offset savings with extra paint commands.
+
+## Where fill-and-repaint cannot combine
+
+The central weakness belongs specifically to the fill-and-repaint optimization behind `-E size`, not to the `-E` parser or the exact-mask `auto` and `fast` paths. Filling a hole is safe only when a later paint is guaranteed to restore that pixel. Several other modes give a hole the opposite meaning, so their defining behavior and the Figure 2 optimization cannot operate on the same pixels.
+
+| Other feature | Why the fill-and-repaint idea conflicts |
+| --- | --- |
+| `-I` high color | Later passes intentionally omit pixels completed by earlier passes while redefining palette registers. Filling those holes could overwrite completed pixels, and no later pass is guaranteed to restore them. |
+| `-O` OR mode | Painting sets color-plane bits by OR. A later paint can add another bit but cannot clear a bit introduced by a solid underpaint, so the Figure 2 repair step is impossible. |
+| Transparent pixels or `--transparent-offset` | Under DCS `P2=1`, an omitted cell means “keep the destination pixel.” Painting through that cell destroys the screen content it was meant to preserve. |
+| 6delta encoding | An omitted/key-color cell means “this pixel is unchanged from the retained plane.” Underpainting it would turn an unchanged pixel into a changed one and defeat delta encoding. |
+
+This is an algorithmic incompatibility, not necessarily a command-line rejection. The current implementation can accept some of these option combinations, but it must fence off the generic overpaint opportunity wherever a protected hole occurs. Its OR-mode `size` path can skip an empty bit plane, for example, but that is a separate size optimization rather than fill-and-repaint. Similarly, transparent-offset clipping can still optimize a fully opaque safe span, but not a transparent hole within it. In practice the characteristic `-E size` saving is strongest for one opaque, indexed, replace-mode image; it cannot simply be stacked with the characteristic savings or semantics of `-I`, `-O`, transparent reuse, or 6delta on the same region.
 
 ## Policies
 
@@ -54,7 +67,7 @@ The optimization is not a compressor applied after encoding; it changes the pain
 
 `auto` is a policy name, not currently an image-adaptive choice between the other two modes. Both values take the same non-size encoder path, and the measurement below produced byte-identical streams. They are therefore not distinct performance modes in the current implementation: any observed timing difference between them is measurement noise. Code should nevertheless pass `fast` when that exact intent matters instead of relying on today's implementation of `auto`.
 
-Transparency is more nuanced than the original 2014 description. Current size-policy code checks whether a band can be filled safely and clips transparent-offset work at image boundaries; it does not categorically reject transparent input. The [alpha policy](../loader/alpha-policy.md) still owns whether a source pixel is composited or omitted, while `-E` only decides how the surviving masks are serialized.
+Transparency is therefore more nuanced than the original 2014 description. The current size-policy code checks whether each band can be filled safely and clips transparent-offset work at image boundaries; it does not categorically reject the option combination. The [alpha policy](../loader/alpha-policy.md) still owns whether a source pixel is composited or omitted, while `-E` only decides how the surviving safe masks are serialized.
 
 ## Measured quality, speed, and size
 

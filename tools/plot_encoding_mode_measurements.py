@@ -36,7 +36,8 @@ HIGH_COLOR_MODES: Tuple[Tuple[str, str, str], ...] = (
     ("fixed256", "fixed 256-color", "#0072B2"),
     ("high15", "high color (15bpp)", "#D55E00"),
 )
-DEFAULT_SPEED_THREADS = tuple(range(2, 13))
+DEFAULT_ENCODE_SPEED_THREADS = tuple(range(1, 13))
+DEFAULT_HIGH_COLOR_SPEED_THREADS = tuple(range(2, 13))
 
 
 def file_sha256(path: Path) -> str:
@@ -64,10 +65,10 @@ def percentile(values: Sequence[float], fraction: float) -> float:
 
 
 def parse_threads(value: str) -> Tuple[int, ...]:
-    """Parse unique encode-worker budgets; serial mode has no worker events."""
+    """Parse unique positive worker budgets."""
     threads = tuple(int(item) for item in value.split(","))
-    if not threads or any(item < 2 for item in threads):
-        raise argparse.ArgumentTypeError("speed threads must all be at least 2")
+    if not threads or any(item < 1 for item in threads):
+        raise argparse.ArgumentTypeError("speed threads must all be positive")
     if len(threads) != len(set(threads)):
         raise argparse.ArgumentTypeError("speed threads must be unique")
     return threads
@@ -226,20 +227,24 @@ def load_timeline(path: Path) -> List[Dict[str, object]]:
     return records
 
 
-def encode_worker_window(path: Path) -> Dict[str, object]:
+def encode_worker_window(path: Path, threads: int) -> Dict[str, object]:
     """Measure from the first encode worker start to the last completion."""
     records = load_timeline(path)
+    start_event = "start" if threads == 1 else "worker_start"
+    finish_event = "finish" if threads == 1 else "worker_done"
     starts = [
         record for record in records
         if record.get("worker") == "encode"
         and record.get("role") == "worker"
-        and record.get("event") == "worker_start"
+        and record.get("event") == start_event
+        and (threads != 1 or int(record.get("frame_no", 0)) == -1)
     ]
     finishes = [
         record for record in records
         if record.get("worker") == "encode"
         and record.get("role") == "worker"
-        and record.get("event") == "worker_done"
+        and record.get("event") == finish_event
+        and (threads != 1 or int(record.get("frame_no", 0)) == -1)
     ]
     start_jobs = Counter(
         (int(record.get("session_id", -1)), int(record.get("job", -1)))
@@ -265,14 +270,14 @@ def encode_worker_window(path: Path) -> Dict[str, object]:
 
 
 def timeline_once(command_template: Sequence[str], log_path: Path,
-                  env: Mapping[str, str]) -> Dict[str, object]:
+                  env: Mapping[str, str], threads: int) -> Dict[str, object]:
     """Run one timeline command and return its encode-worker window."""
     command = [
         str(log_path) if argument == "{timeline}" else argument
         for argument in command_template
     ]
     run_process(command, env)
-    return encode_worker_window(log_path)
+    return encode_worker_window(log_path, threads)
 
 
 def measure_encode_windows(
@@ -293,10 +298,12 @@ def measure_encode_windows(
             if warmup % 2:
                 order.reverse()
             for configuration in order:
+                _, threads = configuration
                 timeline_once(
                     commands[configuration],
                     root / f"warmup-{sequence:05d}.jsonl",
                     env,
+                    threads,
                 )
                 sequence += 1
         for sample in range(1, runs + 1):
@@ -310,6 +317,7 @@ def measure_encode_windows(
                     commands[configuration],
                     root / f"timed-{sequence:05d}.jsonl",
                     env,
+                    threads,
                 )
                 label, color = labels[name]
                 rows.append({
@@ -415,7 +423,8 @@ def program_record(path: Path, reports_version: bool = True) -> Dict[str, str]:
 
 
 def common_metadata(args: argparse.Namespace, input_image: Path,
-                    img2sixel: Path, sixel2png: Path, lsqa: Path) \
+                    img2sixel: Path, sixel2png: Path, lsqa: Path,
+                    speed_threads: Sequence[int], serial_body: bool) \
         -> Dict[str, object]:
     """Return provenance shared by the two measurement manifests."""
     return {
@@ -441,6 +450,10 @@ def common_metadata(args: argparse.Namespace, input_image: Path,
         "timing": {
             "clock": "libsixel monotonic JSON timeline timestamps",
             "boundary": (
+                "serial body start/finish or earliest parallel "
+                "encode/worker/worker_start through latest "
+                "encode/worker/worker_done"
+                if serial_body else
                 "earliest encode/worker/worker_start through latest "
                 "encode/worker/worker_done"
             ),
@@ -454,7 +467,7 @@ def common_metadata(args: argparse.Namespace, input_image: Path,
             ),
             "warmups": args.warmups,
             "runs": args.runs,
-            "threads": list(args.speed_threads),
+            "threads": list(speed_threads),
             "width": args.speed_width,
             "height": args.speed_height,
             "summary": "standard box plot: median, IQR, 1.5-IQR whiskers",
@@ -801,8 +814,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input-label", default="images/snake.png")
     parser.add_argument("--warmups", type=int, default=2)
     parser.add_argument("--runs", type=int, default=21)
-    parser.add_argument("--speed-threads", type=parse_threads,
-                        default=DEFAULT_SPEED_THREADS)
+    parser.add_argument("--encode-speed-threads", type=parse_threads,
+                        default=DEFAULT_ENCODE_SPEED_THREADS)
+    parser.add_argument("--high-color-speed-threads", type=parse_threads,
+                        default=DEFAULT_HIGH_COLOR_SPEED_THREADS)
     parser.add_argument("--speed-width", type=int, default=1920)
     parser.add_argument("--speed-height", type=int, default=1080)
     parser.add_argument("--encode-output-dir", type=Path, required=True)
@@ -865,7 +880,7 @@ def main() -> None:
             "{timeline}",
         )
         for name, _, _ in ENCODE_POLICIES
-        for threads in args.speed_threads
+        for threads in args.encode_speed_threads
     }
     encode_labels = {
         name: (label, color) for name, label, color in ENCODE_POLICIES
@@ -919,7 +934,7 @@ def main() -> None:
             "{timeline}",
         )
         for name, _, _ in HIGH_COLOR_MODES
-        for threads in args.speed_threads
+        for threads in args.high_color_speed_threads
     }
     high_labels = {
         name: (label, color) for name, label, color in HIGH_COLOR_MODES
@@ -967,13 +982,18 @@ def main() -> None:
         high_dir / "high-color-visual-comparison.png",
     )
 
-    shared = common_metadata(
-        args, input_image, img2sixel, sixel2png, lsqa
+    encode_shared = common_metadata(
+        args, input_image, img2sixel, sixel2png, lsqa,
+        args.encode_speed_threads, True
+    )
+    high_shared = common_metadata(
+        args, input_image, img2sixel, sixel2png, lsqa,
+        args.high_color_speed_threads, False
     )
     write_metadata(
         encode_dir / "encode-policy-run.json",
         {
-            **shared,
+            **encode_shared,
             "comparison": "img2sixel -E auto, fast, and size",
             "controls": (
                 "fixed 256-color output and no diffusion; artifact runs use "
@@ -986,7 +1006,7 @@ def main() -> None:
     write_metadata(
         high_dir / "high-color-run.json",
         {
-            **shared,
+            **high_shared,
             "comparison": "fixed 256-color output and img2sixel -I",
             "controls": (
                 "no diffusion and fast encoding policy; artifact runs use "

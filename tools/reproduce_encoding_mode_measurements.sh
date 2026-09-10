@@ -19,7 +19,8 @@ high_dir=${2-${TOP_SRCDIR}/docs/functionality/high-color/measurements}
 input_image=${3-images/snake.png}
 warmups=${ENCODING_MODE_WARMUPS-2}
 runs=${ENCODING_MODE_RUNS-21}
-speed_threads=${ENCODING_MODE_THREADS-2,3,4,5,6,7,8,9,10,11,12}
+encode_speed_threads=${ENCODE_POLICY_THREADS-1,2,3,4,5,6,7,8,9,10,11,12}
+high_color_speed_threads=${HIGH_COLOR_THREADS-2,3,4,5,6,7,8,9,10,11,12}
 speed_width=${ENCODING_MODE_WIDTH-1920}
 speed_height=${ENCODING_MODE_HEIGHT-1080}
 source_state=clean
@@ -50,7 +51,8 @@ cd "${TOP_SRCDIR}"
     --source-state "${source_state}" \
     --warmups "${warmups}" \
     --runs "${runs}" \
-    --speed-threads "${speed_threads}" \
+    --encode-speed-threads "${encode_speed_threads}" \
+    --high-color-speed-threads "${high_color_speed_threads}" \
     --speed-width "${speed_width}" \
     --speed-height "${speed_height}" \
     --encode-output-dir "${encode_dir}" \
