@@ -1,0 +1,115 @@
+{
+  "comparison": "fixed 256-color output and img2sixel -I",
+  "configure": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension 'CFLAGS=-O3 -std=c99' BASH=/bin/sh",
+  "controls": "no diffusion, one CPU thread, fast encoding policy",
+  "decode": "sixel2png --direct to RGBA PNG before lsqa",
+  "environment": "ambient SIXEL_* and LSQA_* variables removed",
+  "high_color_note": "The current CLI bypasses palette construction and resolves palette-space diffusion to none for -I.",
+  "input": {
+    "path": "images/snake.png",
+    "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4"
+  },
+  "machine": "arm64",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "programs": {
+    "img2sixel": {
+      "path": "/private/tmp/libsixel-encode-docs.xrTCp5/worktree/converters/img2sixel",
+      "sha256": "f3bf0d57517db47b3a719446dd7607d79a3591ac718765a5ee2efc6d97af2985",
+      "version": "img2sixel 1.11.1-pre1"
+    },
+    "lsqa": {
+      "path": "/private/tmp/libsixel-encode-docs.xrTCp5/worktree/assessment/lsqa",
+      "sha256": "4e75cd9ffed5315c9381efbb7f4b5553d285c93334cae4b4a06dc8d18ff05508",
+      "version": "not reported by this program"
+    },
+    "sixel2png": {
+      "path": "/private/tmp/libsixel-encode-docs.xrTCp5/worktree/converters/sixel2png",
+      "sha256": "80f36c79ae2d662a137e49b9804ae1e0ebfd30c26d6a2dcf3257ed8d0a51febb",
+      "version": "sixel2png 1.11.1-pre1"
+    }
+  },
+  "python": "3.12.0",
+  "recorded_at_utc": "2026-09-10T13:22:11.117726+00:00",
+  "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
+  "rows": [
+    {
+      "Delta Chroma_mean": 1.749753,
+      "Delta E00_mean": 2.403138,
+      "MS-SSIM": 0.9861,
+      "PSNR_Y": 37.637573,
+      "color": "#0072B2",
+      "command": "'$BUILD_DIR/converters/img2sixel' --threads=1 --precision=8bit --quality=high '--loaders=builtin!' --diffusion=none --gpu-policy=off --palette-type=rgb --encode-policy fast -p 256 -o - '$TOP_SRCDIR/images/snake.png'",
+      "decoded_png_sha256": "6546e867a4b39246142542f634aa46f1ad3ccc987f61e9419bec0c9f5c39f465",
+      "encoded_bytes": 247009,
+      "encoded_sha256": "9a70bba4f755dad349c55f23ec11d2bd246f084f83dbb4f366e5eb2da11cde7b",
+      "input": "images/snake.png",
+      "label": "fixed 256-color",
+      "max_seconds": 0.06330666597932577,
+      "median_seconds": 0.05892529198899865,
+      "min_seconds": 0.05704774986952543,
+      "mode": "fixed256",
+      "platform": "macOS-26.5.1-arm64-arm-64bit",
+      "q1_seconds": 0.058267979067750275,
+      "q3_seconds": 0.06151566654443741,
+      "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
+      "runs": 7,
+      "samples_seconds": [
+        0.05827283300459385,
+        0.05704774986952543,
+        0.06330666597932577,
+        0.06196929095312953,
+        0.06106204213574529,
+        0.0582631251309067,
+        0.05892529198899865
+      ],
+      "timed_command": "'$BUILD_DIR/converters/img2sixel' --threads=1 --precision=8bit --quality=high '--loaders=builtin!' --diffusion=none --gpu-policy=off --palette-type=rgb --encode-policy fast -p 256 -o /dev/null '$TOP_SRCDIR/images/snake.png'"
+    },
+    {
+      "Delta Chroma_mean": 1.355781,
+      "Delta E00_mean": 1.75277,
+      "MS-SSIM": 0.989064,
+      "PSNR_Y": 41.390858,
+      "color": "#D55E00",
+      "command": "'$BUILD_DIR/converters/img2sixel' --threads=1 --precision=8bit --quality=high '--loaders=builtin!' --diffusion=none --gpu-policy=off --palette-type=rgb --encode-policy fast -I -o - '$TOP_SRCDIR/images/snake.png'",
+      "decoded_png_sha256": "c3be324a7188245388b682b216fd98a4b1f2c29f70ab355a2a05f4df73c78857",
+      "encoded_bytes": 675644,
+      "encoded_sha256": "be50f5cea2d2ff9e23565de0743b79661aed0c1f85518e1c1e54fb7ca728f44b",
+      "input": "images/snake.png",
+      "label": "high color (15bpp)",
+      "max_seconds": 0.04855412500910461,
+      "median_seconds": 0.04716958315111697,
+      "min_seconds": 0.04599966714158654,
+      "mode": "high15",
+      "platform": "macOS-26.5.1-arm64-arm-64bit",
+      "q1_seconds": 0.04626679187640548,
+      "q3_seconds": 0.048280042014084756,
+      "revision": "a7c9e1a819ccd1e64d682779211fc047681dbc0a",
+      "runs": 7,
+      "samples_seconds": [
+        0.04807749995961785,
+        0.04855412500910461,
+        0.04848258406855166,
+        0.04716958315111697,
+        0.0462159588932991,
+        0.04631762485951185,
+        0.04599966714158654
+      ],
+      "timed_command": "'$BUILD_DIR/converters/img2sixel' --threads=1 --precision=8bit --quality=high '--loaders=builtin!' --diffusion=none --gpu-policy=off --palette-type=rgb --encode-policy fast -I -o /dev/null '$TOP_SRCDIR/images/snake.png'"
+    }
+  ],
+  "schema": 1,
+  "source_state": "clean",
+  "timing": {
+    "clock": "fresh-process wall time",
+    "ordering": "rotated and reversed within each comparison",
+    "runs": 7,
+    "summary": "median with interquartile range",
+    "warmups": 2
+  },
+  "visualization": {
+    "accessibility": "labels duplicate color, error maps share one stated scale, and captions define directionality",
+    "fallback": "adjacent Markdown tables plus CSV and JSON data",
+    "primary": "static directly labeled comparison plots",
+    "qa": "plots reviewed at native size after final generation"
+  }
+}
