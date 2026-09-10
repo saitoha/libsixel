@@ -6,7 +6,7 @@ libsixel CI protects portability, build-system parity, public interfaces, image 
 
 The project uses two complementary CI systems: GitHub Actions and the private CI operated on @saitoha's local desktop infrastructure. GitHub Actions owns every platform/compiler pair it can run; the local CI is reserved for pairs that are not already represented there. Within each owning system, the matrix remains broad across build systems, ABIs, optional image libraries, linkage modes, sanitizers, and language runtimes.
 
-The user-facing [Build, Runtime, and Platform Support](../platform-support.md) document defines the support tiers and summarizes the OS, architecture, compiler, and build-system coverage. The GitHub Actions workflows and the companion `libsixel-ci` job catalog are the authoritative configuration sources; the repository does not maintain a duplicate combined table.
+The user-facing [Build, Runtime, and Platform Support](../platform-support.md) document defines the support tiers and summarizes the OS, architecture, compiler, and build-system coverage. The GitHub Actions workflows are the authoritative source for public jobs, while the support document is the repository-visible source for local-CI coverage. The repository does not maintain a duplicate job-by-job correspondence table.
 
 ## GitHub Actions workflow responsibilities
 
@@ -79,32 +79,21 @@ prove that a branch is green.
 
 The private local CI complements GitHub Actions only with platform/compiler pairs that are not represented there. Its active catalog covers Debian GNU/Linux Bookworm with GCC, OpenIndiana 2025.10 with GCC 13, and OpenVMS 9.2-3 with the GNV `cc` environment. Autotools and Meson variants may coexist within an owned pair, but they do not create a reason to duplicate that pair across CI systems.
 
-The local CI implementation and configuration files are versioned in the companion `libsixel-ci` source repository. Its relevant configuration is:
-
-- `srv/misc/jobs.tsv`: authoritative job catalog;
-- `srv/misc/runner-profiles.tsv`: backend, resource, and execution profile for
-  each runner class;
-- `srv/misc/resource-classes.tsv`: scheduler resource policy;
-- `srv/misc/workers.tsv`: dispatch workers and their capabilities;
-- `srv/misc/job-definition/`: build and test command flows;
-- `srv/setup/`: guest and toolchain provisioning, including OpenVMS and Debian
-  GNU/Hurd support.
-
-The local catalog is host-owned configuration, but it is not an unversioned live-server setting. Change it in the `libsixel-ci` source repository and deploy through that repository's commit-and-push workflow. Do not edit `/srv` runtime files directly.
+The implementation, job catalog, runner configuration, and deployment procedure are private operational details. Repository documentation must not name their repository paths because contributors cannot inspect those paths from this source tree. The Tier 2 table in [Build, Runtime, and Platform Support](../platform-support.md) is the public inventory of local-CI coverage.
 
 ## Coverage allocation policy
 
 A platform/compiler pair is identified by the named operating system, distribution, or compatibility environment; target architecture; and compiler or ABI family. A different OS release, build system, sanitizer, optional dependency set, linkage mode, shell, install mode, or test flavor does not by itself make a second local-CI copy of a GitHub Actions pair acceptable.
 
-GitHub Actions is the primary owner. Before adding a local job, inspect the current workflows and record why that platform/compiler pair cannot be maintained there. When GitHub Actions gains the same pair, first obtain a live green Actions result and then remove the pair from the active local `srv/misc/jobs.tsv` catalog. Dormant runner profiles and job definitions may remain for manual diagnosis, but they must not be scheduled by the active catalog.
+GitHub Actions is the primary owner. Before adding a local job, inspect the current workflows and record why that platform/compiler pair cannot be maintained there. When GitHub Actions gains the same pair, first obtain a live green Actions result and then remove the pair from the active local schedule. Dormant local runner and job definitions may remain for manual diagnosis, but they must not be scheduled.
 
-The workflows under `.github/workflows/` and the companion `libsixel-ci/srv/misc/jobs.tsv` catalog are the only detailed inventories. Do not add a generated or manually synchronized combined table to this repository. Update the summary in [Build, Runtime, and Platform Support](../platform-support.md) only when the represented platform, architecture, compiler family, ABI, or build system changes.
+The workflows under `.github/workflows/` are the detailed inventory for GitHub Actions. Exact local job definitions remain an operational concern outside this repository; do not mention undiscoverable repositories or paths as though contributors could inspect them. Do not add a generated or manually synchronized combined table to this repository. Update the summary in [Build, Runtime, and Platform Support](../platform-support.md) only when the represented platform, architecture, compiler family, ABI, or build system changes.
 
 When adding, removing, or renaming a CI job:
 
 1. Audit the current GitHub Actions platform/compiler coverage and select exactly one owning CI system.
-2. Change the authoritative Actions workflow or local CI catalog and its job definition.
-3. Review the owning source directly, including labels and the commands that distinguish each configuration.
+2. Change the authoritative Actions workflow or use the local CI's private maintenance procedure.
+3. Review the owning configuration directly when you have access, including labels and the commands that distinguish each configuration.
 4. Update `docs/platform-support.md` when the change adds or removes an OS, architecture, compiler family, ABI, or supported build system.
 5. Run `make staticcheck` before committing.
 6. Verify the actual replacement job in the corresponding CI system.
@@ -231,3 +220,11 @@ PATH="$PWD/.local/bin:$PATH" ./config.status --recheck
 
 Finish with `git diff --check` and a selective commit containing only the CI
 change and directly required source, test, or generated-file updates.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| CI-01 | CI documentation does not direct contributors to repositories or configuration paths that are unavailable from this source tree. | [tests/_static/sh/staticcheck-ci-doc-public-surface.sh](../../tests/_static/sh/staticcheck-ci-doc-public-surface.sh) |
