@@ -51,8 +51,8 @@ are grouped by domain so each area can grow without overloading one document.
   shared quality, speed, and size comparison across processing policies.
 - [Dithering](functionality/dithering.md) explains `-d`, error shaping, scan
   order, temporal behavior, per-pixel cost, and its interaction with lookup.
-- [Lookup policy](functionality/lookup-policy.md) defines libsixel's `-~` /
-  `--lookup-policy` concept, mathematical basis, exactness guarantees, and
+- [Lookup policy](functionality/lookup-policy.md) defines the `-~` /
+  `--lookup-policy` interface provided by `img2sixel`, its mathematical basis, exactness guarantees, and
   preparation/query costs. It contains one detailed chapter per policy and a
   measured Delta E, chroma, MS-SSIM, and runtime comparison across palette
   sizes.

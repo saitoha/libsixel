@@ -2,35 +2,35 @@
 
 ## Scope
 
-This document defines the design policy for libsixel command-line interfaces. The CLI-program layer includes the converters under `converters/` and specialized executable tools such as `lsqa` under `assessment/`; most detailed option contracts below concern `img2sixel` and `sixel2png`. A CLI is a public compatibility surface, not a thin test wrapper around the C library. Accepted spellings, defaults, precedence, operation order, diagnostics, output streams, and exit status are part of the interface contract.
+This document defines the design policy for the command-line tools provided with libsixel. libsixel is principally a library project; these command-line programs are supporting tools distributed with it. The CLI-program layer includes the converters under `converters/` and specialized executable tools such as `lsqa` under `assessment/`; most detailed option contracts below concern `img2sixel` and `sixel2png`. A CLI is a public compatibility surface, not a thin test wrapper around the C library. Accepted spellings, defaults, precedence, operation order, diagnostics, output streams, and exit status are part of the interface contract.
 
-The policy begins with established command-line guidance, then identifies the constraints specific to libsixel, explains the architecture selected from those inputs, and records why common alternatives were not selected. A new CLI decision is incomplete until both its rule and its rationale are documented.
+The policy begins with established command-line guidance, then identifies the constraints of the command-line tools provided with libsixel, explains the architecture selected from those inputs, and records why common alternatives were not selected. A new CLI decision is incomplete until both its rule and its rationale are documented.
 
 ## Baseline: established command-line guidance
 
-No single external guide is binding on libsixel. POSIX optimizes for portable utility syntax, GNU extends that model for discoverability, and newer guidance treats a CLI as both a composable program interface and a human-facing user interface. libsixel takes compatible ideas from all three while retaining released behavior where a clean-sheet design would differ.
+No single external guide is binding on the command-line tools provided with libsixel. POSIX optimizes for portable utility syntax, GNU extends that model for discoverability, and newer guidance treats a CLI as both a composable program interface and a human-facing user interface. The tools take compatible ideas from all three while retaining released behavior where a clean-sheet design would differ.
 
 ### POSIX utility syntax
 
 The [POSIX Utility Syntax Guidelines](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap12.html) establish the traditional utility model: short option names, explicit option arguments, operands, `--` as the option terminator, and no implied semantic relationship among options merely because of their order. The accompanying [POSIX rationale](https://pubs.opengroup.org/onlinepubs/9799919799/xrat/V4_xbd_chap01.html) describes the goal as user portability and acknowledges that historical utilities retain exceptions.
 
-libsixel adopts the recognizable option-and-operand model, short options, standard streams, and deterministic parsing. It does not claim strict POSIX syntax conformance: it also supports GNU-style long options, historical punctuation short flags, structured option arguments, and one documented order-sensitive geometry case. Those deviations exist for compatibility or to represent image-processing policy without exhausting the top-level namespace.
+The CLI tools adopt the recognizable option-and-operand model, short options, standard streams, and deterministic parsing. They do not claim strict POSIX syntax conformance: they also support GNU-style long options, historical punctuation short flags, structured option arguments, and one documented order-sensitive geometry case. Those deviations exist for compatibility or to represent image-processing policy without exhausting the top-level namespace.
 
 ### GNU command-line conventions
 
 The [GNU Coding Standards for command-line interfaces](https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces) recommend long names equivalent to short options, consistent common names, explicit output options, and standard `--help` and `--version` actions. These conventions add discoverability without discarding efficient short forms.
 
-libsixel adopts paired short and long top-level options, `--help`, `--version`, explicit input and output controls, and familiar names where compatibility permits. It retains `-H` for help because `-h` already means image height, and it retains non-alphanumeric historical short flags because those character identities are published through the C API. Preserving those meanings is less surprising than retrofitting superficial conformance that would break existing commands.
+The CLI tools adopt paired short and long top-level options, `--help`, `--version`, explicit input and output controls, and familiar names where compatibility permits. `img2sixel` retains `-H` for help because `-h` already means image height, and the converters retain non-alphanumeric historical short flags because those character identities are published through the C API. Preserving those meanings is less surprising than retrofitting superficial conformance that would break existing commands.
 
 ### Human-facing CLI guidance
 
 The open [Command Line Interface Guidelines](https://clig.dev/) emphasize that Unix composability and human usability can coexist: primary or machine-readable output belongs on standard output, messages belong on standard error, help and examples should make features discoverable, invalid input should be explained, and a likely correction should be suggested rather than silently executed.
 
-libsixel adopts that separation of streams, contextual help, human-readable diagnostics, stable code-oriented diagnostics, validation, and deterministic suggestions. It does not make every modern recommendation a compatibility mandate. In particular, the converters do not become a subcommand suite or acquire implicit configuration files merely because those patterns work well for stateful multi-operation products.
+The CLI tools adopt that separation of streams, contextual help, human-readable diagnostics, stable code-oriented diagnostics, validation, and deterministic suggestions. They do not make every modern recommendation a compatibility mandate. In particular, the converters do not become a subcommand suite or acquire implicit configuration files merely because those patterns work well for stateful multi-operation products.
 
 ## Product constraints that shape the design
 
-libsixel is not a clean-sheet CLI. Five constraints determine which general conventions fit:
+The CLI tools distributed with libsixel are not a clean-sheet interface. Five constraints determine which general conventions fit:
 
 1. `img2sixel` and `sixel2png` already name two stable, opposite conversion directions and are widely usable as single-purpose pipeline stages.
 2. Top-level short-option characters became public [`SIXEL_OPTFLAG_*`](../../include/sixel.h.in) identifiers consumed by library `setopt` functions, so converter syntax and the public C API share compatibility history.
@@ -56,23 +56,23 @@ These constraints lead to a hybrid interface: conventional executables and top-l
 
 ### Strict POSIX short options only
 
-A strictly POSIX surface would maximize parser portability but remove descriptive long names and reject already-published punctuation flags. libsixel instead provides its own `getopt_long()` fallback on platforms that need one and treats compatibility with released CLI and C identifiers as the stronger requirement. New deviations still need a semantic reason; history is not permission to invent arbitrary syntax.
+A strictly POSIX surface would maximize parser portability but remove descriptive long names and reject already-published punctuation flags. The converter sources instead provide their own `getopt_long()` fallback on platforms that need one and treat compatibility with released CLI and C identifiers as the stronger requirement. New deviations still need a semantic reason; history is not permission to invent arbitrary syntax.
 
 ### One flat set of long options
 
 Flattening every control into names such as `--quantize-kmeans-init-type` would be easy to parse but would repeat subsystem names, flood help output, and leave no credible one-character partner for each new top-level setting. More importantly, it would obscure that some controls are valid only for a particular base algorithm. Typed suboptions keep validation and discovery in the active domain, while a descriptive long spelling remains available for scripts and documentation.
 
-This explains why the current structure remains internally coherent; it does not establish that the structure was the best clean-sheet CLI design. In hindsight, if the eventual number and depth of settings had been foreseeable in 2014, libsixel would have made descriptive long options the primary interface and reserved short forms for the most frequent operations. Interix provided `getopt()` but not `getopt_long()`, yet that limitation did not make a long-option-first design impossible: with the expected scale visible, implementing a compatibility `getopt_long()` at that point would have been a reasonable engineering choice. The later MSVC and OpenVMS fallback demonstrates the shape of the implementation that could have been introduced earlier, although it does not erase the cost and uncertainty such work would have carried in 2014.
+This explains why the current structure remains internally coherent; it does not establish that the structure was the best clean-sheet CLI design. In hindsight, if the eventual number and depth of settings had been foreseeable in 2014, the CLI would have made descriptive long options the primary interface and reserved short forms for the most frequent operations. Interix provided `getopt()` but not `getopt_long()`, yet that limitation did not make a long-option-first design impossible: with the expected scale visible, implementing a compatibility `getopt_long()` at that point would have been a reasonable engineering choice. The later MSVC and OpenVMS fallback demonstrates the shape of the implementation that could have been introduced earlier, although it does not erase the cost and uncertainty such work would have carried in 2014.
 
 The present suboption form acquires a rational scoped grammar once learned, but the additional colon syntax and context-dependent compact letters create genuine operational surprise for first-time and occasional users. On that user-experience criterion, it is difficult to call the result the CLI-design optimum. The project retains the structure because its released spellings, environment mappings, validation scopes, manuals, completion, and C-facing option history are now compatibility surface. Future work should improve discovery and avoid unnecessary new nesting; consistency with an imperfect historical structure is evidence to weigh, not an automatic design decision.
 
 ### One umbrella executable with subcommands
 
-A `sixel encode` / `sixel decode` command could share global help and configuration, and subcommands are valuable when a product has many nouns and actions. libsixel has two established, stateless conversion directions whose executable names already describe their work. Replacing them with subcommands would lengthen common pipelines, complicate packaging and dispatch, and break existing scripts without simplifying the underlying encoder policy. An additive umbrella tool could be considered separately if future workflows justify it, but it must not silently replace the directional utilities.
+A `sixel encode` / `sixel decode` command could share global help and configuration, and subcommands are valuable when a product has many nouns and actions. The two established converter programs already express their stateless conversion directions in their executable names. Replacing them with subcommands would lengthen common pipelines, complicate packaging and dispatch, and break existing scripts without simplifying the underlying encoder policy. An additive umbrella tool could be considered separately if future workflows justify it, but it must not silently replace the directional utilities.
 
 ### An order-sensitive image-operation language
 
-[ImageMagick command-line processing](https://usage.imagemagick.org/basics/) intentionally executes image operators in command order because it represents arbitrary reads, transforms, image lists, stacks, and compositions. libsixel does not expose that general image-programming model. Its options select policies for a known conversion pipeline, so making every flag execute at its textual position would expose internal staging, multiply invalid combinations, and make equivalent command lines unexpectedly order-dependent.
+[ImageMagick command-line processing](https://usage.imagemagick.org/basics/) intentionally executes image operators in command order because it represents arbitrary reads, transforms, image lists, stacks, and compositions. The converters provided with libsixel do not expose that general image-programming model. Their options select policies for a known conversion pipeline, so making every flag execute at its textual position would expose internal staging, multiply invalid combinations, and make equivalent command lines unexpectedly order-dependent.
 
 Crop and resize are the deliberate exception because the two operations do not commute and both coordinate interpretations are useful. That exception does not turn palette construction, dithering, colorspace selection, diagnostics, or output policy into ordered operators.
 
@@ -82,7 +82,7 @@ A user or project config file would reduce repetition but introduce filesystem l
 
 ### Silent correction of invalid input
 
-Automatically accepting a likely typo feels convenient once but silently creates aliases, makes future names harder to add, and can execute a materially different conversion than requested. libsixel separates matching from suggestions: only declared exact or prefix rules can succeed, while fuzzy candidates explain a failure and leave the command unsuccessful.
+Automatically accepting a likely typo feels convenient once but silently creates aliases, makes future names harder to add, and can execute a materially different conversion than requested. The CLI tools separate matching from suggestions: only declared exact or prefix rules can succeed, while fuzzy candidates explain a failure and leave the command unsuccessful.
 
 ## Program and data model
 
@@ -128,7 +128,7 @@ For example, `-Q kmeans:inittype=pca` and its compact spelling `-Q kmeans:Ipca` 
 
 Every public top-level option of `img2sixel` and `sixel2png` must have both a one-character short form and a long form with the same argument shape. The long form is the discoverable, self-explanatory spelling. The short form is the stable dispatch identity and efficient interactive spelling.
 
-During libsixel's initial development in 2014, long options mapped back to the character used by their short option. Interix later exposed an environment with `getopt()` but not `getopt_long()`, making the short form the only portable option interface at the time. In 2015 those characters became public `SIXEL_OPTFLAG_*` macros accepted by library `setopt` functions. Later MSVC and OpenVMS ports added the project's [`getopt_long()` fallback](../../converters/getopt_stub.h), removing the parser limitation but not the published character contract.
+During initial development of `img2sixel` and its related command-line interface in 2014, long options mapped back to the character used by their short option. Interix later exposed an environment with `getopt()` but not `getopt_long()`, making the short form the only portable option interface at the time. In 2015 those characters became public `SIXEL_OPTFLAG_*` macros accepted by library `setopt` functions. Later MSVC and OpenVMS ports added the project's [`getopt_long()` fallback](../../converters/getopt_stub.h), removing the parser limitation but not the published character contract.
 
 As the interface grew, letters and digits ceased to be enough, and released flags consumed punctuation such as `~`, `=`, and `+`. This is a historical portability deviation, not a preferred source of future names. Typed suboptions let one stable top-level operation grow without allocating increasingly opaque punctuation. They must not be used merely to hide an independent stage under an unrelated option.
 
@@ -136,7 +136,7 @@ The one-character namespace is converter-local because encoder and decoder flags
 
 ### Suboption forms and names
 
-Use suboptions for policy specific to a named subsystem. A public suboption has a typed domain, one canonical long name, one uppercase compact name, and an explicit environment representation. Long `name=value` keys are exact, while the compact `Kvalue` form is a separately registered spelling rather than a key abbreviation. Names describe user-visible behavior in established libsixel terminology rather than a temporary function, data structure, dependency, or optimization. The detailed naming and parsing contracts belong to the [suboption architecture](suboptions.md).
+Use suboptions for policy specific to a named subsystem. A public suboption has a typed domain, one canonical long name, one uppercase compact name, and an explicit environment representation. Long `name=value` keys are exact, while the compact `Kvalue` form is a separately registered spelling rather than a key abbreviation. Names describe user-visible behavior in established project terminology rather than a temporary function, data structure, dependency, or optimization. The detailed naming and parsing contracts belong to the [suboption architecture](suboptions.md).
 
 ### Internal controls
 

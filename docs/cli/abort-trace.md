@@ -56,7 +56,7 @@ Enabling the runtime policy cannot add the feature to a build that omitted it. I
 
 ## Diagnostic output and failure semantics
 
-The trace is written to standard error so SIXEL or PNG data on standard output remains unmodified. A successful trace is delimited by stable libsixel messages; the frame lines between them are platform-dependent:
+The trace is written to standard error so SIXEL or PNG data on standard output remains unmodified. A successful trace is delimited by stable `libsixel:` messages; the frame lines between them are platform-dependent:
 
 ```text
 libsixel: abort() detected
@@ -67,7 +67,7 @@ libsixel: abort trace complete
 
 The start and completion lines help users and tests distinguish a complete trace from output cut short by a second fault, deadlock, closed descriptor, or forced process termination. Frame text is not a stable machine-readable format: it may contain function names, module paths, offsets, raw addresses, or only an availability message.
 
-On POSIX systems the second `SIGABRT` is delivered with the default disposition. Shells and supervisors should therefore continue to observe signal termination rather than a new libsixel-specific exit code, subject to the host operating system's normal signal and core-dump configuration.
+On POSIX systems the second `SIGABRT` is delivered with the default disposition. Shells and supervisors should therefore continue to observe signal termination rather than a new CLI-specific exit code, subject to the host operating system's normal signal and core-dump configuration.
 
 ### Representative terminal output
 
@@ -122,7 +122,7 @@ The following systems illustrate nearby design choices; they are comparisons, no
 | Facility | Similarity | Important difference from the converter aborttrace |
 | --- | --- | --- |
 | [GNU C Library `backtrace()` and `backtrace_symbols_fd()`](https://sourceware.org/glibc/manual/latest/html_node/Backtraces.html) | These are the low-level in-process capture and file-descriptor output primitives used when detected on compatible targets. | glibc provides primitives rather than the converters' CLI policy, signal ownership rule, terminal recovery, and output delimiters. |
-| [Go `GOTRACEBACK`](https://pkg.go.dev/runtime#hdr-Environment_Variables) | An environment setting controls how much failure-time stack information the runtime prints and can request an OS crash for a core dump. | The Go runtime understands goroutines and runtime frames and offers several detail levels; libsixel captures only the receiving native thread and exposes an on/off policy. |
+| [Go `GOTRACEBACK`](https://pkg.go.dev/runtime#hdr-Environment_Variables) | An environment setting controls how much failure-time stack information the runtime prints and can request an OS crash for a core dump. | The Go runtime understands goroutines and runtime frames and offers several detail levels; aborttrace captures only the receiving native thread and exposes an on/off policy. |
 | [Rust standard-library backtraces](https://doc.rust-lang.org/std/backtrace/index.html) | `RUST_BACKTRACE` and `RUST_LIB_BACKTRACE` let deployments trade diagnostic capture against runtime cost. | Rust backtrace capture is integrated with Rust's panic and library facilities and is disabled by default for `Backtrace::capture`; the converter helper installs a narrow `SIGABRT` handler by default but performs the costly capture only after abort. |
 | [systemd coredump handling](https://systemd.io/COREDUMP/) | It can retain crash metadata, a stack trace, and a core for later inspection. | It is an operating-system service outside the crashing process and can preserve a far richer, durable artifact. The converter aborttrace is immediate, process-local, portable to non-systemd POSIX environments, and complementary rather than a replacement. |
 
