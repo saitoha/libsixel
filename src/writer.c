@@ -265,15 +265,21 @@ png_crc32_update(unsigned int crc, unsigned char const *data,
     size_t index;
     int bit;
 
+    /*
+     * PNG uses the reflected form of CRC-32.  Bytes enter at the low end and
+     * every bit shifts right against the reversed 0xedb88320 polynomial.
+     * Keeping the complement at this function boundary allows callers to
+     * extend one chunk CRC across its type and payload in separate calls.
+     */
     crc = ~crc;
     for (index = 0; index < length; ++index) {
         octet = data[index];
-        crc ^= (unsigned int)octet << 24;
+        crc ^= (unsigned int)octet;
         for (bit = 0; bit < 8; ++bit) {
-            if (crc & 0x80000000U) {
-                crc = (crc << 1) ^ 0x04c11db7U;
+            if (crc & 1U) {
+                crc = (crc >> 1) ^ 0xedb88320U;
             } else {
-                crc <<= 1;
+                crc >>= 1;
             }
         }
     }
