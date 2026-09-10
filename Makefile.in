@@ -581,8 +581,6 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/project-history.md \
 	docs/sixel-format.md \
 	docs/ci/design.md \
-	docs/ci/local-jobs.tsv \
-	docs/ci/support-matrix.md \
 	docs/cli/design-policy.md \
 	docs/misc/platforms/openvms.md \
 	docs/concepts/colorspace.md \

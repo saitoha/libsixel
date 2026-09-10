@@ -7,10 +7,7 @@ for libsixel and summarizes the environments continuously represented in CI.
 It describes support for the source tree, library, and command-line tools; it
 does not promise that the project publishes a prebuilt package for every row.
 
-The tables below are a human-readable projection of the configured CI matrix.
-The generated [CI support matrix](ci/support-matrix.md) is the authoritative
-list of individual jobs and is checked against the GitHub Actions workflows
-and the @saitoha local CI catalog by `make staticcheck`.
+The tables below are deliberately coarse summaries of the configured CI systems. The workflows under `.github/workflows/` and the companion `libsixel-ci/srv/misc/jobs.tsv` catalog are the authoritative sources for individual jobs; this repository does not duplicate them in a combined correspondence table.
 
 ## Support tiers
 
@@ -19,18 +16,9 @@ Support is evidence-based:
 - **Tier 1** environments have an active build or test configuration in
   GitHub Actions. Failures are visible to all contributors and are expected to
   block or qualify changes according to the owning workflow.
-- **Tier 2** environments have a build or test configuration in @saitoha's
-  personal local CI. They include systems that are impractical to run in
-  GitHub Actions, such as OpenVMS and GNU/Hurd, as well as duplicate coverage
-  for several Tier 1 environments. Results depend on privately operated
-  runners, but the job catalog and definitions are version-controlled in the
-  companion `libsixel-ci` repository.
+- **Tier 2** environments have a build or test configuration in @saitoha's personal local CI because their platform/compiler pair is not represented in GitHub Actions. Results depend on privately operated runners, but the job catalog and definitions are version-controlled in the companion `libsixel-ci` repository.
 
-The tiers identify the source of CI evidence and are not mutually exclusive.
-When one configuration is represented in both systems, it has public Tier 1
-coverage and additional Tier 2 coverage. A configured job is evidence of
-intended support; the result of its latest run determines whether that support
-is currently healthy.
+The tiers identify the source of CI evidence and are mutually exclusive at the platform/compiler-pair level. A configured job is evidence of intended support; the result of its latest run determines whether that support is currently healthy.
 
 Only the OS releases, target architectures, compiler or ABI families, and
 build systems named by a configured job are covered. Similar releases and
@@ -109,12 +97,7 @@ decoder limits and error handling described by the public API.
 
 ## Tier 1: GitHub Actions
 
-The following summary includes active GitHub Actions build configurations.
-"System C compiler" means the default compiler selected by that CI image or
-guest; the exact package version is intentionally owned by the workflow or VM
-image rather than repeated here. Grouped compiler, architecture, and build
-system cells are not Cartesian products; consult the generated inventory for
-the exact combinations.
+The following summary includes active GitHub Actions build configurations. "System C compiler" means the default compiler selected by that CI image or guest; the exact package version is intentionally owned by the workflow or VM image rather than repeated here. Grouped compiler, architecture, and build-system cells are not Cartesian products; consult the owning workflows for the exact combinations.
 
 | OS or target | CI release/profile | Architecture | Compiler or ABI | Build systems |
 | --- | --- | --- | --- | --- |
@@ -133,55 +116,31 @@ the exact combinations.
 | WebAssembly | Emscripten runtime profiles | wasm32 | Emscripten/Clang | Autotools, Meson |
 | Cosmopolitan APE | current toolchain profile | portable APE; x86_64 and AArch64 hosts | `cosmocc` | Autotools, Meson |
 
-The Windows rows include native MSVC-ABI builds, MinGW/UCRT variants, and
-cross-built Win64 binaries exercised under Wine. The WebAssembly and
-Cosmopolitan rows describe target formats; their host OS is recorded by each
-individual job in the generated inventory.
+The Windows rows include native MSVC-ABI builds, MinGW/UCRT variants, and cross-built Win64 binaries exercised under Wine. The WebAssembly and Cosmopolitan rows describe target formats; their host OS is recorded by each individual workflow job.
 
 ## Tier 2: @saitoha local CI
 
-The local desktop CI catalog contains the following platform/compiler groups.
-The Tier 1 overlap column shows whether GitHub Actions also represents all or
-part of the grouped row. Grouped cells are summaries rather than claims that
-every listed dimension is combined with every other dimension.
+The local desktop CI catalog contains only the following platform/compiler groups. Grouped cells are summaries rather than claims that every listed dimension is combined with every other dimension.
 
-| OS or environment | CI release/profile | Architecture | Compiler or ABI | Build systems | Tier 1 overlap |
-| --- | --- | --- | --- | --- | --- |
-| Debian GNU/Linux | Bookworm | x86_64 | GCC | Autotools, Meson | No |
-| Ubuntu Linux | 24.04 | x86_64 | GCC, Clang, TCC, PCC | Autotools, Meson | Yes |
-| macOS | 14 | x86_64 | Apple Clang, GNU GCC | Autotools, Meson | Partial; Actions uses its maintained macOS images |
-| Windows, MSYS2, and Cygwin | local VM/direct profiles | x86_64 | MSVC, MinGW GCC, Cygwin GCC | Autotools, Meson | Yes |
-| FreeBSD | 14.3 | x86_64 | system C compiler | Autotools, Meson | Yes |
-| OpenBSD | 7.8 | x86_64 | system C compiler | Autotools, Meson | Yes |
-| NetBSD | 10.1 | x86_64 | system C compiler | Autotools, Meson | Yes |
-| DragonFly BSD | 6.4.2 | x86_64 | system C compiler | Autotools, Meson | Yes |
-| Haiku | R1/beta5 | x86_64 | system C compiler | Autotools, Meson | Yes |
-| Solaris | 11.4 | x86_64 | GCC | Autotools, Meson | Yes |
-| OmniOS | r151056 | x86_64 | GCC 13 | Autotools, Meson | Partial; Actions covers Autotools |
-| Debian GNU/Hurd | 2026-03-14 image | amd64 | GCC | Autotools, Meson | No |
-| OpenIndiana | 2025.10 image | x86_64 | GCC 13 | Autotools, Meson | No |
-| OpenVMS with GNV | 9.2-3 | x86_64 | GNV `cc` environment | Autotools | No |
+| OS or environment | CI release/profile | Architecture | Compiler or ABI | Build systems |
+| --- | --- | --- | --- | --- |
+| Debian GNU/Linux | Bookworm | x86_64 | GCC | Autotools, Meson |
+| OpenIndiana | 2025.10 image | x86_64 | GCC 13 | Autotools, Meson |
+| OpenVMS with GNV | 9.2-3 | x86_64 | GNV `cc` environment | Autotools |
 
-The local jobs run on @saitoha-operated desktop infrastructure using native
-hosts, virtual machines, and containers. In particular, OpenVMS and GNU/Hurd
-coverage does not depend on a GitHub-hosted runner.
+The local jobs run on @saitoha-operated desktop infrastructure using containers and virtual machines. OpenVMS compatibility considerations are documented in [OpenVMS Compatibility](misc/platforms/openvms.md).
 
 ## Matrix maintenance
 
-The summary tables deliberately avoid enumerating sanitizer, linkage,
-dependency, binding, and packaging permutations. Those exact configurations
-belong in the generated [CI support matrix](ci/support-matrix.md).
+The summary tables deliberately avoid enumerating sanitizer, linkage, dependency, binding, packaging, and other job-level permutations. Those exact configurations belong in the owning GitHub Actions workflows or the companion local-CI catalog.
 
 When a CI change adds or removes an OS, architecture, compiler family, ABI, or
 build system:
 
-1. update the owning GitHub workflow or the companion local CI catalog;
-2. regenerate `docs/ci/support-matrix.md` and, for local CI changes,
-   `docs/ci/local-jobs.tsv` as described in the
-   [CI design guide](ci/design.md#maintained-support-inventory);
+1. inspect the current GitHub Actions workflows and assign the platform/compiler pair to exactly one CI system;
+2. update the owning GitHub workflow or the companion local CI catalog;
 3. update the summary table in this document;
-4. run `make staticcheck` so the detailed inventory cannot drift from its
-   configuration sources.
+4. run `make staticcheck` and validate the changed job in its owning CI system.
 
 Do not add a platform to these tables from an ad hoc successful build. Add a
 maintained CI job first, then assign the tier from the system that owns it.

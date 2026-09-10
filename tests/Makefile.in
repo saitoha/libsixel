@@ -1924,7 +1924,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/shellcheck.sh \
     _static/sh/staticcheck-suite.sh \
     _static/sh/staticcheck-actionlint.sh \
-    _static/sh/staticcheck-ci-support-matrix.sh \
+    _static/sh/staticcheck-openvms-compat.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \
     _static/sh/staticcheck-binding-constants-sync.sh \
     _static/sh/staticcheck-shellcheck.sh \
@@ -1932,7 +1932,6 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-python-compileall.sh \
     _static/sh/staticcheck-c-ast.sh \
     _static/python/staticcheck_c_ast.py \
-    _static/python/generate_ci_support_matrix.py \
 	_static/sh/staticcheck-private-includes.sh \
 	_static/sh/staticcheck-src-no-direct-getenv.sh \
 	_static/sh/staticcheck-test-no-direct-getenv.sh \

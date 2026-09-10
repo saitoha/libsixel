@@ -2,23 +2,11 @@
 
 ## Goals
 
-libsixel CI protects portability, build-system parity, public interfaces, image
-semantics, memory safety, language bindings, distribution integrity, and
-malformed-input handling.
+libsixel CI protects portability, build-system parity, public interfaces, image semantics, memory safety, language bindings, distribution integrity, and malformed-input handling.
 
-The project uses two complementary CI systems: GitHub Actions and the private
-CI operated on @saitoha's local desktop infrastructure. Their combined matrix
-is intentionally broad because the project crosses C compilers, ABIs,
-operating systems, optional image libraries, build systems, and language
-runtimes. A green result in one common Linux configuration is not sufficient.
+The project uses two complementary CI systems: GitHub Actions and the private CI operated on @saitoha's local desktop infrastructure. GitHub Actions owns every platform/compiler pair it can run; the local CI is reserved for pairs that are not already represented there. Within each owning system, the matrix remains broad across build systems, ABIs, optional image libraries, linkage modes, sanitizers, and language runtimes.
 
-The generated [CI Support Matrix](support-matrix.md) lists the build
-configurations configured in both systems.
-
-The user-facing [Build, Runtime, and Platform Support](../platform-support.md)
-document defines the support tiers and summarizes the OS, architecture,
-compiler, and build-system coverage. The generated inventory remains the
-source of truth for individual CI configurations.
+The user-facing [Build, Runtime, and Platform Support](../platform-support.md) document defines the support tiers and summarizes the OS, architecture, compiler, and build-system coverage. The GitHub Actions workflows and the companion `libsixel-ci` job catalog are the authoritative configuration sources; the repository does not maintain a duplicate combined table.
 
 ## GitHub Actions workflow responsibilities
 
@@ -89,13 +77,9 @@ prove that a branch is green.
 
 ## @saitoha local desktop CI
 
-The private local CI complements GitHub Actions with environments that are not
-available as practical GitHub-hosted runners. It includes OpenVMS 9.2-3 with
-GNV, Debian GNU/Hurd, the BSD family, Haiku, Solaris and illumos derivatives,
-Windows variants, Intel macOS, and Linux Docker toolchain/sanitizer variants.
+The private local CI complements GitHub Actions only with platform/compiler pairs that are not represented there. Its active catalog covers Debian GNU/Linux Bookworm with GCC, OpenIndiana 2025.10 with GCC 13, and OpenVMS 9.2-3 with the GNV `cc` environment. Autotools and Meson variants may coexist within an owned pair, but they do not create a reason to duplicate that pair across CI systems.
 
-The local CI implementation and configuration files are versioned in the
-companion `libsixel-ci` source repository. Its relevant configuration is:
+The local CI implementation and configuration files are versioned in the companion `libsixel-ci` source repository. Its relevant configuration is:
 
 - `srv/misc/jobs.tsv`: authoritative job catalog;
 - `srv/misc/runner-profiles.tsv`: backend, resource, and execution profile for
@@ -106,57 +90,24 @@ companion `libsixel-ci` source repository. Its relevant configuration is:
 - `srv/setup/`: guest and toolchain provisioning, including OpenVMS and Debian
   GNU/Hurd support.
 
-The local catalog is host-owned configuration, but it is not an unversioned
-live-server setting. Change it in the `libsixel-ci` source repository and deploy
-through that repository's commit-and-push workflow. Do not edit `/srv` runtime
-files directly.
+The local catalog is host-owned configuration, but it is not an unversioned live-server setting. Change it in the `libsixel-ci` source repository and deploy through that repository's commit-and-push workflow. Do not edit `/srv` runtime files directly.
 
-`docs/ci/local-jobs.tsv` is a normalized documentation snapshot of the job name
-and runner profile columns from the authoritative catalog. It is deliberately
-non-operative: the local scheduler continues to read the `libsixel-ci` catalog.
+## Coverage allocation policy
 
-## Maintained support inventory
+A platform/compiler pair is identified by the named operating system, distribution, or compatibility environment; target architecture; and compiler or ABI family. A different OS release, build system, sanitizer, optional dependency set, linkage mode, shell, install mode, or test flavor does not by itself make a second local-CI copy of a GitHub Actions pair acceptable.
 
-[CI Support Matrix](support-matrix.md) is generated rather than maintained
-as a hand-written list. The generator expands literal GitHub Actions matrix
-entries and combines them with the tracked normalized local-CI snapshot.
+GitHub Actions is the primary owner. Before adding a local job, inspect the current workflows and record why that platform/compiler pair cannot be maintained there. When GitHub Actions gains the same pair, first obtain a live green Actions result and then remove the pair from the active local `srv/misc/jobs.tsv` catalog. Dormant runner profiles and job definitions may remain for manual diagnosis, but they must not be scheduled by the active catalog.
 
-After changing GitHub Actions configuration, regenerate the inventory with:
-
-```sh
-python3 tests/_static/python/generate_ci_support_matrix.py \
-    --root . \
-    --local-snapshot docs/ci/local-jobs.tsv \
-    --write docs/ci/support-matrix.md
-```
-
-After changing the authoritative local CI catalog, refresh both the snapshot
-and inventory with:
-
-```sh
-python3 tests/_static/python/generate_ci_support_matrix.py \
-    --root . \
-    --local-snapshot docs/ci/local-jobs.tsv \
-    --sync-local-catalog /path/to/libsixel-ci/srv/misc/jobs.tsv \
-    --write docs/ci/support-matrix.md
-```
-
-`make staticcheck` rejects drift between the GitHub Actions workflow matrices,
-the local snapshot, and the generated Markdown. In @saitoha's normal workspace,
-it also discovers the companion catalog and compares it with the snapshot. Set
-`LIBSIXEL_LOCAL_CI_JOBS` to its path when using another checkout layout.
+The workflows under `.github/workflows/` and the companion `libsixel-ci/srv/misc/jobs.tsv` catalog are the only detailed inventories. Do not add a generated or manually synchronized combined table to this repository. Update the summary in [Build, Runtime, and Platform Support](../platform-support.md) only when the represented platform, architecture, compiler family, ABI, or build system changes.
 
 When adding, removing, or renaming a CI job:
 
-1. change the authoritative Actions workflow or local CI catalog and job
-   definition;
-2. regenerate the support inventory, refreshing the local snapshot when
-   applicable;
-3. review the generated list as part of the CI change;
-4. update `docs/platform-support.md` when the change adds or removes an OS,
-   architecture, compiler family, ABI, or supported build system;
-5. run `make staticcheck` before committing;
-6. verify the actual replacement job in the corresponding CI system.
+1. Audit the current GitHub Actions platform/compiler coverage and select exactly one owning CI system.
+2. Change the authoritative Actions workflow or local CI catalog and its job definition.
+3. Review the owning source directly, including labels and the commands that distinguish each configuration.
+4. Update `docs/platform-support.md` when the change adds or removes an OS, architecture, compiler family, ABI, or supported build system.
+5. Run `make staticcheck` before committing.
+6. Verify the actual replacement job in the corresponding CI system.
 
 ## Matrix design principles
 
@@ -231,7 +182,7 @@ CI changes are production changes to the project's verification system.
    practical.
 4. Keep the fix limited to the failing surface; do not mix unrelated cleanup
    into a CI repair.
-5. Regenerate the support inventory when a configured job changes.
+5. Recheck that the selected CI system is the sole owner of the platform/compiler pair.
 6. Validate workflow syntax and repository policy with `make staticcheck`.
 7. Run `make check` when the workflow change can affect compilation, generated
    inputs, tests, packaging, or runtime behavior.

@@ -1,12 +1,40 @@
-# OpenVMS Porting Record
+# OpenVMS Compatibility
 
 ## Scope
 
-This document records the OpenVMS port completed in May and June 2026, with later corrections that preserved the port as the surrounding build evolved. It is a retrospective engineering record, not a complete installation or CI-operations manual. Current support status belongs in [Build, Runtime, and Platform Support](../../platform-support.md), while the local runner architecture belongs in [CI Architecture and Design](../../ci/design.md).
+This document defines the maintained OpenVMS compatibility boundary and records the engineering rationale behind it. It is not a complete installation or CI-operations manual. Current support status belongs in [Build, Runtime, and Platform Support](../../platform-support.md), while the local runner architecture belongs in [CI Architecture and Design](../../ci/design.md).
 
 The maintained configuration is OpenVMS 9.2-3 on x86-64 with GNV and Autotools. The source tree also retains a smaller native DCL bootstrap under [`openvms/`](../../../openvms/README.md). Keeping both paths was useful during bring-up: the DCL build proved that VSI C and the native linker could build the core before GNV, Autoconf, Automake, and libtool were made reliable.
 
-## Result
+## Maintenance contract
+
+OpenVMS support is a compatibility path over GNV, not an assumption that GNV behaves like a conventional Unix host. Future changes must preserve the normal Autotools entry points while keeping demonstrated OpenVMS differences explicit and narrow. The source-level invariants are checked by [`tests/_static/sh/staticcheck-openvms-compat.sh`](../../../tests/_static/sh/staticcheck-openvms-compat.sh); an actual OpenVMS CI run remains required because a host-independent static check cannot exercise RMS, DCL, VSI C, the native linker, or GNV process semantics.
+
+The following boundaries are part of the maintained contract:
+
+- OpenVMS detection and `.exe` program lookup must occur before generic canonical-host and compiler discovery. Moving these decisions later can make configure fail before the platform branch is active.
+- Header probes, function probes, `config.status`, recursive builds, and the default test runner must retain their documented serial boundaries unless a current GNV release is shown to preserve child statuses and generated-file state under parallel execution.
+- Compiler, archiver, removal, and final-link behavior must remain isolated in the four wrappers under [`openvms/`](../../../openvms/README.md). Do not normalize a non-zero status merely because it is inconvenient: accept warning-only outcomes only when diagnostics are known and any requested output exists, and preserve all error or fatal evidence.
+- Final program links must continue to use native DCL `LINK` for the affected Automake targets until object-only GNV compiler links are demonstrated to create and validate the requested executable. A successful shell status without an output image is a failure.
+- OpenVMS process exits must remain shell-observable: zero represents success, failures use even non-zero condition values, and the inhibit-message bit prevents native condition text from corrupting TAP output.
+- Record-oriented file behavior, RMS timestamps, shell text conversion, PTY execution, and background-process semantics must not be generalized from POSIX behavior. Tests should assert the behavior they consume and use a narrow, documented skip only when the observation itself is unavailable on OpenVMS.
+- Autotools source and intentionally tracked generated files must stay synchronized. Any change to an OpenVMS conditional in a `Makefile.am`, `configure.ac`, or `build-aux/*.in` file must be reviewed against the generated inputs used by a normal checkout.
+
+### Change checklist
+
+When changing configure logic, build orchestration, converter exit handling, test execution, or any script under `openvms/`:
+
+1. Read the nearby OpenVMS comments and the rationale in this document before simplifying or consolidating the code.
+2. Reproduce a suspected GNV tool failure with the smallest possible source or shell command and record both the process status and requested output state.
+3. Update [`tests/_static/sh/staticcheck-openvms-compat.sh`](../../../tests/_static/sh/staticcheck-openvms-compat.sh) when the maintained invariant changes; do not weaken the check solely to accommodate an unrelated refactor.
+4. Run the OpenVMS static check and the complete repository static suite on a conventional host.
+5. Run the replacement revision through the maintained OpenVMS CI job and inspect the final job result. A queued job, a successful build phase without tests, or a warning-normalized command without its output is not green evidence.
+
+### Known limitations
+
+The continuously maintained path is OpenVMS 9.2-3 on x86-64 with the CI guest's GNV and VSI C environment. Alpha, Itanium, VAX, other OpenVMS releases, Meson, shared-library completeness, and interactive terminal behavior are not continuously verified. The Autotools path is intentionally serial in several phases, final executables use the native-link wrapper, and OpenVMS builds currently define `NDEBUG` because `assert()` can become unresolved on that link path. Revisit these limitations only with current toolchain evidence and an end-to-end OpenVMS run.
+
+## Historical result
 
 The port started with commit `5128e5a40` on May 26, 2026, reached a green GNV test run at `525c7b6dc` on May 28, and was merged from `port/openvms` into `develop` by `09521b70a` on June 2. Subsequent fixes removed assumptions about binary-file byte counts and clock-origin timing, and commit `229cf26d9` corrected a subtle M4/AWK quoting problem on August 7.
 
@@ -142,6 +170,22 @@ Using top-level `make check` would re-enter the expensive library-object walk be
 - Reduce filesystem and archive churn before adding parallelism on a record-oriented, high-latency guest.
 - Keep CI transport workarounds in the runner and source compatibility workarounds in the source tree; neither should silently absorb failures owned by the other.
 - Preserve platform-specific skips as narrow statements about the missing observation, not as a general exemption from the test suite.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| OV-01 | Configure detects OpenVMS and `.exe` tools early, serializes unsafe probes and `config.status`, selects the narrow wrappers, disables dependency tracking by default, and preserves M4-safe AWK generation. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+| OV-02 | OpenVMS build and test defaults remain serial, library compilation retains its isolated-object path, and exactly the six affected programs use the native-link override. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+| OV-03 | The compiler and archiver wrappers accept representative warning-only conditions but reject error conditions, while forced removal of an absent file remains harmless. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+| OV-04 | The native-link wrapper rejects unresolved-symbol diagnostics and unsupported arguments and verifies that the requested image exists. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+| OV-05 | Converter failures retain even OpenVMS condition severities with the inhibit-message bit, and the TAP driver accepts the documented mapped-error range. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+
+### Coverage boundary
+
+The static check runs on non-OpenVMS hosts and protects source structure plus representative wrapper translations. It cannot validate VSI compiler diagnostics, DCL `LINK`, RMS record and timestamp behavior, GNV child-status propagation, PTY transport, or end-to-end test execution. Those remain covered only by the maintained OpenVMS CI job, whose current result must be checked after a compatibility-sensitive change.
 
 ## Source and history map
 
