@@ -74,7 +74,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 - [CLI design policy](cli/design-policy.md) defines option design,
   compatibility, parsing, diagnostics, and documentation synchronization.
-- [CLI abort trace diagnostics](cli/abort-trace.md) defines the purpose, controls, platform behavior, reliability, performance, output-quality boundary, and test coverage of the `img2sixel` and `sixel2png` `SIGABRT` stack trace.
+- [CLI abort trace diagnostics](cli/abort-trace.md) defines the CLI-layer ownership, current converter consumers, non-consuming `lsqa` boundary, controls, platform behavior, representative output, reliability, performance, output-quality boundary, and test coverage of the `SIGABRT` stack trace.
 
 ## Quality
 
