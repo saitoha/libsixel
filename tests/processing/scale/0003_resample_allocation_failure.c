@@ -10,6 +10,7 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
@@ -118,6 +119,8 @@ test_scale_0003_resample_alloc_failure(int argc, char **argv)
 
     status = SIXEL_FALSE;
     allocator = NULL;
+    memset(float_src, 0, sizeof(float_src));
+    memset(byte_src, 0, sizeof(byte_src));
     live_allocation_baseline = 0u;
     sraf_failure_size = 0u;
     sraf_failure_count = 0u;

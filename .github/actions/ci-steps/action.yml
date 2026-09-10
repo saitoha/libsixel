@@ -194,17 +194,20 @@ runs:
         sync_files: runner-to-vm
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
+          if command -v ${{ fromJSON(inputs.matrix_json).extra_packages || '' }} >/dev/null 2>&1; then
+            exit 0
+          fi
           for attempt in 1 2 3; do
-            # Refresh and install belong to one retry boundary because either
-            # operation can fail while a Haiku package mirror is unavailable.
-            if pkgman refresh &&
-                pkgman install -y ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}; then
+            # Prefer the VM's cached repository metadata. A forced refresh
+            # makes an otherwise usable image depend on every mirror checksum.
+            if pkgman install -y ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}; then
               break
             fi
             if [ "$attempt" -eq 3 ]; then
-              echo "pkgman refresh/install failed after ${attempt} attempts" >&2
+              echo "pkgman install failed after ${attempt} attempts" >&2
               exit 1
             fi
+            pkgman refresh || true
             sleep $((attempt * 10))
           done
 

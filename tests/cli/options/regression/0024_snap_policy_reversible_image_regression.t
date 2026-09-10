@@ -6,6 +6,11 @@
 
 set -eux
 
+# OpenBSD rand() is non-deterministic by default, so pin the unrelated
+# Kmeans initializer while comparing independent converter processes.
+SIXEL_PALETTE_KMEANS_SEED=1
+export SIXEL_PALETTE_KMEANS_SEED
+
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"
     exit 0
