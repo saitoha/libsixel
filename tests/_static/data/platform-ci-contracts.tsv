@@ -1,0 +1,18 @@
+# coverage	label	buildtool	runner	exec_type	msystem	required-token-1	required-token-2
+WPATH-01	Meson-cmd-x86_64-msvc-x86_64	meson	windows-latest	cmd	-	-	-
+WPATH-01	Autotools-msys2-msys-msvc	autotools	windows-latest	msys2	MSYS	CC=cl	--host=x86_64-pc-windows-msvc
+WPATH-01	Autotools-msys2-msys-vs_clangcl	autotools	windows-latest	msys2	MSYS	CC=clang-cl	--host=x86_64-pc-windows-msvc
+WPATH-01	Autotools-cygwin64-msvc	autotools	windows-latest	cygwin	-	CC=cl	--host=x86_64-pc-windows-msvc
+WPATH-01	Autotools-cygwin64-clangcl	autotools	windows-latest	cygwin	-	CC=clang-cl	--host=x86_64-pc-windows-msvc
+WPATH-01	Autotools-cygwin64-clang_msvc_abi	autotools	windows-latest	cygwin	-	CC="clang --driver-mode=cl"	--host=x86_64-pc-windows-msvc
+WPATH-01	Autotools-msys2-clang64	autotools	windows-latest	msys2	CLANG64	CC=clang	mingw-w64-clang-x86_64-toolchain
+WPATH-01	Autotools-msys2-mingw32	autotools	windows-latest	msys2	MINGW32	mingw-w64-i686-toolchain	-
+WPATH-01	Autotools-msys2-ucrt64-coverage	autotools	windows-latest	msys2	UCRT64	mingw-w64-ucrt-x86_64-toolchain	--enable-gcov
+WPATH-01	Autotools-msys2-msys-gcc-coverage	autotools	windows-latest	msys2	MSYS	gcc	--enable-gcov
+WPATH-01	Meson-cygwin64-gcc-unity	meson	windows-latest	cygwin	-	-Dunity=on	-
+WPATH-01	Autotools-ubuntu-x86_64-mingw-w64-x86_64-win32-wine64-static	autotools	ubuntu-latest	bash	-	SIXEL_RUNTIME=wine	--host=x86_64-w64-mingw32
+WPATH-01	Autotools-ubuntu-aarch64-emscripten-static	autotools	ubuntu-24.04-arm	bash	-	--host=wasm32-unknown-emscripten	--with-shebang-file="$PWD/build-aux/shebang/node"
+WPATH-01	Autotools-macos-aarch64-emscripten-static	autotools	macos-latest	bash	-	--host=wasm32-unknown-emscripten	--with-shebang-file="$PWD/build-aux/shebang/node"
+SOL-02	Autotools-solaris-11.4-x86_64	autotools	ubuntu-latest	solaris-vm	-	--disable-dependency-tracking	make: gmake
+HAIKU-02	Autotools-haiku-r1beta5-x86-64	autotools	ubuntu-latest	cross-platform-vms	-	cp_os: haiku	cp_version: r1beta5
+HAIKU-02	Meson-haiku-r1beta5-x86-64	meson	ubuntu-latest	cross-platform-vms	-	cp_os: haiku	check_target: test --num-processes 1

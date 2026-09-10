@@ -191,6 +191,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/timeline/0003_timeline_clock_origin.c \
 	processing/timeline/0004_timeline_log_path_environment_probe.c \
 	processing/timeline/0005_timeline_line_policy_environment.c \
+	platform/path/0001_path_to_libc_runtime.c \
 	processing/threadpool/0001_threadpool_service.c \
 	processing/threadpool/0002_thread_default_counts.c \
 	processing/scale/0001_parallel_factor_environment.c \
@@ -314,7 +315,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
 	$(top_srcdir)/src/lookup-policy.c \
 	$(top_srcdir)/converters/aborttrace.c \
-	$(top_srcdir)/converters/cli.c
+	$(top_srcdir)/converters/cli.c $(top_srcdir)/converters/path.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
@@ -396,6 +397,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0003_timeline_clock_origin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0004_timeline_log_path_environment_probe.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0005_timeline_line_policy_environment.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/path/test_runner-0001_path_to_libc_runtime.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0001_threadpool_service.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0002_thread_default_counts.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0001_parallel_factor_environment.$(OBJEXT) \
@@ -514,7 +516,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__objects_1) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-aborttrace.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-cli.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-cli.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-path.$(OBJEXT)
 am__objects_2 =  \
 	$(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_OBJECTS =  \
@@ -583,6 +586,7 @@ am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po \
+	$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po \
 	$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po \
 	./$(DEPDIR)/test_runner-test_runner.Po \
@@ -651,6 +655,7 @@ am__depfiles_remade =  \
 	loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po \
 	loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
+	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po \
@@ -1553,6 +1558,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_TIMELINE_LOG_PATH_ENVIRONMENT_PROBE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_TIMELINE_LINE_POLICY_ENVIRONMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PATH_TO_LIBC_RUNTIME \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_THREADPOOL_SERVICE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PARALLEL_FACTOR_ENVIRONMENT \
@@ -1765,6 +1771,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0003_timeline_clock_origin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0004_timeline_log_path_environment_probe.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0005_timeline_line_policy_environment.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/path/0001_path_to_libc_runtime.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0001_threadpool_service.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0002_thread_default_counts.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0001_parallel_factor_environment.c \
@@ -1888,7 +1895,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(TEST_RUNNER_LOOKUP_POLICY_SOURCE) \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/aborttrace.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/cli.c
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/cli.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/path.c
 
 @OPENVMS_GNV_FALSE@test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @OPENVMS_GNV_FALSE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_runner_CFLAGS) \
@@ -1925,8 +1933,12 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-suite.sh \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-platform-compat.sh \
+    _static/sh/staticcheck-platform-ci-contracts.sh \
     _static/sh/staticcheck-windows-path-compat.sh \
     _static/data/platform-macro-classification.tsv \
+    _static/data/platform-non-c-classification.tsv \
+    _static/data/native-windows-discriminator.tsv \
+    _static/data/platform-ci-contracts.tsv \
     _static/sh/staticcheck-openvms-compat.sh \
     _static/sh/staticcheck-ci-doc-public-surface.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \
@@ -2344,6 +2356,15 @@ processing/timeline/test_runner-0004_timeline_log_path_environment_probe.$(OBJEX
 processing/timeline/test_runner-0005_timeline_line_policy_environment.$(OBJEXT):  \
 	processing/timeline/$(am__dirstamp) \
 	processing/timeline/$(DEPDIR)/$(am__dirstamp)
+platform/path/$(am__dirstamp):
+	@$(MKDIR_P) platform/path
+	@: >>platform/path/$(am__dirstamp)
+platform/path/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) platform/path/$(DEPDIR)
+	@: >>platform/path/$(DEPDIR)/$(am__dirstamp)
+platform/path/test_runner-0001_path_to_libc_runtime.$(OBJEXT):  \
+	platform/path/$(am__dirstamp) \
+	platform/path/$(DEPDIR)/$(am__dirstamp)
 processing/threadpool/$(am__dirstamp):
 	@$(MKDIR_P) processing/threadpool
 	@: >>processing/threadpool/$(am__dirstamp)
@@ -2835,6 +2856,9 @@ $(top_builddir)/converters/test_runner-aborttrace.$(OBJEXT):  \
 $(top_builddir)/converters/test_runner-cli.$(OBJEXT):  \
 	$(top_builddir)/converters/$(am__dirstamp) \
 	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/converters/test_runner-path.$(OBJEXT):  \
+	$(top_builddir)/converters/$(am__dirstamp) \
+	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/amalgamation/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/amalgamation
 	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
@@ -2873,6 +2897,7 @@ mostlyclean-compile:
 	-rm -f loader/libwebp/*.$(OBJEXT)
 	-rm -f loader/quicklook/*.$(OBJEXT)
 	-rm -f loader/wic/*.$(OBJEXT)
+	-rm -f platform/path/*.$(OBJEXT)
 	-rm -f processing/chunk/*.$(OBJEXT)
 	-rm -f processing/decoder/*.$(OBJEXT)
 	-rm -f processing/dither/*.$(OBJEXT)
@@ -2896,6 +2921,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_runner-test_runner.Po@am__quote@ # am--include-marker
@@ -2964,6 +2990,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
@@ -4228,6 +4255,20 @@ processing/timeline/test_runner-0005_timeline_line_policy_environment.obj: proce
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/timeline/0005_timeline_line_policy_environment.c' object='processing/timeline/test_runner-0005_timeline_line_policy_environment.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/timeline/test_runner-0005_timeline_line_policy_environment.obj `if test -f 'processing/timeline/0005_timeline_line_policy_environment.c'; then $(CYGPATH_W) 'processing/timeline/0005_timeline_line_policy_environment.c'; else $(CYGPATH_W) '$(srcdir)/processing/timeline/0005_timeline_line_policy_environment.c'; fi`
+
+platform/path/test_runner-0001_path_to_libc_runtime.o: platform/path/0001_path_to_libc_runtime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/path/test_runner-0001_path_to_libc_runtime.o -MD -MP -MF platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Tpo -c -o platform/path/test_runner-0001_path_to_libc_runtime.o `test -f 'platform/path/0001_path_to_libc_runtime.c' || echo '$(srcdir)/'`platform/path/0001_path_to_libc_runtime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Tpo platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/path/0001_path_to_libc_runtime.c' object='platform/path/test_runner-0001_path_to_libc_runtime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/path/test_runner-0001_path_to_libc_runtime.o `test -f 'platform/path/0001_path_to_libc_runtime.c' || echo '$(srcdir)/'`platform/path/0001_path_to_libc_runtime.c
+
+platform/path/test_runner-0001_path_to_libc_runtime.obj: platform/path/0001_path_to_libc_runtime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/path/test_runner-0001_path_to_libc_runtime.obj -MD -MP -MF platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Tpo -c -o platform/path/test_runner-0001_path_to_libc_runtime.obj `if test -f 'platform/path/0001_path_to_libc_runtime.c'; then $(CYGPATH_W) 'platform/path/0001_path_to_libc_runtime.c'; else $(CYGPATH_W) '$(srcdir)/platform/path/0001_path_to_libc_runtime.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Tpo platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/path/0001_path_to_libc_runtime.c' object='platform/path/test_runner-0001_path_to_libc_runtime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/path/test_runner-0001_path_to_libc_runtime.obj `if test -f 'platform/path/0001_path_to_libc_runtime.c'; then $(CYGPATH_W) 'platform/path/0001_path_to_libc_runtime.c'; else $(CYGPATH_W) '$(srcdir)/platform/path/0001_path_to_libc_runtime.c'; fi`
 
 processing/threadpool/test_runner-0001_threadpool_service.o: processing/threadpool/0001_threadpool_service.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/threadpool/test_runner-0001_threadpool_service.o -MD -MP -MF processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Tpo -c -o processing/threadpool/test_runner-0001_threadpool_service.o `test -f 'processing/threadpool/0001_threadpool_service.c' || echo '$(srcdir)/'`processing/threadpool/0001_threadpool_service.c
@@ -5895,6 +5936,20 @@ $(top_builddir)/converters/test_runner-cli.obj: $(top_builddir)/converters/cli.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
 
+$(top_builddir)/converters/test_runner-path.o: $(top_builddir)/converters/path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-path.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Tpo -c -o $(top_builddir)/converters/test_runner-path.o `test -f '$(top_builddir)/converters/path.c' || echo '$(srcdir)/'`$(top_builddir)/converters/path.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/path.c' object='$(top_builddir)/converters/test_runner-path.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-path.o `test -f '$(top_builddir)/converters/path.c' || echo '$(srcdir)/'`$(top_builddir)/converters/path.c
+
+$(top_builddir)/converters/test_runner-path.obj: $(top_builddir)/converters/path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-path.obj -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Tpo -c -o $(top_builddir)/converters/test_runner-path.obj `if test -f '$(top_builddir)/converters/path.c'; then $(CYGPATH_W) '$(top_builddir)/converters/path.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/path.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/path.c' object='$(top_builddir)/converters/test_runner-path.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-path.obj `if test -f '$(top_builddir)/converters/path.c'; then $(CYGPATH_W) '$(top_builddir)/converters/path.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/path.c'; fi`
+
 $(top_builddir)/amalgamation/test_runner-sixel.o: $(top_builddir)/amalgamation/sixel.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/test_runner-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo -c -o $(top_builddir)/amalgamation/test_runner-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
@@ -6282,6 +6337,8 @@ distclean-generic:
 	-$(am__rm_f) loader/quicklook/$(am__dirstamp)
 	-$(am__rm_f) loader/wic/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/wic/$(am__dirstamp)
+	-$(am__rm_f) platform/path/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) platform/path/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(am__dirstamp)
 	-$(am__rm_f) processing/decoder/$(DEPDIR)/$(am__dirstamp)
@@ -6328,6 +6385,7 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
@@ -6396,6 +6454,7 @@ distclean: distclean-am
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
+	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
@@ -6572,6 +6631,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
@@ -6640,6 +6700,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
+	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po

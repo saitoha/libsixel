@@ -12,11 +12,18 @@
 # Policy: docs/misc/platforms/posix-runtimes.md
 # Policy: docs/misc/platforms/haiku.md
 # Policy: docs/misc/platforms/solaris.md
+# Coverage: PL-01 PL-02 PL-03 PL-04 PL-05 OV-06 WIN-01 WIN-02 MSVC-01
+# Coverage: MSVC-02
+# Coverage: MW-01 MW-02 CYG-01 CYG-02 EM-01 EM-02 COSMO-01
+# Coverage: MAC-01 MAC-02 POSIX-01 POSIX-02 HAIKU-01 HAIKU-02
+# Coverage: SOL-01 SOL-02
 
 set -eu
 
 src_root=$1
 classification="$src_root/tests/_static/data/platform-macro-classification.tsv"
+non_c_classification="$src_root/tests/_static/data/platform-non-c-classification.tsv"
+native_windows_inventory="$src_root/tests/_static/data/native-windows-discriminator.tsv"
 ledger="$src_root/docs/misc/platforms/README.md"
 failed=0
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-platform-compat-XXXXXX")
@@ -47,6 +54,10 @@ require_fixed()
 echo "1..1"
 
 test -f "$classification" || fail "macro classification is missing"
+test -f "$non_c_classification" ||
+    fail "non-C platform classification is missing"
+test -f "$native_windows_inventory" ||
+    fail "native Windows discriminator inventory is missing"
 
 awk -F '\t' '
     /^#/ { next }
@@ -129,6 +140,145 @@ while IFS="$tab" read -r macro policy; do
         fail "platform ledger does not link $policy"
 done < "$tmpdir/platform-macros"
 
+# Non-C compatibility selectors cannot be inferred from preprocessor spelling.
+# Keep their owning source and policy explicit so shell, CI, and harness rules
+# participate in the same bidirectional audit as C macros.
+awk -F '\t' '
+    /^#/ { next }
+    NF != 4 { print "invalid field count: " $0; next }
+    $2 !~ /^(build-driver|build-tool|package-tool|runtime-launch|shell-tool|test-harness)$/ {
+        print "invalid non-C class for " $1 ": " $2
+    }
+    $3 !~ /^docs\/misc\/platforms\/[A-Za-z0-9_.-]+\.md$/ {
+        print "non-C marker has no platform policy: " $1
+    }
+    seen[$1 "\t" $4]++ {
+        print "duplicate non-C marker/source pair: " $1 " -> " $4
+    }
+' "$non_c_classification" > "$tmpdir/non-c-errors"
+test ! -s "$tmpdir/non-c-errors" || {
+    sed 's/^/# /' "$tmpdir/non-c-errors" >&2
+    failed=1
+}
+tab=$(printf '\t')
+while IFS="$tab" read -r marker class policy source; do
+    case "$marker" in
+      ''|'#'*) continue ;;
+    esac
+    : "$class"
+    test -f "$src_root/$policy" || {
+        fail "$marker policy does not exist: $policy"
+        continue
+    }
+    test -f "$src_root/$source" || {
+        fail "$marker source does not exist: $source"
+        continue
+    }
+    grep -F -- "$marker" "$src_root/$policy" >/dev/null 2>&1 ||
+        fail "$policy does not mention non-C marker: $marker"
+    grep -F -- "$marker" "$src_root/$source" >/dev/null 2>&1 ||
+        fail "$source does not retain non-C marker: $marker"
+done < "$non_c_classification"
+
+# Every platform coverage row must identify the exact assertion-bearing test,
+# not merely a file with a broad reciprocal policy link.
+find "$src_root/docs/misc/platforms" -type f -name '*.md' -exec awk '
+    $0 == "<!-- test-coverage: enforced -->" { enforced=1; next }
+    enforced != 0 && $0 ~ /^\| [A-Z][A-Z0-9]*-[0-9]+ \|/ {
+        split($0, fields, "|")
+        coverage=fields[2]
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", coverage)
+        line=$0
+        while (match(line,
+                     /\[tests\/[A-Za-z0-9_.\/-]+\]\([^()[:space:]]+\)/)) {
+            token=substr(line, RSTART, RLENGTH)
+            separator=index(token, "](")
+            test_path=substr(token, 2, separator - 2)
+            print coverage "|" test_path
+            line=substr(line, RSTART + RLENGTH)
+        }
+    }
+' {} + | LC_ALL=C sort -u > "$tmpdir/doc-coverage-pairs"
+
+find "$src_root/tests" -type f \
+    \( -name '*.t' -o -name '*.c' -o -name '*.sh' \) -exec awk \
+    -v src_root="$src_root/" '
+    /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Coverage:/ {
+        line=$0
+        sub(/^[[:space:]]*(#|\/\/|\*)[[:space:]]*Coverage:[[:space:]]*/, "", line)
+        count=split(line, fields, /[[:space:]]+/)
+        test_path=substr(FILENAME, length(src_root) + 1)
+        for (field_index=1; field_index <= count; field_index++) {
+            if (fields[field_index] ~ /^[A-Z][A-Z0-9]*-[0-9]+$/) {
+                print fields[field_index] "|" test_path
+            }
+        }
+    }
+' {} + | LC_ALL=C sort -u > "$tmpdir/test-coverage-pairs"
+comm -23 "$tmpdir/doc-coverage-pairs" "$tmpdir/test-coverage-pairs" \
+    > "$tmpdir/missing-coverage-assertions"
+comm -13 "$tmpdir/doc-coverage-pairs" "$tmpdir/test-coverage-pairs" \
+    > "$tmpdir/extra-coverage-assertions"
+test ! -s "$tmpdir/missing-coverage-assertions" || {
+    sed 's/^/# platform coverage row lacks test assertion: /' \
+        "$tmpdir/missing-coverage-assertions" >&2
+    failed=1
+}
+test ! -s "$tmpdir/extra-coverage-assertions" || {
+    sed 's/^/# platform test assertion lacks coverage row: /' \
+        "$tmpdir/extra-coverage-assertions" >&2
+    failed=1
+}
+
+# Count complete native-Windows preprocessor directives by owning file. This
+# catches a single copy losing the Cygwin/MSYS exclusions or WITH_WINPTHREAD
+# boundary while visually similar copies remain elsewhere.
+find "$src_root/src" "$src_root/converters" "$src_root/assessment" \
+    "$src_root/include" "$src_root/examples" "$src_root/fuzz" -type f \
+    \( -name '*.c' -o -name '*.h' -o -name '*.m' \) -exec awk \
+    -v src_root="$src_root/" '
+function inspect(text, flat) {
+    flat=text
+    gsub(/[[:space:]]+/, " ", flat)
+    if (flat ~ /defined\(_WIN32\)/ &&
+        flat ~ /!defined\(__CYGWIN__\)/ &&
+        flat ~ /!defined\(__MSYS__\)/) {
+        counts[FILENAME]++
+    }
+}
+/^[[:space:]]*#[[:space:]]*(if|elif)/ {
+    directive=$0
+    active=1
+    if ($0 !~ /\\[[:space:]]*$/) {
+        inspect(directive)
+        active=0
+    }
+    next
+}
+active != 0 {
+    directive=directive " " $0
+    if ($0 !~ /\\[[:space:]]*$/) {
+        inspect(directive)
+        active=0
+    }
+}
+END {
+    for (path in counts) {
+        relative=substr(path, length(src_root) + 1)
+        print relative "\t" counts[path]
+    }
+}
+' {} + | LC_ALL=C sort > "$tmpdir/native-windows-actual"
+awk -F '\t' '!/^#/ { print }' "$native_windows_inventory" |
+    LC_ALL=C sort > "$tmpdir/native-windows-expected"
+cmp -s "$tmpdir/native-windows-expected" \
+    "$tmpdir/native-windows-actual" || {
+    echo "# native Windows discriminator inventory differs:" >&2
+    diff -u "$tmpdir/native-windows-expected" \
+        "$tmpdir/native-windows-actual" >&2 || :
+    failed=1
+}
+
 require_fixed '#if defined(WITH_WINPTHREAD) && WITH_WINPTHREAD' src/threading.c
 require_fixed '#elif defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__)' src/threading.c
 require_fixed 'GetEnvironmentVariableA(name, NULL, 0)' src/compat_stub.c
@@ -146,12 +296,22 @@ test -n "$msvc_line" && test -n "$compiler_line" &&
 require_fixed 'written = _vscprintf(format, args_copy);' src/compat_stub.c
 require_fixed 'msvc_result = _vsnprintf_s(buffer,' src/compat_stub.c
 require_fixed 'result = _stat64i32(libc_path,' src/compat_stub.c
+require_fixed '# if defined(_USE_32BIT_TIME_T)' src/compat_stub.c
+require_fixed 'result = _stat32(libc_path,' src/compat_stub.c
 require_fixed 'handle = _beginthreadex(NULL, 0,' src/threading.c
+# The shell variables are part of the configure.ac text being asserted.
+# shellcheck disable=SC2016
+require_fixed 'AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"' configure.ac
+require_fixed 'NM="dumpbin -symbols"' configure.ac
+require_fixed 'STRIP=:' configure.ac
+require_fixed 'RANLIB=:' configure.ac
 
 require_fixed '#  define SIXEL_PRINTF_ARCHETYPE __MINGW_PRINTF_FORMAT' src/compat_stub.h
 require_fixed '_CRTIMP int __cdecl _setmode(int fd, int mode);' src/compat_stub.c
 require_fixed '#  define SIXEL_COMPAT_API __declspec(dllexport)' src/compat_stub.h
 require_fixed "uuid = cc.find_library('uuid', required: false)" meson.build
+require_fixed 'uuid.lib' configure.ac
+require_fixed '-luuid' configure.ac
 
 require_fixed 'cygwin_conv_path(CCP_WIN_A_TO_POSIX, path, NULL, 0)' src/path.c
 require_fixed 'cygwin_conv_path(CCP_WIN_A_TO_POSIX, path, NULL, 0)' converters/path.c
@@ -170,6 +330,16 @@ require_fixed "emscripten_fetch_flag = '-sFETCH=1'" meson.build
 require_fixed 'emscripten_get_compiler_setting("NODERAWFS")' src/path.c
 require_fixed 'fetch = emscripten_fetch(&attr, url);' src/chunk.c
 require_fixed '#if defined(O_EXCL) && !defined(__EMSCRIPTEN__)' src/decoder.c
+require_fixed 'AC_PATH_PROG([RANLIB], [emranlib], [ranlib])' configure.ac
+require_fixed 'AC_PATH_PROGS([AR], [emar emer], [ar])' configure.ac
+require_fixed "ar = 'emar'" build-aux/meson-cross/emscripten
+require_fixed "ranlib = 'emranlib'" build-aux/meson-cross/emscripten
+require_fixed 'install-emscripten-sidecar.sh' converters/meson.build
+require_fixed 'img2sixel-node-launcher.in' converters/meson.build
+require_fixed 'sixel2png-node-launcher.in' converters/meson.build
+require_fixed '!defined(_WIN32) && !defined(__EMSCRIPTEN__)' src/tty.c
+require_fixed 'HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)' src/tty.c
+require_fixed '#if defined(__EMSCRIPTEN__)' src/options.c
 
 require_fixed 'return IsWindows() ? 1 : 0;' src/path.c
 require_fixed 'return IsWindows() ? 1 : 0;' converters/path.c
@@ -179,6 +349,14 @@ require_fixed "add_project_arguments('-D_DARWIN_C_SOURCE', language: 'c')" meson
 require_fixed '# define _DARWIN_C_SOURCE' src/threading.c
 require_fixed '# undef vsnprintf' src/compat_stub.c
 require_fixed 'mib[1] = HW_AVAILCPU;' src/threading.c
+require_fixed 'mib[1] = HW_NCPU;' src/threading.c
+darwin_define_line=$(awk '/# define _DARWIN_C_SOURCE/ { print NR; exit }' \
+    "$src_root/src/threading.c")
+darwin_header_line=$(awk '/#  include <sys\/sysctl.h>/ { print NR; exit }' \
+    "$src_root/src/threading.c")
+test -n "$darwin_define_line" && test -n "$darwin_header_line" &&
+    test "$darwin_define_line" -lt "$darwin_header_line" ||
+    fail "_DARWIN_C_SOURCE must precede the Darwin sysctl header"
 
 require_fixed '# define _BSD_SOURCE' src/threading.c
 require_fixed '# define _NETBSD_SOURCE' src/threading.c
@@ -186,6 +364,12 @@ require_fixed '# define _DRAGONFLY_SOURCE' src/threading.c
 require_fixed 'fetchIO *fetch_stream = NULL;' src/chunk.c
 require_fixed 'fetched = fetchIO_read(fetch_stream, bucket, sizeof(bucket));' src/chunk.c
 require_fixed 'HAVE_POSIX_SPAWNP && !defined(__FreeBSD__) && !defined(__DragonFly__)' src/loader-gnome-thumbnailer.c
+require_fixed '#if defined(__OpenBSD__)' src/threading.c
+require_fixed '#if defined(__FreeBSD__) || defined(__DragonFly__)' \
+    src/compat_stub.c
+require_fixed '# if defined(__GLIBC__) && defined(_GNU_SOURCE)' \
+    src/compat_stub.c
+require_fixed 'defined(__ANDROID__))' converters/aborttrace.c
 
 require_fixed '# if HAVE_EXECINFO_H' converters/aborttrace.c
 require_fixed '#  if HAVE_BACKTRACE' converters/aborttrace.c
@@ -198,6 +382,19 @@ require_fixed 'SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE' tests/loader/builtin/1021_l
 require_fixed 'meson test -C builddir --no-rebuild --num-processes 1' .github/actions/ci-steps/action.yml
 require_fixed "--slice \"\${slice}/\${slice_count}\" --print-errorlogs" .github/actions/ci-steps/action.yml
 require_fixed 'if pkgman refresh &&' .github/actions/ci-steps/action.yml
+require_fixed 'slice_count=16' .github/actions/ci-steps/action.yml
+require_fixed 'for attempt in 1 2 3; do' .github/actions/ci-steps/action.yml
+haiku_psd_skip_count=$(grep -lF 'SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE' \
+    "$src_root"/tests/loader/builtin/*.t | awk 'END { print NR }')
+test "$haiku_psd_skip_count" -eq 5 ||
+    fail "expected 5 narrow Haiku PSD skips, found $haiku_psd_skip_count"
+# The shell variable is part of the test text being asserted.
+# shellcheck disable=SC2016
+require_fixed 'build_os="${RUNTIME_ENV_BUILD_OS-unknown}"' \
+    tests/loader/libwebp/0164_loader_libwebp_sigint_pipeline_stop_trace.t
+# shellcheck disable=SC2016
+require_fixed 'build_os="${RUNTIME_ENV_BUILD_OS-unknown}"' \
+    tests/loader/builtin/1249_loader_builtin_gif_sigint_pipeline_stop_trace.t
 
 require_fixed 'volatile int jpeg_failed;' src/loader-libjpeg.c
 require_fixed '#if HAVE_SYS_TTYCOM_H' src/tty.c
@@ -211,6 +408,118 @@ require_fixed 'COVERAGE_AWK="nawk"' .github/actions/ci-steps/action.yml
 require_fixed 'label: Autotools-solaris-11.4-x86_64' .github/workflows/ci.yml
 require_fixed '--disable-dependency-tracking' .github/workflows/ci.yml
 require_fixed 'make: gmake' .github/workflows/ci.yml
+require_fixed '#if defined(_MSC_VER)' assessment/lsqa.c
+require_fixed 'errno_t rc;' assessment/lsqa.c
+
+# Solaris awk lacks the GNU third match() argument. Reject its reintroduction
+# across project-owned shell, awk, test, workflow, and build-generator code.
+find "$src_root/tests" "$src_root/tools" "$src_root/build-aux" \
+    "$src_root/.github" -type f \
+    \( -name '*.sh' -o -name '*.sh.in' -o -name '*.t' -o -name '*.awk' \
+       -o -name '*.yml' -o -name '*.yaml' -o -name '*.am' \) \
+    ! -name config.guess ! -name config.sub -exec awk '
+function reset_call() {
+    in_call=0
+    call_depth=0
+    call_commas=0
+    in_string=0
+    in_regex=0
+    escaped=0
+    expect_operand=0
+}
+function inspect_fragment(text, file, line_number,
+                          remaining, open_at, cursor, character) {
+    cursor=1
+    while (cursor <= length(text)) {
+        if (in_call == 0) {
+            remaining=substr(text, cursor)
+            if (match(remaining, /(^|[^A-Za-z0-9_])match[[:space:]]*\(/) == 0) {
+                return
+            }
+            open_at=cursor + RSTART + RLENGTH - 2
+            in_call=1
+            call_depth=1
+            call_commas=0
+            in_string=0
+            in_regex=0
+            escaped=0
+            expect_operand=1
+            call_file=file
+            call_line=line_number
+            cursor=open_at + 1
+            continue
+        }
+        character=substr(text, cursor, 1)
+        if (in_string != 0) {
+            if (escaped != 0) {
+                escaped=0
+            } else if (character == "\\") {
+                escaped=1
+            } else if (character == "\"") {
+                in_string=0
+                expect_operand=0
+            }
+            cursor++
+            continue
+        }
+        if (in_regex != 0) {
+            if (escaped != 0) {
+                escaped=0
+            } else if (character == "\\") {
+                escaped=1
+            } else if (character == "/") {
+                in_regex=0
+                expect_operand=0
+            }
+            cursor++
+            continue
+        }
+        if (character == "\"") {
+            in_string=1
+        } else if (character == "/" && expect_operand != 0) {
+            in_regex=1
+        } else if (character == "(") {
+            call_depth++
+            expect_operand=1
+        } else if (character == ")") {
+            if (call_depth == 1) {
+                if (call_commas >= 2) {
+                    print call_file ":" call_line ": match() has three arguments"
+                }
+                reset_call()
+            } else {
+                call_depth--
+                expect_operand=0
+            }
+        } else if (character == ",") {
+            if (call_depth == 1) {
+                call_commas++
+            }
+            expect_operand=1
+        } else if (character !~ /[[:space:]]/) {
+            expect_operand=0
+        }
+        cursor++
+    }
+}
+FILENAME != previous_file {
+    reset_call()
+    previous_file=FILENAME
+}
+{
+    inspect_fragment($0 "\n", FILENAME, FNR)
+}
+END {
+    if (in_call != 0 && call_commas >= 2) {
+        print call_file ":" call_line ": unterminated three-argument match()"
+    }
+}
+' {} + > "$tmpdir/gnu-awk-capture-arrays"
+test ! -s "$tmpdir/gnu-awk-capture-arrays" || {
+    sed 's/^/# GNU awk capture-array syntax: /' \
+        "$tmpdir/gnu-awk-capture-arrays" >&2
+    failed=1
+}
 
 test "$failed" -eq 0 || {
     echo "not ok 1 - platform compatibility ledger and seams are synchronized"

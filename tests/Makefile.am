@@ -293,6 +293,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
     -DBUILD_TEST_0004_TIMELINE_LOG_PATH_ENVIRONMENT_PROBE \
     -DBUILD_TEST_0005_TIMELINE_LINE_POLICY_ENVIRONMENT \
+    -DBUILD_TEST_0001_PATH_TO_LIBC_RUNTIME \
     -DBUILD_TEST_0001_THREADPOOL_SERVICE \
     -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
     -DBUILD_TEST_0001_PARALLEL_FACTOR_ENVIRONMENT \
@@ -480,6 +481,7 @@ test_runner_SOURCES = test_runner.c \
     processing/timeline/0003_timeline_clock_origin.c \
     processing/timeline/0004_timeline_log_path_environment_probe.c \
     processing/timeline/0005_timeline_line_policy_environment.c \
+    platform/path/0001_path_to_libc_runtime.c \
     processing/threadpool/0001_threadpool_service.c \
     processing/threadpool/0002_thread_default_counts.c \
     processing/scale/0001_parallel_factor_environment.c \
@@ -603,7 +605,8 @@ test_runner_SOURCES = test_runner.c \
     $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
     $(TEST_RUNNER_LOOKUP_POLICY_SOURCE) \
     $(top_srcdir)/converters/aborttrace.c \
-    $(top_srcdir)/converters/cli.c
+    $(top_srcdir)/converters/cli.c \
+    $(top_srcdir)/converters/path.c
 test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
     $(LIBWEBP_CFLAGS) \
     $(GDK_PIXBUF_CFLAGS) \
@@ -2335,8 +2338,12 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-suite.sh \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-platform-compat.sh \
+    _static/sh/staticcheck-platform-ci-contracts.sh \
     _static/sh/staticcheck-windows-path-compat.sh \
     _static/data/platform-macro-classification.tsv \
+    _static/data/platform-non-c-classification.tsv \
+    _static/data/native-windows-discriminator.tsv \
+    _static/data/platform-ci-contracts.tsv \
     _static/sh/staticcheck-openvms-compat.sh \
     _static/sh/staticcheck-ci-doc-public-surface.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \

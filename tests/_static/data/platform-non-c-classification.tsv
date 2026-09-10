@@ -1,0 +1,12 @@
+# marker	class	policy	source
+OPENVMS_TEST_JOBS	test-harness	docs/misc/platforms/openvms.md	tests/Makefile.am
+RUNTIME_ENV_IS_OPENVMS	test-harness	docs/misc/platforms/openvms.md	tests/Makefile.am
+RUNTIME_ENV_BUILD_OS	test-harness	docs/misc/platforms/haiku.md	tests/Makefile.am
+SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE	test-harness	docs/misc/platforms/haiku.md	.github/workflows/ci.yml
+--slice	test-harness	docs/misc/platforms/haiku.md	.github/actions/ci-steps/action.yml
+pkgman refresh	package-tool	docs/misc/platforms/haiku.md	.github/actions/ci-steps/action.yml
+MSYS2_ARG_CONV_EXCL	build-driver	docs/misc/platforms/windows-paths.md	.github/actions/ci-steps/action.yml
+SIXEL_RUNTIME	runtime-launch	docs/misc/platforms/windows-paths.md	.github/workflows/ci.yml
+/usr/xpg4/bin/awk	shell-tool	docs/misc/platforms/solaris.md	.github/actions/ci-steps/action.yml
+--disable-dependency-tracking	build-driver	docs/misc/platforms/solaris.md	.github/workflows/ci.yml
+gmake	build-tool	docs/misc/platforms/solaris.md	.github/workflows/ci.yml

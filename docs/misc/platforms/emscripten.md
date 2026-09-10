@@ -34,7 +34,7 @@ BSD libfetch is replaced by the synchronous `emscripten_fetch` adapter. Its `-sF
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | EM-01 | Emscripten toolchain intent remains ahead of generic compiler discovery, and the build retains link-only `NODERAWFS`, compiler-settings, and Fetch flags. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
-| EM-02 | Runtime path handling queries `NODERAWFS`, network fetching uses `emscripten_fetch`, and terminal/temp-file exclusions remain explicit. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| EM-02 | Runtime path handling queries `NODERAWFS`, network fetching uses `emscripten_fetch`, and terminal/temp-file exclusions remain explicit. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
 
 ### Coverage boundary
 
