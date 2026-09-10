@@ -18,7 +18,7 @@ message=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_JOB_FAILURE=init \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=4 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
-    "${TOP_SRCDIR}/images/snake.png" 2>&1 >"${output}") || {
+    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >"${output}") || {
     echo "not ok 1 - palette worker init failure stopped encoding"
     exit 0
 }

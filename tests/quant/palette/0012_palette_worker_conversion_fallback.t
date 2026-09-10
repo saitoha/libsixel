@@ -19,7 +19,7 @@ actual="${ARTIFACT_LOCAL_DIR}/palette-worker-convert-$$.six"
 _SIXEL_TEST_PALETTE_JOB_FAILURE=init \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=4 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable -Xoklab \
-    "${TOP_SRCDIR}/images/snake.png" >"${expected}" || {
+    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" >"${expected}" || {
     echo "not ok 1 - reference full-frame fallback failed"
     exit 0
 }
@@ -28,7 +28,7 @@ message=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_JOB_FAILURE=convert \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=4 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable -Xoklab \
-    "${TOP_SRCDIR}/images/snake.png" 2>&1 >"${actual}") || {
+    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >"${actual}") || {
     echo "not ok 1 - sampled conversion failure stopped encoding"
     exit 0
 }

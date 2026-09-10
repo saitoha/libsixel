@@ -183,6 +183,8 @@ Using top-level `make check` would re-enter the expensive library-object walk be
 | OV-04 | The native-link wrapper rejects unresolved-symbol diagnostics and unsupported arguments and verifies that the requested image exists. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 | OV-05 | Converter failures retain even OpenVMS condition severities with the inhibit-message bit, and the TAP driver accepts the documented mapped-error range. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 | OV-06 | `LIBSIXEL_OPENVMS` remains classified in the cross-platform macro ledger and this policy remains linked from the platform index. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| OV-07 | Byte-exact DCS assertions discard only GNV's trailing text-record newline, and converter-failure tests accept only the harness-defined mapped-error range. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+| OV-08 | Palette fallback tests use the bounded 64 x 64 fixture so redirected SIXEL output cannot exceed the demonstrated RMS record-size boundary before the fallback contract is observed. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 
 ### Coverage boundary
 
