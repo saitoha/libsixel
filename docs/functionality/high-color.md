@@ -46,13 +46,13 @@ High color is an alternate encoding path, not a larger value for `-p`.
 
 ## Measured quality, speed, and size
 
-The controlled comparison used `images/snake.png` at revision `24e46743fd78167db78ca9d72754e50b6a834947`. The baseline requested a fixed 256-color palette; the other run enabled `-I`. Both used the builtin loader, RGB palette space, 8-bit precision, high quality, no diffusion, no GPU, and the fast encoding policy. Quality and size used the original 600 by 450 image with one thread, and output was decoded through the direct RGBA path before `lsqa` assessment.
+The controlled comparison used `images/snake.png` at revision `a639171f5a3ab8207dbb5450edb8b0a000e1f1c0`. The baseline requested a fixed 256-color palette; the other run enabled `-I`. Both used the builtin loader, RGB palette space, 8-bit precision, high quality, no diffusion, no GPU, and the fast encoding policy. Quality and size used the original 600 by 450 image with one thread, and output was decoded through the direct RGBA path before `lsqa` assessment.
 
 Speed was measured separately on the same image scaled to 1920 by 1080. Each box contains 21 runs after two warmups for one `--threads` value from 2 through 12. A run begins at the first `encode/worker/worker_start` event and ends at the last `encode/worker/worker_done` event across all high-color passes. Loader, fixed-palette construction, dither before the first encode worker, and ordered writer work are outside the interval; waits for later band results after the first worker starts remain inside. One-thread mode emits no encode-worker events and is omitted rather than mixed with another timing boundary.
 
 ![MS-SSIM, mean Delta E00, runtime, and SIXEL byte size for fixed 256-color and high-color output](high-color/measurements/high-color-results.png)
 
-*Figure 3. Quality, encode-worker-window speed, and exact stream size for this fixture. Thread count is the speed panel's horizontal axis. Box centers are medians, boxes are interquartile ranges, whiskers extend to 1.5 times the IQR, and points are outliers. The 125.683 ms point at 12 threads is retained rather than hidden.*
+*Figure 3. Quality, encode-worker-window speed, and exact stream size for this fixture. Thread count is the speed panel's horizontal axis. Box centers are medians, boxes are interquartile ranges, whiskers extend to 1.5 times the IQR, and points are outliers.*
 
 | Mode | MS-SSIM | Mean Delta E00 | SIXEL bytes |
 | --- | ---: | ---: | ---: |
@@ -61,15 +61,15 @@ Speed was measured separately on the same image scaled to 1920 by 1080. Each box
 
 | Threads | Fixed 256-color median [Q1--Q3] | High color median [Q1--Q3] |
 | ---: | ---: | ---: |
-| 2 | 13.634 [13.590--13.773] ms | 56.103 [55.696--56.462] ms |
-| 3 | 47.870 [47.619--47.993] ms | 54.363 [54.013--54.546] ms |
-| 4 | 34.697 [34.415--35.605] ms | 53.838 [53.458--54.234] ms |
-| 8 | 21.007 [20.548--21.182] ms | 53.341 [52.589--53.689] ms |
-| 12 | 17.116 [16.790--17.376] ms | 53.064 [52.581--53.567] ms |
+| 2 | 14.287 [14.062--14.714] ms | 61.047 [57.445--61.856] ms |
+| 3 | 52.901 [51.915--54.016] ms | 59.540 [55.431--59.922] ms |
+| 4 | 38.718 [35.593--40.215] ms | 59.139 [55.028--59.302] ms |
+| 8 | 21.807 [21.557--22.365] ms | 58.333 [53.944--58.719] ms |
+| 12 | 17.771 [17.541--18.450] ms | 57.995 [54.367--58.891] ms |
 
-On this image, high color improved MS-SSIM by 0.002964 and reduced mean Delta E00 by 27.06%, but produced a stream 2.735 times as large. Once palette construction and lookup are excluded, high color is not the faster encoder: its repeated register-definition and paint passes held the median encode window near 53--56 ms across the thread grid. The fixed 256-color path fell from 47.870 ms at 3 threads to 17.116 ms at 12 threads. Its still shorter 13.634 ms interval at 2 threads reflects the different pipeline schedule: dithering has already finished when encode workers start, so it is not an end-to-end comparison with the overlapping plans.
+On this image, high color improved MS-SSIM by 0.002964 and reduced mean Delta E00 by 27.06%, but produced a stream 2.735 times as large. Once palette construction and lookup are excluded, high color is not the faster encoder: its repeated register-definition and paint passes held the median encode window near 58--61 ms across the thread grid. The fixed 256-color path fell from 52.901 ms at 3 threads to 17.771 ms at 12 threads. Its still shorter 14.287 ms interval at 2 threads reflects the different pipeline schedule: dithering has already finished when encode workers start, so it is not an end-to-end comparison with the overlapping plans.
 
-High-color IQR did not grow monotonically either. It reached 1.809 ms at 10 threads, then narrowed to 0.985 ms at 12 threads despite one 125.683 ms outlier. More distinct 15-bit colors can require more passes, and the larger stream can dominate transport latency after the measured worker interval. These results should not be generalized to every image, build, loader, scheduler, or receiving terminal.
+High-color IQR did not grow monotonically either. It was 4.411 ms at two threads, reached 5.156 ms at 10 threads, and was 4.524 ms at 12 threads. More distinct 15-bit colors can require more passes, and the larger stream can dominate transport latency after the measured worker interval. These results should not be generalized to every image, build, loader, scheduler, or receiving terminal.
 
 ![Reference image, direct decodes, and equally scaled absolute RGB error maps for fixed 256-color and high-color output](high-color/measurements/high-color-visual-comparison.png)
 
