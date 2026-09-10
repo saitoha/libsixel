@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify OR mode direct-color decode uses the composed palette index.
 
 set -eux

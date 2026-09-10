@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify selective_blur applies the RGB-distance threshold.
 
 set -eux

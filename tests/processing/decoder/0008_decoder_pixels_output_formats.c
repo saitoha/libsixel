@@ -1,8 +1,8 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify that sixel_decode_pixels() returns the requested packed byte order
- * and marks fully opaque output so callers can use RGBX/XRGB fast paths.
+ * Verify that sixel_decode_pixels() returns every supported packed byte order
+ * and marks fully opaque output so callers can use RGB and RGBX/XRGB paths.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -17,12 +17,16 @@
 
 typedef struct decoder_pixels_format_case {
     int pixelformat;
+    int depth;
     char const *name;
     unsigned char expected[4];
 } decoder_pixels_format_case_t;
 
 static unsigned char const g_output_formats_payload[] =
     "\033Pq\"1;1;2;1#1;2;100;0;0#1@@\033\\";
+
+static unsigned char const g_output_formats_order_payload[] =
+    "\033Pq\"1;1;2;1#1;2;80;40;20#1@@\033\\";
 
 static unsigned char const g_output_formats_alpha_payload[] =
     "\033Pq\"1;1;2;1#1;2;100;0;0#1@\033\\";
@@ -31,10 +35,46 @@ static unsigned char const g_output_formats_transparent_neighbor_payload[] =
     "\033Pq\"1;1;2;1#0;2;80;0;0#1;2;100;0;0#1?@\033\\";
 
 static decoder_pixels_format_case_t const g_output_format_cases[] = {
-    { SIXEL_PIXELFORMAT_XRGB8888, "XRGB8888", { 0xffU, 0xffU, 0x00U, 0x00U } },
-    { SIXEL_PIXELFORMAT_RGBX8888, "RGBX8888", { 0xffU, 0x00U, 0x00U, 0xffU } },
-    { SIXEL_PIXELFORMAT_XBGR8888, "XBGR8888", { 0xffU, 0x00U, 0x00U, 0xffU } },
-    { SIXEL_PIXELFORMAT_BGRX8888, "BGRX8888", { 0x00U, 0x00U, 0xffU, 0xffU } }
+    { SIXEL_PIXELFORMAT_RGB888,
+      3,
+      "RGB888",
+      { 0xccU, 0x66U, 0x33U, 0x00U } },
+    { SIXEL_PIXELFORMAT_BGR888,
+      3,
+      "BGR888",
+      { 0x33U, 0x66U, 0xccU, 0x00U } },
+    { SIXEL_PIXELFORMAT_RGBA8888,
+      4,
+      "RGBA8888",
+      { 0xccU, 0x66U, 0x33U, 0xffU } },
+    { SIXEL_PIXELFORMAT_ARGB8888,
+      4,
+      "ARGB8888",
+      { 0xffU, 0xccU, 0x66U, 0x33U } },
+    { SIXEL_PIXELFORMAT_BGRA8888,
+      4,
+      "BGRA8888",
+      { 0x33U, 0x66U, 0xccU, 0xffU } },
+    { SIXEL_PIXELFORMAT_ABGR8888,
+      4,
+      "ABGR8888",
+      { 0xffU, 0x33U, 0x66U, 0xccU } },
+    { SIXEL_PIXELFORMAT_XRGB8888,
+      4,
+      "XRGB8888",
+      { 0xffU, 0xccU, 0x66U, 0x33U } },
+    { SIXEL_PIXELFORMAT_RGBX8888,
+      4,
+      "RGBX8888",
+      { 0xccU, 0x66U, 0x33U, 0xffU } },
+    { SIXEL_PIXELFORMAT_XBGR8888,
+      4,
+      "XBGR8888",
+      { 0xffU, 0x33U, 0x66U, 0xccU } },
+    { SIXEL_PIXELFORMAT_BGRX8888,
+      4,
+      "BGRX8888",
+      { 0x33U, 0x66U, 0xccU, 0xffU } }
 };
 
 static char const *const g_output_format_dequantize_cases[] = {
@@ -337,8 +377,8 @@ test_decoder_0008_decoder_pixels_output_formats(int argc, char **argv)
         memset(&result, 0, sizeof(result));
 
         status = sixel_decode_pixels(
-            g_output_formats_payload,
-            sizeof(g_output_formats_payload) - 1U,
+            g_output_formats_order_payload,
+            sizeof(g_output_formats_order_payload) - 1U,
             &options,
             &result,
             allocator);
@@ -348,7 +388,8 @@ test_decoder_0008_decoder_pixels_output_formats(int argc, char **argv)
                     status);
             goto end;
         }
-        if (result.width != 2 || result.height != 1 || result.stride != 8) {
+        if (result.width != 2 || result.height != 1 ||
+                result.stride != 2 * g_output_format_cases[i].depth) {
             fprintf(stderr, "%s dimensions are %dx%d stride %d\n",
                     g_output_format_cases[i].name,
                     result.width,
@@ -365,7 +406,7 @@ test_decoder_0008_decoder_pixels_output_formats(int argc, char **argv)
         if (result.pixels == NULL ||
                 memcmp(result.pixels,
                        g_output_format_cases[i].expected,
-                       4U) != 0) {
+                       (size_t)g_output_format_cases[i].depth) != 0) {
             fprintf(stderr, "%s first pixel is not in requested byte order\n",
                     g_output_format_cases[i].name);
             goto end;

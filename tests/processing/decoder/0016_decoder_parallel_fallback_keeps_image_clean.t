@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify failed parallel decode leaves the serial fallback image clean.
 
 set -eux

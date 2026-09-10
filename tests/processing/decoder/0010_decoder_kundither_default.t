@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify default k_undither output for a 32-color indexed image.
 
 set -eux

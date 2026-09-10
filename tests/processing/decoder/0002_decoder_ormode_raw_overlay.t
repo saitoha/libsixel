@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify OR mode raw-index decode overlays bit-plane selectors.
 
 set -eux

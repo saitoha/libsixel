@@ -1,0 +1,43 @@
+{
+  "assets": [
+    {
+      "path": "decoding-pipeline-wide.svg",
+      "role": "large-screen decoding mental model"
+    },
+    {
+      "path": "decoding-pipeline-mobile.svg",
+      "role": "mobile decoding mental model"
+    },
+    {
+      "path": "decoder-parser.svg",
+      "role": "wire controls and shared parser state"
+    },
+    {
+      "path": "decoder-raster-policy.svg",
+      "role": "declared raster versus observed paint"
+    },
+    {
+      "path": "decoder-representations.svg",
+      "role": "indexed, direct, and packed output contracts"
+    },
+    {
+      "path": "decoder-output-policy.svg",
+      "role": "stateful decoder and CLI output branches"
+    },
+    {
+      "path": "decoder-parallel.svg",
+      "role": "parallel validation, barrier, and fallback"
+    }
+  ],
+  "color_roles": {
+    "context": "#556176",
+    "paint_and_safe_parallel_work": "#0F766E",
+    "palette_and_representation": "#BE185D",
+    "policy_and_fallback": "#D97706",
+    "protocol_and_control": "#2563EB"
+  },
+  "generator": "tools/plot_decoding_pipeline_figures.py",
+  "kind": "deterministic architecture schematics",
+  "measurement": false,
+  "schema": 1
+}

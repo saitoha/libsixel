@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify OR mode repeat spans compose each touched pixel independently.
 
 set -eux

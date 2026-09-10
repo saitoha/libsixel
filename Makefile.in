@@ -682,6 +682,15 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dither-policies/measurements/dither-policy-size.png \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.csv \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.png \
+	docs/functionality/decoding-pipeline.md \
+	docs/functionality/decoding-pipeline-figures/decoder-output-policy.svg \
+	docs/functionality/decoding-pipeline-figures/decoder-parallel.svg \
+	docs/functionality/decoding-pipeline-figures/decoder-parser.svg \
+	docs/functionality/decoding-pipeline-figures/decoder-raster-policy.svg \
+	docs/functionality/decoding-pipeline-figures/decoder-representations.svg \
+	docs/functionality/decoding-pipeline-figures/decoding-pipeline-figures.json \
+	docs/functionality/decoding-pipeline-figures/decoding-pipeline-mobile.svg \
+	docs/functionality/decoding-pipeline-figures/decoding-pipeline-wide.svg \
 	docs/functionality/encoding-pipeline.md \
 	docs/functionality/encoding-pipeline-figures/encoding-pipeline-figures.json \
 	docs/functionality/encoding-pipeline-figures/encoding-pipeline-mobile.svg \
@@ -818,6 +827,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_clustering_colorspace_measurements.py \
 	tools/plot_cover_policy_figures.py \
 	tools/plot_dither_policy_measurements.py \
+	tools/plot_decoding_pipeline_figures.py \
 	tools/plot_encoder_execution_map_figures.py \
 	tools/plot_encoding_pipeline_figures.py \
 	tools/plot_loader_architecture_figures.py \
@@ -837,6 +847,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/reproduce_clustering_colorspace_measurements.sh \
 	tools/reproduce_cover_policy_figures.sh \
 	tools/reproduce_dither_policy_measurements.sh \
+	tools/reproduce_decoding_pipeline_figures.sh \
 	tools/reproduce_encoder_execution_map_figures.sh \
 	tools/reproduce_encoding_pipeline_figures.sh \
 	tools/reproduce_lookup_policy_measurements.sh \

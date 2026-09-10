@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify direct decoder output is written as 8-bit RGBA PNG.
 # Policy: docs/writers/png.md
 

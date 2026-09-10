@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/decoding-pipeline.md
 # Verify overlapping direct paint row ranges fall back before publication.
 
 set -eux
