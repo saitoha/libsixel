@@ -269,122 +269,140 @@ def selected_color_rows(tokens: str) -> tuple[str, ...]:
 SOLID_UNDERPAINT_ROWS = tuple("GGGGMMMM" for _ in range(6))
 
 
-def overpaint_panel(x: float, title_value: str, size_policy: bool) -> str:
-    """Return one paint plan for the shared four-color example."""
-    accent = GOLD if size_policy else BLUE
-    first_rows = (
-        SOLID_UNDERPAINT_ROWS if size_policy
-        else selected_color_rows("GM")
+def node_card(x: float, y: float, token: str, register: str,
+              color: str, span: str, width: float = 190) -> str:
+    """Return one ordered encoder node with its exact source mask."""
+    return (
+        rect(x, y, width, 180, PAPER, color, 1.5, 12)
+        + badge(x + 12, y + 12, register, color, 54)
+        + code_text(x + 76, y + 40, span, 15, 700)
+        + draw_grid(x + (width - 112) / 2, y + 66,
+                    mask_rows(FOUR_COLOR_ROWS, token),
+                    14, 2, True)
+        + text(x + width / 2, y + 166, "12 pixels", 14, 650,
+               MUTED, "middle")
     )
-    second_rows = selected_color_rows("BT")
-    first_label = (
-        "#1 / #3 solid underpaint" if size_policy
-        else "#1 / #3 exact masks"
-    )
-    second_label = (
-        "#0 / #2 repair" if size_policy
-        else "#0 / #2 exact masks"
-    )
-    literal = SIZE_EXAMPLE_BODY if size_policy else FAST_EXAMPLE_BODY
-    byte_count = 23 if size_policy else 25
-    body = [card(x, 170, 650, 520, title_value, accent,
-                 GOLD_LIGHT if size_policy else PAPER)]
-    body.extend([
-        text(x + 25, 240, first_label, 15, 700, accent),
-        draw_grid(x + 25, 258, first_rows, 20, 2, True),
-        line(x + 190, 320, x + 222, 320, accent, 4, "arrow-blue"),
-        text(x + 230, 240, second_label, 15, 700,
-             GOLD if size_policy else BLUE),
-        draw_grid(x + 230, 258, second_rows, 20, 2, True),
-        line(x + 395, 320, x + 427, 320, accent, 4, "arrow-blue"),
-        text(x + 435, 240, "decoded result", 15, 700, TEAL),
-        draw_grid(x + 435, 258, FOUR_COLOR_ROWS, 20, 2),
-        rect(x + 25, 435, 600, 62, PAPER, accent, 1.5, 10),
-        code_text(x + 42, 473, literal, 15, 650),
-        badge(x + 25, 525, f"{byte_count} bytes", accent, 112),
-    ])
-    if size_policy:
-        body.extend([
-            code_text(x + 160, 552, "!4~ + !4~", 18, 750, GOLD),
-            text(x + 285, 551, "makes two simple rectangles", 16, 600, MUTED),
-            text(x + 25, 620, "Blue and green safely repaint the temporary overdraw.", 16, 600, MUTED),
-        ])
-    else:
-        body.extend([
-            text(x + 160, 551, "Every mask retains its holes.", 16, 600, MUTED),
-            text(x + 25, 620, "No pixel is temporarily painted with another color.", 16, 600, MUTED),
-        ])
-    return "".join(body)
 
 
 def overpaint_wide() -> str:
-    """Compare both real paint plans for the four-color band."""
+    """Show the current greedy node plan for the four-color band."""
     width = 1460
-    height = 840
+    height = 1080
     body = [rect(0, 0, width, height, PANEL)]
     body.extend([
-        text(55, 62, "Why size saves two bytes in the same four-color band", 38, 800),
-        text(55, 100, "It replaces two hole-shaped masks with solid runs, then repairs the safe overdraw.", 20, 500, MUTED),
-        overpaint_panel(55, "auto / fast: preserve every hole", False),
-        overpaint_panel(755, "size: underpaint, then repair", True),
-        rect(170, 735, 1120, 58, TEAL_LIGHT, TEAL, 1.5, 13),
-        text(730, 772, "same 8 × 6 pixels  •  25-byte body → 23-byte body", 21, 750, TEAL, "middle"),
+        text(55, 62, "How size chooses fills in this band", 38, 800),
+        text(55, 100, "No color-frequency winner: all four colors occur 12 times. The encoder greedily walks ordered span nodes.", 20, 500, MUTED),
+        card(55, 145, 310, 310, "Input: one 8 × 6 band", BLUE),
+        draw_grid(92, 212, FOUR_COLOR_ROWS, 29),
+        text(210, 410, "#0  #1  #2  #3", 17, 750, INK, "middle"),
+        text(210, 438, "12 pixels each", 15, 600, MUTED, "middle"),
+        line(375, 300, 420, 300, BLUE, 5, "arrow-blue"),
+        card(430, 145, 975, 310,
+             "1  compose: order nodes by start x, then farther end x",
+             TEAL),
+        text(462, 210,
+             "For equal [start, end) spans, this fixture's insertion order puts the later-discovered color first.",
+             15, 600, MUTED),
+        node_card(462, 235, "G", "#1", GOLD, "[0, 4)"),
+        text(667, 334, "→", 26, 800, MUTED, "middle"),
+        node_card(682, 235, "B", "#0", BLUE, "[0, 4)"),
+        text(887, 334, "→", 26, 800, MUTED, "middle"),
+        node_card(902, 235, "M", "#3", MAGENTA, "[4, 8)"),
+        text(1107, 334, "→", 26, 800, MUTED, "middle"),
+        node_card(1122, 235, "T", "#2", TEAL, "[4, 8)"),
+        card(55, 505, 650, 410,
+             "2  first emit sweep: fillable = true", GOLD, GOLD_LIGHT),
+        text(88, 575, "take #1", 16, 750, GOLD),
+        text(180, 575, "skip #0", 16, 650, MUTED),
+        text(280, 575, "take #3", 16, 750, MAGENTA),
+        text(375, 575, "skip #2", 16, 650, MUTED),
+        text(478, 575, "cursor: 0 → 4 → 8", 16, 650, INK),
+        text(88, 615,
+             "Each taken node fills only its own [start, end) span.",
+             15, 600, MUTED),
+        draw_grid(199, 652, SOLID_UNDERPAINT_ROWS, 32),
+        text(327, 865, "temporary canvas", 15, 650, MUTED,
+             "middle"),
+        code_text(88, 892, "#1!4~#3!4~", 20, 750, GOLD),
+        card(755, 505, 650, 410,
+             "3  next emit sweep: fillable = false", BLUE),
+        text(788, 575, "remaining nodes: #0 [0, 4) → #2 [4, 8)",
+             16, 700, INK),
+        text(788, 615, "Write their original masks; they repair the overpaint.",
+             15, 600, MUTED),
+        draw_grid(800, 655, selected_color_rows("BT"), 27, 2, True),
+        line(1030, 735, 1070, 735, BLUE, 5, "arrow-blue"),
+        draw_grid(1090, 655, FOUR_COLOR_ROWS, 27),
+        text(908, 842, "exact repair", 15, 650, MUTED, "middle"),
+        text(1198, 842, "final pixels", 15, 650, TEAL, "middle"),
+        code_text(788, 892, "$#0NB{o#2NB{o", 20, 750, BLUE),
+        rect(105, 955, 1250, 78, TEAL_LIGHT, TEAL, 1.5, 14),
+        code_text(150, 1004, SIZE_EXAMPLE_BODY, 18, 700),
+        text(720, 1004,
+             "same pixels  •  exact 25 bytes → size 23 bytes",
+             20, 750, TEAL),
     ])
     return svg_document(
         width,
         height,
-        "Why size saves two bytes in the same four-color band",
-        "Two panels encode the same eight by six blue, amber, green, and pink grid. Auto and fast preserve every hole in a 25-byte paint body. Size paints solid amber and pink rectangles, repairs blue and green pixels, and uses a 23-byte paint body.",
+        "How the size policy chooses fills in this band",
+        "The current encoder does not choose a most frequent color. All four colors have twelve pixels. It orders four span nodes as palette one, zero, three, two; greedily fills the nonoverlapping palette-one and palette-three spans on the first sweep; then writes the remaining palette-zero and palette-two masks exactly.",
         "\n".join(body),
     )
 
 
 def overpaint_mobile() -> str:
-    """Return the mobile layout of the four-color byte-saving example."""
+    """Return the mobile layout of the current greedy node plan."""
     width = 760
-    height = 1540
+    height = 2010
     body = [rect(0, 0, width, height, PANEL)]
     body.extend([
-        text(38, 56, "Why size saves two bytes", 38, 800),
-        text(38, 90, "The same four-color band from Figure 1.", 18, 500, MUTED),
-        card(55, 135, 650, 535, "auto / fast: preserve every hole", BLUE),
-        text(85, 215, "#1 / #3 exact", 15, 700, GOLD),
-        draw_grid(85, 235, selected_color_rows("GM"), 18, 2, True),
-        line(235, 290, 275, 290, BLUE, 4, "arrow-blue"),
-        text(285, 215, "#0 / #2 exact", 15, 700, BLUE),
-        draw_grid(285, 235, selected_color_rows("BT"), 18, 2, True),
-        line(435, 290, 475, 290, BLUE, 4, "arrow-blue"),
-        text(485, 215, "result", 15, 700, TEAL),
-        draw_grid(485, 235, FOUR_COLOR_ROWS, 18, 2),
-        rect(85, 390, 590, 58, PAPER, BLUE, 1.5, 10),
-        code_text(102, 426, FAST_EXAMPLE_BODY, 15, 650),
-        badge(85, 485, "25 bytes", BLUE, 108),
-        text(215, 512, "All four masks retain their holes.", 16, 600, MUTED),
-        line(380, 685, 380, 730, GOLD, 5, "arrow-gold"),
-        card(55, 740, 650, 555, "size: underpaint, then repair", GOLD, GOLD_LIGHT),
-        text(85, 820, "solid #1 / #3", 15, 700, GOLD),
-        draw_grid(85, 840, SOLID_UNDERPAINT_ROWS, 18, 2, True),
-        line(235, 895, 275, 895, GOLD, 4, "arrow-gold"),
-        text(285, 820, "#0 / #2 repair", 15, 700, BLUE),
-        draw_grid(285, 840, selected_color_rows("BT"), 18, 2, True),
-        line(435, 895, 475, 895, GOLD, 4, "arrow-gold"),
-        text(485, 820, "same result", 15, 700, TEAL),
-        draw_grid(485, 840, FOUR_COLOR_ROWS, 18, 2),
-        rect(85, 995, 590, 58, PAPER, GOLD, 1.5, 10),
-        code_text(102, 1031, SIZE_EXAMPLE_BODY, 15, 650),
-        badge(85, 1090, "23 bytes", GOLD, 108),
-        code_text(215, 1118, "!4~ + !4~", 18, 750, GOLD),
-        text(345, 1117, "forms two solid blocks", 16, 600, MUTED),
-        text(85, 1190, "Blue and green safely repair the temporary overdraw.", 16, 600, MUTED),
-        rect(90, 1360, 580, 100, TEAL_LIGHT, TEAL, 1.5, 14),
-        text(380, 1400, "same decoded pixels", 21, 800, TEAL, "middle"),
-        text(380, 1433, "25-byte body → 23-byte body", 17, 600, MUTED, "middle"),
+        text(38, 56, "How size picks fills in this band", 38, 800),
+        text(38, 90, "No most-frequent color is selected.", 18, 600, MUTED),
+        card(55, 135, 650, 320, "Input: all four colors have 12 pixels", BLUE),
+        draw_grid(232, 205, FOUR_COLOR_ROWS, 37),
+        text(380, 435, "one complete 8 × 6 band", 16, 650,
+             MUTED, "middle"),
+        line(380, 470, 380, 510, TEAL, 5, "arrow-blue"),
+        card(55, 520, 650, 415,
+             "1  compose: ordered span nodes", TEAL),
+        text(85, 585, "start x ascending; farther end x first",
+             15, 600, MUTED),
+        node_card(80, 615, "G", "#1", GOLD, "[0,4)", 145),
+        node_card(235, 615, "B", "#0", BLUE, "[0,4)", 145),
+        node_card(390, 615, "M", "#3", MAGENTA, "[4,8)", 145),
+        node_card(545, 615, "T", "#2", TEAL, "[4,8)", 145),
+        text(380, 910, "equal-span insertion determines each tie",
+             14, 600, MUTED, "middle"),
+        line(380, 950, 380, 990, GOLD, 5, "arrow-gold"),
+        card(55, 1000, 650, 385,
+             "2  first sweep: fillable = true", GOLD, GOLD_LIGHT),
+        text(85, 1070, "take #1  →  skip #0  →  take #3  →  skip #2",
+             16, 700, INK),
+        text(85, 1105, "cursor advances 0 → 4 → 8", 15, 600, MUTED),
+        draw_grid(248, 1140, SOLID_UNDERPAINT_ROWS, 33),
+        code_text(85, 1360, "#1!4~#3!4~", 20, 750, GOLD),
+        line(380, 1400, 380, 1440, BLUE, 5, "arrow-blue"),
+        card(55, 1450, 650, 365,
+             "3  next sweep: fillable = false", BLUE),
+        text(85, 1520, "remaining: #0 [0,4) → #2 [4,8)",
+             16, 700, INK),
+        text(85, 1555, "Write exact masks to repair the temporary paint.",
+             15, 600, MUTED),
+        draw_grid(105, 1590, selected_color_rows("BT"), 26, 2, True),
+        line(330, 1670, 370, 1670, BLUE, 5, "arrow-blue"),
+        draw_grid(390, 1590, FOUR_COLOR_ROWS, 26),
+        code_text(85, 1790, "$#0NB{o#2NB{o", 20, 750, BLUE),
+        rect(70, 1870, 620, 95, TEAL_LIGHT, TEAL, 1.5, 14),
+        code_text(100, 1910, SIZE_EXAMPLE_BODY, 16, 700),
+        text(380, 1948, "same pixels  •  25 bytes → 23 bytes",
+             17, 750, TEAL, "middle"),
     ])
     return svg_document(
         width,
         height,
-        "Why size saves two bytes in the same four-color band",
-        "Mobile comparison of the same four-color band. Auto and fast preserve mask holes in a 25-byte body; size paints solid amber and pink blocks, repairs blue and green, and uses 23 bytes.",
+        "How the size policy chooses fills in this band",
+        "Mobile diagram of the current encoder algorithm. All four colors have twelve pixels. Ordered span nodes are walked greedily; the first nonoverlapping sweep fills palette one and palette three, and the next sweep writes the remaining palette-zero and palette-two masks exactly.",
         "\n".join(body),
     )
 
@@ -601,6 +619,15 @@ def encode_manifest() -> dict[str, object]:
             },
             "auto_fast_paint_body": FAST_EXAMPLE_BODY,
             "size_paint_body": SIZE_EXAMPLE_BODY,
+            "active_color_discovery": ["#0", "#1", "#2", "#3"],
+            "ordered_nodes": [
+                "#1 [0,4)",
+                "#0 [0,4)",
+                "#3 [4,8)",
+                "#2 [4,8)",
+            ],
+            "first_fill_sweep": ["#1 [0,4)", "#3 [4,8)"],
+            "exact_repair_sweep": ["#0 [0,4)", "#2 [4,8)"],
             "wrapper": "DCS introducer, raster attributes, palette definitions, and ST omitted",
         },
         "assets": [
@@ -615,7 +642,7 @@ def encode_manifest() -> dict[str, object]:
             "context": MUTED,
         },
         "review": {
-            "story_job": "show literal four-color serialization and overpainting",
+            "story_job": "show literal serialization and the current greedy node walk",
             "data_shape": "conceptual process and side-by-side comparison",
             "primary": "responsive SVG diagrams",
             "encoding": "arrows show order; labels and layout repeat color roles",

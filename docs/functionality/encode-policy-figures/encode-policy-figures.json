@@ -25,8 +25,28 @@
     "warning": "#BE185D"
   },
   "four_color_example": {
+    "active_color_discovery": [
+      "#0",
+      "#1",
+      "#2",
+      "#3"
+    ],
     "auto_fast_paint_body": "#1o{BN#3o{BN$#0NB{o#2NB{o",
     "dimensions": "8x6",
+    "exact_repair_sweep": [
+      "#0 [0,4)",
+      "#2 [4,8)"
+    ],
+    "first_fill_sweep": [
+      "#1 [0,4)",
+      "#3 [4,8)"
+    ],
+    "ordered_nodes": [
+      "#1 [0,4)",
+      "#0 [0,4)",
+      "#3 [4,8)",
+      "#2 [4,8)"
+    ],
     "palette": {
       "#0": "blue",
       "#1": "amber",
@@ -45,7 +65,7 @@
     "fallback": "adjacent prose and figure alt text",
     "primary": "responsive SVG diagrams",
     "qa": "wide and mobile assets reviewed after final generation",
-    "story_job": "show literal four-color serialization and overpainting"
+    "story_job": "show literal serialization and the current greedy node walk"
   },
   "schema": 1,
   "scope": "img2sixel -E literal band serialization and overpainting"
