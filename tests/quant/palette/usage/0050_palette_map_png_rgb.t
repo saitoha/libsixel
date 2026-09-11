@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify img2sixel accepts an RGB PNG as a palette map.
+# Policy: docs/functionality/external-palettes.md
 #
 # Test flow:
 # - Use a PNGSuite RGB (color type 2) image as the -m mapfile.

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify PNG mapfile colorspace conversion remains deterministic.
+# Policy: docs/functionality/external-palettes.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

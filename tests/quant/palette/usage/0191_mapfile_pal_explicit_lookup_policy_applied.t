@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify explicit FHEDT reaches palette application with a PAL mapfile.
+# Policy: docs/functionality/external-palettes.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
