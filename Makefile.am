@@ -67,6 +67,21 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/project-history.md \
 	docs/sixel-format.md \
 	docs/functionality/or-mode.md \
+	docs/functionality/or-mode/scaling.md \
+	docs/functionality/or-mode/sweeps/axes.csv \
+	docs/functionality/or-mode/sweeps/color-curves.png \
+	docs/functionality/or-mode/sweeps/decode-photos.png \
+	docs/functionality/or-mode/sweeps/decode.json \
+	docs/functionality/or-mode/sweeps/encode.json \
+	docs/functionality/or-mode/sweeps/fullhd-threads.png \
+	docs/functionality/or-mode/sweeps/inputs.json \
+	docs/functionality/or-mode/sweeps/metadata.json \
+	docs/functionality/or-mode/sweeps/summary.json \
+	docs/functionality/or-mode/sweeps/thread-curves.png \
+	docs/functionality/or-mode/sweeps/thread-observations.json \
+	tools/ormode/decode-bench.c \
+	tools/ormode/sweeps.py \
+	tools/ormode/render_sweeps.py \
 	docs/functionality/or-mode/measurements/alpha.json \
 	docs/functionality/or-mode/measurements/comparison.png \
 	docs/functionality/or-mode/measurements/controls.json \

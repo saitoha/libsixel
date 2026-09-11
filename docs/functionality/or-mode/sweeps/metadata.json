@@ -1,0 +1,37 @@
+{
+  "revision": "cf4cb3439aedec252b68bbc3674b10aa2bf0145f",
+  "colors": [
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256
+  ],
+  "threads": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "cli_runs": 11,
+  "api_runs": 21,
+  "warmups": 2,
+  "binary_sha256": {
+    "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel": "d27a23d3a090651e89ac94a039151bf8e4f5bb37104d50da2dc498532cb2f9e0",
+    "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/sixel2png": "901bd28122ccc86af7a07ff56a1af2d351f0bc1a5c7f1a89a225ac476026e216",
+    "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/decode-bench": "1a90b3ea74476c2551f504b05de8179df1b3f0c26ca879bd87aa72f108cabc72",
+    "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/src/.libs/libsixel.1.dylib": "fe525ded019a9cf7a485b6d49310cf4f2cdcaa0c8914e1af07fdbc067996e49e"
+  },
+  "decoder_input": "Encode once at threads=1, then reuse identical stream bytes across all decoder budgets."
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "threads": 1,
+    "format": "rgba",
+    "calls": 4,
+    "event_counts": {
+      "io/decoder/start": 4,
+      "controller/decoder/start": 4,
+      "parser/decoder/finish": 4,
+      "io/decoder/finish": 4
+    }
+  },
+  {
+    "threads": 1,
+    "format": "indexed",
+    "calls": 4,
+    "event_counts": {
+      "io/decoder/start": 4,
+      "controller/decoder/start": 4,
+      "parser/decoder/finish": 4,
+      "io/decoder/finish": 4
+    }
+  },
+  {
+    "threads": 4,
+    "format": "rgba",
+    "calls": 4,
+    "event_counts": {
+      "io/decoder/start": 4,
+      "controller/decoder/start": 4,
+      "controller/decoder/launch": 4,
+      "decoder/scan/start": 16,
+      "decoder/scan/finish": 16,
+      "decoder/paint/ready": 16,
+      "decoder/paint/start": 16,
+      "decoder/paint/finish": 16,
+      "parser/decoder/finish": 4,
+      "io/decoder/finish": 4
+    }
+  },
+  {
+    "threads": 4,
+    "format": "indexed",
+    "calls": 4,
+    "event_counts": {
+      "io/decoder/start": 4,
+      "controller/decoder/start": 4,
+      "controller/decoder/launch": 4,
+      "decoder/scan/start": 16,
+      "decoder/scan/finish": 16,
+      "decoder/paint/ready": 16,
+      "decoder/paint/start": 16,
+      "decoder/paint/finish": 16,
+      "parser/decoder/finish": 4,
+      "io/decoder/finish": 4
+    }
+  },
+  {
+    "threads": 12,
+    "format": "rgba",
+    "calls": 4,
+    "event_counts": {
+      "io/decoder/start": 4,
+      "controller/decoder/start": 4,
+      "controller/decoder/launch": 4,
+      "decoder/scan/start": 48,
+      "decoder/scan/finish": 48,
+      "decoder/paint/ready": 48,
+      "decoder/paint/start": 48,
+      "decoder/paint/finish": 48,
+      "parser/decoder/finish": 4,
+      "io/decoder/finish": 4
+    }
+  },
+  {
+    "threads": 12,
+    "format": "indexed",
+    "calls": 4,
+    "event_counts": {
+      "io/decoder/start": 4,
+      "controller/decoder/start": 4,
+      "controller/decoder/launch": 4,
+      "decoder/scan/start": 48,
+      "decoder/scan/finish": 48,
+      "decoder/paint/ready": 48,
+      "decoder/paint/start": 48,
+      "decoder/paint/finish": 48,
+      "parser/decoder/finish": 4,
+      "io/decoder/finish": 4
+    }
+  }
+]
