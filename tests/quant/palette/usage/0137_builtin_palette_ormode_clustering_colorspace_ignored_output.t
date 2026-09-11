@@ -26,6 +26,11 @@ test -n "${expected_output}" || {
     exit 0
 }
 
+case "${expected_output}" in
+    *"P7;5q"*) ;;
+    *) echo "not ok 1 - baseline did not enter OR mode"; exit 0 ;;
+esac
+
 actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -O -X oklab -bxterm16 -o - "${input_image}"

@@ -145,6 +145,46 @@ int test_filter_0045_filter_binning_stream_alpha_zero_disabled(
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpudeq_0001_strtoul(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
+int test_or_enc_0027(int argc, char **argv);
+int test_or_enc_0028(int argc, char **argv);
+int test_or_enc_0029(int argc, char **argv);
+int test_or_dec_0041(int argc, char **argv);
+int test_or_enc_0007(int argc, char **argv);
+int test_or_enc_0008(int argc, char **argv);
+int test_or_enc_0009(int argc, char **argv);
+int test_or_enc_0010(int argc, char **argv);
+int test_or_enc_0011(int argc, char **argv);
+int test_or_enc_0012(int argc, char **argv);
+int test_or_enc_0013(int argc, char **argv);
+int test_or_enc_0014(int argc, char **argv);
+int test_or_enc_0015(int argc, char **argv);
+int test_or_enc_0016(int argc, char **argv);
+int test_or_enc_0017(int argc, char **argv);
+int test_or_enc_0018(int argc, char **argv);
+int test_or_enc_0019(int argc, char **argv);
+int test_or_enc_0020(int argc, char **argv);
+int test_or_enc_0021(int argc, char **argv);
+int test_or_enc_0022(int argc, char **argv);
+int test_or_enc_0023(int argc, char **argv);
+int test_or_enc_0024(int argc, char **argv);
+int test_or_enc_0025(int argc, char **argv);
+int test_or_enc_0026(int argc, char **argv);
+int test_or_dec_0022(int argc, char **argv);
+int test_or_dec_0027(int argc, char **argv);
+int test_or_dec_0028(int argc, char **argv);
+int test_or_dec_0029(int argc, char **argv);
+int test_or_dec_0030(int argc, char **argv);
+int test_or_dec_0031(int argc, char **argv);
+int test_or_dec_0032(int argc, char **argv);
+int test_or_dec_0033(int argc, char **argv);
+int test_or_dec_0034(int argc, char **argv);
+int test_or_dec_0035(int argc, char **argv);
+int test_or_dec_0036(int argc, char **argv);
+int test_or_dec_0037(int argc, char **argv);
+int test_or_dec_0038(int argc, char **argv);
+int test_or_dec_0039(int argc, char **argv);
+int test_or_dec_0040(int argc, char **argv);
+int test_or_offset_cli(int argc, char **argv);
 int test_encoder_core_0002_encoder_core_ormode_body_full_band(int argc,
                                                               char **argv);
 int test_encoder_core_0003_encoder_core_ormode_body_tail_band(int argc,
@@ -214,7 +254,6 @@ test_decoder_0019_direct_repeat_overflow(
     char **argv);
 int test_decoder_0020_decoder_pixels_body_api(int argc, char **argv);
 int test_decoder_0021_decoder_selective_blur_threshold(int argc, char **argv);
-int test_decoder_0022_decoder_ormode_dequantize_opaque(int argc, char **argv);
 int test_decoder_0023_decoder_high_color_dequantize_bypass(int argc, char **argv);
 int
 test_decoder_0024_decoder_parallel_skew_environment(int argc, char **argv);
@@ -718,6 +757,85 @@ static test_entry_t const test_entries[] = {
       test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
     { "encoder-core/0001_encoder_core_factory",
       test_encoder_core_0001_encoder_core_factory },
+    { "encoder-core/0027_ormode_public_output_disable",
+      test_or_enc_0027 },
+    { "encoder-core/0028_ormode_pipeline_size",
+      test_or_enc_0028 },
+    { "encoder-core/0029_ormode_offset_disables_pipeline",
+      test_or_enc_0029 },
+    { "decoder/0041_ormode_legacy_zero_is_color",
+      test_or_dec_0041 },
+    { "encoder-core/0007_ormode_one_color_plane",
+      test_or_enc_0007 },
+    { "encoder-core/0008_ormode_two_color_plane",
+      test_or_enc_0008 },
+    { "encoder-core/0009_ormode_three_color_planes",
+      test_or_enc_0009 },
+    { "encoder-core/0010_ormode_four_color_planes",
+      test_or_enc_0010 },
+    { "encoder-core/0011_ormode_five_color_planes",
+      test_or_enc_0011 },
+    { "encoder-core/0012_ormode_128_color_planes",
+      test_or_enc_0012 },
+    { "encoder-core/0013_ormode_129_color_high_bit",
+      test_or_enc_0013 },
+    { "encoder-core/0014_ormode_256_color_all_bits",
+      test_or_enc_0014 },
+    { "encoder-core/0015_ormode_size_zero_full_band",
+      test_or_enc_0015 },
+    { "encoder-core/0016_ormode_size_zero_tail_band",
+      test_or_enc_0016 },
+    { "encoder-core/0017_ormode_size_leading_empty_columns",
+      test_or_enc_0017 },
+    { "encoder-core/0018_ormode_size_tail_empty_plane",
+      test_or_enc_0018 },
+    { "encoder-core/0019_ormode_size_empty_then_nonempty_band",
+      test_or_enc_0019 },
+    { "encoder-core/0020_ormode_size_sample_last_column",
+      test_or_enc_0020 },
+    { "encoder-core/0021_ormode_size_sample_beyond_column",
+      test_or_enc_0021 },
+    { "encoder-core/0022_ormode_offset_top_0",
+      test_or_enc_0022 },
+    { "encoder-core/0023_ormode_offset_top_1",
+      test_or_enc_0023 },
+    { "encoder-core/0024_ormode_offset_top_5",
+      test_or_enc_0024 },
+    { "encoder-core/0025_ormode_offset_top_6",
+      test_or_enc_0025 },
+    { "encoder-core/0026_ormode_offset_top_7",
+      test_or_enc_0026 },
+    { "decoder/0022_ormode_selective_blur_opaque",
+      test_or_dec_0022 },
+    { "decoder/0027_ormode_kundither_opaque",
+      test_or_dec_0027 },
+    { "decoder/0028_ormode_repeated_bit_idempotent",
+      test_or_dec_0028 },
+    { "decoder/0029_ormode_plane_order_independent",
+      test_or_dec_0029 },
+    { "decoder/0030_ormode_zero_mask_retains_bits",
+      test_or_dec_0030 },
+    { "decoder/0031_ormode_high_bit_composition",
+      test_or_dec_0031 },
+    { "decoder/0032_ormode_p2_without_p1",
+      test_or_dec_0032 },
+    { "decoder/0033_ormode_p1_without_p2",
+      test_or_dec_0033 },
+    { "decoder/0034_ormode_parallel_rgba",
+      test_or_dec_0034 },
+    { "decoder/0035_ormode_parallel_indexed",
+      test_or_dec_0035 },
+    { "decoder/0036_ormode_fallback_rgba",
+      test_or_dec_0036 },
+    { "decoder/0037_ormode_fallback_indexed",
+      test_or_dec_0037 },
+    { "decoder/0038_ormode_parallel_indexed_request",
+      test_or_dec_0038 },
+    { "decoder/0039_ormode_decoder_reuse_resets_mode",
+      test_or_dec_0039 },
+    { "decoder/0040_ormode_direct_zero_is_opaque",
+      test_or_dec_0040 },
+    { "palette/or_offset_cli", test_or_offset_cli },
     { "encoder-core/0002_encoder_core_ormode_body_full_band",
       test_encoder_core_0002_encoder_core_ormode_body_full_band },
     { "encoder-core/0003_encoder_core_ormode_body_tail_band",
@@ -816,8 +934,6 @@ static test_entry_t const test_entries[] = {
       test_decoder_0020_decoder_pixels_body_api },
     { "decoder/0021_decoder_selective_blur_threshold",
       test_decoder_0021_decoder_selective_blur_threshold },
-    { "decoder/0022_decoder_ormode_dequantize_opaque",
-      test_decoder_0022_decoder_ormode_dequantize_opaque },
     { "decoder/0023_decoder_high_color_dequantize_bypass",
       test_decoder_0023_decoder_high_color_dequantize_bypass },
     { "decoder/0024_decoder_parallel_skew_environment",

@@ -13,29 +13,24 @@ echo "1..1"
 set -v
 set +x
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
-
-output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -L builtin -p 2 -O -+ 3,5 -o - "${input_image}") || {
-    echo "not ok 1 - transparent-offset OR-mode render failed"
+output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -L builtin -b xterm16 -d none --palette-type=rgb -O -+ 3,5 -o - <<'PPM'
+P3
+2 2
+255
+255 0 0   0 255 0
+0 0 255   255 255 255
+PPM
+) || {
+    echo "not ok 1 - OR offset encode failed"
     exit 0
 }
 
-case "${output}" in
-    *"\"1;1;9;17"*) ;;
-    *)
-        echo "not ok 1 - OR-mode transparent-offset header geometry mismatch"
-        exit 0
-        ;;
-esac
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    "palette/or_offset_cli" "${output}" || {
+    echo "not ok 1 - OR offset pixels or geometry differ"
+    exit 0
+}
 
-case "${output}" in
-    *"???"*) ;;
-    *)
-        echo "not ok 1 - OR-mode transparent-offset dropped the left padding"
-        exit 0
-        ;;
-esac
-
-echo "ok 1 - OR-mode transparent-offset emits the offset geometry"
+echo "ok 1 - OR offset preserves every source and margin pixel"
 exit 0

@@ -309,21 +309,61 @@ The downloader checks recorded hashes rather than silently substituting changed 
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| OR-01 | CLI conversion accepts `-O`. | [tests/cli/options/general/0002_ormode_option_runs.t](../../tests/cli/options/general/0002_ormode_option_runs.t) |
+| OR-01 | CLI `-O` selects the OR-mode DCS header. | [tests/cli/options/general/0002_ormode_short_header.t](../../tests/cli/options/general/0002_ormode_short_header.t) |
 | OR-02 | Full six-row bands serialize the expected plane bytes. | [tests/processing/encoder-core/0002_encoder_core_ormode_body_full_band.t](../../tests/processing/encoder-core/0002_encoder_core_ormode_body_full_band.t) |
 | OR-03 | A short final band serializes only its available rows. | [tests/processing/encoder-core/0003_encoder_core_ormode_body_tail_band.t](../../tests/processing/encoder-core/0003_encoder_core_ormode_body_tail_band.t) |
 | OR-04 | The OR producer/writer pipeline matches the serial body for its fixture. | [tests/processing/encoder-core/0005_encoder_core_ormode_pipeline_matches_body.t](../../tests/processing/encoder-core/0005_encoder_core_ormode_pipeline_matches_body.t) |
 | OR-05 | Size policy omits an empty plane in the regression fixture. | [tests/processing/encoder-core/0006_encoder_core_ormode_body_skips_empty_planes.t](../../tests/processing/encoder-core/0006_encoder_core_ormode_body_skips_empty_planes.t) |
 | OR-06 | Raw decoding composes selectors 1 and 2 into index 3. | [tests/processing/decoder/0002_decoder_ormode_raw_overlay.t](../../tests/processing/decoder/0002_decoder_ormode_raw_overlay.t) |
 | OR-07 | Wide-index decoding preserves OR composition. | [tests/processing/decoder/0003_decoder_ormode_wide_overlay.t](../../tests/processing/decoder/0003_decoder_ormode_wide_overlay.t) |
-| OR-08 | Direct decoding resolves the composed index and opaque entry zero. | [tests/processing/decoder/0004_decoder_ormode_direct_overlay.t](../../tests/processing/decoder/0004_decoder_ormode_direct_overlay.t) |
+| OR-08 | Direct decoding resolves the composed index. | [tests/processing/decoder/0004_decoder_ormode_direct_overlay.t](../../tests/processing/decoder/0004_decoder_ormode_direct_overlay.t) |
 | OR-09 | Repeat runs preserve OR composition. | [tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t](../../tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t) |
 | OR-10 | The legacy decode API follows OR composition. | [tests/processing/decoder/0006_decoder_ormode_legacy_api.t](../../tests/processing/decoder/0006_decoder_ormode_legacy_api.t) |
 | OR-11 | The parallel request path accumulates OR indices. | [tests/processing/decoder/0007_decoder_ormode_parallel_request.t](../../tests/processing/decoder/0007_decoder_ormode_parallel_request.t) |
-| OR-12 | Dequantization retains opaque OR raster cells. | [tests/processing/decoder/0022_decoder_ormode_dequantize_opaque.t](../../tests/processing/decoder/0022_decoder_ormode_dequantize_opaque.t) |
+| OR-12 | Selective-blur dequantization retains opaque OR raster cells. | [tests/processing/decoder/0022_ormode_selective_blur_opaque.t](../../tests/processing/decoder/0022_ormode_selective_blur_opaque.t) |
 | OR-13 | Builtin palette OR output ignores clustering-space selection. | [tests/quant/palette/usage/0137_builtin_palette_ormode_clustering_colorspace_ignored_output.t](../../tests/quant/palette/usage/0137_builtin_palette_ormode_clustering_colorspace_ignored_output.t) |
 | OR-14 | PAL mapfile OR output ignores clustering-space selection. | [tests/quant/palette/usage/0138_mapfile_pal_ormode_clustering_colorspace_ignored_output.t](../../tests/quant/palette/usage/0138_mapfile_pal_ormode_clustering_colorspace_ignored_output.t) |
-| OR-15 | Transparent-offset OR output carries expanded geometry and left padding. | [tests/quant/palette/usage/0174_transparent_offset_ormode_geometry.t](../../tests/quant/palette/usage/0174_transparent_offset_ormode_geometry.t) |
+| OR-15 | Transparent-offset CLI output preserves every source and opaque margin pixel. | [tests/quant/palette/usage/0174_transparent_offset_ormode_geometry.t](../../tests/quant/palette/usage/0174_transparent_offset_ormode_geometry.t) |
+| OR-16 | A one-entry palette still emits the minimum one candidate plane. | [tests/processing/encoder-core/0007_ormode_one_color_plane.t](../../tests/processing/encoder-core/0007_ormode_one_color_plane.t) |
+| OR-17 | Two palette entries require one plane and preserve index 1. | [tests/processing/encoder-core/0008_ormode_two_color_plane.t](../../tests/processing/encoder-core/0008_ormode_two_color_plane.t) |
+| OR-18 | Three palette entries require two planes and preserve index 2. | [tests/processing/encoder-core/0009_ormode_three_color_planes.t](../../tests/processing/encoder-core/0009_ormode_three_color_planes.t) |
+| OR-19 | Four palette entries still use two planes and preserve index 3. | [tests/processing/encoder-core/0010_ormode_four_color_planes.t](../../tests/processing/encoder-core/0010_ormode_four_color_planes.t) |
+| OR-20 | Five palette entries introduce plane 4 without losing index 4. | [tests/processing/encoder-core/0011_ormode_five_color_planes.t](../../tests/processing/encoder-core/0011_ormode_five_color_planes.t) |
+| OR-21 | 128 palette entries use seven planes through selector 64. | [tests/processing/encoder-core/0012_ormode_128_color_planes.t](../../tests/processing/encoder-core/0012_ormode_128_color_planes.t) |
+| OR-22 | 129 palette entries introduce selector 128 without losing its high bit. | [tests/processing/encoder-core/0013_ormode_129_color_high_bit.t](../../tests/processing/encoder-core/0013_ormode_129_color_high_bit.t) |
+| OR-23 | Index 255 reconstructs all eight bits in a 256-entry palette. | [tests/processing/encoder-core/0014_ormode_256_color_all_bits.t](../../tests/processing/encoder-core/0014_ormode_256_color_all_bits.t) |
+| OR-24 | An all-zero full band omits all planes but preserves the band advance. | [tests/processing/encoder-core/0015_ormode_size_zero_full_band.t](../../tests/processing/encoder-core/0015_ormode_size_zero_full_band.t) |
+| OR-25 | An all-zero short band omits all planes without changing raster size. | [tests/processing/encoder-core/0016_ormode_size_zero_tail_band.t](../../tests/processing/encoder-core/0016_ormode_size_zero_tail_band.t) |
+| OR-26 | Size policy preserves leading empty columns before a set pixel. | [tests/processing/encoder-core/0017_ormode_size_leading_empty_columns.t](../../tests/processing/encoder-core/0017_ormode_size_leading_empty_columns.t) |
+| OR-27 | Size policy omits an empty plane in a short final band. | [tests/processing/encoder-core/0018_ormode_size_tail_empty_plane.t](../../tests/processing/encoder-core/0018_ormode_size_tail_empty_plane.t) |
+| OR-28 | An empty full band does not shift the following nonempty short band. | [tests/processing/encoder-core/0019_ormode_size_empty_then_nonempty_band.t](../../tests/processing/encoder-core/0019_ormode_size_empty_then_nonempty_band.t) |
+| OR-29 | Size policy preserves pixels when all planes appear within 64 columns. | [tests/processing/encoder-core/0020_ormode_size_sample_last_column.t](../../tests/processing/encoder-core/0020_ormode_size_sample_last_column.t) |
+| OR-30 | Size policy preserves a plane first used beyond its 64-column sample. | [tests/processing/encoder-core/0021_ormode_size_sample_beyond_column.t](../../tests/processing/encoder-core/0021_ormode_size_sample_beyond_column.t) |
+| OR-31 | A left offset alone preserves every source index and zero-valued margin. | [tests/processing/encoder-core/0022_ormode_offset_top_0.t](../../tests/processing/encoder-core/0022_ormode_offset_top_0.t) |
+| OR-32 | A one-row top offset preserves every source index and margin. | [tests/processing/encoder-core/0023_ormode_offset_top_1.t](../../tests/processing/encoder-core/0023_ormode_offset_top_1.t) |
+| OR-33 | A five-row top offset preserves pixels across the first band boundary. | [tests/processing/encoder-core/0024_ormode_offset_top_5.t](../../tests/processing/encoder-core/0024_ormode_offset_top_5.t) |
+| OR-34 | A six-row top offset preserves the empty band before source pixels. | [tests/processing/encoder-core/0025_ormode_offset_top_6.t](../../tests/processing/encoder-core/0025_ormode_offset_top_6.t) |
+| OR-35 | A seven-row top offset preserves the empty band and partial-band offset. | [tests/processing/encoder-core/0026_ormode_offset_top_7.t](../../tests/processing/encoder-core/0026_ormode_offset_top_7.t) |
+| OR-36 | K-undither keeps untouched OR index-zero cells opaque. | [tests/processing/decoder/0027_ormode_kundither_opaque.t](../../tests/processing/decoder/0027_ormode_kundither_opaque.t) |
+| OR-37 | Painting the same selector twice does not add or toggle its bit. | [tests/processing/decoder/0028_ormode_repeated_bit_idempotent.t](../../tests/processing/decoder/0028_ormode_repeated_bit_idempotent.t) |
+| OR-38 | Reversing the order of selectors 1 and 2 still yields index 3. | [tests/processing/decoder/0029_ormode_plane_order_independent.t](../../tests/processing/decoder/0029_ormode_plane_order_independent.t) |
+| OR-39 | A zero mask does not erase an already composed index. | [tests/processing/decoder/0030_ormode_zero_mask_retains_bits.t](../../tests/processing/decoder/0030_ormode_zero_mask_retains_bits.t) |
+| OR-40 | Selectors 128 and 1 compose index 129. | [tests/processing/decoder/0031_ormode_high_bit_composition.t](../../tests/processing/decoder/0031_ormode_high_bit_composition.t) |
+| OR-41 | P2=5 selects OR composition even when P1 is zero. | [tests/processing/decoder/0032_ormode_p2_without_p1.t](../../tests/processing/decoder/0032_ormode_p2_without_p1.t) |
+| OR-42 | P1=7 alone does not replace ordinary overwrite semantics with OR. | [tests/processing/decoder/0033_ormode_p1_without_p2.t](../../tests/processing/decoder/0033_ormode_p1_without_p2.t) |
+| OR-43 | The public RGBA decoder returns every expected pixel at two workers. | [tests/processing/decoder/0034_ormode_parallel_rgba.t](../../tests/processing/decoder/0034_ormode_parallel_rgba.t) |
+| OR-44 | The public indexed decoder returns every expected index at two workers. | [tests/processing/decoder/0035_ormode_parallel_indexed.t](../../tests/processing/decoder/0035_ormode_parallel_indexed.t) |
+| OR-45 | RGBA output remains exact after an injected paint-worker launch failure. | [tests/processing/decoder/0036_ormode_fallback_rgba.t](../../tests/processing/decoder/0036_ormode_fallback_rgba.t) |
+| OR-46 | Indexed output remains exact after an injected paint-worker launch failure. | [tests/processing/decoder/0037_ormode_fallback_indexed.t](../../tests/processing/decoder/0037_ormode_fallback_indexed.t) |
+| OR-47 | The internal parallel indexed request completes and composes every index. | [tests/processing/decoder/0038_ormode_parallel_indexed_request.t](../../tests/processing/decoder/0038_ormode_parallel_indexed_request.t) |
+| OR-48 | Reusing a decoder for a normal stream after OR restores overwrite rules. | [tests/processing/decoder/0039_ormode_decoder_reuse_resets_mode.t](../../tests/processing/decoder/0039_ormode_decoder_reuse_resets_mode.t) |
+| OR-49 | An untouched OR pixel resolves palette zero with alpha 255. | [tests/processing/decoder/0040_ormode_direct_zero_is_opaque.t](../../tests/processing/decoder/0040_ormode_direct_zero_is_opaque.t) |
+| OR-50 | The long --ormode option selects the OR-mode DCS header. | [tests/cli/options/general/0009_ormode_long_header.t](../../tests/cli/options/general/0009_ormode_long_header.t) |
+| OR-51 | The CLI leaves OR mode disabled by default. | [tests/cli/options/general/0010_ormode_disabled_by_default.t](../../tests/cli/options/general/0010_ormode_disabled_by_default.t) |
+| OR-52 | The public output setter can turn OR mode back off. | [tests/processing/encoder-core/0027_ormode_public_output_disable.t](../../tests/processing/encoder-core/0027_ormode_public_output_disable.t) |
+| OR-53 | The size-policy OR pipeline matches the serial body across full and tail bands. | [tests/processing/encoder-core/0028_ormode_pipeline_size.t](../../tests/processing/encoder-core/0028_ormode_pipeline_size.t) |
+| OR-54 | OR offsets preserve exact pixels through serial dispatch at two workers. | [tests/processing/encoder-core/0029_ormode_offset_disables_pipeline.t](../../tests/processing/encoder-core/0029_ormode_offset_disables_pipeline.t) |
+| OR-55 | The legacy decoder exposes untouched palette zero as a color. | [tests/processing/decoder/0041_ormode_legacy_zero_is_color.t](../../tests/processing/decoder/0041_ormode_legacy_zero_is_color.t) |
 
 ### Defensive and malformed-input tests
 
@@ -331,6 +371,6 @@ The [encoder-core test category](../../tests/processing/encoder-core/) also exer
 
 ### Coverage limits
 
-The CLI test is a conversion smoke test, not an exhaustive default, long-option, repeated-option, or multi-input state test. The table does not establish every palette size, every alpha-policy combination, `-I`/`-O` composition, equivalence under every thread schedule, or terminal display compatibility. Receiver handling of `P2=5`, existing framebuffer content, and offset margins requires a separate receiver-specific observation.
+The tests cover explicit CLI mode selection, selected palette and band boundaries, exact offset pixels, OR algebra, and final public decoder output at a two-worker budget. They do not establish every alpha-policy combination, `-I`/`-O` composition, equivalence under every thread schedule, or terminal display compatibility. The public parallel comparisons use independently expected pixels, while separate internal request tests require successful worker execution; a configured budget alone is not evidence of worker use. Receiver handling of `P2=5`, existing framebuffer content, and offset margins requires a separate receiver-specific observation.
 
 <!-- Regenerate the explanatory SVGs with: python3 tools/ormode/render_explanation.py -->
