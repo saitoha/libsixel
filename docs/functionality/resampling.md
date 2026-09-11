@@ -6,6 +6,16 @@ This document describes how the current byte and float32 scalers choose source s
 
 `img2sixel -r METHOD` and `img2sixel --resampling=METHOD` select a resampling method only when `-w` or `-h` activates resize. The default is `bilinear`.
 
+## Theory and method chapters
+
+This document is the implementation and measurement guide. The mathematical and historical material is split into smaller method references:
+
+- [Resampling theory and history](resampling/theory-history.md) derives the sampling model, sinc reconstruction, finite windowing, separability, and the boundary between ImageMagick influence and libsixel implementation lineage.
+- [Compact resampling methods](resampling/compact-kernels.md) covers `nearest`, `gaussian`, `hanning`, `hamming`, `bilinear`, and `welsh` individually.
+- [Wide-support resampling methods](resampling/wide-kernels.md) covers the exact Keys-family `bicubic` coefficients and each Lanczos radius individually.
+
+The method chapters plot the continuous functions and their theoretical transforms. The figures and tables below measure the current discrete C implementation, including phase, scale dilation, two-dimensional separability, clamping, quality, speed, and encoded size.
+
 ## Choosing a method
 
 No method is uniformly best. The practical choice depends first on whether the operation enlarges or reduces, then on whether false patterns, blur, ringing, runtime, or exact source samples matter most.
