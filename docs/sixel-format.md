@@ -48,7 +48,15 @@ Palette formats have another useful property: a decoder can preserve the palette
 
 See [repeated encoding as a state contract](sixel-format/comparison.md#repeated-encoding-is-a-state-contract) for equality checks, the SIXEL-to-SIXEL CLI path, timing boundaries, the other image classes, raw samples and reproduction commands.
 
-## DCS envelope
+## Wire format
+
+The comparisons above measure the cost and quality of producing and consuming an image stream. The wire format explains how the three parts of SIXEL's image pipeline become bytes: quantization supplies a palette and pixel indices, the encoder turns those indices into six-row color masks and repeated runs, and a terminal control envelope carries the resulting graphics commands.
+
+The receiver does not repeat color quantization. It reads palette definitions and paints the masks using the selected colors. Those definitions, masks, run lengths, and graphics cursor movements form the SIXEL body. The surrounding Device Control String (DCS) tells the terminal where that body begins, and the String Terminator (ST) tells it where graphics input ends.
+
+The following sections read this representation from the outside inward: first the DCS envelope, then the sixel data characters, and finally the commands that define colors, repeat masks, and position them. The rendering model then puts these pieces together into a complete image.
+
+### DCS envelope
 
 In a 7-bit environment, a complete image has this shape:
 
@@ -70,7 +78,7 @@ The spaces and brackets above are notation only; they are not transmitted.
 For example, libsixel commonly begins a 7-bit image with `ESC P 0;0;0 q`
 without spaces.
 
-### Header parameters
+#### Header parameters
 
 `P1`, `P2`, and `P3` are decimal parameters before `q`.
 
@@ -102,7 +110,7 @@ SIXEL pixels.
 grid size was fixed. Modern applications should not rely on it for output
 dimensions.
 
-## Sixel data characters
+### Sixel data characters
 
 A sixel is one vertical column of six pixels. Data bytes range from `?`
 (`0x3f`) through `~` (`0x7e`). Subtract `0x3f` from the byte to obtain a six-bit
@@ -130,9 +138,9 @@ positions and painted pixels. Trailing blank columns or bands can therefore be
 ambiguous or cropped by an implementation. Emit raster attributes when exact
 canvas dimensions matter.
 
-## Body control functions
+### Body control functions
 
-### Graphics Repeat Introducer: `!`
+#### Graphics Repeat Introducer: `!`
 
 ```text
 ! Pn sixel-character
@@ -146,7 +154,7 @@ and apply documented image-size and resource limits before expanding a run.
 Some historical devices limit the repeat argument to 255; libsixel exposes a
 compatibility option for that restriction.
 
-### Set Raster Attributes: `"`
+#### Set Raster Attributes: `"`
 
 ```text
 " Pan ; Pad ; Ph ; Pv
@@ -163,7 +171,7 @@ blank columns. A decoder must therefore account for both declared extents and
 the actual positions reached by the body, while rejecting values that exceed
 its resource limits.
 
-### Graphics Color Introducer: `#`
+#### Graphics Color Introducer: `#`
 
 Select an existing color register with:
 
@@ -200,13 +208,13 @@ or shared registers vary among terminals. Portable output should define every
 register it depends on and should not assume that an earlier image established
 the current palette.
 
-### Graphics Carriage Return: `$`
+#### Graphics Carriage Return: `$`
 
 `$` returns the active horizontal position to the graphics left margin without
 advancing to the next sixel band. Encoders use it to overprint the same band
 with another color plane.
 
-### Graphics New Line: `-`
+#### Graphics New Line: `-`
 
 `-` returns to the graphics left margin and advances to the next sixel band.
 For a 1:1 raster this advances the logical vertical position by six pixels.
