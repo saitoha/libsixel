@@ -10,7 +10,7 @@ root = Path(sys.argv[1])
 p = json.loads((root / 'results.json').read_text())
 rows = p['rows']
 n = p['metadata']['generations']
-assert len(rows) == 3 * (11 * 4 + 8 * n)
+assert len(rows) == 3 * (11 * 4 + 6 * n)
 keys = set()
 for row in rows:
     key = (row['image'], row['experiment'], row['codec'], row['threads'], row.get('mode'), row.get('generation'))
@@ -26,8 +26,11 @@ for row in rows:
     if row['codec'] in ['PNG', 'WebP lossless']:
         assert row['exact_input']
         assert row['ms_ssim'] == 1
-    if row['experiment'] == 'generation' and row['mode'] == 'indexed':
-        assert row['exact_generation_one']
+    if row['experiment'] == 'generation':
+        palette = row['codec'] in ['SIXEL default', 'GIF']
+        assert row['mode'] == ('indexed' if palette else 'RGB')
+        if palette:
+            assert row['exact_generation_one']
 for name, digest in p['metadata']['inputs'].items():
     assert hashlib.sha256((root / f'{name}.png').read_bytes()).hexdigest() == digest
     for codec in {r['codec'] for r in rows if r['experiment'] == 'scaling'}:
