@@ -100,9 +100,10 @@ Those benefits do not make builtin inherently safer. Every in-tree parser, decom
 
 ## Backend documentation boundaries
 
-The shared manager contract stays here. Each detailed backend document should separately specify its recognized formats, depth and colorspace behavior, metadata precedence, animation model, alpha representation, suboptions, fallback statuses, host dependencies, security considerations, and implementation/test landmarks. The current detailed backend document is:
+The shared manager contract stays here. Each detailed backend document should separately specify its recognized formats, depth and colorspace behavior, metadata precedence, animation model, alpha representation, suboptions, fallback statuses, host dependencies, security considerations, and implementation/test landmarks. The current detailed builtin references are:
 
 - [Builtin Image Loader](builtin.md), including its stb_image lineage and format-specific extraction history.
+- [Builtin Format Components](builtin/README.md), indexing the exact accepted variants, metadata semantics, output precision/colorspace, history, and unsupported features of each builtin decoder family.
 
 Cross-backend alpha and background behavior is defined by [Alpha Policy](alpha-policy.md) and [Background Policy](background-policy.md).
 

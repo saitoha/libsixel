@@ -95,6 +95,18 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/loader/alpha-policy.md \
 	docs/loader/background-policy.md \
 	docs/loader/builtin.md \
+	docs/loader/builtin/README.md \
+	docs/loader/builtin/bmp.md \
+	docs/loader/builtin/gif.md \
+	docs/loader/builtin/hdr.md \
+	docs/loader/builtin/jpeg.md \
+	docs/loader/builtin/netpbm.md \
+	docs/loader/builtin/pic.md \
+	docs/loader/builtin/png.md \
+	docs/loader/builtin/psd.md \
+	docs/loader/builtin/sixel.md \
+	docs/loader/builtin/tga.md \
+	docs/loader/builtin/webp.md \
 	docs/loader/assets/alpha-policy-comparison.gif \
 	docs/loader/assets/alpha-policy-comparison.png \
 	docs/loader/loader-architecture-figures/builtin-lineage-mobile.svg \
