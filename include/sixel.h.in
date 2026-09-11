@@ -1485,7 +1485,13 @@ sixel_helper_normalize_pixelformat(
     int                 /* in */  height            /* height of source image */
 );
 
-/* scale image to specified size */
+/*
+ * Scale image to specified size.  Inputs whose computed depth is not three
+ * bytes are normalized before scaling, and dst uses the resulting normalized
+ * layout.  Allocate dst for that effective pixel format: RGB888 for G8,
+ * packed-RGB, alpha-bearing, and float inputs; G8 or PAL8 for packed gray or
+ * palette inputs.
+ */
 SIXELAPI SIXELSTATUS
 sixel_helper_scale_image(
     unsigned char       /* out */ *dst,                  /* destination buffer */

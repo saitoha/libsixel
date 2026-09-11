@@ -299,6 +299,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_PARALLEL_FACTOR_ENVIRONMENT \
     -DBUILD_TEST_0002_PARALLEL_MIN_BYTES_ENVIRONMENT \
     -DBUILD_TEST_0003_RESAMPLE_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0004_G8_NORMALIZED_RGB888 \
+    -DBUILD_TEST_0005_RGB565_NORMALIZED_RGB888 \
+    -DBUILD_TEST_0006_RGBA8888_NORMALIZED_RGB888 \
     -DBUILD_TEST_0001_DECODER_PARALLEL_SPLIT_AFTER_NEWLINE \
     -DBUILD_TEST_0002_DECODER_ORMODE_RAW_OVERLAY \
     -DBUILD_TEST_0003_DECODER_ORMODE_WIDE_OVERLAY \
@@ -487,6 +490,9 @@ test_runner_SOURCES = test_runner.c \
     processing/scale/0001_parallel_factor_environment.c \
     processing/scale/0002_parallel_min_bytes_environment.c \
     processing/scale/0003_resample_allocation_failure.c \
+    processing/scale/0004_g8_normalized_rgb888.c \
+    processing/scale/0005_rgb565_normalized_rgb888.c \
+    processing/scale/0006_rgba8888_normalized_rgb888.c \
     processing/decoder/0001_decoder_parallel_split_after_newline.c \
     processing/decoder/0002_decoder_ormode_raw_overlay.c \
     processing/decoder/0003_decoder_ormode_wide_overlay.c \

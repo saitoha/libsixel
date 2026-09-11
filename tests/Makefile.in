@@ -197,6 +197,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/scale/0001_parallel_factor_environment.c \
 	processing/scale/0002_parallel_min_bytes_environment.c \
 	processing/scale/0003_resample_allocation_failure.c \
+	processing/scale/0004_g8_normalized_rgb888.c \
+	processing/scale/0005_rgb565_normalized_rgb888.c \
+	processing/scale/0006_rgba8888_normalized_rgb888.c \
 	processing/decoder/0001_decoder_parallel_split_after_newline.c \
 	processing/decoder/0002_decoder_ormode_raw_overlay.c \
 	processing/decoder/0003_decoder_ormode_wide_overlay.c \
@@ -403,6 +406,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0001_parallel_factor_environment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0002_parallel_min_bytes_environment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0003_resample_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0004_g8_normalized_rgb888.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0005_rgb565_normalized_rgb888.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0006_rgba8888_normalized_rgb888.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0002_decoder_ormode_raw_overlay.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0003_decoder_ormode_wide_overlay.$(OBJEXT) \
@@ -753,6 +759,9 @@ am__depfiles_remade =  \
 	processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po \
 	processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po \
 	processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po \
+	processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Po \
+	processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Po \
+	processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0002_thread_default_counts.Po \
@@ -1564,6 +1573,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PARALLEL_FACTOR_ENVIRONMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PARALLEL_MIN_BYTES_ENVIRONMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_RESAMPLE_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_G8_NORMALIZED_RGB888 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_RGB565_NORMALIZED_RGB888 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_RGBA8888_NORMALIZED_RGB888 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DECODER_PARALLEL_SPLIT_AFTER_NEWLINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_DECODER_ORMODE_RAW_OVERLAY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_DECODER_ORMODE_WIDE_OVERLAY \
@@ -1777,6 +1789,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0001_parallel_factor_environment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0002_parallel_min_bytes_environment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0003_resample_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0004_g8_normalized_rgb888.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0005_rgb565_normalized_rgb888.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0006_rgba8888_normalized_rgb888.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0001_decoder_parallel_split_after_newline.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0002_decoder_ormode_raw_overlay.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0003_decoder_ormode_wide_overlay.c \
@@ -2390,6 +2405,15 @@ processing/scale/test_runner-0002_parallel_min_bytes_environment.$(OBJEXT):  \
 	processing/scale/$(am__dirstamp) \
 	processing/scale/$(DEPDIR)/$(am__dirstamp)
 processing/scale/test_runner-0003_resample_allocation_failure.$(OBJEXT):  \
+	processing/scale/$(am__dirstamp) \
+	processing/scale/$(DEPDIR)/$(am__dirstamp)
+processing/scale/test_runner-0004_g8_normalized_rgb888.$(OBJEXT):  \
+	processing/scale/$(am__dirstamp) \
+	processing/scale/$(DEPDIR)/$(am__dirstamp)
+processing/scale/test_runner-0005_rgb565_normalized_rgb888.$(OBJEXT):  \
+	processing/scale/$(am__dirstamp) \
+	processing/scale/$(DEPDIR)/$(am__dirstamp)
+processing/scale/test_runner-0006_rgba8888_normalized_rgb888.$(OBJEXT):  \
 	processing/scale/$(am__dirstamp) \
 	processing/scale/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/$(am__dirstamp):
@@ -3088,6 +3112,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0002_thread_default_counts.Po@am__quote@ # am--include-marker
@@ -4339,6 +4366,48 @@ processing/scale/test_runner-0003_resample_allocation_failure.obj: processing/sc
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/scale/0003_resample_allocation_failure.c' object='processing/scale/test_runner-0003_resample_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/scale/test_runner-0003_resample_allocation_failure.obj `if test -f 'processing/scale/0003_resample_allocation_failure.c'; then $(CYGPATH_W) 'processing/scale/0003_resample_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/scale/0003_resample_allocation_failure.c'; fi`
+
+processing/scale/test_runner-0004_g8_normalized_rgb888.o: processing/scale/0004_g8_normalized_rgb888.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/scale/test_runner-0004_g8_normalized_rgb888.o -MD -MP -MF processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Tpo -c -o processing/scale/test_runner-0004_g8_normalized_rgb888.o `test -f 'processing/scale/0004_g8_normalized_rgb888.c' || echo '$(srcdir)/'`processing/scale/0004_g8_normalized_rgb888.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Tpo processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/scale/0004_g8_normalized_rgb888.c' object='processing/scale/test_runner-0004_g8_normalized_rgb888.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/scale/test_runner-0004_g8_normalized_rgb888.o `test -f 'processing/scale/0004_g8_normalized_rgb888.c' || echo '$(srcdir)/'`processing/scale/0004_g8_normalized_rgb888.c
+
+processing/scale/test_runner-0004_g8_normalized_rgb888.obj: processing/scale/0004_g8_normalized_rgb888.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/scale/test_runner-0004_g8_normalized_rgb888.obj -MD -MP -MF processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Tpo -c -o processing/scale/test_runner-0004_g8_normalized_rgb888.obj `if test -f 'processing/scale/0004_g8_normalized_rgb888.c'; then $(CYGPATH_W) 'processing/scale/0004_g8_normalized_rgb888.c'; else $(CYGPATH_W) '$(srcdir)/processing/scale/0004_g8_normalized_rgb888.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Tpo processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/scale/0004_g8_normalized_rgb888.c' object='processing/scale/test_runner-0004_g8_normalized_rgb888.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/scale/test_runner-0004_g8_normalized_rgb888.obj `if test -f 'processing/scale/0004_g8_normalized_rgb888.c'; then $(CYGPATH_W) 'processing/scale/0004_g8_normalized_rgb888.c'; else $(CYGPATH_W) '$(srcdir)/processing/scale/0004_g8_normalized_rgb888.c'; fi`
+
+processing/scale/test_runner-0005_rgb565_normalized_rgb888.o: processing/scale/0005_rgb565_normalized_rgb888.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/scale/test_runner-0005_rgb565_normalized_rgb888.o -MD -MP -MF processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Tpo -c -o processing/scale/test_runner-0005_rgb565_normalized_rgb888.o `test -f 'processing/scale/0005_rgb565_normalized_rgb888.c' || echo '$(srcdir)/'`processing/scale/0005_rgb565_normalized_rgb888.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Tpo processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/scale/0005_rgb565_normalized_rgb888.c' object='processing/scale/test_runner-0005_rgb565_normalized_rgb888.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/scale/test_runner-0005_rgb565_normalized_rgb888.o `test -f 'processing/scale/0005_rgb565_normalized_rgb888.c' || echo '$(srcdir)/'`processing/scale/0005_rgb565_normalized_rgb888.c
+
+processing/scale/test_runner-0005_rgb565_normalized_rgb888.obj: processing/scale/0005_rgb565_normalized_rgb888.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/scale/test_runner-0005_rgb565_normalized_rgb888.obj -MD -MP -MF processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Tpo -c -o processing/scale/test_runner-0005_rgb565_normalized_rgb888.obj `if test -f 'processing/scale/0005_rgb565_normalized_rgb888.c'; then $(CYGPATH_W) 'processing/scale/0005_rgb565_normalized_rgb888.c'; else $(CYGPATH_W) '$(srcdir)/processing/scale/0005_rgb565_normalized_rgb888.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Tpo processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/scale/0005_rgb565_normalized_rgb888.c' object='processing/scale/test_runner-0005_rgb565_normalized_rgb888.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/scale/test_runner-0005_rgb565_normalized_rgb888.obj `if test -f 'processing/scale/0005_rgb565_normalized_rgb888.c'; then $(CYGPATH_W) 'processing/scale/0005_rgb565_normalized_rgb888.c'; else $(CYGPATH_W) '$(srcdir)/processing/scale/0005_rgb565_normalized_rgb888.c'; fi`
+
+processing/scale/test_runner-0006_rgba8888_normalized_rgb888.o: processing/scale/0006_rgba8888_normalized_rgb888.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/scale/test_runner-0006_rgba8888_normalized_rgb888.o -MD -MP -MF processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Tpo -c -o processing/scale/test_runner-0006_rgba8888_normalized_rgb888.o `test -f 'processing/scale/0006_rgba8888_normalized_rgb888.c' || echo '$(srcdir)/'`processing/scale/0006_rgba8888_normalized_rgb888.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Tpo processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/scale/0006_rgba8888_normalized_rgb888.c' object='processing/scale/test_runner-0006_rgba8888_normalized_rgb888.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/scale/test_runner-0006_rgba8888_normalized_rgb888.o `test -f 'processing/scale/0006_rgba8888_normalized_rgb888.c' || echo '$(srcdir)/'`processing/scale/0006_rgba8888_normalized_rgb888.c
+
+processing/scale/test_runner-0006_rgba8888_normalized_rgb888.obj: processing/scale/0006_rgba8888_normalized_rgb888.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/scale/test_runner-0006_rgba8888_normalized_rgb888.obj -MD -MP -MF processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Tpo -c -o processing/scale/test_runner-0006_rgba8888_normalized_rgb888.obj `if test -f 'processing/scale/0006_rgba8888_normalized_rgb888.c'; then $(CYGPATH_W) 'processing/scale/0006_rgba8888_normalized_rgb888.c'; else $(CYGPATH_W) '$(srcdir)/processing/scale/0006_rgba8888_normalized_rgb888.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Tpo processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/scale/0006_rgba8888_normalized_rgb888.c' object='processing/scale/test_runner-0006_rgba8888_normalized_rgb888.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/scale/test_runner-0006_rgba8888_normalized_rgb888.obj `if test -f 'processing/scale/0006_rgba8888_normalized_rgb888.c'; then $(CYGPATH_W) 'processing/scale/0006_rgba8888_normalized_rgb888.c'; else $(CYGPATH_W) '$(srcdir)/processing/scale/0006_rgba8888_normalized_rgb888.c'; fi`
 
 processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.o: processing/decoder/0001_decoder_parallel_split_after_newline.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Tpo -c -o processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.o `test -f 'processing/decoder/0001_decoder_parallel_split_after_newline.c' || echo '$(srcdir)/'`processing/decoder/0001_decoder_parallel_split_after_newline.c
@@ -6552,6 +6621,9 @@ distclean: distclean-am
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po
+	-rm -f processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Po
+	-rm -f processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Po
+	-rm -f processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0002_thread_default_counts.Po
@@ -6798,6 +6870,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po
+	-rm -f processing/scale/$(DEPDIR)/test_runner-0004_g8_normalized_rgb888.Po
+	-rm -f processing/scale/$(DEPDIR)/test_runner-0005_rgb565_normalized_rgb888.Po
+	-rm -f processing/scale/$(DEPDIR)/test_runner-0006_rgba8888_normalized_rgb888.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0002_thread_default_counts.Po
