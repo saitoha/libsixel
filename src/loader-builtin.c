@@ -120,6 +120,7 @@ sixel_builtin_load_with_builtin_impl(
 #endif
 
 static SIXEL_STBI_TLS sixel_allocator_t *stbi_allocator;
+static SIXEL_STBI_TLS int stbi_allocation_failed;
 
 #undef SIXEL_STBI_TLS
 
@@ -263,19 +264,33 @@ typedef struct sixel_loader_builtin_component {
 void *
 stbi_malloc(size_t n)
 {
+    void *ptr;
+
+    ptr = NULL;
     if (stbi_allocator == NULL) {
         return malloc(n);
     }
-    return sixel_allocator_malloc(stbi_allocator, n);
+    ptr = sixel_allocator_malloc(stbi_allocator, n);
+    if (ptr == NULL && n != 0u) {
+        stbi_allocation_failed = 1;
+    }
+    return ptr;
 }
 
 void *
 stbi_realloc(void *p, size_t n)
 {
+    void *ptr;
+
+    ptr = NULL;
     if (stbi_allocator == NULL) {
         return realloc(p, n);
     }
-    return sixel_allocator_realloc(stbi_allocator, p, n);
+    ptr = sixel_allocator_realloc(stbi_allocator, p, n);
+    if (ptr == NULL && n != 0u) {
+        stbi_allocation_failed = 1;
+    }
+    return ptr;
 }
 
 void
@@ -2778,6 +2793,7 @@ sixel_builtin_apng_emit_frame(
         alpha_zero_is_transparent,
         emit_callback);
 
+    stbi_allocation_failed = 0;
     stbi__start_mem(&stb_context, png_data, (int)png_size);
     subframe = stbi__load_and_postprocess_8bit(&stb_context,
                                                &width,
@@ -2794,7 +2810,9 @@ sixel_builtin_apng_emit_frame(
             png_size,
             stbi_reason != NULL ? stbi_reason : "(null)");
         sixel_helper_set_additional_message(stbi_reason);
-        status = SIXEL_STBI_ERROR;
+        status = stbi_allocation_failed != 0
+            ? SIXEL_BAD_ALLOCATION
+            : SIXEL_STBI_ERROR;
         goto end;
     }
     sixel_trace_topic_message(
@@ -6445,6 +6463,14 @@ sixel_builtin_load_stbi_png_path(
             callback_context.cancel_context);
         if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
             *animation_handled = 1;
+            return status;
+        }
+        if (status == SIXEL_BAD_ALLOCATION) {
+            /*
+             * A resource failure is not evidence that the APNG is a static
+             * PNG. Falling back here would silently emit only the default
+             * image and report success after truncating the animation.
+             */
             return status;
         }
     }

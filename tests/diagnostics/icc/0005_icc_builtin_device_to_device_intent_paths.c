@@ -47,6 +47,10 @@
 #define check_transform_rgb8 icc0005_check_transform_rgb8
 #define check_transform_rgb8_fails icc0005_check_transform_rgb8_fails
 #define check_transform_rgb8_to_cmyk8 icc0005_check_transform_rgb8_to_cmyk8
+#define check_transform_rgb8_to_cmyk16 \
+    icc0005_check_transform_rgb8_to_cmyk16
+#define check_transform_rgb8_to_cmykf32 \
+    icc0005_check_transform_rgb8_to_cmykf32
 #define check_transform_lab_f32_identity icc0005_check_transform_lab_f32_identity
 #define check_transform_lab_f32_rejects_non_lab_profiles \
     icc0005_check_transform_lab_f32_rejects_non_lab_profiles
@@ -776,6 +780,66 @@ check_transform_rgb8_to_cmyk8(sixel_cms_profile_t *src,
 }
 
 static int
+check_transform_rgb8_to_cmyk16(sixel_cms_profile_t *src,
+                               sixel_cms_profile_t *dst,
+                               unsigned char const input[3],
+                               unsigned int expected_slot)
+{
+    sixel_cms_transform_t *tr;
+    uint16_t out[4];
+
+    tr = NULL;
+    memset(out, 0, sizeof(out));
+    if (src == NULL || dst == NULL || input == NULL ||
+        expected_slot > 2u) {
+        return 0;
+    }
+    tr = sixel_cms_create_transform(src,
+                                    SIXEL_CMS_PIXELFORMAT_RGB_8,
+                                    dst,
+                                    SIXEL_CMS_PIXELFORMAT_CMYK_16,
+                                    SIXEL_CMS_TRANSFORM_DEFAULT);
+    if (tr == NULL || !sixel_cms_do_transform(tr, input, out, 1u)) {
+        sixel_cms_delete_transform(tr);
+        return 0;
+    }
+    sixel_cms_delete_transform(tr);
+    return out[expected_slot] > 40000u &&
+        out[(expected_slot + 1u) % 3u] < 25000u &&
+        out[(expected_slot + 2u) % 3u] < 25000u;
+}
+
+static int
+check_transform_rgb8_to_cmykf32(sixel_cms_profile_t *src,
+                                sixel_cms_profile_t *dst,
+                                unsigned char const input[3],
+                                unsigned int expected_slot)
+{
+    sixel_cms_transform_t *tr;
+    float out[4];
+
+    tr = NULL;
+    memset(out, 0, sizeof(out));
+    if (src == NULL || dst == NULL || input == NULL ||
+        expected_slot > 2u) {
+        return 0;
+    }
+    tr = sixel_cms_create_transform(src,
+                                    SIXEL_CMS_PIXELFORMAT_RGB_8,
+                                    dst,
+                                    SIXEL_CMS_PIXELFORMAT_CMYK_F32,
+                                    SIXEL_CMS_TRANSFORM_DEFAULT);
+    if (tr == NULL || !sixel_cms_do_transform(tr, input, out, 1u)) {
+        sixel_cms_delete_transform(tr);
+        return 0;
+    }
+    sixel_cms_delete_transform(tr);
+    return out[expected_slot] > 0.6f &&
+        out[(expected_slot + 1u) % 3u] < 0.4f &&
+        out[(expected_slot + 2u) % 3u] < 0.4f;
+}
+
+static int
 check_transform_lab_f32_identity(void)
 {
     sixel_cms_profile_t *src;
@@ -1087,7 +1151,9 @@ run_device_to_device_intent_cases(void)
     }
 
     if (test_setenv("SIXEL_CMS_RENDERING_INTENT", "perceptual!") != 0 ||
-        !check_transform_rgb8_to_cmyk8(src, dst, input, 0u)) {
+        !check_transform_rgb8_to_cmyk8(src, dst, input, 0u) ||
+        !check_transform_rgb8_to_cmyk16(src, dst, input, 0u) ||
+        !check_transform_rgb8_to_cmykf32(src, dst, input, 0u)) {
         goto fail;
     }
 
@@ -1137,6 +1203,8 @@ test_icc_0005_icc_builtin_device_to_device_intent_paths(int argc, char **argv)
 #undef check_transform_lab_f32_rejects_non_lab_profiles
 #undef check_transform_lab_f32_identity
 #undef check_transform_rgb8_to_cmyk8
+#undef check_transform_rgb8_to_cmyk16
+#undef check_transform_rgb8_to_cmykf32
 #undef check_transform_rgb8_fails
 #undef check_transform_rgb8
 #undef expect_slot_channel_cmyk

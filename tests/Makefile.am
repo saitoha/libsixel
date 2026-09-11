@@ -242,6 +242,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0005_ICC_BUILTIN_DEVICE_TO_DEVICE_INTENT_PATHS \
     -DBUILD_TEST_0006_ICC_BUILTIN_PIXEL_FORMAT_MATRIX \
     -DBUILD_TEST_0007_ICC_BUILTIN_FLOAT_SPECIAL_VALUES \
+    -DBUILD_TEST_0008_ICC_BUILTIN_D2B_B2D_LEGACY_LUT \
     -DBUILD_TEST_0002_FILTER_SAMPLE \
     -DBUILD_TEST_0002_INCREMENTAL_LOAD \
     -DBUILD_TEST_0003_CORRUPT_DATA \
@@ -522,6 +523,17 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0163_LOADER_BUILTIN_WEBP_CANCEL_BOUNDARIES \
     -DBUILD_TEST_0164_LOADER_BUILTIN_JPEG_LOSSLESS_PREDICTORS_NUMERIC \
     -DBUILD_TEST_0165_LOADER_BUILTIN_JPEG_RGB_RESTART_NUMERIC \
+    -DBUILD_TEST_0166_LOADER_BUILTIN_APNG_ALLOCATION_FAILURES \
+    -DBUILD_TEST_0167_LOADER_BUILTIN_WEBP_ANIMATION_ALLOCATION_FAILURES \
+    -DBUILD_TEST_0168_LOADER_BUILTIN_PSD_EFFECT_ALLOCATION_FAILURES \
+    -DBUILD_TEST_0169_LOADER_BUILTIN_PNG_ICC_ALLOCATION_FAILURES \
+    -DBUILD_TEST_0170_LOADER_BUILTIN_WEBP_VP8L_COLOR_CACHE_DIGEST \
+    -DBUILD_TEST_0171_LOADER_BUILTIN_WEBP_VP8L_COLOR_INDEX_DIGEST \
+    -DBUILD_TEST_0172_LOADER_BUILTIN_WEBP_ALPHA_BACKGROUND_DIGEST \
+    -DBUILD_TEST_0173_LOADER_BUILTIN_TGA_HEADER_COLLISION_REJECT \
+    -DBUILD_TEST_0174_LOADER_BUILTIN_PNG_CHRM_GAMA_FLOAT_NUMERIC \
+    -DBUILD_TEST_0175_LOADER_BUILTIN_PNG_SINGULAR_CHRM_FALLBACK_NUMERIC \
+    -DBUILD_TEST_0176_LOADER_BUILTIN_PNG_FILE_BACKGROUND_CHRM_NUMERIC \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -823,6 +835,18 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0163_loader_builtin_webp_cancel_boundaries.c \
     loader/builtin/0164_loader_builtin_jpeg_lossless_predictors_numeric.c \
     loader/builtin/0165_loader_builtin_jpeg_rgb_restart_numeric.c \
+    loader/builtin/0166_loader_builtin_apng_allocation_failures.c \
+    loader/builtin/0167_loader_builtin_webp_animation_allocation_failures.c \
+    loader/builtin/0168_loader_builtin_psd_effect_allocation_failures.c \
+    loader/builtin/0169_loader_builtin_png_icc_allocation_failures.c \
+    loader/builtin/0170_loader_builtin_webp_vp8l_color_cache_digest.c \
+    loader/builtin/0171_loader_builtin_webp_vp8l_color_index_digest.c \
+    loader/builtin/0172_loader_builtin_webp_alpha_background_digest.c \
+    loader/builtin/0173_loader_builtin_tga_header_collision_reject.c \
+    loader/builtin/0174_loader_builtin_png_chrm_gama_float_numeric.c \
+    loader/builtin/0175_loader_builtin_png_singular_chrm_fallback_numeric.c \
+    loader/builtin/0176_loader_builtin_png_file_background_chrm_numeric.c \
+    loader/builtin/loader_builtin_png_color_test_common.h \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
     loader/libwebp/0013_loader_libwebp_pixelformat.c \
@@ -894,6 +918,7 @@ test_runner_SOURCES = test_runner.c \
     diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.c \
     diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c \
     diagnostics/icc/0007_icc_builtin_float_special_values.c \
+    diagnostics/icc/0008_icc_builtin_d2b_b2d_legacy_lut.c \
     extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
     extension/gdk-pixbuf-loader/0002_incremental_load.c \
     extension/gdk-pixbuf-loader/0003_corrupt_data.c \
