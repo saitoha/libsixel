@@ -386,17 +386,21 @@ def validate_metadata(path: Path) -> Dict[str, object]:
     if metadata.get("schema_version") != 1:
         fail("metadata schema is not version 1")
     source = metadata.get("source")
+    build = metadata.get("build")
     protocol = metadata.get("protocol")
     preflight = metadata.get("preflight")
     artifacts = metadata.get("artifacts")
     if not all(isinstance(value, dict) for value in (
-            source, protocol, preflight, artifacts)):
-        fail("metadata is missing source, protocol, preflight, or artifacts")
+            source, build, protocol, preflight, artifacts)):
+        fail("metadata is missing source, build, protocol, preflight, or artifacts")
     if source.get("tracked_worktree_state_at_start") != "clean":
         fail("durable measurements were not recorded from a clean worktree")
     if (not source.get("revision") or not source.get("input")
             or len(source.get("input_sha256", "")) != 64):
         fail("measurement source provenance is incomplete")
+    for field in ("compiler_command", "cflags", "configure_arguments"):
+        if not build.get(field):
+            fail(f"measurement build provenance has no {field}")
     expected_protocol = {
         "policies": [str(record[0]) for record in POLICIES],
         "simd_modes": list(SIMD_MODES),

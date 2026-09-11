@@ -1182,6 +1182,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lsqa", required=True, type=Path)
     parser.add_argument("--revision", required=True)
     parser.add_argument("--source-state", required=True, choices=("clean",))
+    parser.add_argument("--compiler-command", required=True)
+    parser.add_argument("--cflags", required=True)
+    parser.add_argument("--cppflags", required=True)
+    parser.add_argument("--ldflags", required=True)
+    parser.add_argument("--configure-arguments", required=True)
     parser.add_argument("--warmups", type=int, default=2)
     parser.add_argument("--runs", type=int, default=9)
     parser.add_argument("--output-directory", required=True, type=Path)
@@ -1300,6 +1305,13 @@ def main() -> None:
             "img2sixel": program_record(img2sixel),
             "sixel2png": program_record(sixel2png),
             "lsqa": program_record(lsqa, ()),
+        },
+        "build": {
+            "compiler_command": args.compiler_command,
+            "cflags": args.cflags,
+            "cppflags": args.cppflags,
+            "ldflags": args.ldflags,
+            "configure_arguments": args.configure_arguments,
         },
         "python": {
             "version": platform.python_version(),
