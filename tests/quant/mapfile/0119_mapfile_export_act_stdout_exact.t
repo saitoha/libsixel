@@ -24,7 +24,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     exit 0
 }
 
-cmp -s "${actual_palette}" "${expected_palette}" || {
+# RMS record attributes can make cmp disagree for a file created by stdout
+# redirection even when both files expose the same logical byte sequence.
+test "$(od -An -tx1 "${actual_palette}")" = \
+    "$(od -An -tx1 "${expected_palette}")" || {
     echo "not ok" 1 - "ACT stdout palette layout changed"
     exit 0
 }

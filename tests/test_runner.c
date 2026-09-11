@@ -2901,6 +2901,26 @@ test_runner_setenv_portable(char const *name, char const *value)
 #endif
 }
 
+static int
+test_runner_process_exit_status(int status)
+{
+#if defined(LIBSIXEL_OPENVMS)
+    enum { TEST_RUNNER_OPENVMS_INHIBIT_MSG = 0x10000000 };
+
+    /*
+     * OpenVMS treats a condition value with its low bit set as success, so a
+     * conventional C test failure such as EXIT_FAILURE (1) must be translated
+     * at the executable boundary.  Keep internal test functions portable and
+     * prevent DCL condition text from entering shell TAP output.
+     */
+    if (status != EXIT_SUCCESS) {
+        return TEST_RUNNER_OPENVMS_INHIBIT_MSG | 2;
+    }
+#endif
+
+    return status;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -2914,49 +2934,54 @@ main(int argc, char **argv)
 
     if (test_runner_apply_env_options(argc, argv, &first_index) != 0) {
         print_usage(argv[0]);
-        return EXIT_FAILURE;
+        return test_runner_process_exit_status(EXIT_FAILURE);
     }
 
     if (argc <= first_index) {
         print_usage(argv[0]);
-        return EXIT_FAILURE;
+        return test_runner_process_exit_status(EXIT_FAILURE);
     }
 
     if (strcmp(argv[first_index], "--list") == 0) {
         for (index = 0u; test_entries[index].name != NULL; index++) {
             printf("%s\n", test_entries[index].name);
         }
-        return EXIT_SUCCESS;
+        return test_runner_process_exit_status(EXIT_SUCCESS);
     }
 
     if (strcmp(argv[first_index], "--is-running-under-wine") == 0) {
-        return test_runner_is_running_under_wine() ? EXIT_SUCCESS
-                                                   : EXIT_FAILURE;
+        return test_runner_process_exit_status(
+            test_runner_is_running_under_wine() ? EXIT_SUCCESS
+                                                : EXIT_FAILURE);
     }
 
     if (strcmp(argv[first_index], "--win32-ctrl-break-run") == 0) {
-        return test_runner_run_windows_ctrl_break(argc - first_index,
-                                                  argv + first_index);
+        return test_runner_process_exit_status(
+            test_runner_run_windows_ctrl_break(argc - first_index,
+                                               argv + first_index));
     }
 
     if (strcmp(argv[first_index], "--sigint-run") == 0) {
-        return test_runner_run_posix_sigint(argc - first_index,
-                                            argv + first_index);
+        return test_runner_process_exit_status(
+            test_runner_run_posix_sigint(argc - first_index,
+                                         argv + first_index));
     }
     if (strcmp(argv[first_index], "--sigint-run-until") == 0) {
-        return test_runner_run_posix_sigint_until(argc - first_index,
-                                                  argv + first_index);
+        return test_runner_process_exit_status(
+            test_runner_run_posix_sigint_until(argc - first_index,
+                                               argv + first_index));
     }
 
     requested = argv[first_index];
     for (index = 0u; test_entries[index].name != NULL; index++) {
         if (strcmp(requested, test_entries[index].name) == 0) {
-            return test_entries[index].run(argc - first_index,
-                                           argv + first_index);
+            return test_runner_process_exit_status(
+                test_entries[index].run(argc - first_index,
+                                        argv + first_index));
         }
     }
 
     fprintf(stderr, "unknown test: %s\n", requested);
     print_usage(argv[0]);
-    return EXIT_FAILURE;
+    return test_runner_process_exit_status(EXIT_FAILURE);
 }

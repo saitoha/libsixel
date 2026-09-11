@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify the source-level OpenVMS compatibility boundaries.
 # Policy: docs/misc/platforms/openvms.md
-# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10
+# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11
 
 set -eu
 
@@ -107,6 +107,18 @@ require_fixed 'SIXEL2PNG_OPENVMS_INHIBIT_MSG | 2' converters/sixel2png.c
 require_fixed 'SIXEL2PNG_OPENVMS_INHIBIT_MSG | 4' converters/sixel2png.c
 require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS=4' \
     build-aux/lso-tap-driver.sh.in
+require_fixed 'TEST_RUNNER_OPENVMS_INHIBIT_MSG = 0x10000000' \
+    tests/test_runner.c
+require_fixed 'return TEST_RUNNER_OPENVMS_INHIBIT_MSG | 2;' \
+    tests/test_runner.c
+main_unmapped_return_count=$(awk '
+    /^main\(int argc, char \*\*argv\)$/ { in_main = 1 }
+    in_main && /^[[:space:]]*return / &&
+        $0 !~ /test_runner_process_exit_status/ { count++ }
+    END { print count + 0 }
+' "$src_root/tests/test_runner.c")
+test "$main_unmapped_return_count" -eq 0 ||
+    fail "test_runner main retains an unmapped OpenVMS process return"
 require_fixed "tr -d '\\n' <\"\${out_file}\" | cksum" \
     tests/planner/pipeline/0013_pipeline_gpu_force_reject_closes_dcs.t
 require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3' \
@@ -174,6 +186,16 @@ for mapfile_test in \
 do
     require_fixed 'tests/data/inputs/mapfile/' "$mapfile_test"
 done
+# These are literal shell fragments asserted in the target test.
+# shellcheck disable=SC2016
+require_fixed 'od -An -tx1 "${actual_palette}"' \
+    tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t
+# shellcheck disable=SC2016
+if grep -F 'cmp -s "${actual_palette}" "${expected_palette}"' \
+        "$src_root/tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t" \
+        >/dev/null 2>&1; then
+    fail "ACT stdout test compares RMS file attributes instead of logical bytes"
+fi
 # These are literal shell fragments asserted in the target tests.
 # shellcheck disable=SC2016
 require_fixed 'stat -c %s "${actual_palette}"' \
