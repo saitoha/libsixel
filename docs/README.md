@@ -39,6 +39,7 @@ are grouped by domain so each area can grow without overloading one document.
 - [Resampling](functionality/resampling.md) details resize coordinate mapping, kernel support and shape, edge normalization, separable passes, threading, SIMD dispatch, and transparent-mask sampling.
 - [Encoding policy](functionality/encode-policy.md) explains `-E`, six-row mask serialization, size-policy overpainting, and measured quality, speed, and stream-size behavior.
 - [High-color output](functionality/high-color.md) explains `-I`, paint-time palette-register semantics, repeated 255-slot passes, terminal compatibility, and measured quality, speed, and size tradeoffs.
+- [External palette input and output](functionality/external-palettes.md) explains `-m` and `-M`, palette-generation and reuse workflows, format origins, application compatibility, format detection, and fixed-palette policy interactions.
 - [Palette construction pipeline](functionality/palette-pipeline.md) defines
   the sampling, palette-space, binning, and quantization boundaries, joint
   automatic policy resolution, typed artifacts, and migration waves.
