@@ -1,6 +1,8 @@
 #!/bin/sh
 # Verify sixel2png -s scales the longer edge and preserves aspect ratio.
 # Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/misc/platforms/solaris.md
+# Coverage: SOL-03
 
 set -eux
 
@@ -22,14 +24,14 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -s 31 \
     exit 0
 }
 
-# Word splitting maps the eight decimal bytes to positional parameters.
+# Hex bytes have a stable width across GNU and Solaris od implementations.
 # shellcheck disable=SC2046
-set -- $(od -An -tu1 -j16 -N8 "${output_png}")
+set -- $(od -An -tx1 -j16 -N8 "${output_png}")
 test "$#" -eq 8 || {
     echo "not ok" 1 - "PNG IHDR dimensions are unavailable"
     exit 0
 }
-test "$1 $2 $3 $4 $5 $6 $7 $8" = "0 0 0 31 0 0 0 5" || {
+test "$1 $2 $3 $4 $5 $6 $7 $8" = "00 00 00 1f 00 00 00 05" || {
     echo "not ok" 1 - "93x14 input did not scale to 31x5"
     exit 0
 }

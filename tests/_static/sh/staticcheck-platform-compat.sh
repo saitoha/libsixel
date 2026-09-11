@@ -16,7 +16,7 @@
 # Coverage: MSVC-02
 # Coverage: MW-01 MW-02 CYG-01 CYG-02 EM-01 EM-02 COSMO-01
 # Coverage: MAC-01 MAC-02 POSIX-01 POSIX-02 HAIKU-01 HAIKU-02
-# Coverage: SOL-01 SOL-02
+# Coverage: SOL-01 SOL-02 SOL-03
 
 set -eu
 
@@ -408,6 +408,10 @@ require_fixed 'COVERAGE_AWK="nawk"' .github/actions/ci-steps/action.yml
 require_fixed 'label: Autotools-solaris-11.4-x86_64' .github/workflows/ci.yml
 require_fixed '--disable-dependency-tracking' .github/workflows/ci.yml
 require_fixed 'make: gmake' .github/workflows/ci.yml
+require_fixed 'od -An -tx1 -j16 -N8' \
+    tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t
+require_fixed '00 00 00 1f 00 00 00 05' \
+    tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t
 require_fixed '#if defined(_MSC_VER)' assessment/lsqa.c
 require_fixed 'errno_t rc;' assessment/lsqa.c
 
