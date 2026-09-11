@@ -16,6 +16,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
+# Preserve the unmanaged fixture values; CMS defaults are tested separately.
+
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/images/pngsuite/background/bgan6a08.png"
@@ -28,7 +30,7 @@ env_output="${artifact_dir}/0098-loader-background-colorspace-env-$$.six"
 control_output="${artifact_dir}/0098-loader-background-colorspace-control-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
     -A composite "-Lbuiltin:Pexplicit_first:Clinear!" \
     -B#808080 "${input_image}" \
     2>&1 >"${short_output}") || {
@@ -42,7 +44,7 @@ test "${short_trace#*LSXSUB1|*key=background_colorspace|stored=1|binding=backgro
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
     -A composite \
     --env "SIXEL_BACKGROUND_POLICY=explicit_first" \
     --env "SIXEL_LOADER_BACKGROUND_COLORSPACE=linear" "-Lbuiltin!" \
@@ -56,7 +58,7 @@ test "${env_trace#*LSXSUB1|*key=background_colorspace|stored=1|binding=backgroun
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
     -A composite \
     --env "SIXEL_BACKGROUND_POLICY=explicit_first" \
     --env "SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma" "-Lbuiltin!" \
@@ -75,7 +77,7 @@ cmp -s "${short_output}" "${control_output}" && {
     exit 0
 }
 
-lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
+lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=none \
     -b "MS-SSIM:0.98" "${reference_image}" \
     "${short_output}" 2>&1) || lsqa_status=$?
 test "${lsqa_status:-0}" -eq 0 || {

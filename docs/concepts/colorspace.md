@@ -132,7 +132,7 @@ An embedded ICC profile describes how source sample values relate to a profile c
 
 Loader CMS serves primarily as input normalization: it prevents images authored for different primaries or transfer functions from being misinterpreted as sRGB. The default `-Ugamma` output remains gamma-encoded sRGB; CMS does not expand the output gamut. Mapping that result to a physical display, or deliberately enhancing it beyond sRGB, belongs to the receiving terminal and display stack. See [Why loader CMS matters](../loader/color-management.md#why-loader-cms-matters) for the limits of this division of responsibility.
 
-For participating `img2sixel` loaders, CMS is disabled by default. Use `-# ENGINE` or `--cms-engine=ENGINE` to supply a process-wide loader default:
+For participating `img2sixel` and `lsqa` loaders, CMS defaults to `auto`. Library API loader defaults remain disabled. Use `-# ENGINE` or `--cms-engine=ENGINE` to supply a process-wide loader default:
 
 | Engine | Behavior |
 | --- | --- |

@@ -12,6 +12,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+
+# Preserve the unmanaged fixture values; CMS defaults are tested separately.
 set +x
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
@@ -23,7 +25,7 @@ nl='
 
 SIXEL_TRACE_TOPIC=webp_decode
 export SIXEL_TRACE_TOPIC
-trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
     -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {

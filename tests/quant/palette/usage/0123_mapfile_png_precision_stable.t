@@ -11,6 +11,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
+# Preserve the unmanaged fixture values; CMS defaults are tested separately.
+
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 mapfile_png="${TOP_SRCDIR}/images/map8-palette.png"
 expected_palette='JASC-PAL
@@ -26,7 +28,7 @@ expected_palette='JASC-PAL
 2 2 2'
 
 actual_palette=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
         --precision=float32 -m "${mapfile_png}" -M pal:- -o /dev/null \
         "${input_image}"
 ) || {
