@@ -135,14 +135,139 @@ def figure(kind, mobile):
             + '\n'.join(body) + '\n</svg>\n')
 
 
+def document(width, height, title, desc, body):
+    """Keep the explanatory figures usable as standalone accessible assets."""
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" '
+            f'height="{height}" viewBox="0 0 {width} {height}" role="img" '
+            'aria-labelledby="title desc" font-family="Arial, sans-serif">\n'
+            f'<title id="title">{html.escape(title)}</title>\n'
+            f'<desc id="desc">{html.escape(desc)}</desc>\n'
+            + '\n'.join(body) + '\n</svg>\n')
+
+
+def palette_clue(mobile):
+    """Hold the observed pair fixed while changing its available palette."""
+    width, height = (380, 1060) if mobile else (960, 610)
+    title = 'Was the middle color available?'
+    body = [rect(0, 0, width, height, '#ffffff', radius=0),
+            text(20, 36, title, 23, weight=700),
+            text(20, 64, 'Same pixels. Different palette evidence.', 16, MUTED)]
+    for present in (False, True):
+        x = 20 if mobile else 24 + int(present) * 472
+        y = 85 + int(present) * 470 if mobile else 90
+        pw = 340 if mobile else 440
+        body.append(rect(x, y, pw, 450, '#f6f8fa', '#c8d0d7'))
+        body.append(text(x + 16, y + 30,
+                         '2  Middle color available' if present else
+                         '1  Middle color unavailable', 19, weight=700))
+        body.append(text(x + 16, y + 61, 'Observed neighboring pixels:', 16))
+        for j, (v, name) in enumerate([(80, 'A = 80'), (160, 'B = 160')]):
+            sx = x + 30 + j * 142
+            body.append(rect(sx, y + 77, 102, 45, f'rgb({v},{v},{v})', radius=4))
+            body.append(text(sx + 51, y + 147, name, 16, anchor='middle'))
+        body.append(text(x + 16, y + 190, 'Palette entries on a grayscale axis', 15))
+        left, right = x + 42, x + pw - 42
+        middle = (left + right) / 2
+        body.append(f'<path d="M {left} {y+245} H {right}" stroke="{MUTED}"/>')
+        for sx, v in [(left, 80), (middle, 120), (right, 160)]:
+            available = v != 120 or present
+            body.append(rect(sx - 10, y + 235, 20, 20,
+                             f'rgb({v},{v},{v})' if available else '#ffffff',
+                             BLUE if v == 120 else MUTED, 0, 2))
+            body.append(text(sx, y + 280, str(v), 16, anchor='middle'))
+        body.append(text(middle, y + 216, 'M: midpoint', 15, BLUE, anchor='middle'))
+        body.append(text(middle, y + 309,
+                         '120 is a stored palette color' if present else
+                         '120 is missing from the palette', 15, BLUE, anchor='middle'))
+        body.append(lines(x + 16, y + 355,
+                          ['The encoder could have used 120.',
+                           'A/B may be a real boundary.',
+                           'Suppress this pair\'s mixing.'] if present else
+                          ['A/B may stand in for missing 120.',
+                           'An intermediate color is plausible.',
+                           'Allow this pair to mix.'], 16, INK, 26))
+    body.append(text(20, height - 17,
+                     'Palette clue only; spatial gradients also protect edges.',
+                     12 if mobile else 16, MUTED))
+    return document(width, height, title,
+                    'The observed A=80 and B=160 do not change. A midpoint '
+                    'entry at 120 changes the inference from a plausible '
+                    'missing shade to evidence for a boundary.', body)
+
+
+def gradient_response(patch):
+    """Evaluate the upstream center Prewitt response for opaque grayscale."""
+    gray = [4 * value for value in patch]
+    gx = gray[2] - gray[0] + gray[5] - gray[3] + gray[8] - gray[6]
+    gy = sum(gray[6:9]) - sum(gray[0:3])
+    return gx, gy, (gx * gx + gy * gy) // 256
+
+
+def gradient_clue(mobile):
+    """Compare cancellation in alternating dots with a coherent boundary."""
+    width, height = (380, 1120) if mobile else (960, 635)
+    title = 'Dots or a coherent boundary?'
+    body = [rect(0, 0, width, height, '#ffffff', radius=0),
+            text(20, 36, title, 23, weight=700),
+            text(20, 64, 'Same shades. Different spatial structure.', 16, MUTED)]
+    patches = [[80, 160, 80, 160, 80, 160, 80, 160, 80],
+               [80, 80, 160, 80, 80, 160, 80, 80, 160]]
+    for i, patch in enumerate(patches):
+        x = 20 if mobile else 24 + i * 472
+        y = 85 + i * 475 if mobile else 90
+        pw = 340 if mobile else 440
+        body.append(rect(x, y, pw, 455, '#f6f8fa', '#c8d0d7'))
+        body.append(text(x + 16, y + 31,
+                         'Alternating dots' if i == 0 else 'A vertical step',
+                         20, weight=700))
+        sx = x + (pw - 180) / 2
+        for j, v in enumerate(patch):
+            cx, cy = sx + j % 3 * 60, y + 55 + j // 3 * 60
+            body.append(rect(cx, cy, 56, 56, f'rgb({v},{v},{v})',
+                             GOLD if j == 4 else 'none', 3, 3))
+            body.append(text(cx + 28, cy + 34, str(v), 16,
+                             '#ffffff' if v == 80 else '#111111',
+                             anchor='middle'))
+        gx, gy, response = gradient_response(patch)
+        body.append(text(x + 16, y + 263, f'Horizontal sum: {gx}; vertical: {gy}', 15))
+        body.append(text(x + 16, y + 300, f'Gradient response = {response}', 21, BLUE, 700))
+        body.append(lines(x + 16, y + 339,
+                          ['Opposite sides cancel here.',
+                           'Center weight stays at 8.',
+                           'Palette evidence decides mixing.'] if i == 0 else
+                          ['The sides differ consistently.',
+                           '3600 exceeds the threshold 256.',
+                           'Keep the center unchanged.'], 16, INK, 26))
+    footer = (['Calculated from brightness R + 2G + B.',
+               'Upstream protection. In libsixel, -e 100',
+               'selects these thresholds.'] if mobile else
+              ['Calculated from brightness R + 2G + B.',
+               'Upstream protection; libsixel needs -e 100 for these thresholds.'])
+    body.append(lines(20, height - (67 if mobile else 55),
+                      footer, 12 if mobile else 16, MUTED, 22))
+    return document(width, height, title,
+                    'At the center, an 80/160 checkerboard has response 0; '
+                    'an 80/160 vertical step has response 3600. The upstream '
+                    'gradient gate protects the step from mixing.', body)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
     assets = {f'{kind}-{layout}.svg': figure(kind, layout == 'mobile')
               for kind in METHODS for layout in ('wide', 'mobile')}
+    for layout in ('wide', 'mobile'):
+        assets[f'palette-clue-{layout}.svg'] = palette_clue(layout == 'mobile')
+        assets[f'gradient-clue-{layout}.svg'] = gradient_clue(layout == 'mobile')
     assets['figures.json'] = json.dumps({
-        'kind': 'schematic, not measured output',
+        'kind': 'schematic with calculated grayscale examples',
+        'upstream_revision': '844241504c7f2b224c67761de277c2bb5c56ab81',
+        'gradient_examples': {'checkerboard': 0, 'vertical_step': 3600},
+        'inference_layouts': {
+            'palette-clue': {'wide': [960, 610], 'mobile': [380, 1060]},
+            'gradient-clue': {'wide': [960, 635], 'mobile': [380, 1120]},
+        },
         'source': 'src/decoder.c',
         'color_roles': {'gold': 'center', 'blue': 'considered neighbor',
                         'gray': 'unused or excluded neighbor'},
