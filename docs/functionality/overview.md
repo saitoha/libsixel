@@ -73,6 +73,8 @@ semantics as a newer API; verify the public header and its focused tests.
 
 The [Decoding Pipeline](decoding-pipeline.md) follows those contracts from DCS framing and stateful paint execution through raster policy, output representation, reconstruction, resize, parallel fallback, and PNG writing.
 
+See [Dequantization](dequantization.md) for reconstruction algorithms, decoder controls, transparency, acceleration conditions, and focused coverage.
+
 ### Image loading
 
 The project supports built-in and optional loaders for multiple raster and

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify parallel k_undither output matches scalar output.
+# Policy: docs/functionality/dequantization.md
 
 set -eux
 

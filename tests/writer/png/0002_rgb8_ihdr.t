@@ -1,5 +1,6 @@
 #!/bin/sh
 # Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/functionality/dequantization.md
 # Verify dequantized decoder output is written as 8-bit RGB PNG.
 # Policy: docs/writers/png.md
 

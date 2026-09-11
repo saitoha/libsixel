@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify fused fast4 decode+undither output matches scalar output.
+# Policy: docs/functionality/dequantization.md
 
 set -eux
 

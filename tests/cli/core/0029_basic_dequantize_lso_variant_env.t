@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify the registered LSO variant environment value reaches dequantization.
+# Policy: docs/functionality/dequantization.md
 
 set -eux
 
