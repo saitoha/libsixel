@@ -6805,7 +6805,7 @@ sixel_builtin_load_with_builtin_impl(
             &webp_callback_context,
             context,
             &webp_animation_handled);
-        if (SIXEL_FAILED(status)) {
+        if (status != SIXEL_OK) {
             goto end;
         }
         if (webp_animation_handled != 0) {
@@ -6848,7 +6848,7 @@ sixel_builtin_load_with_builtin_impl(
     status = sixel_builtin_finalize_loaded_frame(&load_request,
                                                  &load_context,
                                                  frame);
-    if (SIXEL_FAILED(status)) {
+    if (status != SIXEL_OK) {
         goto end;
     }
 

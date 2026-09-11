@@ -12,19 +12,19 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 
 | Area | Tests | Direct values | Quality floor | Trace/status | Accept/reject | Robustness | Other/smoke |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| [Shared loader integration and policy](../loader/builtin.md) | 47 | 1 | 3 | 0 | 4 | 0 | 39 |
+| [Shared loader integration and policy](../loader/builtin.md) | 49 | 1 | 3 | 1 | 4 | 0 | 40 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
-| [PNG and APNG](../loader/builtin/png.md) | 107 | 3 | 59 | 0 | 11 | 0 | 34 |
-| [JPEG](../loader/builtin/jpeg.md) | 25 | 4 | 14 | 1 | 2 | 0 | 4 |
+| [PNG and APNG](../loader/builtin/png.md) | 112 | 8 | 59 | 0 | 11 | 0 | 34 |
+| [JPEG](../loader/builtin/jpeg.md) | 30 | 9 | 14 | 1 | 2 | 0 | 4 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 982 | 4 | 551 | 402 | 8 | 2 | 15 |
+| [PSD and PSB](../loader/builtin/psd.md) | 987 | 8 | 551 | 402 | 9 | 2 | 15 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
-| [WebP](../loader/builtin/webp.md) | 298 | 5 | 48 | 241 | 0 | 0 | 4 |
+| [WebP](../loader/builtin/webp.md) | 303 | 10 | 48 | 241 | 0 | 0 | 4 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 24 | 11 | 8 | 0 | 3 | 0 | 2 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **1981** | **424** | **724** | **651** | **49** | **4** | **129** |
+| **Total** | **2003** | **443** | **724** | **652** | **50** | **4** | **130** |
 
 ## Complete inventory
 
@@ -83,6 +83,8 @@ Primary implementation context: [Builtin Image Loader](../loader/builtin.md).
 | [tests/loader/builtin/1938_loader_builtin_indexed_background_policy_file_fallback_without_keycolor.t](../../tests/loader/builtin/1938_loader_builtin_indexed_background_policy_file_fallback_without_keycolor.t) | Verify indexed PNG bKGD fallback when key-color mode is disabled. | Other integration/smoke | Policy-linked: [`docs/loader/background-policy.md`](../loader/background-policy.md) |
 | [tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t](../../tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t) | Verify GIF87a signature and pixels with a minimal in-memory stream. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
 | [tests/loader/builtin/1992_loader_builtin_unknown_selector_reject.t](../../tests/loader/builtin/1992_loader_builtin_unknown_selector_reject.t) | Verify an unknown unified-runner selector cannot pass through the baseline. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t](../../tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t) | Verify builtin formats handle allocation failures atomically. | Other integration/smoke | Policy-linked: [`docs/loader/builtin.md`](../loader/builtin.md) |
+| [tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t](../../tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t) | Verify builtin formats propagate callback interruption. | Trace/status observation | Policy-linked: [`docs/loader/builtin.md`](../loader/builtin.md) |
 
 ### Netpbm
 
@@ -283,6 +285,11 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader/builtin/1962_loader_builtin_png_apng_dispose_previous_numeric.t](../../tests/loader/builtin/1962_loader_builtin_png_apng_dispose_previous_numeric.t) | Verify APNG PREVIOUS disposal with exact decoded-frame pixels. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/1977_loader_builtin_png_icc_numeric.t](../../tests/loader/builtin/1977_loader_builtin_png_icc_numeric.t) | Fix builtin-CMS output type and representative samples for a profiled PNG. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/1994_loader_builtin_apng_animation_metadata_numeric.t](../../tests/loader/builtin/1994_loader_builtin_apng_animation_metadata_numeric.t) | Verify APNG delay, frame, loop, and multiframe metadata exactly. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/2001_loader_builtin_png_filter_modes_numeric.t](../../tests/loader/builtin/2001_loader_builtin_png_filter_modes_numeric.t) | Verify PNG filters 0-4 reconstruct exact RGB. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/2002_loader_builtin_png_adam7_indexed4_digest.t](../../tests/loader/builtin/2002_loader_builtin_png_adam7_indexed4_digest.t) | Verify PNG Adam7 indexed4 reconstructs exact RGB. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/2003_loader_builtin_png_gray16_sub8bit_numeric.t](../../tests/loader/builtin/2003_loader_builtin_png_gray16_sub8bit_numeric.t) | Verify PNG gray16 preserves sub-eight-bit samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/2004_loader_builtin_apng_blend_over_digest.t](../../tests/loader/builtin/2004_loader_builtin_apng_blend_over_digest.t) | Verify APNG SOURCE and OVER composition stays exact. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/2005_loader_builtin_apng_dispose_background_digest.t](../../tests/loader/builtin/2005_loader_builtin_apng_dispose_background_digest.t) | Verify APNG BACKGROUND disposal stays exact. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 
 ### JPEG
 
@@ -315,6 +322,11 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t](../../tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t) | Fix the byte-exact output of baseline sequential RGB JPEG decoding. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t](../../tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t) | Fix builtin-CMS output type and representative samples for a profiled JPEG. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t](../../tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t) | Fix decoded float samples from 16-bit lossless JPEG input. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2006_loader_builtin_jpeg_gray16_sub8bit_numeric.t](../../tests/loader/builtin/2006_loader_builtin_jpeg_gray16_sub8bit_numeric.t) | Verify JPEG gray16 preserves sub-eight-bit samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2007_loader_builtin_jpeg_progressive_420_digest.t](../../tests/loader/builtin/2007_loader_builtin_jpeg_progressive_420_digest.t) | Verify JPEG progressive 4:2:0 scans produce exact RGB. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2008_loader_builtin_jpeg_gray16_restart_numeric.t](../../tests/loader/builtin/2008_loader_builtin_jpeg_gray16_restart_numeric.t) | Verify JPEG lossless restart samples stay exact. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2009_loader_builtin_jpeg_ycbcr444_digest.t](../../tests/loader/builtin/2009_loader_builtin_jpeg_ycbcr444_digest.t) | Verify JPEG YCbCr 4:4:4 conversion stays exact. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2010_loader_builtin_jpeg_cmyk8_digest.t](../../tests/loader/builtin/2010_loader_builtin_jpeg_cmyk8_digest.t) | Verify JPEG CMYK conversion stays exact. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 
 ### Radiance HDR
 
@@ -1577,6 +1589,11 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/1979_loader_builtin_psd_icc_digest.t](../../tests/loader/builtin/1979_loader_builtin_psd_icc_digest.t) | Fix exact builtin-CMS output for an embedded-profile PSD. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/1984_loader_builtin_psd_rgb16_zip_pred_numeric.t](../../tests/loader/builtin/1984_loader_builtin_psd_rgb16_zip_pred_numeric.t) | Fix decoded float samples from PSD 16-bit ZIP prediction. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/1985_loader_builtin_psd_rgb32_rle_numeric.t](../../tests/loader/builtin/1985_loader_builtin_psd_rgb32_rle_numeric.t) | Fix decoded float samples from PSD 32-bit PackBits RLE. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/2016_loader_builtin_psd_rgb8_alpha_mask_digest.t](../../tests/loader/builtin/2016_loader_builtin_psd_rgb8_alpha_mask_digest.t) | Verify PSD RGB8 emits exact RGB and alpha mask. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/2017_loader_builtin_psd_rgb8_alpha_white_digest.t](../../tests/loader/builtin/2017_loader_builtin_psd_rgb8_alpha_white_digest.t) | Verify PSD RGB8 alpha composes exactly over white. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/2018_loader_builtin_psd_cmyk16_zip_pred_numeric.t](../../tests/loader/builtin/2018_loader_builtin_psd_cmyk16_zip_pred_numeric.t) | Verify PSD CMYK16 ZIP prediction keeps exact samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/2019_loader_builtin_psd_lab32_zip_pred_numeric.t](../../tests/loader/builtin/2019_loader_builtin_psd_lab32_zip_pred_numeric.t) | Verify PSD Lab32 ZIP prediction keeps exact samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/2020_loader_builtin_psb_layer_info_u64max_reject.t](../../tests/loader/builtin/2020_loader_builtin_psb_layer_info_u64max_reject.t) | Verify PSB rejects UINT64_MAX layer-info length. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 ### BMP and DIB
 
@@ -2014,6 +2031,11 @@ Primary implementation context: [WebP builtin component](../loader/builtin/webp.
 | [tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t](../../tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t) | Fix exact composited frames for lossy WebP animation. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 | [tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t](../../tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t) | Fix VP8+ALPH RGB bytes and the separate transparency mask. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 | [tests/loader/builtin/1995_loader_builtin_webp_animation_metadata_numeric.t](../../tests/loader/builtin/1995_loader_builtin_webp_animation_metadata_numeric.t) | Verify WebP delay, frame, loop, and multiframe metadata exactly. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/2011_loader_builtin_webp_vp8_token_partitions_digest.t](../../tests/loader/builtin/2011_loader_builtin_webp_vp8_token_partitions_digest.t) | Verify WebP VP8 token partitions produce exact RGB. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/2012_loader_builtin_webp_alph_filter1_numeric.t](../../tests/loader/builtin/2012_loader_builtin_webp_alph_filter1_numeric.t) | Verify WebP ALPH filter 1 produces exact RGB and mask. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/2013_loader_builtin_webp_alph_filter2_numeric.t](../../tests/loader/builtin/2013_loader_builtin_webp_alph_filter2_numeric.t) | Verify WebP ALPH filter 2 produces exact RGB and mask. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/2014_loader_builtin_webp_alph_filter3_numeric.t](../../tests/loader/builtin/2014_loader_builtin_webp_alph_filter3_numeric.t) | Verify WebP ALPH filter 3 produces exact RGB and mask. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/2015_loader_builtin_webp_animation_subrect_digest.t](../../tests/loader/builtin/2015_loader_builtin_webp_animation_subrect_digest.t) | Verify WebP subrect animation produces exact canvases. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 
 ### SIXEL
 
