@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test ensuring built-in palette and mapfile options conflict.
+# Policy: docs/functionality/external-palettes.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

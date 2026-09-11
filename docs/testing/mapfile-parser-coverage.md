@@ -1,8 +1,8 @@
-# Mapfile Parser Coverage Inventory
+# Mapfile Input and Output Coverage Inventory
 
 ## Purpose
 
-This inventory keeps every test in `tests/quant/mapfile/` discoverable without treating every malformed-input variant or smoke test as a separate public guarantee. The user-visible format and option contracts remain owned by [External Palette Input and Output](../functionality/external-palettes.md). Tests classified as behavioral contracts carry both a `Policy:` backlink to that document and a `Test-plan:` backlink here. Defensive and supplementary tests carry only `Test-plan:`.
+This inventory keeps every mapfile input and output test in `tests/quant/mapfile/` discoverable without treating every malformed-input variant or smoke test as a separate public guarantee. The user-visible format and option contracts remain owned by [External Palette Input and Output](../functionality/external-palettes.md). Tests classified as behavioral contracts carry both a `Policy:` backlink to that document and a `Test-plan:` backlink here. Defensive and supplementary tests carry only `Test-plan:`.
 
 The observation text below mirrors each test's opening comment. The test itself remains authoritative for fixture construction, exact assertions, skips, and failure localization.
 
@@ -27,7 +27,7 @@ The observation text below mirrors each test's opening comment. The test itself 
 | [tests/quant/mapfile/0013_mapfile_import_gpl_rejects_component_suffix.t](../../tests/quant/mapfile/0013_mapfile_import_gpl_rejects_component_suffix.t) | GPL import rejects component tokens with trailing garbage. | Behavioral contract |
 | [tests/quant/mapfile/0014_mapfile_import_rejects_input_over_16mib.t](../../tests/quant/mapfile/0014_mapfile_import_rejects_input_over_16mib.t) | mapfile import rejects palette streams larger than 16 MiB. | Behavioral contract |
 | [tests/quant/mapfile/0015_mapfile_import_accepts_exactly_16mib.t](../../tests/quant/mapfile/0015_mapfile_import_accepts_exactly_16mib.t) | mapfile import accepts palette streams exactly 16 MiB long. | Behavioral contract |
-| [tests/quant/mapfile/0016_mapfile_import_act_accepts_zero_color_count.t](../../tests/quant/mapfile/0016_mapfile_import_act_accepts_zero_color_count.t) | ACT import keeps count=0 compatibility by treating it as 256. | Behavioral contract |
+| [tests/quant/mapfile/0016_mapfile_import_act_accepts_zero_color_count.t](../../tests/quant/mapfile/0016_mapfile_import_act_accepts_zero_color_count.t) | Verify ACT count zero imports all 256 ordered entries. | Behavioral contract |
 | [tests/quant/mapfile/0017_mapfile_import_riff_rejects_chunk_payload_overrun.t](../../tests/quant/mapfile/0017_mapfile_import_riff_rejects_chunk_payload_overrun.t) | RIFF import rejects chunks whose payload size overruns input. | Behavioral contract |
 | [tests/quant/mapfile/0018_mapfile_import_riff_rejects_missing_chunk_padding.t](../../tests/quant/mapfile/0018_mapfile_import_riff_rejects_missing_chunk_padding.t) | RIFF import rejects odd-sized chunks without pad byte. | Behavioral contract |
 | [tests/quant/mapfile/0019_mapfile_import_gpl_accepts_label_suffix.t](../../tests/quant/mapfile/0019_mapfile_import_gpl_accepts_label_suffix.t) | GPL import keeps compatibility with trailing color labels. | Behavioral contract |
@@ -50,8 +50,8 @@ The observation text below mirrors each test's opening comment. The test itself 
 | [tests/quant/mapfile/0036_mapfile_import_prefers_jasc_signature_over_act_size.t](../../tests/quant/mapfile/0036_mapfile_import_prefers_jasc_signature_over_act_size.t) | extensionless JASC signature is preferred over ACT size heuristics. | Behavioral contract |
 | [tests/quant/mapfile/0037_mapfile_import_riff_rejects_invalid_version.t](../../tests/quant/mapfile/0037_mapfile_import_riff_rejects_invalid_version.t) | RIFF import rejects unsupported palette version values. | Behavioral contract |
 | [tests/quant/mapfile/0038_mapfile_import_riff_rejects_trailing_bytes.t](../../tests/quant/mapfile/0038_mapfile_import_riff_rejects_trailing_bytes.t) | RIFF import rejects trailing bytes after chunk traversal. | Behavioral contract |
-| [tests/quant/mapfile/0039_mapfile_import_pal_rejects_non_utf8_bom.t](../../tests/quant/mapfile/0039_mapfile_import_pal_rejects_non_utf8_bom.t) | JASC-PAL import rejects UTF-16/32 BOM encoded input. | Behavioral contract |
-| [tests/quant/mapfile/0040_mapfile_import_gpl_rejects_non_utf8_bom.t](../../tests/quant/mapfile/0040_mapfile_import_gpl_rejects_non_utf8_bom.t) | GPL import rejects UTF-16/32 BOM encoded input. | Behavioral contract |
+| [tests/quant/mapfile/0039_mapfile_import_pal_rejects_utf16_le_bom.t](../../tests/quant/mapfile/0039_mapfile_import_pal_rejects_utf16_le_bom.t) | Verify JASC PAL import rejects a UTF-16 little-endian BOM. | Behavioral contract |
+| [tests/quant/mapfile/0040_mapfile_import_gpl_rejects_utf16_be_bom.t](../../tests/quant/mapfile/0040_mapfile_import_gpl_rejects_utf16_be_bom.t) | Verify GPL import rejects a UTF-16 big-endian BOM. | Behavioral contract |
 | [tests/quant/mapfile/0041_mapfile_import_gpl_rejects_extra_numeric_token.t](../../tests/quant/mapfile/0041_mapfile_import_gpl_rejects_extra_numeric_token.t) | GPL import rejects a fourth numeric token after RGB triplet. | Behavioral contract |
 | [tests/quant/mapfile/0042_mapfile_import_pal_accepts_utf8_bom.t](../../tests/quant/mapfile/0042_mapfile_import_pal_accepts_utf8_bom.t) | JASC-PAL import accepts UTF-8 BOM. | Behavioral contract |
 | [tests/quant/mapfile/0043_mapfile_import_gpl_accepts_utf8_bom.t](../../tests/quant/mapfile/0043_mapfile_import_gpl_accepts_utf8_bom.t) | GPL import accepts UTF-8 BOM. | Behavioral contract |
@@ -103,6 +103,37 @@ The observation text below mirrors each test's opening comment. The test itself 
 | [tests/quant/mapfile/0089_mapfile_import_gpl_lf.t](../../tests/quant/mapfile/0089_mapfile_import_gpl_lf.t) | Verify GPL import accepts LF line endings. | Behavioral contract |
 | [tests/quant/mapfile/0090_mapfile_import_gpl_cr.t](../../tests/quant/mapfile/0090_mapfile_import_gpl_cr.t) | Verify GPL import accepts CR line endings. | Behavioral contract |
 | [tests/quant/mapfile/0091_mapfile_import_gpl_crlf.t](../../tests/quant/mapfile/0091_mapfile_import_gpl_crlf.t) | Verify GPL import accepts CRLF line endings. | Behavioral contract |
+| [tests/quant/mapfile/0092_mapfile_import_stdin_rejects_missing_type.t](../../tests/quant/mapfile/0092_mapfile_import_stdin_rejects_missing_type.t) | Verify untyped standard-input mapfiles are rejected as ambiguous. | Behavioral contract |
+| [tests/quant/mapfile/0093_mapfile_import_pal_rejects_utf32_le_bom.t](../../tests/quant/mapfile/0093_mapfile_import_pal_rejects_utf32_le_bom.t) | Verify JASC PAL import rejects a UTF-32 little-endian BOM. | Behavioral contract |
+| [tests/quant/mapfile/0094_mapfile_import_gpl_rejects_utf32_be_bom.t](../../tests/quant/mapfile/0094_mapfile_import_gpl_rejects_utf32_be_bom.t) | Verify GPL import rejects a UTF-32 big-endian BOM. | Behavioral contract |
+| [tests/quant/mapfile/0095_mapfile_import_pal_accepts_comments.t](../../tests/quant/mapfile/0095_mapfile_import_pal_accepts_comments.t) | Verify JASC PAL import ignores comment lines between grammar fields. | Behavioral contract |
+| [tests/quant/mapfile/0096_mapfile_import_pal_accepts_blank_lines.t](../../tests/quant/mapfile/0096_mapfile_import_pal_accepts_blank_lines.t) | Verify JASC PAL import ignores blank lines between grammar fields. | Behavioral contract |
+| [tests/quant/mapfile/0097_mapfile_import_pal_trims_spaces_and_tabs.t](../../tests/quant/mapfile/0097_mapfile_import_pal_trims_spaces_and_tabs.t) | Verify JASC PAL import trims leading and trailing spaces and tabs. | Behavioral contract |
+| [tests/quant/mapfile/0098_mapfile_import_gpl_accepts_blank_lines.t](../../tests/quant/mapfile/0098_mapfile_import_gpl_accepts_blank_lines.t) | Verify GPL import ignores blank lines around metadata and color rows. | Behavioral contract |
+| [tests/quant/mapfile/0099_mapfile_import_gpl_trims_spaces_and_tabs.t](../../tests/quant/mapfile/0099_mapfile_import_gpl_trims_spaces_and_tabs.t) | Verify GPL import trims leading and trailing spaces and tabs. | Behavioral contract |
+| [tests/quant/mapfile/0100_mapfile_import_pal_rejects_fourth_numeric_token.t](../../tests/quant/mapfile/0100_mapfile_import_pal_rejects_fourth_numeric_token.t) | Verify JASC PAL import rejects a fourth numeric component token. | Behavioral contract |
+| [tests/quant/mapfile/0101_mapfile_import_riff_skips_padded_unknown_chunk.t](../../tests/quant/mapfile/0101_mapfile_import_riff_skips_padded_unknown_chunk.t) | Verify RIFF PAL import skips a padded odd-sized unknown subchunk. | Behavioral contract |
+| [tests/quant/mapfile/0102_mapfile_import_pal_extension_detects_riff.t](../../tests/quant/mapfile/0102_mapfile_import_pal_extension_detects_riff.t) | Verify a `.pal` extension detects RIFF PAL content. | Behavioral contract |
+| [tests/quant/mapfile/0103_mapfile_import_pal_prefix_detects_riff.t](../../tests/quant/mapfile/0103_mapfile_import_pal_prefix_detects_riff.t) | Verify the `pal:` prefix detects RIFF PAL content. | Behavioral contract |
+| [tests/quant/mapfile/0104_mapfile_import_extensionless_gpl_detected.t](../../tests/quant/mapfile/0104_mapfile_import_extensionless_gpl_detected.t) | Verify extensionless GPL input is detected from its signature. | Behavioral contract |
+| [tests/quant/mapfile/0105_mapfile_import_pal_accepts_256_colors.t](../../tests/quant/mapfile/0105_mapfile_import_pal_accepts_256_colors.t) | Verify JASC PAL import retains exactly 256 ordered entries. | Behavioral contract |
+| [tests/quant/mapfile/0106_mapfile_import_gpl_accepts_256_colors.t](../../tests/quant/mapfile/0106_mapfile_import_gpl_accepts_256_colors.t) | Verify GPL import retains exactly 256 ordered entries. | Behavioral contract |
+| [tests/quant/mapfile/0107_mapfile_export_riff_256_color_fields.t](../../tests/quant/mapfile/0107_mapfile_export_riff_256_color_fields.t) | Verify RIFF PAL export writes the 256-color size and count fields. | Behavioral contract |
+| [tests/quant/mapfile/0108_mapfile_import_riff_accepts_256_colors.t](../../tests/quant/mapfile/0108_mapfile_import_riff_accepts_256_colors.t) | Verify RIFF PAL import retains exactly 256 ordered entries. | Behavioral contract |
+| [tests/quant/mapfile/0109_mapfile_export_act_256_color_count.t](../../tests/quant/mapfile/0109_mapfile_export_act_256_color_count.t) | Verify ACT export writes the 256-color big-endian count. | Behavioral contract |
+| [tests/quant/mapfile/0110_mapfile_export_gpl_256_colors_exact.t](../../tests/quant/mapfile/0110_mapfile_export_gpl_256_colors_exact.t) | Verify GPL export writes all 256 canonical rows exactly. | Behavioral contract |
+| [tests/quant/mapfile/0111_mapfile_export_gpl_extension_exact.t](../../tests/quant/mapfile/0111_mapfile_export_gpl_extension_exact.t) | Verify a `.gpl` output extension selects exact GPL text. | Behavioral contract |
+| [tests/quant/mapfile/0112_mapfile_export_stdout_rejects_missing_type.t](../../tests/quant/mapfile/0112_mapfile_export_stdout_rejects_missing_type.t) | Verify palette export to standard output requires an explicit type. | Behavioral contract |
+| [tests/quant/mapfile/0113_mapfile_export_rejects_unknown_extension.t](../../tests/quant/mapfile/0113_mapfile_export_rejects_unknown_extension.t) | Verify palette export rejects an unknown filename extension. | Behavioral contract |
+| [tests/quant/mapfile/0114_mapfile_export_rejects_empty_option.t](../../tests/quant/mapfile/0114_mapfile_export_rejects_empty_option.t) | Verify an empty palette-output option value is rejected. | Behavioral contract |
+| [tests/quant/mapfile/0115_mapfile_export_rejects_prefix_only.t](../../tests/quant/mapfile/0115_mapfile_export_rejects_prefix_only.t) | Verify a palette-output type prefix without a path is rejected. | Behavioral contract |
+| [tests/quant/mapfile/0116_mapfile_export_rejects_unopenable_path.t](../../tests/quant/mapfile/0116_mapfile_export_rejects_unopenable_path.t) | Verify palette export reports a file-open failure. | Behavioral contract |
+| [tests/quant/mapfile/0117_mapfile_export_accepts_uppercase_prefix.t](../../tests/quant/mapfile/0117_mapfile_export_accepts_uppercase_prefix.t) | Verify palette-output type prefixes are case-insensitive. | Behavioral contract |
+| [tests/quant/mapfile/0118_mapfile_export_prefix_overrides_extension.t](../../tests/quant/mapfile/0118_mapfile_export_prefix_overrides_extension.t) | Verify a palette-output type prefix overrides a mismatched extension. | Behavioral contract |
+| [tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t](../../tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t) | Verify ACT palette export writes its exact binary layout to stdout. | Behavioral contract |
+| [tests/quant/mapfile/0120_mapfile_export_riff_stdout_exact.t](../../tests/quant/mapfile/0120_mapfile_export_riff_stdout_exact.t) | Verify RIFF PAL export writes its exact binary layout to stdout. | Behavioral contract |
+| [tests/quant/mapfile/0121_mapfile_image_pnm_source_exact.t](../../tests/quant/mapfile/0121_mapfile_image_pnm_source_exact.t) | Verify a PNM image can construct a deterministic mapfile palette. | Behavioral contract |
+| [tests/quant/mapfile/0122_mapfile_image_animated_gif_uses_first_frame.t](../../tests/quant/mapfile/0122_mapfile_image_animated_gif_uses_first_frame.t) | Verify an animated GIF mapfile uses one static first-frame palette source. | Behavioral contract |
 
 <!-- test-plan-end -->
 
