@@ -339,6 +339,16 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.csv \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.png \
 	docs/functionality/dequantization.md \
+	tools/plot_dequantization_figures.py \
+	docs/functionality/dequantization-figures/figures.json \
+	docs/functionality/dequantization-figures/full-mobile.svg \
+	docs/functionality/dequantization-figures/full-wide.svg \
+	docs/functionality/dequantization-figures/light-mobile.svg \
+	docs/functionality/dequantization-figures/light-wide.svg \
+	docs/functionality/dequantization-figures/none-mobile.svg \
+	docs/functionality/dequantization-figures/none-wide.svg \
+	docs/functionality/dequantization-figures/selective-mobile.svg \
+	docs/functionality/dequantization-figures/selective-wide.svg \
 	docs/functionality/decoding-pipeline.md \
 	docs/functionality/decoding-pipeline-figures/decoder-output-policy.svg \
 	docs/functionality/decoding-pipeline-figures/decoder-parallel.svg \
