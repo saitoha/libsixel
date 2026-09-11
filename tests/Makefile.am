@@ -181,6 +181,47 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_ORMODE_TEST_COMMON \
+    -DBUILD_TEST_0027_ORMODE_PUBLIC_OUTPUT_DISABLE \
+    -DBUILD_TEST_0028_ORMODE_PIPELINE_SIZE \
+    -DBUILD_TEST_0029_ORMODE_OFFSET_DISABLES_PIPELINE \
+    -DBUILD_TEST_0041_ORMODE_LEGACY_ZERO_IS_COLOR \
+    -DBUILD_TEST_0007_ORMODE_ONE_COLOR_PLANE \
+    -DBUILD_TEST_0008_ORMODE_TWO_COLOR_PLANE \
+    -DBUILD_TEST_0009_ORMODE_THREE_COLOR_PLANES \
+    -DBUILD_TEST_0010_ORMODE_FOUR_COLOR_PLANES \
+    -DBUILD_TEST_0011_ORMODE_FIVE_COLOR_PLANES \
+    -DBUILD_TEST_0012_ORMODE_128_COLOR_PLANES \
+    -DBUILD_TEST_0013_ORMODE_129_COLOR_HIGH_BIT \
+    -DBUILD_TEST_0014_ORMODE_256_COLOR_ALL_BITS \
+    -DBUILD_TEST_0015_ORMODE_SIZE_ZERO_FULL_BAND \
+    -DBUILD_TEST_0016_ORMODE_SIZE_ZERO_TAIL_BAND \
+    -DBUILD_TEST_0017_ORMODE_SIZE_LEADING_EMPTY_COLUMNS \
+    -DBUILD_TEST_0018_ORMODE_SIZE_TAIL_EMPTY_PLANE \
+    -DBUILD_TEST_0019_ORMODE_SIZE_EMPTY_THEN_NONEMPTY_BAND \
+    -DBUILD_TEST_0020_ORMODE_SIZE_SAMPLE_LAST_COLUMN \
+    -DBUILD_TEST_0021_ORMODE_SIZE_SAMPLE_BEYOND_COLUMN \
+    -DBUILD_TEST_0022_ORMODE_OFFSET_TOP_0 \
+    -DBUILD_TEST_0023_ORMODE_OFFSET_TOP_1 \
+    -DBUILD_TEST_0024_ORMODE_OFFSET_TOP_5 \
+    -DBUILD_TEST_0025_ORMODE_OFFSET_TOP_6 \
+    -DBUILD_TEST_0026_ORMODE_OFFSET_TOP_7 \
+    -DBUILD_TEST_0022_ORMODE_SELECTIVE_BLUR_OPAQUE \
+    -DBUILD_TEST_0027_ORMODE_KUNDITHER_OPAQUE \
+    -DBUILD_TEST_0028_ORMODE_REPEATED_BIT_IDEMPOTENT \
+    -DBUILD_TEST_0029_ORMODE_PLANE_ORDER_INDEPENDENT \
+    -DBUILD_TEST_0030_ORMODE_ZERO_MASK_RETAINS_BITS \
+    -DBUILD_TEST_0031_ORMODE_HIGH_BIT_COMPOSITION \
+    -DBUILD_TEST_0032_ORMODE_P2_WITHOUT_P1 \
+    -DBUILD_TEST_0033_ORMODE_P1_WITHOUT_P2 \
+    -DBUILD_TEST_0034_ORMODE_PARALLEL_RGBA \
+    -DBUILD_TEST_0035_ORMODE_PARALLEL_INDEXED \
+    -DBUILD_TEST_0036_ORMODE_FALLBACK_RGBA \
+    -DBUILD_TEST_0037_ORMODE_FALLBACK_INDEXED \
+    -DBUILD_TEST_0038_ORMODE_PARALLEL_INDEXED_REQUEST \
+    -DBUILD_TEST_0039_ORMODE_DECODER_REUSE_RESETS_MODE \
+    -DBUILD_TEST_0040_ORMODE_DIRECT_ZERO_IS_OPAQUE \
+    -DBUILD_TEST_0174_TRANSPARENT_OFFSET_ORMODE_GEOMETRY \
     -DBUILD_TEST_RUNNER \
     -DBUILD_SIXEL_PIXBUF_LOADER \
     -DBUILD_TEST_0001_FILTER_CLIP \
@@ -325,7 +366,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0019_DECODER_PARALLEL_DIRECT_REPEAT_OVERFLOW_FALLBACK \
     -DBUILD_TEST_0020_DECODER_PIXELS_BODY_API \
     -DBUILD_TEST_0021_DECODER_SELECTIVE_BLUR_THRESHOLD \
-    -DBUILD_TEST_0022_DECODER_ORMODE_DEQUANTIZE_OPAQUE \
     -DBUILD_TEST_0023_DECODER_HIGH_COLOR_DEQUANTIZE_BYPASS \
     -DBUILD_TEST_0024_DECODER_PARALLEL_SKEW_ENVIRONMENT \
     -DBUILD_TEST_0025_DECODER_PAINT_CREATE_FAILURE_CLEAN \
@@ -560,6 +600,32 @@ test_runner_SOURCES = test_runner.c \
     processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c \
     processing/encoder-core/0005_encoder_core_ormode_pipeline_matches_body.c \
     processing/encoder-core/0006_encoder_core_ormode_body_skips_empty_planes.c \
+    processing/encoder-core/0007_ormode_one_color_plane.c \
+    processing/encoder-core/0008_ormode_two_color_plane.c \
+    processing/encoder-core/0009_ormode_three_color_planes.c \
+    processing/encoder-core/0010_ormode_four_color_planes.c \
+    processing/encoder-core/0011_ormode_five_color_planes.c \
+    processing/encoder-core/0012_ormode_128_color_planes.c \
+    processing/encoder-core/0013_ormode_129_color_high_bit.c \
+    processing/encoder-core/0014_ormode_256_color_all_bits.c \
+    processing/encoder-core/0015_ormode_size_zero_full_band.c \
+    processing/encoder-core/0016_ormode_size_zero_tail_band.c \
+    processing/encoder-core/0017_ormode_size_leading_empty_columns.c \
+    processing/encoder-core/0018_ormode_size_tail_empty_plane.c \
+    processing/encoder-core/0019_ormode_size_empty_then_nonempty_band.c \
+    processing/encoder-core/0020_ormode_size_sample_last_column.c \
+    processing/encoder-core/0021_ormode_size_sample_beyond_column.c \
+    processing/encoder-core/0022_ormode_offset_top_0.c \
+    processing/encoder-core/0023_ormode_offset_top_1.c \
+    processing/encoder-core/0024_ormode_offset_top_5.c \
+    processing/encoder-core/0025_ormode_offset_top_6.c \
+    processing/encoder-core/0026_ormode_offset_top_7.c \
+    processing/encoder-core/0027_ormode_public_output_disable.c \
+    processing/encoder-core/0028_ormode_pipeline_size.c \
+    processing/encoder-core/0029_ormode_offset_disables_pipeline.c \
+    processing/encoder-core/ormode_test_common.c \
+    processing/encoder-core/ormode_test_common.h \
+    quant/palette/usage/0174_transparent_offset_ormode_geometry.c \
     processing/sixel-writer/0001_sixel_writer_factory.c \
     processing/frame/0001_frame_factory.c \
     processing/frame/0002_frame_float_request.c \
@@ -608,11 +674,28 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c \
     processing/decoder/0020_decoder_pixels_body_api.c \
     processing/decoder/0021_decoder_selective_blur_threshold.c \
-    processing/decoder/0022_decoder_ormode_dequantize_opaque.c \
+    processing/decoder/0022_ormode_selective_blur_opaque.c \
     processing/decoder/0023_decoder_high_color_dequantize_bypass.c \
     processing/decoder/0024_decoder_parallel_skew_environment.c \
     processing/decoder/0025_decoder_paint_create_failure_clean.c \
     processing/decoder/0026_decoder_paint_overlap_fallback_clean.c \
+    processing/decoder/0027_ormode_kundither_opaque.c \
+    processing/decoder/0028_ormode_repeated_bit_idempotent.c \
+    processing/decoder/0029_ormode_plane_order_independent.c \
+    processing/decoder/0030_ormode_zero_mask_retains_bits.c \
+    processing/decoder/0031_ormode_high_bit_composition.c \
+    processing/decoder/0032_ormode_p2_without_p1.c \
+    processing/decoder/0033_ormode_p1_without_p2.c \
+    processing/decoder/0034_ormode_parallel_rgba.c \
+    processing/decoder/0035_ormode_parallel_indexed.c \
+    processing/decoder/0036_ormode_fallback_rgba.c \
+    processing/decoder/0037_ormode_fallback_indexed.c \
+    processing/decoder/0038_ormode_parallel_indexed_request.c \
+    processing/decoder/0039_ormode_decoder_reuse_resets_mode.c \
+    processing/decoder/0040_ormode_direct_zero_is_opaque.c \
+    processing/decoder/0041_ormode_legacy_zero_is_color.c \
+    processing/decoder/ormode_test_common.c \
+    processing/decoder/ormode_test_common.h \
     processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
     processing/lookup/0012_lookup_packing_registry_direct.c \
