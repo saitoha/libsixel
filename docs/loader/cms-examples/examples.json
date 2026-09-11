@@ -1,0 +1,145 @@
+{
+  "generator": "tools/plot_loader_cms_examples.py",
+  "source": "images/snake.png",
+  "source_sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+  "method": "Analytical re-encoding, not a libsixel backend measurement",
+  "baseline": "Fixture RGB bytes explicitly interpreted as sRGB",
+  "source_quantization": "None; float64 until sRGB preview rounding",
+  "gamut_mapping": "None required: reference colors are inside sRGB and P3",
+  "reference": "https://www.w3.org/TR/css-color-4/#predefined-display-p3",
+  "srgb_primaries": [
+    [
+      0.64,
+      0.33
+    ],
+    [
+      0.3,
+      0.6
+    ],
+    [
+      0.15,
+      0.06
+    ]
+  ],
+  "p3_primaries": [
+    [
+      0.68,
+      0.32
+    ],
+    [
+      0.265,
+      0.69
+    ],
+    [
+      0.15,
+      0.06
+    ]
+  ],
+  "white_xy": [
+    0.3127,
+    0.329
+  ],
+  "gamma_exponents": [
+    1.8,
+    1.0
+  ],
+  "gamut_chips_srgb_bytes": {
+    "correct": [
+      [
+        230,
+        50,
+        50
+      ],
+      [
+        240,
+        140,
+        35
+      ],
+      [
+        40,
+        180,
+        70
+      ],
+      [
+        30,
+        180,
+        200
+      ],
+      [
+        60,
+        90,
+        220
+      ],
+      [
+        128,
+        128,
+        128
+      ]
+    ],
+    "p3-ignored": [
+      [
+        212,
+        68,
+        60
+      ],
+      [
+        226,
+        145,
+        63
+      ],
+      [
+        88,
+        177,
+        84
+      ],
+      [
+        85,
+        177,
+        197
+      ],
+      [
+        67,
+        89,
+        212
+      ],
+      [
+        128,
+        128,
+        128
+      ]
+    ]
+  },
+  "gray_steps_srgb_bytes": {
+    "correct": [
+      32,
+      64,
+      96,
+      128,
+      192,
+      224
+    ],
+    "gamma18-ignored": [
+      24,
+      49,
+      77,
+      109,
+      179,
+      217
+    ],
+    "linear-ignored": [
+      4,
+      13,
+      30,
+      55,
+      134,
+      190
+    ]
+  },
+  "roundtrip_max_abs_error_bound": 1e-12,
+  "preview_sha256": {
+    "gamut-wide.png": "f2f8ea107d54d2dc5ec0f1842cb69b8ee6f7194c0227e96138dbc2d978f23bbf",
+    "gamut-mobile.png": "789d6ebc7dd40ead95f4a3d674651ec6f9b7d22476b2098c93986349a6e1c299",
+    "gamma-wide.png": "3b53527b80d24daa542b1f289f9f9bd19c7cd3bd2643ad883091b000cd5de5be",
+    "gamma-mobile.png": "7d276882b47bf2f0fa327bf64b7440af9866586838c025547beb527d4ceb9172"
+  }
+}

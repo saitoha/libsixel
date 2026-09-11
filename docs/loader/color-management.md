@@ -10,6 +10,52 @@ The default output contract is gamma-encoded sRGB palette values (`-Ugamma`), su
 
 The receiving terminal and display stack own the mapping from those output values to the physical display. On a wide-gamut device, faithful rendering of sRGB and an optional enhancement that expands sRGB colors into a larger gamut are different policies: the former preserves the requested colors, while the latter deliberately changes them. Such display enhancement belongs to the terminal/device side and is not enabled by libsixel's loader CMS. SIXEL carries no source ICC profile or explicit color-space tag with which to negotiate it, so libsixel also cannot guarantee how every terminal will render its palette values.
 
+## See what happens when the source is misinterpreted
+
+These examples show the same intended image with correct conversion and with source numbers incorrectly treated as sRGB. Look at the colored scales in the first comparison and the dark scales in the second. CMS is restoring the reference appearance; the correct panels have no added saturation or contrast enhancement.
+
+### Different color gamut: Display P3 interpreted as sRGB
+
+<picture>
+  <source media="(max-width: 640px)" srcset="cms-examples/gamut-mobile.png">
+  <img alt="The same snake photograph and six color patches: correct Display P3 to sRGB conversion on the left; P3 sample numbers incorrectly displayed as sRGB on the right. The yellow and green scales and colored patches lose saturation, while the neutral gray patch stays unchanged." src="cms-examples/gamut-wide.png">
+</picture>
+
+*The source primaries change, but the transfer function stays the same. Ignoring that distinction alters the color balance even though the image still loads and its detail remains recognizable. The reference colors all fit inside sRGB: the correct panel does not require a wide-gamut monitor.*
+
+### Different gamma: midtones and shadows change
+
+<picture>
+  <source media="(max-width: 1000px)" srcset="cms-examples/gamma-mobile.png">
+  <img alt="Three versions of the same snake photograph and gray steps: correctly converted sRGB, gamma 1.8 samples incorrectly treated as sRGB, and linear-light samples incorrectly treated as sRGB. The latter two are progressively darker. A reference gray value of 128 becomes 109 or 55, respectively." src="cms-examples/gamma-wide.png">
+</picture>
+
+*Here the primaries stay sRGB. The middle panel illustrates a gamma 1.8 source; the last panel illustrates the stronger error of treating linear-light samples as gamma-encoded values. These are two separate source encodings of the same intended colors, not successive edits to the photograph.*
+
+| Intended sRGB gray (0–255) | Correct conversion | Gamma 1.8 source misread as sRGB | Linear source misread as sRGB |
+| --- | --- | --- | --- |
+| 32 | 32 | 24 | 4 |
+| 64 | 64 | 49 | 13 |
+| 128 | 128 | 109 | 55 |
+| 192 | 192 | 179 | 134 |
+
+This is why changing a palette algorithm cannot fix the underlying problem: it would optimize an already misinterpreted image. These particular errors darken or reduce saturation; other source encodings and incorrect interpretations can cause different shifts, including brightening. The figures illustrate a mechanism, not a typical error magnitude for every image.
+
+### How the examples are made
+
+The generator explicitly treats the RGB bytes of the repository's [snake fixture](../../images/snake.png) as an sRGB reference, independently of its approximate PNG gamma declaration. It converts that reference to floating-point source samples and then takes two paths: apply the inverse source interpretation to recover sRGB, or use those source samples directly as sRGB preview values. All figure PNGs carry an sRGB chunk, including the deliberately wrong panels, so the viewer does not correct the illustrated mistake a second time.
+
+For Display P3, the calculation decodes the sRGB transfer function, converts linear sRGB through D65 XYZ to P3 primaries, and re-encodes with the same transfer function. The correct path reverses this conversion. The primaries and transfer definition follow [CSS Color 4](https://www.w3.org/TR/css-color-4/#predefined-display-p3). Starting from sRGB colors avoids out-of-gamut clipping and isolates misinterpretation from gamut mapping. For gamma 1.8, source values are `linear_sRGB ** (1 / 1.8)`; for linear light they are simply `linear_sRGB`. Correct interpretation decodes that source representation and applies sRGB encoding. Values are rounded to bytes only when producing the previews.
+
+These are analytical illustrations before palette reduction, not screenshots, measurements of `img2sixel --cms-engine=none`, or a comparison of builtin and lcms2 accuracy. Actual loader fallback can interpret other metadata instead of treating samples as sRGB. The examples do not test ICC parsing, rendering intents, terminal gamut mapping, or SIXEL quantization. Their purpose is to make the cost of a wrong source interpretation visible on an ordinary sRGB display.
+
+The [generator](../../tools/plot_loader_cms_examples.py) creates wide and stacked mobile layouts and checks that correct conversions recover the reference within `1e-12` before byte rounding. The [numerical record](cms-examples/examples.json) contains source and output hashes, chromaticities, and patch values. Regenerate or verify with Python, NumPy, and Pillow (the committed figures use NumPy 2.3.5 and Pillow 12.2.0 with its bundled font):
+
+```sh
+python3 tools/plot_loader_cms_examples.py
+python3 tools/plot_loader_cms_examples.py --check
+```
+
 ## Choosing an engine
 
 Enable loader CMS when the source profile matters: `img2sixel --cms-engine=auto image.png`. CMS is disabled by default for participating loaders. For varied third-party ICC profiles, prefer a build with Little CMS (`lcms2`) and verify that the selected loader supplies the original source color model to it. Choose `builtin` when avoiding an external CMS dependency matters and the actual profile corpus has been validated against the supported subset below. Neither engine can repair an incorrect source profile or recover source channels already discarded by a decoder.
