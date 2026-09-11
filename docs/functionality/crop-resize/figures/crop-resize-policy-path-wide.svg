@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1880 690" role="img" aria-labelledby="title desc">
+<title id="title">Resize precision policy path</title>
+<desc id="desc">The loaded frame is optionally cropped, routed through preserve, linear, or float resize representations, resampled, optionally converted to the working representation, optionally cropped after resize, and then sent to palette application and SIXEL encoding. The SIMD ceiling selects only eligible implementations and does not change the chosen resize policy.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 z" fill="#5E6672"/></marker>
+</defs>
+<style>.box{fill:#F7F8FA;stroke:#AAB2BD;stroke-width:2;}.title{font:700 24px system-ui,sans-serif;fill:#20242A;}.label{font:700 18px system-ui,sans-serif;fill:#20242A;}.body{font:15px system-ui,sans-serif;fill:#20242A;}.small{font:13px system-ui,sans-serif;fill:#5E6672;}.arrow{fill:none;stroke:#5E6672;stroke-width:2;marker-end:url(#arrow);}</style>
+<rect width="1880" height="690" fill="#FFFFFF"/>
+<text x="30" y="45" text-anchor="start" class="title">Resize precision policy path</text>
+<text x="30" y="75" text-anchor="start" class="small">Default RGB888 input and gamma working space; conditional stages are labeled.</text>
+<rect x="30" y="285" width="150" height="82" rx="10" fill="#F7F8FA" stroke="#AAB2BD" stroke-width="2"/>
+<text x="105" y="316" text-anchor="middle" class="label">Loaded frame</text>
+<text x="105" y="342" text-anchor="middle" class="small">decoded pixels</text>
+<rect x="220" y="285" width="130" height="82" rx="10" fill="#F7F8FA" stroke="#AAB2BD" stroke-width="2"/>
+<text x="285" y="316" text-anchor="middle" class="label">Early crop</text>
+<text x="285" y="342" text-anchor="middle" class="small">when -c precedes -w/-h</text>
+<path d="M180,326 L220,326" class="arrow"/>
+<path d="M350,326 L370,326 L370,170 L390,170" class="arrow"/>
+<path d="M370,326 L390,340" class="arrow"/>
+<path d="M370,326 L370,510 L390,510" class="arrow"/>
+<rect x="390" y="115" width="190" height="110" rx="10" fill="#FFFFFF" stroke="#E69F00" stroke-width="2" stroke-dasharray="10 6"/>
+<text x="485" y="146" text-anchor="middle" class="label" fill="#E69F00">preserve</text>
+<text x="485" y="174" text-anchor="middle" class="small">
+<tspan x="485" dy="0">keep RGB888</tspan>
+<tspan x="485" dy="18">gamma-coded samples</tspan>
+</text>
+<rect x="655" y="115" width="330" height="110" rx="10" fill="#FFFFFF" stroke="#E69F00" stroke-width="2" stroke-dasharray="10 6"/>
+<text x="820" y="151" text-anchor="middle" class="body">
+<tspan x="820" dy="0">Resampling: selected kernel</tspan>
+<tspan x="820" dy="22">byte path: scalar or SIMD</tspan>
+</text>
+<rect x="1060" y="115" width="330" height="110" rx="10" fill="#FFFFFF" stroke="#E69F00" stroke-width="2" stroke-dasharray="10 6"/>
+<text x="1225" y="151" text-anchor="middle" class="body">
+<tspan x="1225" dy="0">convert only if later work</tspan>
+<tspan x="1225" dy="22">requests another format</tspan>
+</text>
+<path d="M580,170 L655,170" class="arrow"/>
+<path d="M985,170 L1060,170" class="arrow"/>
+<rect x="390" y="285" width="190" height="110" rx="10" fill="#FFFFFF" stroke="#0072B2" stroke-width="2"/>
+<text x="485" y="316" text-anchor="middle" class="label" fill="#0072B2">linear</text>
+<text x="485" y="344" text-anchor="middle" class="small">
+<tspan x="485" dy="0">promote to float32</tspan>
+<tspan x="485" dy="18">gamma -&gt; linear RGB</tspan>
+</text>
+<rect x="655" y="285" width="330" height="110" rx="10" fill="#FFFFFF" stroke="#0072B2" stroke-width="2"/>
+<text x="820" y="321" text-anchor="middle" class="body">
+<tspan x="820" dy="0">Resampling: selected kernel</tspan>
+<tspan x="820" dy="22">linear-f32: scalar or SIMD</tspan>
+</text>
+<rect x="1060" y="285" width="330" height="110" rx="10" fill="#FFFFFF" stroke="#0072B2" stroke-width="2"/>
+<text x="1225" y="321" text-anchor="middle" class="body">
+<tspan x="1225" dy="0">convert to working format</tspan>
+<tspan x="1225" dy="22">normally RGB888</tspan>
+</text>
+<path d="M580,340 L655,340" class="arrow"/>
+<path d="M985,340 L1060,340" class="arrow"/>
+<rect x="390" y="455" width="190" height="110" rx="10" fill="#FFFFFF" stroke="#CC79A7" stroke-width="2" stroke-dasharray="3 5"/>
+<text x="485" y="486" text-anchor="middle" class="label" fill="#CC79A7">float</text>
+<text x="485" y="514" text-anchor="middle" class="small">
+<tspan x="485" dy="0">promote to float32</tspan>
+<tspan x="485" dy="18">gamma -&gt; linear RGB</tspan>
+</text>
+<rect x="655" y="455" width="330" height="110" rx="10" fill="#FFFFFF" stroke="#CC79A7" stroke-width="2" stroke-dasharray="3 5"/>
+<text x="820" y="491" text-anchor="middle" class="body">
+<tspan x="820" dy="0">Resampling: selected kernel</tspan>
+<tspan x="820" dy="22">linear-f32: scalar or SIMD</tspan>
+</text>
+<rect x="1060" y="455" width="330" height="110" rx="10" fill="#FFFFFF" stroke="#CC79A7" stroke-width="2" stroke-dasharray="3 5"/>
+<text x="1225" y="491" text-anchor="middle" class="body">
+<tspan x="1225" dy="0">retain float32 work</tspan>
+<tspan x="1225" dy="22">RGB-f32 for -W gamma</tspan>
+</text>
+<path d="M580,510 L655,510" class="arrow"/>
+<path d="M985,510 L1060,510" class="arrow"/>
+<rect x="625" y="92" width="390" height="500" rx="14" fill="none" stroke="#008B8B" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="820" y="620" text-anchor="middle" class="label" fill="#008B8B">SIMD ceiling</text>
+<text x="820" y="646" text-anchor="middle" class="small" fill="#008B8B">Caps byte/float resampling kernels in the measured path.</text>
+<path d="M1390,170 L1450,170 L1450,326" fill="none" stroke="#5E6672" stroke-width="2"/>
+<path d="M1390,340 L1450,340" fill="none" stroke="#5E6672" stroke-width="2"/>
+<path d="M1390,510 L1450,510 L1450,340" fill="none" stroke="#5E6672" stroke-width="2"/>
+<rect x="1480" y="285" width="150" height="82" rx="10" fill="#F7F8FA" stroke="#AAB2BD" stroke-width="2"/>
+<text x="1555" y="316" text-anchor="middle" class="label">Late crop</text>
+<text x="1555" y="342" text-anchor="middle" class="small">when -c follows -w/-h</text>
+<rect x="1670" y="285" width="180" height="82" rx="10" fill="#F7F8FA" stroke="#AAB2BD" stroke-width="2"/>
+<text x="1760" y="316" text-anchor="middle" class="label">Palette / SIXEL</text>
+<text x="1760" y="342" text-anchor="middle" class="small">common downstream path</text>
+<path d="M1450,340 L1450,326 L1480,326" class="arrow"/>
+<path d="M1630,326 L1670,326" class="arrow"/>
+</svg>

@@ -35,7 +35,8 @@ are grouped by domain so each area can grow without overloading one document.
   composed cost model.
 - [Decoding pipeline](functionality/decoding-pipeline.md) follows SIXEL wire bytes through parser and paint state, raster policy, indexed and direct representations, optional reconstruction and resize, parallel fallback, and PNG output, with a reciprocal coverage audit.
 - [Encoder execution map](functionality/encoder-execution-map.md) expands the implementation path through loader fallback, preprocessing, scheduler overlap, quantizer-specific work, lookup and dither application, and palette serialization.
-- [Crop and resize](functionality/crop-resize.md) defines geometry syntax, aspect-ratio and rounding rules, crop/resize ordering, resampling filters, precision, transparency, and public frame helpers.
+- [Crop and resize](functionality/crop-resize.md) defines geometry syntax, crop/resize ordering, resize colorspace and precision policy, its SIMD relationship, measured quality, speed, size, transparency, and public frame helpers.
+- [Resampling](functionality/resampling.md) details resize coordinate mapping, kernel support and shape, edge normalization, separable passes, threading, SIMD dispatch, and transparent-mask sampling.
 - [Encoding policy](functionality/encode-policy.md) explains `-E`, six-row mask serialization, size-policy overpainting, and measured quality, speed, and stream-size behavior.
 - [High-color output](functionality/high-color.md) explains `-I`, paint-time palette-register semantics, repeated 255-slot passes, terminal compatibility, and measured quality, speed, and size tradeoffs.
 - [Palette construction pipeline](functionality/palette-pipeline.md) defines
