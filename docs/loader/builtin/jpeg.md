@@ -1,26 +1,87 @@
 # Builtin JPEG Loader
 
-## Identity and history
+## Format lineage
 
-JPEG is recognized by the SOI marker and decoded by the heavily adapted stb-derived JPEG core in [`stb_image.h`](../../../src/stb_image.h). Metadata extraction, precision routing, and frame initialization are in [`loader-builtin.c`](../../../src/loader-builtin.c). The source entered the project with stb_image 1.33 in commit [`81375f0bd`](https://github.com/saitoha/libsixel/commit/81375f0bd) on 2014-03-19. Commit [`158bb61ea`](https://github.com/saitoha/libsixel/commit/158bb61ea) introduced float decoding in 2026, and [`cb7fb59bb`](https://github.com/saitoha/libsixel/commit/cb7fb59bb) plus [`81184726a`](https://github.com/saitoha/libsixel/commit/81184726a) added and hardened lossless high-depth decoding.
+JPEG names both a family of continuous-tone compression processes and the marker-coded interchange syntax standardized as ISO/IEC 10918-1 and [ITU-T T.81](https://www.itu.int/rec/T-REC-T.81). JFIF later standardized common file interchange conventions around that syntax; Exif and Adobe APP markers introduced other widely deployed metadata and component conventions. JPEG 2000, JPEG-LS, and JPEG XL are independent formats despite sharing the name.
 
-## Coding processes and precision
+The builtin decoder entered libsixel with stb_image 1.33 in commit [`81375f0bd`](https://github.com/saitoha/libsixel/commit/81375f0bd) in 2014. It remains an adapted stb-derived core in [`stb_image.h`](../../../src/stb_image.h), but it is no longer stock behavior. Commit [`158bb61ea`](https://github.com/saitoha/libsixel/commit/158bb61ea) added a float output path in 2026. Commits [`cb7fb59bb`](https://github.com/saitoha/libsixel/commit/cb7fb59bb) and [`81184726a`](https://github.com/saitoha/libsixel/commit/81184726a) added and hardened high-depth lossless JPEG. Metadata extraction and frame routing live in [`loader-builtin.c`](../../../src/loader-builtin.c).
 
-| SOF | Process | Accepted sample precision |
+## Marker container and coding processes
+
+A JPEG interchange stream begins with SOI and is a sequence of markers and entropy-coded scan data ending at EOI. SOF defines dimensions, components, precision, and sampling; DQT and DHT define quantization and Huffman tables; DRI establishes restart intervals; SOS begins a scan. APPn and COM segments carry conventions or metadata outside the coded sample process.
+
+| SOF marker | Process | Builtin precision |
 | --- | --- | --- |
-| `SOF0` | Baseline sequential DCT | 8 bits. |
-| `SOF1` | Extended sequential DCT | 8 through 12 bits. |
-| `SOF2` | Progressive DCT | 8 through 12 bits. |
-| `SOF3` | Huffman lossless | 2 through 16 bits, predictors 1 through 7, with a point transform below the sample precision. |
+| `SOF0` | Baseline sequential DCT | 8 bits |
+| `SOF1` | Extended sequential DCT | 8 through 12 bits |
+| `SOF2` | Progressive DCT | 8 through 12 bits |
+| `SOF3` | Huffman lossless predictive | 2 through 16 bits |
 
-The decoder supports one, three, or four frame components, Huffman tables, 8- and 16-bit quantization tables, restart intervals, and multiple scans. Horizontal and vertical sampling factors are each 1 through 4 and must form integer ratios with the maximum factor. A DNL marker is accepted only when it repeats the already-known height; a frame whose SOF height is initially zero is rejected.
+Lossy modes level-shift samples, divide the image into component blocks, apply an 8×8 DCT and quantization, reorder coefficients, and Huffman-code DC differences and AC runs. Progressive scans deliver coefficient bands or refinements over several scans. Lossless JPEG does not use DCT or quantization: it predicts each sample from neighboring samples with predictor 1 through 7 and Huffman-codes the difference, with a point transform below the sample precision.
 
-Three-component data is treated as RGB when component IDs are `R`, `G`, `B`, or when applicable Adobe/JFIF signaling selects direct RGB; otherwise it is converted from YCbCr. Four-component Adobe transform 0 is interpreted as CMYK and transform 2 as YCCK. A four-component stream without those semantics is decoded from its first three components; the fourth component is not exposed as alpha.
+The decoder accepts 8- and 16-bit quantization tables, up to four Huffman tables of each class, restart markers, and multiple scans. Horizontal and vertical sampling factors are 1 through 4 and must divide the maximum factor so component upsampling has an integral ratio. SOF dimensions must be known; a zero-height SOF/delayed-height stream is rejected, and DNL is accepted only when it repeats the already established height.
 
-## Metadata and output
+## Component and color interpretation
 
-APP0 JFIF and APP14 Adobe markers affect component interpretation. APP2 `ICC_PROFILE` segments are reassembled only when their count, sequence numbers, and uniqueness are consistent. APP1 Exif is inspected for orientation. Other APP segments and COM data are skipped after structural validation; XMP and arbitrary Exif tags are not exposed.
+One-, three-, and four-component frames are accepted. One component becomes grayscale RGB. Three components are direct RGB when the identifiers are `R`, `G`, `B`, or when the applicable Adobe/JFIF signaling selects RGB; otherwise samples are interpreted as YCbCr and converted to RGB. Chroma-subsampled planes are upsampled before the matrix conversion.
 
-Ordinary eight-bit DCT data can produce gamma `RGB888`. Lossless JPEG, precision above eight bits, an enabled precision-preserving path, or required color work produces gamma `RGBFLOAT32`. The embedded-profile path accepts an RGB-domain ICC profile after JPEG component conversion. CMYK-domain profiles are not applied directly to the original CMYK samples because the decoder has already converted those samples to RGB.
+Four-component Adobe transform 0 is treated as CMYK and transform 2 as YCCK. The decoder performs its device conversion to RGB. A four-component stream without those recognized semantics uses the first three components through the fallback conversion and does not expose the fourth as alpha. JPEG alpha is therefore not supported.
 
-Arithmetic-coded JPEG, differential and hierarchical processes, JPEG-LS, JPEG 2000, and delayed-height streams are not supported. JPEG alpha is not supported. The optional `libjpeg` component is a separate decoder and may have capabilities determined by the linked library; this page describes only `-Lbuiltin!`.
+This distinction matters for profiles: the builtin ICC stage sees RGB pixels after JPEG component conversion. It applies only an RGB-domain profile. A CMYK profile is not applied retroactively to original CMYK samples, because those planes are no longer the frame boundary.
+
+## Metadata and dialect handling
+
+| Marker convention | Treatment |
+| --- | --- |
+| APP0 JFIF | Recognized for common component interpretation. Density and thumbnail data are not exposed. |
+| APP14 Adobe | Transform byte selects direct RGB/CMYK/YCCK behavior where applicable. |
+| APP2 `ICC_PROFILE` | Numbered chunks are reassembled only when count, sequence, uniqueness, and lengths are consistent. A usable RGB profile can drive CMS. |
+| APP1 Exif | TIFF-formatted orientation is parsed when enabled. Other Exif tags and thumbnails are ignored. |
+| Other APPn and COM | Structurally skipped; XMP, IPTC, and comments are not returned as metadata. |
+
+Arithmetic-coded SOF processes, differential and hierarchical modes, JPEG-LS, JPEG 2000, and extension processes outside SOF0–SOF3 are rejected. The optional `libjpeg` loader is a separate component whose feature set depends on its linked library; this page describes `-Lbuiltin!` only.
+
+## Decode and precision pipeline
+
+The dispatcher recognizes SOI, scans markers to decide whether the byte API is safe, and extracts Exif/ICC only for the policies that need them. The fast byte path is used only for 8-bit SOF0/SOF1/SOF2 when CMS is disabled and the encoder has not requested a float loader boundary. SOF3 always takes the float path even at eight bits.
+
+The encoder implicitly requests float loader data when resizing is active, its working colorspace is not gamma, default quantization clusters in a non-gamma space, or another encoder precision policy requests float. That request is distinct from the loader suboption `prefer_8bit`, which controls CMS target storage rather than this JPEG decode-path decision.
+
+| Decode condition | Initial frame |
+| --- | --- |
+| Eligible 8-bit DCT, CMS off, no float request | Gamma `RGB888`. |
+| SOF3, precision above 8, CMS enabled, or encoder float request | Gamma `RGBFLOAT32`. |
+| Applicable RGB ICC with CMS enabled | Profile conversion runs on RGB float samples; the frame remains a semantic RGB float boundary and later target conversion follows loader/encoder policy. |
+
+Float output prevents an avoidable byte rounding between JPEG component conversion, resize, and later color transforms. It cannot restore information already discarded by lossy quantization or chroma subsampling.
+
+## Options and observable differences
+
+```console
+img2sixel -Lbuiltin! photo.jpg
+img2sixel -Lbuiltin:cms_engine=auto:cms_target=linear:orientation=1! photo.jpg
+```
+
+| Control | Exact effect on JPEG |
+| --- | --- |
+| `builtin:cms_engine=...` | Enables APP2 ICC use and selects the CMS backend. Enabling CMS also selects float decode. Non-RGB profiles are non-applicable. |
+| `cms_target`, `cms_intent`, `prefer_8bit` | Affect an applicable CMS conversion, not marker parsing. `prefer_8bit` does not force high-precision or lossless JPEG through the byte decoder. |
+| `builtin:orientation=0|1` | Enables APP1 Exif orientation; default is `1`. Orientation is applied after decode to pixels and transparency state together. |
+| Resize, working-colorspace, and clustering-colorspace options | Can request the float decode path before the resize/color-space stages run. |
+| `-B`, background policy/colorspace, and `-A` | No image alpha or file background exists in this path, so these do not change JPEG pixels. |
+| `-p COLORS` | Controls later palette size but does not make JPEG an indexed loader frame. |
+| `-S`, `-l`, `-T`, `-g` | No effect because builtin JPEG emits one still frame with no delay. |
+| PNG, HDR, PNM, and BMP-specific suboptions | No effect. |
+
+## Failure and security boundary
+
+Malformed marker lengths, component references, Huffman/quantization tables, scan transitions, restart placement, predictors, and allocation products fail before a frame callback. Extra junk after recognized structures may be tolerated where the inherited JPEG parser deliberately resynchronizes, so this is not a canonical-file validator.
+
+JPEG entropy decode and high-depth prediction operate on attacker-controlled symbols and dimensions. Profile and Exif segments add separate parsers. Selecting the builtin path gives libsixel control over precision and errors, but increases project-owned attack surface and is not process isolation.
+
+## Implementation landmarks
+
+- Entropy, DCT/progressive/lossless decode and component conversion: [`stb_image.h`](../../../src/stb_image.h)
+- Precision selection, ICC assembly, orientation, and frame creation: [`loader-builtin.c`](../../../src/loader-builtin.c)
+- Loader color contract: [Color Spaces and Loader Color Management](../../concepts/colorspace.md)
+- JPEG regression and malformed-input coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
