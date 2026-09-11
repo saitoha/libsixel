@@ -630,6 +630,36 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/loader/loader-architecture-figures/loader-architecture-figures.json \
 	docs/loader/loader-architecture-figures/loader-chain-mobile.svg \
 	docs/loader/loader-architecture-figures/loader-chain-wide.svg \
+	docs/functionality/crop-resize.md \
+	docs/functionality/crop-resize/figures/crop-resize-policy-path-mobile.svg \
+	docs/functionality/crop-resize/figures/crop-resize-policy-path-wide.svg \
+	docs/functionality/crop-resize/measurements/crop-resize-boundary-float.png \
+	docs/functionality/crop-resize/measurements/crop-resize-boundary-input.png \
+	docs/functionality/crop-resize/measurements/crop-resize-boundary-linear.png \
+	docs/functionality/crop-resize/measurements/crop-resize-boundary-preserve.png \
+	docs/functionality/crop-resize/measurements/crop-resize-boundary-samples.csv \
+	docs/functionality/crop-resize/measurements/crop-resize-quality-checker-delta-e00.png \
+	docs/functionality/crop-resize/measurements/crop-resize-quality-checker-ms-ssim.png \
+	docs/functionality/crop-resize/measurements/crop-resize-quality-natural-delta-e00.png \
+	docs/functionality/crop-resize/measurements/crop-resize-quality-natural-ms-ssim.png \
+	docs/functionality/crop-resize/measurements/crop-resize-quality.csv \
+	docs/functionality/crop-resize/measurements/crop-resize-run.json \
+	docs/functionality/crop-resize/measurements/crop-resize-size.csv \
+	docs/functionality/crop-resize/measurements/crop-resize-size.png \
+	docs/functionality/crop-resize/measurements/crop-resize-speed.csv \
+	docs/functionality/crop-resize/measurements/crop-resize-speed.png \
+	docs/functionality/crop-resize/measurements/crop-resize-visual-float-auto-zoom.png \
+	docs/functionality/crop-resize/measurements/crop-resize-visual-float-auto.png \
+	docs/functionality/crop-resize/measurements/crop-resize-visual-linear-auto-zoom.png \
+	docs/functionality/crop-resize/measurements/crop-resize-visual-linear-auto.png \
+	docs/functionality/crop-resize/measurements/crop-resize-visual-preserve-auto-zoom.png \
+	docs/functionality/crop-resize/measurements/crop-resize-visual-preserve-auto.png \
+	docs/functionality/crop-resize/measurements/crop-resize-visual-reference-linear-scalar-zoom.png \
+	docs/functionality/crop-resize/measurements/crop-resize-visual-reference-linear-scalar.png \
+	docs/functionality/resampling.md \
+	docs/functionality/resampling/figures/resampling-coordinate-mapping.png \
+	docs/functionality/resampling/figures/resampling-kernels-radius-1.png \
+	docs/functionality/resampling/figures/resampling-kernels-wide.png \
 	docs/functionality/clustering-colorspace.md \
 	docs/functionality/working-colorspace.md \
 	docs/functionality/merge-policy.md \

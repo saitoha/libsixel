@@ -1,0 +1,200 @@
+{
+  "artifacts": {
+    "measurement_directory": [
+      "crop-resize-boundary-float.png",
+      "crop-resize-boundary-input.png",
+      "crop-resize-boundary-linear.png",
+      "crop-resize-boundary-preserve.png",
+      "crop-resize-boundary-samples.csv",
+      "crop-resize-quality-checker-delta-e00.png",
+      "crop-resize-quality-checker-ms-ssim.png",
+      "crop-resize-quality-natural-delta-e00.png",
+      "crop-resize-quality-natural-ms-ssim.png",
+      "crop-resize-quality.csv",
+      "crop-resize-size.csv",
+      "crop-resize-size.png",
+      "crop-resize-speed.csv",
+      "crop-resize-speed.png",
+      "crop-resize-visual-float-auto-zoom.png",
+      "crop-resize-visual-float-auto.png",
+      "crop-resize-visual-linear-auto-zoom.png",
+      "crop-resize-visual-linear-auto.png",
+      "crop-resize-visual-preserve-auto-zoom.png",
+      "crop-resize-visual-preserve-auto.png",
+      "crop-resize-visual-reference-linear-scalar-zoom.png",
+      "crop-resize-visual-reference-linear-scalar.png"
+    ],
+    "resampling_figures": [
+      "resampling-coordinate-mapping.png",
+      "resampling-kernels-radius-1.png",
+      "resampling-kernels-wide.png"
+    ]
+  },
+  "build": {
+    "cflags": "-O3 -std=c99",
+    "compiler_command": "gcc",
+    "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "ldflags": ""
+  },
+  "generated_at_utc": "2026-09-11T01:18:02.287803+00:00",
+  "preflight": {
+    "float-auto": {
+      "resize_input_format": "linear-f32",
+      "resize_mode": 3,
+      "scale_output_format": "linear-f32",
+      "simd_cap": 3,
+      "simd_effective": 3,
+      "simd_native": 3,
+      "source_format": "rgb888",
+      "work_format": "rgb-f32"
+    },
+    "float-scalar": {
+      "resize_input_format": "linear-f32",
+      "resize_mode": 3,
+      "scale_output_format": "linear-f32",
+      "simd_cap": 0,
+      "simd_effective": 0,
+      "simd_native": 3,
+      "source_format": "rgb888",
+      "work_format": "rgb-f32"
+    },
+    "linear-auto": {
+      "resize_input_format": "linear-f32",
+      "resize_mode": 2,
+      "scale_output_format": "linear-f32",
+      "simd_cap": 3,
+      "simd_effective": 3,
+      "simd_native": 3,
+      "source_format": "rgb888",
+      "work_format": "rgb888"
+    },
+    "linear-scalar": {
+      "resize_input_format": "linear-f32",
+      "resize_mode": 2,
+      "scale_output_format": "linear-f32",
+      "simd_cap": 0,
+      "simd_effective": 0,
+      "simd_native": 3,
+      "source_format": "rgb888",
+      "work_format": "rgb888"
+    },
+    "preserve-auto": {
+      "resize_input_format": "rgb888",
+      "resize_mode": 1,
+      "scale_output_format": "rgb888",
+      "simd_cap": 3,
+      "simd_effective": 3,
+      "simd_native": 3,
+      "source_format": "rgb888",
+      "work_format": "rgb888"
+    },
+    "preserve-scalar": {
+      "resize_input_format": "rgb888",
+      "resize_mode": 1,
+      "scale_output_format": "rgb888",
+      "simd_cap": 0,
+      "simd_effective": 0,
+      "simd_native": 3,
+      "source_format": "rgb888",
+      "work_format": "rgb888"
+    }
+  },
+  "programs": {
+    "img2sixel": {
+      "path": "/Users/saitoha/repo/libsixel/converters/img2sixel",
+      "sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
+      "version": "img2sixel 1.11.1-pre1"
+    },
+    "lsqa": {
+      "path": "/Users/saitoha/repo/libsixel/assessment/lsqa",
+      "sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
+      "version": "not exposed; identify this program by source revision and SHA-256"
+    },
+    "sixel2png": {
+      "path": "/Users/saitoha/repo/libsixel/converters/sixel2png",
+      "sha256": "b7b512951e1e6e4dafe1bc9490e2bf82c9de8bf8cca885f3db5601f9a8bdc917",
+      "version": "sixel2png 1.11.1-pre1"
+    }
+  },
+  "protocol": {
+    "boundary_sample_x": 256,
+    "boundary_source_size": [
+      8,
+      192
+    ],
+    "boundary_target_size": [
+      513,
+      192
+    ],
+    "checker_reference_srgb_tone": 188,
+    "checker_source_size": [
+      600,
+      450
+    ],
+    "checker_target_size": [
+      300,
+      225
+    ],
+    "comparison_colorspace": "oklab",
+    "comparison_precision": "float32",
+    "dither": "none",
+    "gpu_policy": "off",
+    "natural_reference": "linear-scalar post-SIXEL snapshot",
+    "natural_source_size": [
+      600,
+      450
+    ],
+    "natural_target_size": [
+      300,
+      225
+    ],
+    "palette_colors": 256,
+    "policies": [
+      "preserve",
+      "linear",
+      "float"
+    ],
+    "resampling": "bilinear",
+    "simd_modes": [
+      "scalar",
+      "auto"
+    ],
+    "sixel_environment_removed": true,
+    "speed_case_order_seed": 1,
+    "speed_runs": 9,
+    "speed_source_size": [
+      2400,
+      1800
+    ],
+    "speed_target_size": [
+      600,
+      450
+    ],
+    "speed_warmups": 2,
+    "threads": 1,
+    "zoom_box": [
+      0,
+      65,
+      120,
+      100
+    ],
+    "zoom_display_scale": 4
+  },
+  "python": {
+    "matplotlib": "3.11.1",
+    "numpy": "2.3.5",
+    "pillow": "12.2.0",
+    "version": "3.12.14"
+  },
+  "schema_version": 1,
+  "source": {
+    "input": "images/snake.png",
+    "input_sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+    "machine": "arm64",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "processor": "arm",
+    "revision": "cf9bad2a3bb8a83f0ff87192ef1a9da7ac698fc3",
+    "tracked_worktree_state_at_start": "clean"
+  }
+}

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 1540" role="img" aria-labelledby="title desc">
+<title id="title">Resize precision policy path, narrow layout</title>
+<desc id="desc">The same resize policy path as the wide diagram, arranged as stacked preserve, linear, and float paths for narrow screens.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,4 L0,8 z" fill="#5E6672"/></marker>
+</defs>
+<style>.box{fill:#F7F8FA;stroke:#AAB2BD;stroke-width:2;}.title{font:700 24px system-ui,sans-serif;fill:#20242A;}.label{font:700 18px system-ui,sans-serif;fill:#20242A;}.body{font:15px system-ui,sans-serif;fill:#20242A;}.small{font:13px system-ui,sans-serif;fill:#5E6672;}.arrow{fill:none;stroke:#5E6672;stroke-width:2;marker-end:url(#arrow);}</style>
+<rect width="760" height="1540" fill="#FFFFFF"/>
+<text x="30" y="45" text-anchor="start" class="title">Resize precision policy path</text>
+<text x="30" y="75" text-anchor="start" class="small">Conditional stages remain explicit in the stacked view.</text>
+<rect x="240" y="110" width="280" height="82" rx="10" fill="#F7F8FA" stroke="#AAB2BD" stroke-width="2"/>
+<text x="380" y="141" text-anchor="middle" class="label">Loaded frame</text>
+<text x="380" y="167" text-anchor="middle" class="small">decoded pixels</text>
+<rect x="240" y="225" width="280" height="82" rx="10" fill="#F7F8FA" stroke="#AAB2BD" stroke-width="2"/>
+<text x="380" y="256" text-anchor="middle" class="label">Early crop</text>
+<text x="380" y="282" text-anchor="middle" class="small">when -c precedes -w/-h</text>
+<path d="M380,192 L380,225" class="arrow"/>
+<path d="M380,307 L380,345" class="arrow"/>
+<text x="380" y="375" text-anchor="middle" class="label">resize_precision selects one path</text>
+<rect x="75" y="415" width="610" height="160" rx="12" fill="#FFFFFF" stroke="#E69F00" stroke-width="2" stroke-dasharray="10 6"/>
+<text x="380" y="450" text-anchor="middle" class="label" fill="#E69F00">preserve</text>
+<text x="380" y="485" text-anchor="middle" class="body">
+<tspan x="380" dy="0">RGB888 gamma samples -&gt; Resampling (selected byte kernel)</tspan>
+<tspan x="380" dy="23">-&gt; convert only if later work requests another format</tspan>
+</text>
+<rect x="75" y="600" width="610" height="160" rx="12" fill="#FFFFFF" stroke="#0072B2" stroke-width="2"/>
+<text x="380" y="635" text-anchor="middle" class="label" fill="#0072B2">linear</text>
+<text x="380" y="670" text-anchor="middle" class="body">
+<tspan x="380" dy="0">promote + gamma -&gt; linear-f32 -&gt; Resampling</tspan>
+<tspan x="380" dy="23">-&gt; convert to the working format, normally RGB888</tspan>
+</text>
+<rect x="75" y="785" width="610" height="160" rx="12" fill="#FFFFFF" stroke="#CC79A7" stroke-width="2" stroke-dasharray="3 5"/>
+<text x="380" y="820" text-anchor="middle" class="label" fill="#CC79A7">float</text>
+<text x="380" y="855" text-anchor="middle" class="body">
+<tspan x="380" dy="0">promote + gamma -&gt; linear-f32 -&gt; Resampling</tspan>
+<tspan x="380" dy="23">-&gt; retain float32 work, RGB-f32 for -W gamma</tspan>
+</text>
+<rect x="75" y="975" width="610" height="135" rx="14" fill="none" stroke="#008B8B" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="380" y="1008" text-anchor="middle" class="label" fill="#008B8B">SIMD ceiling</text>
+<text x="380" y="1038" text-anchor="middle" class="small" fill="#008B8B">
+<tspan x="380" dy="0">Caps byte and float resampling kernels in this path.</tspan>
+<tspan x="380" dy="20">It does not change color-mixing policy or working precision.</tspan>
+<tspan x="380" dy="20">Measured promotion and float color conversion remain scalar.</tspan>
+</text>
+<rect x="240" y="1150" width="280" height="82" rx="10" fill="#F7F8FA" stroke="#AAB2BD" stroke-width="2"/>
+<text x="380" y="1181" text-anchor="middle" class="label">Late crop</text>
+<text x="380" y="1207" text-anchor="middle" class="small">when -c follows -w/-h</text>
+<rect x="220" y="1275" width="320" height="82" rx="10" fill="#F7F8FA" stroke="#AAB2BD" stroke-width="2"/>
+<text x="380" y="1306" text-anchor="middle" class="label">Palette / SIXEL</text>
+<text x="380" y="1332" text-anchor="middle" class="small">common downstream path</text>
+<path d="M380,1110 L380,1150" class="arrow"/>
+<path d="M380,1232 L380,1275" class="arrow"/>
+<text x="380" y="1405" text-anchor="middle" class="body">
+<tspan x="380" dy="0">The selected resampling kernel is orthogonal to resize_precision.</tspan>
+<tspan x="380" dy="24">The measured matrix fixes bilinear and varies policy x SIMD ceiling.</tspan>
+</text>
+</svg>
