@@ -34,6 +34,7 @@ EXTRA_DIST = libsixel-config.in \
              jpegref.c \
              ls-action-summarize \
              ls-summarize \
+             check_crop_resize_measurements.py \
              check_dither_policy_measurements.py \
              check_dither_spectrum_measurements.py \
              check_makefile_generated_pairs.sh \
@@ -46,7 +47,9 @@ EXTRA_DIST = libsixel-config.in \
              check_snap_policy_measurements.py \
              check_threading_measurements.py \
              check_working_colorspace_measurements.py \
+             generate_crop_resize_policy_path.py \
              plot_cover_policy_figures.py \
+             plot_crop_resize_measurements.py \
              plot_dither_policy_measurements.py \
              plot_dither_spectrum_measurements.py \
              plot_lookup_policy_acceleration.py \
@@ -63,6 +66,7 @@ EXTRA_DIST = libsixel-config.in \
              plot_working_colorspace_measurements.py \
              reproduce_lookup_policy_acceleration.sh \
              reproduce_cover_policy_figures.sh \
+             reproduce_crop_resize_measurements.sh \
              reproduce_dither_policy_measurements.sh \
              reproduce_dither_spectrum_measurements.sh \
              reproduce_lookup_policy_measurements.sh \
