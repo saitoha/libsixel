@@ -480,6 +480,9 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 bin_SCRIPTS = libsixel-config $(am__append_1)
 EXTRA_DIST = libsixel-config.in \
+             build-docs \
+             docs/mkdocs_hooks.py \
+             docs/requirements.txt \
              quicklook-extension.bash \
              sixel-thumbnailer \
              update-mime-database.sh \

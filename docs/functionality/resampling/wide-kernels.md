@@ -139,7 +139,7 @@ Increasing Lanczos support changes several objectives at once:
 - separable horizontal and vertical responses multiply, so directional differences can grow;
 - palette quantization and dithering may react differently to the new pixel distribution, changing SIXEL size as well as appearance.
 
-The recorded output sizes are consequently non-monotonic: the wider kernel does not merely emit more bytes, because the encoder stores a palette-index pattern rather than kernel weights. Select by the failure that matters for the actual image, then compare the decoded output at its final display size. The [visual comparison](../resampling.md#decoded-output-and-magnified-comparison), [moiré guidance](../resampling.md#when-moiré-appears), and [quality, speed, and size graphs](../resampling.md#measured-quality-speed-and-sixel-size) provide the implementation evidence needed alongside these theoretical curves.
+The recorded output sizes are consequently non-monotonic: the wider kernel does not merely emit more bytes, because the encoder stores a palette-index pattern rather than kernel weights. Select by the failure that matters for the actual image, then compare the decoded output at its final display size. The [visual comparison](../resampling.md#natural-image-output-comparison), [moiré guidance](../resampling.md#when-moire-appears), and [quality, speed, and size graphs](../resampling.md#measured-quality-speed-and-sixel-size) provide the implementation evidence needed alongside these theoretical curves.
 
 ## Comparing the theory with the implementation
 
