@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test: ACT palette export writes expected size.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
 
 set -eux
 

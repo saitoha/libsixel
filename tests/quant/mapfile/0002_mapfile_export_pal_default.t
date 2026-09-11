@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test: default PAL palette export writes JASC-PAL header.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
 
 set -eux
 

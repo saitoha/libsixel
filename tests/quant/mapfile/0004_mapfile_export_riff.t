@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test: RIFF palette export writes RIFF header bytes.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
 
 set -eux
 

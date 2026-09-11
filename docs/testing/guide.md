@@ -139,6 +139,8 @@ Behavioral policy documents with an enforced coverage inventory also require rec
 
 Use a reciprocal `Policy:` reference only when the test directly proves a documented user-visible contract. Parser robustness cases, malformed-input probes, resource-limit checks, and implementation-specific failure paths should remain discoverable through a separately described defensive test category unless the policy document promises their exact observable behavior. In that case, promote the behavior to a stable coverage ID and add the reciprocal direct link. A suite-directory link is an index of defensive breadth, not a substitute for contract-level coverage.
 
+When a suite has a marked exhaustive test-plan inventory, add its exact test link to the delimited inventory and add the reciprocal `Test-plan: docs/...` comment near the beginning of the test. `staticcheck-test-plan-links` compares the marker glob, inventory links, and comments as complete sets. Use both `Policy:` and `Test-plan:` when a test is simultaneously public-contract evidence and a member of the exhaustive suite inventory.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -154,10 +156,11 @@ Each automated contract has a stable ID and an owning static check. The reciproc
 | TG-05 | C test-runner sources remain synchronized with amalgamation build defines. | [tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh](../../tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh) |
 | TG-06 | Enforced policy documents and their listed tests carry reciprocal repository-relative links, and every coverage row has an owning test. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
 | TG-07 | Shell TAP tests do not use `for` or `until` loops; heredoc payloads in other languages are excluded. | [tests/_static/sh/staticcheck-test-no-for-until.sh](../../tests/_static/sh/staticcheck-test-no-for-until.sh) |
+| TG-08 | Marked test-plan inventories and their complete glob-scoped test sets carry exact reciprocal links without duplicate entries. | [tests/_static/sh/staticcheck-test-plan-links.sh](../../tests/_static/sh/staticcheck-test-plan-links.sh) |
 
 ### Coverage boundary
 
-These checks enforce the repository-wide invariants stated in their contract rows. Naming quality, fixture minimality, whether separate values provide genuinely distinct observations, and the necessity of file or process work still require review because they cannot be inferred reliably from syntax alone. Other syntactic rules in this guide are requirements even where the current static suite does not yet enforce them; the table must not be read as claiming broader mechanical coverage than its rows state.
+These checks enforce the repository-wide invariants stated in their contract rows. The test-plan link check proves set completeness and reciprocity, not whether an inventory description accurately characterizes the assertion. Naming quality, fixture minimality, whether separate values provide genuinely distinct observations, and the necessity of file or process work still require review because they cannot be inferred reliably from syntax alone. Other syntactic rules in this guide are requirements even where the current static suite does not yet enforce them; the table must not be read as claiming broader mechanical coverage than its rows state.
 
 ## Required validation
 

@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: GPL import rejects more than 256 colors.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

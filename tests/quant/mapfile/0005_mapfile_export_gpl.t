@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test: GPL palette export writes GIMP header.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
 
 set -eux
 

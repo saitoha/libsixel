@@ -865,6 +865,10 @@ run_case_tap "staticcheck-doc-test-links" \
     "$src_root/tests/_static/sh/staticcheck-doc-test-links.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-plan-links" \
+    "$src_root/tests/_static/sh/staticcheck-test-plan-links.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-loader-builtin-1464-static-contract" \
     env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-loader-builtin-1464" \
     TOP_SRCDIR="$TOP_SRCDIR" \

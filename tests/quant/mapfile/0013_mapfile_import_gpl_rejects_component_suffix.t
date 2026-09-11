@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: GPL import rejects component tokens with trailing garbage.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

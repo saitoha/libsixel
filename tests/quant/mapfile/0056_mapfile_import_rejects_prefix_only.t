@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: prefix-only mapfile paths are rejected.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

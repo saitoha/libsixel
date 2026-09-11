@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: ACT import accepts transparency index 0 and count 256.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

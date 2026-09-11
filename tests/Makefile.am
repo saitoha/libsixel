@@ -731,6 +731,7 @@ AM_LOG_FLAGS =
 	staticcheck-docs-envvars-help-table \
 	staticcheck-docs-github-math \
 	staticcheck-doc-test-links \
+	staticcheck-test-plan-links \
 	staticcheck-c-header-modeline
 
 # Keep Autotools staticcheck semantics aligned with Meson:
@@ -802,6 +803,7 @@ staticcheck-docs-bash-vs-zsh-completion \
 staticcheck-docs-envvars-help-table \
 staticcheck-docs-github-math \
 staticcheck-doc-test-links \
+staticcheck-test-plan-links \
 staticcheck-c-header-modeline: \
 	T_LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS) --enable-hard-errors
 
@@ -1447,6 +1449,16 @@ staticcheck-doc-test-links:
 		--trs-file staticcheck-doc-test-links.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-doc-test-links.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-test-plan-links:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-plan-links" \
+		--log-file staticcheck-test-plan-links.log \
+		--trs-file staticcheck-test-plan-links.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-plan-links.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-docs-help-vs-man:
@@ -2423,6 +2435,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
     _static/sh/staticcheck-docs-github-math.sh \
     _static/sh/staticcheck-doc-test-links.sh \
+    _static/sh/staticcheck-test-plan-links.sh \
     _static/awk/docs-github-math.awk \
     _static/data/github-math-macros.txt \
     _static/sh/staticcheck-c-header-modeline.sh \

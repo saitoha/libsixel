@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: GPL import rejects metadata-only payloads without a header.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

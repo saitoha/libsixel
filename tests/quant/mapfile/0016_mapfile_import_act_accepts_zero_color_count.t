@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: ACT import keeps count=0 compatibility by treating it as 256.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

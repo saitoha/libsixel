@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: .pal input rejects ACT-sized binary payload ambiguity.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

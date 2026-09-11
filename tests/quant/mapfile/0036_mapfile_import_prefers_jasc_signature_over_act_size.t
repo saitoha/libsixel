@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: extensionless JASC signature is preferred over ACT size heuristics.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

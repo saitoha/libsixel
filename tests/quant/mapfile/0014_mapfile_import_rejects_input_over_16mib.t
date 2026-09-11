@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: mapfile import rejects palette streams larger than 16 MiB.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 
