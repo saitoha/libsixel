@@ -139,7 +139,7 @@ The rows below are pipeline landmarks rather than a complete decoder inventory. 
 | SIX-02 | The raw parser accepts the `P2=5` dialect and resolves overlapping selectors into the expected byte index and palette entry. | [tests/processing/decoder/0002_decoder_ormode_raw_overlay.t](../../../tests/processing/decoder/0002_decoder_ormode_raw_overlay.t) |
 | SIX-03 | Repeat expansion and OR-mode paint use the same register-bit accumulation contract. | [tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t](../../../tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t) |
 | SIX-04 | A valid anchored split produces byte-identical serial and parallel output across a sixel newline boundary. | [tests/processing/decoder/0001_decoder_parallel_split_after_newline.t](../../../tests/processing/decoder/0001_decoder_parallel_split_after_newline.t) |
-| SIX-05 | The completed loader frame remains usable by the downstream encoder geometry and palette path. | [tests/processing/geometry/0009_sixel_resize_palette_limit.t](../../../tests/processing/geometry/0009_sixel_resize_palette_limit.t) |
+| SIX-05 | The adapter preserves the raw unpainted sentinel in `PAL8`, expands it through the backing palette in `RGB888`, and exposes the documented final-palette collapse after register redefinition. | [tests/loader/builtin/1986_loader_builtin_sixel_unpainted_numeric.t](../../../tests/loader/builtin/1986_loader_builtin_sixel_unpainted_numeric.t), [tests/loader/builtin/1987_loader_builtin_sixel_high_color_numeric.t](../../../tests/loader/builtin/1987_loader_builtin_sixel_high_color_numeric.t) |
 
 ### Defensive and malformed-input tests
 
@@ -147,4 +147,4 @@ The rows below are pipeline landmarks rather than a complete decoder inventory. 
 | --- | --- | --- |
 | SIX-90 | A failed parallel attempt does not leak partially painted worker state into the serial fallback image. | [tests/processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.t](../../../tests/processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.t) |
 
-Coverage audit note: these owners cover routing, representative raw/OR paint, one safe parallel split, and dirty-worker fallback. This page does not yet own an adapter-level numeric test that distinguishes unpainted sentinels across the `PAL8` and expanded-`RGB888` branches, nor one that isolates high-color register redefinition through the builtin loader.
+Coverage audit note: these owners cover routing, representative raw/OR paint, one safe parallel split, dirty-worker fallback, both adapter representations of an unpainted pixel, and the final-palette limitation after register redefinition. They still do not make the builtin adapter a terminal replay model or add a separate paint mask.

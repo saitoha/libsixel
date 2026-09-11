@@ -103,6 +103,13 @@ FAMILIES = (
         ("webp",),
     ),
     Family(
+        "sixel",
+        "SIXEL",
+        "docs/loader/builtin/sixel.md",
+        "SIXEL builtin component",
+        ("sixel",),
+    ),
+    Family(
         "tga",
         "TGA",
         "docs/loader/builtin/tga.md",
@@ -124,6 +131,7 @@ FAMILIES = (
 CLASSIFICATION_ORDER = (
     "psd",
     "webp",
+    "sixel",
     "hdr",
     "bmp",
     "png",

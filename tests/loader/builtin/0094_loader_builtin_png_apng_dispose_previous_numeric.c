@@ -3,7 +3,7 @@
 #include "loader_builtin_memory_test_common.h"
 
 int
-test_loader_0094_loader_builtin_png_apng_dispose_previous_numeric(
+test_loader_0094_builtin_png_apng_dispose_previous_numeric(
     int argc,
     char **argv)
 {

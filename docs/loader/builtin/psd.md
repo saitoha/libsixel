@@ -148,7 +148,9 @@ The rows below are pipeline landmarks rather than the complete suite. The [PSD/P
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
+| PSD-02 | The 16-bit ZIP-prediction and 32-bit PackBits paths both produce gamma `RGBFLOAT32` frames with fixed representative samples. | [tests/loader/builtin/1984_loader_builtin_psd_rgb16_zip_pred_numeric.t](../../../tests/loader/builtin/1984_loader_builtin_psd_rgb16_zip_pred_numeric.t), [tests/loader/builtin/1985_loader_builtin_psd_rgb32_rle_numeric.t](../../../tests/loader/builtin/1985_loader_builtin_psd_rgb32_rle_numeric.t) |
 | PSD-04 | A missing merged composite is reconstructed from offset RGB8 layers with normal blend, producing the fixed complete RGB buffer. | [tests/loader/builtin/1964_loader_builtin_psd_missing_composite_rgb8_digest.t](../../../tests/loader/builtin/1964_loader_builtin_psd_missing_composite_rgb8_digest.t) |
+| PSD-05 | Builtin ICC conversion for an RGB8 document produces the fixed complete RGB buffer. | [tests/loader/builtin/1979_loader_builtin_psd_icc_digest.t](../../../tests/loader/builtin/1979_loader_builtin_psd_icc_digest.t) |
 
 ### Quality regression tests
 
@@ -167,4 +169,4 @@ The rows below are pipeline landmarks rather than the complete suite. The [PSD/P
 | PSD-01 | A document whose mode/depth contract has the wrong channel count is rejected by structural validation. | [tests/loader/builtin/0177_loader_builtin_psd_spec_wrong_channel_count_reject.t](../../../tests/loader/builtin/0177_loader_builtin_psd_spec_wrong_channel_count_reject.t) |
 | PSD-90 | A signature/version mismatch between PSD and PSB is rejected rather than changing length-field interpretation. | [tests/loader/builtin/0778_loader_builtin_psd_signature8bpb_version1_reject_trace.t](../../../tests/loader/builtin/0778_loader_builtin_psd_signature8bpb_version1_reject_trace.t) |
 
-Coverage audit note: exact owners sample structure and one RGB8 layer reconstruction. The 16-bit ZIP-prediction, 32-bit RLE, ICC, and alpha cases use end-to-end quality or relational observations; they do not fix the loader's typed samples, exact composition values, or color conversion. Those remain gaps alongside the incomplete mode × depth × compression × PSD/PSB matrix and non-exhaustive masks, fills, text, vector data, blend modes, and effects coverage.
+Coverage audit note: direct owners now fix representative typed samples for 16-bit ZIP prediction and 32-bit RLE, complete RGB buffers for builtin ICC and one RGB8 layer reconstruction, and selected structural failures. Exact alpha composition remains covered only relationally, alongside an incomplete mode × depth × compression × PSD/PSB matrix and non-exhaustive masks, fills, text, vector data, blend modes, and effects coverage.

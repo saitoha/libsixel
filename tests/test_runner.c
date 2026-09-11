@@ -421,13 +421,13 @@ int test_loader_0092_loader_builtin_pic_mixed_rle_repeat128_numeric(
 int test_loader_0093_loader_builtin_pic_ten_packet_limit_numeric(
     int argc,
     char **argv);
-int test_loader_0094_loader_builtin_png_apng_dispose_previous_numeric(
+int test_loader_0094_builtin_png_apng_dispose_previous_numeric(
     int argc,
     char **argv);
 int test_loader_0095_loader_builtin_jpeg_ycck8_rgb_digest(
     int argc,
     char **argv);
-int test_loader_0096_loader_builtin_psd_missing_composite_rgb8_digest(
+int test_loader_0096_builtin_psd_missing_composite_rgb8_digest(
     int argc,
     char **argv);
 int test_loader_0097_loader_builtin_webp_vp8l_transform_rgb_digest(
@@ -452,6 +452,55 @@ int test_loader_0103_loader_builtin_gif_disposal3_numeric(
     int argc,
     char **argv);
 int test_loader_0104_loader_builtin_gif_local_palette_numeric(
+    int argc,
+    char **argv);
+int test_loader_0105_loader_builtin_hdr_new_rle_numeric(
+    int argc,
+    char **argv);
+int test_loader_0106_loader_builtin_hdr_old_scanline_rle_numeric(
+    int argc,
+    char **argv);
+int test_loader_0107_loader_builtin_hdr_legacy_stream_numeric(
+    int argc,
+    char **argv);
+int test_loader_0108_loader_builtin_jpeg_rgb8_sequential_digest(
+    int argc,
+    char **argv);
+int test_loader_0109_loader_builtin_png_icc_numeric(int argc, char **argv);
+int test_loader_0110_loader_builtin_jpeg_icc_numeric(int argc, char **argv);
+int test_loader_0111_loader_builtin_psd_icc_digest(int argc, char **argv);
+int test_loader_0112_loader_builtin_webp_vp8_digest(int argc, char **argv);
+int test_loader_0113_loader_builtin_webp_lossy_animation_digest(
+    int argc,
+    char **argv);
+int test_loader_0114_loader_builtin_webp_vp8_alpha_numeric(
+    int argc,
+    char **argv);
+int test_loader_0115_loader_builtin_jpeg_rgb16_lossless_numeric(
+    int argc,
+    char **argv);
+int test_loader_0116_loader_builtin_psd_rgb16_zip_pred_numeric(
+    int argc,
+    char **argv);
+int test_loader_0117_loader_builtin_psd_rgb32_rle_numeric(
+    int argc,
+    char **argv);
+int test_loader_0118_loader_builtin_sixel_unpainted_numeric(
+    int argc,
+    char **argv);
+int test_loader_0119_loader_builtin_sixel_high_color_numeric(
+    int argc,
+    char **argv);
+int test_loader_0120_loader_builtin_pic_zero_dimension_reject(
+    int argc,
+    char **argv);
+int test_loader_0121_loader_builtin_pic_eleventh_packet_reject(
+    int argc,
+    char **argv);
+int test_loader_0122_loader_builtin_tga_truncated_direct_reject(
+    int argc,
+    char **argv);
+int test_loader_0123_loader_builtin_tga_rle_overrun_reject(
     int argc,
     char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
@@ -918,11 +967,11 @@ static test_entry_t const test_entries[] = {
     { "loader/0093_loader_builtin_pic_ten_packet_limit_numeric",
       test_loader_0093_loader_builtin_pic_ten_packet_limit_numeric },
     { "loader/0094_loader_builtin_png_apng_dispose_previous_numeric",
-      test_loader_0094_loader_builtin_png_apng_dispose_previous_numeric },
+      test_loader_0094_builtin_png_apng_dispose_previous_numeric },
     { "loader/0095_loader_builtin_jpeg_ycck8_rgb_digest",
       test_loader_0095_loader_builtin_jpeg_ycck8_rgb_digest },
     { "loader/0096_loader_builtin_psd_missing_composite_rgb8_digest",
-      test_loader_0096_loader_builtin_psd_missing_composite_rgb8_digest },
+      test_loader_0096_builtin_psd_missing_composite_rgb8_digest },
     { "loader/0097_loader_builtin_webp_vp8l_transform_rgb_digest",
       test_loader_0097_loader_builtin_webp_vp8l_transform_rgb_digest },
     { "loader/0098_loader_builtin_pic_raw_rgb_numeric",
@@ -939,6 +988,44 @@ static test_entry_t const test_entries[] = {
       test_loader_0103_loader_builtin_gif_disposal3_numeric },
     { "loader/0104_loader_builtin_gif_local_palette_numeric",
       test_loader_0104_loader_builtin_gif_local_palette_numeric },
+    { "loader/0105_loader_builtin_hdr_new_rle_numeric",
+      test_loader_0105_loader_builtin_hdr_new_rle_numeric },
+    { "loader/0106_loader_builtin_hdr_old_scanline_rle_numeric",
+      test_loader_0106_loader_builtin_hdr_old_scanline_rle_numeric },
+    { "loader/0107_loader_builtin_hdr_legacy_stream_numeric",
+      test_loader_0107_loader_builtin_hdr_legacy_stream_numeric },
+    { "loader/0108_loader_builtin_jpeg_rgb8_sequential_digest",
+      test_loader_0108_loader_builtin_jpeg_rgb8_sequential_digest },
+    { "loader/0109_loader_builtin_png_icc_numeric",
+      test_loader_0109_loader_builtin_png_icc_numeric },
+    { "loader/0110_loader_builtin_jpeg_icc_numeric",
+      test_loader_0110_loader_builtin_jpeg_icc_numeric },
+    { "loader/0111_loader_builtin_psd_icc_digest",
+      test_loader_0111_loader_builtin_psd_icc_digest },
+    { "loader/0112_loader_builtin_webp_vp8_digest",
+      test_loader_0112_loader_builtin_webp_vp8_digest },
+    { "loader/0113_loader_builtin_webp_lossy_animation_digest",
+      test_loader_0113_loader_builtin_webp_lossy_animation_digest },
+    { "loader/0114_loader_builtin_webp_vp8_alpha_numeric",
+      test_loader_0114_loader_builtin_webp_vp8_alpha_numeric },
+    { "loader/0115_loader_builtin_jpeg_rgb16_lossless_numeric",
+      test_loader_0115_loader_builtin_jpeg_rgb16_lossless_numeric },
+    { "loader/0116_loader_builtin_psd_rgb16_zip_pred_numeric",
+      test_loader_0116_loader_builtin_psd_rgb16_zip_pred_numeric },
+    { "loader/0117_loader_builtin_psd_rgb32_rle_numeric",
+      test_loader_0117_loader_builtin_psd_rgb32_rle_numeric },
+    { "loader/0118_loader_builtin_sixel_unpainted_numeric",
+      test_loader_0118_loader_builtin_sixel_unpainted_numeric },
+    { "loader/0119_loader_builtin_sixel_high_color_numeric",
+      test_loader_0119_loader_builtin_sixel_high_color_numeric },
+    { "loader/0120_loader_builtin_pic_zero_dimension_reject",
+      test_loader_0120_loader_builtin_pic_zero_dimension_reject },
+    { "loader/0121_loader_builtin_pic_eleventh_packet_reject",
+      test_loader_0121_loader_builtin_pic_eleventh_packet_reject },
+    { "loader/0122_loader_builtin_tga_truncated_direct_reject",
+      test_loader_0122_loader_builtin_tga_truncated_direct_reject },
+    { "loader/0123_loader_builtin_tga_rle_overrun_reject",
+      test_loader_0123_loader_builtin_tga_rle_overrun_reject },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
