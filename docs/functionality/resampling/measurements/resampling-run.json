@@ -1,0 +1,166 @@
+{
+  "artifacts": {
+    "resampling-discrete-stencils.csv": "03ec361ccf05acbfece7555869cb2c3413cf4e3cc7753d98ff4d807b45a66dc5",
+    "resampling-discrete-stencils.png": "22f77db43dffd5b5f36a47a62e5efc6745e5e09d32c58e7c5497a326a90e0b77",
+    "resampling-frequency-response-compact.png": "0ba81d27df26b208f47bd4c6e70959e4186e8ac45caf7c1993b050e302158c40",
+    "resampling-frequency-response-wide.png": "0185567ffa258bc38fd9443cac1f29ef9ff08913266314abb9613938a662b44e",
+    "resampling-frequency-response.csv": "51691b6d6ebea3bef7d4369894fe28ca4e3fd9e1d8b72bf320e405d9244ccaa3",
+    "resampling-isotropy-gain.png": "62491a0c57f6bf0aedb684dbafaa7c8acb28c66aea8b9eb7b5240ee8edd1cd3d",
+    "resampling-isotropy-spread.png": "5696efa8c4137f10a229b0d192fc88138c93689713ebdab87b8c3db1a993b3a4",
+    "resampling-isotropy.csv": "44b03e201045d09f1e65ea5895f84fdb18df8dc93ff53da694f56ebf538e5484",
+    "resampling-moire-bicubic.png": "7b4df651129c0998968856bc5b463bb925e76721d322045453f01366a10b4fbb",
+    "resampling-moire-bilinear.png": "6204f35cb5fd4d5ad6107a3c38a14d564f8ec35265f8c2fce70161723c2a015a",
+    "resampling-moire-gaussian.png": "db1f841ae431cf132313c975fd1a9f6963c0d8cd3d837c18f32c74d7b52d5cbc",
+    "resampling-moire-hamming.png": "bb9fbdf7a9859b92a2c2ee74080fdce4d9aa255b6ff88b00a8de60f4f2d64aae",
+    "resampling-moire-hanning.png": "6b1c046c9d1591f196b72c7c5bd52eeaef4464a412803733fcb16d8d29cf72a5",
+    "resampling-moire-input.png": "a16a427395ae6ca8c2f7ca3f82a75f3847a3ada38c650b419d19a0a881a89eb5",
+    "resampling-moire-lanczos2.png": "1fc38d2940f56a30b34edc039debfa05ab87d1b9c2a87fd8c7bc8d92d98aee92",
+    "resampling-moire-lanczos3.png": "8a641f3eed4d43922ac580a338182b0cae6d3b4c391191d5ba95ef2a67119a6d",
+    "resampling-moire-lanczos4.png": "93f549b2583d72a79eafc7a135e40964a6016d5591bb0114129aa0b4420c952a",
+    "resampling-moire-nearest.png": "53c4a6eab72756b6cb660183b22b65f22c8308cc08bf2570d6a509d81ddefb82",
+    "resampling-moire-reference.png": "35eba43e8d2e17977991afe1774dc05d730d03c067a060fee63fc0f53e6fc17a",
+    "resampling-moire-welsh.png": "250f9d87666172e8f05d6f5fb2852bd36a48b64bc9c25812f8a7b896cceb3dd7",
+    "resampling-moire.csv": "6da74de4f3a490922b84d4fe9a1a958f32fe25eb022d3e88f8adb7418c172cd8",
+    "resampling-natural-bicubic-zoom.png": "bf7cba687fc8bf8afd898b491f703a82898adeca7cf375e83125af9d187c4035",
+    "resampling-natural-bilinear-zoom.png": "c57817426601b62faeee64a1d78edaa9d62b2fdccaf0d0d9c24d1e80aa95ee8b",
+    "resampling-natural-gaussian-zoom.png": "7f4d0c04d2fdbfc8a52d99511781aae7f5f18e1a8f83d0315c7fdd3e05f9b249",
+    "resampling-natural-hamming-zoom.png": "b7eb0399881f761b1c627b7fe45374a5cb50aaf066322c01ecaed3f5a7497eda",
+    "resampling-natural-hanning-zoom.png": "ba972c95a3cb2eed2fd2c633ef518434589f0c4c660c2a26a646c6a46f8eb567",
+    "resampling-natural-lanczos2-zoom.png": "63c2f825d55422119569eb2422e033aeed0896c7dfd28b03acf6de5ac28d463c",
+    "resampling-natural-lanczos3-zoom.png": "6376de909b4b6d6cf8bcb843943ef477fbad42e1e25ce0dcad409128c763421a",
+    "resampling-natural-lanczos4-zoom.png": "bd19a788985752d485bb749be0779caf98aef3b41bea17ddc7b4790553fd389b",
+    "resampling-natural-nearest-zoom.png": "511ac819b00bcbf4895f7539f211be9c093a5f769eec4cbd946562b618de4011",
+    "resampling-natural-reference-zoom.png": "142583ed0a17e48434e8edf7d9cb772dde15ac6913eac4e408fcd46ee5d33fea",
+    "resampling-natural-welsh-zoom.png": "2de39bd527aec8c16d33c63c6634baf9886c6b20ab27215caa3e609ed51bd714",
+    "resampling-quality-delta-e00.png": "ad1d2c188fc72241b08e37d6186f182f6e2e2b2da678ddd35769c4d9983c3863",
+    "resampling-quality-ms-ssim.png": "3546ec4e8e29849e5153cee63a0833ca0dc7b63c1e65f4a725d3f7432b225fff",
+    "resampling-quality-size.csv": "9d0a3b70af59e32cfd835064bfeadd794ffcbb677462462c231e136431c49b07",
+    "resampling-size.png": "21c9557788d1e60e0c196720bde38fc29b8732e224524750842c7e7c75ad2b14",
+    "resampling-speed.csv": "701714b94cb4a3b5d16f83c0bee86e053adf799a0628d17d1fdfe30d4ec6cd34",
+    "resampling-speed.png": "329dd846acb3e61c5cff0995ed3b3280a1b8f11e14a3680d08bc9539d2f7a20f"
+  },
+  "build": {
+    "cflags": "-O3 -std=c99",
+    "compiler_command": "gcc",
+    "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "ldflags": ""
+  },
+  "platform": {
+    "machine": "arm64",
+    "matplotlib": "3.10.5",
+    "numpy": "2.2.6",
+    "python": "3.12.0",
+    "release": "25.5.0",
+    "system": "Darwin"
+  },
+  "protocol": {
+    "diffusion": "none",
+    "direct_pixelformat": "linear RGB float32",
+    "direct_scaler": "sixel_helper_scale_image_float32",
+    "direct_simd": "scalar",
+    "direct_threads": 1,
+    "encoder_simd": "scalar",
+    "encoder_threads": 1,
+    "frequency_samples": 128,
+    "isotropy_angles_degrees": [
+      0.0,
+      5.0,
+      10.0,
+      15.0,
+      20.0,
+      25.0,
+      30.0,
+      35.0,
+      40.0,
+      45.0,
+      50.0,
+      55.0,
+      60.0,
+      65.0,
+      70.0,
+      75.0,
+      80.0,
+      85.0,
+      90.0
+    ],
+    "isotropy_frequency": 0.45,
+    "methods": [
+      "nearest",
+      "gaussian",
+      "hanning",
+      "hamming",
+      "bilinear",
+      "welsh",
+      "bicubic",
+      "lanczos2",
+      "lanczos3",
+      "lanczos4"
+    ],
+    "moire_reference": "8x8 supersampled area integration of the generating field",
+    "moire_source_size": [
+      1024,
+      1024
+    ],
+    "moire_target_size": [
+      256,
+      256
+    ],
+    "palette_colors": 256,
+    "quality_metrics": [
+      "MS-SSIM",
+      "mean Delta E00"
+    ],
+    "quality_reference": "exact 3x3 linear-light source-pixel area average",
+    "quality_source_size": [
+      600,
+      450
+    ],
+    "quality_target_size": [
+      200,
+      150
+    ],
+    "reduction_scale": 4,
+    "resize_precision": "linear",
+    "speed_order": "seeded interleaving with seed 1",
+    "speed_runs": 9,
+    "speed_source_size": [
+      2400,
+      1800
+    ],
+    "speed_target_size": [
+      600,
+      450
+    ],
+    "speed_warmups": 2,
+    "target_nyquist_cycles_per_pixel": 0.5
+  },
+  "schema_version": 1,
+  "source": {
+    "input": "images/snake.png",
+    "input_sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+    "revision": "fbce8f1cc9171132d99dc3a100aec18e3740eea0",
+    "tracked_worktree_state_at_start": "clean"
+  },
+  "tools": {
+    "img2sixel": {
+      "path": "/Users/saitoha/repo/libsixel/converters/img2sixel",
+      "sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
+      "version": "img2sixel 1.11.1-pre1"
+    },
+    "libsixel": {
+      "path": "/Users/saitoha/repo/libsixel/src/.libs/libsixel.dylib",
+      "sha256": "c7fa16fd2f9592817f626accf9b8223c2c4816f803d8ab2c6920389e2ffe48ee"
+    },
+    "lsqa": {
+      "path": "/Users/saitoha/repo/libsixel/assessment/lsqa",
+      "sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
+      "version": "lsqa: unrecognized option '--version'."
+    },
+    "sixel2png": {
+      "path": "/Users/saitoha/repo/libsixel/converters/sixel2png",
+      "sha256": "b7b512951e1e6e4dafe1bc9490e2bf82c9de8bf8cca885f3db5601f9a8bdc917",
+      "version": "sixel2png 1.11.1-pre1"
+    }
+  }
+}
