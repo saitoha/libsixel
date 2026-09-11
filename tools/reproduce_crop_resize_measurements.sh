@@ -18,6 +18,7 @@ measurement_dir=${1-${TOP_SRCDIR}/docs/functionality/crop-resize/measurements}
 policy_figure_dir=${2-${TOP_SRCDIR}/docs/functionality/crop-resize/figures}
 resampling_figure_dir=${3-${TOP_SRCDIR}/docs/functionality/resampling/figures}
 input_image=${4-${TOP_SRCDIR}/images/snake.png}
+input_image=$(CDPATH='' cd -- "${input_image%/*}" && pwd -P)/${input_image##*/}
 input_label=${input_image}
 warmups=${CROP_RESIZE_WARMUPS-2}
 runs=${CROP_RESIZE_RUNS-9}
