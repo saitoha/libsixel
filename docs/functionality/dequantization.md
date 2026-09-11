@@ -1,10 +1,60 @@
 # Dequantization
 
-Dequantization is optional reconstruction after SIXEL decoding. It mixes selected neighboring colors to reduce visible quantization and dither patterns. It can produce colors outside the decoded palette, but cannot recover the unknown original image or reverse error diffusion losslessly. The default is `none`.
+A SIXEL image stores a limited set of colors, called a **palette**. To suggest an in-between color, an encoder can place dots of different colors next to each other. This is called **dithering**. The dots can look smooth from a distance but grainy when enlarged.
 
-Ordinary palette expansion replaces each index with its palette color and preserves samples. Dequantization changes samples. It is also separate from resizing: the file decoder reconstructs at decoded resolution before applying `sixel2png -s`. See the [decoding pipeline](decoding-pipeline.md), [pixel formats](../concepts/pixelformat.md), and [PNG writer](../writers/png.md) for the surrounding representation boundaries.
+**Dequantization is an optional way to soften those dots after decoding.** It estimates a new color for each pixel using selected nearby pixels. It may make photographs and gradients look smoother, but may also soften text or fine detail. It cannot recover the original image exactly. By default, libsixel leaves it off (`none`).
+
+Reading the palette and displaying its colors is ordinary decoding. Mixing those colors is the additional step explained here. The image keeps the same dimensions; resizing is a separate option. In file conversion, reconstruction runs before `sixel2png -s` resizes the result.
+
+## A visual guide to the four choices
+
+Each square below represents one pixel. The outlined **CENTER** is the pixel being updated. Blue squares identify neighbors that the method considers; gray squares are not used for this update. Labels carry the same meaning as color. The diagrams explain the rules, not the appearance or measured quality of a particular photograph.
+
+### 1. None: keep the decoded pixels
+
+Choose `none` to see the colors exactly as decoded, including any dither pattern. This is useful for pixel art, small text, or checking what an encoder produced. No surrounding pixel can change the center's color.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="dequantization-figures/none-mobile.svg">
+  <img alt="None keeps the center color without mixing neighboring pixels." src="dequantization-figures/none-wide.svg">
+</picture>
+
+### 2. Full undither: consider all eight neighbors
+
+`k_undither` and `lso_undither:Vfs` are two names for the same choice. The filter looks all around the center and decides how much each neighboring color should contribute. Its decision uses the image's whole palette, not just how similar two neighboring pixels look.
+
+This can soften dither patterns using information from every direction. Optional edge protection (`-e`) can reduce mixing near strong boundaries; it is off by default. Smoothing can still remove real detail.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="dequantization-figures/full-mobile.svg">
+  <img alt="Full undither considers all eight neighbors and uses the image palette to weight their colors." src="dequantization-figures/full-wide.svg">
+</picture>
+
+### 3. Light undither: consider four neighbors
+
+`lso_undither:Vlight` uses the same palette-aware idea with a smaller set: the three pixels in the row above, plus the pixel immediately to the left. It does not use the right or lower neighbors, and it does not have the full method's edge-protection stage.
+
+“Light” describes the smaller neighborhood. It does not promise an identical image in less time, or simply a weaker version of full undither. It is the method available for optional GPU acceleration.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="dequantization-figures/light-mobile.svg">
+  <img alt="Light undither considers upper-left, above, upper-right and left, and skips the other four neighbors." src="dequantization-figures/light-wide.svg">
+</picture>
+
+### 4. Selective blur: mix nearby colors and skip distant ones
+
+`selective_blur` asks a simpler question for each of the eight neighbors: is its color close enough to the center? Nearby colors can mix; colors beyond the chosen `threshold` are excluded. The center contributes more than an individual neighbor, so this is not an equal average of all nine pixels.
+
+The default threshold is 24. Raising it lets more different colors mix, which may smooth more but also soften boundaries. Lowering it keeps more differences intact. Threshold zero leaves valid painted colors unchanged. The area examined always stays 3×3 pixels.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="dequantization-figures/selective-mobile.svg">
+  <img alt="Selective blur includes nearby colors and excludes distant colors from a weighted neighborhood average." src="dequantization-figures/selective-wide.svg">
+</picture>
 
 ## Choosing a method
+
+Start with `none` as a reference. If a photograph looks grainy, compare a reconstructed version at the size you actually intend to view it. Keep the one that balances smooth areas and fine detail for that image. For a predictable color-distance control, try selective blur; to compare palette-aware reconstruction, try full and light undither. There is no universal quality winner.
 
 | Method | Neighborhood and decision | Controls | Intended tradeoff |
 | --- | --- | --- | --- |
@@ -86,6 +136,17 @@ GPU policy defaults to `off` unless configured through the environment or decode
 `--gpu=auto:dequant_threshold=262144` expresses the default automatic pixel-count cutoff; `SIXEL_GPU_DEQUANT_THRESHOLD` supplies its environment counterpart. The threshold controls when an attempt is eligible, not guaranteed speedup. GPU dispatch consumes already decoded RGBA plus a palette, writes a second RGBA buffer, and still examines palette colors for similarity. It does not parse SIXEL on the GPU or fuse reconstruction with resizing. The owning interfaces are [`src/gpu-dequant.h`](../../src/gpu-dequant.h) and [`src/gpu-dequant.c`](../../src/gpu-dequant.c).
 
 For `P` pixels and `K` palette entries, selective blur does a bounded number of neighbor operations per pixel. CPU palette-aware filtering additionally uses a `K × K` similarity cache; an uncached pair can scan the palette. Output buffers, gradient buffers on the scalar full path, parallel setup, and GPU source/destination storage contribute to peak memory. Final PNG size is not a memory estimate. Measure decode, reconstruction, resizing, and PNG writing separately before attributing end-to-end cost to the filter.
+
+## Figure sources and regeneration
+
+The four concept diagrams have separate wide and mobile layouts, accessible SVG descriptions, and text labels that do not rely on color alone. Their geometry and role metadata are generated by [`tools/plot_dequantization_figures.py`](../../tools/plot_dequantization_figures.py); [`figures.json`](dequantization-figures/figures.json) records the schematic status, neighborhoods, and layout sizes. They illustrate the neighborhood definitions in [`src/decoder.c`](../../src/decoder.c), not measured output colors or a speed comparison. In the selective-blur diagram, the NEAR/FAR arrangement is illustrative; the small 100/112 example uses the exact DQ-05 calculation.
+
+```sh
+python3 tools/plot_dequantization_figures.py
+python3 tools/plot_dequantization_figures.py --check
+```
+
+For the surrounding stages, see the [decoding pipeline](decoding-pipeline.md), [pixel formats](../concepts/pixelformat.md), and [PNG writer](../writers/png.md).
 
 ## Test coverage
 
