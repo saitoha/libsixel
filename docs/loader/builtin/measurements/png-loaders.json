@@ -1,0 +1,593 @@
+{
+  "revision": "34d1a6bad",
+  "measured_at_utc": "2026-09-11T07:32:00.929874+00:00",
+  "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "processor": "Apple M3 Max",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+  "libpng_version": "1.6.58",
+  "magick_version": "Version: ImageMagick 7.1.2-25 Q16-HDRI aarch64 037e46295:20260604 https://imagemagick.org\nCopyright: (C) 1999 ImageMagick Studio LLC\nLicense: https://imagemagick.org/license/\nFeatures: Cipher DPC HDRI Modules \nDelegates (built-in): bzlib freetype heic jng jpeg lcms ltdl lzma png tiff webp xml zlib zstd\nCompiler: clang (21.0.0)",
+  "zlib_version": "1.2.12",
+  "numpy_version": "2.4.6",
+  "matplotlib_version": "3.11.1",
+  "source_sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+  "probe_sha256": "c30df33650d5e17e6cfde97aa693cefc5acafcab8c198f1fdae1451e62fb17e9",
+  "library_sha256": "97a2f8c5774739d89f59d450dba56c3211b2bb4ccca5e088a21946ce90d552af",
+  "config_sha256": "e990b8562ca87173d2a3aca21253d31757ef5d692d6949bb8bf91ac70e52bae8",
+  "configure_arguments": "--with-png=/opt/homebrew/opt/libpng --with-lcms2=no --with-jpeg=no --with-tiff=no --with-gdk-pixbuf2=no --with-gd=no --without-libcurl --disable-python --disable-ruby --disable-tests 'CFLAGS=-O3 -DNDEBUG' BASH=/bin/sh",
+  "batches": 9,
+  "repeats_per_batch": 8,
+  "warmups_per_batch": 2,
+  "dimensions": [
+    512,
+    512
+  ],
+  "scope": "warm file read + dispatch + decode + normalization + frame callback + release; no encoder",
+  "palette_fusion": false,
+  "records": [
+    {
+      "id": "rgb8-none",
+      "label": "RGB8 / None filter",
+      "input_sha256": "627bf26c7d8cfc87293801d2bd70c55a75f3cf8f9bce4bb33965074bdad72468",
+      "input_bytes": 507868,
+      "backends": {
+        "builtin": {
+          "order": "builtin:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "RGB888",
+          "samples_ms": [
+            3.38675,
+            3.1745,
+            3.119875,
+            3.231875,
+            3.220625,
+            3.399625,
+            3.413625,
+            3.309625,
+            3.078375
+          ],
+          "native_sha256": "f56a7ae6222ef982064fc324ee84ffe86793b52c4e903d003aef6819e03f018f",
+          "max_linear_reference_error": 2.8026145182380446e-08,
+          "linear_reference_rmse": 1.3282058680510932e-08,
+          "median_ms": 3.231875,
+          "q1_ms": 3.1745,
+          "q3_ms": 3.38675
+        },
+        "libpng": {
+          "order": "libpng:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "RGB888",
+          "samples_ms": [
+            5.809375,
+            5.825625,
+            5.7605,
+            5.681375,
+            5.74075,
+            5.769875,
+            5.79325,
+            5.584,
+            5.581625
+          ],
+          "native_sha256": "f56a7ae6222ef982064fc324ee84ffe86793b52c4e903d003aef6819e03f018f",
+          "max_linear_reference_error": 2.8026145182380446e-08,
+          "linear_reference_rmse": 1.3282058680510932e-08,
+          "median_ms": 5.7605,
+          "q1_ms": 5.681375,
+          "q3_ms": 5.79325
+        }
+      },
+      "native_values_equal": true,
+      "max_linear_backend_difference": 0.0
+    },
+    {
+      "id": "rgb8-paeth",
+      "label": "RGB8 / Paeth filter",
+      "input_sha256": "71163a4aafb21a709266a0739033db98fc32161a905c3df8e1fed550e02f9f66",
+      "input_bytes": 307301,
+      "backends": {
+        "builtin": {
+          "order": "builtin:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "RGB888",
+          "samples_ms": [
+            3.263375,
+            3.321,
+            3.253125,
+            3.335125,
+            3.289125,
+            3.31825,
+            3.296375,
+            3.2875,
+            3.2445
+          ],
+          "native_sha256": "f56a7ae6222ef982064fc324ee84ffe86793b52c4e903d003aef6819e03f018f",
+          "max_linear_reference_error": 2.8026145182380446e-08,
+          "linear_reference_rmse": 1.3282058680510932e-08,
+          "median_ms": 3.289125,
+          "q1_ms": 3.263375,
+          "q3_ms": 3.31825
+        },
+        "libpng": {
+          "order": "libpng:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "RGB888",
+          "samples_ms": [
+            5.0075,
+            4.892125,
+            4.948875,
+            4.8535,
+            4.827375,
+            4.898625,
+            4.95425,
+            4.97575,
+            4.942
+          ],
+          "native_sha256": "f56a7ae6222ef982064fc324ee84ffe86793b52c4e903d003aef6819e03f018f",
+          "max_linear_reference_error": 2.8026145182380446e-08,
+          "linear_reference_rmse": 1.3282058680510932e-08,
+          "median_ms": 4.942,
+          "q1_ms": 4.892125,
+          "q3_ms": 4.95425
+        }
+      },
+      "native_values_equal": true,
+      "max_linear_backend_difference": 0.0
+    },
+    {
+      "id": "rgb16-paeth",
+      "label": "RGB16 / Paeth filter",
+      "input_sha256": "50f5c859b77d3c89a21446be05f4064a35b5d69dc50eed5517f7fdfda8708bca",
+      "input_bytes": 33382,
+      "backends": {
+        "builtin": {
+          "order": "builtin:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "RGBFLOAT32",
+          "samples_ms": [
+            2.194875,
+            2.17625,
+            2.18575,
+            2.381875,
+            2.370875,
+            2.213125,
+            2.33,
+            2.2785,
+            2.256875
+          ],
+          "native_sha256": "db4b1498812246daf8cb458e0f0968c5000e1048c3a894c0be924c0f10bb7557",
+          "max_linear_reference_error": 6.762006421467959e-08,
+          "linear_reference_rmse": 1.7845794950847086e-08,
+          "median_ms": 2.256875,
+          "q1_ms": 2.194875,
+          "q3_ms": 2.33
+        },
+        "libpng": {
+          "order": "libpng:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "RGBFLOAT32",
+          "samples_ms": [
+            3.32775,
+            3.4085,
+            3.303625,
+            3.419125,
+            3.392125,
+            3.432,
+            3.40925,
+            3.3485,
+            3.32625
+          ],
+          "native_sha256": "db4b1498812246daf8cb458e0f0968c5000e1048c3a894c0be924c0f10bb7557",
+          "max_linear_reference_error": 6.762006421467959e-08,
+          "linear_reference_rmse": 1.7845794950847086e-08,
+          "median_ms": 3.392125,
+          "q1_ms": 3.32775,
+          "q3_ms": 3.40925
+        }
+      },
+      "native_values_equal": true,
+      "max_linear_backend_difference": 0.0
+    },
+    {
+      "id": "rgba8",
+      "label": "RGBA8 / explicit background",
+      "input_sha256": "fff8e28e64b901e213cd7742d685fd8bb3220d6b3f0d7cd10846e9a1c7edad10",
+      "input_bytes": 351227,
+      "backends": {
+        "builtin": {
+          "order": "builtin:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "LINEARRGBFLOAT32",
+          "samples_ms": [
+            10.17025,
+            10.17525,
+            10.08575,
+            10.152,
+            10.0785,
+            10.0895,
+            10.140625,
+            10.144625,
+            10.133875
+          ],
+          "native_sha256": "32ed8f1fd1c7cba8617cbb0d7387cfa1a672be1de5ef866b6b92e55011802218",
+          "max_linear_reference_error": 3.3852271374978926e-08,
+          "linear_reference_rmse": 8.622160397403885e-09,
+          "median_ms": 10.140625,
+          "q1_ms": 10.0895,
+          "q3_ms": 10.152
+        },
+        "libpng": {
+          "order": "libpng:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "LINEARRGBFLOAT32",
+          "samples_ms": [
+            12.917125,
+            13.191375,
+            12.893875,
+            12.816125,
+            12.8675,
+            12.75775,
+            12.832,
+            12.780875,
+            12.840875
+          ],
+          "native_sha256": "6509e4dd308fe9bb65a9db090216271043b05105e2969ec67b674cbb3883c2e6",
+          "max_linear_reference_error": 3.235429113512822e-08,
+          "linear_reference_rmse": 4.882166649692387e-09,
+          "median_ms": 12.840875,
+          "q1_ms": 12.816125,
+          "q3_ms": 12.893875
+        }
+      },
+      "native_values_equal": false,
+      "max_linear_backend_difference": 2.9802322387695312e-08
+    },
+    {
+      "id": "rgba16",
+      "label": "RGBA16 / explicit background",
+      "input_sha256": "ffcb86daf8495d6a7eba179dc0da227282df2402774c15f7f23894073f9c358d",
+      "input_bytes": 38160,
+      "backends": {
+        "builtin": {
+          "order": "builtin:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "LINEARRGBFLOAT32",
+          "samples_ms": [
+            8.4895,
+            8.478625,
+            8.4595,
+            8.4265,
+            8.587875,
+            8.5525,
+            8.495,
+            8.49125,
+            8.44475
+          ],
+          "native_sha256": "b32bb8458594b5b0081939adc30c50e99f5e5207e8bd48000adc0df0e3c3c7da",
+          "max_linear_reference_error": 7.336255447576434e-08,
+          "linear_reference_rmse": 1.2209988586960304e-08,
+          "median_ms": 8.4895,
+          "q1_ms": 8.4595,
+          "q3_ms": 8.495
+        },
+        "libpng": {
+          "order": "libpng:cms_engine=none:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "LINEARRGBFLOAT32",
+          "samples_ms": [
+            9.701625,
+            9.785875,
+            9.6215,
+            9.628875,
+            9.6705,
+            9.6715,
+            9.69175,
+            9.63425,
+            9.6805
+          ],
+          "native_sha256": "b32bb8458594b5b0081939adc30c50e99f5e5207e8bd48000adc0df0e3c3c7da",
+          "max_linear_reference_error": 7.336255447576434e-08,
+          "linear_reference_rmse": 1.2209988586960304e-08,
+          "median_ms": 9.6715,
+          "q1_ms": 9.63425,
+          "q3_ms": 9.69175
+        }
+      },
+      "native_values_equal": true,
+      "max_linear_backend_difference": 0.0
+    },
+    {
+      "id": "gama16",
+      "label": "RGB16 / gAMA=1 / CMS",
+      "input_sha256": "c26f39f7933a82ce4c725d8416ec08cd27d63a0eb31e90c64e58c5140cae41d4",
+      "input_bytes": 33398,
+      "backends": {
+        "builtin": {
+          "order": "builtin:cms_engine=builtin:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "RGBFLOAT32",
+          "samples_ms": [
+            14.20025,
+            14.329625,
+            14.233375,
+            14.3385,
+            14.341875,
+            14.26275,
+            14.265875,
+            14.351125,
+            14.372625
+          ],
+          "native_sha256": "da0eb8bc7f1930b9a86e3a3fb07cdf1c3ff18d7bd13f43a22f0db707128d8ef4",
+          "max_linear_reference_error": 9.682305845970518e-08,
+          "linear_reference_rmse": 2.82295927460757e-08,
+          "median_ms": 14.329625,
+          "q1_ms": 14.26275,
+          "q3_ms": 14.341875
+        },
+        "libpng": {
+          "order": "libpng:cms_engine=builtin:cms_target=gamma:prefer_8bit=0:background_colorspace=gamma!",
+          "format": "RGBFLOAT32",
+          "samples_ms": [
+            18.39775,
+            18.19275,
+            18.17325,
+            18.141625,
+            18.157125,
+            18.1535,
+            18.159625,
+            18.17475,
+            18.23425
+          ],
+          "native_sha256": "da0eb8bc7f1930b9a86e3a3fb07cdf1c3ff18d7bd13f43a22f0db707128d8ef4",
+          "max_linear_reference_error": 9.682305845970518e-08,
+          "linear_reference_rmse": 2.82295927460757e-08,
+          "median_ms": 18.17325,
+          "q1_ms": 18.157125,
+          "q3_ms": 18.19275
+        }
+      },
+      "native_values_equal": true,
+      "max_linear_backend_difference": 0.0
+    }
+  ],
+  "background_probe": [
+    {
+      "order": "builtin:cms_engine=none:background_policy=file_first:background_colorspace=gamma!",
+      "format": "LINEARRGBFLOAT32",
+      "linear_rgb": [
+        0.4399726986885071,
+        0.114757239818573,
+        0.43657591938972473
+      ]
+    },
+    {
+      "order": "builtin:cms_engine=none:background_policy=file_first:background_colorspace=linear!",
+      "format": "LINEARRGBFLOAT32",
+      "linear_rgb": [
+        0.46864163875579834,
+        0.2572464048862457,
+        0.4713436961174011
+      ]
+    },
+    {
+      "order": "builtin:cms_engine=none:background_policy=explicit_first:background_colorspace=gamma!",
+      "format": "LINEARRGBFLOAT32",
+      "linear_rgb": [
+        0.5448991060256958,
+        0.114757239818573,
+        0.1101079136133194
+      ]
+    },
+    {
+      "order": "builtin:cms_engine=none:background_policy=explicit_first:background_colorspace=linear!",
+      "format": "LINEARRGBFLOAT32",
+      "linear_rgb": [
+        0.6873882412910461,
+        0.2572464048862457,
+        0.25259706377983093
+      ]
+    },
+    {
+      "order": "libpng:cms_engine=none:background_policy=file_first:background_colorspace=gamma!",
+      "format": "LINEARRGBFLOAT32",
+      "linear_rgb": [
+        0.5448991060256958,
+        0.114757239818573,
+        0.1101079136133194
+      ]
+    },
+    {
+      "order": "libpng:cms_engine=none:background_policy=file_first:background_colorspace=linear!",
+      "format": "LINEARRGBFLOAT32",
+      "linear_rgb": [
+        0.6873882412910461,
+        0.2572464048862457,
+        0.25259706377983093
+      ]
+    },
+    {
+      "order": "libpng:cms_engine=none:background_policy=explicit_first:background_colorspace=gamma!",
+      "format": "LINEARRGBFLOAT32",
+      "linear_rgb": [
+        0.5448991060256958,
+        0.114757239818573,
+        0.1101079136133194
+      ]
+    },
+    {
+      "order": "libpng:cms_engine=none:background_policy=explicit_first:background_colorspace=linear!",
+      "format": "LINEARRGBFLOAT32",
+      "linear_rgb": [
+        0.6873882412910461,
+        0.2572464048862457,
+        0.25259706377983093
+      ]
+    }
+  ],
+  "precision_probes": [
+    {
+      "case": "16-bit tRNS / key on",
+      "order": "builtin:cms_engine=none:trns_keycolor=1!",
+      "format": "RGB888",
+      "native_rgb_and_coverage": [
+        [
+          0.501960813999176,
+          0.501960813999176,
+          0.501960813999176,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "case": "16-bit tRNS / key on",
+      "order": "libpng:cms_engine=none:trns_keycolor=1!",
+      "format": "RGBA8888",
+      "native_rgb_and_coverage": [
+        [
+          0.501960813999176,
+          0.501960813999176,
+          0.501960813999176,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "case": "16-bit tRNS / key off",
+      "order": "builtin:cms_engine=none:trns_keycolor=0!",
+      "format": "LINEARRGBFLOAT32",
+      "native_rgb_and_coverage": [
+        [
+          0.21404820680618286,
+          0.21406233310699463,
+          0.2140764445066452,
+          1.0
+        ],
+        [
+          1.1810388969024643e-06,
+          2.3620777938049287e-06,
+          3.5431164633337175e-06,
+          0.0
+        ]
+      ]
+    },
+    {
+      "case": "16-bit tRNS / key off",
+      "order": "libpng:cms_engine=none:trns_keycolor=0!",
+      "format": "LINEARRGBFLOAT32",
+      "native_rgb_and_coverage": [
+        [
+          0.21404820680618286,
+          0.21406233310699463,
+          0.2140764445066452,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "case": "indexed alpha / gamma",
+      "order": "builtin:cms_engine=none:background_colorspace=gamma!",
+      "format": "PAL8",
+      "native_rgb_and_coverage": [
+        [
+          0.7176470756530762,
+          0.30980393290519714,
+          0.27843138575553894,
+          1.0
+        ],
+        [
+          0.27843138575553894,
+          0.7176470756530762,
+          0.30980393290519714,
+          1.0
+        ],
+        [
+          0.30980393290519714,
+          0.27843138575553894,
+          0.7176470756530762,
+          1.0
+        ]
+      ]
+    },
+    {
+      "case": "indexed alpha / gamma",
+      "order": "libpng:cms_engine=none:background_colorspace=gamma!",
+      "format": "PAL8",
+      "native_rgb_and_coverage": [
+        [
+          0.7176470756530762,
+          0.30980393290519714,
+          0.27843138575553894,
+          1.0
+        ],
+        [
+          0.27843138575553894,
+          0.7176470756530762,
+          0.30980393290519714,
+          1.0
+        ],
+        [
+          0.30980393290519714,
+          0.27843138575553894,
+          0.7176470756530762,
+          1.0
+        ]
+      ]
+    },
+    {
+      "case": "indexed alpha / linear",
+      "order": "builtin:cms_engine=none:background_colorspace=linear!",
+      "format": "PAL8",
+      "native_rgb_and_coverage": [
+        [
+          0.7176470756530762,
+          0.30980393290519714,
+          0.27843138575553894,
+          1.0
+        ],
+        [
+          0.27843138575553894,
+          0.7176470756530762,
+          0.30980393290519714,
+          1.0
+        ],
+        [
+          0.30980393290519714,
+          0.27843138575553894,
+          0.7176470756530762,
+          1.0
+        ]
+      ]
+    },
+    {
+      "case": "indexed alpha / linear",
+      "order": "libpng:cms_engine=none:background_colorspace=linear!",
+      "format": "PAL8",
+      "native_rgb_and_coverage": [
+        [
+          0.8470588326454163,
+          0.545098066329956,
+          0.5411764979362488,
+          1.0
+        ],
+        [
+          0.5411764979362488,
+          0.8470588326454163,
+          0.545098066329956,
+          1.0
+        ],
+        [
+          0.545098066329956,
+          0.5411764979362488,
+          0.8470588326454163,
+          1.0
+        ]
+      ]
+    }
+  ]
+}

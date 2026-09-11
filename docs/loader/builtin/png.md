@@ -60,7 +60,7 @@ Indexed palette conversion happens before later resize and quantization. If the 
 
 `acTL` declares frame count and play count. Each `fcTL` gives a canvas sub-rectangle, delay numerator/denominator, disposal, and blend operator. `fdAT` carries frame zlib bytes after a sequence number; the default image can instead use `IDAT`. The implementation checks sequence numbers, declared frame count, chunk order, rectangle overflow, and canvas bounds.
 
-Each frame is reconstructed as a synthetic PNG using the shared `IHDR`, palette, transparency, background, and color metadata, then composited onto an RGBA canvas:
+Each frame is reconstructed as a synthetic PNG using shared chunks, decoded through `stbi__load_and_postprocess_8bit()`, and composited onto an RGBA8 canvas. This is a distinct path from `sixel_frompng_load_nonindexed()` and its precision-preserving static pipeline. Shared metadata being copied into the synthetic PNG does not imply that static PNG's float/CMS processing runs before animation blending:
 
 | APNG field | Behavior |
 | --- | --- |
@@ -76,7 +76,7 @@ The delay denominator defaults to 100 when encoded as zero. Delay is converted t
 
 ![A vertical implementation map of the builtin PNG and APNG loader. It follows static-versus-animation classification into indexed and non-indexed raster paths, profile and transfer conversion, APNG frame reconstruction and canvas composition, then common alpha, orientation, and typed-frame finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/png.svg)
 
-The static branches are alternatives, not a forced trip through each box: an indexed image may finish through `sixel_builtin_try_load_indexed_png()`, while non-indexed and high-depth images enter `sixel_frompng_load_nonindexed()`. APNG reconstructs a legal frame PNG and reuses those decode/color paths before it updates the animation canvas.
+The static branches are alternatives, not a forced trip through each box: an indexed image may finish through `sixel_builtin_try_load_indexed_png()`, while non-indexed and high-depth images enter `sixel_frompng_load_nonindexed()`. APNG takes its own RGBA8 raster/canvas branch. Its integer `OVER` operation blends the stored component values; it is not switched to a float linear-light canvas by `background_colorspace`. Background flattening at emission is a separate operation.
 
 | ID | Implementation boundary | State entering → state leaving | Correctness obligation |
 | --- | --- | --- | --- |
@@ -110,6 +110,80 @@ img2sixel -Lbuiltin:cms_engine=auto:cms_target=linear:prefer_8bit=0! image.png
 | `-S`, `-T`, `-l`, `-g` | Apply only to APNG. Their start-frame, loop, static, and presentation-delay meanings match the GIF description; prior frames may be decoded for canvas state. |
 | HDR, PNM, and BMP-specific suboptions | No effect. |
 
+## Comparison with the libpng loader
+
+The comparison is between libsixel's `builtin` and `libpng` loader components, including their adapters and color/alpha processing, not between bare stb_image and bare libpng. Both components support static PNG, precision-preserving static 16-bit paths, and APNG. In the libpng component, libsixel implements APNG chunk sequencing, reconstruction, blend/dispose, and looping around ordinary libpng raster decoding; an APNG-patched libpng is not required. See [`loader-libpng.c`](../../../src/loader-libpng.c), especially `load_png()`, `load_apng_frames()`, `apng_blend_rect()`, and `load_with_libpng()`.
+
+### Precision and representation are conditional
+
+| Input and effective path | Observed relationship / limit |
+| --- | --- |
+| Opaque RGB8, CMS off, no palette | Both return `RGB888`; the measured samples are identical. PNG's lossless decompression does not itself create a quality advantage for either loader. |
+| Opaque RGB16, CMS off | Both retain normalized 16-bit values in `RGBFLOAT32`; the measured float samples are identical. A 16-bit source is not automatically truncated by the libpng component. |
+| Non-indexed RGBA8/16 with the same resolved background | Both can return `LINEARRGBFLOAT32` after linear-light composition. The measured RGBA16 samples are identical; RGBA8 differs by at most `2.98e-8` in normalized linear RGB. This is floating-point rounding, not a measured perceptual advantage. |
+| RGB16 with `gAMA=1`, builtin CMS, gamma target | Both measured paths return identical `RGBFLOAT32`. This single fallback-transfer case does not establish parity for all ICC profiles, CMS engines, rendering intents, or targets. |
+| RGB16 with `tRNS`, CMS off, no background, `trns_keycolor=1` | Both key-color paths reduce to eight-bit component values. In the probe, source `(32768,32769,32770)` becomes `(128,128,128)`. Builtin exposes RGB plus a mask; libpng exposes RGBA8 at this callback boundary. |
+| Same `tRNS` input with `trns_keycolor=0` | Both retain the distinct visible component values in linear float. In the measured default-composite/no-background case, builtin preserves the transparent pixel's mask while libpng flattens it to black without a mask. This observed difference is not a compatibility promise. |
+| APNG | Both animation raster/canvas paths are eight-bit. Neither should be described as a precision-preserving 16-bit animation compositor merely because its static PNG path supports float32. |
+| Integrity checking | Builtin skips stored PNG CRCs. The libpng adapter retains libpng's default CRC processing. Equal decoded pixels on valid files do not imply equivalent validation work or acceptance of damaged input. |
+
+The static timings below deliberately avoid the key-color path and palette fusion. `prefer_8bit=0` does not restore low bits already removed by an earlier key-color path. Conversely, enabling `prefer_8bit=1` is not a universal instruction to truncate every untransformed 16-bit source. Inspect the returned frame representation before drawing precision conclusions.
+
+### Background source, interpretation, and blend arithmetic
+
+These are three separate decisions. `background_policy=file_first|explicit_first` selects a source; `background_colorspace=gamma|linear` controls how background values are interpreted on the selected path; the path itself determines where alpha arithmetic takes place. For the static non-indexed float paths, foreground samples are decoded into linear light and composited there under either background setting. With `-B#808080`, `gamma` supplies approximately `0.21586` linear intensity, whereas `linear` supplies `128/255`, approximately `0.50196`. Thus changing this option changes the color denoted by the background argument, not just rounding or speed. PNG's [reference compositing procedure](https://www.w3.org/TR/png-3/#13Alpha-channel-processing) likewise distinguishes transfer decoding from alpha arithmetic.
+
+| Boundary | Builtin | libpng component |
+| --- | --- | --- |
+| Explicit background and `bKGD` both present | `sixel_frompng_resolve_background()` applies `background_policy`; default `file_first` can select the file color. | `png_resolve_background_unit()` selects a supplied explicit background immediately. Setting the common `background_policy=file_first` suboption does not change that branch in the measured revision. |
+| Non-indexed RGBA8/16 static composition | `sixel_frompng_convert_rgba8_to_linearrgbfloat32()` / `sixel_frompng_convert_rgba16_to_linearrgbfloat32()` transform source and background and blend in linear float. | `load_png()` has corresponding alpha/float branches; matching source selection and background interpretation can produce matching samples. |
+| Indexed `PAL8` fast path, partial `tRNS`, explicit background, no CMS or `bKGD` | The retained palette is composited with byte arithmetic on gamma component values. The probe remains unchanged when `background_colorspace` changes to `linear`. | `read_palette()` uses gamma byte arithmetic for `gamma`, but transfer-decodes the foreground and uses linear arithmetic for `linear`, then encodes back into the byte palette. |
+| Indexed input with `bKGD` | Dispatch bypasses both indexed fast paths and enters `frompng`, so background policy and float/alpha handling are resolved together. | Has its own palette/alpha dispatch and background resolver; do not infer builtin path selection from a shared filename or option. |
+| APNG `OVER` and subsequent background flattening | Integer RGBA8 inter-frame blend; emission/background normalization is a later step. | Integer RGBA8 inter-frame blend with a separate emission/background path. |
+
+For a concrete source `(240,32,16,128)`, file background `(16,128,240)`, and explicit background `#808080`, the measured non-indexed linear output is `(0.439973,0.114757,0.436576)` under builtin `file_first:background_colorspace=gamma`, and `(0.544899,0.114757,0.110108)` under builtin `explicit_first:background_colorspace=gamma`. libpng produces the latter with either priority setting. For the separate palette-retaining specimen without `bKGD`, `background_colorspace=linear` gives byte RGB `(183,79,71)` in builtin and `(216,139,138)` in libpng. These are visibly different policy/path outcomes, not DEFLATE precision losses.
+
+For a builtin PNG requiring explicit-background linear-light processing, specify the source priority and verify that the effective route expands to component pixels. Merely requesting `background_colorspace=linear` while retaining an indexed palette is insufficient in the measured implementation. The [background policy](../background-policy.md) and [alpha policy](../alpha-policy.md) describe the common controls; their availability does not imply identical handling in every loader.
+
+### Measured static PNG cost
+
+![Two grouped horizontal bar charts compare builtin and libpng loader time. Builtin is faster in all six measured conditions. Bars begin at zero and show milliseconds per call; whiskers show the interquartile range. The opaque-decode panel and composition/CMS panel use different scales.](measurements/png-loaders.svg)
+
+| 512 × 512 input / operation | Builtin median (ms) | libpng median (ms) | Returned representation (both) | Maximum linear RGB difference |
+| --- | ---: | ---: | --- | ---: |
+| RGB8, None filter | 3.232 | 5.761 | `RGB888` | 0 |
+| RGB8, Paeth filter | 3.289 | 4.942 | `RGB888` | 0 |
+| RGB16, Paeth filter | 2.257 | 3.392 | `RGBFLOAT32` | 0 |
+| RGBA8, explicit background | 10.141 | 12.841 | `LINEARRGBFLOAT32` | `2.98e-8` |
+| RGBA16, explicit background | 8.489 | 9.671 | `LINEARRGBFLOAT32` | 0 |
+| RGB16, `gAMA=1`, builtin CMS | 14.330 | 18.173 | `RGBFLOAT32` | 0 |
+
+Measured on Apple M3 Max, arm64 macOS, libpng 1.6.58, libsixel revision `34d1a6bad`, Clang `-O3 -DNDEBUG`, no lcms2, one calling thread. Each entry is the median of nine alternating paired batches of eight calls. Each batch has an untimed pixel export and two warmup calls; whiskers show the first and third quartiles of batch averages. Each timed call includes cached file reading, dispatch, decode, normalization, frame callback, and release. It excludes process startup, loader construction, pixel export, resize, quantization, dithering, SIXEL generation, and terminal I/O. These are warm-loader timings, not cold-start or whole-encoder timings.
+
+RGB8 uses `images/snake.png` resized to 512 × 512 before measurement; RGB16 uses a deterministic three-channel ramp with nonzero low bits. RGBA variants add fixed alpha (`128/255` or `32768/65535`) and explicit `#808080`. The writer uses zlib level 6 and known None/Paeth row filters without interlace or incidental color metadata. The gamma fixture alone carries `gAMA=100000`. All timed runs disable palette fusion, use `prefer_8bit=0`, gamma background interpretation, and a terminal `!` on the selected loader; CMS is off except for the marked transfer case. The two RGB8 files encode identical pixels but different filtered streams. Different depths use different content/compressibility, so the faster RGB16 row is not evidence that 16-bit decoding is inherently cheaper.
+
+Builtin took approximately 12–44% less time in these cases. This does not establish a universal speed ranking. The [official libpng source](https://github.com/pnggroup/libpng) includes architecture-specific filter optimizations such as ARM NEON, while builtin's adapted [`stb_image.h`](../../../src/stb_image.h) PNG unfilter/inflate path is largely scalar C (its JPEG SIMD should not be mistaken for PNG SIMD). This measurement does not isolate or disable libpng SIMD. Filter mix, DEFLATE implementation, compressed size, allocation, metadata, CMS, and alpha processing all contribute; counting SIMD kernels alone does not predict the complete-loader result.
+
+The [raw measurement record](measurements/png-loaders.json) includes all timing samples, native pixel hashes, output formats, maximum/RMS error against independently computed linear reference samples, precision/background probes, versions, configure arguments, and binary/input hashes. Exact native comparisons precede canonical linear comparisons. The independent reference error is below `1e-7` for the six timed cases. This is a loader-boundary sample/precision experiment, not an MS-SSIM comparison of final SIXEL images; downstream quantization can amplify even small differences. Existing end-to-end quality owners are listed below.
+
+### Reproduce the measurements
+
+Use a clean checkout of the recorded revision with libpng enabled, `--with-lcms2=no`, and `CFLAGS='-O3 -DNDEBUG'`; the JSON records the full configuration. Build `src`, then compile the public loader-API probe against that build. Use an isolated build when another task is changing the working tree. The Python runner requires NumPy, Matplotlib, ImageMagick, and pkg-config:
+
+```sh
+cc -O3 -DNDEBUG -I"$PNG_BUILD/include" tools/bench/png-loader.c \
+    -L"$PNG_BUILD/src/.libs" -lsixel -o "$PNG_BUILD/png-loader"
+python3 tools/measure_png_loaders.py \
+    --build "$PNG_BUILD" --probe "$PNG_BUILD/png-loader" \
+    --revision 34d1a6bad --output docs/loader/builtin/measurements/png-loaders.json
+python3 tools/measure_png_loaders.py --plot-only \
+    --output docs/loader/builtin/measurements/png-loaders.json
+python3 tools/measure_png_loaders.py --check \
+    --output docs/loader/builtin/measurements/png-loaders.json
+```
+
+`PNG_BUILD` is the absolute configured build directory. The runner pins its library search path to that build and removes inherited `SIXEL_*`/`LSQA_*` policy variables. The generated fixtures are temporary; their construction and hashes are retained. `--plot-only` regenerates the static SVG from saved observations without rerunning timing. `--check` verifies saved medians/quartiles and byte-identical SVG regeneration; it does not rerun timing or assert a hardware-independent speed threshold. Use the recorded package versions for byte-identical regeneration. The graph is a single Markdown-embedded SVG, not a separately selected mobile page.
+
 ## Unsupported behavior and security boundary
 
 MNG and JNG are separate formats and are not decoded. Unknown critical chunks, invalid standard depth/type combinations, inconsistent APNG sequence graphs, and out-of-canvas frames fail. Arbitrary per-frame color profiles and general ancillary metadata preservation are not implemented.
@@ -140,6 +214,10 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 | PNG-04 | Embedded ICC conversion matches a reference PNM through the format color-management path. | [tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t) |
 | PNG-05 | APNG disposal `PREVIOUS` restores the saved canvas before the next emitted frame. | [tests/loader/builtin/0033_apng_builtin_dispose_previous.t](../../../tests/loader/builtin/0033_apng_builtin_dispose_previous.t) |
 | PNG-06 | Enabling and disabling eXIf orientation changes geometry/pixels at common frame finalization as documented. | [tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t](../../../tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t) |
+| PNG-07 | Builtin's file-first default, explicit-first selection, and invalid-policy fallback determine competing background priority. | [tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t](../../../tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t) |
+| PNG-08 | The builtin non-indexed linear-background option agrees with its reference image, and CLI/suboption forms agree. | [tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t](../../../tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t) |
+| PNG-09 | The libpng component accepts APNG and can emit its static selection. | [tests/loader/libpng/0001_apng_libpng_static_option.t](../../../tests/loader/libpng/0001_apng_libpng_static_option.t) |
+| PNG-10 | The libpng RGBA8 and RGBA16 paths satisfy their end-to-end PNGSuite MS-SSIM references. | [tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t](../../../tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t), [tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t](../../../tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t) |
 
 ### Defensive and malformed-input tests
 
@@ -148,3 +226,5 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 | PNG-90 | An `fcTL` placed after image data in an invalid structural position is rejected. | [tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t](../../../tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t) |
 
 Coverage audit note: these owners cover the major representation, CMS, orientation, and APNG-disposal boundaries, not every PNG filter × Adam7 pass × depth/color-type combination or every APNG ordering failure. CRC validation is not an uncovered promised behavior: the implementation deliberately does not validate stored CRCs, as documented above.
+
+The performance and sample-comparison records are reproducible observations, not a timing CI gate or exhaustive backend-equivalence test. In particular, the measured libpng background-priority difference, indexed linear-composition difference, and no-background `tRNS` mask difference are documented limitations; the existing behavioral owners do not guarantee those differences remain unchanged. APNG frame count/disposal tests do not prove linear-light inter-frame blending or 16-bit preservation.
