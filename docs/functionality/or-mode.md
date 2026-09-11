@@ -208,7 +208,7 @@ Other quantization and diffusion options use that revision's defaults. Explicit 
 
 For the second measurement, a normal CLI stream is decoded once to obtain a single index raster and palette. Both encoders receive copies of those same indices. Captured untimed streams are decoded and compared with each other and the CLI baseline. Normal and OR order alternates within each measured pair. These are warm, unisolated desktop measurements; small differences near 1.00× should not be treated as a reliable optimization. The two timing boundaries cannot be substituted for one another.
 
-### Output size and speed
+### Output size and encoding speed
 
 | Photo-set statistic | Result |
 | --- | ---: |
@@ -250,6 +250,36 @@ The article's snake example also illustrates why the baseline must be explicit. 
 | 256 | 326,104 | 299,483 | 312,223 | −4.26% | +4.25% |
 
 Here `-Eauto` matches `-Efast`, and the three OR policy outputs have the same size. OR reduces size against fast encoding while increasing it against size-optimized encoding, without changing a decoded pixel in either comparison. This does not contradict the article's explanation; the comparison baseline and implementation revision matter.
+
+### Decoder speed
+
+OR decoding was slower for most of the same 100 photos, despite the reduction in total stream bytes. The following results reuse the saved measurements for the pinned build and host described above: 800×600 photos, a 256-color palette budget, and one decoder thread. They are measurements of that revision, not a benchmark of the latest checkout.
+
+| Output boundary | Median normal/OR speed ratio | Median OR/normal time ratio | Normal faster / OR faster (photos) |
+| --- | ---: | ---: | ---: |
+| RGBA pixels (`sixel_decode_direct`) | 0.655× | 1.527× | 94 / 6 |
+| Palette indices (`sixel_decode_raw`) | 0.619× | 1.615× | 99 / 1 |
+| RGBA PNG (`sixel2png --direct`) | 0.954× | 1.048× | 95 / 5 |
+
+Each ratio compares the repeated-run medians for one photo; the table reports the median of those per-photo ratios. A speed ratio below 1 means OR is slower. Expressed as elapsed time, the median increases are about 53% for RGBA pixels, 62% for palette indices, and 5% for PNG-inclusive conversion. The few observed OR wins do not establish that the differences exceed desktop timing noise.
+
+![Decoder speed ratios and their relationship to stream size for the same 100 photos](or-mode/sweeps/decode-photos.png)
+
+Box centers are medians across photos, boxes span the interquartile range, and whiskers extend to 1.5 times that range; outlying points are shown individually. These distributions describe variation between images, not confidence intervals for one image.
+
+The API measurements use 21 timed calls after two warmup pairs, with streams already in memory. They include parsing, validation, result allocation, and applicable worker setup, but exclude file I/O, correctness comparisons, result freeing, and PNG encoding. The CLI measurements use 11 timed processes after two warmup pairs, running `sixel2png --direct --threads=1 -i stream.six -o /dev/null`; they include process startup, cached file reads, decoding, PNG generation, and output writes. Normal/OR order alternates within each pair. Neither boundary measures terminal rendering or network transport.
+
+For an absolute-time example, the 1920×1080 snake image at 256 colors gives the following medians. Each cell is normal / OR in milliseconds. Both encoded streams remain byte-for-byte fixed while only the decoder thread budget changes.
+
+| Decoder threads | RGBA decoder API | Indexed decoder API | RGBA PNG CLI |
+| --- | ---: | ---: | ---: |
+| 1 | 15.60 / 31.67 | 15.05 / 33.60 | 194.24 / 210.53 |
+| 4 | 10.96 / 25.11 | 10.68 / 23.57 | 189.16 / 203.81 |
+| 12 | 6.83 / 13.88 | 6.97 / 12.19 | 186.68 / 195.98 |
+
+OR painting accumulates palette-index bits with read-modify-write operations; RGBA output also needs an intermediate index buffer and a final palette expansion. These implementation differences help explain why fewer input bytes do not guarantee less decoding work, but the timings do not isolate the cost of each operation. See the [decoder study](or-mode/scaling.md#decoder-timing-boundaries) for the implementation discussion, the [color-count curves](or-mode/scaling.md#color-count-axis), and the complete [1–12-thread curves](or-mode/scaling.md#thread-count-axis), including configurations where adding workers is slower.
+
+The [raw decoder records](or-mode/sweeps/decode.json) retain samples, medians, quartiles, stream hashes, commands, and exact pixel checks. All 264 decoder pairs across the photo and scaling studies passed those checks. The [reproduction instructions](or-mode/scaling.md#reproduction) describe how to rerun the measurements with the retained inputs and pinned build.
 
 ### Is the quality impact exactly zero?
 
