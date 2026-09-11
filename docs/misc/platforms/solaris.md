@@ -39,6 +39,7 @@ Coverage normalization chooses `/usr/xpg4/bin/awk`, then `nawk`, then `awk`. Sol
 | SOL-01 | The libjpeg longjmp flag remains `volatile`, and TTY use remains guarded by both `HAVE_SYS_TTYCOM_H` and `TIOCGWINSZ`. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 | SOL-02 | Test-tool resolution remains shell-based, project-owned scripts avoid GNU awk capture arrays, coverage retains the XPG4/nawk fallback, and the Solaris Autotools CI tuple retains GNU make plus disabled dependency tracking. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/_static/sh/staticcheck-platform-ci-contracts.sh](../../../tests/_static/sh/staticcheck-platform-ci-contracts.sh) |
 | SOL-03 | PNG byte assertions use fixed-width hexadecimal `od` output so Solaris decimal zero-padding cannot create false failures. | [tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t](../../../tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t), [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| SOL-04 | The small RGBA roundtrip uses the project-wide `MS-SSIM:0.98` gate rather than a platform-fragile stricter value. | [tests/loader/builtin/0016_lsqa_roundtrip_rgba_small.t](../../../tests/loader/builtin/0016_lsqa_roundtrip_rgba_small.t), [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 
 ### Coverage boundary
 

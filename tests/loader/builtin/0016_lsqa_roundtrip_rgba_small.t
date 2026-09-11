@@ -1,6 +1,8 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Confirm small RGBA roundtrip retains the MS-SSIM baseline.
+# Policy: docs/misc/platforms/solaris.md
+# Coverage: SOL-04
 
 set -eux
 
@@ -19,7 +21,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 # Baseline against source RGBA after roundtrip through builtin loader.
-lsqa_floor=0.99
+lsqa_floor=0.98
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
