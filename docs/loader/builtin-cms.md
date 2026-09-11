@@ -136,6 +136,8 @@ These tests establish selected implementation paths. They are not a complete con
 | BCMS-05 | Selected source-to-destination intent paths. | [tests/diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.t](../../tests/diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.t) |
 | BCMS-06 | Builtin PNG parametric ICC conversion compared with a stored regression reference. | [tests/loader/builtin/1199_loader_builtin_png_rgb_parametric_012_builtin_cms_lsqa.t](../../tests/loader/builtin/1199_loader_builtin_png_rgb_parametric_012_builtin_cms_lsqa.t) |
 | BCMS-07 | An unsupported mpet payload is identified by the loader trace. | [tests/diagnostics/cms_trace/0001_mpet_payload_reason.t](../../tests/diagnostics/cms_trace/0001_mpet_payload_reason.t) |
+| BCMS-08 | The builtin facade accepts representative RGB8, RGB float32, and RGBA8 source/destination combinations and preserves copied alpha. | [tests/diagnostics/icc/0006_icc_builtin_pixel_format_matrix.t](../../tests/diagnostics/icc/0006_icc_builtin_pixel_format_matrix.t) |
+| BCMS-09 | NaN and positive/negative infinity in representative RGB float input, plus NaN in Lab input, are clamped to the same results as zero or one before profile math. | [tests/diagnostics/icc/0007_icc_builtin_float_special_values.t](../../tests/diagnostics/icc/0007_icc_builtin_float_special_values.t) |
 
 ### Defensive and malformed-input tests
 
@@ -145,4 +147,4 @@ The [trace suite](../../tests/diagnostics/cms_trace/) covers diagnostic reasons,
 
 ### Coverage boundary
 
-The current tests do not establish complete ICC v2/v4 conformance, arbitrary profile-class support, mpet execution, fidelity for non-identity legacy LUT matrices, independent absolute-intent behavior, uniform resource limits, all float special-value handling, or performance/quality equivalence across CMS engines. Header validation, object lifetime, allocation failures, and every source/destination format combination also require more than the selected path tests listed here. Those limits remain visible engineering work rather than being inferred away from a passing test suite.
+The current tests do not establish complete ICC v2/v4 conformance, arbitrary profile-class support, mpet execution, fidelity for non-identity legacy LUT matrices, independent absolute-intent behavior, uniform resource limits, every float-bearing device/Lab path, or performance/quality equivalence across CMS engines. Header validation, object lifetime, allocation failures, and every source/destination format combination also require more than the selected path tests listed here. Those limits remain visible engineering work rather than being inferred away from a passing test suite.

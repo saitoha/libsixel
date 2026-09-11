@@ -104,3 +104,16 @@ Selecting `-Lbuiltin!` limits decoding to this component and avoids passing the 
 | WebP | [`fromwebp.c`](../../src/fromwebp.c) and the `fromwebp-*` modules |
 | Functional and regression coverage | [`tests/loader/builtin`](../../tests/loader/builtin) |
 | General and structural fuzz coverage | [`fuzz/Makefile.am`](../../fuzz/Makefile.am) and the `fuzz-loader-builtin*` targets |
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+The format pages own byte-level decode contracts. These tests instead protect behavior shared by the builtin component across representative files from every routed format family.
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| BLT-01 | Deterministic allocation injection either fails before callback without leaking or produces the exact baseline frame when an optional allocation is allowed to fail. | [tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t](../../tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t) |
+| BLT-02 | PNG, JPEG, GIF, WebP, HDR, PSD, BMP, TGA, PIC, PNM, and SIXEL routes return an interrupted frame callback unchanged. | [tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t](../../tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t) |
+
+The allocation test intentionally accepts retained stb paths that report an injected allocation failure through their historical format-error status, but it does not accept a partial frame, a leak, or changed output. This makes the lifetime and atomicity contract explicit without claiming that every internal decoder can distinguish out-of-memory from malformed compressed data.

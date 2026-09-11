@@ -5,7 +5,7 @@
 #include "loader_builtin_memory_test_common.h"
 
 int
-test_loader_0134_loader_builtin_hdr_legacy_repeat_overrun_reject(
+test_loader_0134_hdr_legacy_repeat_overrun_reject(
     int argc,
     char **argv)
 {

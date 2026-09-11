@@ -14,7 +14,7 @@
 
 #define EDGE_BUFFER_CAPACITY 65536u
 #define EDGE_FRAME_CAPACITY 3
-#define EDGE_RGB_CAPACITY 65536u
+#define EDGE_RGB_CAPACITY 131072u
 #define EDGE_PALETTE_CAPACITY 768u
 #define EDGE_MASK_CAPACITY 16384u
 
@@ -88,6 +88,13 @@ int edge_load_fixture_options(char const *label,
                               edge_loader_options_t const *options,
                               edge_frame_probe_t *probe,
                               SIXELSTATUS *load_status);
+int edge_load_fixture_custom(char const *label,
+                             char const *relative_path,
+                             edge_loader_options_t const *options,
+                             sixel_allocator_t *component_allocator,
+                             sixel_load_image_function callback,
+                             void *callback_context,
+                             SIXELSTATUS *load_status);
 int edge_expect_rgb(char const *label,
                     unsigned char const *buffer,
                     size_t buffer_size,
@@ -128,6 +135,27 @@ int edge_expect_fixture_float_samples(
     size_t const sample_pixels[3],
     float const expected_samples[9],
     float tolerance);
+int edge_expect_buffer_float_samples(
+    char const *label,
+    unsigned char const *buffer,
+    size_t buffer_size,
+    edge_loader_options_t const *options,
+    int expected_width,
+    int expected_height,
+    int expected_pixelformat,
+    int expected_colorspace,
+    size_t const sample_pixels[3],
+    float const expected_samples[9],
+    float tolerance);
+int edge_expect_fixture_rgb_mask_digests(
+    char const *label,
+    char const *relative_path,
+    edge_loader_options_t const *options,
+    int expected_width,
+    int expected_height,
+    int expected_frames,
+    uint64_t const *expected_rgb_digests,
+    uint64_t const *expected_mask_digests);
 uint64_t edge_digest_bytes(unsigned char const *bytes, size_t byte_count);
 
 #endif

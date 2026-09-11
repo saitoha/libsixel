@@ -2099,6 +2099,10 @@ static double const sixel_cms_xyz_to_srgb_d65[3][3] = {
 static double
 sixel_cms_clamp_unit(double value)
 {
+    /* Normalize NaN before comparisons so it cannot poison matrix math. */
+    if (value != value) {
+        return 0.0;
+    }
     if (value < 0.0) {
         return 0.0;
     }
@@ -2132,6 +2136,10 @@ sixel_cms_encode_srgb_unit(double linear_value)
 static double
 sixel_cms_clamp_lab_ab(double value)
 {
+    /* Lab float input uses the same deterministic NaN policy as RGB. */
+    if (value != value) {
+        return 0.0;
+    }
     if (value < -1.5) {
         return -1.5;
     }
@@ -3159,9 +3167,14 @@ sixel_cms_do_transform_builtin_to_srgb(
             }
             memcpy(dst, src, pixel_count * 3u * sizeof(float));
         }
+        dst_f32 = (float *)dst;
+        for (i = 0u; i < pixel_count * 3u; ++i) {
+            dst_f32[i] = (float)sixel_cms_clamp_unit(
+                (double)dst_f32[i]);
+        }
         if (!sixel_cms_builtin_profile_is_srgb(src_profile)) {
             return sixel_cms_builtin_apply_rgb_f32_intent(
-                (float *)dst,
+                dst_f32,
                 pixel_count,
                 &src_profile->builtin_profile,
                 transform);

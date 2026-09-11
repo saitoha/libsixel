@@ -313,6 +313,28 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/0132_loader_builtin_hdr_new_rle_truncated_reject.c \
 	loader/builtin/0133_loader_builtin_hdr_legacy_repeat_first_reject.c \
 	loader/builtin/0134_loader_builtin_hdr_legacy_repeat_overrun_reject.c \
+	loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c \
+	loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c \
+	loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c \
+	loader/builtin/0138_loader_builtin_apng_blend_over_digest.c \
+	loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c \
+	loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c \
+	loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c \
+	loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c \
+	loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c \
+	loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c \
+	loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c \
+	loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c \
+	loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c \
+	loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c \
+	loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c \
+	loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c \
+	loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c \
+	loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c \
+	loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c \
+	loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c \
+	loader/builtin/0155_loader_builtin_allocator_failure_matrix.c \
+	loader/builtin/0156_loader_builtin_callback_status_matrix.c \
 	loader/quicklook/0015_loader_quicklook_pixelformat.c \
 	loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
 	loader/libwebp/0013_loader_libwebp_pixelformat.c \
@@ -382,6 +404,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c \
 	diagnostics/icc/0004_icc_builtin_b2a_slot_paths.c \
 	diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.c \
+	diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c \
+	diagnostics/icc/0007_icc_builtin_float_special_values.c \
 	extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 	extension/gdk-pixbuf-loader/0002_incremental_load.c \
 	extension/gdk-pixbuf-loader/0003_corrupt_data.c \
@@ -590,6 +614,28 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0132_loader_builtin_hdr_new_rle_truncated_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0133_loader_builtin_hdr_legacy_repeat_first_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0134_loader_builtin_hdr_legacy_repeat_overrun_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.$(OBJEXT) \
@@ -656,6 +702,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0004_icc_builtin_b2a_slot_paths.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0005_icc_builtin_device_to_device_intent_paths.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0002_incremental_load.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0003_corrupt_data.$(OBJEXT) \
@@ -753,6 +801,8 @@ am__depfiles_remade =  \
 	diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0004_icc_builtin_b2a_slot_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0005_icc_builtin_device_to_device_intent_paths.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po \
 	diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po \
 	diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po \
@@ -850,6 +900,28 @@ am__depfiles_remade =  \
 	loader/builtin/$(DEPDIR)/test_runner-0132_loader_builtin_hdr_new_rle_truncated_reject.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0133_loader_builtin_hdr_legacy_repeat_first_reject.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0134_loader_builtin_hdr_legacy_repeat_overrun_reject.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Po \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_pic_test_common.Po \
@@ -1687,6 +1759,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ICC_BUILTIN_A2B_INTENT_PATHS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_ICC_BUILTIN_B2A_SLOT_PATHS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_ICC_BUILTIN_DEVICE_TO_DEVICE_INTENT_PATHS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_ICC_BUILTIN_PIXEL_FORMAT_MATRIX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_ICC_BUILTIN_FLOAT_SPECIAL_VALUES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_FILTER_SAMPLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_INCREMENTAL_LOAD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_CORRUPT_DATA \
@@ -1937,6 +2011,28 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0132_LOADER_BUILTIN_HDR_NEW_RLE_TRUNCATED_REJECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0133_LOADER_BUILTIN_HDR_LEGACY_REPEAT_FIRST_REJECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0134_LOADER_BUILTIN_HDR_LEGACY_REPEAT_OVERRUN_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0135_LOADER_BUILTIN_PNG_FILTER_MODES_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0136_LOADER_BUILTIN_PNG_ADAM7_INDEXED4_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0137_LOADER_BUILTIN_PNG_GRAY16_SUB8BIT_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0138_LOADER_BUILTIN_APNG_BLEND_OVER_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0139_LOADER_BUILTIN_APNG_DISPOSE_BACKGROUND_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0140_LOADER_BUILTIN_JPEG_GRAY16_SUB8BIT_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0141_LOADER_BUILTIN_JPEG_PROGRESSIVE_420_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0142_LOADER_BUILTIN_JPEG_GRAY16_RESTART_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0143_LOADER_BUILTIN_JPEG_YCBCR444_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0144_LOADER_BUILTIN_JPEG_CMYK8_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0145_LOADER_BUILTIN_WEBP_VP8_TOKEN_PARTITIONS_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0146_LOADER_BUILTIN_WEBP_ALPH_FILTER1_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0147_LOADER_BUILTIN_WEBP_ALPH_FILTER2_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0148_LOADER_BUILTIN_WEBP_ALPH_FILTER3_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0149_LOADER_BUILTIN_WEBP_ANIMATION_SUBRECT_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0150_LOADER_BUILTIN_PSD_RGB8_ALPHA_MASK_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0151_LOADER_BUILTIN_PSD_RGB8_ALPHA_WHITE_DIGEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0152_LOADER_BUILTIN_PSD_CMYK16_ZIP_PRED_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0153_LOADER_BUILTIN_PSD_LAB32_ZIP_PRED_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0154_LOADER_BUILTIN_PSB_LAYER_INFO_U64MAX_REJECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0155_LOADER_BUILTIN_ALLOCATOR_FAILURE_MATRIX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0156_LOADER_BUILTIN_CALLBACK_STATUS_MATRIX \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -2187,6 +2283,28 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0132_loader_builtin_hdr_new_rle_truncated_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0133_loader_builtin_hdr_legacy_repeat_first_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0134_loader_builtin_hdr_legacy_repeat_overrun_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0138_loader_builtin_apng_blend_over_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0155_loader_builtin_allocator_failure_matrix.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0156_loader_builtin_callback_status_matrix.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/quicklook/0015_loader_quicklook_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0013_loader_libwebp_pixelformat.c \
@@ -2256,6 +2374,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0004_icc_builtin_b2a_slot_paths.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0007_icc_builtin_float_special_values.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0002_incremental_load.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0003_corrupt_data.c \
@@ -3162,6 +3282,72 @@ loader/builtin/test_runner-0133_loader_builtin_hdr_legacy_repeat_first_reject.$(
 loader/builtin/test_runner-0134_loader_builtin_hdr_legacy_repeat_overrun_reject.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
 loader/quicklook/$(am__dirstamp):
 	@$(MKDIR_P) loader/quicklook
 	@: >>loader/quicklook/$(am__dirstamp)
@@ -3393,6 +3579,12 @@ diagnostics/icc/test_runner-0004_icc_builtin_b2a_slot_paths.$(OBJEXT):  \
 diagnostics/icc/test_runner-0005_icc_builtin_device_to_device_intent_paths.$(OBJEXT):  \
 	diagnostics/icc/$(am__dirstamp) \
 	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
 extension/gdk-pixbuf-loader/$(am__dirstamp):
 	@$(MKDIR_P) extension/gdk-pixbuf-loader
 	@: >>extension/gdk-pixbuf-loader/$(am__dirstamp)
@@ -3533,6 +3725,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0004_icc_builtin_b2a_slot_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0005_icc_builtin_device_to_device_intent_paths.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po@am__quote@ # am--include-marker
@@ -3630,6 +3824,28 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0132_loader_builtin_hdr_new_rle_truncated_reject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0133_loader_builtin_hdr_legacy_repeat_first_reject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0134_loader_builtin_hdr_legacy_repeat_overrun_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_pic_test_common.Po@am__quote@ # am--include-marker
@@ -6548,6 +6764,314 @@ loader/builtin/test_runner-0134_loader_builtin_hdr_legacy_repeat_overrun_reject.
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0134_loader_builtin_hdr_legacy_repeat_overrun_reject.obj `if test -f 'loader/builtin/0134_loader_builtin_hdr_legacy_repeat_overrun_reject.c'; then $(CYGPATH_W) 'loader/builtin/0134_loader_builtin_hdr_legacy_repeat_overrun_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0134_loader_builtin_hdr_legacy_repeat_overrun_reject.c'; fi`
 
+loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.o: loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Tpo -c -o loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.o `test -f 'loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c' || echo '$(srcdir)/'`loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c' object='loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.o `test -f 'loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c' || echo '$(srcdir)/'`loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c
+
+loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.obj: loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Tpo -c -o loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.obj `if test -f 'loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c' object='loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0135_loader_builtin_png_filter_modes_numeric.obj `if test -f 'loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0135_loader_builtin_png_filter_modes_numeric.c'; fi`
+
+loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.o: loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Tpo -c -o loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.o `test -f 'loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c' || echo '$(srcdir)/'`loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c' object='loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.o `test -f 'loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c' || echo '$(srcdir)/'`loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c
+
+loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.obj: loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Tpo -c -o loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.obj `if test -f 'loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c'; then $(CYGPATH_W) 'loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c' object='loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.obj `if test -f 'loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c'; then $(CYGPATH_W) 'loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0136_loader_builtin_png_adam7_indexed4_digest.c'; fi`
+
+loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.o: loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Tpo -c -o loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.o `test -f 'loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c' || echo '$(srcdir)/'`loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c' object='loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.o `test -f 'loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c' || echo '$(srcdir)/'`loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c
+
+loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.obj: loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Tpo -c -o loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.obj `if test -f 'loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c' object='loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.obj `if test -f 'loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0137_loader_builtin_png_gray16_sub8bit_numeric.c'; fi`
+
+loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.o: loader/builtin/0138_loader_builtin_apng_blend_over_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Tpo -c -o loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.o `test -f 'loader/builtin/0138_loader_builtin_apng_blend_over_digest.c' || echo '$(srcdir)/'`loader/builtin/0138_loader_builtin_apng_blend_over_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0138_loader_builtin_apng_blend_over_digest.c' object='loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.o `test -f 'loader/builtin/0138_loader_builtin_apng_blend_over_digest.c' || echo '$(srcdir)/'`loader/builtin/0138_loader_builtin_apng_blend_over_digest.c
+
+loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.obj: loader/builtin/0138_loader_builtin_apng_blend_over_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Tpo -c -o loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.obj `if test -f 'loader/builtin/0138_loader_builtin_apng_blend_over_digest.c'; then $(CYGPATH_W) 'loader/builtin/0138_loader_builtin_apng_blend_over_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0138_loader_builtin_apng_blend_over_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0138_loader_builtin_apng_blend_over_digest.c' object='loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0138_loader_builtin_apng_blend_over_digest.obj `if test -f 'loader/builtin/0138_loader_builtin_apng_blend_over_digest.c'; then $(CYGPATH_W) 'loader/builtin/0138_loader_builtin_apng_blend_over_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0138_loader_builtin_apng_blend_over_digest.c'; fi`
+
+loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.o: loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Tpo -c -o loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.o `test -f 'loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c' || echo '$(srcdir)/'`loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c' object='loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.o `test -f 'loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c' || echo '$(srcdir)/'`loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c
+
+loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.obj: loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Tpo -c -o loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.obj `if test -f 'loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c'; then $(CYGPATH_W) 'loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c' object='loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0139_loader_builtin_apng_dispose_background_digest.obj `if test -f 'loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c'; then $(CYGPATH_W) 'loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0139_loader_builtin_apng_dispose_background_digest.c'; fi`
+
+loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.o: loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Tpo -c -o loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.o `test -f 'loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c' || echo '$(srcdir)/'`loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c' object='loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.o `test -f 'loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c' || echo '$(srcdir)/'`loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c
+
+loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.obj: loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Tpo -c -o loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.obj `if test -f 'loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c' object='loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.obj `if test -f 'loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0140_loader_builtin_jpeg_gray16_sub8bit_numeric.c'; fi`
+
+loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.o: loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Tpo -c -o loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.o `test -f 'loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c' || echo '$(srcdir)/'`loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c' object='loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.o `test -f 'loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c' || echo '$(srcdir)/'`loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c
+
+loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.obj: loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Tpo -c -o loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.obj `if test -f 'loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c'; then $(CYGPATH_W) 'loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c' object='loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.obj `if test -f 'loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c'; then $(CYGPATH_W) 'loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0141_loader_builtin_jpeg_progressive_420_digest.c'; fi`
+
+loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.o: loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Tpo -c -o loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.o `test -f 'loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c' || echo '$(srcdir)/'`loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c' object='loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.o `test -f 'loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c' || echo '$(srcdir)/'`loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c
+
+loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.obj: loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Tpo -c -o loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.obj `if test -f 'loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c' object='loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.obj `if test -f 'loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0142_loader_builtin_jpeg_gray16_restart_numeric.c'; fi`
+
+loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.o: loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Tpo -c -o loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.o `test -f 'loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c' || echo '$(srcdir)/'`loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c' object='loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.o `test -f 'loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c' || echo '$(srcdir)/'`loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c
+
+loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.obj: loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Tpo -c -o loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.obj `if test -f 'loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c'; then $(CYGPATH_W) 'loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c' object='loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.obj `if test -f 'loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c'; then $(CYGPATH_W) 'loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0143_loader_builtin_jpeg_ycbcr444_digest.c'; fi`
+
+loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.o: loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Tpo -c -o loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.o `test -f 'loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c' || echo '$(srcdir)/'`loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c' object='loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.o `test -f 'loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c' || echo '$(srcdir)/'`loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c
+
+loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.obj: loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Tpo -c -o loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.obj `if test -f 'loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c'; then $(CYGPATH_W) 'loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c' object='loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.obj `if test -f 'loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c'; then $(CYGPATH_W) 'loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0144_loader_builtin_jpeg_cmyk8_digest.c'; fi`
+
+loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.o: loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Tpo -c -o loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.o `test -f 'loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c' || echo '$(srcdir)/'`loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c' object='loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.o `test -f 'loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c' || echo '$(srcdir)/'`loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c
+
+loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.obj: loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Tpo -c -o loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.obj `if test -f 'loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c'; then $(CYGPATH_W) 'loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c' object='loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.obj `if test -f 'loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c'; then $(CYGPATH_W) 'loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0145_loader_builtin_webp_vp8_token_partitions_digest.c'; fi`
+
+loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.o: loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Tpo -c -o loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.o `test -f 'loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c' || echo '$(srcdir)/'`loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c' object='loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.o `test -f 'loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c' || echo '$(srcdir)/'`loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c
+
+loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.obj: loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Tpo -c -o loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.obj `if test -f 'loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c' object='loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.obj `if test -f 'loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0146_loader_builtin_webp_alph_filter1_numeric.c'; fi`
+
+loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.o: loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Tpo -c -o loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.o `test -f 'loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c' || echo '$(srcdir)/'`loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c' object='loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.o `test -f 'loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c' || echo '$(srcdir)/'`loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c
+
+loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.obj: loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Tpo -c -o loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.obj `if test -f 'loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c' object='loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.obj `if test -f 'loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0147_loader_builtin_webp_alph_filter2_numeric.c'; fi`
+
+loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.o: loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Tpo -c -o loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.o `test -f 'loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c' || echo '$(srcdir)/'`loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c' object='loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.o `test -f 'loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c' || echo '$(srcdir)/'`loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c
+
+loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.obj: loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Tpo -c -o loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.obj `if test -f 'loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c' object='loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.obj `if test -f 'loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0148_loader_builtin_webp_alph_filter3_numeric.c'; fi`
+
+loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.o: loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Tpo -c -o loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.o `test -f 'loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c' || echo '$(srcdir)/'`loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c' object='loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.o `test -f 'loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c' || echo '$(srcdir)/'`loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c
+
+loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.obj: loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Tpo -c -o loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.obj `if test -f 'loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c'; then $(CYGPATH_W) 'loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c' object='loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0149_loader_builtin_webp_animation_subrect_digest.obj `if test -f 'loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c'; then $(CYGPATH_W) 'loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0149_loader_builtin_webp_animation_subrect_digest.c'; fi`
+
+loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.o: loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Tpo -c -o loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.o `test -f 'loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c' || echo '$(srcdir)/'`loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c' object='loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.o `test -f 'loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c' || echo '$(srcdir)/'`loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c
+
+loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.obj: loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Tpo -c -o loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.obj `if test -f 'loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c'; then $(CYGPATH_W) 'loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c' object='loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.obj `if test -f 'loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c'; then $(CYGPATH_W) 'loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0150_loader_builtin_psd_rgb8_alpha_mask_digest.c'; fi`
+
+loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.o: loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Tpo -c -o loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.o `test -f 'loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c' || echo '$(srcdir)/'`loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c' object='loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.o `test -f 'loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c' || echo '$(srcdir)/'`loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c
+
+loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.obj: loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Tpo -c -o loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.obj `if test -f 'loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c'; then $(CYGPATH_W) 'loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Tpo loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c' object='loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.obj `if test -f 'loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c'; then $(CYGPATH_W) 'loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0151_loader_builtin_psd_rgb8_alpha_white_digest.c'; fi`
+
+loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.o: loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Tpo -c -o loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.o `test -f 'loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c' || echo '$(srcdir)/'`loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c' object='loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.o `test -f 'loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c' || echo '$(srcdir)/'`loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c
+
+loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.obj: loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Tpo -c -o loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.obj `if test -f 'loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c' object='loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.obj `if test -f 'loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0152_loader_builtin_psd_cmyk16_zip_pred_numeric.c'; fi`
+
+loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.o: loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Tpo -c -o loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.o `test -f 'loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c' || echo '$(srcdir)/'`loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c' object='loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.o `test -f 'loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c' || echo '$(srcdir)/'`loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c
+
+loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.obj: loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Tpo -c -o loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.obj `if test -f 'loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Tpo loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c' object='loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.obj `if test -f 'loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c'; then $(CYGPATH_W) 'loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0153_loader_builtin_psd_lab32_zip_pred_numeric.c'; fi`
+
+loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.o: loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Tpo -c -o loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.o `test -f 'loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c' || echo '$(srcdir)/'`loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Tpo loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c' object='loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.o `test -f 'loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c' || echo '$(srcdir)/'`loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c
+
+loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.obj: loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Tpo -c -o loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.obj `if test -f 'loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c'; then $(CYGPATH_W) 'loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Tpo loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c' object='loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.obj `if test -f 'loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c'; then $(CYGPATH_W) 'loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c'; fi`
+
+loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.o: loader/builtin/0155_loader_builtin_allocator_failure_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Tpo -c -o loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.o `test -f 'loader/builtin/0155_loader_builtin_allocator_failure_matrix.c' || echo '$(srcdir)/'`loader/builtin/0155_loader_builtin_allocator_failure_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Tpo loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0155_loader_builtin_allocator_failure_matrix.c' object='loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.o `test -f 'loader/builtin/0155_loader_builtin_allocator_failure_matrix.c' || echo '$(srcdir)/'`loader/builtin/0155_loader_builtin_allocator_failure_matrix.c
+
+loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.obj: loader/builtin/0155_loader_builtin_allocator_failure_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Tpo -c -o loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.obj `if test -f 'loader/builtin/0155_loader_builtin_allocator_failure_matrix.c'; then $(CYGPATH_W) 'loader/builtin/0155_loader_builtin_allocator_failure_matrix.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0155_loader_builtin_allocator_failure_matrix.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Tpo loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0155_loader_builtin_allocator_failure_matrix.c' object='loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0155_loader_builtin_allocator_failure_matrix.obj `if test -f 'loader/builtin/0155_loader_builtin_allocator_failure_matrix.c'; then $(CYGPATH_W) 'loader/builtin/0155_loader_builtin_allocator_failure_matrix.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0155_loader_builtin_allocator_failure_matrix.c'; fi`
+
+loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.o: loader/builtin/0156_loader_builtin_callback_status_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Tpo -c -o loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.o `test -f 'loader/builtin/0156_loader_builtin_callback_status_matrix.c' || echo '$(srcdir)/'`loader/builtin/0156_loader_builtin_callback_status_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Tpo loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0156_loader_builtin_callback_status_matrix.c' object='loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.o `test -f 'loader/builtin/0156_loader_builtin_callback_status_matrix.c' || echo '$(srcdir)/'`loader/builtin/0156_loader_builtin_callback_status_matrix.c
+
+loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.obj: loader/builtin/0156_loader_builtin_callback_status_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Tpo -c -o loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.obj `if test -f 'loader/builtin/0156_loader_builtin_callback_status_matrix.c'; then $(CYGPATH_W) 'loader/builtin/0156_loader_builtin_callback_status_matrix.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0156_loader_builtin_callback_status_matrix.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Tpo loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0156_loader_builtin_callback_status_matrix.c' object='loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0156_loader_builtin_callback_status_matrix.obj `if test -f 'loader/builtin/0156_loader_builtin_callback_status_matrix.c'; then $(CYGPATH_W) 'loader/builtin/0156_loader_builtin_callback_status_matrix.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0156_loader_builtin_callback_status_matrix.c'; fi`
+
 loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o: loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
@@ -7472,6 +7996,34 @@ diagnostics/icc/test_runner-0005_icc_builtin_device_to_device_intent_paths.obj: 
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0005_icc_builtin_device_to_device_intent_paths.obj `if test -f 'diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.c'; then $(CYGPATH_W) 'diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.c'; fi`
 
+diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.o: diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Tpo -c -o diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.o `test -f 'diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c' || echo '$(srcdir)/'`diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c' object='diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.o `test -f 'diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c' || echo '$(srcdir)/'`diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c
+
+diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.obj: diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Tpo -c -o diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.obj `if test -f 'diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c'; then $(CYGPATH_W) 'diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c' object='diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0006_icc_builtin_pixel_format_matrix.obj `if test -f 'diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c'; then $(CYGPATH_W) 'diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0006_icc_builtin_pixel_format_matrix.c'; fi`
+
+diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.o: diagnostics/icc/0007_icc_builtin_float_special_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Tpo -c -o diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.o `test -f 'diagnostics/icc/0007_icc_builtin_float_special_values.c' || echo '$(srcdir)/'`diagnostics/icc/0007_icc_builtin_float_special_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0007_icc_builtin_float_special_values.c' object='diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.o `test -f 'diagnostics/icc/0007_icc_builtin_float_special_values.c' || echo '$(srcdir)/'`diagnostics/icc/0007_icc_builtin_float_special_values.c
+
+diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.obj: diagnostics/icc/0007_icc_builtin_float_special_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Tpo -c -o diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.obj `if test -f 'diagnostics/icc/0007_icc_builtin_float_special_values.c'; then $(CYGPATH_W) 'diagnostics/icc/0007_icc_builtin_float_special_values.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0007_icc_builtin_float_special_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0007_icc_builtin_float_special_values.c' object='diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0007_icc_builtin_float_special_values.obj `if test -f 'diagnostics/icc/0007_icc_builtin_float_special_values.c'; then $(CYGPATH_W) 'diagnostics/icc/0007_icc_builtin_float_special_values.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0007_icc_builtin_float_special_values.c'; fi`
+
 extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o: extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o -MD -MP -MF extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Tpo -c -o extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o `test -f 'extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c' || echo '$(srcdir)/'`extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Tpo extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
@@ -8094,6 +8646,8 @@ distclean: distclean-am
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0004_icc_builtin_b2a_slot_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0005_icc_builtin_device_to_device_intent_paths.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
@@ -8191,6 +8745,28 @@ distclean: distclean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0132_loader_builtin_hdr_new_rle_truncated_reject.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0133_loader_builtin_hdr_legacy_repeat_first_reject.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0134_loader_builtin_hdr_legacy_repeat_overrun_reject.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_pic_test_common.Po
@@ -8413,6 +8989,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0004_icc_builtin_b2a_slot_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0005_icc_builtin_device_to_device_intent_paths.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
@@ -8510,6 +9088,28 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0132_loader_builtin_hdr_new_rle_truncated_reject.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0133_loader_builtin_hdr_legacy_repeat_first_reject.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0134_loader_builtin_hdr_legacy_repeat_overrun_reject.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0135_loader_builtin_png_filter_modes_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0136_loader_builtin_png_adam7_indexed4_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0137_loader_builtin_png_gray16_sub8bit_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0138_loader_builtin_apng_blend_over_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0139_loader_builtin_apng_dispose_background_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0140_loader_builtin_jpeg_gray16_sub8bit_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0141_loader_builtin_jpeg_progressive_420_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0142_loader_builtin_jpeg_gray16_restart_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0143_loader_builtin_jpeg_ycbcr444_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0144_loader_builtin_jpeg_cmyk8_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0145_loader_builtin_webp_vp8_token_partitions_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0146_loader_builtin_webp_alph_filter1_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0147_loader_builtin_webp_alph_filter2_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0148_loader_builtin_webp_alph_filter3_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0149_loader_builtin_webp_animation_subrect_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0150_loader_builtin_psd_rgb8_alpha_mask_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0151_loader_builtin_psd_rgb8_alpha_white_digest.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0152_loader_builtin_psd_cmyk16_zip_pred_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0153_loader_builtin_psd_lab32_zip_pred_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0154_loader_builtin_psb_layer_info_u64max_reject.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0155_loader_builtin_allocator_failure_matrix.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0156_loader_builtin_callback_status_matrix.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_pic_test_common.Po
