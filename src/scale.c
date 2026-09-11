@@ -1910,16 +1910,18 @@ sixel_helper_scale_image(
     sixel_allocator_t   /* in */  *allocator)             /* allocator object */
 {
     /*
-     * Convert the source image to RGB24 if necessary and scale it to the
-     * requested destination size.  The caller supplies an allocator used
-     * for any temporary buffers required during conversion or filtering.
+     * Normalize layouts that are not three bytes per pixel, then scale to
+     * the requested destination size.  The caller supplies an allocator
+     * used for any temporary buffers required during conversion or filtering.
      */
-    int const depth = sixel_helper_compute_depth(pixelformat);
+    int depth;
     unsigned char *new_src = NULL;  /* optional converted source buffer */
     int nret;
     int new_pixelformat;
 
-    /* ensure the scaler operates on RGB triples */
+    depth = sixel_helper_compute_depth(pixelformat);
+
+    /* Normalize layouts that are not already three bytes per pixel. */
     if (depth != 3) {
         new_src = (unsigned char *)sixel_allocator_malloc(allocator,
                                                           (size_t)(srcw * srch * 3));
@@ -1939,6 +1941,12 @@ sixel_helper_scale_image(
     } else {
         new_pixelformat = pixelformat;
     }
+
+    /*
+     * Normalization can change the component count.  The scale loops must
+     * therefore use the normalized layout for both source and destination.
+     */
+    depth = sixel_helper_compute_depth(new_pixelformat);
 
     /* choose re-sampling strategy */
     switch (method_for_resampling) {

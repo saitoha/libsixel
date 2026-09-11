@@ -177,6 +177,9 @@ int test_threadpool_0002_thread_default_counts(int argc, char **argv);
 int test_scale_0001_parallel_factor_environment(int argc, char **argv);
 int test_scale_0002_parallel_min_bytes_environment(int argc, char **argv);
 int test_scale_0003_resample_alloc_failure(int argc, char **argv);
+int test_scale_0004_g8_rgb888(int argc, char **argv);
+int test_scale_0005_rgb565_rgb888(int argc, char **argv);
+int test_scale_0006_rgba_rgb888(int argc, char **argv);
 int test_decoder_0001_decoder_parallel_split_after_newline(int argc,
                                                            char **argv);
 int test_decoder_0002_decoder_ormode_raw_overlay(int argc, char **argv);
@@ -516,6 +519,12 @@ static test_entry_t const test_entries[] = {
       test_scale_0002_parallel_min_bytes_environment },
     { "scale/0003_resample_allocation_failure",
       test_scale_0003_resample_alloc_failure },
+    { "scale/0004_g8_normalized_rgb888",
+      test_scale_0004_g8_rgb888 },
+    { "scale/0005_rgb565_normalized_rgb888",
+      test_scale_0005_rgb565_rgb888 },
+    { "scale/0006_rgba8888_normalized_rgb888",
+      test_scale_0006_rgba_rgb888 },
     { "decoder/0001_decoder_parallel_split_after_newline",
       test_decoder_0001_decoder_parallel_split_after_newline },
     { "decoder/0002_decoder_ormode_raw_overlay",
