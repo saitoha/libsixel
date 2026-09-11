@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/png.md
 # Verify builtin RGBA16 PNG keycolor is enabled by default.
 
 set -eux

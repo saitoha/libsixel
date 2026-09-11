@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/psd.md
 # Verify builtin PSD ICC conversion matches a fixed no-ICC PNM reference.
 
 set -eux

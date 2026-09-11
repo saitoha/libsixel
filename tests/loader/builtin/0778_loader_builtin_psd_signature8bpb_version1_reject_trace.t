@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/psd.md
 # Verify builtin PSD loader rejects 8BPB header with version=1 mismatch.
 # Fixture generation commands:
 #   cp tests/data/inputs/formats/stbi_minimal_version2_rgb_rle.psd \

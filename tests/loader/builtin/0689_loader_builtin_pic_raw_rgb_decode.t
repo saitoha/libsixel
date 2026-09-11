@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/pic.md
 # Verify builtin loader decodes PIC raw RGB data.
 
 set -eux

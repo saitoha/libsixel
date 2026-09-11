@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/jpeg.md
 # Verify builtin loader decodes 8-bit YCCK JPEG (sequential 4:4:4)
 # with stable quality against a fixed expected PNM reference.
 # Reference generation command (ImageMagick):

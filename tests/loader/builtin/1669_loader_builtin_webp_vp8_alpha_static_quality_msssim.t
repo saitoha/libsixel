@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/webp.md
 # TAP test confirming builtin VP8+ALPH quality against libwebp.
 # Fixture webp-vp8-alpha-snake64-alpha00.webp reuses the VP8 payload from
 # tests/data/inputs/snake_64.webp and adds an ALPHA chunk with control 0x00.

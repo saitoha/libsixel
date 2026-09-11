@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/netpbm.md
 # TAP wrapper for builtin PNM PPM8 fastpath numeric checks.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/jpeg.md
 # TAP test confirming builtin loader rejects corrupted JPEG streams.
 
 set -eux

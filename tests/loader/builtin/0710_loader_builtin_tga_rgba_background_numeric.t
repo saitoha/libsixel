@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/tga.md
 # Verify builtin TGA RGBA preserves alpha without a background and composites
 # all alpha against an explicit background.
 

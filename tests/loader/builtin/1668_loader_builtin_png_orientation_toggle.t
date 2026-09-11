@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/png.md
 # TAP test confirming builtin orientation toggle affects PNG eXIf decode.
 
 set -eux

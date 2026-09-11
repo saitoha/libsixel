@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/psd.md
 # Verify builtin loader maps PSD Multichannel(3ch) to RGB 16-bit ZIP+Prediction decode.
 # Fixture generation command:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

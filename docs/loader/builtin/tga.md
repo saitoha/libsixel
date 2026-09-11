@@ -71,6 +71,22 @@ Trailing data can therefore coexist with a successfully decoded raster, but it i
 
 The loader output is always eight-bit gamma RGB/PAL8 plus optional transparency state. Later resize, crop, colorspace conversion, palette initialization, and quantization are encoder stages.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin TGA loader. It follows the signature-less structural probe into an optional indexed-palette fast path or the adapted raw and packet-RLE raster decoder, vertical-origin normalization, and direct or palette alpha finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/tga.svg)
+
+TGA is the one map here whose first node is necessarily a weak probe. The indexed fast path and general `stbi__tga_load()` path are alternatives; their alpha behavior is not equivalent, so the pipeline preserves that fork instead of presenting a fictional universal RGBA intermediate.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `TGA-01` | `stbi__tga_test()` and `stbi__tga_info()` in [`stb_image.h`](../../../src/stb_image.h) | Residual input bytes → plausible TGA header model | Image type, colormap flag, depths, and positive dimensions must be mutually plausible, while strong-signature formats retain routing priority. |
+| `TGA-02` | `sixel_builtin_try_load_indexed_tga()` in [`loader-builtin.c`](../../../src/loader-builtin.c), calling `stbi__tga_load_palette()` | Indexed type with fusion enabled → `PAL8`, RGB palette, optional key | Only 8-bit indices and at most 256 entries qualify; multiple binary-transparent entries and partial alpha must be normalized as documented. |
+| `TGA-03` | `stbi__tga_load()` and `stbi__tga_read_rgb16()` in [`stb_image.h`](../../../src/stb_image.h) | Raw or packet-RLE source pixels → expanded RGB/RGBA bytes | Raw/run packets, palette indices, grayscale, 5:5:5, BGR, and BGRA component order must consume exactly the raster pixel count. |
+| `TGA-04` | Row-order branch inside `stbi__tga_load()` in [`stb_image.h`](../../../src/stb_image.h) | File-order decoded rows → canonical top-to-bottom rows | Bottom-origin rows must reverse exactly once; the unsupported right-to-left bit must not be documented as an implemented mirror. |
+| `TGA-05` | `sixel_builtin_apply_tga_truecolor_alpha_policy()` and `sixel_builtin_finalize_loaded_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Direct RGBA or palette transparency → gamma RGB/PAL8 plus mask/key or composite | Direct 32-bit alpha must reach common policy; alpha discarded by the general indexed fallback must not be claimed as recoverable. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 ```console
@@ -100,4 +116,22 @@ Weak recognition, dimensions, palette sizes, index values, and RLE commands are 
 - TGA predicate, indexed parser, and general decode: [`stb_image.h`](../../../src/stb_image.h)
 - Palette fusion, palette-alpha folding, direct-alpha selection, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Alpha/background contract: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
-- Regression coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| TGA-01 | A structurally valid type-2 direct-color TGA is recognized and meets the expected quality floor. | [tests/loader/builtin/0010_lsqa_format_tga_type2_rgb.t](../../../tests/loader/builtin/0010_lsqa_format_tga_type2_rgb.t) |
+| TGA-02 | An eligible indexed TGA selects the palette-preserving builtin path. | [tests/loader/builtin/0050_loader_builtin_palette_tga_path.t](../../../tests/loader/builtin/0050_loader_builtin_palette_tga_path.t) |
+| TGA-03 | A type-10 packet-RLE truecolor TGA expands to the expected image. | [tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t](../../../tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t) |
+| TGA-04 | A grayscale TGA with the fixture's declared origin reaches the canonical expected image. | [tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t](../../../tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t) |
+| TGA-05 | Direct BGRA alpha composites against an explicit background with the expected numeric result. | [tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t](../../../tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t) |
+
+### Defensive and malformed-input tests
+
+There is currently no dedicated owning test that isolates malformed TGA header collision, RLE overrun, or horizontal-origin rejection. The broad loader suite exercises successful TGA variants, but this remains an explicit coverage gap rather than evidence supplied by an unrelated format test.

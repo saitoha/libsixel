@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/jpeg.md
 # Verify builtin JPEG ICC conversion matches a fixed no-ICC PNM reference.
 
 set -eux

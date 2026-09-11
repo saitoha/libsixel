@@ -70,6 +70,23 @@ This delegation matters for precision and dialect support. A 16-bit embedded PNG
 
 Possible initial results include gamma `RGB888`, gamma `RGBA8888` before finalization, a configured typed CMS target, or any higher-precision representation returned by an embedded PNG/JPEG path. BMP does not preserve its source index plane as loader `PAL8` in the current dedicated path.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin BMP loader. It follows BMP and DIB probing into native raster, RLE or OS/2 compressed, and embedded JPEG or PNG branches, then calibrated or embedded-profile color conversion and explicit-alpha finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/bmp.svg)
+
+The compressed and nested-payload boxes are alternatives. Native BMP compression stays in `frombmp.c`; `BI_JPEG` and `BI_PNG` slice a child chunk and deliberately re-enter the JPEG/PNG decoders, so their precision, CMS, and alpha rules are inherited from the child format before BMP finalization resumes.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `BMP-01` | `sixel_frombmp_probe()` in [`frombmp-parser.c`](../../../src/frombmp-parser.c) and `sixel_bmp_parse_header()` in [`frombmp.c`](../../../src/frombmp.c) | File/DIB bytes → validated dialect, raster window, masks, palette, profile, and compression model | OS/2 versus Windows field namespaces, signed geometry, offsets, bpp/compression pairs, and `bmp_info40_mode` must be settled before payload dispatch. |
+| `BMP-02` | `sixel_frombmp_load()`, `sixel_bmp_decode_indexed_uncompressed()`, and `sixel_bmp_decode_truecolor()` in [`frombmp.c`](../../../src/frombmp.c) | Native palette/packed rows → RGB or RGBA canvas | Row stride/origin, palette bounds, bit masks, scaling, and explicit-versus-legacy alpha must produce canonical row-major pixels. |
+| `BMP-03` | `sixel_bmp_decode_rle8_rgb()`, `sixel_bmp_decode_rle4_rgb()`, `sixel_bmp_decode_huffman1d_rgb()`, and `sixel_bmp_decode_rle24_rgb()` in [`frombmp.c`](../../../src/frombmp.c) | Compressed native payload → RGB/CMYK canvas | Encoded/absolute runs, delta/EOL/EOB motion, OS/2 Huffman codes, top-down exclusions, and row/canvas bounds must be enforced by dialect. |
+| `BMP-04` | `sixel_builtin_load_nonpng_rgb8_fallback()` in [`loader-builtin.c`](../../../src/loader-builtin.c), calling `sixel_builtin_load_jpeg_frame()` or `sixel_frompng_load_nonindexed()` | Bounded BI_JPEG/BI_PNG child chunk → child-format typed pixels | Child data must not escape the BMP payload window; PNG/JPEG source depth, alpha, background, and CMS semantics must survive delegation. |
+| `BMP-05` | `sixel_builtin_apply_bmp_icc_to_rgba_channels()` and `sixel_builtin_apply_bmp_calibrated_to_rgba_channels()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Source RGB(A) plus V4/V5 metadata → transformed RGB(A) | Embedded ICC takes its documented precedence over calibrated endpoints/gamma, and color conversion must leave alpha unchanged. |
+| `BMP-06` | `sixel_builtin_apply_bmp_alpha_policy()` and `sixel_builtin_finalize_loaded_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Native or delegated pixels → one typed frame | Only implicit all-zero legacy alpha receives the opaque rescue; explicit alpha must be composited or converted to the frame transparency representation. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 ```console
@@ -100,4 +117,27 @@ BMP is not intrinsically simple: header-size dialects, signed dimensions, palett
 - Probe and payload boundary used by loader routing: [`frombmp-parser.c`](../../../src/frombmp-parser.c)
 - Nested JPEG/PNG, CMS, alpha, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Alpha/background semantics: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
-- Regression coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| BMP-01 | An OS/2 DIB is selected and decoded according to its RGB24 field namespace. | [tests/loader/builtin/1414_loader_builtin_bmp_os2_rgb24_decode_numeric.t](../../../tests/loader/builtin/1414_loader_builtin_bmp_os2_rgb24_decode_numeric.t) |
+| BMP-02 | Explicit RGBA without a background becomes the documented RGB-plus-mask frame. | [tests/loader/builtin/1332_loader_builtin_bmp_rgba_mask_no_bg_numeric.t](../../../tests/loader/builtin/1332_loader_builtin_bmp_rgba_mask_no_bg_numeric.t) |
+| BMP-03 | Mixed encoded, absolute, and control records reconstruct an RLE4 raster correctly. | [tests/loader/builtin/1345_loader_builtin_bmp_rle4_mixed_numeric.t](../../../tests/loader/builtin/1345_loader_builtin_bmp_rle4_mixed_numeric.t) |
+| BMP-04 | A 16-bit alpha-bearing BI_PNG child retains PNG CMS/background precision through the BMP wrapper. | [tests/loader/builtin/1456_loader_builtin_bmp_bi_png16_alpha_bgcolor_cms_on_numeric.t](../../../tests/loader/builtin/1456_loader_builtin_bmp_bi_png16_alpha_bgcolor_cms_on_numeric.t) |
+| BMP-05 | A V5 embedded RGB ICC profile transforms native BMP pixels when CMS is enabled. | [tests/loader/builtin/1372_loader_builtin_bmp_v5_embedded_icc_rgb_cms_on_numeric.t](../../../tests/loader/builtin/1372_loader_builtin_bmp_v5_embedded_icc_rgb_cms_on_numeric.t) |
+| BMP-06 | RGBA composition over an explicit background preserves the expected float color result. | [tests/loader/builtin/1331_loader_builtin_bmp_rgba_bgcolor_float32_numeric.t](../../../tests/loader/builtin/1331_loader_builtin_bmp_rgba_bgcolor_float32_numeric.t) |
+
+### Defensive and malformed-input tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| BMP-90 | Overlapping or otherwise invalid color masks are rejected during header/model validation. | [tests/loader/builtin/1360_loader_builtin_bmp_fail_invalid_color_masks_numeric.t](../../../tests/loader/builtin/1360_loader_builtin_bmp_fail_invalid_color_masks_numeric.t) |
+
+Coverage audit note: the owners cover one OS/2 dialect, native alpha, RLE4, nested PNG, V5 ICC, and mask rejection. RLE8, OS/2 Huffman1D, RLE24, CMYK families, nested JPEG, and the full DIB-size/bpp/compression matrix remain outside this primary reciprocal set and must not be inferred from the single `BMP-03` branch owner.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/psd.md
 # Verify builtin PSD grayscale 16-bit+alpha compositing responds to --bgcolor.
 # Fixture generation command:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

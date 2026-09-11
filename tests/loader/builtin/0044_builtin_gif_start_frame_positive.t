@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/gif.md
 # TAP test: builtin GIF start frame accepts positive indexes.
 
 set -eux

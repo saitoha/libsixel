@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/bmp.md
 # TAP wrapper for builtin BMP RGBA bgcolor float32 numeric checks.
 
 set -eux

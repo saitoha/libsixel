@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/gif.md
 # TAP test: disposal-heavy GIF decode completes within watchdog window.
 
 set -eux

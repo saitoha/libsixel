@@ -55,6 +55,23 @@ The encoder implicitly requests float loader data when resizing is active, its w
 
 Float output prevents an avoidable byte rounding between JPEG component conversion, resize, and later color transforms. It cannot restore information already discarded by lossy quantization or chroma subsampling.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin JPEG loader. It follows SOI routing and byte-versus-float planning into marker parsing, sequential, progressive, or lossless entropy decode, component and colorspace conversion, ICC application, and orientation-aware typed-frame output. Every node carries a coverage ID used by the tables below.](pipeline-figures/jpeg.svg)
+
+The byte and float paths share marker and entropy machinery but diverge before component conversion. In particular, high-depth/lossless samples enter `load_jpeg_image_float_high_precision()`; documenting only the final `RGB` label would hide the precision boundary that resize and CMS tests depend on.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `JPG-01` | `sixel_builtin_load_jpeg_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | SOI chunk plus encoder/CMS precision request → byte or float JPEG API | The fast byte API is legal only for eligible eight-bit DCT input when no downstream condition requests float. |
+| `JPG-02` | `stbi__decode_jpeg_header()`, `stbi__process_marker()`, and `stbi__process_scan_header()` in [`stb_image.h`](../../../src/stb_image.h) | Marker segments → frame/components, tables, restart state, and scan plan | SOF precision/process, DQT/DHT, Adobe/JFIF hints, and unsupported arithmetic coding must be classified before entropy output is trusted. |
+| `JPG-03` | `stbi__parse_entropy_coded_data()` or `stbi__parse_entropy_coded_data_lossless()` in [`stb_image.h`](../../../src/stb_image.h) | Entropy bits → DCT coefficients or predicted source samples | Sequential/progressive coefficient updates, restart handling, lossless predictors, and 9–16-bit sample ranges must remain distinct. |
+| `JPG-04` | `load_jpeg_image_float_high_precision()` and `stbi__YCbCr_to_RGB_row_f32()` in [`stb_image.h`](../../../src/stb_image.h) | Component planes → normalized gamma RGB float | Chroma upsampling and Gray/RGB/YCbCr/CMYK/YCCK interpretation must preserve the selected precision and Adobe transform semantics. |
+| `JPG-05` | `sixel_builtin_extract_jpeg_icc()` and `sixel_cms_convert_profile_to_srgb()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | APP2 fragments plus float RGB → profile-converted RGB | ICC fragments must be assembled in sequence; only an applicable RGB profile may transform the already decoded RGB samples. |
+| `JPG-06` | `sixel_builtin_finalize_loaded_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Gamma `RGB888`/`RGBFLOAT32` plus Exif → one oriented frame | Orientation may change dimensions/pixel order, while JPEG still has no alpha/background stage or animation callback. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 ```console
@@ -84,4 +101,27 @@ JPEG entropy decode and high-depth prediction operate on attacker-controlled sym
 - Entropy, DCT/progressive/lossless decode and component conversion: [`stb_image.h`](../../../src/stb_image.h)
 - Precision selection, ICC assembly, orientation, and frame creation: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Loader color contract: [Color Spaces and Loader Color Management](../../concepts/colorspace.md)
-- JPEG regression and malformed-input coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning JPEG regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| JPG-01 | An eligible eight-bit sequential RGB image decodes through the builtin path with the expected visual floor. | [tests/loader/builtin/0119_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t](../../../tests/loader/builtin/0119_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t) |
+| JPG-03 | A 16-bit lossless RGB JPEG decodes without forcing source samples through an eight-bit boundary. | [tests/loader/builtin/0116_loader_builtin_jpeg_rgb_16bit_lossless_r0_decode.t](../../../tests/loader/builtin/0116_loader_builtin_jpeg_rgb_16bit_lossless_r0_decode.t) |
+| JPG-04 | Adobe YCCK component interpretation produces the expected RGB image. | [tests/loader/builtin/0123_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t](../../../tests/loader/builtin/0123_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t) |
+| JPG-05 | An embedded RGB ICC profile produces the same converted result as the reference PNM. | [tests/loader/builtin/0056_builtin_jpeg_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0056_builtin_jpeg_embedded_icc_matches_reference_pnm.t) |
+| JPG-06 | The orientation option controls APP1 Exif geometry/pixel transformation. | [tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t](../../../tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t) |
+
+### Defensive and malformed-input tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| JPG-02 | Arithmetic-coded JPEG is classified as unsupported and rejected before entropy decode. | [tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t](../../../tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t) |
+| JPG-90 | A corrupt JPEG stream fails the builtin decoder rather than yielding a partial frame. | [tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t](../../../tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t) |
+
+Coverage audit note: the owning rows cover sequential byte output, high-depth lossless float output, YCCK, ICC, orientation, and two failure classes. Progressive scans, sampling-factor combinations, restart-marker placement, and the full Gray/RGB/YCbCr/CMYK/YCCK × precision matrix have additional regression cases but are not exhaustively owned by this page.

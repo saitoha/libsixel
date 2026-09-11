@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1626" viewBox="0 0 960 1626" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">Builtin PSD and PSB pipeline</title>
+<desc id="figure-description">Container validation, planar codecs, color modes, layer fallback. A vertical sequence of implementation stages names source modules, function anchors, invariants, and coverage identifiers that link to the document test audit.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="960.0" height="1626.0" fill="#F8FAFC" stroke="none"/>
+<text x="42.0" y="58.0" fill="#172033" font-size="36" font-weight="820" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Builtin PSD and PSB pipeline</text>
+<text x="42.0" y="92.0" fill="#556176" font-size="18" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Container validation, planar codecs, color modes, layer fallback</text>
+<text x="918.0" y="58.0" fill="#2563EB" font-size="14" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="end">IMPLEMENTATION MAP</text>
+<rect x="42.0" y="158.0" width="876.0" height="184.0" rx="16.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#card-shadow)"/>
+<rect x="42.0" y="158.0" width="9.0" height="184.0" rx="4.5" fill="#6941C6" stroke="none"/>
+<rect x="67.0" y="180.0" width="105.0" height="30.0" rx="15.0" fill="#F4EBFF" stroke="#6941C6" stroke-width="1.2"/>
+<text x="119.5" y="201.0" fill="#6941C6" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">PSD-01</text>
+<text x="190.0" y="201.0" fill="#556176" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">HEADER</text>
+<text x="67.0" y="237.0" fill="#172033" font-size="21" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Parse PSD/PSB document structure</text>
+<text x="67.0" y="265.0" fill="#6941C6" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_parse_psd_info()  -&gt;  sixel_builtin_validate_psd_info()</text>
+<text x="67.0" y="300.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">validate 8BPS version, depth, mode and section lengths</text><text x="67.0" y="318.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">locate resources, composite and layer/mask windows</text>
+<text x="893.0" y="201.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="end">src/frompsd-header.c</text>
+<path d="M 480 342 V 376" fill="none" stroke="#6941C6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<rect x="42.0" y="388.0" width="876.0" height="184.0" rx="16.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#card-shadow)"/>
+<rect x="42.0" y="388.0" width="9.0" height="184.0" rx="4.5" fill="#D97706" stroke="none"/>
+<rect x="67.0" y="410.0" width="105.0" height="30.0" rx="15.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="119.5" y="431.0" fill="#D97706" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">PSD-02</text>
+<text x="190.0" y="431.0" fill="#556176" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">PLANES</text>
+<text x="67.0" y="467.0" fill="#172033" font-size="21" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Decode composite channel payloads</text>
+<text x="67.0" y="495.0" fill="#D97706" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_decode_psd_8bit_channel()  -&gt;  sixel_builtin_decode_psd_16bit_channel()</text><text x="67.0" y="513.0" fill="#D97706" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_decode_psd_32bit_channel()</text>
+<text x="67.0" y="548.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">select raw, PackBits RLE, ZIP or ZIP prediction</text><text x="67.0" y="566.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">retain native precision in planar working buffers</text>
+<text x="893.0" y="431.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="end">src/frompsd.c</text>
+<path d="M 480 572 V 606" fill="none" stroke="#D97706" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<rect x="42.0" y="618.0" width="876.0" height="184.0" rx="16.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#card-shadow)"/>
+<rect x="42.0" y="618.0" width="9.0" height="184.0" rx="4.5" fill="#6941C6" stroke="none"/>
+<rect x="67.0" y="640.0" width="105.0" height="30.0" rx="15.0" fill="#F4EBFF" stroke="#6941C6" stroke-width="1.2"/>
+<text x="119.5" y="661.0" fill="#6941C6" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">PSD-03</text>
+<text x="190.0" y="661.0" fill="#556176" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">COLOR</text>
+<text x="67.0" y="697.0" fill="#172033" font-size="21" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Interpret bitmap, Gray, Indexed, RGB, CMYK or Lab</text>
+<text x="67.0" y="725.0" fill="#6941C6" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_psd_lookup_basic_decode_fn()</text><text x="67.0" y="743.0" fill="#6941C6" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_psd_decode_cmyk_by_mode()</text>
+<text x="67.0" y="778.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">dispatch mode/depth-specific conversion</text><text x="67.0" y="796.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">produce RGB, linear RGB or CIELAB typed pixels</text>
+<text x="893.0" y="661.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="end">src/loader-builtin.c</text>
+<path d="M 480 802 V 836" fill="none" stroke="#6941C6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<rect x="42.0" y="848.0" width="876.0" height="184.0" rx="16.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#card-shadow)"/>
+<rect x="42.0" y="848.0" width="9.0" height="184.0" rx="4.5" fill="#BE185D" stroke="none"/>
+<rect x="67.0" y="870.0" width="105.0" height="30.0" rx="15.0" fill="#FCE7F3" stroke="#BE185D" stroke-width="1.2"/>
+<text x="119.5" y="891.0" fill="#BE185D" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">PSD-04</text>
+<text x="190.0" y="891.0" fill="#556176" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">FALLBACK</text>
+<text x="67.0" y="927.0" fill="#172033" font-size="21" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Reconstruct a missing composite from layers</text>
+<text x="67.0" y="955.0" fill="#BE185D" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_decode_psd_multilayer_missing_composite()</text><text x="67.0" y="973.0" fill="#BE185D" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_psd_composite_layer_over()</text>
+<text x="67.0" y="1008.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">decode layer channels, masks, fills and supported effects</text><text x="67.0" y="1026.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">blend visible layers into a linear canvas</text>
+<text x="893.0" y="891.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="end">src/frompsd.c</text>
+<path d="M 480 1032 V 1066" fill="none" stroke="#BE185D" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<rect x="42.0" y="1078.0" width="876.0" height="184.0" rx="16.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#card-shadow)"/>
+<rect x="42.0" y="1078.0" width="9.0" height="184.0" rx="4.5" fill="#6941C6" stroke="none"/>
+<rect x="67.0" y="1100.0" width="105.0" height="30.0" rx="15.0" fill="#F4EBFF" stroke="#6941C6" stroke-width="1.2"/>
+<text x="119.5" y="1121.0" fill="#6941C6" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">PSD-05</text>
+<text x="190.0" y="1121.0" fill="#556176" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">PROFILE</text>
+<text x="67.0" y="1157.0" fill="#172033" font-size="21" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Apply embedded ICC where applicable</text>
+<text x="67.0" y="1185.0" fill="#6941C6" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_psd_apply_embedded_icc()</text>
+<text x="67.0" y="1220.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">match profile colorspace to decoded mode</text><text x="67.0" y="1238.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">preserve explicit fallback when conversion is unavailable</text>
+<text x="893.0" y="1121.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="end">src/loader-builtin.c</text>
+<path d="M 480 1262 V 1296" fill="none" stroke="#6941C6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<rect x="42.0" y="1308.0" width="876.0" height="184.0" rx="16.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#card-shadow)"/>
+<rect x="42.0" y="1308.0" width="9.0" height="184.0" rx="4.5" fill="#0F766E" stroke="none"/>
+<rect x="67.0" y="1330.0" width="105.0" height="30.0" rx="15.0" fill="#CCFBF1" stroke="#0F766E" stroke-width="1.2"/>
+<text x="119.5" y="1351.0" fill="#0F766E" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">PSD-06</text>
+<text x="190.0" y="1351.0" fill="#556176" font-size="13" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">OUTPUT</text>
+<text x="67.0" y="1387.0" fill="#172033" font-size="21" font-weight="780" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Finalize alpha/mask and typed frame</text>
+<text x="67.0" y="1415.0" fill="#0F766E" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">sixel_builtin_load_psd_single_frame()  -&gt;  sixel_builtin_finalize_loaded_frame()</text>
+<text x="67.0" y="1450.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">attach pixel buffer, colorspace and transparent mask</text><text x="67.0" y="1468.0" fill="#556176" font-size="13" font-weight="450" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">apply common orientation/alpha policy and emit once</text>
+<text x="893.0" y="1351.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="end">src/loader-builtin.c</text>
+<text x="42.0" y="1587.0" fill="#556176" font-size="14" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Coverage IDs join this diagram to the audit table and owning tests in the format document.</text>
+</svg>

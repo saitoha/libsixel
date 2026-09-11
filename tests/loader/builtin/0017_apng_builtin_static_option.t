@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/png.md
 # TAP test: APNG supports static render option.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/webp.md
 # TAP test confirming builtin VP8L transform subimages use subsampled height.
 
 set -eux

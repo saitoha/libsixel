@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/sixel.md
 # Policy: docs/functionality/decoding-pipeline.md
 # Verify failed parallel decode leaves the serial fallback image clean.
 

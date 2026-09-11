@@ -85,6 +85,23 @@ Unknown additional-layer keys and unsupported descriptor classes are skipped aft
 
 Depending on mode and depth, the initial frame can be gamma `RGB888`, `RGBFLOAT32`, `LINEARRGBFLOAT32`, or `CIELABFLOAT32`, followed by a configured typed target after successful CMS. Even an alpha-bearing document is conceptually three color components plus transparency state at the stable boundary, not an unconditional four-component RGBA image.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin PSD and PSB loader. It follows document-header and section validation into native-depth planar decompression, color-mode dispatch, the guarded missing-composite layer fallback, embedded ICC conversion, and alpha or mask aware typed-frame finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/psd.svg)
+
+The composite and layer-reconstruction routes converge only after they have independently decoded native-depth channels and interpreted the document color mode. The layer fallback box represents a substantial subgraph—records, masks, fills, supported effects, clipping, blend, and deferred effects—not a call to a general Photoshop renderer. The table names the stable top-level anchors from which those format-specific helpers can be followed.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `PSD-01` | `sixel_builtin_parse_psd_info()` and `sixel_builtin_validate_psd_info()` in [`frompsd-header.c`](../../../src/frompsd-header.c) | PSD/PSB bytes → validated section windows and document model | Version-dependent lengths, dimensions, depth/mode/channel count, resources, composite bounds, and layer-fallback eligibility must be checked before decode. |
+| `PSD-02` | `sixel_builtin_decode_psd_8bit_channel()`, `sixel_builtin_decode_psd_16bit_channel()`, and `sixel_builtin_decode_psd_32bit_channel()` in [`frompsd.c`](../../../src/frompsd.c) | Raw/RLE/ZIP/predicted-ZIP planes → native-precision component buffers | Row tables, PackBits runs, inflate size, prediction reversal, and endian float/sample conversion must agree for PSD and PSB. |
+| `PSD-03` | `sixel_builtin_psd_lookup_basic_decode_fn()` and `sixel_builtin_psd_decode_cmyk_by_mode()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Mode/depth-specific component planes → RGB, linear RGB, or CIELAB pixels | Bitmap, Gray/Duotone, Indexed, RGB, CMYK/Multichannel, and Lab must retain the documented precision and fallback semantics. |
+| `PSD-04` | `sixel_builtin_decode_psd_multilayer_missing_composite()` and `sixel_builtin_psd_composite_layer_over()` in [`frompsd.c`](../../../src/frompsd.c) | Layer/mask/resource graph → reconstructed linear canvas | Only supported pixel/fill/effect semantics may enter the compositor; ordering, clipping, masks, alpha, blend, and deferred effects must remain explicit. |
+| `PSD-05` | `sixel_builtin_psd_apply_embedded_icc()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Applicable resource ICC plus decoded mode components → configured target color | Profile colorspace must match the source model; conversion must occur before CMYK/Lab components are irreversibly collapsed to fallback RGB. |
+| `PSD-06` | `sixel_builtin_load_psd_single_frame()` and `sixel_builtin_finalize_loaded_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Decoded pixels plus alpha/mask → one typed frame | Pixel storage kind, colorspace, background composition, separate transparency mask, and ownership must match the selected decode/CMS route. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 ```console
@@ -119,4 +136,27 @@ PSD/PSB is the builtin family's broadest attacker-controlled object graph: neste
 - Stable diagnostic buffering and codes: [`frompsd-trace.c`](../../../src/frompsd-trace.c)
 - Builtin routing, CMS handoff, alpha, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Alpha and typed-frame concepts: [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md) and [Alpha Policy](../alpha-policy.md)
-- Regression coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| PSD-02 | A 16-bit Multichannel/RGB-mode composite reverses ZIP prediction and preserves the expected image. | [tests/loader/builtin/0597_loader_builtin_psd_mode7_rgb16_zip_pred_decode.t](../../../tests/loader/builtin/0597_loader_builtin_psd_mode7_rgb16_zip_pred_decode.t) |
+| PSD-03 | A 32-bit mode-7 RGB document passes RLE plane decode and the mode/depth color dispatcher. | [tests/loader/builtin/0580_loader_builtin_psd_mode7_rgb32_rle_decode.t](../../../tests/loader/builtin/0580_loader_builtin_psd_mode7_rgb32_rle_decode.t) |
+| PSD-04 | A missing merged composite is reconstructed from offset RGB8 layers with normal blend. | [tests/loader/builtin/0647_loader_builtin_psd_missing_composite_rgb8_multilayer_normal_decode.t](../../../tests/loader/builtin/0647_loader_builtin_psd_missing_composite_rgb8_multilayer_normal_decode.t) |
+| PSD-05 | An embedded PSD ICC profile produces the same converted result as the reference PNM. | [tests/loader/builtin/0057_builtin_psd_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0057_builtin_psd_embedded_icc_matches_reference_pnm.t) |
+| PSD-06 | A 16-bit Gray/Duotone alpha document composites differently over black and white backgrounds. | [tests/loader/builtin/0173_loader_builtin_psd_gray_duotone_16bit_alpha_bgcolor_composite.t](../../../tests/loader/builtin/0173_loader_builtin_psd_gray_duotone_16bit_alpha_bgcolor_composite.t) |
+
+### Defensive and malformed-input tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| PSD-01 | A document whose mode/depth contract has the wrong channel count is rejected by structural validation. | [tests/loader/builtin/0177_loader_builtin_psd_spec_wrong_channel_count_reject.t](../../../tests/loader/builtin/0177_loader_builtin_psd_spec_wrong_channel_count_reject.t) |
+| PSD-90 | A signature/version mismatch between PSD and PSB is rejected rather than changing length-field interpretation. | [tests/loader/builtin/0778_loader_builtin_psd_signature8bpb_version1_reject_trace.t](../../../tests/loader/builtin/0778_loader_builtin_psd_signature8bpb_version1_reject_trace.t) |
+
+Coverage audit note: these owners sample structure, two native-depth compression paths, one mode conversion, one layer reconstruction, ICC, and alpha. They do not imply a complete mode × depth × compression × PSD/PSB matrix or exhaustive coverage of masks, fills, text, vector data, blend modes, and supported effects; those claims must be traced to narrower cases in the broader suite.

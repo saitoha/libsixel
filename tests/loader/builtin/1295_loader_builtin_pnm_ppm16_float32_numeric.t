@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/netpbm.md
 # TAP wrapper for builtin PNM PPM16 float32 numeric checks.
 
 set -eux

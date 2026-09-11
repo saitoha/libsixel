@@ -1,0 +1,1205 @@
+{
+  "color_roles": {
+    "conditional_branch": "#BE185D",
+    "container_and_policy_parsing": "#6941C6",
+    "coverage_gap_or_error": "#B42318",
+    "raster_or_entropy_decode": "#D97706",
+    "routing": "#2563EB",
+    "typed_frame_output": "#0F766E"
+  },
+  "formats": {
+    "bmp": {
+      "asset": "bmp.svg",
+      "document": "docs/loader/builtin/bmp.md",
+      "stages": [
+        {
+          "coverage_id": "BMP-01",
+          "details": [
+            "distinguish OS/2 and Windows structures",
+            "validate offsets, masks, palette and compression tuple"
+          ],
+          "phase": "HEADER",
+          "role": "parse",
+          "source": "src/frombmp-parser.c",
+          "symbols": [
+            "sixel_frombmp_probe",
+            "sixel_bmp_parse_header"
+          ],
+          "title": "Probe file header and DIB dialect"
+        },
+        {
+          "coverage_id": "BMP-02",
+          "details": [
+            "expand palette or bitfields with row padding/origin",
+            "preserve explicit alpha when present"
+          ],
+          "phase": "RASTER",
+          "role": "decode",
+          "source": "src/frombmp.c",
+          "symbols": [
+            "sixel_frombmp_load",
+            "sixel_bmp_decode_indexed_uncompressed",
+            "sixel_bmp_decode_truecolor"
+          ],
+          "title": "Decode native BMP pixels"
+        },
+        {
+          "coverage_id": "BMP-03",
+          "details": [
+            "interpret encoded/absolute/control records",
+            "reject top-down or overrun combinations that are invalid"
+          ],
+          "phase": "COMPRESSED",
+          "role": "branch",
+          "source": "src/frombmp.c",
+          "symbols": [
+            "sixel_bmp_decode_rle8_rgb",
+            "sixel_bmp_decode_rle4_rgb",
+            "sixel_bmp_decode_huffman1d_rgb",
+            "sixel_bmp_decode_rle24_rgb"
+          ],
+          "title": "Dispatch RLE and OS/2 compressed dialects"
+        },
+        {
+          "coverage_id": "BMP-04",
+          "details": [
+            "slice the embedded payload from the parent BMP",
+            "reuse JPEG/PNG precision, CMS and alpha paths"
+          ],
+          "phase": "NESTED",
+          "role": "branch",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_load_nonpng_rgb8_fallback",
+            "sixel_builtin_load_jpeg_frame",
+            "sixel_frompng_load_nonindexed"
+          ],
+          "title": "Decode BI_JPEG or BI_PNG payload"
+        },
+        {
+          "coverage_id": "BMP-05",
+          "details": [
+            "choose embedded ICC before calibrated endpoints",
+            "convert RGB channels while retaining alpha"
+          ],
+          "phase": "COLOR",
+          "role": "color",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_apply_bmp_icc_to_rgba_channels",
+            "sixel_builtin_apply_bmp_calibrated_to_rgba_channels"
+          ],
+          "title": "Apply V4/V5 calibrated or embedded profile"
+        },
+        {
+          "coverage_id": "BMP-06",
+          "details": [
+            "rescue all-zero implicit alpha only where permitted",
+            "composite or create transparency mask, then emit"
+          ],
+          "phase": "OUTPUT",
+          "role": "output",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_apply_bmp_alpha_policy",
+            "sixel_builtin_finalize_loaded_frame"
+          ],
+          "title": "Normalize legacy alpha and emit typed frame"
+        }
+      ],
+      "tests": {
+        "BMP-01": [
+          "tests/loader/builtin/1414_loader_builtin_bmp_os2_rgb24_decode_numeric.t"
+        ],
+        "BMP-02": [
+          "tests/loader/builtin/1332_loader_builtin_bmp_rgba_mask_no_bg_numeric.t"
+        ],
+        "BMP-03": [
+          "tests/loader/builtin/1345_loader_builtin_bmp_rle4_mixed_numeric.t"
+        ],
+        "BMP-04": [
+          "tests/loader/builtin/1456_loader_builtin_bmp_bi_png16_alpha_bgcolor_cms_on_numeric.t"
+        ],
+        "BMP-05": [
+          "tests/loader/builtin/1372_loader_builtin_bmp_v5_embedded_icc_rgb_cms_on_numeric.t"
+        ],
+        "BMP-06": [
+          "tests/loader/builtin/1331_loader_builtin_bmp_rgba_bgcolor_float32_numeric.t"
+        ]
+      }
+    },
+    "gif": {
+      "asset": "gif.svg",
+      "document": "docs/loader/builtin/gif.md",
+      "stages": [
+        {
+          "coverage_id": "GIF-01",
+          "details": [
+            "initialize callback-owned frame finalization",
+            "pass start-frame and loop controls to fromgif"
+          ],
+          "phase": "ROUTE",
+          "role": "route",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_load_gif_frames"
+          ],
+          "title": "Recognize GIF87a or GIF89a"
+        },
+        {
+          "coverage_id": "GIF-02",
+          "details": [
+            "resolve global/local tables, GCE, NETSCAPE loop data",
+            "ignore structurally valid unknown extensions"
+          ],
+          "phase": "SCAN",
+          "role": "parse",
+          "source": "src/fromgif.c",
+          "symbols": [
+            "gif_load_header",
+            "gif_scan_stream_info",
+            "gif_skip_subblocks"
+          ],
+          "title": "Read logical screen and extensions"
+        },
+        {
+          "coverage_id": "GIF-03",
+          "details": [
+            "expand clear/end codes and interlaced row order",
+            "normalize transparent index and dirty regions"
+          ],
+          "phase": "LZW",
+          "role": "decode",
+          "source": "src/fromgif.c",
+          "symbols": [
+            "gif_process_raster",
+            "gif_out_code"
+          ],
+          "title": "Decode image raster into frame indices"
+        },
+        {
+          "coverage_id": "GIF-04",
+          "details": [
+            "compose over persistent canvas",
+            "restore background or saved previous pixels"
+          ],
+          "phase": "COMPOSE",
+          "role": "branch",
+          "source": "src/fromgif.c",
+          "symbols": [
+            "gif_decode_one_frame",
+            "gif_history_mark",
+            "gif_reset_canvas_for_loop"
+          ],
+          "title": "Apply frame rectangle and disposal"
+        },
+        {
+          "coverage_id": "GIF-05",
+          "details": [
+            "honor start-frame and loop policy",
+            "emit PAL8 when stable or RGB/mask when composition requires"
+          ],
+          "phase": "EMIT",
+          "role": "output",
+          "source": "src/fromgif.c",
+          "symbols": [
+            "gif_should_emit_decoded_frame",
+            "gif_export_pal8_frame",
+            "gif_export_nonpal_frame"
+          ],
+          "title": "Select frame, loop and output form"
+        }
+      ],
+      "tests": {
+        "GIF-01": [
+          "tests/loader/builtin/0044_builtin_gif_start_frame_positive.t"
+        ],
+        "GIF-02": [
+          "tests/loader/builtin/0261_loader_builtin_gif_unknown_extension_ignored.t"
+        ],
+        "GIF-03": [
+          "tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t"
+        ],
+        "GIF-04": [
+          "tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t"
+        ],
+        "GIF-05": [
+          "tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t"
+        ]
+      }
+    },
+    "hdr": {
+      "asset": "hdr.svg",
+      "document": "docs/loader/builtin/hdr.md",
+      "stages": [
+        {
+          "coverage_id": "HDR-01",
+          "details": [
+            "accept #?RADIANCE or #?RGBE headers",
+            "collect FORMAT, GAMMA, PRIMARIES and exposure hints"
+          ],
+          "phase": "ROUTE",
+          "role": "route",
+          "source": "src/fromhdr.c",
+          "symbols": [
+            "sixel_builtin_load_hdr_frame",
+            "sixel_builtin_parse_hdr_profile_hint"
+          ],
+          "title": "Recognize Radiance signature and format"
+        },
+        {
+          "coverage_id": "HDR-02",
+          "details": [
+            "validate axis order, signs, dimensions and scan geometry",
+            "map file scan positions into canonical rows and columns"
+          ],
+          "phase": "GEOMETRY",
+          "role": "parse",
+          "source": "src/fromhdr.c",
+          "symbols": [
+            "sixel_builtin_hdr_parse_resolution_line",
+            "sixel_builtin_hdr_map_scan_position"
+          ],
+          "title": "Parse resolution and orientation"
+        },
+        {
+          "coverage_id": "HDR-03",
+          "details": [
+            "reconstruct four exponent-coded channels",
+            "validate run counts, truncation and scanline width"
+          ],
+          "phase": "SCANLINES",
+          "role": "decode",
+          "source": "src/fromhdr.c",
+          "symbols": [
+            "sixel_builtin_hdr_decode_new_rle_scanline",
+            "sixel_builtin_hdr_decode_old_scanline",
+            "sixel_builtin_hdr_decode_legacy_stream"
+          ],
+          "title": "Decode new RLE, old RLE or legacy stream"
+        },
+        {
+          "coverage_id": "HDR-04",
+          "details": [
+            "restore shared exponent magnitude",
+            "convert XYZE through the built-in XYZ matrix"
+          ],
+          "phase": "LINEARIZE",
+          "role": "color",
+          "source": "src/fromhdr.c",
+          "symbols": [
+            "sixel_builtin_hdr_rgbe_to_float",
+            "sixel_builtin_hdr_xyz_to_linearrgb"
+          ],
+          "title": "Convert RGBE or XYZE to linear RGB float"
+        },
+        {
+          "coverage_id": "HDR-05",
+          "details": [
+            "use PRIMARIES/GAMMA or fallback profile",
+            "combine header exposure, EV and tone mapping"
+          ],
+          "phase": "POST",
+          "role": "color",
+          "source": "src/fromhdr.c",
+          "symbols": [
+            "sixel_builtin_hdr_apply_source_profile",
+            "sixel_builtin_hdr_apply_dynamic_range",
+            "sixel_builtin_hdr_apply_postprocess"
+          ],
+          "title": "Apply source profile and dynamic range policy"
+        },
+        {
+          "coverage_id": "HDR-06",
+          "details": [
+            "start as LINEARRGBFLOAT32",
+            "CMS target may convert frame precision/colorspace"
+          ],
+          "phase": "OUTPUT",
+          "role": "output",
+          "source": "src/fromhdr.c",
+          "symbols": [
+            "sixel_builtin_hdr_assign_decoded_frame"
+          ],
+          "title": "Assign typed frame and optional target conversion"
+        }
+      ],
+      "tests": {
+        "HDR-01": [
+          "tests/loader/builtin/0278_loader_builtin_hdr_cms_header_priority_numeric.t"
+        ],
+        "HDR-02": [
+          "tests/loader/builtin/0671_loader_builtin_hdr_orientation_all_numeric.t"
+        ],
+        "HDR-03": [
+          "tests/loader/builtin/0670_loader_builtin_hdr_xyze_numeric.t"
+        ],
+        "HDR-04": [
+          "tests/loader/builtin/0308_loader_builtin_hdr_numeric_target_linear_gamma_none_primaries_none_ev_0_tonemap_none_cms_none_fallback_linear_srgb.t"
+        ],
+        "HDR-05": [
+          "tests/loader/builtin/0534_loader_builtin_hdr_header_exposure_multi_numeric.t"
+        ],
+        "HDR-06": [
+          "tests/loader/builtin/0276_loader_builtin_hdr_cms_target_din99d.t"
+        ]
+      }
+    },
+    "jpeg": {
+      "asset": "jpeg.svg",
+      "document": "docs/loader/builtin/jpeg.md",
+      "stages": [
+        {
+          "coverage_id": "JPG-01",
+          "details": [
+            "inspect precision/CMS policy before choosing an API",
+            "use byte fast path only when it preserves the contract"
+          ],
+          "phase": "ROUTE",
+          "role": "route",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_load_jpeg_frame"
+          ],
+          "title": "Recognize SOI and select JPEG loader"
+        },
+        {
+          "coverage_id": "JPG-02",
+          "details": [
+            "build quantization and Huffman state",
+            "reject unsupported arithmetic coding"
+          ],
+          "phase": "MARKERS",
+          "role": "parse",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "stbi__decode_jpeg_header",
+            "stbi__process_marker",
+            "stbi__process_scan_header"
+          ],
+          "title": "Parse frame, tables and scans"
+        },
+        {
+          "coverage_id": "JPG-03",
+          "details": [
+            "inverse-DCT coefficient paths or lossless predictors",
+            "retain 9-16 bit samples for float output"
+          ],
+          "phase": "ENTROPY",
+          "role": "decode",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "stbi__parse_entropy_coded_data",
+            "stbi__parse_entropy_coded_data_lossless"
+          ],
+          "title": "Decode sequential/progressive/lossless data"
+        },
+        {
+          "coverage_id": "JPG-04",
+          "details": [
+            "handle Gray, RGB, YCbCr, CMYK and YCCK conventions",
+            "produce gamma RGB bytes or normalized float RGB"
+          ],
+          "phase": "COLOR",
+          "role": "color",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "load_jpeg_image_float_high_precision",
+            "stbi__YCbCr_to_RGB_row_f32"
+          ],
+          "title": "Upsample and interpret component model"
+        },
+        {
+          "coverage_id": "JPG-05",
+          "details": [
+            "assemble APP2 ICC fragments",
+            "transform float RGB; skip non-RGB profiles"
+          ],
+          "phase": "PROFILE",
+          "role": "color",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_extract_jpeg_icc",
+            "sixel_cms_convert_profile_to_srgb"
+          ],
+          "title": "Apply embedded RGB ICC when enabled"
+        },
+        {
+          "coverage_id": "JPG-06",
+          "details": [
+            "optionally apply Exif orientation in common finalization",
+            "emit RGB888 or RGBFLOAT32 with gamma colorspace"
+          ],
+          "phase": "OUTPUT",
+          "role": "output",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_finalize_loaded_frame"
+          ],
+          "title": "Apply orientation and deliver one frame"
+        }
+      ],
+      "tests": {
+        "JPG-01": [
+          "tests/loader/builtin/0119_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t"
+        ],
+        "JPG-02": [
+          "tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t"
+        ],
+        "JPG-03": [
+          "tests/loader/builtin/0116_loader_builtin_jpeg_rgb_16bit_lossless_r0_decode.t"
+        ],
+        "JPG-04": [
+          "tests/loader/builtin/0123_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t"
+        ],
+        "JPG-05": [
+          "tests/loader/builtin/0056_builtin_jpeg_embedded_icc_matches_reference_pnm.t"
+        ],
+        "JPG-06": [
+          "tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t"
+        ]
+      }
+    },
+    "netpbm": {
+      "asset": "netpbm.svg",
+      "document": "docs/loader/builtin/netpbm.md",
+      "stages": [
+        {
+          "coverage_id": "PNM-01",
+          "details": [
+            "require magic plus following whitespace",
+            "route the complete chunk to load_pnm"
+          ],
+          "phase": "ROUTE",
+          "role": "route",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_detect_decode_path"
+          ],
+          "title": "Recognize P1 through P7"
+        },
+        {
+          "coverage_id": "PNM-02",
+          "details": [
+            "select ASCII/binary reader, depth, alpha and MAXVAL",
+            "apply strict or compatibility header policy"
+          ],
+          "phase": "HEADER",
+          "role": "parse",
+          "source": "src/frompnm.c",
+          "symbols": [
+            "pnm_parse_header",
+            "pnm_parse_tuple_type",
+            "pnm_validate_header_limits"
+          ],
+          "title": "Parse grammar and tuple model"
+        },
+        {
+          "coverage_id": "PNM-03",
+          "details": [
+            "PBM inversion, gray replication and MAXVAL normalization",
+            "reject malformed samples, truncation and trailing data"
+          ],
+          "phase": "SAMPLES",
+          "role": "decode",
+          "source": "src/frompnm.c",
+          "symbols": [
+            "pnm_reader_read_sample",
+            "pnm_validate_sample",
+            "pnm_validate_raster_tail"
+          ],
+          "title": "Decode and validate raster samples"
+        },
+        {
+          "coverage_id": "PNM-04",
+          "details": [
+            "MAXVAL <= 255 becomes gamma RGB888",
+            "MAXVAL > 255 becomes gamma RGBFLOAT32"
+          ],
+          "phase": "PRECISION",
+          "role": "branch",
+          "source": "src/frompnm.c",
+          "symbols": [
+            "pnm_decode_rgb8_noalpha",
+            "pnm_decode_rgbfloat_noalpha"
+          ],
+          "title": "Select byte or float output"
+        },
+        {
+          "coverage_id": "PNM-05",
+          "details": [
+            "decode source and background transfer functions",
+            "return opaque LINEARRGBFLOAT32"
+          ],
+          "phase": "ALPHA",
+          "role": "output",
+          "source": "src/frompnm.c",
+          "symbols": [
+            "pnm_compose_rgba8_to_linearrgbfloat32",
+            "pnm_compose_rgbafloat_to_linearrgbfloat32"
+          ],
+          "title": "Composite PAM alpha in linear light"
+        }
+      ],
+      "tests": {
+        "PNM-01": [
+          "tests/loader/builtin/1546_loader_builtin_pnm_pam_tupletype_matrix_numeric.t"
+        ],
+        "PNM-02": [
+          "tests/loader/builtin/1296_loader_builtin_pnm_ppm8_fastpath_numeric.t"
+        ],
+        "PNM-03": [
+          "tests/loader/builtin/1548_loader_builtin_pnm_binary_truncation_matrix_numeric.t"
+        ],
+        "PNM-04": [
+          "tests/loader/builtin/1295_loader_builtin_pnm_ppm16_float32_numeric.t"
+        ],
+        "PNM-05": [
+          "tests/loader/builtin/1294_loader_builtin_pnm_pam_rgba_linear_bg_numeric.t"
+        ]
+      }
+    },
+    "pic": {
+      "asset": "pic.svg",
+      "document": "docs/loader/builtin/pic.md",
+      "stages": [
+        {
+          "coverage_id": "PIC-01",
+          "details": [
+            "require 0x5380f634 and PICT at byte 88",
+            "distinguish Softimage PIC from Radiance .pic"
+          ],
+          "phase": "PROBE",
+          "role": "route",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "stbi__pic_test",
+            "stbi__pic_test_core"
+          ],
+          "title": "Recognize magic plus PICT marker"
+        },
+        {
+          "coverage_id": "PIC-02",
+          "details": [
+            "validate width, height and one-to-ten descriptors",
+            "derive selected RGB/A channels and compression modes"
+          ],
+          "phase": "HEADER",
+          "role": "parse",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "stbi__pic_load",
+            "stbi__pic_load_core"
+          ],
+          "title": "Read fixed geometry and packet chain"
+        },
+        {
+          "coverage_id": "PIC-03",
+          "details": [
+            "start from white opaque RGBA",
+            "write selected component tuples for each row"
+          ],
+          "phase": "RASTER",
+          "role": "decode",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "stbi__pic_load_core"
+          ],
+          "title": "Decode raw packet scanlines"
+        },
+        {
+          "coverage_id": "PIC-04",
+          "details": [
+            "decode byte and extended repeat counts",
+            "validate mixed-run bounds and input truncation"
+          ],
+          "phase": "RLE",
+          "role": "branch",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "stbi__pic_load_core"
+          ],
+          "title": "Expand pure or mixed RLE packets"
+        },
+        {
+          "coverage_id": "PIC-05",
+          "details": [
+            "preserve decoded alpha until common policy",
+            "composite or derive transparency mask from RGBA8888"
+          ],
+          "phase": "OUTPUT",
+          "role": "output",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_apply_pic_alpha_policy",
+            "sixel_builtin_finalize_loaded_frame"
+          ],
+          "title": "Finalize RGBA and emit one frame"
+        }
+      ],
+      "tests": {
+        "PIC-01": [
+          "tests/loader/builtin/0696_loader_builtin_pic_missing_pict_signature_reject.t"
+        ],
+        "PIC-02": [
+          "tests/loader/builtin/0694_loader_builtin_pic_chained_packets_decode.t"
+        ],
+        "PIC-03": [
+          "tests/loader/builtin/0689_loader_builtin_pic_raw_rgb_decode.t"
+        ],
+        "PIC-04": [
+          "tests/loader/builtin/0693_loader_builtin_pic_rle_mixed_ext_count_decode.t"
+        ],
+        "PIC-05": [
+          "tests/loader/builtin/0708_loader_builtin_pic_rgba_composite_numeric.t"
+        ]
+      }
+    },
+    "png": {
+      "asset": "png.svg",
+      "document": "docs/loader/builtin/png.md",
+      "stages": [
+        {
+          "coverage_id": "PNG-01",
+          "details": [
+            "validate the PNG signature and detect acTL",
+            "split still-image and animation control flow"
+          ],
+          "phase": "ROUTE",
+          "role": "route",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_load_stbi_png_path",
+            "sixel_builtin_chunk_has_apng_control"
+          ],
+          "title": "Classify static PNG or APNG"
+        },
+        {
+          "coverage_id": "PNG-02",
+          "details": [
+            "decode PLTE/tRNS and enforce palette-fusion limits",
+            "choose PAL8 key color or RGBA fallback"
+          ],
+          "phase": "INDEXED",
+          "role": "branch",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_try_load_indexed_png",
+            "sixel_builtin_load_png_keycolor_or_rgba"
+          ],
+          "title": "Attempt palette-preserving decode"
+        },
+        {
+          "coverage_id": "PNG-03",
+          "details": [
+            "use adapted PNG/zlib helpers for scanline reconstruction",
+            "preserve 16-bit values as float before later conversion"
+          ],
+          "phase": "RASTER",
+          "role": "decode",
+          "source": "src/frompng.c",
+          "symbols": [
+            "sixel_frompng_load_nonindexed"
+          ],
+          "title": "Inflate, unfilter and deinterlace"
+        },
+        {
+          "coverage_id": "PNG-04",
+          "details": [
+            "apply iCCP/sRGB/cHRM/gAMA precedence",
+            "transform pixels and background in the matching precision"
+          ],
+          "phase": "COLOR",
+          "role": "color",
+          "source": "src/frompng.c",
+          "symbols": [
+            "sixel_frompng_build_profile_from_chunks",
+            "sixel_frompng_apply_colorspace_fallback_internal"
+          ],
+          "title": "Resolve profile and transfer metadata"
+        },
+        {
+          "coverage_id": "PNG-05",
+          "details": [
+            "validate sequence, decode IDAT/fdAT frame images",
+            "apply blend/dispose and loop/start-frame policy"
+          ],
+          "phase": "ANIMATE",
+          "role": "decode",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_apng_process_chunk",
+            "sixel_builtin_apng_blend_rect",
+            "sixel_builtin_apng_emit_pending_frame"
+          ],
+          "title": "Rebuild and composite APNG frames"
+        },
+        {
+          "coverage_id": "PNG-06",
+          "details": [
+            "convert temporary alpha to background or mask semantics",
+            "deliver typed pixels, colorspace and timing"
+          ],
+          "phase": "OUTPUT",
+          "role": "output",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_finalize_frame_callback",
+            "sixel_builtin_finalize_loaded_frame"
+          ],
+          "title": "Finalize alpha, orientation and frame"
+        }
+      ],
+      "tests": {
+        "PNG-01": [
+          "tests/loader/builtin/0017_apng_builtin_static_option.t"
+        ],
+        "PNG-02": [
+          "tests/loader/builtin/0143_loader_builtin_png_trns_keycolor_default_enabled_for_palette.t"
+        ],
+        "PNG-03": [
+          "tests/loader/builtin/0166_loader_builtin_trns_keycolor_optin_changes_rgba16_output.t"
+        ],
+        "PNG-04": [
+          "tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t"
+        ],
+        "PNG-05": [
+          "tests/loader/builtin/0033_apng_builtin_dispose_previous.t"
+        ],
+        "PNG-06": [
+          "tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t"
+        ]
+      }
+    },
+    "psd": {
+      "asset": "psd.svg",
+      "document": "docs/loader/builtin/psd.md",
+      "stages": [
+        {
+          "coverage_id": "PSD-01",
+          "details": [
+            "validate 8BPS version, depth, mode and section lengths",
+            "locate resources, composite and layer/mask windows"
+          ],
+          "phase": "HEADER",
+          "role": "parse",
+          "source": "src/frompsd-header.c",
+          "symbols": [
+            "sixel_builtin_parse_psd_info",
+            "sixel_builtin_validate_psd_info"
+          ],
+          "title": "Parse PSD/PSB document structure"
+        },
+        {
+          "coverage_id": "PSD-02",
+          "details": [
+            "select raw, PackBits RLE, ZIP or ZIP prediction",
+            "retain native precision in planar working buffers"
+          ],
+          "phase": "PLANES",
+          "role": "decode",
+          "source": "src/frompsd.c",
+          "symbols": [
+            "sixel_builtin_decode_psd_8bit_channel",
+            "sixel_builtin_decode_psd_16bit_channel",
+            "sixel_builtin_decode_psd_32bit_channel"
+          ],
+          "title": "Decode composite channel payloads"
+        },
+        {
+          "coverage_id": "PSD-03",
+          "details": [
+            "dispatch mode/depth-specific conversion",
+            "produce RGB, linear RGB or CIELAB typed pixels"
+          ],
+          "phase": "COLOR",
+          "role": "color",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_psd_lookup_basic_decode_fn",
+            "sixel_builtin_psd_decode_cmyk_by_mode"
+          ],
+          "title": "Interpret bitmap, Gray, Indexed, RGB, CMYK or Lab"
+        },
+        {
+          "coverage_id": "PSD-04",
+          "details": [
+            "decode layer channels, masks, fills and supported effects",
+            "blend visible layers into a linear canvas"
+          ],
+          "phase": "FALLBACK",
+          "role": "branch",
+          "source": "src/frompsd.c",
+          "symbols": [
+            "sixel_builtin_decode_psd_multilayer_missing_composite",
+            "sixel_builtin_psd_composite_layer_over"
+          ],
+          "title": "Reconstruct a missing composite from layers"
+        },
+        {
+          "coverage_id": "PSD-05",
+          "details": [
+            "match profile colorspace to decoded mode",
+            "preserve explicit fallback when conversion is unavailable"
+          ],
+          "phase": "PROFILE",
+          "role": "color",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_psd_apply_embedded_icc"
+          ],
+          "title": "Apply embedded ICC where applicable"
+        },
+        {
+          "coverage_id": "PSD-06",
+          "details": [
+            "attach pixel buffer, colorspace and transparent mask",
+            "apply common orientation/alpha policy and emit once"
+          ],
+          "phase": "OUTPUT",
+          "role": "output",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_load_psd_single_frame",
+            "sixel_builtin_finalize_loaded_frame"
+          ],
+          "title": "Finalize alpha/mask and typed frame"
+        }
+      ],
+      "tests": {
+        "PSD-01": [
+          "tests/loader/builtin/0177_loader_builtin_psd_spec_wrong_channel_count_reject.t"
+        ],
+        "PSD-02": [
+          "tests/loader/builtin/0597_loader_builtin_psd_mode7_rgb16_zip_pred_decode.t"
+        ],
+        "PSD-03": [
+          "tests/loader/builtin/0580_loader_builtin_psd_mode7_rgb32_rle_decode.t"
+        ],
+        "PSD-04": [
+          "tests/loader/builtin/0647_loader_builtin_psd_missing_composite_rgb8_multilayer_normal_decode.t"
+        ],
+        "PSD-05": [
+          "tests/loader/builtin/0057_builtin_psd_embedded_icc_matches_reference_pnm.t"
+        ],
+        "PSD-06": [
+          "tests/loader/builtin/0173_loader_builtin_psd_gray_duotone_16bit_alpha_bgcolor_composite.t"
+        ]
+      }
+    },
+    "sixel": {
+      "asset": "sixel.svg",
+      "document": "docs/loader/builtin/sixel.md",
+      "stages": [
+        {
+          "coverage_id": "SIX-01",
+          "details": [
+            "ESC P or C1 DCS; scan parameters to final q",
+            "select the dedicated SIXEL branch"
+          ],
+          "phase": "ROUTE",
+          "role": "route",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_detect_decode_path"
+          ],
+          "title": "Recognize one leading DCS"
+        },
+        {
+          "coverage_id": "SIX-02",
+          "details": [
+            "validate header, raster extent, repeats and cursor motion",
+            "allocate index canvas and local register table"
+          ],
+          "phase": "PARSE",
+          "role": "parse",
+          "source": "src/fromsixel.c",
+          "symbols": [
+            "sixel_decode_raw",
+            "sixel_decode_raw_impl",
+            "parser_context_enter_decsixel"
+          ],
+          "title": "Initialize raw decoder state"
+        },
+        {
+          "coverage_id": "SIX-03",
+          "details": [
+            "RGB/HLS definitions update local registers",
+            "overwrite or P2=5 OR-mode updates the index canvas"
+          ],
+          "phase": "PAINT",
+          "role": "decode",
+          "source": "src/fromsixel.c",
+          "symbols": [
+            "hls_to_rgb",
+            "image_buffer_store_pixel",
+            "image_buffer_ormode_store_sixel"
+          ],
+          "title": "Resolve registers and paint commands"
+        },
+        {
+          "coverage_id": "SIX-04",
+          "details": [
+            "release workers only after anchored, disjoint ownership",
+            "unsafe split or create failure returns to clean serial paint"
+          ],
+          "phase": "PARALLEL",
+          "role": "branch",
+          "source": "src/decoder-parallel.c",
+          "symbols": [
+            "sixel_decoder_parallel_request_start",
+            "sixel_decoder_parallel_direct_rows_disjoint"
+          ],
+          "title": "Validate spans before worker paint"
+        },
+        {
+          "coverage_id": "SIX-05",
+          "details": [
+            "palette fusion keeps byte indexes when permitted",
+            "otherwise emit gamma RGB888; no mask is requested"
+          ],
+          "phase": "OUTPUT",
+          "role": "output",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_load_with_builtin_impl",
+            "sixel_builtin_finalize_loaded_frame"
+          ],
+          "title": "Choose PAL8 or expand final palette"
+        }
+      ],
+      "tests": {
+        "SIX-01": [
+          "tests/processing/geometry/0009_sixel_resize_palette_limit.t"
+        ],
+        "SIX-02": [
+          "tests/processing/decoder/0002_decoder_ormode_raw_overlay.t"
+        ],
+        "SIX-03": [
+          "tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t"
+        ],
+        "SIX-04": [
+          "tests/processing/decoder/0001_decoder_parallel_split_after_newline.t"
+        ],
+        "SIX-05": [
+          "tests/processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.t"
+        ]
+      }
+    },
+    "tga": {
+      "asset": "tga.svg",
+      "document": "docs/loader/builtin/tga.md",
+      "stages": [
+        {
+          "coverage_id": "TGA-01",
+          "details": [
+            "check image type, dimensions, depth and palette tuple",
+            "run only after strongly identified formats"
+          ],
+          "phase": "PROBE",
+          "role": "route",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "stbi__tga_test",
+            "stbi__tga_info"
+          ],
+          "title": "Validate a signature-less TGA header"
+        },
+        {
+          "coverage_id": "TGA-02",
+          "details": [
+            "call stbi__tga_load_palette when fusion is enabled",
+            "retain PAL8 and normalize binary palette transparency"
+          ],
+          "phase": "INDEXED",
+          "role": "branch",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_try_load_indexed_tga"
+          ],
+          "title": "Attempt the 8-bit index fast path"
+        },
+        {
+          "coverage_id": "TGA-03",
+          "details": [
+            "expand index, gray or BGR(A) source samples",
+            "normalize 5:5:5 and byte component order"
+          ],
+          "phase": "RASTER",
+          "role": "decode",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "stbi__tga_load",
+            "stbi__tga_read_rgb16"
+          ],
+          "title": "Decode raw or packet-RLE samples"
+        },
+        {
+          "coverage_id": "TGA-04",
+          "details": [
+            "reverse rows for bottom-origin images",
+            "horizontal right-to-left order remains unsupported"
+          ],
+          "phase": "ORIGIN",
+          "role": "parse",
+          "source": "src/stb_image.h",
+          "symbols": [
+            "stbi__tga_load"
+          ],
+          "title": "Normalize the vertical image origin"
+        },
+        {
+          "coverage_id": "TGA-05",
+          "details": [
+            "keep 32-bit direct alpha through RGBA8888",
+            "composite or convert supported transparency to a mask"
+          ],
+          "phase": "OUTPUT",
+          "role": "output",
+          "source": "src/loader-builtin.c",
+          "symbols": [
+            "sixel_builtin_apply_tga_truecolor_alpha_policy",
+            "sixel_builtin_finalize_loaded_frame"
+          ],
+          "title": "Finalize direct or palette alpha"
+        }
+      ],
+      "tests": {
+        "TGA-01": [
+          "tests/loader/builtin/0010_lsqa_format_tga_type2_rgb.t"
+        ],
+        "TGA-02": [
+          "tests/loader/builtin/0050_loader_builtin_palette_tga_path.t"
+        ],
+        "TGA-03": [
+          "tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t"
+        ],
+        "TGA-04": [
+          "tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t"
+        ],
+        "TGA-05": [
+          "tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t"
+        ]
+      }
+    },
+    "webp": {
+      "asset": "webp.svg",
+      "document": "docs/loader/builtin/webp.md",
+      "stages": [
+        {
+          "coverage_id": "WBP-01",
+          "details": [
+            "validate VP8X flags, chunk graph, sizes and padding",
+            "classify VP8, VP8+ALPH, VP8L or animation"
+          ],
+          "phase": "CONTAINER",
+          "role": "parse",
+          "source": "src/fromwebp-container.c",
+          "symbols": [
+            "sixel_webp_parse_container",
+            "sixel_webp_build_decode_plan"
+          ],
+          "title": "Parse RIFF chunks and build decode plan"
+        },
+        {
+          "coverage_id": "WBP-02",
+          "details": [
+            "parse partitions, macroblocks, transforms and filters",
+            "upsample YUV into gamma RGBA"
+          ],
+          "phase": "LOSSY",
+          "role": "decode",
+          "source": "src/fromwebp-vp8.c",
+          "symbols": [
+            "sixel_webp_decode_vp8_payload"
+          ],
+          "title": "Decode VP8 key frame"
+        },
+        {
+          "coverage_id": "WBP-03",
+          "details": [
+            "decode prefix codes, cache and back references",
+            "reverse predictor, color, green and index transforms"
+          ],
+          "phase": "LOSSLESS",
+          "role": "decode",
+          "source": "src/fromwebp-vp8l.c",
+          "symbols": [
+            "sixel_webp_decode_stream",
+            "sixel_webp_decode_vp8l_payload"
+          ],
+          "title": "Decode VP8L transform graph"
+        },
+        {
+          "coverage_id": "WBP-04",
+          "details": [
+            "decode raw or VP8L-compressed alpha",
+            "reverse supported filters and copy into RGBA"
+          ],
+          "phase": "ALPHA",
+          "role": "branch",
+          "source": "src/fromwebp-vp8-alpha.c",
+          "symbols": [
+            "sixel_webp_apply_vp8_alpha_payload",
+            "sixel_webp_vp8_alpha_reconstruct"
+          ],
+          "title": "Decode and attach separate ALPH plane"
+        },
+        {
+          "coverage_id": "WBP-05",
+          "details": [
+            "decode nested frame payloads into a canvas",
+            "honor blend, dispose, duration, start-frame and loop"
+          ],
+          "phase": "ANIMATION",
+          "role": "decode",
+          "source": "src/fromwebp.c",
+          "symbols": [
+            "sixel_fromwebp_load_animation",
+            "sixel_webp_anim_composite_rect",
+            "sixel_webp_anim_clear_rect"
+          ],
+          "title": "Decode, composite and dispose ANMF frames"
+        },
+        {
+          "coverage_id": "WBP-06",
+          "details": [
+            "apply metadata precedence with parse-size limits",
+            "emit RGBA for common finalization or completed frames"
+          ],
+          "phase": "META/OUTPUT",
+          "role": "output",
+          "source": "src/fromwebp.c",
+          "symbols": [
+            "sixel_webp_apply_iccp_to_srgb_rgba",
+            "sixel_webp_try_apply_exif_orientation",
+            "sixel_fromwebp_load"
+          ],
+          "title": "Apply ICC, orientation and alpha policy"
+        }
+      ],
+      "tests": {
+        "WBP-01": [
+          "tests/loader/builtin/1620_loader_builtin_webp_bad_chunk_payload_exceeds_riff_code.t"
+        ],
+        "WBP-02": [
+          "tests/loader/builtin/1647_loader_builtin_webp_vp8_static_quality_snake64_msssim.t"
+        ],
+        "WBP-03": [
+          "tests/loader/builtin/1931_loader_builtin_webp_vp8l_transform_subsample_quality_msssim.t"
+        ],
+        "WBP-04": [
+          "tests/loader/builtin/1669_loader_builtin_webp_vp8_alpha_static_quality_msssim.t"
+        ],
+        "WBP-05": [
+          "tests/loader/builtin/1725_loader_builtin_webp_animation_lossy_alpha_quality_msssim.t"
+        ],
+        "WBP-06": [
+          "tests/loader/builtin/1847_loader_builtin_webp_static_xmp_orientation_and_cms_coexist_code.t"
+        ]
+      }
+    }
+  },
+  "generator": "tools/plot_builtin_loader_format_figures.py",
+  "layout": "single responsive vertical SVG per format"
+}

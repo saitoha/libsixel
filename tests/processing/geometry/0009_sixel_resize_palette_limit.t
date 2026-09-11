@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/sixel.md
 # Resize Sixel input while constraining palette size.
 set -eux
 

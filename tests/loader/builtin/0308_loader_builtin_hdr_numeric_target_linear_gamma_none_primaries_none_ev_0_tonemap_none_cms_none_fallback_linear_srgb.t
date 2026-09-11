@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/hdr.md
 set -eux
 
 SIXEL_HDR_CASE_LABEL='hdr matrix numeric case=008 target=linear gamma=none primaries=none ev=0 tonemap=none cms=none fallback=linear-srgb'

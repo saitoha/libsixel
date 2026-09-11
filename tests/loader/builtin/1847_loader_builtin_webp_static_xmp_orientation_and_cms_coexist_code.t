@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/webp.md
 # TAP test confirming static WebP applies XMP orientation and XMP CMS together.
 # Derived fixture: orientation_plain_12x8.webp
 # Added XMP payload: tiff:Orientation="6" photoshop:ICCProfile="DisplayP3".

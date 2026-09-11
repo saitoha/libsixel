@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/png.md
 # Verify builtin PNG ICC conversion matches a fixed no-ICC PNM reference.
 
 set -eux

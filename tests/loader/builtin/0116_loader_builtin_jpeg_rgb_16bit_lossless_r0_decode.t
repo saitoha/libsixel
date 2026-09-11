@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/jpeg.md
 # Verify builtin loader can decode RGB 16-bit lossless JPEG (restart=0).
 
 set -eux
