@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying repeated mapfile options use last occurrence.
+# Policy: docs/functionality/external-palettes.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

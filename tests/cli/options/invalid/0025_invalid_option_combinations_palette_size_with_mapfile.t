@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test ensuring palette size conflicts with mapfile palette option.
+# Policy: docs/functionality/external-palettes.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

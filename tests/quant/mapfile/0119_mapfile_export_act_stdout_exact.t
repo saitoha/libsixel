@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify ACT count zero imports all 256 ordered entries.
+# Verify ACT palette export writes its exact binary layout to stdout.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
 # Policy: docs/functionality/external-palettes.md
 
@@ -15,26 +15,25 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-count-zero.act"
 actual_palette="${ARTIFACT_LOCAL_DIR}/actual.act"
 expected_palette="${ARTIFACT_LOCAL_DIR}/expected.act"
 
 {
-    dd if="${input_palette}" bs=768 count=1 2>/dev/null
-    printf '\001\000\000\000'
+    printf '\000\000\000\377\377\377'
+    dd if=/dev/zero bs=1 count=762 2>/dev/null
+    printf '\000\002\000\000'
 } >"${expected_palette}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${input_palette}" \
-    -M act:"${actual_palette}" -o/dev/null "${input_image}" || {
-    echo "not ok" 1 - "ACT count-zero palette import failed"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
+    -M act:- -o/dev/null "${input_image}" >"${actual_palette}" || {
+    echo "not ok" 1 - "ACT palette export to stdout failed"
     exit 0
 }
 
 cmp -s "${actual_palette}" "${expected_palette}" || {
-    echo "not ok" 1 - "ACT count zero did not import as 256 ordered entries"
+    echo "not ok" 1 - "ACT stdout palette layout changed"
     exit 0
 }
 
-echo "ok" 1 - "ACT count zero imports all 256 entries in order"
-
+echo "ok" 1 - "ACT palette export to stdout has exact layout"
 exit 0

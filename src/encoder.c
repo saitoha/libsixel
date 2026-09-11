@@ -6037,6 +6037,16 @@ sixel_prepare_specified_palette(
             "sixel_prepare_specified_palette: empty mapfile path.");
         return SIXEL_BAD_ARGUMENT;
     }
+    /*
+     * Standard input has no extension to disambiguate a structured palette
+     * from other input.  Require the caller to state the palette format so a
+     * future image signature cannot silently change how "-" is interpreted.
+     */
+    if (format_hint == SIXEL_PALETTE_FORMAT_NONE && strcmp(path, "-") == 0) {
+        sixel_helper_set_additional_message(
+            "sixel_prepare_specified_palette: format required for '-'.");
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     format_ext = sixel_palette_format_from_extension(path);
     path_has_extension = sixel_path_has_any_extension(path);
