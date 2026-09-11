@@ -837,6 +837,7 @@ def plot_quality(
             fontsize=9,
         )
     ax.set_xticks(x_positions, [record[1] for record in POLICIES])
+    ax.set_xlim(-0.35, len(POLICIES) - 1 + 0.35)
     ax.set_ylabel(ylabel)
     ax.set_title(title, loc="left", fontweight="bold")
     ax.grid(axis="y")
@@ -899,6 +900,7 @@ def plot_speed(rows: Sequence[Dict[str, object]], output_path: Path) -> None:
                 fontsize=9,
             )
     ax.set_xticks(np.arange(len(POLICIES)), [record[1] for record in POLICIES])
+    ax.set_xlim(-0.35, len(POLICIES) - 1 + 0.35)
     ax.set_ylabel("Median wall time (ms)")
     ax.set_title(
         "End-to-end resize runtime, 2400 x 1800 -> 600 x 450",
@@ -970,6 +972,7 @@ def plot_size(rows: Sequence[Dict[str, object]], output_path: Path) -> None:
                 fontsize=9,
             )
     ax.set_xticks(np.arange(len(POLICIES)), [record[1] for record in POLICIES])
+    ax.set_xlim(-0.35, len(POLICIES) - 1 + 0.35)
     ax.set_ylabel("SIXEL stream bytes")
     ax.set_title(
         "Exact stream size, snake 600 x 450 -> 300 x 225",
