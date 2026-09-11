@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify the source-level OpenVMS compatibility boundaries.
 # Policy: docs/misc/platforms/openvms.md
-# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11
+# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11 OV-12
 
 set -eu
 
@@ -186,15 +186,15 @@ for mapfile_test in \
 do
     require_fixed 'tests/data/inputs/mapfile/' "$mapfile_test"
 done
-# These are literal shell fragments asserted in the target test.
+# This is a literal shell fragment asserted in the target test.
 # shellcheck disable=SC2016
-require_fixed 'od -An -tx1 "${actual_palette}"' \
+require_fixed '| cmp - "${expected_palette}"' \
     tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t
 # shellcheck disable=SC2016
-if grep -F 'cmp -s "${actual_palette}" "${expected_palette}"' \
+if grep -F '>"${actual_palette}"' \
         "$src_root/tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t" \
         >/dev/null 2>&1; then
-    fail "ACT stdout test compares RMS file attributes instead of logical bytes"
+    fail "ACT stdout test materializes an RMS-sensitive comparison file"
 fi
 # These are literal shell fragments asserted in the target tests.
 # shellcheck disable=SC2016
