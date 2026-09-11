@@ -241,6 +241,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0012_loader_libpng_pixelformat.c \
 	loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
 	loader/builtin/0014_loader_builtin_pixelformat.c \
+	loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c \
 	loader/quicklook/0015_loader_quicklook_pixelformat.c \
 	loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
 	loader/libwebp/0013_loader_libwebp_pixelformat.c \
@@ -450,6 +451,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.$(OBJEXT) \
@@ -646,6 +648,7 @@ am__depfiles_remade =  \
 	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Po \
 	loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
 	loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po \
 	loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po \
@@ -1651,6 +1654,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_LOADER_GD_STATUS_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_LOADER_GD_PIXELPOLICY_DETAIL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_LOADER_BUILTIN_GIF_TGA_PIC_EDGES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_LOADER_ANIMATION_HIDE_CURSOR_ENVIRONMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_LOADER_BUILTIN_RGBA_ALPHA_MASK \
@@ -1839,6 +1843,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0012_loader_libpng_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0014_loader_builtin_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/quicklook/0015_loader_quicklook_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0013_loader_libwebp_pixelformat.c \
@@ -2607,6 +2612,9 @@ loader/builtin/$(DEPDIR)/$(am__dirstamp):
 loader/builtin/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
 loader/quicklook/$(am__dirstamp):
 	@$(MKDIR_P) loader/quicklook
 	@: >>loader/quicklook/$(am__dirstamp)
@@ -3017,6 +3025,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po@am__quote@ # am--include-marker
@@ -4979,6 +4988,20 @@ loader/builtin/test_runner-0014_loader_builtin_pixelformat.obj: loader/builtin/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0014_loader_builtin_pixelformat.obj `if test -f 'loader/builtin/0014_loader_builtin_pixelformat.c'; then $(CYGPATH_W) 'loader/builtin/0014_loader_builtin_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0014_loader_builtin_pixelformat.c'; fi`
 
+loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.o: loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Tpo -c -o loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.o `test -f 'loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c' || echo '$(srcdir)/'`loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Tpo loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c' object='loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.o `test -f 'loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c' || echo '$(srcdir)/'`loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c
+
+loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.obj: loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Tpo -c -o loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.obj `if test -f 'loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c'; then $(CYGPATH_W) 'loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Tpo loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c' object='loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0061_loader_builtin_gif_tga_pic_edges.obj `if test -f 'loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c'; then $(CYGPATH_W) 'loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c'; fi`
+
 loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o: loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
@@ -6558,6 +6581,7 @@ distclean: distclean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
 	-rm -f loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
 	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
@@ -6809,6 +6833,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0061_loader_builtin_gif_tga_pic_edges.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
 	-rm -f loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
 	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po

@@ -12,18 +12,18 @@ Counts show suite composition, not semantic completeness. A large generated matr
 
 | Area | Tests | Policy-backed contracts | Supplementary or defensive |
 | --- | ---: | ---: | ---: |
-| [Shared loader integration and policy](../loader/builtin.md) | 45 | 13 | 32 |
+| [Shared loader integration and policy](../loader/builtin.md) | 46 | 14 | 32 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 6 | 30 |
-| [GIF](../loader/builtin/gif.md) | 25 | 7 | 18 |
+| [GIF](../loader/builtin/gif.md) | 33 | 15 | 18 |
 | [PNG and APNG](../loader/builtin/png.md) | 104 | 9 | 95 |
 | [JPEG](../loader/builtin/jpeg.md) | 21 | 7 | 14 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 258 | 7 | 251 |
 | [PSD and PSB](../loader/builtin/psd.md) | 978 | 7 | 971 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 7 | 118 |
 | [WebP](../loader/builtin/webp.md) | 293 | 7 | 286 |
-| [TGA](../loader/builtin/tga.md) | 12 | 5 | 7 |
-| [Softimage PIC](../loader/builtin/pic.md) | 22 | 6 | 16 |
-| **Total** | **1919** | **81** | **1838** |
+| [TGA](../loader/builtin/tga.md) | 20 | 13 | 7 |
+| [Softimage PIC](../loader/builtin/pic.md) | 28 | 12 | 16 |
+| **Total** | **1942** | **104** | **1838** |
 
 ## Complete inventory
 
@@ -80,6 +80,7 @@ Primary implementation context: [Builtin Image Loader](../loader/builtin.md).
 | [tests/loader/builtin/1936_loader_builtin_pal8_trns_clip_omits_pixel.t](../../tests/loader/builtin/1936_loader_builtin_pal8_trns_clip_omits_pixel.t) | Verify that clipping preserves omitted transparent coverage after promotion. | Behavioral contract: [`docs/concepts/pixelformat.md`](../concepts/pixelformat.md) |
 | [tests/loader/builtin/1937_loader_builtin_indexed_background_policy_file_fallback.t](../../tests/loader/builtin/1937_loader_builtin_indexed_background_policy_file_fallback.t) | Verify indexed PNG bKGD fallback bypasses palette fast paths. | Behavioral contract: [`docs/loader/background-policy.md`](../loader/background-policy.md) |
 | [tests/loader/builtin/1938_loader_builtin_indexed_background_policy_file_fallback_without_keycolor.t](../../tests/loader/builtin/1938_loader_builtin_indexed_background_policy_file_fallback_without_keycolor.t) | Verify indexed PNG bKGD fallback when key-color mode is disabled. | Behavioral contract: [`docs/loader/background-policy.md`](../loader/background-policy.md) |
+| [tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t](../../tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t) | Verify GIF87a signature and pixels with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
 
 ### Netpbm
 
@@ -155,6 +156,14 @@ Primary implementation context: [GIF builtin component](../loader/builtin/gif.md
 | [tests/loader/builtin/1226_loader_builtin_gif_sigint_cancel_no_hang.t](../../tests/loader/builtin/1226_loader_builtin_gif_sigint_cancel_no_hang.t) | builtin GIF force-loop exits promptly on SIGINT. | Supplementary or defensive regression |
 | [tests/loader/builtin/1249_loader_builtin_gif_sigint_pipeline_stop_trace.t](../../tests/loader/builtin/1249_loader_builtin_gif_sigint_pipeline_stop_trace.t) | builtin GIF pipeline emits cancel stop trace on SIGINT. | Supplementary or defensive regression |
 | [tests/loader/builtin/1499_loader_builtin_background_policy_gif_priority.t](../../tests/loader/builtin/1499_loader_builtin_background_policy_gif_priority.t) | Verify GIF background policy default/invalid fallback and explicit-first switch. | Behavioral contract: [`docs/loader/background-policy.md`](../loader/background-policy.md) |
+| [tests/loader/builtin/1940_loader_builtin_gif_interlace_four_pass_numeric.t](../../tests/loader/builtin/1940_loader_builtin_gif_interlace_four_pass_numeric.t) | Verify GIF four-pass interlace row order with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/1941_loader_builtin_gif_rectangle_offset_numeric.t](../../tests/loader/builtin/1941_loader_builtin_gif_rectangle_offset_numeric.t) | Verify GIF image rectangle offset composition with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/1942_loader_builtin_gif_rectangle_oob_reject.t](../../tests/loader/builtin/1942_loader_builtin_gif_rectangle_oob_reject.t) | Verify GIF out-of-bounds image rectangle rejection with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t](../../tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t) | Verify GIF extension sub-block skipping with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/1944_loader_builtin_gif_truncated_raster_reject.t](../../tests/loader/builtin/1944_loader_builtin_gif_truncated_raster_reject.t) | Verify GIF truncated raster sub-block rejection with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/1945_loader_builtin_gif_illegal_lzw_code_reject.t](../../tests/loader/builtin/1945_loader_builtin_gif_illegal_lzw_code_reject.t) | Verify GIF illegal LZW dictionary code rejection with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t](../../tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t) | Verify GIF disposal method 2 composition with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t](../../tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t) | Verify GIF LZW code-width growth through 12 bits with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
 
 ### PNG and APNG
 
@@ -1995,6 +2004,14 @@ Primary implementation context: [TGA builtin component](../loader/builtin/tga.md
 | [tests/loader/builtin/0051_loader_builtin_rgb_tga_fallback.t](../../tests/loader/builtin/0051_loader_builtin_rgb_tga_fallback.t) | TAP test confirming builtin loader falls back for non-indexed TGA. | Supplementary or defensive regression |
 | [tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t](../../tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t) | Verify builtin TGA RGBA preserves alpha without a background and composites all alpha against an explicit background. | Behavioral contract: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 | [tests/loader/builtin/0711_loader_builtin_tga_palette_rgba_transparent_index_numeric.t](../../tests/loader/builtin/0711_loader_builtin_tga_palette_rgba_transparent_index_numeric.t) | Verify builtin indexed TGA RGBA keeps PAL8 and collapses transparent indices into one transparent key index. | Supplementary or defensive regression |
+| [tests/loader/builtin/1948_loader_builtin_tga_truecolor16_numeric.t](../../tests/loader/builtin/1948_loader_builtin_tga_truecolor16_numeric.t) | Verify TGA 16-bit truecolor expansion with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/1949_loader_builtin_tga_palette8_numeric.t](../../tests/loader/builtin/1949_loader_builtin_tga_palette8_numeric.t) | Verify TGA 8-bit grayscale palette entry with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/1950_loader_builtin_tga_palette16_numeric.t](../../tests/loader/builtin/1950_loader_builtin_tga_palette16_numeric.t) | Verify TGA 16-bit palette entry expansion with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/1951_loader_builtin_tga_index16_numeric.t](../../tests/loader/builtin/1951_loader_builtin_tga_index16_numeric.t) | Verify TGA 16-bit palette index with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/1952_loader_builtin_tga_bottom_origin_numeric.t](../../tests/loader/builtin/1952_loader_builtin_tga_bottom_origin_numeric.t) | Verify TGA bottom-origin row order with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t](../../tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t) | Verify TGA raw and repeated RLE packets with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t](../../tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t) | Verify TGA truncated palette rejection with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t](../../tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t) | Verify TGA out-of-range index compatibility fallback with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 
 ### Softimage PIC
 
@@ -2024,6 +2041,12 @@ Primary implementation context: [Softimage PIC builtin component](../loader/buil
 | [tests/loader/builtin/0707_loader_builtin_pic_lsqa_snake16_quality_guard.t](../../tests/loader/builtin/0707_loader_builtin_pic_lsqa_snake16_quality_guard.t) | Verify builtin PIC decode keeps MS-SSIM quality for snake16 fixture. | Supplementary or defensive regression |
 | [tests/loader/builtin/0708_loader_builtin_pic_rgba_composite_numeric.t](../../tests/loader/builtin/0708_loader_builtin_pic_rgba_composite_numeric.t) | Verify builtin PIC RGBA composites all alpha against an explicit background. | Behavioral contract: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 | [tests/loader/builtin/0709_loader_builtin_pic_stdin_decode.t](../../tests/loader/builtin/0709_loader_builtin_pic_stdin_decode.t) | Loader builtin pic stdin decode. | Supplementary or defensive regression |
+| [tests/loader/builtin/1956_loader_builtin_pic_omitted_channels_numeric.t](../../tests/loader/builtin/1956_loader_builtin_pic_omitted_channels_numeric.t) | Verify PIC omitted-channel default values with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
+| [tests/loader/builtin/1957_loader_builtin_pic_repeated_channel_overwrite_numeric.t](../../tests/loader/builtin/1957_loader_builtin_pic_repeated_channel_overwrite_numeric.t) | Verify PIC repeated-channel packet overwrite order with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
+| [tests/loader/builtin/1958_loader_builtin_pic_pure_rle_oversized_clip_numeric.t](../../tests/loader/builtin/1958_loader_builtin_pic_pure_rle_oversized_clip_numeric.t) | Verify PIC pure-RLE oversized-run clipping with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
+| [tests/loader/builtin/1959_loader_builtin_pic_mixed_rle_raw128_numeric.t](../../tests/loader/builtin/1959_loader_builtin_pic_mixed_rle_raw128_numeric.t) | Verify PIC mixed-RLE raw count 128 boundary with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
+| [tests/loader/builtin/1960_loader_builtin_pic_mixed_rle_repeat128_numeric.t](../../tests/loader/builtin/1960_loader_builtin_pic_mixed_rle_repeat128_numeric.t) | Verify PIC mixed-RLE repeated count 128 boundary with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
+| [tests/loader/builtin/1961_loader_builtin_pic_ten_packet_limit_numeric.t](../../tests/loader/builtin/1961_loader_builtin_pic_ten_packet_limit_numeric.t) | Verify PIC ten-packet upper bound with a minimal in-memory stream. | Behavioral contract: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 
 <!-- test-plan-end -->
 

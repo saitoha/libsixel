@@ -371,6 +371,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0058_LOADER_GD_STATUS_POLICY \
     -DBUILD_TEST_0059_LOADER_GD_PIXELPOLICY_DETAIL \
     -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
+    -DBUILD_TEST_0061_LOADER_BUILTIN_GIF_TGA_PIC_EDGES \
     -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
     -DBUILD_TEST_0062_LOADER_ANIMATION_HIDE_CURSOR_ENVIRONMENT \
     -DBUILD_TEST_0063_LOADER_BUILTIN_RGBA_ALPHA_MASK \
@@ -534,6 +535,7 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0012_loader_libpng_pixelformat.c \
     loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
     loader/builtin/0014_loader_builtin_pixelformat.c \
+    loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
     loader/libwebp/0013_loader_libwebp_pixelformat.c \

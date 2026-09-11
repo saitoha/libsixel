@@ -133,7 +133,17 @@ The rows below are pipeline landmarks rather than the complete suite. The [TGA c
 | TGA-03 | A type-10 packet-RLE truecolor TGA expands to the expected image. | [tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t](../../../tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t) |
 | TGA-04 | A grayscale TGA with the fixture's declared origin reaches the canonical expected image. | [tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t](../../../tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t) |
 | TGA-05 | Direct BGRA alpha composites against an explicit background with the expected numeric result. | [tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t](../../../tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t) |
+| TGA-06 | Packed 5:5:5 direct color expands to exact RGB bytes. | [tests/loader/builtin/1948_loader_builtin_tga_truecolor16_numeric.t](../../../tests/loader/builtin/1948_loader_builtin_tga_truecolor16_numeric.t) |
+| TGA-07 | Eight-bit grayscale and 5:5:5 palette entries expand through their distinct component paths. | [tests/loader/builtin/1949_loader_builtin_tga_palette8_numeric.t](../../../tests/loader/builtin/1949_loader_builtin_tga_palette8_numeric.t), [tests/loader/builtin/1950_loader_builtin_tga_palette16_numeric.t](../../../tests/loader/builtin/1950_loader_builtin_tga_palette16_numeric.t) |
+| TGA-08 | Sixteen-bit palette indices select the exact declared entry. | [tests/loader/builtin/1951_loader_builtin_tga_index16_numeric.t](../../../tests/loader/builtin/1951_loader_builtin_tga_index16_numeric.t) |
+| TGA-09 | Bottom-origin storage is vertically normalized to top-to-bottom frame order. | [tests/loader/builtin/1952_loader_builtin_tga_bottom_origin_numeric.t](../../../tests/loader/builtin/1952_loader_builtin_tga_bottom_origin_numeric.t) |
+| TGA-10 | Raw and repeated type-10 RLE packets preserve exact pixel order. | [tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t](../../../tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t) |
+| TGA-11 | The general RGB fallback maps an out-of-range palette index to entry zero instead of reading beyond the palette. | [tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t](../../../tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t) |
 
 ### Defensive and malformed-input tests
 
-There is currently no dedicated owning test that isolates malformed TGA header collision, RLE overrun, or horizontal-origin rejection. The broad loader suite exercises successful TGA variants, but this remains an explicit coverage gap rather than evidence supplied by an unrelated format test.
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| TGA-90 | A truncated declared palette is rejected without emitting a frame. | [tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t](../../../tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t) |
+
+There is still no dedicated owning test that isolates malformed TGA header collision, RLE overrun, truncated direct-pixel input, or horizontal-origin handling. Those remain explicit coverage gaps rather than evidence supplied by an unrelated format test.

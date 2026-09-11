@@ -277,6 +277,7 @@ int test_loader_0011_loader_gd_pixelformat(int argc, char **argv);
 int test_loader_0012_loader_libpng_pixelformat(int argc, char **argv);
 int test_loader_0013_loader_libjpeg_pixelformat(int argc, char **argv);
 int test_loader_0014_loader_builtin_pixelformat(int argc, char **argv);
+int test_loader_0061_loader_builtin_gif_tga_pic_edges(int argc, char **argv);
 int test_loader_0015_loader_quicklook_pixelformat(int argc, char **argv);
 int test_loader_0016_loader_gnome_thumbnailer_pixelformat(int argc,
                                                           char **argv);
@@ -671,6 +672,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0013_loader_libjpeg_pixelformat },
     { "loader/0014_loader_builtin_pixelformat",
       test_loader_0014_loader_builtin_pixelformat },
+    { "loader/0061_loader_builtin_gif_tga_pic_edges",
+      test_loader_0061_loader_builtin_gif_tga_pic_edges },
     { "loader/0015_loader_quicklook_pixelformat",
       test_loader_0015_loader_quicklook_pixelformat },
     { "loader/0016_loader_gnome_thumbnailer_pixelformat",
