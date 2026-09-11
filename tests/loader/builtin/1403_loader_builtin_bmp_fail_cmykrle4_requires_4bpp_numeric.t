@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP BI_CMYKRLE4 bpp-mismatch rejection checks.
 
 set -eux

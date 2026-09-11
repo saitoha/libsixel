@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify a non-pixel-only layer (no decodable pixel channels) is skipped during
 # RGB8 multi-layer fallback with informational trace, while decode succeeds.
 # Reference generation commands:

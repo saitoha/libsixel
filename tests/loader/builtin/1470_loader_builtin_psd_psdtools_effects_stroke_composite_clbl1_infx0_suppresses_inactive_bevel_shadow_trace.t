@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 + infx=0 keeps deferred clipped-group flow active
 # while suppressing inactive interior effect apply.
 # Fixture/expected regeneration command:

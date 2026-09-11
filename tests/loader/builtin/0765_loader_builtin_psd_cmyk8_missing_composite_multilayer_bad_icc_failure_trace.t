@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify native CMYK8 multi-layer fallback keeps embedded-ICC conversion
 # failure trace behavior for bad ICC bytes.
 # Fixture generation command:

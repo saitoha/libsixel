@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD reports malformed image data when composite payload is absent
 # and no layer records exist.
 

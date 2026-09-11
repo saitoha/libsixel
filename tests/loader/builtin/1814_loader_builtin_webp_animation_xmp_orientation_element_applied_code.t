@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP accepts element-form XMP orientation syntax.
 # Derived fixture: animated-lossy-8x8-2frame-min-xmp-o6.webp
 # Replaced XMP payload with: <tiff:Orientation>6</tiff:Orientation>.

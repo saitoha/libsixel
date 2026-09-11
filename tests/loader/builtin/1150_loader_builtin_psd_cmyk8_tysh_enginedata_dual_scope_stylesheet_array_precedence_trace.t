@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD TySh EngineData stylesheet-array precedence:
 # StyleRun/StyleSheetData [<< /FillColor ... >>] must win over later top-level FillColor.
 # Reference generation commands:

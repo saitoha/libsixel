@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader decodes PSD RGB 32-bit Raw with stable image quality.
 # Reference generation command (ImageMagick):
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

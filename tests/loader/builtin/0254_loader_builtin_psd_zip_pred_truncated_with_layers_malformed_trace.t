@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD ZIP+Prediction stream truncation is malformed even with layer
 # records present.
 

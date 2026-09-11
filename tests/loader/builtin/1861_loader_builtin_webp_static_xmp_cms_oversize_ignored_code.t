@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming oversize static XMP CMS metadata is ignored non-fatally.
 # Derived fixture: orientation_xmp_icc_srgb_vp8_static_12x8.webp
 # Replaced XMP payload with 262145-byte ICCProfile metadata.

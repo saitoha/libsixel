@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin GIF force-loop exits promptly on SIGINT.
 
 set -eux

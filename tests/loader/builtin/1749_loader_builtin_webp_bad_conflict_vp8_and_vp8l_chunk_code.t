@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8 and VP8L top-level conflict is rejected.
 # Fixture is derived from snake_64.webp by appending VP8L chunk from palette_lossless_noicc.webp.
 

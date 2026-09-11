@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 deferred replay keeps solid overlay out of replay when base
 # suppression is not adopted and records the skip contract code.
 # Fixture/expected regeneration command:

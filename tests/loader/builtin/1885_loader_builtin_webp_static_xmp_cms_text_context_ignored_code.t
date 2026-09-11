@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP ignores ICCProfile text outside XML tags.
 # Derived fixture: orientation_xmp_icc_srgb_vp8_static_12x8.webp
 # Replaced XMP value with plain text containing photoshop:ICCProfile token.

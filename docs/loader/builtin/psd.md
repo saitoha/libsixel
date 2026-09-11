@@ -142,6 +142,8 @@ PSD/PSB is the builtin family's broadest attacker-controlled object graph: neste
 
 <!-- test-coverage: enforced -->
 
+The rows below are pipeline landmarks rather than the complete suite. The [PSD/PSB coverage inventory](../../testing/builtin-loader-coverage.md#psd-and-psb) lists every format-classified test, including supplementary and defensive cases.
+
 ### Behavioral contract tests
 
 | ID | Contract protected | Owning test |

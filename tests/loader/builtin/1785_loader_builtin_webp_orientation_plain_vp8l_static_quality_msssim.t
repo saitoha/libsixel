@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin VP8L quality on orientation_plain_12x8.webp.
 
 set -eux

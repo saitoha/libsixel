@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7(4ch->CMYK32) TySh descriptor payload on a pixel layer keeps
 # pixel-priority semantics: non-pixel payload is ignored without synthetic fill
 # and output remains the CMYK32 snake baseline.

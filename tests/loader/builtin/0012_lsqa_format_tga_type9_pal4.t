@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify TGA type 9 (RLE color-mapped) with 16-color palette.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -colors 16 -type Palette -compress RLE -define tga:image-origin=TopLeft tests/data/inputs/formats/snake-tga-type9-pal4.tga

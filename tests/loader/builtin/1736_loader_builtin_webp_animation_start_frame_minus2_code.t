@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming two-frame animation start_frame=-2 succeeds.
 
 set -eux

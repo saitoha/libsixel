@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming exact-limit EXIF remains applicable on static WebP.
 # Derived fixture: orientation_exif_o6_vp8_static_12x8.webp
 # Replaced EXIF payload size to exactly 1048576 bytes.

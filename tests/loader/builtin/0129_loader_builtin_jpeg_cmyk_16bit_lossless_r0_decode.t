@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader decodes 16-bit CMYK lossless JPEG without fallback.
 
 set -eux

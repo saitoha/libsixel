@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming forced builtin loader corrupted VP8+ALPH fixture maps to stream error.
 
 set -eux

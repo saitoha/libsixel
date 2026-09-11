@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/pic.md
 # Verify builtin loader rejects PIC missing PICT signature.
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP ignores unknown XMP CMS profile names.
 # Derived fixture: animated-lossy-8x8-2frame-min.webp
 # Added XMP payload: photoshop:ICCProfile="NotAProfile".

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: APNG RGBA pixel format decode succeeds.
 
 set -eux

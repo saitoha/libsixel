@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clipfirst ordering remains stable for PAL8 transparent geometry.
 # Policy: docs/cli/design-policy.md
 

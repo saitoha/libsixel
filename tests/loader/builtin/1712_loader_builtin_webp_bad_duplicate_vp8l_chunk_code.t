@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming duplicate VP8L chunk maps to VP8L stream error.
 # Fixture is derived from palette_lossless_noicc.webp by appending one VP8L
 # chunk image and updating RIFF size field.

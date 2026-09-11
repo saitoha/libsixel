@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify malformed PSD image-resource section is logged and decode still succeeds.
 
 set -eux

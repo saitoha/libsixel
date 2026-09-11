@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB Lab16 missing-composite marker is diagnosed as malformed
 # layer record table.
 # Fixture generation commands:

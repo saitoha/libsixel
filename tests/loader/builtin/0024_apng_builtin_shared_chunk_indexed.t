@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: APNG shared PLTE and tRNS chunks are accepted.
 
 set -eux

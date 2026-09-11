@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8 zero width header reports stream error.
 # Fixture is derived from tests/data/inputs/snake_64.webp by patching width raw
 # bytes at offsets 26..27 to 0x00 0x00.

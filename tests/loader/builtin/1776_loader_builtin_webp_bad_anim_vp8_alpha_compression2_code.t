@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming invalid VP8+ALPH compression=2 in ANMF stays ERR.
 # Fixture is derived from animated-lossy-alpha-8x8-2frame-min.webp by patching
 # first ALPH control byte at offset 0x4c from 0x01 to 0x02.

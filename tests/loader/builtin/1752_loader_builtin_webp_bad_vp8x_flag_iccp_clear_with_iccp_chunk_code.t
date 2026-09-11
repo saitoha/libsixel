@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8X ICCP flag clear with ICCP chunk is rejected.
 # Fixture is derived from palette_lossless_embedded_a98_icc.webp by clearing VP8X flag bit 0x20 at offset 20.
 

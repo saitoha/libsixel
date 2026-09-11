@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD RGB with two extra channels uses the first extra channel as alpha.
 
 set -eux

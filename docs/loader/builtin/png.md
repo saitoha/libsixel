@@ -128,6 +128,8 @@ PNG combines attacker-controlled chunk lengths, DEFLATE expansion, filters, inte
 
 <!-- test-coverage: enforced -->
 
+The rows below are pipeline landmarks rather than the complete suite. The [PNG/APNG coverage inventory](../../testing/builtin-loader-coverage.md#png-and-apng) lists every format-classified test, including supplementary and defensive cases.
+
 ### Behavioral contract tests
 
 | ID | Contract protected | Owning test |

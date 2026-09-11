@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: unknown NETSCAPE loop subtype does not cause force-loop hang.
 
 set -eux

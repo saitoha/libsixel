@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify non-pixel layer payload in multi-layer PSD is tolerated when pixel
 # channels are present: decode succeeds and emits informational trace.
 # Reference generation commands:

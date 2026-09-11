@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify process SIXEL_BGCOLOR disables builtin APNG keycolor path.
 
 set -eux

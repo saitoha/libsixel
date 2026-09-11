@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ICCP takes precedence over XMP CMS in static WebP.
 # Derived fixture: snake_64_embedded_a98_icc.webp
 # Added XMP chunk while preserving embedded ICCP.

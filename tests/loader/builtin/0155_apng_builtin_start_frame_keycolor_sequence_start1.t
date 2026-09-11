@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin APNG start=1 + keycolor keeps emitted frame_no sequence.
 
 set -eux

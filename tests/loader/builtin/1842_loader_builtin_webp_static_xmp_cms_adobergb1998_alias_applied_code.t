@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP applies XMP CMS alias name for AdobeRGB1998.
 # Derived fixture: orientation_plain_12x8.webp
 # Added XMP payload: photoshop:ICCProfile="AdobeRGB1998".

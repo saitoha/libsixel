@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming forced builtin loader corrupted fixture bad_duplicate_vp8x_chunk.webp.
 
 set -eux

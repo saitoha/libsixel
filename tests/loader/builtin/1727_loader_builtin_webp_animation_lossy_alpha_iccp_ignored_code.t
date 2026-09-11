@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming lossy alpha animation keeps ICCP ignored with CMS off.
 
 set -eux

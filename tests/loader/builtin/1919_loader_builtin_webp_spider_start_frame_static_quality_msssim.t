@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming opaque full-canvas start_frame replay keeps parity.
 
 set -eux

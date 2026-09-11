@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming orientation_plain_anim_12x8.webp decodes as ANIM.
 
 set -eux

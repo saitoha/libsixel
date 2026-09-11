@@ -107,6 +107,8 @@ JPEG entropy decode and high-depth prediction operate on attacker-controlled sym
 
 <!-- test-coverage: enforced -->
 
+The rows below are pipeline landmarks rather than the complete suite. The [JPEG coverage inventory](../../testing/builtin-loader-coverage.md#jpeg) lists every format-classified test, including supplementary and defensive cases.
+
 ### Behavioral contract tests
 
 | ID | Contract protected | Owning test |

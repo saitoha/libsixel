@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify deferred miter stroke-adjust diagnostics stay mapped after split.
 
 set -eux

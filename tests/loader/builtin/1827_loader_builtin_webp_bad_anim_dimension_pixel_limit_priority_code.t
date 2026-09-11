@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANIM limit priority prefers dimension over pixel limit.
 # Derived fixture: bad_vp8x_image_exceeds_pixel_limit.webp
 # Patched offsets: VP8X width_minus_one bytes at 24..26 -> ff 7f 00.

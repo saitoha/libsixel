@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP V5 embedded-ICC RGBA bgcolor numeric checks.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify malformed layer-only Gray8 PSD is deterministically rejected by
 # missing-composite fallback layout policy.
 

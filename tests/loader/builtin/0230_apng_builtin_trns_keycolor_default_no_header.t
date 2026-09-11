@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin APNG RGBA default output does not need a keycolor DCS header.
 
 set -eux

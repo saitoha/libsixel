@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify SIXEL_LOADER_BACKGROUND_COLORSPACE defaults to gamma in builtin path.
 
 set -eux

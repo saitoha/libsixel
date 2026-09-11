@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Run the focused builtin RGBA alpha-mask representation test.
 # Policy: docs/concepts/pixelformat.md
 

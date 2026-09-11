@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader reconstructs CMYK16 from a PSD layer-only file
 # when merged/composite image data is missing.
 # Fixture generation command:

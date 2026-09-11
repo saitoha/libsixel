@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD mode7 CMYK8 path applies embedded mft2 ICC via builtin CMS.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin GIF pipeline emits cancel stop trace on SIGINT.
 
 set -eux

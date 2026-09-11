@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD reports malformed layer metadata when image data is
 # absent and layer section metadata is inconsistent.
 

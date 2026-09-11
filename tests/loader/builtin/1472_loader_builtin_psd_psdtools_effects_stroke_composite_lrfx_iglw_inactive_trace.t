@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify lrFX v2 iglw payload keeps inactive contract while
 # preserving legacy merge behavior on effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

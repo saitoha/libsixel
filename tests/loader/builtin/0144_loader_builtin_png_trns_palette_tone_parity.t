@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin palette+tRNS keycolor path keeps libpng-equivalent tone.
 
 set -eux

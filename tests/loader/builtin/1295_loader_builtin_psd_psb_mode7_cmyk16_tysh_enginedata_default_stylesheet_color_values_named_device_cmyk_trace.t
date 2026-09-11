@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB mode7 CMYK16 TySh /DefaultStyleSheet /Color /Values
 # [/DeviceCMYK ...] decode.
 # Fixture generation commands:

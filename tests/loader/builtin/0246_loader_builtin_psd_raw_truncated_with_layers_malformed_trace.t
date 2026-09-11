@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD raw stream truncation is malformed even when layer records exist.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming EXIF precedence over oversize XMP orientation metadata.
 # Derived fixture: orientation_exif_o6_vp8_static_12x8_xmp_o3.webp
 # Replaced XMP payload with 262145-byte orientation metadata.

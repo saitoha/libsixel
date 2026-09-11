@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP BI_PNG16 opaque no-bg CMS-on numeric checks.
 
 set -eux

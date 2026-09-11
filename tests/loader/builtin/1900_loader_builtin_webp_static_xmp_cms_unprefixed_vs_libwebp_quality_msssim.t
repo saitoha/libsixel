@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test comparing static unprefixed XMP CMS output against libwebp output.
 # Input: orientation_xmp_icc_unknown_unprefixed_attr_vp8_static_12x8.webp
 

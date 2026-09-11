@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify layer-marked CMYK32 PSD is deterministically rejected as unsupported
 # layer fallback layout when merged/composite image data is missing.
 

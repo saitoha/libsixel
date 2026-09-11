@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP V2 16bpp BI_BITFIELDS RGB565 checks.
 
 set -eux

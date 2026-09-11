@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify 3-channel PSD with ICC does not emit false ICC failure trace when --bgcolor is set.
 
 set -eux

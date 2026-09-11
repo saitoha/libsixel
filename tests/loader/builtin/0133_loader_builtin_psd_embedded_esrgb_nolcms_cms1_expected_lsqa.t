@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader applies embedded PSD ICC when lcms2 is unavailable.
 
 set -eux

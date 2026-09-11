@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 deferred overlay path keeps deferred stroke application trace
 # on effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

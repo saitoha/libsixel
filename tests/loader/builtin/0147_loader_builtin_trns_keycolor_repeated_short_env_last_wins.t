@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify repeated short -% assignments honor the last alpha-policy value.
 
 set -eux

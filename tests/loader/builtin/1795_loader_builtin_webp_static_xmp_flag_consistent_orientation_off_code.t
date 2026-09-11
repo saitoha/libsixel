@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static XMP-consistent WebP succeeds with orientation off.
 # Derived fixture: orientation_exif_o6_vp8_static_12x8.webp
 # Patched offsets: RIFF size at 0x04, VP8X flags at 0x14, appended XMP chunk.

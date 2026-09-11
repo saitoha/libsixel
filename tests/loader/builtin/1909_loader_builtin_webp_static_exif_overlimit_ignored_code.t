@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming oversize EXIF is ignored non-fatally on static WebP.
 # Derived fixture: orientation_exif_o6_vp8_static_12x8.webp
 # Replaced EXIF payload size to 1048577 bytes and stored as .webp.gz.

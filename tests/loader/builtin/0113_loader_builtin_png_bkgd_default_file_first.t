@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin PNG default background policy stays file_first for bKGD.
 # Policy: docs/loader/background-policy.md
 

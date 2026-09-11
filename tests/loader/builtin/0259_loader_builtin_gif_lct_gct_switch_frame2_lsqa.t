@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/gif.md
 # TAP test: LCT/GCT switching animation keeps frame2 colors stable.
 

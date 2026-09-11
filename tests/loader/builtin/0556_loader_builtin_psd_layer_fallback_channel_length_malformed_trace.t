@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify layer fallback rejects channel-length<2 with deterministic trace.
 
 set -eux

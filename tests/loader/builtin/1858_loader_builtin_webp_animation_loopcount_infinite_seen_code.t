@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming infinite ANIM loopcount emits infinite timing contract.
 
 set -eux

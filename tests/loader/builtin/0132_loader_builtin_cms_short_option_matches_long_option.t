@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader suboption short form Eauto matches
 # cms_engine=auto for JPEG ICC.
 

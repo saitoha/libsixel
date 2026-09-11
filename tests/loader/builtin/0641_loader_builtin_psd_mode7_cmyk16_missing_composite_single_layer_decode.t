@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader reconstructs mode7(4ch->CMYK) 16-bit pixels from a
 # layer-only PSD when merged/composite image data is missing.
 # Fixture generation command:

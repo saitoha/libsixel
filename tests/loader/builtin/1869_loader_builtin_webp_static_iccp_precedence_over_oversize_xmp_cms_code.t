@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ICCP precedence over oversize XMP CMS metadata.
 # Derived fixture: snake_64_embedded_a98_icc_xmp_iccprofile.webp
 # Replaced XMP payload with 262145-byte ICCProfile metadata.

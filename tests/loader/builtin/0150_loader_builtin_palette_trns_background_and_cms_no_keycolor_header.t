@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin palette+tRNS drops keycolor header under cms=1 background.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify missing-composite single-layer Duotone8+alpha disables keycolor with --bgcolor.
 
 set -eux

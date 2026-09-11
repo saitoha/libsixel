@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/psd.md
 # Verify builtin PSD loader rejects 8BPB header with version=1 mismatch.
 # Fixture generation commands:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin VP8+ALPHA compression=1 preprocess=1 quality.
 
 set -eux

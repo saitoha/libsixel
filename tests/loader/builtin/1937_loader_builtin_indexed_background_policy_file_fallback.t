@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify indexed PNG bKGD fallback bypasses palette fast paths.
 # Policy: docs/loader/background-policy.md
 

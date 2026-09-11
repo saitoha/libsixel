@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8X alpha=1 without ANMF alpha stays decodable.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp.
 # Patch: VP8X flag byte at offset 0x14 changed from 0x02 to 0x12.

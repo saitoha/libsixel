@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify APNG background policy fallback when only explicit background exists.
 # Policy: docs/loader/background-policy.md
 

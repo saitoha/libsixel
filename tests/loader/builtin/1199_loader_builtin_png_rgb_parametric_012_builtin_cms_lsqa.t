@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PNG loader reaches parametric ICC path with builtin CMS.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD decode reaches psd-tools baseline for
 # transparency/fill-opacity.psd.
 # Fixture/expected regeneration command:

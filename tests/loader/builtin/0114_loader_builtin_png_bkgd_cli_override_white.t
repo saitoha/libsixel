@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: explicit_first policy should let -B override embedded PNG bKGD.
 
 set -eux

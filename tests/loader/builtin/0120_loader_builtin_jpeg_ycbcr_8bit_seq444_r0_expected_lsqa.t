@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader decodes 8-bit YCbCr JPEG (sequential 4:4:4)
 # with stable quality against a fixed expected PNM reference.
 # Reference generation command (ImageMagick):

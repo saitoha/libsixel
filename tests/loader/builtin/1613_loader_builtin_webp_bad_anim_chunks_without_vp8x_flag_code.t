@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming forced builtin loader corrupted fixture bad_anim_chunks_without_vp8x_anim_flag.webp.
 
 set -eux

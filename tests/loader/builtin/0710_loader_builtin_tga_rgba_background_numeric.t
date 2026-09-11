@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/tga.md
 # Verify builtin TGA RGBA preserves alpha without a background and composites
 # all alpha against an explicit background.

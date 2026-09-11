@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming regular lossless ANIM without alpha keeps success.
 
 set -eux

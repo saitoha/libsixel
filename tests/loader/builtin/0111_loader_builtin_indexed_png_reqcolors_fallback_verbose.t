@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify indexed PNG near reqcolors threshold falls back to RGB by checking
 # verbose planner output.
 

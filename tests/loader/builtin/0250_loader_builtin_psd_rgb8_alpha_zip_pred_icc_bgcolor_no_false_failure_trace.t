@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD RGB+alpha ZIP+Prediction with embedded ICC and --bgcolor
 # avoids false failure trace.
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify deferred stroke applies clip-weighted coverage on
 # psd-tools effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

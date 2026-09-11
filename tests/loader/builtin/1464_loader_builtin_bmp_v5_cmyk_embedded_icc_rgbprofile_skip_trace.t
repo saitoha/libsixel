@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify CMYK BMP with non-applicable RGB ICC keeps silent skip behavior.
 
 set -eux

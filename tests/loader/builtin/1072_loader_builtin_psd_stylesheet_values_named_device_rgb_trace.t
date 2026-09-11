@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB TySh EngineData FillColor DeviceRGB aliases for
 # /Values([/DeviceRGB ...]) and StyleRun/StyleSheetData nesting.
 # Reference generation commands:

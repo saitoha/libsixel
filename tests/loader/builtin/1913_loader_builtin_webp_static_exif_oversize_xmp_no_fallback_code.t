@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming EXIF precedence suppresses XMP fallback when EXIF is oversized.
 # Derived fixture: orientation_exif_o6_vp8_static_12x8_xmp_o3.webp
 # Replaced EXIF payload size to 1048577 bytes and stored as .webp.gz.

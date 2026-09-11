@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify palette PNG quality respects the lsqa baseline and relaxed floor.
 
 set -eux

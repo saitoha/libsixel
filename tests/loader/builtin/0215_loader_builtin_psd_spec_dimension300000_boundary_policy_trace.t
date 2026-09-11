@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD dimension boundary 300000 is accepted before policy checks.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify layer-only RGB8 PSD with multiple layers is deterministically rejected
 # by single-layer fallback layout policy.
 

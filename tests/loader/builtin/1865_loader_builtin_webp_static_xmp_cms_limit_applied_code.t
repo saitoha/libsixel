@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static XMP CMS at parse limit is still applied.
 # Derived fixture: orientation_xmp_icc_srgb_vp8_static_12x8.webp
 # Replaced XMP payload with exactly 262144-byte ICCProfile metadata.

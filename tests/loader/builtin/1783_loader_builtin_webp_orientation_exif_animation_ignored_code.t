@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming EXIF orientation can be disabled on animated VP8L stream.
 
 set -eux

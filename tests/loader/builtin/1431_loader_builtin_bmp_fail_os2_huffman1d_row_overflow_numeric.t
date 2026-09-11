@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP OS/2 HUFFMAN1D row-overflow failure checks.
 
 set -eux

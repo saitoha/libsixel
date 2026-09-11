@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify composite policy fills a zero-alpha pixel with the -B color.
 # Policy: docs/loader/alpha-policy.md
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animation start-frame parse failure still reports EXIF ignored.
 
 set -eux

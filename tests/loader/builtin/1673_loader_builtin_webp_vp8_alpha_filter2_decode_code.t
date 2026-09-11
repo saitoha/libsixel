@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin loader decodes VP8+ALPHA with filter=2.
 # Fixture is derived from webp-vp8-alpha-snake64-alpha00.webp.
 

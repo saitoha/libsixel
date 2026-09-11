@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8X ICCP flag set without ICCP chunk is rejected.
 # Fixture is derived from orientation_exif_o6_12x8.webp by setting VP8X flag byte at offset 20 to 0x28.
 

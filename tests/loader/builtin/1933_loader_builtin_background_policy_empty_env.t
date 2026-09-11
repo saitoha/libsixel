@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify an empty background-policy environment value uses the default.
 # Policy: docs/loader/background-policy.md
 

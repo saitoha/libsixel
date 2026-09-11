@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/jpeg.md
 # TAP test confirming builtin orientation toggle affects JPEG EXIF decode.
 

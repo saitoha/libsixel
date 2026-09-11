@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP accepts element-form XMP orientation syntax.
 # Derived fixture: orientation_xmp_o6_vp8_static_12x8.webp
 # Replaced XMP payload with: <tiff:Orientation>6</tiff:Orientation>.

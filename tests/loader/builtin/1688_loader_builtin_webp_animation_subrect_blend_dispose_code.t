@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin WebP animation supports subrect blend/dispose.
 # Fixture source frames:
 #   tests/data/inputs/snake_64.webp

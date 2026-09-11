@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming oversize ICCP is ignored without size-limit code when CMS is off.
 # Derived fixture: snake_64_embedded_a98_icc_xmp_iccprofile_unprefixed_display_dash_p3.webp
 # Replaced ICCP payload size to 1048577 bytes and stored as .webp.gz.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader decodes minimal 16-bit/channel raw PSD with stable image quality.
 # Reference generation command (ImageMagick):
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

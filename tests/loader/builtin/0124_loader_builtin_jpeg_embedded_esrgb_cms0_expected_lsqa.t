@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader keeps embedded JPEG sample values when cms=0.
 # Reference generation command (libjpeg-turbo):
 #   djpeg -rgb tests/data/inputs/formats/snake-64-embedded-esrgb.jpg \

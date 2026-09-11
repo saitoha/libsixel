@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7 non-pixel layer payload in multi-layer fallback is tolerated
 # when pixel channels are present: decode succeeds and emits info trace.
 # Reference generation commands:

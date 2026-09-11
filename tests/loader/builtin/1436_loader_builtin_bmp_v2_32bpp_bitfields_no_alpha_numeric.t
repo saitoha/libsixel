@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP V2 32bpp BI_BITFIELDS no-alpha checks.
 
 set -eux

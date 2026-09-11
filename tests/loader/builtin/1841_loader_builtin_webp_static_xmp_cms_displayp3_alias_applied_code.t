@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP applies XMP CMS alias name for DisplayP3.
 # Derived fixture: orientation_plain_12x8.webp
 # Added XMP payload: photoshop:ICCProfile="DisplayP3".

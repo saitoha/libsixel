@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/psd.md
 # Verify builtin loader reconstructs a multi-layer RGB8 PSD (missing composite)
 # with normal blend and layer offsets.

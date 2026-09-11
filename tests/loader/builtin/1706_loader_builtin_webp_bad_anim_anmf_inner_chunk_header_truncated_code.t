@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming truncated inner ANMF chunk header maps to stream error.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp by reducing
 # first inner VP8 subchunk size from 0x30 to 0x2a.

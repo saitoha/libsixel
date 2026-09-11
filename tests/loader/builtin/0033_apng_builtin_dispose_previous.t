@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/png.md
 # TAP test: APNG dispose previous input is handled by builtin loader path.
 

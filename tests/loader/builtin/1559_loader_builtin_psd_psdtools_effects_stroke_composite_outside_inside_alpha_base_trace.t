@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify outside fixture keeps base inside stroke alpha semantics.
 # Fixture derivation command:
 #   python3 - <<'PY'

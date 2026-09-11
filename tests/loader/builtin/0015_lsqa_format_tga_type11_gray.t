@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify TGA type 11 (RLE grayscale) quality against lsqa baselines.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -colorspace Gray -compress RLE -define tga:image-origin=TopLeft tests/data/inputs/formats/snake-tga-type11-gray.tga

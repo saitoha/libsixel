@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/netpbm.md
 # TAP wrapper for builtin PNM PAM RGBA linear background numeric checks.
 

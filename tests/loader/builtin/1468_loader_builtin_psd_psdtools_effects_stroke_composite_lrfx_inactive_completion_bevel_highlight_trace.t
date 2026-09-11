@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify lrFX inactive completion keeps bevel highlight channel diagnostics
 # while highlight remains inactive on effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

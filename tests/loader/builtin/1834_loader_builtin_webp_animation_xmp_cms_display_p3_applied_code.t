@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP applies XMP CMS mapping for Display P3.
 # Derived fixture: animated-lossy-8x8-2frame-min-xmp-o6.webp
 # Replaced XMP payload with <photoshop:ICCProfile>Display P3</photoshop:ICCProfile>.

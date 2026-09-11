@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8 token partition=4 quality against libwebp.
 # Fixture source: webmproject/libwebp-test-data@06ddd96e276c2c638a72d39d3c0f340afd61978c
 # Fixture SHA256: 8d2daf0d7c7e902208621342450bd4009a7bfe3b6aaf36b7d43d232066cd9037

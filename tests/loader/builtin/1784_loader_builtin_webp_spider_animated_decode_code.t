@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming spider_64_animated.webp decodes on builtin ANIM path.
 
 set -eux

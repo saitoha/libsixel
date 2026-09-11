@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify explicit_first falls back to a PNG file background.
 # Policy: docs/loader/background-policy.md
 

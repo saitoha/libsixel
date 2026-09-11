@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD TySh EngineData StyleRun RunLengthArray precedence when
 # StyleSheetData is resolved from StyleSheetSet entries.
 # Reference generation commands:

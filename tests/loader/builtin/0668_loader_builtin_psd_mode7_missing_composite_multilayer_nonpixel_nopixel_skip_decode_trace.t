@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7(3ch->RGB8) non-pixel-only layer (no decodable pixel channels)
 # is skipped during multi-layer fallback with informational trace.
 # Reference generation commands:

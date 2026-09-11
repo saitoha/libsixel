@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static XMP fixture quality matches libwebp when disabled.
 # Derived fixture: orientation_exif_o6_vp8_static_12x8.webp
 # Replaced EXIF chunk with XMP chunk: tiff:Orientation="6".

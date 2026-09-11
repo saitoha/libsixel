@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin multi-zero palette+tRNS matches single-zero under cms=auto.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8X EXIF flag set without EXIF chunk is rejected.
 # Fixture is derived from palette_lossless_embedded_a98_icc.webp by setting VP8X flag bit 0x08 at offset 20.
 

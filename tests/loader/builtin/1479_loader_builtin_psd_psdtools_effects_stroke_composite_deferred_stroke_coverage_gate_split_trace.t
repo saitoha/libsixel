@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify deferred stroke separates coverage source and clip gate on
 # psd-tools effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

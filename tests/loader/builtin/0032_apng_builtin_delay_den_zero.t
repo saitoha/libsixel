@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: APNG delay denominator zero input is handled by builtin loader path.
 
 set -eux

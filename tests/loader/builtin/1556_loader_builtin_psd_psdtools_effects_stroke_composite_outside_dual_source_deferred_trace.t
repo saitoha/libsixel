@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify stroke-composite outside fixture keeps dual-source deferred tracing.
 # Fixture derivation command:
 #   python3 - <<'PY'

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB TySh EngineData dual-scope FillColor /Values precedence:
 # StyleRun/StyleSheetData FillColor /Values must win over top-level FillColor.
 # Reference generation commands:

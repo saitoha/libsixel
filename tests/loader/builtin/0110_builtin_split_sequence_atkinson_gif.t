@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin loader static GIF frame with Atkinson dithering matches reference.
 
 set -eux

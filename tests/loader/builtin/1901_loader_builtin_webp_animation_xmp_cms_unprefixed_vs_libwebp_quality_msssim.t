@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test comparing animated unprefixed XMP CMS output against libwebp output.
 # Input: animated-lossy-8x8-2frame-min-xmp-icc-unprefixed-attr-displayp3.webp
 

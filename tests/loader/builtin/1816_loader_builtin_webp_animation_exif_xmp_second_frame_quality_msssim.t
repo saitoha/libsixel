@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated EXIF+XMP fixture second-frame quality.
 # Derived fixture: animated-lossy-8x8-2frame-min-exif-o6.webp
 # Patched offsets: VP8X flags at 0x14 to include XMP, appended XMP orientation=3.

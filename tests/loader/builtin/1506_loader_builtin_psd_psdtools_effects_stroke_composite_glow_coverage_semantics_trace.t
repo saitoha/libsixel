@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify stroke-composite keeps glow parse semantics while
 # inactive lfx2 effects do not enter deferred interior apply.
 # Fixture/expected regeneration command:

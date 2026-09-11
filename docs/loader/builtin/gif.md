@@ -101,6 +101,8 @@ The LZW dictionary, sub-block lengths, image rectangles, frame count, and dispos
 
 <!-- test-coverage: enforced -->
 
+The rows below are pipeline landmarks rather than the complete suite. The [GIF coverage inventory](../../testing/builtin-loader-coverage.md#gif) lists every format-classified test, including supplementary and defensive cases.
+
 ### Behavioral contract tests
 
 | ID | Contract protected | Owning test |

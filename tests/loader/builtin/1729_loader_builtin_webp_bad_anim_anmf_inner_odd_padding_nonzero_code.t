@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming odd-sized inner ANMF chunk requires zero padding.
 # Fixture is derived from animated-lossy-alpha-8x8-2frame-min.webp by
 # changing first ALPH subchunk size at byte offset 0x48 from 0x0c to 0x0b.

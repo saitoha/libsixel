@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB TySh EngineData StyleRun/StyleSheetData FillColor /Values gray parsing
 # for mode4/mode7 CMYK(8/16/32bpc) non-pixel/no-pixel fallback layers.
 # Reference generation commands:

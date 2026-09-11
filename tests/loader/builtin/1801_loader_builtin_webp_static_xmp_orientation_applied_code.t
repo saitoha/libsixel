@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP applies XMP orientation fallback.
 # Derived fixture: orientation_exif_o6_vp8_static_12x8.webp
 # Replaced EXIF chunk with XMP chunk: tiff:Orientation="6".

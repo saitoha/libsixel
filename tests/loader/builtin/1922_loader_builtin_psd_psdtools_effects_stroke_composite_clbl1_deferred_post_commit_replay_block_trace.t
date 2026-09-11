@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 deferred replay does not emit post-commit replay-block in
 # normal flow and keeps header contracts stable.
 # Fixture/expected regeneration command:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader applies raster user-mask channel (-2) in a layer-only
 # CMYK32 multi-layer PSD (missing composite).
 # Reference generation commands:

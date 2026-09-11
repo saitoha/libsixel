@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify Lab ZIP path does not emit false ICC failure traces.
 
 set -eux

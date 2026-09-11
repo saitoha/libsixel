@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify scale geometry promotes PAL8+transparent frames to RGB+mask path.
 
 set -eux

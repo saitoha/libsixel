@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify multi-layer fallback keeps decoding and emits info trace for this
 # payload class after degrade policy update.
 # Reference generation commands:

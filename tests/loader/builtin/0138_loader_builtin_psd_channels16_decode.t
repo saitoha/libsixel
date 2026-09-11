@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader accepts the STB-supported PSD channel upper bound (16)
 # with stable image quality.
 # Reference generation command (ImageMagick):

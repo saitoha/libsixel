@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP applies XMP CMS alias name for DisplayP3.
 # Derived fixture: animated-lossy-8x8-2frame-min.webp
 # Replaced XMP property name: photoshop:ICCProfile -> myphotosh:ICCProfile.

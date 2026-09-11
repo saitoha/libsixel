@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify legacy lrFX supplements inactive lfx2 effects on
 # effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

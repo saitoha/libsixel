@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming one-frame animated WebP succeeds with W_OK_ANIM.
 
 set -eux

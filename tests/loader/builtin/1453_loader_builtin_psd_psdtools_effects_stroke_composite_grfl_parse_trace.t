@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify GrFl effect payload is parsed as active for
 # effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

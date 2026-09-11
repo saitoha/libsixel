@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify deferred outer effect path uses distance-map coverage
 # on effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader reconstructs mode7(4ch->CMYK32) multi-layer PSD
 # (missing composite) with normal blend and layer offsets.
 # Reference generation commands:

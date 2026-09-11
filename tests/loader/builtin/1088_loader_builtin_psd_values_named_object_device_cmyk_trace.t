@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD TySh EngineData /FillColor /Values <<...>> object parsing for
 # DeviceRGB and DeviceCMYK aliases, including StyleRun/StyleSheetData nesting.
 # Reference generation commands:

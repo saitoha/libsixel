@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8X reserved bytes map to W_ERR_VP8X_RESERVED.
 
 set -eux

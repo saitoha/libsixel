@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 deferred ownership suppresses base overlays and keeps
 # deferred gradient overlay contracts active.
 # Fixture/expected regeneration command:

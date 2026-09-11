@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify reqcolors=256 keeps pal8 work format in builtin path.
 
 set -eux

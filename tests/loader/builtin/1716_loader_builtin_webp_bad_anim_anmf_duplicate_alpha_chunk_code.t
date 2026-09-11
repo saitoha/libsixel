@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/webp.md
 # TAP test confirming ANMF duplicate ALPH chunk maps to VP8 stream error.
 # Fixture is derived from animated-lossy-alpha-8x8-2frame-min.webp by patching

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming truncated VP8 payload (< 10 bytes) reports stream error.
 # Fixture is derived from tests/data/inputs/snake_64.webp by rewriting VP8
 # chunk size at offset 16 to 9 and RIFF size at offset 4 to 22.

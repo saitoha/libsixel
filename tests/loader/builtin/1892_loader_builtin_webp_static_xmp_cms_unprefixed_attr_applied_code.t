@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP applies unprefixed XMP ICCProfile attribute.
 # Derived fixture: orientation_xmp_icc_display_p3_vp8_static_12x8.webp
 # Replaced key: photoshop:ICCProfile -> ICCProfile + spacing.

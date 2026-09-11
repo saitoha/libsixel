@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANMF y-offset overflow is treated as stream error.
 # Fixture is derived from bad_anim_anmf_subrect_offset.webp by forcing
 # frame-1 x offset back to 0 and y offset to 2 while canvas stays 8x8.

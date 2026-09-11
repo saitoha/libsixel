@@ -100,6 +100,8 @@ Plain formats are not inherently safe merely because their grammar is simple: de
 
 <!-- test-coverage: enforced -->
 
+The rows below are pipeline landmarks rather than the complete suite. The [Netpbm coverage inventory](../../testing/builtin-loader-coverage.md#netpbm) lists every format-classified test, including supplementary and defensive cases.
+
 ### Behavioral contract tests
 
 | ID | Contract protected | Owning test |

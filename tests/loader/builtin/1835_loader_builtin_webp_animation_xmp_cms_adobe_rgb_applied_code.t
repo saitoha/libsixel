@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP applies XMP CMS mapping for Adobe RGB.
 # Derived fixture: animated-lossy-alpha-8x8-2frame-min-embedded-a98-icc.webp
 # Removed ICCP chunk and replaced metadata with XMP ICCProfile.

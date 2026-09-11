@@ -884,6 +884,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/quantize-models/measurements/quantize-model-speed.png \
 	docs/functionality/quantization.md \
 	docs/quality/measurement-policy.md \
+	docs/testing/builtin-loader-coverage.md \
 	docs/testing/guide.md \
 	docs/writers/png.md \
 	docs/threading/README.md \
@@ -929,6 +930,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/check_quantize_model_measurements.py \
 	tools/check_snap_policy_measurements.py \
 	tools/check_threading_measurements.py \
+	tools/generate_builtin_loader_coverage.py \
 	tools/generate_palette_pipeline_suite_fixtures.py \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP requires matching ICCProfile element qname.
 # Derived fixture: orientation_xmp_icc_srgb_vp8_static_12x8.webp
 # Replaced XMP value with <a:ICCProfile>...</b:ICCProfile> mismatch tags.

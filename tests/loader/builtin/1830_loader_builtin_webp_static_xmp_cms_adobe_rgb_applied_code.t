@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP applies XMP CMS mapping for Adobe RGB (1998).
 # Derived fixture: snake_64_embedded_a98_icc.webp
 # Removed ICCP chunk and replaced metadata with XMP ICCProfile element.

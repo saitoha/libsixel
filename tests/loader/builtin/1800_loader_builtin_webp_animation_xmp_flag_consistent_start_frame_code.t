@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated XMP-consistent stream keeps W_OK_ANIM with start_frame.
 # Derived fixture: animated-lossy-8x8-2frame-min.webp
 # Patched offsets: RIFF size at 0x04, VP8X flags at 0x14, appended XMP chunk.

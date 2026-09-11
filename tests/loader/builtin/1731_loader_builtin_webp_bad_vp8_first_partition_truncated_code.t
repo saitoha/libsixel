@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming truncated VP8 first partition reports stream error.
 # Fixture is derived from tests/data/inputs/snake_64.webp by patching frame tag
 # bytes at offsets 20..22 to 0x70 0x76 0x00 (first_partition_size=947).

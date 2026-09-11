@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD TySh EngineData StyleRun/StyleSheetData FillColor /Values
 # with /DeviceGray aliases for mode4/mode7 CMYK(8/16/32bpc)
 # non-pixel/no-pixel fallback layers.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify alpha-policy selection is stable across multi-input sequences.
 # Policy: docs/loader/alpha-policy.md
 

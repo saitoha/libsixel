@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin WebP accepts frame_count == 1024.
 # Fixture origin: animated-lossless-2frame.webp.
 # Patch summary: duplicate the first ANMF chunk to 1024 entries and

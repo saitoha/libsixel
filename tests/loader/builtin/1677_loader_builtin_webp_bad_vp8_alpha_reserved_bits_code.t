@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming non-zero reserved bits map to stream error code.
 # Fixture is derived from webp-vp8-alpha-snake64-alpha00.webp.
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 deferred stroke contract remains intact while clip-weighted
 # deferred passes are active on effects/stroke-composite.
 # Fixture/expected regeneration command:

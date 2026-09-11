@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB mode7 TySh EngineData stylesheet-array /Color /Values precedence:
 # StyleRun/StyleSheetData [<< /Color << /Values ... >> >>] must win over
 # later top-level FillColor.

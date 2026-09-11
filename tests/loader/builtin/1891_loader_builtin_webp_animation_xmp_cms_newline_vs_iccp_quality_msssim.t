@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test comparing animated newline XMP CMS output against ICCP output.
 # Pair: animated-lossy-8x8-2frame-min-xmp-icc-srgb-newline.webp vs
 # animated-lossy-8x8-2frame-min-embedded-srgb-icc.webp.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper validating builtin HDR Reinhard tonemap numerically.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP keeps XMP orientation ignored when disabled.
 # Derived fixture: animated-lossy-8x8-2frame-min.webp
 # Added VP8X XMP flag and appended XMP chunk: tiff:Orientation="6".

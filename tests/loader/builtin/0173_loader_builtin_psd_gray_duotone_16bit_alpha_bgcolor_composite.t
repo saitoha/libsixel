@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/psd.md
 # Verify builtin PSD grayscale 16-bit+alpha compositing responds to --bgcolor.
 # Fixture generation command:

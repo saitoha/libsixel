@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin alpha-channel PNG keycolor is enabled by default.
 
 set -eux

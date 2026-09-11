@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify stroke-composite center fixture splits deferred center stroke alpha.
 # Fixture derivation command:
 #   python3 - <<'PY'

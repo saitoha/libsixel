@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin loader accepts VP8+ALPHA preprocess=1.
 # Fixture is derived from webp-vp8-alpha-snake64-alpha00.webp.
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clip geometry promotes PAL8+transparent input to RGB work storage.
 # Policy: docs/concepts/pixelformat.md
 

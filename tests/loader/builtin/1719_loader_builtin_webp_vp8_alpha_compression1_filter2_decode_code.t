@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8+ALPHA compression=1 filter=2 decodes successfully.
 # Fixture is derived from webp-vp8-alpha-snake64-compression1.webp by setting
 # ALPH control byte at offset 38 to 0x09.

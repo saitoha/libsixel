@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANIM stream rejects a top-level ALPH chunk.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp.
 # Patch: append top-level ALPH chunk with size=1 and payload=0x00.

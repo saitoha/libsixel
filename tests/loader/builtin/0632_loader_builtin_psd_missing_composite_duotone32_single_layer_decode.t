@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader reconstructs Duotone32 from a PSD layer-only file
 # when merged/composite image data is missing.
 # Reference generation command:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify cms=1 gating disables keycolor behavior in builtin loader path.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin VP8+ALPHA filter=3 quality against libwebp.
 # Fixture is derived from webp-vp8-alpha-snake64-alpha00.webp.
 

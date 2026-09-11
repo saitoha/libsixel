@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify an invalid PNG keycolor boolean falls back to the enabled default.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Confirm small RGBA roundtrip retains the MS-SSIM baseline.
 
 set -eux

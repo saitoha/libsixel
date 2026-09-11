@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8 token partition table truncation maps to stream error.
 # Fixture is derived from vp80-04-partitions-1406.webp by rewriting frame tag
 # bytes at payload offset 0 to increase first partition size.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP info40 os2-mode HUFFMAN1D numeric checks.
 
 set -eux

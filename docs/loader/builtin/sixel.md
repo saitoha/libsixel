@@ -129,6 +129,8 @@ Numeric parameters, repeats, raster declarations, register numbers, cursor motio
 
 <!-- test-coverage: enforced -->
 
+The rows below are pipeline landmarks rather than a complete decoder inventory. The [related SIXEL suites](../../testing/builtin-loader-coverage.md#related-sixel-suites) section explains the boundary between the builtin adapter, reusable decoder, and `sixel2png` coverage.
+
 ### Behavioral contract tests
 
 | ID | Contract protected | Owning test |

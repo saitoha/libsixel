@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify short -% env override enables keycolor over process opt-out.
 
 set -eux

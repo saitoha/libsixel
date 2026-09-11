@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8X EXIF flag clear with EXIF chunk is rejected.
 # Fixture is derived from orientation_exif_o6_12x8.webp by clearing VP8X flag bit 0x08 at offset 20.
 

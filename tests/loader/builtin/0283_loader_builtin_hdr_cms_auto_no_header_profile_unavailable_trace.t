@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin HDR cms=auto avoids header-profile unavailable trace.
 
 set -eux

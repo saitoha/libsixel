@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming duplicate ANIM top-level chunk is rejected.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp by appending ANIM chunk (offset 30, size 6).
 

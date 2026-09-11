@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test comparing animated prefixed XMP CMS output against ICCP output.
 # Pair: animated-lossy-8x8-2frame-min-xmp-icc-displayp3-alias-psprefix.webp vs
 # animated-lossy-8x8-2frame-min-embedded-display-p3-icc.webp.

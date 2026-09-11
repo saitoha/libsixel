@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP applies XMP CMS mapping for sRGB.
 # Derived fixture: orientation_xmp_o6_vp8_static_12x8.webp
 # Replaced XMP payload with photoshop:ICCProfile="sRGB IEC61966-2.1".

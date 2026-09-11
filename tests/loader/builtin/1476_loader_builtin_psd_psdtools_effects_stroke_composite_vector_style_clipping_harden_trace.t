@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify stroke-composite hardcase hardens alpha for vector-style clipping
 # siblings without overlay effects.
 # Fixture/expected regeneration command:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANMF height overflow is treated as stream error.
 # Fixture is derived from bad_anim_anmf_subrect_offset.webp by setting
 # frame-1 height_minus_1 from 7 to 8 while canvas stays 8x8.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD decoder logs ICC conversion failure for invalid profile bytes.
 
 set -eux

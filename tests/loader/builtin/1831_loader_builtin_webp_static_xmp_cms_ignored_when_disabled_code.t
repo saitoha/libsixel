@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP ignores XMP CMS mapping when CMS is disabled.
 # Derived fixture: snake_64_embedded_a98_icc.webp
 # Removed ICCP chunk and replaced metadata with XMP ICCProfile element.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/tga.md
 # Verify TGA type 2 (uncompressed RGB) quality against lsqa baselines.
 # Reproduction commands (ImageMagick):

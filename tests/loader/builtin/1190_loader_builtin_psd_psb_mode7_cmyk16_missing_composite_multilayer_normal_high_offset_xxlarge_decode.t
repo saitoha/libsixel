@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader reconstructs PSB mode7(4ch->CMYK)16 multi-layer image at xxlarge high-offset layout.
 # Fixture is prepared under TOP_BUILDDIR/tests/data/inputs/formats
 # by tests/_static/sh/prepare-psb-large-fixtures.sh
