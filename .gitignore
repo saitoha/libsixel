@@ -106,3 +106,7 @@ tests/snake_64_metrics.json
 fuzz/fuzz-*-libfuzzer
 fuzz/fuzz-*-libfuzzer.exe
 images/component/
+
+# optional HTML documentation build
+.docs-build/
+site/

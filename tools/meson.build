@@ -22,6 +22,14 @@
 
 local_inc = include_directories('.')
 
+if py.found()
+  run_target('docs',
+    command: [py,
+      meson.project_source_root() / 'tools/build-docs',
+      '--output-dir', meson.project_build_root() / 'site',
+      '--work-dir', meson.project_build_root() / '.docs-build'])
+endif
+
 if jpeg_dep.found()
   executable('jpegref', ['jpegref.c'],
     dependencies: [jpeg_dep],

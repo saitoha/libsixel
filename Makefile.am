@@ -45,6 +45,7 @@ DIST_SUBDIRS = \
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
 EXTRA_DIST = LICENSE build-aux/depcomp \
+	mkdocs.yml \
 	m4/ax_count_cpus.m4 \
 	package.json.in.in \
 	build-aux/lso-tap-driver.sh.in \
@@ -61,6 +62,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/resolve-test-tool-paths.sh.in \
 	docs/AGENTS.md \
 	docs/README.md \
+	docs/assets/javascripts/mathjax.js \
 	docs/platform-support.md \
 	docs/project-history.md \
 	docs/sixel-format.md \
@@ -491,7 +493,7 @@ ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
 	$(AM_V_GEN)$(INSTALL_DATA) $(top_srcdir)/build-aux/ltmain.sh $@
 
 
-.PHONY: install-quicklook-extension uninstall-quicklook-extension \
+.PHONY: docs install-quicklook-extension uninstall-quicklook-extension \
 	fuzz-cli-img2sixel fuzz-cli-img2sixel-parser \
 	fuzz-cli-img2sixel-boundary fuzz-cli-img2sixel-pathenv \
 	fuzz-cli-img2sixel-numeric fuzz-cli-img2sixel-all \
@@ -503,6 +505,11 @@ ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
 	fuzz-run-struct-full-set \
 	check-python check-ruby check-perl check-php \
 	installcheck-local
+
+docs:
+	$(AM_V_GEN)$(top_srcdir)/tools/build-docs \
+		--output-dir "$(abs_top_builddir)/site" \
+		--work-dir "$(abs_top_builddir)/.docs-build"
 
 check-python:
 	$(MAKE) -C tests check-python

@@ -18,6 +18,9 @@ noinst_PROGRAMS += lso-timeout
 endif
 
 EXTRA_DIST = libsixel-config.in \
+             build-docs \
+             docs/mkdocs_hooks.py \
+             docs/requirements.txt \
              quicklook-extension.bash \
              sixel-thumbnailer \
              update-mime-database.sh \

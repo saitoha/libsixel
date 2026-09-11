@@ -1,0 +1,66 @@
+site_name: libsixel documentation
+site_description: Reference documentation for libsixel
+repo_name: saitoha/libsixel
+repo_url: https://github.com/saitoha/libsixel
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  language: en
+  font: false
+  features:
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - search
+
+hooks:
+  - tools/docs/mkdocs_hooks.py
+
+markdown_extensions:
+  - fenced_code
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+
+extra_javascript:
+  - assets/javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+exclude_docs: |
+  **/.DS_Store
+
+validation:
+  nav:
+    omitted_files: warn
+    absolute_links: warn
+  links:
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: warn
+
+extra:
+  source_repository: https://github.com/saitoha/libsixel
+  source_revision: master
