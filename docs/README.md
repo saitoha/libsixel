@@ -66,6 +66,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 - [Image loader architecture](loader/README.md) explains the compiled loader registry, `-L` chain construction, predicate and fallback control flow, typed frame outputs, backend inventory, and quality/security tradeoffs.
 - [Builtin image loader](loader/builtin.md) documents the in-tree format families, precision and colorspace goals, security model, and the extraction history from the original stb_image integration.
+- [Builtin format components](loader/builtin/README.md) indexes one implementation reference per builtin format family, with exact variants, metadata and extension handling, output representation, history, and explicit exclusions.
 - [Alpha policy](loader/alpha-policy.md) defines loader-side background
   composition, alpha-zero preservation, SIXEL `P2` requests, terminal-specific
   rendering, and the loader/encoder ownership boundary.

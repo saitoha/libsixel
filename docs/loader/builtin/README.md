@@ -1,0 +1,25 @@
+# Builtin Format Components
+
+The builtin loader is one component in the `-L` loader chain, but internally it dispatches to several format-specific decoders. This directory documents those byte-level decode families. The parent [Builtin Image Loader](../builtin.md) explains the shared rationale, frame contract, security tradeoff, and stb_image lineage; the pages below define exact format variants, interpreted metadata, output character, and known exclusions.
+
+Recognition is based on file bytes rather than filename extensions. A page saying that a family is supported therefore means that its signature and the listed structural variant are accepted by the current decoder. It does not mean that every file carrying the conventional suffix is accepted. Conversely, an input without a conventional suffix may decode.
+
+| Family | Decoder page | Main implementation |
+| --- | --- | --- |
+| SIXEL | [SIXEL](sixel.md) | [`fromsixel.c`](../../../src/fromsixel.c), invoked by [`loader-builtin.c`](../../../src/loader-builtin.c) |
+| PBM, PGM, PPM, PAM | [Netpbm](netpbm.md) | [`frompnm.c`](../../../src/frompnm.c) |
+| GIF | [GIF](gif.md) | [`fromgif.c`](../../../src/fromgif.c) |
+| PNG and APNG | [PNG/APNG](png.md) | [`frompng.c`](../../../src/frompng.c), [`loader-builtin.c`](../../../src/loader-builtin.c), and adapted PNG/zlib helpers in [`stb_image.h`](../../../src/stb_image.h) |
+| JPEG | [JPEG](jpeg.md) | Adapted JPEG code in [`stb_image.h`](../../../src/stb_image.h), with metadata and frame routing in [`loader-builtin.c`](../../../src/loader-builtin.c) |
+| Radiance HDR | [Radiance HDR](hdr.md) | [`fromhdr.c`](../../../src/fromhdr.c) |
+| PSD and PSB | [PSD/PSB](psd.md) | [`frompsd.c`](../../../src/frompsd.c) and the `frompsd-*` modules |
+| BMP and DIB variants | [BMP](bmp.md) | [`frombmp.c`](../../../src/frombmp.c) and [`frombmp-parser.c`](../../../src/frombmp-parser.c) |
+| WebP | [WebP](webp.md) | [`fromwebp.c`](../../../src/fromwebp.c) and the `fromwebp-*` modules |
+| TGA | [TGA](tga.md) | Adapted TGA code in [`stb_image.h`](../../../src/stb_image.h), with palette and alpha routing in [`loader-builtin.c`](../../../src/loader-builtin.c) |
+| Softimage PIC | [Softimage PIC](pic.md) | Adapted PIC code in [`stb_image.h`](../../../src/stb_image.h), with alpha routing in [`loader-builtin.c`](../../../src/loader-builtin.c) |
+
+TIFF is intentionally absent. It is handled by the optional `libtiff` loader component when compiled; the current builtin component has no TIFF pixel decoder. Metadata helper code in `loader-builtin.c` must not be read as a builtin TIFF support promise.
+
+These pages describe the format-specific boundary before common loader finalization. Background composition, alpha normalization, orientation, and callback delivery may change the concrete frame after a decoder has produced its initial pixels. See [Alpha Policy](../alpha-policy.md), [Background Policy](../background-policy.md), [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md), and [Color Spaces and Loader Color Management](../../concepts/colorspace.md).
+
+The implementation matrix is exercised by the format-named cases in [`tests/loader/builtin`](../../../tests/loader/builtin), with malformed-structure coverage also supplied by the builtin loader fuzz targets in [`fuzz/Makefile.am`](../../../fuzz/Makefile.am). Those tests are the executable compatibility evidence; the tables in these pages are the durable human-readable contract and should be updated when that matrix changes.
