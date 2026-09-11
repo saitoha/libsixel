@@ -99,6 +99,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 - [Testing guide](testing/guide.md) covers test organization, shell TAP rules,
   registration, portability, and required checks.
+- [Mapfile parser coverage inventory](testing/mapfile-parser-coverage.md) maps every structured-palette parser and writer test to its exact observation while keeping behavioral contracts distinct from defensive and supplementary coverage.
 - [Staticcheck](testing/staticcheck.md) defines libsixel's repository-wide invariant-verification target, its broader-than-lint scope, IDL and cross-surface checks, test meta-checks, CLI synchronization role, and extension workflow.
 
 ## Threading

@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: RIFF PAL import rejects data chunks whose size disagrees with entry count.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

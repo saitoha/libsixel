@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: RIFF import rejects chunks whose payload size overruns input.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

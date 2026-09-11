@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: JASC-PAL import rejects missing RGB components.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

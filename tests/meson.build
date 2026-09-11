@@ -993,6 +993,11 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-test-plan-links',
+    [meson.current_source_dir() / '_static/sh/staticcheck-test-plan-links.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-ci-doc-public-surface',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-ci-doc-public-surface.sh',

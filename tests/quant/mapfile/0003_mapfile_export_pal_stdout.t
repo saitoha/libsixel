@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test: PAL export to stdout retains JASC-PAL header.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
 
 set -eux
 

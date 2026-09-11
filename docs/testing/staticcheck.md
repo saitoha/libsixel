@@ -19,7 +19,7 @@ The target deliberately spans more than conventional lint:
 | IDL, schema, and generated artifacts | A declarative source remains authoritative and every derived representation is current. | Regenerate into a temporary file and compare, or compare registry projections. |
 | Cross-surface interface consistency | CLI help, manuals, completion, public headers, bindings, build descriptions, and platform metadata describe the same contract. | Normalize each representation and compare complete inventories. |
 | Test meta-checks | Tests themselves follow plan, structure, registration, portability, artifact, and source-list rules. | Inspect the test corpus and its Autotools, Meson, runner, and amalgamation registrations. |
-| Documentation traceability | Durable policy claims link to their evidence and the evidence links back to its owning policy. | Compare enforced documentation inventories with reciprocal `Policy:` comments. |
+| Documentation traceability | Durable policy claims link to their evidence, while exhaustive suite inventories keep every defensive and supplementary test discoverable without turning it into a public contract. | Compare enforced behavioral inventories with reciprocal `Policy:` comments and marked test-plan inventories with reciprocal `Test-plan:` comments. |
 
 IDL-based verification and tests about how tests are written are both first-class `staticcheck` work. The category is intentionally broad because a growing repository accumulates quality risks between files and systems, while ordinary language linters usually see only one representation at a time.
 
@@ -80,7 +80,7 @@ The umbrella target remains the completion criterion because a focused check doe
 4. Give the check a `staticcheck-<subject>` name and add it to [`staticcheck-suite.sh`](../../tests/_static/sh/staticcheck-suite.sh), which is the canonical umbrella ordering used by both build systems.
 5. Keep the Autotools, tracked `Makefile.in`, Meson run target, and distribution lists synchronized when the check is exposed individually.
 6. Add reciprocal `Policy: docs/...` comments when the check enforces a durable subject policy document, and list the check in that subject document's coverage inventory. Do not add every check to this overview; reserve this document's own coverage inventory for checks that maintain staticcheck itself or this documentation contract.
-7. Run the focused check, `staticcheck-doc-test-links` when policy links changed, the full `make staticcheck`, and behavioral tests appropriate to any product code changed alongside the invariant.
+7. Run the focused check, `staticcheck-doc-test-links` when policy links changed, `staticcheck-test-plan-links` when exhaustive suite inventories changed, the full `make staticcheck`, and behavioral tests appropriate to any product code changed alongside the invariant.
 
 A staticcheck should fail with enough normalized evidence to locate the divergent representation. It must not silently rewrite committed outputs: automatic correction can be a separate developer command, but the verification target remains read-only with respect to tracked repository state.
 
@@ -94,7 +94,8 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | --- | --- | --- |
 | SC-01 | Every standalone `staticcheck-*.sh` implementation other than the runner itself is registered in the umbrella suite, the suite does not reference missing implementations, and both Autotools and Meson invoke that suite. | [tests/_static/sh/staticcheck-staticcheck-suite-sync.sh](../../tests/_static/sh/staticcheck-staticcheck-suite-sync.sh) |
 | SC-02 | This document and its owning meta-checks maintain complete reciprocal links. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
+| SC-03 | Exhaustive test-plan markers, their scoped test links, and reciprocal test comments remain complete and duplicate-free. | [tests/_static/sh/staticcheck-test-plan-links.sh](../../tests/_static/sh/staticcheck-test-plan-links.sh) |
 
 ### Coverage boundary
 
-The suite-registration check covers shell implementations named `staticcheck-*.sh`; inline compile probes remain explicit runner code and are not projected into a second generated inventory. The reciprocal-link check proves the documentation relationship, not the completeness of the prose. Whether a new invariant belongs in staticcheck, whether normalization preserves the right distinctions, and whether a passing static contract has sufficient behavioral coverage remain review decisions.
+The suite-registration check covers shell implementations named `staticcheck-*.sh`; inline compile probes remain explicit runner code and are not projected into a second generated inventory. The reciprocal policy-link check proves the behavioral documentation relationship, and the test-plan check proves exhaustive suite membership, but neither proves the completeness or accuracy of prose. Whether a new invariant belongs in staticcheck, whether normalization preserves the right distinctions, and whether a passing static contract has sufficient behavioral coverage remain review decisions.

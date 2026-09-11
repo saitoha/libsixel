@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify JASC PAL export writes the complete canonical text layout.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
 # Policy: docs/functionality/external-palettes.md
 
 set -eux

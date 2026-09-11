@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify ACT transparency metadata does not offset imported palette entries.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
 # Policy: docs/functionality/external-palettes.md
 
 set -eux

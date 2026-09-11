@@ -1,5 +1,7 @@
 #!/bin/sh
 # TAP test: mapfile format prefixes are accepted case-insensitively.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

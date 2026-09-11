@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify a trailer-free 768-byte ACT imports all 256 ordered entries.
+# Test-plan: docs/testing/mapfile-parser-coverage.md
 # Policy: docs/functionality/external-palettes.md
 
 set -eux

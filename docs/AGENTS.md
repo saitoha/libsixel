@@ -64,6 +64,17 @@ The coverage inventory must follow these rules:
 
 The [`staticcheck-doc-test-links`](../tests/_static/sh/staticcheck-doc-test-links.sh) check enforces both directions: every document link must name an existing test that links back, and every `Policy: docs/...` test reference must be present in the named document. Update the document and its owning tests in the same change; a one-sided update is a static-check failure.
 
+An exhaustive test-plan inventory serves a different purpose from a behavioral coverage table. Use it when every test in a suite should remain discoverable from documentation, including malformed-input variants, resource boundaries, fault-localization probes, and supplementary smoke tests that do not each define a public guarantee.
+
+- Put the exhaustive inventory in a dedicated testing document instead of expanding a user-facing policy document into a test ledger.
+- Delimit the inventory with `<!-- test-plan: tests/path/*.t -->` and `<!-- test-plan-end -->`. The glob names the complete, nonrecursive set owned by that inventory.
+- Link every matched test exactly once inside the delimited inventory, using its repository-relative `tests/...` path as the Markdown label.
+- Add one reciprocal `Test-plan: docs/...` source comment within the first 20 lines of every matched test. A test that directly owns a public behavioral contract carries both `Policy:` and `Test-plan:`; the latter does not replace the former.
+- Keep the observation in the test filename and opening comment aligned with the inventory description. The inventory should explain why the cases are grouped, while the test remains the authoritative detail for its fixture and assertion.
+- Do not interpret `Test-plan:` as a public compatibility or stability promise. Promote a rejection, diagnostic, resource limit, or recovery rule to the behavioral coverage table and add `Policy:` only when the policy document deliberately guarantees it.
+
+The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-links.sh) check expands every marked glob and enforces exact, duplicate-free document links and reciprocal `Test-plan:` comments. A suite addition, deletion, rename, moved link, or one-sided comment change therefore fails the static suite until the inventory is updated.
+
 ## Adding a document
 
 Add a document only when the topic is durable and materially distinct from the existing references. Give it a stable subject-oriented name, place it in the owning subject directory, and add it to `README.md` when users or contributors should discover it. Add a repository-level link only when contributors must read it before working in that area.
@@ -76,7 +87,8 @@ Add a document only when the topic is durable and materially distinct from the e
 | --- | --- | --- |
 | DG-01 | Enforced policy documents and their owning tests carry complete reciprocal links, and one-sided references fail the static suite. | [tests/_static/sh/staticcheck-doc-test-links.sh](../tests/_static/sh/staticcheck-doc-test-links.sh) |
 | DG-02 | Documentation math uses only TeX commands verified to render on GitHub.com. | [tests/_static/sh/staticcheck-docs-github-math.sh](../tests/_static/sh/staticcheck-docs-github-math.sh) |
+| DG-03 | Marked test-plan inventories contain every scoped test exactly once and every listed test links back without using `Policy:` for non-contract coverage. | [tests/_static/sh/staticcheck-test-plan-links.sh](../tests/_static/sh/staticcheck-test-plan-links.sh) |
 
 ### Coverage boundary
 
-The static check validates paths and the completeness of the two reciprocal behavioral-contract link inventories. It does not infer missing contracts from prose, treat a defensive suite link as contract coverage, decide whether a policy contract is decomposed at the correct granularity, or decide whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.
+The static checks validate paths and the completeness of reciprocal behavioral-contract and test-plan inventories. They do not infer missing contracts from prose, treat a defensive inventory as contract coverage, decide whether a policy contract is decomposed at the correct granularity, or decide whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.
