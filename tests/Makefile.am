@@ -371,7 +371,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0058_LOADER_GD_STATUS_POLICY \
     -DBUILD_TEST_0059_LOADER_GD_PIXELPOLICY_DETAIL \
     -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
-    -DBUILD_TEST_0061_LOADER_BUILTIN_GIF_TGA_PIC_EDGES \
     -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
     -DBUILD_TEST_0062_LOADER_ANIMATION_HIDE_CURSOR_ENVIRONMENT \
     -DBUILD_TEST_0063_LOADER_BUILTIN_RGBA_ALPHA_MASK \
@@ -382,6 +381,33 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0068_LOADER_BACKGROUND_COLORSPACE_GAMMA \
     -DBUILD_TEST_0069_LOADER_BACKGROUND_COLORSPACE_RESET \
     -DBUILD_TEST_0070_LOADER_GIF_BGCOLOR_CANVAS_FILL_EXPLICIT_FIRST \
+    -DBUILD_LOADER_BUILTIN_MEMORY_TEST_COMMON \
+    -DBUILD_LOADER_BUILTIN_GIF_TEST_COMMON \
+    -DBUILD_LOADER_BUILTIN_TGA_TEST_COMMON \
+    -DBUILD_LOADER_BUILTIN_PIC_TEST_COMMON \
+    -DBUILD_TEST_0071_LOADER_BUILTIN_GIF87A_NUMERIC \
+    -DBUILD_TEST_0072_LOADER_BUILTIN_GIF_INTERLACE_FOUR_PASS_NUMERIC \
+    -DBUILD_TEST_0073_LOADER_BUILTIN_GIF_RECTANGLE_OFFSET_NUMERIC \
+    -DBUILD_TEST_0074_LOADER_BUILTIN_GIF_RECTANGLE_OOB_REJECT \
+    -DBUILD_TEST_0075_LOADER_BUILTIN_GIF_EXTENSION_SUBBLOCKS_NUMERIC \
+    -DBUILD_TEST_0076_LOADER_BUILTIN_GIF_TRUNCATED_RASTER_REJECT \
+    -DBUILD_TEST_0077_LOADER_BUILTIN_GIF_ILLEGAL_LZW_CODE_REJECT \
+    -DBUILD_TEST_0078_LOADER_BUILTIN_GIF_DISPOSAL2_NUMERIC \
+    -DBUILD_TEST_0079_LOADER_BUILTIN_GIF_LZW_12BIT_WIDTH_NUMERIC \
+    -DBUILD_TEST_0080_LOADER_BUILTIN_TGA_TRUECOLOR16_NUMERIC \
+    -DBUILD_TEST_0081_LOADER_BUILTIN_TGA_PALETTE8_NUMERIC \
+    -DBUILD_TEST_0082_LOADER_BUILTIN_TGA_PALETTE16_NUMERIC \
+    -DBUILD_TEST_0083_LOADER_BUILTIN_TGA_INDEX16_NUMERIC \
+    -DBUILD_TEST_0084_LOADER_BUILTIN_TGA_BOTTOM_ORIGIN_NUMERIC \
+    -DBUILD_TEST_0085_LOADER_BUILTIN_TGA_RLE_PACKET_MODES_NUMERIC \
+    -DBUILD_TEST_0086_LOADER_BUILTIN_TGA_TRUNCATED_PALETTE_REJECT \
+    -DBUILD_TEST_0087_LOADER_BUILTIN_TGA_OOB_INDEX_FALLBACK_NUMERIC \
+    -DBUILD_TEST_0088_LOADER_BUILTIN_PIC_OMITTED_CHANNELS_NUMERIC \
+    -DBUILD_TEST_0089_LOADER_BUILTIN_PIC_REPEATED_CHANNEL_OVERWRITE_NUMERIC \
+    -DBUILD_TEST_0090_LOADER_BUILTIN_PIC_PURE_RLE_OVERSIZED_CLIP_NUMERIC \
+    -DBUILD_TEST_0091_LOADER_BUILTIN_PIC_MIXED_RLE_RAW128_NUMERIC \
+    -DBUILD_TEST_0092_LOADER_BUILTIN_PIC_MIXED_RLE_REPEAT128_NUMERIC \
+    -DBUILD_TEST_0093_LOADER_BUILTIN_PIC_TEN_PACKET_LIMIT_NUMERIC \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -535,7 +561,37 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0012_loader_libpng_pixelformat.c \
     loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
     loader/builtin/0014_loader_builtin_pixelformat.c \
-    loader/builtin/0061_loader_builtin_gif_tga_pic_edges.c \
+    loader/builtin/loader_builtin_memory_test_common.c \
+    loader/builtin/loader_builtin_memory_test_common.h \
+    loader/builtin/loader_builtin_gif_test_common.c \
+    loader/builtin/loader_builtin_gif_test_common.h \
+    loader/builtin/loader_builtin_tga_test_common.c \
+    loader/builtin/loader_builtin_tga_test_common.h \
+    loader/builtin/loader_builtin_pic_test_common.c \
+    loader/builtin/loader_builtin_pic_test_common.h \
+    loader/builtin/0071_loader_builtin_gif87a_numeric.c \
+    loader/builtin/0072_loader_builtin_gif_interlace_four_pass_numeric.c \
+    loader/builtin/0073_loader_builtin_gif_rectangle_offset_numeric.c \
+    loader/builtin/0074_loader_builtin_gif_rectangle_oob_reject.c \
+    loader/builtin/0075_loader_builtin_gif_extension_subblocks_numeric.c \
+    loader/builtin/0076_loader_builtin_gif_truncated_raster_reject.c \
+    loader/builtin/0077_loader_builtin_gif_illegal_lzw_code_reject.c \
+    loader/builtin/0078_loader_builtin_gif_disposal2_numeric.c \
+    loader/builtin/0079_loader_builtin_gif_lzw_12bit_width_numeric.c \
+    loader/builtin/0080_loader_builtin_tga_truecolor16_numeric.c \
+    loader/builtin/0081_loader_builtin_tga_palette8_numeric.c \
+    loader/builtin/0082_loader_builtin_tga_palette16_numeric.c \
+    loader/builtin/0083_loader_builtin_tga_index16_numeric.c \
+    loader/builtin/0084_loader_builtin_tga_bottom_origin_numeric.c \
+    loader/builtin/0085_loader_builtin_tga_rle_packet_modes_numeric.c \
+    loader/builtin/0086_loader_builtin_tga_truncated_palette_reject.c \
+    loader/builtin/0087_loader_builtin_tga_oob_index_fallback_numeric.c \
+    loader/builtin/0088_loader_builtin_pic_omitted_channels_numeric.c \
+    loader/builtin/0089_loader_builtin_pic_repeated_channel_overwrite_numeric.c \
+    loader/builtin/0090_loader_builtin_pic_pure_rle_oversized_clip_numeric.c \
+    loader/builtin/0091_loader_builtin_pic_mixed_rle_raw128_numeric.c \
+    loader/builtin/0092_loader_builtin_pic_mixed_rle_repeat128_numeric.c \
+    loader/builtin/0093_loader_builtin_pic_ten_packet_limit_numeric.c \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
     loader/libwebp/0013_loader_libwebp_pixelformat.c \

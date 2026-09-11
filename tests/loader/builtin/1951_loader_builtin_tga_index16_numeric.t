@@ -9,8 +9,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_BUILTIN_EDGE_CASE=tga-index16" \
-    "loader/0061_loader_builtin_gif_tga_pic_edges" || {
+    "loader/0083_loader_builtin_tga_index16_numeric" || {
     echo "not ok 1 - TGA 16-bit palette index"
     exit 0
 }

@@ -9,8 +9,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_BUILTIN_EDGE_CASE=gif-disposal2" \
-    "loader/0061_loader_builtin_gif_tga_pic_edges" || {
+    "loader/0078_loader_builtin_gif_disposal2_numeric" || {
     echo "not ok 1 - GIF disposal method 2 composition"
     exit 0
 }

@@ -9,8 +9,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_BUILTIN_EDGE_CASE=tga-truncated-palette" \
-    "loader/0061_loader_builtin_gif_tga_pic_edges" || {
+    "loader/0086_loader_builtin_tga_truncated_palette_reject" || {
     echo "not ok 1 - TGA truncated palette rejection"
     exit 0
 }
