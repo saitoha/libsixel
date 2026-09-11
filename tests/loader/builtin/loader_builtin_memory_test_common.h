@@ -65,6 +65,10 @@ void edge_put_bytes(edge_writer_t *writer,
                     unsigned char const *bytes,
                     size_t byte_count);
 void edge_loader_options_init(edge_loader_options_t *options);
+int edge_read_fixture(char const *relative_path,
+                      unsigned char *buffer,
+                      size_t capacity,
+                      size_t *buffer_size);
 
 int edge_load_buffer(char const *label,
                      unsigned char const *buffer,
@@ -97,6 +101,11 @@ int edge_load_fixture_custom(char const *label,
                              SIXELSTATUS *load_status);
 int edge_expect_fixture_cancel_boundaries(char const *label,
                                           char const *relative_path);
+int edge_expect_fixture_allocation_failures(
+    char const *label,
+    char const *relative_path,
+    edge_loader_options_t const *options,
+    int allow_successful_fallback);
 int edge_expect_rgb(char const *label,
                     unsigned char const *buffer,
                     size_t buffer_size,
@@ -116,6 +125,12 @@ int edge_expect_fixture_rgb_digests(char const *label,
                                     int expected_height,
                                     int expected_frames,
                                     uint64_t const *expected_digests);
+int edge_expect_buffer_rgb_digest(char const *label,
+                                  unsigned char const *buffer,
+                                  size_t buffer_size,
+                                  int expected_width,
+                                  int expected_height,
+                                  uint64_t expected_digest);
 int edge_expect_fixture_digests_options(
     char const *label,
     char const *relative_path,

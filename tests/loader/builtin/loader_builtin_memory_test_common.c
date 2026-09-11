@@ -6,12 +6,14 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <6cells.h>
 
 #include "tests/loader/pixelformat_test_common.h"
 #include "src/cms.h"
+#include "src/compat_stub.h"
 #include "src/factory.h"
 #include "src/loader.h"
 #include "src/loader-common.h"
@@ -71,6 +73,62 @@ edge_loader_options_init(edge_loader_options_t *options)
     options->reqcolors = 256;
     options->loop_control = SIXEL_LOOP_DISABLE;
     options->cms_engine = SIXEL_CMS_ENGINE_NONE;
+}
+
+int
+edge_read_fixture(char const *relative_path,
+                  unsigned char *buffer,
+                  size_t capacity,
+                  size_t *buffer_size)
+{
+    char const *source_root;
+    char image_path[PATH_MAX];
+    FILE *fp;
+    size_t read_size;
+    int trailing_byte;
+    int read_failed;
+    int close_status;
+
+    source_root = NULL;
+    fp = NULL;
+    read_size = 0u;
+    trailing_byte = 0;
+    read_failed = 0;
+    close_status = 0;
+    if (relative_path == NULL || buffer == NULL || capacity == 0u ||
+        buffer_size == NULL) {
+        return 1;
+    }
+    *buffer_size = 0u;
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+    if (build_image_path(source_root,
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        return 1;
+    }
+    fp = sixel_compat_fopen(image_path, "rb");
+    if (fp == NULL) {
+        return 1;
+    }
+    read_size = fread(buffer, 1u, capacity, fp);
+    trailing_byte = fgetc(fp);
+    read_failed = ferror(fp);
+    close_status = fclose(fp);
+    if (read_failed || trailing_byte != EOF || close_status != 0) {
+        return 1;
+    }
+    *buffer_size = read_size;
+    return read_size == 0u ? 1 : 0;
 }
 
 static SIXELSTATUS
@@ -675,6 +733,263 @@ cleanup:
     return result;
 }
 
+typedef struct edge_allocator_capture {
+    unsigned int callback_count;
+    uint64_t digest;
+    size_t size;
+    int width;
+    int height;
+    int pixelformat;
+    int colorspace;
+    int alpha_zero_is_transparent;
+    size_t mask_size;
+    uint64_t mask_digest;
+} edge_allocator_capture_t;
+
+static unsigned int edge_allocation_count;
+static unsigned int edge_allocation_target;
+static unsigned int edge_live_allocation_count;
+static size_t edge_failure_size;
+
+static void *
+edge_fault_malloc(size_t size)
+{
+    void *ptr;
+
+    ptr = NULL;
+    ++edge_allocation_count;
+    if (edge_allocation_count == edge_allocation_target) {
+        edge_failure_size = size;
+        return NULL;
+    }
+    ptr = malloc(size);
+    if (ptr != NULL) {
+        ++edge_live_allocation_count;
+    }
+    return ptr;
+}
+
+static void *
+edge_fault_calloc(size_t count, size_t size)
+{
+    void *ptr;
+
+    ptr = NULL;
+    ++edge_allocation_count;
+    if (edge_allocation_count == edge_allocation_target) {
+        edge_failure_size = count * size;
+        return NULL;
+    }
+    ptr = calloc(count, size);
+    if (ptr != NULL) {
+        ++edge_live_allocation_count;
+    }
+    return ptr;
+}
+
+static void *
+edge_fault_realloc(void *ptr, size_t size)
+{
+    void *resized;
+    int had_allocation;
+
+    resized = NULL;
+    had_allocation = ptr != NULL;
+    ++edge_allocation_count;
+    if (edge_allocation_count == edge_allocation_target) {
+        edge_failure_size = size;
+        return NULL;
+    }
+    resized = realloc(ptr, size);
+    if (!had_allocation && resized != NULL) {
+        ++edge_live_allocation_count;
+    }
+    return resized;
+}
+
+static void
+edge_fault_free(void *ptr)
+{
+    if (ptr != NULL && edge_live_allocation_count != 0u) {
+        --edge_live_allocation_count;
+    }
+    free(ptr);
+}
+
+static SIXELSTATUS
+edge_capture_allocator_frame(sixel_frame_t *frame, void *data)
+{
+    edge_allocator_capture_t *capture;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_transparency_t transparency;
+    SIXELSTATUS status;
+    unsigned char const *pixels;
+    int depth;
+
+    capture = (edge_allocator_capture_t *)data;
+    frame_if = NULL;
+    memset(&transparency, 0, sizeof(transparency));
+    status = SIXEL_FALSE;
+    pixels = NULL;
+    depth = 0;
+    if (frame == NULL || capture == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    capture->width = sixel_frame_get_width(frame);
+    capture->height = sixel_frame_get_height(frame);
+    capture->pixelformat = sixel_frame_get_pixelformat(frame);
+    capture->colorspace = sixel_frame_get_colorspace(frame);
+    depth = sixel_helper_compute_depth(capture->pixelformat);
+    pixels = sixel_frame_get_pixels(frame);
+    if (capture->width <= 0 || capture->height <= 0 || depth <= 0 ||
+        pixels == NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+    capture->size = (size_t)capture->width * (size_t)capture->height *
+                    (size_t)depth;
+    capture->digest = edge_digest_bytes(pixels, capture->size);
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if == NULL || frame_if->vtbl == NULL ||
+        frame_if->vtbl->get_transparency == NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+    status = frame_if->vtbl->get_transparency(frame_if, &transparency);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    capture->alpha_zero_is_transparent =
+        transparency.alpha_zero_is_transparent;
+    capture->mask_size = transparency.transparent_mask_size;
+    capture->mask_digest = 0u;
+    if (transparency.transparent_mask != NULL &&
+        transparency.transparent_mask_size != 0u) {
+        capture->mask_digest = edge_digest_bytes(
+            transparency.transparent_mask,
+            transparency.transparent_mask_size);
+    }
+    ++capture->callback_count;
+    return SIXEL_OK;
+}
+
+int
+edge_expect_fixture_allocation_failures(
+    char const *label,
+    char const *relative_path,
+    edge_loader_options_t const *options,
+    int allow_successful_fallback)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    unsigned int allocation_total;
+    unsigned int failure_target;
+    unsigned int live_baseline;
+    edge_allocator_capture_t baseline;
+    edge_allocator_capture_t actual;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    allocation_total = 0u;
+    failure_target = 0u;
+    live_baseline = 0u;
+    memset(&baseline, 0, sizeof(baseline));
+    memset(&actual, 0, sizeof(actual));
+    result = 1;
+    edge_allocation_count = 0u;
+    edge_allocation_target = 0u;
+    edge_live_allocation_count = 0u;
+    edge_failure_size = 0u;
+    if (label == NULL || relative_path == NULL || options == NULL) {
+        return 1;
+    }
+    status = sixel_allocator_new(&allocator,
+                                 edge_fault_malloc,
+                                 edge_fault_calloc,
+                                 edge_fault_realloc,
+                                 edge_fault_free);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    live_baseline = edge_live_allocation_count;
+    status = SIXEL_FALSE;
+    result = edge_load_fixture_custom(label,
+                                      relative_path,
+                                      options,
+                                      allocator,
+                                      edge_capture_allocator_frame,
+                                      &baseline,
+                                      &status);
+    allocation_total = edge_allocation_count;
+    if (result != 0 || status != SIXEL_OK ||
+        baseline.callback_count == 0u || allocation_total == 0u ||
+        edge_live_allocation_count != live_baseline) {
+        fprintf(stderr, "%s baseline allocation load failed\n", label);
+        goto cleanup;
+    }
+
+    for (failure_target = 1u;
+         failure_target <= allocation_total;
+         ++failure_target) {
+        edge_allocation_count = 0u;
+        edge_allocation_target = failure_target;
+        edge_failure_size = 0u;
+        memset(&actual, 0, sizeof(actual));
+        status = SIXEL_FALSE;
+        result = edge_load_fixture_custom(label,
+                                          relative_path,
+                                          options,
+                                          allocator,
+                                          edge_capture_allocator_frame,
+                                          &actual,
+                                          &status);
+        edge_allocation_target = 0u;
+        if (result != 0 ||
+            (status != SIXEL_OK && !SIXEL_FAILED(status)) ||
+            (SIXEL_FAILED(status) &&
+             actual.callback_count > baseline.callback_count) ||
+            (status == SIXEL_OK &&
+             (actual.callback_count != baseline.callback_count ||
+              (allow_successful_fallback == 0 &&
+               (actual.digest != baseline.digest ||
+                actual.size != baseline.size ||
+                actual.width != baseline.width ||
+                actual.height != baseline.height ||
+                actual.pixelformat != baseline.pixelformat ||
+                actual.colorspace != baseline.colorspace ||
+                actual.alpha_zero_is_transparent !=
+                    baseline.alpha_zero_is_transparent ||
+                actual.mask_size != baseline.mask_size ||
+                actual.mask_digest != baseline.mask_digest)))) ||
+            edge_live_allocation_count != live_baseline) {
+            result = 1;
+            fprintf(stderr,
+                    "%s allocation %u/%u size=%lu: status=%d "
+                    "callbacks=%u live=%u/%u\n",
+                    label,
+                    failure_target,
+                    allocation_total,
+                    (unsigned long)edge_failure_size,
+                    (int)status,
+                    actual.callback_count,
+                    edge_live_allocation_count,
+                    live_baseline);
+            goto cleanup;
+        }
+    }
+    result = 0;
+
+cleanup:
+    edge_allocation_target = 0u;
+    sixel_allocator_unref(allocator);
+    if (edge_live_allocation_count != 0u) {
+        fprintf(stderr, "%s leaked %u allocations\n",
+                label,
+                edge_live_allocation_count);
+        return 1;
+    }
+    return result;
+}
+
 int
 edge_expect_rgb(char const *label,
                 unsigned char const *buffer,
@@ -884,6 +1199,42 @@ edge_expect_fixture_digests_options(
 }
 
 int
+edge_expect_buffer_rgb_digest(char const *label,
+                              unsigned char const *buffer,
+                              size_t buffer_size,
+                              int expected_width,
+                              int expected_height,
+                              uint64_t expected_digest)
+{
+    edge_frame_probe_t probe;
+    SIXELSTATUS status;
+    size_t expected_size;
+    int result;
+
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    expected_size = (size_t)expected_width * (size_t)expected_height * 3u;
+    result = edge_load_buffer(label,
+                              buffer,
+                              buffer_size,
+                              1,
+                              &probe,
+                              &status);
+    if (result != 0 || status != SIXEL_OK || probe.callback_count != 1 ||
+        probe.width[0] != expected_width ||
+        probe.height[0] != expected_height ||
+        probe.pixelformat[0] != SIXEL_PIXELFORMAT_RGB888 ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.rgb_size[0] != expected_size ||
+        edge_digest_bytes(probe.rgb[0], probe.rgb_size[0]) !=
+            expected_digest) {
+        fprintf(stderr, "%s: RGB digest or metadata mismatch\n", label);
+        return 1;
+    }
+    return 0;
+}
+
+int
 edge_expect_fixture_rgb_digests(char const *label,
                                 char const *relative_path,
                                 int require_static,
@@ -997,7 +1348,16 @@ edge_expect_float_samples(char const *label,
         sample_pixels[0] >= pixel_count ||
         sample_pixels[1] >= pixel_count ||
         sample_pixels[2] >= pixel_count) {
-        fprintf(stderr, "%s: float frame metadata mismatch\n", label);
+        fprintf(stderr,
+                "%s: float frame metadata callbacks=%d size=%dx%d "
+                "pf=%d cs=%d bytes=%lu\n",
+                label,
+                probe->callback_count,
+                probe->width[0],
+                probe->height[0],
+                probe->pixelformat[0],
+                probe->colorspace[0],
+                (unsigned long)probe->rgb_size[0]);
         return 1;
     }
     for (sample_index = 0u; sample_index < 3u; ++sample_index) {
@@ -1140,8 +1500,18 @@ edge_expect_fixture_rgb_mask_digests(
             probe.rgb_size[frame_index] != rgb_size ||
             probe.mask_size[frame_index] != mask_size ||
             probe.alpha_zero_is_transparent[frame_index] == 0) {
-            fprintf(stderr, "%s: frame %d RGB/mask metadata mismatch\n",
-                    label, frame_index);
+            fprintf(stderr,
+                    "%s: frame %d RGB/mask metadata %dx%d pf=%d cs=%d "
+                    "rgb=%lu mask=%lu alpha-zero=%d\n",
+                    label,
+                    frame_index,
+                    probe.width[frame_index],
+                    probe.height[frame_index],
+                    probe.pixelformat[frame_index],
+                    probe.colorspace[frame_index],
+                    (unsigned long)probe.rgb_size[frame_index],
+                    (unsigned long)probe.mask_size[frame_index],
+                    probe.alpha_zero_is_transparent[frame_index]);
             return 1;
         }
         actual_rgb_digest = edge_digest_bytes(probe.rgb[frame_index],

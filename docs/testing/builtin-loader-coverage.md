@@ -15,16 +15,16 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Shared loader integration and policy](../loader/builtin.md) | 49 | 1 | 3 | 1 | 4 | 0 | 40 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
-| [PNG and APNG](../loader/builtin/png.md) | 114 | 9 | 59 | 0 | 11 | 0 | 35 |
+| [PNG and APNG](../loader/builtin/png.md) | 119 | 12 | 59 | 0 | 11 | 2 | 35 |
 | [JPEG](../loader/builtin/jpeg.md) | 32 | 11 | 14 | 1 | 2 | 0 | 4 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 991 | 12 | 551 | 402 | 9 | 2 | 15 |
+| [PSD and PSB](../loader/builtin/psd.md) | 992 | 12 | 551 | 402 | 9 | 3 | 15 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
-| [WebP](../loader/builtin/webp.md) | 304 | 10 | 48 | 241 | 0 | 0 | 5 |
+| [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| [TGA](../loader/builtin/tga.md) | 24 | 11 | 8 | 0 | 3 | 0 | 2 |
+| [TGA](../loader/builtin/tga.md) | 25 | 11 | 8 | 0 | 4 | 0 | 2 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2012** | **450** | **724** | **652** | **50** | **4** | **132** |
+| **Total** | **2023** | **456** | **724** | **652** | **51** | **8** | **132** |
 
 ## Complete inventory
 
@@ -292,6 +292,11 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader/builtin/2005_loader_builtin_apng_dispose_background_digest.t](../../tests/loader/builtin/2005_loader_builtin_apng_dispose_background_digest.t) | Verify APNG BACKGROUND disposal stays exact. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/2023_loader_builtin_png_cgbi_numeric.t](../../tests/loader/builtin/2023_loader_builtin_png_cgbi_numeric.t) | Verify CgBI premultiplied BGRA becomes exact straight RGB. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/2028_loader_builtin_apng_cancel_boundaries.t](../../tests/loader/builtin/2028_loader_builtin_apng_cancel_boundaries.t) | Verify cancellation before decode and immediately after the first APNG frame. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/2032_loader_builtin_apng_allocation_failures.t](../../tests/loader/builtin/2032_loader_builtin_apng_allocation_failures.t) | Verify APNG allocation failures cannot become truncated success. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/2035_loader_builtin_png_icc_allocation_failures.t](../../tests/loader/builtin/2035_loader_builtin_png_icc_allocation_failures.t) | Verify PNG ICC allocation fallback leaves no live allocation. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md), [`docs/loader/builtin-cms.md`](../loader/builtin-cms.md) |
+| [tests/loader/builtin/2040_loader_builtin_png_chrm_gama_float_numeric.t](../../tests/loader/builtin/2040_loader_builtin_png_chrm_gama_float_numeric.t) | Verify cHRM/gAMA matrix conversion at float frame precision. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md), [`docs/loader/builtin-cms.md`](../loader/builtin-cms.md) |
+| [tests/loader/builtin/2041_loader_builtin_png_singular_chrm_fallback_numeric.t](../../tests/loader/builtin/2041_loader_builtin_png_singular_chrm_fallback_numeric.t) | Verify singular cHRM falls back to the usable gAMA path. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md), [`docs/loader/builtin-cms.md`](../loader/builtin-cms.md) |
+| [tests/loader/builtin/2042_loader_builtin_png_file_background_chrm_numeric.t](../../tests/loader/builtin/2042_loader_builtin_png_file_background_chrm_numeric.t) | Verify PNG bKGD uses the same cHRM/gAMA source interpretation. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md), [`docs/loader/background-policy.md`](../loader/background-policy.md) |
 
 ### JPEG
 
@@ -1602,6 +1607,7 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/2025_loader_builtin_psd_clipping_digest.t](../../tests/loader/builtin/2025_loader_builtin_psd_clipping_digest.t) | Verify PSD clipping reconstruction with a complete RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/2026_loader_builtin_psd_mask_digest.t](../../tests/loader/builtin/2026_loader_builtin_psd_mask_digest.t) | Verify PSD raster-mask reconstruction with a complete RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/2027_loader_builtin_psd_effect_digest.t](../../tests/loader/builtin/2027_loader_builtin_psd_effect_digest.t) | Verify representative PSD layer effects with a complete RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/2034_loader_builtin_psd_effect_allocation_failures.t](../../tests/loader/builtin/2034_loader_builtin_psd_effect_allocation_failures.t) | Verify PSD layer-effect allocation failures leave no live allocation. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 ### BMP and DIB
 
@@ -2045,6 +2051,10 @@ Primary implementation context: [WebP builtin component](../loader/builtin/webp.
 | [tests/loader/builtin/2014_loader_builtin_webp_alph_filter3_numeric.t](../../tests/loader/builtin/2014_loader_builtin_webp_alph_filter3_numeric.t) | Verify WebP ALPH filter 3 produces exact RGB and mask. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 | [tests/loader/builtin/2015_loader_builtin_webp_animation_subrect_digest.t](../../tests/loader/builtin/2015_loader_builtin_webp_animation_subrect_digest.t) | Verify WebP subrect animation produces exact canvases. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 | [tests/loader/builtin/2029_loader_builtin_webp_cancel_boundaries.t](../../tests/loader/builtin/2029_loader_builtin_webp_cancel_boundaries.t) | Verify cancellation before decode and immediately after the first WebP frame. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/2033_loader_builtin_webp_animation_allocation_failures.t](../../tests/loader/builtin/2033_loader_builtin_webp_animation_allocation_failures.t) | Verify WebP animation allocation failures clean up partial traversal. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/2036_loader_builtin_webp_vp8l_color_cache_digest.t](../../tests/loader/builtin/2036_loader_builtin_webp_vp8l_color_cache_digest.t) | Verify VP8L color-cache expansion against an exact RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/2037_loader_builtin_webp_vp8l_color_index_digest.t](../../tests/loader/builtin/2037_loader_builtin_webp_vp8l_color_index_digest.t) | Verify VP8L color-index reversal against an exact RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/2038_loader_builtin_webp_alpha_background_digest.t](../../tests/loader/builtin/2038_loader_builtin_webp_alpha_background_digest.t) | Verify alpha-bearing ANIM background composition by frame digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 
 ### SIXEL
 
@@ -2085,6 +2095,7 @@ Primary implementation context: [TGA builtin component](../loader/builtin/tga.md
 | [tests/loader/builtin/1969_loader_builtin_tga_grayscale8_numeric.t](../../tests/loader/builtin/1969_loader_builtin_tga_grayscale8_numeric.t) | Verify type-3 TGA gray samples expand to exact RGB bytes. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 | [tests/loader/builtin/1990_loader_builtin_tga_truncated_direct_reject.t](../../tests/loader/builtin/1990_loader_builtin_tga_truncated_direct_reject.t) | Verify direct-color raster truncation is rejected. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 | [tests/loader/builtin/1991_loader_builtin_tga_rle_overrun_reject.t](../../tests/loader/builtin/1991_loader_builtin_tga_rle_overrun_reject.t) | Verify an RLE packet cannot run past the declared raster. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/2039_loader_builtin_tga_header_collision_reject.t](../../tests/loader/builtin/2039_loader_builtin_tga_header_collision_reject.t) | Verify a conflicting TGA palette flag cannot claim a direct image. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 
 ### Softimage PIC
 

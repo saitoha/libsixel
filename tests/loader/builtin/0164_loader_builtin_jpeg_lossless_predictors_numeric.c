@@ -6,7 +6,7 @@
 #include "jpeg_lossless_test_common.h"
 
 int
-test_loader_0164_loader_builtin_jpeg_lossless_predictors_numeric(
+test_loader_0164_loader_builtin_jpeg_lossless_preds_numeric(
     int argc,
     char **argv)
 {
