@@ -476,6 +476,8 @@ test_runner_SOURCES = test_runner.c \
     processing/frame/0005_frame_transparent_mask_resize_bilinear.c \
     processing/frame/frame_transparent_mask_resize_test_common.c \
     processing/frame/frame_transparent_mask_resize_test_common.h \
+    processing/geometry/resampling_exact_test_driver.c \
+    processing/geometry/resampling_measurement_test_driver.c \
     processing/planner/0001_resize_linear_float32.c \
     processing/planner/0002_resize_allocation_failure.c \
     processing/chunk/0001_chunk_factory.c \

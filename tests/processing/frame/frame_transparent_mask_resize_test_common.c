@@ -21,14 +21,18 @@ static SIXELSTATUS
 frame_mask_resize_init(sixel_allocator_t *allocator,
                        sixel_frame_t **frame_out)
 {
-    static unsigned char const source_pixels[12] = {
-        0xffu, 0x00u, 0x00u,
+    static unsigned char const source_pixels[9] = {
         0xffu, 0x00u, 0x00u,
         0xffu, 0x00u, 0x00u,
         0xffu, 0x00u, 0x00u
     };
-    static unsigned char const source_mask[4] = {
-        1u, 1u, 0u, 0u
+    /*
+     * Reducing the alternating mask from three samples to two separates the
+     * methods: nearest selects [1, 0], while bilinear coverage is 5/8 at both
+     * destinations and therefore crosses the inclusive half-mask threshold.
+     */
+    static unsigned char const source_mask[3] = {
+        1u, 0u, 1u
     };
     SIXELSTATUS status;
     sixel_frame_t *frame;
@@ -59,7 +63,7 @@ frame_mask_resize_init(sixel_allocator_t *allocator,
     memcpy(pixels, source_pixels, sizeof(source_pixels));
     status = sixel_frame_init(frame,
                               pixels,
-                              4,
+                              3,
                               1,
                               SIXEL_PIXELFORMAT_RGB888,
                               NULL,
@@ -68,7 +72,7 @@ frame_mask_resize_init(sixel_allocator_t *allocator,
         goto end;
     }
     pixels = NULL;
-    mask = (unsigned char *)sixel_allocator_malloc(allocator, 4u);
+    mask = (unsigned char *)sixel_allocator_malloc(allocator, 3u);
     if (mask == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -97,7 +101,7 @@ end:
 int
 frame_transparent_mask_resize_run(
     int method_for_resampling,
-    unsigned char const expected_mask[7])
+    unsigned char const expected_mask[2])
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -118,7 +122,7 @@ frame_transparent_mask_resize_run(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    status = sixel_frame_resize(frame, 7, 1, method_for_resampling);
+    status = sixel_frame_resize(frame, 2, 1, method_for_resampling);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -129,8 +133,8 @@ frame_transparent_mask_resize_run(
     }
     if (transparency.alpha_zero_is_transparent == 0 ||
         transparency.transparent_mask == NULL ||
-        transparency.transparent_mask_size != 7u ||
-        memcmp(transparency.transparent_mask, expected_mask, 7u) != 0) {
+        transparency.transparent_mask_size != 2u ||
+        memcmp(transparency.transparent_mask, expected_mask, 2u) != 0) {
         status = SIXEL_LOGIC_ERROR;
         goto end;
     }

@@ -161,6 +161,8 @@ int test_frame_0002_float_request(int argc, char **argv);
 int test_frame_0003_transparent_mask_clip(int argc, char **argv);
 int test_frame_0004_transparent_mask_resize(int argc, char **argv);
 int test_frame_0005_transparent_mask_resize_bilinear(int argc, char **argv);
+int test_geometry_resampling_exact(int argc, char **argv);
+int test_geometry_resampling_measurement_baseline(int argc, char **argv);
 int test_plan_0001_resize_linear_float32(int argc, char **argv);
 int test_plan_0002_resize_alloc_failure(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
@@ -492,6 +494,9 @@ static test_entry_t const test_entries[] = {
       test_frame_0004_transparent_mask_resize },
     { "frame/0005_frame_transparent_mask_resize_bilinear",
       test_frame_0005_transparent_mask_resize_bilinear },
+    { "geometry/resampling_exact", test_geometry_resampling_exact },
+    { "geometry/resampling_measurement_baseline",
+      test_geometry_resampling_measurement_baseline },
     { "planner/0001_resize_linear_float32",
       test_plan_0001_resize_linear_float32 },
     { "planner/0002_resize_allocation_failure",

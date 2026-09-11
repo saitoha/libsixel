@@ -21,8 +21,8 @@
 int
 test_frame_0004_transparent_mask_resize(int argc, char **argv)
 {
-    static unsigned char const expected_mask[7] = {
-        1u, 1u, 1u, 1u, 0u, 0u, 0u
+    static unsigned char const expected_mask[2] = {
+        1u, 0u
     };
 
     (void)argc;

@@ -17,6 +17,10 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
 
 PLOTTER = Path(__file__).with_name("plot_resampling_measurements.py")
+NUMERIC_BASELINES = (
+    Path(__file__).resolve().parents[1]
+    / "tests/data/expected/resampling-measurement-baselines.csv"
+)
 
 
 def literal_assignment(path: Path, name: str) -> object:
@@ -266,6 +270,182 @@ def validate_moire(rows: Sequence[Mapping[str, str]]) -> None:
             fail(f"invalid zone-plate digest: {row}")
 
 
+def compare_numeric_baselines(
+    measurement: str,
+    actual: Mapping[Tuple[str, str, str], float],
+    baseline_rows: Sequence[Mapping[str, str]],
+) -> None:
+    """Compare derived metrics with an explicit, reviewable tolerance table."""
+    expected: Dict[Tuple[str, str, str], Tuple[float, float]] = {}
+
+    for row in baseline_rows:
+        if row["measurement"] != measurement:
+            continue
+        key = (row["scenario"], row["method"], row["metric"])
+        if key in expected:
+            fail(f"duplicate numeric baseline for {measurement}/{key}")
+        value = float(row["expected"])
+        tolerance = float(row["tolerance"])
+        if not math.isfinite(value) or not math.isfinite(tolerance):
+            fail(f"non-finite numeric baseline for {measurement}/{key}")
+        if tolerance < 0.0:
+            fail(f"negative numeric tolerance for {measurement}/{key}")
+        expected[key] = (value, tolerance)
+
+    if set(actual) != set(expected):
+        missing = sorted(set(expected) - set(actual))
+        extra = sorted(set(actual) - set(expected))
+        fail(
+            f"numeric baseline keys changed for {measurement}: "
+            f"missing={missing}, extra={extra}"
+        )
+    for key, value in actual.items():
+        expected_value, tolerance = expected[key]
+        if abs(value - expected_value) > tolerance:
+            fail(
+                f"numeric baseline changed for {measurement}/{key}: "
+                f"{value:.8f} is outside {expected_value:.8f} "
+                f"+/- {tolerance:.8f}"
+            )
+
+
+def validate_stencil_baselines(
+    rows: Sequence[Mapping[str, str]],
+    baseline_rows: Sequence[Mapping[str, str]],
+) -> None:
+    """Gate support width, DC normalization, and negative-lobe magnitude."""
+    actual: Dict[Tuple[str, str, str], float] = {}
+
+    for scenario in ("enlarge-4x", "reduce-4x"):
+        for method in METHOD_NAMES:
+            responses = [
+                float(row["response"])
+                for row in rows
+                if row["scenario"] == scenario and row["method"] == method
+                and float(row["response"]) != 0.0
+            ]
+            actual[(scenario, method, "nonzero_count")] = float(
+                len(responses)
+            )
+            actual[(scenario, method, "response_sum")] = sum(responses)
+            actual[(scenario, method, "response_abs_sum")] = sum(
+                abs(value) for value in responses
+            )
+    compare_numeric_baselines("stencil", actual, baseline_rows)
+
+
+def validate_frequency_baselines(
+    rows: Sequence[Mapping[str, str]],
+    baseline_rows: Sequence[Mapping[str, str]],
+) -> None:
+    """Gate near-cutoff retention and above-Nyquist alias leakage."""
+    actual: Dict[Tuple[str, str, str], float] = {}
+
+    for method in METHOD_NAMES:
+        selected = [row for row in rows if row["method"] == method]
+        near = min(
+            selected,
+            key=lambda row: abs(
+                float(row["frequency_cycles_per_output_pixel"]) - 0.45
+            ),
+        )
+        alias = [
+            float(row["contrast_gain"])
+            for row in selected
+            if float(row["frequency_cycles_per_output_pixel"]) > 0.5
+        ]
+        actual[("", method, "gain_near_0_45")] = float(
+            near["contrast_gain"]
+        )
+        actual[("", method, "alias_rms")] = math.sqrt(
+            statistics.fmean(value * value for value in alias)
+        )
+    compare_numeric_baselines("frequency", actual, baseline_rows)
+
+
+def validate_isotropy_baselines(
+    rows: Sequence[Mapping[str, str]],
+    baseline_rows: Sequence[Mapping[str, str]],
+) -> None:
+    """Gate the measured directional spread of the separable operator."""
+    actual: Dict[Tuple[str, str, str], float] = {}
+
+    for method in METHOD_NAMES:
+        gains = [
+            float(row["contrast_gain"])
+            for row in rows if row["method"] == method
+        ]
+        mean = statistics.fmean(gains)
+        actual[("", method, "directional_range_over_mean")] = (
+            (max(gains) - min(gains)) / mean
+        )
+    compare_numeric_baselines("isotropy", actual, baseline_rows)
+
+
+def validate_moire_baselines(
+    rows: Sequence[Mapping[str, str]],
+    baseline_rows: Sequence[Mapping[str, str]],
+) -> None:
+    """Gate radial-chirp error against the recorded area comparator."""
+    actual = {
+        ("", row["method"], "rms_error_vs_area_reference"): float(
+            row["rms_error_vs_area_reference"]
+        )
+        for row in rows
+    }
+    compare_numeric_baselines("moire", actual, baseline_rows)
+
+
+def validate_quality_baselines(
+    rows: Sequence[Mapping[str, str]],
+    baseline_rows: Sequence[Mapping[str, str]],
+) -> None:
+    """Gate measured image quality and encoded size with explicit bands."""
+    actual: Dict[Tuple[str, str, str], float] = {}
+
+    for row in rows:
+        method = row["method"]
+        actual[("", method, "ms_ssim")] = float(row["ms_ssim"])
+        actual[("", method, "delta_e00_mean")] = float(
+            row["delta_e00_mean"]
+        )
+        actual[("", method, "sixel_bytes")] = float(row["sixel_bytes"])
+    compare_numeric_baselines("quality", actual, baseline_rows)
+
+
+def validate_speed_baselines(
+    rows: Sequence[Mapping[str, str]],
+    baseline_rows: Sequence[Mapping[str, str]],
+) -> None:
+    """Gate relative method cost without promising absolute host timings."""
+    actual: Dict[Tuple[str, str, str], float] = {}
+    nearest = float(rows[0]["median_ms"])
+
+    for row in rows:
+        actual[("", row["method"], "median_ratio_to_nearest")] = (
+            float(row["median_ms"]) / nearest
+        )
+    compare_numeric_baselines("speed", actual, baseline_rows)
+
+
+def validate_numeric_baselines(directory: Path) -> None:
+    """Validate all implementation-level measurements against tolerances."""
+    baseline_rows = read_csv(NUMERIC_BASELINES)
+    stencil_rows = read_csv(directory / "resampling-discrete-stencils.csv")
+    frequency_rows = read_csv(directory / "resampling-frequency-response.csv")
+    isotropy_rows = read_csv(directory / "resampling-isotropy.csv")
+    moire_rows = read_csv(directory / "resampling-moire.csv")
+    quality_rows = read_csv(directory / "resampling-quality-size.csv")
+    speed_rows = read_csv(directory / "resampling-speed.csv")
+
+    validate_stencil_baselines(stencil_rows, baseline_rows)
+    validate_frequency_baselines(frequency_rows, baseline_rows)
+    validate_isotropy_baselines(isotropy_rows, baseline_rows)
+    validate_moire_baselines(moire_rows, baseline_rows)
+    validate_quality_baselines(quality_rows, baseline_rows)
+    validate_speed_baselines(speed_rows, baseline_rows)
+
+
 def validate_quality(rows: Sequence[Mapping[str, str]]) -> None:
     """Validate post-SIXEL quality, size, digests, and commands."""
     validate_method_order(rows)
@@ -452,6 +632,7 @@ def main() -> int:
         read_csv(directory / "resampling-speed.csv"),
         int(protocol["speed_runs"]),
     )
+    validate_numeric_baselines(directory)
     validate_artifact_hashes(directory, metadata)
     return 0
 
