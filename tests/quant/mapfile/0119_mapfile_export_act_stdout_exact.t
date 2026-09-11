@@ -2,6 +2,8 @@
 # Verify ACT palette export writes its exact binary layout to stdout.
 # Test-plan: docs/testing/mapfile-parser-coverage.md
 # Policy: docs/functionality/external-palettes.md
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-12
 
 set -eux
 
@@ -12,22 +14,14 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-actual_palette="${ARTIFACT_LOCAL_DIR}/actual.act"
 expected_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-black-white-count-2.act"
 
+# Compare the stdout stream before an OpenVMS RMS file can add a record
+# terminator or make cmp consider record attributes that are not ACT bytes.
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
-    -M act:- -o/dev/null "${input_image}" >"${actual_palette}" || {
-    echo "not ok" 1 - "ACT palette export to stdout failed"
-    exit 0
-}
-
-# RMS record attributes can make cmp disagree for a file created by stdout
-# redirection even when both files expose the same logical byte sequence.
-test "$(od -An -tx1 "${actual_palette}")" = \
-    "$(od -An -tx1 "${expected_palette}")" || {
+    -M act:- -o/dev/null "${input_image}" | cmp - "${expected_palette}" || {
     echo "not ok" 1 - "ACT stdout palette layout changed"
     exit 0
 }
