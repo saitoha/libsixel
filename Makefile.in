@@ -660,6 +660,45 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/resampling/figures/resampling-coordinate-mapping.png \
 	docs/functionality/resampling/figures/resampling-kernels-radius-1.png \
 	docs/functionality/resampling/figures/resampling-kernels-wide.png \
+	docs/functionality/resampling/measurements/resampling-discrete-stencils.csv \
+	docs/functionality/resampling/measurements/resampling-discrete-stencils.png \
+	docs/functionality/resampling/measurements/resampling-frequency-response-compact.png \
+	docs/functionality/resampling/measurements/resampling-frequency-response-wide.png \
+	docs/functionality/resampling/measurements/resampling-frequency-response.csv \
+	docs/functionality/resampling/measurements/resampling-isotropy-gain.png \
+	docs/functionality/resampling/measurements/resampling-isotropy-spread.png \
+	docs/functionality/resampling/measurements/resampling-isotropy.csv \
+	docs/functionality/resampling/measurements/resampling-moire-bicubic.png \
+	docs/functionality/resampling/measurements/resampling-moire-bilinear.png \
+	docs/functionality/resampling/measurements/resampling-moire-gaussian.png \
+	docs/functionality/resampling/measurements/resampling-moire-hamming.png \
+	docs/functionality/resampling/measurements/resampling-moire-hanning.png \
+	docs/functionality/resampling/measurements/resampling-moire-input.png \
+	docs/functionality/resampling/measurements/resampling-moire-lanczos2.png \
+	docs/functionality/resampling/measurements/resampling-moire-lanczos3.png \
+	docs/functionality/resampling/measurements/resampling-moire-lanczos4.png \
+	docs/functionality/resampling/measurements/resampling-moire-nearest.png \
+	docs/functionality/resampling/measurements/resampling-moire-reference.png \
+	docs/functionality/resampling/measurements/resampling-moire-welsh.png \
+	docs/functionality/resampling/measurements/resampling-moire.csv \
+	docs/functionality/resampling/measurements/resampling-natural-bicubic-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-bilinear-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-gaussian-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-hamming-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-hanning-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-lanczos2-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-lanczos3-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-lanczos4-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-nearest-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-reference-zoom.png \
+	docs/functionality/resampling/measurements/resampling-natural-welsh-zoom.png \
+	docs/functionality/resampling/measurements/resampling-quality-delta-e00.png \
+	docs/functionality/resampling/measurements/resampling-quality-ms-ssim.png \
+	docs/functionality/resampling/measurements/resampling-quality-size.csv \
+	docs/functionality/resampling/measurements/resampling-run.json \
+	docs/functionality/resampling/measurements/resampling-size.png \
+	docs/functionality/resampling/measurements/resampling-speed.csv \
+	docs/functionality/resampling/measurements/resampling-speed.png \
 	docs/functionality/clustering-colorspace.md \
 	docs/functionality/working-colorspace.md \
 	docs/functionality/merge-policy.md \
