@@ -22,6 +22,13 @@ Instead of asking “which squares are color 5?”, the OR encoder asks “which
 
 For an eight-entry palette numbered 0 through 7, three switches with values **1, 2, and 4** can represent every label. For example, 5 uses the 1 and 4 switches; 6 uses the 2 and 4 switches. Consider this single column of six pixels:
 
+<picture>
+  <source media="(max-width: 640px)" srcset="or-mode/encoding-explained-mobile.svg">
+  <img alt="The same six pixels numbered 1 through 6 need six ordinary color stencils or three OR bit stencils. Pixel E receives bits 1 and 4, reconstructing palette index 5 and its original purple color." src="or-mode/encoding-explained.svg">
+</picture>
+
+*Read each stencil column from top to bottom: 1 marks a pixel and 0 leaves it unmarked. Each column becomes one SIXEL pattern character, shown underneath. The colors in the input are illustrative palette entries; teal marks index bits, not a new paint color. The lower panel follows pixel E through reconstruction and palette lookup.*
+
 | Pixel, top to bottom | Desired palette index | Plane 1 | Plane 2 | Plane 4 |
 | --- | ---: | :---: | :---: | :---: |
 | A | 1 | On | Off | Off |
@@ -277,3 +284,5 @@ The [encoder-core test category](../../tests/processing/encoder-core/) also exer
 ### Coverage limits
 
 The CLI test is a conversion smoke test, not an exhaustive default, long-option, repeated-option, or multi-input state test. The table does not establish every palette size, every alpha-policy combination, `-I`/`-O` composition, equivalence under every thread schedule, or terminal display compatibility. Receiver handling of `P2=5`, existing framebuffer content, and offset margins requires a separate receiver-specific observation.
+
+<!-- Regenerate the explanatory SVGs with: python3 tools/ormode/render_explanation.py -->

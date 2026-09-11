@@ -67,6 +67,9 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/project-history.md \
 	docs/sixel-format.md \
 	docs/functionality/or-mode.md \
+	docs/functionality/or-mode/encoding-explained.svg \
+	docs/functionality/or-mode/encoding-explained-mobile.svg \
+	tools/ormode/render_explanation.py \
 	docs/functionality/or-mode/scaling.md \
 	docs/functionality/or-mode/sweeps/axes.csv \
 	docs/functionality/or-mode/sweeps/color-curves.png \
