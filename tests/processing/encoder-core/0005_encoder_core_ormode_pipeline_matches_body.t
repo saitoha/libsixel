@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/or-mode.md
 # Compare OR-mode pipeline body output with serial body output.
 
 set -eux

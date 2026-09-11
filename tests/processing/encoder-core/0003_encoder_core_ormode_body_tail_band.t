@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/or-mode.md
 # Run the OR-mode body tail-band unit test via the unified runner.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/or-mode.md
 # Verify OR mode wide-index decode overlays bit-plane selectors.
 
 set -eux

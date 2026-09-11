@@ -318,6 +318,8 @@ Likewise, libsixel's high-color mode is an encoding technique built from normal
 SIXEL operations, including repeated palette definitions and painting passes;
 it is not a new sixel data-character range.
 
+The [OR-mode dialect](functionality/or-mode.md) uses `P2=5` to request bitwise OR of palette indices. It requires explicit receiver support and differs from ordinary SIXEL overwrite semantics.
+
 ## Robustness and security
 
 SIXEL is both image data and executable terminal control syntax. Do not send an

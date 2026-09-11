@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/or-mode.md
 # Verify -O compatibility mode conversion succeeds.
 set -eux
 

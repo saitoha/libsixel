@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/or-mode.md
 # Verify -X does not change ormode encoded output with PAL mapfiles.
 set -eux
 

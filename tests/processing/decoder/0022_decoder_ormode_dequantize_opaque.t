@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/or-mode.md
 # Policy: docs/functionality/decoding-pipeline.md
 # Verify OR mode stays opaque through the dequantize decode path.
 
