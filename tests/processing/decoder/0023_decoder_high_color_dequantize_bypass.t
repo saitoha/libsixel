@@ -1,5 +1,6 @@
 #!/bin/sh
 # Policy: docs/functionality/decoding-pipeline.md
+# Policy: docs/functionality/dequantization.md
 # Verify high color streams bypass the dequantize decode path.
 
 set -eux

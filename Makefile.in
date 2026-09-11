@@ -854,6 +854,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dither-policies/measurements/dither-policy-size.png \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.csv \
 	docs/functionality/dither-policies/measurements/dither-policy-speed.png \
+	docs/functionality/dequantization.md \
 	docs/functionality/decoding-pipeline.md \
 	docs/functionality/decoding-pipeline-figures/decoder-output-policy.svg \
 	docs/functionality/decoding-pipeline-figures/decoder-parallel.svg \

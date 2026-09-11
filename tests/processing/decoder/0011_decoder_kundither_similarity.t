@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify k_undither output with a non-default similarity bias.
+# Policy: docs/functionality/dequantization.md
 
 set -eux
 

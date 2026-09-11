@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify sixel_decode_pixels() packed output byte-order hints.
+# Policy: docs/functionality/dequantization.md
 # Policy: docs/functionality/decoding-pipeline.md
 
 set -eux

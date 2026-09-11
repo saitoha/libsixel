@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify k_undither output with edge protection enabled.
+# Policy: docs/functionality/dequantization.md
 
 set -eux
 
