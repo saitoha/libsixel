@@ -1,15 +1,103 @@
 # Builtin TGA Loader
 
-## Identity and history
+## Format lineage
 
-TGA remains in the adapted stb-derived core imported with commit [`81375f0bd`](https://github.com/saitoha/libsixel/commit/81375f0bd). It has no strong leading file signature, so recognition validates the 18-byte header and its compatible image-type, colormap, size, and depth fields. Commit [`6d57f075d`](https://github.com/saitoha/libsixel/commit/6d57f075d) added the palette-preserving fast path on 2026-01-22, and [`ba59c4607`](https://github.com/saitoha/libsixel/commit/ba59c4607) added explicit truecolor alpha-policy handling on 2026-03-29.
+Truevision introduced TGA for TARGA graphics hardware and later published the TGA 2.0 extension/footer model. The format is also called TARGA and conventionally uses `.tga`, but it has no mandatory leading magic. The [Truevision TGA specification archive](https://github.com/DEAKSoftware/Truevision-TGA) preserves the 2.0 specification and developer material.
 
-## Accepted variants
+TGA is a small raster container rather than one pixel coding. It can store colormapped indices, direct BGR(A), or grayscale, either raw or packet-RLE, with selectable vertical/horizontal origin and optional trailing extension/developer areas. Many old writers use underspecified 16-bit alpha and colormap conventions, so “TGA support” needs a narrower compatibility statement.
 
-The decoder accepts colormapped image types 1 and 9, truecolor types 2 and 10, and grayscale types 3 and 11; adding 8 to the base type selects TGA RLE. Colormap entries may be 8, 15, 16, 24, or 32 bits. Colormap indices may be 8 or 16 bits in the general path, while the palette-preserving `PAL8` path requires 8-bit indices. Direct samples may be 8-bit gray, 16-bit gray plus alpha, 15/16-bit 5:5:5 RGB, 24-bit BGR, or 32-bit BGRA. Vertical origin is honored.
+libsixel retains TGA in the adapted stb-derived core imported by commit [`81375f0bd`](https://github.com/saitoha/libsixel/commit/81375f0bd). Commit [`6d57f075d`](https://github.com/saitoha/libsixel/commit/6d57f075d) added the palette-preserving path on 2026-01-22, and [`ba59c4607`](https://github.com/saitoha/libsixel/commit/ba59c4607) added explicit 32-bit truecolor alpha finalization on 2026-03-29. Unlike PNG, GIF, HDR, BMP, and PSD, this family has not been extracted into a complete format-owned decoder.
 
-Indexed 8-bit input can remain `PAL8`; 32-bit palette entries provide transparency metadata, and multiple fully transparent entries are folded into the frame's single transparent palette key when necessary. Other forms become gamma RGB/RGBA byte data. Truecolor alpha is handled by common background/alpha policy.
+## Header, recognition, and image types
 
-## Not supported or not interpreted
+The 18-byte little-endian header contains ID length, colormap flag, image type, colormap origin/length/entry size, x/y origin, width, height, pixel depth, and descriptor. Because there is no signature, the predicate validates compatible combinations and can only make a structural guess. Closing the loader chain with `-Lbuiltin!` prevents another component from accepting a rejected guess but does not make TGA recognition collision-free.
 
-The x/y origin fields are parsed but do not place the image on a larger canvas, and a nonzero first-colormap-entry index is not implemented as a palette index base. Horizontal right-to-left origin is not implemented. The descriptor's claimed alpha-bit count is not used to reinterpret 15/16-bit truecolor; those forms are treated as opaque RGB, while explicit 16-bit grayscale-alpha and 32-bit pixels carry alpha through their component layouts. TGA 2.0 extension/developer areas, color-correction tables, scan-line tables, thumbnails, and ICC/profile metadata are not interpreted. The loader is single-frame and eight-bit at its output boundary.
+| Image type | Source model | Compression |
+| --- | --- | --- |
+| 1 | Colormapped indices | Raw |
+| 2 | Direct truecolor | Raw |
+| 3 | Grayscale | Raw |
+| 9 | Colormapped indices | TGA packet RLE |
+| 10 | Direct truecolor | TGA packet RLE |
+| 11 | Grayscale | TGA packet RLE |
+
+The image ID field is skipped. Width and height must be positive and within stb's configured dimension limit. The descriptor's vertical-origin bit is honored by row reversal. The horizontal right-to-left bit is not implemented. X/y origin values do not place the raster on a larger canvas.
+
+## Pixel and palette representations
+
+| Source representation | Parser support | Builtin frame behavior |
+| --- | --- | --- |
+| 8-bit grayscale | Yes | Expanded to gamma `RGB888` because the residual wrapper requests three components. |
+| 16-bit grayscale plus alpha | The stb parser recognizes two 8-bit components | The residual wrapper requests `RGB`, so grayscale is expanded and alpha is discarded. This is not an alpha-preserving end-to-end variant. |
+| 15/16-bit direct truecolor | Yes | Interpreted as opaque 5:5:5 RGB and expanded to gamma bytes. The spare bit is not treated as alpha. |
+| 24-bit direct truecolor | Yes | BGR is reordered to gamma `RGB888`. |
+| 32-bit direct truecolor | Yes | BGRA is reordered to `RGBA8888`, then common alpha/background finalization runs. |
+| 8-bit colormap entry | Yes | Interpreted as grayscale and expanded to RGB. |
+| 15/16-bit colormap entry | Yes | Interpreted as opaque 5:5:5 and expanded to RGB. |
+| 24-bit colormap entry | Yes | BGR palette entry becomes RGB. |
+| 32-bit colormap entry | Yes | BGRA palette entry supplies palette alpha as described below. |
+
+The general stb path accepts 8- or 16-bit colormap indices and expands them immediately. The palette-preserving path is narrower: it requires an indexed type, 8-bit indices, and enabled palette fusion, then returns gamma `PAL8` plus at most 256 RGB entries.
+
+The header's first-colormap-entry value is not implemented as a logical index base. Files using a nonzero origin are therefore outside the supported semantic subset even where the byte parser can continue. This is important because the field is not simply cosmetic; compliant indices are relative to that declared origin.
+
+## RLE coding and orientation
+
+TGA RLE divides the raster into packets of 1 through 128 pixels. A command with bit 7 clear is a raw packet followed by that many distinct samples; bit 7 set is a run packet followed by one sample repeated that many times. Packets can cross scanline boundaries because decode is over the linear pixel count. The decoder validates allocation arithmetic and source availability through the stb context, then performs vertical row reversal when the descriptor declares bottom-left origin.
+
+Horizontal right-to-left order is left unchanged. TGA 2.0 scan-line tables are not used to seek rows; all accepted pixel data is decoded sequentially from the image-data offset.
+
+## Alpha and palette fast-path details
+
+Thirty-two-bit direct truecolor is the only non-indexed TGA form for which the builtin wrapper explicitly requests RGBA and retains source alpha. Common finalization then composites it against a resolved output background or converts alpha into the frame's transparency mask according to `-A`.
+
+For an indexed 8-bit TGA with a 32-bit palette, the fast path chooses the first fully transparent palette entry as the single key-color index and remaps pixels using any other fully transparent entry to that key. Partial palette alpha cannot be represented in `PAL8`; each such palette color is flattened with integer gamma-space blending against the provided background, or black when no background is available. Thus the palette path preserves binary transparency but not arbitrary per-entry partial alpha.
+
+If palette fusion is disabled, indexed input is expanded by the general path. That path is requested as three-component RGB, so palette alpha does not survive. This differs from 32-bit direct truecolor and is a current builtin boundary, not a property of the TGA format.
+
+## TGA 2.0 and extension fields
+
+The TGA 2.0 footer, extension-area offset, developer directory, author/comment fields, timestamp, job information, software ID, key color, pixel-aspect ratio, gamma, color-correction table, postage-stamp image, scan-line table, and attribute-type field are not interpreted. In particular, extension gamma/color-correction data does not establish a source colorspace, and the attribute-type field does not override the decoder's 15/16/32-bit decisions.
+
+Trailing data can therefore coexist with a successfully decoded raster, but it is neither validated as a complete 2.0 object nor preserved for round trip.
+
+## Builtin decode and output pipeline
+
+1. Residual dispatch reaches the weak-signature TGA predicate only after strong signatures such as PNG, JPEG, GIF, PSD, HDR, BMP, PIC, and WebP have had their dedicated routing.
+2. With palette fusion enabled, the builtin wrapper first attempts the narrow indexed-8 path and creates `PAL8` when it succeeds.
+3. Otherwise stb decodes raw/RLE samples and converts them to a requested three-component buffer, except that recognized 32-bit direct truecolor requests four components.
+4. BGR ordering and vertical origin are normalized. There is no TGA CMS or metadata-orientation stage.
+5. Direct RGBA or a palette key enters common alpha/background finalization; opaque/general RGB is delivered directly as one frame.
+
+The loader output is always eight-bit gamma RGB/PAL8 plus optional transparency state. Later resize, crop, colorspace conversion, palette initialization, and quantization are encoder stages.
+
+## Options and observable differences
+
+```console
+img2sixel -Lbuiltin! indexed.tga
+img2sixel -Lbuiltin! -A keep -B '#202020' rgba32.tga
+```
+
+| Control | Exact effect on TGA |
+| --- | --- |
+| `-A auto|composite|clear|keep` | Applies to 32-bit direct truecolor and to binary transparent-key output from the indexed fast path. It cannot recover alpha discarded by the RGB fallback. |
+| `-B COLOR`, `background_colorspace` | Supplies the output background for direct alpha finalization. On the indexed fast path, partial palette alpha is flattened against the supplied byte color; absent background means black. |
+| `background_policy` | TGA has no interpreted file-background candidate, so it does not choose between two TGA background sources. |
+| `-p COLORS` | Does not itself disable palette fusion. The TGA fast path can return the complete source palette even when later encoder policy requests fewer output colors; later palette processing must reduce it. This differs from builtin PNG's loader-side `palette_colors <= reqcolors` guard. |
+| Resize options and non-default encoder color modes | Disable loader palette fusion, forcing indexed TGA through RGB expansion. In that path 32-bit palette alpha is not retained. |
+| `cms_engine`, `cms_target`, `cms_intent`, `prefer_8bit` | No effect on TGA decode because no TGA color metadata is interpreted. Later encoder conversions remain possible. |
+| `builtin:orientation` | No effect. Vertical origin is always handled by the TGA raster parser; Exif/XMP orientation is absent. Horizontal origin remains unsupported. |
+| `-S`, `-T`, `-l`, `-g`, `trns_keycolor`, HDR, PNM, BMP, and PSD-specific suboptions | No effect. TGA is emitted as one frame. |
+
+## Unsupported behavior and security boundary
+
+Nonzero colormap origins, horizontal right-to-left storage, extension/developer semantics, high-depth samples, alpha-preserving gray-alpha, alpha-preserving indexed fallback, ICC/profile interpretation, and animation are not supported as end-to-end contracts. The descriptor alpha-bit count is not used to turn 15/16-bit direct pixels into alpha.
+
+Weak recognition, dimensions, palette sizes, index values, and RLE commands are attacker-controlled. Because TGA lacks a strong magic, fallback order can affect which parser sees a malformed input. `-Lbuiltin!` narrows the component set but does not sandbox the adapted stb decoder.
+
+## Implementation landmarks
+
+- TGA predicate, indexed parser, and general decode: [`stb_image.h`](../../../src/stb_image.h)
+- Palette fusion, palette-alpha folding, direct-alpha selection, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
+- Alpha/background contract: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
+- Regression coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
