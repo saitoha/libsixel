@@ -128,6 +128,22 @@ img2sixel --cms-engine=builtin source.png | lsqa --cms-engine=builtin source.png
 
 Use `--cms-engine=none` in both commands when deliberately measuring the legacy interpretation. Record the selected engine and loader-specific overrides alongside the metric. CMS interprets source metadata during loading; `lsqa -W` and `-P` choose the comparison colorspace and precision after loading. Those comparison options cannot repair source values that were already interpreted incorrectly. SIXEL input has no embedded ICC profile to recover: its decoded palette is compared with the normalized reference.
 
+## Diagnosing ignored ICC features
+
+Enable `SIXEL_TRACE_TOPIC=loader` to record builtin ICC parser decisions on stderr:
+
+```sh
+SIXEL_TRACE_TOPIC=loader img2sixel --cms-engine=builtin image.png > image.six
+```
+
+Records use `LSXCMS1|engine=builtin`. `event=ignored-tag` includes `tag`, payload `type`, and a `reason`: `unsupported-pipeline-type` (including `mpet`), `unsupported-intent-slot` (including D2B3/B2D3), `tag-not-consumed`, or `invalid-tag-bounds`. Tag and type signatures are eight hexadecimal digits, not raw untrusted text: D2B0 is `44324230` and mpet is `6d706574`. Descriptive `desc`, `cprt`, `dmnd`, and `dmdd` tags are omitted from this audit. `tag-not-consumed` means this parser does not read that tag; it does not assert that the tag is invalid or that ignoring it changes the image.
+
+A present transformation slot that fails parsing or channel validation emits `event=pipeline-rejected` with its tag and `reason=invalid-or-unsupported-pipeline`. The parser may still accept another path. `event=profile-rejected` identifies an unsupported PCS or the absence of a usable profile path; an invalid tag table emits `event=invalid-table`. These messages do not distinguish every malformed nested element from every unsupported feature, and a successfully parsed profile is not proof that a loader ultimately applied it. They describe the builtin parser, not decisions inside Little CMS or ColorSync. Profiles that do not reach the parser, including CMS-disabled loads, are outside this diagnostic boundary.
+
+The tag audit checks offsets and lengths before reading payload signatures, limits detailed records to 64 per parse, and then emits `event=tag-audit-truncated`. Repeated parsing can produce repeated records. With the loader trace topic disabled, this audit is skipped and no new diagnostics are emitted. Trace selection does not change profile acceptance, fallback, or output pixels.
+
+The diagnostic fixture `tests/data/colormgmt/input/custom/rgb_trace_ignored_tags.png` preserves the PNG pixels and original profile tags from `rgb_parametric_012.png`. Its iCCP profile adds D2B0 and D2B3 mpet payloads containing a three-channel identity matrix element, plus a private tag whose signature contains ESC. Profile size, tag offsets, compressed iCCP data, and PNG CRC are updated. It exercises unsupported paths and escaped logging while retaining the original usable normalization path; it is not an mpet conformance fixture.
+
 ## Choosing an engine
 
 Enable loader CMS when the source profile matters: `img2sixel --cms-engine=auto image.png`. CMS is disabled by default for participating loaders. For varied third-party ICC profiles, prefer a build with Little CMS (`lcms2`) and verify that the selected loader supplies the original source color model to it. Choose `builtin` when avoiding an external CMS dependency matters and the actual profile corpus has been validated against the supported subset below. Neither engine can repair an incorrect source profile or recover source channels already discarded by a decoder.
@@ -244,6 +260,12 @@ Compare decoded managed pixels against an independently prepared color-managed r
 | CMS-10 | Missing engines are rejected with an argument diagnostic. | [tests/quality_gate/cms/0006_lsqa_cms_missing_engine.t](../../tests/quality_gate/cms/0006_lsqa_cms_missing_engine.t) |
 | CMS-11 | Repeated selection uses the last value, including the off alias. | [tests/quality_gate/cms/0007_lsqa_cms_repeated_alias.t](../../tests/quality_gate/cms/0007_lsqa_cms_repeated_alias.t) |
 | CMS-12 | Omitting the option retains the environment-selected CMS default. | [tests/quality_gate/cms/0008_lsqa_cms_omitted_uses_env.t](../../tests/quality_gate/cms/0008_lsqa_cms_omitted_uses_env.t) |
+| CMS-13 | mpet payload reason. | [tests/diagnostics/cms_trace/0001_mpet_payload_reason.t](../../tests/diagnostics/cms_trace/0001_mpet_payload_reason.t) |
+| CMS-14 | absolute slot reason. | [tests/diagnostics/cms_trace/0002_absolute_slot_reason.t](../../tests/diagnostics/cms_trace/0002_absolute_slot_reason.t) |
+| CMS-15 | unknown tag escaped. | [tests/diagnostics/cms_trace/0003_unknown_tag_escaped.t](../../tests/diagnostics/cms_trace/0003_unknown_tag_escaped.t) |
+| CMS-16 | pipeline rejection reason. | [tests/diagnostics/cms_trace/0004_pipeline_rejection_reason.t](../../tests/diagnostics/cms_trace/0004_pipeline_rejection_reason.t) |
+| CMS-17 | trace disabled quiet. | [tests/diagnostics/cms_trace/0005_trace_disabled_quiet.t](../../tests/diagnostics/cms_trace/0005_trace_disabled_quiet.t) |
+| CMS-18 | ignored tags preserve pixels. | [tests/diagnostics/cms_trace/0006_ignored_tags_preserve_pixels.t](../../tests/diagnostics/cms_trace/0006_ignored_tags_preserve_pixels.t) |
 
 ### Defensive and malformed-input tests
 

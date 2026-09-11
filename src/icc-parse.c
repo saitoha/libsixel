@@ -27,6 +27,7 @@
 #endif
 
 #include "icc-parse.h"
+#include "loader-common.h"
 
 #if HAVE_MATH_H
 #include <math.h>
@@ -66,6 +67,95 @@ sixel_icc_read_be32(unsigned char const *p)
         | ((uint32_t)p[1] << 16u)
         | ((uint32_t)p[2] << 8u)
         | (uint32_t)p[3];
+}
+
+/*
+ * Audit only when requested. Signatures are hex so untrusted profile bytes
+ * cannot inject terminal controls or additional log records. This describes
+ * parser capabilities, not whether a transform was ultimately applied.
+ */
+static void
+sixel_icc_trace_tags(unsigned char const *data, size_t size)
+{
+    static char const consumed[][5] = {
+        "rXYZ", "gXYZ", "bXYZ", "rTRC", "gTRC", "bTRC", "kTRC", "wtpt"
+    };
+    static char const descriptive[][5] = {
+        "desc", "cprt", "dmnd", "dmdd"
+    };
+    unsigned char const *entry;
+    unsigned char const *payload;
+    char const *reason;
+    size_t count;
+    size_t index;
+    size_t offset;
+    size_t length;
+    size_t item;
+    unsigned int emitted;
+    int known;
+    int pipeline;
+
+    if (!loader_trace_is_enabled()) {
+        return;
+    }
+    count = (size_t)sixel_icc_read_be32(data + 128u);
+    if (count > (size - 132u) / 12u) {
+        loader_trace_message("LSXCMS1|engine=builtin|event=invalid-table");
+        return;
+    }
+    emitted = 0u;
+    for (index = 0u; index < count; ++index) {
+        entry = data + 132u + index * 12u;
+        offset = (size_t)sixel_icc_read_be32(entry + 4u);
+        length = (size_t)sixel_icc_read_be32(entry + 8u);
+        reason = NULL;
+        payload = NULL;
+        pipeline = memcmp(entry, "A2B", 3u) == 0
+            || memcmp(entry, "B2A", 3u) == 0
+            || memcmp(entry, "D2B", 3u) == 0
+            || memcmp(entry, "B2D", 3u) == 0;
+        known = 0;
+        for (item = 0u; item < sizeof(consumed) / sizeof(consumed[0]);
+             ++item) {
+            known |= memcmp(entry, consumed[item], 4u) == 0;
+        }
+        for (item = 0u;
+             item < sizeof(descriptive) / sizeof(descriptive[0]); ++item) {
+            known |= memcmp(entry, descriptive[item], 4u) == 0;
+        }
+        if (offset > size || length > size - offset || length < 4u) {
+            reason = "invalid-tag-bounds";
+        } else {
+            payload = data + offset;
+            if (pipeline && (entry[3] < '0' || entry[3] > '2')) {
+                reason = "unsupported-intent-slot";
+            } else if (pipeline
+                       && memcmp(payload, "mAB ", 4u) != 0
+                       && memcmp(payload, "mBA ", 4u) != 0
+                       && memcmp(payload, "mft1", 4u) != 0
+                       && memcmp(payload, "mft2", 4u) != 0) {
+                reason = "unsupported-pipeline-type";
+            } else if (!pipeline && !known) {
+                reason = "tag-not-consumed";
+            }
+        }
+        if (reason == NULL) {
+            continue;
+        }
+        if (emitted == 64u) {
+            loader_trace_message(
+                "LSXCMS1|engine=builtin|event=tag-audit-truncated|limit=64");
+            break;
+        }
+        loader_trace_message(
+            "LSXCMS1|engine=builtin|event=ignored-tag|tag=%08lx"
+            "|type=%08lx|reason=%s",
+            (unsigned long)sixel_icc_read_be32(entry),
+            payload != NULL
+                ? (unsigned long)sixel_icc_read_be32(payload) : 0ul,
+            reason);
+        ++emitted;
+    }
 }
 
 static double
@@ -1700,6 +1790,11 @@ sixel_icc_parse_a2b_slot(unsigned char const *profile_data,
     }
     sixel_icc_lut_destroy(lut);
 
+    /* A present pipeline can fail validation even if other slots work. */
+    loader_trace_message(
+        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s"
+        "|reason=invalid-or-unsupported-pipeline",
+        sixel_icc_a2b_tag_names[slot]);
     return 0;
 }
 
@@ -1757,6 +1852,11 @@ sixel_icc_parse_b2a_slot(unsigned char const *profile_data,
     }
     sixel_icc_lut_destroy(lut);
 
+    /* A present pipeline can fail validation even if other slots work. */
+    loader_trace_message(
+        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s"
+        "|reason=invalid-or-unsupported-pipeline",
+        sixel_icc_b2a_tag_names[slot]);
     return 0;
 }
 
@@ -1814,6 +1914,11 @@ sixel_icc_parse_d2b_slot(unsigned char const *profile_data,
     }
     sixel_icc_lut_destroy(lut);
 
+    /* A present pipeline can fail validation even if other slots work. */
+    loader_trace_message(
+        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s"
+        "|reason=invalid-or-unsupported-pipeline",
+        sixel_icc_d2b_tag_names[slot]);
     return 0;
 }
 
@@ -1871,6 +1976,11 @@ sixel_icc_parse_b2d_slot(unsigned char const *profile_data,
     }
     sixel_icc_lut_destroy(lut);
 
+    /* A present pipeline can fail validation even if other slots work. */
+    loader_trace_message(
+        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s"
+        "|reason=invalid-or-unsupported-pipeline",
+        sixel_icc_b2d_tag_names[slot]);
     return 0;
 }
 
@@ -1944,6 +2054,8 @@ sixel_icc_parse_profile(void const *data,
         return 0;
     }
 
+    sixel_icc_trace_tags(profile_data, profile_size);
+
     color_space = profile_data + 16u;
     pcs = profile_data + 20u;
     if (memcmp(pcs, "XYZ ", 4u) == 0) {
@@ -1951,6 +2063,9 @@ sixel_icc_parse_profile(void const *data,
     } else if (memcmp(pcs, "Lab ", 4u) == 0) {
         parsed.pcs = SIXEL_ICC_PROFILE_PCS_LAB;
     } else {
+        loader_trace_message(
+            "LSXCMS1|engine=builtin|event=profile-rejected"
+            "|reason=unsupported-pcs");
         return 0;
     }
 
@@ -2244,6 +2359,9 @@ sixel_icc_parse_profile(void const *data,
     return 1;
 
 fail:
+    loader_trace_message(
+        "LSXCMS1|engine=builtin|event=profile-rejected"
+        "|reason=no-usable-profile-path");
     sixel_icc_profile_destroy(&parsed);
     return 0;
 }
