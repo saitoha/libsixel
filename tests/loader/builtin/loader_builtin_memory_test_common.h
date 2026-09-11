@@ -8,11 +8,12 @@
 #define LOADER_BUILTIN_MEMORY_TEST_COMMON_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <sixel.h>
 
 #define EDGE_BUFFER_CAPACITY 65536u
-#define EDGE_FRAME_CAPACITY 2
+#define EDGE_FRAME_CAPACITY 3
 #define EDGE_RGB_CAPACITY 12288u
 
 typedef struct edge_writer {
@@ -44,6 +45,11 @@ int edge_load_buffer(char const *label,
                      int require_static,
                      edge_frame_probe_t *probe,
                      SIXELSTATUS *load_status);
+int edge_load_fixture(char const *label,
+                      char const *relative_path,
+                      int require_static,
+                      edge_frame_probe_t *probe,
+                      SIXELSTATUS *load_status);
 int edge_expect_rgb(char const *label,
                     unsigned char const *buffer,
                     size_t buffer_size,
@@ -56,6 +62,13 @@ int edge_expect_rgb(char const *label,
 int edge_expect_failure(char const *label,
                         unsigned char const *buffer,
                         size_t buffer_size);
+int edge_expect_fixture_rgb_digests(char const *label,
+                                    char const *relative_path,
+                                    int require_static,
+                                    int expected_width,
+                                    int expected_height,
+                                    int expected_frames,
+                                    uint64_t const *expected_digests);
 
 #endif
 

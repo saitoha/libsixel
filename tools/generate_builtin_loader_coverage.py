@@ -17,6 +17,15 @@ TEST_PLAN = "docs/testing/builtin-loader-coverage.md"
 TEST_PLAN_COMMENT = f"# Test-plan: {TEST_PLAN}"
 TEST_PLAN_GLOB = "tests/loader/builtin/*.t"
 
+ASSURANCE_KINDS = (
+    "Direct numeric/digest",
+    "Perceptual quality threshold",
+    "Trace/status observation",
+    "Acceptance/rejection",
+    "Robustness/liveness",
+    "Other integration/smoke",
+)
+
 
 @dataclass(frozen=True)
 class Family:
@@ -268,15 +277,42 @@ def document_link(document: str) -> str:
     return "../" + document.removeprefix("docs/")
 
 
-def traceability_role(policies: tuple[str, ...]) -> str:
-    """Separate stable policy contracts from the exhaustive inventory."""
+def assurance_kind(path: Path, lines: list[str]) -> str:
+    """Classify the assertion mechanism without inferring completeness."""
+
+    name = path.stem.lower()
+    source = "\n".join(lines).lower()
+    if ("lsqa_path" in source or "ms-ssim" in source or
+            "msssim" in name or "_lsqa" in name):
+        return "Perceptual quality threshold"
+    if re.search(r"(?:^|_)(?:numeric|digest)(?:_|$)", name):
+        return "Direct numeric/digest"
+    if re.search(r"(?:^|_)(?:trace|code|status)(?:_|$)", name):
+        return "Trace/status observation"
+    if re.search(
+        r"(?:^|_)(?:reject|rejects|invalid|corrupt|truncated|bad|fail)"
+        r"(?:_|$)",
+        name,
+    ):
+        return "Acceptance/rejection"
+    if re.search(
+        r"(?:^|_)(?:watchdog|sigint|oom|allocation|resource|overflow)"
+        r"(?:_|$)",
+        name,
+    ):
+        return "Robustness/liveness"
+    return "Other integration/smoke"
+
+
+def policy_context(policies: tuple[str, ...]) -> str:
+    """Render policy traceability independently of assertion strength."""
 
     if not policies:
-        return "Supplementary or defensive regression"
+        return "Inventory only"
     links = ", ".join(
         f"[`{policy}`]({document_link(policy)})" for policy in policies
     )
-    return f"Behavioral contract: {links}"
+    return f"Policy-linked: {links}"
 
 
 def read_tests(root: Path) -> list[dict[str, object]]:
@@ -293,6 +329,7 @@ def read_tests(root: Path) -> list[dict[str, object]]:
                 "family": classify(relative),
                 "observation": observation(relative, lines),
                 "policies": policies,
+                "assurance": assurance_kind(relative, lines),
             }
         )
     if not tests:
@@ -304,21 +341,38 @@ def render_summary(tests: list[dict[str, object]]) -> list[str]:
     """Render family counts without pretending counts prove coverage."""
 
     lines = [
-        "| Area | Tests | Policy-backed contracts | Supplementary or defensive |",
-        "| --- | ---: | ---: | ---: |",
+        "| Area | Tests | Direct values | Quality floor | Trace/status "
+        "| Accept/reject | Robustness | Other/smoke |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for family in FAMILIES:
         members = [test for test in tests if test["family"] == family.key]
-        policy_count = sum(bool(test["policies"]) for test in members)
+        counts = {
+            kind: sum(test["assurance"] == kind for test in members)
+            for kind in ASSURANCE_KINDS
+        }
         lines.append(
             f"| [{family.title}]({document_link(family.document)}) "
-            f"| {len(members)} | {policy_count} "
-            f"| {len(members) - policy_count} |"
+            f"| {len(members)} "
+            f"| {counts['Direct numeric/digest']} "
+            f"| {counts['Perceptual quality threshold']} "
+            f"| {counts['Trace/status observation']} "
+            f"| {counts['Acceptance/rejection']} "
+            f"| {counts['Robustness/liveness']} "
+            f"| {counts['Other integration/smoke']} |"
         )
-    policy_count = sum(bool(test["policies"]) for test in tests)
+    counts = {
+        kind: sum(test["assurance"] == kind for test in tests)
+        for kind in ASSURANCE_KINDS
+    }
     lines.append(
-        f"| **Total** | **{len(tests)}** | **{policy_count}** "
-        f"| **{len(tests) - policy_count}** |"
+        f"| **Total** | **{len(tests)}** "
+        f"| **{counts['Direct numeric/digest']}** "
+        f"| **{counts['Perceptual quality threshold']}** "
+        f"| **{counts['Trace/status observation']}** "
+        f"| **{counts['Acceptance/rejection']}** "
+        f"| **{counts['Robustness/liveness']}** "
+        f"| **{counts['Other integration/smoke']}** |"
     )
     return lines
 
@@ -336,16 +390,17 @@ def render_inventory(tests: list[dict[str, object]]) -> list[str]:
                 f"Primary implementation context: "
                 f"[{family.document_label}]({document_link(family.document)}).",
                 "",
-                "| Test | Observation | Traceability role |",
-                "| --- | --- | --- |",
+                "| Test | Observation | Assertion mechanism | Policy context |",
+                "| --- | --- | --- | --- |",
             ]
         )
         for test in members:
             relative = test["path"].as_posix()
             target = "../../" + relative
-            role = traceability_role(test["policies"])
+            context = policy_context(test["policies"])
             lines.append(
-                f"| [{relative}]({target}) | {test['observation']} | {role} |"
+                f"| [{relative}]({target}) | {test['observation']} "
+                f"| {test['assurance']} | {context} |"
             )
         lines.append("")
     lines.append("<!-- test-plan-end -->")
@@ -360,13 +415,13 @@ def render_document(tests: list[dict[str, object]]) -> str:
         "",
         "## Purpose",
         "",
-        "This inventory keeps every shell test in `tests/loader/builtin/` discoverable without turning every generated matrix cell, malformed-input probe, or quality smoke test into a public compatibility promise. The format contracts and implementation maps remain owned by the [builtin format component documentation](../loader/builtin/README.md). Tests that directly own a documented behavioral contract carry both a `Policy:` backlink to that contract and a `Test-plan:` backlink here; all other tests carry only `Test-plan:`.",
+        "This inventory keeps every shell test in `tests/loader/builtin/` discoverable without turning every generated matrix cell, malformed-input probe, or quality smoke test into a public compatibility promise. The format contracts and implementation maps remain owned by the [builtin format component documentation](../loader/builtin/README.md). A `Policy:` backlink records traceability, while the separately generated assertion mechanism records what the test actually observes; a policy link does not turn an LSQA threshold into an exact decoded-value assertion.",
         "",
-        "The observation column is generated from the opening explanatory comment, then from a matrix `CASE_LABEL` when present, and finally from the test filename. The test itself remains authoritative for fixture construction, exact assertions, skips, and failure localization. Filename tokens assign each test to one primary format section; cross-format reference images such as PNM baselines do not create duplicate inventory rows.",
+        "The observation column is generated from the opening explanatory comment, then from a matrix `CASE_LABEL` when present, and finally from the test filename. Assertion mechanisms are classified conservatively from explicit test vocabulary: LSQA/MS-SSIM use is a perceptual quality threshold, `_numeric` and `_digest` cases directly compare decoded values, `_trace` and `_code` cases observe protocol or status evidence, and remaining names fall into acceptance/rejection, robustness/liveness, or other integration/smoke buckets. The test itself remains authoritative. Filename tokens assign each test to one primary format section; cross-format reference images such as PNM baselines do not create duplicate inventory rows.",
         "",
         "## Coverage summary",
         "",
-        "Counts show suite composition, not semantic completeness. A large generated matrix may exercise many combinations of one branch while leaving another branch untested.",
+        "Counts are rebuilt from the suite and show assertion mechanisms, not semantic completeness. `Perceptual quality threshold` means a minimum regression floor: it neither fixes exact decoded pixels nor proves metadata, branch selection, or error behavior. `Direct numeric/digest` fixes decoded values but does not by itself prove that an independently implemented decoder would produce the same values. A large generated matrix may still exercise many combinations of one branch while leaving another branch untested.",
         "",
         *render_summary(tests),
         "",

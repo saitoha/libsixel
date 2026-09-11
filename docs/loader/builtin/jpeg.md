@@ -113,11 +113,16 @@ The rows below are pipeline landmarks rather than the complete suite. The [JPEG 
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| JPG-01 | An eligible eight-bit sequential RGB image decodes through the builtin path with the expected visual floor. | [tests/loader/builtin/0119_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t](../../../tests/loader/builtin/0119_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t) |
-| JPG-03 | A 16-bit lossless RGB JPEG decodes without forcing source samples through an eight-bit boundary. | [tests/loader/builtin/0116_loader_builtin_jpeg_rgb_16bit_lossless_r0_decode.t](../../../tests/loader/builtin/0116_loader_builtin_jpeg_rgb_16bit_lossless_r0_decode.t) |
-| JPG-04 | Adobe YCCK component interpretation produces the expected RGB image. | [tests/loader/builtin/0123_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t](../../../tests/loader/builtin/0123_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t) |
-| JPG-05 | An embedded RGB ICC profile produces the same converted result as the reference PNM. | [tests/loader/builtin/0056_builtin_jpeg_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0056_builtin_jpeg_embedded_icc_matches_reference_pnm.t) |
+| JPG-04 | Adobe YCCK component interpretation produces the fixed complete RGB buffer for the representative stream. | [tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t](../../../tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t) |
 | JPG-06 | The orientation option controls APP1 Exif geometry/pixel transformation. | [tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t](../../../tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t) |
+
+### Quality regression tests
+
+| ID | Quality floor protected | Owning test |
+| --- | --- | --- |
+| JPGQ-01 | An eligible eight-bit sequential RGB image retains its end-to-end visual floor. | [tests/loader/builtin/0119_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t](../../../tests/loader/builtin/0119_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t) |
+| JPGQ-02 | Adobe YCCK conversion remains visually close to the external reference after encoding. | [tests/loader/builtin/0123_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t](../../../tests/loader/builtin/0123_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t) |
+| JPGQ-03 | Embedded ICC conversion remains visually close to the fixed converted PNM after encoding. | [tests/loader/builtin/0056_builtin_jpeg_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0056_builtin_jpeg_embedded_icc_matches_reference_pnm.t) |
 
 ### Defensive and malformed-input tests
 
@@ -126,4 +131,4 @@ The rows below are pipeline landmarks rather than the complete suite. The [JPEG 
 | JPG-02 | Arithmetic-coded JPEG is classified as unsupported and rejected before entropy decode. | [tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t](../../../tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t) |
 | JPG-90 | A corrupt JPEG stream fails the builtin decoder rather than yielding a partial frame. | [tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t](../../../tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t) |
 
-Coverage audit note: the owning rows cover sequential byte output, high-depth lossless float output, YCCK, ICC, orientation, and two failure classes. Progressive scans, sampling-factor combinations, restart-marker placement, and the full Gray/RGB/YCbCr/CMYK/YCCK × precision matrix have additional regression cases but are not exhaustively owned by this page.
+Coverage audit note: exact owners cover one YCCK stream, orientation, and two failure classes. Sequential RGB and ICC currently have end-to-end quality floors. The 16-bit lossless test proves acceptance only; it does not inspect float samples or prove preservation beyond eight bits, so that remains an explicit gap. Progressive scans, sampling-factor combinations, restart-marker placement, and the full Gray/RGB/YCbCr/CMYK/YCCK × precision matrix have additional regressions but are not exhaustively owned by this page.

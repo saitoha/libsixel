@@ -148,11 +148,17 @@ The rows below are pipeline landmarks rather than the complete suite. The [PSD/P
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| PSD-02 | A 16-bit Multichannel/RGB-mode composite reverses ZIP prediction and preserves the expected image. | [tests/loader/builtin/0597_loader_builtin_psd_mode7_rgb16_zip_pred_decode.t](../../../tests/loader/builtin/0597_loader_builtin_psd_mode7_rgb16_zip_pred_decode.t) |
-| PSD-03 | A 32-bit mode-7 RGB document passes RLE plane decode and the mode/depth color dispatcher. | [tests/loader/builtin/0580_loader_builtin_psd_mode7_rgb32_rle_decode.t](../../../tests/loader/builtin/0580_loader_builtin_psd_mode7_rgb32_rle_decode.t) |
-| PSD-04 | A missing merged composite is reconstructed from offset RGB8 layers with normal blend. | [tests/loader/builtin/0647_loader_builtin_psd_missing_composite_rgb8_multilayer_normal_decode.t](../../../tests/loader/builtin/0647_loader_builtin_psd_missing_composite_rgb8_multilayer_normal_decode.t) |
-| PSD-05 | An embedded PSD ICC profile produces the same converted result as the reference PNM. | [tests/loader/builtin/0057_builtin_psd_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0057_builtin_psd_embedded_icc_matches_reference_pnm.t) |
-| PSD-06 | A 16-bit Gray/Duotone alpha document composites differently over black and white backgrounds. | [tests/loader/builtin/0173_loader_builtin_psd_gray_duotone_16bit_alpha_bgcolor_composite.t](../../../tests/loader/builtin/0173_loader_builtin_psd_gray_duotone_16bit_alpha_bgcolor_composite.t) |
+| PSD-04 | A missing merged composite is reconstructed from offset RGB8 layers with normal blend, producing the fixed complete RGB buffer. | [tests/loader/builtin/1964_loader_builtin_psd_missing_composite_rgb8_digest.t](../../../tests/loader/builtin/1964_loader_builtin_psd_missing_composite_rgb8_digest.t) |
+
+### Quality regression tests
+
+| ID | Regression observation protected | Owning test |
+| --- | --- | --- |
+| PSDQ-01 | A 16-bit Multichannel/RGB-mode ZIP-prediction stream retains its end-to-end visual floor. | [tests/loader/builtin/0597_loader_builtin_psd_mode7_rgb16_zip_pred_decode.t](../../../tests/loader/builtin/0597_loader_builtin_psd_mode7_rgb16_zip_pred_decode.t) |
+| PSDQ-02 | A 32-bit mode-7 RGB RLE stream retains its end-to-end visual floor. | [tests/loader/builtin/0580_loader_builtin_psd_mode7_rgb32_rle_decode.t](../../../tests/loader/builtin/0580_loader_builtin_psd_mode7_rgb32_rle_decode.t) |
+| PSDQ-03 | Missing-composite RGB8 reconstruction remains visually close to the external reference after encoding. | [tests/loader/builtin/0647_loader_builtin_psd_missing_composite_rgb8_multilayer_normal_decode.t](../../../tests/loader/builtin/0647_loader_builtin_psd_missing_composite_rgb8_multilayer_normal_decode.t) |
+| PSDQ-04 | Embedded ICC conversion remains visually close to the fixed converted PNM after encoding. | [tests/loader/builtin/0057_builtin_psd_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0057_builtin_psd_embedded_icc_matches_reference_pnm.t) |
+| PSDQ-05 | A 16-bit Gray/Duotone alpha document produces observably different encoded images over black and white backgrounds. | [tests/loader/builtin/0173_loader_builtin_psd_gray_duotone_16bit_alpha_bgcolor_composite.t](../../../tests/loader/builtin/0173_loader_builtin_psd_gray_duotone_16bit_alpha_bgcolor_composite.t) |
 
 ### Defensive and malformed-input tests
 
@@ -161,4 +167,4 @@ The rows below are pipeline landmarks rather than the complete suite. The [PSD/P
 | PSD-01 | A document whose mode/depth contract has the wrong channel count is rejected by structural validation. | [tests/loader/builtin/0177_loader_builtin_psd_spec_wrong_channel_count_reject.t](../../../tests/loader/builtin/0177_loader_builtin_psd_spec_wrong_channel_count_reject.t) |
 | PSD-90 | A signature/version mismatch between PSD and PSB is rejected rather than changing length-field interpretation. | [tests/loader/builtin/0778_loader_builtin_psd_signature8bpb_version1_reject_trace.t](../../../tests/loader/builtin/0778_loader_builtin_psd_signature8bpb_version1_reject_trace.t) |
 
-Coverage audit note: these owners sample structure, two native-depth compression paths, one mode conversion, one layer reconstruction, ICC, and alpha. They do not imply a complete mode × depth × compression × PSD/PSB matrix or exhaustive coverage of masks, fills, text, vector data, blend modes, and supported effects; those claims must be traced to narrower cases in the broader suite.
+Coverage audit note: exact owners sample structure and one RGB8 layer reconstruction. The 16-bit ZIP-prediction, 32-bit RLE, ICC, and alpha cases use end-to-end quality or relational observations; they do not fix the loader's typed samples, exact composition values, or color conversion. Those remain gaps alongside the incomplete mode × depth × compression × PSD/PSB matrix and non-exhaustive masks, fills, text, vector data, blend modes, and effects coverage.

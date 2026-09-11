@@ -66,16 +66,17 @@ edge_gif_begin(edge_writer_t *writer,
  * With enough pixels it crosses every code-width boundary through 12 bits.
  * clear_each keeps hand-built small images independent of dictionary state.
  */
-void
-edge_gif_image(edge_writer_t *writer,
-               unsigned int x,
-               unsigned int y,
-               unsigned int width,
-               unsigned int height,
-               int interlaced,
-               unsigned char const *pixels,
-               size_t pixel_count,
-               int clear_each)
+static void
+edge_gif_image_core(edge_writer_t *writer,
+                    unsigned int x,
+                    unsigned int y,
+                    unsigned int width,
+                    unsigned int height,
+                    int interlaced,
+                    unsigned char const *local_palette,
+                    unsigned char const *pixels,
+                    size_t pixel_count,
+                    int clear_each)
 {
     unsigned char compressed[8192];
     size_t compressed_length;
@@ -114,7 +115,12 @@ edge_gif_image(edge_writer_t *writer,
     edge_put_u16le(writer, y);
     edge_put_u16le(writer, width);
     edge_put_u16le(writer, height);
-    edge_put_u8(writer, interlaced != 0 ? 0x40u : 0u);
+    edge_put_u8(writer,
+                (interlaced != 0 ? 0x40u : 0u) |
+                (local_palette != NULL ? 0x81u : 0u));
+    if (local_palette != NULL) {
+        edge_put_bytes(writer, local_palette, sizeof(edge_palette_rgb));
+    }
     edge_put_u8(writer, 2u);
 
     edge_lzw_code(compressed,
@@ -189,6 +195,51 @@ edge_gif_image(edge_writer_t *writer,
         block_offset += block_size;
     }
     edge_put_u8(writer, 0u);
+}
+
+void
+edge_gif_image(edge_writer_t *writer,
+               unsigned int x,
+               unsigned int y,
+               unsigned int width,
+               unsigned int height,
+               int interlaced,
+               unsigned char const *pixels,
+               size_t pixel_count,
+               int clear_each)
+{
+    edge_gif_image_core(writer,
+                        x,
+                        y,
+                        width,
+                        height,
+                        interlaced,
+                        NULL,
+                        pixels,
+                        pixel_count,
+                        clear_each);
+}
+
+void
+edge_gif_local_image(edge_writer_t *writer,
+                     unsigned int x,
+                     unsigned int y,
+                     unsigned int width,
+                     unsigned int height,
+                     unsigned char const *palette,
+                     unsigned char const *pixels,
+                     size_t pixel_count)
+{
+    edge_gif_image_core(writer,
+                        x,
+                        y,
+                        width,
+                        height,
+                        0,
+                        palette,
+                        pixels,
+                        pixel_count,
+                        1);
 }
 
 void

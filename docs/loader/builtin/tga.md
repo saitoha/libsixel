@@ -128,10 +128,10 @@ The rows below are pipeline landmarks rather than the complete suite. The [TGA c
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| TGA-01 | A structurally valid type-2 direct-color TGA is recognized and meets the expected quality floor. | [tests/loader/builtin/0010_lsqa_format_tga_type2_rgb.t](../../../tests/loader/builtin/0010_lsqa_format_tga_type2_rgb.t) |
+| TGA-01 | A type-2 24-bit direct-color stream expands exact BGR pixels into RGB component lanes. | [tests/loader/builtin/1968_loader_builtin_tga_truecolor24_numeric.t](../../../tests/loader/builtin/1968_loader_builtin_tga_truecolor24_numeric.t) |
 | TGA-02 | An eligible indexed TGA selects the palette-preserving builtin path. | [tests/loader/builtin/0050_loader_builtin_palette_tga_path.t](../../../tests/loader/builtin/0050_loader_builtin_palette_tga_path.t) |
-| TGA-03 | A type-10 packet-RLE truecolor TGA expands to the expected image. | [tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t](../../../tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t) |
-| TGA-04 | A grayscale TGA with the fixture's declared origin reaches the canonical expected image. | [tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t](../../../tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t) |
+| TGA-03 | A type-10 packet-RLE truecolor stream expands raw and repeated packets to exact RGB bytes. | [tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t](../../../tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t) |
+| TGA-04 | A type-3 grayscale stream expands each sample to exact equal RGB components. | [tests/loader/builtin/1969_loader_builtin_tga_grayscale8_numeric.t](../../../tests/loader/builtin/1969_loader_builtin_tga_grayscale8_numeric.t) |
 | TGA-05 | Direct BGRA alpha composites against an explicit background with the expected numeric result. | [tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t](../../../tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t) |
 | TGA-06 | Packed 5:5:5 direct color expands to exact RGB bytes. | [tests/loader/builtin/1948_loader_builtin_tga_truecolor16_numeric.t](../../../tests/loader/builtin/1948_loader_builtin_tga_truecolor16_numeric.t) |
 | TGA-07 | Eight-bit grayscale and 5:5:5 palette entries expand through their distinct component paths. | [tests/loader/builtin/1949_loader_builtin_tga_palette8_numeric.t](../../../tests/loader/builtin/1949_loader_builtin_tga_palette8_numeric.t), [tests/loader/builtin/1950_loader_builtin_tga_palette16_numeric.t](../../../tests/loader/builtin/1950_loader_builtin_tga_palette16_numeric.t) |
@@ -140,10 +140,18 @@ The rows below are pipeline landmarks rather than the complete suite. The [TGA c
 | TGA-10 | Raw and repeated type-10 RLE packets preserve exact pixel order. | [tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t](../../../tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t) |
 | TGA-11 | The general RGB fallback maps an out-of-range palette index to entry zero instead of reading beyond the palette. | [tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t](../../../tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t) |
 
+### Quality regression tests
+
+| ID | Quality floor protected | Owning test |
+| --- | --- | --- |
+| TGAQ-01 | A type-2 direct-color image retains its end-to-end visual floor. | [tests/loader/builtin/0010_lsqa_format_tga_type2_rgb.t](../../../tests/loader/builtin/0010_lsqa_format_tga_type2_rgb.t) |
+| TGAQ-02 | A type-10 RLE truecolor image retains its end-to-end visual floor. | [tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t](../../../tests/loader/builtin/0014_lsqa_format_tga_type10_rgb.t) |
+| TGAQ-03 | A type-3 grayscale image retains its end-to-end visual floor. | [tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t](../../../tests/loader/builtin/0011_lsqa_format_tga_type3_gray.t) |
+
 ### Defensive and malformed-input tests
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
 | TGA-90 | A truncated declared palette is rejected without emitting a frame. | [tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t](../../../tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t) |
 
-There is still no dedicated owning test that isolates malformed TGA header collision, RLE overrun, truncated direct-pixel input, or horizontal-origin handling. Those remain explicit coverage gaps rather than evidence supplied by an unrelated format test.
+There is still no dedicated owning test that isolates malformed TGA header collision, RLE overrun, truncated direct-pixel input, or horizontal-origin handling. Those remain explicit coverage gaps rather than evidence supplied by an LSQA floor or unrelated format test.

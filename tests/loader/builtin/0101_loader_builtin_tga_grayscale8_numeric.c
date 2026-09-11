@@ -1,16 +1,16 @@
-/* Verify pure PIC RLE clips an oversized run to the scanline. */
+/* Verify type-3 TGA gray samples expand to exact RGB bytes. */
 
-#include "loader_builtin_pic_test_common.h"
+#include "loader_builtin_tga_test_common.h"
 
 int
-test_loader_0090_pic_pure_rle_clip_numeric(
+test_loader_0101_loader_builtin_tga_grayscale8_numeric(
     int argc,
     char **argv)
 {
-    unsigned char buffer[160];
+    unsigned char buffer[64];
     unsigned char const expected[6] = {
-        0x44u, 0xffu, 0xffu,
-        0x44u, 0xffu, 0xffu
+        0x10u, 0x10u, 0x10u,
+        0xe0u, 0xe0u, 0xe0u
     };
     edge_writer_t writer;
 
@@ -20,14 +20,13 @@ test_loader_0090_pic_pure_rle_clip_numeric(
     writer.capacity = sizeof(buffer);
     writer.length = 0u;
     writer.failed = 0;
-    edge_pic_begin(&writer, 2u, 1u);
-    edge_pic_packet(&writer, 0, 1u, 0x80u);
-    edge_put_u8(&writer, 0xffu);
-    edge_put_u8(&writer, 0x44u);
+    edge_tga_begin(&writer, 0u, 3u, 0u, 0u, 2u, 1u, 8u, 0x20u);
+    edge_put_u8(&writer, 0x10u);
+    edge_put_u8(&writer, 0xe0u);
     if (writer.failed != 0) {
         return 1;
     }
-    return edge_expect_rgb("PIC pure RLE oversized run clipping",
+    return edge_expect_rgb("TGA type-3 8-bit grayscale",
                            buffer,
                            writer.length,
                            1,

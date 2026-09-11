@@ -20,6 +20,14 @@ void edge_gif_image(edge_writer_t *writer,
                     unsigned char const *pixels,
                     size_t pixel_count,
                     int clear_each);
+void edge_gif_local_image(edge_writer_t *writer,
+                          unsigned int x,
+                          unsigned int y,
+                          unsigned int width,
+                          unsigned int height,
+                          unsigned char const *palette,
+                          unsigned char const *pixels,
+                          size_t pixel_count);
 void edge_gif_graphic_control(edge_writer_t *writer,
                               unsigned int disposal);
 

@@ -408,6 +408,17 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0091_LOADER_BUILTIN_PIC_MIXED_RLE_RAW128_NUMERIC \
     -DBUILD_TEST_0092_LOADER_BUILTIN_PIC_MIXED_RLE_REPEAT128_NUMERIC \
     -DBUILD_TEST_0093_LOADER_BUILTIN_PIC_TEN_PACKET_LIMIT_NUMERIC \
+    -DBUILD_TEST_0094_LOADER_BUILTIN_PNG_APNG_DISPOSE_PREVIOUS_NUMERIC \
+    -DBUILD_TEST_0095_LOADER_BUILTIN_JPEG_YCCK8_RGB_DIGEST \
+    -DBUILD_TEST_0096_LOADER_BUILTIN_PSD_MISSING_COMPOSITE_RGB8_DIGEST \
+    -DBUILD_TEST_0097_LOADER_BUILTIN_WEBP_VP8L_TRANSFORM_RGB_DIGEST \
+    -DBUILD_TEST_0098_LOADER_BUILTIN_PIC_RAW_RGB_NUMERIC \
+    -DBUILD_TEST_0099_LOADER_BUILTIN_PIC_MIXED_RLE_EXTENDED_NUMERIC \
+    -DBUILD_TEST_0100_LOADER_BUILTIN_TGA_TRUECOLOR24_NUMERIC \
+    -DBUILD_TEST_0101_LOADER_BUILTIN_TGA_GRAYSCALE8_NUMERIC \
+    -DBUILD_TEST_0102_LOADER_BUILTIN_PIC_CHAINED_PACKETS_NUMERIC \
+    -DBUILD_TEST_0103_LOADER_BUILTIN_GIF_DISPOSAL3_NUMERIC \
+    -DBUILD_TEST_0104_LOADER_BUILTIN_GIF_LOCAL_PALETTE_NUMERIC \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -592,6 +603,17 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0091_loader_builtin_pic_mixed_rle_raw128_numeric.c \
     loader/builtin/0092_loader_builtin_pic_mixed_rle_repeat128_numeric.c \
     loader/builtin/0093_loader_builtin_pic_ten_packet_limit_numeric.c \
+    loader/builtin/0094_loader_builtin_png_apng_dispose_previous_numeric.c \
+    loader/builtin/0095_loader_builtin_jpeg_ycck8_rgb_digest.c \
+    loader/builtin/0096_loader_builtin_psd_missing_composite_rgb8_digest.c \
+    loader/builtin/0097_loader_builtin_webp_vp8l_transform_rgb_digest.c \
+    loader/builtin/0098_loader_builtin_pic_raw_rgb_numeric.c \
+    loader/builtin/0099_loader_builtin_pic_mixed_rle_extended_numeric.c \
+    loader/builtin/0100_loader_builtin_tga_truecolor24_numeric.c \
+    loader/builtin/0101_loader_builtin_tga_grayscale8_numeric.c \
+    loader/builtin/0102_loader_builtin_pic_chained_packets_numeric.c \
+    loader/builtin/0103_loader_builtin_gif_disposal3_numeric.c \
+    loader/builtin/0104_loader_builtin_gif_local_palette_numeric.c \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
     loader/libwebp/0013_loader_libwebp_pixelformat.c \

@@ -52,7 +52,7 @@ Durable behavioral policy documents must make their automated coverage externall
 
 The coverage inventory must follow these rules:
 
-- Separate tests that prove documented, user-visible behavior from defensive tests that exercise malformed input, resource limits, internal assertions, or implementation-specific failure paths. When a document discusses both, put them under distinct `Behavioral contract tests` and `Defensive and malformed-input tests` subsections.
+- Separate tests that fix documented, user-visible behavior from perceptual quality regressions and defensive tests that exercise malformed input, resource limits, internal assertions, or implementation-specific failure paths. When a document discusses all three, put them under distinct `Behavioral contract tests`, `Quality regression tests`, and `Defensive and malformed-input tests` subsections. An LSQA or MS-SSIM threshold protects only its stated quality floor; it does not substitute for an exact pixel, metadata, branch-selection, or error-behavior assertion.
 - Give each independently testable contract a stable coverage ID.
 - Link each automated contract directly to its owning test with a Markdown link whose label is the repository-relative `tests/...` path.
 - Add a reciprocal `Policy: docs/...` repository-relative path in a source comment near the beginning of every listed test. A test owned by multiple policy documents carries one reciprocal line for each document.
@@ -73,7 +73,7 @@ An exhaustive test-plan inventory serves a different purpose from a behavioral c
 - Keep the observation in the test filename and opening comment aligned with the inventory description. The inventory should explain why the cases are grouped, while the test remains the authoritative detail for its fixture and assertion.
 - Do not interpret `Test-plan:` as a public compatibility or stability promise. Promote a rejection, diagnostic, resource limit, or recovery rule to the behavioral coverage table and add `Policy:` only when the policy document deliberately guarantees it.
 
-The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-links.sh) check expands every marked glob and enforces exact, duplicate-free document links and reciprocal `Test-plan:` comments. A suite addition, deletion, rename, moved link, or one-sided comment change therefore fails the static suite until the inventory is updated.
+The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-links.sh) check expands every marked glob and enforces exact, duplicate-free document links and reciprocal `Test-plan:` comments. It also runs the builtin-loader inventory generator in `--check` mode, so generated assertion-mechanism counts and rows cannot drift from test sources. A suite addition, deletion, rename, moved link, one-sided comment change, or stale generated summary therefore fails the static suite until the inventory is regenerated.
 
 ## Adding a document
 

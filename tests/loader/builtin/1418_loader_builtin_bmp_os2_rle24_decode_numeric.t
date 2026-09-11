@@ -1,5 +1,6 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
+# Policy: docs/loader/builtin/bmp.md
 # TAP wrapper for builtin BMP OS/2 RLE24 decode checks.
 
 set -eux
