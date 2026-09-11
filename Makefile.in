@@ -611,6 +611,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/concepts/pixelformat.md \
 	docs/loader/README.md \
 	docs/loader/color-management.md \
+	docs/loader/cms-examples/gamut-wide.png \
+	docs/loader/cms-examples/gamut-mobile.png \
+	docs/loader/cms-examples/gamma-wide.png \
+	docs/loader/cms-examples/gamma-mobile.png \
+	docs/loader/cms-examples/examples.json \
 	docs/loader/alpha-policy.md \
 	docs/loader/background-policy.md \
 	docs/loader/builtin.md \
@@ -955,6 +960,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/measure_png_loaders.py \
 	tools/bench/png-loader.c \
 	tools/plot_loader_architecture_figures.py \
+	tools/plot_loader_cms_examples.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
 	tools/plot_merge_policy_measurements.py \
