@@ -1,0 +1,94 @@
+{
+  "rows": [
+    [
+      0,
+      1,
+      2
+    ],
+    [
+      3,
+      4,
+      5
+    ],
+    [
+      6,
+      7,
+      0
+    ],
+    [
+      1,
+      2,
+      3
+    ],
+    [
+      4,
+      5,
+      6
+    ],
+    [
+      7,
+      0,
+      1
+    ]
+  ],
+  "palette": [
+    [
+      255,
+      255,
+      255
+    ],
+    [
+      255,
+      153,
+      153
+    ],
+    [
+      255,
+      204,
+      102
+    ],
+    [
+      153,
+      204,
+      153
+    ],
+    [
+      102,
+      153,
+      255
+    ],
+    [
+      204,
+      153,
+      255
+    ],
+    [
+      255,
+      153,
+      204
+    ],
+    [
+      153,
+      204,
+      204
+    ]
+  ],
+  "policy": "fast",
+  "palette_optimization": false,
+  "library_sha256": "fe525ded019a9cf7a485b6d49310cf4f2cdcaa0c8914e1af07fdbc067996e49e",
+  "source_revision": "cf4cb3439aedec252b68bbc3674b10aa2bf0145f",
+  "outputs": {
+    "normal": {
+      "body": "#6C?O$#3A?G$#1G@_$#0@_C$#7_C$#4OA$#5?OA$#2?G@",
+      "body_bytes": 45,
+      "total_bytes": 170,
+      "exact_rgb": true
+    },
+    "or": {
+      "body": "#1iTi$#2eKX$#4sUQ$-",
+      "body_bytes": 19,
+      "total_bytes": 147,
+      "exact_rgb": true
+    }
+  }
+}
