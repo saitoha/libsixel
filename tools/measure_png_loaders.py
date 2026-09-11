@@ -255,9 +255,10 @@ def plot(data, output):
         ax.set_axisbelow(True)
         ax.legend(loc="lower right" if title.startswith("Opaque")
                   else "upper right", frameon=False)
-    fig.suptitle("PNG loader cost depends on the processing path", fontsize=16, fontweight="bold")
+    fig.suptitle("PNG loader cost includes adapter overhead", fontsize=16, fontweight="bold")
     fig.supxlabel(f"512 × 512 · {data['batches']} alternating paired batches × {data['repeats_per_batch']} calls · median and IQR\n"
-                  f"{data['machine']} · libpng {data['libpng_version']} · -O3 · one calling thread · panels use different scales",
+                  f"{data['machine']} · libpng {data['libpng_version']} · -O3 · one calling thread · panels use different scales\n"
+                  "Recorded libpng adapter prepares APNG even for static PNG. These are not codec-only timings.",
                   fontsize=9)
     fig.savefig(output, metadata={"Date": None})
     plt.close(fig)
