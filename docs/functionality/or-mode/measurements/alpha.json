@@ -1,0 +1,25 @@
+[
+  {
+    "policy": "keep",
+    "changed_pixels": 60000,
+    "alpha_changed_pixels": 60000,
+    "normal_alpha": [
+      0,
+      255
+    ],
+    "or_alpha": [
+      255
+    ]
+  },
+  {
+    "policy": "composite",
+    "changed_pixels": 0,
+    "alpha_changed_pixels": 0,
+    "normal_alpha": [
+      255
+    ],
+    "or_alpha": [
+      255
+    ]
+  }
+]

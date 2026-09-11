@@ -1,0 +1,17 @@
+libsixel: scale plan active=0 width=600 height=450 fmt=00000003
+libsixel: scale plan active=0 width=600 height=450 fmt=00000003
+[planner] DAG (Directed Acyclic Graph)
+  workers: total=1 main=1 palette=0 heavy_ops=0
+  formats: source=rgb888 work=rgb888 scale_out=rgb888
+  resize: mode=1 input=rgb888
+  loader: multiframe=no handoff=serial
+  nodes:
+    load
+    dither
+    encode
+  edges:
+    load -> dither
+    dither -> encode
+  pipeline:
+    bands=0 queue=0 mode=serial
+    band_height=0 overlap=0 threads: dither=0 encode=0

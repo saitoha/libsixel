@@ -1,0 +1,50 @@
+[
+  {
+    "colors": 16,
+    "policy": "auto",
+    "normal_bytes": 136556,
+    "or_bytes": 123286,
+    "size_ratio": 0.902823749963385,
+    "changed_pixels": 0
+  },
+  {
+    "colors": 16,
+    "policy": "fast",
+    "normal_bytes": 136556,
+    "or_bytes": 123286,
+    "size_ratio": 0.902823749963385,
+    "changed_pixels": 0
+  },
+  {
+    "colors": 16,
+    "policy": "size",
+    "normal_bytes": 104209,
+    "or_bytes": 123286,
+    "size_ratio": 1.1830648024642785,
+    "changed_pixels": 0
+  },
+  {
+    "colors": 256,
+    "policy": "auto",
+    "normal_bytes": 326104,
+    "or_bytes": 312223,
+    "size_ratio": 0.9574338247920908,
+    "changed_pixels": 0
+  },
+  {
+    "colors": 256,
+    "policy": "fast",
+    "normal_bytes": 326104,
+    "or_bytes": 312223,
+    "size_ratio": 0.9574338247920908,
+    "changed_pixels": 0
+  },
+  {
+    "colors": 256,
+    "policy": "size",
+    "normal_bytes": 299483,
+    "or_bytes": 312223,
+    "size_ratio": 1.042539977227422,
+    "changed_pixels": 0
+  }
+]
