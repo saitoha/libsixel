@@ -36,7 +36,7 @@ The loader suboption is request-specific and therefore overrides the global dedi
 
 ## Colorspace
 
-Background composition is performed in the loader's selected background colorspace. `SIXEL_LOADER_BACKGROUND_COLORSPACE` and the corresponding loader suboption select `gamma` or `linear`; `gamma` is the default. OSC 11 describes a terminal UI color and is always interpreted as gamma-encoded, regardless of that setting. File metadata is interpreted according to the owning format and loader path before composition.
+`SIXEL_LOADER_BACKGROUND_COLORSPACE` and the corresponding loader suboption select `gamma` or `linear`; `gamma` is the default. The setting's effect depends on the loader path: static non-indexed PNG float paths blend in linear light under either setting, while changing how background values are interpreted. Indexed palette paths have different rules, and APNG inter-frame blending is a separate operation. See the [PNG loader comparison](builtin/png.md#background-source-interpretation-and-blend-arithmetic) for measured builtin/libpng differences, including background-source priority and palette composition. OSC 11 describes a terminal UI color and is always interpreted as gamma-encoded, regardless of that setting. File metadata is interpreted according to the owning format and loader path before composition.
 
 Fully transparent pixels are filled only when the effective alpha policy is `composite` and a background is resolved. `clear` and `keep` retain alpha-zero coverage, while partial alpha may still require composition because SIXEL has no partial-alpha representation. See the alpha policy document for the exact mask and DCS behavior.
 

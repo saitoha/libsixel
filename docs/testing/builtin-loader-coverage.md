@@ -15,7 +15,7 @@ Counts show suite composition, not semantic completeness. A large generated matr
 | [Shared loader integration and policy](../loader/builtin.md) | 46 | 14 | 32 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 6 | 30 |
 | [GIF](../loader/builtin/gif.md) | 33 | 15 | 18 |
-| [PNG and APNG](../loader/builtin/png.md) | 104 | 9 | 95 |
+| [PNG and APNG](../loader/builtin/png.md) | 104 | 10 | 94 |
 | [JPEG](../loader/builtin/jpeg.md) | 21 | 7 | 14 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 258 | 7 | 251 |
 | [PSD and PSB](../loader/builtin/psd.md) | 978 | 7 | 971 |
@@ -23,7 +23,7 @@ Counts show suite composition, not semantic completeness. A large generated matr
 | [WebP](../loader/builtin/webp.md) | 293 | 7 | 286 |
 | [TGA](../loader/builtin/tga.md) | 20 | 13 | 7 |
 | [Softimage PIC](../loader/builtin/pic.md) | 28 | 12 | 16 |
-| **Total** | **1942** | **104** | **1838** |
+| **Total** | **1942** | **105** | **1837** |
 
 ## Complete inventory
 
@@ -271,8 +271,8 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader/builtin/0231_apng_builtin_trns_keycolor_env0_drops_header.t](../../tests/loader/builtin/0231_apng_builtin_trns_keycolor_env0_drops_header.t) | Verify builtin APNG output drops keycolor DCS header when SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0. | Supplementary or defensive regression |
 | [tests/loader/builtin/0232_apng_builtin_trns_keycolor_env1_matches_default.t](../../tests/loader/builtin/0232_apng_builtin_trns_keycolor_env1_matches_default.t) | Verify builtin APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 matches default output. | Supplementary or defensive regression |
 | [tests/loader/builtin/0236_apng_builtin_trns_keycolor_env_empty_matches_default.t](../../tests/loader/builtin/0236_apng_builtin_trns_keycolor_env_empty_matches_default.t) | Verify empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR matches default behavior in builtin APNG path. | Supplementary or defensive regression |
-| [tests/loader/builtin/1199_loader_builtin_png_rgb_parametric_012_builtin_cms_lsqa.t](../../tests/loader/builtin/1199_loader_builtin_png_rgb_parametric_012_builtin_cms_lsqa.t) | Verify builtin PNG loader reaches parametric ICC path with builtin CMS. | Supplementary or defensive regression |
-| [tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t](../../tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t) | Verify PNG bKGD priority policy, strict parsing, and fallback behavior. | Behavioral contract: [`docs/loader/background-policy.md`](../loader/background-policy.md) |
+| [tests/loader/builtin/1199_loader_builtin_png_rgb_parametric_012_builtin_cms_lsqa.t](../../tests/loader/builtin/1199_loader_builtin_png_rgb_parametric_012_builtin_cms_lsqa.t) | Verify builtin PNG loader reaches parametric ICC path with builtin CMS. | Behavioral contract: [`docs/loader/color-management.md`](../loader/color-management.md) |
+| [tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t](../../tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t) | Verify PNG bKGD priority policy, strict parsing, and fallback behavior. | Behavioral contract: [`docs/loader/builtin/png.md`](../loader/builtin/png.md), [`docs/loader/background-policy.md`](../loader/background-policy.md) |
 | [tests/loader/builtin/1498_loader_builtin_background_policy_apng_explicit_fallback.t](../../tests/loader/builtin/1498_loader_builtin_background_policy_apng_explicit_fallback.t) | Verify APNG background policy fallback when only explicit background exists. | Behavioral contract: [`docs/loader/background-policy.md`](../loader/background-policy.md) |
 | [tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t](../../tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t) | TAP test confirming builtin orientation toggle affects PNG eXIf decode. | Behavioral contract: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 

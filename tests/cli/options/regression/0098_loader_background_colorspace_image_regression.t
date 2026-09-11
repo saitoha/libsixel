@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/png.md
 # Verify common loader background colorspace through short and env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|NULL|background_colorspace
 # Registry binding: background_colorspace

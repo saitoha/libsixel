@@ -721,8 +721,8 @@
         {
           "coverage_id": "PNG-05",
           "details": [
-            "validate sequence, decode IDAT/fdAT frame images",
-            "apply blend/dispose and loop/start-frame policy"
+            "decode frame PNGs to RGBA8, not the static float path",
+            "integer canvas blend/dispose; then emission and background"
           ],
           "phase": "ANIMATE",
           "role": "decode",

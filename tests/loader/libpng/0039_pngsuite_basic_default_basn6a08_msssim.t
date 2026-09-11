@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/png.md
 # TAP test: PNGSuite case for basic/basn6a08.png with direct LSQA comparison.
 
 # Reference image generation command:

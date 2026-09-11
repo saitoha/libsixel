@@ -106,6 +106,8 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/loader/builtin/netpbm.md \
 	docs/loader/builtin/pic.md \
 	docs/loader/builtin/png.md \
+	docs/loader/builtin/measurements/png-loaders.json \
+	docs/loader/builtin/measurements/png-loaders.svg \
 	docs/loader/builtin/psd.md \
 	docs/loader/builtin/sixel.md \
 	docs/loader/builtin/tga.md \
@@ -434,6 +436,8 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_encoding_pipeline_figures.py \
 	tools/plot_sixel_format_figures.py \
 	tools/plot_builtin_loader_format_figures.py \
+	tools/measure_png_loaders.py \
+	tools/bench/png-loader.c \
 	tools/plot_loader_architecture_figures.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
