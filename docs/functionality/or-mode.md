@@ -54,6 +54,54 @@ A palette of 16 entries needs four bit planes; 256 entries need eight. In a busy
 
 The display-memory arrangement described in arakiken's article also suggests a receiver that consumes these planes directly. A receiver that needs complete pixel colors must instead reconstruct the indices and look them up. Our [measurements](or-mode/scaling.md#photo-set-decoder-results) show why that distinction matters: smaller OR streams usually decoded more slowly in the measured libsixel CPU decoder. Use OR mode with a compatible receiver and evaluate size, encoding time, and decoding time separately.
 
+## From a grid image to actual output
+
+The following example makes the transmitted characters concrete. It uses an opaque **3-column × 6-row image with eight palette entries**, so the entire image fits in one SIXEL band. Every square is one pixel; the number inside it selects a color from the illustrated palette. The earlier six-pixel diagram explains the principle, while this grid shows an actual encoder result.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="or-mode/grid-example/grid-mobile.svg">
+  <img alt="A 3 by 6 indexed image split into eight ordinary color masks and three OR bit masks. Each grid column has its actual SIXEL character underneath, followed by the complete drawing body. Normal encoding uses 45 body bytes, OR uses 19, and both reconstruct the same RGB image." src="or-mode/grid-example/grid.svg">
+</picture>
+
+*The normal masks follow the encoder's actual output order, rather than numerical palette order. A 1 means “paint here” or “set this index bit”; a dot means no operation. Read the three columns of each mask from left to right. Characters missing beneath an all-empty trailing column were omitted by the encoder. An internal empty column uses `?` to advance without painting.*
+
+### The literal drawing commands
+
+The normal drawing body is:
+
+```text
+#6C?O$#3A?G$#1G@_$#0@_C$#7_C$#4OA$#5?OA$#2?G@
+```
+
+For example, `#6C?O` selects color 6. `C` marks the third pixel down in the first column, `?` skips the second column, and `O` marks the fifth pixel down in the third column. `$` then returns to the left edge of the same six-row band before another color is selected. Compare these positions with the two squares numbered 6 in the source grid.
+
+The OR drawing body is:
+
+```text
+#1iTi$#2eKX$#4sUQ$-
+```
+
+Here `#1iTi` sends the three columns of the 1-bit plane. `#2eKX` and `#4sUQ` send the 2-bit and 4-bit planes. `$` returns to the left edge; the final `-` advances to the next six-row band and is included in the recorded byte count. The palette lookup occurs after the index bits have been combined. For the top-right source pixel, planes 1 and 4 are off and plane 2 is on, recovering index 2 and its yellow palette color.
+
+To see how a column becomes a character, follow the first column of plane 1. Its six positions, top to bottom, are **0, 1, 0, 1, 0, 1**. SIXEL assigns these vertical positions weights **1, 2, 4, 8, 16, 32**. The marked positions total `2 + 8 + 32 = 42`. Adding the SIXEL character offset of 63 gives ASCII code 105, the character `i`. These six vertical-position bits are distinct from the three palette-index bits represented by the planes.
+
+### Exact files and reproduction
+
+The [input PNG](or-mode/grid-example/input.png), [normal SIXEL file](or-mode/grid-example/normal.six), [OR SIXEL file](or-mode/grid-example/or.six), and [recorded palette and results](or-mode/grid-example/example.json) accompany the figure. The drawing bodies occupy **45 normal bytes and 19 OR bytes**. Complete streams occupy **170 and 147 bytes**, respectively, because they also contain the raster attributes, palette definitions, DCS header, and terminator. Normal framing starts with `ESC P q`; OR framing starts with `ESC P 7;5 q`. Both streams declare `"1;1;3;6`, use the same eight palette definitions, and end with `ESC` followed by a backslash. Spaces here separate explanatory tokens and are not transmitted.
+
+These outputs were generated from the fixed indexed raster with the study's pinned libsixel revision `cf4cb3439aedec252b68bbc3674b10aa2bf0145f`, using the low-level encoder, RGB palette syntax, palette optimization disabled, and **fast** encode policy. This preserves the color labels and keeps the ordinary per-color masks easy to follow. It is an encoding walkthrough, not the `-Esize` performance comparison; different policies can produce different valid commands. Both files were decoded to RGB and checked byte-for-byte against the original image.
+
+To regenerate with the [study environment](#reproduce-and-inspect):
+
+```sh
+"$OR_MODE_STUDY_DIR/venv/bin/python" tools/ormode/grid_example.py \
+  --library "$OR_MODE_STUDY_DIR/source/src/.libs/libsixel.1.dylib" \
+  --decoder "$OR_MODE_STUDY_DIR/source/converters/.libs/sixel2png"
+python3 tools/ormode/render_grid_example.py
+```
+
+The first script calls the encoder and verifies decoded pixels; the second checks every illustrated mask against the recorded drawing commands and writes the wide and narrow SVGs. The library filename above is for the measured macOS build; use the corresponding shared-library filename on other platforms.
+
 ## Usage and API
 
 OR mode is disabled by default. Enable it explicitly when producing a stream for a receiver that implements this dialect:

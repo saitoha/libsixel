@@ -583,6 +583,14 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/project-history.md \
 	docs/sixel-format.md \
 	docs/functionality/or-mode.md \
+	docs/functionality/or-mode/grid-example/input.png \
+	docs/functionality/or-mode/grid-example/normal.six \
+	docs/functionality/or-mode/grid-example/or.six \
+	docs/functionality/or-mode/grid-example/example.json \
+	docs/functionality/or-mode/grid-example/grid.svg \
+	docs/functionality/or-mode/grid-example/grid-mobile.svg \
+	tools/ormode/grid_example.py \
+	tools/ormode/render_grid_example.py \
 	docs/functionality/or-mode/encoding-explained.svg \
 	docs/functionality/or-mode/encoding-explained-mobile.svg \
 	tools/ormode/render_explanation.py \
