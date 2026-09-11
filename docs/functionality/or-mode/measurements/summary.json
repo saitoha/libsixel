@@ -1,0 +1,19 @@
+{
+  "count": 100,
+  "increased": 22,
+  "decreased": 78,
+  "aggregate_size_ratio": 0.7905024042266996,
+  "mean_size_ratio": 0.8507139202867606,
+  "median_size_ratio": 0.8045787885353017,
+  "min_size_ratio": 0.48494746786522,
+  "max_size_ratio": 1.6529733976199006,
+  "median_cli_speedup": 1.2933066296539912,
+  "min_cli_speedup": 1.0216921345617453,
+  "max_cli_speedup": 2.0806740132409702,
+  "median_indexed_speedup": 6.322764497396635,
+  "min_indexed_speedup": 1.8847248576850095,
+  "max_indexed_speedup": 24.761250000000004,
+  "all_cli_pixels_equal": true,
+  "all_indexed_pixels_equal": true,
+  "all_repeats_equal": true
+}

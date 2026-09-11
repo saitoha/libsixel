@@ -582,6 +582,26 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/platform-support.md \
 	docs/project-history.md \
 	docs/sixel-format.md \
+	docs/functionality/or-mode.md \
+	docs/functionality/or-mode/measurements/alpha.json \
+	docs/functionality/or-mode/measurements/comparison.png \
+	docs/functionality/or-mode/measurements/controls.json \
+	docs/functionality/or-mode/measurements/index-boundaries.json \
+	docs/functionality/or-mode/measurements/inputs.json \
+	docs/functionality/or-mode/measurements/metadata.json \
+	docs/functionality/or-mode/measurements/pr133-result.txt \
+	docs/functionality/or-mode/measurements/preflight.txt \
+	docs/functionality/or-mode/measurements/qiita-cases.json \
+	docs/functionality/or-mode/measurements/results.json \
+	docs/functionality/or-mode/measurements/summary.csv \
+	docs/functionality/or-mode/measurements/summary.json \
+	tools/ormode/download.py \
+	tools/ormode/edge_cases.py \
+	tools/ormode/indexed-bench.c \
+	tools/ormode/measure.py \
+	tools/ormode/qiita_cases.py \
+	tools/ormode/render.py \
+	tools/ormode/requirements.txt \
 	docs/sixel-format-figures/encoder-comparison-mobile.svg \
 	docs/sixel-format-figures/encoder-comparison-wide.svg \
 	docs/sixel-format-figures/node-scheduling-mobile.svg \
