@@ -1,5 +1,32 @@
 {
-  "kind": "schematic, not measured output",
+  "kind": "schematic with calculated grayscale examples",
+  "upstream_revision": "844241504c7f2b224c67761de277c2bb5c56ab81",
+  "gradient_examples": {
+    "checkerboard": 0,
+    "vertical_step": 3600
+  },
+  "inference_layouts": {
+    "palette-clue": {
+      "wide": [
+        960,
+        610
+      ],
+      "mobile": [
+        380,
+        1060
+      ]
+    },
+    "gradient-clue": {
+      "wide": [
+        960,
+        635
+      ],
+      "mobile": [
+        380,
+        1120
+      ]
+    }
+  },
   "source": "src/decoder.c",
   "color_roles": {
     "gold": "center",

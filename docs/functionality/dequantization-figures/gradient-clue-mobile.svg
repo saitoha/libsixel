@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="1120" viewBox="0 0 380 1120" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Dots or a coherent boundary?</title>
+<desc id="desc">At the center, an 80/160 checkerboard has response 0; an 80/160 vertical step has response 3600. The upstream gradient gate protects the step from mixing.</desc>
+<rect x="0" y="0" width="380" height="1120" rx="0" fill="#ffffff" stroke="none" stroke-width="1"/>
+<text x="20" y="36" font-size="23" fill="#183247" font-weight="700" text-anchor="start">Dots or a coherent boundary?</text>
+<text x="20" y="64" font-size="16" fill="#4c6070" font-weight="400" text-anchor="start">Same shades. Different spatial structure.</text>
+<rect x="20" y="85" width="340" height="455" rx="10" fill="#f6f8fa" stroke="#c8d0d7" stroke-width="1"/>
+<text x="36" y="116" font-size="20" fill="#183247" font-weight="700" text-anchor="start">Alternating dots</text>
+<rect x="100.0" y="140" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="none" stroke-width="3"/>
+<text x="128.0" y="174" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="160.0" y="140" width="56" height="56" rx="3" fill="rgb(160,160,160)" stroke="none" stroke-width="3"/>
+<text x="188.0" y="174" font-size="16" fill="#111111" font-weight="400" text-anchor="middle">160</text>
+<rect x="220.0" y="140" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="none" stroke-width="3"/>
+<text x="248.0" y="174" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="100.0" y="200" width="56" height="56" rx="3" fill="rgb(160,160,160)" stroke="none" stroke-width="3"/>
+<text x="128.0" y="234" font-size="16" fill="#111111" font-weight="400" text-anchor="middle">160</text>
+<rect x="160.0" y="200" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="#855012" stroke-width="3"/>
+<text x="188.0" y="234" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="220.0" y="200" width="56" height="56" rx="3" fill="rgb(160,160,160)" stroke="none" stroke-width="3"/>
+<text x="248.0" y="234" font-size="16" fill="#111111" font-weight="400" text-anchor="middle">160</text>
+<rect x="100.0" y="260" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="none" stroke-width="3"/>
+<text x="128.0" y="294" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="160.0" y="260" width="56" height="56" rx="3" fill="rgb(160,160,160)" stroke="none" stroke-width="3"/>
+<text x="188.0" y="294" font-size="16" fill="#111111" font-weight="400" text-anchor="middle">160</text>
+<rect x="220.0" y="260" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="none" stroke-width="3"/>
+<text x="248.0" y="294" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<text x="36" y="348" font-size="15" fill="#183247" font-weight="400" text-anchor="start">Horizontal sum: 0; vertical: 0</text>
+<text x="36" y="385" font-size="21" fill="#17618c" font-weight="700" text-anchor="start">Gradient response = 0</text>
+<text x="36" y="424" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Opposite sides cancel here.</text><text x="36" y="450" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Center weight stays at 8.</text><text x="36" y="476" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Palette evidence decides mixing.</text>
+<rect x="20" y="560" width="340" height="455" rx="10" fill="#f6f8fa" stroke="#c8d0d7" stroke-width="1"/>
+<text x="36" y="591" font-size="20" fill="#183247" font-weight="700" text-anchor="start">A vertical step</text>
+<rect x="100.0" y="615" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="none" stroke-width="3"/>
+<text x="128.0" y="649" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="160.0" y="615" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="none" stroke-width="3"/>
+<text x="188.0" y="649" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="220.0" y="615" width="56" height="56" rx="3" fill="rgb(160,160,160)" stroke="none" stroke-width="3"/>
+<text x="248.0" y="649" font-size="16" fill="#111111" font-weight="400" text-anchor="middle">160</text>
+<rect x="100.0" y="675" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="none" stroke-width="3"/>
+<text x="128.0" y="709" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="160.0" y="675" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="#855012" stroke-width="3"/>
+<text x="188.0" y="709" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="220.0" y="675" width="56" height="56" rx="3" fill="rgb(160,160,160)" stroke="none" stroke-width="3"/>
+<text x="248.0" y="709" font-size="16" fill="#111111" font-weight="400" text-anchor="middle">160</text>
+<rect x="100.0" y="735" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="none" stroke-width="3"/>
+<text x="128.0" y="769" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="160.0" y="735" width="56" height="56" rx="3" fill="rgb(80,80,80)" stroke="none" stroke-width="3"/>
+<text x="188.0" y="769" font-size="16" fill="#ffffff" font-weight="400" text-anchor="middle">80</text>
+<rect x="220.0" y="735" width="56" height="56" rx="3" fill="rgb(160,160,160)" stroke="none" stroke-width="3"/>
+<text x="248.0" y="769" font-size="16" fill="#111111" font-weight="400" text-anchor="middle">160</text>
+<text x="36" y="823" font-size="15" fill="#183247" font-weight="400" text-anchor="start">Horizontal sum: 960; vertical: 0</text>
+<text x="36" y="860" font-size="21" fill="#17618c" font-weight="700" text-anchor="start">Gradient response = 3600</text>
+<text x="36" y="899" font-size="16" fill="#183247" font-weight="400" text-anchor="start">The sides differ consistently.</text><text x="36" y="925" font-size="16" fill="#183247" font-weight="400" text-anchor="start">3600 exceeds the threshold 256.</text><text x="36" y="951" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Keep the center unchanged.</text>
+<text x="20" y="1053" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">Calculated from brightness R + 2G + B.</text><text x="20" y="1075" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">Upstream protection. In libsixel, -e 100</text><text x="20" y="1097" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">selects these thresholds.</text>
+</svg>

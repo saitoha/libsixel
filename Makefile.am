@@ -341,6 +341,10 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dequantization.md \
 	tools/plot_dequantization_figures.py \
 	docs/functionality/dequantization-figures/figures.json \
+	docs/functionality/dequantization-figures/palette-clue-wide.svg \
+	docs/functionality/dequantization-figures/palette-clue-mobile.svg \
+	docs/functionality/dequantization-figures/gradient-clue-wide.svg \
+	docs/functionality/dequantization-figures/gradient-clue-mobile.svg \
 	docs/functionality/dequantization-figures/full-mobile.svg \
 	docs/functionality/dequantization-figures/full-wide.svg \
 	docs/functionality/dequantization-figures/light-mobile.svg \

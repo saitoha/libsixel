@@ -34,7 +34,7 @@ are grouped by domain so each area can grow without overloading one document.
 - [Encoding pipeline](functionality/encoding-pipeline.md) connects loading,
   palette construction, palette application, SIXEL byte generation, and their
   composed cost model.
-- [Dequantization](functionality/dequantization.md) explains reconstruction methods, controls, alpha and palette-history boundaries, CPU/GPU execution, and test coverage.
+- [Dequantization](functionality/dequantization.md) explains Kornelski's palette and gradient inference, libsixel's mixing ratios, reconstruction controls, alpha and palette-history boundaries, CPU/GPU execution, and test coverage.
 - [Decoding pipeline](functionality/decoding-pipeline.md) follows SIXEL wire bytes through parser and paint state, raster policy, indexed and direct representations, optional reconstruction and resize, parallel fallback, and PNG output, with a reciprocal coverage audit.
 - [Encoder execution map](functionality/encoder-execution-map.md) expands the implementation path through loader fallback, preprocessing, scheduler overlap, quantizer-specific work, lookup and dither application, and palette serialization.
 - [Crop and resize](functionality/crop-resize.md) defines geometry syntax, crop/resize ordering, resize colorspace and precision policy, its SIMD relationship, measured quality, speed, size, transparency, and public frame helpers.

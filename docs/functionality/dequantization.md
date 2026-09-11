@@ -6,9 +6,100 @@ A SIXEL image stores a limited set of colors, called a **palette**. To suggest a
 
 Reading the palette and displaying its colors is ordinary decoding. Mixing those colors is the additional step explained here. The image keeps the same dimensions; resizing is a separate option. In file conversion, reconstruction runs before `sixel2png -s` resizes the result.
 
-## A visual guide to the four choices
+## Kornelski's undither: infer what the palette could not express
 
-Each square below represents one pixel. The outlined **CENTER** is the pixel being updated. Blue squares identify neighbors that the method considers; gray squares are not used for this update. Labels carry the same meaning as color. The diagrams explain the rules, not the appearance or measured quality of a particular photograph.
+This chapter explains the upstream algorithm before describing libsixel's changes. The reference is the Rust implementation of [kornelski/undither at commit `844241504c7f`](https://github.com/kornelski/undither/tree/844241504c7f2b224c67761de277c2bb5c56ab81). Historical versions have different coefficients; “upstream” below means this specific revision.
+
+### The missing-color clue
+
+Imagine two neighboring pixels with colors A and B. Their difference has two possible explanations: the source really had a boundary, or the encoder alternated available colors to suggest a color it could not store. Looking only at A and B cannot settle that question. The palette supplies another clue: **which colors could the encoder have chosen instead?**
+
+Consider their midpoint M. If the palette lacks a color near M, alternating A and B is a plausible substitute for an unavailable intermediate color. Mixing can reconstruct that intermediate shade. If a palette color already lies near M, the encoder could have used it directly; the observed A/B difference is stronger evidence for a real boundary, so mixing is suppressed. This is the central hypothesis described in the [upstream README](https://github.com/kornelski/undither/blob/844241504c7f2b224c67761de277c2bb5c56ab81/README.md).
+
+<picture>
+  <source media="(max-width: 640px)" srcset="dequantization-figures/palette-clue-mobile.svg">
+  <img alt="The same A=80 and B=160 pixels have midpoint 120. Without a palette entry near 120, mixing is plausible. With an entry at 120, their difference is treated as evidence for a boundary." src="dequantization-figures/palette-clue-wide.svg">
+</picture>
+
+*The two panels keep the observed pixels fixed and change only the palette. The line is a grayscale slice through color space, not a row of image pixels. The midpoint is a hypothesis, not a known original color.*
+
+### From a palette gap to a mixing weight
+
+For each center/neighbor pair, [`Similarity::compare`](https://github.com/kornelski/undither/blob/844241504c7f2b224c67761de277c2bb5c56ab81/src/acc.rs) computes the RGB midpoint M, the squared distance `d` from M to A, and the nearest squared distance `q` from M to another palette entry, excluding the two endpoint entries. Small `q` relative to `d` discourages mixing; large `q` permits it. The resulting weight is used in a normalized average of the center and eligible neighbors. The implementation caches these pair decisions and uses a nearest-neighbor search that its own comment describes as approximate.
+
+Thus “similarity” here is not just closeness of A and B. It is their compatibility with an intermediate-color explanation given the palette. The coefficient comparison in the next chapter shows the upstream weight levels alongside libsixel's replacements.
+
+### The spatial-gradient clue
+
+Palette evidence alone does not describe image structure. Upstream also computes a Prewitt gradient from the decoded neighborhood, using the brightness proxy `R + 2G + B`. It compares opposite sides of the neighborhood horizontally and vertically. Alternating dots can cancel in those sums, while a coherent boundary can produce a strong response. This provides a second reason to preserve detail. See [`prewitt.rs`](https://github.com/kornelski/undither/blob/844241504c7f2b224c67761de277c2bb5c56ab81/src/prewitt.rs).
+
+<picture>
+  <source media="(max-width: 640px)" srcset="dequantization-figures/gradient-clue-mobile.svg">
+  <img alt="Two 3 by 3 grayscale patches use the same values 80 and 160. A checkerboard has zero Prewitt response at the center; a vertical step has response 3600 and triggers upstream edge protection." src="dequantization-figures/gradient-clue-wide.svg">
+</picture>
+
+*Calculated examples using the upstream brightness and gradient formulas. Both contain the same two shades, but their spatial arrangement changes the gradient. Zero response in this particular checkerboard does not mean every dither pattern has zero response.*
+
+In [`Undither::undith_into`](https://github.com/kornelski/undither/blob/844241504c7f2b224c67761de277c2bb5c56ab81/src/undither.rs), a gradient response at most 160 gives the center weight 8. Above 160 and at most 256, its weight rises to 24, reducing the neighbors' influence. Above 256, the center is left unchanged. The two clues work together: palette analysis sets neighbor weights; spatial structure sets center protection.
+
+This is heuristic reconstruction, not a unique inversion of quantization. A palette is evidence of available choices, not proof of why the encoder chose a particular pixel. The method estimates where intermediate colors are plausible and where existing differences deserve protection.
+
+## libsixel's mixing ratios
+
+libsixel retains the midpoint/palette-gap idea but changes its coefficients and makes gradient protection optional. `k_undither` and `lso_undither:Vfs` select the full neighborhood; Vlight uses the same CPU pair-weight rule with four neighbors and no gradient stage. These details describe current implementation behavior, not a promise that a particular coefficient is optimal for every image.
+
+### How the palette selects a neighbor's weight
+
+The owning implementation is `sixel_similarity_compare()` in [`src/decoder.c`](../../src/decoder.c). For a pair of different palette entries, the active code uses the midpoint in byte RGB, rounding each component downward. It finds the nearest other palette entry by squared RGB distance. Unlike the upstream search, the CPU implementation scans the other entries directly, with scalar or SIMD execution.
+
+Let `d` be the squared distance from this midpoint to the first endpoint used by the cached pair calculation, and `q` the nearest-other-entry squared distance. At default `-S 100`, the comparison base is `max(1, d)`. More generally it is:
+
+```text
+base = max(1, floor((d * max(1, S) + 50) / 100))
+r = q / base
+```
+
+The ratio `r` is explanatory notation: the code uses integer comparisons, not floating-point division. Smaller `r` means that another palette entry lies closer to the candidate intermediate color relative to the endpoint distance.
+
+| Palette-gap ratio `r` | Upstream neighbor weight (`q/d`, for `d > 0`) | libsixel neighbor weight |
+| --- | ---: | ---: |
+| `0 <= r < 1/3` | 0 | 0 |
+| `1/3 <= r < 1/2` | 0 | 2 |
+| `1/2 <= r < 3/5` | 0 | 4 |
+| `3/5 <= r < 2/3` | 0 | 7 |
+| `2/3 <= r < 3/4` | 1 | 5 |
+| `3/4 <= r < 1` | 1 | 7 |
+| `1 <= r < 2` | 6 | 8 |
+| `2 <= r` | 8 | 5 |
+
+The columns compare the respective decision functions at the stated ratio, not a guarantee that the upstream approximate search and libsixel return identical `q`. The libsixel branches at `3/4` and `5/6` both return 7, so they share one row here. A repeated palette index has cached weight 7 in libsixel. When no third entry exists, libsixel substitutes `q = 2 * base`, giving weight 5.
+
+The libsixel weights are deliberately documented as a **non-monotonic table**: for example, the weight changes from 7 to 5 at `2/3`, and from 8 to 5 at 2. Increasing the palette gap does not always increase mixing. Likewise, `-S` rescales the decision base; it is not a linear “more smoothing” slider. These coefficients alone do not establish a quality advantage over upstream.
+
+### A weight is not yet a percentage
+
+For each output channel, the filter normalizes all contributions:
+
+```text
+output = floor((center_weight * center + sum(w_i * neighbor_i))
+               / (center_weight + sum(w_i)))
+```
+
+At the default `-e 0`, the center weight is 8. With just one eligible neighbor of weight 5, the center contributes `8/13` and the neighbor `5/13` (about 38%). With weight 8, they contribute equally. Multiple neighbors each add their own weight to the denominator, so the final fraction depends on the actual neighborhood.
+
+For an exact two-pixel, one-row CPU example, take grayscale A=80 and B=160 and a palette containing only these two entries. There is no third entry, so libsixel uses neighbor weight 5: the first output is `floor((8*80 + 5*160)/13) = 110`, and the second is 129. Add a third palette entry at 120 without changing either input pixel: `q` becomes zero, the neighbor weight becomes zero, and the outputs stay 80 and 160. This makes the palette's role visible while separating the candidate midpoint (120) from the actual reconstructed samples (110 and 129).
+
+### Gradient protection and neighbor position
+
+Full undither defaults to `-e 0`, which disables the spatial-gradient gate and leaves the center weight at 8. With `-e 100`, libsixel uses the upstream gradient thresholds 160 and 256: moderate gradients raise the center weight to 24, and strong gradients leave the center unchanged. Other positive values inversely scale those thresholds, with integer rounding and limits. The same neighbor weight 5 then contributes only `5/29` (about 17%) when the center weight is 24. Vlight omits this gradient stage.
+
+The current active midpoint calculation ignores the `numerator` and `denominator` arguments stored in the neighbor-offset tables. They do **not** multiply the final mixing weights by direction. Full undither and Vlight differ in which neighbors they inspect; for the same cached palette pair, the active CPU weight rule itself is independent of neighbor position. A disabled alternative formula in the source must not be presented as current behavior.
+
+The CPU rules above apply to decoded byte RGB. Encoder working-color-space and precision options do not change this reconstruction space. The Metal Vlight implementation has its own dispatch and arithmetic path; this chapter does not claim exhaustive byte-for-byte GPU equivalence.
+
+## Available methods and their neighborhoods
+
+Each square below represents one pixel. The outlined **CENTER** is the pixel being updated. Blue squares identify neighbors that the method considers; gray squares are not used for this update. Labels carry the same meaning as color. These supplementary diagrams show the neighborhoods and the simpler methods; the palette and gradient diagrams above explain the undither inference itself.
 
 ### 1. None: keep the decoded pixels
 
@@ -91,15 +182,7 @@ Compact forms include `k`, `l:Vf`, `l:Vl`, and `s:T24`. Long suboption names use
 
 `lsqa -d` reuses the decoder's method/suboption parser, including Vlight and selective blur, for target reconstruction. It does not turn every `lsqa` option into a converter suboption. When measuring quality, record whether reconstruction was applied to the target: a score after smoothing answers a different question from a score for plain decoded SIXEL.
 
-## Algorithm details
-
-### Palette-aware undither
-
-The implementation in [`src/decoder.c`](../../src/decoder.c) caches similarity decisions for palette-color pairs. It compares a pair's midpoint against other palette entries and uses the similarity bias to scale the decision. Thus two identical local color pairs can receive different weights when the rest of the palette changes. `-S` is a heuristic bias, not a blur radius or a percentage of recovered color.
-
-The full method combines a center weight with eight direction-dependent neighbor weights. With edge protection enabled, a Prewitt gradient computed from decoded luminance can increase the center's contribution or preserve a strong-edge sample without smoothing. Vlight retains palette similarity but samples only the four causal neighbors and omits this gradient stage. Both operate on decoded byte RGB values; encoder working-color-space and precision options do not select a different reconstruction color space.
-
-### Selective blur
+## Selective-blur calculation
 
 For each painted center, the filter starts with center weight 4. It considers eight neighbors with these spatial weights:
 
@@ -139,7 +222,7 @@ For `P` pixels and `K` palette entries, selective blur does a bounded number of 
 
 ## Figure sources and regeneration
 
-The four concept diagrams have separate wide and mobile layouts, accessible SVG descriptions, and text labels that do not rely on color alone. Their geometry and role metadata are generated by [`tools/plot_dequantization_figures.py`](../../tools/plot_dequantization_figures.py); [`figures.json`](dequantization-figures/figures.json) records the schematic status, neighborhoods, and layout sizes. They illustrate the neighborhood definitions in [`src/decoder.c`](../../src/decoder.c), not measured output colors or a speed comparison. In the selective-blur diagram, the NEAR/FAR arrangement is illustrative; the small 100/112 example uses the exact DQ-05 calculation.
+The palette-evidence and spatial-gradient diagrams lead the explanation; four supplementary method diagrams show neighborhoods and simpler filters. All have separate wide and mobile layouts, accessible SVG descriptions, and text labels that do not rely on color alone. Their geometry and role metadata are generated by [`tools/plot_dequantization_figures.py`](../../tools/plot_dequantization_figures.py); [`figures.json`](dequantization-figures/figures.json) records the schematic status, neighborhoods, and layout sizes. The method diagrams illustrate the neighborhood definitions in [`src/decoder.c`](../../src/decoder.c), not measured output colors or a speed comparison. In the selective-blur diagram, the NEAR/FAR arrangement is illustrative; the small 100/112 example uses the exact DQ-05 calculation.
 
 ```sh
 python3 tools/plot_dequantization_figures.py
@@ -181,4 +264,4 @@ The [decoder tests](../../tests/processing/decoder/) and [GPU dequantization tes
 
 ### Coverage boundary
 
-The linked tests establish the listed observations, not every combination described by the implementation. Remaining focused coverage opportunities include repeated `-d` state, explicit-versus-environment precedence for each method, exhaustive threshold endpoints, GPU/CPU numerical comparisons on available hardware, and file-output transparency across every method. Build-conditioned skips are not successful hardware validation. No new performance benchmark or visual-quality ranking is claimed here.
+The linked tests establish the listed observations, not every combination described by the implementation. The coefficient table is source-audited; the existing fixed-image tests do not individually isolate every ratio boundary. Remaining focused coverage opportunities include a boundary-by-boundary coefficient test, repeated `-d` state, explicit-versus-environment precedence for each method, exhaustive threshold endpoints, GPU/CPU numerical comparisons on available hardware, and file-output transparency across every method. Build-conditioned skips are not successful hardware validation. No new performance benchmark or visual-quality ranking is claimed here.

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="1060" viewBox="0 0 380 1060" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Was the middle color available?</title>
+<desc id="desc">The observed A=80 and B=160 do not change. A midpoint entry at 120 changes the inference from a plausible missing shade to evidence for a boundary.</desc>
+<rect x="0" y="0" width="380" height="1060" rx="0" fill="#ffffff" stroke="none" stroke-width="1"/>
+<text x="20" y="36" font-size="23" fill="#183247" font-weight="700" text-anchor="start">Was the middle color available?</text>
+<text x="20" y="64" font-size="16" fill="#4c6070" font-weight="400" text-anchor="start">Same pixels. Different palette evidence.</text>
+<rect x="20" y="85" width="340" height="450" rx="10" fill="#f6f8fa" stroke="#c8d0d7" stroke-width="1"/>
+<text x="36" y="115" font-size="19" fill="#183247" font-weight="700" text-anchor="start">1  Middle color unavailable</text>
+<text x="36" y="146" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Observed neighboring pixels:</text>
+<rect x="50" y="162" width="102" height="45" rx="4" fill="rgb(80,80,80)" stroke="none" stroke-width="1"/>
+<text x="101" y="232" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">A = 80</text>
+<rect x="192" y="162" width="102" height="45" rx="4" fill="rgb(160,160,160)" stroke="none" stroke-width="1"/>
+<text x="243" y="232" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">B = 160</text>
+<text x="36" y="275" font-size="15" fill="#183247" font-weight="400" text-anchor="start">Palette entries on a grayscale axis</text>
+<path d="M 62 330 H 318" stroke="#4c6070"/>
+<rect x="52" y="320" width="20" height="20" rx="0" fill="rgb(80,80,80)" stroke="#4c6070" stroke-width="2"/>
+<text x="62" y="365" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">80</text>
+<rect x="180.0" y="320" width="20" height="20" rx="0" fill="#ffffff" stroke="#17618c" stroke-width="2"/>
+<text x="190.0" y="365" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">120</text>
+<rect x="308" y="320" width="20" height="20" rx="0" fill="rgb(160,160,160)" stroke="#4c6070" stroke-width="2"/>
+<text x="318" y="365" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">160</text>
+<text x="190.0" y="301" font-size="15" fill="#17618c" font-weight="400" text-anchor="middle">M: midpoint</text>
+<text x="190.0" y="394" font-size="15" fill="#17618c" font-weight="400" text-anchor="middle">120 is missing from the palette</text>
+<text x="36" y="440" font-size="16" fill="#183247" font-weight="400" text-anchor="start">A/B may stand in for missing 120.</text><text x="36" y="466" font-size="16" fill="#183247" font-weight="400" text-anchor="start">An intermediate color is plausible.</text><text x="36" y="492" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Allow this pair to mix.</text>
+<rect x="20" y="555" width="340" height="450" rx="10" fill="#f6f8fa" stroke="#c8d0d7" stroke-width="1"/>
+<text x="36" y="585" font-size="19" fill="#183247" font-weight="700" text-anchor="start">2  Middle color available</text>
+<text x="36" y="616" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Observed neighboring pixels:</text>
+<rect x="50" y="632" width="102" height="45" rx="4" fill="rgb(80,80,80)" stroke="none" stroke-width="1"/>
+<text x="101" y="702" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">A = 80</text>
+<rect x="192" y="632" width="102" height="45" rx="4" fill="rgb(160,160,160)" stroke="none" stroke-width="1"/>
+<text x="243" y="702" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">B = 160</text>
+<text x="36" y="745" font-size="15" fill="#183247" font-weight="400" text-anchor="start">Palette entries on a grayscale axis</text>
+<path d="M 62 800 H 318" stroke="#4c6070"/>
+<rect x="52" y="790" width="20" height="20" rx="0" fill="rgb(80,80,80)" stroke="#4c6070" stroke-width="2"/>
+<text x="62" y="835" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">80</text>
+<rect x="180.0" y="790" width="20" height="20" rx="0" fill="rgb(120,120,120)" stroke="#17618c" stroke-width="2"/>
+<text x="190.0" y="835" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">120</text>
+<rect x="308" y="790" width="20" height="20" rx="0" fill="rgb(160,160,160)" stroke="#4c6070" stroke-width="2"/>
+<text x="318" y="835" font-size="16" fill="#183247" font-weight="400" text-anchor="middle">160</text>
+<text x="190.0" y="771" font-size="15" fill="#17618c" font-weight="400" text-anchor="middle">M: midpoint</text>
+<text x="190.0" y="864" font-size="15" fill="#17618c" font-weight="400" text-anchor="middle">120 is a stored palette color</text>
+<text x="36" y="910" font-size="16" fill="#183247" font-weight="400" text-anchor="start">The encoder could have used 120.</text><text x="36" y="936" font-size="16" fill="#183247" font-weight="400" text-anchor="start">A/B may be a real boundary.</text><text x="36" y="962" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Suppress this pair&#x27;s mixing.</text>
+<text x="20" y="1043" font-size="12" fill="#4c6070" font-weight="400" text-anchor="start">Palette clue only; spatial gradients also protect edges.</text>
+</svg>
