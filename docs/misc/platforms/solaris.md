@@ -16,7 +16,7 @@ Secure-CRT names are not proof of the MSVC type system. In `assessment/lsqa.c`, 
 
 Solaris awk variants do not provide every extension accepted by GNU awk. Maintained scripts use POSIX operations such as `index`, `substr`, `sub`, `split`, `RSTART`, and `RLENGTH` instead of `match(string, regexp, capture_array)`. JSON metrics and quoted shell values must be parsed structurally without depending on GNU capture arrays or fragile regex escaping.
 
-Byte checks must ignore the implementation-specific spacing produced by `od`; consume fields through shell splitting or remove `[[:space:]]` rather than comparing the raw line. TAP parsing runs with `LC_ALL=C` where character classes and diagnostics must be stable.
+Byte checks must ignore the implementation-specific spacing produced by `od`; consume fields through shell splitting or remove `[[:space:]]` rather than comparing the raw line. Solaris `od -tu1` also zero-pads unsigned decimal bytes, while GNU `od` does not. Tests that compare byte text therefore use fixed-width hexadecimal output such as `od -tx1`, or compare parsed values numerically, instead of treating decimal output as a canonical string. TAP parsing runs with `LC_ALL=C` where character classes and diagnostics must be stable.
 
 `build-aux/resolve-test-tool-paths.sh.in` deliberately resolves libtool state, quote removal, key trimming, and shell-safe assignment output using POSIX shell string operations. Reintroducing sed/awk into that bootstrap path recreates quoting and implementation differences before tests can start.
 
@@ -27,7 +27,7 @@ Coverage normalization chooses `/usr/xpg4/bin/awk`, then `nawk`, then `awk`. Sol
 - Mark every automatic value read after a possible `longjmp` according to the C rule, not only the first observed flag.
 - Keep header, declaration, and callable-feature probes separate.
 - Restrict repository awk to POSIX syntax unless a script explicitly selects and verifies a stronger implementation.
-- Validate shell quoting and `od` normalization with Solaris tools before accepting GNU-only simplifications.
+- Validate shell quoting, `od` spacing, and decimal zero-padding with Solaris tools before accepting GNU-only simplifications.
 - Keep GNU make and dependency-tracking choices explicit in the Solaris CI row.
 
 ## Test coverage
@@ -38,6 +38,7 @@ Coverage normalization chooses `/usr/xpg4/bin/awk`, then `nawk`, then `awk`. Sol
 | --- | --- | --- |
 | SOL-01 | The libjpeg longjmp flag remains `volatile`, and TTY use remains guarded by both `HAVE_SYS_TTYCOM_H` and `TIOCGWINSZ`. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 | SOL-02 | Test-tool resolution remains shell-based, project-owned scripts avoid GNU awk capture arrays, coverage retains the XPG4/nawk fallback, and the Solaris Autotools CI tuple retains GNU make plus disabled dependency tracking. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/_static/sh/staticcheck-platform-ci-contracts.sh](../../../tests/_static/sh/staticcheck-platform-ci-contracts.sh) |
+| SOL-03 | PNG byte assertions use fixed-width hexadecimal `od` output so Solaris decimal zero-padding cannot create false failures. | [tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t](../../../tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t), [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 
 ### Coverage boundary
 
