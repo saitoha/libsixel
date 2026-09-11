@@ -116,21 +116,17 @@ The formats share an 8-bit RGB model but come from different application ecosyst
 
 | Format | Origin and overview | libsixel selector and filename behavior | Common application compatibility |
 | --- | --- | --- | --- |
-| Adobe Color Table (ACT) | Photoshop color-table format. A binary file contains 256 interleaved RGB triplets; the 768-byte form has no trailer, while the 772-byte form adds a color count and a transparency index. | `act:PATH` or `.act`. `-M` emits 772 bytes, pads unused RGB slots with zero, records the entry count, and writes a zero transparency index. | Adobe Photoshop color tables; GIMP and Krita import ACT. |
+| Adobe Color Table (ACT) | Photoshop color-table format. A binary file contains 256 interleaved RGB triplets; the 768-byte form has no trailer, while the 772-byte form adds a color count and a transparency index. | `act:PATH` or `.act`. `-m` imports the counted colors from entry zero and ignores transparency metadata because source-image alpha is a separate policy. `-M` emits 772 bytes, pads unused RGB slots with zero, records the entry count, and writes a zero transparency index. | Adobe Photoshop color tables; GIMP and Krita import ACT. |
 | JASC PAL | Text palette associated with JASC Software's Paint Shop Pro, now continued as Corel PaintShop Pro. It begins with `JASC-PAL`, version `0100`, an entry count, and decimal `R G B` lines. Historical files conventionally use CRLF line endings. | `pal-jasc:PATH`; `pal:PATH` or `.pal` also works when the signature is JASC. A conventional `.psp` filename needs the prefix. libsixel accepts CR, LF, or CRLF and emits LF; `-M palette.pal` defaults to this format. | Paint Shop Pro; GIMP; Krita imports it as a PaintShop Pro `.psp` palette. |
 | RIFF PAL | Microsoft's RIFF “Simple PAL” representation of a Windows logical palette. A `RIFF` / `PAL ` container holds a `data` chunk with version `0x0300`, an entry count, and RGB-plus-flags entries. | `pal-riff:PATH`; `pal:PATH` or `.pal` also works when the signature is RIFF. A conventional `.riff` filename needs the prefix. libsixel reads the RGB fields without preserving entry flags and writes every flag as zero. | Windows RIFF palette consumers; GIMP; Krita imports `.riff`. |
 | GIMP Palette (GPL) | GIMP's human-readable palette format. It has a `GIMP Palette` header, optional name and column metadata, comments, and decimal RGB rows with optional color names. GPL version 2 defines those entries as 8-bit sRGB. | `gpl:PATH` or `.gpl`. libsixel reads RGB entries but does not preserve names or layout metadata; it exports a new palette name, 16-column hint, comment, and `Index N` labels. | GIMP; Krita; Aseprite and other open-source graphics tools that use GIMP palettes. |
-
-### Adobe Color Table compatibility limitation
-
-Adobe defines the second 16-bit word in a 772-byte ACT trailer as the transparent-color index. The current libsixel reader instead interprets that word as the starting palette-entry index. Consequently, a Photoshop ACT file with a nonzero transparency index can be shifted or rejected. The 768-byte form, a 772-byte file whose transparency word is zero, and files produced by the current `-M` writer avoid this defect. This is a libsixel implementation limitation, not part of the ACT format definition.
 
 ### Choosing an interchange format
 
 - Prefer GPL for manual inspection, version control, hand editing, meaningful color labels, and interchange among GIMP-oriented tools.
 - Prefer JASC PAL when a simple text format or Paint Shop Pro compatibility is the priority.
 - Prefer RIFF PAL for software built around Windows logical palettes or when a binary RIFF container is required.
-- Prefer ACT for Photoshop color-table workflows, subject to the current nonzero-transparency-index limitation above.
+- Prefer ACT for Photoshop color-table workflows.
 - Use an indexed PNG as an image mapfile when the palette is naturally distributed with an indexed asset and application-specific palette-file compatibility is unnecessary.
 
 Do not choose a format merely from the `.pal` suffix: JASC PAL and RIFF PAL are unrelated layouts that conventionally share it. Use an explicit prefix in scripts and build systems.
@@ -153,11 +149,11 @@ Supplying a palette removes the construction stage but leaves the application st
 
 The same lookup, cover, and snap rules apply to the other fixed palettes selected by `-b` and `-e`: explicit lookup applies, explicit cover conflicts, and snap is accepted but bypassed. The owning policy documents define the normative details: [Lookup Policy](lookup-policy.md), [Palette Cover Policy](cover-policy.md), [Palette Snap Policy](snap-policy.md), and [Palette Working Color Space](working-colorspace.md).
 
-## Historical use in the NetBSD retro-computing demos
+## Historical use by sayaka on NetBSD/x68k
 
 libsixel added `-m` in [March 2014](https://github.com/saitoha/libsixel/commit/7771fd9a962bf719d99123de1f52fddf88a5a555), followed three days later by [support for using color-map images](https://github.com/saitoha/libsixel/commit/9674865e09838c48f38d1ef7999444ecfb0164c5). The [initial PHP implementation of isaki68k/sayaka](https://github.com/isaki68k/sayaka/blob/6d3f96b6e8605abb95de548623a0ffa4b46a94ef/sayaka.php#L125-L150), committed in September 2014, invoked `img2sixel -m colormap8.png` or `colormap16.png` for its reduced-color modes. A [September 2015 x68k change](https://github.com/isaki68k/sayaka/commit/b297510e2edb75dd2b64294f0768dca9d019ceec) added `colormapx68k16.png` and passed it through `-m` for the X68000-specific 16-color mode. This is a concrete early example of the external-palette feature being used to fit image output to a restricted old-machine display environment.
 
-The project then moved away from that dependency. A [July 2015 commit](https://github.com/isaki68k/sayaka/commit/f4d43a605f5d701ae6266f86ea506ec593ae43d8) introduced a `SixelConverter` that used GdkPixbuf and emitted SIXEL without `img2sixel`; the [old PHP implementation was retired](https://github.com/isaki68k/sayaka/commit/05f27b3050db69abdd6e42abd6e3565d317ded1e) in 2016. The present sayaka tree contains its own image reduction and SIXEL output code. This confirms the x68k/sayaka part of the historical recollection, but the available repository evidence does not show that the separate luna68k/mikutterm demonstration used `-m`; the two demonstrations should not be conflated.
+The project then moved away from that dependency. A [July 2015 commit](https://github.com/isaki68k/sayaka/commit/f4d43a605f5d701ae6266f86ea506ec593ae43d8) introduced a `SixelConverter` that used GdkPixbuf and emitted SIXEL without `img2sixel`; the [old PHP implementation was retired](https://github.com/isaki68k/sayaka/commit/05f27b3050db69abdd6e42abd6e3565d317ded1e) in 2016. The present sayaka tree contains its own image reduction and SIXEL output code.
 
 `-M` is not part of that early history. It was added in [November 2025](https://github.com/saitoha/libsixel/commit/74a8cda3f441145dc6601989eab9e1f9412f0107), turning the older one-way fixed-palette input into a palette-generation, inspection, editing, and reuse workflow.
 
