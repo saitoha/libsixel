@@ -94,6 +94,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-run.json \
 	docs/concepts/pixelformat.md \
 	docs/loader/README.md \
+	docs/loader/color-management.md \
 	docs/loader/alpha-policy.md \
 	docs/loader/background-policy.md \
 	docs/loader/builtin.md \
