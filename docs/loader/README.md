@@ -1,6 +1,6 @@
 # Image Loader Architecture
 
-For engine selection and its limits, read [Loader CMS: builtin and Little CMS](color-management.md). It distinguishes decoder support from CMS support and covers unsupported profiles, best-effort fallback, quality, and performance.
+For engine selection and its limits, read [Loader CMS: builtin and Little CMS](color-management.md). It distinguishes decoder support from CMS support and covers unsupported profiles, best-effort fallback, quality, and performance. For the subsystem design, read [Builtin CMS specification and architecture](builtin-cms.md).
 
 ## Scope
 

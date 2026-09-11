@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin-cms.md
 # TAP runner for builtin ICC B2A0/B2A1/B2A2 parser/apply coverage.
 
 set -eux

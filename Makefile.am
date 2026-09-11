@@ -95,6 +95,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/concepts/pixelformat.md \
 	docs/loader/README.md \
 	docs/loader/color-management.md \
+	docs/loader/builtin-cms.md \
 	docs/loader/cms-examples/gamut-wide.png \
 	docs/loader/cms-examples/gamut-mobile.png \
 	docs/loader/cms-examples/gamma-wide.png \

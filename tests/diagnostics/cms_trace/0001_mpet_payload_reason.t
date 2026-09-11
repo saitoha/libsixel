@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin-cms.md
 # Policy: docs/loader/color-management.md
 # Observe builtin ICC decisions without changing the image load result.
 
