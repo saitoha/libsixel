@@ -137,6 +137,8 @@ Keep numbering, filenames, registrations, build defines, and test purpose in syn
 
 Behavioral policy documents with an enforced coverage inventory also require reciprocal document/test path references. Follow the [documentation-to-test traceability policy](../AGENTS.md#documentation-to-test-traceability) and run `staticcheck-doc-test-links` after changing either side.
 
+Use a reciprocal `Policy:` reference only when the test directly proves a documented user-visible contract. Parser robustness cases, malformed-input probes, resource-limit checks, and implementation-specific failure paths should remain discoverable through a separately described defensive test category unless the policy document promises their exact observable behavior. In that case, promote the behavior to a stable coverage ID and add the reciprocal direct link. A suite-directory link is an index of defensive breadth, not a substitute for contract-level coverage.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
