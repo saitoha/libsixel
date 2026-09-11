@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/netpbm.md
 # TAP wrapper for builtin PNM PAM tupletype matrix numeric checks.
 
 set -eux

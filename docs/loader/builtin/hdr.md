@@ -62,6 +62,23 @@ The `header_EXPOSURE` divisor is present only when `hdr_header_exposure=1`. `COL
 
 This work occurs before encoder sampling, resize, crop, palette initialization, and quantization. A later encoder colorspace conversion or quantizer preprocessing is a separate stage and must not be mistaken for HDR decode.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin Radiance HDR loader. It follows signature and metadata parsing into resolution and orientation mapping, new-RLE, old-RLE, or legacy scanline decode, RGBE or XYZE expansion to linear RGB float, profile and dynamic-range postprocessing, and typed-frame output. Every node carries a coverage ID used by the tables below.](pipeline-figures/hdr.svg)
+
+HDR is decoded directly to a three-component float buffer; there is no RGBA intermediate. The profile and dynamic-range passes are ordered operations on that same buffer, and `sixel_frame_set_pixelformat()` may then convert it to the configured CMS target. Tests therefore need to state both numeric values and the expected semantic pixel format.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `HDR-01` | `sixel_builtin_load_hdr_frame()` and `sixel_builtin_parse_hdr_profile_hint()` in [`fromhdr.c`](../../../src/fromhdr.c) | Radiance chunk → format/profile hint plus decode request | `FORMAT`, `GAMMA`, `PRIMARIES`, `EXPOSURE`, and `COLORCORR` parsing must preserve documented precedence and malformed-field fallback. |
+| `HDR-02` | `sixel_builtin_hdr_parse_resolution_line()` and `sixel_builtin_hdr_map_scan_position()` in [`fromhdr.c`](../../../src/fromhdr.c) | Resolution axis declaration → canonical destination coordinates | Both axis orders and signs must map scan samples into width/height without silently rotating, mirroring, or overrunning the canvas. |
+| `HDR-03` | `sixel_builtin_hdr_decode_new_rle_scanline()`, `sixel_builtin_hdr_decode_old_scanline()`, or `sixel_builtin_hdr_decode_legacy_stream()` in [`fromhdr.c`](../../../src/fromhdr.c) | Encoded four-channel scan data → RGBE/XYZE tuples | Width guards, run/literal counts, old repeat markers, truncation, and scanline selection must be validated before exponent expansion. |
+| `HDR-04` | `sixel_builtin_hdr_rgbe_to_float()` and `sixel_builtin_hdr_xyz_to_linearrgb()` in [`fromhdr.c`](../../../src/fromhdr.c) | Exponent-coded tuple → finite nonnegative linear RGB float | Shared exponent reconstruction and the XYZE matrix must not be confused with a gamma RGB byte conversion. |
+| `HDR-05` | `sixel_builtin_hdr_apply_source_profile()`, `sixel_builtin_hdr_apply_dynamic_range()`, and `sixel_builtin_hdr_apply_postprocess()` in [`fromhdr.c`](../../../src/fromhdr.c) | Linear RGB plus metadata/options → color-interpreted and range-mapped float | Header/fallback profile, exposure divisors, `COLORCORR`, EV, and optional Reinhard mapping must run in the documented order. |
+| `HDR-06` | `sixel_builtin_hdr_assign_decoded_frame()` in [`fromhdr.c`](../../../src/fromhdr.c) | Float buffer plus target policy → typed one-frame object | CMS-off output stays `LINEARRGBFLOAT32`; an enabled target conversion must update pixel format/colorspace without losing frame ownership. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 ```console
@@ -97,4 +114,27 @@ Header lengths, dimensions, scanline markers, and RLE counts are attacker-contro
 - Builtin recognition and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Shared colorspace model: [Color Spaces and Loader Color Management](../../concepts/colorspace.md)
 - Precision behavior: [Pixel-format Precision](../../concepts/pixelformat-precision.md)
-- Regression coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| HDR-01 | Usable header profile metadata takes precedence over the configured fallback interpretation. | [tests/loader/builtin/0278_loader_builtin_hdr_cms_header_priority_numeric.t](../../../tests/loader/builtin/0278_loader_builtin_hdr_cms_header_priority_numeric.t) |
+| HDR-02 | Every accepted Radiance axis-order/sign combination maps to the same canonical image. | [tests/loader/builtin/0671_loader_builtin_hdr_orientation_all_numeric.t](../../../tests/loader/builtin/0671_loader_builtin_hdr_orientation_all_numeric.t) |
+| HDR-03 | An XYZE stream passes the native scanline decoder and reaches the expected numeric output. | [tests/loader/builtin/0670_loader_builtin_hdr_xyze_numeric.t](../../../tests/loader/builtin/0670_loader_builtin_hdr_xyze_numeric.t) |
+| HDR-04 | The no-CMS, no-tonemap baseline exposes the expected linear float values rather than gamma bytes. | [tests/loader/builtin/0308_loader_builtin_hdr_numeric_target_linear_gamma_none_primaries_none_ev_0_tonemap_none_cms_none_fallback_linear_srgb.t](../../../tests/loader/builtin/0308_loader_builtin_hdr_numeric_target_linear_gamma_none_primaries_none_ev_0_tonemap_none_cms_none_fallback_linear_srgb.t) |
+| HDR-05 | Multiple header `EXPOSURE` values participate in the documented dynamic-range scale. | [tests/loader/builtin/0534_loader_builtin_hdr_header_exposure_multi_numeric.t](../../../tests/loader/builtin/0534_loader_builtin_hdr_header_exposure_multi_numeric.t) |
+| HDR-06 | A non-RGB CMS target changes the typed frame to DIN99d as requested. | [tests/loader/builtin/0276_loader_builtin_hdr_cms_target_din99d.t](../../../tests/loader/builtin/0276_loader_builtin_hdr_cms_target_din99d.t) |
+
+### Defensive and malformed-input tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| HDR-90 | A malformed header exposure is ignored in favor of the safe unit default. | [tests/loader/builtin/0538_loader_builtin_hdr_invalid_header_exposure_defaults_to_unity_numeric.t](../../../tests/loader/builtin/0538_loader_builtin_hdr_invalid_header_exposure_defaults_to_unity_numeric.t) |
+
+Coverage audit note: profile priority, orientation, XYZE, baseline linear values, exposure, and a typed target are owned. New scanline RLE, old scanline RLE, and legacy-stream decode are not yet separated into three reciprocal owners here, so a regression confined to one coding dialect could require the broader suite or a new focused test to localize.

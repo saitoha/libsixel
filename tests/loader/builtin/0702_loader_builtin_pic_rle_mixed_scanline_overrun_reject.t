@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/pic.md
 # Verify builtin loader rejects PIC mixed RLE scanline overrun.
 
 set -eux

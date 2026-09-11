@@ -77,6 +77,23 @@ Metadata is container-global. The component does not define frame-local ICC or o
 
 The source is always eight-bit. `prefer_8bit=0` does not manufacture high source precision, and this component does not promote static or animation frames to a source `PAL8` representation. Later resize, encoder colorspace conversion, and quantization may convert the returned three color components to float or another working colorspace.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin WebP loader. It follows RIFF graph parsing and decode-plan construction into the native VP8, VP8L, and separate ALPH codec branches, animated ANMF canvas composition, then bounded ICC, XMP, and Exif processing before typed-frame finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/webp.svg)
+
+The VP8, VP8L, and animation paths are mutually selected by `sixel_webp_build_decode_plan()`. An animated `ANMF` frame may itself use VP8 plus ALPH or VP8L, but it decodes into a rectangle/scratch buffer owned by the animation state before the full canvas is emitted. Metadata remains container-global and is applied to completed frames, not to entropy-code blocks.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `WBP-01` | `sixel_webp_parse_container()` and `sixel_webp_build_decode_plan()` in [`fromwebp-container.c`](../../../src/fromwebp-container.c) | RIFF bytes → validated static/alpha/lossless/animation plan plus metadata references | RIFF size/padding, VP8X flags, unique/conflicting chunks, canvas/frame limits, and nested `ANMF` structure must be proven before codec dispatch. |
+| `WBP-02` | `sixel_webp_decode_vp8_payload()` in [`fromwebp-vp8.c`](../../../src/fromwebp-vp8.c) and its native submodules | VP8 key-frame payload → gamma RGBA rectangle | Partition tables, tokens, prediction, inverse transforms, loop filters, and YUV upsampling must reproduce an intra-frame without libwebp. |
+| `WBP-03` | `sixel_webp_decode_stream()` and `sixel_webp_decode_vp8l_payload()` in [`fromwebp-vp8l.c`](../../../src/fromwebp-vp8l.c) | VP8L bitstream → gamma ARGB/RGBA pixels | Huffman groups, cache/back references, nested transforms, and reverse predictor/color/green/index operations must obey dependency order and bounds. |
+| `WBP-04` | `sixel_webp_apply_vp8_alpha_payload()` and `sixel_webp_vp8_alpha_reconstruct()` in [`fromwebp-vp8-alpha.c`](../../../src/fromwebp-vp8-alpha.c) | ALPH chunk → alpha bytes attached to VP8 RGBA | Raw or VP8L-compressed alpha must reverse its declared filter and must not disturb decoded RGB channels. |
+| `WBP-05` | `sixel_fromwebp_load_animation()`, `sixel_webp_anim_composite_rect()`, and `sixel_webp_anim_clear_rect()` in [`fromwebp.c`](../../../src/fromwebp.c) | ANIM/ANMF plan plus decoded rectangles → emitted full-canvas frames | Rectangle offsets, blend/replace, dispose, background clear, timing, loop/start-frame pre-roll, and ownership-transfer fast paths must agree. |
+| `WBP-06` | `sixel_webp_apply_iccp_to_srgb_rgba()`, `sixel_webp_try_apply_exif_orientation()`, and `sixel_fromwebp_load()` in [`fromwebp.c`](../../../src/fromwebp.c) | Completed RGBA frame plus bounded metadata → oriented sRGB RGBA frame | ICCP/XMP and Exif/XMP precedence, size caps, best-effort failures, and geometry-plus-alpha transforms must remain container-global and deterministic. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 ```console
@@ -113,4 +130,27 @@ RIFF sizes, nested `ANMF` fragments, entropy tables, transform graphs, back refe
 - Lossless codec: [`fromwebp-vp8l.c`](../../../src/fromwebp-vp8l.c) and related `fromwebp-vp8l-*` modules
 - Alpha codec: [`fromwebp-vp8-alpha.c`](../../../src/fromwebp-vp8-alpha.c)
 - Common alpha/background finalization: [`loader-builtin.c`](../../../src/loader-builtin.c), [Alpha Policy](../alpha-policy.md), and [Background Policy](../background-policy.md)
-- Regression coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| WBP-02 | The native VP8 key-frame path retains an MS-SSIM quality floor against libwebp. | [tests/loader/builtin/1647_loader_builtin_webp_vp8_static_quality_snake64_msssim.t](../../../tests/loader/builtin/1647_loader_builtin_webp_vp8_static_quality_snake64_msssim.t) |
+| WBP-03 | VP8L color-index transform subsampling is reversed with the required quality. | [tests/loader/builtin/1931_loader_builtin_webp_vp8l_transform_subsample_quality_msssim.t](../../../tests/loader/builtin/1931_loader_builtin_webp_vp8l_transform_subsample_quality_msssim.t) |
+| WBP-04 | A static VP8+ALPH image decodes RGB and its separate alpha plane with the required quality. | [tests/loader/builtin/1669_loader_builtin_webp_vp8_alpha_static_quality_msssim.t](../../../tests/loader/builtin/1669_loader_builtin_webp_vp8_alpha_static_quality_msssim.t) |
+| WBP-05 | Animated lossy frames with separate alpha decode, composite, and emit with the required quality. | [tests/loader/builtin/1725_loader_builtin_webp_animation_lossy_alpha_quality_msssim.t](../../../tests/loader/builtin/1725_loader_builtin_webp_animation_lossy_alpha_quality_msssim.t) |
+| WBP-06 | XMP orientation and color metadata coexist and are applied in their documented roles. | [tests/loader/builtin/1847_loader_builtin_webp_static_xmp_orientation_and_cms_coexist_code.t](../../../tests/loader/builtin/1847_loader_builtin_webp_static_xmp_orientation_and_cms_coexist_code.t) |
+
+### Defensive and malformed-input tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| WBP-01 | A chunk whose payload exceeds the enclosing RIFF size is rejected during container-plan construction. | [tests/loader/builtin/1620_loader_builtin_webp_bad_chunk_payload_exceeds_riff_code.t](../../../tests/loader/builtin/1620_loader_builtin_webp_bad_chunk_payload_exceeds_riff_code.t) |
+| WBP-90 | A frame containing duplicate ALPH chunks is rejected before animation composition. | [tests/loader/builtin/1716_loader_builtin_webp_bad_anim_anmf_duplicate_alpha_chunk_code.t](../../../tests/loader/builtin/1716_loader_builtin_webp_bad_anim_anmf_duplicate_alpha_chunk_code.t) |
+
+Coverage audit note: the owners cover each top-level codec family, separate alpha, animated composition, metadata coexistence, and two container failures. They do not exhaust every VP8 macroblock/filter/partition mode, VP8L Huffman/transform nesting, ALPH filter, animation blend/dispose permutation, or metadata precedence/size-limit combination.

@@ -46,6 +46,22 @@ After composition, the decoder attempts `PAL8` promotion only when palette use i
 
 Frame delay remains in centiseconds. `fromgif` records the stream loop count and libsixel loop number separately. A replay cache may retain first-loop frames when repeated playback is needed; its default data cap is 64 MiB, and failure to cache falls back to decoding the stream again.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin GIF loader. It follows GIF signature routing into logical-screen and extension scanning, LZW raster expansion, persistent-canvas composition and disposal, then frame selection, loop handling, and PAL8-or-RGB emission. Every node carries a coverage ID used by the tables below.](pipeline-figures/gif.svg)
+
+The map separates source indices from the emitted frame. Local-table indices are consumed by `gif_process_raster()` and painted into a logical-screen canvas; `gif_export_pal8_frame()` may build a new palette only after composition proves that the complete canvas is representable. This distinction is central to interpreting the palette and disposal tests.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `GIF-01` | `sixel_builtin_load_gif_frames()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | GIF chunk and loader controls → `load_gif()` callback run | Start-frame, static, loop, background, palette, and cancellation policy must reach the format decoder without creating asynchronous callbacks. |
+| `GIF-02` | `gif_load_header()`, `gif_scan_stream_info()`, and `gif_skip_subblocks()` in [`fromgif.c`](../../../src/fromgif.c) | Header/block stream → screen metadata and buffer plan | Global table/background, GCE, Netscape looping, and unknown-extension skipping must leave the next block boundary exact. |
+| `GIF-03` | `gif_process_raster()` and `gif_out_code()` in [`fromgif.c`](../../../src/fromgif.c) | LZW sub-block stream plus active table → decoded rectangle pixels | Code-table reset/growth, interlace order, local/global table selection, and transparent-index normalization must agree. |
+| `GIF-04` | `gif_decode_one_frame()`, `gif_history_mark()`, and `gif_reset_canvas_for_loop()` in [`fromgif.c`](../../../src/fromgif.c) | Decoded rectangle plus prior canvas → completed logical-screen canvas | Offsets, transparency, disposal 0–3, saved history, dirty regions, and loop reset must reconstruct the visible frame. |
+| `GIF-05` | `gif_should_emit_decoded_frame()`, `gif_export_pal8_frame()`, and `gif_export_nonpal_frame()` in [`fromgif.c`](../../../src/fromgif.c) | Completed canvas → selected callback frame | Start-frame and loop decisions must not skip prerequisite composition; PAL8 is permitted only when the final canvas and binary alpha fit. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 ```console
@@ -79,4 +95,26 @@ The LZW dictionary, sub-block lengths, image rectangles, frame count, and dispos
 - GIF parser, LZW decode, canvas, frame selection, and replay: [`fromgif.c`](../../../src/fromgif.c)
 - Builtin dispatch and common frame finalization: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Alpha and background semantics: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
-- Format and malformed-stream tests: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning format and malformed-stream suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| GIF-01 | A positive start-frame selection emits the requested composited frame rather than renumbering the source stream. | [tests/loader/builtin/0044_builtin_gif_start_frame_positive.t](../../../tests/loader/builtin/0044_builtin_gif_start_frame_positive.t) |
+| GIF-02 | A structurally valid unknown extension is consumed without corrupting the following block boundary. | [tests/loader/builtin/0261_loader_builtin_gif_unknown_extension_ignored.t](../../../tests/loader/builtin/0261_loader_builtin_gif_unknown_extension_ignored.t) |
+| GIF-03 | LZW decode selects the local table for the later frame and does not reuse global-table colors. | [tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t](../../../tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t) |
+| GIF-04 | Transparency plus disposal 3 restores the saved pre-frame canvas before the next composition. | [tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t](../../../tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t) |
+| GIF-05 | Automatic looping honors a finite Netscape loop count for a multi-frame stream. | [tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t](../../../tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t) |
+
+### Defensive and malformed-input tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| GIF-90 | Repeated disposal/history transitions complete within the watchdog rather than hanging or growing without bound. | [tests/loader/builtin/0260_loader_builtin_gif_disposal_stress_watchdog.t](../../../tests/loader/builtin/0260_loader_builtin_gif_disposal_stress_watchdog.t) |
+
+Coverage audit note: the owners prove local-table LZW decode, disposal 3, unknown-extension skipping, one start-frame case, and finite automatic looping. They do not form a complete disposal × background-policy × palette-fusion × start-frame/loop matrix; those combinations remain auditable gaps even where the broader suite contains neighboring cases.

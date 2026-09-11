@@ -72,6 +72,23 @@ Each frame is reconstructed as a synthetic PNG using the shared `IHDR`, palette,
 
 The delay denominator defaults to 100 when encoded as zero. Delay is converted to libsixel's centisecond frame unit, so finer fractions are truncated by that boundary. A default image not participating in the animation remains the static fallback defined by APNG structure; invalid attempts to mix frame controls and data are rejected.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin PNG and APNG loader. It follows static-versus-animation classification into indexed and non-indexed raster paths, profile and transfer conversion, APNG frame reconstruction and canvas composition, then common alpha, orientation, and typed-frame finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/png.svg)
+
+The static branches are alternatives, not a forced trip through each box: an indexed image may finish through `sixel_builtin_try_load_indexed_png()`, while non-indexed and high-depth images enter `sixel_frompng_load_nonindexed()`. APNG reconstructs a legal frame PNG and reuses those decode/color paths before it updates the animation canvas.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `PNG-01` | `sixel_builtin_load_stbi_png_path()` and `sixel_builtin_chunk_has_apng_control()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | PNG chunk → static path or APNG state machine | `acTL` controls animation routing; `-S` may request one emitted frame without changing the structural classification. |
+| `PNG-02` | `sixel_builtin_try_load_indexed_png()` and `sixel_builtin_load_png_keycolor_or_rgba()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | PLTE/tRNS raster → `PAL8`, key-color, or RGBA branch | Palette size, fusion policy, CMS/background needs, and multiple transparent entries must select a representable output. |
+| `PNG-03` | `sixel_frompng_load_nonindexed()` in [`frompng.c`](../../../src/frompng.c), backed by the adapted inflate/filter code in [`stb_image.h`](../../../src/stb_image.h) | Compressed scanlines → canonical byte or float RGB(A) samples | DEFLATE, PNG filters, Adam7 ordering, source depth, and alpha expansion must preserve numeric sample precision. |
+| `PNG-04` | `sixel_frompng_build_profile_from_chunks()` and `sixel_frompng_apply_colorspace_fallback_internal()` in [`frompng.c`](../../../src/frompng.c) | Decoded samples plus iCCP/sRGB/cHRM/gAMA/bKGD → transformed pixels/background | Metadata precedence and source transfer must be applied in the same precision and colorspace as alpha/background composition. |
+| `PNG-05` | `sixel_builtin_apng_process_chunk()`, `sixel_builtin_apng_blend_rect()`, and `sixel_builtin_apng_emit_pending_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | acTL/fcTL/IDAT/fdAT stream → completed animation canvases | Sequence numbers, frame rectangles, shared chunks, blend/dispose, timing, loop count, and pre-roll must remain coherent. |
+| `PNG-06` | `sixel_builtin_finalize_frame_callback()` and `sixel_builtin_finalize_loaded_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Format-owned temporary frame → public typed frame callback | Alpha must become composition or a separate transparency representation, and Exif orientation must rotate pixels and mask together. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 ```console
@@ -105,4 +122,27 @@ PNG combines attacker-controlled chunk lengths, DEFLATE expansion, filters, inte
 - APNG, indexed routing, orientation, and finalization: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Adapted inflate and CgBI helpers: [`stb_image.h`](../../../src/stb_image.h)
 - Alpha/background semantics: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
-- Regression coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| PNG-01 | `-S` selects the APNG static behavior without treating the file as an unrelated residual format. | [tests/loader/builtin/0017_apng_builtin_static_option.t](../../../tests/loader/builtin/0017_apng_builtin_static_option.t) |
+| PNG-02 | Indexed tRNS uses the documented default key-color path when its palette representation is valid. | [tests/loader/builtin/0143_loader_builtin_png_trns_keycolor_default_enabled_for_palette.t](../../../tests/loader/builtin/0143_loader_builtin_png_trns_keycolor_default_enabled_for_palette.t) |
+| PNG-03 | A 16-bit RGBA source follows the high-depth alpha/key-color decision rather than silently collapsing into the ordinary eight-bit path. | [tests/loader/builtin/0166_loader_builtin_trns_keycolor_optin_changes_rgba16_output.t](../../../tests/loader/builtin/0166_loader_builtin_trns_keycolor_optin_changes_rgba16_output.t) |
+| PNG-04 | Embedded ICC conversion matches a reference PNM through the format color-management path. | [tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t) |
+| PNG-05 | APNG disposal `PREVIOUS` restores the saved canvas before the next emitted frame. | [tests/loader/builtin/0033_apng_builtin_dispose_previous.t](../../../tests/loader/builtin/0033_apng_builtin_dispose_previous.t) |
+| PNG-06 | Enabling and disabling eXIf orientation changes geometry/pixels at common frame finalization as documented. | [tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t](../../../tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t) |
+
+### Defensive and malformed-input tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| PNG-90 | An `fcTL` placed after image data in an invalid structural position is rejected. | [tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t](../../../tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t) |
+
+Coverage audit note: these owners cover the major representation, CMS, orientation, and APNG-disposal boundaries, not every PNG filter × Adam7 pass × depth/color-type combination or every APNG ordering failure. CRC validation is not an uncovered promised behavior: the implementation deliberately does not validate stored CRCs, as documented above.

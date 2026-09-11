@@ -62,6 +62,22 @@ Packet payloads are stored row by row, with every packet decoded for a row befor
 
 No CMS or orientation stage occurs inside PIC. Later sampling, resize, crop, encoder working-colorspace conversion, palette initialization, quantization, lookup, and dithering are separate encoder stages.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin Softimage PIC loader. It follows magic and PICT recognition into fixed-header and channel-packet parsing, raw or pure and mixed RLE scanline decoding, and common RGBA alpha finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/pic.svg)
+
+PIC remains inside the adapted stb source, so several conceptual stages share `stbi__pic_load_core()`. They are split in the map because their invariants and tests differ: packet-table validation determines channel ownership, while each scanline compression mode determines how many component tuples are produced.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `PIC-01` | `stbi__pic_test()` and `stbi__pic_test_core()` in [`stb_image.h`](../../../src/stb_image.h) | Residual bytes → recognized Softimage PIC | Both the big-endian magic and `PICT` marker at byte 88 are required; the `.pic` suffix alone must not collide with Radiance HDR. |
+| `PIC-02` | `stbi__pic_load()` and header/packet setup in `stbi__pic_load_core()` in [`stb_image.h`](../../../src/stb_image.h) | Fixed header plus descriptor chain → dimensions and selected-channel packet plan | One-to-ten descriptors, 8-bit sample size, compression 0–2, channel masks, and continuation termination must be validated before raster writes. |
+| `PIC-03` | Raw-packet branch in `stbi__pic_load_core()` in [`stb_image.h`](../../../src/stb_image.h) | Uncompressed per-row tuples → white-initialized RGBA canvas | Every selected component must land in its RGBA lane while omitted channels retain the documented white/opaque initialization. |
+| `PIC-04` | Pure- and mixed-RLE branches in `stbi__pic_load_core()` in [`stb_image.h`](../../../src/stb_image.h) | Run/literal commands → selected-component tuples | Byte and extended counts, literal payload size, clipping compatibility for pure RLE, and strict mixed-run row bounds must remain distinct. |
+| `PIC-05` | `sixel_builtin_apply_pic_alpha_policy()` and `sixel_builtin_finalize_loaded_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Requested `RGBA8888` canvas → gamma RGB plus mask or composite | Packet alpha must survive the wrapper request and reach common finalization; opaque files must not acquire synthetic transparency. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 ```console
@@ -90,4 +106,26 @@ Dimensions, packet masks, chain length, run counts, and source availability are 
 - Predicate, fixed header, packet chain, and RLE: [`stb_image.h`](../../../src/stb_image.h)
 - PIC selection, RGBA request, alpha/background finalization, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Alpha/background contract: [Alpha Policy](../alpha-policy.md) and [Background Policy](../background-policy.md)
-- Regression coverage: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| PIC-02 | A chained packet table combines channel selections in descriptor order. | [tests/loader/builtin/0694_loader_builtin_pic_chained_packets_decode.t](../../../tests/loader/builtin/0694_loader_builtin_pic_chained_packets_decode.t) |
+| PIC-03 | Raw RGB packet data decodes into the expected component lanes. | [tests/loader/builtin/0689_loader_builtin_pic_raw_rgb_decode.t](../../../tests/loader/builtin/0689_loader_builtin_pic_raw_rgb_decode.t) |
+| PIC-04 | Mixed RLE accepts the extended repeat-count form and reconstructs the row. | [tests/loader/builtin/0693_loader_builtin_pic_rle_mixed_ext_count_decode.t](../../../tests/loader/builtin/0693_loader_builtin_pic_rle_mixed_ext_count_decode.t) |
+| PIC-05 | A PIC alpha channel reaches explicit-background composition with the expected numeric result. | [tests/loader/builtin/0708_loader_builtin_pic_rgba_composite_numeric.t](../../../tests/loader/builtin/0708_loader_builtin_pic_rgba_composite_numeric.t) |
+
+### Defensive and malformed-input tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| PIC-01 | Missing `PICT` at the fixed offset prevents recognition even when other header bytes are present. | [tests/loader/builtin/0696_loader_builtin_pic_missing_pict_signature_reject.t](../../../tests/loader/builtin/0696_loader_builtin_pic_missing_pict_signature_reject.t) |
+| PIC-90 | A mixed-RLE run that exceeds the scanline is rejected instead of writing past the row. | [tests/loader/builtin/0702_loader_builtin_pic_rle_mixed_scanline_overrun_reject.t](../../../tests/loader/builtin/0702_loader_builtin_pic_rle_mixed_scanline_overrun_reject.t) |
+
+Coverage audit note: the owners distinguish recognition, packet chaining, raw decode, extended mixed RLE, alpha composition, and mixed-run overrun. Pure-RLE oversized-run clipping compatibility and every multi-channel packet-mask overlap are not isolated by reciprocal owners here.

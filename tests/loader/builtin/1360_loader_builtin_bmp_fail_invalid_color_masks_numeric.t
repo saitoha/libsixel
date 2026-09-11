@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/bmp.md
 # TAP wrapper for builtin BMP invalid-color-masks fail numeric checks.
 
 set -eux

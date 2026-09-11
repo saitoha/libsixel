@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/gif.md
 # Verify builtin GIF transparency + disposal=3 frame composition is stable.
 
 set -eux

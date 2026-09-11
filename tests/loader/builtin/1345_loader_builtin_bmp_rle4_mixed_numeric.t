@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/bmp.md
 # TAP wrapper for builtin BMP RLE4 mixed numeric checks.
 
 set -eux

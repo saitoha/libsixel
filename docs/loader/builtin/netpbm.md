@@ -43,6 +43,22 @@ PAM alpha is not returned as RGBA or as a mask. With transparency and no resolve
 
 Netpbm has no standardized embedded ICC container in these accepted variants. `frompnm` therefore does not open a source profile or infer Exif orientation. The numeric samples are treated as the fallback gamma RGB interpretation until alpha composition requires linearization.
 
+### Implementation and test map
+
+![A vertical implementation map of the builtin Netpbm loader. It follows P1 through P7 recognition into header and tuple parsing, checked raster sample decode, the byte-versus-float precision branch, and linear-light PAM alpha composition. Every node carries a coverage ID used by the tables below.](pipeline-figures/netpbm.svg)
+
+`load_pnm()` is the format-owned boundary: there is no intermediate universal RGBA frame. Its branches deliberately return different pixel formats, so a coverage audit must check the representation as well as whether decoding succeeded.
+
+| ID | Implementation boundary | State entering → state leaving | Correctness obligation |
+| --- | --- | --- | --- |
+| `PNM-01` | `sixel_builtin_detect_decode_path()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Input chunk → PNM branch | Recognition requires `P1`–`P7` followed by whitespace and must not route unrelated `P` files. |
+| `PNM-02` | `pnm_parse_header()`, `pnm_parse_tuple_type()`, and `pnm_validate_header_limits()` in [`frompnm.c`](../../../src/frompnm.c) | Magic/header tokens → dimensions, reader mode, tuple model, alpha, and `MAXVAL` | Strict and compatibility switches must alter only their documented grammar boundaries. |
+| `PNM-03` | `pnm_reader_read_sample()`, `pnm_validate_sample()`, and `pnm_validate_raster_tail()` in [`frompnm.c`](../../../src/frompnm.c) | ASCII/binary raster → validated scalar samples | Sample bounds, binary width/endian rules, truncation, and the one-image tail contract must hold before output ownership transfers. |
+| `PNM-04` | `pnm_decode_rgb8_noalpha()` or `pnm_decode_rgbfloat_noalpha()` in [`frompnm.c`](../../../src/frompnm.c) | Opaque scalar samples → gamma RGB buffer | Eight-bit sources take `RGB888`; higher `MAXVAL` values must remain normalized `RGBFLOAT32` rather than being rounded to bytes. |
+| `PNM-05` | `pnm_compose_rgba8_to_linearrgbfloat32()` or `pnm_compose_rgbafloat_to_linearrgbfloat32()` in [`frompnm.c`](../../../src/frompnm.c) | Gamma RGB/alpha plus resolved background → opaque linear RGB float | Alpha and background must be converted to linear light before composition, and no RGBA/mask claim may survive this boundary. |
+
+The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
+
 ## Options and observable differences
 
 The examples below close the loader chain with the final `!`, so rejection cannot fall through to a framework decoder with different tolerance.
@@ -77,5 +93,27 @@ Plain formats are not inherently safe merely because their grammar is simple: de
 
 - Parser, sample decode, compatibility policy, and alpha composition: [`frompnm.c`](../../../src/frompnm.c)
 - Builtin signature routing and frame initialization: [`loader-builtin.c`](../../../src/loader-builtin.c)
-- Executable compatibility matrix: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning compatibility suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
 - Shared frame meanings: [Pixel Formats and Alpha Representation](../../concepts/pixelformat.md) and [Color Spaces and Loader Color Management](../../concepts/colorspace.md)
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| PNM-01 | PAM tuple types and depth fallbacks select the documented component/alpha model. | [tests/loader/builtin/1546_loader_builtin_pnm_pam_tupletype_matrix_numeric.t](../../../tests/loader/builtin/1546_loader_builtin_pnm_pam_tupletype_matrix_numeric.t) |
+| PNM-02 | An opaque eight-bit PPM uses the gamma `RGB888` fast path with exact sample values. | [tests/loader/builtin/1296_loader_builtin_pnm_ppm8_fastpath_numeric.t](../../../tests/loader/builtin/1296_loader_builtin_pnm_ppm8_fastpath_numeric.t) |
+| PNM-04 | A 16-bit PPM produces normalized `RGBFLOAT32` values without byte truncation. | [tests/loader/builtin/1295_loader_builtin_pnm_ppm16_float32_numeric.t](../../../tests/loader/builtin/1295_loader_builtin_pnm_ppm16_float32_numeric.t) |
+| PNM-05 | Non-opaque PAM RGBA is composited with the declared background in linear light and returned as `LINEARRGBFLOAT32`. | [tests/loader/builtin/1294_loader_builtin_pnm_pam_rgba_linear_bg_numeric.t](../../../tests/loader/builtin/1294_loader_builtin_pnm_pam_rgba_linear_bg_numeric.t) |
+
+### Defensive and malformed-input tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| PNM-03 | The binary-format matrix rejects truncated raster payloads at the checked sample-reader boundary. | [tests/loader/builtin/1548_loader_builtin_pnm_binary_truncation_matrix_numeric.t](../../../tests/loader/builtin/1548_loader_builtin_pnm_binary_truncation_matrix_numeric.t) |
+| PNM-90 | Header/parser error classes remain rejected rather than falling into an output-format branch. | [tests/loader/builtin/1545_loader_builtin_pnm_parse_error_matrix_numeric.t](../../../tests/loader/builtin/1545_loader_builtin_pnm_parse_error_matrix_numeric.t) |
+
+Coverage audit note: the owners establish the tuple, precision, alpha, and truncation boundaries, but they are not an exhaustive `P1`–`P7` × ASCII/binary × every compatibility-switch cross product. The broader suite contains additional cases; a future claim of exhaustive dialect coverage needs an explicit generated matrix rather than inference from this representative set.

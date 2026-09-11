@@ -107,6 +107,18 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/loader/builtin/sixel.md \
 	docs/loader/builtin/tga.md \
 	docs/loader/builtin/webp.md \
+	docs/loader/builtin/pipeline-figures/bmp.svg \
+	docs/loader/builtin/pipeline-figures/builtin-loader-pipelines.json \
+	docs/loader/builtin/pipeline-figures/gif.svg \
+	docs/loader/builtin/pipeline-figures/hdr.svg \
+	docs/loader/builtin/pipeline-figures/jpeg.svg \
+	docs/loader/builtin/pipeline-figures/netpbm.svg \
+	docs/loader/builtin/pipeline-figures/pic.svg \
+	docs/loader/builtin/pipeline-figures/png.svg \
+	docs/loader/builtin/pipeline-figures/psd.svg \
+	docs/loader/builtin/pipeline-figures/sixel.svg \
+	docs/loader/builtin/pipeline-figures/tga.svg \
+	docs/loader/builtin/pipeline-figures/webp.svg \
 	docs/loader/assets/alpha-policy-comparison.gif \
 	docs/loader/assets/alpha-policy-comparison.png \
 	docs/loader/loader-architecture-figures/builtin-lineage-mobile.svg \
@@ -416,6 +428,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	tools/plot_encoder_execution_map_figures.py \
 	tools/plot_encoding_pipeline_figures.py \
 	tools/plot_sixel_format_figures.py \
+	tools/plot_builtin_loader_format_figures.py \
 	tools/plot_loader_architecture_figures.py \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \

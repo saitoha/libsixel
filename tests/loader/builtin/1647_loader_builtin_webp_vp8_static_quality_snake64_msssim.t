@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/webp.md
 # TAP test confirming builtin VP8 static quality against libwebp on snake_64.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/tga.md
 # Verify TGA type 2 (uncompressed RGB) quality against lsqa baselines.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -define tga:image-origin=TopLeft tests/data/inputs/formats/snake-tga-type2-rgb.tga

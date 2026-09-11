@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/bmp.md
 # TAP wrapper for builtin BMP RGBA mask-without-bg numeric checks.
 
 set -eux

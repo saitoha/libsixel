@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/gif.md
 # TAP test: LCT/GCT switching animation keeps frame2 colors stable.
 
 set -eux

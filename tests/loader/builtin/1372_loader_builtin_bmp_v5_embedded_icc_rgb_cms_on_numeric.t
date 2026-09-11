@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/bmp.md
 # TAP wrapper for builtin BMP V5 embedded-ICC RGB CMS-on numeric checks.
 
 set -eux

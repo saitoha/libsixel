@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/psd.md
 # Verify builtin loader rejects PSD (channel count > 16).
 
 set -eux

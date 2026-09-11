@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/pic.md
 # Verify builtin loader decodes PIC chained packet streams.
 
 set -eux

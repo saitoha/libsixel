@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/gif.md
 set -eux
 
 

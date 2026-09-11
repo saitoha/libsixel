@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/pic.md
 # Verify builtin PIC RGBA composites all alpha against an explicit background.
 
 set -eux

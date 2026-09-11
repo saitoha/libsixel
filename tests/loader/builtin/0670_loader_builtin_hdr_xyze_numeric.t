@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/hdr.md
 set -eux
 
 

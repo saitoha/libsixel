@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/jpeg.md
 # Verify builtin loader rejects arithmetic-coded JPEG streams.
 
 set -eux

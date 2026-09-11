@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/tga.md
 # TAP test confirming builtin loader keeps indexed TGA palette path.
 
 set -eux

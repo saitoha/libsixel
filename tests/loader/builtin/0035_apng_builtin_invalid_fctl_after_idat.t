@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/png.md
 # TAP test: APNG fcTL after first IDAT input input is handled by builtin loader path.
 
 set -eux

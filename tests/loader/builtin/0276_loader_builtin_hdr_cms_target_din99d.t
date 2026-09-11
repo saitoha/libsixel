@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin/hdr.md
 # TAP wrapper validating builtin HDR pixelformat checks with DIN99d CMS target.
 
 set -eux
