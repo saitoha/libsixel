@@ -153,5 +153,7 @@ The rows below are pipeline landmarks rather than the complete suite. The [TGA c
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
 | TGA-90 | A truncated declared palette is rejected without emitting a frame. | [tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t](../../../tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t) |
+| TGA-91 | A short direct-color raster is rejected instead of accepting zero-filled tail pixels. | [tests/loader/builtin/1990_loader_builtin_tga_truncated_direct_reject.t](../../../tests/loader/builtin/1990_loader_builtin_tga_truncated_direct_reject.t) |
+| TGA-92 | A packet-RLE count that exceeds the remaining raster is rejected before pixel expansion. | [tests/loader/builtin/1991_loader_builtin_tga_rle_overrun_reject.t](../../../tests/loader/builtin/1991_loader_builtin_tga_rle_overrun_reject.t) |
 
-There is still no dedicated owning test that isolates malformed TGA header collision, RLE overrun, truncated direct-pixel input, or horizontal-origin handling. Those remain explicit coverage gaps rather than evidence supplied by an LSQA floor or unrelated format test.
+There is still no dedicated owning test that isolates malformed TGA header collision. Horizontal right-to-left origin remains explicitly unsupported and is therefore not locked in as a successful compatibility behavior. RLE overrun and truncated direct-pixel input now have focused rejection owners rather than relying on an LSQA floor or unrelated format test.

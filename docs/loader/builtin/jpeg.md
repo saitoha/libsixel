@@ -113,7 +113,10 @@ The rows below are pipeline landmarks rather than the complete suite. The [JPEG 
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
+| JPG-01 | Eligible eight-bit sequential RGB input takes the byte path and produces the fixed complete RGB buffer. | [tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t](../../../tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t) |
+| JPG-03 | A 16-bit lossless stream produces a gamma `RGBFLOAT32` frame with fixed numeric samples. | [tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t](../../../tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t) |
 | JPG-04 | Adobe YCCK component interpretation produces the fixed complete RGB buffer for the representative stream. | [tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t](../../../tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t) |
+| JPG-05 | Builtin ICC conversion preserves gamma float typing and representative converted samples. | [tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t](../../../tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t) |
 | JPG-06 | The orientation option controls APP1 Exif geometry/pixel transformation. | [tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t](../../../tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t) |
 
 ### Quality regression tests
@@ -131,4 +134,4 @@ The rows below are pipeline landmarks rather than the complete suite. The [JPEG 
 | JPG-02 | Arithmetic-coded JPEG is classified as unsupported and rejected before entropy decode. | [tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t](../../../tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t) |
 | JPG-90 | A corrupt JPEG stream fails the builtin decoder rather than yielding a partial frame. | [tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t](../../../tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t) |
 
-Coverage audit note: exact owners cover one YCCK stream, orientation, and two failure classes. Sequential RGB and ICC currently have end-to-end quality floors. The 16-bit lossless test proves acceptance only; it does not inspect float samples or prove preservation beyond eight bits, so that remains an explicit gap. Progressive scans, sampling-factor combinations, restart-marker placement, and the full Gray/RGB/YCbCr/CMYK/YCCK × precision matrix have additional regressions but are not exhaustively owned by this page.
+Coverage audit note: direct owners now cover sequential RGB bytes, 16-bit lossless float samples, one YCCK stream, builtin ICC samples, orientation, and two failure classes. The 16-bit fixture preserves the typed high-precision route, although its selected source samples happen to lie on eight-bit fractions and therefore do not alone prove sub-eight-bit value preservation. Progressive scans, sampling-factor combinations, restart-marker placement, and the full Gray/RGB/YCbCr/CMYK/YCCK × precision matrix have additional regressions but are not exhaustively owned by this page.

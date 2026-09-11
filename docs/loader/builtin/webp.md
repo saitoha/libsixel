@@ -142,7 +142,10 @@ The rows below are pipeline landmarks rather than the complete suite. The [WebP 
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
+| WBP-02 | Native lossy VP8 decoding produces the fixed complete RGB buffer for the representative key frame. | [tests/loader/builtin/1980_loader_builtin_webp_vp8_digest.t](../../../tests/loader/builtin/1980_loader_builtin_webp_vp8_digest.t) |
 | WBP-03 | VP8L color-index transform subsampling is reversed into the fixed complete RGB buffer for the representative stream. | [tests/loader/builtin/1965_loader_builtin_webp_vp8l_transform_rgb_digest.t](../../../tests/loader/builtin/1965_loader_builtin_webp_vp8l_transform_rgb_digest.t) |
+| WBP-04 | A separate ALPH chunk yields the fixed VP8 RGB plane and exact transparency mask without changing RGB bytes. | [tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t](../../../tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t) |
+| WBP-05 | A two-frame lossy animation emits fixed complete RGB canvases after composition. | [tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t](../../../tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t) |
 | WBP-06 | XMP orientation and color metadata coexist and are applied in their documented roles. | [tests/loader/builtin/1847_loader_builtin_webp_static_xmp_orientation_and_cms_coexist_code.t](../../../tests/loader/builtin/1847_loader_builtin_webp_static_xmp_orientation_and_cms_coexist_code.t) |
 
 ### Quality regression tests
@@ -161,4 +164,4 @@ The rows below are pipeline landmarks rather than the complete suite. The [WebP 
 | WBP-01 | A chunk whose payload exceeds the enclosing RIFF size is rejected during container-plan construction. | [tests/loader/builtin/1620_loader_builtin_webp_bad_chunk_payload_exceeds_riff_code.t](../../../tests/loader/builtin/1620_loader_builtin_webp_bad_chunk_payload_exceeds_riff_code.t) |
 | WBP-90 | A frame containing duplicate ALPH chunks is rejected before animation composition. | [tests/loader/builtin/1716_loader_builtin_webp_bad_anim_anmf_duplicate_alpha_chunk_code.t](../../../tests/loader/builtin/1716_loader_builtin_webp_bad_anim_anmf_duplicate_alpha_chunk_code.t) |
 
-Coverage audit note: the exact owner fixes one VP8L transform stream, while VP8, separate ALPH, and lossy animation currently have only perceptual quality floors. Exact decoded RGB/alpha planes and exact animation composition for those branches remain gaps. The suite also does not exhaust every VP8 macroblock/filter/partition mode, VP8L Huffman/transform nesting, ALPH filter, animation blend/dispose permutation, or metadata precedence/size-limit combination.
+Coverage audit note: direct owners now fix representative VP8 and VP8L RGB output, a separate ALPH mask, and two lossy animation canvases. The suite still does not exhaust every VP8 macroblock/filter/partition mode, VP8L Huffman/transform nesting, ALPH filter, animation blend/dispose permutation, or metadata precedence/size-limit combination.

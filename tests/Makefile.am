@@ -419,6 +419,25 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0102_LOADER_BUILTIN_PIC_CHAINED_PACKETS_NUMERIC \
     -DBUILD_TEST_0103_LOADER_BUILTIN_GIF_DISPOSAL3_NUMERIC \
     -DBUILD_TEST_0104_LOADER_BUILTIN_GIF_LOCAL_PALETTE_NUMERIC \
+    -DBUILD_TEST_0105_LOADER_BUILTIN_HDR_NEW_RLE_NUMERIC \
+    -DBUILD_TEST_0106_LOADER_BUILTIN_HDR_OLD_SCANLINE_RLE_NUMERIC \
+    -DBUILD_TEST_0107_LOADER_BUILTIN_HDR_LEGACY_STREAM_NUMERIC \
+    -DBUILD_TEST_0108_LOADER_BUILTIN_JPEG_RGB8_SEQUENTIAL_DIGEST \
+    -DBUILD_TEST_0109_LOADER_BUILTIN_PNG_ICC_NUMERIC \
+    -DBUILD_TEST_0110_LOADER_BUILTIN_JPEG_ICC_NUMERIC \
+    -DBUILD_TEST_0111_LOADER_BUILTIN_PSD_ICC_DIGEST \
+    -DBUILD_TEST_0112_LOADER_BUILTIN_WEBP_VP8_DIGEST \
+    -DBUILD_TEST_0113_LOADER_BUILTIN_WEBP_LOSSY_ANIMATION_DIGEST \
+    -DBUILD_TEST_0114_LOADER_BUILTIN_WEBP_VP8_ALPHA_NUMERIC \
+    -DBUILD_TEST_0115_LOADER_BUILTIN_JPEG_RGB16_LOSSLESS_NUMERIC \
+    -DBUILD_TEST_0116_LOADER_BUILTIN_PSD_RGB16_ZIP_PRED_NUMERIC \
+    -DBUILD_TEST_0117_LOADER_BUILTIN_PSD_RGB32_RLE_NUMERIC \
+    -DBUILD_TEST_0118_LOADER_BUILTIN_SIXEL_UNPAINTED_NUMERIC \
+    -DBUILD_TEST_0119_LOADER_BUILTIN_SIXEL_HIGH_COLOR_NUMERIC \
+    -DBUILD_TEST_0120_LOADER_BUILTIN_PIC_ZERO_DIMENSION_REJECT \
+    -DBUILD_TEST_0121_LOADER_BUILTIN_PIC_ELEVENTH_PACKET_REJECT \
+    -DBUILD_TEST_0122_LOADER_BUILTIN_TGA_TRUNCATED_DIRECT_REJECT \
+    -DBUILD_TEST_0123_LOADER_BUILTIN_TGA_RLE_OVERRUN_REJECT \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -614,6 +633,25 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0102_loader_builtin_pic_chained_packets_numeric.c \
     loader/builtin/0103_loader_builtin_gif_disposal3_numeric.c \
     loader/builtin/0104_loader_builtin_gif_local_palette_numeric.c \
+    loader/builtin/0105_loader_builtin_hdr_new_rle_numeric.c \
+    loader/builtin/0106_loader_builtin_hdr_old_scanline_rle_numeric.c \
+    loader/builtin/0107_loader_builtin_hdr_legacy_stream_numeric.c \
+    loader/builtin/0108_loader_builtin_jpeg_rgb8_sequential_digest.c \
+    loader/builtin/0109_loader_builtin_png_icc_numeric.c \
+    loader/builtin/0110_loader_builtin_jpeg_icc_numeric.c \
+    loader/builtin/0111_loader_builtin_psd_icc_digest.c \
+    loader/builtin/0112_loader_builtin_webp_vp8_digest.c \
+    loader/builtin/0113_loader_builtin_webp_lossy_animation_digest.c \
+    loader/builtin/0114_loader_builtin_webp_vp8_alpha_numeric.c \
+    loader/builtin/0115_loader_builtin_jpeg_rgb16_lossless_numeric.c \
+    loader/builtin/0116_loader_builtin_psd_rgb16_zip_pred_numeric.c \
+    loader/builtin/0117_loader_builtin_psd_rgb32_rle_numeric.c \
+    loader/builtin/0118_loader_builtin_sixel_unpainted_numeric.c \
+    loader/builtin/0119_loader_builtin_sixel_high_color_numeric.c \
+    loader/builtin/0120_loader_builtin_pic_zero_dimension_reject.c \
+    loader/builtin/0121_loader_builtin_pic_eleventh_packet_reject.c \
+    loader/builtin/0122_loader_builtin_tga_truncated_direct_reject.c \
+    loader/builtin/0123_loader_builtin_tga_rle_overrun_reject.c \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
     loader/libwebp/0013_loader_libwebp_pixelformat.c \

@@ -3,7 +3,7 @@
 #include "loader_builtin_memory_test_common.h"
 
 int
-test_loader_0096_loader_builtin_psd_missing_composite_rgb8_digest(
+test_loader_0096_builtin_psd_missing_composite_rgb8_digest(
     int argc,
     char **argv)
 {

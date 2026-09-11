@@ -7172,6 +7172,8 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
    int RLE_count = 0;
    int RLE_repeating = 0;
    int read_next_pixel = 1;
+   int RLE_cmd = 0;
+   int remaining_pixels = 0;
    STBI_NOTUSED(ri);
    STBI_NOTUSED(tga_x_origin); // @TODO
    STBI_NOTUSED(tga_y_origin); // @TODO
@@ -7212,7 +7214,11 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
       for (i=0; i < tga_height; ++i) {
          int row = tga_inverted ? tga_height -i - 1 : i;
          stbi_uc *tga_row = tga_data + row*tga_width*tga_comp;
-         stbi__getn(s, tga_row, tga_width * tga_comp);
+         /* Do not turn a short direct row into an implicit zero-filled tail. */
+         if (!stbi__getn(s, tga_row, tga_width * tga_comp)) {
+            STBI_FREE(tga_data);
+            return stbi__errpuc("bad data", "TGA file too short");
+         }
       }
    } else  {
       //   do I need to load a palette?
@@ -7253,10 +7259,17 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
             if ( RLE_count == 0 )
             {
                //   yep, get the next byte as a RLE command
-               int RLE_cmd = stbi__get8(s);
+               RLE_cmd = stbi__get8(s);
                RLE_count = 1 + (RLE_cmd & 127);
                RLE_repeating = RLE_cmd >> 7;
                read_next_pixel = 1;
+               remaining_pixels = tga_width * tga_height - i;
+               /* The outer loop must not silently clip an oversized packet. */
+               if (RLE_count > remaining_pixels) {
+                  STBI_FREE(tga_palette);
+                  STBI_FREE(tga_data);
+                  return stbi__errpuc("bad RLE", "Corrupt TGA");
+               }
             } else if ( !RLE_repeating )
             {
                read_next_pixel = 1;

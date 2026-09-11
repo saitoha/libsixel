@@ -15,15 +15,16 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Shared loader integration and policy](../loader/builtin.md) | 46 | 1 | 3 | 0 | 3 | 0 | 39 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 35 | 7 | 3 | 2 | 2 | 2 | 19 |
-| [PNG and APNG](../loader/builtin/png.md) | 105 | 1 | 59 | 0 | 11 | 0 | 34 |
-| [JPEG](../loader/builtin/jpeg.md) | 22 | 1 | 14 | 1 | 2 | 0 | 4 |
-| [Radiance HDR](../loader/builtin/hdr.md) | 258 | 216 | 37 | 1 | 0 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 979 | 1 | 551 | 402 | 8 | 2 | 15 |
+| [PNG and APNG](../loader/builtin/png.md) | 106 | 2 | 59 | 0 | 11 | 0 | 34 |
+| [JPEG](../loader/builtin/jpeg.md) | 25 | 4 | 14 | 1 | 2 | 0 | 4 |
+| [Radiance HDR](../loader/builtin/hdr.md) | 261 | 219 | 37 | 1 | 0 | 0 | 4 |
+| [PSD and PSB](../loader/builtin/psd.md) | 982 | 4 | 551 | 402 | 8 | 2 | 15 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
-| [WebP](../loader/builtin/webp.md) | 294 | 1 | 48 | 241 | 0 | 0 | 4 |
-| [TGA](../loader/builtin/tga.md) | 22 | 11 | 8 | 0 | 1 | 0 | 2 |
-| [Softimage PIC](../loader/builtin/pic.md) | 31 | 10 | 1 | 0 | 12 | 0 | 8 |
-| **Total** | **1953** | **406** | **724** | **651** | **39** | **4** | **129** |
+| [WebP](../loader/builtin/webp.md) | 297 | 4 | 48 | 241 | 0 | 0 | 4 |
+| [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
+| [TGA](../loader/builtin/tga.md) | 24 | 11 | 8 | 0 | 3 | 0 | 2 |
+| [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
+| **Total** | **1972** | **421** | **724** | **651** | **43** | **4** | **129** |
 
 ## Complete inventory
 
@@ -36,7 +37,7 @@ Primary implementation context: [Builtin Image Loader](../loader/builtin.md).
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
 | [tests/loader/builtin/0004_loader_builtin_pixelformat.t](../../tests/loader/builtin/0004_loader_builtin_pixelformat.t) | TAP wrapper that dispatches to the unified C test runner. | Other integration/smoke | Inventory only |
-| [tests/loader/builtin/0016_lsqa_roundtrip_rgba_small.t](../../tests/loader/builtin/0016_lsqa_roundtrip_rgba_small.t) | Confirm small RGBA roundtrip retains the MS-SSIM baseline. | Perceptual quality threshold | Inventory only |
+| [tests/loader/builtin/0016_lsqa_roundtrip_rgba_small.t](../../tests/loader/builtin/0016_lsqa_roundtrip_rgba_small.t) | Confirm small RGBA roundtrip retains the MS-SSIM baseline. Coverage: SOL-04. | Perceptual quality threshold | Policy-linked: [`docs/misc/platforms/solaris.md`](../misc/platforms/solaris.md) |
 | [tests/loader/builtin/0044_loader_builtin_composite_policy_fills_transparency.t](../../tests/loader/builtin/0044_loader_builtin_composite_policy_fills_transparency.t) | Verify composite policy fills a zero-alpha pixel with the -B color. | Other integration/smoke | Policy-linked: [`docs/loader/alpha-policy.md`](../loader/alpha-policy.md) |
 | [tests/loader/builtin/0052_loader_builtin_palette_disabled_by_scale.t](../../tests/loader/builtin/0052_loader_builtin_palette_disabled_by_scale.t) | TAP test confirming scale options disable builtin palette fast path. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/0053_loader_builtin_palette_disabled_by_highcolor.t](../../tests/loader/builtin/0053_loader_builtin_palette_disabled_by_highcolor.t) | TAP test confirming high-color mode disables builtin palette fast path. | Other integration/smoke | Inventory only |
@@ -278,6 +279,7 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader/builtin/1498_loader_builtin_background_policy_apng_explicit_fallback.t](../../tests/loader/builtin/1498_loader_builtin_background_policy_apng_explicit_fallback.t) | Verify APNG background policy fallback when only explicit background exists. | Other integration/smoke | Policy-linked: [`docs/loader/background-policy.md`](../loader/background-policy.md) |
 | [tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t](../../tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t) | TAP test confirming builtin orientation toggle affects PNG eXIf decode. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/1962_loader_builtin_png_apng_dispose_previous_numeric.t](../../tests/loader/builtin/1962_loader_builtin_png_apng_dispose_previous_numeric.t) | Verify APNG PREVIOUS disposal with exact decoded-frame pixels. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/1977_loader_builtin_png_icc_numeric.t](../../tests/loader/builtin/1977_loader_builtin_png_icc_numeric.t) | Fix builtin-CMS output type and representative samples for a profiled PNG. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 
 ### JPEG
 
@@ -307,6 +309,9 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/1463_loader_builtin_jpeg_embedded_cmykprofile_skip_trace.t](../../tests/loader/builtin/1463_loader_builtin_jpeg_embedded_cmykprofile_skip_trace.t) | Verify RGB JPEG with non-applicable CMYK ICC keeps silent skip behavior. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t](../../tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t) | TAP test confirming builtin orientation toggle affects JPEG EXIF decode. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t](../../tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t) | Verify JPEG YCCK conversion with an exact decoded RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t](../../tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t) | Fix the byte-exact output of baseline sequential RGB JPEG decoding. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t](../../tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t) | Fix builtin-CMS output type and representative samples for a profiled JPEG. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t](../../tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t) | Fix decoded float samples from 16-bit lossless JPEG input. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 
 ### Radiance HDR
 
@@ -572,6 +577,9 @@ Primary implementation context: [Radiance HDR builtin component](../loader/built
 | [tests/loader/builtin/0672_loader_builtin_hdr_colorcorr_single_numeric.t](../../tests/loader/builtin/0672_loader_builtin_hdr_colorcorr_single_numeric.t) | Loader builtin hdr colorcorr single numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/0673_loader_builtin_hdr_colorcorr_multi_numeric.t](../../tests/loader/builtin/0673_loader_builtin_hdr_colorcorr_multi_numeric.t) | Loader builtin hdr colorcorr multi numeric. | Direct numeric/digest | Inventory only |
 | [tests/loader/builtin/0674_loader_builtin_hdr_pixaspect_view_metadata_numeric.t](../../tests/loader/builtin/0674_loader_builtin_hdr_pixaspect_view_metadata_numeric.t) | Loader builtin hdr pixaspect view metadata numeric. | Direct numeric/digest | Inventory only |
+| [tests/loader/builtin/1973_loader_builtin_hdr_new_rle_numeric.t](../../tests/loader/builtin/1973_loader_builtin_hdr_new_rle_numeric.t) | Verify modern component RLE emits exact linear float samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/1974_loader_builtin_hdr_old_scanline_rle_numeric.t](../../tests/loader/builtin/1974_loader_builtin_hdr_old_scanline_rle_numeric.t) | Verify old scanline RLE emits exact linear float samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/1975_loader_builtin_hdr_legacy_stream_numeric.t](../../tests/loader/builtin/1975_loader_builtin_hdr_legacy_stream_numeric.t) | Verify legacy stream RLE emits exact linear float samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
 
 ### PSD and PSB
 
@@ -1558,6 +1566,9 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/1929_loader_builtin_psd_psdtools_effects_stroke_composite_clbl1_solid_suppression_source_mismatch_trace.t](../../tests/loader/builtin/1929_loader_builtin_psd_psdtools_effects_stroke_composite_clbl1_solid_suppression_source_mismatch_trace.t) | Verify clbl=1 source-mismatch path keeps global base SoFi while deferred solid replay is skipped under unsuppressed ownership. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/1930_loader_builtin_psd_psdtools_effects_stroke_composite_clbl1_solid_suppression_unmatched_source_trace.t](../../tests/loader/builtin/1930_loader_builtin_psd_psdtools_effects_stroke_composite_clbl1_solid_suppression_unmatched_source_trace.t) | Verify clbl=1 deferred replay keeps base SoFi when replay replacement is absent in the current fixture. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/1964_loader_builtin_psd_missing_composite_rgb8_digest.t](../../tests/loader/builtin/1964_loader_builtin_psd_missing_composite_rgb8_digest.t) | Verify PSD missing-composite reconstruction with an exact RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/1979_loader_builtin_psd_icc_digest.t](../../tests/loader/builtin/1979_loader_builtin_psd_icc_digest.t) | Fix exact builtin-CMS output for an embedded-profile PSD. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/1984_loader_builtin_psd_rgb16_zip_pred_numeric.t](../../tests/loader/builtin/1984_loader_builtin_psd_rgb16_zip_pred_numeric.t) | Fix decoded float samples from PSD 16-bit ZIP prediction. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/1985_loader_builtin_psd_rgb32_rle_numeric.t](../../tests/loader/builtin/1985_loader_builtin_psd_rgb32_rle_numeric.t) | Fix decoded float samples from PSD 32-bit PackBits RLE. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 ### BMP and DIB
 
@@ -1991,6 +2002,18 @@ Primary implementation context: [WebP builtin component](../loader/builtin/webp.
 | [tests/loader/builtin/1919_loader_builtin_webp_spider_start_frame_static_quality_msssim.t](../../tests/loader/builtin/1919_loader_builtin_webp_spider_start_frame_static_quality_msssim.t) | TAP test confirming opaque full-canvas start_frame replay keeps parity. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/1931_loader_builtin_webp_vp8l_transform_subsample_quality_msssim.t](../../tests/loader/builtin/1931_loader_builtin_webp_vp8l_transform_subsample_quality_msssim.t) | TAP test confirming builtin VP8L transform subimages use subsampled height. | Perceptual quality threshold | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 | [tests/loader/builtin/1965_loader_builtin_webp_vp8l_transform_rgb_digest.t](../../tests/loader/builtin/1965_loader_builtin_webp_vp8l_transform_rgb_digest.t) | Verify VP8L transform reversal with an exact decoded RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/1980_loader_builtin_webp_vp8_digest.t](../../tests/loader/builtin/1980_loader_builtin_webp_vp8_digest.t) | Fix the byte-exact output of the lossy VP8 decoder. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t](../../tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t) | Fix exact composited frames for lossy WebP animation. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t](../../tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t) | Fix VP8+ALPH RGB bytes and the separate transparency mask. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+
+### SIXEL
+
+Primary implementation context: [SIXEL builtin component](../loader/builtin/sixel.md).
+
+| Test | Observation | Assertion mechanism | Policy context |
+| --- | --- | --- | --- |
+| [tests/loader/builtin/1986_loader_builtin_sixel_unpainted_numeric.t](../../tests/loader/builtin/1986_loader_builtin_sixel_unpainted_numeric.t) | Distinguish an unpainted index before and after palette expansion. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/sixel.md`](../loader/builtin/sixel.md) |
+| [tests/loader/builtin/1987_loader_builtin_sixel_high_color_numeric.t](../../tests/loader/builtin/1987_loader_builtin_sixel_high_color_numeric.t) | Isolate final-palette collapse after a color-register redefinition. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/sixel.md`](../loader/builtin/sixel.md) |
 
 ### TGA
 
@@ -2020,6 +2043,8 @@ Primary implementation context: [TGA builtin component](../loader/builtin/tga.md
 | [tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t](../../tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t) | Verify TGA out-of-range index compatibility fallback with a minimal in-memory stream. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 | [tests/loader/builtin/1968_loader_builtin_tga_truecolor24_numeric.t](../../tests/loader/builtin/1968_loader_builtin_tga_truecolor24_numeric.t) | Verify type-2 TGA BGR bytes expand to exact RGB component lanes. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 | [tests/loader/builtin/1969_loader_builtin_tga_grayscale8_numeric.t](../../tests/loader/builtin/1969_loader_builtin_tga_grayscale8_numeric.t) | Verify type-3 TGA gray samples expand to exact RGB bytes. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/1990_loader_builtin_tga_truncated_direct_reject.t](../../tests/loader/builtin/1990_loader_builtin_tga_truncated_direct_reject.t) | Verify direct-color raster truncation is rejected. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
+| [tests/loader/builtin/1991_loader_builtin_tga_rle_overrun_reject.t](../../tests/loader/builtin/1991_loader_builtin_tga_rle_overrun_reject.t) | Verify an RLE packet cannot run past the declared raster. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 
 ### Softimage PIC
 
@@ -2058,6 +2083,8 @@ Primary implementation context: [Softimage PIC builtin component](../loader/buil
 | [tests/loader/builtin/1966_loader_builtin_pic_raw_rgb_numeric.t](../../tests/loader/builtin/1966_loader_builtin_pic_raw_rgb_numeric.t) | Verify PIC raw RGB packets populate exact component lanes. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 | [tests/loader/builtin/1967_loader_builtin_pic_mixed_rle_extended_numeric.t](../../tests/loader/builtin/1967_loader_builtin_pic_mixed_rle_extended_numeric.t) | Verify PIC mixed RLE expands the 16-bit extended repeat count exactly. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 | [tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t](../../tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t) | Verify chained PIC packets combine exact component lanes. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
+| [tests/loader/builtin/1988_loader_builtin_pic_zero_dimension_reject.t](../../tests/loader/builtin/1988_loader_builtin_pic_zero_dimension_reject.t) | Verify zero-width and zero-height PIC canvases are rejected. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
+| [tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t](../../tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t) | Verify the descriptor-table upper bound rejects packet eleven. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/pic.md`](../loader/builtin/pic.md) |
 
 <!-- test-plan-end -->
 
