@@ -406,10 +406,10 @@ int test_loader_0087_loader_builtin_tga_oob_index_fallback_numeric(
 int test_loader_0088_loader_builtin_pic_omitted_channels_numeric(
     int argc,
     char **argv);
-int test_loader_0089_loader_builtin_pic_repeated_channel_overwrite_numeric(
+int test_loader_0089_pic_repeated_channel_numeric(
     int argc,
     char **argv);
-int test_loader_0090_loader_builtin_pic_pure_rle_oversized_clip_numeric(
+int test_loader_0090_pic_pure_rle_clip_numeric(
     int argc,
     char **argv);
 int test_loader_0091_loader_builtin_pic_mixed_rle_raw128_numeric(
@@ -419,6 +419,39 @@ int test_loader_0092_loader_builtin_pic_mixed_rle_repeat128_numeric(
     int argc,
     char **argv);
 int test_loader_0093_loader_builtin_pic_ten_packet_limit_numeric(
+    int argc,
+    char **argv);
+int test_loader_0094_loader_builtin_png_apng_dispose_previous_numeric(
+    int argc,
+    char **argv);
+int test_loader_0095_loader_builtin_jpeg_ycck8_rgb_digest(
+    int argc,
+    char **argv);
+int test_loader_0096_loader_builtin_psd_missing_composite_rgb8_digest(
+    int argc,
+    char **argv);
+int test_loader_0097_loader_builtin_webp_vp8l_transform_rgb_digest(
+    int argc,
+    char **argv);
+int test_loader_0098_loader_builtin_pic_raw_rgb_numeric(
+    int argc,
+    char **argv);
+int test_loader_0099_loader_builtin_pic_mixed_rle_extended_numeric(
+    int argc,
+    char **argv);
+int test_loader_0100_loader_builtin_tga_truecolor24_numeric(
+    int argc,
+    char **argv);
+int test_loader_0101_loader_builtin_tga_grayscale8_numeric(
+    int argc,
+    char **argv);
+int test_loader_0102_loader_builtin_pic_chained_packets_numeric(
+    int argc,
+    char **argv);
+int test_loader_0103_loader_builtin_gif_disposal3_numeric(
+    int argc,
+    char **argv);
+int test_loader_0104_loader_builtin_gif_local_palette_numeric(
     int argc,
     char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
@@ -875,15 +908,37 @@ static test_entry_t const test_entries[] = {
     { "loader/0088_loader_builtin_pic_omitted_channels_numeric",
       test_loader_0088_loader_builtin_pic_omitted_channels_numeric },
     { "loader/0089_loader_builtin_pic_repeated_channel_overwrite_numeric",
-      test_loader_0089_loader_builtin_pic_repeated_channel_overwrite_numeric },
+      test_loader_0089_pic_repeated_channel_numeric },
     { "loader/0090_loader_builtin_pic_pure_rle_oversized_clip_numeric",
-      test_loader_0090_loader_builtin_pic_pure_rle_oversized_clip_numeric },
+      test_loader_0090_pic_pure_rle_clip_numeric },
     { "loader/0091_loader_builtin_pic_mixed_rle_raw128_numeric",
       test_loader_0091_loader_builtin_pic_mixed_rle_raw128_numeric },
     { "loader/0092_loader_builtin_pic_mixed_rle_repeat128_numeric",
       test_loader_0092_loader_builtin_pic_mixed_rle_repeat128_numeric },
     { "loader/0093_loader_builtin_pic_ten_packet_limit_numeric",
       test_loader_0093_loader_builtin_pic_ten_packet_limit_numeric },
+    { "loader/0094_loader_builtin_png_apng_dispose_previous_numeric",
+      test_loader_0094_loader_builtin_png_apng_dispose_previous_numeric },
+    { "loader/0095_loader_builtin_jpeg_ycck8_rgb_digest",
+      test_loader_0095_loader_builtin_jpeg_ycck8_rgb_digest },
+    { "loader/0096_loader_builtin_psd_missing_composite_rgb8_digest",
+      test_loader_0096_loader_builtin_psd_missing_composite_rgb8_digest },
+    { "loader/0097_loader_builtin_webp_vp8l_transform_rgb_digest",
+      test_loader_0097_loader_builtin_webp_vp8l_transform_rgb_digest },
+    { "loader/0098_loader_builtin_pic_raw_rgb_numeric",
+      test_loader_0098_loader_builtin_pic_raw_rgb_numeric },
+    { "loader/0099_loader_builtin_pic_mixed_rle_extended_numeric",
+      test_loader_0099_loader_builtin_pic_mixed_rle_extended_numeric },
+    { "loader/0100_loader_builtin_tga_truecolor24_numeric",
+      test_loader_0100_loader_builtin_tga_truecolor24_numeric },
+    { "loader/0101_loader_builtin_tga_grayscale8_numeric",
+      test_loader_0101_loader_builtin_tga_grayscale8_numeric },
+    { "loader/0102_loader_builtin_pic_chained_packets_numeric",
+      test_loader_0102_loader_builtin_pic_chained_packets_numeric },
+    { "loader/0103_loader_builtin_gif_disposal3_numeric",
+      test_loader_0103_loader_builtin_gif_disposal3_numeric },
+    { "loader/0104_loader_builtin_gif_local_palette_numeric",
+      test_loader_0104_loader_builtin_gif_local_palette_numeric },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",

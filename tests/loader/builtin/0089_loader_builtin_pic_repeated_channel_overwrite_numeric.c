@@ -3,7 +3,7 @@
 #include "loader_builtin_pic_test_common.h"
 
 int
-test_loader_0089_loader_builtin_pic_repeated_channel_overwrite_numeric(
+test_loader_0089_pic_repeated_channel_numeric(
     int argc,
     char **argv)
 {

@@ -135,6 +135,11 @@ The rows below are pipeline landmarks rather than the complete suite. The [BMP/D
 | BMP-04 | A 16-bit alpha-bearing BI_PNG child retains PNG CMS/background precision through the BMP wrapper. | [tests/loader/builtin/1456_loader_builtin_bmp_bi_png16_alpha_bgcolor_cms_on_numeric.t](../../../tests/loader/builtin/1456_loader_builtin_bmp_bi_png16_alpha_bgcolor_cms_on_numeric.t) |
 | BMP-05 | A V5 embedded RGB ICC profile transforms native BMP pixels when CMS is enabled. | [tests/loader/builtin/1372_loader_builtin_bmp_v5_embedded_icc_rgb_cms_on_numeric.t](../../../tests/loader/builtin/1372_loader_builtin_bmp_v5_embedded_icc_rgb_cms_on_numeric.t) |
 | BMP-06 | RGBA composition over an explicit background preserves the expected float color result. | [tests/loader/builtin/1331_loader_builtin_bmp_rgba_bgcolor_float32_numeric.t](../../../tests/loader/builtin/1331_loader_builtin_bmp_rgba_bgcolor_float32_numeric.t) |
+| BMP-07 | Mixed encoded, absolute, delta, and end records reconstruct an RLE8 raster exactly. | [tests/loader/builtin/1334_loader_builtin_bmp_rle8_decode_numeric.t](../../../tests/loader/builtin/1334_loader_builtin_bmp_rle8_decode_numeric.t) |
+| BMP-08 | The OS/2 Huffman1D path decodes its monochrome scanline to exact samples. | [tests/loader/builtin/1417_loader_builtin_bmp_os2_huffman1d_decode_numeric.t](../../../tests/loader/builtin/1417_loader_builtin_bmp_os2_huffman1d_decode_numeric.t) |
+| BMP-09 | The OS/2 RLE24 path reconstructs exact RGB samples. | [tests/loader/builtin/1418_loader_builtin_bmp_os2_rle24_decode_numeric.t](../../../tests/loader/builtin/1418_loader_builtin_bmp_os2_rle24_decode_numeric.t) |
+| BMP-10 | Native CMYK32 conversion without CMS produces the documented numeric RGB result. | [tests/loader/builtin/1396_loader_builtin_bmp_cmyk_cms_off_numeric.t](../../../tests/loader/builtin/1396_loader_builtin_bmp_cmyk_cms_off_numeric.t) |
+| BMP-11 | A nested BI_JPEG child produces exact pixels through the BMP wrapper with CMS disabled. | [tests/loader/builtin/1382_loader_builtin_bmp_bi_jpeg_cms_off_numeric.t](../../../tests/loader/builtin/1382_loader_builtin_bmp_bi_jpeg_cms_off_numeric.t) |
 
 ### Defensive and malformed-input tests
 
@@ -142,4 +147,4 @@ The rows below are pipeline landmarks rather than the complete suite. The [BMP/D
 | --- | --- | --- |
 | BMP-90 | Overlapping or otherwise invalid color masks are rejected during header/model validation. | [tests/loader/builtin/1360_loader_builtin_bmp_fail_invalid_color_masks_numeric.t](../../../tests/loader/builtin/1360_loader_builtin_bmp_fail_invalid_color_masks_numeric.t) |
 
-Coverage audit note: the owners cover one OS/2 dialect, native alpha, RLE4, nested PNG, V5 ICC, and mask rejection. RLE8, OS/2 Huffman1D, RLE24, CMYK families, nested JPEG, and the full DIB-size/bpp/compression matrix remain outside this primary reciprocal set and must not be inferred from the single `BMP-03` branch owner.
+Coverage audit note: direct numeric owners cover OS/2 RGB24, Huffman1D and RLE24, native alpha, RLE4 and RLE8, native CMYK32, nested JPEG and PNG, V5 ICC, and mask rejection. This still does not constitute the full DIB-size × bpp × compression matrix; the generated inventory must be consulted for narrower cases, and unlisted cross-products remain gaps rather than implications of these representatives.

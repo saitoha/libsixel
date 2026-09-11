@@ -30,6 +30,7 @@ duplicates="$tmpdir/duplicates"
 missing="$tmpdir/missing"
 extra="$tmpdir/extra"
 errors="$tmpdir/errors"
+generated_check="$tmpdir/generated-check"
 
 : > "$plan_specs"
 : > "$doc_links"
@@ -214,6 +215,16 @@ while IFS='|' read -r doc_rel test_rel; do
     printf '%s: Test-plan reference is outside the document glob in %s\n' \
         "$test_rel" "$doc_rel" >> "$errors"
 done < "$extra"
+
+python_bin=${PYTHON_STATICCHECK:-python3}
+(CDPATH='' cd -- "$src_root" &&
+    "$python_bin" tools/generate_builtin_loader_coverage.py --check) \
+    >"$generated_check" 2>&1 || {
+    printf '%s\n' \
+        "docs/testing/builtin-loader-coverage.md: generated content is stale" \
+        >> "$errors"
+    sed 's/^/  /' "$generated_check" >> "$errors"
+}
 
 test ! -s "$errors" || {
     echo "not ok 1 - test-plan inventories and covered tests are reciprocal"

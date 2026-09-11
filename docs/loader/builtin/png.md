@@ -221,13 +221,18 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 | PNG-01 | `-S` selects the APNG static behavior without treating the file as an unrelated residual format. | [tests/loader/builtin/0017_apng_builtin_static_option.t](../../../tests/loader/builtin/0017_apng_builtin_static_option.t) |
 | PNG-02 | Indexed tRNS uses the documented default key-color path when its palette representation is valid. | [tests/loader/builtin/0143_loader_builtin_png_trns_keycolor_default_enabled_for_palette.t](../../../tests/loader/builtin/0143_loader_builtin_png_trns_keycolor_default_enabled_for_palette.t) |
 | PNG-03 | A 16-bit RGBA source follows the high-depth alpha/key-color decision rather than silently collapsing into the ordinary eight-bit path. | [tests/loader/builtin/0166_loader_builtin_trns_keycolor_optin_changes_rgba16_output.t](../../../tests/loader/builtin/0166_loader_builtin_trns_keycolor_optin_changes_rgba16_output.t) |
-| PNG-04 | Embedded ICC conversion matches a reference PNM through the format color-management path. | [tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t) |
-| PNG-05 | APNG disposal `PREVIOUS` restores the saved canvas before the next emitted frame. | [tests/loader/builtin/0033_apng_builtin_dispose_previous.t](../../../tests/loader/builtin/0033_apng_builtin_dispose_previous.t) |
+| PNG-05 | APNG disposal `PREVIOUS` restores the saved canvas before a third frame is composed; all three decoded RGB buffers are compared exactly. | [tests/loader/builtin/1962_loader_builtin_png_apng_dispose_previous_numeric.t](../../../tests/loader/builtin/1962_loader_builtin_png_apng_dispose_previous_numeric.t) |
 | PNG-06 | Enabling and disabling eXIf orientation changes geometry/pixels at common frame finalization as documented. | [tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t](../../../tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t) |
 | PNG-07 | Builtin's file-first default, explicit-first selection, and invalid-policy fallback determine competing background priority. | [tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t](../../../tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t) |
 | PNG-08 | The builtin non-indexed linear-background option agrees with its reference image, and CLI/suboption forms agree. | [tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t](../../../tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t) |
 | PNG-09 | The libpng component accepts APNG and can emit its static selection. | [tests/loader/libpng/0001_apng_libpng_static_option.t](../../../tests/loader/libpng/0001_apng_libpng_static_option.t) |
-| PNG-10 | The libpng RGBA8 and RGBA16 paths satisfy their end-to-end PNGSuite MS-SSIM references. | [tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t](../../../tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t), [tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t](../../../tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t) |
+
+### Quality regression tests
+
+| ID | Quality floor protected | Owning test |
+| --- | --- | --- |
+| PNGQ-01 | Embedded ICC conversion remains visually close to the fixed converted PNM after the full encode path. | [tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t](../../../tests/loader/builtin/0055_builtin_png_embedded_icc_matches_reference_pnm.t) |
+| PNGQ-02 | The libpng RGBA8 and RGBA16 paths retain their end-to-end PNGSuite MS-SSIM floors. | [tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t](../../../tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_msssim.t), [tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t](../../../tests/loader/libpng/0040_pngsuite_basic_default_basn6a16_msssim.t) |
 
 ### Defensive and malformed-input tests
 
@@ -235,6 +240,6 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 | --- | --- | --- |
 | PNG-90 | An `fcTL` placed after image data in an invalid structural position is rejected. | [tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t](../../../tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t) |
 
-Coverage audit note: these owners cover the major representation, CMS, orientation, and APNG-disposal boundaries, not every PNG filter × Adam7 pass × depth/color-type combination or every APNG ordering failure. CRC validation is not an uncovered promised behavior: the implementation deliberately does not validate stored CRCs, as documented above.
+Coverage audit note: these owners cover the major representation, orientation, and APNG-disposal boundaries, not every PNG filter × Adam7 pass × depth/color-type combination or every APNG ordering failure. ICC currently has an end-to-end quality floor but no direct loader-output oracle, so exact converted samples remain a gap. CRC validation is not an uncovered promised behavior: the implementation deliberately does not validate stored CRCs, as documented above.
 
 The performance and sample-comparison records are reproducible observations, not a timing CI gate or exhaustive backend-equivalence test. In particular, the measured libpng background-priority difference, indexed linear-composition difference, and no-background `tRNS` mask difference are documented limitations; the existing behavioral owners do not guarantee those differences remain unchanged. APNG frame count/disposal tests do not prove linear-light inter-frame blending or 16-bit preservation.

@@ -109,8 +109,8 @@ The rows below are pipeline landmarks rather than the complete suite. The [GIF c
 | --- | --- | --- |
 | GIF-01 | A positive start-frame selection emits the requested composited frame rather than renumbering the source stream. | [tests/loader/builtin/0044_builtin_gif_start_frame_positive.t](../../../tests/loader/builtin/0044_builtin_gif_start_frame_positive.t) |
 | GIF-02 | A structurally valid unknown extension is consumed without corrupting the following block boundary. | [tests/loader/builtin/0261_loader_builtin_gif_unknown_extension_ignored.t](../../../tests/loader/builtin/0261_loader_builtin_gif_unknown_extension_ignored.t) |
-| GIF-03 | LZW decode selects the local table for the later frame and does not reuse global-table colors. | [tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t](../../../tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t) |
-| GIF-04 | Transparency plus disposal 3 restores the saved pre-frame canvas before the next composition. | [tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t](../../../tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t) |
+| GIF-03 | A later frame's local color table replaces global-table colors for that frame. | [tests/loader/builtin/1972_loader_builtin_gif_local_palette_numeric.t](../../../tests/loader/builtin/1972_loader_builtin_gif_local_palette_numeric.t) |
+| GIF-04 | Disposal method 3 restores the saved pre-frame canvas before the next composition. | [tests/loader/builtin/1971_loader_builtin_gif_disposal3_numeric.t](../../../tests/loader/builtin/1971_loader_builtin_gif_disposal3_numeric.t) |
 | GIF-05 | Automatic looping honors a finite Netscape loop count for a multi-frame stream. | [tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t](../../../tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t) |
 | GIF-06 | The GIF87a signature reaches the same exact-pixel decode path as the later GIF89a dialect. | [tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t](../../../tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t) |
 | GIF-07 | Four-pass interlacing maps encoded rows to their exact logical-screen positions. | [tests/loader/builtin/1940_loader_builtin_gif_interlace_four_pass_numeric.t](../../../tests/loader/builtin/1940_loader_builtin_gif_interlace_four_pass_numeric.t) |
@@ -118,6 +118,13 @@ The rows below are pipeline landmarks rather than the complete suite. The [GIF c
 | GIF-09 | Comment, Plain Text, and unknown Application extension sub-blocks preserve the following image boundary. | [tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t](../../../tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t) |
 | GIF-10 | Disposal method 2 clears the previous dirty rectangle before the next frame is composed. | [tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t](../../../tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t) |
 | GIF-11 | Literal LZW input remains exact while the dictionary crosses each code-width boundary through 12 bits. | [tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t](../../../tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t) |
+
+### Quality regression tests
+
+| ID | Quality floor protected | Owning test |
+| --- | --- | --- |
+| GIFQ-01 | The later-frame local/global palette switch remains visually close to its reference after the full encode path. | [tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t](../../../tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t) |
+| GIFQ-02 | Transparency plus disposal 3 remains visually close to the expected second frame after the full encode path. | [tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t](../../../tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t) |
 
 ### Defensive and malformed-input tests
 
@@ -128,4 +135,4 @@ The rows below are pipeline landmarks rather than the complete suite. The [GIF c
 | GIF-92 | A raster sub-block shorter than its declared length is rejected without emitting a frame. | [tests/loader/builtin/1944_loader_builtin_gif_truncated_raster_reject.t](../../../tests/loader/builtin/1944_loader_builtin_gif_truncated_raster_reject.t) |
 | GIF-93 | An LZW dictionary reference beyond the next available code is rejected without emitting a frame. | [tests/loader/builtin/1945_loader_builtin_gif_illegal_lzw_code_reject.t](../../../tests/loader/builtin/1945_loader_builtin_gif_illegal_lzw_code_reject.t) |
 
-Coverage audit note: the owners now isolate both format signatures, four-pass interlacing, descriptor offsets and bounds, known extension families, LZW width growth and illegal references, and disposal methods 2 and 3. They do not form a complete disposal × background-policy × palette-fusion × start-frame/loop matrix; those combinations remain auditable gaps even where the broader suite contains neighboring cases.
+Coverage audit note: exact owners isolate both format signatures, local/global palettes, four-pass interlacing, descriptor offsets and bounds, known extension families, LZW width growth and illegal references, and disposal methods 2 and 3. The LSQA cases remain complementary end-to-end quality floors. The owners do not form a complete disposal × background-policy × palette-fusion × start-frame/loop matrix.

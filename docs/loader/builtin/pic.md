@@ -118,9 +118,9 @@ The rows below are pipeline landmarks rather than the complete suite. The [Softi
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| PIC-02 | A chained packet table combines channel selections in descriptor order. | [tests/loader/builtin/0694_loader_builtin_pic_chained_packets_decode.t](../../../tests/loader/builtin/0694_loader_builtin_pic_chained_packets_decode.t) |
-| PIC-03 | Raw RGB packet data decodes into the expected component lanes. | [tests/loader/builtin/0689_loader_builtin_pic_raw_rgb_decode.t](../../../tests/loader/builtin/0689_loader_builtin_pic_raw_rgb_decode.t) |
-| PIC-04 | Mixed RLE accepts the extended repeat-count form and reconstructs the row. | [tests/loader/builtin/0693_loader_builtin_pic_rle_mixed_ext_count_decode.t](../../../tests/loader/builtin/0693_loader_builtin_pic_rle_mixed_ext_count_decode.t) |
+| PIC-02 | Chained descriptors combine distinct component packets in descriptor order. | [tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t](../../../tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t) |
+| PIC-03 | Raw RGB packet data decodes into exact component lanes. | [tests/loader/builtin/1966_loader_builtin_pic_raw_rgb_numeric.t](../../../tests/loader/builtin/1966_loader_builtin_pic_raw_rgb_numeric.t) |
+| PIC-04 | Mixed RLE accepts the 16-bit extended repeat-count form and reconstructs every pixel in the row. | [tests/loader/builtin/1967_loader_builtin_pic_mixed_rle_extended_numeric.t](../../../tests/loader/builtin/1967_loader_builtin_pic_mixed_rle_extended_numeric.t) |
 | PIC-05 | A PIC alpha channel reaches explicit-background composition with the expected numeric result. | [tests/loader/builtin/0708_loader_builtin_pic_rgba_composite_numeric.t](../../../tests/loader/builtin/0708_loader_builtin_pic_rgba_composite_numeric.t) |
 | PIC-06 | Channels omitted from the packet table retain their initialized white/opaque values. | [tests/loader/builtin/1956_loader_builtin_pic_omitted_channels_numeric.t](../../../tests/loader/builtin/1956_loader_builtin_pic_omitted_channels_numeric.t) |
 | PIC-07 | A later packet selecting an already-written channel wins in descriptor order. | [tests/loader/builtin/1957_loader_builtin_pic_repeated_channel_overwrite_numeric.t](../../../tests/loader/builtin/1957_loader_builtin_pic_repeated_channel_overwrite_numeric.t) |

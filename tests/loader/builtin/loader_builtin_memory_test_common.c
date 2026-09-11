@@ -108,18 +108,16 @@ edge_capture_frame(sixel_frame_t *frame, void *data)
     return SIXEL_OK;
 }
 
-int
-edge_load_buffer(char const *label,
-                 unsigned char const *buffer,
-                 size_t buffer_size,
-                 int require_static,
-                 edge_frame_probe_t *probe,
-                 SIXELSTATUS *load_status)
+static int
+edge_load_chunk(char const *label,
+                sixel_chunk_t *chunk,
+                int require_static,
+                edge_frame_probe_t *probe,
+                SIXELSTATUS *load_status)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_loader_component_t *component;
-    sixel_chunk_t *chunk;
     loader_probe_callback_state_t callback_state;
     int use_palette;
     int reqcolors;
@@ -130,7 +128,6 @@ edge_load_buffer(char const *label,
     status = SIXEL_FALSE;
     allocator = NULL;
     component = NULL;
-    chunk = NULL;
     use_palette = 0;
     reqcolors = 256;
     loop_control = SIXEL_LOOP_DISABLE;
@@ -139,8 +136,8 @@ edge_load_buffer(char const *label,
     if (load_status != NULL) {
         *load_status = SIXEL_FALSE;
     }
-    if (label == NULL || buffer == NULL || buffer_size == 0u ||
-        probe == NULL || load_status == NULL) {
+    if (label == NULL || chunk == NULL || probe == NULL ||
+        load_status == NULL) {
         return 1;
     }
     memset(probe, 0, sizeof(*probe));
@@ -155,15 +152,6 @@ edge_load_buffer(char const *label,
                                              (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: builtin component creation failed\n", label);
-        goto cleanup;
-    }
-    status = sixel_chunk_create_from_memory(&chunk,
-                                            buffer,
-                                            buffer_size,
-                                            NULL,
-                                            allocator);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "%s: memory chunk creation failed\n", label);
         goto cleanup;
     }
     status = sixel_loader_component_setopt(component,
@@ -209,6 +197,122 @@ edge_load_buffer(char const *label,
 
 cleanup:
     sixel_loader_component_unref(component);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+int
+edge_load_buffer(char const *label,
+                 unsigned char const *buffer,
+                 size_t buffer_size,
+                 int require_static,
+                 edge_frame_probe_t *probe,
+                 SIXELSTATUS *load_status)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    result = 1;
+    if (label == NULL || buffer == NULL || buffer_size == 0u ||
+        probe == NULL || load_status == NULL) {
+        return 1;
+    }
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            buffer,
+                                            buffer_size,
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: memory chunk creation failed\n", label);
+        goto cleanup;
+    }
+    result = edge_load_chunk(label,
+                             chunk,
+                             require_static,
+                             probe,
+                             load_status);
+
+cleanup:
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+int
+edge_load_fixture(char const *label,
+                  char const *relative_path,
+                  int require_static,
+                  edge_frame_probe_t *probe,
+                  SIXELSTATUS *load_status)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    char const *source_root;
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    source_root = NULL;
+    cancel_flag = 0;
+    result = 1;
+    if (label == NULL || relative_path == NULL || probe == NULL ||
+        load_status == NULL) {
+        return 1;
+    }
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+    if (build_image_path(source_root,
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build fixture path\n", label);
+        return 1;
+    }
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+    status = sixel_chunk_create_from_source(&chunk,
+                                            image_path,
+                                            0,
+                                            &cancel_flag,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: fixture read failed\n", label);
+        goto cleanup;
+    }
+    result = edge_load_chunk(label,
+                             chunk,
+                             require_static,
+                             probe,
+                             load_status);
+
+cleanup:
     if (chunk != NULL) {
         chunk->vtbl->unref(chunk);
     }
@@ -307,6 +411,94 @@ edge_expect_failure(char const *label,
     if (probe.callback_count != 0) {
         fprintf(stderr, "%s: malformed stream emitted a frame\n", label);
         return 1;
+    }
+    return 0;
+}
+
+static uint64_t
+edge_rgb_digest(unsigned char const *rgb, size_t rgb_size)
+{
+    uint64_t digest;
+    size_t index;
+
+    digest = UINT64_C(14695981039346656037);
+    for (index = 0u; index < rgb_size; ++index) {
+        digest ^= (uint64_t)rgb[index];
+        digest *= UINT64_C(1099511628211);
+    }
+    return digest;
+}
+
+int
+edge_expect_fixture_rgb_digests(char const *label,
+                                char const *relative_path,
+                                int require_static,
+                                int expected_width,
+                                int expected_height,
+                                int expected_frames,
+                                uint64_t const *expected_digests)
+{
+    edge_frame_probe_t probe;
+    SIXELSTATUS status;
+    uint64_t actual_digest;
+    size_t expected_size;
+    int frame_index;
+    int result;
+
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    actual_digest = 0u;
+    expected_size = (size_t)expected_width * (size_t)expected_height * 3u;
+    frame_index = 0;
+    result = edge_load_fixture(label,
+                               relative_path,
+                               require_static,
+                               &probe,
+                               &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: loader failed (%d)\n", label, (int)status);
+        return 1;
+    }
+    if (expected_digests == NULL || expected_width <= 0 ||
+        expected_height <= 0 || expected_frames <= 0 ||
+        expected_frames > EDGE_FRAME_CAPACITY) {
+        fprintf(stderr, "%s: invalid digest expectation\n", label);
+        return 1;
+    }
+    if (probe.callback_count != expected_frames) {
+        fprintf(stderr,
+                "%s: callback count mismatch (%d, expected %d)\n",
+                label,
+                probe.callback_count,
+                expected_frames);
+        return 1;
+    }
+    for (frame_index = 0;
+         frame_index < expected_frames;
+         ++frame_index) {
+        if (probe.width[frame_index] != expected_width ||
+            probe.height[frame_index] != expected_height ||
+            probe.pixelformat[frame_index] != SIXEL_PIXELFORMAT_RGB888 ||
+            probe.rgb_size[frame_index] != expected_size) {
+            fprintf(stderr, "%s: frame %d metadata mismatch\n",
+                    label, frame_index);
+            return 1;
+        }
+        actual_digest = edge_rgb_digest(probe.rgb[frame_index],
+                                        probe.rgb_size[frame_index]);
+        if (actual_digest != expected_digests[frame_index]) {
+            fprintf(stderr,
+                    "%s: frame %d RGB digest 0x%016llx, "
+                    "expected 0x%016llx\n",
+                    label,
+                    frame_index,
+                    (unsigned long long)actual_digest,
+                    (unsigned long long)expected_digests[frame_index]);
+            return 1;
+        }
     }
     return 0;
 }
