@@ -514,6 +514,7 @@ EXTRA_DIST = libsixel-config.in \
              plot_cover_policy_figures.py \
              plot_crop_resize_measurements.py \
              plot_resampling_measurements.py \
+             plot_resampling_theory.py \
              plot_dither_policy_measurements.py \
              plot_dither_spectrum_measurements.py \
              plot_lookup_policy_acceleration.py \

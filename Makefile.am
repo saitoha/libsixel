@@ -141,9 +141,24 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/crop-resize/measurements/crop-resize-visual-reference-linear-scalar-zoom.png \
 	docs/functionality/crop-resize/measurements/crop-resize-visual-reference-linear-scalar.png \
 	docs/functionality/resampling.md \
+	docs/functionality/resampling/compact-kernels.md \
+	docs/functionality/resampling/theory-history.md \
+	docs/functionality/resampling/wide-kernels.md \
 	docs/functionality/resampling/figures/resampling-coordinate-mapping.png \
+	docs/functionality/resampling/figures/resampling-kernel-bicubic.png \
+	docs/functionality/resampling/figures/resampling-kernel-bilinear.png \
+	docs/functionality/resampling/figures/resampling-kernel-gaussian.png \
+	docs/functionality/resampling/figures/resampling-kernel-hamming.png \
+	docs/functionality/resampling/figures/resampling-kernel-hanning.png \
+	docs/functionality/resampling/figures/resampling-kernel-lanczos2.png \
+	docs/functionality/resampling/figures/resampling-kernel-lanczos3.png \
+	docs/functionality/resampling/figures/resampling-kernel-lanczos4.png \
+	docs/functionality/resampling/figures/resampling-kernel-nearest.png \
+	docs/functionality/resampling/figures/resampling-kernel-welsh.png \
 	docs/functionality/resampling/figures/resampling-kernels-radius-1.png \
 	docs/functionality/resampling/figures/resampling-kernels-wide.png \
+	docs/functionality/resampling/figures/resampling-theory-aliasing.png \
+	docs/functionality/resampling/figures/resampling-theory-sinc-reconstruction.png \
 	docs/functionality/resampling/measurements/resampling-discrete-stencils.csv \
 	docs/functionality/resampling/measurements/resampling-discrete-stencils.png \
 	docs/functionality/resampling/measurements/resampling-frequency-response-compact.png \
