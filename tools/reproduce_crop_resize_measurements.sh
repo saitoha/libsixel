@@ -43,6 +43,11 @@ test "${source_state}" = clean || {
 }
 
 revision=$("${GIT}" -C "${TOP_SRCDIR}" rev-parse HEAD)
+compiler_command=$(sed -n 's/^CC = //p' "${BUILD_DIR}/Makefile")
+cflags=$(sed -n 's/^CFLAGS = //p' "${BUILD_DIR}/Makefile")
+cppflags=$(sed -n 's/^CPPFLAGS = //p' "${BUILD_DIR}/Makefile")
+ldflags=$(sed -n 's/^LDFLAGS = //p' "${BUILD_DIR}/Makefile")
+configure_arguments=$("${BUILD_DIR}/config.status" --config)
 PATH="${TOP_SRCDIR}/.local/bin:${PATH}"
 LC_ALL=C
 TZ=UTC
@@ -66,6 +71,11 @@ test -d "${resampling_figure_dir}" || mkdir -p "${resampling_figure_dir}"
     --lsqa "${LSQA_PATH}" \
     --revision "${revision}" \
     --source-state "${source_state}" \
+    --compiler-command "${compiler_command}" \
+    --cflags "${cflags}" \
+    --cppflags "${cppflags}" \
+    --ldflags "${ldflags}" \
+    --configure-arguments "${configure_arguments}" \
     --warmups "${warmups}" \
     --runs "${runs}" \
     --output-directory "${measurement_dir}" \
