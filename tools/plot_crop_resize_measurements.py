@@ -75,19 +75,26 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def program_record(path: Path) -> Dict[str, str]:
+def program_record(
+    path: Path,
+    version_args: Sequence[str] = ("--version",),
+) -> Dict[str, str]:
     """Describe one invoked executable."""
-    proc = subprocess.run(
-        [str(path), "--version"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        check=False,
-    )
-    lines = proc.stdout.decode("utf-8", errors="replace").splitlines()
+    version = "not exposed; identify this program by source revision and SHA-256"
+    if version_args:
+        proc = subprocess.run(
+            [str(path), *version_args],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+        )
+        lines = proc.stdout.decode("utf-8", errors="replace").splitlines()
+        if lines:
+            version = lines[0]
     return {
         "path": str(path),
         "sha256": file_sha256(path),
-        "version": lines[0] if lines else "unknown",
+        "version": version,
     }
 
 
@@ -1169,6 +1176,7 @@ def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=Path)
+    parser.add_argument("--input-label", required=True)
     parser.add_argument("--img2sixel", required=True, type=Path)
     parser.add_argument("--sixel2png", required=True, type=Path)
     parser.add_argument("--lsqa", required=True, type=Path)
@@ -1285,13 +1293,13 @@ def main() -> None:
             "platform": platform.platform(),
             "machine": platform.machine(),
             "processor": platform.processor(),
-            "input": str(args.input),
+            "input": args.input_label,
             "input_sha256": file_sha256(input_path),
         },
         "programs": {
             "img2sixel": program_record(img2sixel),
             "sixel2png": program_record(sixel2png),
-            "lsqa": program_record(lsqa),
+            "lsqa": program_record(lsqa, ()),
         },
         "python": {
             "version": platform.python_version(),
