@@ -394,7 +394,8 @@ def validate_metadata(path: Path) -> Dict[str, object]:
         fail("metadata is missing source, protocol, preflight, or artifacts")
     if source.get("tracked_worktree_state_at_start") != "clean":
         fail("durable measurements were not recorded from a clean worktree")
-    if not source.get("revision") or len(source.get("input_sha256", "")) != 64:
+    if (not source.get("revision") or not source.get("input")
+            or len(source.get("input_sha256", "")) != 64):
         fail("measurement source provenance is incomplete")
     expected_protocol = {
         "policies": [str(record[0]) for record in POLICIES],

@@ -18,9 +18,14 @@ measurement_dir=${1-${TOP_SRCDIR}/docs/functionality/crop-resize/measurements}
 policy_figure_dir=${2-${TOP_SRCDIR}/docs/functionality/crop-resize/figures}
 resampling_figure_dir=${3-${TOP_SRCDIR}/docs/functionality/resampling/figures}
 input_image=${4-${TOP_SRCDIR}/images/snake.png}
+input_label=${input_image}
 warmups=${CROP_RESIZE_WARMUPS-2}
 runs=${CROP_RESIZE_RUNS-9}
 source_state=clean
+
+case ${input_image} in
+    "${TOP_SRCDIR}"/*) input_label=${input_image#"${TOP_SRCDIR}"/} ;;
+esac
 
 "${GIT}" -C "${TOP_SRCDIR}" diff --quiet -- || source_state=dirty
 "${GIT}" -C "${TOP_SRCDIR}" diff --cached --quiet -- || source_state=dirty
@@ -53,6 +58,7 @@ test -d "${resampling_figure_dir}" || mkdir -p "${resampling_figure_dir}"
 
 "${PYTHON}" "${TOP_SRCDIR}/tools/plot_crop_resize_measurements.py" \
     "${input_image}" \
+    --input-label "${input_label}" \
     --img2sixel "${IMG2SIXEL_PATH}" \
     --sixel2png "${SIXEL2PNG_PATH}" \
     --lsqa "${LSQA_PATH}" \
