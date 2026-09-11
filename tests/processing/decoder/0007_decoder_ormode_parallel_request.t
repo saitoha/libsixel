@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/or-mode.md
 # Run the OR-mode parallel decoder request unit test.
 
 set -eux

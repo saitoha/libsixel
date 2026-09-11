@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/or-mode.md
 # Policy: docs/loader/builtin/sixel.md
 # Policy: docs/functionality/decoding-pipeline.md
 # Verify OR mode raw-index decode overlays bit-plane selectors.

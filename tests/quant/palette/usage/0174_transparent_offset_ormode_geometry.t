@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/or-mode.md
 # Verify transparent-offset places OR-mode bodies on the offset geometry.
 
 set -eux
