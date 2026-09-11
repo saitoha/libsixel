@@ -95,6 +95,8 @@ int edge_load_fixture_custom(char const *label,
                              sixel_load_image_function callback,
                              void *callback_context,
                              SIXELSTATUS *load_status);
+int edge_expect_fixture_cancel_boundaries(char const *label,
+                                          char const *relative_path);
 int edge_expect_rgb(char const *label,
                     unsigned char const *buffer,
                     size_t buffer_size,

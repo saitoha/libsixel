@@ -313,15 +313,15 @@ RECENT REVISION HISTORY:
 //
 // iPhone PNG support:
 //
-// We optionally support converting iPhone-formatted PNGs (which store
-// premultiplied BGRA) back to RGB, even though they're internally encoded
-// differently. To enable this conversion, call
-// stbi_convert_iphone_png_to_rgb(1).
+// We support converting iPhone-formatted PNGs (which store premultiplied
+// BGRA) back to RGB, even though they're internally encoded differently.
+// libsixel enables this conversion for its internal decoder by default;
+// stbi_convert_iphone_png_to_rgb() retains explicit control for diagnostics.
 //
-// Call stbi_set_unpremultiply_on_load(1) as well to force a divide per
-// pixel to remove any premultiplied alpha *only* if the image file explicitly
-// says there's premultiplied data (currently only happens in iPhone images,
-// and only if iPhone convert-to-rgb processing is on).
+// libsixel also enables the divide that removes premultiplied alpha by
+// default. stbi_set_unpremultiply_on_load() retains explicit control over
+// that operation, which applies only if the image explicitly says its data is
+// premultiplied (currently only CgBI with conversion enabled).
 //
 // ===========================================================================
 //
@@ -5937,8 +5937,14 @@ static int stbi__expand_png_palette(stbi__png *a, stbi_uc *palette, int len, int
    return 1;
 }
 
-static int stbi__unpremultiply_on_load_global = 0;
-static int stbi__de_iphone_flag_global = 0;
+/*
+ * libsixel owns this internal stb instance and documents CgBI decoding as a
+ * normalized RGBA boundary.  Enable both halves by default so Apple-private
+ * premultiplied BGRA samples cannot escape as ordinary straight RGBA pixels.
+ * The retained stb controls can still opt out explicitly for diagnostics.
+ */
+static int stbi__unpremultiply_on_load_global = 1;
+static int stbi__de_iphone_flag_global = 1;
 
 STBIDEF void stbi_set_unpremultiply_on_load(int flag_true_if_should_unpremultiply)
 {

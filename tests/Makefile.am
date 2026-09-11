@@ -513,6 +513,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0154_LOADER_BUILTIN_PSB_LAYER_INFO_U64MAX_REJECT \
     -DBUILD_TEST_0155_LOADER_BUILTIN_ALLOCATOR_FAILURE_MATRIX \
     -DBUILD_TEST_0156_LOADER_BUILTIN_CALLBACK_STATUS_MATRIX \
+    -DBUILD_TEST_0157_LOADER_BUILTIN_PNG_CGBI_NUMERIC \
+    -DBUILD_TEST_0158_LOADER_BUILTIN_PSD_BLEND_MODES_NUMERIC \
+    -DBUILD_TEST_0159_LOADER_BUILTIN_PSD_CLIPPING_DIGEST \
+    -DBUILD_TEST_0160_LOADER_BUILTIN_PSD_MASK_DIGEST \
+    -DBUILD_TEST_0161_LOADER_BUILTIN_PSD_EFFECT_DIGEST \
+    -DBUILD_TEST_0162_LOADER_BUILTIN_APNG_CANCEL_BOUNDARIES \
+    -DBUILD_TEST_0163_LOADER_BUILTIN_WEBP_CANCEL_BOUNDARIES \
+    -DBUILD_TEST_0164_LOADER_BUILTIN_JPEG_LOSSLESS_PREDICTORS_NUMERIC \
+    -DBUILD_TEST_0165_LOADER_BUILTIN_JPEG_RGB_RESTART_NUMERIC \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -711,6 +720,8 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0014_loader_builtin_pixelformat.c \
     loader/builtin/loader_builtin_memory_test_common.c \
     loader/builtin/loader_builtin_memory_test_common.h \
+    loader/builtin/jpeg_lossless_test_common.c \
+    loader/builtin/jpeg_lossless_test_common.h \
     loader/builtin/loader_builtin_gif_test_common.c \
     loader/builtin/loader_builtin_gif_test_common.h \
     loader/builtin/loader_builtin_tga_test_common.c \
@@ -803,6 +814,15 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0154_loader_builtin_psb_layer_info_u64max_reject.c \
     loader/builtin/0155_loader_builtin_allocator_failure_matrix.c \
     loader/builtin/0156_loader_builtin_callback_status_matrix.c \
+    loader/builtin/0157_loader_builtin_png_cgbi_numeric.c \
+    loader/builtin/0158_loader_builtin_psd_blend_modes_numeric.c \
+    loader/builtin/0159_loader_builtin_psd_clipping_digest.c \
+    loader/builtin/0160_loader_builtin_psd_mask_digest.c \
+    loader/builtin/0161_loader_builtin_psd_effect_digest.c \
+    loader/builtin/0162_loader_builtin_apng_cancel_boundaries.c \
+    loader/builtin/0163_loader_builtin_webp_cancel_boundaries.c \
+    loader/builtin/0164_loader_builtin_jpeg_lossless_predictors_numeric.c \
+    loader/builtin/0165_loader_builtin_jpeg_rgb_restart_numeric.c \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
     loader/libwebp/0013_loader_libwebp_pixelformat.c \
