@@ -123,6 +123,10 @@ edge_capture_frame(sixel_frame_t *frame, void *data)
     probe->pixelformat[frame_index] = pixelformat;
     probe->colorspace[frame_index] = sixel_frame_get_colorspace(frame);
     probe->ncolors[frame_index] = ncolors;
+    probe->delay[frame_index] = sixel_frame_get_delay(frame);
+    probe->frame_no[frame_index] = sixel_frame_get_frame_no(frame);
+    probe->loop_no[frame_index] = sixel_frame_get_loop_no(frame);
+    probe->multiframe[frame_index] = sixel_frame_get_multiframe(frame);
     probe->transparent[frame_index] = sixel_frame_get_transparent(frame);
     ++probe->callback_count;
     if (width <= 0 || height <= 0 ||

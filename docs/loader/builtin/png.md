@@ -227,6 +227,7 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 | PNG-07 | Builtin's file-first default, explicit-first selection, and invalid-policy fallback determine competing background priority. | [tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t](../../../tests/loader/builtin/1497_loader_builtin_background_policy_png_priority.t) |
 | PNG-08 | The builtin non-indexed linear-background option agrees with its reference image, and CLI/suboption forms agree. | [tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t](../../../tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t) |
 | PNG-09 | The libpng component accepts APNG and can emit its static selection. | [tests/loader/libpng/0001_apng_libpng_static_option.t](../../../tests/loader/libpng/0001_apng_libpng_static_option.t) |
+| PNG-10 | APNG maps a zero delay denominator to 100 and emits exact delay, frame, loop, and multiframe metadata. | [tests/loader/builtin/1994_loader_builtin_apng_animation_metadata_numeric.t](../../../tests/loader/builtin/1994_loader_builtin_apng_animation_metadata_numeric.t) |
 
 ### Quality regression tests
 

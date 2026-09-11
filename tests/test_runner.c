@@ -503,6 +503,33 @@ int test_loader_0122_loader_builtin_tga_truncated_direct_reject(
 int test_loader_0123_loader_builtin_tga_rle_overrun_reject(
     int argc,
     char **argv);
+int test_loader_0124_loader_manager_open_plan(int argc, char **argv);
+int test_loader_0125_loader_manager_closed_plan(int argc, char **argv);
+int test_loader_0126_loader_manager_fallback_status(int argc, char **argv);
+int test_loader_0127_loader_builtin_gif_animation_metadata_numeric(
+    int argc,
+    char **argv);
+int test_loader_0128_loader_builtin_apng_animation_metadata_numeric(
+    int argc,
+    char **argv);
+int test_loader_0129_loader_builtin_webp_animation_metadata_numeric(
+    int argc,
+    char **argv);
+int test_loader_0130_loader_builtin_hdr_new_rle_zero_count_reject(
+    int argc,
+    char **argv);
+int test_loader_0131_loader_builtin_hdr_new_rle_overrun_reject(
+    int argc,
+    char **argv);
+int test_loader_0132_loader_builtin_hdr_new_rle_truncated_reject(
+    int argc,
+    char **argv);
+int test_loader_0133_loader_builtin_hdr_legacy_repeat_first_reject(
+    int argc,
+    char **argv);
+int test_loader_0134_loader_builtin_hdr_legacy_repeat_overrun_reject(
+    int argc,
+    char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -1026,6 +1053,28 @@ static test_entry_t const test_entries[] = {
       test_loader_0122_loader_builtin_tga_truncated_direct_reject },
     { "loader/0123_loader_builtin_tga_rle_overrun_reject",
       test_loader_0123_loader_builtin_tga_rle_overrun_reject },
+    { "loader/0124_loader_manager_open_plan",
+      test_loader_0124_loader_manager_open_plan },
+    { "loader/0125_loader_manager_closed_plan",
+      test_loader_0125_loader_manager_closed_plan },
+    { "loader/0126_loader_manager_fallback_status",
+      test_loader_0126_loader_manager_fallback_status },
+    { "loader/0127_loader_builtin_gif_animation_metadata_numeric",
+      test_loader_0127_loader_builtin_gif_animation_metadata_numeric },
+    { "loader/0128_loader_builtin_apng_animation_metadata_numeric",
+      test_loader_0128_loader_builtin_apng_animation_metadata_numeric },
+    { "loader/0129_loader_builtin_webp_animation_metadata_numeric",
+      test_loader_0129_loader_builtin_webp_animation_metadata_numeric },
+    { "loader/0130_loader_builtin_hdr_new_rle_zero_count_reject",
+      test_loader_0130_loader_builtin_hdr_new_rle_zero_count_reject },
+    { "loader/0131_loader_builtin_hdr_new_rle_overrun_reject",
+      test_loader_0131_loader_builtin_hdr_new_rle_overrun_reject },
+    { "loader/0132_loader_builtin_hdr_new_rle_truncated_reject",
+      test_loader_0132_loader_builtin_hdr_new_rle_truncated_reject },
+    { "loader/0133_loader_builtin_hdr_legacy_repeat_first_reject",
+      test_loader_0133_loader_builtin_hdr_legacy_repeat_first_reject },
+    { "loader/0134_loader_builtin_hdr_legacy_repeat_overrun_reject",
+      test_loader_0134_loader_builtin_hdr_legacy_repeat_overrun_reject },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",

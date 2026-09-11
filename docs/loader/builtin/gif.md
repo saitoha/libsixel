@@ -118,6 +118,7 @@ The rows below are pipeline landmarks rather than the complete suite. The [GIF c
 | GIF-09 | Comment, Plain Text, and unknown Application extension sub-blocks preserve the following image boundary. | [tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t](../../../tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t) |
 | GIF-10 | Disposal method 2 clears the previous dirty rectangle before the next frame is composed. | [tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t](../../../tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t) |
 | GIF-11 | Literal LZW input remains exact while the dictionary crosses each code-width boundary through 12 bits. | [tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t](../../../tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t) |
+| GIF-12 | Emitted frames preserve exact GCE delays and report the expected frame, loop, and multiframe metadata. | [tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t](../../../tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t) |
 
 ### Quality regression tests
 

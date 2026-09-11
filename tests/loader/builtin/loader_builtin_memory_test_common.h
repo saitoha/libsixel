@@ -44,6 +44,10 @@ typedef struct edge_frame_probe {
     int pixelformat[EDGE_FRAME_CAPACITY];
     int colorspace[EDGE_FRAME_CAPACITY];
     int ncolors[EDGE_FRAME_CAPACITY];
+    int delay[EDGE_FRAME_CAPACITY];
+    int frame_no[EDGE_FRAME_CAPACITY];
+    int loop_no[EDGE_FRAME_CAPACITY];
+    int multiframe[EDGE_FRAME_CAPACITY];
     size_t rgb_size[EDGE_FRAME_CAPACITY];
     unsigned char rgb[EDGE_FRAME_CAPACITY][EDGE_RGB_CAPACITY];
     size_t palette_size[EDGE_FRAME_CAPACITY];

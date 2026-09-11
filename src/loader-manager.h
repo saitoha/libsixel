@@ -68,13 +68,16 @@ loader_manager_resolve_loader_suboptions(
     sixel_option_argument_list_resolution_t const *resolution,
     sixel_loader_suboptions_t *suboptions);
 
-size_t
+SIXEL_INTERNAL_API size_t
 loader_manager_build_plan_from_resolution(
     sixel_option_argument_list_resolution_t const *resolution,
     sixel_loader_entry_t const *entries,
     size_t entry_count,
     sixel_loader_entry_t const **plan,
     size_t plan_capacity);
+
+SIXEL_INTERNAL_API int
+loader_manager_status_allows_fallback(SIXELSTATUS status);
 
 SIXEL_INTERNAL_API size_t
 loader_manager_get_entries(sixel_loader_entry_t const **entries);

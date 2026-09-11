@@ -5734,6 +5734,21 @@ run_builtin_loader_test(void)
         return dispatch_result;
     }
 
+    /*
+     * The historical runner contains one baseline suite and many environment-
+     * selected cases.  Require the baseline caller to identify itself so a
+     * misspelled or lost selector cannot silently execute unrelated checks and
+     * report a false pass.
+     */
+    expected_cms_pixelformat_text = loader_test_getenv(
+        "SIXEL_TEST_BUILTIN_PIXELFORMAT_BASELINE");
+    if (expected_cms_pixelformat_text == NULL ||
+        strcmp(expected_cms_pixelformat_text, "1") != 0) {
+        fprintf(stderr,
+                "builtin loader test selector is missing or unknown\n");
+        return 1;
+    }
+
     result = run_loader_component_case(
         "builtin loader jpeg rgb8 cms off",
         "/tests/data/inputs/formats/snake-jpeg-8bit-rgb-seq444.jpg",

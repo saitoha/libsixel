@@ -776,8 +776,8 @@ sixel_loader_manager_format_worker_name(char *worker,
                                 backend_name);
 }
 
-static int
-sixel_loader_manager_status_allows_fallback(SIXELSTATUS status)
+int
+loader_manager_status_allows_fallback(SIXELSTATUS status)
 {
     switch (status) {
     case SIXEL_FALSE:
@@ -1040,7 +1040,7 @@ sixel_loader_manager_load_impl(
             return SIXEL_OK;
         }
         if (SIXEL_SUCCEEDED(status) ||
-                !sixel_loader_manager_status_allows_fallback(status)) {
+                !loader_manager_status_allows_fallback(status)) {
             return status;
         }
         /*

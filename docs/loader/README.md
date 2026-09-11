@@ -54,7 +54,7 @@ When a candidate is invoked, three outcomes matter:
 | Recognized mismatch or decoder-family error | Reject only this candidate and continue to the next component. |
 | Successful non-`SIXEL_OK` status, or terminal failure | Return immediately without trying another decoder. |
 
-The fallback set is explicit in `sixel_loader_manager_status_allows_fallback()`. It includes `SIXEL_FALSE`, `SIXEL_BAD_INPUT`, and the JPEG, PNG, WebP, TIFF, GDK, GD, stb, COM, and WIC decoder-family errors. Allocation failure, invalid arguments, cancellation, integer overflow, and unrelated runtime or logic failures are terminal. This distinction prevents a resource failure or caller cancellation from being misreported as “perhaps another decoder understands the file”.
+The fallback set is explicit in `loader_manager_status_allows_fallback()`. It includes `SIXEL_FALSE`, `SIXEL_BAD_INPUT`, and the JPEG, PNG, WebP, TIFF, GDK, GD, stb, COM, and WIC decoder-family errors. Allocation failure, invalid arguments, cancellation, integer overflow, and unrelated runtime or logic failures are terminal. This distinction prevents a resource failure or caller cancellation from being misreported as “perhaps another decoder understands the file”.
 
 A longer chain can expose the same untrusted byte stream to more than one decoder. Closing a chain with `!` narrows that set, but does not sandbox, validate, or otherwise make the chosen backend a security boundary.
 
@@ -118,3 +118,19 @@ Cross-backend alpha and background behavior is defined by [Alpha Policy](alpha-p
 | Manager construction from the public loader helper | `sixel_helper_load_image_file` in [`loader.c`](../../src/loader.c) |
 | Component interface and frame callback | `loader_component` and `loader_manager` in [`6cells.idl`](../../include/6cells.idl), plus [`frame-private.h`](../../src/frame-private.h) |
 | Loader-order structural fuzzing | [`fuzz-loader-builtin-struct-loader-order-libfuzzer.c`](../../fuzz/fuzz-loader-builtin-struct-loader-order-libfuzzer.c) |
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract protected | Owning test |
+| --- | --- | --- |
+| LM-01 | Explicit loader entries retain first-occurrence order, duplicates are removed, explicitly selected non-default loaders remain eligible, and remaining default-enabled loaders append in registry order. | [tests/loader/unit/0012_loader_manager_open_plan.t](../../tests/loader/unit/0012_loader_manager_open_plan.t) |
+| LM-02 | A final `!` closes the plan after the deduplicated explicit entries and prevents automatic default-loader append. | [tests/loader/unit/0013_loader_manager_closed_plan.t](../../tests/loader/unit/0013_loader_manager_closed_plan.t) |
+| LM-03 | Only the documented mismatch and decoder-family statuses continue to another candidate; successful non-OK, allocation, argument, cancellation, and overflow statuses remain terminal. | [tests/loader/unit/0014_loader_manager_fallback_status.t](../../tests/loader/unit/0014_loader_manager_fallback_status.t) |
+
+### Coverage boundary
+
+The plan tests use a synthetic registry so compile-time loader availability cannot hide ordering behavior. Backend-specific integration tests still own real decoder recognition and fallback examples. The status test fixes the manager's classification table; it does not claim that every backend can emit every decoder-family status.
