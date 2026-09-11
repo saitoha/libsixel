@@ -538,6 +538,143 @@ cleanup:
     return result;
 }
 
+typedef struct edge_cancel_probe {
+    int *cancel_flag;
+    int callback_count;
+} edge_cancel_probe_t;
+
+static SIXELSTATUS
+edge_cancel_unexpected_frame(sixel_frame_t *frame, void *data)
+{
+    edge_cancel_probe_t *probe;
+
+    probe = (edge_cancel_probe_t *)data;
+    if (frame == NULL || probe == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    ++probe->callback_count;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+edge_cancel_after_first_frame(sixel_frame_t *frame, void *data)
+{
+    edge_cancel_probe_t *probe;
+
+    probe = (edge_cancel_probe_t *)data;
+    if (frame == NULL || probe == NULL || probe->cancel_flag == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    ++probe->callback_count;
+    *probe->cancel_flag = 1;
+    return SIXEL_OK;
+}
+
+int
+edge_expect_fixture_cancel_boundaries(char const *label,
+                                      char const *relative_path)
+{
+    SIXELSTATUS status;
+    sixel_loader_t *loader;
+    edge_cancel_probe_t probe;
+    char const *source_root;
+    char image_path[PATH_MAX];
+    char const loader_order[] = "builtin!";
+    int cancel_flag;
+    int loop_control;
+    int result;
+
+    status = SIXEL_FALSE;
+    loader = NULL;
+    probe.cancel_flag = NULL;
+    probe.callback_count = 0;
+    source_root = NULL;
+    cancel_flag = 1;
+    loop_control = SIXEL_LOOP_DISABLE;
+    result = 1;
+    if (label == NULL || relative_path == NULL) {
+        return 1;
+    }
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+    if (build_image_path(source_root,
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build fixture path\n", label);
+        return 1;
+    }
+
+    status = sixel_loader_new(&loader, NULL);
+    if (SIXEL_FAILED(status)) {
+        return 1;
+    }
+    probe.cancel_flag = &cancel_flag;
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOADER_ORDER,
+                                 loader_order);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                 &loop_control);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CONTEXT,
+                                 &probe);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CANCEL_FLAG,
+                                 &cancel_flag);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_load_file(loader,
+                                    image_path,
+                                    edge_cancel_unexpected_frame);
+    if (status != SIXEL_INTERRUPTED || probe.callback_count != 0) {
+        fprintf(stderr,
+                "%s: pre-frame cancel status=%d callbacks=%d\n",
+                label,
+                (int)status,
+                probe.callback_count);
+        goto cleanup;
+    }
+
+    cancel_flag = 0;
+    probe.callback_count = 0;
+    status = sixel_loader_load_file(loader,
+                                    image_path,
+                                    edge_cancel_after_first_frame);
+    if (status != SIXEL_INTERRUPTED || probe.callback_count != 1) {
+        fprintf(stderr,
+                "%s: post-frame cancel status=%d callbacks=%d\n",
+                label,
+                (int)status,
+                probe.callback_count);
+        goto cleanup;
+    }
+    result = 0;
+
+cleanup:
+    sixel_loader_unref(loader);
+    return result;
+}
+
 int
 edge_expect_rgb(char const *label,
                 unsigned char const *buffer,

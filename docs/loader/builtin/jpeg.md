@@ -123,6 +123,8 @@ The rows below are pipeline landmarks rather than the complete suite. The [JPEG 
 | JPG-09 | High-precision lossless samples immediately around a restart boundary remain fixed. | [tests/loader/builtin/2008_loader_builtin_jpeg_gray16_restart_numeric.t](../../../tests/loader/builtin/2008_loader_builtin_jpeg_gray16_restart_numeric.t) |
 | JPG-10 | A sequential YCbCr 4:4:4 stream produces the fixed complete RGB buffer. | [tests/loader/builtin/2009_loader_builtin_jpeg_ycbcr444_digest.t](../../../tests/loader/builtin/2009_loader_builtin_jpeg_ycbcr444_digest.t) |
 | JPG-11 | A sequential Adobe CMYK stream produces the fixed complete RGB buffer independently of YCCK coverage. | [tests/loader/builtin/2010_loader_builtin_jpeg_cmyk8_digest.t](../../../tests/loader/builtin/2010_loader_builtin_jpeg_cmyk8_digest.t) |
+| JPG-12 | Minimal in-memory lossless streams fix predictors 1 through 7 and point-transform reconstruction at exact float samples. | [tests/loader/builtin/2030_loader_builtin_jpeg_lossless_predictors_numeric.t](../../../tests/loader/builtin/2030_loader_builtin_jpeg_lossless_predictors_numeric.t) |
+| JPG-13 | A three-component lossless stream fixes independent predictor resets across two restart markers. | [tests/loader/builtin/2031_loader_builtin_jpeg_rgb_restart_numeric.t](../../../tests/loader/builtin/2031_loader_builtin_jpeg_rgb_restart_numeric.t) |
 
 ### Quality regression tests
 
@@ -139,4 +141,4 @@ The rows below are pipeline landmarks rather than the complete suite. The [JPEG 
 | JPG-02 | Arithmetic-coded JPEG is classified as unsupported and rejected before entropy decode. | [tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t](../../../tests/loader/builtin/0131_loader_builtin_rejects_arithmetic_jpeg.t) |
 | JPG-90 | A corrupt JPEG stream fails the builtin decoder rather than yielding a partial frame. | [tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t](../../../tests/loader/builtin/0127_loader_builtin_rejects_corrupt_jpeg.t) |
 
-Coverage audit note: direct owners now cover sequential RGB bytes, progressive 4:2:0 output, sub-eight-bit Gray16 values, samples around one lossless restart boundary, YCbCr 4:4:4, CMYK, YCCK, builtin ICC samples, orientation, and two failure classes. These representatives still do not establish every sampling-factor combination, progressive scan script, restart interval/MCU placement, or the full Gray/RGB/YCbCr/CMYK/YCCK × precision matrix.
+Coverage audit note: direct owners now cover sequential RGB bytes, progressive 4:2:0 output, sub-eight-bit Gray16 values, all seven lossless predictors with a point transform, Gray and RGB restart boundaries, YCbCr 4:4:4, CMYK, YCCK, builtin ICC samples, orientation, and two failure classes. These representatives still do not establish every sampling-factor combination, progressive scan script, restart interval/MCU placement, point transform, or the full Gray/RGB/YCbCr/CMYK/YCCK × precision matrix.

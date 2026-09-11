@@ -637,6 +637,33 @@ int test_loader_0155_loader_builtin_allocator_failure_matrix(
 int test_loader_0156_loader_builtin_callback_status_matrix(
     int argc,
     char **argv);
+int test_loader_0157_loader_builtin_png_cgbi_numeric(
+    int argc,
+    char **argv);
+int test_loader_0158_loader_builtin_psd_blend_modes_numeric(
+    int argc,
+    char **argv);
+int test_loader_0159_loader_builtin_psd_clipping_digest(
+    int argc,
+    char **argv);
+int test_loader_0160_loader_builtin_psd_mask_digest(
+    int argc,
+    char **argv);
+int test_loader_0161_loader_builtin_psd_effect_digest(
+    int argc,
+    char **argv);
+int test_loader_0162_loader_builtin_apng_cancel_boundaries(
+    int argc,
+    char **argv);
+int test_loader_0163_loader_builtin_webp_cancel_boundaries(
+    int argc,
+    char **argv);
+int test_loader_0164_loader_builtin_jpeg_lossless_predictors_numeric(
+    int argc,
+    char **argv);
+int test_loader_0165_loader_builtin_jpeg_rgb_restart_numeric(
+    int argc,
+    char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -1307,6 +1334,24 @@ static test_entry_t const test_entries[] = {
       test_loader_0155_loader_builtin_allocator_failure_matrix },
     { "loader/0156_loader_builtin_callback_status_matrix",
       test_loader_0156_loader_builtin_callback_status_matrix },
+    { "loader/0157_loader_builtin_png_cgbi_numeric",
+      test_loader_0157_loader_builtin_png_cgbi_numeric },
+    { "loader/0158_loader_builtin_psd_blend_modes_numeric",
+      test_loader_0158_loader_builtin_psd_blend_modes_numeric },
+    { "loader/0159_loader_builtin_psd_clipping_digest",
+      test_loader_0159_loader_builtin_psd_clipping_digest },
+    { "loader/0160_loader_builtin_psd_mask_digest",
+      test_loader_0160_loader_builtin_psd_mask_digest },
+    { "loader/0161_loader_builtin_psd_effect_digest",
+      test_loader_0161_loader_builtin_psd_effect_digest },
+    { "loader/0162_loader_builtin_apng_cancel_boundaries",
+      test_loader_0162_loader_builtin_apng_cancel_boundaries },
+    { "loader/0163_loader_builtin_webp_cancel_boundaries",
+      test_loader_0163_loader_builtin_webp_cancel_boundaries },
+    { "loader/0164_loader_builtin_jpeg_lossless_predictors_numeric",
+      test_loader_0164_loader_builtin_jpeg_lossless_predictors_numeric },
+    { "loader/0165_loader_builtin_jpeg_rgb_restart_numeric",
+      test_loader_0165_loader_builtin_jpeg_rgb_restart_numeric },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
