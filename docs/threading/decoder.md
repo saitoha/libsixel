@@ -65,7 +65,7 @@ still blocked, leaving the serial fallback image untouched.
 
 ## Why a PNG phase appears
 
-All checked-in decoder measurements invoke `sixel2png`. The command first uses
+The threading timelines in this directory invoke `sixel2png`. The command first uses
 libsixel to decode the SIXEL stream and then serializes the returned raster as
 a PNG file. Its timeline therefore contains a downstream `png/io` interval in
 addition to the decoder interval. PNG wall time is retained to make the CLI
@@ -82,6 +82,8 @@ worker budget. Scan is shown in light blue and paint in dark blue.
 
 *Figure: Full HD decoding measured through `sixel2png`; the final PNG interval
 is CLI output serialization after libsixel decoding.*
+
+The [OR-mode scaling study](../functionality/or-mode/scaling.md) additionally measures in-process indexed and RGBA decoder calls. Those API measurements exclude PNG serialization entirely and are reported separately from complete `sixel2png` timings.
 
 ## Worker-budget scaling
 

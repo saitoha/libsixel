@@ -78,6 +78,8 @@ Fewer candidate planes can reduce output size, especially when many palette colo
 
 Compare stream byte counts and decoded images using the same source, loader, palette, dithering, geometry, encode policy, and thread budget. Distinguish complete conversion time from body serialization and terminal rendering. The measured comparison below follows the [quality measurement policy](../quality/measurement-policy.md). Terminal rendering and transport latency remain outside its scope.
 
+For color-count and thread-count curves, plus indexed/RGBA decoder timing, see the [scaling and decoding study](or-mode/scaling.md).
+
 ## Measured comparison
 
 ### Historical comparison and the baseline

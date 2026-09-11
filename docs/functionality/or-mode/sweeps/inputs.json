@@ -1,0 +1,100 @@
+[
+  {
+    "name": "snake",
+    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/snake.png",
+    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/snake.png",
+    "source_sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+    "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+    "dimensions": [
+      600,
+      450
+    ]
+  },
+  {
+    "name": "egret",
+    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/egret.jpg",
+    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/egret.jpg",
+    "source_sha256": "b54d3d2ebdf8bd63ebd0bd39bc77fd69511e6306ba3eb2206213dca27a984faa",
+    "sha256": "b54d3d2ebdf8bd63ebd0bd39bc77fd69511e6306ba3eb2206213dca27a984faa",
+    "dimensions": [
+      600,
+      450
+    ]
+  },
+  {
+    "name": "autumn-resized",
+    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/inputs/autumn-resized.png",
+    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/autumn.png",
+    "source_sha256": "05ae28a9b564fdb7aa2fa0affd6693fcc236f6d04b5d4ca2e6cf36319b12ebbc",
+    "sha256": "6a2cf06538dbf892f0aadb974f68edc113159ee6c510e74fcff42c6cada1864d",
+    "dimensions": [
+      800,
+      402
+    ]
+  },
+  {
+    "name": "fisheye-resized",
+    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/inputs/fisheye-resized.png",
+    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/fisheye.png",
+    "source_sha256": "e93a81b0d2a6c5ffdac9cdb544ce7068543914a9892d22de26aa5134d056e789",
+    "sha256": "b02ee2cb26cf4ff7b9c8f801eaa0ed8a0ee6ff45718e52933dd46c782b116b5d",
+    "dimensions": [
+      714,
+      600
+    ]
+  },
+  {
+    "name": "vimperator3",
+    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/vimperator3.png",
+    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/vimperator3.png",
+    "source_sha256": "469db2a68010522cde29cc1dce7617743cb5a293ad2874cde6744f5ebb23bd33",
+    "sha256": "469db2a68010522cde29cc1dce7617743cb5a293ad2874cde6744f5ebb23bd33",
+    "dimensions": [
+      582,
+      746
+    ]
+  },
+  {
+    "name": "map16",
+    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/map16.png",
+    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/map16.png",
+    "source_sha256": "8c6a00ac90661d98d846d400dde57c97691d2be0bdaae48b53f147041e0d925a",
+    "sha256": "8c6a00ac90661d98d846d400dde57c97691d2be0bdaae48b53f147041e0d925a",
+    "dimensions": [
+      598,
+      42
+    ]
+  },
+  {
+    "name": "smooth-gradient-600x450",
+    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/measurements/palette-pipeline/smooth-gradient-600x450.png",
+    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/measurements/palette-pipeline/smooth-gradient-600x450.png",
+    "source_sha256": "47de1f7508b0bb9d1ebdf6b0b2278cb5ccd1db1ad82ff2fbee365dab40510a93",
+    "sha256": "47de1f7508b0bb9d1ebdf6b0b2278cb5ccd1db1ad82ff2fbee365dab40510a93",
+    "dimensions": [
+      600,
+      450
+    ]
+  },
+  {
+    "name": "rare-colors-600x450",
+    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/measurements/palette-pipeline/rare-colors-600x450.png",
+    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/measurements/palette-pipeline/rare-colors-600x450.png",
+    "source_sha256": "93f0f2284086e1db61d5d2d702b1e67a5d73063ce63c5df726dd5f2bf22ab5c7",
+    "sha256": "93f0f2284086e1db61d5d2d702b1e67a5d73063ce63c5df726dd5f2bf22ab5c7",
+    "dimensions": [
+      600,
+      450
+    ]
+  },
+  {
+    "name": "snake-fullhd",
+    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/inputs/snake-fullhd.png",
+    "sha256": "df3018c1d364eb851d91d66470b6edd9aa589d53b6b1a7ca5436d0531286db31",
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "preprocess": "RGB conversion and Lanczos resize to exactly 1920x1080 before timing"
+  }
+]
