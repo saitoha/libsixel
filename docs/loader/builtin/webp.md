@@ -147,6 +147,7 @@ The rows below are pipeline landmarks rather than the complete suite. The [WebP 
 | WBP-04 | A separate ALPH chunk yields the fixed VP8 RGB plane and exact transparency mask without changing RGB bytes. | [tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t](../../../tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t) |
 | WBP-05 | A two-frame lossy animation emits fixed complete RGB canvases after composition. | [tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t](../../../tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t) |
 | WBP-06 | XMP orientation and color metadata coexist and are applied in their documented roles. | [tests/loader/builtin/1847_loader_builtin_webp_static_xmp_orientation_and_cms_coexist_code.t](../../../tests/loader/builtin/1847_loader_builtin_webp_static_xmp_orientation_and_cms_coexist_code.t) |
+| WBP-07 | ANMF millisecond duration is converted to centiseconds while emitted frames retain exact frame, loop, and multiframe metadata. | [tests/loader/builtin/1995_loader_builtin_webp_animation_metadata_numeric.t](../../../tests/loader/builtin/1995_loader_builtin_webp_animation_metadata_numeric.t) |
 
 ### Quality regression tests
 

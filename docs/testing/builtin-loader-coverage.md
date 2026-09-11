@@ -12,19 +12,19 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 
 | Area | Tests | Direct values | Quality floor | Trace/status | Accept/reject | Robustness | Other/smoke |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| [Shared loader integration and policy](../loader/builtin.md) | 46 | 1 | 3 | 0 | 3 | 0 | 39 |
+| [Shared loader integration and policy](../loader/builtin.md) | 47 | 1 | 3 | 0 | 4 | 0 | 39 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
-| [GIF](../loader/builtin/gif.md) | 35 | 7 | 3 | 2 | 2 | 2 | 19 |
-| [PNG and APNG](../loader/builtin/png.md) | 106 | 2 | 59 | 0 | 11 | 0 | 34 |
+| [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
+| [PNG and APNG](../loader/builtin/png.md) | 107 | 3 | 59 | 0 | 11 | 0 | 34 |
 | [JPEG](../loader/builtin/jpeg.md) | 25 | 4 | 14 | 1 | 2 | 0 | 4 |
-| [Radiance HDR](../loader/builtin/hdr.md) | 261 | 219 | 37 | 1 | 0 | 0 | 4 |
+| [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
 | [PSD and PSB](../loader/builtin/psd.md) | 982 | 4 | 551 | 402 | 8 | 2 | 15 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
-| [WebP](../loader/builtin/webp.md) | 297 | 4 | 48 | 241 | 0 | 0 | 4 |
+| [WebP](../loader/builtin/webp.md) | 298 | 5 | 48 | 241 | 0 | 0 | 4 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 24 | 11 | 8 | 0 | 3 | 0 | 2 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **1972** | **421** | **724** | **651** | **43** | **4** | **129** |
+| **Total** | **1981** | **424** | **724** | **651** | **49** | **4** | **129** |
 
 ## Complete inventory
 
@@ -82,6 +82,7 @@ Primary implementation context: [Builtin Image Loader](../loader/builtin.md).
 | [tests/loader/builtin/1937_loader_builtin_indexed_background_policy_file_fallback.t](../../tests/loader/builtin/1937_loader_builtin_indexed_background_policy_file_fallback.t) | Verify indexed PNG bKGD fallback bypasses palette fast paths. | Other integration/smoke | Policy-linked: [`docs/loader/background-policy.md`](../loader/background-policy.md) |
 | [tests/loader/builtin/1938_loader_builtin_indexed_background_policy_file_fallback_without_keycolor.t](../../tests/loader/builtin/1938_loader_builtin_indexed_background_policy_file_fallback_without_keycolor.t) | Verify indexed PNG bKGD fallback when key-color mode is disabled. | Other integration/smoke | Policy-linked: [`docs/loader/background-policy.md`](../loader/background-policy.md) |
 | [tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t](../../tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t) | Verify GIF87a signature and pixels with a minimal in-memory stream. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/1992_loader_builtin_unknown_selector_reject.t](../../tests/loader/builtin/1992_loader_builtin_unknown_selector_reject.t) | Verify an unknown unified-runner selector cannot pass through the baseline. | Acceptance/rejection | Inventory only |
 
 ### Netpbm
 
@@ -167,6 +168,7 @@ Primary implementation context: [GIF builtin component](../loader/builtin/gif.md
 | [tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t](../../tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t) | Verify GIF LZW code-width growth through 12 bits with a minimal in-memory stream. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
 | [tests/loader/builtin/1971_loader_builtin_gif_disposal3_numeric.t](../../tests/loader/builtin/1971_loader_builtin_gif_disposal3_numeric.t) | Verify GIF disposal method 3 restores exact pre-frame pixels. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
 | [tests/loader/builtin/1972_loader_builtin_gif_local_palette_numeric.t](../../tests/loader/builtin/1972_loader_builtin_gif_local_palette_numeric.t) | Verify a GIF local table replaces global colors with exact pixels. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
+| [tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t](../../tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t) | Verify GIF delay, frame, loop, and multiframe metadata exactly. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
 
 ### PNG and APNG
 
@@ -280,6 +282,7 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t](../../tests/loader/builtin/1668_loader_builtin_png_orientation_toggle.t) | TAP test confirming builtin orientation toggle affects PNG eXIf decode. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/1962_loader_builtin_png_apng_dispose_previous_numeric.t](../../tests/loader/builtin/1962_loader_builtin_png_apng_dispose_previous_numeric.t) | Verify APNG PREVIOUS disposal with exact decoded-frame pixels. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/1977_loader_builtin_png_icc_numeric.t](../../tests/loader/builtin/1977_loader_builtin_png_icc_numeric.t) | Fix builtin-CMS output type and representative samples for a profiled PNG. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/1994_loader_builtin_apng_animation_metadata_numeric.t](../../tests/loader/builtin/1994_loader_builtin_apng_animation_metadata_numeric.t) | Verify APNG delay, frame, loop, and multiframe metadata exactly. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 
 ### JPEG
 
@@ -580,6 +583,11 @@ Primary implementation context: [Radiance HDR builtin component](../loader/built
 | [tests/loader/builtin/1973_loader_builtin_hdr_new_rle_numeric.t](../../tests/loader/builtin/1973_loader_builtin_hdr_new_rle_numeric.t) | Verify modern component RLE emits exact linear float samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
 | [tests/loader/builtin/1974_loader_builtin_hdr_old_scanline_rle_numeric.t](../../tests/loader/builtin/1974_loader_builtin_hdr_old_scanline_rle_numeric.t) | Verify old scanline RLE emits exact linear float samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
 | [tests/loader/builtin/1975_loader_builtin_hdr_legacy_stream_numeric.t](../../tests/loader/builtin/1975_loader_builtin_hdr_legacy_stream_numeric.t) | Verify legacy stream RLE emits exact linear float samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/1996_loader_builtin_hdr_new_rle_zero_count_reject.t](../../tests/loader/builtin/1996_loader_builtin_hdr_new_rle_zero_count_reject.t) | Verify a zero-length component-RLE packet is rejected. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/1997_loader_builtin_hdr_new_rle_overrun_reject.t](../../tests/loader/builtin/1997_loader_builtin_hdr_new_rle_overrun_reject.t) | Verify a component-RLE run cannot exceed the scanline. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/1998_loader_builtin_hdr_new_rle_truncated_reject.t](../../tests/loader/builtin/1998_loader_builtin_hdr_new_rle_truncated_reject.t) | Verify a truncated component-RLE stream is rejected. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/1999_loader_builtin_hdr_legacy_repeat_first_reject.t](../../tests/loader/builtin/1999_loader_builtin_hdr_legacy_repeat_first_reject.t) | Verify legacy RLE cannot repeat before a source pixel exists. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
+| [tests/loader/builtin/2000_loader_builtin_hdr_legacy_repeat_overrun_reject.t](../../tests/loader/builtin/2000_loader_builtin_hdr_legacy_repeat_overrun_reject.t) | Verify legacy RLE cannot repeat beyond the raster. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/hdr.md`](../loader/builtin/hdr.md) |
 
 ### PSD and PSB
 
@@ -2005,6 +2013,7 @@ Primary implementation context: [WebP builtin component](../loader/builtin/webp.
 | [tests/loader/builtin/1980_loader_builtin_webp_vp8_digest.t](../../tests/loader/builtin/1980_loader_builtin_webp_vp8_digest.t) | Fix the byte-exact output of the lossy VP8 decoder. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 | [tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t](../../tests/loader/builtin/1981_loader_builtin_webp_lossy_animation_digest.t) | Fix exact composited frames for lossy WebP animation. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 | [tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t](../../tests/loader/builtin/1982_loader_builtin_webp_vp8_alpha_numeric.t) | Fix VP8+ALPH RGB bytes and the separate transparency mask. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
+| [tests/loader/builtin/1995_loader_builtin_webp_animation_metadata_numeric.t](../../tests/loader/builtin/1995_loader_builtin_webp_animation_metadata_numeric.t) | Verify WebP delay, frame, loop, and multiframe metadata exactly. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/webp.md`](../loader/builtin/webp.md) |
 
 ### SIXEL
 

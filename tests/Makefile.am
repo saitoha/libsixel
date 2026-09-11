@@ -438,6 +438,17 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0121_LOADER_BUILTIN_PIC_ELEVENTH_PACKET_REJECT \
     -DBUILD_TEST_0122_LOADER_BUILTIN_TGA_TRUNCATED_DIRECT_REJECT \
     -DBUILD_TEST_0123_LOADER_BUILTIN_TGA_RLE_OVERRUN_REJECT \
+    -DBUILD_TEST_0124_LOADER_MANAGER_OPEN_PLAN \
+    -DBUILD_TEST_0125_LOADER_MANAGER_CLOSED_PLAN \
+    -DBUILD_TEST_0126_LOADER_MANAGER_FALLBACK_STATUS \
+    -DBUILD_TEST_0127_LOADER_BUILTIN_GIF_ANIMATION_METADATA_NUMERIC \
+    -DBUILD_TEST_0128_LOADER_BUILTIN_APNG_ANIMATION_METADATA_NUMERIC \
+    -DBUILD_TEST_0129_LOADER_BUILTIN_WEBP_ANIMATION_METADATA_NUMERIC \
+    -DBUILD_TEST_0130_LOADER_BUILTIN_HDR_NEW_RLE_ZERO_COUNT_REJECT \
+    -DBUILD_TEST_0131_LOADER_BUILTIN_HDR_NEW_RLE_OVERRUN_REJECT \
+    -DBUILD_TEST_0132_LOADER_BUILTIN_HDR_NEW_RLE_TRUNCATED_REJECT \
+    -DBUILD_TEST_0133_LOADER_BUILTIN_HDR_LEGACY_REPEAT_FIRST_REJECT \
+    -DBUILD_TEST_0134_LOADER_BUILTIN_HDR_LEGACY_REPEAT_OVERRUN_REJECT \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -652,6 +663,17 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0121_loader_builtin_pic_eleventh_packet_reject.c \
     loader/builtin/0122_loader_builtin_tga_truncated_direct_reject.c \
     loader/builtin/0123_loader_builtin_tga_rle_overrun_reject.c \
+    loader/0124_loader_manager_open_plan.c \
+    loader/0125_loader_manager_closed_plan.c \
+    loader/0126_loader_manager_fallback_status.c \
+    loader/builtin/0127_loader_builtin_gif_animation_metadata_numeric.c \
+    loader/builtin/0128_loader_builtin_apng_animation_metadata_numeric.c \
+    loader/builtin/0129_loader_builtin_webp_animation_metadata_numeric.c \
+    loader/builtin/0130_loader_builtin_hdr_new_rle_zero_count_reject.c \
+    loader/builtin/0131_loader_builtin_hdr_new_rle_overrun_reject.c \
+    loader/builtin/0132_loader_builtin_hdr_new_rle_truncated_reject.c \
+    loader/builtin/0133_loader_builtin_hdr_legacy_repeat_first_reject.c \
+    loader/builtin/0134_loader_builtin_hdr_legacy_repeat_overrun_reject.c \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
     loader/libwebp/0013_loader_libwebp_pixelformat.c \

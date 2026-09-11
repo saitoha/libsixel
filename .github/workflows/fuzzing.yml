@@ -317,7 +317,7 @@ jobs:
       fail-fast: false
       matrix:
         buildtool: [autotools, meson]
-        target: [png, gif, jpeg, pnm, sixel, hdr, psd, pic, bmp, webp]
+        target: [png, gif, jpeg, pnm, sixel, hdr, psd, pic, bmp, tga, webp]
     env:
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}

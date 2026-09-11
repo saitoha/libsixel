@@ -30,6 +30,9 @@ void edge_gif_local_image(edge_writer_t *writer,
                           size_t pixel_count);
 void edge_gif_graphic_control(edge_writer_t *writer,
                               unsigned int disposal);
+void edge_gif_graphic_control_delay(edge_writer_t *writer,
+                                    unsigned int disposal,
+                                    unsigned int delay);
 
 #endif
 

@@ -46,6 +46,7 @@ typedef enum fuzz_builtin_force_format {
     FUZZ_FORCE_FORMAT_PSD,
     FUZZ_FORCE_FORMAT_PIC,
     FUZZ_FORCE_FORMAT_BMP,
+    FUZZ_FORCE_FORMAT_TGA,
     FUZZ_FORCE_FORMAT_WEBP
 } fuzz_builtin_force_format_t;
 
@@ -86,6 +87,9 @@ fuzz_parse_force_format(char const *value)
     }
     if (strcmp(value, "bmp") == 0) {
         return FUZZ_FORCE_FORMAT_BMP;
+    }
+    if (strcmp(value, "tga") == 0) {
+        return FUZZ_FORCE_FORMAT_TGA;
     }
     if (strcmp(value, "webp") == 0) {
         return FUZZ_FORCE_FORMAT_WEBP;
@@ -185,6 +189,38 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0x00u, 0x00u
     };
+    static unsigned char const tga_indexed_raw[25] = {
+        0x00u, 0x01u, 0x01u, 0x00u, 0x00u, 0x02u, 0x00u, 0x18u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x00u,
+        0x08u, 0x20u, 0x00u, 0x00u, 0x00u, 0xffu, 0xffu, 0xffu,
+        0x00u
+    };
+    static unsigned char const tga_truecolor_raw[21] = {
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x00u,
+        0x18u, 0x20u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const tga_grayscale_raw[19] = {
+        0x00u, 0x00u, 0x03u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x00u,
+        0x08u, 0x20u, 0x00u
+    };
+    static unsigned char const tga_indexed_rle[26] = {
+        0x00u, 0x01u, 0x09u, 0x00u, 0x00u, 0x02u, 0x00u, 0x18u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x00u,
+        0x08u, 0x20u, 0x00u, 0x00u, 0x00u, 0xffu, 0xffu, 0xffu,
+        0x80u, 0x00u
+    };
+    static unsigned char const tga_truecolor_rle[22] = {
+        0x00u, 0x00u, 0x0au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x00u,
+        0x18u, 0x20u, 0x80u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const tga_grayscale_rle[20] = {
+        0x00u, 0x00u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x00u,
+        0x08u, 0x20u, 0x80u, 0x00u
+    };
     static unsigned char const webp_vp8_header[30] = {
         'R', 'I', 'F', 'F', 0x16u, 0x00u, 0x00u, 0x00u,
         'W', 'E', 'B', 'P', 'V', 'P', '8', ' ',
@@ -277,6 +313,9 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         0x40u, 0x00u
     };
     size_t target_size;
+    unsigned int tga_variant;
+    unsigned char const *tga_template;
+    size_t tga_template_size;
     unsigned int webp_variant;
     unsigned int webp_alpha_control;
     unsigned char const *webp_header;
@@ -290,6 +329,40 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         *out_data = (unsigned char const *)(uintptr_t)data;
         *out_size = size;
         return 1;
+    }
+    tga_variant = 0u;
+    tga_template = tga_truecolor_raw;
+    tga_template_size = sizeof(tga_truecolor_raw);
+    if (g_force_format == FUZZ_FORCE_FORMAT_TGA) {
+        tga_variant = (size > 0u && data != NULL)
+                      ? (unsigned int)(data[0] % 6u)
+                      : 0u;
+        switch (tga_variant) {
+        case 0u:
+            tga_template = tga_indexed_raw;
+            tga_template_size = sizeof(tga_indexed_raw);
+            break;
+        case 1u:
+            tga_template = tga_truecolor_raw;
+            tga_template_size = sizeof(tga_truecolor_raw);
+            break;
+        case 2u:
+            tga_template = tga_grayscale_raw;
+            tga_template_size = sizeof(tga_grayscale_raw);
+            break;
+        case 3u:
+            tga_template = tga_indexed_rle;
+            tga_template_size = sizeof(tga_indexed_rle);
+            break;
+        case 4u:
+            tga_template = tga_truecolor_rle;
+            tga_template_size = sizeof(tga_truecolor_rle);
+            break;
+        default:
+            tga_template = tga_grayscale_rle;
+            tga_template_size = sizeof(tga_grayscale_rle);
+            break;
+        }
     }
     webp_variant = 0u;
     webp_alpha_control = 0xffu;
@@ -341,6 +414,11 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
     case FUZZ_FORCE_FORMAT_BMP:
         if (target_size < sizeof(bmp_header)) {
             target_size = sizeof(bmp_header);
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_TGA:
+        if (target_size < tga_template_size) {
+            target_size = tga_template_size;
         }
         break;
     case FUZZ_FORCE_FORMAT_WEBP:
@@ -432,6 +510,13 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
                          0u,
                          bmp_header,
                          sizeof(bmp_header));
+        break;
+    case FUZZ_FORCE_FORMAT_TGA:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         tga_template,
+                         tga_template_size);
         break;
     case FUZZ_FORCE_FORMAT_WEBP:
         webp_variant = (size > 0u && data != NULL)

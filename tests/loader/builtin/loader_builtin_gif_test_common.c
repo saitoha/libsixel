@@ -245,11 +245,19 @@ edge_gif_local_image(edge_writer_t *writer,
 void
 edge_gif_graphic_control(edge_writer_t *writer, unsigned int disposal)
 {
+    edge_gif_graphic_control_delay(writer, disposal, 0u);
+}
+
+void
+edge_gif_graphic_control_delay(edge_writer_t *writer,
+                               unsigned int disposal,
+                               unsigned int delay)
+{
     edge_put_u8(writer, 0x21u);
     edge_put_u8(writer, 0xf9u);
     edge_put_u8(writer, 4u);
     edge_put_u8(writer, (disposal & 7u) << 2);
-    edge_put_u16le(writer, 0u);
+    edge_put_u16le(writer, delay);
     edge_put_u8(writer, 0u);
     edge_put_u8(writer, 0u);
 }
