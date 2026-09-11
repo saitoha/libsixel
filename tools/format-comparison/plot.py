@@ -94,10 +94,10 @@ def main():
                     note = 'SIXEL: N-worker budget. WebP: parallel switch at N > 1. Pillow JPEG/GIF/PNG remain serial.'
                 else:
                     for codec in ['SIXEL default', 'GIF', 'PNG', 'JPEG 80', 'WebP 80', 'WebP lossless']:
-                        for mode in (['RGB','indexed'] if codec in ['SIXEL default','GIF'] else ['RGB']):
+                        for mode in (['indexed'] if codec in ['SIXEL default','GIF'] else ['RGB']):
                             data = sorted([r for r in rows if r['image'] == image and r['experiment'] == 'generation' and r['codec'] == codec and r['mode'] == mode], key=lambda r:r['generation'])
                             x = [r['generation'] for r in data]
-                            label = codec + (' / retained indices' if mode == 'indexed' else ' / RGB')
+                            label = codec
                             for ax, metric in zip(axes, ['ms_ssim','delta_e','encode_ms','decode_ms']):
                                 y = [statistics.median(r[metric]) if isinstance(r[metric],list) else r[metric] for r in data]
                                 ax.plot(x,y,label=label,color=color(codec),marker='x' if mode=='indexed' else MARKERS[codec.split()[0]],markersize=4,linestyle='--' if mode=='indexed' or codec.endswith('lossless') else '-')
@@ -107,8 +107,8 @@ def main():
                     for ax in axes[2:]:
                         ax.set_yscale('log')
                     fig.legend(*axes[0].get_legend_handles_labels(), loc='outside lower center', ncol=3 if not mobile else 2, fontsize=8)
-                    title = 'Repeated round trips: RGB versus retained indices'
-                    note = 'One thread; 7 samples per generation. Indexed paths decode to indices; RGB paths decode to RGB.'
+                    title = 'Repeated round trips with native decoded representations'
+                    note = 'One thread; 7 samples per generation. SIXEL/GIF retain indices and palette; other formats use RGB.'
                 for ax in axes:
                     ax.grid(axis='x', alpha=.15)
                     for axis in [ax.xaxis, ax.yaxis]:

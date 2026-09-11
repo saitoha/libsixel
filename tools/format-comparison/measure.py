@@ -3,7 +3,7 @@
 
 Requires Pillow, numpy, an isolated libsixel build and the codecs.c adapter.
 Input/output copies and wrapper allocation are included; disk I/O and LSQA
-are excluded. RGB generations never silently retain an indexed image.
+are excluded. Palette formats retain decoded indices between generations.
 """
 import argparse
 import datetime
@@ -237,7 +237,7 @@ def main():
                     save()
                 print(name, codec, 'scaling complete', flush=True)
             for codec in ['SIXEL default', 'GIF', 'PNG', 'JPEG 80', 'WebP 80', 'WebP lossless']:
-                modes = ['RGB', 'indexed'] if codec in ['SIXEL default', 'GIF'] else ['RGB']
+                modes = ['indexed'] if codec in ['SIXEL default', 'GIF'] else ['RGB']
                 for mode in modes:
                     current = image
                     first_rgb = None

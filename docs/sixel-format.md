@@ -39,14 +39,14 @@ The study measures configured budgets of 1, 2, 4 and 8. SIXEL receives an explic
   <img alt="Configured one, two, four and eight thread budgets: encoding time, fixed-stream RGB decoding time, encoder quality and output size, with serial codec and Boolean WebP controls identified." src="sixel-format-figures/comparison/photo-scaling-wide.svg">
 </picture>
 
-Palette formats have another useful property: a decoder can preserve the palette and indices so that a subsequent encoder bypasses color quantization and assignment. The eight-generation experiment compares that path with decoding to RGB and quantizing again. Palette reuse can reduce second-generation encoding time and preserve first-generation pixels; it does not remove the initial quantization error. Repeated RGB SIXEL encoding can still lose quality. PNG and lossless WebP preserve original RGB pixels from generation one, while lossy JPEG/WebP may accumulate changes or approach a stable point.
+Palette formats have another useful property: a decoder can preserve the palette and indices so that a subsequent encoder bypasses color quantization and assignment. The eight-generation experiment uses this native indexed path for SIXEL and GIF. Ordinary `img2sixel` SIXEL-to-SIXEL conversion also retains the palette and indices when no resizing or color override is requested. Palette reuse reduces second-generation encoding time and preserves first-generation pixels in the measured cases; it does not remove the initial quantization error. PNG and lossless WebP preserve original RGB pixels from generation one, while lossy JPEG/WebP may accumulate changes or approach a stable point.
 
 <picture>
   <source media="(max-width: 640px)" srcset="sixel-format-figures/comparison/photo-generations-mobile.svg">
-  <img alt="Eight encode/decode generations comparing quality relative to the original and separate encode/decode latency, including RGB and retained-index SIXEL/GIF workflows." src="sixel-format-figures/comparison/photo-generations-wide.svg">
+  <img alt="Eight encode/decode generations comparing quality relative to the original and separate encode/decode latency, using retained palettes and indices for SIXEL/GIF." src="sixel-format-figures/comparison/photo-generations-wide.svg">
 </picture>
 
-See [repeated encoding as a state contract](sixel-format/comparison.md#repeated-encoding-is-a-state-contract) for equality checks, retained-index versus RGB timing boundaries, the other image classes, raw samples and reproduction commands.
+See [repeated encoding as a state contract](sixel-format/comparison.md#repeated-encoding-is-a-state-contract) for equality checks, the SIXEL-to-SIXEL CLI path, timing boundaries, the other image classes, raw samples and reproduction commands.
 
 ## DCS envelope
 

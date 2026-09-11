@@ -62,7 +62,6 @@ The checked-in run used an Apple M3 Max (14 logical CPUs), macOS 26.5.1, Apple C
 | JPEG quality 80 / WebP quality 80 Base64 payload | 52,168 / 30,104 bytes; both are much smaller than SIXEL here |
 | Retained-index SIXEL encode, generation 1 → 2 | 57.82 → 9.86 ms; generations 2–8 preserve generation-one RGB exactly |
 | Retained-index GIF encode, generation 1 → 2 | 84.70 → 3.65 ms; generations 2–8 preserve generation-one RGB exactly |
-| Fresh RGB SIXEL, generation 1 → 8 | MS-SSIM 0.9885 → 0.9670; retained-index SIXEL remains 0.9885 |
 
 SIXEL's eight-budget photo decode is faster than this RGB PNG decode (about 4.40 ms), but it is slower than this JPEG, GIF and lossy WebP decode. On the diagram, eight-budget SIXEL encoding is about 2.52 ms versus lossy WebP quality 80 at 12.54 ms, while PNG and JPEG remain faster. These are useful examples of workload-dependent tradeoffs, not a Huffman-versus-RLE law or a matched-quality victory.
 
@@ -84,15 +83,23 @@ The timing points compare all sampled codec configurations; the quality plot sho
 
 ## Repeated encoding is a state contract
 
-The **RGB** path fully decodes each generation, discards format-specific state, and encodes those RGB pixels again. The **retained indices** path decodes GIF/SIXEL into its index plane and palette and supplies that representation to the next encoder. The first generation always starts with the same original RGB image. Palette construction and nearest-color assignment can then be bypassed from generation two onward. This is reuse of the decoded representation, not reuse of previously compressed bytes or a warmed encoder object; each SIXEL encode creates a fresh encoder.
+The generation experiment decodes GIF/SIXEL into its index plane and palette and supplies that representation to the next encoder. JPEG, PNG and WebP use their decoded RGB pixels. The first generation always starts with the same original RGB image. Palette construction and nearest-color assignment can then be bypassed from generation two onward for GIF/SIXEL. This is reuse of the decoded representation, not reuse of previously compressed bytes or a warmed encoder object; each SIXEL encode creates a fresh encoder.
 
-Preserving an unchanged index plane and exactly representable palette permits stable subsequent generations, but being a palette format does not guarantee that arbitrary RGB workflows will do this. Requantization, dithering, palette conversion and SIXEL's integer-percent RGB definitions can introduce further changes. The retained-index result is checked against generation one's RGB pixels, not merely assumed to be stable. First-generation quantization loss is still present. PNG and lossless WebP preserve the original RGB pixels from the first generation without needing a palette; indexed PNG could also reuse palette state, although that mode is not measured here.
+This indexed path reflects ordinary `img2sixel` SIXEL-to-SIXEL conversion. The [encoder](../../src/encoder.c) enables palette retention for ordinary input without resizing or a color override, and the SIXEL loader in [loader-builtin.c](../../src/loader-builtin.c) returns PAL8 pixels with their palette when the requested palette capacity suffices. The command sequence is:
 
-Lossy JPEG/WebP can accumulate distortion, but the amount depends on the image and settings; a sequence can approach a stable point. It need not lose the same amount at every step. Conversely, RGB GIF can become stable when a decoder produces at most 256 exactly representable colors. A faster second encode therefore does not by itself prove a retained-palette optimization.
+```sh
+img2sixel --threads=1 -o generation1.six photo.png
+img2sixel --threads=1 -o generation2.six generation1.six
+img2sixel --threads=1 -o generation3.six generation2.six
+```
+
+A separate CLI verification using the recorded libsixel source build repeated this operation through generation eight for all three fixtures. Every generation's decoded RGB pixels matched generation one exactly. This verifies the actual file-loader/encoder path; the graphed timings remain the in-memory API measurements described above and do not include CLI startup or file I/O.
+
+The generation graphs therefore retain one native representation path per codec. SIXEL/GIF preserve first-generation pixels in all measured generations, including the initial quantization error. PNG and lossless WebP preserve the original RGB pixels from generation one without needing a palette; indexed PNG could also reuse palette state, although that mode is not measured here. Lossy JPEG/WebP can accumulate distortion, but the amount depends on the image and settings; a sequence can approach a stable point rather than losing the same amount at every step.
 
 <picture>
   <source media="(max-width: 640px)" srcset="../sixel-format-figures/comparison/photo-generations-mobile.svg">
-  <img alt="Eight photographic encode/decode generations: MS-SSIM and Delta E00 against the original, encoding latency, and decoding latency. Separate retained-index GIF/SIXEL curves distinguish palette reuse from fresh RGB input." src="../sixel-format-figures/comparison/photo-generations-wide.svg">
+  <img alt="Eight photographic encode/decode generations: MS-SSIM and Delta E00 against the original, encoding latency, and decoding latency. GIF/SIXEL retain their decoded palettes and indices between generations." src="../sixel-format-figures/comparison/photo-generations-wide.svg">
 </picture>
 
 Indexed decode times have a different output contract from RGB decode times and must not be ranked as interchangeable decoder performance. All generation quality measurements expand indices to RGB outside the timed region.
@@ -146,7 +153,7 @@ Install Python dependencies (`Pillow`, `numpy`, `matplotlib`) in a dedicated env
 PYTHON=/path/to/venv/bin/python tools/reproduce_format_comparison.sh
 ```
 
-The wrapper archives a committed revision into an isolated temporary source directory and builds it with `CFLAGS=-O3`. It never benchmarks the shared dirty worktree. Set `REVISION` to reproduce a particular recorded implementation. The metadata records the full source revision, compiler, CPU, runtime and codec versions, build configuration, adapter/library digests, script digests, and input PNG digests. Timing and output records include all seven samples, stream/pixel hashes, quality, native bytes, transport bytes and generation equality assertions. The source snapshot is kept in the temporary study directory for inspection; `STUDY_DIR` can select that location.
+The wrapper archives a committed revision into an isolated temporary source directory and builds it with `CFLAGS=-O3`. It never benchmarks the shared dirty worktree. Set `REVISION` to reproduce a particular recorded implementation. The saved records retain the original timing samples; selection metadata identifies the original archive and the omitted RGB-requantization controls. The metadata records the full source revision, compiler, CPU, runtime and codec versions, build configuration, adapter/library digests, script digests, and input PNG digests. Timing and output records include all seven samples, stream/pixel hashes, quality, native bytes, transport bytes and generation equality assertions. The source snapshot is kept in the temporary study directory for inspection; `STUDY_DIR` can select that location.
 
 To validate the saved data and regenerate figures without rerunning measurements:
 
