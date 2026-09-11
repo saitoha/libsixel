@@ -4,6 +4,49 @@
 
 The [img2sixel manual](../../converters/img2sixel.1) attributes the dialect to the NetBSD/x68k `ite` console and the `sayaka` client. This document describes the current libsixel implementation; it does not certify current versions of those or other receivers.
 
+## The idea, step by step
+
+Think of an image as a sheet of numbered squares, accompanied by a color chart. A square marked **5** means “use color 5 from the chart.” That number is a label, not a brightness or a mixture of colors. The chart is the **palette**, and the labels are **palette indices**. OR mode changes how those labels are sent after the image has been reduced to a palette.
+
+[arakiken's article](https://qiita.com/arakiken/items/26f6c67da5a9f9f907ac) explains the motivation through older computers whose display memory stores each bit of a color number in a separate layer. OR mode applies the same arrangement to SIXEL transmission. The example below uses a smaller, independently constructed image to walk through the current [libsixel encoder](../../src/encoder-core-encode.c).
+
+### Ordinary SIXEL: a stencil for each color
+
+Imagine painting through a stencil: its holes say which squares receive the currently selected color. Ordinary SIXEL sends that kind of pattern. It selects a palette color, marks the positions to paint, then selects another color and sends another pattern.
+
+SIXEL groups **six vertically adjacent pixels** into one data character. Within that group, a character can mark any combination of positions, but an ordinary painting operation uses just one selected color. If all six positions have different colors, they cannot all be painted by that one operation. If they share a color, a single character can mark all six.
+
+### OR mode: a stencil for each bit of the color number
+
+Instead of asking “which squares are color 5?”, the OR encoder asks “which squares have the 1-bit set?”, then repeats for the 2-bit, the 4-bit, and so on. Each resulting yes/no stencil is called a **bit plane**. These are layers of numbers, not translucent layers of colored paint.
+
+For an eight-entry palette numbered 0 through 7, three switches with values **1, 2, and 4** can represent every label. For example, 5 uses the 1 and 4 switches; 6 uses the 2 and 4 switches. Consider this single column of six pixels:
+
+| Pixel, top to bottom | Desired palette index | Plane 1 | Plane 2 | Plane 4 |
+| --- | ---: | :---: | :---: | :---: |
+| A | 1 | On | Off | Off |
+| B | 2 | Off | On | Off |
+| C | 3 | On | On | Off |
+| D | 4 | Off | Off | On |
+| E | 5 | On | Off | On |
+| F | 6 | Off | On | On |
+
+Read each plane column vertically. Plane 1 marks A, C, and E; plane 2 marks B, C, and F; plane 4 marks D, E, and F. Each is a six-position yes/no pattern that fits into one SIXEL data character. This simple example therefore needs **three plane-pattern characters**, compared with **six color-pattern characters** for straightforward ordinary painting. This counts only the pattern characters, not headers, palette definitions, selectors, or cursor movement; it is not a claim that a complete file becomes half as large.
+
+### The receiver puts the number back together
+
+Start each pixel's number at zero. When a plane marks that pixel, turn on the corresponding switch without turning off any switch already set. This is the **OR** operation that names the mode. For pixel E, receiving plane 1 gives 1, plane 2 leaves it unchanged, and plane 4 changes it to 5. The receiver then looks up palette entry 5 and displays that color.
+
+Because each plane represents a different switch, adding its value once gives the same result in this example. OR is more precise than ordinary addition: receiving the 1-bit twice still leaves it at 1, not 2. A zero in a plane means “do not add this bit,” not “erase this pixel.”
+
+The color chart has not changed, and reconstructing the same number selects exactly the same chart entry. This explains why the decomposition itself does not discard color information. It does not undo the color reduction that happened before encoding, and source transparency needs the separate treatment described [below](#palette-transparency-and-other-options).
+
+### Why this can help, and why it is not always smaller or faster
+
+A palette of 16 entries needs four bit planes; 256 entries need eight. In a busy, dithered image, one plane can describe positions belonging to many different colors together. In a flat-color area, ordinary SIXEL may already describe the pixels with very few operations. The arrangement of repeated patterns and the encoder's optimizations determine the actual byte count, so counting planes alone does not predict the saving.
+
+The display-memory arrangement described in arakiken's article also suggests a receiver that consumes these planes directly. A receiver that needs complete pixel colors must instead reconstruct the indices and look them up. Our [measurements](or-mode/scaling.md#photo-set-decoder-results) show why that distinction matters: smaller OR streams usually decoded more slowly in the measured libsixel CPU decoder. Use OR mode with a compatible receiver and evaluate size, encoding time, and decoding time separately.
+
 ## Usage and API
 
 OR mode is disabled by default. Enable it explicitly when producing a stream for a receiver that implements this dialect:
