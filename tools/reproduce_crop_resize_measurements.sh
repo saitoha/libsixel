@@ -27,6 +27,7 @@ source_state=clean
 case ${input_image} in
     "${TOP_SRCDIR}"/*) input_label=${input_image#"${TOP_SRCDIR}"/} ;;
 esac
+input_label=${CROP_RESIZE_INPUT_LABEL-${input_label}}
 
 "${GIT}" -C "${TOP_SRCDIR}" diff --quiet -- || source_state=dirty
 "${GIT}" -C "${TOP_SRCDIR}" diff --cached --quiet -- || source_state=dirty
