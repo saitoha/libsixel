@@ -20,6 +20,14 @@ LINK_RE = re.compile(
     r"(?P<prefix>!?\[[^\]\n]*\]\()"
     r"(?P<target><[^>\n]+>|[^)\s\n]+)"
 )
+HTML_MEDIA_TAG_RE = re.compile(r"<(?:img|source)\b[^>]*>", re.IGNORECASE)
+HTML_ASSET_ATTRIBUTE_RE = re.compile(
+    r"(?P<prefix>\b(?:src|srcset)\s*=\s*)"
+    r"(?P<quote>[\"'])"
+    r"(?P<value>.*?)"
+    r"(?P=quote)",
+    re.IGNORECASE,
+)
 FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
 LOGGER = logging.getLogger("mkdocs.plugins.libsixel")
 
@@ -327,6 +335,55 @@ def _rewrite_target(prefix: str, raw_target: str, source: Path) -> str:
     return rewritten
 
 
+def _rewrite_html_asset_target(target_text, source, page, files):
+    parsed = urlsplit(target_text)
+    if parsed.scheme or parsed.netloc or not parsed.path:
+        return target_text
+    target = (source.parent / unquote(parsed.path)).resolve()
+    if _docs_dir is None or not _is_relative_to(target, _docs_dir):
+        return target_text
+    source_uri = target.relative_to(_docs_dir).as_posix()
+    target_file = files.get_file_from_path(source_uri)
+    if target_file is None or not target.is_file():
+        return target_text
+    rewritten = target_file.url_relative_to(page.file)
+    if parsed.query:
+        rewritten += "?" + parsed.query
+    if parsed.fragment:
+        rewritten += "#" + parsed.fragment
+    return rewritten
+
+
+def _rewrite_srcset(value, source, page, files):
+    rewritten = []
+    for candidate in value.split(","):
+        leading = candidate[: len(candidate) - len(candidate.lstrip())]
+        trailing = candidate[len(candidate.rstrip()) :]
+        fields = candidate.strip().split(None, 1)
+        if not fields:
+            rewritten.append(candidate)
+            continue
+        target = _rewrite_html_asset_target(fields[0], source, page, files)
+        descriptor = " " + fields[1] if len(fields) == 2 else ""
+        rewritten.append(leading + target + descriptor + trailing)
+    return ",".join(rewritten)
+
+
+def _rewrite_html_media_tag(match, source, page, files):
+    def replace_attribute(attribute_match):
+        prefix = attribute_match.group("prefix")
+        quote_character = attribute_match.group("quote")
+        value = attribute_match.group("value")
+        attribute = prefix.split("=", 1)[0].strip().lower()
+        if attribute == "srcset":
+            value = _rewrite_srcset(value, source, page, files)
+        else:
+            value = _rewrite_html_asset_target(value, source, page, files)
+        return prefix + quote_character + value + quote_character
+
+    return HTML_ASSET_ATTRIBUTE_RE.sub(replace_attribute, match.group(0))
+
+
 def on_page_markdown(markdown, page, config, files):
     if _docs_dir is None:
         return markdown
@@ -342,6 +399,12 @@ def on_page_markdown(markdown, page, config, files):
                         match.group("target"),
                         source,
                     )
+                ),
+                line,
+            )
+            line = HTML_MEDIA_TAG_RE.sub(
+                lambda match: _rewrite_html_media_tag(
+                    match, source, page, files
                 ),
                 line,
             )
