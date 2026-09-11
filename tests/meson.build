@@ -978,6 +978,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-aborttrace-wine-skip',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-aborttrace-wine-skip.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-test-plan-single',
     [meson.current_source_dir() / '_static/sh/staticcheck-test-plan-single.sh',
       meson.project_source_root()],

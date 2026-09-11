@@ -120,6 +120,7 @@ Follow [Quality Measurement Policy](../quality/measurement-policy.md). In partic
 - Use harness-provided `TOP_SRCDIR`, `TOP_BUILDDIR`, `ARTIFACT_LOCAL_DIR`, executable paths, feature flags, and runtime prefix.
 - Do not assume GNU-only flags, `/proc`, a case-sensitive filesystem, executable suffixes, or Unix path separators unless the test is platform-specific.
 - Keep optional-feature detection explicit and early.
+- Aborttrace TAP tests that invoke the shared abort helper must emit a whole-file skip for both `wine` and `wine64` before the normal TAP plan and before invoking the helper. Wine can leave the combined test runner alive after an aborttrace policy probe, while the converter-level regression suite covers the policy under Wine without that helper path.
 - Avoid timing-sensitive sleeps. Prefer an observable readiness or completion condition.
 
 ## Registration
@@ -152,6 +153,7 @@ Each automated contract has a stable ID and an owning static check. The reciproc
 | TG-05 | C test-runner sources remain synchronized with amalgamation build defines. | [tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh](../../tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh) |
 | TG-06 | Enforced policy documents and their listed tests carry reciprocal repository-relative links, and every coverage row has an owning test. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
 | TG-07 | Shell TAP tests do not use `for` or `until` loops; heredoc payloads in other languages are excluded. | [tests/_static/sh/staticcheck-test-no-for-until.sh](../../tests/_static/sh/staticcheck-test-no-for-until.sh) |
+| TG-08 | Aborttrace TAP tests that invoke the shared abort helper retain early whole-file skips for both Wine runtime prefixes. | [tests/_static/sh/staticcheck-aborttrace-wine-skip.sh](../../tests/_static/sh/staticcheck-aborttrace-wine-skip.sh) |
 
 ### Coverage boundary
 

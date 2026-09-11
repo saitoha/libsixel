@@ -623,6 +623,10 @@ else
     run_case_skip "staticcheck-codespell" "codespell not found"
 fi
 
+run_case_tap "staticcheck-aborttrace-wine-skip" \
+    "$src_root/tests/_static/sh/staticcheck-aborttrace-wine-skip.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-plan-single" \
     "$src_root/tests/_static/sh/staticcheck-test-plan-single.sh" \
     "$src_root" || fail_and_exit $?
