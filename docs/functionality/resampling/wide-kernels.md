@@ -146,3 +146,18 @@ The recorded output sizes are consequently non-monotonic: the wider kernel does 
 The four figures transform the continuous finite functions stated above. They intentionally omit scale-dependent candidate positions, subpixel phase, image-edge clipping, per-output normalization, the second separable axis, numeric precision, SIMD rounding, and output clamping. Those omitted operations are exactly why a theoretically attractive curve cannot by itself select the best `--resampling` option.
 
 Use the [measured discrete stencils](../resampling.md#the-implemented-operator-is-discrete-and-phase-dependent), [frequency response](../resampling.md#frequency-response-and-alias-leakage), and [directional response](../resampling.md#directional-response-and-isotropy) to inspect the current C scaler rather than inferring its output from the window equation alone.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning tests |
+| --- | --- | --- |
+| WK-01 | `bicubic` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0021_resample_bicubic_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0021_resample_bicubic_downscale_80pct_lsqa.t), [tests/processing/geometry/0031_resample_bicubic_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0031_resample_bicubic_upscale_120pct_lsqa.t) |
+| WK-02 | `lanczos2` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0022_resample_lanczos2_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0022_resample_lanczos2_downscale_80pct_lsqa.t), [tests/processing/geometry/0032_resample_lanczos2_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0032_resample_lanczos2_upscale_120pct_lsqa.t) |
+| WK-03 | `lanczos3` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0023_resample_lanczos3_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0023_resample_lanczos3_downscale_80pct_lsqa.t), [tests/processing/geometry/0033_resample_lanczos3_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0033_resample_lanczos3_upscale_120pct_lsqa.t) |
+| WK-04 | `lanczos4` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0024_resample_lanczos4_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0024_resample_lanczos4_downscale_80pct_lsqa.t), [tests/processing/geometry/0034_resample_lanczos4_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0034_resample_lanczos4_upscale_120pct_lsqa.t) |
+
+### Coverage boundary
+
+These tests exercise CLI method selection and compare decoded SIXEL output with tracked reference images for one 80% reduction and one 120% enlargement. They do not prove the continuous equations point by point, every scale or phase, the theoretical transform plots, isotropy, or benchmark rankings; those boundaries remain covered by source inspection and the reproducible measurements linked above.
