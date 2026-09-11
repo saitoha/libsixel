@@ -100,6 +100,34 @@ python3 tools/plot_loader_cms_examples.py
 python3 tools/plot_loader_cms_examples.py --check
 ```
 
+## Why ship a builtin CMS despite the additional attack surface?
+
+Successful decoding does not prove correct color interpretation. Without an available CMS, a profiled image can still look plausible: its objects and detail remain recognizable, while its brightness or color balance is slightly wrong. A user can reasonably mistake that result for a correctly loaded image and attribute the difference to the source, quantizer, terminal, or quality metric. A silent interpretation error is therefore a practical correctness problem, even when it does not prevent opening the file.
+
+Little CMS cannot be assumed to be installed in every supported environment. Making it mandatory would turn a missing color-management dependency into an inability to build or use libsixel at all. That tradeoff is particularly costly on platforms with limited package availability and in cross-compilation or WebAssembly builds, where a usable host installation is not enough: dependencies also need compatible target binaries, headers, and build/link configuration. WebAssembly does not make Little CMS impossible to use; it makes an additional dependency something that the target build must provision and maintain. The project supports [Emscripten targets](../platform-support.md), and both [Autotools](../../configure.ac) and [Meson](../../meson.build) allow builds without lcms2.
+
+| Design choice | Benefit | Cost |
+| --- | --- | --- |
+| Require Little CMS | Ensure the external CMS dependency is present. | Exclude otherwise usable builds when that dependency cannot be provisioned; presence alone still does not guarantee every loader/profile combination is supported. |
+| Keep Little CMS optional without a builtin CMS | Avoid maintaining an additional in-project profile interpreter. | When no external CMS is available, lose that normalization path and risk plausible-looking, incorrectly interpreted images. |
+| Keep Little CMS optional and provide builtin CMS | Preserve build availability while retaining normalization for supported profiles without the external dependency. | Add profile-parsing and transform code, security exposure, maintenance, and a smaller compatibility envelope than Little CMS. |
+
+The builtin engine deliberately accepts the third tradeoff. It supplies a useful baseline of color interpretation across dependency-constrained builds; it is not a claim that a smaller CMS is inherently safer, or that it replaces Little CMS's broader support. ICC metadata is untrusted input, and adding an interpreter increases libsixel's attack surface. Bounds and size checks, malformed-profile tests, fuzzing, and continued maintenance are necessary costs of this choice, not proof that the implementation is free of vulnerabilities. See the support limits and defensive coverage below.
+
+This rationale also does not turn a successful load into a certification of color accuracy. Builtin CMS must be enabled to help, unsupported profiles remain possible, and fallback can still produce an image without applying the intended profile. The current default remains disabled. Documentation and reproducible measurements must distinguish the selected engine, the profiles it can interpret, and whether normalization actually occurred.
+
+## CMS in quality measurements
+
+`lsqa -# ENGINE` and `lsqa --cms-engine=ENGINE` select the process-wide loader CMS default for **both the reference and the target**, including a target read from standard input. Accepted engines are `none`, `auto`, `builtin`, `lcms2`, and `colorsync`; `off` and `disabled` alias `none`, `lcms` aliases `lcms2`, and `color-sync` aliases `colorsync`. Repeated selections use the last value. Omitting the option preserves existing loader defaults and environment settings; this addition does not enable CMS by default.
+
+An explicit option overrides `SIXEL_LOADER_CMS_ENGINE`, including assignments through `--env`, regardless of argument order. Loader-specific environment settings and `-L` suboptions retain their normal higher priority. Engine availability and fallback follow the same loader rules as `img2sixel`. Use matching settings in both programs when measuring profile-aware encoding:
+
+```sh
+img2sixel --cms-engine=builtin source.png | lsqa --cms-engine=builtin source.png -
+```
+
+Use `--cms-engine=none` in both commands when deliberately measuring the legacy interpretation. Record the selected engine and loader-specific overrides alongside the metric. CMS interprets source metadata during loading; `lsqa -W` and `-P` choose the comparison colorspace and precision after loading. Those comparison options cannot repair source values that were already interpreted incorrectly. SIXEL input has no embedded ICC profile to recover: its decoded palette is compared with the normalized reference.
+
 ## Choosing an engine
 
 Enable loader CMS when the source profile matters: `img2sixel --cms-engine=auto image.png`. CMS is disabled by default for participating loaders. For varied third-party ICC profiles, prefer a build with Little CMS (`lcms2`) and verify that the selected loader supplies the original source color model to it. Choose `builtin` when avoiding an external CMS dependency matters and the actual profile corpus has been validated against the supported subset below. Neither engine can repair an incorrect source profile or recover source channels already discarded by a decoder.
@@ -208,6 +236,14 @@ Compare decoded managed pixels against an independently prepared color-managed r
 | CMS-02 | Selected RGB, gray, and CMYK mAB/mBA paths are evaluated. | [tests/diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.t](../../tests/diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.t) |
 | CMS-03 | Builtin rendering-intent selection reaches the expected A2B slots, including relative/absolute slot sharing. | [tests/diagnostics/icc/0003_icc_builtin_a2b_intent_paths.t](../../tests/diagnostics/icc/0003_icc_builtin_a2b_intent_paths.t) |
 | CMS-04 | A builtin PNG with parametric ICC curves retains quality against its stored builtin reference. This is a regression check, not lcms2 parity. | [tests/loader/builtin/1199_loader_builtin_png_rgb_parametric_012_builtin_cms_lsqa.t](../../tests/loader/builtin/1199_loader_builtin_png_rgb_parametric_012_builtin_cms_lsqa.t) |
+| CMS-05 | Explicit CMS changes reference interpretation and matches component selection. | [tests/quality_gate/cms/0001_lsqa_cms_reference_selection.t](../../tests/quality_gate/cms/0001_lsqa_cms_reference_selection.t) |
+| CMS-06 | CMS also reaches the target read from standard input. | [tests/quality_gate/cms/0002_lsqa_cms_target_stdin.t](../../tests/quality_gate/cms/0002_lsqa_cms_target_stdin.t) |
+| CMS-07 | Explicit selection overrides a later global environment assignment. | [tests/quality_gate/cms/0003_lsqa_cms_cli_over_env.t](../../tests/quality_gate/cms/0003_lsqa_cms_cli_over_env.t) |
+| CMS-08 | Loader component selection overrides the global CMS option. | [tests/quality_gate/cms/0004_lsqa_cms_component_override.t](../../tests/quality_gate/cms/0004_lsqa_cms_component_override.t) |
+| CMS-09 | Invalid engines are rejected with an argument diagnostic. | [tests/quality_gate/cms/0005_lsqa_cms_invalid_engine.t](../../tests/quality_gate/cms/0005_lsqa_cms_invalid_engine.t) |
+| CMS-10 | Missing engines are rejected with an argument diagnostic. | [tests/quality_gate/cms/0006_lsqa_cms_missing_engine.t](../../tests/quality_gate/cms/0006_lsqa_cms_missing_engine.t) |
+| CMS-11 | Repeated selection uses the last value, including the off alias. | [tests/quality_gate/cms/0007_lsqa_cms_repeated_alias.t](../../tests/quality_gate/cms/0007_lsqa_cms_repeated_alias.t) |
+| CMS-12 | Omitting the option retains the environment-selected CMS default. | [tests/quality_gate/cms/0008_lsqa_cms_omitted_uses_env.t](../../tests/quality_gate/cms/0008_lsqa_cms_omitted_uses_env.t) |
 
 ### Defensive and malformed-input tests
 

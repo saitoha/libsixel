@@ -1540,6 +1540,22 @@ lsqa_parse_compare_colorspace(char const *argument,
                                       detail_size);
 }
 
+/* Values index canonical assignments applied after all --env options. */
+static sixel_option_choice_t const g_lsqa_cms_choices[] = {
+    { "none", 0 }, { "off", 0 }, { "disabled", 0 },
+    { "auto", 1 }, { "builtin", 2 },
+    { "lcms2", 3 }, { "lcms", 3 },
+    { "colorsync", 4 }, { "color-sync", 4 }
+};
+
+static char const *const g_lsqa_cms_assignments[] = {
+    "SIXEL_LOADER_CMS_ENGINE=none",
+    "SIXEL_LOADER_CMS_ENGINE=auto",
+    "SIXEL_LOADER_CMS_ENGINE=builtin",
+    "SIXEL_LOADER_CMS_ENGINE=lcms2",
+    "SIXEL_LOADER_CMS_ENGINE=colorsync"
+};
+
 static int
 lsqa_parse_compare_precision(char const *argument,
                              int *out_precision,
@@ -1970,6 +1986,16 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           as img2sixel -L).\n"
     },
     {
+        '#',
+        "cms-engine",
+        "-# ENGINE, --cms-engine=ENGINE\n"
+        "                           loader CMS for both inputs:\n"
+        "                           none/auto/builtin/lcms2/colorsync.\n"
+        "                           Overrides SIXEL_LOADER_CMS_ENGINE;\n"
+        "                           loader-specific settings take priority.\n"
+        "                           Omitted: retain loader defaults/env.\n"
+    },
+    {
         'B',
         "bgcolor",
         "-B BGCOLOR, --bgcolor=BGCOLOR\n"
@@ -2036,7 +2062,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "m:b:%:gW:P:L:B:d:S:e:Hh";
+static char const g_lsqa_optstring[] = "m:b:%:gW:P:L:#:B:d:S:e:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -2208,19 +2234,19 @@ print_usage(const char *prog)
 {
     fprintf(stderr,
             "Usage: %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
             "             [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "             <reference> [target]\n",
             prog);
     fprintf(stderr,
             "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
             "             [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "             <reference> < target\n",
             prog);
     fprintf(stderr,
             "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
             "             [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "             <reference> - < target\n",
             prog);
@@ -2246,6 +2272,9 @@ print_usage(const char *prog)
     fprintf(stderr,
             "  -L, --loaders LIST  loader order (img2sixel -L syntax)\n");
     fprintf(stderr,
+            "  -#, --cms-engine ENGINE\n"
+            "                        none/auto/builtin/lcms2/colorsync\n");
+    fprintf(stderr,
             "  -B, --bgcolor BGCOLOR\n");
     fprintf(stderr,
             "                        background color for alpha composition\n");
@@ -2269,15 +2298,15 @@ show_help(void)
      */
     fprintf(stdout,
             "Usage: lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
             "            [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "            <reference> [target]\n"
             "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
             "            [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "            <reference> < target\n"
             "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
             "            [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "            <reference> - < target\n"
             "\n"
@@ -2292,6 +2321,7 @@ show_help(void)
             "  LSQA_COMPARE_COLORSPACE=reference|gamma|linear|oklab|cielab|din99d\n"
             "  LSQA_COMPARE_PRECISION=reference|8bit|float32\n"
             "  LSQA_LOADERS=LIST\n"
+            "  SIXEL_LOADER_CMS_ENGINE=none|auto|builtin|lcms2|colorsync\n"
             "  LSQA_VERBOSE=0|1\n"
             "\n"
             "Exit codes:\n"
@@ -2583,6 +2613,7 @@ parse_args(int argc, char **argv, Options *opts)
     int scan_argc;
     int opt;
     int verbose_value;
+    int cms_choice;
     char detail_buffer[256];
 #if HAVE_GETOPT_LONG
     int long_opt;
@@ -2626,6 +2657,7 @@ parse_args(int argc, char **argv, Options *opts)
     scan_argc = 0;
     opt = 0;
     verbose_value = 0;
+    cms_choice = -1;
     detail_buffer[0] = '\0';
     verbose_env = NULL;
 #if HAVE_GETOPT_LONG
@@ -2653,6 +2685,7 @@ parse_args(int argc, char **argv, Options *opts)
             {"grayscale", no_argument, &long_opt, 'g'},
             {"compare-colorspace", required_argument, &long_opt, 'W'},
             {"compare-precision", required_argument, &long_opt, 'P'},
+            {"cms-engine", required_argument, &long_opt, '#'},
             {"loaders", required_argument, &long_opt, 'L'},
             {"bgcolor", required_argument, &long_opt, 'B'},
             {"dequantize", required_argument, &long_opt, 'd'},
@@ -2734,6 +2767,19 @@ parse_args(int argc, char **argv, Options *opts)
                 goto cleanup;
             }
             opts->compare_precision_specified = 1;
+            break;
+        case '#':
+            if (lsqa_parse_choice_argument(
+                    optarg, g_lsqa_cms_choices,
+                    sizeof(g_lsqa_cms_choices)
+                        / sizeof(g_lsqa_cms_choices[0]),
+                    "Expected none, auto, builtin, lcms2, or colorsync.",
+                    &cms_choice, detail_buffer,
+                    sizeof(detail_buffer)) != 0) {
+                lsqa_report_invalid_argument('#', optarg, detail_buffer);
+                parse_status = -1;
+                goto cleanup;
+            }
             break;
         case 'L':
             if (opts->loader_order != NULL) {
@@ -2901,6 +2947,16 @@ parse_args(int argc, char **argv, Options *opts)
     }
 
     if (lsqa_apply_env_overrides(opts) != 0) {
+        parse_status = -1;
+        goto cleanup;
+    }
+
+    /* Both image loads must see the same explicit process default. */
+    if (cms_choice >= 0
+            && cli_apply_env_assignment(g_lsqa_cms_assignments[cms_choice],
+                                        detail_buffer,
+                                        sizeof(detail_buffer)) != 0) {
+        lsqa_set_parse_error(detail_buffer);
         parse_status = -1;
         goto cleanup;
     }
