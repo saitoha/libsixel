@@ -9,8 +9,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_BUILTIN_EDGE_CASE=pic-mixed-raw128" \
-    "loader/0061_loader_builtin_gif_tga_pic_edges" || {
+    "loader/0091_loader_builtin_pic_mixed_rle_raw128_numeric" || {
     echo "not ok 1 - PIC mixed-RLE raw count 128 boundary"
     exit 0
 }

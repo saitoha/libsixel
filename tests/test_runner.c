@@ -277,7 +277,6 @@ int test_loader_0011_loader_gd_pixelformat(int argc, char **argv);
 int test_loader_0012_loader_libpng_pixelformat(int argc, char **argv);
 int test_loader_0013_loader_libjpeg_pixelformat(int argc, char **argv);
 int test_loader_0014_loader_builtin_pixelformat(int argc, char **argv);
-int test_loader_0061_loader_builtin_gif_tga_pic_edges(int argc, char **argv);
 int test_loader_0015_loader_quicklook_pixelformat(int argc, char **argv);
 int test_loader_0016_loader_gnome_thumbnailer_pixelformat(int argc,
                                                           char **argv);
@@ -353,6 +352,73 @@ int test_loader_0068_loader_background_colorspace_gamma(int argc,
 int test_loader_0069_loader_background_colorspace_reset(int argc,
                                                          char **argv);
 int test_loader_0070_loader_gif_bgcolor_canvas_fill_explicit_first(
+    int argc,
+    char **argv);
+int test_loader_0071_loader_builtin_gif87a_numeric(int argc, char **argv);
+int test_loader_0072_loader_builtin_gif_interlace_four_pass_numeric(
+    int argc,
+    char **argv);
+int test_loader_0073_loader_builtin_gif_rectangle_offset_numeric(
+    int argc,
+    char **argv);
+int test_loader_0074_loader_builtin_gif_rectangle_oob_reject(
+    int argc,
+    char **argv);
+int test_loader_0075_loader_builtin_gif_extension_subblocks_numeric(
+    int argc,
+    char **argv);
+int test_loader_0076_loader_builtin_gif_truncated_raster_reject(
+    int argc,
+    char **argv);
+int test_loader_0077_loader_builtin_gif_illegal_lzw_code_reject(
+    int argc,
+    char **argv);
+int test_loader_0078_loader_builtin_gif_disposal2_numeric(
+    int argc,
+    char **argv);
+int test_loader_0079_loader_builtin_gif_lzw_12bit_width_numeric(
+    int argc,
+    char **argv);
+int test_loader_0080_loader_builtin_tga_truecolor16_numeric(
+    int argc,
+    char **argv);
+int test_loader_0081_loader_builtin_tga_palette8_numeric(
+    int argc,
+    char **argv);
+int test_loader_0082_loader_builtin_tga_palette16_numeric(
+    int argc,
+    char **argv);
+int test_loader_0083_loader_builtin_tga_index16_numeric(
+    int argc,
+    char **argv);
+int test_loader_0084_loader_builtin_tga_bottom_origin_numeric(
+    int argc,
+    char **argv);
+int test_loader_0085_loader_builtin_tga_rle_packet_modes_numeric(
+    int argc,
+    char **argv);
+int test_loader_0086_loader_builtin_tga_truncated_palette_reject(
+    int argc,
+    char **argv);
+int test_loader_0087_loader_builtin_tga_oob_index_fallback_numeric(
+    int argc,
+    char **argv);
+int test_loader_0088_loader_builtin_pic_omitted_channels_numeric(
+    int argc,
+    char **argv);
+int test_loader_0089_loader_builtin_pic_repeated_channel_overwrite_numeric(
+    int argc,
+    char **argv);
+int test_loader_0090_loader_builtin_pic_pure_rle_oversized_clip_numeric(
+    int argc,
+    char **argv);
+int test_loader_0091_loader_builtin_pic_mixed_rle_raw128_numeric(
+    int argc,
+    char **argv);
+int test_loader_0092_loader_builtin_pic_mixed_rle_repeat128_numeric(
+    int argc,
+    char **argv);
+int test_loader_0093_loader_builtin_pic_ten_packet_limit_numeric(
     int argc,
     char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
@@ -672,8 +738,6 @@ static test_entry_t const test_entries[] = {
       test_loader_0013_loader_libjpeg_pixelformat },
     { "loader/0014_loader_builtin_pixelformat",
       test_loader_0014_loader_builtin_pixelformat },
-    { "loader/0061_loader_builtin_gif_tga_pic_edges",
-      test_loader_0061_loader_builtin_gif_tga_pic_edges },
     { "loader/0015_loader_quicklook_pixelformat",
       test_loader_0015_loader_quicklook_pixelformat },
     { "loader/0016_loader_gnome_thumbnailer_pixelformat",
@@ -774,6 +838,52 @@ static test_entry_t const test_entries[] = {
       test_loader_0069_loader_background_colorspace_reset },
     { "loader/0070_loader_gif_bgcolor_canvas_fill_explicit_first",
       test_loader_0070_loader_gif_bgcolor_canvas_fill_explicit_first },
+    { "loader/0071_loader_builtin_gif87a_numeric",
+      test_loader_0071_loader_builtin_gif87a_numeric },
+    { "loader/0072_loader_builtin_gif_interlace_four_pass_numeric",
+      test_loader_0072_loader_builtin_gif_interlace_four_pass_numeric },
+    { "loader/0073_loader_builtin_gif_rectangle_offset_numeric",
+      test_loader_0073_loader_builtin_gif_rectangle_offset_numeric },
+    { "loader/0074_loader_builtin_gif_rectangle_oob_reject",
+      test_loader_0074_loader_builtin_gif_rectangle_oob_reject },
+    { "loader/0075_loader_builtin_gif_extension_subblocks_numeric",
+      test_loader_0075_loader_builtin_gif_extension_subblocks_numeric },
+    { "loader/0076_loader_builtin_gif_truncated_raster_reject",
+      test_loader_0076_loader_builtin_gif_truncated_raster_reject },
+    { "loader/0077_loader_builtin_gif_illegal_lzw_code_reject",
+      test_loader_0077_loader_builtin_gif_illegal_lzw_code_reject },
+    { "loader/0078_loader_builtin_gif_disposal2_numeric",
+      test_loader_0078_loader_builtin_gif_disposal2_numeric },
+    { "loader/0079_loader_builtin_gif_lzw_12bit_width_numeric",
+      test_loader_0079_loader_builtin_gif_lzw_12bit_width_numeric },
+    { "loader/0080_loader_builtin_tga_truecolor16_numeric",
+      test_loader_0080_loader_builtin_tga_truecolor16_numeric },
+    { "loader/0081_loader_builtin_tga_palette8_numeric",
+      test_loader_0081_loader_builtin_tga_palette8_numeric },
+    { "loader/0082_loader_builtin_tga_palette16_numeric",
+      test_loader_0082_loader_builtin_tga_palette16_numeric },
+    { "loader/0083_loader_builtin_tga_index16_numeric",
+      test_loader_0083_loader_builtin_tga_index16_numeric },
+    { "loader/0084_loader_builtin_tga_bottom_origin_numeric",
+      test_loader_0084_loader_builtin_tga_bottom_origin_numeric },
+    { "loader/0085_loader_builtin_tga_rle_packet_modes_numeric",
+      test_loader_0085_loader_builtin_tga_rle_packet_modes_numeric },
+    { "loader/0086_loader_builtin_tga_truncated_palette_reject",
+      test_loader_0086_loader_builtin_tga_truncated_palette_reject },
+    { "loader/0087_loader_builtin_tga_oob_index_fallback_numeric",
+      test_loader_0087_loader_builtin_tga_oob_index_fallback_numeric },
+    { "loader/0088_loader_builtin_pic_omitted_channels_numeric",
+      test_loader_0088_loader_builtin_pic_omitted_channels_numeric },
+    { "loader/0089_loader_builtin_pic_repeated_channel_overwrite_numeric",
+      test_loader_0089_loader_builtin_pic_repeated_channel_overwrite_numeric },
+    { "loader/0090_loader_builtin_pic_pure_rle_oversized_clip_numeric",
+      test_loader_0090_loader_builtin_pic_pure_rle_oversized_clip_numeric },
+    { "loader/0091_loader_builtin_pic_mixed_rle_raw128_numeric",
+      test_loader_0091_loader_builtin_pic_mixed_rle_raw128_numeric },
+    { "loader/0092_loader_builtin_pic_mixed_rle_repeat128_numeric",
+      test_loader_0092_loader_builtin_pic_mixed_rle_repeat128_numeric },
+    { "loader/0093_loader_builtin_pic_ten_packet_limit_numeric",
+      test_loader_0093_loader_builtin_pic_ten_packet_limit_numeric },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",

@@ -9,8 +9,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_BUILTIN_EDGE_CASE=gif-offset" \
-    "loader/0061_loader_builtin_gif_tga_pic_edges" || {
+    "loader/0073_loader_builtin_gif_rectangle_offset_numeric" || {
     echo "not ok 1 - GIF image rectangle offset composition"
     exit 0
 }

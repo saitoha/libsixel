@@ -9,8 +9,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_BUILTIN_EDGE_CASE=gif-illegal-code" \
-    "loader/0061_loader_builtin_gif_tga_pic_edges" || {
+    "loader/0077_loader_builtin_gif_illegal_lzw_code_reject" || {
     echo "not ok 1 - GIF illegal LZW dictionary code rejection"
     exit 0
 }

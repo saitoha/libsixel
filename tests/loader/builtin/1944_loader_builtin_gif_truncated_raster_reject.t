@@ -9,8 +9,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_BUILTIN_EDGE_CASE=gif-truncated-raster" \
-    "loader/0061_loader_builtin_gif_tga_pic_edges" || {
+    "loader/0076_loader_builtin_gif_truncated_raster_reject" || {
     echo "not ok 1 - GIF truncated raster sub-block rejection"
     exit 0
 }

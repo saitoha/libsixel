@@ -9,8 +9,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_BUILTIN_EDGE_CASE=pic-pure-clip" \
-    "loader/0061_loader_builtin_gif_tga_pic_edges" || {
+    "loader/0090_loader_builtin_pic_pure_rle_oversized_clip_numeric" || {
     echo "not ok 1 - PIC pure-RLE oversized-run clipping"
     exit 0
 }

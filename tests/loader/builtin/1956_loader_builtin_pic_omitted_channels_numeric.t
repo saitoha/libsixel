@@ -9,8 +9,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_BUILTIN_EDGE_CASE=pic-missing-channels" \
-    "loader/0061_loader_builtin_gif_tga_pic_edges" || {
+    "loader/0088_loader_builtin_pic_omitted_channels_numeric" || {
     echo "not ok 1 - PIC omitted-channel default values"
     exit 0
 }
