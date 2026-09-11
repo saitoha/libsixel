@@ -189,3 +189,20 @@ The per-method frequency plots in this document transform the continuous finite 
 - byte or float32 accumulation and clamping.
 
 Use the [discrete stencil](../resampling.md#the-implemented-operator-is-discrete-and-phase-dependent), [frequency-response](../resampling.md#frequency-response-and-alias-leakage), [isotropy](../resampling.md#directional-response-and-isotropy), and [quality, speed, and size](../resampling.md#measured-quality-speed-and-sixel-size) sections for those implementation-level effects.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning tests |
+| --- | --- | --- |
+| CK-01 | `nearest` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0015_resample_nearest_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0015_resample_nearest_downscale_80pct_lsqa.t), [tests/processing/geometry/0025_resample_nearest_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0025_resample_nearest_upscale_120pct_lsqa.t) |
+| CK-02 | `gaussian` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0016_resample_gaussian_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0016_resample_gaussian_downscale_80pct_lsqa.t), [tests/processing/geometry/0026_resample_gaussian_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0026_resample_gaussian_upscale_120pct_lsqa.t) |
+| CK-03 | `hanning` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0017_resample_hanning_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0017_resample_hanning_downscale_80pct_lsqa.t), [tests/processing/geometry/0027_resample_hanning_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0027_resample_hanning_upscale_120pct_lsqa.t) |
+| CK-04 | `hamming` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0018_resample_hamming_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0018_resample_hamming_downscale_80pct_lsqa.t), [tests/processing/geometry/0028_resample_hamming_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0028_resample_hamming_upscale_120pct_lsqa.t) |
+| CK-05 | `bilinear` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0019_resample_bilinear_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0019_resample_bilinear_downscale_80pct_lsqa.t), [tests/processing/geometry/0029_resample_bilinear_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0029_resample_bilinear_upscale_120pct_lsqa.t) |
+| CK-06 | `welsh` is selectable and produces compatible decoded output for both reduction and enlargement. | [tests/processing/geometry/0020_resample_welsh_downscale_80pct_lsqa.t](../../../tests/processing/geometry/0020_resample_welsh_downscale_80pct_lsqa.t), [tests/processing/geometry/0030_resample_welsh_upscale_120pct_lsqa.t](../../../tests/processing/geometry/0030_resample_welsh_upscale_120pct_lsqa.t) |
+
+### Coverage boundary
+
+These tests exercise CLI method selection and compare decoded SIXEL output with tracked reference images for one 80% reduction and one 120% enlargement. They do not prove the continuous equations point by point, every scale or phase, the theoretical transform plots, isotropy, or benchmark rankings; those boundaries remain covered by source inspection and the reproducible measurements linked above.

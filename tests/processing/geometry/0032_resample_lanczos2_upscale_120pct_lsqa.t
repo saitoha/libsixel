@@ -1,5 +1,6 @@
 #!/bin/sh
 # Validate upscale 120pct scaling with lanczos2 resampling.
+# Policy: docs/functionality/resampling/wide-kernels.md
 #
 # Reference image details:
 # - Source: tests/data/inputs/snake_64.png (64x64)
