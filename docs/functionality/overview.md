@@ -29,6 +29,7 @@ The introductory [Encoding Pipeline](encoding-pipeline.md) explains the input an
 - [Resampling](resampling.md) details the coordinate mapping, kernels, edge normalization, separable passes, threading, and SIMD dispatch used by resize;
 - [Palette Quantization](quantization.md), selected by `-Q`, determines which
   palette colors are available and documents each solver's objective and cost;
+- [External Palette Input and Output](external-palettes.md), selected by `-m` and `-M`, separates palette construction from reuse and documents the supported interchange formats;
 - [Final Palette Merge Policy](merge-policy.md), selected by `-F`, optionally builds an oversplit provisional palette, reduces it with Ward's criterion, and applies supported Lloyd polishing;
 - [Palette Cover Policy](cover-policy.md), selected by `-a` or `--cover-policy`, repairs reachability after quantization;
 - [Palette Snap Policy](snap-policy.md), selected by `-_` or `--snap-policy`, enables and configures reversible safe-tone mapping;
