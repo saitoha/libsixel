@@ -1,0 +1,320 @@
+{
+  "encoder_binary_sha256": "1c8ebeed8618ad9466b639d2fb23a1c357806cc1866af82df3f0a6636eb2da12",
+  "assessment_binary_sha256": "dc9a7bc2236b865c14220b770ddfe55bd66f70607a591d4cd407fda05bc1ae80",
+  "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+  "samples": 7,
+  "revision": "cf4cb3439aedec252b68bbc3674b10aa2bf0145f",
+  "source_state": "CMS CLI defaults changed in working tree",
+  "cms_source_sha256": "9d1261621e9bf215e60286a5e6595d47e2675966a3e533beca6de4cfbb93ac12",
+  "img2sixel_source_sha256": "fd8b096f39fb964974d7d1a5041aaba029a95f688c069e66a0c48c5be9604cb5",
+  "lsqa_source_sha256": "659b2a1d7e5d3e13e5bd26ec0d0785f728b5e2d148bb24de1dff5d97722e16f6",
+  "version": "img2sixel 1.11.1-pre1\n\nconfigured with:\n  libcurl: no\n  libfetch: no\n  WinHTTP: no\n  libpng: no\n  libjpeg: no\n  libwebp: no\n  gdk-pixbuf2: no\n  GD: no\n  WIC: no\n  CoreGraphics: no\n\navailable loaders:\n  builtin\n  gnome-thumbnailer\n\n",
+  "timing_scope": "fresh CLI process, decode through SIXEL output; stdout pipe and startup included; quality untimed",
+  "environment": "SIXEL_* and LSQA_* removed; builtin loader, one thread",
+  "records": [
+    {
+      "input": "images/snake.png",
+      "sha256": "44770793da3ca994f797808d6522db1e1f8c75d8caa6316c577a8f2da076eff4",
+      "results": {
+        "none": {
+          "seconds": [
+            0.07037891700019827,
+            0.07134887499887554,
+            0.0704197920003935,
+            0.07114837500012072,
+            0.07000991699896986,
+            0.07321091700032412,
+            0.07337216599989915
+          ],
+          "output_bytes": 326104,
+          "median_seconds": 0.07114837500012072,
+          "managed_reference_ms_ssim": 0.988798,
+          "command": [
+            "/Users/saitoha/repo/libsixel/converters/img2sixel",
+            "--threads=1",
+            "-L",
+            "builtin!",
+            "-d",
+            "fs:scan=raster",
+            "--cms-engine=none",
+            "/Users/saitoha/repo/libsixel/images/snake.png"
+          ],
+          "assessment_command": [
+            "/Users/saitoha/repo/libsixel/assessment/lsqa",
+            "-L",
+            "builtin!",
+            "--cms-engine=auto",
+            "-m",
+            "MS-SSIM",
+            "/Users/saitoha/repo/libsixel/images/snake.png",
+            "/var/folders/yw/m2t_g0_12r7dqntbkj7hnmdh0000gn/T/cms-default-z3jnu2_g/none.six"
+          ],
+          "output_sha256": "9a0ddaf4380d0d968b872cfe900738283ac20da460e4f370f0b8d2724940f0d2"
+        },
+        "auto": {
+          "seconds": [
+            0.08486816699951305,
+            0.08595670900103869,
+            0.08577912500004459,
+            0.08624495900039619,
+            0.08584995800083561,
+            0.08630720800101699,
+            0.0870837919992482
+          ],
+          "output_bytes": 324973,
+          "median_seconds": 0.08595670900103869,
+          "managed_reference_ms_ssim": 0.990314,
+          "command": [
+            "/Users/saitoha/repo/libsixel/converters/img2sixel",
+            "--threads=1",
+            "-L",
+            "builtin!",
+            "-d",
+            "fs:scan=raster",
+            "--cms-engine=auto",
+            "/Users/saitoha/repo/libsixel/images/snake.png"
+          ],
+          "assessment_command": [
+            "/Users/saitoha/repo/libsixel/assessment/lsqa",
+            "-L",
+            "builtin!",
+            "--cms-engine=auto",
+            "-m",
+            "MS-SSIM",
+            "/Users/saitoha/repo/libsixel/images/snake.png",
+            "/var/folders/yw/m2t_g0_12r7dqntbkj7hnmdh0000gn/T/cms-default-z3jnu2_g/auto.six"
+          ],
+          "output_sha256": "33e55c2ccbcdef04facecc78312b1689304fa2fc25fffdf4b5a61d4d14d54358"
+        }
+      }
+    },
+    {
+      "input": "images/snake.jpg",
+      "sha256": "7a022d51209928b1b66f640818610350a0d3410310ade492c8bd2f7bb3e8200a",
+      "results": {
+        "none": {
+          "seconds": [
+            0.07091341699924669,
+            0.07457595899904845,
+            0.07352891700065811,
+            0.07383495800058881,
+            0.07614558299974306,
+            0.07352291700044589,
+            0.07304133300021931
+          ],
+          "output_bytes": 325502,
+          "median_seconds": 0.07352891700065811,
+          "managed_reference_ms_ssim": 0.99044,
+          "command": [
+            "/Users/saitoha/repo/libsixel/converters/img2sixel",
+            "--threads=1",
+            "-L",
+            "builtin!",
+            "-d",
+            "fs:scan=raster",
+            "--cms-engine=none",
+            "/Users/saitoha/repo/libsixel/images/snake.jpg"
+          ],
+          "assessment_command": [
+            "/Users/saitoha/repo/libsixel/assessment/lsqa",
+            "-L",
+            "builtin!",
+            "--cms-engine=auto",
+            "-m",
+            "MS-SSIM",
+            "/Users/saitoha/repo/libsixel/images/snake.jpg",
+            "/var/folders/yw/m2t_g0_12r7dqntbkj7hnmdh0000gn/T/cms-default-z3jnu2_g/none.six"
+          ],
+          "output_sha256": "49a1dde91fc6b8bba9cb950cc76c1594432040855cc2f437cc4c978a03ecc82f"
+        },
+        "auto": {
+          "seconds": [
+            0.10690195899951505,
+            0.10786762499992619,
+            0.10925262499949895,
+            0.11053491599886911,
+            0.10907645800034516,
+            0.10918829100046423,
+            0.10967879100098799
+          ],
+          "output_bytes": 362829,
+          "median_seconds": 0.10918829100046423,
+          "managed_reference_ms_ssim": 0.990493,
+          "command": [
+            "/Users/saitoha/repo/libsixel/converters/img2sixel",
+            "--threads=1",
+            "-L",
+            "builtin!",
+            "-d",
+            "fs:scan=raster",
+            "--cms-engine=auto",
+            "/Users/saitoha/repo/libsixel/images/snake.jpg"
+          ],
+          "assessment_command": [
+            "/Users/saitoha/repo/libsixel/assessment/lsqa",
+            "-L",
+            "builtin!",
+            "--cms-engine=auto",
+            "-m",
+            "MS-SSIM",
+            "/Users/saitoha/repo/libsixel/images/snake.jpg",
+            "/var/folders/yw/m2t_g0_12r7dqntbkj7hnmdh0000gn/T/cms-default-z3jnu2_g/auto.six"
+          ],
+          "output_sha256": "5e2e70178e2baf7a653aad6db0ebe821f0d2fd19a74aedbe6f4f99034d1e212a"
+        }
+      }
+    },
+    {
+      "input": "tests/data/inputs/formats/snake-64-embedded-esrgb.jpg",
+      "sha256": "fb0df9b3753bae4a9c3c7b563dfcc2e123c31418b53ff18531213c53b32dfadc",
+      "results": {
+        "none": {
+          "seconds": [
+            0.026070957999763777,
+            0.027222291999351,
+            0.02789900000061607,
+            0.026494957999602775,
+            0.02680208400124684,
+            0.026466166998943663,
+            0.02504604200112226
+          ],
+          "output_bytes": 14315,
+          "median_seconds": 0.026494957999602775,
+          "managed_reference_ms_ssim": 0.77841,
+          "command": [
+            "/Users/saitoha/repo/libsixel/converters/img2sixel",
+            "--threads=1",
+            "-L",
+            "builtin!",
+            "-d",
+            "fs:scan=raster",
+            "--cms-engine=none",
+            "/Users/saitoha/repo/libsixel/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
+          ],
+          "assessment_command": [
+            "/Users/saitoha/repo/libsixel/assessment/lsqa",
+            "-L",
+            "builtin!",
+            "--cms-engine=auto",
+            "-m",
+            "MS-SSIM",
+            "/Users/saitoha/repo/libsixel/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg",
+            "/var/folders/yw/m2t_g0_12r7dqntbkj7hnmdh0000gn/T/cms-default-z3jnu2_g/none.six"
+          ],
+          "output_sha256": "ed780916440d184e175a25a648669fd61f43913c0dfe7f161866cdf898078567"
+        },
+        "auto": {
+          "seconds": [
+            0.027029582999603008,
+            0.028672332999121863,
+            0.026371333000497543,
+            0.026280250000127126,
+            0.02737570799945388,
+            0.025579082999684033,
+            0.026043582998681813
+          ],
+          "output_bytes": 14892,
+          "median_seconds": 0.026371333000497543,
+          "managed_reference_ms_ssim": 0.997297,
+          "command": [
+            "/Users/saitoha/repo/libsixel/converters/img2sixel",
+            "--threads=1",
+            "-L",
+            "builtin!",
+            "-d",
+            "fs:scan=raster",
+            "--cms-engine=auto",
+            "/Users/saitoha/repo/libsixel/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
+          ],
+          "assessment_command": [
+            "/Users/saitoha/repo/libsixel/assessment/lsqa",
+            "-L",
+            "builtin!",
+            "--cms-engine=auto",
+            "-m",
+            "MS-SSIM",
+            "/Users/saitoha/repo/libsixel/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg",
+            "/var/folders/yw/m2t_g0_12r7dqntbkj7hnmdh0000gn/T/cms-default-z3jnu2_g/auto.six"
+          ],
+          "output_sha256": "e576edb1e4845c9cfd11f51ada001db3aeb67148a2e950f4ec9845eb6ef816c2"
+        }
+      }
+    },
+    {
+      "input": "tests/data/colormgmt/input/custom/rgb_parametric_012.png",
+      "sha256": "2261c4c1c0f597c9a097c695bdce51889c2a23f1f8144a211d9d23b7aa06f1fe",
+      "results": {
+        "none": {
+          "seconds": [
+            0.026793708000695915,
+            0.02622766700005741,
+            0.025615874999857624,
+            0.026546416000201134,
+            0.025742666999576613,
+            0.02410920799957239,
+            0.024415374999080086
+          ],
+          "output_bytes": 5399,
+          "median_seconds": 0.025742666999576613,
+          "managed_reference_ms_ssim": 0.98931,
+          "command": [
+            "/Users/saitoha/repo/libsixel/converters/img2sixel",
+            "--threads=1",
+            "-L",
+            "builtin!",
+            "-d",
+            "fs:scan=raster",
+            "--cms-engine=none",
+            "/Users/saitoha/repo/libsixel/tests/data/colormgmt/input/custom/rgb_parametric_012.png"
+          ],
+          "assessment_command": [
+            "/Users/saitoha/repo/libsixel/assessment/lsqa",
+            "-L",
+            "builtin!",
+            "--cms-engine=auto",
+            "-m",
+            "MS-SSIM",
+            "/Users/saitoha/repo/libsixel/tests/data/colormgmt/input/custom/rgb_parametric_012.png",
+            "/var/folders/yw/m2t_g0_12r7dqntbkj7hnmdh0000gn/T/cms-default-z3jnu2_g/none.six"
+          ],
+          "output_sha256": "23390b35097f9c8d1271744b414892832b4bbd81aa25d18a7639f1ebf4e16e5f"
+        },
+        "auto": {
+          "seconds": [
+            0.02489804200013168,
+            0.02804025000114052,
+            0.02562625000064145,
+            0.02708866700049839,
+            0.025644999999713036,
+            0.027056334000008064,
+            0.025184584001181065
+          ],
+          "output_bytes": 5619,
+          "median_seconds": 0.025644999999713036,
+          "managed_reference_ms_ssim": 0.996289,
+          "command": [
+            "/Users/saitoha/repo/libsixel/converters/img2sixel",
+            "--threads=1",
+            "-L",
+            "builtin!",
+            "-d",
+            "fs:scan=raster",
+            "--cms-engine=auto",
+            "/Users/saitoha/repo/libsixel/tests/data/colormgmt/input/custom/rgb_parametric_012.png"
+          ],
+          "assessment_command": [
+            "/Users/saitoha/repo/libsixel/assessment/lsqa",
+            "-L",
+            "builtin!",
+            "--cms-engine=auto",
+            "-m",
+            "MS-SSIM",
+            "/Users/saitoha/repo/libsixel/tests/data/colormgmt/input/custom/rgb_parametric_012.png",
+            "/var/folders/yw/m2t_g0_12r7dqntbkj7hnmdh0000gn/T/cms-default-z3jnu2_g/auto.six"
+          ],
+          "output_sha256": "99232a7e1d1146483ea4d502e6d648b229bca585ce14056fe1cff20f8af082af"
+        }
+      }
+    }
+  ]
+}

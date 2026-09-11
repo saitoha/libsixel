@@ -611,6 +611,8 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/concepts/pixelformat.md \
 	docs/loader/README.md \
 	docs/loader/color-management.md \
+	docs/loader/cms-default-measurements.json \
+	tools/measure_cms_default.py \
 	docs/loader/builtin-cms.md \
 	docs/loader/cms-examples/gamut-wide.png \
 	docs/loader/cms-examples/gamut-mobile.png \

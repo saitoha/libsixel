@@ -1993,7 +1993,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           none/auto/builtin/lcms2/colorsync.\n"
         "                           Overrides SIXEL_LOADER_CMS_ENGINE;\n"
         "                           loader-specific settings take priority.\n"
-        "                           Omitted: retain loader defaults/env.\n"
+        "                           Default: auto; explicit env is retained.\n"
     },
     {
         'B',
@@ -2947,6 +2947,13 @@ parse_args(int argc, char **argv, Options *opts)
     }
 
     if (lsqa_apply_env_overrides(opts) != 0) {
+        parse_status = -1;
+        goto cleanup;
+    }
+
+    /* Match img2sixel while preserving explicit environment and options. */
+    if (cli_apply_env_default("SIXEL_LOADER_CMS_ENGINE", "auto") != 0) {
+        lsqa_set_parse_error("lsqa: failed to set CMS default.");
         parse_status = -1;
         goto cleanup;
     }

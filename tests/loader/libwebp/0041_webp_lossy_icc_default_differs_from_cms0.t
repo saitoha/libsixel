@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify lossy WebP ICC input differs between default cms and cms=1.
+# Verify lossy WebP ICC input differs between default cms and cms=0.
 
 set -eux
 
@@ -19,24 +19,24 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_default="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-default-vs-cms0.sixel"
-output_cms1="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-cms1-vs-default.sixel"
+output_cms0="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-cms0-vs-default.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! "${input_webp}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp lossy ICC decode failed with default cms"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
-    echo "not ok" 1 - "libwebp lossy ICC decode failed with cms=1"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_cms0}" || {
+    echo "not ok" 1 - "libwebp lossy ICC decode failed with cms=0"
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" "${output_default}" "${output_cms1}" 2>&1) || lsqa_status=$?
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" "${output_default}" "${output_cms0}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
-    echo "not ok" 1 - "lossy ICC default and cms=1 outputs were not distinguishable: ${lsqa_msg-}"
+    echo "not ok" 1 - "lossy ICC default and cms=0 outputs were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-echo "ok" 1 - "lossy ICC default cms behavior differs from cms=1"
+echo "ok" 1 - "lossy ICC default cms behavior differs from cms=0"
 exit 0

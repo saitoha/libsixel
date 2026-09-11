@@ -12,6 +12,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
+# Preserve the unmanaged fixture values; CMS defaults are tested separately.
+
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 mapfile_png="${TOP_SRCDIR}/images/map8-palette.png"
 expected_palette='JASC-PAL
@@ -28,7 +30,7 @@ expected_palette='JASC-PAL
 
 # The fixture has PLTE entries 0 through 8, but its pixels use only 0 through 7.
 actual_palette=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${mapfile_png}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none -m "${mapfile_png}" \
         -M pal-jasc:- -o /dev/null "${input_image}"
 ) || {
     echo "not ok" 1 - "indexed PNG mapfile export failed"

@@ -8,7 +8,7 @@ Loader CMS primarily protects the intended color interpretation of input images.
 
 For example, Display P3 and sRGB have different primaries: the same RGB triplet need not describe the same color. Similarly, a source with a different gamma needs the appropriate transfer conversion even if its primaries match the destination. Correct conversion changes the numbers to preserve the intended colors where the destination can represent them. Colors outside sRGB must be mapped or clipped according to the available profile, intent, and implementation; CMS cannot preserve every wide-gamut source color in an sRGB result.
 
-The default output contract is gamma-encoded sRGB palette values (`-Ugamma`), subject to palette reduction and SIXEL component quantization. An internal `cms_target=linear` or a perceptual working space changes the calculation representation, not that output contract or the display gamut. The explicit alternative `-U` modes are described in the [color-space guide](../concepts/colorspace.md); they do not provide an ICC-tagged wide-gamut display protocol. CMS establishes the input interpretation needed to honor the default output contract, but it remains disabled by default and cannot guarantee normalization when metadata is missing, unsupported, or skipped.
+The default output contract is gamma-encoded sRGB palette values (`-Ugamma`), subject to palette reduction and SIXEL component quantization. An internal `cms_target=linear` or a perceptual working space changes the calculation representation, not that output contract or the display gamut. The explicit alternative `-U` modes are described in the [color-space guide](../concepts/colorspace.md); they do not provide an ICC-tagged wide-gamut display protocol. CMS establishes the input interpretation needed to honor the default output contract, but it cannot guarantee normalization when metadata is missing, unsupported, or skipped.
 
 The receiving terminal and display stack own the mapping from those output values to the physical display. On a wide-gamut device, faithful rendering of sRGB and an optional enhancement that expands sRGB colors into a larger gamut are different policies: the former preserves the requested colors, while the latter deliberately changes them. Such display enhancement belongs to the terminal/device side and is not enabled by libsixel's loader CMS. SIXEL carries no source ICC profile or explicit color-space tag with which to negotiate it, so libsixel also cannot guarantee how every terminal will render its palette values.
 
@@ -50,7 +50,7 @@ The table describes specific paths, not a blanket correct/incorrect ranking of a
 | ImageMagick `magick input -profile sRGB.icc output` | Performs profile conversion when an input profile is already present; without one, the source interpretation must first be established. | `-strip` removes metadata; it does not perform this normalization. Convert before removing the source description. [Profile operator](https://imagemagick.org/command-line-options/#profile), [profile examples](https://usage.imagemagick.org/formats/#profiles) |
 | libpng 1.6 traditional read API | Provides `png_set_gamma` / `png_set_alpha_mode` for requested transfer handling; general ICC conversion remains application work. | Linking libpng alone does not establish full CMS. The simplified API has its own output contract and is not covered by this row. [libpng manual](https://github.com/pnggroup/libpng/blob/libpng16/libpng-manual.txt) |
 | Upstream stb_image `stbi_load` for ordinary PNG | Its PNG parser skips unhandled ancillary color chunks; it does not provide ICC or `gAMA` normalization on this path. | The application needs an additional interpretation step. This is upstream stb_image, not libsixel's current builtin loader and its separate CMS implementation. [Upstream source](https://github.com/nothings/stb/blob/master/stb_image.h) |
-| libsixel participating loaders, default `cms_engine=none` versus enabled CMS | The default disables libsixel loader CMS; `--cms-engine=auto` requests conversion for supported metadata and paths. | Enable CMS when carrying source color interpretation into the sRGB output contract. Loader limitations and fallback still apply; see the engine comparison below. |
+| libsixel participating CLI loaders, default `cms_engine=auto` | The default requests conversion for supported metadata and paths; `--cms-engine=none` restores unmanaged interpretation. | CMS carries source color interpretation into the sRGB output contract. Loader limitations and fallback still apply; see the engine comparison below. |
 
 A small local check with Pillow 12.2.0 confirmed the distinction: a PNG sample `(128,128,128)` with `gAMA=1.0` still decoded to `(128,128,128)` through `convert("RGB")`; reading the gamma value did not convert that linear sample to sRGB. Separately, the repository's Adobe-RGB [profiled fixture](../../images/measurements/palette-pipeline/a98-gamut-600x450.png) produced different pixels with explicit `ImageCms.profileToProfile(..., sRGB)` than with plain RGB mode conversion. These are narrow checks, not a complete tool conformance suite.
 
@@ -116,11 +116,11 @@ Little CMS cannot be assumed to be installed in every supported environment. Mak
 
 The builtin engine deliberately accepts the third tradeoff. It supplies a useful baseline of color interpretation across dependency-constrained builds; it is not a claim that a smaller CMS is inherently safer, or that it replaces Little CMS's broader support. ICC metadata is untrusted input, and adding an interpreter increases libsixel's attack surface. Bounds and size checks, malformed-profile tests, fuzzing, and continued maintenance are necessary costs of this choice, not proof that the implementation is free of vulnerabilities. See the support limits and defensive coverage below.
 
-This rationale also does not turn a successful load into a certification of color accuracy. Builtin CMS must be enabled to help, unsupported profiles remain possible, and fallback can still produce an image without applying the intended profile. The current default remains disabled. Documentation and reproducible measurements must distinguish the selected engine, the profiles it can interpret, and whether normalization actually occurred.
+This rationale also does not turn a successful load into a certification of color accuracy. Builtin CMS must be enabled to help, unsupported profiles remain possible, and fallback can still produce an image without applying the intended profile. The `img2sixel` and `lsqa` defaults are `auto`; library API loader defaults remain disabled. Documentation and reproducible measurements must distinguish the selected engine, the profiles it can interpret, and whether normalization actually occurred.
 
 ## CMS in quality measurements
 
-`lsqa -# ENGINE` and `lsqa --cms-engine=ENGINE` select the process-wide loader CMS default for **both the reference and the target**, including a target read from standard input. Accepted engines are `none`, `auto`, `builtin`, `lcms2`, and `colorsync`; `off` and `disabled` alias `none`, `lcms` aliases `lcms2`, and `color-sync` aliases `colorsync`. Repeated selections use the last value. Omitting the option preserves existing loader defaults and environment settings; this addition does not enable CMS by default.
+`lsqa -# ENGINE` and `lsqa --cms-engine=ENGINE` select the process-wide loader CMS default for **both the reference and the target**, including a target read from standard input. Accepted engines are `none`, `auto`, `builtin`, `lcms2`, and `colorsync`; `off` and `disabled` alias `none`, `lcms` aliases `lcms2`, and `color-sync` aliases `colorsync`. Repeated selections use the last value. Omitting the option selects `auto` unless an explicit environment setting overrides it. Library API loader defaults are unchanged.
 
 An explicit option overrides `SIXEL_LOADER_CMS_ENGINE`, including assignments through `--env`, regardless of argument order. Loader-specific environment settings and `-L` suboptions retain their normal higher priority. Engine availability and fallback follow the same loader rules as `img2sixel`. Use matching settings in both programs when measuring profile-aware encoding:
 
@@ -146,9 +146,32 @@ The tag audit checks offsets and lengths before reading payload signatures, limi
 
 The diagnostic fixture `tests/data/colormgmt/input/custom/rgb_trace_ignored_tags.png` preserves the PNG pixels and original profile tags from `rgb_parametric_012.png`. Its iCCP profile adds D2B0 and D2B3 mpet payloads containing a three-channel identity matrix element, plus a private tag whose signature contains ESC. Profile size, tag offsets, compressed iCCP data, and PNG CRC are updated. It exercises unsupported paths and escaped logging while retaining the original usable normalization path; it is not an mpet conformance fixture.
 
+## Default-on migration and measurements
+
+`img2sixel` and `lsqa` set the global loader CMS default to `auto` when its environment value is absent or empty. Explicit `none`, backend-specific settings, and CLI choices retain their precedence. This is a CLI behavior change; direct library loader defaults remain disabled. Existing scripts requiring byte-identical legacy interpretation should specify `--cms-engine=none` in both tools. Profile-aware checks should select the same CMS engine on encoding and assessment, and test the unmanaged path only as an intentional control.
+
+The migration keeps fixed unmanaged palette/background fixture tests explicit about `none`; it does not regenerate their expected values from the new implementation. Separate default tests omit the engine option and verify an observable difference from `none`. Historical quantization/precision figures describe controlled experiments at their recorded revisions, not the new CLI defaults. The shared environments in `plot_lookup_policy_speed.py` and `plot_quality_curve.py` now explicitly retain `SIXEL_LOADER_CMS_ENGINE=none` for those policy sweeps unless overridden. For other historical reproduction scripts, inspect their recorded commands and supply the corresponding CMS setting rather than inheriting today's default. The [PNG loader comparison](builtin/png.md#reproduce-the-measurements) already specifies `cms_engine` per case and is unaffected by the CLI default.
+
+The default change itself was remeasured with the builtin decoder, one thread, raster Floyd–Steinberg diffusion, seven interleaved samples after warmup, and the same binary with explicit `none` versus `auto`. On this build `auto` uses builtin CMS. Times include fresh process startup, decoding, quantization, SIXEL encoding, and stdout capture; they are not isolated CMS costs. All quality values use an `auto`-managed reference in lsqa, including the unmanaged encoding control. The [raw record](cms-default-measurements.json) contains commands, versions, input/source/output hashes and every sample.
+
+| Input | CMS none, median ms | CMS auto, median ms | Managed-reference MS-SSIM, none | Managed-reference MS-SSIM, auto |
+| --- | ---: | ---: | ---: | ---: |
+| Snake PNG | 71.15 | 85.96 | 0.988798 | 0.990314 |
+| Snake JPEG | 73.53 | 109.19 | 0.990440 | 0.990493 |
+| Embedded extended-sRGB JPEG, 64 px fixture | 26.49 | 26.37 | 0.778410 | 0.997297 |
+| Parametric ICC PNG fixture | 25.74 | 25.64 | 0.989310 | 0.996289 |
+
+These samples demonstrate both the correction benefit and the cost. The profiled JPEG control is visibly outside the normal quality gate; that low control score is not a lowered acceptance threshold. The ordinary JPEG also becomes slower: builtin CMS enablement selects float decoding even without an applicable ICC conversion. Small-fixture times are dominated by startup and are not evidence that conversion itself is free. These are local measurements, not cross-platform speed guarantees or an independent validation of builtin ICC accuracy.
+
+Reproduce the migration experiment with the current build:
+
+```sh
+python3 tools/measure_cms_default.py --samples 7 --output cms-default-measurements.json
+```
+
 ## Choosing an engine
 
-Enable loader CMS when the source profile matters: `img2sixel --cms-engine=auto image.png`. CMS is disabled by default for participating loaders. For varied third-party ICC profiles, prefer a build with Little CMS (`lcms2`) and verify that the selected loader supplies the original source color model to it. Choose `builtin` when avoiding an external CMS dependency matters and the actual profile corpus has been validated against the supported subset below. Neither engine can repair an incorrect source profile or recover source channels already discarded by a decoder.
+Enable loader CMS when the source profile matters: `img2sixel --cms-engine=auto image.png`. CMS defaults to `auto` in `img2sixel` and `lsqa` for participating loaders. For varied third-party ICC profiles, prefer a build with Little CMS (`lcms2`) and verify that the selected loader supplies the original source color model to it. Choose `builtin` when avoiding an external CMS dependency matters and the actual profile corpus has been validated against the supported subset below. Neither engine can repair an incorrect source profile or recover source channels already discarded by a decoder.
 
 **Successful image loading is not proof of successful color management.** Unsupported or unusable metadata can lead to a format-specific fallback and a displayable image with different colors. Also, requesting `lcms2` does not require that dependency to be present: an unavailable engine resolves through `auto`. Reproducible color output requires checking the build and loader as well as the command line.
 
@@ -268,6 +291,8 @@ Compare decoded managed pixels against an independently prepared color-managed r
 | CMS-16 | pipeline rejection reason. | [tests/diagnostics/cms_trace/0004_pipeline_rejection_reason.t](../../tests/diagnostics/cms_trace/0004_pipeline_rejection_reason.t) |
 | CMS-17 | trace disabled quiet. | [tests/diagnostics/cms_trace/0005_trace_disabled_quiet.t](../../tests/diagnostics/cms_trace/0005_trace_disabled_quiet.t) |
 | CMS-18 | ignored tags preserve pixels. | [tests/diagnostics/cms_trace/0006_ignored_tags_preserve_pixels.t](../../tests/diagnostics/cms_trace/0006_ignored_tags_preserve_pixels.t) |
+| CMS-19 | lsqa defaults to auto and normalizes a profiled image differently from none. | [tests/quality_gate/cms/0009_lsqa_cms_default_auto.t](../../tests/quality_gate/cms/0009_lsqa_cms_default_auto.t) |
+| CMS-20 | img2sixel defaults to auto and normalizes a profiled image differently from none. | [tests/quality_gate/cms/0010_img2sixel_cms_default_auto.t](../../tests/quality_gate/cms/0010_img2sixel_cms_default_auto.t) |
 
 ### Defensive and malformed-input tests
 

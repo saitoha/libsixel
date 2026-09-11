@@ -279,6 +279,8 @@ def make_command_environment(clean_sixel_environment: bool) -> Dict[str, str]:
         for name in list(env):
             if name.startswith("SIXEL_"):
                 del env[name]
+    # Historical policy sweeps isolate quantization from loader CMS.
+    env.setdefault("SIXEL_LOADER_CMS_ENGINE", "none")
     return env
 
 

@@ -1033,7 +1033,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               libpng/libjpeg/libwebp/libtiff/builtin support\n"
         "                               :cms_engine=none|auto|builtin|lcms2|"
         "colorsync (or :Evalue,\n"
-        "                               default none). builtin supports\n"
+        "                               default auto). builtin supports\n"
         "                               :bmp_info40_mode=MODE (or :BMODE).\n"
         "                               WIC supports :ico_minsize=SIZE (or :ISIZE) to choose\n"
         "                               the smallest ICO frame with edge >= SIZE. Append \"!\" to\n"
@@ -1097,6 +1097,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "cms-engine",
         "-# ENGINE, --cms-engine=ENGINE\n"
         "    set default loader CMS backend for this process (SIXEL_LOADER_CMS_ENGINE).\n"
+        "      Default: auto. Use none for legacy unmanaged interpretation.\n"
         "      none      -> disable loader CMS.\n"
         "      auto      -> prefer lcms2, then ColorSync (macOS), then builtin.\n"
         "      builtin   -> force builtin backend.\n"
@@ -1664,7 +1665,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_CMS_ENGINE",
         "select default loader CMS backend. Accepts none, auto, builtin,\n"
         "lcms2, or colorsync. auto prefers lcms2, then ColorSync (macOS),\n"
-        "then builtin. Overridden by -#/--cms-engine."
+        "then builtin. Default: auto. Overridden by -#/--cms-engine."
     },
     {
         "SIXEL_LOADER_BUILTIN_CMS_ENGINE",
@@ -3535,6 +3536,13 @@ img2sixel_main(int argc, char *argv[])
         if (SIXEL_FAILED(status)) {
             goto error;
         }
+    }
+
+    /* CLI loads normalize color by default; retain explicit environment. */
+    if (cli_apply_env_default("SIXEL_LOADER_CMS_ENGINE", "auto") != 0) {
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message("failed to set CMS default");
+        goto error;
     }
 
     sixel_option_apply_cli_suggestion_defaults();

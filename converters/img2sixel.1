@@ -1032,7 +1032,7 @@ policies \fBpnm_trailing_data=0|1\fP (short form \fBN0\fP or \fBN1\fP) and
 \fBpnm_truncated_ascii=0|1\fP (short form \fBY0\fP or \fBY1\fP).
 The libpng, libjpeg, libwebp, libtiff, and builtin loaders accept
 \fBcms_engine=none|auto|builtin|lcms2|colorsync\fP (short form \fBEvalue\fP,
-default none).
+default auto in img2sixel).
 The builtin loader accepts \fBbmp_info40_mode=MODE\fP (short form
 \fBBMODE\fP). The WIC loader accepts \fBwic:ico_minsize=SIZE\fP (short
 form \fBISIZE\fP) to pick the smallest ICO frame whose edge is at least
@@ -1817,7 +1817,8 @@ Override with \fB-Lloader:hdr_header_exposure=0|1\fP or short form
 .br
 select the default loader CMS backend. Accepts "none", "auto", "builtin",
 "lcms2", or "colorsync".
-"auto" prefers lcms2, then ColorSync (macOS), then builtin.
+The img2sixel default is "auto", which prefers lcms2, then ColorSync
+(macOS), then builtin. Use "none" for legacy unmanaged interpretation.
 overrided by \fB-#\fP/\fB--cms\-engine\fP option.
 .TP 5
 .B SIXEL_LOADER_BUILTIN_CMS_ENGINE
