@@ -1,5 +1,15 @@
 # Loader Color Management: builtin and Little CMS
 
+## Why loader CMS matters
+
+Loader CMS primarily protects the intended color interpretation of input images. Files authored for wider RGB gamuts or different transfer functions cannot safely be treated as ordinary sRGB just because they decode to three channels. Interpreting those samples directly as sRGB can change hue, saturation, brightness, and the balance between colors. CMS uses an applicable source profile or supported color metadata to normalize those samples into libsixel's known sRGB basis before the encoder makes palette and dithering decisions. Its purpose here is faithful normalization, not increasing saturation or extending the display gamut.
+
+For example, Display P3 and sRGB have different primaries: the same RGB triplet need not describe the same color. Similarly, a source with a different gamma needs the appropriate transfer conversion even if its primaries match the destination. Correct conversion changes the numbers to preserve the intended colors where the destination can represent them. Colors outside sRGB must be mapped or clipped according to the available profile, intent, and implementation; CMS cannot preserve every wide-gamut source color in an sRGB result.
+
+The default output contract is gamma-encoded sRGB palette values (`-Ugamma`), subject to palette reduction and SIXEL component quantization. An internal `cms_target=linear` or a perceptual working space changes the calculation representation, not that output contract or the display gamut. The explicit alternative `-U` modes are described in the [color-space guide](../concepts/colorspace.md); they do not provide an ICC-tagged wide-gamut display protocol. CMS establishes the input interpretation needed to honor the default output contract, but it remains disabled by default and cannot guarantee normalization when metadata is missing, unsupported, or skipped.
+
+The receiving terminal and display stack own the mapping from those output values to the physical display. On a wide-gamut device, faithful rendering of sRGB and an optional enhancement that expands sRGB colors into a larger gamut are different policies: the former preserves the requested colors, while the latter deliberately changes them. Such display enhancement belongs to the terminal/device side and is not enabled by libsixel's loader CMS. SIXEL carries no source ICC profile or explicit color-space tag with which to negotiate it, so libsixel also cannot guarantee how every terminal will render its palette values.
+
 ## Choosing an engine
 
 Enable loader CMS when the source profile matters: `img2sixel --cms-engine=auto image.png`. CMS is disabled by default for participating loaders. For varied third-party ICC profiles, prefer a build with Little CMS (`lcms2`) and verify that the selected loader supplies the original source color model to it. Choose `builtin` when avoiding an external CMS dependency matters and the actual profile corpus has been validated against the supported subset below. Neither engine can repair an incorrect source profile or recover source channels already discarded by a decoder.
