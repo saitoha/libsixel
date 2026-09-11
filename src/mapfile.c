@@ -604,7 +604,7 @@ sixel_palette_import_dither_entries(sixel_dither_t *dither,
  *   | section   | bytes                     |
  *   +-----------+---------------------------+
  *   | palette   | 256 entries * 3 RGB bytes |
- *   | trailer   | optional count/start pair |
+ *   | trailer   | optional count/transparency pair |
  *   +-----------+---------------------------+
  */
 SIXELSTATUS
@@ -615,17 +615,13 @@ sixel_palette_parse_act(unsigned char const *data,
 {
     SIXELSTATUS status;
     sixel_dither_t *local;
-    unsigned char const *palette_start;
     unsigned char const *trailer;
     int exported_colors;
-    int start_index;
 
     status = SIXEL_FALSE;
     local = NULL;
-    palette_start = data;
     trailer = NULL;
     exported_colors = 0;
-    start_index = 0;
 
     if (encoder == NULL || dither == NULL) {
         sixel_helper_set_additional_message(
@@ -640,24 +636,21 @@ sixel_palette_parse_act(unsigned char const *data,
 
     if (size == 256u * 3u) {
         exported_colors = 256;
-        start_index = 0;
     } else if (size == 256u * 3u + 4u) {
         trailer = data + 256u * 3u;
         exported_colors = (int)(((unsigned int)trailer[0] << 8)
                                 | (unsigned int)trailer[1]);
-        start_index = (int)(((unsigned int)trailer[2] << 8)
-                            | (unsigned int)trailer[3]);
+        /*
+         * The remaining word is a transparency index, not an entry offset.
+         * Mapfile import owns only colors; source alpha remains a loader
+         * policy, so the transparency metadata is intentionally ignored.
+         */
     } else {
         sixel_helper_set_additional_message(
             "sixel_palette_parse_act: invalid ACT length.");
         return SIXEL_BAD_INPUT;
     }
 
-    if (start_index < 0 || start_index >= 256) {
-        sixel_helper_set_additional_message(
-            "sixel_palette_parse_act: ACT start index out of range.");
-        return SIXEL_BAD_INPUT;
-    }
     /*
      * Keep legacy ACT behavior for count 0 (means 256), but reject
      * explicit values above the 8-bit palette limit.
@@ -669,12 +662,6 @@ sixel_palette_parse_act(unsigned char const *data,
             "sixel_palette_parse_act: invalid ACT color count.");
         return SIXEL_BAD_INPUT;
     }
-    if (start_index + exported_colors > 256) {
-        sixel_helper_set_additional_message(
-            "sixel_palette_parse_act: ACT palette exceeds 256 slots.");
-        return SIXEL_BAD_INPUT;
-    }
-
     status = sixel_dither_new(&local, exported_colors, encoder->allocator);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -688,7 +675,7 @@ sixel_palette_parse_act(unsigned char const *data,
 
     status = sixel_palette_import_dither_entries(
         local,
-        palette_start + (size_t)start_index * 3u,
+        data,
         (unsigned int)exported_colors);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(local);
@@ -1430,6 +1417,7 @@ sixel_palette_write_act(FILE *stream,
     trailer[0] = (unsigned char)(((unsigned int)exported_colors >> 8)
                                  & 0xffu);
     trailer[1] = (unsigned char)((unsigned int)exported_colors & 0xffu);
+    /* Palette files have no image alpha to identify, so use index zero. */
     trailer[2] = 0u;
     trailer[3] = 0u;
 
