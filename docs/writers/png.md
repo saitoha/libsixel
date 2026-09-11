@@ -92,6 +92,37 @@ For indexed output, libsixel prefixes every row with PNG filter type 0, compress
 
 For direct RGB and RGBA output, libsixel passes the normalized tightly packed rows to the bundled `stbi_write_png_to_mem()` implementation and writes the returned PNG buffer to the destination stream. Filtering and compression choices in this branch belong to the bundled implementation and are not a stable byte-level API.
 
+## Measured speed and output size
+
+The comparison below measures the writer itself on identical prepared pixels, separately for indexed, RGB, and RGBA output. It does not include image loading, quantization, SIXEL encoding, or SIXEL decoding. Both backends preserve the supplied pixels; smaller files here mean better lossless compression, not reduced image quality.
+
+![PNG writer time for photo and flat shapes in PAL8, RGB, and RGBA; bars show medians and whiskers show observed minimum and maximum.](png-figures/writer-time.svg)
+
+![PNG file size for the same inputs; libpng produces smaller files in all six measured cases.](png-figures/writer-size.svg)
+
+On this machine, builtin writes the photo RGB and RGBA inputs about 2.4–2.5 times as fast as libpng, while libpng produces files about 33% smaller. Photo indexed timing is close, with overlapping observed ranges; libpng's indexed file is about 25% smaller. For flat shapes, libpng is both faster and smaller in all three formats. There is no universal speed winner: pixel representation and image structure matter. Each panel starts at zero but has its own scale; compare backends within a panel rather than bar lengths between panels.
+
+### Measurement conditions and reproduction
+
+The recorded run used an Apple M3 Max, macOS 26.5.1 arm64, Apple clang 21.0.0 with `-O2`, and libpng 1.6.58. All inputs are 512 × 512 pixels. “Photo” is [`images/snake.png`](../../images/snake.png), resized with Pillow's Lanczos filter. “Flat shapes” is a deterministic white image with four colored rectangles. PAL8 inputs are quantized once to at most 256 entries and shared unchanged by both writers. RGB retains the prepared color samples; RGBA additionally uses a repeating 0–255 alpha ramp. These two fixtures illustrate contrasting content, not a representative corpus of every PNG workload.
+
+The harness compiles the current `src/writer.c` twice with the same configuration and support library, overriding only `HAVE_LIBPNG` and renaming the public writer entry point for isolation. Both builds retain their normal compression defaults. Timing surrounds one public writer call to `/dev/null`, including writer allocation, filtering, compression, stream open, flush, and close, but excluding Python fixture preparation and process startup. It therefore measures writer cost without filesystem storage throughput or durability costs. Three warmup writes precede 21 measured writes per backend and input; backend order alternates. Bars report the median, with observed minimum–maximum whiskers, not confidence intervals. Timings include a small common Python/ctypes call overhead and depend on machine load.
+
+Size is the full byte count of a separate PNG file, including headers, palette, and chunks; 1 KiB = 1024 bytes. Every generated file is decoded with Pillow and compared exactly with the prepared input in RGBA form. This validation is a benchmark sanity check, not a replacement for the behavioral suite below.
+
+The [recorded samples and source/build hashes](png-figures/measurements.json) accompany the figures. The [measurement and plotting script](../../tools/plot_png_writer_measurements.py) requires a configured, built shared libsixel, a C compiler, `pkg-config` with libpng development files, Pillow, and matplotlib on macOS or Linux. Run from the repository root, with timeline logging disabled:
+
+```sh
+# Measure both branches and regenerate SVG/PNG figures.
+python3 tools/plot_png_writer_measurements.py --measure
+# Regenerate from the recorded samples without rerunning timings.
+python3 tools/plot_png_writer_measurements.py
+# Verify that committed figures match the recorded samples.
+python3 tools/plot_png_writer_measurements.py --check
+```
+
+Use the same plotting environment for byte-for-byte regeneration (this rendering used matplotlib 3.11.1 and Pillow 12.3.0). New measurements are expected to vary; backend rankings and compressed bytes are observations of this version and these inputs, not performance guarantees.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->

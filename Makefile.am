@@ -419,6 +419,12 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/testing/builtin-loader-coverage.md \
 	docs/testing/guide.md \
 	docs/writers/png.md \
+	docs/writers/png-figures/measurements.json \
+	docs/writers/png-figures/writer-time.svg \
+	docs/writers/png-figures/writer-time.png \
+	docs/writers/png-figures/writer-size.svg \
+	docs/writers/png-figures/writer-size.png \
+	tools/plot_png_writer_measurements.py \
 	docs/threading/README.md \
 	docs/threading/animation.md \
 	docs/threading/decoder.md \
