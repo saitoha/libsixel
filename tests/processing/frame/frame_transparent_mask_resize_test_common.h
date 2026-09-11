@@ -7,7 +7,7 @@
 
 int frame_transparent_mask_resize_run(
     int method_for_resampling,
-    unsigned char const expected_mask[7]);
+    unsigned char const expected_mask[2]);
 
 #endif
 

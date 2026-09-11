@@ -183,6 +183,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/frame/0005_frame_transparent_mask_resize_bilinear.c \
 	processing/frame/frame_transparent_mask_resize_test_common.c \
 	processing/frame/frame_transparent_mask_resize_test_common.h \
+	processing/geometry/resampling_exact_test_driver.c \
+	processing/geometry/resampling_measurement_test_driver.c \
 	processing/planner/0001_resize_linear_float32.c \
 	processing/planner/0002_resize_allocation_failure.c \
 	processing/chunk/0001_chunk_factory.c \
@@ -392,6 +394,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0004_frame_transparent_mask_resize.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-frame_transparent_mask_resize_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/geometry/test_runner-resampling_exact_test_driver.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/geometry/test_runner-resampling_measurement_test_driver.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/planner/test_runner-0001_resize_linear_float32.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/planner/test_runner-0002_resize_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
@@ -749,6 +753,8 @@ am__depfiles_remade =  \
 	processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po \
 	processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po \
 	processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po \
+	processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po \
+	processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po \
 	processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
@@ -1775,6 +1781,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0005_frame_transparent_mask_resize_bilinear.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/frame_transparent_mask_resize_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/frame_transparent_mask_resize_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/geometry/resampling_exact_test_driver.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/geometry/resampling_measurement_test_driver.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/planner/0001_resize_linear_float32.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/planner/0002_resize_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
@@ -2330,6 +2338,18 @@ processing/frame/test_runner-0005_frame_transparent_mask_resize_bilinear.$(OBJEX
 processing/frame/test_runner-frame_transparent_mask_resize_test_common.$(OBJEXT):  \
 	processing/frame/$(am__dirstamp) \
 	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/geometry/$(am__dirstamp):
+	@$(MKDIR_P) processing/geometry
+	@: >>processing/geometry/$(am__dirstamp)
+processing/geometry/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/geometry/$(DEPDIR)
+	@: >>processing/geometry/$(DEPDIR)/$(am__dirstamp)
+processing/geometry/test_runner-resampling_exact_test_driver.$(OBJEXT):  \
+	processing/geometry/$(am__dirstamp) \
+	processing/geometry/$(DEPDIR)/$(am__dirstamp)
+processing/geometry/test_runner-resampling_measurement_test_driver.$(OBJEXT):  \
+	processing/geometry/$(am__dirstamp) \
+	processing/geometry/$(DEPDIR)/$(am__dirstamp)
 processing/planner/$(am__dirstamp):
 	@$(MKDIR_P) processing/planner
 	@: >>processing/planner/$(am__dirstamp)
@@ -2929,6 +2949,7 @@ mostlyclean-compile:
 	-rm -f processing/encoder-core/*.$(OBJEXT)
 	-rm -f processing/filter/*.$(OBJEXT)
 	-rm -f processing/frame/*.$(OBJEXT)
+	-rm -f processing/geometry/*.$(OBJEXT)
 	-rm -f processing/gpu-dequant/*.$(OBJEXT)
 	-rm -f processing/gpu-palette/*.$(OBJEXT)
 	-rm -f processing/lookup/*.$(OBJEXT)
@@ -3103,6 +3124,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
@@ -4171,6 +4194,34 @@ processing/frame/test_runner-frame_transparent_mask_resize_test_common.obj: proc
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/frame_transparent_mask_resize_test_common.c' object='processing/frame/test_runner-frame_transparent_mask_resize_test_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-frame_transparent_mask_resize_test_common.obj `if test -f 'processing/frame/frame_transparent_mask_resize_test_common.c'; then $(CYGPATH_W) 'processing/frame/frame_transparent_mask_resize_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/frame_transparent_mask_resize_test_common.c'; fi`
+
+processing/geometry/test_runner-resampling_exact_test_driver.o: processing/geometry/resampling_exact_test_driver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/geometry/test_runner-resampling_exact_test_driver.o -MD -MP -MF processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Tpo -c -o processing/geometry/test_runner-resampling_exact_test_driver.o `test -f 'processing/geometry/resampling_exact_test_driver.c' || echo '$(srcdir)/'`processing/geometry/resampling_exact_test_driver.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Tpo processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/geometry/resampling_exact_test_driver.c' object='processing/geometry/test_runner-resampling_exact_test_driver.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/geometry/test_runner-resampling_exact_test_driver.o `test -f 'processing/geometry/resampling_exact_test_driver.c' || echo '$(srcdir)/'`processing/geometry/resampling_exact_test_driver.c
+
+processing/geometry/test_runner-resampling_exact_test_driver.obj: processing/geometry/resampling_exact_test_driver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/geometry/test_runner-resampling_exact_test_driver.obj -MD -MP -MF processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Tpo -c -o processing/geometry/test_runner-resampling_exact_test_driver.obj `if test -f 'processing/geometry/resampling_exact_test_driver.c'; then $(CYGPATH_W) 'processing/geometry/resampling_exact_test_driver.c'; else $(CYGPATH_W) '$(srcdir)/processing/geometry/resampling_exact_test_driver.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Tpo processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/geometry/resampling_exact_test_driver.c' object='processing/geometry/test_runner-resampling_exact_test_driver.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/geometry/test_runner-resampling_exact_test_driver.obj `if test -f 'processing/geometry/resampling_exact_test_driver.c'; then $(CYGPATH_W) 'processing/geometry/resampling_exact_test_driver.c'; else $(CYGPATH_W) '$(srcdir)/processing/geometry/resampling_exact_test_driver.c'; fi`
+
+processing/geometry/test_runner-resampling_measurement_test_driver.o: processing/geometry/resampling_measurement_test_driver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/geometry/test_runner-resampling_measurement_test_driver.o -MD -MP -MF processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Tpo -c -o processing/geometry/test_runner-resampling_measurement_test_driver.o `test -f 'processing/geometry/resampling_measurement_test_driver.c' || echo '$(srcdir)/'`processing/geometry/resampling_measurement_test_driver.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Tpo processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/geometry/resampling_measurement_test_driver.c' object='processing/geometry/test_runner-resampling_measurement_test_driver.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/geometry/test_runner-resampling_measurement_test_driver.o `test -f 'processing/geometry/resampling_measurement_test_driver.c' || echo '$(srcdir)/'`processing/geometry/resampling_measurement_test_driver.c
+
+processing/geometry/test_runner-resampling_measurement_test_driver.obj: processing/geometry/resampling_measurement_test_driver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/geometry/test_runner-resampling_measurement_test_driver.obj -MD -MP -MF processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Tpo -c -o processing/geometry/test_runner-resampling_measurement_test_driver.obj `if test -f 'processing/geometry/resampling_measurement_test_driver.c'; then $(CYGPATH_W) 'processing/geometry/resampling_measurement_test_driver.c'; else $(CYGPATH_W) '$(srcdir)/processing/geometry/resampling_measurement_test_driver.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Tpo processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/geometry/resampling_measurement_test_driver.c' object='processing/geometry/test_runner-resampling_measurement_test_driver.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/geometry/test_runner-resampling_measurement_test_driver.obj `if test -f 'processing/geometry/resampling_measurement_test_driver.c'; then $(CYGPATH_W) 'processing/geometry/resampling_measurement_test_driver.c'; else $(CYGPATH_W) '$(srcdir)/processing/geometry/resampling_measurement_test_driver.c'; fi`
 
 processing/planner/test_runner-0001_resize_linear_float32.o: processing/planner/0001_resize_linear_float32.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/planner/test_runner-0001_resize_linear_float32.o -MD -MP -MF processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Tpo -c -o processing/planner/test_runner-0001_resize_linear_float32.o `test -f 'processing/planner/0001_resize_linear_float32.c' || echo '$(srcdir)/'`processing/planner/0001_resize_linear_float32.c
@@ -6421,6 +6472,8 @@ distclean-generic:
 	-$(am__rm_f) processing/filter/$(am__dirstamp)
 	-$(am__rm_f) processing/frame/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/frame/$(am__dirstamp)
+	-$(am__rm_f) processing/geometry/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/geometry/$(am__dirstamp)
 	-$(am__rm_f) processing/gpu-dequant/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/gpu-dequant/$(am__dirstamp)
 	-$(am__rm_f) processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
@@ -6612,6 +6665,8 @@ distclean: distclean-am
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po
+	-rm -f processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po
+	-rm -f processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
@@ -6861,6 +6916,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0004_frame_transparent_mask_resize.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0005_frame_transparent_mask_resize_bilinear.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po
+	-rm -f processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po
+	-rm -f processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po
 	-rm -f processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
 	-rm -f processing/gpu-palette/$(DEPDIR)/test_runner-0001_gpu_palette_threshold_strtoul.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po

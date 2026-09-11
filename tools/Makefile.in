@@ -511,6 +511,7 @@ EXTRA_DIST = libsixel-config.in \
              check_threading_measurements.py \
              check_working_colorspace_measurements.py \
              generate_crop_resize_policy_path.py \
+             generate_resampling_exact_fixtures.py \
              plot_cover_policy_figures.py \
              plot_crop_resize_measurements.py \
              plot_resampling_measurements.py \
