@@ -368,7 +368,11 @@ def write_csv(path: Path, rows: Sequence[Dict[str, object]],
               fieldnames: Sequence[str]) -> None:
     """Write one stable CSV with explicit column order."""
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=fieldnames,
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(rows)
 
