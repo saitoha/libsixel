@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify layer fallback detects short blend block with deterministic trace.
 
 set -eux

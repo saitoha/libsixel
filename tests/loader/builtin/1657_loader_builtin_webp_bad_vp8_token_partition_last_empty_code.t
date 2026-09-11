@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming empty VP8 token partition maps to stream error.
 # Fixture is derived from vp80-04-partitions-1404.webp by rewriting the token
 # partition table first length field so the last partition size becomes zero.

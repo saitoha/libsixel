@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/psd.md
 # Verify builtin PSD ICC conversion matches a fixed no-ICC PNM reference.
 

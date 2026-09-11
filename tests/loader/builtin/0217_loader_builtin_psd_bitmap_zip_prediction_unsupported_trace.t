@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify Bitmap 1-bit + ZIP prediction is explicitly unsupported.
 
 set -eux

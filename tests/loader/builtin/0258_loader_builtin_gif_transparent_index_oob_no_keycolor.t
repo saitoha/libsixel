@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: out-of-range transparent index is normalized (no keycolor header).
 
 set -eux

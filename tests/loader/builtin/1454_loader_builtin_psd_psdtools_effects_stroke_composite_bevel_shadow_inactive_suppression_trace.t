@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify stroke-composite keeps explicit inactive ebbl out of apply
 # paths while keeping bevel channel parse traces deterministic.
 # Fixture/expected regeneration command:

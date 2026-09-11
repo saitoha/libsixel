@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin loader accepts negative out-of-range APNG start frame.
 
 set -eux

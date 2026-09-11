@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Confirm RGB PNG quality meets the lsqa baseline thresholds.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! tests/data/inputs/snake_64.png

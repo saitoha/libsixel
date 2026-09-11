@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/jpeg.md
 # Verify builtin loader decodes 8-bit RGB JPEG (sequential 4:4:4)
 # with stable quality against a fixed expected PNM reference.

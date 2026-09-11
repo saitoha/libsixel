@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader reconstructs PSB mode7(4ch->CMYK32) multi-layer image at high-offset layout.
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psb_missing_composite_fixtures.py

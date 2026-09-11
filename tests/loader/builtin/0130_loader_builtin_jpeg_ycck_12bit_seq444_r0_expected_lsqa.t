@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader decodes 12-bit YCCK JPEG (sequential 4:4:4)
 # with stable quality against expected PNM reference.
 # Reference generation command (libjpeg tool path):

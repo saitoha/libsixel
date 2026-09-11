@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify invalid APNG keycolor input uses the builtin enabled default.
 
 set -eux

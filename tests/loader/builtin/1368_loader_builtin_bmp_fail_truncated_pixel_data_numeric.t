@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP truncated-pixel-data fail numeric checks.
 
 set -eux

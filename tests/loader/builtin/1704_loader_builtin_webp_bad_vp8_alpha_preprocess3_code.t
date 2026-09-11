@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8+ALPHA preprocess=3 is treated as invalid.
 # Fixture is derived from webp-vp8-alpha-snake64-alpha00.webp by setting
 # ALPH control byte to 0x30.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify stroke-composite keeps deferred clipped-group flow while
 # explicit inactive outer effects stay suppressed.
 # Fixture/expected regeneration command:

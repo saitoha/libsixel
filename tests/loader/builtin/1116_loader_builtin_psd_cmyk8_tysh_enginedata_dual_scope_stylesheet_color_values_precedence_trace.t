@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD TySh EngineData dual-scope precedence with StyleSheetData /Color:
 # top-level /FillColor must lose to StyleRun/StyleSheetData /Color /Values.
 # Reference generation commands:

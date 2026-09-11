@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin GIF positive out-of-range start frame returns an error.
 
 set -eux

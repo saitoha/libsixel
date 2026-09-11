@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming forced builtin loader tags invalid VP8 start code stream
 # errors.
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD loader accepts 8BPB+version2 minimal RLE composite input.
 # Fixture generation commands:
 #   cp tests/data/inputs/formats/stbi_minimal_version2_rgb_rle.psd \

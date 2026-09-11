@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB mode7 TySh weighted run-length fixture avoids false failure trace on valid ICC.
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

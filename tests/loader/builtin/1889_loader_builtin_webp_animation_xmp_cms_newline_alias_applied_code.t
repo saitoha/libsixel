@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP accepts newline-separated sRGB alias text.
 # Derived fixture: animated-lossy-8x8-2frame-min-xmp-icc-srgb.webp
 # Replaced XMP value bytes: "sRGB IEC61966-2.1" -> "sRGB\nIEC61966-2.1".

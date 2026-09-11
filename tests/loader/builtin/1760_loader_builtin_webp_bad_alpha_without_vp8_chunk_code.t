@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming top-level ALPH chunk without VP8 payload is rejected.
 # Fixture is a minimal RIFF/WEBP sample with VP8X(alpha=1) + ALPH only.
 

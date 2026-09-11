@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl parse contract remains visible on effects/shape-fx while
 # keeping psd-tools LSQA parity.
 # Fixture/expected regeneration command:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP top-down 24bpp numeric checks.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP applies unprefixed XMP ICCProfile element.
 # Derived fixture: orientation_xmp_icc_prefix_mismatch_vp8_static_12x8.webp
 # Replaced element payload with unprefixed Adobe_RGB1998 form.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify OrGl/ChFX object parse contract remains visible on
 # effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

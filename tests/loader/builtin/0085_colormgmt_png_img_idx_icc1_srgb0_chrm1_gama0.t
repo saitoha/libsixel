@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin loader colormgmt parity for idx/img_idx_icc1_srgb0_chrm1_gama0.png
 
 set -eux

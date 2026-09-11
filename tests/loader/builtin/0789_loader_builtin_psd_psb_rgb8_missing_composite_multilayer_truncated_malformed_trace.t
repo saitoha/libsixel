@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB missing-composite fixture with truncated tail is detected as malformed.
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psb_missing_composite_fixtures.py

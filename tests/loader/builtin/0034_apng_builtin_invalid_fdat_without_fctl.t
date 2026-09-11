@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: APNG fdAT without fcTL input is rejected by builtin loader path.
 
 set -eux

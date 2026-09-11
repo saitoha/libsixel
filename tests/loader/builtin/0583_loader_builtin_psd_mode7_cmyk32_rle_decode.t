@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader maps PSD Multichannel(4ch) to CMYK 32-bit RLE decode.
 # Fixture generation command:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

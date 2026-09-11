@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP OS/2 short DIB(32) RLE4 numeric checks.
 
 set -eux

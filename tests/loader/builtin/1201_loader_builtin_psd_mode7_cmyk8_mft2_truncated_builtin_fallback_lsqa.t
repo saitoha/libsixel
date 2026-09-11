@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD mode7 CMYK8 path rejects truncated mft2 ICC and falls back.
 
 set -eux

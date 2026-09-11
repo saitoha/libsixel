@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify active deferred gradient/stroke contracts remain intact while
 # lfx2 explicit inactive guards suppress inactive effect application.
 # Fixture/expected regeneration command:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8 interframe inside ANMF maps to stream error.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp by patching
 # first frame VP8 payload byte at offset 0x4c from 0xd0 to 0xd1.

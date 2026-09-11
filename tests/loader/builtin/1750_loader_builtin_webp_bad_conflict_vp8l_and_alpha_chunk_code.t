@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8L and ALPH top-level conflict is rejected.
 # Fixture is derived from palette_lossless_noicc.webp by appending ALPH chunk from webp-static-alpha-keycolor-lossy.webp.
 

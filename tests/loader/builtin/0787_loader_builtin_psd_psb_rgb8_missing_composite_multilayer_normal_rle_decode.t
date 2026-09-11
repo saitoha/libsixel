@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader decodes PSB RGB8 multi-layer image with per-layer RLE channel payloads and 4-byte row tables.
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psb_missing_composite_fixtures.py

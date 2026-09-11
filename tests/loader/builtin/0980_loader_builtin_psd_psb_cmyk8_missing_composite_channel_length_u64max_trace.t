@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB mode4 CMYK8 UINT64_MAX channel-length emits dedicated malformed trace.
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psb_missing_composite_fixtures.py

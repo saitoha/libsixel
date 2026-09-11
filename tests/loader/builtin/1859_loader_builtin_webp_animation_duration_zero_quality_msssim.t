@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming duration=0 animation keeps builtin/libwebp quality parity.
 
 set -eux

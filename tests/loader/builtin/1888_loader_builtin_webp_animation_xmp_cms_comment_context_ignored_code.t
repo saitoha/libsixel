@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP ignores ICCProfile text inside comments.
 # Derived fixture: animated-lossy-8x8-2frame-min-xmp-icc-srgb.webp
 # Replaced XMP value with <!--photoshop:ICCProfile=DisplayP3--> comment text.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 deferred solid replay is emitted when suppression is adopted
 # for the selected replay source layer.
 # Fixture/expected regeneration command:

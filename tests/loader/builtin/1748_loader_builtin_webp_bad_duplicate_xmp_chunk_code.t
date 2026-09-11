@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming duplicate XMP top-level chunk is rejected.
 # Fixture is derived from palette_lossless_noicc.webp by injecting two XMP chunks (size 4 each).
 

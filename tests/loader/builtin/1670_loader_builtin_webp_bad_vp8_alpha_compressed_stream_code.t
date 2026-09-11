@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming corrupted VP8 ALPH compressed payload maps to stream error.
 # Fixture is derived from webp-static-alpha-keycolor-lossy.webp by setting the
 # ALPH control byte to 0x01 without re-encoding the ALPH residual stream.

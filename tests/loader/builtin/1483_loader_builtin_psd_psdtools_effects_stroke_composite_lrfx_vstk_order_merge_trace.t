@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify stroke-composite keeps legacy lrFX merge contract when vstk payload is
 # parsed in the same layer extra-data stream.
 # Fixture/expected regeneration command:

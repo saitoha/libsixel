@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated XMP orientation at parse limit is still applied.
 # Derived fixture: animated-lossy-8x8-2frame-min-xmp-o6.webp
 # Replaced XMP payload with exactly 262144-byte orientation metadata.

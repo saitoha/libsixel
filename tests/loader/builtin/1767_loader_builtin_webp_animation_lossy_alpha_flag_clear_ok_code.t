@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming regular lossy ANIM without alpha keeps success contract.
 
 set -eux

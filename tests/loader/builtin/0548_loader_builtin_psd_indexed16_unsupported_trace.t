@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD rejects Indexed depth=16 with deterministic trace.
 
 set -eux

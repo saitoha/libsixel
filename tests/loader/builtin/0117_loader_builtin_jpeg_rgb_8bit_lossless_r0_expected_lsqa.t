@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader decodes 8-bit lossless JPEG (SOF3) with stable quality
 # against a fixed expected PNM reference.
 # Reference generation command (ImageMagick):

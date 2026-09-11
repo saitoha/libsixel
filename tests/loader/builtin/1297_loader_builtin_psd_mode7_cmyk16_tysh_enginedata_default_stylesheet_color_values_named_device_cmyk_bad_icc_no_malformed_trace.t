@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD mode7 CMYK16 TySh /DefaultStyleSheet /Color DeviceCMYK with bad
 # ICC bytes is not misclassified as malformed resource and still decodes.
 # Fixture generation commands:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB mode7 CMYK16 TySh /DefaultStyleSheet /Color DeviceCMYK keeps
 # malformed ICC skip trace.
 # Fixture generation commands:

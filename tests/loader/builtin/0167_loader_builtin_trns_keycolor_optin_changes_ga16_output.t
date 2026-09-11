@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify opt-in keycolor mode changes GA16 PNG output in builtin loader path.
 
 set -eux

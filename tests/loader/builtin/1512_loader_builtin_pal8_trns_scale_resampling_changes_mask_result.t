@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PAL8 transparent scale output changes with resampling mode.
 
 set -eux

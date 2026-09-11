@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming second-frame quality for palette_lossless_noicc_anim2.webp.
 
 set -eux

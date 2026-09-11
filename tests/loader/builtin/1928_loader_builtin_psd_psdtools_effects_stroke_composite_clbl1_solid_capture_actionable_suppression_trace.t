@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 actionable solid capture keeps suppression code while solid
 # replay remains blocked without adopted base suppression.
 # Fixture/expected regeneration command:

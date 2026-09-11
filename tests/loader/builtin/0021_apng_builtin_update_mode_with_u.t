@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: APNG builtin static start-frame selection follows start-frame
 # controls.
 

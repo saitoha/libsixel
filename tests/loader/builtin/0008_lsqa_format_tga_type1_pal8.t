@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify TGA type 1 (uncompressed color-mapped) with 256-color palette.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -colors 256 -type Palette -define tga:image-origin=TopLeft tests/data/inputs/formats/snake-tga-type1-pal8.tga

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin indexed PNG ICC conversion matches a fixed no-ICC PNM reference.
 
 set -eux

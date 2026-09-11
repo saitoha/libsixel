@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7(4ch->CMYK32) TySh wrapped descriptor payload in a non-pixel/no-pixel
 # layer is interpreted as synthetic fill during missing-composite fallback.
 # Fixture generation commands:

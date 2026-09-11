@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD CMYK16 TySh EngineData StyleRun RunStyle precedence:
 # RunLength-weighted RunArray entries should resolve through /RunStyle into
 # StyleSheetSet deterministically.

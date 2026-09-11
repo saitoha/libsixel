@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD CMYK8 alpha keeps keycolor without --bgcolor.
 
 set -eux

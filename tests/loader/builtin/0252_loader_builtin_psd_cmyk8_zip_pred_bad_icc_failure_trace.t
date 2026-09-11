@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify CMYK ZIP+Prediction path keeps bad-ICC failure trace behavior.
 
 set -eux

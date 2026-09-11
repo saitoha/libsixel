@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/webp.md
 # TAP test confirming alpha lossy animation keeps composited quality parity.
 

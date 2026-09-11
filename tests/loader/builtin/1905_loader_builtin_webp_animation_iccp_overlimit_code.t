@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming oversize ICCP is ignored non-fatally on animated WebP.
 # Derived fixture: animated-lossy-8x8-2frame-min-embedded-srgb-icc.webp
 # Replaced ICCP payload size to 1048577 bytes and stored as .webp.gz.

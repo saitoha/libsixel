@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB mode7 RGB8 TySh descriptor Lab color payload in a non-pixel/no-pixel
 # layer is interpreted as synthetic fill during missing-composite fallback.
 # Fixture generation commands:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming oversize animated XMP orientation is ignored non-fatally.
 # Derived fixture: animated-lossy-8x8-2frame-min-xmp-o6.webp
 # Replaced XMP payload with 262145-byte orientation metadata.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader reconstructs multi-layer Lab16 PSD (missing composite)
 # with normal blend and layer offsets.
 # Reference generation commands:

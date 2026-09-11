@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify deferred stroke applies fractional silhouette coverage on
 # psd-tools effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

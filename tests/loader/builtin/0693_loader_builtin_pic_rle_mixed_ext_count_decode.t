@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/pic.md
 # Verify builtin loader decodes PIC mixed RLE extended count packets.
 

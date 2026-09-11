@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 set -eux
 
 SIXEL_HDR_CASE_LABEL='hdr matrix numeric case=076 target=linear gamma=2.2 primaries=bt2020 ev=-2 tonemap=reinhard cms=none fallback=linear-srgb'

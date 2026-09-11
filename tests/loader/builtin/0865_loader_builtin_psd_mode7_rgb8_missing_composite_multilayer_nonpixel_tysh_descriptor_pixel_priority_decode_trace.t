@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7(3ch->RGB8) TySh descriptor payload on a pixel layer keeps
 # pixel-priority semantics: non-pixel payload is ignored without synthetic fill
 # and output remains the RGB8 snake baseline.

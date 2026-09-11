@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP start_frame replay keeps subrect state parity.
 
 set -eux

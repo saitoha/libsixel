@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP keeps ICCP precedence over unprefixed XMP CMS.
 # Derived fixture: snake_64_embedded_a98_icc_xmp_iccprofile.webp
 # Replaced XMP key/value: ICCProfile="Display-P3" (unprefixed).

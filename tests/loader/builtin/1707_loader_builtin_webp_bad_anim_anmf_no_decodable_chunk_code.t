@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANMF without VP8/VP8L frame chunk maps to stream error.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp by replacing
 # first inner VP8 FourCC with JUNK.

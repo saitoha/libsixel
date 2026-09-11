@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD CMYK8 TySh FillOpacity=0.25 applies synthetic fill opacity.
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

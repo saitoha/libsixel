@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin WebP animation keeps ICCP ignored when CMS is off.
 
 set -eux

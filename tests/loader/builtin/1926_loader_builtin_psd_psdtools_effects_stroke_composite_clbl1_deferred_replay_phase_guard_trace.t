@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify replay-phase guard keeps gradient replay active while solid replay is
 # blocked by unsuppressed ownership in header-only trace output.
 # Fixture/expected regeneration command:

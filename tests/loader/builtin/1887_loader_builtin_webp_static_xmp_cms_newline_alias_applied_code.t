@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP accepts newline-separated sRGB alias text.
 # Derived fixture: orientation_xmp_icc_srgb_vp8_static_12x8.webp
 # Replaced XMP value bytes: "sRGB IEC61966-2.1" -> "sRGB\nIEC61966-2.1".

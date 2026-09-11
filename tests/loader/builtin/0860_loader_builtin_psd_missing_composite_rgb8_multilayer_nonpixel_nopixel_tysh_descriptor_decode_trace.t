@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify TySh descriptor payload in a non-pixel/no-pixel RGB8 layer is
 # interpreted as synthetic fill during missing-composite fallback.
 # Reference generation commands:

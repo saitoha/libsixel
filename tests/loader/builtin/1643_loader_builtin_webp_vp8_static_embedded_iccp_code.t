@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming forced builtin loader keeps ICCP ignore contract on
 # static VP8 decode.
 

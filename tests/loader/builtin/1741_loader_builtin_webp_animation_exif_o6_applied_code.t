@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANIM path applies EXIF orientation on o6 fixture.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp by injecting
 # EXIF metadata extracted from orientation_exif_o6_vp8_static_12x8.webp.

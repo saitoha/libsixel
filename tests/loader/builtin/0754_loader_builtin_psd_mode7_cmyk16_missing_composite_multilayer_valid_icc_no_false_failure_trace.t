@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7(4ch->CMYK16) multi-layer fallback with valid ICC avoids false
 # embedded-ICC failure trace.
 # Fixture generation command:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD rejects Bitmap depth=8 with deterministic trace.
 
 set -eux

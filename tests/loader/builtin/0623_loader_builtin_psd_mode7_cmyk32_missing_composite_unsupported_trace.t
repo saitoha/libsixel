@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify layer-marked mode7 CMYK32 PSD is deterministically rejected as unsupported
 # when merged/composite image data is missing.
 

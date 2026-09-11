@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated XMP CMS at parse limit is still applied.
 # Derived fixture: animated-lossy-8x8-2frame-min-xmp-icc-srgb.webp
 # Replaced XMP payload with exactly 262144-byte ICCProfile metadata.

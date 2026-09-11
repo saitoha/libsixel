@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7(4ch->CMYK16) with valid embedded ICC avoids false failure trace.
 # Fixture generation command:
 #   python3 tests/data/inputs/formats/generate_psd_policy_trace_fixtures.py

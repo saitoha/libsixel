@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify GIF background policy default/invalid fallback and explicit-first switch.
 # Policy: docs/loader/background-policy.md
 

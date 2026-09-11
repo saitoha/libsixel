@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD TySh EngineData /Color << /Values [...] >> parsing:
 # fallback should render non-pixel fill payload and keep deterministic trace.
 # Reference generation commands:

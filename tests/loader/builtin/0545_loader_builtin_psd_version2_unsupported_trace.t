@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD decodes PSB (version=2) minimal RLE composite input.
 
 set -eux

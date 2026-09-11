@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming exact-limit EXIF remains applicable on animated WebP.
 # Derived fixture: animated-lossy-8x8-2frame-min-exif-o6.webp
 # Replaced EXIF payload size to exactly 1048576 bytes.

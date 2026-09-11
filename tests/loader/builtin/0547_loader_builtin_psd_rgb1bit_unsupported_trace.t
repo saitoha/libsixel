@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD rejects RGB depth=1 with deterministic trace.
 
 set -eux

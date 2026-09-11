@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP keeps ICCP precedence over XMP CMS.
 # Derived fixture: animated-lossy-8x8-2frame-min-embedded-srgb-icc.webp
 # Added XMP payload: photoshop:ICCProfile="DisplayP3".

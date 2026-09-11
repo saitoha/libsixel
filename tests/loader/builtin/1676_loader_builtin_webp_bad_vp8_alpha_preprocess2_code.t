@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming invalid VP8 ALPHA preprocess=2 maps to ERR code.
 # Fixture is derived from webp-vp8-alpha-snake64-alpha00.webp.
 

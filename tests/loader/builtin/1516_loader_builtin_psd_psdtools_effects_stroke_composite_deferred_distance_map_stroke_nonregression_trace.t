@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify deferred distance-map coverage keeps existing deferred stroke
 # non-regression contracts on effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:

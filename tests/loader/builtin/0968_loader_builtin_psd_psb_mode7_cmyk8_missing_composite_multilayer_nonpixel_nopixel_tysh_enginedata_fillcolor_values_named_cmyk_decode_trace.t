@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB mode7(CMYK8) TySh EngineData FillColor /Values([/CMYK ...])
 # payload in a non-pixel/no-pixel layer is interpreted as synthetic fill
 # during missing-composite fallback.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: invalid GIF bgindex falls back to deterministic black background.
 
 set -eux

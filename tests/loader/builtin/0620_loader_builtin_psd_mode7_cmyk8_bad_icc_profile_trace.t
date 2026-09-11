@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD mode7(4ch->CMYK) logs ICC conversion failure for invalid profile bytes.
 # Fixture generation command:
 #   python3 tests/data/inputs/formats/generate_psd_policy_trace_fixtures.py

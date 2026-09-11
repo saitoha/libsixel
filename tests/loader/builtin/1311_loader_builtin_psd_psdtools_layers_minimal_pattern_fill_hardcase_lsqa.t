@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD decode reaches psd-tools baseline for
 # layers-minimal/pattern-fill.psd.
 # Fixture/expected regeneration command:

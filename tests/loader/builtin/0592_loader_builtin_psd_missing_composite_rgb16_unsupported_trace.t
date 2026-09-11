@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify malformed layer-marker RGB16 PSD is deterministically rejected
 # by layer-fallback layout checks.
 

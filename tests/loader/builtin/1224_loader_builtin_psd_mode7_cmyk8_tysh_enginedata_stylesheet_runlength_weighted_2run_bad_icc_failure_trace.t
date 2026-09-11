@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD mode7 TySh weighted run-length fixture keeps bad ICC failure trace.
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

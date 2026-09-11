@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify lrFX inactive completion keeps merge diagnostics while
 # inactive ebbl still suppresses bevel-shadow apply.
 # Fixture/expected regeneration command:

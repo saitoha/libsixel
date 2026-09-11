@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify cms=auto disables keycolor behavior for RGBA16 in builtin loader path.
 
 set -eux

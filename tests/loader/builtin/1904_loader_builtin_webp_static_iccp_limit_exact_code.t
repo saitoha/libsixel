@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming exact 1MiB ICCP payload stays accepted.
 # Derived fixture: webp-static-icc-overlimit-padded.webp
 # Replaced ICCP payload size from 1049601 to exactly 1048576 bytes.

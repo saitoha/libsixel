@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ICCP precedence with tab-alias XMP CMS metadata.
 # Derived fixture: snake_64_embedded_a98_icc_xmp_iccprofile.webp
 # Replaced XMP value bytes: "Display P3" -> "Display\tP3".

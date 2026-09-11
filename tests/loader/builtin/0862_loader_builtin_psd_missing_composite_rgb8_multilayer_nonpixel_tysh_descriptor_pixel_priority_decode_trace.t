@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify TySh descriptor payload on a pixel layer keeps pixel-priority semantics:
 # layer fallback ignores non-pixel payload, does not synthesize fill, and decode
 # output remains the RGB8 snake baseline.

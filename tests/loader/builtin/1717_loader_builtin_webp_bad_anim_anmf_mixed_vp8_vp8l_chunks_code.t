@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANMF mixed VP8 and VP8L chunks map to VP8 stream error.
 # Fixture is derived from animated-lossy-alpha-8x8-2frame-min.webp by patching
 # first ANMF inner ALPH FourCC at byte offset 68 to VP8L.

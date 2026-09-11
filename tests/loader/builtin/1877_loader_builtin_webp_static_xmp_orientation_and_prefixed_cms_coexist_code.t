@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP applies XMP orientation and XMP CMS together.
 # Derived fixture: orientation_plain_12x8.webp
 # Replaced XMP property name: photoshop:ICCProfile -> myphotosh:ICCProfile.

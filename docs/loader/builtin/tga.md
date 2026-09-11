@@ -122,6 +122,8 @@ Weak recognition, dimensions, palette sizes, index values, and RLE commands are 
 
 <!-- test-coverage: enforced -->
 
+The rows below are pipeline landmarks rather than the complete suite. The [TGA coverage inventory](../../testing/builtin-loader-coverage.md#tga) lists every format-classified test, including supplementary and defensive cases.
+
 ### Behavioral contract tests
 
 | ID | Contract protected | Owning test |

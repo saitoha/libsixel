@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP INFO40 32bpp bitfields no-alpha numeric checks.
 
 set -eux

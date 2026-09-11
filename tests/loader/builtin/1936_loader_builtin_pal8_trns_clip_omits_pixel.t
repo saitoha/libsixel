@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify that clipping preserves omitted transparent coverage after promotion.
 # Policy: docs/concepts/pixelformat.md
 

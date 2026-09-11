@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD validate defensive branches that are not reachable from file-level
 # decode fixtures.
 

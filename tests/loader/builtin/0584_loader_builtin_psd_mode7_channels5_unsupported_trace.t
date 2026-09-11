@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify Multichannel(mode=7) with channels!=3/4 is explicitly unsupported.
 # Fixture generation command:
 #   python3 tests/data/inputs/formats/generate_psd_policy_trace_fixtures.py

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify malformed mode7 PSD image-resource section is logged and decode succeeds.
 # Fixture generation command:
 #   python3 tests/data/inputs/formats/generate_psd_policy_trace_fixtures.py

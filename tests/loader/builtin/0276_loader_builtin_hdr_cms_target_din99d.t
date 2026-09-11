@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/hdr.md
 # TAP wrapper validating builtin HDR pixelformat checks with DIN99d CMS target.
 

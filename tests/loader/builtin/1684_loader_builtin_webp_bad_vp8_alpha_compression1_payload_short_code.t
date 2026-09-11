@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming short VP8 ALPH compression=1 payload maps to stream error.
 # Fixture is derived from webp-vp8-alpha-snake64-compression1.webp by removing
 # bytes from the ALPH payload and adjusting RIFF/chunk size fields.

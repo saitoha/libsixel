@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming duplicate ICCP top-level chunk is rejected.
 # Fixture is derived from snake_64_embedded_a98_icc.webp by appending ICCP chunk (offset 30, size 564).
 

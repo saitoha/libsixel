@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD TySh EngineData dual-StyleSheetData FillColor precedence:
 # when multiple StyleSheetData entries are present, the last valid one must win.
 # Reference generation commands:

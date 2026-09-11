@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7(4ch->CMYK16) multi-layer fallback with bad ICC bytes does not
 # misclassify resource parsing as malformed and still decodes.
 # Fixture generation command:

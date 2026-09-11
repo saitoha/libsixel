@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify CMYK32 TySh EngineData FillColor payload in a non-pixel/no-pixel layer
 # is interpreted as synthetic fill during missing-composite fallback.
 # Reference generation commands:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD mode7 CMYK8 TySh /DefaultStyleSheet bad ICC emits failure trace.
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

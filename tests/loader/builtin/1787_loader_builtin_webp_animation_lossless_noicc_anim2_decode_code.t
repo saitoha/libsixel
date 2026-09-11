@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming palette_lossless_noicc_anim2.webp decodes as ANIM.
 
 set -eux

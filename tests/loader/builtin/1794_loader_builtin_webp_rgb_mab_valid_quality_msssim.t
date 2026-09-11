@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming rgb_mab_valid.webp static quality against libwebp.
 
 set -eux

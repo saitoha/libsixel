@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 deferred ownership records a solid replay/skip decision code
 # after base suppression.
 # Fixture/expected regeneration command:

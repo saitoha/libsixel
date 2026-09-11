@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader reconstructs clipping-group behavior in a layer-only
 # CMYK8 multi-layer PSD (missing composite).
 # Reference generation commands:

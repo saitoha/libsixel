@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming EXIF takes priority over XMP orientation in static WebP.
 # Derived fixture: orientation_exif_o6_vp8_static_12x8.webp
 # Added VP8X XMP flag and appended XMP chunk: tiff:Orientation="3".

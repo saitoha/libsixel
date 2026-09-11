@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming short VP8 ALPH payload maps to stream error.
 # Fixture is derived from webp-static-alpha-keycolor-lossy.webp by shortening
 # ALPH payload length and adjusting RIFF/chunk size fields.

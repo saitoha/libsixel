@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 deferred replay keeps base SoFi when replay replacement is
 # absent in the current fixture.
 # Fixture/expected regeneration command:

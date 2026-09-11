@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify invalid background colorspace falls back to gamma in builtin path.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify malformed layer-only PSD is deterministically rejected.
 
 set -eux

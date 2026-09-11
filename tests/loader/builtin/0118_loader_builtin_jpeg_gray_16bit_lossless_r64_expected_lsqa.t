@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader decodes 16-bit lossless JPEG with restart markers
 # and keeps stable quality against a fixed expected PNM reference.
 # Reference generation command (ImageMagick):

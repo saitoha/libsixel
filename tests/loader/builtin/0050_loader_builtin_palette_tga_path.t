@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/tga.md
 # TAP test confirming builtin loader keeps indexed TGA palette path.
 

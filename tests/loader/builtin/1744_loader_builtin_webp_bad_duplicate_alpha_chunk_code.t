@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming duplicate ALPH top-level chunk is rejected.
 # Fixture is derived from webp-static-alpha-keycolor-lossy.webp by appending ALPH chunk (offset 30, size 7).
 

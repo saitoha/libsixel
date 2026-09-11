@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify stroke-composite keeps bevel parse traces while explicit
 # inactive ebbl prevents bevel apply.
 # Fixture/expected regeneration command:

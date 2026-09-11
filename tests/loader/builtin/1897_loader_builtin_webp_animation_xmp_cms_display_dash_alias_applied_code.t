@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP accepts Display-P3 XMP profile alias.
 # Derived fixture: animated-lossy-8x8-2frame-min-xmp-icc-displayp3-alias.webp
 # Replaced key/value to unprefixed ICCProfile="Display-P3".

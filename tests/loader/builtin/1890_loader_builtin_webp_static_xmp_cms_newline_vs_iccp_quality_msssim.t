@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test comparing static newline XMP CMS output against ICCP output.
 # Pair: orientation_xmp_icc_srgb_newline_vp8_static_12x8.webp vs
 # orientation_embedded_srgb_icc_vp8_static_12x8.webp.

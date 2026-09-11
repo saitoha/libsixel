@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANIM duration=0 streams expose timing contract codes.
 # Fixture origin: animated-lossless-8x8-2frame-min.webp.
 # Patch summary: first ANMF duration bytes were rewritten from 10 to 0.

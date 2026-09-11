@@ -120,6 +120,8 @@ Header lengths, dimensions, scanline markers, and RLE counts are attacker-contro
 
 <!-- test-coverage: enforced -->
 
+The rows below are pipeline landmarks rather than the complete suite. The [Radiance HDR coverage inventory](../../testing/builtin-loader-coverage.md#radiance-hdr) lists every format-classified test, including supplementary and defensive cases.
+
 ### Behavioral contract tests
 
 | ID | Contract protected | Owning test |

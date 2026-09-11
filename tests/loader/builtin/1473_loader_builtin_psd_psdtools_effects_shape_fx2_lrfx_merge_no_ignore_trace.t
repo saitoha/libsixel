@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify lrFX inactive completion merges shape-fx2 legacy glow records
 # without staying in ignore-only mode.
 # effects/shape-fx2 hardcase.

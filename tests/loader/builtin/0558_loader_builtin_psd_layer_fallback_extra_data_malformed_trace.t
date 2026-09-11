@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify layer fallback detects oversized layer extra-data length.
 
 set -eux

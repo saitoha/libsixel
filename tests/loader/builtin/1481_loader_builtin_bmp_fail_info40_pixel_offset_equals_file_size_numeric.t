@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP wrapper for builtin BMP INFO40 pixel-offset-equals-file-size checks.
 
 set -eux

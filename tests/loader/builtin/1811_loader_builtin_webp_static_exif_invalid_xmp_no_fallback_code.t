@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming EXIF presence suppresses XMP fallback even with invalid EXIF.
 # Derived fixture: orientation_exif_o6_vp8_static_12x8_xmp_o3.webp
 # Patched EXIF signature bytes and changed XMP payload to orientation=6.

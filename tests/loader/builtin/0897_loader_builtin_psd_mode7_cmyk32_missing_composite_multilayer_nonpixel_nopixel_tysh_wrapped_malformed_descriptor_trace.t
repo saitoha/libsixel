@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify malformed mode7 CMYK32 TySh wrapped descriptor payload is skipped with
 # deterministic trace and without synthetic fill rendering.
 # Reference generation commands:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD TySh EngineData named HSB + valid ICC matrix keeps decode quality
 # and avoids false failure traces.
 # Fixture generation commands:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB mode7 TySh EngineData StyleRun RunLengthArray precedence:
 # RunLength-weighted StyleSheetData blending should remain deterministic.
 # Reference generation commands:

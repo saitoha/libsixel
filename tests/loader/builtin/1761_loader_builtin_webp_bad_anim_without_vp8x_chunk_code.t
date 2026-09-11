@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANIM/ANMF without VP8X is rejected.
 # Fixture is a minimal RIFF/WEBP sample with VP8 + ANIM + ANMF and no VP8X.
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify malformed lrFX record signature does not emit legacy feature-record
 # trace and decode keeps fallback behavior.
 

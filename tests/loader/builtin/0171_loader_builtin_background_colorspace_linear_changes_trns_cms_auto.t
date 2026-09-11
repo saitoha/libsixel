@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify linear background interpretation changes tRNS composition with cms=auto in builtin path.
 
 set -eux

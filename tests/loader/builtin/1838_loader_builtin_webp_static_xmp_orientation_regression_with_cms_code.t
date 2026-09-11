@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming XMP orientation contract is preserved after XMP CMS add.
 # Input keeps only XMP orientation metadata and no XMP ICCProfile metadata.
 

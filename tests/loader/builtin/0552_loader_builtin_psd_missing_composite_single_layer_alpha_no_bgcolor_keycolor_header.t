@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify missing-composite single-layer RGB8+alpha keeps keycolor without --bgcolor.
 
 set -eux

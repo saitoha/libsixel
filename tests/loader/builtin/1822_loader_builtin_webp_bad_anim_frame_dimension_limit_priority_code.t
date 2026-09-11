@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANIM limit priority prefers frame limit over dimension.
 # Derived fixture: bad_anim_frame_count_exceeds_limit.webp
 # Patched offsets: VP8X width_minus_one bytes at 24..26 -> ff 7f 00.

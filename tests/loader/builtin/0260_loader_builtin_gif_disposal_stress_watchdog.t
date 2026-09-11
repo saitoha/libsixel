@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/gif.md
 # TAP test: disposal-heavy GIF decode completes within watchdog window.
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify RGB8 multi-layer fallback renders GdFl descriptor HSB stop payload.
 # Reference generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8X alpha=0 with ANMF VP8+ALPH is rejected.
 # Fixture is derived from animated-lossy-alpha-8x8-2frame-min.webp.
 # Patch: VP8X flag byte at offset 0x14 changed from 0x12 to 0x02.

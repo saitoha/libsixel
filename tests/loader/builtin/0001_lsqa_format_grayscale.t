@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Ensure grayscale JPEG quality stays within the recorded lsqa baseline.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-grayscale.jpg

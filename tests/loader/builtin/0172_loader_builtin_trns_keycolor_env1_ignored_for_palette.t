@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 is ignored for palette+tRNS in builtin loader path.
 
 set -eux

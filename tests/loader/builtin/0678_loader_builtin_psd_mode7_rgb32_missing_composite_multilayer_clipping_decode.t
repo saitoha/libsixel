@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader reconstructs clipping-group behavior in a layer-only
 # mode7(3ch->RGB32) multi-layer PSD.
 # Reference generation commands:

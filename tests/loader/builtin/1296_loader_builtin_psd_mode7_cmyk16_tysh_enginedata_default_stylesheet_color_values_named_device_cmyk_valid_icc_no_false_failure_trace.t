@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSD mode7 CMYK16 TySh /DefaultStyleSheet /Color DeviceCMYK avoids
 # false failure trace on valid ICC.
 # Fixture generation commands:

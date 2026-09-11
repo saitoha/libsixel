@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming out-of-canvas ANMF rectangle is treated as stream error.
 # Fixture is derived from animated-lossless-8x8-2frame-min.webp by setting
 # the first ANMF frame X offset to 2 pixels while keeping width=8.

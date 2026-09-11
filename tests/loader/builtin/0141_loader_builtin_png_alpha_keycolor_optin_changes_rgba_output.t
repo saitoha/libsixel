@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader alpha-keycolor opt-in changes RGBA output.
 
 set -eux

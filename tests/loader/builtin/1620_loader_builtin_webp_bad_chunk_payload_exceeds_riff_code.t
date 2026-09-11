@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/webp.md
 # TAP test confirming forced builtin loader corrupted fixture bad_chunk_payload_exceeds_riff.webp.
 

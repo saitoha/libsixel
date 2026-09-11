@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7(4ch->CMYK8) multi-layer fallback keeps embedded-ICC conversion
 # failure trace behavior for invalid profile bytes.
 # Fixture generation command:

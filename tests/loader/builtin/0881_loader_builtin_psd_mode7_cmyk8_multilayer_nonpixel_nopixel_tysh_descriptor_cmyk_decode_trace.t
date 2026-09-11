@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7 CMYK8 TySh descriptor CMYK color payload in a non-pixel/no-pixel
 # layer is interpreted as synthetic fill during missing-composite fallback.
 # Reference generation commands:

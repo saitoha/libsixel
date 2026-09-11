@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/pic.md
 # Verify builtin PIC RGBA composites all alpha against an explicit background.
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify that indexed transparent input stays PAL8 without geometry changes.
 # Policy: docs/concepts/pixelformat.md
 

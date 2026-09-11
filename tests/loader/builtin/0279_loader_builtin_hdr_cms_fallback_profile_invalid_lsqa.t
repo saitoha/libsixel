@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming invalid builtin HDR fallback profile does not break decode.
 
 set -eux

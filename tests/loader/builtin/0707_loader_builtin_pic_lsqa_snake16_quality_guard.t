@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PIC decode keeps MS-SSIM quality for snake16 fixture.
 
 set -eux

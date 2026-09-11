@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static WebP ignores XMP orientation value 1.
 # Derived fixture: orientation_xmp_o6_vp8_static_12x8.webp
 # Replaced XMP payload with: tiff:Orientation="1".

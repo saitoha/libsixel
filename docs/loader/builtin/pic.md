@@ -112,6 +112,8 @@ Dimensions, packet masks, chain length, run counts, and source availability are 
 
 <!-- test-coverage: enforced -->
 
+The rows below are pipeline landmarks rather than the complete suite. The [Softimage PIC coverage inventory](../../testing/builtin-loader-coverage.md#softimage-pic) lists every format-classified test, including supplementary and defensive cases.
+
 ### Behavioral contract tests
 
 | ID | Contract protected | Owning test |

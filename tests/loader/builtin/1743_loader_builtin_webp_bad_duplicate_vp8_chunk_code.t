@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming duplicate VP8 top-level chunk is rejected.
 # Fixture is derived from snake_64.webp by appending one VP8 chunk (offset 976, size 956).
 

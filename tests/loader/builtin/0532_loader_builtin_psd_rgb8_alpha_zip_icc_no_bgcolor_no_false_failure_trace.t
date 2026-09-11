@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD RGB8 alpha ZIP ICC keeps keycolor and avoids false failure trace without --bgcolor.
 
 set -eux

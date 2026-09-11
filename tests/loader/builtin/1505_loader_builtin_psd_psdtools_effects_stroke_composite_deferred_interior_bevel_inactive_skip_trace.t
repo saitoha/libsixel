@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify stroke-composite deferred clipped-group flow keeps
 # gradient/stroke applies while skipping inactive interior effects.
 # Fixture/expected regeneration command:

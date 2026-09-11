@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming VP8X XMP flag set without XMP chunk is rejected.
 # Fixture is derived from orientation_exif_o6_12x8.webp by setting VP8X flag bit 0x04 at offset 20.
 

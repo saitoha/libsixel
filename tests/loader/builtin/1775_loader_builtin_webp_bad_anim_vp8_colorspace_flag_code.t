@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming invalid VP8 colorspace flag inside ANMF stays ERR.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp by patching
 # first frame VP8 payload byte at offset 0x56 from 0x02 to 0xfd.

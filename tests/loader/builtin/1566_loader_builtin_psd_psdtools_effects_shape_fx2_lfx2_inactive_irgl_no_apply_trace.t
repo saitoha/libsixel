@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify explicit inactive IrGl from lfx2 suppresses inner-glow apply
 # while keeping legacy lrFX merge traces on effects/shape-fx2.
 # Fixture/expected regeneration command:

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify PSB mode4 CMYK32 xxlarge high-offset layer-info-end overrun emits dedicated malformed trace.
 # Fixture is prepared under TOP_BUILDDIR/tests/data/inputs/formats
 # by tests/_static/sh/prepare-psb-large-fixtures.sh

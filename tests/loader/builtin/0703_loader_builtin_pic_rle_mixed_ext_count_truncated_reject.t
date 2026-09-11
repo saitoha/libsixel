@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin loader rejects PIC mixed RLE extended count truncation.
 
 set -eux

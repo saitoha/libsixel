@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify mode7 CMYK16 TySh wrapped descriptor payload with unknown descriptor
 # item still renders synthetic fill via loose Clr/Objc recovery in fallback.
 # Reference generation commands:

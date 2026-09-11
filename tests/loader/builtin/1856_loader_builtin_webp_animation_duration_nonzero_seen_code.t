@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANIM duration>0 streams expose nonzero duration contract.
 
 set -eux

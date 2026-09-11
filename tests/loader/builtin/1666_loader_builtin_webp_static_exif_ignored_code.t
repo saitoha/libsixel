@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming builtin WebP keeps EXIF orientation ignored when off.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming animated WebP applies unprefixed XMP ICCProfile attribute.
 # Derived fixture: animated-lossy-8x8-2frame-min-xmp-icc-displayp3-alias.webp
 # Replaced key: photoshop:ICCProfile -> ICCProfile + spacing.

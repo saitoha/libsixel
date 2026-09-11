@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming static VP8 stream failure keeps ICCP ignored contract.
 # Fixture is derived from snake_64_embedded_a98_icc.webp by corrupting VP8
 # start-code byte.

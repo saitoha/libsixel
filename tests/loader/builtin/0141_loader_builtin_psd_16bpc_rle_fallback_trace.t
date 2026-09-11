@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin PSD decoder keeps native 16bpc path for RLE input.
 
 set -eux

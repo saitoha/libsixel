@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 solid slot contract stays consistent: base SoFi remains while
 # deferred solid replay is skipped under unsuppressed ownership.
 # Fixture/expected regeneration command:

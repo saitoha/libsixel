@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify builtin BMP BI_PNG16 uses its PNG background with ICC and CMS on.
 
 set -eux

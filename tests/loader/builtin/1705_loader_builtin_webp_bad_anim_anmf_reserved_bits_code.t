@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming ANMF reserved flags are treated as stream error.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp by setting
 # first ANMF flags byte to 0x04.

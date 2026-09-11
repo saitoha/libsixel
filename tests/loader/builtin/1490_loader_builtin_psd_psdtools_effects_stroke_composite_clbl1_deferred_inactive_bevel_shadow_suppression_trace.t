@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify clbl=1 deferred flow keeps running without interior apply
 # while suppressing inactive bevel-shadow apply.
 # Fixture/expected regeneration command:

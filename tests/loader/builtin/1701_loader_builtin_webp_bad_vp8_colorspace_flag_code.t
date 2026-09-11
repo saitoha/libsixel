@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test confirming invalid VP8 colorspace flag maps to ERR feature.
 
 set -eux

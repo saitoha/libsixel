@@ -1,4 +1,5 @@
 #!/bin/sh
+# Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify explicit inactive ebbl from lfx2 suppresses bevel-shadow apply
 # while keeping legacy lrFX merge traces on effects/stroke-composite.
 # Fixture/expected regeneration command:
