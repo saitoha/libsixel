@@ -1,0 +1,21 @@
+# path	cksum	bytes
+tests/data/inputs/mapfile/act-black-white-256.act	517652051	768
+tests/data/inputs/mapfile/act-black-white-count-2.act	3577151629	772
+tests/data/inputs/mapfile/act-black-white-count-256.act	1543881455	772
+tests/data/inputs/mapfile/act-transparency-0-count-256.act	2897278455	772
+tests/data/inputs/mapfile/gpl-trim-whitespace.gpl	708858490	69
+tests/data/inputs/mapfile/gpl-two-colors-cr.gpl	1159145463	34
+tests/data/inputs/mapfile/gpl-two-colors-crlf.gpl	1473889237	37
+tests/data/inputs/mapfile/gpl-two-colors-lf.gpl	2990207309	34
+tests/data/inputs/mapfile/gpl-utf32be-bom-invalid.gpl	573241037	23
+tests/data/inputs/mapfile/pal-fourth-component-invalid.pal	1674169565	28
+tests/data/inputs/mapfile/pal-trim-whitespace.pal	2476356910	48
+tests/data/inputs/mapfile/pal-two-colors-cr.pal	3673235274	37
+tests/data/inputs/mapfile/pal-two-colors-crlf.pal	1611577185	42
+tests/data/inputs/mapfile/pal-two-colors-lf.pal	3216835718	37
+tests/data/inputs/mapfile/pal-utf32le-bom-invalid.pal	2550340332	26
+tests/data/inputs/mapfile/riff-two-colors-flags-nonzero.pal	4229443117	32
+tests/data/inputs/mapfile/riff-two-colors-flags-zero.pal	3882270482	32
+tests/data/inputs/mapfile/riff-two-colors-padded-unknown.pal	859511008	44
+tests/data/inputs/mapfile/riff-two-colors-values.pal	3901419329	32
+tests/data/inputs/mapfile/riff-valid-noext	3117481855	28

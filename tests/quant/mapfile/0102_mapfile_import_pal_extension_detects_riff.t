@@ -15,15 +15,12 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
-input_palette="${ARTIFACT_LOCAL_DIR}/auto-riff.pal"
+input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/riff-two-colors-values.pal"
 expected_palette='JASC-PAL
 0100
 2
 12 34 56
 200 210 220'
-
-printf '\122\111\106\106\030\000\000\000\120\101\114\040\144\141\164\141\014\000\000\000\000\003\002\000\014\042\070\000\310\322\334\000' \
-    >"${input_palette}"
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${input_palette}" \

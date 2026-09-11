@@ -17,8 +17,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-256-valid.pal"
 actual_palette="${ARTIFACT_LOCAL_DIR}/actual.riff"
-actual_fields="${ARTIFACT_LOCAL_DIR}/actual-fields.bin"
-expected_fields="${ARTIFACT_LOCAL_DIR}/expected-fields.bin"
+actual_size=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m pal-jasc:"${input_palette}" \
     -M pal-riff:"${actual_palette}" -o/dev/null "${input_image}" || {
@@ -26,18 +25,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m pal-jasc:"${input_palette}" \
     exit 0
 }
 
-test "$(wc -c <"${actual_palette}")" -eq 1048 || {
+actual_size=$(wc -c <"${actual_palette}")
+test "${RUNTIME_ENV_IS_OPENVMS-0}" = "1" && {
+    actual_size=$(stat -c %s "${actual_palette}")
+}
+test "${actual_size}" -eq 1048 || {
     echo "not ok" 1 - "256-color RIFF PAL size is not 1048 bytes"
     exit 0
 }
 
-dd if="${actual_palette}" of="${actual_fields}" bs=1 skip=20 count=4 \
-    2>/dev/null || {
-    echo "not ok" 1 - "RIFF PAL version and count extraction failed"
-    exit 0
-}
-printf '\000\003\000\001' >"${expected_fields}"
-cmp -s "${actual_fields}" "${expected_fields}" || {
+# Word splitting is intentional: each hexadecimal byte becomes one argument.
+# shellcheck disable=SC2046
+set -- $(od -An -tx1 -j20 -N4 "${actual_palette}")
+test "$#" -eq 4 && test "$1" = 00 && test "$2" = 03 && \
+    test "$3" = 00 && test "$4" = 01 || {
     echo "not ok" 1 - "RIFF PAL 256-color version or count field changed"
     exit 0
 }

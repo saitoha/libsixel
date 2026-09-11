@@ -1,11 +1,12 @@
 #!/bin/sh
 # Verify the source-level OpenVMS compatibility boundaries.
 # Policy: docs/misc/platforms/openvms.md
-# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08
+# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10
 
 set -eu
 
 src_root=$1
+record_fixture_ledger="$src_root/tests/_static/data/openvms-record-fixtures.tsv"
 failed=0
 
 fail()
@@ -122,6 +123,78 @@ do
         fail "$palette_test uses an RMS-hostile full-size output fixture"
     fi
 done
+
+require_fixed 'tests/data/inputs/mapfile/* -text' .gitattributes
+test -f "$record_fixture_ledger" ||
+    fail "OpenVMS record-fixture ledger is missing"
+tab=$(printf '\t')
+while IFS="$tab" read -r fixture_path fixture_cksum fixture_size; do
+    case "$fixture_path" in
+        ''|'#'*) continue ;;
+    esac
+    test -f "$src_root/$fixture_path" || {
+        fail "OpenVMS record fixture is missing: $fixture_path"
+        continue
+    }
+    fixture_actual=$(cksum "$src_root/$fixture_path")
+    read -r fixture_actual_cksum fixture_actual_size fixture_actual_path <<EOF
+$fixture_actual
+EOF
+    : "$fixture_actual_path"
+    test "$fixture_actual_cksum" = "$fixture_cksum" &&
+        test "$fixture_actual_size" = "$fixture_size" ||
+        fail "OpenVMS record fixture changed: $fixture_path"
+    fixture_name=${fixture_path##*/}
+    grep -R -F -- "$fixture_name" "$src_root/tests/quant/mapfile" \
+        >/dev/null 2>&1 ||
+        fail "OpenVMS record fixture is not owned by a mapfile test: $fixture_path"
+done < "$record_fixture_ledger"
+
+for mapfile_test in \
+    tests/quant/mapfile/0016_mapfile_import_act_accepts_zero_color_count.t \
+    tests/quant/mapfile/0080_mapfile_export_act_exact_layout.t \
+    tests/quant/mapfile/0081_mapfile_import_act_768_exact.t \
+    tests/quant/mapfile/0083_mapfile_import_jasc_lf.t \
+    tests/quant/mapfile/0084_mapfile_import_jasc_cr.t \
+    tests/quant/mapfile/0085_mapfile_import_jasc_crlf.t \
+    tests/quant/mapfile/0086_mapfile_export_riff_exact_layout.t \
+    tests/quant/mapfile/0087_mapfile_import_riff_exact_entries.t \
+    tests/quant/mapfile/0089_mapfile_import_gpl_lf.t \
+    tests/quant/mapfile/0090_mapfile_import_gpl_cr.t \
+    tests/quant/mapfile/0091_mapfile_import_gpl_crlf.t \
+    tests/quant/mapfile/0093_mapfile_import_pal_rejects_utf32_le_bom.t \
+    tests/quant/mapfile/0094_mapfile_import_gpl_rejects_utf32_be_bom.t \
+    tests/quant/mapfile/0097_mapfile_import_pal_trims_spaces_and_tabs.t \
+    tests/quant/mapfile/0099_mapfile_import_gpl_trims_spaces_and_tabs.t \
+    tests/quant/mapfile/0100_mapfile_import_pal_rejects_fourth_numeric_token.t \
+    tests/quant/mapfile/0101_mapfile_import_riff_skips_padded_unknown_chunk.t \
+    tests/quant/mapfile/0102_mapfile_import_pal_extension_detects_riff.t \
+    tests/quant/mapfile/0103_mapfile_import_pal_prefix_detects_riff.t \
+    tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t
+do
+    require_fixed 'tests/data/inputs/mapfile/' "$mapfile_test"
+done
+# These are literal shell fragments asserted in the target tests.
+# shellcheck disable=SC2016
+require_fixed 'stat -c %s "${actual_palette}"' \
+    tests/quant/mapfile/0107_mapfile_export_riff_256_color_fields.t
+# shellcheck disable=SC2016
+require_fixed 'od -An -tx1 -j20 -N4 "${actual_palette}"' \
+    tests/quant/mapfile/0107_mapfile_export_riff_256_color_fields.t
+# shellcheck disable=SC2016
+require_fixed 'stat -c %s "${actual_palette}"' \
+    tests/quant/mapfile/0109_mapfile_export_act_256_color_count.t
+# shellcheck disable=SC2016
+require_fixed 'od -An -tx1 -j768 -N4 "${actual_palette}"' \
+    tests/quant/mapfile/0109_mapfile_export_act_256_color_count.t
+# shellcheck disable=SC2016
+require_fixed '-o/dev/null "${snake_gray_png}"' \
+    tests/quant/palette/usage/0015_grayscale_png_with_palette.t
+if grep -F 'target_sixel=' \
+        "$src_root/tests/quant/palette/usage/0015_grayscale_png_with_palette.t" \
+        >/dev/null 2>&1; then
+    fail "grayscale palette smoke test retains an unobserved SIXEL artifact"
+fi
 
 test "$failed" -eq 0 || {
     echo "not ok 1 - OpenVMS compatibility boundaries are preserved"

@@ -14,14 +14,15 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
+input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-trim-whitespace.gpl"
 expected_palette='JASC-PAL
 0100
 2
 12 34 56
 200 210 220'
 
-actual_palette=$(printf '\tGIMP Palette \t\n Name: trim \t\n\t12 34 56 first \t\n 200 210 220 second\t\n' | \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m gpl:- \
+actual_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -m gpl:"${input_palette}" \
         -M pal-jasc:- -o /dev/null "${input_image}") || {
     echo "not ok" 1 - "GPL surrounding whitespace was rejected"
     exit 0

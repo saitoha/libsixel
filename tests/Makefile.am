@@ -2635,6 +2635,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/data/platform-non-c-classification.tsv \
     _static/data/native-windows-discriminator.tsv \
     _static/data/platform-ci-contracts.tsv \
+    _static/data/openvms-record-fixtures.tsv \
     _static/sh/staticcheck-openvms-compat.sh \
     _static/sh/staticcheck-ci-doc-public-surface.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \

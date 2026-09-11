@@ -16,13 +16,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 actual_palette="${ARTIFACT_LOCAL_DIR}/actual.act"
-expected_palette="${ARTIFACT_LOCAL_DIR}/expected.act"
-
-{
-    printf '\000\000\000\377\377\377'
-    dd if=/dev/zero bs=1 count=762 2>/dev/null
-    printf '\000\002\000\000'
-} >"${expected_palette}"
+expected_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-black-white-count-2.act"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     -M act:- -o/dev/null "${input_image}" >"${actual_palette}" || {

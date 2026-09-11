@@ -14,10 +14,11 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
+input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-utf32be-bom-invalid.gpl"
 
-msg=$(set +xv; printf '\000\000\376\377GIMP Palette\n0 0 0\n' | \
-          ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \
-          -m gpl:- -o/dev/null "${input_image}" 2>&1 >/dev/null) && {
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \
+          -m gpl:"${input_palette}" -o/dev/null \
+          "${input_image}" 2>&1 >/dev/null) && {
     echo "not ok" 1 - "GPL UTF-32BE BOM unexpectedly succeeded"
     exit 0
 }
