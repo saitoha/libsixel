@@ -14,10 +14,11 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
+input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-utf32le-bom-invalid.pal"
 
-msg=$(set +xv; printf '\377\376\000\000JASC-PAL\n0100\n1\n0 0 0\n' | \
-          ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \
-          -m pal-jasc:- -o/dev/null "${input_image}" 2>&1 >/dev/null) && {
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \
+          -m pal-jasc:"${input_palette}" -o/dev/null \
+          "${input_image}" 2>&1 >/dev/null) && {
     echo "not ok" 1 - "JASC PAL UTF-32LE BOM unexpectedly succeeded"
     exit 0
 }

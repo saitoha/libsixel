@@ -10,13 +10,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 map8_palette="${TOP_SRCDIR}/images/map8-palette.png"
-target_sixel="${ARTIFACT_LOCAL_DIR}/gray-png-palette.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${map8_palette}" "${snake_gray_png}" >"${target_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${map8_palette}" \
+    -o/dev/null "${snake_gray_png}" || {
     echo "not ok" 1 - "grayscale PNG palette conversion fails"
     exit 0
 }

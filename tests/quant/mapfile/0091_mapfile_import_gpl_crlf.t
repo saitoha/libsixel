@@ -14,6 +14,7 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
+input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-two-colors-crlf.gpl"
 expected_palette='JASC-PAL
 0100
 2
@@ -21,9 +22,8 @@ expected_palette='JASC-PAL
 200 210 220'
 
 actual_palette=$(
-    printf 'GIMP Palette\r\n12 34 56\r\n200 210 220\r\n' | \
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m gpl:- \
-            -M pal-jasc:- -o /dev/null "${input_image}"
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m gpl:"${input_palette}" \
+        -M pal-jasc:- -o /dev/null "${input_image}"
 ) || {
     echo "not ok" 1 - "CRLF GPL import failed"
     exit 0

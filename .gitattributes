@@ -1,0 +1,4 @@
+tests/data/inputs/mapfile/* -text
+tests/data/inputs/mapfile/*-cr.* binary
+tests/data/inputs/mapfile/*-crlf.* binary
+tests/data/inputs/mapfile/*-whitespace.* binary

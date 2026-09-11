@@ -14,6 +14,7 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
+input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-two-colors-crlf.pal"
 expected_palette='JASC-PAL
 0100
 2
@@ -21,9 +22,9 @@ expected_palette='JASC-PAL
 200 210 220'
 
 actual_palette=$(
-    printf 'JASC-PAL\r\n0100\r\n2\r\n12 34 56\r\n200 210 220\r\n' | \
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m pal-jasc:- \
-            -M pal-jasc:- -o /dev/null "${input_image}"
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        -m pal-jasc:"${input_palette}" -M pal-jasc:- \
+        -o /dev/null "${input_image}"
 ) || {
     echo "not ok" 1 - "CRLF JASC PAL import failed"
     exit 0

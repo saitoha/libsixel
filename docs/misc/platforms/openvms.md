@@ -133,6 +133,10 @@ RMS record semantics invalidate several assumptions that look harmless on byte-s
 
 The first image smoke test used a small ASCII PPM because creating a binary PPM from the GNV shell could append a text newline. The lesson is not that OpenVMS cannot process binary input, but that a shell text producer is not proof of binary-safe fixture creation.
 
+The same rule applies to palette tests. A shell `printf`, `dd`, pipeline, or redirection can create an RMS record file whose logical contents differ from the byte stream intended by an ACT, RIFF PAL, CR-only, CRLF, or BOM test. Byte-sensitive palette inputs and expected outputs are therefore tracked fixtures under [`tests/data/inputs/mapfile/`](../../../tests/data/inputs/mapfile/) and are marked `-text` in [`.gitattributes`](../../../.gitattributes). [`tests/_static/data/openvms-record-fixtures.tsv`](../../../tests/_static/data/openvms-record-fixtures.tsv) locks their byte counts and POSIX `cksum` values. Tests that inspect fields in a generated binary file use `stat` for the OpenVMS physical size and hexadecimal `od` output for field bytes instead of materializing another binary file through the shell.
+
+A test that only needs the converter exit status must not redirect an otherwise unobserved SIXEL stream into an artifact file. On GNV that can fail at the RMS record boundary before the behavior under test is reached. Pass `-o/dev/null` to the converter instead; retain an output file only when the test reads or compares it.
+
 Clock behavior is another platform boundary. Forcing `TZ=UTC0` in CI shifted the time GNV make compared with RMS modification times, producing false future-timestamp and clock-skew warnings. The OpenVMS job leaves `TZ` unset. Tests that require a stable monotonic relationship between platform clock origins are skipped explicitly when that relationship was not demonstrated on GNV.
 
 Signal, pipeline, and background-job semantics were handled test by test. The port did not blanket-skip the suite: it exported `RUNTIME_ENV_IS_OPENVMS`, replaced avoidable assumptions, and retained targeted skips only where the observation itself was not portable.
@@ -185,6 +189,8 @@ Using top-level `make check` would re-enter the expensive library-object walk be
 | OV-06 | `LIBSIXEL_OPENVMS` remains classified in the cross-platform macro ledger and this policy remains linked from the platform index. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 | OV-07 | Byte-exact DCS assertions discard only GNV's trailing text-record newline, and converter-failure tests accept only the harness-defined mapped-error range. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 | OV-08 | Palette fallback tests use the bounded 64 x 64 fixture so redirected SIXEL output cannot exceed the demonstrated RMS record-size boundary before the fallback contract is observed. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+| OV-09 | Palette parser tests use byte-stable tracked fixtures for binary records, line endings, BOMs, and whitespace, while generated binary field checks use OpenVMS-safe size and hexadecimal-byte observations. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+| OV-10 | Tests that observe only converter success discard SIXEL through the converter output option instead of creating an unobserved RMS-sensitive output record. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 
 ### Coverage boundary
 
