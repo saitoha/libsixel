@@ -112,11 +112,20 @@ The rows below are pipeline landmarks rather than the complete suite. The [GIF c
 | GIF-03 | LZW decode selects the local table for the later frame and does not reuse global-table colors. | [tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t](../../../tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_lsqa.t) |
 | GIF-04 | Transparency plus disposal 3 restores the saved pre-frame canvas before the next composition. | [tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t](../../../tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_lsqa.t) |
 | GIF-05 | Automatic looping honors a finite Netscape loop count for a multi-frame stream. | [tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t](../../../tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t) |
+| GIF-06 | The GIF87a signature reaches the same exact-pixel decode path as the later GIF89a dialect. | [tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t](../../../tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t) |
+| GIF-07 | Four-pass interlacing maps encoded rows to their exact logical-screen positions. | [tests/loader/builtin/1940_loader_builtin_gif_interlace_four_pass_numeric.t](../../../tests/loader/builtin/1940_loader_builtin_gif_interlace_four_pass_numeric.t) |
+| GIF-08 | A nonzero image-descriptor offset composites into the full logical-screen canvas. | [tests/loader/builtin/1941_loader_builtin_gif_rectangle_offset_numeric.t](../../../tests/loader/builtin/1941_loader_builtin_gif_rectangle_offset_numeric.t) |
+| GIF-09 | Comment, Plain Text, and unknown Application extension sub-blocks preserve the following image boundary. | [tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t](../../../tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t) |
+| GIF-10 | Disposal method 2 clears the previous dirty rectangle before the next frame is composed. | [tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t](../../../tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t) |
+| GIF-11 | Literal LZW input remains exact while the dictionary crosses each code-width boundary through 12 bits. | [tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t](../../../tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t) |
 
 ### Defensive and malformed-input tests
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
 | GIF-90 | Repeated disposal/history transitions complete within the watchdog rather than hanging or growing without bound. | [tests/loader/builtin/0260_loader_builtin_gif_disposal_stress_watchdog.t](../../../tests/loader/builtin/0260_loader_builtin_gif_disposal_stress_watchdog.t) |
+| GIF-91 | An image rectangle extending beyond the logical screen is rejected before raster writes. | [tests/loader/builtin/1942_loader_builtin_gif_rectangle_oob_reject.t](../../../tests/loader/builtin/1942_loader_builtin_gif_rectangle_oob_reject.t) |
+| GIF-92 | A raster sub-block shorter than its declared length is rejected without emitting a frame. | [tests/loader/builtin/1944_loader_builtin_gif_truncated_raster_reject.t](../../../tests/loader/builtin/1944_loader_builtin_gif_truncated_raster_reject.t) |
+| GIF-93 | An LZW dictionary reference beyond the next available code is rejected without emitting a frame. | [tests/loader/builtin/1945_loader_builtin_gif_illegal_lzw_code_reject.t](../../../tests/loader/builtin/1945_loader_builtin_gif_illegal_lzw_code_reject.t) |
 
-Coverage audit note: the owners prove local-table LZW decode, disposal 3, unknown-extension skipping, one start-frame case, and finite automatic looping. They do not form a complete disposal × background-policy × palette-fusion × start-frame/loop matrix; those combinations remain auditable gaps even where the broader suite contains neighboring cases.
+Coverage audit note: the owners now isolate both format signatures, four-pass interlacing, descriptor offsets and bounds, known extension families, LZW width growth and illegal references, and disposal methods 2 and 3. They do not form a complete disposal × background-policy × palette-fusion × start-frame/loop matrix; those combinations remain auditable gaps even where the broader suite contains neighboring cases.
