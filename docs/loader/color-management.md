@@ -10,6 +10,50 @@ The default output contract is gamma-encoded sRGB palette values (`-Ugamma`), su
 
 The receiving terminal and display stack own the mapping from those output values to the physical display. On a wide-gamut device, faithful rendering of sRGB and an optional enhancement that expands sRGB colors into a larger gamut are different policies: the former preserves the requested colors, while the latter deliberately changes them. Such display enhancement belongs to the terminal/device side and is not enabled by libsixel's loader CMS. SIXEL carries no source ICC profile or explicit color-space tag with which to negotiate it, so libsixel also cannot guarantee how every terminal will render its palette values.
 
+## This already affects ordinary web images
+
+You do not need to create wide-gamut artwork yourself to encounter this problem. A browser may already be interpreting an image's color metadata for you. Downloading that image and passing it through a different decoding API does not automatically preserve that behavior. The visible symptom can be “the downloaded image has different colors from the browser,” even when both programs successfully decode the file.
+
+### Published prevalence, with a defined denominator
+
+The [2024 Web Almanac media chapter](https://almanac.httparchive.org/en/2024/media#image-color-spaces) reports the following for its mobile image sample:
+
+| Observation | Reported share or derivation |
+| --- | --- |
+| No ICC profile | 87.7% |
+| ICC profile present | Approximately **12.3%**, calculated as `100 - 87.7` |
+| Wide-gamut ICC profile | Approximately **1 in 80 images** (1.25%) |
+| Adobe RGB (1998) profile | 0.7% |
+| Display P3 profile | 0.4% |
+
+These categories overlap: Adobe RGB and Display P3 are examples within wide-gamut ICC usage, which is itself within ICC usage. Most profiled images in this report use sRGB or an sRGB-like profile. **12.3% is not the percentage of images that visibly fail without CMS.** The report places CICP-only images in the no-ICC category, so its wide-gamut count does not cover every signaling method.
+
+This is a historical June 2024 crawl, not a census of all Internet images or a current 2026 estimate. The [published SQL](https://github.com/HTTPArchive/almanac.httparchive.org/blob/main/sql/2024/media/color_spaces_and_depth.sql) counts image request records with ImageMagick colorspace metadata and more than one pixel, grouped by client and ICC description; it does not deduplicate all copies into unique image artworks. The [crawl methodology](https://almanac.httparchive.org/en/2024/methodology#websites) describes the selected public pages and logged-out lab conditions. Do not turn these percentages into the probability that a particular user's photo collection needs conversion.
+
+No representative web-wide prevalence estimate for PNG `gAMA` alone, or for the union of ICC, `gAMA`, `sRGB`, `cHRM`, and CICP declarations, was established by the sources reviewed for this guide. An image contains color metadata, not a CMS: the CMS is the software interpreting it. An ICC-only statistic therefore cannot answer “how many images have gamma information?” Conversely, a `gAMA` declaration can describe an ordinary sRGB-like transfer and does not by itself establish a visible mismatch. The [PNG specification](https://www.w3.org/TR/png-3/#11gAMA) defines it separately from ICC and other color declarations.
+
+### Familiar tools: decoding and color conversion are different operations
+
+The table describes specific paths, not a blanket correct/incorrect ranking of applications. “Automatic” means the stated rendering path interprets supported source information; it does not promise identical rendering intents, full profile compatibility, or accurate physical displays. API support means the caller must connect it correctly. External documentation was checked on 2026-09-11; named browser versions below are the published test snapshot, not a new local browser test.
+
+| Tool or API path | What happens to source color information? | Practical consequence and evidence |
+| --- | --- | --- |
+| Chrome/Edge image display | The W3C PNG report records passing ICC v2/v4, Display P3, and ICC gamma-1.8 examples for Chrome 137 and Edge 137. | Browser display is a managed path for these examples. This is not a blanket result for every PNG `gAMA`-only or HDR case. [W3C implementation report](https://w3c.github.io/png/Implementation_Report_3e/#ICC) |
+| Firefox image display, normal settings | Applies color management to tagged media and assumes sRGB for untagged media; settings can disable or change this. | Users can benefit without selecting a CMS themselves. [Mozilla settings documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/browserSettings/colorManagement) |
+| Safari/WebKit image rendering, including drawing an image to Canvas | Honors an image's profile when drawing it into the destination color space. | A downloaded image decoded elsewhere may differ from its browser appearance. [WebKit Canvas color documentation](https://webkit.org/blog/12058/wide-gamut-2d-graphics-using-html-canvas/) |
+| macOS Quartz/Core Graphics with a calibrated source color space | Uses the supplied white point and gamma to convert source colors into the output space. | Supply the correct source space; merely putting bytes into a device-RGB buffer does not identify their original profile. [Apple Quartz color-space guide](https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/dq_color/dq_color.html) |
+| Windows WIC with `IWICColorTransform` | Converts a bitmap between supplied source and destination color contexts. | Color contexts and an explicit transform are separate from simply decoding/copying bitmap pixels. [Microsoft WIC color management](https://learn.microsoft.com/en-us/windows/win32/wic/-wic-colormanagement) |
+| Pillow `Image.open(...).convert("RGB")` | Decodes samples and converts their pixel mode. PNG gamma/chromaticity are exposed as metadata; this path does not apply a source ICC transform or normalize PNG gamma to sRGB. | `RGB` is a storage mode, not proof of sRGB normalization. [PNG metadata documentation](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#png), [conversion implementation](https://pillow.readthedocs.io/en/stable/_modules/PIL/Image.html#Image.convert) |
+| Pillow `ImageCms.profileToProfile(...)` | Explicit ICC conversion using Little CMS with source and destination profiles. | This is the profile-aware path. A standalone `gAMA` value is not an ICC profile supplied to this function. [Pillow ImageCms](https://pillow.readthedocs.io/en/stable/reference/ImageCms.html#PIL.ImageCms.profileToProfile) |
+| ImageMagick `magick input -profile sRGB.icc output` | Performs profile conversion when an input profile is already present; without one, the source interpretation must first be established. | `-strip` removes metadata; it does not perform this normalization. Convert before removing the source description. [Profile operator](https://imagemagick.org/command-line-options/#profile), [profile examples](https://usage.imagemagick.org/formats/#profiles) |
+| libpng 1.6 traditional read API | Provides `png_set_gamma` / `png_set_alpha_mode` for requested transfer handling; general ICC conversion remains application work. | Linking libpng alone does not establish full CMS. The simplified API has its own output contract and is not covered by this row. [libpng manual](https://github.com/pnggroup/libpng/blob/libpng16/libpng-manual.txt) |
+| Upstream stb_image `stbi_load` for ordinary PNG | Its PNG parser skips unhandled ancillary color chunks; it does not provide ICC or `gAMA` normalization on this path. | The application needs an additional interpretation step. This is upstream stb_image, not libsixel's current builtin loader and its separate CMS implementation. [Upstream source](https://github.com/nothings/stb/blob/master/stb_image.h) |
+| libsixel participating loaders, default `cms_engine=none` versus enabled CMS | The default disables libsixel loader CMS; `--cms-engine=auto` requests conversion for supported metadata and paths. | Enable CMS when carrying source color interpretation into the sRGB output contract. Loader limitations and fallback still apply; see the engine comparison below. |
+
+A small local check with Pillow 12.2.0 confirmed the distinction: a PNG sample `(128,128,128)` with `gAMA=1.0` still decoded to `(128,128,128)` through `convert("RGB")`; reading the gamma value did not convert that linear sample to sRGB. Separately, the repository's Adobe-RGB [profiled fixture](../../images/measurements/palette-pipeline/a98-gamut-600x450.png) produced different pixels with explicit `ImageCms.profileToProfile(..., sRGB)` than with plain RGB mode conversion. These are narrow checks, not a complete tool conformance suite.
+
+The everyday lesson is to preserve source color interpretation across tool boundaries. A browser can make profile handling invisible to its user, while a script receiving only RGB bytes can lose it. CMS is what connects those two workflows without unintentionally changing the image's colors.
+
 ## See what happens when the source is misinterpreted
 
 These examples show the same intended image with correct conversion and with source numbers incorrectly treated as sRGB. Look at the colored scales in the first comparison and the dark scales in the second. CMS is restoring the reference appearance; the correct panels have no added saturation or contrast enhancement.
