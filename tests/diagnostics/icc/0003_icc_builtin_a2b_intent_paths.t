@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin-cms.md
 # Policy: docs/loader/color-management.md
 # TAP runner for builtin ICC A2B0/A2B1/A2B2 intent path coverage.
 

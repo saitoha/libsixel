@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin-cms.md
 # TAP runner for builtin ICC device-to-device intent path coverage.
 
 set -eux

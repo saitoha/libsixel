@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/builtin-cms.md
 # Policy: docs/loader/color-management.md
 # TAP runner for builtin ICC mAB/mBA A2B0 parser/apply coverage.
 

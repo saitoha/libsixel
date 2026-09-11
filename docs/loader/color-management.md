@@ -1,5 +1,7 @@
 # Loader Color Management: builtin and Little CMS
 
+For the implementation model and exact support boundaries, see [Builtin CMS specification and architecture](builtin-cms.md).
+
 ## Why loader CMS matters
 
 Loader CMS primarily protects the intended color interpretation of input images. Files authored for wider RGB gamuts or different transfer functions cannot safely be treated as ordinary sRGB just because they decode to three channels. Interpreting those samples directly as sRGB can change hue, saturation, brightness, and the balance between colors. CMS uses an applicable source profile or supported color metadata to normalize those samples into libsixel's known sRGB basis before the encoder makes palette and dithering decisions. Its purpose here is faithful normalization, not increasing saturation or extending the display gamut.
