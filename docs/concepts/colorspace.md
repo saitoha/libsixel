@@ -126,6 +126,8 @@ SIXEL carries numeric palette components but does not embed an ICC profile or an
 
 ## Loader color management
 
+For the detailed engine comparison, supported ICC structures, unsupported builtin cases, and quality/performance tradeoffs, see [Loader CMS: builtin and Little CMS](../loader/color-management.md). Loader and CMS engine selection are independent; successful decoding alone does not prove that the source profile was applied.
+
 An embedded ICC profile describes how source sample values relate to a profile connection space. A color-management system uses that description to transform source colors into a known destination. This is different from merely asking the encoder to measure distances in Oklab or linear RGB: `-X` and `-W` assume the frame already has a valid color interpretation, while loader CMS establishes that interpretation from file metadata.
 
 For participating `img2sixel` loaders, CMS is disabled by default. Use `-# ENGINE` or `--cms-engine=ENGINE` to supply a process-wide loader default:

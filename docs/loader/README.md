@@ -1,5 +1,7 @@
 # Image Loader Architecture
 
+For engine selection and its limits, read [Loader CMS: builtin and Little CMS](color-management.md). It distinguishes decoder support from CMS support and covers unsupported profiles, best-effort fallback, quality, and performance.
+
 ## Scope
 
 Image loading in libsixel is an ordered component pipeline rather than one decoder hidden behind a uniform RGBA buffer. The loader manager builds a candidate chain, gives each candidate an opportunity to recognize and decode the input, and returns the first accepted frame. Each backend owns format recognition, decoding, metadata precedence, animation delivery, orientation, alpha finalization, and any CMS path that it supports.
