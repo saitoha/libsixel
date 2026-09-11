@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify ACT transparency metadata does not offset imported palette entries.
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

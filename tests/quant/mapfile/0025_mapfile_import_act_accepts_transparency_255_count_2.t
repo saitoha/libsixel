@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test: ACT import accepts transparency index 255 and count 2.
+# Policy: docs/functionality/external-palettes.md
 
 set -eux
 

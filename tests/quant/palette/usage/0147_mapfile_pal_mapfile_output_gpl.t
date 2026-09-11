@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify PAL mapfile GPL export remains stable.
+# Policy: docs/functionality/external-palettes.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

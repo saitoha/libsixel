@@ -33,13 +33,24 @@ img2sixel -m palette.gpl -o output.six input.png
 
 The palette is fixed before the input pixels are mapped. Palette-construction controls such as the quantizer do not rebuild it, but palette-application controls still matter. In particular, an explicit [`--lookup-policy`](lookup-policy.md), the [`--diffusion`](dithering.md) method, and the [`-W` working color space](working-colorspace.md) apply when the image is mapped to the supplied colors.
 
+### Image mapfiles
+
 `-m` also accepts an image as the palette source:
 
 ```sh
 img2sixel -m hardware-palette.png -o output.six input.png
 ```
 
-An indexed image is the most predictable image-based palette source because its stored palette already defines the intended colors. A direct-color image is loaded as a static palette source and may itself require color extraction or reduction to the 256-entry limit. Use a palette file when exact entries and ordering are important.
+PNG is a common choice, but this path is not specific to PNG. A filename that does not select ACT, PAL, or GPL is passed to the configured image loaders, so JPEG, GIF, BMP, PNM, and other enabled input formats can also serve as map images. The image is loaded as a single static palette source.
+
+An image mapfile describes colors through its decoded pixels. libsixel converts those pixels to the selected working color space and constructs a palette of at most 256 colors from them. An indexed PNG is therefore convenient for a swatch image, but libsixel does not import its palette table as an ordered file-format palette: unused entries can disappear, duplicate entries can collapse, and entry indices are not preserved. If an image contains more than 256 colors, its pixel distribution also influences the reduction. Use ACT, PAL, or GPL when exact entry count and ordering are part of the interchange contract.
+
+Image mapfiles are input-only. `-M` does not write PNG or another map image; it writes ACT, JASC PAL, RIFF PAL, or GPL. The two options can still be combined to inspect or translate the palette constructed from an image:
+
+```sh
+img2sixel -m hardware-palette.png -M gpl:hardware-palette.gpl \
+    -o /dev/null input.png
+```
 
 ### Format selection
 
@@ -110,9 +121,9 @@ img2sixel -m gpl:series.gpl --lookup-policy=certlut \
 
 For a sequence, reuse the same file for every frame or asset. If the palette is tuned outside libsixel, keep an unmodified master and record the `-W`, `-U`, lookup, and diffusion choices used for the final conversion; these choices can change the rendered result without changing the stored palette entries.
 
-## Supported palette formats
+## Supported palette-file formats
 
-The formats share an 8-bit RGB model but come from different application ecosystems. “Compatible applications” below means that the named application's current or historical documentation describes importing or using the format; it does not imply preservation of names, flags, transparency, profiles, or every vendor extension.
+The formats below are the structured palette files accepted by `-m` and written by `-M`; image mapfiles are described separately above. These formats share an 8-bit RGB model but come from different application ecosystems. “Compatible applications” below means that the named application's current or historical documentation describes importing or using the format; it does not imply preservation of names, flags, transparency, profiles, or every vendor extension.
 
 | Format | Origin and overview | libsixel selector and filename behavior | Common application compatibility |
 | --- | --- | --- | --- |
@@ -127,7 +138,7 @@ The formats share an 8-bit RGB model but come from different application ecosyst
 - Prefer JASC PAL when a simple text format or Paint Shop Pro compatibility is the priority.
 - Prefer RIFF PAL for software built around Windows logical palettes or when a binary RIFF container is required.
 - Prefer ACT for Photoshop color-table workflows.
-- Use an indexed PNG as an image mapfile when the palette is naturally distributed with an indexed asset and application-specific palette-file compatibility is unnecessary.
+- Use a PNG swatch image as an image mapfile when the colors are naturally distributed with an image asset and exact palette-table indices are unnecessary.
 
 Do not choose a format merely from the `.pal` suffix: JASC PAL and RIFF PAL are unrelated layouts that conventionally share it. Use an explicit prefix in scripts and build systems.
 
@@ -157,7 +168,23 @@ The project then moved away from that dependency. A [July 2015 commit](https://g
 
 `-M` is not part of that early history. It was added in [November 2025](https://github.com/saitoha/libsixel/commit/74a8cda3f441145dc6601989eab9e1f9412f0107), turning the older one-way fixed-palette input into a palette-generation, inspection, editing, and reuse workflow.
 
-## Implementation and verification
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Regression coverage |
+| --- | --- | --- |
+| EP-01 | A direct-color PNG can supply colors through `-m`. | [tests/quant/palette/usage/0050_palette_map_png_rgb.t](../../tests/quant/palette/usage/0050_palette_map_png_rgb.t) |
+| EP-02 | Indexed PNG map images with 1-, 2-, 4-, and 8-bit indices are accepted. | [tests/quant/palette/usage/0051_palette_map_png_pal1.t](../../tests/quant/palette/usage/0051_palette_map_png_pal1.t), [tests/quant/palette/usage/0052_palette_map_png_pal2.t](../../tests/quant/palette/usage/0052_palette_map_png_pal2.t), [tests/quant/palette/usage/0053_palette_map_png_pal4.t](../../tests/quant/palette/usage/0053_palette_map_png_pal4.t), [tests/quant/palette/usage/0054_palette_map_png_pal8.t](../../tests/quant/palette/usage/0054_palette_map_png_pal8.t) |
+| EP-03 | Palette-construction color-space and precision controls do not reinterpret a completed PNG mapfile palette. | [tests/quant/palette/usage/0122_mapfile_png_clustering_colorspace_stable.t](../../tests/quant/palette/usage/0122_mapfile_png_clustering_colorspace_stable.t), [tests/quant/palette/usage/0123_mapfile_png_precision_stable.t](../../tests/quant/palette/usage/0123_mapfile_png_precision_stable.t) |
+| EP-04 | Working/output color-space conversion of PNG mapfiles is deterministic, including an embedded ICC profile. | [tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t), [tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t) |
+| EP-05 | `-m` and `-M` can translate a prepared JASC PAL palette to GPL. | [tests/quant/palette/usage/0147_mapfile_pal_mapfile_output_gpl.t](../../tests/quant/palette/usage/0147_mapfile_pal_mapfile_output_gpl.t) |
+| EP-06 | An explicit lookup policy reaches palette application with a palette mapfile. | [tests/quant/palette/usage/0191_mapfile_pal_explicit_lookup_policy_applied.t](../../tests/quant/palette/usage/0191_mapfile_pal_explicit_lookup_policy_applied.t) |
+| EP-07 | ACT transparency metadata neither shifts entries nor causes a valid palette to be rejected. | [tests/quant/mapfile/0025_mapfile_import_act_accepts_transparency_255_count_2.t](../../tests/quant/mapfile/0025_mapfile_import_act_accepts_transparency_255_count_2.t), [tests/quant/mapfile/0045_mapfile_import_act_transparency_does_not_offset_palette.t](../../tests/quant/mapfile/0045_mapfile_import_act_transparency_does_not_offset_palette.t) |
+
+Every test listed above links back to this document through its `Policy` comment. This keeps the behavioral contract discoverable in both directions when either the documentation or a regression test changes.
+
+## Implementation
 
 - [`src/mapfile.c`](../../src/mapfile.c) implements format detection, parsing, and writing for ACT, JASC PAL, RIFF PAL, and GPL.
 - [`src/encoder.c`](../../src/encoder.c) decides whether a mapfile is a palette or image, prepares fixed palettes, applies option conflicts, captures the final palette, and emits `-M` output.
