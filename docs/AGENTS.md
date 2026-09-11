@@ -52,9 +52,13 @@ Durable behavioral policy documents must make their automated coverage externall
 
 The coverage inventory must follow these rules:
 
+- Separate tests that prove documented, user-visible behavior from defensive tests that exercise malformed input, resource limits, internal assertions, or implementation-specific failure paths. When a document discusses both, put them under distinct `Behavioral contract tests` and `Defensive and malformed-input tests` subsections.
 - Give each independently testable contract a stable coverage ID.
 - Link each automated contract directly to its owning test with a Markdown link whose label is the repository-relative `tests/...` path.
 - Add a reciprocal `Policy: docs/...` repository-relative path in a source comment near the beginning of every listed test. A test owned by multiple policy documents carries one reciprocal line for each document.
+- A `Policy:` backlink means that the test directly owns a documented behavioral contract; do not add it merely because a defensive test belongs to the same subsystem. Summarize defensive coverage by category and link to its test directory or inventory with a descriptive Markdown label that is not presented as an owning-test link.
+- Invalid specimens derived from a documented accepted grammar do not each become independent behavioral contracts; they can remain in the defensive summary. If the document elevates a particular rejection outcome, diagnostic, resource limit, recovery rule, or other failure behavior to a stable user-visible guarantee, give it a coverage ID and a direct reciprocal test link instead of leaving it only in that summary.
+- A directory or suite link describes the breadth of defensive coverage but is not evidence that every normative claim in the document has an owning test.
 - Describe terminal-dependent, platform-dependent, or otherwise manual observations explicitly instead of presenting them as automated coverage.
 - Audit defaults, accepted and rejected values, precedence, fallback, cross-option interaction, and repeated or multi-input state where those dimensions are part of the contract.
 
@@ -75,4 +79,4 @@ Add a document only when the topic is durable and materially distinct from the e
 
 ### Coverage boundary
 
-The static check validates paths and the completeness of the two link inventories. It does not decide whether a policy contract is decomposed at the correct granularity or whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.
+The static check validates paths and the completeness of the two reciprocal behavioral-contract link inventories. It does not infer missing contracts from prose, treat a defensive suite link as contract coverage, decide whether a policy contract is decomposed at the correct granularity, or decide whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.
