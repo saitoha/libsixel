@@ -88,22 +88,18 @@ RLogin introduced a numeric image-index extension in [2.17.3 on 2014-11-21](http
 
 ### DRCS-SIXEL and Unicode Plane 16
 
-A related line of work made SIXEL images addressable as text. RLogin introduced
-a DRCS-SIXEL extension in which a SIXEL image embedded in DECDLD is divided
-into character-cell tiles and registered as dynamically redefinable glyphs.
-Separately, Hayaki Saito's [drcsterm](https://github.com/saitoha/drcsterm)
-proposed mapping code points in Unicode Plane 16 (`U+100000` through
-`U+10FFFF`) to ISO/IEC 2022 DRCS designations. Combining the two lets an
-application preload image tiles and subsequently draw them as Unicode
-characters.
+A related line of work made SIXEL images addressable as text. It combines two proposals from **2012**: RLogin's extension that divides a SIXEL image embedded in DECDLD into character-cell glyphs, and Hayaki Saito's drcsterm mapping from Unicode Plane 16 to ISO/IEC 2022 DRCS designations. Together, they let an application preload image tiles and subsequently draw them as Unicode characters. Later revisions refined that combination.
 
-Araki Ken's
-[DRCS-SIXEL account](https://qiita.com/arakiken/items/626b02cd857d20c12fbc)
-documents the RLogin origin of the image-glyph extension, the Plane 16 mapping,
-and the later coordination that brought compatible behavior to mlterm and
-RLogin. This work remains much better known in the Japanese-language terminal
-community than elsewhere. Current libsixel preserves a practical connection
-to it through the experimental `img2sixel -@` (`--drcs`) output mode.
+| Year | Proposal and contributor | Dated evidence |
+| --- | --- | --- |
+| **2012** | **kmiya / RLogin: DRCS-SIXEL.** Embed SIXEL in DECDLD and register the resulting image tiles as glyphs. | [RLogin 2.13.0, released 2012-10-13](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L1695-L1701), records the DECDLD SIXEL extension. The release history establishes public implementation by this date. |
+| **2012** | **Hayaki Saito / drcsterm: Unicode-to-DRCS mapping**, later called mapping version 1. Use selected code points in Plane 16 (`U+100000` through `U+10FFFF`) to invoke DRCS glyphs through ISO/IEC 2022. | The [initial commit on 2012-11-24](https://github.com/saitoha/drcsterm/commit/62a409ad9eb86816d38d5f88402d8d5ef4e62638) already includes the [mapping rule](https://github.com/saitoha/drcsterm/blob/62a409ad9eb86816d38d5f88402d8d5ef4e62638/README.rst#L11-L21). |
+| **2017** | **Araki Ken / mlterm: DRCS-SIXEL v2 specification and coordination with RLogin.** Extend the Unicode mapping to 96-character sets and refine image-cell handling. | mlterm's [2017-12-25 implementation record](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L6268-L6292) describes the extensions; the [v2 specification was added on 2017-12-30](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L6244-L6250) and revised into January 2018. |
+| **2025** | **Hayaki Saito: DRCS mapping v3.** Improve ISO/IEC 2022 alignment and expand the usable mapping area within Plane 16. | The [v3 proposal discussion](https://github.com/kmiya-culti/RLogin/issues/152) opened on **2025-11-26**. |
+
+Proposal and specification years are distinct from the subsequent release dates. The v2 work reached [RLogin 2.23.1 on 2018-01-30](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L828-L834) and [mlterm 3.8.5 on 2018-03-07](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L5782-L5789). The v3 work reached [RLogin 2.31.2 on 2025-12-25](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L95-L100) and [mlterm 3.9.5 on 2026-07-05](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L181-L188), whose [release notes list DRCSMMv3](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/doc/en/ReleaseNote#L4-L8).
+
+Araki Ken's [DRCS-SIXEL account](https://qiita.com/arakiken/items/626b02cd857d20c12fbc), published in 2018 and updated for v3 in 2026, explains how the original image-glyph extension, Unicode mapping, and later revisions fit together. This work remains much better known in the Japanese-language terminal community than elsewhere. Current libsixel preserves a practical connection to this work through the experimental `img2sixel -@` (`--drcs`) output mode.
 
 ## kmiya's `sixel`
 
