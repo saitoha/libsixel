@@ -6,6 +6,8 @@ This chapter covers the combined Autoconf/Automake configuration and Makefile ma
 
 The maintained inputs are [configure.ac](../../configure.ac), macros under `m4/`, and the root and per-directory `Makefile.am` files. Autoconf, Automake, and Libtool generate the checked-in `configure`, `Makefile.in`, and support files. Running `configure` then probes the selected compiler and target dependencies and uses `config.status` to produce `config.h`, configured headers, Makefiles, package metadata, and configured wrappers.
 
+[Autoconf macros and configuration extensions](configure-macros.md) maps every tracked `m4/` file and the project macro definitions inside `configure.ac`. [Build support scripts](support-scripts.md) covers their executable counterparts, including `compile`, MSVC's `ar-lib`, Libtool's `ltmain.sh`, configured test helpers, and Wasm installation adapters.
+
 The ordinary sequence is:
 
 ```sh
