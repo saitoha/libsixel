@@ -183,6 +183,21 @@ jobs:
               cc -dumpmachine
               file /bin/sh
 
+              # The generic runners own the complete suite. These emulated
+              # guests exercise representative ABI, byte-order, codec,
+              # threading, and security contracts on the target CPU.
+              set -- \
+                cli/core/0002_version.t \
+                cli/core/0007_basic_stdin_snake.t \
+                cli/sixel2png/0005_stdin_default_output.t \
+                codec/output/0003_direct_sixel_encode.t \
+                processing/decoder/0008_decoder_pixels_output_formats.t \
+                processing/dither/0001_dither_policy.t \
+                processing/frame/0001_frame_factory.t \
+                processing/scale/0004_g8_normalized_rgb888.t \
+                processing/threadpool/0001_threadpool_service.t \
+                security/issue/0012_issue220_dcs_signed_integer_overflow.t
+
               rm -rf /tmp/libsixel-build
               mkdir /tmp/libsixel-build
               if test "$BUILD_TOOL" = autotools; then
@@ -190,12 +205,12 @@ jobs:
                 "$GITHUB_WORKSPACE/configure" \
                   --disable-dependency-tracking
                 make -j2 V=1
-                make check
+                make -j2 check TESTS="$*"
               else
                 meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE"
                 meson compile -C /tmp/libsixel-build -j 2 -v
                 meson test -C /tmp/libsixel-build \
-                  --num-processes 1 --print-errorlogs
+                  --num-processes 2 --print-errorlogs "$@"
               fi
             '
 
@@ -240,9 +255,21 @@ jobs:
           run: |
             set -eux
             uname -a
-            getconf LONG_BIT
             cc -dumpmachine
             file /bin/sh
+            # Keep the same target-executed smoke contracts as the Linux
+            # emulation matrix while the generic runners own the full suite.
+            set -- \
+              cli/core/0002_version.t \
+              cli/core/0007_basic_stdin_snake.t \
+              cli/sixel2png/0005_stdin_default_output.t \
+              codec/output/0003_direct_sixel_encode.t \
+              processing/decoder/0008_decoder_pixels_output_formats.t \
+              processing/dither/0001_dither_policy.t \
+              processing/frame/0001_frame_factory.t \
+              processing/scale/0004_g8_normalized_rgb888.t \
+              processing/threadpool/0001_threadpool_service.t \
+              security/issue/0012_issue220_dcs_signed_integer_overflow.t
             rm -rf /tmp/libsixel-build
             mkdir /tmp/libsixel-build
             if test '${{ matrix.buildtool }}' = autotools; then
@@ -250,12 +277,12 @@ jobs:
               "$GITHUB_WORKSPACE/configure" \
                 --disable-dependency-tracking
               gmake V=1
-              gmake check
+              gmake check TESTS="$*"
             else
               meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE"
               meson compile -C /tmp/libsixel-build -v
               meson test -C /tmp/libsixel-build \
-                --num-processes 1 --print-errorlogs
+                --num-processes 1 --print-errorlogs "$@"
             fi
 
   collect:
