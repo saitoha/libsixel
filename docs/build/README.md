@@ -14,6 +14,8 @@ For libsixel's requirements, there is still no complete replacement for Autotool
 
 Retaining this system comes with substantial dissatisfaction. The maintainer has long wanted a successor that preserves those properties while removing the dependence on GNU make encountered in the Automake-based build and improving parallel execution. In the maintainer's assessment, build-tool development has not moved in that desired direction: newer tools solve useful problems, but none has delivered the replacement this project needs. The decision to keep Autotools + Libtool reflects that unmet requirement, alongside its strengths.
 
+The maintainer considered CMake and `build2` around the 2025 Meson introduction and passed over both because they did not meet libsixel's requirements. Meson was adopted for a supplementary role where Autotools + Libtool was hard to use. [The adoption history](meson-history.md#other-candidates-considered) records that evaluation in its historical context.
+
 libsixel has addressed parallelism weaknesses with its own configuration probes, phased build scheduling, and test orchestration. These are necessary engineering work that the standard machinery did not provide for this project's layout and scale. They improve the retained build path while leaving its GNU make dependency in place. [Limitations and local remedies](autotools.md#limitations-and-local-remedies) separates the maintainer's objections, upstream capabilities, and the concrete adaptations.
 
 ### Autotools + Libtool separates maintainer tools from distribution requirements
@@ -38,6 +40,8 @@ The [command-length failures around the 2,000-test milestone](test-harness.md#wh
 
 ### Meson addresses the cost of Autotools + Libtool on Windows
 
+`libsixel/libsixel` introduced Meson in 2021 to replace its main Autotools build with a faster, modern build system. `saitoha/libsixel` added it in September 2025 as a supplementary path for environments where Autotools + Libtool was difficult to use, retaining both systems from the outset. This also served the next release's goal of carrying forward the community fork's broad externally visible feature set. [Meson adoption history](meson-history.md#introduction-and-scope-of-the-evidence) explains the different purposes and this repository's selective integration of community-fork capabilities.
+
 The shell-oriented execution of Autotools + Libtool can be expensive on Windows. Configuration probes, recursive makes, Libtool wrappers, and small utility invocations create many short-lived processes. POSIX compatibility environments add process and path-handling costs that can make a technically working build impractically slow. Adding parallel jobs does not eliminate the work needed to launch and coordinate those processes.
 
 Meson with Ninja supplies a practical path in that environment: Meson constructs the dependency graph and the backend schedules compiler and linker commands without reproducing the recursive shell-driven orchestration. This is why libsixel needs Meson even though its Autotools + Libtool path supports several Windows toolchains. The benefit concerns build orchestration; it does not make the C compiler intrinsically faster or remove every shell invocation. libsixel's generators and shared TAP tests still use shell helpers, and the [testing guide](../testing/guide.md#process-and-file-cost) separately limits their process cost.
@@ -55,7 +59,7 @@ The two systems are therefore complementary. Keeping both costs source-list main
 - [Autotools + Libtool configuration and build orchestration](autotools.md) follows generated files, configure-time parallelism, phased recursive builds, library linking, and amalgamation.
 - [Meson configuration and build graph](meson.md) follows feature detection, generated targets, test registration, packaging, and execution wrappers.
 - [Test harness and command-length limits](test-harness.md) explains the shared test inventory, unified C runner, custom Automake driver and result collection, and the separate limits encountered during testing, cleanup, and distribution.
-- [Meson adoption and remaining differences](meson-history.md) records the introduction and subsequent integration, distinguishes implementation gaps from execution differences and unverified platforms, and points to the owning evidence.
+- [Meson adoption and remaining differences](meson-history.md) distinguishes the community fork's 2021 replacement policy from this repository's 2025 supplementary build path and release goal, explains selective reuse and other candidates considered, and records implementation gaps, execution differences, and unverified platforms.
 
 For commands and the complete option inventory, use the repository's [build guide](../../build.md). [Platform support](../platform-support.md) owns requirements and CI-backed support claims; the [platform compatibility ledger](../misc/platforms/README.md) owns individual portability constraints. The [testing guide](../testing/guide.md) describes how to write tests, and [staticcheck](../testing/staticcheck.md) describes repository invariant verification.
 

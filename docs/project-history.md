@@ -260,6 +260,8 @@ published v1.9.0 and the v1.10 series through v1.10.5. Fredrick R. Brennan,
 nick black (`@dankamongmen`), Eli Schwartz, Henner Zeller, WSLUser, and other
 contributors participated at different points in that work.
 
+The community fork introduced Meson in June 2021 through Fredrick Brennan's [PR #20](https://github.com/libsixel/libsixel/pull/20), seeking a faster, modern replacement for its main Autotools build. Its [integrated change](https://github.com/libsixel/libsixel/commit/27635ffdffa2f85e4ffe079c3d5081b7fb152781) removed that main build. September 13, 2025 is the later adoption date in `saitoha/libsixel`; it is not the beginning of Meson support across the libsixel family. [Meson adoption history](build/meson-history.md) records both lines and their different maintenance choices.
+
 This period must not be collapsed into inactivity in the wider project
 history: even though updates in `saitoha/libsixel` had stalled, substantial
 maintenance and release work continued in `libsixel/libsixel`. The fork became
@@ -279,12 +281,11 @@ a version number or issue number alone can be ambiguous.
 
 ### 2025: development resumes in `saitoha/libsixel`
 
-Active development resumed in the original repository in 2025. The two
-repositories had accumulated different commits and release histories, so the
-result was not a simple rename or fast-forward from the community fork. Work
-from the fork has been incorporated or reimplemented where appropriate, and
-the current repository still refers to `libsixel/libsixel` issues and commits
-when preserving that provenance.
+Active development resumed in the original repository in 2025. The maintainer chose to continue the `saitoha/libsixel` line and cherry-pick needed changes from `libsixel/libsixel`, adapting or reimplementing work where appropriate, without basing the resumed line on the community fork's later commits. The repositories share the earlier history from before the fork; this strategy preserves that relationship while selecting later work individually. References to `libsixel/libsixel` issues, commits, and original authors preserve the provenance of that reuse.
+
+The intended next release was to carry forward the community fork's broad externally visible feature set, including Meson support for users and packagers. The purpose of the [September 13, 2025 addition](https://github.com/saitoha/libsixel/commit/cf813513b8ab0498f246ada93f75d2d55c018f79) within `saitoha/libsixel` was to provide a supplementary build path for environments where Autotools + Libtool was hard to use. The original build system was deliberately retained. Thus the resumed line carried forward the Meson capability with a different role from the community fork's replacement policy. This records the maintainer's adoption purpose; it does not imply that every implementation detail and option was identical.
+
+The maintainer also considered CMake and `build2` during this period, but passed over both because they did not meet libsixel's requirements. [The build history](build/meson-history.md#other-candidates-considered) places that evaluation alongside the decision to maintain Autotools + Libtool and Meson as complementary paths.
 
 That reuse includes direct cherry-picks of security work from the community
 fork. In August 2025, the original line imported the fork's fixes for
