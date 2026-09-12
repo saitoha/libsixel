@@ -125,11 +125,13 @@ img2sixel -Lbuiltin:cms_engine=auto:cms_target=linear:prefer_8bit=0! image.png
 
 ## Comparison with the libpng loader
 
-The [libpng Image Loader](../libpng.md) reference separates that adapter's desired behavior from implementation gaps and documents its build selection, metadata, animation, and coverage boundaries.
+The [libpng Image Loader](../libpng.md) reference documents that adapter's current shared alpha/background policy, float APNG canvas, original-stream validation, and coverage boundaries.
 
 The comparison is between libsixel's `builtin` and `libpng` loader components, including their adapters and color/alpha processing, not between bare stb_image and bare libpng. Both components support static PNG, precision-preserving static 16-bit paths, and APNG. In the libpng component, libsixel implements APNG chunk sequencing, reconstruction, blend/dispose, and looping around ordinary libpng raster decoding; an APNG-patched libpng is not required. See [`loader-libpng.c`](../../../src/loader-libpng.c), especially `load_png()`, `load_apng_frames()`, `apng_blend_rect()`, and `load_with_libpng()`.
 
 ### Precision and representation are conditional
+
+The following comparison tables and numerical examples record the earlier adapter used for the measurements below. They are historical observations, not current libpng behavior. The repaired libpng adapter retains sixteen-bit alpha/APNG samples, preserves masks independently of CMS, honors background priority, and blends in linear light; its [current contracts and numerical tests](../libpng.md#test-coverage) supersede the old libpng path limitations listed here. The recorded timing results have not been rerun for the repaired adapter.
 
 | Input and effective path | Observed relationship / limit |
 | --- | --- |

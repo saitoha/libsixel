@@ -1414,12 +1414,14 @@ sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
                                                     profile->pcs);
     }
 
-    xyz_d50[0] = sixel_icc_eval_curve(&profile->curves[0], device_unit[0])
-        * profile->gray_white_xyz_d50[0];
-    xyz_d50[1] = sixel_icc_eval_curve(&profile->curves[0], device_unit[0])
-        * profile->gray_white_xyz_d50[1];
-    xyz_d50[2] = sixel_icc_eval_curve(&profile->curves[0], device_unit[0])
-        * profile->gray_white_xyz_d50[2];
+    /* Gray TRC output is relative to the PCS illuminant, not the media
+     * white in wtpt. Using a D65 media white here would adapt it twice
+     * when the PCS is subsequently converted from D50 to sRGB. */
+    source_linear[0] = sixel_icc_eval_curve(&profile->curves[0],
+                                           device_unit[0]);
+    xyz_d50[0] = source_linear[0] * sixel_icc_d50_white_xyz[0];
+    xyz_d50[1] = source_linear[0] * sixel_icc_d50_white_xyz[1];
+    xyz_d50[2] = source_linear[0] * sixel_icc_d50_white_xyz[2];
     return 1;
 }
 
@@ -1582,12 +1584,11 @@ sixel_icc_apply_rgb_triplet_internal(double rgb[3],
 
         sixel_icc_apply_matrix(profile->matrix_to_xyz_d50, source_linear, xyz_d50);
     } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_GRAY) {
-        double gray_linear;
-
-        gray_linear = sixel_icc_eval_curve(&profile->curves[0], rgb[0]);
-        xyz_d50[0] = gray_linear * profile->gray_white_xyz_d50[0];
-        xyz_d50[1] = gray_linear * profile->gray_white_xyz_d50[1];
-        xyz_d50[2] = gray_linear * profile->gray_white_xyz_d50[2];
+        /* Match the gray-to-PCS path: kTRC scales the PCS D50 white. */
+        source_linear[0] = sixel_icc_eval_curve(&profile->curves[0], rgb[0]);
+        xyz_d50[0] = source_linear[0] * sixel_icc_d50_white_xyz[0];
+        xyz_d50[1] = source_linear[0] * sixel_icc_d50_white_xyz[1];
+        xyz_d50[2] = source_linear[0] * sixel_icc_d50_white_xyz[2];
     } else {
         return 0;
     }

@@ -16,11 +16,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn6a16.png"
-out_default="${ARTIFACT_LOCAL_DIR}/libpng-trns-keycolor-rgba16-default.six"
-out_optin="${ARTIFACT_LOCAL_DIR}/libpng-trns-keycolor-rgba16-optin.six"
+out_default="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng-trns-keycolor-rgba16-default.six"
+out_optin="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng-trns-keycolor-rgba16-optin.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! \
@@ -38,8 +37,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-cmp -s "${out_default}" "${out_optin}" && {
-    echo "not ok 1 - opt-in unexpectedly ignored for libpng rgba16 PNG"
+cmp -s "${out_default}" "${out_optin}" || {
+    echo "not ok 1 - opt-in changed pixels for libpng rgba16 PNG"
     exit 0
 }
 

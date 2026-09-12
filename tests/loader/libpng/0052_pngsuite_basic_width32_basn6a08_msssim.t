@@ -18,12 +18,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn6a08.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0045_pngsuite_basic_width32_basn6a08_msssim.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/basn6a08.sixel"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -w32 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+output_sixel="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-basn6a08.sixel"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -B#000 -Nexplicit_first --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -w32 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "$lsqa_msg"
     exit 0
 }

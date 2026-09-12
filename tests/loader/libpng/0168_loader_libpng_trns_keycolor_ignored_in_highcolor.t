@@ -16,18 +16,17 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
-out_on="${ARTIFACT_LOCAL_DIR}/trns-keycolor-highcolor-on-tbbn0g04.six"
-out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-highcolor-off-tbbn0g04.six"
+out_on="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-trns-keycolor-highcolor-on-tbbn0g04.six"
+out_off="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-trns-keycolor-highcolor-off-tbbn0g04.six"
 keycolor_header="$(printf '\033P0;1q')"
 out_on_payload=''
 out_off_payload=''
 out_on_has_header=0
 out_off_has_header=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -I \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -I \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${out_on}" || {
@@ -35,7 +34,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -I \
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -I \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -I \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${out_off}" || {
