@@ -44,7 +44,7 @@ DIST_SUBDIRS = \
         tests
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = LICENSE build-aux/depcomp \
+EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	mkdocs.yml \
 	m4/ax_count_cpus.m4 \
 	package.json.in.in \
@@ -62,6 +62,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/resolve-test-tool-paths.sh.in \
 	docs/AGENTS.md \
 	docs/README.md \
+	docs/build/README.md \
+	docs/build/autotools.md \
+	docs/build/meson.md \
+	docs/build/meson-history.md \
+	docs/build/test-harness.md \
 	docs/assets/javascripts/mathjax.js \
 	docs/platform-support.md \
 	docs/project-history.md \

@@ -4,6 +4,8 @@ This document explains how to build libsixel using the traditional Autotools
 build system as well as the Meson build system. Examples assume a POSIX-like
 shell unless noted otherwise.
 
+For implementation details, see [Build System Architecture](docs/build/README.md), including the custom test harness, command-length limits, and Meson adoption and remaining differences.
+
 ## Prerequisites
 
 Before building, ensure the following tools are available:
@@ -463,13 +465,11 @@ meson setup builddir -Dwiccodec=enabled -Dregister_dll=true …
 ```
 
 When `register_dll` is true, `meson install` runs `regsvr32 /s` on the installed
-`libwicsixel.dll` (skipping registration when installing into a `DESTDIR`).  To
-deregister it manually, run:
+`libwicsixel.dll` (skipping registration when installing into a `DESTDIR`). Unregister the installed DLL while it still exists, then remove the installed files:
 
 ```sh
-ninja -C builddir uninstall  # removes files
-# then unregister the codec
 regsvr32 /u /s "$PREFIX\lib\libsixel\libwicsixel.dll"
+ninja -C builddir uninstall  # removes files after deregistration
 ```
 
 Note: Meson does not currently run unregister commands during `ninja uninstall`,
