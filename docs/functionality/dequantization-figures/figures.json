@@ -52,6 +52,16 @@
     ]
   },
   "inference_layouts": {
+    "position-cases": {
+      "wide": [
+        980,
+        990
+      ],
+      "mobile": [
+        380,
+        1850
+      ]
+    },
     "rgb-geometry": {
       "wide": [
         1080,

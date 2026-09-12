@@ -313,6 +313,83 @@ def rgb_geometry(mobile):
                     'constant-blue slice, not a projection with distorted distances.',body)
 
 
+def position_cases(mobile):
+    """Partition possible nearest-color positions by squared radial distance."""
+    import math
+    width, height = (380, 1850) if mobile else (980, 990)
+    body = [rect(0,0,width,height,'#ffffff',radius=0),
+            text(20,34,'Where can the nearest color P lie?',
+                 19 if mobile else 28,weight=700),
+            text(20,62,'Position → distance ratio → neighbor weight',
+                 15 if mobile else 18,MUTED)]
+    sets = [
+        ('Upstream', [0,2/3,1,2], [0,1,6,8],
+         ['0 ≤ r < 2/3','2/3 ≤ r < 1','1 ≤ r < 2','2 ≤ r'],
+         [.25,.82,1.4,2.5], [55,140,245,325]),
+        ('libsixel (-S 100)', [0,1/3,1/2,3/5,2/3,3/4,1,2],
+         [0,2,4,7,5,7,8,5],
+         ['0 ≤ r < 1/3','1/3 ≤ r < 1/2','1/2 ≤ r < 3/5',
+          '3/5 ≤ r < 2/3','2/3 ≤ r < 3/4','3/4 ≤ r < 1',
+          '1 ≤ r < 2','2 ≤ r'],
+         [.15,.42,.55,.63,.70,.85,1.4,2.5],
+         [45,100,150,205,255,305,30,145]),
+    ]
+    for index,(name,low,weights,labels,samples,angles) in enumerate(sets):
+        x,y,pw = (20,85+index*845,340) if mobile else (20+index*485,85,465)
+        body.append(rect(x,y,pw,825,'#f6f8fa','#c8d0d7'))
+        body.append(text(x+16,y+32,name,22,weight=700))
+        cx,cy,scale=x+pw/2,y+225,94
+        colors=['#f5f8fc','#dfeaf4','#f0f6fa','#d4e4ef',
+                '#eaf0f8','#cbddeb','#e2ebf3','#f0f3f6']
+        for k in reversed(range(len(low))):
+            outer=low[k+1] if k+1<len(low) else 3.0
+            radius=scale*math.sqrt(outer)
+            body.append(f'<circle cx="{cx}" cy="{cy}" r="{radius}" '
+                        f'fill="{colors[k]}" stroke="#96aabb" stroke-width="1"/>')
+        body.append(f'<circle cx="{cx}" cy="{cy}" r="{scale}" '
+                    f'fill="none" stroke="{GOLD}" stroke-width="2"/>')
+        body.append(f'<path d="M {cx-scale} {cy} H {cx+scale}" '
+                    f'stroke="{GOLD}" stroke-width="2"/>')
+        for label,dx in [('A',-scale),('M',0),('B',scale)]:
+            body.append(rect(cx+dx-4,cy-4,8,8,'white',GOLD,0,2))
+            body.append(text(cx+dx,cy+22,label,16,GOLD,700,'middle'))
+        for k,(ratio,angle) in enumerate(zip(samples,angles)):
+            upper = low[k+1] if k+1 < len(low) else float("inf")
+            assert low[k] <= ratio < upper, "Sample lies outside its case"
+            radius=scale*math.sqrt(ratio);rad=math.radians(angle)
+            px,py=cx+radius*math.cos(rad),cy-radius*math.sin(rad)
+            body.append(f'<circle cx="{px}" cy="{py}" r="9" '
+                        f'fill="{BLUE}" stroke="white" stroke-width="1"/>')
+            body.append(text(px,py+4,str(k+1),12,'white',700,'middle'))
+        body.append(text(x+16,y+421,'r = |M−P|² / |M−A|²',18,BLUE,700))
+        body.append(text(x+16,y+450,'Case / position of P',16,weight=700))
+        body.append(text(x+pw-16,y+450,'Weight',16,weight=700,anchor='end'))
+        for k,(label,w) in enumerate(zip(labels,weights)):
+            ly=y+481+k*30
+            body.append(text(x+16,ly,f'#{k+1}',16))
+            body.append(text(x+65,ly,label,16))
+            body.append(text(x+pw-24,ly,str(w),18,BLUE,700,'end'))
+        note = (['Farther P gives larger weights here.',
+                 'The gradient gate is a separate step.'] if index==0 else
+                ['Weights rise and fall across rings.',
+                 'Distance is not a linear blur control.'])
+        body.append(lines(x+16,y+773,note,14,MUTED,22))
+    footer = ['Numbered P positions are separate cases, not one palette.',
+              'Gold circle: r=1. Circles are slices of RGB spheres.']
+    if mobile:
+        footer=['Numbered P positions are separate cases;',
+                'they are not entries in one shared palette.',
+                'Gold circle: r=1. RGB boundaries are spheres.']
+    body.append(lines(20,height-(66 if mobile else 34),footer,
+                      12 if mobile else 15,MUTED,20))
+    return document(width,height,'Position cases for the nearest palette color',
+                    'Concentric boundaries around M classify the possible '
+                    'nearest other palette color P. The radius is the square '
+                    'root of the listed squared-distance ratio. A and B stay '
+                    'fixed. Upstream has four weight regions; libsixel has '
+                    'eight. Exact boundary points belong to the outer region.',body)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -320,6 +397,7 @@ def main():
     assets = {f'{kind}-{layout}.svg': figure(kind, layout == 'mobile')
               for kind in METHODS for layout in ('wide', 'mobile')}
     for layout in ('wide', 'mobile'):
+        assets[f'position-cases-{layout}.svg'] = position_cases(layout == 'mobile')
         assets[f'rgb-geometry-{layout}.svg'] = rgb_geometry(layout == 'mobile')
         assets[f'palette-clue-{layout}.svg'] = palette_clue(layout == 'mobile')
         assets[f'gradient-clue-{layout}.svg'] = gradient_clue(layout == 'mobile')
@@ -333,6 +411,7 @@ def main():
                                             [160,192,128]],
                          'other_colors': [[40,220,128], [225,215,128]]},
         'inference_layouts': {
+            'position-cases': {'wide': [980,990], 'mobile': [380,1850]},
             'rgb-geometry': {'wide': [1080,680], 'mobile': [380,1590]},
             'palette-clue': {'wide': [960, 610], 'mobile': [380, 1060]},
             'gradient-clue': {'wide': [960, 635], 'mobile': [380, 1120]},
