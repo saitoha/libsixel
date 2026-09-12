@@ -80,7 +80,7 @@ as an image encoding.
 
 Image preloading also fits the needs of applications that track images as objects. A browser such as w3m keeps an image associated with its source, dimensions, and currently visible region. Scrolling or redrawing a page changes the required placement or crop without necessarily changing the source image. Keeping image content in the receiver under a reusable reference lets the application express those drawing operations separately. This application model helps explain the interest in image references alongside the transfer-speed improvements of terminal macros.
 
-Hayaki Saito's tanasinn added an [image overlay plugin on 2012-03-11](https://github.com/saitoha/tanasinn/commit/e73817ae444c0fe275e145fa67c1fded870b0782). In revision `e432aeec6345`, [`OSC 212`](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/optional/overlayimage.js#L122-L177) takes `x;y;w;h;filename`, reuses an image cached by filename or URI, and converts character-cell placement coordinates to canvas pixels. [`OSC 213`](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/optional/overlayimage.js#L180-L208) clears a rectangle without deleting that cache entry. These are source-string references, not numeric image IDs. In the same revision, OSC 200/201 belong to the [popup display handlers](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/session_components/popup.js#L336-L469).
+Hayaki Saito's tanasinn added an [image overlay plugin on 2012-03-11](https://github.com/saitoha/tanasinn/commit/e73817ae444c0fe275e145fa67c1fded870b0782). In revision `e432aeec6345`, [`OSC 212`](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/optional/overlayimage.js#L122-L177) takes `x;y;w;h;filename`, reuses an image cached by filename or URI, and converts character-cell placement coordinates to canvas pixels. [`OSC 213`](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/optional/overlayimage.js#L180-L208) clears a rectangle without deleting that cache entry. These are source-string references, not numeric image IDs.
 
 tanasinn's separate [`OSC 99` w3m interface](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/session_components/w3m.js#L154-L209) dispatches drawing commands and reuses loaded images by filename. Its [w3m-side drawing code](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/tools/w3m/image.c#L111-L129) sends an image-cache index together with geometry and the filename; the receiver uses the filename as its cache key and [draws the requested source rectangle at the destination](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/session_components/w3m.js#L274-L297). This is a concrete connection between application image tracking and receiver image reuse.
 
@@ -201,6 +201,18 @@ library and converter directories, gained public encoding and decoding APIs,
 added color quantization, multiple diffusion and resampling methods, resizing,
 animation handling, 7-bit and 8-bit output, and broad Unix and Windows build
 support.
+
+Several influential SIXEL techniques were implemented in quick succession across libsixel, mlterm, and RLogin during 2014. The same year brought work on reducing image retransmission, retaining images under reusable references, and extending color rendering. The following implementation and release records show that concentration:
+
+| Date in 2014 | Project | Recorded change |
+| --- | --- | --- |
+| March 19 | libsixel | [Import of kmiya's encoder and decoder](https://github.com/saitoha/libsixel/commit/0ebd7dd3c62353eeb0bbfc0dd2a8ee26c71f4777), starting the recognizable libsixel development line. |
+| July 21 | mlterm and libsixel | [Terminal macros with SIXEL image caching in mlterm](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L11508-L11515) and [DECDMAC/DECINVM playback through libsixel's `-u`](https://github.com/saitoha/libsixel/commit/fc93d97631a6c1556b8af0ceceab2a5cf8c9fa35). |
+| August 2 | libsixel | [`-n` for explicit macro IDs](https://github.com/saitoha/libsixel/commit/7f12bdb00456f43a260c03cba9986227744d46cd), allowing an application to preload an image and invoke it later. |
+| November 2 | libsixel | [Araki Ken's experimental 15-bit color implementation](https://github.com/saitoha/libsixel/commit/0382aef1afa5333ad2d69f4412900accca866ef2), using palette redefinition; initially exposed as `-F`, it became the current `-I` high-color mode. |
+| November 21 | RLogin | [Version 2.17.3 adds image-index selection and 24-bit color extensions](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L1378-L1383). The image-ID extension follows the July macro implementation by about four months. |
+
+This period built on the [earlier emulator revival](#before-libsixel-the-modern-terminal-emulator-revival) and tanasinn's [2012 image-reference work](#image-references-and-application-redraw). The distinctive feature of 2014 was the concentration of new implementations around libsixel's formation, with encoders, receivers, and applications developing related ways to use SIXEL as a stateful graphics facility.
 
 Community work was important from the beginning. Araki Ken (`@arakiken`)
 contributed or designed high-compression output, 15-bit high-color operation,
