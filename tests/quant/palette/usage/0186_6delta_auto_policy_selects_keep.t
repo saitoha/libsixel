@@ -18,7 +18,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-minimal-1x1-rgba.png
 esc="$(printf '\033')"
 
 output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --6delta-threshold=0 -B '#ffffff' \
+    --update-policy=delta:threshold=0 -B '#ffffff' \
     -L builtin! -d fs:scan=raster -o - "${input_image}") || {
     echo "not ok" 1 - "default 6delta alpha-policy render failed"
     exit 0

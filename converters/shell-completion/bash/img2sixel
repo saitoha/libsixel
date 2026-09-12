@@ -939,12 +939,8 @@ _img2sixel()
     -+|--transparent-offset)
         return 0
         ;;
-    -Z|--6delta-threshold)
-        return 0
-        ;;
-    -Y|--6delta-error)
-        COMPREPLY=( $( compgen -W 'diffuse \
-                                   skip' -- "$cur" ) )
+    -Z|--update-policy)
+        COMPREPLY=( $( compgen -W 'full delta delta:threshold=0:error=diffuse delta:threshold=0:error=skip' -- "$cur" ) )
         return 0
         ;;
     -L|--loaders)
@@ -1069,8 +1065,7 @@ _img2sixel()
                                    -N --background-policy \
                                    -A --alpha-policy \
                                    -+ --transparent-offset \
-                                   -Z --6delta-threshold \
-                                   -Y --6delta-error \
+                                   -Z --update-policy \
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \

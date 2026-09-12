@@ -8,10 +8,10 @@ See the [SIXEL format](../sixel-format.md) for the wire syntax, [alpha policy](.
 
 ## Quick start
 
-Enable 6delta with `-Z` or `--6delta-threshold`. Zero enables the feature with an exact early-match gate and the post-lookup comparison described below; it does **not** disable delta encoding.
+Select `--update-policy=delta` (short form `-Z delta`) to enable 6delta. The default policy is `full`. The delta policy defaults to `threshold=0:error=diffuse`; zero controls the exact early-match gate, while the policy itself controls enablement.
 
 ```sh
-img2sixel --6delta-threshold=0 --6delta-error=diffuse \
+img2sixel --update-policy=delta:threshold=0:error=diffuse \
   --precision=8bit --working-colorspace=gamma --gpu-policy=off \
   --loop-control=disable animation.gif
 ```
@@ -22,13 +22,17 @@ The first frame establishes history. Subsequent frames in the same encoder insta
 
 | Control | Meaning | Default |
 | --- | --- | --- |
-| `-Z DELTA`, `--6delta-threshold=DELTA` | Enable 6delta and set the early-keep tolerance, an integer from 0 through 255. | Disabled when neither the option nor a valid environment setting is supplied. |
-| `-Y MODE`, `--6delta-error=MODE` | Choose `diffuse` or `skip` for error handling at kept pixels. This option alone does not enable 6delta. | `diffuse`. |
-| `SIXEL_6DELTA_THRESHOLD` | Set the initial threshold and enable 6delta when valid. | Invalid values leave the built-in disabled state. |
-| `SIXEL_6DELTA_ERROR` | Set the initial kept-pixel error mode. | Invalid values leave `diffuse`. |
-| `--alpha-policy=auto` | Resolve to `keep` for 6delta, requesting `P2=1`. | `auto`. |
+| `-Z POLICY`, `--update-policy=POLICY` | Select `full` or `delta[:threshold=N][:error=MODE]`. | `full`. |
+| `delta:threshold=N` (short key `T`) | Set the early-keep tolerance, an integer from 0 through 255. | `0`. |
+| `delta:error=MODE` (short key `E`) | Choose `diffuse` or `skip` for kept-pixel error handling. | `diffuse`. |
+| `SIXEL_UPDATE_POLICY` | Select the initial base policy, `full` or `delta`, without suboptions. | Invalid values leave `full`. |
+| `SIXEL_UPDATE_DELTA_THRESHOLD` | Set the delta threshold default without enabling delta. | Invalid values leave `0`. |
+| `SIXEL_UPDATE_DELTA_ERROR` | Set the delta error-mode default without enabling delta. | Invalid values leave `diffuse`. |
+| `--alpha-policy=auto` | Resolve to `keep` for delta, requesting `P2=1`. | `auto`. |
 
-Explicit `-Z` and `-Y` settings override the corresponding environment defaults. The threshold and error mode persist on a C encoder object until changed. There is no documented `-Z` value meaning “off”; use a fresh encoder without a threshold setting for an independent non-delta baseline, and unset `SIXEL_6DELTA_THRESHOLD` for a CLI baseline. Clearing history only forces repainting until history is built again.
+An explicit policy overrides `SIXEL_UPDATE_POLICY`. Within delta, explicit suboptions override their environment defaults. Each policy selection resets its parameters to built-in defaults, then applies applicable environment defaults and explicit suboptions. Thus `-Z delta:T8:Eskip` followed by `-Z delta` restores environment/default tuning. Parameters remain on the encoder until the next selection.
+
+`full` accepts no suboptions, disables temporal keeps, and invalidates retained history. It preserves source-alpha handling: source-transparent pixels can still be omitted under `alpha-policy=keep`. Selecting delta again starts with no retained history. Malformed arguments are rejected before changing the policy, parameters, or retained plane. Clearing history without selecting full only forces repainting until history is built again.
 
 The canonical error-mode names are `diffuse` and `skip`; `carry` is rejected. Explicit `--alpha-policy=clear` or `--alpha-policy=composite` conflicts with 6delta and is rejected. A process-level alpha default does not prevent the feature from resolving to `keep`; see [alpha-policy precedence](../loader/alpha-policy.md).
 
@@ -97,7 +101,7 @@ At zero, a post-lookup keep is no farther from this sample under the helper's RG
 
 Error-diffusion policies make their comparison using the current error-corrected sample. Positional policies such as A-dither, X-dither, and blue noise use the source sample for the keep comparison while their positional perturbation affects the palette choice. The selected candidate and the meaning of the sample therefore depend on the policy; the threshold is not universally a comparison against untouched input-file bytes.
 
-With `--6delta-error=diffuse`, a kept pixel's quantization error is calculated against retained RGB and propagated through the chosen diffusion kernel. The target is the color left on screen, not the transparency marker's RGB. With `skip`, propagation from a kept pixel is omitted; ordinary painted pixels still use the selected diffusion policy. Skipping can change following pixels and temporal appearance as well as execution time. Positional dithers and `none` have no spatial error diffusion for this switch to suppress.
+With `--update-policy=delta:error=diffuse`, a kept pixel's quantization error is calculated against retained RGB and propagated through the chosen diffusion kernel. The target is the color left on screen, not the transparency marker's RGB. With `skip`, propagation from a kept pixel is omitted; ordinary painted pixels still use the selected diffusion policy. Skipping can change following pixels and temporal appearance as well as execution time. Positional dithers and `none` have no spatial error diffusion for this switch to suppress.
 
 ## What goes on the wire
 
@@ -125,8 +129,8 @@ The public declarations are in [sixel.h.in](../../include/sixel.h.in). The featu
 
 | API | Purpose and lifetime |
 | --- | --- |
-| `sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_6DELTA_THRESHOLD, "0")` | Enable delta selection on this encoder. |
-| `sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_6DELTA_ERROR, "diffuse")` | Set kept-pixel error handling. |
+| `sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY, "delta:threshold=0:error=diffuse")` | Select delta and its parameters. |
+| `sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY, "full")` | Disable temporal keeps and discard history. |
 | `sixel_encoder_set_6delta_plane_size(encoder, width, height)` | Declare the persistent surface in output pixels. Changing the size discards history; repeating the same size preserves it. `(0, 0)` restores frame-sized history. |
 | `sixel_encoder_set_6delta_plane_origin(encoder, x, y)` | Locate the next frame inside the declared plane. The nonnegative pixel origin persists until changed. |
 | `sixel_encoder_set_accumulation_buffer(encoder, pixels, width, height, pixelformat)` | Copy a supplied previous image into RGB888 history, mark all positions valid, and declare its dimensions as the plane size. Passing `NULL` clears the history. |
@@ -161,12 +165,8 @@ prepare_delta_surface(sixel_encoder_t *encoder, int width, int height)
         return status;
     }
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_6DELTA_THRESHOLD, "0");
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_6DELTA_ERROR, "diffuse");
+                                  SIXEL_OPTFLAG_UPDATE_POLICY,
+                                  "delta:threshold=0:error=diffuse");
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -203,7 +203,7 @@ A successful encode does not acknowledge terminal presentation. If an applicatio
 | Path or feature | Current scope |
 | --- | --- |
 | CPU RGB888 | Early and post-lookup keep helpers are used by `none`, `fs`, `atkinson`, `lso2`, `jajuni`, `stucki`, `burkes`, `sierra1`, `sierra2`, `sierra3`, `a_dither`, `x_dither`, and `bluenoise`. `auto` resolves to a concrete dither policy. |
-| Float32 and non-gamma working spaces | The described keep helpers are in the RGB888 policy implementations. Do not assume that selecting `-Z` adds the same keep behavior to float32 paths or changes the metric to the `-W` space. Explicit `--precision=8bit --working-colorspace=gamma` is the baseline for this guide; see [precision](precision.md). |
+| Float32 and non-gamma working spaces | The described keep helpers are in the RGB888 policy implementations. Do not assume that selecting `-Z delta` adds the same keep behavior to float32 paths or changes the metric to the `-W` space. Explicit `--precision=8bit --working-colorspace=gamma` is the baseline for this guide; see [precision](precision.md). |
 | GPU palette application | The Metal path supports RGB888 `none` and `bluenoise` with a compatible retained plane matching the frame geometry. It implements both threshold and post-lookup decisions. CPU error-diffusion kernels are a separate path. |
 | GPU with a larger or offset retained plane | The GPU request cannot express general origin-based plane addressing. `auto` declines that request so the CPU can apply the proper plane coordinates. Forced GPU use is not a portable fallback setting; prefer `off` or `auto` for damage rectangles. |
 | Generated palette | An active retained plane requires a reserved transparency key. In the ordinary generated-palette path, one slot is taken from the requested budget; for `-p 256`, up to 255 entries remain for painted colors when that reservation is required. The key is excluded from ordinary nearest-color lookup. |
@@ -247,12 +247,12 @@ The IDs below map to existing assertions. A representative fixture establishes i
 
 | ID | Contract and assertion boundary | Owning test |
 | --- | --- | --- |
-| D6-01 | No history keeps on the first opaque frame; repeats keep pixels; a moving rectangle keeps some overlap without keeping the entire new rectangle; invalidation forces no history keeps. | [tests/processing/filter/0012_filter_encode_6delta_plane.t](../../tests/processing/filter/0012_filter_encode_6delta_plane.t) |
+| D6-01 | No history keeps on the first opaque frame; repeats keep pixels; a moving rectangle keeps some overlap without keeping the entire new rectangle; invalidation and a full/delta transition force no history keeps; rejected full suboptions preserve state. | [tests/processing/filter/0012_filter_encode_6delta_plane.t](../../tests/processing/filter/0012_filter_encode_6delta_plane.t) |
 | D6-02 | Repeated content can produce keeps at threshold zero. | [tests/processing/filter/0013_filter_encode_6delta_keycolor.t](../../tests/processing/filter/0013_filter_encode_6delta_keycolor.t) |
-| D6-03 | CLI threshold 8 is accepted; 256, -1, and nonnumeric input are rejected; `skip` is accepted. | [tests/quant/palette/usage/0168_6delta_threshold_cli_range.t](../../tests/quant/palette/usage/0168_6delta_threshold_cli_range.t) |
-| D6-04 | `diffuse` and `skip` are accepted; `carry` is rejected. | [tests/cli/options/matching/0149_option_matching_6delta_error_choice.t](../../tests/cli/options/matching/0149_option_matching_6delta_error_choice.t) |
-| D6-05 | Threshold 32 supplied through the environment produces the same animation bytes as `-Z 32` for the fixture. | [tests/cli/options/migration/0001_6delta_threshold_environment_cli_equivalence.t](../../tests/cli/options/migration/0001_6delta_threshold_environment_cli_equivalence.t) |
-| D6-06 | Environment `skip` produces the same animation bytes as `-Y skip` for the fixture. | [tests/cli/options/migration/0002_6delta_error_environment_cli_equivalence.t](../../tests/cli/options/migration/0002_6delta_error_environment_cli_equivalence.t) |
+| D6-03 | CLI threshold 8 is accepted; 256, -1, and nonnumeric input are rejected; `skip` is accepted. | [tests/quant/palette/usage/0168_update_delta_threshold_cli_range.t](../../tests/quant/palette/usage/0168_update_delta_threshold_cli_range.t) |
+| D6-04 | `diffuse` and `skip` are accepted; `carry` is rejected. | [tests/cli/options/matching/0149_option_matching_update_delta_error_choice.t](../../tests/cli/options/matching/0149_option_matching_update_delta_error_choice.t) |
+| D6-05 | Threshold 32 supplied through the environment produces the same animation bytes as `-Z delta:threshold=32` for the fixture. | [tests/cli/options/migration/0001_update_delta_threshold_environment_cli_equivalence.t](../../tests/cli/options/migration/0001_update_delta_threshold_environment_cli_equivalence.t) |
+| D6-06 | Environment `skip` produces the same animation bytes as `-Z delta:error=skip` for the fixture. | [tests/cli/options/migration/0002_update_delta_error_environment_cli_equivalence.t](../../tests/cli/options/migration/0002_update_delta_error_environment_cli_equivalence.t) |
 | D6-07 | Default `auto` requests `P2=1` with 6delta. | [tests/quant/palette/usage/0186_6delta_auto_policy_selects_keep.t](../../tests/quant/palette/usage/0186_6delta_auto_policy_selects_keep.t) |
 | D6-08 | Explicit `clear` conflicts with 6delta and reports the alpha-policy requirement. | [tests/quant/palette/usage/0187_6delta_explicit_alpha_policy_conflict.t](../../tests/quant/palette/usage/0187_6delta_explicit_alpha_policy_conflict.t) |
 | D6-09 | Explicit `composite` conflicts with 6delta and reports the alpha-policy requirement. | [tests/quant/palette/usage/0190_6delta_composite_policy_conflict.t](../../tests/quant/palette/usage/0190_6delta_composite_policy_conflict.t) |
@@ -269,6 +269,7 @@ The IDs below map to existing assertions. A representative fixture establishes i
 | D6-20 | `skip` leaves the following sample unchanged by a kept pixel for Jajuni, Stucki, Burkes, and the three Sierra policies. | [tests/processing/filter/0026_filter_dither_6delta_diffusion_skip.t](../../tests/processing/filter/0026_filter_dither_6delta_diffusion_skip.t) |
 | D6-21 | High-level forced GPU blue noise attaches an exact-size retained plane and returns the expected keep index/mask; requires a GPU-capable build and device. | [tests/processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.t](../../tests/processing/filter/0028_filter_dither_6delta_bluenoise_gpu_exact_plane.t) |
 | D6-22 | GPU `auto` permits origin-aware CPU fallback for an offset retained plane. | [tests/processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.t](../../tests/processing/filter/0029_filter_dither_6delta_bluenoise_gpu_auto_fallback.t) |
+| D6-24 | Environment tuning alone does not enable delta; explicit suffixes override it; repeated delta resets tuning; invalid arguments preserve parameters; invalid base environment falls back to full. | [tests/processing/filter/0011_filter_encode_accumulation_buffer.t](../../tests/processing/filter/0011_filter_encode_accumulation_buffer.t) |
 
 ### Quality regression tests
 
@@ -282,6 +283,6 @@ The [filter test directory](../../tests/processing/filter/) also checks contradi
 
 ### Coverage limits and manual validation
 
-The documented constructor defaults, environment precedence and invalid-value fallback, exact early-match and threshold-255 boundaries, plane-size rejection/reset details, seeded-buffer lifecycle, float32 scope, and emitted-RGB fallback are audited against owning code. The table does not provide a separate focused automated assertion for every one of those dimensions. Likewise, the listed LSO2 test asserts `diffuse`, while D6-20's `skip` test covers only its six named policies. GPU tests may skip when the required device or backend is unavailable.
+The exact early-match and threshold-255 boundaries, plane-size rejection/reset details, seeded-buffer lifecycle, float32 scope, and emitted-RGB fallback are audited against owning code. The table does not provide a separate focused automated assertion for every one of those dimensions. Likewise, the listed LSO2 test asserts `diffuse`, while D6-20's `skip` test covers only its six named policies. GPU tests may skip when the required device or backend is unavailable.
 
 Receiver preservation, palette interpretation, external scroll/overlay recovery, delivery loss, and temporal appearance are application/terminal integration observations. Validate them with the actual receiver and a composed frame sequence; a passing single-frame decoder test cannot establish them.

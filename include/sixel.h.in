@@ -292,6 +292,10 @@ typedef int SIXELSTATUS;
 #define SIXEL_BACKGROUND_POLICY_FILE_FIRST     0
 #define SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST 1
 
+/* frame update policy */
+#define SIXEL_UPDATE_POLICY_FULL  0
+#define SIXEL_UPDATE_POLICY_DELTA 1
+
 /* 6delta encoding error handling */
 #define SIXEL_6DELTA_ERROR_DIFFUSE 0  /* diffuse error from kept RGB */
 #define SIXEL_6DELTA_ERROR_SKIP    1  /* skip diffusion on kept pixels */
@@ -805,14 +809,9 @@ typedef int SIXELSTATUS;
 /* -+ LEFT,TOP, --transparent-offset=LEFT,TOP */
 /* add transparent left/top pixel offset for P2=1 image-plane reuse */
 #define SIXEL_OPTFLAG_TRANSPARENT_OFFSET ('+')
-/* -Z DELTA, --6delta-threshold=DELTA */
-/* set the 6delta lookup shortcut: a pixel is kept whenever the displayed */
-/* color beats the palette, and this tolerance decides that before the    */
-/* lookup runs, trading accuracy for speed                                */
-#define SIXEL_OPTFLAG_6DELTA_THRESHOLD ('Z')
-/* -Y MODE, --6delta-error=MODE */
-/* choose 6delta kept-pixel error handling: diffuse or skip */
-#define SIXEL_OPTFLAG_6DELTA_ERROR     ('Y')
+/* -Z POLICY, --update-policy=POLICY */
+/* select full output or delta[:threshold=0..255][:error=diffuse|skip] */
+#define SIXEL_OPTFLAG_UPDATE_POLICY ('Z')
 #define SIXEL_OPTFLAG_BGCOLOR           ('B')  /* -B BGCOLOR, --bgcolor=BGCOLOR:
                                                   specify background color
                                                   BGCOLOR is represented by the
@@ -1925,7 +1924,7 @@ sixel_encoder_set_cancel_callback(
  * Set the previous RGB plane used by 6delta encoding.  Plain
  * alpha-policy=keep/P2=1 does not need this buffer; it is only
  * consulted after 6delta is explicitly enabled, for example with
- * --6delta-threshold.  The buffer is copied as RGB888.  Pass NULL for PIXELS
+ * --update-policy=delta.  The buffer is copied as RGB888.  Pass NULL for PIXELS
  * to clear the retained 6delta buffer.
  *
  * The supplied buffer becomes the retained plane, so it also defines the plane

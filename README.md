@@ -974,17 +974,12 @@ steps.
                            add transparent left/top pixel offset with
                            DCS P2=1 image-plane reuse. 0,0 disables
                            the offset. Requires alpha-policy=auto or keep.
--Z DELTA, --6delta-threshold=DELTA
-                           set RGB per-channel tolerance for
-                           6delta encoding. DELTA must be 0..255
-                           (default: 0). Requires
-                           alpha-policy=auto or keep.
--Y MODE, --6delta-error=MODE
-                           choose 6delta kept-pixel error handling.
-                             diffuse -> diffuse error from the
-                                        retained RGB (default)
-                             skip    -> skip diffusion on kept pixels
-                                        for speed
+-Z POLICY, --update-policy=POLICY
+                           select full (default) or delta updates.
+                           delta suboptions: threshold=0..255 (T),
+                           error=diffuse|skip (E).
+                           Defaults: threshold=0, error=diffuse.
+                           delta requires alpha-policy=auto or keep.
 -P, --penetrate            [[deprecated]] penetrate GNU Screen
                            using DCS pass-through sequence
 -D, --pipe-mode            [[deprecated]] read source images from
@@ -1112,14 +1107,13 @@ SIXEL_ALPHA_POLICY         control source alpha and omitted SIXEL pixel
                            handling. Accepts auto (default), composite,
                            clear, or keep. The values and semantics are
                            identical to -A/--alpha-policy.
-SIXEL_6DELTA_THRESHOLD     set default RGB per-channel tolerance for
-                           6delta encoding. Accepts 0..255.
-                           Invalid values keep the built-in default 0.
-                           overrided by -Z(--6delta-threshold) option.
-SIXEL_6DELTA_ERROR         set default 6delta kept-pixel error handling.
-                           Accepts diffuse or skip. Invalid values keep
-                           diffuse.
-                           overrided by -Y(--6delta-error) option.
+SIXEL_UPDATE_POLICY       default full or delta (without suboptions).
+                           Overridden by -Z/--update-policy.
+SIXEL_UPDATE_DELTA_THRESHOLD
+                           delta:threshold default (0..255, default 0).
+SIXEL_UPDATE_DELTA_ERROR   delta:error default (diffuse or skip).
+                           Delta tuning does not enable delta; explicit
+                           update-policy suboptions take precedence.
 SIXEL_LOADER_ORIENTATION   default EXIF orientation handling for
                            libjpeg/libpng/libwebp loaders.
                            Accepts only 0/1. Defaults to 1.

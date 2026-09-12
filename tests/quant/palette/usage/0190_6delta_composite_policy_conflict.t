@@ -16,7 +16,7 @@ set +e
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --alpha-policy=composite --6delta-threshold=0 \
+    --alpha-policy=composite --update-policy=delta:threshold=0 \
     -o /dev/null "${input_image}" 2>&1)
 status=$?
 set -e

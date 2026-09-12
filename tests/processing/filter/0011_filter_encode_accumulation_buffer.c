@@ -87,8 +87,9 @@ accumulation_test_6delta_env_defaults(void)
     encoder = NULL;
     ok = 0;
 
-    if (sixel_compat_setenv("SIXEL_6DELTA_THRESHOLD", "7") != 0 ||
-        sixel_compat_setenv("SIXEL_6DELTA_ERROR", "skip") != 0) {
+    if (sixel_compat_setenv("SIXEL_UPDATE_POLICY", "delta") != 0 ||
+        sixel_compat_setenv("SIXEL_UPDATE_DELTA_THRESHOLD", "7") != 0 ||
+        sixel_compat_setenv("SIXEL_UPDATE_DELTA_ERROR", "skip") != 0) {
         fprintf(stderr, "6delta env setup failed\n");
         goto end;
     }
@@ -102,11 +103,56 @@ accumulation_test_6delta_env_defaults(void)
         goto end;
     }
     if (encoder->sixdelta_enabled == 0) {
-        fprintf(stderr, "6delta env threshold did not enable 6delta\n");
+        fprintf(stderr, "6delta env policy did not enable 6delta\n");
         goto end;
     }
     if (encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_SKIP) {
         fprintf(stderr, "6delta env error mode was not applied\n");
+        goto end;
+    }
+    /* Explicit suffixes override environment defaults, including zero. */
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+                                  "delta:threshold=0:error=diffuse");
+    if (SIXEL_FAILED(status) || encoder->sixdelta_threshold != 0u ||
+        encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_DIFFUSE) {
+        fprintf(stderr, "explicit update policy did not override env\n");
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+                                  "delta:threshold=12:error=carry");
+    if (SIXEL_SUCCEEDED(status) || encoder->sixdelta_threshold != 0u ||
+        encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_DIFFUSE) {
+        fprintf(stderr, "invalid suffix partially changed update policy\n");
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+                                  "delta");
+    if (SIXEL_FAILED(status) || encoder->sixdelta_threshold != 7u ||
+        encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_SKIP) {
+        fprintf(stderr, "repeated delta did not restore env defaults\n");
+        goto end;
+    }
+    sixel_encoder_unref(encoder);
+    encoder = NULL;
+
+    /* Tuning alone, or inline base-environment suffixes, cannot enable delta. */
+    if (sixel_compat_setenv("SIXEL_UPDATE_POLICY", "") != 0) {
+        goto end;
+    }
+    status = sixel_encoder_new(&encoder, NULL);
+    if (SIXEL_FAILED(status) || encoder->sixdelta_enabled ||
+        encoder->sixdelta_threshold != 0u) {
+        fprintf(stderr, "tuning environment enabled delta\n");
+        goto end;
+    }
+    sixel_encoder_unref(encoder);
+    encoder = NULL;
+    if (sixel_compat_setenv("SIXEL_UPDATE_POLICY", "delta:threshold=7") != 0) {
+        goto end;
+    }
+    status = sixel_encoder_new(&encoder, NULL);
+    if (SIXEL_FAILED(status) || encoder->sixdelta_enabled) {
+        fprintf(stderr, "base environment accepted inline suboptions\n");
         goto end;
     }
     sixel_encoder_unref(encoder);
@@ -116,8 +162,9 @@ accumulation_test_6delta_env_defaults(void)
      * Environment values seed defaults, so invalid text should not make
      * encoder creation fail.  The explicit CLI/API options stay strict.
      */
-    if (sixel_compat_setenv("SIXEL_6DELTA_THRESHOLD", "256") != 0 ||
-        sixel_compat_setenv("SIXEL_6DELTA_ERROR", "carry") != 0) {
+    if (sixel_compat_setenv("SIXEL_UPDATE_POLICY", "delta") != 0 ||
+        sixel_compat_setenv("SIXEL_UPDATE_DELTA_THRESHOLD", "256") != 0 ||
+        sixel_compat_setenv("SIXEL_UPDATE_DELTA_ERROR", "carry") != 0) {
         fprintf(stderr, "invalid 6delta env setup failed\n");
         goto end;
     }
@@ -130,8 +177,8 @@ accumulation_test_6delta_env_defaults(void)
         fprintf(stderr, "invalid 6delta threshold env changed default\n");
         goto end;
     }
-    if (encoder->sixdelta_enabled != 0) {
-        fprintf(stderr, "invalid 6delta threshold env enabled 6delta\n");
+    if (encoder->sixdelta_enabled == 0) {
+        fprintf(stderr, "invalid tuning env disabled the delta policy\n");
         goto end;
     }
     if (encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_DIFFUSE) {
@@ -145,8 +192,9 @@ end:
     if (encoder != NULL) {
         sixel_encoder_unref(encoder);
     }
-    (void)sixel_compat_setenv("SIXEL_6DELTA_THRESHOLD", "");
-    (void)sixel_compat_setenv("SIXEL_6DELTA_ERROR", "");
+    (void)sixel_compat_setenv("SIXEL_UPDATE_POLICY", "");
+    (void)sixel_compat_setenv("SIXEL_UPDATE_DELTA_THRESHOLD", "");
+    (void)sixel_compat_setenv("SIXEL_UPDATE_DELTA_ERROR", "");
 
     return ok;
 }
@@ -276,7 +324,7 @@ static SIXELSTATUS
 accumulation_encode(sixel_allocator_t *allocator,
                     unsigned char const *previous,
                     unsigned char const *current,
-                    char const *sixdelta_threshold,
+                    char const *update_policy,
                     int *size_out,
                     int *has_keep_header_out)
 {
@@ -316,10 +364,10 @@ accumulation_encode(sixel_allocator_t *allocator,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (sixdelta_threshold != NULL) {
+    if (update_policy != NULL) {
         status = sixel_encoder_setopt(encoder,
-                                      SIXEL_OPTFLAG_6DELTA_THRESHOLD,
-                                      sixdelta_threshold);
+                                      SIXEL_OPTFLAG_UPDATE_POLICY,
+                                      update_policy);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -421,8 +469,8 @@ accumulation_encode_sequence(sixel_allocator_t *allocator,
      * retained-plane path after palette application.
      */
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_6DELTA_THRESHOLD,
-                                  "8");
+                                  SIXEL_OPTFLAG_UPDATE_POLICY,
+                                  "delta:threshold=8");
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -486,7 +534,7 @@ accumulation_encode_sequence_delta3(sixel_allocator_t *allocator,
                                     unsigned char const *first,
                                     unsigned char const *second,
                                     unsigned char const *third,
-                                    char const *sixdelta_threshold,
+                                    char const *update_policy,
                                     int *first_size_out,
                                     int *second_size_out,
                                     int *third_size_out)
@@ -513,7 +561,7 @@ accumulation_encode_sequence_delta3(sixel_allocator_t *allocator,
     sizes[2] = third_size_out;
     frame_index = 0;
     if (allocator == NULL || first == NULL || second == NULL ||
-        third == NULL || sixdelta_threshold == NULL ||
+        third == NULL || update_policy == NULL ||
         first_size_out == NULL || second_size_out == NULL ||
         third_size_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -541,8 +589,8 @@ accumulation_encode_sequence_delta3(sixel_allocator_t *allocator,
         goto end;
     }
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_6DELTA_THRESHOLD,
-                                  sixdelta_threshold);
+                                  SIXEL_OPTFLAG_UPDATE_POLICY,
+                                  update_policy);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -835,7 +883,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     status = accumulation_encode(allocator,
                                  previous,
                                  current,
-                                 "0",
+                                 "delta:threshold=0",
                                  &accumulation_6delta0_size,
                                  &accumulation_has_keep_header);
     if (SIXEL_FAILED(status)) {
@@ -889,7 +937,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     status = accumulation_encode(allocator,
                                  near_previous,
                                  near_current,
-                                 "3",
+                                 "delta:threshold=3",
                                  &near_below_delta_size,
                                  &near_has_keep_header);
     if (SIXEL_FAILED(status)) {
@@ -901,7 +949,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     status = accumulation_encode(allocator,
                                  near_previous,
                                  near_current,
-                                 "4",
+                                 "delta:threshold=4",
                                  &near_with_delta_size,
                                  &near_has_keep_header);
     if (SIXEL_FAILED(status)) {
@@ -929,7 +977,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
                                                  near_previous,
                                                  near_current,
                                                  near_next,
-                                                 "4",
+                                                 "delta:threshold=4",
                                                  &delta_first_size,
                                                  &delta_second_size,
                                                  &delta_third_size);

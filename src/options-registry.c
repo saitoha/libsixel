@@ -1416,15 +1416,20 @@ static sixel_option_value_schema_t const g_background_policy_values[] = {
     }
 };
 
-static sixel_option_value_schema_t const g_6delta_error_values[] = {
+static sixel_option_value_schema_t const g_update_policy_values[] = {
     {
-        "diffuse", SIXEL_6DELTA_ERROR_DIFFUSE, 0u,
+        "full", SIXEL_UPDATE_POLICY_FULL, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     },
     {
-        "skip", SIXEL_6DELTA_ERROR_SKIP, 0u,
+        "delta", SIXEL_UPDATE_POLICY_DELTA, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
     }
+};
+
+static sixel_suboption_choice_t const g_update_error_choices[] = {
+    { "diffuse", SIXEL_6DELTA_ERROR_DIFFUSE },
+    { "skip", SIXEL_6DELTA_ERROR_SKIP }
 };
 
 static sixel_suboption_choice_t const g_dequantize_lso_variant_choices[] = {
@@ -1664,6 +1669,17 @@ static sixel_suboption_choice_t const g_loader_hdr_tonemap_choices[] = {
  * into every quantizer or diffusion method.
  */
 static sixel_suboption_key_t const g_suboptions[] = {
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "threshold", 'T', "SIXEL_UPDATE_DELTA_THRESHOLD", NULL, NULL,
+        0.0, 255.0, 1,
+        "delta threshold must be an integer in range 0..255.",
+        sixdelta_threshold, sixdelta_threshold_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "error", 'E', "SIXEL_UPDATE_DELTA_ERROR", NULL, NULL,
+        g_update_error_choices,
+        sixdelta_error_mode, sixdelta_error_mode_override),
     SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN(
         SIXEL_OPTION_SCHEMA_DIAGNOSTICS, NULL,
         "quiet", 'Q', "SIXEL_DIAG_MODE_QUIET",
@@ -3087,33 +3103,16 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_BACKGROUND_POLICY_FILE_FIRST,
         g_background_policy_values,
         NULL),
-    SIXEL_REGISTRY_SCALAR_UINT(
-        SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
+    SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY,
         SIXEL_OPTION_SCOPE_ENCODER,
-        SIXEL_OPTFLAG_6DELTA_THRESHOLD,
-        "6delta-threshold",
-        "SIXEL_6DELTA_THRESHOLD",
-        0.0,
-        255.0,
-        0.0,
-        255.0,
-        SIXEL_SUBOPTION_ENV_RANGE_REJECT,
-        "6delta threshold must be an integer in range 0..255.",
-        NULL,
-        NULL,
-        SIXEL_OPTION_DEFAULT_OWNER,
-        0),
-    SIXEL_REGISTRY_SCALAR_CHOICE(
-        SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
-        SIXEL_OPTION_SCOPE_ENCODER,
-        SIXEL_OPTFLAG_6DELTA_ERROR,
-        "6delta-error",
-        SIXEL_OPTION_MATCH_PREFIX,
-        SIXEL_OPTION_MATCH_PREFIX,
-        "SIXEL_6DELTA_ERROR",
-        "cannot parse 6delta error option.",
-        SIXEL_6DELTA_ERROR_DIFFUSE,
-        g_6delta_error_values),
+        SIXEL_OPTFLAG_UPDATE_POLICY,
+        "update-policy",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_UPDATE_POLICY_FULL,
+        g_update_policy_values,
+        "SIXEL_UPDATE_POLICY"),
     SIXEL_REGISTRY_SCALAR_STRING(
         SIXEL_OPTION_SCHEMA_BGCOLOR,
         SIXEL_OPTION_SCOPE_ENCODER,

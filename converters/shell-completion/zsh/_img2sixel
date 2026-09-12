@@ -188,11 +188,13 @@ _backgroundpolicy() {
     'explicit_first[prefer -B, SIXEL_BGCOLOR, or OSC 11]'
 }
 
-_6deltaerror() {
+_updatepolicy() {
   _values \
-    '6DELTAERROR' \
-    'diffuse[diffuse error from the retained RGB]' \
-    'skip[skip diffusion on kept pixels for speed]'
+    'UPDATEPOLICY' \
+    'full[disable temporal keeps]' \
+    'delta[enable retained-plane updates]' \
+    'delta:threshold=0:error=diffuse[diffuse retained-color error]' \
+    'delta:threshold=0:error=skip[skip retained-color error diffusion]'
 }
 
 _cmsengine() {
@@ -1106,8 +1108,7 @@ _arguments -S -s -A "-*" -S \
 '[select background source priority]':backgroundpolicy:_backgroundpolicy \
   {-A,--alpha-policy=}'[select alpha policy]':alphapolicy:_alphapolicy \
   {-+,--transparent-offset=}'[add transparent left/top pixel offset]' \
-  {-Z,--6delta-threshold=}'[set RGB tolerance for 6delta encoding]' \
-  {-Y,--6delta-error=}'[choose 6delta kept-pixel error handling]':6deltaerror:_6deltaerror \
+  {-Z,--update-policy=}'[choose full or delta updates]':updatepolicy:_updatepolicy \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \

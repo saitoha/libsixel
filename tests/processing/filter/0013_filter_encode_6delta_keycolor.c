@@ -274,8 +274,8 @@ test_filter_0013_filter_encode_6delta_keycolor(int argc, char **argv)
                                              SIXEL_OPTFLAG_ALPHA_POLICY,
                                              "keep"))
         || SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                                             SIXEL_OPTFLAG_6DELTA_THRESHOLD,
-                                             "0"))) {
+                                             SIXEL_OPTFLAG_UPDATE_POLICY,
+                                             "delta:threshold=0"))) {
         fprintf(stderr, "encoder setup failed\n");
         goto end;
     }
