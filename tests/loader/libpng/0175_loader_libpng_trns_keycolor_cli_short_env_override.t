@@ -16,13 +16,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
-out="${ARTIFACT_LOCAL_DIR}/trns-keycolor-cli-short-override-tbbn0g04.six"
+out="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-trns-keycolor-cli-short-override-tbbn0g04.six"
 
 SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
                   -Llibpng:cms_engine=none! -d fs:scan=raster \
                   "${input_png}" >"${out}" || {
     echo "not ok 1 - process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 + -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"

@@ -285,6 +285,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c \
 	loader/gd/0011_loader_gd_pixelformat.c \
 	loader/libpng/0012_loader_libpng_pixelformat.c \
+	loader/libpng/0023_loader_libpng_contract.c \
 	loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
 	loader/builtin/0014_loader_builtin_pixelformat.c \
 	loader/builtin/loader_builtin_memory_test_common.c \
@@ -666,6 +667,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gd/test_runner-0011_loader_gd_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0023_loader_libpng_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-loader_builtin_memory_test_common.$(OBJEXT) \
@@ -1113,6 +1115,7 @@ am__depfiles_remade =  \
 	loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po \
@@ -2181,6 +2184,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_LOADER_LIBRSVG_DETECT_SVG_LIKE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_LOADER_BUILTIN_INDEXED_PNG_REQCOLORS_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_LOADER_LIBPNG_INDEXED_PNG_REQCOLORS_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_LOADER_LIBPNG_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_LOADER_LIBRSVG_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_LOADER_LIBRSVG_DECODE_MODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_LOADER_LIBRSVG_SETOPT_COMPAT \
@@ -2553,6 +2557,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/gd/0011_loader_gd_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0012_loader_libpng_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0023_loader_libpng_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0014_loader_builtin_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/loader_builtin_memory_test_common.c \
@@ -3579,6 +3584,9 @@ loader/libpng/$(DEPDIR)/$(am__dirstamp):
 loader/libpng/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT):  \
 	loader/libpng/$(am__dirstamp) \
 	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0023_loader_libpng_contract.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
 loader/libjpeg/$(am__dirstamp):
 	@$(MKDIR_P) loader/libjpeg
 	@: >>loader/libjpeg/$(am__dirstamp)
@@ -4499,6 +4507,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po@am__quote@ # am--include-marker
@@ -7087,6 +7096,20 @@ loader/libpng/test_runner-0012_loader_libpng_pixelformat.obj: loader/libpng/0012
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0012_loader_libpng_pixelformat.c' object='loader/libpng/test_runner-0012_loader_libpng_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0012_loader_libpng_pixelformat.obj `if test -f 'loader/libpng/0012_loader_libpng_pixelformat.c'; then $(CYGPATH_W) 'loader/libpng/0012_loader_libpng_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0012_loader_libpng_pixelformat.c'; fi`
+
+loader/libpng/test_runner-0023_loader_libpng_contract.o: loader/libpng/0023_loader_libpng_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0023_loader_libpng_contract.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Tpo -c -o loader/libpng/test_runner-0023_loader_libpng_contract.o `test -f 'loader/libpng/0023_loader_libpng_contract.c' || echo '$(srcdir)/'`loader/libpng/0023_loader_libpng_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Tpo loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0023_loader_libpng_contract.c' object='loader/libpng/test_runner-0023_loader_libpng_contract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0023_loader_libpng_contract.o `test -f 'loader/libpng/0023_loader_libpng_contract.c' || echo '$(srcdir)/'`loader/libpng/0023_loader_libpng_contract.c
+
+loader/libpng/test_runner-0023_loader_libpng_contract.obj: loader/libpng/0023_loader_libpng_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0023_loader_libpng_contract.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Tpo -c -o loader/libpng/test_runner-0023_loader_libpng_contract.obj `if test -f 'loader/libpng/0023_loader_libpng_contract.c'; then $(CYGPATH_W) 'loader/libpng/0023_loader_libpng_contract.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0023_loader_libpng_contract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Tpo loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0023_loader_libpng_contract.c' object='loader/libpng/test_runner-0023_loader_libpng_contract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0023_loader_libpng_contract.obj `if test -f 'loader/libpng/0023_loader_libpng_contract.c'; then $(CYGPATH_W) 'loader/libpng/0023_loader_libpng_contract.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0023_loader_libpng_contract.c'; fi`
 
 loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.o: loader/libjpeg/0013_loader_libjpeg_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.o -MD -MP -MF loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Tpo -c -o loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.o `test -f 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c' || echo '$(srcdir)/'`loader/libjpeg/0013_loader_libjpeg_pixelformat.c
@@ -10534,6 +10557,7 @@ distclean: distclean-am
 	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
@@ -10951,6 +10975,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po

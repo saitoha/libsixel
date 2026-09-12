@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify opt-in tRNS keycolor mode changes ColorType 0 output.
+# Verify opt-in tRNS keycolor mode preserves ColorType 0 output.
 
 set -eux
 
@@ -16,11 +16,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
-default_out="${ARTIFACT_LOCAL_DIR}/libpng_trns_keycolor_gray_default.six"
-optin_out="${ARTIFACT_LOCAL_DIR}/libpng_trns_keycolor_gray_optin.six"
+default_out="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_trns_keycolor_gray_default.six"
+optin_out="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_trns_keycolor_gray_optin.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! \
@@ -36,11 +35,11 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-cmp -s "${default_out}" "${optin_out}" && {
+cmp -s "${default_out}" "${optin_out}" || {
     echo "not ok" 1 - "opt-in keycolor mode did not change grayscale output"
     exit 0
 }
 
 
-echo "ok" 1 - "opt-in keycolor mode changes ColorType 0+tRNS output"
+echo "ok" 1 - "opt-in keycolor mode preserves ColorType 0+tRNS output"
 exit 0

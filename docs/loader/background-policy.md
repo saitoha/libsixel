@@ -2,7 +2,7 @@
 
 Background policy chooses the color source used when a loader composites source alpha. It does not choose the SIXEL DCS `P2` request; that is the independent [Alpha Policy](alpha-policy.md).
 
-The policy currently applies to file-background handling in the builtin PNG, APNG, and GIF loaders. Other loaders may accept an explicit background without having a competing file-background source.
+The policy currently applies to file-background handling in the builtin PNG, APNG, and GIF loaders, and the libpng static PNG/APNG adapter. Other loaders may accept an explicit background without having a competing file-background source.
 
 ## Policies
 
@@ -38,7 +38,7 @@ The loader suboption is request-specific and therefore overrides the global dedi
 
 Linear-light composition first converts foreground and background into the same linear RGB basis, then combines them using alpha. This can introduce an internal conversion even with `-Wgamma` or `--precision=8bit`. See [Why mixing and background composition use linear RGB](../concepts/colorspace.md#why-mixing-and-background-composition-use-linear-rgb) for the equation, a numerical example, and the distinction between mathematical intermediates and stored frames.
 
-`SIXEL_LOADER_BACKGROUND_COLORSPACE` and the corresponding loader suboption select `gamma` or `linear`; `gamma` is the default. The setting's effect depends on the loader path: static non-indexed PNG float paths blend in linear light under either setting, while changing how background values are interpreted. Indexed palette paths have different rules, and APNG inter-frame blending is a separate operation. See the [PNG loader comparison](builtin/png.md#background-source-interpretation-and-blend-arithmetic) for measured builtin/libpng differences, including background-source priority and palette composition. OSC 11 describes a terminal UI color and is always interpreted as gamma-encoded, regardless of that setting. File metadata is interpreted according to the owning format and loader path before composition.
+`SIXEL_LOADER_BACKGROUND_COLORSPACE` and the corresponding loader suboption select `gamma` or `linear`; `gamma` is the default. The libpng adapter uses linear-light composition under both settings and applies this option to the external background's encoding. File backgrounds use source metadata. Builtin indexed and APNG paths have their own representation boundaries; the [PNG loader comparison](builtin/png.md#background-source-interpretation-and-blend-arithmetic) records older path-specific measurements, while the [libpng reference](libpng.md#alpha-and-background) describes its current contract. OSC 11 describes a terminal UI color and is always interpreted as gamma-encoded, regardless of the setting.
 
 Fully transparent pixels are filled only when the effective alpha policy is `composite` and a background is resolved. `clear` and `keep` retain alpha-zero coverage, while partial alpha may still require composition because SIXEL has no partial-alpha representation. See the alpha policy document for the exact mask and DCS behavior.
 

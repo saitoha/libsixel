@@ -60,6 +60,8 @@ A longer chain can expose the same untrusted byte stream to more than one decode
 
 Set `SIXEL_TRACE_TOPIC=loader` when diagnosing which candidates were attempted and which status selected or rejected each backend.
 
+Once a candidate invokes its first frame callback, any later error is terminal for that load. This includes a decoder-family status returned by the callback itself. The manager preserves the error and does not ask another backend to append replacement frames. Cancellation context remains connected through nested callback/timeline wrappers.
+
 ## Compiled loader inventory
 
 The registry order below is also the automatic priority order for components present in a build. “Output character” is intentionally representative: source depth, alpha, palette preservation, animation, CMS settings, and backend capabilities can change the concrete frame.
@@ -104,7 +106,7 @@ Those benefits do not make builtin inherently safer. Every in-tree parser, decom
 
 The shared manager contract stays here. Each detailed backend document should separately specify its recognized formats, depth and colorspace behavior, metadata precedence, animation model, alpha representation, suboptions, fallback statuses, host dependencies, security considerations, and implementation/test landmarks. The current detailed backend references are:
 
-- [libpng Image Loader](libpng.md), including the desired policy boundaries, current implementation gaps, and static/APNG differences.
+- [libpng Image Loader](libpng.md), including alpha/background policy, source precision, shared static/APNG CMS, and input validation.
 - [Builtin Image Loader](builtin.md), including its stb_image lineage and format-specific extraction history.
 - [Builtin Format Components](builtin/README.md), indexing the exact accepted variants, metadata semantics, output precision/colorspace, history, and unsupported features of each builtin decoder family.
 
@@ -131,6 +133,8 @@ Cross-backend alpha and background behavior is defined by [Alpha Policy](alpha-p
 | LM-01 | Explicit loader entries retain first-occurrence order, duplicates are removed, explicitly selected non-default loaders remain eligible, and remaining default-enabled loaders append in registry order. | [tests/loader/unit/0012_loader_manager_open_plan.t](../../tests/loader/unit/0012_loader_manager_open_plan.t) |
 | LM-02 | A final `!` closes the plan after the deduplicated explicit entries and prevents automatic default-loader append. | [tests/loader/unit/0013_loader_manager_closed_plan.t](../../tests/loader/unit/0013_loader_manager_closed_plan.t) |
 | LM-03 | Only the documented mismatch and decoder-family statuses continue to another candidate; successful non-OK, allocation, argument, cancellation, and overflow statuses remain terminal. | [tests/loader/unit/0014_loader_manager_fallback_status.t](../../tests/loader/unit/0014_loader_manager_fallback_status.t) |
+
+| LM-04 | After the first callback, callback errors and later decoder errors remain terminal and do not invoke a fallback backend. | [tests/loader/libpng/0235_libpng_fallback.t](../../tests/loader/libpng/0235_libpng_fallback.t), [tests/loader/libpng/0244_libpng_late_error.t](../../tests/loader/libpng/0244_libpng_late_error.t) |
 
 ### Coverage boundary
 

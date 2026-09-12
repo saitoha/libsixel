@@ -1836,8 +1836,9 @@ loader_timeline_unwrap_callback_context(void *context)
     sixel_loader_timeline_callback_state_t *state;
 
     state = (sixel_loader_timeline_callback_state_t *)context;
-    if (state != NULL && state->magic == SIXEL_LOADER_TIMELINE_CB_MAGIC) {
-        return state->context;
+    while (state != NULL && state->magic == SIXEL_LOADER_TIMELINE_CB_MAGIC) {
+        context = state->context;
+        state = (sixel_loader_timeline_callback_state_t *)context;
     }
     return context;
 }

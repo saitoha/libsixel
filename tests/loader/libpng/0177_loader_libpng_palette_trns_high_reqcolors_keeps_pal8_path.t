@@ -16,14 +16,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-pal8-trns-multi0-semi-icc.png"
-out_hi="${ARTIFACT_LOCAL_DIR}/req-hi-cms0.six"
-log_hi="${ARTIFACT_LOCAL_DIR}/req-hi-cms0.log"
+out_hi="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-req-hi-cms0.six"
+log_hi="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-req-hi-cms0.log"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Llibpng:cms_engine=none! \
-              -B#ffffff -d none -p256 \
+              -d none -p256 \
               "${input_png}" >"${out_hi}" 2>"${log_hi}" || {
     echo "not ok 1 - high reqcolors render failed"
     exit 0

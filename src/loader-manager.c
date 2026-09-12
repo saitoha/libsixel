@@ -966,6 +966,25 @@ sixel_loader_manager_build_chain_impl(
     return SIXEL_OK;
 }
 
+/*
+ * Use the common transparent context wrapper so cancellation reaches the
+ * original loader even when a backend adds its own timeline wrapper.
+ */
+typedef struct loader_delivery_state {
+    sixel_loader_timeline_callback_state_t callback;
+    int started;
+} loader_delivery_state_t;
+
+static SIXELSTATUS
+loader_delivery_callback(sixel_frame_t *frame, void *context)
+{
+    loader_delivery_state_t *state;
+
+    state = (loader_delivery_state_t *)context;
+    state->started = 1;
+    return state->callback.fn_load(frame, state->callback.context);
+}
+
 static SIXELSTATUS
 sixel_loader_manager_load_impl(
     sixel_loader_manager_t *manager,
@@ -981,6 +1000,7 @@ sixel_loader_manager_load_impl(
     char worker[96];
     size_t index;
     int enforce_predicate;
+    loader_delivery_state_t delivery;
 
     object = NULL;
     status = SIXEL_FALSE;
@@ -1004,6 +1024,9 @@ sixel_loader_manager_load_impl(
         return SIXEL_BAD_ARGUMENT;
     }
     enforce_predicate = object->skip_predicate_gate ? 0 : 1;
+    loader_timeline_callback_state_init(&delivery.callback, fn_load,
+                                         load_context, -1, -1);
+    delivery.started = 0;
     for (index = 0u; index < object->chain_count; ++index) {
         loader = object->chain[index];
         if (loader == NULL) {
@@ -1026,8 +1049,8 @@ sixel_loader_manager_load_impl(
                                     object->timeline_job_seq);
         status = sixel_loader_component_load(loader,
                                              chunk,
-                                             fn_load,
-                                             load_context);
+                                             loader_delivery_callback,
+                                             &delivery);
         loader_timeline_scope_end();
         sixel_loader_timeline_candidate_select_finish(
             object->timeline_loader,
@@ -1039,12 +1062,12 @@ sixel_loader_manager_load_impl(
             }
             return SIXEL_OK;
         }
-        if (SIXEL_SUCCEEDED(status) ||
+        if (delivery.started || SIXEL_SUCCEEDED(status) ||
                 !loader_manager_status_allows_fallback(status)) {
             return status;
         }
         /*
-         * A failed decode rejects only the current candidate.  The next
+         * Before delivery begins, a failed decode rejects this candidate. The
          * backend may still be able to parse the same byte stream, especially
          * when a forced order probes an optional external decoder first.
          */
