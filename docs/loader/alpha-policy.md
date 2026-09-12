@@ -58,6 +58,8 @@ The builtin RGBA and non-indexed PNG paths preserve source RGB for alpha-zero pi
 
 `--transparent-offset` and 6delta output require `keep` because their retained pixels rely on the `P2=1` image-plane request. `auto` selects `keep` for either feature. Explicit `clear` and `composite` are rejected when either feature is active.
 
+[Delta encoding (6delta)](../functionality/delta-encoding.md) explains its retained RGB plane, per-pixel keep decisions, partial-update coordinates, and invalidation. Plain `keep` requests terminal-side preservation without enabling that history or comparing successive frame colors.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->

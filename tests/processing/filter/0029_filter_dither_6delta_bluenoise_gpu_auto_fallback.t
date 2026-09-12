@@ -1,5 +1,6 @@
 #!/bin/sh
 # AUTO must use the origin-aware CPU path for an offset retained plane.
+# Policy: docs/functionality/delta-encoding.md
 
 set -eux
 

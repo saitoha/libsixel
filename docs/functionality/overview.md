@@ -53,6 +53,7 @@ The broader pipeline also includes:
 - palette selection, quantization, lookup, and dithering;
 - transparency and background handling;
 - animation and inter-frame policy;
+- [delta encoding (6delta)](delta-encoding.md), enabled by `-Z` with kept-pixel error handling selected by `-Y`, which compares new pixels with retained display colors and omits suitable repaints using `P2=1`;
 - SIXEL command generation and output buffering.
 
 Encoding policy must remain separate from loader-specific details. A loader

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Preserve SIXEL_6DELTA_ERROR equivalence with -Y during migration.
+# Policy: docs/functionality/delta-encoding.md
 
 set -eux
 

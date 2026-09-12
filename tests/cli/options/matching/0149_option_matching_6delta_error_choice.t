@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test verifying 6delta-error accepts only documented choices.
+# Policy: docs/functionality/delta-encoding.md
 
 set -eux
 

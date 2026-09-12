@@ -972,9 +972,14 @@ add transparent left/top pixel offset with DCS P2=1 image-plane reuse.
 \fB-I\fP.
 .TP 5
 .B \-Z \fIDELTA\fP, \-\-6delta\-threshold=\fIDELTA\fP
-enable 6delta encoding and set RGB per-channel tolerance.
-DELTA must be 0..255 (default: disabled).
+enable 6delta encoding and set its RGB per-channel early-keep tolerance.
+A valid retained RGB pixel is kept before lookup when every channel differs by at most DELTA.
+At 0 this requires an exact RGB match.
+Otherwise, the retained color is kept after lookup when it is at least as close to the compared sample as the selected palette color, using squared RGB distance.
+Larger thresholds can skip more lookups but retain stale colors; 255 keeps every valid retained RGB888 pixel.
+DELTA must be 0..255; 0 enables 6delta (default: disabled).
 Requires \fB--alpha-policy=auto\fP or \fBkeep\fP.
+History belongs to the encoder instance and must match the receiver's display and frame placement.
 .TP 5
 .B \-Y \fIMODE\fP, \-\-6delta\-error=\fIMODE\fP
 choose 6delta kept-pixel error handling.
