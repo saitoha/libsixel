@@ -395,6 +395,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0020_LOADER_LIBRSVG_DETECT_SVG_LIKE \
     -DBUILD_TEST_0021_LOADER_BUILTIN_INDEXED_PNG_REQCOLORS_FALLBACK \
     -DBUILD_TEST_0022_LOADER_LIBPNG_INDEXED_PNG_REQCOLORS_FALLBACK \
+    -DBUILD_TEST_0023_LOADER_LIBPNG_CONTRACT \
     -DBUILD_TEST_0023_LOADER_LIBRSVG_PIXELFORMAT \
     -DBUILD_TEST_0025_LOADER_LIBRSVG_DECODE_MODE \
     -DBUILD_TEST_0026_LOADER_LIBRSVG_SETOPT_COMPAT \
@@ -742,6 +743,7 @@ test_runner_SOURCES = test_runner.c \
     loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c \
     loader/gd/0011_loader_gd_pixelformat.c \
     loader/libpng/0012_loader_libpng_pixelformat.c \
+    loader/libpng/0023_loader_libpng_contract.c \
     loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
     loader/builtin/0014_loader_builtin_pixelformat.c \
     loader/builtin/loader_builtin_memory_test_common.c \

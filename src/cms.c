@@ -429,6 +429,8 @@ sixel_cms_map_format_lcms(sixel_cms_pixel_format_t format)
     switch (format) {
     case SIXEL_CMS_PIXELFORMAT_GRAY_8:
         return TYPE_GRAY_8;
+    case SIXEL_CMS_PIXELFORMAT_GRAY_F32:
+        return TYPE_GRAY_FLT;
     case SIXEL_CMS_PIXELFORMAT_RGBA_8:
         return TYPE_RGBA_8;
     case SIXEL_CMS_PIXELFORMAT_CMYK_8:
@@ -1202,6 +1204,7 @@ sixel_cms_colorsync_map_format(sixel_cms_pixel_format_t format,
         value_layout = kColorSyncAlphaLast;
         *bytes_per_pixel = 4u;
         break;
+    case SIXEL_CMS_PIXELFORMAT_GRAY_F32:
     case SIXEL_CMS_PIXELFORMAT_RGB_F32:
         *depth = kColorSync32BitFloat;
 #if WORDS_BIGENDIAN
@@ -1209,7 +1212,8 @@ sixel_cms_colorsync_map_format(sixel_cms_pixel_format_t format,
 #else
         value_layout |= kColorSyncByteOrder32Little;
 #endif
-        *bytes_per_pixel = 3u * sizeof(float);
+        *bytes_per_pixel = (format == SIXEL_CMS_PIXELFORMAT_GRAY_F32
+                            ? 1u : 3u) * sizeof(float);
         break;
     case SIXEL_CMS_PIXELFORMAT_CMYK_8:
         *depth = kColorSync8BitInteger;
@@ -2540,6 +2544,10 @@ sixel_cms_builtin_load_src_unit(double src_unit[4],
         }
         *input_channel_count = 3u;
         return 1;
+    case SIXEL_CMS_PIXELFORMAT_GRAY_F32:
+        src_unit[0] = sixel_cms_clamp_unit(src_f32[pixel_index]);
+        *input_channel_count = 1u;
+        return 1;
     case SIXEL_CMS_PIXELFORMAT_GRAY_8:
         src_unit[0] = (double)src_u8[pixel_index] / 255.0;
         *input_channel_count = 1u;
@@ -2630,6 +2638,9 @@ sixel_cms_builtin_store_dst_unit(void *dst,
         dst_u8[base + 2u] =
             (unsigned char)(sixel_cms_clamp_unit(dst_unit[2]) * 255.0 + 0.5);
         dst_u8[base + 3u] = alpha;
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_GRAY_F32:
+        dst_f32[pixel_index] = (float)sixel_cms_clamp_unit(dst_unit[0]);
         return 1;
     case SIXEL_CMS_PIXELFORMAT_GRAY_8:
         dst_u8[pixel_index] =
@@ -3023,7 +3034,8 @@ sixel_cms_do_transform_builtin_device_to_device(
         return 0;
     }
 
-    if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_8) {
+    if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_8 ||
+        transform->dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_F32) {
         output_channel_count = 1u;
     } else if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
                transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 ||
@@ -3179,6 +3191,23 @@ sixel_cms_do_transform_builtin_to_srgb(
                 pixel_count,
                 &src_profile->builtin_profile,
                 transform);
+        }
+        return 1;
+    }
+
+    if (transform->src_format == SIXEL_CMS_PIXELFORMAT_GRAY_F32 &&
+        transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
+        dst_f32 = (float *)dst;
+        for (i = 0u; i < pixel_count; ++i) {
+            src_device_unit[0] = sixel_cms_clamp_unit(src_lab_f32[i]);
+            if (!sixel_cms_builtin_apply_src_to_xyz_intent(
+                    xyz_d50, src_device_unit, 1u, src_profile, transform)) {
+                return 0;
+            }
+            sixel_cms_xyz_d50_to_srgb_unit(dst_unit, xyz_d50);
+            dst_f32[i * 3u] = (float)dst_unit[0];
+            dst_f32[i * 3u + 1u] = (float)dst_unit[1];
+            dst_f32[i * 3u + 2u] = (float)dst_unit[2];
         }
         return 1;
     }
@@ -3537,6 +3566,7 @@ sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
     sixel_cms_pixel_format_t src_type;
     sixel_cms_pixel_format_t dst_type;
     size_t pixel_count;
+    size_t sample_bytes;
     unsigned char *gray_in;
     unsigned char *rgb_out;
     size_t i;
@@ -3549,6 +3579,7 @@ sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
     src_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
     dst_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
     pixel_count = 0u;
+    sample_bytes = 1u;
     gray_in = NULL;
     rgb_out = NULL;
     i = 0u;
@@ -3593,6 +3624,7 @@ sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
     }
 
     if (normalized_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        sample_bytes = sizeof(float);
         src_type = SIXEL_CMS_PIXELFORMAT_RGB_F32;
         dst_type = SIXEL_CMS_PIXELFORMAT_RGB_F32;
     } else if (normalized_pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
@@ -3601,15 +3633,20 @@ sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
     }
 
     if (src_colorspace == SIXEL_CMS_COLORSPACE_GRAY) {
-        if (normalized_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        /* Pack one gray sample without reducing sixteen-bit source detail. */
+        if (pixel_count > SIZE_MAX / (3u * sample_bytes)) {
             goto cleanup;
         }
-        gray_in = (unsigned char *)malloc(pixel_count);
-        rgb_out = (unsigned char *)malloc(pixel_count * 3u);
+        gray_in = (unsigned char *)malloc(pixel_count * sample_bytes);
+        rgb_out = (unsigned char *)malloc(pixel_count * 3u * sample_bytes);
         if (gray_in == NULL || rgb_out == NULL) {
             goto cleanup;
         }
-        if (normalized_pixelformat == SIXEL_PIXELFORMAT_G8) {
+        if (sample_bytes == sizeof(float)) {
+            for (i = 0u; i < pixel_count; ++i) {
+                ((float *)gray_in)[i] = ((float *)pixels)[i * 3u];
+            }
+        } else if (normalized_pixelformat == SIXEL_PIXELFORMAT_G8) {
             memcpy(gray_in, pixels, pixel_count);
         } else {
             for (i = 0u; i < pixel_count; ++i) {
@@ -3617,9 +3654,11 @@ sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
             }
         }
         transform = sixel_cms_create_transform(src_profile,
-                                               SIXEL_CMS_PIXELFORMAT_GRAY_8,
+                                               sample_bytes == sizeof(float)
+                                               ? SIXEL_CMS_PIXELFORMAT_GRAY_F32
+                                               : SIXEL_CMS_PIXELFORMAT_GRAY_8,
                                                dst_profile,
-                                               SIXEL_CMS_PIXELFORMAT_RGB_8,
+                                               dst_type,
                                                SIXEL_CMS_TRANSFORM_DEFAULT);
         if (transform == NULL) {
             goto cleanup;
@@ -3632,7 +3671,7 @@ sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
                 pixels[i] = rgb_out[i * 3u];
             }
         } else {
-            memcpy(pixels, rgb_out, pixel_count * 3u);
+            memcpy(pixels, rgb_out, pixel_count * 3u * sample_bytes);
         }
         converted = 1;
     } else {

@@ -68,8 +68,6 @@
 
 #include "allocator.h"
 #include "cms.h"
-#include "icc-apply.h"
-#include "icc-parse.h"
 #include "chunk-view.h"
 #include "compat_stub.h"
 #include "loader-common.h"
@@ -79,12 +77,6 @@
 #include "loader-libpng.h"
 #include "timeline-logger.h"
 #include "options.h"
-
-#if defined(HAVE_DIAGNOSTIC_CLOBBERED) && \
-    defined(__GNUC__) && !defined(__clang__) && !defined(__PCC__)
-/* pcc rejects the GCC-specific -Wclobbered diagnostic pragma argument. */
-# define SIXEL_PNG_SUPPRESS_CLOBBERED_WARNING 1
-#endif
 
 typedef struct sixel_loader_libpng_component {
     sixel_loader_component_t base;
@@ -187,12 +179,12 @@ read_png(png_structp png_ptr,
     available = 0u;
     if (reader == NULL || reader->buffer == NULL ||
         reader->offset > reader->size) {
-        return;
+        png_error(png_ptr, "Invalid PNG read context");
     }
 
     available = reader->size - reader->offset;
     if (length > available) {
-        length = available;
+        png_error(png_ptr, "Truncated PNG read");
     }
     if (length > 0) {
         memcpy(data, reader->buffer + reader->offset, length);
@@ -206,9 +198,6 @@ read_palette(png_structp png_ptr,
              unsigned char *palette,
              int ncolors,
              png_color *png_palette,
-             png_color_16 *pbackground,
-             int background_colorspace,
-             double const bg_linear[3],
              int *transparent,
              unsigned char *zero_alpha_map,
              int *zero_alpha_count)
@@ -218,10 +207,6 @@ read_palette(png_structp png_ptr,
     int alpha;
     int key_index;
     int zero_count;
-    double alpha_unit;
-    double src_unit;
-    double src_linear;
-    double out_linear;
     int i;
 
     trans = NULL;
@@ -229,10 +214,6 @@ read_palette(png_structp png_ptr,
     alpha = 0xff;
     key_index = -1;
     zero_count = 0;
-    alpha_unit = 0.0;
-    src_unit = 0.0;
-    src_linear = 0.0;
-    out_linear = 0.0;
     i = 0;
 
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
@@ -255,47 +236,10 @@ read_palette(png_structp png_ptr,
                 zero_alpha_map[i] = 1;
             }
         }
-        if (pbackground && alpha < 0xff) {
-            if (background_colorspace == SIXEL_COLORSPACE_LINEAR &&
-                bg_linear != NULL) {
-                alpha_unit = (double)alpha / 255.0;
-
-                src_unit = (double)png_palette[i].red / 255.0;
-                src_linear = png_decode_srgb_unit(src_unit);
-                out_linear = src_linear * alpha_unit
-                             + bg_linear[0] * (1.0 - alpha_unit);
-                palette[i * 3 + 0] = (unsigned char)(
-                    png_encode_srgb_unit(out_linear) * 255.0 + 0.5);
-
-                src_unit = (double)png_palette[i].green / 255.0;
-                src_linear = png_decode_srgb_unit(src_unit);
-                out_linear = src_linear * alpha_unit
-                             + bg_linear[1] * (1.0 - alpha_unit);
-                palette[i * 3 + 1] = (unsigned char)(
-                    png_encode_srgb_unit(out_linear) * 255.0 + 0.5);
-
-                src_unit = (double)png_palette[i].blue / 255.0;
-                src_linear = png_decode_srgb_unit(src_unit);
-                out_linear = src_linear * alpha_unit
-                             + bg_linear[2] * (1.0 - alpha_unit);
-                palette[i * 3 + 2] = (unsigned char)(
-                    png_encode_srgb_unit(out_linear) * 255.0 + 0.5);
-            } else {
-                palette[i * 3 + 0] = (unsigned char)(
-                    ((0xff - alpha) * pbackground->red
-                     + alpha * png_palette[i].red) >> 8);
-                palette[i * 3 + 1] = (unsigned char)(
-                    ((0xff - alpha) * pbackground->green
-                     + alpha * png_palette[i].green) >> 8);
-                palette[i * 3 + 2] = (unsigned char)(
-                    ((0xff - alpha) * pbackground->blue
-                     + alpha * png_palette[i].blue) >> 8);
-            }
-        } else {
-            palette[i * 3 + 0] = png_palette[i].red;
-            palette[i * 3 + 1] = png_palette[i].green;
-            palette[i * 3 + 2] = png_palette[i].blue;
-        }
+        /* This retained-palette path has no background composition. */
+        palette[i * 3 + 0] = png_palette[i].red;
+        palette[i * 3 + 1] = png_palette[i].green;
+        palette[i * 3 + 2] = png_palette[i].blue;
     }
     if (transparent != NULL) {
         *transparent = key_index;
@@ -350,75 +294,6 @@ png_decode_source_unit(double value, int transfer_mode, double file_gamma)
         return pow(value, 1.0 / file_gamma);
     }
     return png_decode_srgb_unit(value);
-}
-
-#if !HAVE_LCMS2
-static uint32_t
-png_read_be32_nolcms(unsigned char const *p)
-{
-    return ((uint32_t)p[0] << 24u) |
-           ((uint32_t)p[1] << 16u) |
-           ((uint32_t)p[2] << 8u) |
-           (uint32_t)p[3];
-}
-
-static int
-png_detect_chunk_flags_raw_nolcms(unsigned char const *buffer,
-                                  size_t size,
-                                  int *has_iccp,
-                                  int *has_srgb,
-                                  int *has_chrm,
-                                  int *has_gama)
-{
-    static unsigned char const signature[8] = {
-        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
-    };
-    size_t offset;
-
-    if (has_iccp == NULL || has_srgb == NULL ||
-        has_chrm == NULL || has_gama == NULL) {
-        return 0;
-    }
-    *has_iccp = 0;
-    *has_srgb = 0;
-    *has_chrm = 0;
-    *has_gama = 0;
-
-    if (buffer == NULL || size < sizeof(signature)) {
-        return 0;
-    }
-    if (memcmp(buffer, signature, sizeof(signature)) != 0) {
-        return 0;
-    }
-
-    offset = sizeof(signature);
-    while (offset + 12u <= size) {
-        uint32_t chunk_length;
-        size_t chunk_total;
-        unsigned char const *chunk_type;
-
-        chunk_length = png_read_be32_nolcms(buffer + offset);
-        chunk_total = 12u + (size_t)chunk_length;
-        if (chunk_total > size - offset) {
-            return 0;
-        }
-
-        chunk_type = buffer + offset + 4u;
-        if (memcmp(chunk_type, "iCCP", 4u) == 0) {
-            *has_iccp = 1;
-        } else if (memcmp(chunk_type, "sRGB", 4u) == 0) {
-            *has_srgb = 1;
-        } else if (memcmp(chunk_type, "cHRM", 4u) == 0) {
-            *has_chrm = 1;
-        } else if (memcmp(chunk_type, "gAMA", 4u) == 0) {
-            *has_gama = 1;
-        } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
-            break;
-        }
-
-        offset += chunk_total;
-    }
-    return 1;
 }
 
 /*
@@ -524,9 +399,10 @@ png_build_chrm_to_srgb_matrix(double white_x,
 
     for (row = 0; row < 3; ++row) {
         for (col = 0; col < 3; ++col) {
-            source_to_srgb[row][col] = xyz_to_srgb[row][0] * source_to_xyz[0][col]
-                                     + xyz_to_srgb[row][1] * source_to_xyz[1][col]
-                                     + xyz_to_srgb[row][2] * source_to_xyz[2][col];
+            source_to_srgb[row][col] =
+                xyz_to_srgb[row][0] * source_to_xyz[0][col]
+                + xyz_to_srgb[row][1] * source_to_xyz[1][col]
+                + xyz_to_srgb[row][2] * source_to_xyz[2][col];
         }
     }
     return 1;
@@ -590,176 +466,6 @@ png_apply_linear_matrix_float32(float *pixels,
 }
 
 static void
-png_apply_gama_to_srgb_u8(unsigned char *samples,
-                          size_t sample_count,
-                          double file_gamma)
-{
-    size_t index;
-    double linear;
-    double srgb;
-
-    if (samples == NULL || file_gamma <= 0.0) {
-        return;
-    }
-    for (index = 0u; index < sample_count; ++index) {
-        linear = png_decode_source_unit((double)samples[index] / 255.0,
-                                        SIXEL_PNG_TRANSFER_GAMA,
-                                        file_gamma);
-        srgb = png_encode_srgb_unit(linear);
-        samples[index] = (unsigned char)(png_clamp_unit(srgb) * 255.0 + 0.5);
-    }
-}
-
-static void
-png_apply_gama_to_srgb_float32(float *samples,
-                               size_t sample_count,
-                               double file_gamma)
-{
-    size_t index;
-    double linear;
-
-    if (samples == NULL || file_gamma <= 0.0) {
-        return;
-    }
-    for (index = 0u; index < sample_count; ++index) {
-        linear = png_decode_source_unit((double)samples[index],
-                                        SIXEL_PNG_TRANSFER_GAMA,
-                                        file_gamma);
-        samples[index] = (float)png_encode_srgb_unit(linear);
-    }
-}
-
-static void
-png_apply_gama_chrm_to_srgb_u8(unsigned char *samples,
-                               size_t pixel_count,
-                               double file_gamma,
-                               double source_to_srgb[3][3])
-{
-    size_t index;
-    size_t offset;
-    double linear[3];
-    double srgb;
-    int channel;
-
-    if (samples == NULL || file_gamma <= 0.0 || source_to_srgb == NULL) {
-        return;
-    }
-    for (index = 0u; index < pixel_count; ++index) {
-        offset = index * 3u;
-        for (channel = 0; channel < 3; ++channel) {
-            linear[channel] = png_decode_source_unit(
-                (double)samples[offset + (size_t)channel] / 255.0,
-                SIXEL_PNG_TRANSFER_GAMA,
-                file_gamma);
-        }
-        png_apply_linear_matrix_triplet(linear, source_to_srgb);
-        for (channel = 0; channel < 3; ++channel) {
-            srgb = png_encode_srgb_unit(linear[channel]);
-            samples[offset + (size_t)channel] = (unsigned char)(
-                png_clamp_unit(srgb) * 255.0 + 0.5);
-        }
-    }
-}
-
-static void
-png_apply_gama_chrm_to_srgb_float32(float *samples,
-                                    size_t pixel_count,
-                                    double file_gamma,
-                                    double source_to_srgb[3][3])
-{
-    size_t index;
-    size_t offset;
-    double linear[3];
-    double srgb;
-    int channel;
-
-    if (samples == NULL || file_gamma <= 0.0 || source_to_srgb == NULL) {
-        return;
-    }
-    for (index = 0u; index < pixel_count; ++index) {
-        offset = index * 3u;
-        for (channel = 0; channel < 3; ++channel) {
-            linear[channel] = png_decode_source_unit(
-                (double)samples[offset + (size_t)channel],
-                SIXEL_PNG_TRANSFER_GAMA,
-                file_gamma);
-        }
-        png_apply_linear_matrix_triplet(linear, source_to_srgb);
-        for (channel = 0; channel < 3; ++channel) {
-            srgb = png_encode_srgb_unit(linear[channel]);
-            samples[offset + (size_t)channel] = (float)srgb;
-        }
-    }
-}
-#endif  /* !HAVE_LCMS2 */
-
-static SIXELSTATUS
-png_roundtrip_target_to_linear(float *pixels,
-                               size_t pixel_count,
-                               int enable_cms)
-{
-    SIXELSTATUS status;
-    size_t size_bytes;
-    int target_colorspace;
-
-    if (pixels == NULL || pixel_count == 0u || !enable_cms) {
-        return SIXEL_OK;
-    }
-
-    target_colorspace = loader_cms_target_colorspace();
-    if (target_colorspace == SIXEL_COLORSPACE_LINEAR) {
-        return SIXEL_OK;
-    }
-    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    size_bytes = pixel_count * 3u * sizeof(float);
-
-    status = sixel_helper_convert_colorspace((unsigned char *)pixels,
-                                             size_bytes,
-                                             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-                                             SIXEL_COLORSPACE_LINEAR,
-                                             target_colorspace);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    return sixel_helper_convert_colorspace((unsigned char *)pixels,
-                                           size_bytes,
-                                           SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-                                           target_colorspace,
-                                           SIXEL_COLORSPACE_LINEAR);
-}
-
-static SIXELSTATUS
-png_roundtrip_background_to_linear(double bg_linear[3],
-                                   int enable_cms)
-{
-    SIXELSTATUS status;
-    float bg_pixel[3];
-    int channel;
-
-    if (bg_linear == NULL || !enable_cms) {
-        return SIXEL_OK;
-    }
-
-    for (channel = 0; channel < 3; ++channel) {
-        bg_pixel[channel] = (float)png_clamp_unit(bg_linear[channel]);
-    }
-
-    status = png_roundtrip_target_to_linear(bg_pixel, 1u, enable_cms);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    for (channel = 0; channel < 3; ++channel) {
-        bg_linear[channel] = png_clamp_unit((double)bg_pixel[channel]);
-    }
-
-    return SIXEL_OK;
-}
-
-static void
 png_expand_background_sample_to_unit(png_uint_16 sample,
                                      png_uint_32 bitdepth,
                                      double *out)
@@ -815,21 +521,22 @@ png_resolve_background_unit(png_structp png_ptr,
     bg_unit[1] = 0.0;
     bg_unit[2] = 0.0;
 
-    if (bgcolor != NULL) {
-        bg_unit[0] = (double)bgcolor[0] / 255.0;
-        bg_unit[1] = (double)bgcolor[1] / 255.0;
-        bg_unit[2] = (double)bgcolor[2] / 255.0;
-        return;
-    }
-
     if (png_get_bKGD(png_ptr, info_ptr, &png_background) != PNG_INFO_bKGD ||
-        png_background == NULL) {
+        png_background == NULL ||
+        (bgcolor != NULL && loader_background_policy() ==
+         SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST)) {
+        if (bgcolor != NULL) {
+            bg_unit[0] = (double)bgcolor[0] / 255.0;
+            bg_unit[1] = (double)bgcolor[1] / 255.0;
+            bg_unit[2] = (double)bgcolor[2] / 255.0;
+        }
         return;
     }
 
     *background_from_file = 1;
     if (color_type == PNG_COLOR_TYPE_PALETTE) {
-        if (png_get_PLTE(png_ptr, info_ptr, &palette, &ncolors) != PNG_INFO_PLTE ||
+        if (png_get_PLTE(png_ptr, info_ptr, &palette, &ncolors) !=
+            PNG_INFO_PLTE ||
             palette == NULL || ncolors <= 0) {
             *background_from_file = 0;
             return;
@@ -854,9 +561,12 @@ png_resolve_background_unit(png_structp png_ptr,
         return;
     }
 
-    png_expand_background_sample_to_unit(png_background->red, bitdepth, &bg_unit[0]);
-    png_expand_background_sample_to_unit(png_background->green, bitdepth, &bg_unit[1]);
-    png_expand_background_sample_to_unit(png_background->blue, bitdepth, &bg_unit[2]);
+    png_expand_background_sample_to_unit(png_background->red,
+                                         bitdepth, &bg_unit[0]);
+    png_expand_background_sample_to_unit(png_background->green,
+                                         bitdepth, &bg_unit[1]);
+    png_expand_background_sample_to_unit(png_background->blue,
+                                         bitdepth, &bg_unit[2]);
 }
 
 static int
@@ -876,367 +586,79 @@ png_colorspace_from_pixelformat(int pixelformat)
     }
 }
 
-#if HAVE_SETJMP && HAVE_LONGJMP
-static jmp_buf jmpbuf;
-#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
-
 /* libpng error handler */
 static void
 png_error_callback(png_structp png_ptr, png_const_charp error_message)
 {
-    (void) png_ptr;
-
     sixel_helper_set_additional_message(error_message);
-#if HAVE_SETJMP && HAVE_LONGJMP
-    longjmp(jmpbuf, 1);
-#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
-}
-
-#if HAVE_LCMS2
-static uint32_t
-png_read_be32_chunk(unsigned char const *p)
-{
-    return ((uint32_t)p[0] << 24u) |
-           ((uint32_t)p[1] << 16u) |
-           ((uint32_t)p[2] << 8u) |
-           (uint32_t)p[3];
-}
-
-static int
-png_detect_chunk_flags_raw(unsigned char const *buffer,
-                           size_t size,
-                           int *has_iccp,
-                           int *has_srgb,
-                           int *has_chrm,
-                           int *has_gama)
-{
-    static unsigned char const signature[8] = {
-        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
-    };
-    size_t offset;
-
-    if (has_iccp == NULL || has_srgb == NULL ||
-        has_chrm == NULL || has_gama == NULL) {
-        return 0;
-    }
-
-    *has_iccp = 0;
-    *has_srgb = 0;
-    *has_chrm = 0;
-    *has_gama = 0;
-
-    if (buffer == NULL || size < 8u) {
-        return 0;
-    }
-    if (memcmp(buffer, signature, sizeof(signature)) != 0) {
-        return 0;
-    }
-
-    offset = 8u;
-    while (offset + 12u <= size) {
-        uint32_t chunk_length;
-        size_t chunk_total;
-        unsigned char const *chunk_type;
-
-        chunk_length = png_read_be32_chunk(buffer + offset);
-        chunk_total = 12u + (size_t)chunk_length;
-        if (chunk_total > size - offset) {
-            return 0;
-        }
-
-        chunk_type = buffer + offset + 4u;
-        if (memcmp(chunk_type, "iCCP", 4u) == 0) {
-            *has_iccp = 1;
-        } else if (memcmp(chunk_type, "sRGB", 4u) == 0) {
-            *has_srgb = 1;
-        } else if (memcmp(chunk_type, "cHRM", 4u) == 0) {
-            *has_chrm = 1;
-        } else if (memcmp(chunk_type, "gAMA", 4u) == 0) {
-            *has_gama = 1;
-        } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
-            break;
-        }
-
-        offset += chunk_total;
-    }
-
-    return 1;
+    png_longjmp(png_ptr, 1);
 }
 
 /*
- * Convert decoded PNG RGB pixels from an embedded ICC profile to sRGB.
- *
- * The iCCP chunk is optional. When it is absent or invalid, the loader keeps
- * the original decoded pixels so behavior remains backward compatible.
+ * Convert validated source metadata to linear sRGB without touching alpha.
+ * Usable ICC wins; an unavailable transform falls back to valid PNG metadata.
+ * gAMA/cHRM interpretation is arithmetic shared by every configured CMS engine.
  */
 static int
-png_convert_profile_to_srgb(unsigned char *pixels,
-                            int width,
-                            int height,
-                            int pixelformat,
-                            sixel_cms_profile_t * src_profile)
+png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
+                      float *pixels, int width, int height, int enable_cms)
 {
-    sixel_cms_profile_t * dst_profile;
-    sixel_cms_transform_t * transform;
-    sixel_cms_color_space_t src_colorspace;
-    sixel_cms_pixel_format_t src_type;
-    sixel_cms_pixel_format_t dst_type;
-    size_t pixel_count;
-    unsigned char *gray_in;
-    unsigned char *rgb_out;
-    unsigned char *rgb_in;
+    png_charp name;
+    png_bytep profile;
+    png_uint_32 profile_size;
+    int compression;
+    int intent;
     int converted;
+    int has_gamma;
+    int has_matrix;
+    double gamma;
+    double wx;
+    double wy;
+    double rx;
+    double ry;
+    double gx;
+    double gy;
+    double bx;
+    double by;
+    double matrix[3][3];
+    size_t count;
     size_t i;
 
-    dst_profile = NULL;
-    transform = NULL;
-    src_colorspace = SIXEL_CMS_COLORSPACE_RGB;
-    src_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
-    dst_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
-    pixel_count = 0;
-    gray_in = NULL;
-    rgb_out = NULL;
-    rgb_in = NULL;
+    count = (size_t)width * (size_t)height;
     converted = 0;
-    i = 0u;
-
-    if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
-        return 0;
-    }
-    if (pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
-        pixelformat != SIXEL_PIXELFORMAT_G8 &&
-        pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
-        return 0;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
-        src_type = SIXEL_CMS_PIXELFORMAT_RGB_F32;
-        dst_type = SIXEL_CMS_PIXELFORMAT_RGB_F32;
-    }
-    src_colorspace = sixel_cms_get_color_space(src_profile);
-    pixel_count = (size_t)width * (size_t)height;
-
-    dst_profile = sixel_cms_create_srgb_profile();
-    if (dst_profile == NULL) {
-        return 0;
-    }
-
-    if (src_colorspace == SIXEL_CMS_COLORSPACE_GRAY && pixelformat == SIXEL_PIXELFORMAT_RGB888) {
-        gray_in = (unsigned char *)malloc(pixel_count);
-        rgb_out = (unsigned char *)malloc(pixel_count * 3u);
-        if (gray_in == NULL || rgb_out == NULL) {
-            goto cleanup;
+    has_gamma = 0;
+    has_matrix = 0;
+    gamma = 0.0;
+    if (enable_cms && png_get_iCCP(png_ptr, info_ptr, &name, &compression,
+                                  &profile, &profile_size) == PNG_INFO_iCCP) {
+        converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+            (unsigned char *)pixels, width, height,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, profile, profile_size);
+        if (!converted) {
+            loader_trace_message("libpng: ICC transform unavailable; "
+                                 "using supported PNG color metadata");
         }
-        for (i = 0u; i < pixel_count; ++i) {
-            gray_in[i] = pixels[i * 3u];
+    }
+    if (enable_cms && !converted &&
+        png_get_sRGB(png_ptr, info_ptr, &intent) != PNG_INFO_sRGB) {
+        has_gamma = png_get_gAMA(png_ptr, info_ptr, &gamma) == PNG_INFO_gAMA
+                    && gamma > 0.0;
+        if (png_get_cHRM(png_ptr, info_ptr, &wx, &wy, &rx, &ry,
+                        &gx, &gy, &bx, &by) == PNG_INFO_cHRM) {
+            has_matrix = png_build_chrm_to_srgb_matrix(
+                wx, wy, rx, ry, gx, gy, bx, by, matrix);
         }
-        transform = sixel_cms_create_transform(src_profile,
-                                       SIXEL_CMS_PIXELFORMAT_GRAY_8,
-                                       dst_profile,
-                                       SIXEL_CMS_PIXELFORMAT_RGB_8,
-                                       SIXEL_CMS_TRANSFORM_DEFAULT);
-        if (transform == NULL) {
-            goto cleanup;
-        }
-        sixel_cms_do_transform(transform, gray_in, rgb_out, pixel_count);
-        memcpy(pixels, rgb_out, pixel_count * 3u);
-        converted = 1;
-        goto cleanup;
     }
-    if (pixelformat == SIXEL_PIXELFORMAT_G8) {
-        rgb_out = (unsigned char *)malloc(pixel_count * 3u);
-        if (rgb_out == NULL) {
-            goto cleanup;
-        }
-        if (src_colorspace == SIXEL_CMS_COLORSPACE_GRAY) {
-            gray_in = (unsigned char *)malloc(pixel_count);
-            if (gray_in == NULL) {
-                goto cleanup;
-            }
-            memcpy(gray_in, pixels, pixel_count);
-            transform = sixel_cms_create_transform(src_profile,
-                                           SIXEL_CMS_PIXELFORMAT_GRAY_8,
-                                           dst_profile,
-                                           SIXEL_CMS_PIXELFORMAT_RGB_8,
-                                           SIXEL_CMS_TRANSFORM_DEFAULT);
-            if (transform == NULL) {
-                goto cleanup;
-            }
-            sixel_cms_do_transform(transform, gray_in, rgb_out, pixel_count);
-        } else {
-            rgb_in = (unsigned char *)malloc(pixel_count * 3u);
-            if (rgb_in == NULL) {
-                goto cleanup;
-            }
-            for (i = 0u; i < pixel_count; ++i) {
-                rgb_in[i * 3u + 0u] = pixels[i];
-                rgb_in[i * 3u + 1u] = pixels[i];
-                rgb_in[i * 3u + 2u] = pixels[i];
-            }
-            transform = sixel_cms_create_transform(src_profile,
-                                           SIXEL_CMS_PIXELFORMAT_RGB_8,
-                                           dst_profile,
-                                           SIXEL_CMS_PIXELFORMAT_RGB_8,
-                                           SIXEL_CMS_TRANSFORM_DEFAULT);
-            if (transform == NULL) {
-                goto cleanup;
-            }
-            sixel_cms_do_transform(transform, rgb_in, rgb_out, pixel_count);
-        }
-        for (i = 0u; i < pixel_count; ++i) {
-            pixels[i] = rgb_out[i * 3u + 0u];
-        }
-        converted = 1;
-        goto cleanup;
+    for (i = 0u; i < count * 3u; ++i) {
+        pixels[i] = (float)png_decode_source_unit(pixels[i],
+            has_gamma ? SIXEL_PNG_TRANSFER_GAMA : SIXEL_PNG_TRANSFER_SRGB,
+            gamma);
     }
-
-    transform = sixel_cms_create_transform(src_profile,
-                                   src_type,
-                                   dst_profile,
-                                   dst_type,
-                                   SIXEL_CMS_TRANSFORM_DEFAULT);
-    if (transform == NULL) {
-        goto cleanup;
+    if (has_matrix) {
+        png_apply_linear_matrix_float32(pixels, count, matrix);
     }
-
-    if (sixel_cms_do_transform(transform, pixels, pixels, pixel_count)) {
-        converted = 1;
-    }
-
-cleanup:
-    if (rgb_out != NULL) {
-        free(rgb_out);
-    }
-    if (gray_in != NULL) {
-        free(gray_in);
-    }
-    if (rgb_in != NULL) {
-        free(rgb_in);
-    }
-    if (transform != NULL) {
-        sixel_cms_delete_transform(transform);
-    }
-    if (dst_profile != NULL) {
-        sixel_cms_close_profile(dst_profile);
-    }
-    return converted;
+    return converted || has_gamma || has_matrix;
 }
-
-static int
-png_build_rgb_profile_from_chunks(png_structp png_ptr,
-                                  png_infop info_ptr,
-                                  sixel_cms_profile_t **profile)
-{
-    sixel_cms_profile_t *built_profile;
-    double file_gamma;
-    double white_x;
-    double white_y;
-    double red_x;
-    double red_y;
-    double green_x;
-    double green_y;
-    double blue_x;
-    double blue_y;
-    int has_chrm;
-    int has_gama;
-
-    built_profile = NULL;
-    file_gamma = 0.0;
-    white_x = 0.0;
-    white_y = 0.0;
-    red_x = 0.0;
-    red_y = 0.0;
-    green_x = 0.0;
-    green_y = 0.0;
-    blue_x = 0.0;
-    blue_y = 0.0;
-    has_chrm = 0;
-    has_gama = 0;
-
-    if (profile == NULL) {
-        return 0;
-    }
-    *profile = NULL;
-
-    has_chrm = png_get_cHRM(png_ptr,
-                            info_ptr,
-                            &white_x,
-                            &white_y,
-                            &red_x,
-                            &red_y,
-                            &green_x,
-                            &green_y,
-                            &blue_x,
-                            &blue_y) == PNG_INFO_cHRM;
-    has_gama = png_get_gAMA(png_ptr, info_ptr, &file_gamma) == PNG_INFO_gAMA;
-
-    if (!has_gama) {
-        return 0;
-    }
-    if (!has_chrm) {
-        white_x = 0.3127;
-        white_y = 0.3290;
-        red_x = 0.6400;
-        red_y = 0.3300;
-        green_x = 0.3000;
-        green_y = 0.6000;
-        blue_x = 0.1500;
-        blue_y = 0.0600;
-    }
-    if (!has_gama) {
-        file_gamma = 1.0 / 2.2;
-    }
-    if (file_gamma <= 0.0) {
-        return 0;
-    }
-
-    built_profile = sixel_cms_create_rgb_profile_from_gamma_chrm(file_gamma,
-                                                                 white_x,
-                                                                 white_y,
-                                                                 red_x,
-                                                                 red_y,
-                                                                 green_x,
-                                                                 green_y,
-                                                                 blue_x,
-                                                                 blue_y);
-    if (built_profile == NULL) {
-        return 0;
-    }
-
-    *profile = built_profile;
-    return 1;
-}
-
-static int
-png_convert_embedded_icc_to_srgb(unsigned char *pixels,
-                                 int width,
-                                 int height,
-                                 int pixelformat,
-                                 png_bytep profile,
-                                 png_uint_32 profile_length)
-{
-    sixel_cms_profile_t * src_profile;
-    int converted;
-
-    src_profile = NULL;
-    converted = 0;
-    if (profile == NULL || profile_length == 0u) {
-        return 0;
-    }
-
-    src_profile = sixel_cms_open_profile_from_mem(profile, profile_length);
-    if (src_profile == NULL) {
-        return 0;
-    }
-
-    converted = png_convert_profile_to_srgb(pixels,
-                                            width,
-                                            height,
-                                            pixelformat,
-                                            src_profile);
-    sixel_cms_close_profile(src_profile);
-    return converted;
-}
-#endif
 
 static SIXELSTATUS
 png_convert_rgb16_rows_to_rgbfloat32(unsigned char      /* out */ **result,
@@ -1319,6 +741,14 @@ png_convert_rgb16_rows_to_rgbfloat32(unsigned char      /* out */ **result,
     return status;
 }
 
+/* Alpha is never a CMS channel. APNG keeps it until canvas composition. */
+typedef struct sixel_png_alpha {
+    float *values;
+    double background[3];
+    int has_background;
+    int defer_composition;
+} sixel_png_alpha_t;
+
 static SIXELSTATUS
 load_png(unsigned char      /* out */ **result,
          unsigned char const /* in */ *buffer,
@@ -1334,68 +764,26 @@ load_png(unsigned char      /* out */ **result,
          int                /* out */ *alpha_zero_is_transparent,
          int                /* out */ *cms_applied,
          int                /* in */  enable_cms,
+         sixel_png_alpha_t          *alpha_state,
          sixel_allocator_t  /* in */  *allocator)
 {
     SIXELSTATUS status;
     sixel_png_read_chunk_t read_chunk;
-    png_uint_32 bitdepth;
-    png_uint_32 png_status;
     png_structp png_ptr;
-    png_infop info_ptr;
-#ifdef SIXEL_PNG_SUPPRESS_CLOBBERED_WARNING
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wclobbered"
-#endif
-    unsigned char **rows = NULL;
-    png_color *png_palette = NULL;
-    png_color_16 background;
-#if HAVE_LCMS2
-    png_charp icc_name;
-    int icc_compression_type;
-    png_bytep icc_profile;
-    png_uint_32 icc_profile_length;
-    sixel_cms_profile_t * chunk_profile;
-    int has_embedded_icc;
-    int has_embedded_icc_raw;
-    int has_srgb_chunk;
-    int has_chrm_chunk;
-    int has_gama_chunk;
-    int has_raw_chunk_flags;
-    int has_srgb_chunk_raw;
-    int has_chrm_chunk_raw;
-    int has_gama_chunk_raw;
-#endif
-    int has_iccp_chunk_any;
-    int has_chrm_chunk_any;
-#if !HAVE_LCMS2
-    int has_srgb_chunk_raw_nolcms;
-    int has_chrm_chunk_raw_nolcms;
-    int skip_iccp_conversion_nolcms;
-    int has_embedded_icc_nolcms;
-    int has_icc_profile_bytes_nolcms;
-    png_charp icc_name_nolcms;
-    int icc_compression_type_nolcms;
-    png_bytep icc_profile_nolcms_bytes;
-    png_uint_32 icc_profile_nolcms_bytes_length;
-    int has_icc_profile_nolcms;
-    sixel_icc_profile_t icc_profile_nolcms;
-#endif
-    double white_x;
-    double white_y;
-    double red_x;
-    double red_y;
-    double green_x;
-    double green_y;
-    double blue_x;
-    double blue_y;
+    png_infop volatile info_ptr;
+    unsigned char **volatile rows;
+    unsigned char *volatile raw16_pixels;
+    float *volatile cms_pixels;
+    png_color *png_palette;
     png_uint_32 width;
     png_uint_32 height;
+    png_uint_32 bitdepth;
     png_uint_32 color_type;
+    png_uint_32 png_status;
     png_uint_32 read_bitdepth;
     png_uint_32 read_channels;
     png_size_t rowbytes;
-    unsigned char *raw16_pixels = NULL;
-    size_t raw16_size = 0u;
+    size_t raw16_size;
     int promote_to_float32;
     int i;
     int depth;
@@ -1408,14 +796,7 @@ load_png(unsigned char      /* out */ **result,
     int use_trns_keycolor;
     int background_colorspace;
     int background_from_file;
-    int source_transfer_mode;
-    int has_srgb_chunk_any;
-    int has_gama_chunk_any;
-    int srgb_intent;
-    double gamma_chunk_value;
     double bg_unit[3];
-    double bg_linear[3];
-    double file_gamma_decode;
     int palette_force_pal8;
     int palette_keycolor_mode;
     int palette_keycolor_index;
@@ -1425,116 +806,32 @@ load_png(unsigned char      /* out */ **result,
     size_t pixel_count;
     size_t pixel_index;
     size_t y;
-    size_t x;
-    unsigned char const *src_row;
     size_t src_index;
     size_t dst_index;
     unsigned int palette_index;
-
-#if HAVE_SETJMP && HAVE_LONGJMP
-    if (setjmp(jmpbuf) != 0) {
-        sixel_allocator_free(allocator, *result);
-        *result = NULL;
-        status = SIXEL_PNG_ERROR;
-        goto cleanup;
-    }
-#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
+    unsigned int sample;
+    size_t sample_bytes;
+    size_t color_count;
+    int palette_colors;
+    float *float_pixels;
+    float bg_pixel[3];
+    int channel;
+    double value;
 
     status = SIXEL_FALSE;
     *result = NULL;
+    *transparent = -1;
+    *alpha_zero_is_transparent = 0;
+    *cms_applied = 0;
     png_ptr = NULL;
     info_ptr = NULL;
-    read_bitdepth = 0u;
-    read_channels = 0u;
-    rowbytes = 0u;
+    rows = NULL;
+    raw16_pixels = NULL;
+    cms_pixels = NULL;
+    png_palette = NULL;
     promote_to_float32 = 0;
-    cms_converted = 0;
-    color_type = 0u;
-    has_tRNS_chunk = 0;
-    has_alpha_chunk = 0;
-    has_transparency = 0;
-    indexed_trns_palette_path = 0;
-    trns_keycolor_mode = 0;
-    use_trns_keycolor = 0;
-    background_colorspace = SIXEL_COLORSPACE_GAMMA;
-    background_from_file = 0;
-    source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
-    has_srgb_chunk_any = 0;
-    has_gama_chunk_any = 0;
-    has_iccp_chunk_any = 0;
-    has_chrm_chunk_any = 0;
-#if !HAVE_LCMS2
-    has_srgb_chunk_raw_nolcms = 0;
-    has_chrm_chunk_raw_nolcms = 0;
-    skip_iccp_conversion_nolcms = 0;
-    has_embedded_icc_nolcms = 0;
-    has_icc_profile_bytes_nolcms = 0;
-    icc_name_nolcms = NULL;
-    icc_compression_type_nolcms = 0;
-    icc_profile_nolcms_bytes = NULL;
-    icc_profile_nolcms_bytes_length = 0u;
-    has_icc_profile_nolcms = 0;
-    memset(&icc_profile_nolcms, 0, sizeof(icc_profile_nolcms));
-#endif
-    srgb_intent = 0;
-    gamma_chunk_value = 0.0;
-    white_x = 0.0;
-    white_y = 0.0;
-    red_x = 0.0;
-    red_y = 0.0;
-    green_x = 0.0;
-    green_y = 0.0;
-    blue_x = 0.0;
-    blue_y = 0.0;
-    bg_unit[0] = 0.0;
-    bg_unit[1] = 0.0;
-    bg_unit[2] = 0.0;
-    bg_linear[0] = 0.0;
-    bg_linear[1] = 0.0;
-    bg_linear[2] = 0.0;
-    file_gamma_decode = 0.0;
-    palette_force_pal8 = 0;
-    palette_keycolor_mode = 0;
-    palette_keycolor_index = -1;
-    palette_zero_alpha_count = 0;
     palette_remap_zero_alpha_indexes = 0;
-    memset(palette_zero_alpha_map, 0, sizeof(palette_zero_alpha_map));
-    pixel_count = 0u;
-    pixel_index = 0u;
-    y = 0u;
-    x = 0u;
-    src_row = NULL;
-    src_index = 0u;
-    dst_index = 0u;
-    palette_index = 0u;
-#if HAVE_LCMS2
-    icc_name = NULL;
-    icc_compression_type = 0;
-    icc_profile = NULL;
-    icc_profile_length = 0u;
-    chunk_profile = NULL;
-    has_embedded_icc = 0;
-    has_embedded_icc_raw = 0;
-    has_srgb_chunk = 0;
-    has_chrm_chunk = 0;
-    has_gama_chunk = 0;
-    has_raw_chunk_flags = 0;
-    has_srgb_chunk_raw = 0;
-    has_chrm_chunk_raw = 0;
-    has_gama_chunk_raw = 0;
-#else
-    (void)cms_applied;
-#endif
-    if (cms_applied != NULL) {
-        *cms_applied = 0;
-    }
-    if (transparent != NULL) {
-        *transparent = -1;
-    }
-    if (alpha_zero_is_transparent != NULL) {
-        *alpha_zero_is_transparent = 0;
-    }
-
+    palette_keycolor_index = -1;
     png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
     if (!png_ptr) {
@@ -1580,127 +877,12 @@ load_png(unsigned char      /* out */ **result,
     png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
 #endif
     png_read_info(png_ptr, info_ptr);
-    has_srgb_chunk_any = png_get_sRGB(png_ptr, info_ptr, &srgb_intent) == PNG_INFO_sRGB;
-    has_gama_chunk_any = png_get_gAMA(png_ptr, info_ptr, &gamma_chunk_value) == PNG_INFO_gAMA;
-    has_chrm_chunk_any = png_get_cHRM(png_ptr,
-                                      info_ptr,
-                                      &white_x,
-                                      &white_y,
-                                      &red_x,
-                                      &red_y,
-                                      &green_x,
-                                      &green_y,
-                                      &blue_x,
-                                      &blue_y) == PNG_INFO_cHRM;
-    (void)srgb_intent;
-#if HAVE_LCMS2
-    if (png_get_iCCP(png_ptr,
-                     info_ptr,
-                     &icc_name,
-                     &icc_compression_type,
-                     &icc_profile,
-                     &icc_profile_length) == PNG_INFO_iCCP) {
-        (void)icc_name;
-        (void)icc_compression_type;
-        has_embedded_icc = 1;
-    } else {
-        icc_profile = NULL;
-        icc_profile_length = 0u;
-        has_embedded_icc = 0;
-    }
-    has_iccp_chunk_any = has_embedded_icc;
-    has_srgb_chunk = has_srgb_chunk_any;
-    has_chrm_chunk = has_chrm_chunk_any;
-    has_gama_chunk = has_gama_chunk_any;
-    has_raw_chunk_flags = png_detect_chunk_flags_raw(buffer,
-                                                     size,
-                                                     &has_embedded_icc_raw,
-                                                     &has_srgb_chunk_raw,
-                                                     &has_chrm_chunk_raw,
-                                                     &has_gama_chunk_raw);
-    if (!has_raw_chunk_flags) {
-        has_srgb_chunk_raw = has_srgb_chunk;
-        has_chrm_chunk_raw = has_chrm_chunk;
-        has_gama_chunk_raw = has_gama_chunk;
-    } else {
-        has_iccp_chunk_any = has_embedded_icc_raw;
-    }
-    (void)has_embedded_icc_raw;
-#else
-    {
-        int raw_srgb;
-        int raw_chrm;
-        int raw_gama;
-
-        raw_srgb = 0;
-        raw_chrm = 0;
-        raw_gama = 0;
-        if (png_get_iCCP(png_ptr,
-                         info_ptr,
-                         &icc_name_nolcms,
-                         &icc_compression_type_nolcms,
-                         &icc_profile_nolcms_bytes,
-                         &icc_profile_nolcms_bytes_length) == PNG_INFO_iCCP) {
-            has_embedded_icc_nolcms = 1;
-            has_icc_profile_bytes_nolcms = 1;
-        } else {
-            has_embedded_icc_nolcms = 0;
-            has_icc_profile_bytes_nolcms = 0;
-            icc_profile_nolcms_bytes = NULL;
-            icc_profile_nolcms_bytes_length = 0u;
-        }
-        has_srgb_chunk_raw_nolcms = has_srgb_chunk_any;
-        has_chrm_chunk_raw_nolcms = has_chrm_chunk_any;
-        if (png_detect_chunk_flags_raw_nolcms(buffer,
-                                              size,
-                                              &has_iccp_chunk_any,
-                                              &raw_srgb,
-                                              &raw_chrm,
-                                              &raw_gama)) {
-            has_srgb_chunk_raw_nolcms = raw_srgb;
-            has_chrm_chunk_raw_nolcms = raw_chrm;
-        } else {
-            has_iccp_chunk_any = 0;
-        }
-        if (has_embedded_icc_nolcms) {
-            has_iccp_chunk_any = 1;
-        }
-        /*
-         * Keep parity with the lcms2 priority chain when iCCP conflicts
-         * with explicit sRGB+cHRM chunks. In that case, prefer the PNG
-         * chunk interpretation and skip ICC conversion in no-lcms mode.
-         */
-        skip_iccp_conversion_nolcms = has_srgb_chunk_raw_nolcms &&
-                                      has_chrm_chunk_raw_nolcms;
-        if (skip_iccp_conversion_nolcms) {
-            has_icc_profile_bytes_nolcms = 0;
-            icc_profile_nolcms_bytes = NULL;
-            icc_profile_nolcms_bytes_length = 0u;
-        }
-        (void)icc_name_nolcms;
-        (void)icc_compression_type_nolcms;
-    }
-#endif
-#if !HAVE_LCMS2
-    if (enable_cms &&
-        has_iccp_chunk_any &&
-        !(has_srgb_chunk_raw_nolcms && has_chrm_chunk_raw_nolcms)) {
-        /*
-         * Prefer libpng-provided profile bytes to share intent and profile
-         * guard behavior with the common CMS path. Fall back to the raw iCCP
-         * parser when libpng does not expose profile bytes.
-         */
-        if (!has_icc_profile_bytes_nolcms &&
-            sixel_icc_parse_png_iccp(buffer, size, &icc_profile_nolcms)) {
-            has_icc_profile_nolcms = 1;
-        }
-    }
-#endif
-
     width = png_get_image_width(png_ptr, info_ptr);
     height = png_get_image_height(png_ptr, info_ptr);
 
-    if (width > INT_MAX || height > INT_MAX) {
+    if (width == 0u || height == 0u ||
+        width > INT_MAX || height > INT_MAX ||
+        (size_t)width > SIZE_MAX / (size_t)height / (4u * sizeof(float))) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto cleanup;
     }
@@ -1723,21 +905,7 @@ load_png(unsigned char      /* out */ **result,
     indexed_trns_palette_path = has_tRNS_chunk &&
                                 !has_alpha_chunk &&
                                 color_type == PNG_COLOR_TYPE_PALETTE;
-    has_transparency = (has_tRNS_chunk || has_alpha_chunk) &&
-                       !indexed_trns_palette_path;
     trns_keycolor_mode = loader_png_trns_keycolor_mode();
-    use_trns_keycolor = trns_keycolor_mode != 0 &&
-                        !enable_cms &&
-                        bgcolor == NULL &&
-                        ((has_tRNS_chunk &&
-                          !has_alpha_chunk &&
-                          (color_type == PNG_COLOR_TYPE_GRAY ||
-                           color_type == PNG_COLOR_TYPE_RGB))
-                         || (has_alpha_chunk && trns_keycolor_mode == 2));
-    palette_keycolor_mode = trns_keycolor_mode != 0 &&
-                            !enable_cms &&
-                            bgcolor == NULL &&
-                            indexed_trns_palette_path;
     background_colorspace = loader_background_colorspace();
     png_resolve_background_unit(png_ptr,
                                 info_ptr,
@@ -1746,25 +914,23 @@ load_png(unsigned char      /* out */ **result,
                                 bgcolor,
                                 bg_unit,
                                 &background_from_file);
-    background.red = (png_uint_16)(bg_unit[0] * 255.0 + 0.5);
-    background.green = (png_uint_16)(bg_unit[1] * 255.0 + 0.5);
-    background.blue = (png_uint_16)(bg_unit[2] * 255.0 + 0.5);
-    background.gray = (png_uint_16)((bg_unit[0] + bg_unit[1] + bg_unit[2])
-                                    * 255.0 / 3.0 + 0.5);
-    if (background_colorspace == SIXEL_COLORSPACE_LINEAR) {
-        bg_linear[0] = bg_unit[0];
-        bg_linear[1] = bg_unit[1];
-        bg_linear[2] = bg_unit[2];
-    } else {
-        bg_linear[0] = png_decode_srgb_unit(bg_unit[0]);
-        bg_linear[1] = png_decode_srgb_unit(bg_unit[1]);
-        bg_linear[2] = png_decode_srgb_unit(bg_unit[2]);
+    alpha_state->has_background = background_from_file || bgcolor != NULL;
+    has_transparency = has_tRNS_chunk || has_alpha_chunk ||
+                       alpha_state->defer_composition;
+    if (indexed_trns_palette_path && !enable_cms &&
+        !alpha_state->has_background && !alpha_state->defer_composition &&
+        png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors) &&
+        *pncolors <= reqcolors) {
+        has_transparency = 0;
     }
+    use_trns_keycolor = trns_keycolor_mode != 0 && bitdepth <= 8u &&
+                       !enable_cms && !alpha_state->has_background &&
+                       !alpha_state->defer_composition && has_transparency &&
+                       !indexed_trns_palette_path;
+    palette_keycolor_mode = indexed_trns_palette_path && !has_transparency;
 
+    png_set_interlace_handling(png_ptr);
     if (use_trns_keycolor) {
-        if (bitdepth == 16u) {
-            png_set_strip_16(png_ptr);
-        }
         if (color_type == PNG_COLOR_TYPE_GRAY && bitdepth < 8u) {
 #if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
             png_set_expand_gray_1_2_4_to_8(png_ptr);
@@ -1823,6 +989,7 @@ load_png(unsigned char      /* out */ **result,
             rows[i] = *result + (size_t)i * (size_t)rowbytes;
         }
         png_read_image(png_ptr, rows);
+        png_read_end(png_ptr, info_ptr);
 
         *pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
         if (alpha_zero_is_transparent != NULL) {
@@ -1833,48 +1000,7 @@ load_png(unsigned char      /* out */ **result,
     }
 
     if (has_transparency) {
-        unsigned char *rgb8_pixels;
-        float *rgb16_pixels;
-        float *dst_float_pixels;
-#if HAVE_LCMS2
-        int profile_conversion_kind;
-        sixel_cms_profile_t *active_chunk_profile;
-#else
-        int apply_source_chrm_matrix;
-        double source_to_srgb_matrix[3][3];
-        int background_profile_converted;
-        double background_profile_unit[3];
-#endif
-
-        rgb8_pixels = NULL;
-        rgb16_pixels = NULL;
-        dst_float_pixels = NULL;
-        pixel_count = 0u;
-        y = 0u;
-        x = 0u;
-        src_index = 0u;
-        dst_index = 0u;
-        src_row = NULL;
-#if HAVE_LCMS2
-        profile_conversion_kind = 0;
-        active_chunk_profile = NULL;
-#else
-        apply_source_chrm_matrix = 0;
-        memset(source_to_srgb_matrix, 0, sizeof(source_to_srgb_matrix));
-        background_profile_converted = 0;
-        background_profile_unit[0] = 0.0;
-        background_profile_unit[1] = 0.0;
-        background_profile_unit[2] = 0.0;
-#endif
-        source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
-        file_gamma_decode = gamma_chunk_value;
-
-        if ((size_t)width > SIZE_MAX / (size_t)height) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto alpha_cleanup;
-        }
-        pixel_count = (size_t)width * (size_t)height;
-
+        /* Read RGBA at source depth, including packed samples and Adam7. */
         if (color_type == PNG_COLOR_TYPE_PALETTE) {
             png_set_palette_to_rgb(png_ptr);
         }
@@ -1893,621 +1019,90 @@ load_png(unsigned char      /* out */ **result,
             png_set_tRNS_to_alpha(png_ptr);
         }
         if (!has_alpha_chunk && !has_tRNS_chunk) {
-            if (bitdepth == 16u) {
-                png_set_add_alpha(png_ptr, 0xffffu, PNG_FILLER_AFTER);
-            } else {
-                png_set_add_alpha(png_ptr, 0xffu, PNG_FILLER_AFTER);
-            }
+            png_set_add_alpha(png_ptr, bitdepth == 16u ? 65535u : 255u,
+                              PNG_FILLER_AFTER);
         }
-
         png_read_update_info(png_ptr, info_ptr);
         read_bitdepth = png_get_bit_depth(png_ptr, info_ptr);
-        read_channels = png_get_channels(png_ptr, info_ptr);
         rowbytes = png_get_rowbytes(png_ptr, info_ptr);
-        if (read_channels != 4u) {
-            sixel_helper_set_additional_message(
-                "load_png: unsupported alpha PNG channel layout.");
+        pixel_count = (size_t)width * (size_t)height;
+        sample_bytes = read_bitdepth == 16u ? 2u : 1u;
+        if (png_get_channels(png_ptr, info_ptr) != 4 ||
+            rowbytes != (size_t)width * 4u * sample_bytes ||
+            pixel_count > SIZE_MAX / (4u * sizeof(float))) {
             status = SIXEL_BAD_INPUT;
-            goto alpha_cleanup;
+            goto cleanup;
         }
-        if ((size_t)*psy > 0u && (size_t)rowbytes > SIZE_MAX / (size_t)*psy) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto alpha_cleanup;
-        }
-
-        raw16_size = (size_t)rowbytes * (size_t)*psy;
-        raw16_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                               raw16_size);
-        if (raw16_pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "load_png: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto alpha_cleanup;
-        }
-
+        raw16_pixels = (unsigned char *)sixel_allocator_malloc(
+            allocator, (size_t)rowbytes * height);
         rows = (unsigned char **)sixel_allocator_malloc(
-            allocator,
-            (size_t)*psy * sizeof(unsigned char *));
-        if (rows == NULL) {
-            sixel_helper_set_additional_message(
-                "load_png: sixel_allocator_malloc() failed.");
+            allocator, (size_t)height * sizeof(*rows));
+        *result = (unsigned char *)sixel_allocator_malloc(
+            allocator, pixel_count * 3u * sizeof(float));
+        alpha_state->values = (float *)sixel_allocator_malloc(
+            allocator, pixel_count * sizeof(float));
+        if (raw16_pixels == NULL || rows == NULL || *result == NULL ||
+            alpha_state->values == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            goto alpha_cleanup;
+            goto cleanup;
         }
-        for (i = 0; i < *psy; ++i) {
-            rows[i] = raw16_pixels + (size_t)i * (size_t)rowbytes;
+        for (y = 0u; y < height; ++y) {
+            rows[y] = raw16_pixels + y * rowbytes;
         }
         png_read_image(png_ptr, rows);
-
-#if HAVE_LCMS2
-        if (enable_cms && has_embedded_icc && has_srgb_chunk_raw && has_chrm_chunk_raw) {
-            /* keep original sRGB interpretation */
-        } else if (enable_cms && has_embedded_icc) {
-            profile_conversion_kind = 1;
-        } else if (enable_cms && has_srgb_chunk_raw) {
-            /* no profile conversion required */
-        } else if (enable_cms && has_gama_chunk_raw &&
-                   png_build_rgb_profile_from_chunks(png_ptr,
-                                                     info_ptr,
-                                                     &active_chunk_profile)) {
-            profile_conversion_kind = 2;
-        }
-#endif
-
-        if (read_bitdepth == 16u) {
-            double alpha;
-            double src_linear;
-            double out_linear;
-            unsigned int sample;
-            int channel;
-
-            if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
-                status = SIXEL_BAD_INTEGER_OVERFLOW;
-                goto alpha_cleanup;
-            }
-            rgb16_pixels = (float *)sixel_allocator_malloc(
-                allocator,
-                pixel_count * 3u * sizeof(float));
-            if (rgb16_pixels == NULL) {
-                sixel_helper_set_additional_message(
-                    "load_png: sixel_allocator_malloc() failed.");
-                status = SIXEL_BAD_ALLOCATION;
-                goto alpha_cleanup;
-            }
-
-            for (y = 0u; y < (size_t)*psy; ++y) {
-                src_row = raw16_pixels + y * (size_t)rowbytes;
-                for (x = 0u; x < (size_t)*psx; ++x) {
-                    src_index = x * 8u;
-                    dst_index = (y * (size_t)*psx + x) * 3u;
-
-                    sample = ((unsigned int)src_row[src_index + 0u] << 8u)
-                           | (unsigned int)src_row[src_index + 1u];
-                    rgb16_pixels[dst_index + 0u] = (float)sample / 65535.0f;
-                    sample = ((unsigned int)src_row[src_index + 2u] << 8u)
-                           | (unsigned int)src_row[src_index + 3u];
-                    rgb16_pixels[dst_index + 1u] = (float)sample / 65535.0f;
-                    sample = ((unsigned int)src_row[src_index + 4u] << 8u)
-                           | (unsigned int)src_row[src_index + 5u];
-                    rgb16_pixels[dst_index + 2u] = (float)sample / 65535.0f;
+        png_read_end(png_ptr, info_ptr);
+        float_pixels = (float *)*result;
+        for (pixel_index = 0u; pixel_index < pixel_count; ++pixel_index) {
+            for (channel = 0; channel < 4; ++channel) {
+                src_index = (pixel_index * 4u + (size_t)channel) * sample_bytes;
+                sample = raw16_pixels[src_index];
+                if (sample_bytes == 2u) {
+                    sample = (sample << 8) | raw16_pixels[src_index + 1u];
                 }
-            }
-
-#if HAVE_LCMS2
-            if (profile_conversion_kind == 1) {
-                if (png_convert_embedded_icc_to_srgb((unsigned char *)rgb16_pixels,
-                                                     *psx,
-                                                     *psy,
-                                                     SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                                     icc_profile,
-                                                     icc_profile_length)) {
-                    cms_converted = 1;
-                }
-            } else if (profile_conversion_kind == 2 && active_chunk_profile != NULL) {
-                if (png_convert_profile_to_srgb((unsigned char *)rgb16_pixels,
-                                                *psx,
-                                                *psy,
-                                                SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                                active_chunk_profile)) {
-                    cms_converted = 1;
-                }
-            }
-#endif
-#if !HAVE_LCMS2
-            if (enable_cms &&
-                has_icc_profile_bytes_nolcms &&
-                sixel_cms_convert_to_srgb_with_profile_bytes(
-                    (unsigned char *)rgb16_pixels,
-                    *psx,
-                    *psy,
-                    SIXEL_PIXELFORMAT_RGBFLOAT32,
-                    icc_profile_nolcms_bytes,
-                    (size_t)icc_profile_nolcms_bytes_length)) {
-                cms_converted = 1;
-            } else if (enable_cms &&
-                       has_icc_profile_nolcms &&
-                       sixel_icc_apply_rgb_float32(rgb16_pixels,
-                                                   pixel_count,
-                                                   &icc_profile_nolcms)) {
-                cms_converted = 1;
-            }
-#endif
-
-#if !HAVE_LCMS2
-            apply_source_chrm_matrix = 0;
-#endif
-            if (enable_cms && (cms_converted || has_srgb_chunk_any)) {
-                source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
-            } else if (enable_cms &&
-                       !has_iccp_chunk_any &&
-                       has_gama_chunk_any &&
-                       file_gamma_decode > 0.0) {
-                source_transfer_mode = SIXEL_PNG_TRANSFER_GAMA;
-#if !HAVE_LCMS2
-                if (has_chrm_chunk_any) {
-                    apply_source_chrm_matrix =
-                        png_build_chrm_to_srgb_matrix(white_x,
-                                                      white_y,
-                                                      red_x,
-                                                      red_y,
-                                                      green_x,
-                                                      green_y,
-                                                      blue_x,
-                                                      blue_y,
-                                                      source_to_srgb_matrix);
-                }
-#endif
-            } else {
-                source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
-            }
-
-            for (dst_index = 0u; dst_index < pixel_count * 3u; ++dst_index) {
-                rgb16_pixels[dst_index] = (float)png_decode_source_unit(
-                    (double)rgb16_pixels[dst_index],
-                    source_transfer_mode,
-                    file_gamma_decode);
-            }
-#if !HAVE_LCMS2
-            if (apply_source_chrm_matrix) {
-                png_apply_linear_matrix_float32(rgb16_pixels,
-                                                pixel_count,
-                                                source_to_srgb_matrix);
-            }
-#endif
-            status = png_roundtrip_target_to_linear(rgb16_pixels,
-                                                    pixel_count,
-                                                    enable_cms);
-            if (SIXEL_FAILED(status)) {
-                goto alpha_cleanup;
-            }
-
-#if !HAVE_LCMS2
-            background_profile_converted = 0;
-            if (background_from_file &&
-                cms_converted &&
-                background_colorspace != SIXEL_COLORSPACE_LINEAR) {
-                if (has_icc_profile_bytes_nolcms) {
-                    float bg_rgb_float[3];
-
-                    bg_rgb_float[0] = (float)bg_unit[0];
-                    bg_rgb_float[1] = (float)bg_unit[1];
-                    bg_rgb_float[2] = (float)bg_unit[2];
-                    if (sixel_cms_convert_to_srgb_with_profile_bytes(
-                            (unsigned char *)bg_rgb_float,
-                            1,
-                            1,
-                            SIXEL_PIXELFORMAT_RGBFLOAT32,
-                            icc_profile_nolcms_bytes,
-                            (size_t)icc_profile_nolcms_bytes_length)) {
-                        background_profile_unit[0] = (double)bg_rgb_float[0];
-                        background_profile_unit[1] = (double)bg_rgb_float[1];
-                        background_profile_unit[2] = (double)bg_rgb_float[2];
-                        background_profile_converted = 1;
-                    }
-                } else if (has_icc_profile_nolcms) {
-                    background_profile_unit[0] = bg_unit[0];
-                    background_profile_unit[1] = bg_unit[1];
-                    background_profile_unit[2] = bg_unit[2];
-                    if (sixel_icc_apply_rgb_triplet_unit(background_profile_unit,
-                                                         &icc_profile_nolcms)) {
-                        background_profile_converted = 1;
-                    }
-                }
-            }
-#endif
-            for (channel = 0; channel < 3; ++channel) {
-                if (background_colorspace == SIXEL_COLORSPACE_LINEAR) {
-                    bg_linear[channel] = png_clamp_unit(bg_unit[channel]);
-                } else if (background_from_file) {
-#if HAVE_LCMS2
-                    if (cms_converted && profile_conversion_kind != 0) {
-                        float bg_rgb_float[3];
-                        bg_rgb_float[0] = (float)bg_unit[0];
-                        bg_rgb_float[1] = (float)bg_unit[1];
-                        bg_rgb_float[2] = (float)bg_unit[2];
-                        if (profile_conversion_kind == 1) {
-                            (void)png_convert_embedded_icc_to_srgb(
-                                (unsigned char *)bg_rgb_float,
-                                1,
-                                1,
-                                SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                icc_profile,
-                                icc_profile_length);
-                        } else if (active_chunk_profile != NULL) {
-                            (void)png_convert_profile_to_srgb(
-                                (unsigned char *)bg_rgb_float,
-                                1,
-                                1,
-                                SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                active_chunk_profile);
-                        }
-                        bg_linear[channel] = png_decode_srgb_unit(
-                            (double)bg_rgb_float[channel]);
-                        continue;
-                    }
-#endif
-#if !HAVE_LCMS2
-                    if (background_profile_converted) {
-                        bg_linear[channel] = png_decode_srgb_unit(
-                            background_profile_unit[channel]);
-                        continue;
-                    }
-#endif
-                    bg_linear[channel] = png_decode_source_unit(
-                        bg_unit[channel],
-                        source_transfer_mode,
-                        file_gamma_decode);
+                value = sample / (sample_bytes == 2u ? 65535.0 : 255.0);
+                if (channel == 3) {
+                    alpha_state->values[pixel_index] = (float)value;
                 } else {
-                    bg_linear[channel] = png_decode_srgb_unit(bg_unit[channel]);
-                }
-            }
- #if !HAVE_LCMS2
-            if (background_colorspace != SIXEL_COLORSPACE_LINEAR &&
-                background_from_file &&
-                !background_profile_converted &&
-                apply_source_chrm_matrix) {
-                png_apply_linear_matrix_triplet(bg_linear, source_to_srgb_matrix);
-            }
-#endif
-            status = png_roundtrip_background_to_linear(bg_linear, enable_cms);
-            if (SIXEL_FAILED(status)) {
-                goto alpha_cleanup;
-            }
-
-            dst_float_pixels = (float *)sixel_allocator_malloc(
-                allocator,
-                pixel_count * 3u * sizeof(float));
-            if (dst_float_pixels == NULL) {
-                sixel_helper_set_additional_message(
-                    "load_png: sixel_allocator_malloc() failed.");
-                status = SIXEL_BAD_ALLOCATION;
-                goto alpha_cleanup;
-            }
-
-            for (y = 0u; y < (size_t)*psy; ++y) {
-                src_row = raw16_pixels + y * (size_t)rowbytes;
-                for (x = 0u; x < (size_t)*psx; ++x) {
-                    src_index = x * 8u;
-                    dst_index = (y * (size_t)*psx + x) * 3u;
-                    sample = ((unsigned int)src_row[src_index + 6u] << 8u)
-                           | (unsigned int)src_row[src_index + 7u];
-                    alpha = (double)sample / 65535.0;
-
-                    src_linear = (double)rgb16_pixels[dst_index + 0u];
-                    out_linear = src_linear * alpha + bg_linear[0] * (1.0 - alpha);
-                    dst_float_pixels[dst_index + 0u] = (float)out_linear;
-
-                    src_linear = (double)rgb16_pixels[dst_index + 1u];
-                    out_linear = src_linear * alpha + bg_linear[1] * (1.0 - alpha);
-                    dst_float_pixels[dst_index + 1u] = (float)out_linear;
-
-                    src_linear = (double)rgb16_pixels[dst_index + 2u];
-                    out_linear = src_linear * alpha + bg_linear[2] * (1.0 - alpha);
-                    dst_float_pixels[dst_index + 2u] = (float)out_linear;
-                }
-            }
-
-            *result = (unsigned char *)dst_float_pixels;
-            dst_float_pixels = NULL;
-            *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-            status = SIXEL_OK;
-            goto alpha_cleanup;
-        }
-
-        if (read_bitdepth != 8u) {
-            sixel_helper_set_additional_message(
-                "load_png: unsupported alpha PNG bit depth.");
-            status = SIXEL_BAD_INPUT;
-            goto alpha_cleanup;
-        }
-
-        if (pixel_count > SIZE_MAX / 3u) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto alpha_cleanup;
-        }
-
-        rgb8_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                              pixel_count * 3u);
-        if (rgb8_pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "load_png: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto alpha_cleanup;
-        }
-
-        for (y = 0u; y < (size_t)*psy; ++y) {
-            src_row = raw16_pixels + y * (size_t)rowbytes;
-            for (x = 0u; x < (size_t)*psx; ++x) {
-                src_index = x * 4u;
-                dst_index = (y * (size_t)*psx + x) * 3u;
-                rgb8_pixels[dst_index + 0u] = src_row[src_index + 0u];
-                rgb8_pixels[dst_index + 1u] = src_row[src_index + 1u];
-                rgb8_pixels[dst_index + 2u] = src_row[src_index + 2u];
-            }
-        }
-
-#if HAVE_LCMS2
-        if (profile_conversion_kind == 1) {
-            if (png_convert_embedded_icc_to_srgb(rgb8_pixels,
-                                                 *psx,
-                                                 *psy,
-                                                 SIXEL_PIXELFORMAT_RGB888,
-                                                 icc_profile,
-                                                 icc_profile_length)) {
-                cms_converted = 1;
-            }
-        } else if (profile_conversion_kind == 2 && active_chunk_profile != NULL) {
-            if (png_convert_profile_to_srgb(rgb8_pixels,
-                                            *psx,
-                                            *psy,
-                                            SIXEL_PIXELFORMAT_RGB888,
-                                            active_chunk_profile)) {
-                cms_converted = 1;
-            }
-        }
-#endif
-#if !HAVE_LCMS2
-        if (enable_cms &&
-            has_icc_profile_bytes_nolcms &&
-            sixel_cms_convert_to_srgb_with_profile_bytes(
-                rgb8_pixels,
-                *psx,
-                *psy,
-                SIXEL_PIXELFORMAT_RGB888,
-                icc_profile_nolcms_bytes,
-                (size_t)icc_profile_nolcms_bytes_length)) {
-            cms_converted = 1;
-        } else if (enable_cms &&
-                   has_icc_profile_nolcms &&
-                   sixel_icc_apply_rgb_u8(rgb8_pixels,
-                                          pixel_count,
-                                          &icc_profile_nolcms)) {
-            cms_converted = 1;
-        }
-#endif
-
-#if !HAVE_LCMS2
-        apply_source_chrm_matrix = 0;
-#endif
-        if (enable_cms && (cms_converted || has_srgb_chunk_any)) {
-            source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
-        } else if (enable_cms &&
-                   !has_iccp_chunk_any &&
-                   has_gama_chunk_any &&
-                   file_gamma_decode > 0.0) {
-            source_transfer_mode = SIXEL_PNG_TRANSFER_GAMA;
-#if !HAVE_LCMS2
-            if (has_chrm_chunk_any) {
-                apply_source_chrm_matrix =
-                    png_build_chrm_to_srgb_matrix(white_x,
-                                                  white_y,
-                                                  red_x,
-                                                  red_y,
-                                                  green_x,
-                                                  green_y,
-                                                  blue_x,
-                                                  blue_y,
-                                                  source_to_srgb_matrix);
-            }
-#endif
-        } else {
-            source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
-        }
-
-        if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto alpha_cleanup;
-        }
-        rgb16_pixels = (float *)sixel_allocator_malloc(
-            allocator,
-            pixel_count * 3u * sizeof(float));
-        if (rgb16_pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "load_png: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto alpha_cleanup;
-        }
-        for (dst_index = 0u; dst_index < pixel_count * 3u; ++dst_index) {
-            rgb16_pixels[dst_index] = (float)png_decode_source_unit(
-                (double)rgb8_pixels[dst_index] / 255.0,
-                source_transfer_mode,
-                file_gamma_decode);
-        }
-#if !HAVE_LCMS2
-        if (apply_source_chrm_matrix) {
-            png_apply_linear_matrix_float32(rgb16_pixels,
-                                            pixel_count,
-                                            source_to_srgb_matrix);
-        }
-#endif
-        status = png_roundtrip_target_to_linear(rgb16_pixels,
-                                                pixel_count,
-                                                enable_cms);
-        if (SIXEL_FAILED(status)) {
-            goto alpha_cleanup;
-        }
-
-#if !HAVE_LCMS2
-        background_profile_converted = 0;
-        if (background_from_file &&
-            cms_converted &&
-            background_colorspace != SIXEL_COLORSPACE_LINEAR) {
-            if (has_icc_profile_bytes_nolcms) {
-                float bg_rgb_float[3];
-
-                bg_rgb_float[0] = (float)bg_unit[0];
-                bg_rgb_float[1] = (float)bg_unit[1];
-                bg_rgb_float[2] = (float)bg_unit[2];
-                if (sixel_cms_convert_to_srgb_with_profile_bytes(
-                        (unsigned char *)bg_rgb_float,
-                        1,
-                        1,
-                        SIXEL_PIXELFORMAT_RGBFLOAT32,
-                        icc_profile_nolcms_bytes,
-                        (size_t)icc_profile_nolcms_bytes_length)) {
-                    background_profile_unit[0] = (double)bg_rgb_float[0];
-                    background_profile_unit[1] = (double)bg_rgb_float[1];
-                    background_profile_unit[2] = (double)bg_rgb_float[2];
-                    background_profile_converted = 1;
-                }
-            } else if (has_icc_profile_nolcms) {
-                background_profile_unit[0] = bg_unit[0];
-                background_profile_unit[1] = bg_unit[1];
-                background_profile_unit[2] = bg_unit[2];
-                if (sixel_icc_apply_rgb_triplet_unit(background_profile_unit,
-                                                     &icc_profile_nolcms)) {
-                    background_profile_converted = 1;
+                    float_pixels[pixel_index * 3u + (size_t)channel] =
+                        (float)value;
                 }
             }
         }
-#endif
-        if (background_colorspace == SIXEL_COLORSPACE_LINEAR) {
-            bg_linear[0] = png_clamp_unit(bg_unit[0]);
-            bg_linear[1] = png_clamp_unit(bg_unit[1]);
-            bg_linear[2] = png_clamp_unit(bg_unit[2]);
-        } else if (background_from_file) {
-#if HAVE_LCMS2
-            if (cms_converted && profile_conversion_kind != 0) {
-                unsigned char bg_rgb[3];
-                bg_rgb[0] = (unsigned char)(bg_unit[0] * 255.0 + 0.5);
-                bg_rgb[1] = (unsigned char)(bg_unit[1] * 255.0 + 0.5);
-                bg_rgb[2] = (unsigned char)(bg_unit[2] * 255.0 + 0.5);
-                if (profile_conversion_kind == 1) {
-                    (void)png_convert_embedded_icc_to_srgb(bg_rgb,
-                                                           1,
-                                                           1,
-                                                           SIXEL_PIXELFORMAT_RGB888,
-                                                           icc_profile,
-                                                           icc_profile_length);
-                } else if (active_chunk_profile != NULL) {
-                    (void)png_convert_profile_to_srgb(bg_rgb,
-                                                      1,
-                                                      1,
-                                                      SIXEL_PIXELFORMAT_RGB888,
-                                                      active_chunk_profile);
-                }
-                bg_linear[0] = png_decode_srgb_unit((double)bg_rgb[0] / 255.0);
-                bg_linear[1] = png_decode_srgb_unit((double)bg_rgb[1] / 255.0);
-                bg_linear[2] = png_decode_srgb_unit((double)bg_rgb[2] / 255.0);
-            } else
-#endif
-            {
-#if !HAVE_LCMS2
-                if (background_profile_converted) {
-                    bg_linear[0] = png_decode_srgb_unit(background_profile_unit[0]);
-                    bg_linear[1] = png_decode_srgb_unit(background_profile_unit[1]);
-                    bg_linear[2] = png_decode_srgb_unit(background_profile_unit[2]);
-                } else
-#endif
-                {
-                bg_linear[0] = png_decode_source_unit(bg_unit[0],
-                                                      source_transfer_mode,
-                                                      file_gamma_decode);
-                bg_linear[1] = png_decode_source_unit(bg_unit[1],
-                                                      source_transfer_mode,
-                                                      file_gamma_decode);
-                bg_linear[2] = png_decode_source_unit(bg_unit[2],
-                                                      source_transfer_mode,
-                                                      file_gamma_decode);
-                }
-            }
-        } else {
-            bg_linear[0] = png_decode_srgb_unit(bg_unit[0]);
-            bg_linear[1] = png_decode_srgb_unit(bg_unit[1]);
-            bg_linear[2] = png_decode_srgb_unit(bg_unit[2]);
+        cms_converted = png_source_to_linear(png_ptr, info_ptr, float_pixels,
+                                             *psx, *psy, enable_cms);
+        for (channel = 0; channel < 3; ++channel) {
+            bg_pixel[channel] = (float)bg_unit[channel];
         }
- #if !HAVE_LCMS2
-        if (background_colorspace != SIXEL_COLORSPACE_LINEAR &&
-            background_from_file &&
-            !background_profile_converted &&
-            apply_source_chrm_matrix) {
-            png_apply_linear_matrix_triplet(bg_linear, source_to_srgb_matrix);
-        }
-#endif
-        status = png_roundtrip_background_to_linear(bg_linear, enable_cms);
-        if (SIXEL_FAILED(status)) {
-            goto alpha_cleanup;
-        }
-
-        dst_float_pixels = (float *)sixel_allocator_malloc(
-            allocator,
-            pixel_count * 3u * sizeof(float));
-        if (dst_float_pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "load_png: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto alpha_cleanup;
-        }
-
-        for (y = 0u; y < (size_t)*psy; ++y) {
-            src_row = raw16_pixels + y * (size_t)rowbytes;
-            for (x = 0u; x < (size_t)*psx; ++x) {
-                double alpha;
-                double src_linear;
-                double out_linear;
-
-                src_index = x * 4u;
-                dst_index = (y * (size_t)*psx + x) * 3u;
-
-                alpha = (double)src_row[src_index + 3u] / 255.0;
-
-                src_linear = (double)rgb16_pixels[dst_index + 0u];
-                out_linear = src_linear * alpha + bg_linear[0] * (1.0 - alpha);
-                dst_float_pixels[dst_index + 0u] = (float)out_linear;
-
-                src_linear = (double)rgb16_pixels[dst_index + 1u];
-                out_linear = src_linear * alpha + bg_linear[1] * (1.0 - alpha);
-                dst_float_pixels[dst_index + 1u] = (float)out_linear;
-
-                src_linear = (double)rgb16_pixels[dst_index + 2u];
-                out_linear = src_linear * alpha + bg_linear[2] * (1.0 - alpha);
-                dst_float_pixels[dst_index + 2u] = (float)out_linear;
+        if (background_from_file) {
+            (void)png_source_to_linear(png_ptr, info_ptr, bg_pixel,
+                                       1, 1, enable_cms);
+        } else if (background_colorspace != SIXEL_COLORSPACE_LINEAR) {
+            for (channel = 0; channel < 3; ++channel) {
+                bg_pixel[channel] = (float)png_decode_srgb_unit(
+                    bg_pixel[channel]);
             }
         }
-
-        *result = (unsigned char *)dst_float_pixels;
-        dst_float_pixels = NULL;
+        for (channel = 0; channel < 3; ++channel) {
+            alpha_state->background[channel] = bg_pixel[channel];
+        }
+        for (pixel_index = 0u; pixel_index < pixel_count; ++pixel_index) {
+            value = alpha_state->values[pixel_index];
+            if (alpha_state->defer_composition ||
+                !alpha_state->has_background ||
+                (value == 0.0 && loader_transparent_policy() !=
+                 SIXEL_ALPHA_POLICY_COMPOSITE)) {
+                continue;
+            }
+            for (channel = 0; channel < 3; ++channel) {
+                dst_index = pixel_index * 3u + (size_t)channel;
+                float_pixels[dst_index] = (float)(
+                    float_pixels[dst_index] * value +
+                    bg_pixel[channel] * (1.0 - value));
+            }
+        }
         *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        *cms_applied = cms_converted;
         status = SIXEL_OK;
-
-alpha_cleanup:
-        if (rgb8_pixels != NULL) {
-            sixel_allocator_free(allocator, rgb8_pixels);
-        }
-        if (rgb16_pixels != NULL) {
-            sixel_allocator_free(allocator, rgb16_pixels);
-        }
-        if (dst_float_pixels != NULL) {
-            sixel_allocator_free(allocator, dst_float_pixels);
-        }
-#if HAVE_LCMS2
-        if (active_chunk_profile != NULL) {
-            sixel_cms_close_profile(active_chunk_profile);
-        }
-#endif
-        if (cms_applied != NULL) {
-            *cms_applied = cms_converted;
-        }
         goto cleanup;
     }
 
@@ -2557,12 +1152,10 @@ alpha_cleanup:
             read_palette(png_ptr, info_ptr, *ppalette,
                          *pncolors,
                          png_palette,
-                         &background,
-                         background_colorspace,
-                         bg_linear,
                          palette_keycolor_mode ? transparent : NULL,
                          palette_keycolor_mode ? palette_zero_alpha_map : NULL,
-                         palette_keycolor_mode ? &palette_zero_alpha_count : NULL);
+                         palette_keycolor_mode
+                         ? &palette_zero_alpha_count : NULL);
 
             if (palette_keycolor_mode && palette_zero_alpha_count > 0) {
                 palette_force_pal8 = 1;
@@ -2737,6 +1330,7 @@ alpha_cleanup:
         }
 
         png_read_image(png_ptr, rows);
+        png_read_end(png_ptr, info_ptr);
 
         status = png_convert_rgb16_rows_to_rgbfloat32(result,
                                                       raw16_pixels,
@@ -2752,7 +1346,7 @@ alpha_cleanup:
         depth = sixel_helper_compute_depth(*pixelformat);
         *result = (unsigned char *)
             sixel_allocator_malloc(allocator,
-                                   (size_t)(*psx * *psy * depth));
+                                   (size_t)*psx * (size_t)*psy * (size_t)depth);
         if (*result == NULL) {
             sixel_helper_set_additional_message(
                 "load_png: sixel_allocator_malloc() failed.");
@@ -2773,17 +1367,19 @@ alpha_cleanup:
         case SIXEL_PIXELFORMAT_PAL2:
         case SIXEL_PIXELFORMAT_PAL4:
             for (i = 0; i < *psy; ++i) {
-                rows[i] = *result + (depth * *psx * (int)bitdepth + 7) / 8 * i;
+                rows[i] = *result + (size_t)i *
+                    (((size_t)depth * (size_t)*psx * bitdepth + 7u) / 8u);
             }
             break;
         default:
             for (i = 0; i < *psy; ++i) {
-                rows[i] = *result + depth * *psx * i;
+                rows[i] = *result + (size_t)depth * (size_t)*psx * (size_t)i;
             }
             break;
         }
 
         png_read_image(png_ptr, rows);
+        png_read_end(png_ptr, info_ptr);
 
         if (palette_remap_zero_alpha_indexes &&
             *pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
@@ -2799,274 +1395,66 @@ alpha_cleanup:
                 if ((int)palette_index != palette_keycolor_index &&
                     palette_index < SIXEL_PALETTE_MAX &&
                     palette_zero_alpha_map[palette_index] != 0u) {
-                    (*result)[pixel_index] = (unsigned char)palette_keycolor_index;
+                    (*result)[pixel_index] =
+                        (unsigned char)palette_keycolor_index;
                 }
             }
         }
     }
 
-#if HAVE_LCMS2
-    if (enable_cms && has_embedded_icc && has_srgb_chunk_raw && has_chrm_chunk_raw) {
-        /* Priority 1: iCCP+sRGB+cHRM coexistence => no conversion. */
-    } else if (enable_cms && has_embedded_icc) {
-        /* Priority 2: iCCP only. */
-        if (*pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
-            ppalette != NULL &&
-            *ppalette != NULL &&
-            pncolors != NULL &&
-            *pncolors > 0) {
-            sixel_cms_profile_t * embedded_profile;
-
-            embedded_profile = sixel_cms_open_profile_from_mem(icc_profile, icc_profile_length);
-            if (embedded_profile != NULL) {
-                if (png_convert_profile_to_srgb(*ppalette,
-                                                *pncolors,
-                                                1,
-                                                SIXEL_PIXELFORMAT_RGB888,
-                                                embedded_profile)) {
-                    cms_converted = 1;
-                }
-                sixel_cms_close_profile(embedded_profile);
-            }
-        } else {
-            if (png_convert_embedded_icc_to_srgb(*result,
-                                                 *psx,
-                                                 *psy,
-                                                 *pixelformat,
-                                                 icc_profile,
-                                                 icc_profile_length)) {
-                cms_converted = 1;
-            }
+    if (enable_cms) {
+        color_count = (size_t)*psx * (size_t)*psy;
+        palette_colors = (*pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0;
+        if (palette_colors) {
+            color_count = (size_t)*pncolors;
         }
-    } else if (enable_cms && has_srgb_chunk_raw) {
-        /* Priority 3: sRGB present => no conversion. */
-    } else if (enable_cms &&
-               has_gama_chunk_raw &&
-               png_build_rgb_profile_from_chunks(png_ptr,
-                                                 info_ptr,
-                                                 &chunk_profile)) {
-        /* Priority 4: gAMA(+/-cHRM). */
-        if (*pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
-            ppalette != NULL &&
-            *ppalette != NULL &&
-            pncolors != NULL &&
-            *pncolors > 0) {
-            if (png_convert_profile_to_srgb(*ppalette,
-                                            *pncolors,
-                                            1,
-                                            SIXEL_PIXELFORMAT_RGB888,
-                                            chunk_profile)) {
-                cms_converted = 1;
-            }
-        } else {
-            if (png_convert_profile_to_srgb(*result,
-                                            *psx,
-                                            *psy,
-                                            *pixelformat,
-                                            chunk_profile)) {
-                cms_converted = 1;
-            }
+        if (color_count > SIZE_MAX / (3u * sizeof(float))) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto cleanup;
         }
-        sixel_cms_close_profile(chunk_profile);
-    }
-#endif
-#if !HAVE_LCMS2
-    if (enable_cms &&
-        (has_icc_profile_bytes_nolcms || has_icc_profile_nolcms)) {
-        switch (*pixelformat) {
-        case SIXEL_PIXELFORMAT_PAL1:
-        case SIXEL_PIXELFORMAT_PAL2:
-        case SIXEL_PIXELFORMAT_PAL4:
-        case SIXEL_PIXELFORMAT_PAL8:
-            if (ppalette != NULL &&
-                *ppalette != NULL &&
-                pncolors != NULL &&
-                *pncolors > 0 &&
-                (size_t)*pncolors <= SIZE_MAX / 3u &&
-                ((has_icc_profile_bytes_nolcms &&
-                  sixel_cms_convert_to_srgb_with_profile_bytes(
-                      *ppalette,
-                      *pncolors,
-                      1,
-                      SIXEL_PIXELFORMAT_RGB888,
-                      icc_profile_nolcms_bytes,
-                      (size_t)icc_profile_nolcms_bytes_length)) ||
-                 (has_icc_profile_nolcms &&
-                  sixel_icc_apply_rgb_u8(*ppalette,
-                                         (size_t)*pncolors,
-                                         &icc_profile_nolcms)))) {
-                cms_converted = 1;
-            }
-            break;
-        case SIXEL_PIXELFORMAT_G8:
-            if (*psx > 0 &&
-                *psy > 0 &&
-                (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
-                pixel_count = (size_t)*psx * (size_t)*psy;
-                if ((has_icc_profile_bytes_nolcms &&
-                     sixel_cms_convert_to_srgb_with_profile_bytes(
-                         *result,
-                         *psx,
-                         *psy,
-                         SIXEL_PIXELFORMAT_G8,
-                         icc_profile_nolcms_bytes,
-                         (size_t)icc_profile_nolcms_bytes_length)) ||
-                    (has_icc_profile_nolcms &&
-                     sixel_icc_apply_gray_u8(*result,
-                                             pixel_count,
-                                             &icc_profile_nolcms))) {
-                    cms_converted = 1;
-                }
-            }
-            break;
-        case SIXEL_PIXELFORMAT_RGB888:
-            if (*psx > 0 &&
-                *psy > 0 &&
-                (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
-                pixel_count = (size_t)*psx * (size_t)*psy;
-                if (pixel_count <= SIZE_MAX / 3u) {
-                    if ((has_icc_profile_bytes_nolcms &&
-                         sixel_cms_convert_to_srgb_with_profile_bytes(
-                             *result,
-                             *psx,
-                             *psy,
-                             SIXEL_PIXELFORMAT_RGB888,
-                             icc_profile_nolcms_bytes,
-                             (size_t)icc_profile_nolcms_bytes_length)) ||
-                        (has_icc_profile_nolcms &&
-                         sixel_icc_apply_rgb_u8(*result,
-                                                pixel_count,
-                                                &icc_profile_nolcms))) {
-                        cms_converted = 1;
-                    }
-                }
-            }
-            break;
-        case SIXEL_PIXELFORMAT_RGBFLOAT32:
-            if (*psx > 0 &&
-                *psy > 0 &&
-                (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
-                pixel_count = (size_t)*psx * (size_t)*psy;
-                if (pixel_count <= SIZE_MAX / 3u) {
-                    if ((has_icc_profile_bytes_nolcms &&
-                         sixel_cms_convert_to_srgb_with_profile_bytes(
-                             *result,
-                             *psx,
-                             *psy,
-                             SIXEL_PIXELFORMAT_RGBFLOAT32,
-                             icc_profile_nolcms_bytes,
-                             (size_t)icc_profile_nolcms_bytes_length)) ||
-                        (has_icc_profile_nolcms &&
-                         sixel_icc_apply_rgb_float32((float *)*result,
-                                                     pixel_count,
-                                                     &icc_profile_nolcms))) {
-                        cms_converted = 1;
-                    }
-                }
-            }
-            break;
-        default:
-            break;
+        cms_pixels = (float *)sixel_allocator_malloc(
+            allocator, color_count * 3u * sizeof(float));
+        if (cms_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
         }
-    }
-
-    if (enable_cms &&
-        !cms_converted &&
-        !has_iccp_chunk_any &&
-        has_gama_chunk_any &&
-        !has_srgb_chunk_any &&
-        gamma_chunk_value > 0.0) {
-        int apply_chrm_matrix;
-        double source_to_srgb_matrix[3][3];
-
-        apply_chrm_matrix = 0;
-        memset(source_to_srgb_matrix, 0, sizeof(source_to_srgb_matrix));
-        if (has_chrm_chunk_any) {
-            apply_chrm_matrix = png_build_chrm_to_srgb_matrix(white_x,
-                                                              white_y,
-                                                              red_x,
-                                                              red_y,
-                                                              green_x,
-                                                              green_y,
-                                                              blue_x,
-                                                              blue_y,
-                                                              source_to_srgb_matrix);
-        }
-        switch (*pixelformat) {
-        case SIXEL_PIXELFORMAT_PAL1:
-        case SIXEL_PIXELFORMAT_PAL2:
-        case SIXEL_PIXELFORMAT_PAL4:
-        case SIXEL_PIXELFORMAT_PAL8:
-            if (ppalette != NULL &&
-                *ppalette != NULL &&
-                pncolors != NULL &&
-                *pncolors > 0 &&
-                (size_t)*pncolors <= SIZE_MAX / 3u) {
-                if (apply_chrm_matrix) {
-                    png_apply_gama_chrm_to_srgb_u8(*ppalette,
-                                                   (size_t)*pncolors,
-                                                   gamma_chunk_value,
-                                                   source_to_srgb_matrix);
+        for (pixel_index = 0u; pixel_index < color_count; ++pixel_index) {
+            for (channel = 0; channel < 3; ++channel) {
+                dst_index = pixel_index * 3u + (size_t)channel;
+                if (*pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+                    value = ((float *)*result)[dst_index];
+                } else if (palette_colors) {
+                    value = (*ppalette)[dst_index] / 255.0;
+                } else if (*pixelformat == SIXEL_PIXELFORMAT_G8) {
+                    value = (*result)[pixel_index] / 255.0;
                 } else {
-                    png_apply_gama_to_srgb_u8(*ppalette,
-                                              (size_t)*pncolors * 3u,
-                                              gamma_chunk_value);
+                    value = (*result)[dst_index] / 255.0;
                 }
+                cms_pixels[dst_index] = (float)value;
             }
-            break;
-        case SIXEL_PIXELFORMAT_G8:
-            if (*psx > 0 &&
-                *psy > 0 &&
-                (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
-                png_apply_gama_to_srgb_u8(*result,
-                                          (size_t)*psx * (size_t)*psy,
-                                          gamma_chunk_value);
-            }
-            break;
-        case SIXEL_PIXELFORMAT_RGB888:
-            if (*psx > 0 &&
-                *psy > 0 &&
-                (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
-                pixel_count = (size_t)*psx * (size_t)*psy;
-                if (pixel_count <= SIZE_MAX / 3u) {
-                    if (apply_chrm_matrix) {
-                        png_apply_gama_chrm_to_srgb_u8(*result,
-                                                       pixel_count,
-                                                       gamma_chunk_value,
-                                                       source_to_srgb_matrix);
-                    } else {
-                        png_apply_gama_to_srgb_u8(*result,
-                                                  pixel_count * 3u,
-                                                  gamma_chunk_value);
-                    }
-                }
-            }
-            break;
-        case SIXEL_PIXELFORMAT_RGBFLOAT32:
-            if (*psx > 0 &&
-                *psy > 0 &&
-                (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
-                pixel_count = (size_t)*psx * (size_t)*psy;
-                if (pixel_count <= SIZE_MAX / 3u) {
-                    if (apply_chrm_matrix) {
-                        png_apply_gama_chrm_to_srgb_float32((float *)*result,
-                                                            pixel_count,
-                                                            gamma_chunk_value,
-                                                            source_to_srgb_matrix);
-                    } else {
-                        png_apply_gama_to_srgb_float32((float *)*result,
-                                                       pixel_count * 3u,
-                                                       gamma_chunk_value);
-                    }
-                }
-            }
-            break;
-        default:
-            break;
         }
-    }
-#endif
-    if (cms_applied != NULL) {
+        cms_converted = png_source_to_linear(png_ptr, info_ptr, cms_pixels,
+            palette_colors ? *pncolors : *psx, palette_colors ? 1 : *psy, 1);
+        if (*pixelformat == SIXEL_PIXELFORMAT_G8 && cms_converted) {
+            sixel_allocator_free(allocator, *result);
+            *result = (unsigned char *)sixel_allocator_malloc(
+                allocator, color_count * 3u);
+            if (*result == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto cleanup;
+            }
+            *pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        }
+        for (dst_index = 0u; dst_index < color_count * 3u; ++dst_index) {
+            value = png_encode_srgb_unit(cms_pixels[dst_index]);
+            if (*pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+                ((float *)*result)[dst_index] = (float)value;
+            } else if (palette_colors) {
+                (*ppalette)[dst_index] = (unsigned char)(value * 255.0 + 0.5);
+            } else if (*pixelformat != SIXEL_PIXELFORMAT_G8) {
+                (*result)[dst_index] = (unsigned char)(value * 255.0 + 0.5);
+            }
+        }
         *cms_applied = cms_converted;
     }
 
@@ -3074,7 +1462,7 @@ alpha_cleanup:
 
 cleanup:
     if (png_ptr != NULL) {
-        png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)0);
+        png_destroy_read_struct(&png_ptr, (png_infopp)&info_ptr, (png_infopp)0);
     }
 
     if (rows != NULL) {
@@ -3083,11 +1471,11 @@ cleanup:
     if (raw16_pixels != NULL) {
         sixel_allocator_free(allocator, raw16_pixels);
     }
-#if !HAVE_LCMS2
-    if (has_icc_profile_nolcms) {
-        sixel_icc_profile_destroy(&icc_profile_nolcms);
+    sixel_allocator_free(allocator, cms_pixels);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, *result);
+        *result = NULL;
     }
-#endif
 
     return status;
 }
@@ -3106,8 +1494,8 @@ typedef struct sixel_apng_frame_control {
     ((size_t)(64u * 1024u * 1024u))
 
 typedef struct sixel_apng_canvas {
-    unsigned char *pixels;
-    unsigned char *backup;
+    float *pixels;
+    float *backup;
     int width;
     int height;
 } sixel_apng_canvas_t;
@@ -3500,221 +1888,77 @@ parse_fctl(
     return 1;
 }
 
+/* Both static and animated rectangles use the same source interpretation. */
 static SIXELSTATUS
-decode_png_rgba(
-    unsigned char      /* out */ **result,
-    int                /* out */ *psx,
-    int                /* out */ *psy,
-    unsigned char      /* in */  *buffer,
-    size_t             /* in */  size,
-    sixel_allocator_t  /* in */  *allocator)
+decode_png_rgba(unsigned char **result, int *width, int *height,
+                unsigned char *buffer, size_t size, unsigned char *bgcolor,
+                int enable_cms, sixel_png_alpha_t *alpha_state,
+                sixel_allocator_t *allocator)
 {
-    SIXELSTATUS status;
-    sixel_png_read_chunk_t read_chunk;
-    png_structp png_ptr;
-    png_infop info_ptr;
-    png_uint_32 width;
-    png_uint_32 height;
-    png_size_t rowbytes;
-    png_byte color_type;
-    png_byte bitdepth;
-    unsigned char **rows;
-    int i;
+    int format;
+    int ncolors;
+    int transparent;
+    int alpha_zero;
+    int cms_applied;
 
-    status = SIXEL_FALSE;
-    png_ptr = NULL;
-    info_ptr = NULL;
-    rows = NULL;
-    *result = NULL;
-    *psx = 0;
-    *psy = 0;
-
-    png_ptr = png_create_read_struct(
-        PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
-    if (!png_ptr) {
-        status = SIXEL_PNG_ERROR;
-        goto end;
-    }
-
-#if HAVE_SETJMP
-    if (setjmp(png_jmpbuf(png_ptr)) != 0) {
-        status = SIXEL_PNG_ERROR;
-        goto end;
-    }
-#endif
-
-    info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr) {
-        status = SIXEL_PNG_ERROR;
-        goto end;
-    }
-
-    read_chunk.buffer = buffer;
-    read_chunk.size = size;
-    read_chunk.offset = 0u;
-    png_set_read_fn(png_ptr, (png_voidp)&read_chunk, read_png);
-    png_read_info(png_ptr, info_ptr);
-
-    width = png_get_image_width(png_ptr, info_ptr);
-    height = png_get_image_height(png_ptr, info_ptr);
-    if (width > INT_MAX || height > INT_MAX) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-
-    color_type = png_get_color_type(png_ptr, info_ptr);
-    bitdepth = png_get_bit_depth(png_ptr, info_ptr);
-    if (bitdepth == 16) {
-        png_set_strip_16(png_ptr);
-    }
-    if (color_type == PNG_COLOR_TYPE_PALETTE) {
-        png_set_palette_to_rgb(png_ptr);
-    }
-    if (color_type == PNG_COLOR_TYPE_GRAY && bitdepth < 8) {
-#if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
-        png_set_expand_gray_1_2_4_to_8(png_ptr);
-#elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
-        png_set_gray_1_2_4_to_8(png_ptr);
-#endif
-    }
-    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
-        png_set_tRNS_to_alpha(png_ptr);
-    }
-    if (color_type == PNG_COLOR_TYPE_GRAY ||
-        color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-        png_set_gray_to_rgb(png_ptr);
-    }
-    if ((color_type & PNG_COLOR_MASK_ALPHA) == 0 &&
-        !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
-        png_set_add_alpha(png_ptr, 0xff, PNG_FILLER_AFTER);
-    }
-
-    png_read_update_info(png_ptr, info_ptr);
-    rowbytes = png_get_rowbytes(png_ptr, info_ptr);
-    if (rowbytes != (png_size_t)width * 4u) {
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-
-    *result = (unsigned char *)sixel_allocator_malloc(
-        allocator,
-        (size_t)height * (size_t)rowbytes);
-    if (*result == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    rows = (unsigned char **)sixel_allocator_malloc(
-        allocator,
-        (size_t)height * sizeof(unsigned char *));
-    if (rows == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    for (i = 0; i < (int)height; ++i) {
-        rows[i] = *result + (size_t)i * (size_t)rowbytes;
-    }
-    png_read_image(png_ptr, rows);
-
-    *psx = (int)width;
-    *psy = (int)height;
-    status = SIXEL_OK;
-
-end:
-    if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(allocator, *result);
-        *result = NULL;
-    }
-    sixel_allocator_free(allocator, rows);
-    png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)0);
-    return status;
+    format = 0;
+    ncolors = 0;
+    alpha_state->defer_composition = 1;
+    return load_png(result, buffer, size, width, height, NULL, &ncolors, 0,
+                    &format, bgcolor, &transparent, &alpha_zero, &cms_applied,
+                    enable_cms, alpha_state, allocator);
 }
 
 static void
-apng_clear_rect(
-    sixel_apng_canvas_t const      *canvas,
-    sixel_apng_frame_control_t     *control)
+apng_clear_rect(sixel_apng_canvas_t const *canvas,
+                sixel_apng_frame_control_t *control)
 {
-    int x;
-    int y;
-    int px;
-    int py;
-    unsigned char *dst;
+    size_t y;
+    size_t offset;
 
-    for (y = 0; y < (int)control->height; ++y) {
-        py = (int)control->y_offset + y;
-        if (py < 0 || py >= canvas->height) {
-            continue;
-        }
-        for (x = 0; x < (int)control->width; ++x) {
-            px = (int)control->x_offset + x;
-            if (px < 0 || px >= canvas->width) {
-                continue;
-            }
-            dst = canvas->pixels + ((py * canvas->width + px) * 4);
-            dst[0] = 0;
-            dst[1] = 0;
-            dst[2] = 0;
-            dst[3] = 0;
-        }
+    for (y = 0u; y < control->height; ++y) {
+        offset = ((y + control->y_offset) * (size_t)canvas->width +
+                  control->x_offset) * 4u;
+        memset(canvas->pixels + offset, 0,
+               (size_t)control->width * 4u * sizeof(float));
     }
 }
 
+/* Straight alpha, linear sRGB; retain fractional coverage between frames. */
 static void
-apng_blend_rect(
-    sixel_apng_canvas_t const      *canvas,
-    sixel_apng_frame_control_t     *control,
-    unsigned char const            *src)
+apng_blend_rect(sixel_apng_canvas_t const *canvas,
+                sixel_apng_frame_control_t *control, float const *rgb,
+                float const *alpha)
 {
-    int x;
-    int y;
-    int px;
-    int py;
-    int idx;
-    unsigned int sa;
-    unsigned int da;
-    unsigned int oa;
-    unsigned char const *sp;
-    unsigned char *dp;
+    size_t x;
+    size_t y;
+    size_t index;
+    float *destination;
+    double sa;
+    double da;
+    double oa;
+    int channel;
 
-    for (y = 0; y < (int)control->height; ++y) {
-        py = (int)control->y_offset + y;
-        if (py < 0 || py >= canvas->height) {
-            continue;
-        }
-        for (x = 0; x < (int)control->width; ++x) {
-            px = (int)control->x_offset + x;
-            if (px < 0 || px >= canvas->width) {
-                continue;
-            }
-            idx = y * (int)control->width + x;
-            sp = src + idx * 4;
-            dp = canvas->pixels + ((py * canvas->width + px) * 4);
-
+    for (y = 0u; y < control->height; ++y) {
+        for (x = 0u; x < control->width; ++x) {
+            index = y * control->width + x;
+            destination = canvas->pixels +
+                (((y + control->y_offset) * (size_t)canvas->width +
+                  x + control->x_offset) * 4u);
+            sa = alpha[index];
             if (control->blend_op == 0) {
-                dp[0] = sp[0];
-                dp[1] = sp[1];
-                dp[2] = sp[2];
-                dp[3] = sp[3];
+                memcpy(destination, rgb + index * 3u, 3u * sizeof(float));
+                destination[3] = (float)sa;
                 continue;
             }
-
-            sa = sp[3];
-            da = dp[3];
-            oa = sa + ((da * (255 - sa)) / 255);
-            if (oa == 0) {
-                dp[0] = 0;
-                dp[1] = 0;
-                dp[2] = 0;
-                dp[3] = 0;
-                continue;
+            da = destination[3];
+            oa = sa + da * (1.0 - sa);
+            for (channel = 0; channel < 3; ++channel) {
+                destination[channel] = oa == 0.0 ? 0.0f : (float)(
+                    (rgb[index * 3u + (size_t)channel] * sa +
+                     destination[channel] * da * (1.0 - sa)) / oa);
             }
-            dp[0] = (unsigned char)((sp[0] * sa + dp[0] * da * (255 - sa) / 255)
-                                    / oa);
-            dp[1] = (unsigned char)((sp[1] * sa + dp[1] * da * (255 - sa) / 255)
-                                    / oa);
-            dp[2] = (unsigned char)((sp[2] * sa + dp[2] * da * (255 - sa) / 255)
-                                    / oa);
-            dp[3] = (unsigned char)oa;
+            destination[3] = (float)oa;
         }
     }
 }
@@ -3846,7 +2090,7 @@ emit_apng_frame(
     int                            multiframe,
     int                            emit_callback,
     unsigned char                 *bgcolor,
-    int                            alpha_zero_is_transparent,
+    int                            enable_cms,
     int                            exif_orientation,
     int                            reqcolors,
     int                            fuse_palette,
@@ -3863,7 +2107,15 @@ emit_apng_frame(
     size_t png_size;
     unsigned char *png_data;
     unsigned char *subframe;
-    unsigned char *emitted;
+    float *emitted;
+    unsigned char *mask;
+    sixel_png_alpha_t alpha_state;
+    size_t pixel_count;
+    size_t pixel_index;
+    int channel;
+    int hidden;
+    int has_hidden;
+    double alpha;
     size_t canvas_bytes;
     int cache_frame;
     unsigned char ihdr_copy[13];
@@ -3875,6 +2127,8 @@ emit_apng_frame(
     png_data = NULL;
     subframe = NULL;
     emitted = NULL;
+    mask = NULL;
+    memset(&alpha_state, 0, sizeof(alpha_state));
     canvas_bytes = 0u;
     cache_frame = 0;
     (void)reqcolors;
@@ -3889,7 +2143,8 @@ emit_apng_frame(
     if (state->ihdr == NULL || state->ihdr_size != 13) {
         return SIXEL_BAD_INPUT;
     }
-    if (state->chunk_size > SIZE_MAX - 8 - 25) {
+    if (state->shared_chunks_size > SIZE_MAX - 45u ||
+        state->chunk_size > SIZE_MAX - 45u - state->shared_chunks_size) {
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -3928,30 +2183,56 @@ emit_apng_frame(
                              &height,
                              png_data,
                              png_size,
+                             bgcolor,
+                             enable_cms,
+                             &alpha_state,
                              allocator);
 
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     if (width != (int)control->width || height != (int)control->height) {
         status = SIXEL_BAD_INPUT;
         goto end;
     }
 
-    canvas_bytes = (size_t)canvas->width * (size_t)canvas->height * 4u;
+    canvas_bytes = (size_t)canvas->width * (size_t)canvas->height
+                   * 4u * sizeof(float);
     if (control->dispose_op == 2) {
         memcpy(canvas->backup, canvas->pixels, canvas_bytes);
     }
-    apng_blend_rect(canvas, control, subframe);
+    apng_blend_rect(canvas, control, (float const *)subframe,
+                    alpha_state.values);
 
     if (!emit_callback && !cache_frame) {
         status = SIXEL_OK;
         goto dispose;
     }
 
-    emitted = (unsigned char *)sixel_allocator_malloc(allocator, canvas_bytes);
-    if (emitted == NULL) {
+    pixel_count = (size_t)canvas->width * (size_t)canvas->height;
+    emitted = (float *)sixel_allocator_malloc(
+        allocator, pixel_count * 3u * sizeof(float));
+    mask = (unsigned char *)sixel_allocator_malloc(allocator, pixel_count);
+    if (emitted == NULL || mask == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    memcpy(emitted, canvas->pixels, canvas_bytes);
+    has_hidden = 0;
+    for (pixel_index = 0u; pixel_index < pixel_count; ++pixel_index) {
+        alpha = canvas->pixels[pixel_index * 4u + 3u];
+        hidden = alpha == 0.0 && (!alpha_state.has_background ||
+                 loader_transparent_policy() != SIXEL_ALPHA_POLICY_COMPOSITE);
+        mask[pixel_index] = (unsigned char)hidden;
+        has_hidden |= hidden;
+        if (hidden || !alpha_state.has_background) {
+            alpha = 1.0;
+        }
+        for (channel = 0; channel < 3; ++channel) {
+            emitted[pixel_index * 3u + (size_t)channel] = (float)(
+                canvas->pixels[pixel_index * 4u + (size_t)channel] * alpha +
+                alpha_state.background[channel] * (1.0 - alpha));
+        }
+    }
 
     status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
@@ -3965,20 +2246,24 @@ emit_apng_frame(
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
-            emitted,
+            (unsigned char *)emitted,
             NULL,
             canvas->width,
             canvas->height,
-            SIXEL_PIXELFORMAT_RGBA8888,
-            -1,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+            SIXEL_COLORSPACE_LINEAR,
             0,
-            SIXEL_FRAME_PIXELS_U8
+            SIXEL_FRAME_PIXELS_FLOAT32
         });
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    frame->alpha_zero_is_transparent =
-        alpha_zero_is_transparent != 0 ? 1 : 0;
+    frame->alpha_zero_is_transparent = has_hidden;
+    if (has_hidden) {
+        frame->transparent_mask = mask;
+        frame->transparent_mask_size = pixel_count;
+        mask = NULL;
+    }
     emitted = NULL;
 
     if (exif_orientation >= 2 && exif_orientation <= 8) {
@@ -3988,12 +2273,6 @@ emit_apng_frame(
         }
     }
 
-    if (!frame->alpha_zero_is_transparent) {
-        status = sixel_frame_strip_alpha(frame, bgcolor);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
     if (cache_frame) {
         (void)apng_replay_cache_store_frame(replay_cache, frame, allocator);
     }
@@ -4016,6 +2295,8 @@ end:
     sixel_allocator_free(allocator, png_data);
     sixel_allocator_free(allocator, subframe);
     sixel_allocator_free(allocator, emitted);
+    sixel_allocator_free(allocator, mask);
+    sixel_allocator_free(allocator, alpha_state.values);
     sixel_frame_unref(frame);
 
     return status;
@@ -4058,15 +2339,11 @@ load_apng_frames(
     int seen_fctl;
     int seen_idat;
     int emit_callback;
-    int alpha_zero_is_transparent;
-    int color_type;
-    int has_alpha_chunk;
-    int has_trns_chunk;
-    int trns_keycolor_mode;
     sixel_apng_canvas_t canvas;
     size_t canvas_bytes;
     png_uint_32 sequence_no;
     png_uint_32 fd_sequence;
+    png_uint_32 length;
     sixel_apng_replay_cache_t replay_cache;
     sixel_frame_t *replay_frame;
     size_t replay_index;
@@ -4093,11 +2370,6 @@ load_apng_frames(
     seen_fctl = 0;
     seen_idat = 0;
     emit_callback = 1;
-    alpha_zero_is_transparent = 0;
-    color_type = (-1);
-    has_alpha_chunk = 0;
-    has_trns_chunk = 0;
-    trns_keycolor_mode = loader_png_trns_keycolor_mode();
     memset(&canvas, 0, sizeof(canvas));
     canvas_bytes = 0;
     sequence_no = 0;
@@ -4126,7 +2398,8 @@ load_apng_frames(
         status = SIXEL_FALSE;
         goto end;
     }
-    if (memcmp(sixel_chunk_get_buffer(pchunk), png_signature, sizeof(png_signature)) != 0) {
+    if (memcmp(sixel_chunk_get_buffer(pchunk), png_signature,
+               sizeof(png_signature)) != 0) {
         status = SIXEL_FALSE;
         goto end;
     }
@@ -4211,10 +2484,6 @@ load_apng_frames(
         frames_in_loop = 0;
         seen_fctl = 0;
         seen_idat = 0;
-        color_type = (-1);
-        has_alpha_chunk = 0;
-        has_trns_chunk = 0;
-        alpha_zero_is_transparent = 0;
 
         if (loop_no > 0 && canvas_bytes > 0) {
             memset(canvas.pixels, 0, canvas_bytes);
@@ -4226,8 +2495,6 @@ load_apng_frames(
             status = SIXEL_INTERRUPTED;
             goto end;
         }
-
-        png_uint_32 length;
 
         length = read_be32(p);
         if ((size_t)length > remain - 12) {
@@ -4254,8 +2521,6 @@ load_apng_frames(
             }
             state.ihdr = p + 8;
             state.ihdr_size = length;
-            color_type = (int)p[17];
-            has_alpha_chunk = (color_type & PNG_COLOR_MASK_ALPHA) != 0 ? 1 : 0;
             if (canvas_bytes == 0) {
                 canvas.width = (int)read_be32(p + 8);
                 canvas.height = (int)read_be32(p + 12);
@@ -4267,11 +2532,17 @@ load_apng_frames(
                 goto end;
             }
             if (canvas_bytes == 0) {
-                canvas_bytes = (size_t)canvas.width * (size_t)canvas.height * 4;
-                canvas.pixels = (unsigned char *)sixel_allocator_malloc(
+                if ((size_t)canvas.width >
+                    SIZE_MAX / (size_t)canvas.height / (4u * sizeof(float))) {
+                    status = SIXEL_BAD_INTEGER_OVERFLOW;
+                    goto end;
+                }
+                canvas_bytes = (size_t)canvas.width *
+                               (size_t)canvas.height * 4u * sizeof(float);
+                canvas.pixels = (float *)sixel_allocator_malloc(
                     allocator,
                     canvas_bytes);
-                canvas.backup = (unsigned char *)sixel_allocator_malloc(
+                canvas.backup = (float *)sixel_allocator_malloc(
                     allocator,
                     canvas_bytes);
                 if (canvas.pixels == NULL || canvas.backup == NULL) {
@@ -4281,13 +2552,6 @@ load_apng_frames(
                 memset(canvas.pixels, 0, canvas_bytes);
                 memset(canvas.backup, 0, canvas_bytes);
             }
-            alpha_zero_is_transparent =
-                trns_keycolor_mode != 0 &&
-                bgcolor == NULL &&
-                !enable_cms &&
-                ((has_trns_chunk &&
-                  !has_alpha_chunk)
-                 || (has_alpha_chunk && trns_keycolor_mode == 2));
         } else if (memcmp(p + 4, "acTL", 4) == 0) {
             if (length != 8) {
                 sixel_helper_set_additional_message(
@@ -4370,7 +2634,7 @@ load_apng_frames(
                                          (!fstatic && num_frames > 1),
                                          emit_callback,
                                          bgcolor,
-                                         alpha_zero_is_transparent,
+                                         enable_cms,
                                          exif_orientation,
                                          reqcolors,
                                          fuse_palette,
@@ -4449,55 +2713,25 @@ load_apng_frames(
                 goto end;
             }
         } else if (memcmp(p + 4, "IDAT", 4) == 0) {
-            if (seen_actl && !has_frame && (seen_fctl || seen_idat)) {
-                sixel_helper_set_additional_message(
-                    "APNG parse error: unexpected IDAT ordering");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-            if (!append_chunk(&state,
-                              "IDAT",
-                              p + 8,
-                              length,
-                              allocator)) {
+            /* The classifier already checked contiguous IDAT ordering.
+             * Every chunk of an excluded default image is skipped. */
+            if (seen_fctl && !append_chunk(&state,
+                                           "IDAT", p + 8, length,
+                                           allocator)) {
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
-            if (seen_actl && !seen_fctl && !seen_idat) {
-                control.width = (png_uint_32)canvas.width;
-                control.height = (png_uint_32)canvas.height;
-                control.x_offset = 0;
-                control.y_offset = 0;
-                control.delay_cs = 0;
-                control.dispose_op = 0;
-                control.blend_op = 0;
-            }
             seen_idat = 1;
-            if (seen_actl != 0) {
-                apng_decode_trace_message(
-                    "IDAT accepted: has_frame=%d seen_fctl=%d seen_idat=%d",
-                    has_frame,
-                    seen_fctl,
-                    seen_idat);
-            }
-            has_frame = 1;
         } else if (memcmp(p + 4, "IEND", 4) == 0) {
             break;
-        } else if (memcmp(p + 4, "tRNS", 4) == 0) {
-            has_trns_chunk = 1;
-            alpha_zero_is_transparent =
-                trns_keycolor_mode != 0 &&
-                bgcolor == NULL &&
-                !enable_cms &&
-                ((has_trns_chunk &&
-                  !has_alpha_chunk)
-                 || (has_alpha_chunk && trns_keycolor_mode == 2));
         } else if (memcmp(p + 4, "acTL", 4) != 0 &&
                    memcmp(p + 4, "fcTL", 4) != 0 &&
                    memcmp(p + 4, "fdAT", 4) != 0 &&
                    memcmp(p + 4, "IHDR", 4) != 0 &&
                    memcmp(p + 4, "IEND", 4) != 0 &&
-                   state.chunk_size == 0) {
+                   !seen_idat) {
+            /* Preserve original pre-IDAT metadata, including tRNS. Moving
+             * later color chunks here would make invalid ordering usable. */
             if (!append_shared_chunk(&state,
                                      p,
                                      (size_t)length + 12,
@@ -4540,7 +2774,7 @@ load_apng_frames(
                                  (!fstatic && num_frames > 1),
                                   emit_callback,
                                   bgcolor,
-                                  alpha_zero_is_transparent,
+                                  enable_cms,
                                   exif_orientation,
                                   reqcolors,
                                   fuse_palette,
@@ -4609,13 +2843,12 @@ load_apng_frames(
 end:
     apng_decode_trace_message(
         "load_apng_frames: status=%d emit_frame_no=%d source_frame_no=%d "
-        "loop_no=%d saw_animation=%d alpha_zero_is_transparent=%d",
+        "loop_no=%d saw_animation=%d",
         status,
         emit_frame_no,
         source_frame_no,
         loop_no,
-        saw_animation,
-        alpha_zero_is_transparent);
+        saw_animation);
     sixel_allocator_free(allocator, canvas.pixels);
     sixel_allocator_free(allocator, canvas.backup);
     sixel_allocator_free(allocator, state.shared_chunks);
@@ -4626,9 +2859,6 @@ end:
     }
     return status;
 }
-#ifdef SIXEL_PNG_SUPPRESS_CLOBBERED_WARNING
-# pragma GCC diagnostic pop
-#endif
 
 /*
  * Dedicated libpng loader for precise PNG decoding.
@@ -4637,6 +2867,167 @@ end:
  *    | PNG chunk | --> | libpng decode    | --> | sixel frame emit   |
  *    +-----------+     +------------------+     +--------------------+
  */
+/*
+ * Classify the original chunk stream without allocating image storage. APNG
+ * reconstruction must never replace a corrupt original CRC with a valid one.
+ * Check its animation grammar before the first callback, including the default
+ * image that can be excluded from the animation. libpng validates static CRCs
+ * and recoverable ancillary chunks while reading the original PNG.
+ */
+static SIXELSTATUS
+libpng_classify_stream(sixel_chunk_t const *chunk, int *animated)
+{
+    unsigned char const *buffer;
+    unsigned char const *p;
+    size_t size;
+    size_t offset;
+    size_t length;
+    png_uint_32 frames;
+    png_uint_32 controls;
+    png_uint_32 sequence;
+    sixel_apng_frame_control_t control;
+    png_uint_32 frame_sequence;
+    png_uint_32 width;
+    png_uint_32 height;
+    int seen_idat;
+    int idat_closed;
+    int frame_data;
+    int included_default;
+    int critical;
+    int animation_chunk;
+
+    buffer = sixel_chunk_get_buffer(chunk);
+    size = sixel_chunk_get_size(chunk);
+    *animated = 0;
+    frames = 0u;
+    controls = 0u;
+    sequence = 0u;
+    width = 0u;
+    height = 0u;
+    seen_idat = 0;
+    idat_closed = 0;
+    frame_data = 0;
+    included_default = 0;
+    if (buffer == NULL || size < 33u ||
+        memcmp(buffer, "\211PNG\r\n\032\n", 8) != 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    for (offset = 8u; offset <= size && size - offset >= 12u;
+         offset += length + 12u) {
+        p = buffer + offset;
+        length = read_be32(p);
+        if (length > size - offset - 12u) {
+            goto invalid;
+        }
+        if (offset == 8u) {
+            if (length != 13u || memcmp(p + 4, "IHDR", 4) != 0) {
+                goto invalid;
+            }
+            width = read_be32(p + 8);
+            height = read_be32(p + 12);
+        } else if (memcmp(p + 4, "IHDR", 4) == 0) {
+            goto invalid;
+        }
+        if (memcmp(p + 4, "acTL", 4) == 0) {
+            if (*animated || seen_idat || length != 8u) {
+                goto invalid;
+            }
+            frames = read_be32(p + 8);
+            if (frames == 0u || frames > INT_MAX ||
+                read_be32(p + 12) > INT_MAX) {
+                goto invalid;
+            }
+            *animated = 1;
+        } else if (memcmp(p + 4, "fcTL", 4) == 0) {
+            if (!*animated || (controls != 0u && !frame_data) ||
+                !parse_fctl(p + 8, length, &frame_sequence, &control) ||
+                frame_sequence != sequence || sequence == UINT32_MAX) {
+                goto invalid;
+            }
+            ++sequence;
+            ++controls;
+            frame_data = 0;
+            if (!seen_idat) {
+                included_default = 1;
+                if (control.width != width || control.height != height ||
+                    control.x_offset != 0u || control.y_offset != 0u) {
+                    goto invalid;
+                }
+            }
+            if (control.width == 0u || control.height == 0u ||
+                control.x_offset > width || control.y_offset > height ||
+                control.width > width - control.x_offset ||
+                control.height > height - control.y_offset) {
+                goto invalid;
+            }
+        } else if (memcmp(p + 4, "fdAT", 4) == 0) {
+            if (!*animated || !seen_idat || controls == 0u ||
+                (included_default && controls == 1u) || length < 4u ||
+                read_be32(p + 8) != sequence || sequence == UINT32_MAX) {
+                goto invalid;
+            }
+            ++sequence;
+            frame_data |= length > 4u;
+        } else if (memcmp(p + 4, "IDAT", 4) == 0) {
+            if (idat_closed) {
+                goto invalid;
+            }
+            seen_idat = 1;
+            if (included_default) {
+                frame_data |= length > 0u;
+            }
+        } else if (memcmp(p + 4, "IEND", 4) == 0) {
+            if (length != 0u ||
+                read_be32(p + 8) != UINT32_C(0xae426082) || !seen_idat ||
+                (*animated && (controls != frames || !frame_data))) {
+                goto invalid;
+            }
+            break;
+        }
+        if (seen_idat && memcmp(p + 4, "IDAT", 4) != 0) {
+            idat_closed = 1;
+        }
+        if (seen_idat && (memcmp(p + 4, "PLTE", 4) == 0 ||
+                         memcmp(p + 4, "tRNS", 4) == 0)) {
+            goto invalid;
+        }
+    }
+    if (offset > size || size - offset < 12u) {
+        goto invalid;
+    }
+    if (!*animated) {
+        return SIXEL_OK;
+    }
+    for (offset = 8u; size - offset >= 12u; offset += length + 12u) {
+        p = buffer + offset;
+        length = read_be32(p);
+        critical = (p[4] & 0x20u) == 0u;
+        animation_chunk = memcmp(p + 4, "acTL", 4) == 0 ||
+                          memcmp(p + 4, "fcTL", 4) == 0 ||
+                          memcmp(p + 4, "fdAT", 4) == 0;
+        if (critical && memcmp(p + 4, "IHDR", 4) != 0 &&
+            memcmp(p + 4, "PLTE", 4) != 0 &&
+            memcmp(p + 4, "IDAT", 4) != 0 &&
+            memcmp(p + 4, "IEND", 4) != 0) {
+            goto invalid;
+        }
+        if ((critical || animation_chunk) &&
+            crc32_update(p + 4, length + 4u, 0) !=
+            read_be32(p + 8 + length)) {
+            sixel_helper_set_additional_message("APNG: original CRC error");
+            return SIXEL_PNG_ERROR;
+        }
+        if (memcmp(p + 4, "IEND", 4) == 0) {
+            break;
+        }
+    }
+    return SIXEL_OK;
+
+invalid:
+    sixel_helper_set_additional_message("PNG: invalid chunk structure");
+    return SIXEL_BAD_INPUT;
+}
+
 static SIXELSTATUS
 load_with_libpng(
     sixel_chunk_t const       /* in */     *pchunk,
@@ -4662,10 +3053,15 @@ load_with_libpng(
     int cms_target_pixelformat;
     int enable_orientation;
     int exif_orientation;
+    int animated;
+    sixel_png_alpha_t alpha_state;
+    size_t pixel_count;
+    size_t pixel_index;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
+    memset(&alpha_state, 0, sizeof(alpha_state));
     enable_cms = enable_cms_override != 0 ? 1 : 0;
     cms_applied = 0;
     alpha_zero_is_transparent = 0;
@@ -4673,11 +3069,13 @@ load_with_libpng(
     enable_orientation = enable_orientation_override != 0 ? 1 : 0;
     exif_orientation = 1;
 
-    (void)fstatic;
-    (void)loop_control;
-
     if (pchunk == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = libpng_classify_stream(pchunk, &animated);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     if (enable_orientation) {
@@ -4686,25 +3084,21 @@ load_with_libpng(
                                             &exif_orientation);
     }
 
-    status = load_apng_frames(pchunk,
-                              allocator,
-                              fstatic,
-                              fuse_palette,
-                              reqcolors,
-                              bgcolor,
-                              exif_orientation,
-                              enable_cms,
-                              loop_control,
-                              start_frame_no_set,
-                              start_frame_no_override,
-                              fn_load,
-                              context);
-    /*
-     * Only fall back to single-frame PNG decoding when APNG chunks are
-     * absent. If APNG parsing started and returned an error, preserve the
-     * error instead of masking it with the non-APNG fallback path.
-     */
-    if (status != SIXEL_FALSE) {
+    if (animated) {
+        status = load_apng_frames(pchunk,
+                                  allocator,
+                                  fstatic,
+                                  fuse_palette,
+                                  reqcolors,
+                                  bgcolor,
+                                  exif_orientation,
+                                  enable_cms,
+                                  loop_control,
+                                  start_frame_no_set,
+                                  start_frame_no_override,
+                                  fn_load,
+                                  context);
+        /* Classification is final, including a callback's SIXEL_FALSE. */
         goto end;
     }
 
@@ -4727,6 +3121,7 @@ load_with_libpng(
                       &alpha_zero_is_transparent,
                       &cms_applied,
                       enable_cms,
+                      &alpha_state,
                       allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -4752,6 +3147,24 @@ load_with_libpng(
     }
     frame->alpha_zero_is_transparent = alpha_zero_is_transparent != 0 ? 1 : 0;
     pixels = NULL;
+    if (alpha_state.values != NULL &&
+        (!alpha_state.has_background || loader_transparent_policy() !=
+         SIXEL_ALPHA_POLICY_COMPOSITE)) {
+        pixel_count = (size_t)frame->width * (size_t)frame->height;
+        frame->transparent_mask = (unsigned char *)sixel_allocator_malloc(
+            allocator, pixel_count);
+        if (frame->transparent_mask == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        frame->transparent_mask_size = pixel_count;
+        for (pixel_index = 0u; pixel_index < pixel_count; ++pixel_index) {
+            frame->transparent_mask[pixel_index] =
+                alpha_state.values[pixel_index] == 0.0f;
+            frame->alpha_zero_is_transparent |=
+                frame->transparent_mask[pixel_index];
+        }
+    }
     if (cms_applied
             && ((frame->pixelformat & SIXEL_FORMATTYPE_PALETTE) == 0)
             && frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
@@ -4799,6 +3212,7 @@ load_with_libpng(
     status = SIXEL_OK;
 
 end:
+    sixel_allocator_free(allocator, alpha_state.values);
     sixel_frame_unref(frame);
 
     return status;

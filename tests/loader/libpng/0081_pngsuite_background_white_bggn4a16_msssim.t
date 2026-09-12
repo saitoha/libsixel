@@ -18,13 +18,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/background/bggn4a16.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0073_pngsuite_background_white_bggn4a16_msssim.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/bggn4a16.sixel"
+output_sixel="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-bggn4a16.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -B#000 -Nexplicit_first -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
