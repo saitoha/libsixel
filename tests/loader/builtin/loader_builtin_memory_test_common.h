@@ -30,6 +30,8 @@ typedef struct edge_loader_options {
     int use_palette;
     int reqcolors;
     int loop_control;
+    int set_start_frame_no;
+    int start_frame_no;
     int cms_engine;
     int set_bgcolor;
     unsigned char bgcolor[3];

@@ -664,15 +664,15 @@
         {
           "coverage_id": "PNG-01",
           "details": [
-            "validate the PNG signature and detect acTL",
-            "split still-image and animation control flow"
+            "scan once through the first IDAT; collect tRNS/bKGD",
+            "only a preceding acTL selects animation control flow"
           ],
           "phase": "ROUTE",
           "role": "route",
           "source": "src/loader-builtin.c",
           "symbols": [
             "sixel_builtin_load_stbi_png_path",
-            "sixel_builtin_chunk_has_apng_control"
+            "sixel_builtin_probe_png_header"
           ],
           "title": "Classify static PNG or APNG"
         },
@@ -723,8 +723,8 @@
         {
           "coverage_id": "PNG-05",
           "details": [
-            "decode frame PNGs to RGBA8, not the static float path",
-            "integer canvas blend/dispose; then emission and background"
+            "exclude default IDAT unless fcTL precedes it",
+            "decode RGBA8 frames; late errors remain terminal"
           ],
           "phase": "ANIMATE",
           "role": "decode",
@@ -734,7 +734,7 @@
             "sixel_builtin_apng_blend_rect",
             "sixel_builtin_apng_emit_pending_frame"
           ],
-          "title": "Rebuild and composite APNG frames"
+          "title": "Validate and composite APNG frames"
         },
         {
           "coverage_id": "PNG-06",
@@ -754,7 +754,8 @@
       ],
       "tests": {
         "PNG-01": [
-          "tests/loader/builtin/0017_apng_builtin_static_option.t"
+          "tests/loader/builtin/0017_apng_builtin_static_option.t",
+          "tests/loader/builtin/2043_loader_builtin_png_post_idat_actl_static_numeric.t"
         ],
         "PNG-02": [
           "tests/loader/builtin/0143_loader_builtin_png_trns_keycolor_default_enabled_for_palette.t"
@@ -766,6 +767,7 @@
           "tests/loader/builtin/1977_loader_builtin_png_icc_numeric.t"
         ],
         "PNG-05": [
+          "tests/loader/builtin/0038_apng_builtin_default_image_first_valid.t",
           "tests/loader/builtin/1962_loader_builtin_png_apng_dispose_previous_numeric.t"
         ],
         "PNG-06": [

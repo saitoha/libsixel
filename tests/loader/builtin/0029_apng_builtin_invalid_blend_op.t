@@ -1,6 +1,7 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# TAP test: builtin loader accepts APNG invalid blend operation input.
+# Policy: docs/loader/builtin/png.md
+# TAP test: an early invalid APNG blend operation uses static fallback.
 
 set -eux
 
@@ -14,9 +15,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Lbuiltin! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_blend2.png" -o/dev/null || {
-    echo "not ok" 1 - "APNG invalid blend_op decode failed on builtin loader"
+    echo "not ok" 1 - "APNG invalid blend_op did not recover as static"
     exit 0
 }
 
-echo "ok" 1 - "APNG invalid blend_op input is accepted by builtin loader"
+echo "ok" 1 - "early APNG invalid blend_op recovers as static"
 exit 0
