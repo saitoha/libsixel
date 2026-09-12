@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="680" viewBox="0 0 1080 680" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Four-point RGB geometry</title>
+<desc id="desc">A and B and their midpoint M are fixed. Three different palettes place the nearest other color P off the A-B line. The squared midpoint distances determine the pair weight. The dashed circle has radius M-A. This is an exact constant-blue slice, not a projection with distorted distances.</desc>
+<rect x="0" y="0" width="1080" height="680" rx="0" fill="#ffffff" stroke="none" stroke-width="1"/>
+<text x="20" y="35" font-size="27" fill="#183247" font-weight="700" text-anchor="start">The nearest color need not lie on A–B</text>
+<text x="20" y="64" font-size="16" fill="#4c6070" font-weight="400" text-anchor="start">RGB slice: blue = 128 in every point</text>
+<rect x="20" y="90" width="340" height="450" rx="10" fill="#f6f8fa" stroke="#c8d0d7" stroke-width="1"/>
+<text x="36" y="120" font-size="19" fill="#183247" font-weight="700" text-anchor="start">1  P = (144, 144, 128)</text>
+<path d="M 52 155 V 405 H 335" fill="none" stroke="#c8d0d7"/>
+<text x="59" y="160" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Green ↑</text>
+<text x="264" y="425" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Red →</text>
+<circle cx="163.60000000000002" cy="317.8" r="70.4" fill="none" stroke="#91a8b7" stroke-dasharray="3 4"/>
+<path d="M 93.2 317.8 L 181.20000000000002 300.2 L 234.0 317.8 Z" fill="#e5f3fa" fill-opacity="0.55" stroke="#91a8b7"/>
+<path d="M 163.60000000000002 317.8 L 181.20000000000002 300.2" stroke="#17618c" stroke-width="3"/>
+<path d="M 93.2 317.8 L 163.60000000000002 317.8" stroke="#855012" stroke-width="3"/>
+<path d="M 62.8 212.6 l 8 8 m -8 0 l 8 -8" stroke="#607586" stroke-width="2"/>
+<path d="M 266.3 218.1 l 8 8 m -8 0 l 8 -8" stroke="#607586" stroke-width="2"/>
+<rect x="87.2" y="311.8" width="12" height="12" rx="0" fill="rgb(64,128,128)" stroke="#183247" stroke-width="1"/>
+<text x="93.2" y="343.8" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">A</text>
+<rect x="228.0" y="311.8" width="12" height="12" rx="0" fill="rgb(192,128,128)" stroke="#183247" stroke-width="1"/>
+<text x="234.0" y="343.8" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">B</text>
+<rect x="175.20000000000002" y="294.2" width="12" height="12" rx="0" fill="rgb(144,144,128)" stroke="#183247" stroke-width="1"/>
+<text x="193.20000000000002" y="288.2" font-size="17" fill="#183247" font-weight="700" text-anchor="start">P</text>
+<circle cx="163.60000000000002" cy="317.8" r="5" fill="white" stroke="#855012" stroke-width="2"/>
+<text x="163.60000000000002" y="343.8" font-size="17" fill="#855012" font-weight="700" text-anchor="middle">M</text>
+<text x="36" y="450" font-size="18" fill="#17618c" font-weight="700" text-anchor="start">q/d = 512/4096 = 0.125</text>
+<text x="36" y="481" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Neighbor weight: upstream 0</text>
+<text x="36" y="509" font-size="16" fill="#183247" font-weight="400" text-anchor="start">libsixel 0 at -S 100</text>
+<rect x="375" y="90" width="340" height="450" rx="10" fill="#f6f8fa" stroke="#c8d0d7" stroke-width="1"/>
+<text x="391" y="120" font-size="19" fill="#183247" font-weight="700" text-anchor="start">2  P = (152, 176, 128)</text>
+<path d="M 407 155 V 405 H 690" fill="none" stroke="#c8d0d7"/>
+<text x="414" y="160" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Green ↑</text>
+<text x="619" y="425" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Red →</text>
+<circle cx="518.6" cy="317.8" r="70.4" fill="none" stroke="#91a8b7" stroke-dasharray="3 4"/>
+<path d="M 448.2 317.8 L 545.0 265.0 L 589.0 317.8 Z" fill="#e5f3fa" fill-opacity="0.55" stroke="#91a8b7"/>
+<path d="M 518.6 317.8 L 545.0 265.0" stroke="#17618c" stroke-width="3"/>
+<path d="M 448.2 317.8 L 518.6 317.8" stroke="#855012" stroke-width="3"/>
+<path d="M 417.8 212.6 l 8 8 m -8 0 l 8 -8" stroke="#607586" stroke-width="2"/>
+<path d="M 621.3 218.1 l 8 8 m -8 0 l 8 -8" stroke="#607586" stroke-width="2"/>
+<rect x="442.2" y="311.8" width="12" height="12" rx="0" fill="rgb(64,128,128)" stroke="#183247" stroke-width="1"/>
+<text x="448.2" y="343.8" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">A</text>
+<rect x="583.0" y="311.8" width="12" height="12" rx="0" fill="rgb(192,128,128)" stroke="#183247" stroke-width="1"/>
+<text x="589.0" y="343.8" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">B</text>
+<rect x="539.0" y="259.0" width="12" height="12" rx="0" fill="rgb(152,176,128)" stroke="#183247" stroke-width="1"/>
+<text x="557.0" y="253.0" font-size="17" fill="#183247" font-weight="700" text-anchor="start">P</text>
+<circle cx="518.6" cy="317.8" r="5" fill="white" stroke="#855012" stroke-width="2"/>
+<text x="518.6" y="343.8" font-size="17" fill="#855012" font-weight="700" text-anchor="middle">M</text>
+<text x="391" y="450" font-size="18" fill="#17618c" font-weight="700" text-anchor="start">q/d = 2880/4096 = 0.703125</text>
+<text x="391" y="481" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Neighbor weight: upstream 1</text>
+<text x="391" y="509" font-size="16" fill="#183247" font-weight="400" text-anchor="start">libsixel 5 at -S 100</text>
+<rect x="730" y="90" width="340" height="450" rx="10" fill="#f6f8fa" stroke="#c8d0d7" stroke-width="1"/>
+<text x="746" y="120" font-size="19" fill="#183247" font-weight="700" text-anchor="start">3  P = (160, 192, 128)</text>
+<path d="M 762 155 V 405 H 1045" fill="none" stroke="#c8d0d7"/>
+<text x="769" y="160" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Green ↑</text>
+<text x="974" y="425" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Red →</text>
+<circle cx="873.6" cy="317.8" r="70.4" fill="none" stroke="#91a8b7" stroke-dasharray="3 4"/>
+<path d="M 803.2 317.8 L 908.8 247.39999999999998 L 944.0 317.8 Z" fill="#e5f3fa" fill-opacity="0.55" stroke="#91a8b7"/>
+<path d="M 873.6 317.8 L 908.8 247.39999999999998" stroke="#17618c" stroke-width="3"/>
+<path d="M 803.2 317.8 L 873.6 317.8" stroke="#855012" stroke-width="3"/>
+<path d="M 772.8 212.6 l 8 8 m -8 0 l 8 -8" stroke="#607586" stroke-width="2"/>
+<path d="M 976.3 218.1 l 8 8 m -8 0 l 8 -8" stroke="#607586" stroke-width="2"/>
+<rect x="797.2" y="311.8" width="12" height="12" rx="0" fill="rgb(64,128,128)" stroke="#183247" stroke-width="1"/>
+<text x="803.2" y="343.8" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">A</text>
+<rect x="938.0" y="311.8" width="12" height="12" rx="0" fill="rgb(192,128,128)" stroke="#183247" stroke-width="1"/>
+<text x="944.0" y="343.8" font-size="17" fill="#183247" font-weight="700" text-anchor="middle">B</text>
+<rect x="902.8" y="241.39999999999998" width="12" height="12" rx="0" fill="rgb(160,192,128)" stroke="#183247" stroke-width="1"/>
+<text x="920.8" y="235.39999999999998" font-size="17" fill="#183247" font-weight="700" text-anchor="start">P</text>
+<circle cx="873.6" cy="317.8" r="5" fill="white" stroke="#855012" stroke-width="2"/>
+<text x="873.6" y="343.8" font-size="17" fill="#855012" font-weight="700" text-anchor="middle">M</text>
+<text x="746" y="450" font-size="18" fill="#17618c" font-weight="700" text-anchor="start">q/d = 5120/4096 = 1.25</text>
+<text x="746" y="481" font-size="16" fill="#183247" font-weight="400" text-anchor="start">Neighbor weight: upstream 6</text>
+<text x="746" y="509" font-size="16" fill="#183247" font-weight="400" text-anchor="start">libsixel 8 at -S 100</text>
+<text x="20" y="589" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">A=(64,128,128); B=(192,128,128).</text><text x="20" y="611" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">M=(128,128,128); d=|M−A|²; q=|M−P|².</text><text x="20" y="633" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">Dashed circle: |M−A|. Crosses: other colors.</text><text x="20" y="655" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">P is the closest other palette entry to M.</text>
+</svg>
