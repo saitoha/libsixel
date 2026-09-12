@@ -1,0 +1,167 @@
+{
+  "generator": "tools/plot_colorspace_figures.py",
+  "plot_dependency": "matplotlib==3.10.3",
+  "kinds": {
+    "mixing": "calculated coordinate interpolation, not a quality ranking",
+    "conversion-routes": "schematic operation boundaries, not buffer allocations",
+    "primaries-whitepoints": "standard xy coordinates with equal axis scale"
+  },
+  "examples_at_half_weight_rgb8": {
+    "black-white": {
+      "sRGB": [
+        128,
+        128,
+        128
+      ],
+      "linear RGB": [
+        188,
+        188,
+        188
+      ],
+      "OKLab": [
+        99,
+        99,
+        99
+      ]
+    },
+    "blue-red": {
+      "sRGB": [
+        128,
+        0,
+        128
+      ],
+      "linear RGB": [
+        188,
+        0,
+        188
+      ],
+      "OKLab": [
+        140,
+        83,
+        162
+      ]
+    }
+  },
+  "primaries_xy": {
+    "sRGB": [
+      [
+        0.64,
+        0.33
+      ],
+      [
+        0.3,
+        0.6
+      ],
+      [
+        0.15,
+        0.06
+      ]
+    ],
+    "Display P3": [
+      [
+        0.68,
+        0.32
+      ],
+      [
+        0.265,
+        0.69
+      ],
+      [
+        0.15,
+        0.06
+      ]
+    ]
+  },
+  "whitepoints_xy": {
+    "D65": [
+      0.3127,
+      0.329
+    ],
+    "D50": [
+      0.3457,
+      0.3585
+    ]
+  },
+  "routes": [
+    {
+      "title": "A · No conversion needed",
+      "condition": "No CMS, no mixing or resize; gamma work",
+      "nodes": [
+        "sRGB input",
+        "sRGB work"
+      ],
+      "edges": [
+        "keep the same coordinates"
+      ],
+      "note": "No linear image buffer is needed for this route."
+    },
+    {
+      "title": "B · Mix light only when needed",
+      "condition": "Linear composition / default resize; gamma work",
+      "nodes": [
+        "sRGB input",
+        "linear RGB",
+        "Mix / resize",
+        "sRGB work"
+      ],
+      "edges": [
+        "decode sRGB",
+        "linear-light math",
+        "encode sRGB"
+      ],
+      "note": "A linear loader result can skip the first conversion."
+    },
+    {
+      "title": "C · Enter a perceptual space",
+      "condition": "OKLab palette processing, even without mixing",
+      "nodes": [
+        "sRGB input",
+        "linear RGB",
+        "LMS",
+        "OKLab"
+      ],
+      "edges": [
+        "decode sRGB",
+        "XYZ matrices combined",
+        "cube roots + matrix"
+      ],
+      "note": "LMS approximates cone responses; a separate XYZ image is unnecessary."
+    },
+    {
+      "title": "D · Connect an ICC source profile",
+      "condition": "Conceptual source-to-linear-sRGB normalization",
+      "nodes": [
+        "Input values",
+        "PCS · D50",
+        "XYZ · D65",
+        "linear RGB",
+        "Mix light"
+      ],
+      "edges": [
+        "source profile",
+        "XYZ + adaptation",
+        "RGB matrix",
+        "linear-light math"
+      ],
+      "note": "PCS uses XYZ or Lab; it connects profiles, not processing stages."
+    }
+  ],
+  "sources": [
+    "src/colorspace.c",
+    "src/planner.c",
+    "src/frompng.c",
+    "src/icc-apply.c",
+    "https://www.w3.org/TR/css-color-4/",
+    "https://bottosson.github.io/posts/oklab/",
+    "https://www.color.org/specifications/ICC.1-2022-05.pdf"
+  ],
+  "layouts": [
+    "wide",
+    "mobile"
+  ],
+  "color_roles": {
+    "blue": "conversion hub or sRGB outline",
+    "gold": "Display P3 outline",
+    "mixing_swatches": "calculated sRGB output colors"
+  }
+}

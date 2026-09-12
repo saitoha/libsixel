@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="1400" viewBox="0 0 380 1400" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Operation-dependent color conversion</title>
+<desc id="desc">Four schematic routes show no-op gamma processing, linear-light mixing or resize, OKLab conversion via the combined XYZ-to-LMS matrices, and an ICC PCS D50 connection adapted toward D65 linear sRGB. Nodes do not imply separate image buffers. Loader composition is path-dependent; these are not all loader implementations.</desc>
+<rect x="0" y="0" width="380" height="1400" rx="0" fill="#ffffff" stroke="none"/>
+<text x="20" y="35" font-size="20" fill="#183247" font-weight="700" text-anchor="start">Convert when the operation needs it</text>
+<text x="20" y="65" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">Four routes through the same color system</text>
+<defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 1 1 L 7 4 L 1 7" fill="none" stroke="#4c6070" stroke-width="1.3"/></marker></defs>
+<g data-role="conversion-route" data-case="0">
+<text x="20" y="98" font-size="18" fill="#183247" font-weight="700" text-anchor="start">A · No conversion needed</text>
+<text x="20" y="122" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">No CMS, mixing or resize; gamma work</text>
+<circle cx="42" cy="175" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="175" r="5" fill="#4c6070"/>
+<text x="76" y="181" font-size="18" fill="#183247" font-weight="700" text-anchor="start">sRGB input</text>
+<path d="M 42 193 L 42 213" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="209" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">keep the same coordinates</text>
+<circle cx="42" cy="232" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="232" r="5" fill="#4c6070"/>
+<text x="76" y="238" font-size="18" fill="#183247" font-weight="700" text-anchor="start">sRGB work</text>
+</g>
+<g data-role="conversion-route" data-case="1">
+<text x="20" y="298" font-size="18" fill="#183247" font-weight="700" text-anchor="start">B · Mix light only when needed</text>
+<text x="20" y="322" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Linear composition / default resize</text>
+<text x="20" y="342" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Gamma work after the operation</text>
+<circle cx="42" cy="375" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="375" r="5" fill="#4c6070"/>
+<text x="76" y="381" font-size="18" fill="#183247" font-weight="700" text-anchor="start">sRGB input</text>
+<path d="M 42 393 L 42 413" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="409" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">decode sRGB</text>
+<circle cx="42" cy="432" r="16" fill="#dfedf4"/>
+<circle cx="42" cy="432" r="5" fill="#17618c"/>
+<text x="76" y="438" font-size="18" fill="#17618c" font-weight="700" text-anchor="start">linear RGB</text>
+<path d="M 42 450 L 42 470" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="466" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">linear-light math</text>
+<circle cx="42" cy="489" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="489" r="5" fill="#4c6070"/>
+<text x="76" y="495" font-size="18" fill="#183247" font-weight="700" text-anchor="start">Mix / resize</text>
+<path d="M 42 507 L 42 527" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="523" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">encode sRGB</text>
+<circle cx="42" cy="546" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="546" r="5" fill="#4c6070"/>
+<text x="76" y="552" font-size="18" fill="#183247" font-weight="700" text-anchor="start">sRGB work</text>
+</g>
+<g data-role="conversion-route" data-case="2">
+<text x="20" y="612" font-size="18" fill="#183247" font-weight="700" text-anchor="start">C · Enter a perceptual space</text>
+<text x="20" y="636" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">OKLab palette processing</text>
+<text x="20" y="656" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Even without mixing</text>
+<circle cx="42" cy="689" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="689" r="5" fill="#4c6070"/>
+<text x="76" y="695" font-size="18" fill="#183247" font-weight="700" text-anchor="start">sRGB input</text>
+<path d="M 42 707 L 42 727" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="723" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">decode sRGB</text>
+<circle cx="42" cy="746" r="16" fill="#dfedf4"/>
+<circle cx="42" cy="746" r="5" fill="#17618c"/>
+<text x="76" y="752" font-size="18" fill="#17618c" font-weight="700" text-anchor="start">linear RGB</text>
+<path d="M 42 764 L 42 784" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="780" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">XYZ matrices combined</text>
+<circle cx="42" cy="803" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="803" r="5" fill="#4c6070"/>
+<text x="76" y="809" font-size="18" fill="#183247" font-weight="700" text-anchor="start">LMS</text>
+<path d="M 42 821 L 42 841" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="837" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">cube roots + matrix</text>
+<circle cx="42" cy="860" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="860" r="5" fill="#4c6070"/>
+<text x="76" y="866" font-size="18" fill="#183247" font-weight="700" text-anchor="start">OKLab</text>
+</g>
+<g data-role="conversion-route" data-case="3">
+<text x="20" y="926" font-size="18" fill="#183247" font-weight="700" text-anchor="start">D · Connect an ICC source profile</text>
+<text x="20" y="950" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">ICC source → linear sRGB</text>
+<text x="20" y="970" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Conceptual profile-normalization route</text>
+<circle cx="42" cy="1003" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="1003" r="5" fill="#4c6070"/>
+<text x="76" y="1009" font-size="18" fill="#183247" font-weight="700" text-anchor="start">Input values</text>
+<path d="M 42 1021 L 42 1041" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="1037" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">source profile</text>
+<circle cx="42" cy="1060" r="16" fill="#dfedf4"/>
+<circle cx="42" cy="1060" r="5" fill="#17618c"/>
+<text x="76" y="1066" font-size="18" fill="#17618c" font-weight="700" text-anchor="start">PCS · D50</text>
+<path d="M 42 1078 L 42 1098" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="1094" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">XYZ + adaptation</text>
+<circle cx="42" cy="1117" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="1117" r="5" fill="#4c6070"/>
+<text x="76" y="1123" font-size="18" fill="#183247" font-weight="700" text-anchor="start">XYZ · D65</text>
+<path d="M 42 1135 L 42 1155" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="1151" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">RGB matrix</text>
+<circle cx="42" cy="1174" r="16" fill="#dfedf4"/>
+<circle cx="42" cy="1174" r="5" fill="#17618c"/>
+<text x="76" y="1180" font-size="18" fill="#17618c" font-weight="700" text-anchor="start">linear RGB</text>
+<path d="M 42 1192 L 42 1212" stroke="#4c6070" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="76" y="1208" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">linear-light math</text>
+<circle cx="42" cy="1231" r="16" fill="#edf0f3"/>
+<circle cx="42" cy="1231" r="5" fill="#4c6070"/>
+<text x="76" y="1237" font-size="18" fill="#183247" font-weight="700" text-anchor="start">Mix light</text>
+</g>
+<text x="20" y="1312" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Schematic routes; not buffer allocations.</text>
+<text x="20" y="1335" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">PCS connects profiles using XYZ or Lab.</text>
+<text x="20" y="1358" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">XYZ matrices can be combined on the OKLab route.</text>
+<text x="20" y="1381" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">A linear loader result skips sRGB decoding.</text>
+</svg>

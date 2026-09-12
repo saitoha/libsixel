@@ -1,0 +1,203 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="820" viewBox="0 0 380 820" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">RGB primaries and reference whites</title>
+<desc id="desc">CIE 1931 xy chromaticities from CSS Color 4, drawn at equal x/y scale. Solid blue is sRGB; dashed gold is Display P3. Both share D65 at (0.3127, 0.3290). D50 at (0.3457, 0.3585) is the ICC PCS reference. Triangle fill colors are categorical labels only.</desc>
+<rect x="0" y="0" width="380" height="820" rx="0" fill="#ffffff" stroke="none"/>
+<text x="20" y="36" font-size="20" fill="#183247" font-weight="700" text-anchor="start">Different primaries. The same white.</text>
+<text x="20" y="66" font-size="16" fill="#4c6070" font-weight="400" text-anchor="start">sRGB and Display P3 in CIE 1931 xy</text>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns2="http://creativecommons.org/ns#" xmlns:ns4="http://www.w3.org/1999/xlink" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" width="360" height="360" viewBox="0 0 360 360" version="1.1" x="0" y="77">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>libsixel color-space figure generator</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 360  L 360 360  L 360 0  L 0 0  z " style="fill: #ffffff" />
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 70.338462 302.4  L 332.861538 302.4  L 332.861538 18  L 70.338462 18  z " style="fill: #ffffff" />
+   </g>
+   <g id="patch_3">
+    <path d="M 300.046154 185.723077  L 148.730769 50.815385  L 106.8 280.523077  z " clip-path="url(#pcecbd14d95)" style="fill: #996015; opacity: 0.06" />
+   </g>
+   <g id="patch_4">
+    <path d="M 300.046154 185.723077  L 148.730769 50.815385  L 106.8 280.523077  L 300.046154 185.723077  z " clip-path="url(#pcecbd14d95)" style="fill: none; stroke-dasharray: 6.29,2.72; stroke-dashoffset: 0; stroke: #996015; stroke-width: 1.7; stroke-linejoin: miter" />
+   </g>
+   <g id="patch_5">
+    <path d="M 285.461538 182.076923  L 161.492308 83.630769  L 106.8 280.523077  z " clip-path="url(#pcecbd14d95)" style="fill: #17618c; opacity: 0.06" />
+   </g>
+   <g id="patch_6">
+    <path d="M 285.461538 182.076923  L 161.492308 83.630769  L 106.8 280.523077  L 285.461538 182.076923  z " clip-path="url(#pcecbd14d95)" style="fill: none; stroke: #17618c; stroke-width: 1.7; stroke-linejoin: miter" />
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <path d="M 125.030769 302.4  L 125.030769 18  " clip-path="url(#pcecbd14d95)" style="fill: none; stroke: #dce3e8; stroke-width: 0.5; stroke-linecap: square" />
+     </g>
+     <g id="line2d_2" />
+     <g id="text_1">
+      <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="125.030769" y="319.037812" transform="rotate(-0 125.030769 319.037812)">0.2</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_3">
+      <path d="M 197.953846 302.4  L 197.953846 18  " clip-path="url(#pcecbd14d95)" style="fill: none; stroke: #dce3e8; stroke-width: 0.5; stroke-linecap: square" />
+     </g>
+     <g id="line2d_4" />
+     <g id="text_2">
+      <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="197.953846" y="319.037812" transform="rotate(-0 197.953846 319.037812)">0.4</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_5">
+      <path d="M 270.876923 302.4  L 270.876923 18  " clip-path="url(#pcecbd14d95)" style="fill: none; stroke: #dce3e8; stroke-width: 0.5; stroke-linecap: square" />
+     </g>
+     <g id="line2d_6" />
+     <g id="text_3">
+      <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="270.876923" y="319.037812" transform="rotate(-0 270.876923 319.037812)">0.6</text>
+     </g>
+    </g>
+    <g id="text_4">
+     <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="201.6" y="336.587188" transform="rotate(-0 201.6 336.587188)">x chromaticity</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_7">
+      <path d="M 70.338462 229.476923  L 332.861538 229.476923  " clip-path="url(#pcecbd14d95)" style="fill: none; stroke: #dce3e8; stroke-width: 0.5; stroke-linecap: square" />
+     </g>
+     <g id="line2d_8" />
+     <g id="text_5">
+      <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: end; fill: #183247" x="64.338462" y="234.795829" transform="rotate(-0 64.338462 234.795829)">0.2</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_9">
+      <path d="M 70.338462 156.553846  L 332.861538 156.553846  " clip-path="url(#pcecbd14d95)" style="fill: none; stroke: #dce3e8; stroke-width: 0.5; stroke-linecap: square" />
+     </g>
+     <g id="line2d_10" />
+     <g id="text_6">
+      <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: end; fill: #183247" x="64.338462" y="161.872752" transform="rotate(-0 64.338462 161.872752)">0.4</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_11">
+      <path d="M 70.338462 83.630769  L 332.861538 83.630769  " clip-path="url(#pcecbd14d95)" style="fill: none; stroke: #dce3e8; stroke-width: 0.5; stroke-linecap: square" />
+     </g>
+     <g id="line2d_12" />
+     <g id="text_7">
+      <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: end; fill: #183247" x="64.338462" y="88.949675" transform="rotate(-0 64.338462 88.949675)">0.6</text>
+     </g>
+    </g>
+    <g id="text_8">
+     <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="35.162524" y="160.2" transform="rotate(-90 35.162524 160.2)">y chromaticity</text>
+    </g>
+   </g>
+   <g id="patch_7">
+    <path d="M 70.338462 302.4  L 70.338462 18  " style="fill: none; stroke: #dce3e8; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square" />
+   </g>
+   <g id="patch_8">
+    <path d="M 332.861538 302.4  L 332.861538 18  " style="fill: none; stroke: #dce3e8; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square" />
+   </g>
+   <g id="patch_9">
+    <path d="M 70.338462 302.4  L 332.861538 302.4  " style="fill: none; stroke: #dce3e8; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square" />
+   </g>
+   <g id="patch_10">
+    <path d="M 70.338462 18  L 332.861538 18  " style="fill: none; stroke: #dce3e8; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square" />
+   </g>
+   <g id="text_9">
+    <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: start; fill: #183247" x="155.730769" y="47.67851" transform="rotate(-0 155.730769 47.67851)">G · P3</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: start; fill: #183247" x="168.492308" y="89.493894" transform="rotate(-0 168.492308 89.493894)">G · sRGB</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: end; fill: #183247" x="295.046154" y="206.586202" transform="rotate(-0 295.046154 206.586202)">R · P3</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: end; fill: #183247" x="280.461538" y="173.940048" transform="rotate(-0 280.461538 173.940048)">R · sRGB</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: start; fill: #183247" x="113.8" y="286.386202" transform="rotate(-0 113.8 286.386202)">B · shared</text>
+   </g>
+   <g id="patch_11">
+    <path d="M 158.377128 201.806026  Q 161.878904 193.051585 165.380681 184.297144  " style="fill: none; stroke: #4c6070; stroke-width: 0.8; stroke-linecap: round" />
+   </g>
+   <g id="text_14">
+    <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: middle; fill: #183247" x="154.122923" y="216.304663" transform="rotate(-0 154.122923 216.304663)">D65</text>
+   </g>
+   <g id="patch_12">
+    <path d="M 199.928199 155.647502  Q 189.845709 163.074224 179.76322 170.500946  " style="fill: none; stroke: #4c6070; stroke-width: 0.8; stroke-linecap: round" />
+   </g>
+   <g id="text_15">
+    <text style="font-size: 14px; font-family: 'DejaVu Sans', 'Arial', sans-serif; text-anchor: start; fill: #183247" x="199.155231" y="149.54851" transform="rotate(-0 199.155231 149.54851)">D50</text>
+   </g>
+   <g id="PathCollection_1">
+    <defs>
+     <path id="m0cec8b3e76" d="M 0 2.236068  C 0.593012 2.236068 1.161816 2.000462 1.581139 1.581139  C 2.000462 1.161816 2.236068 0.593012 2.236068 0  C 2.236068 -0.593012 2.000462 -1.161816 1.581139 -1.581139  C 1.161816 -2.000462 0.593012 -2.236068 0 -2.236068  C -0.593012 -2.236068 -1.161816 -2.000462 -1.581139 -1.581139  C -2.000462 -1.161816 -2.236068 -0.593012 -2.236068 0  C -2.236068 0.593012 -2.000462 1.161816 -1.581139 1.581139  C -1.161816 2.000462 -0.593012 2.236068 0 2.236068  z " style="stroke: #996015" />
+    </defs>
+    <g clip-path="url(#pcecbd14d95)">
+     <use ns4:href="#m0cec8b3e76" x="300.046154" y="185.723077" style="fill: #996015; stroke: #996015" />
+     <use ns4:href="#m0cec8b3e76" x="148.730769" y="50.815385" style="fill: #996015; stroke: #996015" />
+     <use ns4:href="#m0cec8b3e76" x="106.8" y="280.523077" style="fill: #996015; stroke: #996015" />
+    </g>
+   </g>
+   <g id="PathCollection_2">
+    <defs>
+     <path id="m58a99e9bdd" d="M 0 2.236068  C 0.593012 2.236068 1.161816 2.000462 1.581139 1.581139  C 2.000462 1.161816 2.236068 0.593012 2.236068 0  C 2.236068 -0.593012 2.000462 -1.161816 1.581139 -1.581139  C 1.161816 -2.000462 0.593012 -2.236068 0 -2.236068  C -0.593012 -2.236068 -1.161816 -2.000462 -1.581139 -1.581139  C -2.000462 -1.161816 -2.236068 -0.593012 -2.236068 0  C -2.236068 0.593012 -2.000462 1.161816 -1.581139 1.581139  C -1.161816 2.000462 -0.593012 2.236068 0 2.236068  z " style="stroke: #17618c" />
+    </defs>
+    <g clip-path="url(#pcecbd14d95)">
+     <use ns4:href="#m58a99e9bdd" x="285.461538" y="182.076923" style="fill: #17618c; stroke: #17618c" />
+     <use ns4:href="#m58a99e9bdd" x="161.492308" y="83.630769" style="fill: #17618c; stroke: #17618c" />
+     <use ns4:href="#m58a99e9bdd" x="106.8" y="280.523077" style="fill: #17618c; stroke: #17618c" />
+    </g>
+   </g>
+   <g id="PathCollection_3">
+    <defs>
+     <path id="m484cb3f390" d="M 0 2.54951  C 0.676138 2.54951 1.324674 2.280877 1.802776 1.802776  C 2.280877 1.324674 2.54951 0.676138 2.54951 0  C 2.54951 -0.676138 2.280877 -1.324674 1.802776 -1.802776  C 1.324674 -2.280877 0.676138 -2.54951 0 -2.54951  C -0.676138 -2.54951 -1.324674 -2.280877 -1.802776 -1.802776  C -2.280877 -1.324674 -2.54951 -0.676138 -2.54951 0  C -2.54951 0.676138 -2.280877 1.324674 -1.802776 1.802776  C -1.324674 2.280877 -0.676138 2.54951 0 2.54951  z " style="stroke: #183247" />
+    </defs>
+    <g clip-path="url(#pcecbd14d95)">
+     <use ns4:href="#m484cb3f390" x="166.122923" y="182.441538" style="fill: #183247; stroke: #183247" />
+    </g>
+   </g>
+   <g id="PathCollection_4">
+    <defs>
+     <path id="m6a6d9a4f65" d="M -0 3.605551  L 3.605551 0  L 0 -3.605551  L -3.605551 -0  z " style="stroke: #183247" />
+    </defs>
+    <g clip-path="url(#pcecbd14d95)">
+     <use ns4:href="#m6a6d9a4f65" x="178.155231" y="171.685385" style="fill: #ffffff; stroke: #183247" />
+    </g>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pcecbd14d95">
+   <rect x="70.338462" y="18" width="262.523077" height="284.4" />
+  </clipPath>
+ </defs>
+</svg>
+<text x="24" y="478" font-size="17" fill="#183247" font-weight="700" text-anchor="start">1  Primaries define the RGB basis</text>
+<text x="24" y="506" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">Triangles join the red, green and blue</text>
+<text x="24" y="529" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">primary chromaticities. P3 extends farther.</text>
+<text x="24" y="572" font-size="17" fill="#183247" font-weight="700" text-anchor="start">2  D65 is the shared white point</text>
+<text x="24" y="600" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">Both spaces use D65 and the sRGB</text>
+<text x="24" y="623" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">transfer function, but their primaries differ.</text>
+<text x="24" y="666" font-size="17" fill="#183247" font-weight="700" text-anchor="start">3  D50 is the ICC PCS reference</text>
+<text x="24" y="694" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">Profile conversion accounts for the</text>
+<text x="24" y="717" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">D50 / D65 change through color adaptation.</text>
+<text x="20" y="757" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Axes are dimensionless; equal x/y scale.</text>
+<text x="20" y="779" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Triangle fills identify spaces;</text>
+<text x="20" y="801" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">they are not actual displayed colors.</text>
+</svg>
