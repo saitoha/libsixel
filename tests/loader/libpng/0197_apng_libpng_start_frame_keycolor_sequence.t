@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify libpng APNG start=1 + keycolor keeps emitted frame_no sequence.
 
 set -eux

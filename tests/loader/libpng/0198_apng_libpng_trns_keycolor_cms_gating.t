@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify cms=1 gating disables APNG keycolor behavior in libpng loader path.
 
 set -eux

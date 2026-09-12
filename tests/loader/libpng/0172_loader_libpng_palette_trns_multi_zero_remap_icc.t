@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify multi-zero palette+tRNS fixture matches normalized single-zero output.
 
 set -eux

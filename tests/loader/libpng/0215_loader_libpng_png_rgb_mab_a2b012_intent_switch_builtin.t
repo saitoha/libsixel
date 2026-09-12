@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify libpng builtin CMS switches A2B slot by rendering intent.
 
 set -eux

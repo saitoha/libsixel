@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # TAP test: libpng APNG dispose-background start frame matches reference.
 
 set -eux

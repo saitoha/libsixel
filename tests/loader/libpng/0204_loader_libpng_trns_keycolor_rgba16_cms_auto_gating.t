@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify cms=auto disables keycolor behavior for RGBA16 in libpng loader path.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # TAP test: libpng static decode ignores invalid start-frame env values.
 
 set -eux

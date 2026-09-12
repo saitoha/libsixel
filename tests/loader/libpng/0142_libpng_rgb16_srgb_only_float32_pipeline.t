@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # TAP test: 16-bit sRGB PNG loader output should stay float32 through planner.
 
 set -eux

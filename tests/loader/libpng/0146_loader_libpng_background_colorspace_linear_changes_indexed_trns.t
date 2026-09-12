@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify linear background interpretation changes indexed+tRNS composition.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # TAP test: libpng static decode ignores out-of-range env values.
 
 set -eux

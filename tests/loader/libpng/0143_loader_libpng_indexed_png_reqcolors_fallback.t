@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # TAP wrapper for libpng indexed PNG reqcolors fallback C test.
 
 set -eux

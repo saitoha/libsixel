@@ -74,6 +74,7 @@ are grouped by domain so each area can grow without overloading one document.
 ## Image loading
 
 - [Image loader architecture](loader/README.md) explains the compiled loader registry, `-L` chain construction, predicate and fallback control flow, typed frame outputs, backend inventory, and quality/security tradeoffs.
+- [libpng image loader](loader/libpng.md) separates desired PNG/APNG behavior from current implementation gaps, then documents format support, precision, CMS, alpha/background handling, animation, and test coverage.
 - [Loader CMS: builtin and Little CMS](loader/color-management.md) compares profile support, unsupported cases, fallback, rendering intents, quality, and speed/memory tradeoffs.
 - [Builtin CMS specification and architecture](loader/builtin-cms.md) explains the implemented ICC subset, profile and transform ownership, numerical behavior, safety boundaries, and coverage limits.
 - [Builtin image loader](loader/builtin.md) documents the in-tree format families, precision and colorspace goals, security model, and the extraction history from the original stb_image integration.

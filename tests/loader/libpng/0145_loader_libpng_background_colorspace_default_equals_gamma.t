@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify SIXEL_LOADER_BACKGROUND_COLORSPACE defaults to gamma.
 
 set -eux
