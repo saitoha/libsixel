@@ -588,6 +588,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/project-history.md \
 	docs/sixel-format.md \
 	docs/functionality/or-mode.md \
+	docs/functionality/terminal-macros.md \
 	docs/functionality/or-mode/grid-example/input.png \
 	docs/functionality/or-mode/grid-example/normal.six \
 	docs/functionality/or-mode/grid-example/or.six \

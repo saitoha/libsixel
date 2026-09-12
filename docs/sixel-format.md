@@ -363,6 +363,8 @@ it is not a new sixel data-character range.
 
 The [OR-mode dialect](functionality/or-mode.md) uses `P2=5` to request bitwise OR of palette indices. It requires explicit receiver support and differs from ordinary SIXEL overwrite semantics.
 
+[Terminal macros](functionality/terminal-macros.md) wrap a complete SIXEL stream in a DECDMAC definition and replay it with DECINVM. `img2sixel -u` uses this for animation, while `-n` selects an explicit macro ID for preloading. These outer control functions are separate from SIXEL's pixel-aspect-ratio macro parameter and require receiver support beyond SIXEL itself.
+
 ## Robustness and security
 
 SIXEL is both image data and executable terminal control syntax. Do not send an

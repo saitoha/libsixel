@@ -494,14 +494,18 @@ static cli_option_help_t const g_option_help_table[] = {
         'u',
         "use-macro",
         "-u, --use-macro\n"
-        "    use DECDMAC and DECINVM sequences to optimize GIF animation rendering\n"
+        "    define and invoke terminal macros; reuse animation frames on\n"
+        "    later loops. Requires SIXEL and DECDMAC/DECINVM support.\n"
+        "    -n suppresses automatic invocation\n"
     },
     {
         'n',
         "macro-number",
         "-n MACRONO, --macro-number=MACRONO\n"
-        "    specify an number argument for DECDMAC and make terminal memorize SIXEL image. No\n"
-        "    image is shown if this option is specified\n"
+        "    define a SIXEL image at macro ID MACRONO without invoking it,\n"
+        "    even with -u. Use -S to preload one frame from an animation.\n"
+        "    MACRONO is 0..INT_MAX; the terminal may support a smaller range.\n"
+        "    Repeating -n selects the last ID\n"
     },
     {
         'C',

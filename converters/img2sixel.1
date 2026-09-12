@@ -404,11 +404,20 @@ This option is mutually exclusive with \fB-b\fP, \fB-m\fP, and
 \fB-e\fP. Repeating \fB-I\fP is allowed.
 .TP 5
 .B \-u, \-\-use-macro
-use DECDMAC and DECINVM sequences to optimize GIF animation rendering.
+use DECDMAC to define a static image or first-pass animation frames as
+terminal macros, and DECINVM to invoke them. Later animation passes
+reuse the stored definitions.
+Requires a receiver that supports both SIXEL and terminal macros.
+The loop policy is selected separately with \fB-l\fP.
+See TERMINAL MACROS for preloading and receiver requirements.
 .TP 5
 .B \-n \fIMACRONO\fP, \-\-macro-number=\fIMACRONO\fP
-specify an number argument for DECDMAC and make terminal memorize
-SIXEL image. No image is shown if this option is specified
+select a fixed DECDMAC ID and suppress automatic invocation, even with
+\fB-u\fP. MACRONO is a decimal integer from 0 through C INT_MAX;
+the receiver may support a smaller range. Repeating this option selects
+the last number. Multiple frames on the first pass redefine the same ID;
+use \fB-S\fP to preload one frame from an animation.
+See TERMINAL MACROS for preloading examples and receiver requirements.
 .TP 5
 .B \-C \fICOMPLEXIONSCORE\fP, \-\-complexion-score=\fICOMPLEXIONSCORE\fP
 [[deprecated]] accepted but ignored.
@@ -1305,6 +1314,37 @@ The output also lists the loader backends available in the current build.
 print help and list available loaders.
 
 
+.SH "TERMINAL MACROS"
+DECDMAC stores terminal input bytes, and DECINVM replays them through the
+terminal parser. libsixel hex-encodes a complete SIXEL stream inside each
+definition. This doubles the image payload on the initial transfer;
+later invocations send only the macro ID. It does not make the terminal
+run an animation independently: img2sixel still sends invocations and
+controls frame delays. \fB-g\fP disables those delays.
+.PP
+To preload a static PNG into macro 7 and then
+display it at text row 2, column 5:
+.nf
+img2sixel -n7 image.png
+printf '\e033[2;5H\e033[7*z'
+.fi
+.PP
+Without \fB-S\fP, a fixed ID is overwritten by successive frames on
+the first pass. \fB-n\fP is not a starting offset for \fB-u\fP.
+The application must manage macro IDs, receiver storage, and redefinition
+after terminal state is lost. The DEC VT510 specifies IDs 0 through 63
+and 6 KiB of storage; other receivers may differ. img2sixel does not
+negotiate macro support or verify that a definition was stored.
+.PP
+A static image is defined independently of the loader's loop metadata.
+For animated input, use \fB-S -n7\fP to preload only the first frame;
+definitions are otherwise emitted for every first-pass frame.
+.PP
+Macro output cannot be combined with DRCS output. Outer DECDMAC and
+DECINVM controls are written outside the SIXEL writer's multiplexer
+wrapping, so ordinary SIXEL passthrough does not establish macro support.
+For the wire syntax, cost model, examples, and coverage boundaries,
+see docs/functionality/terminal-macros.md in the source distribution.
 .SH "ENVIRONMENT VARIABLES"
 \fIimg2sixel\fP honours the following environment variables:
 .TP 5

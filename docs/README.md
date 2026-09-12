@@ -44,6 +44,7 @@ are grouped by domain so each area can grow without overloading one document.
 - [Delta encoding (6delta)](functionality/delta-encoding.md) explains `--update-policy`, retained display colors, threshold and palette comparisons, partial-update APIs, invalidation, CPU/GPU scope, and test coverage.
 - [OR-mode output](functionality/or-mode.md) explains `-O`, index-bit composition, `P2=5`, palette-zero and transparency semantics, receiver compatibility, and regression coverage. Its [scaling and decoding study](functionality/or-mode/scaling.md) compares palette budgets, encoder/decoder thread budgets, and in-process versus PNG-inclusive decoding.
 - [High-color output](functionality/high-color.md) explains `-I`, paint-time palette-register semantics, repeated 255-slot passes, terminal compatibility, and measured quality, speed, and size tradeoffs.
+- [Terminal macros](functionality/terminal-macros.md) explains `-u` and `-n`, DECDMAC definitions and DECINVM playback, preloading, transfer cost, receiver state, and exact static-image and animation regression coverage.
 - [External palette input and output](functionality/external-palettes.md) explains `-m` and `-M`, palette-generation and reuse workflows, format origins, application compatibility, format detection, and fixed-palette policy interactions.
 - [Palette construction pipeline](functionality/palette-pipeline.md) defines
   the sampling, palette-space, binning, and quantization boundaries, joint

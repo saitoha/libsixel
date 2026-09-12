@@ -569,13 +569,17 @@ Options:
 -I, --high-color           output 15bpp sixel image
                            This option is mutually exclusive with -b,
                            -m, and -e. Repeating -I is allowed.
--u, --use-macro            use DECDMAC and DEVINVM sequences to
-                           optimize GIF animation rendering
+-u, --use-macro            define and invoke terminal macros; reuse
+                           animation frames on later loops
+                           Requires SIXEL and DECDMAC/DECINVM support.
+                           -n suppresses automatic invocation.
 -n MACRONO, --macro-number=MACRONO
-                           specify an number argument for
-                           DECDMAC and make terminal memorize
-                           SIXEL image. No image is shown if
-                           this option is specified
+                           define a SIXEL image at macro ID MACRONO
+                           without invoking it, even with -u
+                           Use -S to preload one animation frame.
+                           MACRONO is 0..INT_MAX; the terminal may
+                           support a smaller range. Repeating -n
+                           selects the last ID.
 -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
                            [[deprecated]] accepted but ignored.
                            COMPLEXIONSCORE must be 1 or more.
@@ -1239,6 +1243,8 @@ SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
                            the current process so callers do not need
                            to export it manually.
 ```
+
+See [Terminal macros](docs/functionality/terminal-macros.md) for `-u` animation playback and `-n` preloading with DECDMAC/DECINVM, including invocation examples, receiver requirements, and static-image and animation behavior.
 
 Use `--loaders` to reorder the loader chain. Provide a comma separated list of
 loader names such as `gd,builtin`. Unique prefixes are accepted, so `core,b`

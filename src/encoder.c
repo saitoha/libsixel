@@ -8202,7 +8202,12 @@ sixel_encoder_output_with_macro(
         goto end;
     }
 
-    if (loop_no == 0) {
+    /*
+     * Static loaders can report loop one even for their only frame.  Such
+     * an image has no previous definition to replay.  Only multiframe
+     * input may reuse macros from an earlier animation loop.
+     */
+    if (loop_no == 0 || !multiframe) {
         if (encoder->macro_number >= 0) {
             nwrite = sixel_compat_snprintf(
                 buffer,
