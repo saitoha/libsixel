@@ -22,7 +22,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Concepts
 
-- [Color spaces and loader color management](concepts/colorspace.md) separates color values, pixel formats, color-space interpretation, and ICC/CMS conversion, then connects loader output with the `-X`, `-W`, and `-U` encoder boundaries.
+- [Color spaces and loader color management](concepts/colorspace.md) explains linear RGB/XYZ conversion hubs, ICC PCS and reference whites, linear-light mixing, and when implicit conversions occur, then connects loader output with the `-X`, `-W`, and `-U` encoder boundaries and shows how to inspect the effective path.
 - [Pixel-format precision](concepts/pixelformat-precision.md) explains the `RGB888` and typed float32 storage contracts, implicit promotion by resize, CMS, and color-space conversion, memory cost, and measured resize quality.
 - [Pixel formats and alpha representation](concepts/pixelformat.md) separates
   input memory layouts, frame storage, alpha-zero metadata, and what can be

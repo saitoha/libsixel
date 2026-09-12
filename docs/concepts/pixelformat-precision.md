@@ -55,6 +55,8 @@ palette application/dither --> output-space conversion --> SIXEL palette + indic
 
 The `source`, resize input/output, main `work`, and clustering palette view need not share one format. Reporting only the command-line request loses information about the path that actually ran.
 
+For why linear RGB is needed and when the planner inserts or skips conversions, see [Lazy conversion at operation boundaries](colorspace.md#lazy-conversion-at-operation-boundaries). A mathematical linear RGB or XYZ intermediate can exist inside a single-pixel transform without allocating a separate image buffer; precision promotion describes the storage that a processing stage actually requires.
+
 ## Operations that promote to float32
 
 ### Linear-light resize
