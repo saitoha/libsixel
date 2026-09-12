@@ -4,7 +4,10 @@
   "kinds": {
     "mixing": "calculated coordinate interpolation, not a quality ranking",
     "conversion-routes": "schematic operation boundaries, not buffer allocations",
-    "primaries-whitepoints": "standard xy coordinates with equal axis scale"
+    "primaries-whitepoints": "standard xy coordinates with equal axis scale",
+    "encoding-pipeline": "generated-palette contracts with separate pixel and palette branches",
+    "resize-boundaries": "two actual-format-dependent default resize routes",
+    "pcs-connection": "schematic ICC v2/v4 profile connection"
   },
   "examples_at_half_weight_rgb8": {
     "black-white": {
@@ -146,10 +149,211 @@
       "note": "PCS uses XYZ or Lab; it connects profiles, not processing stages."
     }
   ],
+  "pipeline": {
+    "nodes": {
+      "input": [
+        "Encoded image",
+        [
+          "Bytes + metadata / ICC"
+        ]
+      ],
+      "loader": [
+        "Image loader",
+        [
+          "Optional CMS",
+          "Source → cms_target"
+        ]
+      ],
+      "frame": [
+        "Loaded frame",
+        [
+          "Pixels + format + color space"
+        ]
+      ],
+      "resize": [
+        "Default resize, when requested",
+        [
+          "Linear RGB → resample → work format"
+        ]
+      ],
+      "samples": [
+        "Palette-building view",
+        [
+          "Sampling / selected pixels"
+        ]
+      ],
+      "cluster": [
+        "Clustering coordinates · -X",
+        [
+          "Convert the view as needed"
+        ]
+      ],
+      "quantize": [
+        "Binning + quantizer",
+        [
+          "Generated palette entries in -X"
+        ]
+      ],
+      "palette": [
+        "Palette coordinates · -W",
+        [
+          "Convert entries: -X → -W"
+        ]
+      ],
+      "pixels": [
+        "Main image view · -W",
+        [
+          "Convert image pixels as needed"
+        ]
+      ],
+      "lookup": [
+        "Lookup + dithering · -W",
+        [
+          "Assign palette indices to pixels"
+        ]
+      ],
+      "output": [
+        "Final palette entries · -U",
+        [
+          "Convert entries: -W → -U"
+        ]
+      ],
+      "indices": [
+        "Palette indices",
+        [
+          "Pixel-to-entry assignments stay the same"
+        ]
+      ],
+      "wire": [
+        "SIXEL stream",
+        [
+          "Palette percentages + pixel indices"
+        ]
+      ]
+    },
+    "edges": [
+      [
+        "input",
+        "loader"
+      ],
+      [
+        "loader",
+        "frame"
+      ],
+      [
+        "frame",
+        "resize"
+      ],
+      [
+        "resize",
+        "samples"
+      ],
+      [
+        "resize",
+        "pixels"
+      ],
+      [
+        "samples",
+        "cluster"
+      ],
+      [
+        "cluster",
+        "quantize"
+      ],
+      [
+        "quantize",
+        "palette"
+      ],
+      [
+        "palette",
+        "lookup"
+      ],
+      [
+        "pixels",
+        "lookup"
+      ],
+      [
+        "lookup",
+        "output"
+      ],
+      [
+        "lookup",
+        "indices"
+      ],
+      [
+        "output",
+        "wire"
+      ],
+      [
+        "indices",
+        "wire"
+      ]
+    ]
+  },
+  "resize_cases": [
+    {
+      "title": "A · Gamma input / gamma work",
+      "condition": "--precision=8bit -Wgamma",
+      "nodes": [
+        [
+          "RGB888",
+          [
+            "Gamma-encoded source"
+          ]
+        ],
+        [
+          "LINEARRGBFLOAT32",
+          [
+            "Resize in linear light"
+          ]
+        ],
+        [
+          "RGB888",
+          [
+            "Gamma work · -Wgamma"
+          ]
+        ]
+      ],
+      "edges": [
+        "decode sRGB",
+        "encode sRGB"
+      ]
+    },
+    {
+      "title": "B · Linear loader output / OKLab work",
+      "condition": "Linear-light loader composition, then -Woklab",
+      "nodes": [
+        [
+          "LINEARRGBFLOAT32",
+          [
+            "From loader composition"
+          ]
+        ],
+        [
+          "LINEARRGBFLOAT32",
+          [
+            "Resize in linear light"
+          ]
+        ],
+        [
+          "Oklab float",
+          [
+            "Perceptual work · -Woklab"
+          ]
+        ]
+      ],
+      "edges": [
+        "no decode",
+        "to OKLab"
+      ]
+    }
+  ],
   "sources": [
     "src/colorspace.c",
     "src/planner.c",
     "src/frompng.c",
+    "src/encoder.c",
+    "src/encoder-core-encode.c",
     "src/icc-apply.c",
     "https://www.w3.org/TR/css-color-4/",
     "https://bottosson.github.io/posts/oklab/",

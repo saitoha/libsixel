@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="1530" viewBox="0 0 380 1530" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Color conversion through the encoding pipeline</title>
+<desc id="desc">The loader interprets bytes and optional CMS metadata. The frame carries pixels, format and color space. Optional default resize uses linear RGB. Palette sampling, conversion to -X and quantization produce palette entries, which enter -W to meet the main image view at lookup and dithering. Only final palette entries convert to -U; pixel indices keep their assignments. SIXEL writes both. The generated-palette branch is shown; fixed-palette shortcuts are omitted.</desc>
+<rect x="0" y="0" width="380" height="1530" rx="0" fill="#ffffff" stroke="none"/>
+<defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 1 1 L 7 4 L 1 7" fill="none" stroke="#4c6070" stroke-width="1.3"/></marker></defs>
+<text x="20" y="36" font-size="21" fill="#183247" font-weight="700" text-anchor="start">Where does each conversion act?</text>
+<text x="20" y="65" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Follow image pixels and palette entries separately.</text>
+<path data-from="input" data-to="loader" d="M 190 179 L 190 205" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="loader" data-to="frame" d="M 190 299 L 190 325" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="frame" data-to="resize" d="M 190 401 L 190 427" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="resize" data-to="samples" d="M 190 521 L 190 547 L 101 547 L 101 582" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="resize" data-to="pixels" d="M 190 521 L 190 547 L 279 547 L 279 582" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="samples" data-to="cluster" d="M 101 668 L 101 699" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="cluster" data-to="quantize" d="M 101 785 L 101 816" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="quantize" data-to="palette" d="M 101 923 L 101 954" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="palette" data-to="lookup" d="M 101 1040 L 101 1066 L 190 1066 L 190 1090" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="pixels" data-to="lookup" d="M 279 689 L 279 1066 L 190 1066 L 190 1090" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="lookup" data-to="output" d="M 190 1176 L 190 1202 L 101 1202 L 101 1226" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="lookup" data-to="indices" d="M 190 1176 L 190 1202 L 279 1202 L 279 1226" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="output" data-to="wire" d="M 101 1333 L 101 1359 L 190 1359 L 190 1383" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="indices" data-to="wire" d="M 279 1333 L 279 1359 L 190 1359 L 190 1383" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g data-role="stage" data-stage="input">
+<rect x="40" y="106" width="300" height="72" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="136.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Encoded image</text>
+<text x="190" y="157.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Bytes + metadata / ICC</text>
+</g>
+<g data-role="stage" data-stage="loader">
+<rect x="40" y="208" width="300" height="90" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="237" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Image loader</text>
+<text x="190" y="258" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Optional CMS</text>
+<text x="190" y="279" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Source → cms_target</text>
+</g>
+<g data-role="stage" data-stage="frame">
+<rect x="40" y="328" width="300" height="72" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="358.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Loaded frame</text>
+<text x="190" y="379.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Pixels + format + color space</text>
+</g>
+<g data-role="stage" data-stage="resize">
+<rect x="40" y="430" width="300" height="90" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="6 4"/>
+<text x="190" y="459" font-size="15" fill="#17618c" font-weight="700" text-anchor="middle">Default resize, when requested</text>
+<text x="190" y="480" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Linear RGB → resample</text>
+<text x="190" y="501" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Then enter the work format</text>
+</g>
+<g data-role="stage" data-stage="samples">
+<rect x="20" y="585" width="162" height="82" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="101" y="620.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Palette view</text>
+<text x="101" y="641.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Sample pixels</text>
+</g>
+<g data-role="stage" data-stage="pixels">
+<rect x="198" y="585" width="162" height="103" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="279" y="620.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Main image</text>
+<text x="279" y="641.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">view · -W</text>
+<text x="279" y="662.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Convert pixels</text>
+</g>
+<g data-role="stage" data-stage="cluster">
+<rect x="20" y="702" width="162" height="82" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="none"/>
+<text x="101" y="737.5" font-size="15" fill="#17618c" font-weight="700" text-anchor="middle">Clustering · -X</text>
+<text x="101" y="758.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Convert the view</text>
+</g>
+<g data-role="stage" data-stage="quantize">
+<rect x="20" y="819" width="162" height="103" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="101" y="854.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Binning +</text>
+<text x="101" y="875.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">quantizer</text>
+<text x="101" y="896.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Palette in -X</text>
+</g>
+<g data-role="stage" data-stage="palette">
+<rect x="20" y="957" width="162" height="82" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="none"/>
+<text x="101" y="992.5" font-size="15" fill="#17618c" font-weight="700" text-anchor="middle">Palette · -W</text>
+<text x="101" y="1013.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Entries: -X → -W</text>
+</g>
+<g data-role="stage" data-stage="lookup">
+<rect x="40" y="1093" width="300" height="82" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="none"/>
+<text x="190" y="1128.5" font-size="15" fill="#17618c" font-weight="700" text-anchor="middle">Lookup + dithering · -W</text>
+<text x="190" y="1149.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Assign palette indices to pixels</text>
+</g>
+<g data-role="stage" data-stage="output">
+<rect x="20" y="1229" width="162" height="103" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="none"/>
+<text x="101" y="1264.5" font-size="15" fill="#17618c" font-weight="700" text-anchor="middle">Final palette</text>
+<text x="101" y="1285.5" font-size="15" fill="#17618c" font-weight="700" text-anchor="middle">entries · -U</text>
+<text x="101" y="1306.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">-W → -U</text>
+</g>
+<g data-role="stage" data-stage="indices">
+<rect x="198" y="1229" width="162" height="103" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="279" y="1264.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Palette indices</text>
+<text x="279" y="1285.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Pixel assignments</text>
+<text x="279" y="1306.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">stay the same</text>
+</g>
+<g data-role="stage" data-stage="wire">
+<rect x="40" y="1386" width="300" height="82" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="1411" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">SIXEL stream</text>
+<text x="190" y="1432" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Palette percentages</text>
+<text x="190" y="1453" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">+ pixel indices</text>
+</g>
+<text x="20" y="1496" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Generated-palette route; schematic contracts.</text>
+<text x="20" y="1518" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Stages do not imply separate image buffers.</text>
+</svg>

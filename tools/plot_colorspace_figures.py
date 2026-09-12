@@ -47,6 +47,44 @@ ROUTES = [
      'edges': ['source profile', 'XYZ + adaptation', 'RGB matrix', 'linear-light math'],
      'note': 'PCS uses XYZ or Lab; it connects profiles, not processing stages.'},
 ]
+# Keep the pipeline's contracts separate from its wide/mobile geometry. Each
+# edge joins stable stage IDs; layout changes must preserve this topology.
+PIPELINE = {
+    'input': ('Encoded image', ['Bytes + metadata / ICC']),
+    'loader': ('Image loader', ['Optional CMS', 'Source → cms_target']),
+    'frame': ('Loaded frame', ['Pixels + format + color space']),
+    'resize': ('Default resize, when requested', ['Linear RGB → resample → work format']),
+    'samples': ('Palette-building view', ['Sampling / selected pixels']),
+    'cluster': ('Clustering coordinates · -X', ['Convert the view as needed']),
+    'quantize': ('Binning + quantizer', ['Generated palette entries in -X']),
+    'palette': ('Palette coordinates · -W', ['Convert entries: -X → -W']),
+    'pixels': ('Main image view · -W', ['Convert image pixels as needed']),
+    'lookup': ('Lookup + dithering · -W', ['Assign palette indices to pixels']),
+    'output': ('Final palette entries · -U', ['Convert entries: -W → -U']),
+    'indices': ('Palette indices', ['Pixel-to-entry assignments stay the same']),
+    'wire': ('SIXEL stream', ['Palette percentages + pixel indices']),
+}
+PIPELINE_EDGES = [
+    ('input', 'loader'), ('loader', 'frame'), ('frame', 'resize'),
+    ('resize', 'samples'), ('resize', 'pixels'), ('samples', 'cluster'),
+    ('cluster', 'quantize'), ('quantize', 'palette'), ('palette', 'lookup'),
+    ('pixels', 'lookup'), ('lookup', 'output'), ('lookup', 'indices'),
+    ('output', 'wire'), ('indices', 'wire'),
+]
+RESIZE_CASES = [
+    {'title': 'A · Gamma input / gamma work',
+     'condition': '--precision=8bit -Wgamma',
+     'nodes': [('RGB888', ['Gamma-encoded source']),
+               ('LINEARRGBFLOAT32', ['Resize in linear light']),
+               ('RGB888', ['Gamma work · -Wgamma'])],
+     'edges': ['decode sRGB', 'encode sRGB']},
+    {'title': 'B · Linear loader output / OKLab work',
+     'condition': 'Linear-light loader composition, then -Woklab',
+     'nodes': [('LINEARRGBFLOAT32', ['From loader composition']),
+               ('LINEARRGBFLOAT32', ['Resize in linear light']),
+               ('Oklab float', ['Perceptual work · -Woklab'])],
+     'edges': ['no decode', 'to OKLab']},
+]
 
 
 def text(x, y, value, size=18, color=INK, weight=400, anchor='start'):
@@ -69,6 +107,208 @@ def document(width, height, title, description, body):
             f'<desc id="desc">{html.escape(description)}</desc>\n'
             + rect(0, 0, width, height, '#ffffff') + '\n'
             + '\n'.join(body) + '\n</svg>\n')
+
+
+def arrow_marker():
+    return (f'<defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" '
+            'markerWidth="7" markerHeight="7" orient="auto">'
+            f'<path d="M 1 1 L 7 4 L 1 7" fill="none" stroke="{MUTED}" '
+            'stroke-width="1.3"/></marker></defs>')
+
+
+def connector(points, source, target):
+    path = 'M ' + ' L '.join(f'{x:g} {y:g}' for x, y in points)
+    return (f'<path data-from="{source}" data-to="{target}" d="{path}" '
+            f'fill="none" stroke="{MUTED}" stroke-width="1.8" '
+            'stroke-linejoin="round" marker-end="url(#arrow)"/>')
+
+
+def stage(identifier, box, heading, details, mobile, hub=False, optional=False):
+    x, y, width, height = box
+    headings = [heading] if isinstance(heading, str) else heading
+    gap = 21 if mobile else 24
+    lines = len(headings) + len(details)
+    baseline = y + height / 2 - (lines - 1) * gap / 2 + 5
+    body = [f'<g data-role="stage" data-stage="{identifier}">',
+            f'<rect x="{x}" y="{y}" width="{width}" height="{height}" '
+            f'rx="10" fill="{"#eaf3f8" if hub else "#f5f7f9"}" '
+            f'stroke="{BLUE if hub else "#c4ced6"}" '
+            f'stroke-dasharray="{"6 4" if optional else "none"}"/>']
+    body.extend(text(x + width / 2, baseline + i * gap, value,
+                     15 if mobile else 20, BLUE if hub else INK, 700, 'middle')
+                for i, value in enumerate(headings))
+    body.extend(text(x + width / 2, baseline + (len(headings) + i) * gap,
+                     value, 14 if mobile else 17, MUTED, anchor='middle')
+                for i, value in enumerate(details))
+    return '\n'.join(body + ['</g>'])
+
+
+def pipeline(mobile):
+    width, height = (380, 1530) if mobile else (960, 1240)
+    body = [arrow_marker(),
+            text(20, 36, 'Where does each conversion act?',
+                 21 if mobile else 28, weight=700),
+            text(20, 65, 'Follow image pixels and palette entries separately.',
+                 14 if mobile else 18, MUTED)]
+    if mobile:
+        boxes = {
+            'input': (40, 106, 300, 72), 'loader': (40, 208, 300, 90),
+            'frame': (40, 328, 300, 72), 'resize': (40, 430, 300, 90),
+            'samples': (20, 585, 162, 82), 'pixels': (198, 585, 162, 103),
+            'cluster': (20, 702, 162, 82), 'quantize': (20, 819, 162, 103),
+            'palette': (20, 957, 162, 82), 'lookup': (40, 1093, 300, 82),
+            'output': (20, 1229, 162, 103), 'indices': (198, 1229, 162, 103),
+            'wire': (40, 1386, 300, 82),
+        }
+        labels = dict(PIPELINE)
+        labels.update({
+            'resize': ('Default resize, when requested', ['Linear RGB → resample', 'Then enter the work format']),
+            'samples': ('Palette view', ['Sample pixels']),
+            'cluster': ('Clustering · -X', ['Convert the view']),
+            'quantize': (['Binning +', 'quantizer'], ['Palette in -X']),
+            'palette': ('Palette · -W', ['Entries: -X → -W']),
+            'pixels': (['Main image', 'view · -W'], ['Convert pixels']),
+            'output': (['Final palette', 'entries · -U'], ['-W → -U']),
+            'indices': ('Palette indices', ['Pixel assignments', 'stay the same']),
+            'wire': ('SIXEL stream', ['Palette percentages', '+ pixel indices']),
+        })
+    else:
+        boxes = {
+            'input': (24, 108, 272, 90), 'loader': (344, 108, 272, 90),
+            'frame': (664, 108, 272, 90), 'resize': (260, 256, 440, 76),
+            'samples': (32, 398, 408, 76), 'pixels': (520, 398, 408, 76),
+            'cluster': (32, 510, 408, 76), 'quantize': (32, 622, 408, 76),
+            'palette': (32, 734, 408, 76), 'lookup': (260, 864, 440, 76),
+            'output': (32, 994, 408, 76), 'indices': (520, 994, 408, 76),
+            'wire': (260, 1124, 440, 76),
+        }
+        labels = PIPELINE
+        body.extend([text(724, 610, 'The two branches meet in -W.', 18, MUTED, anchor='middle'),
+                     text(724, 638, 'Lookup and diffusion use', 18, MUTED, anchor='middle'),
+                     text(724, 666, 'the same coordinate system.', 18, MUTED, anchor='middle')])
+    # Orthogonal fork/join routing keeps the same graph in both layouts.
+    for source, target in PIPELINE_EDGES:
+        sx, sy, sw, sh = boxes[source]
+        tx, ty, tw, th = boxes[target]
+        start, end = (sx + sw / 2, sy + sh + 1), (tx + tw / 2, ty - 3)
+        points = [start, end]
+        if not mobile and source in ('input', 'loader'):
+            points = [(sx + sw + 1, sy + sh / 2), (tx - 3, ty + th / 2)]
+        elif not mobile and source == 'frame':
+            points = [start, (start[0], 228), (end[0], 228), end]
+        elif not mobile and source == 'pixels':
+            points = [start, (start[0], 500), (920, 500),
+                      (920, ty - 27), (end[0], ty - 27), end]
+        elif start[0] != end[0]:
+            # Place joins near the destination; forks near their source.
+            bend = sy + sh + 27 if source in ('resize', 'lookup') else ty - 27
+            points = [start, (start[0], bend), (end[0], bend), end]
+        body.append(connector(points, source, target))
+    for identifier, box in boxes.items():
+        heading, details = labels[identifier]
+        body.append(stage(identifier, box, heading, details, mobile,
+                          hub=identifier in ('resize', 'cluster', 'palette', 'lookup', 'output'),
+                          optional=identifier == 'resize'))
+    footer = ['Generated-palette route; schematic contracts, not buffer allocations.']
+    if mobile:
+        footer = ['Generated-palette route; schematic contracts.',
+                  'Stages do not imply separate image buffers.']
+    body.extend(text(20, height - 12 - (len(footer) - i - 1) * 22, line,
+                     14 if mobile else 17, MUTED) for i, line in enumerate(footer))
+    return document(width, height, 'Color conversion through the encoding pipeline',
+                    'The loader interprets bytes and optional CMS metadata. The frame '
+                    'carries pixels, format and color space. Optional default resize '
+                    'uses linear RGB. Palette sampling, conversion to -X and quantization '
+                    'produce palette entries, which enter -W to meet the main image view '
+                    'at lookup and dithering. Only final palette entries convert to -U; '
+                    'pixel indices keep their assignments. SIXEL writes both. The '
+                    'generated-palette branch is shown; fixed-palette shortcuts are omitted.', body)
+
+
+def resize_boundaries(mobile):
+    width, height = (380, 1080) if mobile else (960, 570)
+    body = [arrow_marker(),
+            text(20, 35, 'Resize reveals the boundary',
+                 23 if mobile else 28, weight=700),
+            text(20, 65, 'The actual input format decides the conversions.',
+                 14 if mobile else 18, MUTED)]
+    for index, case in enumerate(RESIZE_CASES):
+        y = 105 + index * (476 if mobile else 222)
+        heading = case['title']
+        if mobile and index == 1:
+            heading = 'B · Linear input / OKLab work'
+        body.append(text(20, y, heading, 17 if mobile else 21, weight=700))
+        condition = 'Linear-light composition, then -Woklab' if mobile and index == 1 else case['condition']
+        body.append(text(20, y + 25, condition, 14 if mobile else 17, MUTED))
+        for i, (name, details) in enumerate(case['nodes']):
+            box = (40, y + 48 + i * 138, 300, 78) if mobile else (24 + i * 346, y + 50, 220, 96)
+            x, top, w, h = box
+            body.append(stage(f'case-{index}-stage-{i}', box, name, details, mobile, hub=i == 1))
+            if i == 2:
+                continue
+            if mobile:
+                points = [(64, top + h + 1), (64, top + 135)]
+                body.append(text(88, top + h + 35, case['edges'][i], 14, MUTED))
+            else:
+                points = [(x + w + 1, top + h / 2), (x + 343, top + h / 2)]
+                body.append(text(x + w + 63, top + 23, case['edges'][i], 17, MUTED, anchor='middle'))
+            body.append(connector(points, f'case-{index}-stage-{i}', f'case-{index}-stage-{i+1}'))
+    footer = ['Default resize path, with conversion only at differing boundaries.',
+              'Schematic examples; loaders may have additional CMS-target conversions.']
+    if mobile:
+        footer = ['Default resize; convert only at differing boundaries.',
+                  'Schematic examples. Loaders may have',
+                  'additional CMS-target conversions.']
+    body.extend(text(20, height - 12 - (len(footer) - i - 1) * 22, line,
+                     14 if mobile else 17, MUTED) for i, line in enumerate(footer))
+    return document(width, height, 'Lazy conversion before and after resize',
+                    'Case A: an opaque gamma RGB888 input is decoded to linear float '
+                    'for default resize, then encoded back to RGB888 for 8-bit gamma work. '
+                    'Case B: a linear float loader result enters resize without transfer '
+                    'decoding, then converts to Oklab float for -Woklab. The resize '
+                    'operation needs the same linear representation in both cases.', body)
+
+
+def pcs_connection(mobile):
+    width, height = (380, 780) if mobile else (960, 465)
+    body = [arrow_marker(),
+            text(20, 35, 'Different devices. One connection.',
+                 21 if mobile else 28, weight=700),
+            text(20, 65, 'Profiles share a reference through PCS.',
+                 15 if mobile else 18, MUTED)]
+    nodes = [('source', 'Source values', ['RGB / gray / CMYK']),
+             ('pcs', 'PCS', ['XYZ or Lab · D50']),
+             ('destination', 'Destination values', ['sRGB, for example'])]
+    for i, (identifier, heading, details) in enumerate(nodes):
+        box = (30, 106 + i * 184, 320, 90) if mobile else (24 + i * 356, 170, 200, 90)
+        x, y, w, h = box
+        body.append(stage(identifier, box, heading, details, mobile, hub=i == 1))
+        if i == 2:
+            continue
+        label = 'Source profile' if i == 0 else 'Destination profile'
+        if mobile:
+            points = [(65, y + h + 1), (65, y + 181)]
+            body.append(text(94, y + h + 48, label, 17, BLUE, weight=700))
+        else:
+            points = [(x + w + 1, y + h / 2), (x + 353, y + h / 2)]
+            body.append(text(x + w + 78, y + 25, label, 17, BLUE, 700, 'middle'))
+        body.append(connector(points, identifier, nodes[i + 1][0]))
+    top = 617 if mobile else 327
+    body.append(text(20, top, 'PCS is the shared reference', 20 if mobile else 23, BLUE, 700))
+    notes = ['Profile mappings and rendering intent govern the connection.',
+             'The resulting loader target and encoder work space are separate choices.']
+    if mobile:
+        notes = ['Profile mappings and rendering intent', 'govern the connection.',
+                 'The loader target and encoder work space', 'are separate choices.']
+    body.extend(text(20, top + 31 + i * 23, line, 15 if mobile else 18, MUTED)
+                for i, line in enumerate(notes))
+    body.append(text(20, height - 13, 'ICC v2/v4 profile connection; schematic.', 14 if mobile else 17, MUTED))
+    return document(width, height, 'ICC Profile Connection Space',
+                    'A source profile maps device values to the common PCS, represented '
+                    'as XYZ or Lab under D50 reference conditions. A destination profile '
+                    'maps the connection to destination values, such as sRGB. Rendering '
+                    'intent governs the connection. PCS is a connecting role, distinct '
+                    'from the loader target and encoder working color space.', body)
 
 
 def decode(value):
@@ -334,18 +574,27 @@ def main():
         raise SystemExit('The documented neutral midpoint examples changed')
     assets = {f'{name}-{layout}.svg': draw(layout == 'mobile')
               for name, draw in [('mixing', mixing), ('conversion-routes', routes),
-                                 ('primaries-whitepoints', primaries)]
+                                 ('primaries-whitepoints', primaries),
+                                 ('encoding-pipeline', pipeline),
+                                 ('resize-boundaries', resize_boundaries),
+                                 ('pcs-connection', pcs_connection)]
               for layout in ('wide', 'mobile')}
     assets['figures.json'] = json.dumps({
         'generator': 'tools/plot_colorspace_figures.py',
         'plot_dependency': 'matplotlib==3.10.3',
         'kinds': {'mixing': 'calculated coordinate interpolation, not a quality ranking',
                   'conversion-routes': 'schematic operation boundaries, not buffer allocations',
-                  'primaries-whitepoints': 'standard xy coordinates with equal axis scale'},
+                  'primaries-whitepoints': 'standard xy coordinates with equal axis scale',
+                  'encoding-pipeline': 'generated-palette contracts with separate pixel and palette branches',
+                  'resize-boundaries': 'two actual-format-dependent default resize routes',
+                  'pcs-connection': 'schematic ICC v2/v4 profile connection'},
         'examples_at_half_weight_rgb8': examples,
         'primaries_xy': PRIMARIES, 'whitepoints_xy': WHITES,
         'routes': ROUTES,
+        'pipeline': {'nodes': PIPELINE, 'edges': PIPELINE_EDGES},
+        'resize_cases': RESIZE_CASES,
         'sources': ['src/colorspace.c', 'src/planner.c', 'src/frompng.c',
+                    'src/encoder.c', 'src/encoder-core-encode.c',
                     'src/icc-apply.c', 'https://www.w3.org/TR/css-color-4/',
                     'https://bottosson.github.io/posts/oklab/',
                     'https://www.color.org/specifications/ICC.1-2022-05.pdf'],
