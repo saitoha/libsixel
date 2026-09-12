@@ -1,8 +1,6 @@
 # Building libsixel
 
-This document explains how to build libsixel using the traditional Autotools
-build system as well as the Meson build system. Examples assume a POSIX-like
-shell unless noted otherwise.
+This document explains how to build libsixel using Autotools + Libtool or Meson with its selected backend, normally Ninja. Examples assume a POSIX-like shell unless noted otherwise.
 
 For implementation details, see [Build System Architecture](docs/build/README.md), including the custom test harness, command-length limits, and Meson adoption and remaining differences.
 
@@ -308,8 +306,7 @@ reference or automated example of the same sequence.
 
 ## Building with Meson
 
-Meson provides a faster and more portable build.  Install Meson and Ninja via
-pip or your package manager:
+Meson with Ninja provides a practical build path on Windows, where the shell and process overhead of Autotools + Libtool can be substantial. libsixel maintains both systems because Autotools + Libtool also serves distribution and platform requirements that Meson does not fully replace; see [why both build systems are maintained](docs/build/README.md#why-maintain-two-build-systems). Install Meson and Ninja via pip or your package manager:
 
 ```sh
 pip install meson ninja  # or use your package manager

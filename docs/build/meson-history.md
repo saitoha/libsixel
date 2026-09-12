@@ -1,10 +1,14 @@
 # Meson Adoption and Remaining Differences
 
+libsixel maintains Meson and Autotools + Libtool as complementary build paths. Meson addresses environments, especially Windows, where the shell-based configuration and library build's process cost is too high. Autotools + Libtool retains the source-distribution and toolchain-adaptation properties the project needs, including environments where Meson does not supply a usable path. [Why maintain two build systems?](README.md#why-maintain-two-build-systems) explains that continuing rationale; the history below records how Meson acquired its current capabilities.
+
+The maintainer had long wanted a replacement that also removed the objectionable GNU make dependence of the Automake-based build and its parallel-orchestration weaknesses. Build tools did not develop into the full replacement envisaged for these requirements. Meson supplies an important additional path, while [local parallelism improvements](autotools.md#limitations-and-local-remedies) make the retained Autotools + Libtool path more practical. This is the maintainer's account of the project's rationale; it should be read separately from what individual historical commit messages record.
+
 ## Introduction and scope of the evidence
 
 The first addition of `meson.build` and `meson_options.txt` in the current history is [`cf813513b`](https://github.com/saitoha/libsixel/commit/cf813513b8ab0498f246ada93f75d2d55c018f79), authored on September 13, 2025 by Hayaki Saito. It added root, library, converter, public-header, and Python build descriptions alongside the existing Autotools files. The initial root graph did not enter a `tests` subdirectory, even though it already exposed and summarized a tests option.
 
-That commit's message records the addition without a detailed design rationale. The [build guide](../../build.md#building-with-meson) describes Meson as a faster and more portable build path. The immediate follow-up work on MinGW, MSVC, and WIC is evidence that compiler and platform coverage was an early practical concern. This chronology supports that interpretation; it is not a measured claim that every Meson configuration builds faster, nor evidence of a decision to retire Autotools.
+The initial commit's message records the addition without detailing the design rationale. The immediate follow-up work on MinGW, MSVC, and WIC shows that Windows compiler and platform coverage was an early practical concern. These commits document implementation milestones; the continuing decision to maintain both systems rests on the complementary requirements described above. Build performance depends on the environment and configuration, so this chronology does not establish a universal Meson speed advantage.
 
 The dates below are Git author dates. Some older commits have later committer dates, and the history includes another commit with the same Meson-addition subject, [`9ceb2a024`](https://github.com/saitoha/libsixel/commit/9ceb2a024d2c1c2439625aa4dec626b33c7c43bc). Inspect the actual additions and graph rather than treating repeated subjects or committer dates as independent introductions.
 
