@@ -64,29 +64,14 @@ The sRGB transfer and `srgb-linear` definitions are described by [CSS Color Modu
 
 Color spaces form a connected conversion network. Linear sRGB is libsixel's common internal RGB basis: the general converter first obtains linear sRGB from the source coordinates, then constructs the destination coordinates. XYZ supplies a device-independent connection between RGB primaries and other color descriptions. Its three tristimulus components describe color without choosing a monitor's RGB primaries; `Y` represents luminance on the chosen scale. The white point still matters, so XYZ D50 and XYZ D65 must be distinguished.
 
-For sRGB to Oklab, the conceptual forward route is:
+The four routes below show when these common bases are needed. Route C follows sRGB into Oklab; route D shows the distinct PCS boundary in CMS.
 
-```text
-gamma-encoded sRGB
-        |
-        | decode the sRGB transfer function
-        v
-linear sRGB ---- RGB-to-XYZ matrix ----> XYZ D65
-        |                                 |
-        |                                 | XYZ-to-LMS matrix
-        |                                 v
-        +---- combined RGB-to-LMS ----> LMS cone-response coordinates
-                                          |
-                                          | component-wise cube roots
-                                          v
-                                         LMS'
-                                          |
-                                          | opponent-coordinate matrix
-                                          v
-                                        Oklab
-```
+<picture>
+  <source media="(max-width: 640px)" srcset="colorspace-figures/conversion-routes-mobile.svg">
+  <img alt="Four schematic routes: gamma input can stay unchanged; mixing or resize uses linear RGB; OKLab uses linear RGB and LMS; ICC input connects through a D50 PCS before adaptation toward D65 linear sRGB. Nodes do not imply separate image buffers." src="colorspace-figures/conversion-routes-wide.svg">
+</picture>
 
-The two routes into LMS are alternatives. In `sixel_linear_to_oklab()`, libsixel uses the combined linear-sRGB-to-LMS matrix directly, followed by cube-root lookup and the opponent transform. It does not allocate an XYZ image or run a separate XYZ pass for every Oklab conversion. Adjacent linear matrices can be combined; the nonlinear sRGB transfer and cube-root stages must retain their order. This is the distinction between a mathematical intermediate and a stored image representation. The [Oklab author's implementation](https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab) provides the direct matrix form.
+Conceptually, the Oklab route includes linear sRGB → XYZ D65 → LMS. In `sixel_linear_to_oklab()`, libsixel combines those two matrices into a direct linear-sRGB-to-LMS transform, followed by cube-root lookup and the opponent transform. It does not allocate an XYZ image or run a separate XYZ pass for every Oklab conversion. Adjacent linear matrices can be combined; the nonlinear sRGB transfer and cube-root stages must retain their order. This is the distinction between a mathematical intermediate and a stored image representation. The [Oklab author's implementation](https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab) provides the direct matrix form.
 
 Other destinations share parts of the route. libsixel's CIELAB conversion explicitly computes XYZ D65 and applies its reference-white-dependent nonlinear transform; DIN99d continues from CIELAB. Reverse transforms recover linear RGB before applying a destination transfer function. Converting to Oklab therefore needs linear-light intermediate values even when no image mixing is requested.
 
@@ -103,6 +88,13 @@ C_linear = alpha * F_linear + (1 - alpha) * B_linear
 Foreground and background must first be interpreted in the same linear RGB basis. Their profiles or transfer functions can differ, so applying the same arithmetic to the original sample numbers is insufficient. Alpha is a coverage/opacity weight and is not sRGB-transfer-decoded. If the next stage needs gamma sRGB, the result is encoded afterward. This is also the order specified by [PNG alpha channel processing](https://www.w3.org/TR/png-3/#13Alpha-channel-processing).
 
 Consider equal contributions of white and black, such as 50% white over opaque black or an equal-area resize average. The linear result is `0.5`, which becomes approximately `0.73536` in encoded sRGB, or byte tone `188`. Averaging encoded values produces `0.5` in sRGB, approximately byte tone `128`, which decodes to only `0.21404` linear light. The darker result is a change in the computed mixture, not merely a storage-rounding difference. The [resize precision experiment](pixelformat-precision.md#measured-resize-quality) demonstrates this distinction with an analytical reference.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="colorspace-figures/mixing-mobile.svg">
+  <img alt="Calculated 50 percent interpolation of black and white yields sRGB byte 128, linear-light byte 188, and OKLab-interpolated byte 99. A blue/red example also changes hue and saturation. Each result is shown in sRGB; only the linear RGB row represents additive-light mixing." src="colorspace-figures/mixing-wide.svg">
+</picture>
+
+The bracket marks the equal-weight position on each gradient, and the separate swatch shows that result. All values are calculated from the same endpoints and rounded only for display as 8-bit sRGB. The Oklab row illustrates perceptual-coordinate interpolation; it is not another implementation of physical alpha composition. This is a comparison of mathematical operations, not a quality ranking or a measured libsixel encode/decode result.
 
 XYZ is also linear in light and can express the same additive mixture when the basis, white point, and scaling agree. Linear RGB is convenient here because source samples, resize buffers, and eventual RGB output already use RGB components. Oklab serves a different objective: interpolation in it can produce a perceptually smooth gradient, and distances or centroids can guide palette optimization. Such operations need not reproduce an additive-light mixture. In libsixel, palette clustering follows `-X`, and lookup and error diffusion follow `-W`; their arithmetic is not automatically redirected into linear RGB.
 
@@ -249,6 +241,13 @@ An RGB value gives amounts of three basis colors, but the letters R, G, and B do
 
 For example, sRGB and Display P3 share the sRGB transfer function and D65 white, but use different primaries. Decoding both triplets into linear light therefore does not make their channel values interchangeable: a primary conversion is still required. Conversely, gamma sRGB and linear sRGB share both primaries and white point; their difference is the transfer encoding. [CSS Color 4's predefined RGB spaces](https://www.w3.org/TR/css-color-4/#predefined) specifies these properties separately.
 
+<picture>
+  <source media="(max-width: 640px)" srcset="colorspace-figures/primaries-whitepoints-mobile.svg">
+  <img alt="Equal-scale CIE 1931 xy plot: sRGB and Display P3 have different red and green primaries, share a blue primary and D65 white, and differ from the D50 reference used by ICC PCS. Solid and dashed outlines identify the two RGB spaces." src="colorspace-figures/primaries-whitepoints-wide.svg">
+</picture>
+
+The plot uses the standard primary and white-point chromaticities from CSS Color 4, with equal scale on both axes. The triangles describe chromaticity coverage, not a complete three-dimensional color volume or a map of the colors this page can display. Their fills identify the two spaces; the D50 and D65 markers identify reference whites rather than example image pixels.
+
 D50 and D65 are standardized daylight references, with correlated color temperatures of approximately 5000 K and 6500 K respectively. D50 is warmer; D65 is bluer. The names specify reference whites, not an instruction to change the terminal display's color temperature. A white point is also not simply the brightest pixel found in an image. ICC PCS uses a D50 reference, while sRGB and Oklab use D65; a profile transform must account for that difference when connecting them.
 
 For matrix-based RGB conversion, the primaries and white point determine a matrix from linear RGB to XYZ. Transfer decoding, this matrix conversion, and any required white-point adaptation answer different questions. Changing only a frame tag performs none of them. More general device profiles can require curves and multidimensional lookup tables rather than a single RGB matrix; the [loader CMS comparison](../loader/color-management.md#supported-profile-structures-and-practical-differences) describes the supported profile structures.
@@ -373,6 +372,19 @@ This distinction is especially important when evaluating `-X` or `-W`: a percept
 - Treating `-W` as the wire color space. The final palette conversion is controlled by `-U`.
 - Assuming `-U` embeds color management metadata. SIXEL has no ICC-profile field, so the terminal receives only numeric palette components.
 - Comparing spaces without controlling precision and loader behavior. A float32 promotion or a profile conversion can otherwise be mistaken for an effect of the named palette space.
+
+## Reproducing the figures
+
+The static SVGs above require no scripts or interactive viewer. Each has an accessible title and description, a separate mobile layout, and a wide layout that can also be embedded with ordinary Markdown image syntax. The responsive `picture` elements choose between those checked-in assets.
+
+[`tools/plot_colorspace_figures.py`](../../tools/plot_colorspace_figures.py) generates the diagrams and calculated interpolation examples. [`figures.json`](colorspace-figures/figures.json) records the coordinate data, midpoint values, route assumptions, color roles, and sources. The chromaticity plot uses Matplotlib with equal axis scales. To regenerate with Python 3.12 and Matplotlib 3.10.3 in an optional environment, run:
+
+```sh
+python tools/plot_colorspace_figures.py
+python tools/plot_colorspace_figures.py --check
+```
+
+The generator and Matplotlib are not needed for normal C builds or `make docs`; the documentation build reads the checked-in SVG files. The interpolation images are calculated examples, and the route diagram is schematic. Neither is a performance measurement or a claim that every loader follows the same composition path.
 
 ## Implementation references
 
