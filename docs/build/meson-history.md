@@ -73,6 +73,8 @@ The following observations describe the source audited at `66100975a`. The imple
 
 The metadata and deregistration rows are concrete incomplete work. The runner, staticcheck, and PGO rows describe narrower validation or instrumentation paths. The platform rows describe missing continuous evidence. These categories call for different follow-up work and should not be collapsed into a single unsupported-feature list.
 
+The [support-script audit](support-scripts.md#wasm-configuration-execution-and-installation) additionally records Emscripten adapter boundaries: `exe_wrapper` is placed in the cross files' `[properties]` section instead of Meson's documented `[binaries]` section; both cross files currently have identical contents despite the `no-threads` name; and Meson 1.8.3's `.js` executable naming exposes mismatches between the split-install target, launcher, and sidecar lookup. These affect configuration and installation evidence even when the shell tests can execute build-tree programs through the compiler wrapper's extensionless Node entry points.
+
 ## Differences that are already implemented
 
 Do not list TAP, the unified C runner, optional bindings, staticcheck, amalgamated library/tools, documentation builds, or installed-command testing as wholly absent from Meson. Their current owners are described in the [Meson build chapter](meson.md). The relevant question is which build and execution path each target actually covers.

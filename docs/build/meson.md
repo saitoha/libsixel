@@ -25,6 +25,8 @@ Meson's dependency graph replaces the need for Autotools' explicit recursive pha
 
 Compiler and runtime adapters are still part of this build. Examples include compiler identity wrappers for PCC and Cosmopolitan, Emscripten configuration and executable sidecars, Windows DLL lookup, and the MSVC tool and path setup in CI. Native MSVC code generation does not remove the POSIX-shell dependencies of this repository's generators and TAP suite. Read the owning [platform compatibility document](../misc/platforms/README.md) before generalizing a successful compiler probe into an end-to-end platform claim.
 
+[Build support scripts and toolchain adapters](support-scripts.md) explains the exact behavior of `pcc-meson`, `cosmocc-meson`, `emcc-meson`, and `ape-wrapper`, including which setup checks are bypassed and which commands still use the real compiler. It also follows Emscripten outputs through Node launchers and sidecar installation, and distinguishes the MSVC native file from Autotools' `ar-lib` integration.
+
 ## Test registration and execution
 
 [tests/meson.build](../../tests/meson.build) discovers runnable scripts through the same `read-check-test-list.sh` helper used by Autotools. It separately scans test C and header files, excludes `*.inc.c` fragments and private environment/artifact trees, and constructs a single `test_runner` executable. That executable also includes selected converter and extension helper sources and depends on `libsixel_dep`.

@@ -64,8 +64,10 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/README.md \
 	docs/build/README.md \
 	docs/build/autotools.md \
+	docs/build/configure-macros.md \
 	docs/build/meson.md \
 	docs/build/meson-history.md \
+	docs/build/support-scripts.md \
 	docs/build/test-harness.md \
 	docs/assets/javascripts/mathjax.js \
 	docs/platform-support.md \

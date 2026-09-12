@@ -57,7 +57,9 @@ The two systems are therefore complementary. Keeping both costs source-list main
 ## Reading guide
 
 - [Autotools + Libtool configuration and build orchestration](autotools.md) follows generated files, configure-time parallelism, phased recursive builds, library linking, and amalgamation.
+- [Autoconf macros and configuration extensions](configure-macros.md) inventories `m4/`, explains the imported macro families and project macros in `configure.ac`, and follows probe results into generated configuration.
 - [Meson configuration and build graph](meson.md) follows feature detection, generated targets, test registration, packaging, and execution wrappers.
+- [Build support scripts and toolchain adapters](support-scripts.md) inventories `build-aux/` and explains Meson compiler workarounds, APE test launching, Wasm/Node output and installation, MSVC archive commands, and upstream support files.
 - [Test harness and command-length limits](test-harness.md) explains the shared test inventory, unified C runner, custom Automake driver and result collection, and the separate limits encountered during testing, cleanup, and distribution.
 - [Meson adoption and remaining differences](meson-history.md) distinguishes the community fork's 2021 replacement policy from this repository's 2025 supplementary build path and release goal, explains selective reuse and other candidates considered, and records implementation gaps, execution differences, and unverified platforms.
 

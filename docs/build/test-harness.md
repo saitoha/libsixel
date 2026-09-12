@@ -41,6 +41,62 @@ This is a simplified excerpt showing the scheduling boundary; the real recipe al
 
 The configured [lso-tap-driver.sh](../../build-aux/lso-tap-driver.sh.in) is the per-script launcher and TAP consumer. It implements Automake's custom-driver arguments, chooses the test shell or language interpreter, applies runtime library paths, sets the artifact location, enforces a timeout through available helpers or a supported shell fallback, captures diagnostics, and produces `.trs` result fields. It also handles expected failures and infrastructure errors. The source comment on `check-TESTS` separately records avoidance of nested single quotes in Automake helper expansion; command length is not the only reason for customization.
 
+## Support scripts before each test
+
+The helpers under `build-aux/` move recurring setup out of individual tests. [The support-script inventory](support-scripts.md#file-inventory-and-ownership) lists their maintained sources and callers. The Autotools recipe performs common preparation before requesting the log targets; Meson supplies a base environment at setup and performs selected lazy preparation in its per-test wrapper.
+
+### Executable paths and runtime libraries
+
+[resolve-test-tool-paths.sh.in](../../build-aux/resolve-test-tool-paths.sh.in) becomes a configured script containing the selected executable suffix and Libtool object-directory name. It takes the build root and a file of requested keys, and emits quoted assignments for converter paths, `lsqa`, `test_runner`, and `LIBSIXEL_LIBDIR`. The key list prevents each caller from duplicating path-discovery rules.
+
+A top-level Libtool executable may be a shell wrapper around the real binary under `.libs`. Bypassing it can save a shell launch, but only if the runtime library lookup rules still select the intended library. The resolver reads `shlibpath_overrides_runpath` from the configured `libtool` and prefers the wrapper when the platform does not permit the search environment to override runpath. The TAP driver applies the corresponding runtime library path for eligible direct execution. This is why blindly choosing every `.libs` binary can produce a different test environment.
+
+With `SIXEL_INSTALLCHECK=1`, the resolver instead uses installed-command names or explicit installcheck overrides and the configured installation library directory. `test_runner` remains test infrastructure. Meson's wrapper performs its own default path setup and permits installcheck values to override it; it does not execute the configured Autotools path resolver.
+
+### Enabled-feature export
+
+[resolve-config-h-exports.sh](../../build-aux/resolve-config-h-exports.sh) reads the configured header once and selects definitions of the exact form `#define NAME 1`. Its `exports` mode emits shell assignments; its `pairs` mode emits tab-separated names and values for Meson setup. Undefined features, zero values, strings, and general numeric settings are omitted.
+
+This avoids reparsing the header in thousands of test processes and keeps the inherited environment smaller, particularly on Windows. It is an enabled-boolean feature inventory, not a serialization of all `config.h` contents. Callers must interpret an absent boolean appropriately and obtain non-boolean configuration through its owning interface.
+
+### Shared binding package environments
+
+The `resolve-*-test-venv.sh` names use “venv” broadly. Only the Python resolver creates a Python virtual environment; the others provide language-specific isolated package and library paths. Each emits shell-safe assignments for the harness to import. Empty interpreter assignments indicate unavailable preparation, leaving the caller to apply its skip or failure policy.
+
+| Resolver | Preparation and reuse | Values supplied to tests |
+| --- | --- | --- |
+| [Python](../../build-aux/resolve-python-test-venv.sh) | Finds packaged wheels, requires `venv` and `ensurepip`, installs the wheel with `pip --no-deps`, verifies it, and caches the selected payload signature. | `SIXEL_TEST_PYTHON`, pointing to the private interpreter. |
+| [Ruby](../../build-aux/resolve-ruby-test-venv.sh) | Installs the locally built gem under an isolated gem home and verifies that `libsixel` can be required from the package. | `SIXEL_TEST_RUBY`, `SIXEL_TEST_RUBY_GEM_HOME`, `SIXEL_TEST_RUBYLIB`. |
+| [Perl](../../build-aux/resolve-perl-test-venv.sh) | Prepares a contained `local::lib` environment, verifies FFI dependencies and the binding's origin, stages the shared library, and creates an interpreter wrapper. It can use `cpanm` to install missing FFI dependencies. | `SIXEL_TEST_PERL` and the `CPANM`, `PERL5LIB`, local-library, and build-option settings. |
+| [PHP](../../build-aux/resolve-php-test-venv.sh) | Prepares interpreter wrappers, checks FFI availability, extracts the packaged binding, resolves its bundled shared library, and handles native Windows path forms. | `SIXEL_TEST_PHP`, optional `SIXEL_TEST_PHPDBG`, binding root, library directory, and library path. |
+
+The shared [resolve-binding-test-common.sh](../../build-aux/resolve-binding-test-common.sh) provides quoting and lookup for the project's `.so`, `.dylib`, and DLL name variants. The resolvers use payload and, where supplied, source/shared-library signatures so a package environment can be reused without silently retaining an earlier build. Callers that omit optional source and library arguments obtain less input-sensitive invalidation; the actual resolver invocation matters.
+
+Autotools prepares the environments before the parallel log targets. [meson-python-tap-wrapper.sh](../../tests/meson-python-tap-wrapper.sh), despite its historical name, coordinates Ruby, Perl, and PHP preparation as well as shell/Python execution. For its shared preparation paths, lock directories and exported-state files coordinate workers so they do not all install or extract the same package. Large packaged fixtures have separate preparation and completion markers. These operations belong to harness setup, which is why the individual TAP tests can remain small and avoid repeated package installation and filesystem work.
+
+## Inside the custom TAP driver
+
+[test-driver](../../build-aux/test-driver) is Automake's shipped basic driver, whose primary observation is process status. The project's configured `lso-tap-driver.sh` instead consumes TAP output. Extension-specific log-driver settings in [tests/Makefile.am](../../tests/Makefile.am) select it for the runtime scripts. The custom suite collector then reads its `.trs` records; these two layers have different responsibilities.
+
+| Driver stage | Adaptation | Why it belongs here |
+| --- | --- | --- |
+| Invocation | Accept Automake's test name, log path, `.trs` path, expected-failure, and hard-error arguments. | Existing per-extension make rules can use a project-specific result consumer. |
+| Interpreter selection | Choose the configured test shell or prepared Python, Ruby, Perl, or PHP interpreter. | Test files retain their language and TAP contract while the build selects the environment. |
+| Artifact path | Export a category-specific path under `tests/_artifacts`; abbreviate long filename components to 43 characters. | Avoid repeated path discovery and excessive filename components. Directory creation is deferred to tests that need artifacts. |
+| Runtime lookup | Apply configured shared-library search metadata and interpreter-specific library paths. | A test must execute against the selected build's library. |
+| Deadline | Prefer a host `timeout`/`gtimeout`, then an eligible project `lso-timeout`, then the supported shell watchdog. | Cross-compiled helpers may not be directly runnable; timeout support must respect the runtime. |
+| Capture | Normally redirect the test to its `.log`; optionally stream through a FIFO and `tee`. | Long static checks can report progress while preserving the complete diagnostic log. |
+| Interpretation | Parse TAP with AWK, or use the `reduce_fork=yes` shell parsing path when selected. | Avoid requiring another language runtime and permit reduced process overhead. |
+| Reporting | Emit individual and global results, recheck/copy flags, elapsed time, and the summary line. | The suite collector can aggregate results without rerunning tests. |
+
+The default timeout budget is 90 seconds with a 10-second escalation delay. The shell watchdog accepts an integer budget, records whether it caused the termination, and returns timeout status 124 for that case. A budget of zero disables that shell deadline. If no helper can be used and the budget is not supported by the shell fallback, the current final fallback runs the command directly. Thus deadline behavior must be diagnosed from the selected path, not just the existence of a `--timeout` argument. The native helper is [lso-timeout.c](../../tools/lso-timeout.c); `lso-timer` is built from [timer.c](../../tools/timer.c).
+
+Streaming defaults to enabled for `staticcheck-*` names and disabled for ordinary runtime tests, with `--stream-output` and `LSO_TAP_STREAM_LOG` overrides. The driver keeps the test's status separately from `tee`'s status and cleans up background processes and the FIFO on interruption. When FIFO creation fails, it falls back to ordinary file capture.
+
+OpenVMS adds a mapped-error-status boundary and a generated `cmp` path adapter because GNV utilities do not all accept the same absolute path forms. These are per-process execution adaptations; the line-oriented inventory and optional test shards described below solve different scheduling and file-record constraints.
+
+The driver normally returns success after recording a failed observation so make can finish the suite and the collector can report every failure. `--enable-hard-errors=yes` changes that driver behavior. This is separate from the rule that an assertion mismatch in a normal TAP test is communicated by `not ok` while the test script exits zero. Both producers and consumers must preserve the distinction between assertion outcome and infrastructure status.
+
 ## Result semantics
 
 The assertion protocol is TAP. A normal shell test declares one observation with `1..1`, emits `ok` or `not ok`, and exits zero even on an assertion mismatch. An unavailable supported optional capability can emit `1..0 # SKIP`. The driver, rather than the assertion's process exit code, decides the test outcome.
