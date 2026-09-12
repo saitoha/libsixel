@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 
+#include "pthread-once.h"
 #include "sixel_atomic.h"
 
 #if (defined(__STDC_NO_ATOMICS__) || !defined(__STDC_VERSION__) || \
@@ -94,7 +95,8 @@ sixel_atomic_fallback_unlock(void)
  * partial pthread struct initializers.
  */
 static pthread_mutex_t sixel_atomic_fallback_mutex;
-static pthread_once_t sixel_atomic_fallback_mutex_once = PTHREAD_ONCE_INIT;
+static pthread_once_t sixel_atomic_fallback_mutex_once =
+    SIXEL_PTHREAD_ONCE_INIT;
 static int sixel_atomic_fallback_mutex_ready = 0;
 
 static void

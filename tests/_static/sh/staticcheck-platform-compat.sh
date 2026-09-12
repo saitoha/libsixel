@@ -8,6 +8,7 @@
 # Policy: docs/misc/platforms/cygwin-msys.md
 # Policy: docs/misc/platforms/emscripten.md
 # Policy: docs/misc/platforms/cosmopolitan.md
+# Policy: docs/misc/platforms/gnu-hurd.md
 # Policy: docs/misc/platforms/macos.md
 # Policy: docs/misc/platforms/posix-runtimes.md
 # Policy: docs/misc/platforms/haiku.md
@@ -15,6 +16,7 @@
 # Coverage: PL-01 PL-02 PL-03 PL-04 PL-05 OV-06 WIN-01 WIN-02 MSVC-01
 # Coverage: MSVC-02
 # Coverage: MW-01 MW-02 CYG-01 CYG-02 EM-01 EM-02 COSMO-01
+# Coverage: HURD-01 HURD-02
 # Coverage: MAC-01 MAC-02 POSIX-01 POSIX-02 HAIKU-01 HAIKU-02
 # Coverage: SOL-01 SOL-02 SOL-03 SOL-04
 
@@ -370,6 +372,34 @@ require_fixed '#if defined(__FreeBSD__) || defined(__DragonFly__)' \
 require_fixed '# if defined(__GLIBC__) && defined(_GNU_SOURCE)' \
     src/compat_stub.c
 require_fixed 'defined(__ANDROID__))' converters/aborttrace.c
+
+require_fixed '| Debian GNU/Hurd | 2026-03-14 image | amd64 | GCC | Autotools, Meson |' \
+    docs/platform-support.md
+require_fixed '[GNU/Hurd compatibility](gnu-hurd.md)' \
+    docs/misc/platforms/README.md
+# The backticks are literal Markdown syntax in the policy text.
+# shellcheck disable=SC2016
+require_fixed '`x86_64-unknown-gnu0.9`' \
+    docs/misc/platforms/gnu-hurd.md
+require_fixed '#if defined(__GNU__) && defined(__GNUC__)' \
+    src/pthread-once.h
+require_fixed '# define SIXEL_PTHREAD_ONCE_INIT __extension__ PTHREAD_ONCE_INIT' \
+    src/pthread-once.h
+# The make variable is literal source-list syntax.
+# shellcheck disable=SC2016
+require_fixed '$(srcdir)/pthread-once.h' src/Makefile.am
+require_fixed "'pthread-once.h'," src/meson.build
+find "$src_root/src" -type f \( -name '*.c' -o -name '*.h' \) \
+    ! -name pthread-once.h -exec awk '
+    /(^|[^A-Za-z0-9_])PTHREAD_ONCE_INIT([^A-Za-z0-9_]|$)/ {
+        print FILENAME ":" FNR ":" $0
+    }
+' {} + > "$tmpdir/direct-pthread-once-init"
+test ! -s "$tmpdir/direct-pthread-once-init" || {
+    sed 's/^/# direct PTHREAD_ONCE_INIT use: /' \
+        "$tmpdir/direct-pthread-once-init" >&2
+    failed=1
+}
 
 require_fixed '# if HAVE_EXECINFO_H' converters/aborttrace.c
 require_fixed '#  if HAVE_BACKTRACE' converters/aborttrace.c

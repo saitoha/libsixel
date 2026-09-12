@@ -644,6 +644,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/misc/platforms/cosmopolitan.md \
 	docs/misc/platforms/cygwin-msys.md \
 	docs/misc/platforms/emscripten.md \
+	docs/misc/platforms/gnu-hurd.md \
 	docs/misc/platforms/haiku.md \
 	docs/misc/platforms/macos.md \
 	docs/misc/platforms/mingw.md \

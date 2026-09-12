@@ -73,6 +73,7 @@
 #include "tty.h"
 #include "compat_stub.h"
 #include "loader-common.h"
+#include "pthread-once.h"
 #include "rgblookup.h"
 #include "sleep.h"
 #include "timer.h"
@@ -1453,7 +1454,7 @@ static sixel_tty_response_dispatcher_t g_tty_response_dispatcher;
 
 #if SIXEL_ENABLE_THREADS
 static pthread_mutex_t g_tty_response_dispatcher_mutex;
-static pthread_once_t g_tty_response_dispatcher_once = PTHREAD_ONCE_INIT;
+static pthread_once_t g_tty_response_dispatcher_once = SIXEL_PTHREAD_ONCE_INIT;
 static int g_tty_response_dispatcher_mutex_ready;
 
 static void

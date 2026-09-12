@@ -53,6 +53,7 @@
 #include <sixel.h>
 #include "compat_stub.h"
 #include "options.h"
+#include "pthread-once.h"
 #include "stdio_stub.h"
 #include "threading.h"
 #include "timeline-logger.h"
@@ -142,7 +143,7 @@ sixel_timeline_writer_init_once(PINIT_ONCE once,
     return TRUE;
 }
 #elif SIXEL_ENABLE_THREADS
-static pthread_once_t g_sixel_timeline_writer_once = PTHREAD_ONCE_INIT;
+static pthread_once_t g_sixel_timeline_writer_once = SIXEL_PTHREAD_ONCE_INIT;
 
 static void
 sixel_timeline_writer_init_once(void)

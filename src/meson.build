@@ -234,6 +234,7 @@ srcs = [
   'tty.c',
   'threading.c',
   'threading.h',
+  'pthread-once.h',
   'threadpool.c',
   'threadpool.h',
   'probe.c',

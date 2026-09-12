@@ -89,6 +89,7 @@
 #endif
 
 #include "compat_stub.h"
+#include "pthread-once.h"
 #include "threading.h"
 #include "options.h"
 #include "options-registry.h"
@@ -747,7 +748,7 @@ sixel_thread_config_lock_init_once(PINIT_ONCE once,
     return TRUE;
 }
 # elif SIXEL_USE_PTHREADS
-static pthread_once_t g_thread_config_once = PTHREAD_ONCE_INIT;
+static pthread_once_t g_thread_config_once = SIXEL_PTHREAD_ONCE_INIT;
 
 static void
 sixel_thread_config_lock_init_once(void)

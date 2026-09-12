@@ -51,6 +51,8 @@
 # include <string.h>
 #endif
 
+#include "pthread-once.h"
+
 #if SIXEL_ENABLE_THREADS
 # if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
         !defined(WITH_WINPTHREAD)
@@ -59,7 +61,7 @@
 static INIT_ONCE g_sixel_loader_gd_support_once = INIT_ONCE_STATIC_INIT;
 # else
 #  include <pthread.h>
-static pthread_once_t g_sixel_loader_gd_support_once = PTHREAD_ONCE_INIT;
+static pthread_once_t g_sixel_loader_gd_support_once = SIXEL_PTHREAD_ONCE_INIT;
 # endif
 #endif
 

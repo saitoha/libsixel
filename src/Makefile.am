@@ -367,6 +367,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/tty.h \
                 $(srcdir)/threading.c \
                 $(srcdir)/threading.h \
+                $(srcdir)/pthread-once.h \
                 $(srcdir)/threadpool.c \
                 $(srcdir)/threadpool.h \
                 $(srcdir)/probe.c \
