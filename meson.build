@@ -586,7 +586,10 @@ endif
 #])
 
 base_flags = ['-Wformat=2']
-if host_system != 'openbsd'
+# Native Windows uses OS TLS and MSVC-style compiler drivers. Intel LLVM
+# accepts this Unix-only option during probing, but later warns for every
+# translation unit, so do not offer it to Windows compilers.
+if host_system != 'openbsd' and host_system != 'windows'
   base_flags += ['-fno-emulated-tls']
 endif
 

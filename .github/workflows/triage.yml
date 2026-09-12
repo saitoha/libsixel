@@ -148,7 +148,10 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          # Intel's environment script reads optional unset variables.
+          set +u
           . /opt/intel/oneapi/compiler/latest/env/vars.sh
+          set -u
           test "$(uname -m)" = x86_64
           icx --version
           icx -dumpmachine
