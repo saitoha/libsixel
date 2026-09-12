@@ -11,7 +11,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
 
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"

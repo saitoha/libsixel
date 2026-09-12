@@ -30,7 +30,7 @@ test "${trace#*LSXSNP1|channel_l=0.75*}" != "${trace}" || {
 }
 
 lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -b "MS-SSIM:0.98" "${input_image}" "${output_sixel}" 2>&1) || \
+    -b "MS-SSIM:0.985" "${input_image}" "${output_sixel}" 2>&1) || \
     lsqa_status=$?
 test "${lsqa_status:-0}" -eq 0 || {
     echo "not ok 1 - snap channel factor image quality regressed"

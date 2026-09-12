@@ -5,7 +5,7 @@
 # Flow summary:
 # - Convert the input image with -X gamma -W din99d.
 # - Compare the output against the original image.
-# - Enforce MS-SSIM >= 0.98 via lsqa.
+# - Enforce MS-SSIM >= 0.99 via lsqa.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -17,7 +17,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-lsqa_floor=0.98
+lsqa_floor=0.99
 
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
