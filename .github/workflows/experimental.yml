@@ -253,6 +253,142 @@ jobs:
                 "$GITHUB_WORKSPACE/tests/$smoke_test"
             done
 
+  icx-x86_64:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Meson-ubuntu-24.04-x86_64-icx-2026.1
+            runner: ubuntu-24.04
+
+          - label: Meson-windows-2022-x86_64-icx-2026.1
+            runner: windows-2022
+    env:
+      ONEAPI_CACHE_REVISION: '1'
+      ONEAPI_LINUX_PACKAGE_VERSION: 2026.1.1-325
+      ONEAPI_WINDOWS_COMPONENT: intel.oneapi.win.cpp-dpcpp-common
+      ONEAPI_WINDOWS_TOOLKIT_URL: >-
+        https://registrationcenter-download.intel.com/akdlm/IRC_NAS/4144bec3-82ce-4672-bd71-5c93a79cd5e7/intel-oneapi-toolkit-2026.1.0.191_offline.exe
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Cache Intel oneAPI compiler (Linux)
+        if: runner.os == 'Linux'
+        id: cache-oneapi-linux
+        uses: actions/cache@v5
+        with:
+          path: /opt/intel/oneapi/compiler
+          key: >-
+            oneapi-linux-x86_64-${{ env.ONEAPI_LINUX_PACKAGE_VERSION }}-${{ env.ONEAPI_CACHE_REVISION }}
+
+      - name: Install build prerequisites (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y \
+            --no-install-recommends ca-certificates gpg meson ninja-build
+
+      - name: Install Intel oneAPI compiler (Linux)
+        if: >-
+          ${{ runner.os == 'Linux'
+              && steps.cache-oneapi-linux.outputs.cache-hit != 'true' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl --fail --location --retry 5 \
+            https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+            | gpg --dearmor > /tmp/oneapi-archive-keyring.gpg
+          sudo install -m 0644 /tmp/oneapi-archive-keyring.gpg \
+            /usr/share/keyrings/oneapi-archive-keyring.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main' \
+            | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y \
+            --no-install-recommends \
+            "intel-oneapi-compiler-dpcpp-cpp=$ONEAPI_LINUX_PACKAGE_VERSION"
+
+      - name: Build and run with icx (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Intel's environment script reads optional unset variables.
+          set +u
+          . /opt/intel/oneapi/compiler/latest/env/vars.sh
+          set -u
+          test "$(uname -m)" = x86_64
+          icx --version
+          icx -dumpmachine
+          CC=icx meson setup builddir-icx \
+            -Ddefault_library=static \
+            -Dtests=false \
+            -Dpng=disabled \
+            -Djpeg=disabled \
+            -Dtiff=disabled \
+            -Dwebp=disabled \
+            -Dlibrsvg=disabled \
+            -Dgd=disabled \
+            -Dgdk_pixbuf2=disabled \
+            -Dlcms2=disabled \
+            -Dcurl=disabled \
+            -Dfetch=disabled
+          meson compile -C builddir-icx -v img2sixel sixel2png
+          builddir-icx/converters/img2sixel --version
+          builddir-icx/converters/sixel2png --version
+
+      - name: Cache Intel oneAPI compiler (Windows)
+        if: runner.os == 'Windows'
+        id: cache-oneapi-windows
+        uses: actions/cache@v5
+        with:
+          path: |
+            C:\Program Files (x86)\Intel\oneAPI\setvars-vcvarsall.bat
+            C:\Program Files (x86)\Intel\oneAPI\compiler
+          key: >-
+            oneapi-windows-x86_64-2026.1.0-${{ env.ONEAPI_CACHE_REVISION }}
+
+      - name: Install Intel oneAPI compiler (Windows)
+        if: >-
+          ${{ runner.os == 'Windows'
+              && steps.cache-oneapi-windows.outputs.cache-hit != 'true' }}
+        shell: cmd
+        run: |
+          curl.exe --fail --location --retry 5 --retry-delay 5 --output "%RUNNER_TEMP%\oneapi.exe" --url "%ONEAPI_WINDOWS_TOOLKIT_URL%"
+          start "" /b /wait "%RUNNER_TEMP%\oneapi.exe" -s -x -f "%RUNNER_TEMP%\oneapi-extracted" --log "%RUNNER_TEMP%\oneapi-extract.log"
+          if errorlevel 1 exit /b %errorlevel%
+          start "" /b /wait "%RUNNER_TEMP%\oneapi-extracted\bootstrapper.exe" -s --action install --components=%ONEAPI_WINDOWS_COMPONENT% --eula=accept -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir="%RUNNER_TEMP%"
+          if errorlevel 1 exit /b %errorlevel%
+          del "%RUNNER_TEMP%\oneapi.exe"
+          rmdir /s /q "%RUNNER_TEMP%\oneapi-extracted"
+
+      - name: Install build prerequisites (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: python -m pip install meson ninja
+
+      - name: Build and run with icx (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars-vcvarsall.bat" vs2022
+          for /f "tokens=* usebackq" %%f in (`dir /b "C:\Program Files (x86)\Intel\oneAPI\compiler\" ^| findstr /V latest ^| sort`) do set "ONEAPI_COMPILER_VERSION=%%f"
+          call "C:\Program Files (x86)\Intel\oneAPI\compiler\%ONEAPI_COMPILER_VERSION%\env\vars.bat"
+          if not "%PROCESSOR_ARCHITECTURE%" == "AMD64" exit /b 1
+          where icx
+          icx --version
+          set "CC=icx"
+          meson setup builddir-icx -Ddefault_library=static -Dtests=false -Dpng=disabled -Djpeg=disabled -Dtiff=disabled -Dwebp=disabled -Dlibrsvg=disabled -Dgd=disabled -Dgdk_pixbuf2=disabled -Dlcms2=disabled -Dcurl=disabled -Dfetch=disabled
+          meson compile -C builddir-icx -v img2sixel sixel2png
+          builddir-icx\converters\img2sixel.exe --version
+          builddir-icx\converters\sixel2png.exe --version
+
   vcpkg-msvc-autotools:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
