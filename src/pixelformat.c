@@ -52,6 +52,7 @@
 #define SIXEL_CIELAB_AB_FLOAT_MAX (1.5f)
 #define SIXEL_CIELAB_L_FLOAT_MIN  (0.0f)
 #define SIXEL_CIELAB_L_FLOAT_MAX  (1.0f)
+/* DIN99d stores all three native coordinates divided by the same 100. */
 #define SIXEL_DIN99D_L_FLOAT_MIN  (0.0f)
 #define SIXEL_DIN99D_L_FLOAT_MAX  (1.0f)
 #define SIXEL_DIN99D_AB_FLOAT_MIN (-1.0f)

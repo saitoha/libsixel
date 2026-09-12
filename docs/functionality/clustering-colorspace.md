@@ -192,8 +192,7 @@ The normative space and Euclidean color-difference methods are described by
 
 ## `din99d`: compressed and rotated CIELAB coordinates
 
-`-X din99d` starts from CIELAB and applies the DIN99d transform described by
-Cui, Luo, Rigg, Roesler, and Witt. The current implementation uses:
+`-X din99d` applies the DIN99d transform described by Cui, Luo, Rigg, Roesler, and Witt. It first replaces `X` with `1.12X − 0.12Z` for both the D65 sample and its reference white. The usual Lab equations applied to those corrected tristimulus values supply the `L*`, `a*`, and `b*` below; they are not ordinary CIELAB coordinates:
 
 ```text
 L99d = 325.22 * ln(1 + 0.0036 * L*)
@@ -211,14 +210,10 @@ b99d = C99 * sin(h)
 libsixel normalizes these values for the solver:
 
 ```text
-phi_din99d(c) = (L99d / 100, a99d / 50, b99d / 50)
+phi_din99d(c) = (L99d / 100, a99d / 100, b99d / 100)
 ```
 
-The logarithms compress lightness and chroma distances while the rotations
-reshape the opponent plane. This makes the metric materially different from
-both normalized CIELAB and OKLab. The source and motivation for the family are
-documented in
-[Uniform colour spaces based on the DIN99 colour-difference formula](https://doi.org/10.1002/col.10066).
+The common divisor preserves the native Euclidean distance up to one overall scale factor. Axis-specific rescaling would change the metric. Lightness is bounded to `[0, 1]` and opponent components to `[-1, 1]` in storage. The logarithmic transforms reshape lightness and chroma spacing, and rotation with unequal intermediate-axis scaling reshapes the opponent plane. The source and motivation for the family are documented in [Uniform colour spaces based on the DIN99 colour-difference formula](https://doi.org/10.1002/col.10066).
 
 ## Cost model
 

@@ -31,7 +31,7 @@ The [pixel-format guide](pixelformat.md) describes memory layout. A pixel-format
 | `linear` | linear-light sRGB with the same primaries and white point as sRGB | loader CMS target, `-X`, `-W`, and `-U` |
 | `oklab` | Oklab opponent coordinates derived from linear sRGB | loader CMS target, `-X`, and `-W` |
 | `cielab` | libsixel's normalized CIE 1976 L*a*b* coordinates, derived through D65 XYZ | loader CMS target, `-X`, and `-W` |
-| `din99d` | libsixel's normalized DIN99d coordinates derived from CIELAB | loader CMS target, `-X`, and `-W` |
+| `din99d` | DIN99d with its XYZ correction, using a common `/100` coordinate scale | loader CMS target, `-X`, and `-W` |
 | `smpte-c` | SMPTE-C primaries with the output transfer used by libsixel | `-U` only |
 
 Within this project, `gamma` is not shorthand for an arbitrary power-law curve. It specifically means the sRGB encoded representation. SMPTE-C output uses a different primary conversion and a nominal 2.2 power transfer.
@@ -73,7 +73,7 @@ The four routes below show when these common bases are needed. Route C follows s
 
 Conceptually, the Oklab route includes linear sRGB → XYZ D65 → LMS. In `sixel_linear_to_oklab()`, libsixel combines those two matrices into a direct linear-sRGB-to-LMS transform, followed by cube-root lookup and the opponent transform. It does not allocate an XYZ image or run a separate XYZ pass for every Oklab conversion. Adjacent linear matrices can be combined; the nonlinear sRGB transfer and cube-root stages must retain their order. This is the distinction between a mathematical intermediate and a stored image representation. The [Oklab author's implementation](https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab) provides the direct matrix form.
 
-Other destinations share parts of the route. libsixel's CIELAB conversion explicitly computes XYZ D65 and applies its reference-white-dependent nonlinear transform; DIN99d continues from CIELAB. Reverse transforms recover linear RGB before applying a destination transfer function. Converting to Oklab therefore needs linear-light intermediate values even when no image mixing is requested.
+Other destinations share parts of the route. libsixel's CIELAB conversion explicitly computes XYZ D65 and applies its reference-white-dependent nonlinear transform. DIN99d first corrects the sample and reference-white `X` values using `X′ = 1.12X − 0.12Z`, then computes Lab-like values and applies its lightness/chroma transformations. It cannot be obtained by applying only the later DIN99d stages to ordinary CIELAB. Reverse transforms undo the correction and recover linear RGB before applying a destination transfer function. Converting to Oklab therefore needs linear-light intermediate values even when no image mixing is requested.
 
 XYZ has another role in CMS: it can serve as the [ICC profile connection space](#pcs-the-connection-between-color-profiles). That profile boundary uses D50 conventions, while the internal sRGB/Oklab route above uses D65. The word "hub" describes reuse of a common basis; it does not mean every stage stores pixels in XYZ or uses the same reference white.
 

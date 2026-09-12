@@ -134,8 +134,8 @@ SIXEL_PTHREAD_ONCE_DECLARE(sixel_colorspace_parallel_min_pixels_once);
 #define SIXEL_CIELAB_AB_SCALE 128.0
 #define SIXEL_CIELAB_L_SCALE  100.0
 #define SIXEL_CIELAB_AB_LIMIT 1.5
-#define SIXEL_DIN99D_L_SCALE  100.0
-#define SIXEL_DIN99D_AB_RANGE 50.0
+/* A common divisor preserves DIN99d Euclidean distance on all three axes. */
+#define SIXEL_DIN99D_SCALE   100.0
 
 #if defined(__FMA__)
 # define SIXEL_FMADD_PS256(a, b, c) _mm256_fmadd_ps((a), (b), (c))
@@ -351,11 +351,11 @@ sixel_din99d_clamp_ab_norm(double value)
 static inline double
 sixel_din99d_clamp_ab(double value)
 {
-    if (value < -SIXEL_DIN99D_AB_RANGE) {
-        return -SIXEL_DIN99D_AB_RANGE;
+    if (value < -SIXEL_DIN99D_SCALE) {
+        return -SIXEL_DIN99D_SCALE;
     }
-    if (value > SIXEL_DIN99D_AB_RANGE) {
-        return SIXEL_DIN99D_AB_RANGE;
+    if (value > SIXEL_DIN99D_SCALE) {
+        return SIXEL_DIN99D_SCALE;
     }
 
     return value;
@@ -1056,7 +1056,11 @@ sixel_cielab_to_din99d(double L,
                        double *A99d,
                        double *B99d)
 {
-    /* Convert from CIELAB to DIN99d using Cui et al. (2002) parameters. */
+    /*
+     * Cui et al. (2002), equation (5). The Lab-like input must already
+     * include X' = 1.12 X - 0.12 Z, including the reference-white X'.
+     * Applying these stages to ordinary CIELAB omits the blue correction.
+     */
     const double c1 = 325.22;
     const double c2 = 0.0036;
     const double c3 = 50.0;
@@ -1097,7 +1101,7 @@ sixel_din99d_to_cielab(double L99d,
                        double *a,
                        double *b)
 {
-    /* Convert from DIN99d back to absolute CIELAB coordinates. */
+    /* Recover Lab-like coordinates in the corrected X' basis. */
     const double c1 = 325.22;
     const double c2 = 0.0036;
     const double c3 = 50.0;
@@ -1138,9 +1142,14 @@ sixel_linear_to_din99d(double r,
                        double *A99d_norm,
                        double *B99d_norm)
 {
-    double L;
-    double A;
-    double B;
+    const double Xn = 1.12 * 0.95047 - 0.12 * 1.08883;
+    const double Zn = 1.08883;
+    double X;
+    double Y;
+    double Z;
+    double fx;
+    double fy;
+    double fz;
     double L_star;
     double a_star;
     double b_star;
@@ -1148,19 +1157,26 @@ sixel_linear_to_din99d(double r,
     double A99d;
     double B99d;
 
-    sixel_linear_to_cielab(r, g, b, &L, &A, &B);
+    X = 0.4124564 * r + 0.3575761 * g + 0.1804375 * b;
+    Y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b;
+    Z = 0.0193339 * r + 0.1191920 * g + 0.9503041 * b;
 
-    L_star = L * SIXEL_CIELAB_L_SCALE;
-    a_star = A * SIXEL_CIELAB_AB_SCALE;
-    b_star = B * SIXEL_CIELAB_AB_SCALE;
+    /* Transform the sample and white together so neutrals stay neutral. */
+    X = 1.12 * X - 0.12 * Z;
+    fx = sixel_cielab_f(X / Xn);
+    fy = sixel_cielab_f(Y);
+    fz = sixel_cielab_f(Z / Zn);
+    L_star = 116.0 * fy - 16.0;
+    a_star = 500.0 * (fx - fy);
+    b_star = 200.0 * (fy - fz);
 
     sixel_cielab_to_din99d(L_star, a_star, b_star, &L99d, &A99d, &B99d);
 
-    *L99d_norm = sixel_clamp_unit(L99d / SIXEL_DIN99D_L_SCALE);
+    *L99d_norm = sixel_clamp_unit(L99d / SIXEL_DIN99D_SCALE);
     *A99d_norm = sixel_din99d_clamp_ab_norm(
-        A99d / SIXEL_DIN99D_AB_RANGE);
+        A99d / SIXEL_DIN99D_SCALE);
     *B99d_norm = sixel_din99d_clamp_ab_norm(
-        B99d / SIXEL_DIN99D_AB_RANGE);
+        B99d / SIXEL_DIN99D_SCALE);
 }
 
 static void
@@ -1171,24 +1187,39 @@ sixel_din99d_to_linear(double L99d_norm,
                        double *g,
                        double *b)
 {
+    const double Xn = 1.12 * 0.95047 - 0.12 * 1.08883;
+    const double Zn = 1.08883;
     double L_star;
     double a_star;
     double b_star;
     double L;
     double A;
     double B;
+    double fx;
+    double fy;
+    double fz;
+    double X;
+    double Y;
+    double Z;
 
-    L = sixel_clamp_unit(L99d_norm) * SIXEL_DIN99D_L_SCALE;
-    A = sixel_din99d_clamp_ab_norm(A99d_norm) * SIXEL_DIN99D_AB_RANGE;
-    B = sixel_din99d_clamp_ab_norm(B99d_norm) * SIXEL_DIN99D_AB_RANGE;
+    L = sixel_clamp_unit(L99d_norm) * SIXEL_DIN99D_SCALE;
+    A = sixel_din99d_clamp_ab_norm(A99d_norm) * SIXEL_DIN99D_SCALE;
+    B = sixel_din99d_clamp_ab_norm(B99d_norm) * SIXEL_DIN99D_SCALE;
 
     sixel_din99d_to_cielab(L, A, B, &L_star, &a_star, &b_star);
 
-    L_star = sixel_clamp_unit(L_star / SIXEL_CIELAB_L_SCALE);
-    a_star = sixel_cielab_clamp_ab(a_star / SIXEL_CIELAB_AB_SCALE);
-    b_star = sixel_cielab_clamp_ab(b_star / SIXEL_CIELAB_AB_SCALE);
+    fy = (L_star + 16.0) / 116.0;
+    fx = fy + a_star / 500.0;
+    fz = fy - b_star / 200.0;
+    X = Xn * sixel_cielab_f_inv(fx);
+    Y = sixel_cielab_f_inv(fy);
+    Z = Zn * sixel_cielab_f_inv(fz);
 
-    sixel_cielab_to_linear(L_star, a_star, b_star, r, g, b);
+    /* Undo X' before the ordinary XYZ-to-linear-sRGB matrix. */
+    X = (X + 0.12 * Z) / 1.12;
+    *r = sixel_clamp_unit(3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z);
+    *g = sixel_clamp_unit(-0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z);
+    *b = sixel_clamp_unit(0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z);
 }
 
 static void

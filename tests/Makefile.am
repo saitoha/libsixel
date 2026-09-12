@@ -181,6 +181,9 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0001_DIN99D_FORWARD \
+    -DBUILD_TEST_0002_DIN99D_INVERSE \
+    -DBUILD_TEST_0003_DIN99D_BYTE \
     -DBUILD_ORMODE_TEST_COMMON \
     -DBUILD_TEST_0027_ORMODE_PUBLIC_OUTPUT_DISABLE \
     -DBUILD_TEST_0028_ORMODE_PIPELINE_SIZE \
@@ -562,6 +565,9 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
+    processing/colorspace/0001_din99d_forward.c \
+    processing/colorspace/0002_din99d_inverse.c \
+    processing/colorspace/0003_din99d_byte.c \
     cli/aborttrace/0001_img2sixel_aborttrace.c \
     cli/0029_cli_token_is_known_option.c \
     cli/0030_cli_option_requires_argument.c \

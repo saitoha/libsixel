@@ -110,6 +110,9 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	processing/colorspace/0001_din99d_forward.c \
+	processing/colorspace/0002_din99d_inverse.c \
+	processing/colorspace/0003_din99d_byte.c \
 	cli/aborttrace/0001_img2sixel_aborttrace.c \
 	cli/0029_cli_token_is_known_option.c \
 	cli/0030_cli_option_requires_argument.c \
@@ -493,6 +496,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0001_din99d_forward.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0002_din99d_inverse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0003_din99d_byte.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/aborttrace/test_runner-0001_img2sixel_aborttrace.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0029_cli_token_is_known_option.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0030_cli_option_requires_argument.$(OBJEXT) \
@@ -1117,6 +1123,9 @@ am__depfiles_remade =  \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po \
@@ -1952,6 +1961,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DIN99D_FORWARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_DIN99D_INVERSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_DIN99D_BYTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ORMODE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_ORMODE_PUBLIC_OUTPUT_DISABLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_ORMODE_PIPELINE_SIZE \
@@ -2358,6 +2370,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0001_din99d_forward.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0002_din99d_inverse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0003_din99d_byte.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/aborttrace/0001_img2sixel_aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0029_cli_token_is_known_option.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0030_cli_option_requires_argument.c \
@@ -2908,6 +2923,21 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+processing/colorspace/$(am__dirstamp):
+	@$(MKDIR_P) processing/colorspace
+	@: >>processing/colorspace/$(am__dirstamp)
+processing/colorspace/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/colorspace/$(DEPDIR)
+	@: >>processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0001_din99d_forward.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0002_din99d_inverse.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0003_din99d_byte.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
 cli/aborttrace/$(am__dirstamp):
 	@$(MKDIR_P) cli/aborttrace
 	@: >>cli/aborttrace/$(am__dirstamp)
@@ -4251,6 +4281,7 @@ mostlyclean-compile:
 	-rm -f loader/wic/*.$(OBJEXT)
 	-rm -f platform/path/*.$(OBJEXT)
 	-rm -f processing/chunk/*.$(OBJEXT)
+	-rm -f processing/colorspace/*.$(OBJEXT)
 	-rm -f processing/decoder/*.$(OBJEXT)
 	-rm -f processing/dither/*.$(OBJEXT)
 	-rm -f processing/encoder-core/*.$(OBJEXT)
@@ -4466,6 +4497,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po@am__quote@ # am--include-marker
@@ -4683,6 +4717,48 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+processing/colorspace/test_runner-0001_din99d_forward.o: processing/colorspace/0001_din99d_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0001_din99d_forward.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Tpo -c -o processing/colorspace/test_runner-0001_din99d_forward.o `test -f 'processing/colorspace/0001_din99d_forward.c' || echo '$(srcdir)/'`processing/colorspace/0001_din99d_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Tpo processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0001_din99d_forward.c' object='processing/colorspace/test_runner-0001_din99d_forward.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0001_din99d_forward.o `test -f 'processing/colorspace/0001_din99d_forward.c' || echo '$(srcdir)/'`processing/colorspace/0001_din99d_forward.c
+
+processing/colorspace/test_runner-0001_din99d_forward.obj: processing/colorspace/0001_din99d_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0001_din99d_forward.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Tpo -c -o processing/colorspace/test_runner-0001_din99d_forward.obj `if test -f 'processing/colorspace/0001_din99d_forward.c'; then $(CYGPATH_W) 'processing/colorspace/0001_din99d_forward.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0001_din99d_forward.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Tpo processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0001_din99d_forward.c' object='processing/colorspace/test_runner-0001_din99d_forward.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0001_din99d_forward.obj `if test -f 'processing/colorspace/0001_din99d_forward.c'; then $(CYGPATH_W) 'processing/colorspace/0001_din99d_forward.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0001_din99d_forward.c'; fi`
+
+processing/colorspace/test_runner-0002_din99d_inverse.o: processing/colorspace/0002_din99d_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0002_din99d_inverse.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Tpo -c -o processing/colorspace/test_runner-0002_din99d_inverse.o `test -f 'processing/colorspace/0002_din99d_inverse.c' || echo '$(srcdir)/'`processing/colorspace/0002_din99d_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Tpo processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0002_din99d_inverse.c' object='processing/colorspace/test_runner-0002_din99d_inverse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0002_din99d_inverse.o `test -f 'processing/colorspace/0002_din99d_inverse.c' || echo '$(srcdir)/'`processing/colorspace/0002_din99d_inverse.c
+
+processing/colorspace/test_runner-0002_din99d_inverse.obj: processing/colorspace/0002_din99d_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0002_din99d_inverse.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Tpo -c -o processing/colorspace/test_runner-0002_din99d_inverse.obj `if test -f 'processing/colorspace/0002_din99d_inverse.c'; then $(CYGPATH_W) 'processing/colorspace/0002_din99d_inverse.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0002_din99d_inverse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Tpo processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0002_din99d_inverse.c' object='processing/colorspace/test_runner-0002_din99d_inverse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0002_din99d_inverse.obj `if test -f 'processing/colorspace/0002_din99d_inverse.c'; then $(CYGPATH_W) 'processing/colorspace/0002_din99d_inverse.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0002_din99d_inverse.c'; fi`
+
+processing/colorspace/test_runner-0003_din99d_byte.o: processing/colorspace/0003_din99d_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0003_din99d_byte.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Tpo -c -o processing/colorspace/test_runner-0003_din99d_byte.o `test -f 'processing/colorspace/0003_din99d_byte.c' || echo '$(srcdir)/'`processing/colorspace/0003_din99d_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Tpo processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0003_din99d_byte.c' object='processing/colorspace/test_runner-0003_din99d_byte.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0003_din99d_byte.o `test -f 'processing/colorspace/0003_din99d_byte.c' || echo '$(srcdir)/'`processing/colorspace/0003_din99d_byte.c
+
+processing/colorspace/test_runner-0003_din99d_byte.obj: processing/colorspace/0003_din99d_byte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0003_din99d_byte.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Tpo -c -o processing/colorspace/test_runner-0003_din99d_byte.obj `if test -f 'processing/colorspace/0003_din99d_byte.c'; then $(CYGPATH_W) 'processing/colorspace/0003_din99d_byte.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0003_din99d_byte.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Tpo processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0003_din99d_byte.c' object='processing/colorspace/test_runner-0003_din99d_byte.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0003_din99d_byte.obj `if test -f 'processing/colorspace/0003_din99d_byte.c'; then $(CYGPATH_W) 'processing/colorspace/0003_din99d_byte.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0003_din99d_byte.c'; fi`
 
 cli/aborttrace/test_runner-0001_img2sixel_aborttrace.o: cli/aborttrace/0001_img2sixel_aborttrace.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/aborttrace/test_runner-0001_img2sixel_aborttrace.o -MD -MP -MF cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Tpo -c -o cli/aborttrace/test_runner-0001_img2sixel_aborttrace.o `test -f 'cli/aborttrace/0001_img2sixel_aborttrace.c' || echo '$(srcdir)/'`cli/aborttrace/0001_img2sixel_aborttrace.c
@@ -10185,6 +10261,8 @@ distclean-generic:
 	-$(am__rm_f) platform/path/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(am__dirstamp)
+	-$(am__rm_f) processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/colorspace/$(am__dirstamp)
 	-$(am__rm_f) processing/decoder/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/decoder/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(DEPDIR)/$(am__dirstamp)
@@ -10424,6 +10502,9 @@ distclean: distclean-am
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po
@@ -10836,6 +10917,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po

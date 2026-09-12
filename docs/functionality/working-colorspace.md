@@ -133,9 +133,9 @@ The CIELAB equations and D50/D65 adaptation context are summarized in [CSS Color
 
 ## `din99d`: DIN99d opponent coordinates
 
-`-Wdin99d` converts through CIELAB and applies the DIN99d lightness, chroma, and hue transformation. libsixel stores `L99d / 100` and `a99d / 50`, `b99d / 50`, with normalized opponent components clamped to `[-1, 1]`.
+`-Wdin99d` applies `X′ = 1.12X − 0.12Z` to the sample and D65 reference white before calculating Lab-like coordinates and the DIN99d lightness, chroma, and hue transformations. The inverse undoes that XYZ correction before returning to RGB. libsixel stores `(L99d, a99d, b99d) / 100`, with lightness bounded to `[0, 1]` and opponent components to `[-1, 1]`. One common scale preserves the native Euclidean distance ratios; scaling the opponent axes by a different divisor would change palette lookup decisions.
 
-DIN99d was designed to improve the uniformity of Euclidean color differences relative to CIELAB. In libsixel it remains a normalized three-coordinate lookup geometry, not a direct implementation of Delta E00. The transformation follows Cui et al., [Uniform colour spaces based on the DIN99 colour-difference formula](https://onlinelibrary.wiley.com/doi/abs/10.1002/col.10066).
+DIN99d was designed to improve the uniformity of Euclidean color differences relative to CIELAB. With the common scale, exact lookup uses its Euclidean geometry, subject to numeric approximation and clipping. This differs from evaluating Delta E00 for each candidate. The transformation follows Cui et al., [Uniform colour spaces based on the DIN99 colour-difference formula](https://onlinelibrary.wiley.com/doi/abs/10.1002/col.10066).
 
 This was the slowest working space in the checked-in end-to-end run. That observation includes conversion, typed-format handling, lookup, and optional diffusion; it is not an isolated benchmark of the DIN99d equations.
 
