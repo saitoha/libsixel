@@ -874,6 +874,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dequantization-figures/selective-mobile.svg \
 	docs/functionality/dequantization-figures/selective-wide.svg \
 	docs/functionality/decoding-pipeline.md \
+	docs/functionality/delta-encoding.md \
 	docs/functionality/decoding-pipeline-figures/decoder-output-policy.svg \
 	docs/functionality/decoding-pipeline-figures/decoder-parallel.svg \
 	docs/functionality/decoding-pipeline-figures/decoder-parser.svg \

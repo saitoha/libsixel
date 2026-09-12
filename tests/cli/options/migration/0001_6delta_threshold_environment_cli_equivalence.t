@@ -1,5 +1,6 @@
 #!/bin/sh
 # Preserve SIXEL_6DELTA_THRESHOLD equivalence with -Z during migration.
+# Policy: docs/functionality/delta-encoding.md
 
 set -eux
 

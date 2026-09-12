@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify 6delta-threshold accepts only the documented byte range.
+# Policy: docs/functionality/delta-encoding.md
 
 set -eux
 
