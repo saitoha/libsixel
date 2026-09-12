@@ -15,7 +15,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Shared loader integration and policy](../loader/builtin.md) | 49 | 1 | 3 | 1 | 4 | 0 | 40 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
-| [PNG and APNG](../loader/builtin/png.md) | 119 | 12 | 59 | 0 | 11 | 2 | 35 |
+| [PNG and APNG](../loader/builtin/png.md) | 121 | 13 | 59 | 0 | 11 | 2 | 36 |
 | [JPEG](../loader/builtin/jpeg.md) | 32 | 11 | 14 | 1 | 2 | 0 | 4 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
 | [PSD and PSB](../loader/builtin/psd.md) | 992 | 12 | 551 | 402 | 9 | 3 | 15 |
@@ -24,7 +24,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 25 | 11 | 8 | 0 | 4 | 0 | 2 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2023** | **456** | **724** | **652** | **51** | **8** | **132** |
+| **Total** | **2025** | **457** | **724** | **652** | **51** | **8** | **133** |
 
 ## Complete inventory
 
@@ -188,24 +188,24 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader/builtin/0022_apng_builtin_blend_over.t](../../tests/loader/builtin/0022_apng_builtin_blend_over.t) | builtin APNG blend-over static rendering matches reference. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/0023_apng_builtin_dispose_background.t](../../tests/loader/builtin/0023_apng_builtin_dispose_background.t) | builtin APNG dispose-background static rendering matches reference. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/0024_apng_builtin_shared_chunk_indexed.t](../../tests/loader/builtin/0024_apng_builtin_shared_chunk_indexed.t) | APNG shared PLTE and tRNS chunks are accepted. | Other integration/smoke | Inventory only |
-| [tests/loader/builtin/0025_apng_builtin_invalid_num_frames_zero.t](../../tests/loader/builtin/0025_apng_builtin_invalid_num_frames_zero.t) | builtin loader accepts APNG acTL num_frames of zero. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/0026_apng_builtin_invalid_num_frames_mismatch.t](../../tests/loader/builtin/0026_apng_builtin_invalid_num_frames_mismatch.t) | builtin loader accepts APNG acTL num_frames mismatch input. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/0027_apng_builtin_invalid_fctl_bounds.t](../../tests/loader/builtin/0027_apng_builtin_invalid_fctl_bounds.t) | builtin loader accepts APNG out-of-bounds frame rectangles. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/0028_apng_builtin_invalid_dispose_op.t](../../tests/loader/builtin/0028_apng_builtin_invalid_dispose_op.t) | builtin loader accepts APNG invalid dispose operation input. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/0029_apng_builtin_invalid_blend_op.t](../../tests/loader/builtin/0029_apng_builtin_invalid_blend_op.t) | builtin loader accepts APNG invalid blend operation input. | Acceptance/rejection | Inventory only |
+| [tests/loader/builtin/0025_apng_builtin_invalid_num_frames_zero.t](../../tests/loader/builtin/0025_apng_builtin_invalid_num_frames_zero.t) | Verify a pre-raster APNG structural error uses one static fallback. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/0026_apng_builtin_invalid_num_frames_mismatch.t](../../tests/loader/builtin/0026_apng_builtin_invalid_num_frames_mismatch.t) | Verify a late APNG frame-count mismatch remains an animation error. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/0027_apng_builtin_invalid_fctl_bounds.t](../../tests/loader/builtin/0027_apng_builtin_invalid_fctl_bounds.t) | an early out-of-bounds APNG frame uses static fallback. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/0028_apng_builtin_invalid_dispose_op.t](../../tests/loader/builtin/0028_apng_builtin_invalid_dispose_op.t) | an early invalid APNG dispose operation uses static fallback. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/0029_apng_builtin_invalid_blend_op.t](../../tests/loader/builtin/0029_apng_builtin_invalid_blend_op.t) | an early invalid APNG blend operation uses static fallback. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/0030_apng_builtin_rgb_format.t](../../tests/loader/builtin/0030_apng_builtin_rgb_format.t) | APNG RGB pixel format decode succeeds. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/0031_apng_builtin_rgba_format.t](../../tests/loader/builtin/0031_apng_builtin_rgba_format.t) | APNG RGBA pixel format decode succeeds. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/0032_apng_builtin_delay_den_zero.t](../../tests/loader/builtin/0032_apng_builtin_delay_den_zero.t) | APNG delay denominator zero input is handled by builtin loader path. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/0033_apng_builtin_dispose_previous.t](../../tests/loader/builtin/0033_apng_builtin_dispose_previous.t) | APNG dispose previous input is handled by builtin loader path. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/0034_apng_builtin_invalid_fdat_without_fctl.t](../../tests/loader/builtin/0034_apng_builtin_invalid_fdat_without_fctl.t) | APNG fdAT without fcTL input is rejected by builtin loader path. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t](../../tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t) | APNG fcTL after first IDAT input input is handled by builtin loader path. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
-| [tests/loader/builtin/0036_apng_builtin_invalid_fctl_sequence_gap.t](../../tests/loader/builtin/0036_apng_builtin_invalid_fctl_sequence_gap.t) | builtin loader accepts APNG fcTL sequence gap input. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/0037_apng_builtin_invalid_fdat_sequence_gap.t](../../tests/loader/builtin/0037_apng_builtin_invalid_fdat_sequence_gap.t) | builtin loader accepts APNG fdAT sequence gap input. | Acceptance/rejection | Inventory only |
-| [tests/loader/builtin/0038_apng_builtin_default_image_first_valid.t](../../tests/loader/builtin/0038_apng_builtin_default_image_first_valid.t) | APNG default image first input is handled on builtin loader path. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/0035_apng_builtin_default_excluded_count_mismatch_reject.t](../../tests/loader/builtin/0035_apng_builtin_default_excluded_count_mismatch_reject.t) | Reject an APNG whose excluded default image masks a frame-count mismatch. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/0036_apng_builtin_invalid_fctl_sequence_gap.t](../../tests/loader/builtin/0036_apng_builtin_invalid_fctl_sequence_gap.t) | Verify a sequence error after one decoded frame cannot fall back to static. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/0037_apng_builtin_invalid_fdat_sequence_gap.t](../../tests/loader/builtin/0037_apng_builtin_invalid_fdat_sequence_gap.t) | builtin loader rejects a late APNG fdAT sequence gap. | Acceptance/rejection | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/0038_apng_builtin_default_image_first_valid.t](../../tests/loader/builtin/0038_apng_builtin_default_image_first_valid.t) | Verify a default image outside the animation is not emitted or counted. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/0039_apng_builtin_start_frame_positive.t](../../tests/loader/builtin/0039_apng_builtin_start_frame_positive.t) | builtin APNG positive start frame matches static reference. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/0040_apng_builtin_start_frame_negative.t](../../tests/loader/builtin/0040_apng_builtin_start_frame_negative.t) | builtin APNG negative start frame matches static reference. | Perceptual quality threshold | Inventory only |
-| [tests/loader/builtin/0041_apng_builtin_start_frame_positive_oob.t](../../tests/loader/builtin/0041_apng_builtin_start_frame_positive_oob.t) | builtin loader accepts positive out-of-range APNG start frame. | Other integration/smoke | Inventory only |
-| [tests/loader/builtin/0042_apng_builtin_start_frame_negative_oob.t](../../tests/loader/builtin/0042_apng_builtin_start_frame_negative_oob.t) | builtin loader accepts negative out-of-range APNG start frame. | Other integration/smoke | Inventory only |
+| [tests/loader/builtin/0041_apng_builtin_start_frame_positive_oob.t](../../tests/loader/builtin/0041_apng_builtin_start_frame_positive_oob.t) | builtin loader rejects positive out-of-range APNG start frame. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/0042_apng_builtin_start_frame_negative_oob.t](../../tests/loader/builtin/0042_apng_builtin_start_frame_negative_oob.t) | builtin loader rejects an out-of-range APNG start frame. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 | [tests/loader/builtin/0043_apng_builtin_start_frame_cli_override.t](../../tests/loader/builtin/0043_apng_builtin_start_frame_cli_override.t) | builtin APNG CLI start frame override wins over env input. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/0045_apng_builtin_trns_keycolor_bgcolor_env_gating.t](../../tests/loader/builtin/0045_apng_builtin_trns_keycolor_bgcolor_env_gating.t) | Verify process SIXEL_BGCOLOR disables builtin APNG keycolor path. | Other integration/smoke | Inventory only |
 | [tests/loader/builtin/0048_loader_builtin_palette_png_path.t](../../tests/loader/builtin/0048_loader_builtin_palette_png_path.t) | TAP test confirming builtin loader keeps indexed PNG palette path. | Other integration/smoke | Inventory only |
@@ -297,6 +297,8 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader/builtin/2040_loader_builtin_png_chrm_gama_float_numeric.t](../../tests/loader/builtin/2040_loader_builtin_png_chrm_gama_float_numeric.t) | Verify cHRM/gAMA matrix conversion at float frame precision. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md), [`docs/loader/builtin-cms.md`](../loader/builtin-cms.md) |
 | [tests/loader/builtin/2041_loader_builtin_png_singular_chrm_fallback_numeric.t](../../tests/loader/builtin/2041_loader_builtin_png_singular_chrm_fallback_numeric.t) | Verify singular cHRM falls back to the usable gAMA path. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md), [`docs/loader/builtin-cms.md`](../loader/builtin-cms.md) |
 | [tests/loader/builtin/2042_loader_builtin_png_file_background_chrm_numeric.t](../../tests/loader/builtin/2042_loader_builtin_png_file_background_chrm_numeric.t) | Verify PNG bKGD uses the same cHRM/gAMA source interpretation. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md), [`docs/loader/background-policy.md`](../loader/background-policy.md) |
+| [tests/loader/builtin/2043_loader_builtin_png_post_idat_actl_static_numeric.t](../../tests/loader/builtin/2043_loader_builtin_png_post_idat_actl_static_numeric.t) | Verify acTL after the first IDAT does not classify a static PNG as APNG. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
+| [tests/loader/builtin/2044_loader_builtin_apng_callback_error_no_fallback.t](../../tests/loader/builtin/2044_loader_builtin_apng_callback_error_no_fallback.t) | Verify a callback error does not invoke the static fallback callback. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png.md`](../loader/builtin/png.md) |
 
 ### JPEG
 

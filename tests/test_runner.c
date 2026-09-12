@@ -698,6 +698,24 @@ int test_loader_0175_loader_builtin_png_singular_chrm_numeric(
 int test_loader_0176_loader_builtin_png_bkgd_chrm_numeric(
     int argc,
     char **argv);
+int test_loader_0177_png_post_idat_actl_static(
+    int argc,
+    char **argv);
+int test_loader_0178_apng_default_excluded(
+    int argc,
+    char **argv);
+int test_loader_0179_apng_early_static_fallback(
+    int argc,
+    char **argv);
+int test_loader_0180_apng_late_count_reject(
+    int argc,
+    char **argv);
+int test_loader_0181_apng_late_sequence_reject(
+    int argc,
+    char **argv);
+int test_loader_0182_apng_callback_no_fallback(
+    int argc,
+    char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -1410,6 +1428,18 @@ static test_entry_t const test_entries[] = {
       test_loader_0175_loader_builtin_png_singular_chrm_numeric },
     { "loader/0176_loader_builtin_png_file_background_chrm_numeric",
       test_loader_0176_loader_builtin_png_bkgd_chrm_numeric },
+    { "loader/0177_loader_builtin_png_post_idat_actl_static_numeric",
+      test_loader_0177_png_post_idat_actl_static },
+    { "loader/0178_loader_builtin_apng_default_image_excluded_numeric",
+      test_loader_0178_apng_default_excluded },
+    { "loader/0179_loader_builtin_apng_early_error_static_fallback_numeric",
+      test_loader_0179_apng_early_static_fallback },
+    { "loader/0180_loader_builtin_apng_late_frame_count_reject",
+      test_loader_0180_apng_late_count_reject },
+    { "loader/0181_loader_builtin_apng_late_sequence_reject",
+      test_loader_0181_apng_late_sequence_reject },
+    { "loader/0182_loader_builtin_apng_callback_error_no_fallback",
+      test_loader_0182_apng_callback_no_fallback },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",

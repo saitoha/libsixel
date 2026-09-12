@@ -1,6 +1,7 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# TAP test: builtin loader accepts APNG fdAT sequence gap input.
+# Policy: docs/loader/builtin/png.md
+# TAP test: builtin loader rejects a late APNG fdAT sequence gap.
 
 set -eux
 
@@ -13,12 +14,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Lbuiltin! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_libpng_fdat_sequence_gap.png" \
-    -o/dev/null || {
-    echo "not ok" 1 - "APNG fdAT sequence gap decode failed on builtin loader"
+    -o/dev/null && {
+    echo "not ok" 1 - "APNG fdAT sequence gap unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 - "APNG fdAT sequence gap input is accepted by builtin loader"
+echo "ok" 1 - "APNG fdAT sequence gap is rejected"
 exit 0

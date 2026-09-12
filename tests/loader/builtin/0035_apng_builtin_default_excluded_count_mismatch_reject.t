@@ -1,7 +1,7 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/png.md
-# TAP test: APNG fcTL after first IDAT input input is handled by builtin loader path.
+# Reject an APNG whose excluded default image masks a frame-count mismatch.
 
 set -eux
 
@@ -10,16 +10,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Lbuiltin! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_libpng_fctl_after_idat.png" \
-    -o/dev/null || {
-    echo "not ok" 1 - "APNG fcTL after IDAT failed"
+    -o/dev/null && {
+    echo "not ok" 1 - "excluded-default frame-count mismatch succeeded"
     exit 0
 }
 
-echo "ok" 1 - "APNG fcTL after IDAT input is handled"
+echo "ok" 1 - "excluded-default frame-count mismatch is rejected"
 exit 0

@@ -1889,13 +1889,18 @@ typedef union _fn_pointer {
     void *                    p;
 } fn_pointer;
 
+typedef struct sixel_builtin_png_header_info {
+    int color_type;
+    int has_alpha_chunk;
+    int has_trns_chunk;
+    int has_bkgd_chunk;
+    int has_apng_control;
+} sixel_builtin_png_header_info_t;
+
 static int
-sixel_builtin_parse_png_transparency_info(
+sixel_builtin_probe_png_header(
     sixel_chunk_t const *pchunk,
-    int *color_type_out,
-    int *has_alpha_chunk_out,
-    int *has_trns_chunk_out,
-    int *has_bkgd_chunk_out)
+    sixel_builtin_png_header_info_t *info)
 {
     static unsigned char const png_signature[8] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
@@ -1906,18 +1911,13 @@ sixel_builtin_parse_png_transparency_info(
     uint32_t length;
     size_t chunk_total;
     unsigned char const *chunk_type;
-    int color_type;
-    int has_trns_chunk;
-    int has_bkgd_chunk;
 
-    if (pchunk == NULL ||
-        color_type_out == NULL ||
-        has_alpha_chunk_out == NULL ||
-        has_trns_chunk_out == NULL ||
-        has_bkgd_chunk_out == NULL) {
+    if (pchunk == NULL || info == NULL) {
         return 0;
     }
 
+    memset(info, 0, sizeof(*info));
+    info->color_type = (-1);
     buffer = sixel_chunk_get_buffer(pchunk);
     size = sixel_chunk_get_size(pchunk);
     if (buffer == NULL || size < (8u + 12u + 13u)) {
@@ -1936,57 +1936,52 @@ sixel_builtin_parse_png_transparency_info(
         return 0;
     }
 
-    color_type = (int)buffer[25u];
-    has_trns_chunk = 0;
-    has_bkgd_chunk = 0;
+    info->color_type = (int)buffer[25u];
+    info->has_alpha_chunk =
+        (info->color_type & SIXEL_BUILTIN_PNG_COLOR_MASK_ALPHA) != 0 ? 1 : 0;
     offset = 8u;
     while (offset + 12u <= size) {
         length = ((uint32_t)buffer[offset + 0u] << 24)
                | ((uint32_t)buffer[offset + 1u] << 16)
                | ((uint32_t)buffer[offset + 2u] << 8)
                | (uint32_t)buffer[offset + 3u];
-        chunk_total = (size_t)length + 12u;
-        if (chunk_total > size - offset) {
+        if ((size_t)length > size - offset - 12u) {
             return 0;
         }
+        chunk_total = (size_t)length + 12u;
         chunk_type = buffer + offset + 4u;
         if (memcmp(chunk_type, "tRNS", 4u) == 0) {
-            has_trns_chunk = 1;
+            info->has_trns_chunk = 1;
         } else if (memcmp(chunk_type, "bKGD", 4u) == 0) {
-            has_bkgd_chunk = 1;
-        } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
+            info->has_bkgd_chunk = 1;
+        } else if (memcmp(chunk_type, "acTL", 4u) == 0) {
+            info->has_apng_control = 1;
+        } else if (memcmp(chunk_type, "IDAT", 4u) == 0 ||
+                   memcmp(chunk_type, "IEND", 4u) == 0) {
+            /*
+             * APNG requires acTL before the first IDAT. Stopping here also
+             * keeps ordinary PNG classification independent of image size.
+             */
             break;
         }
         offset += chunk_total;
     }
-
-    *color_type_out = color_type;
-    *has_alpha_chunk_out =
-        (color_type & SIXEL_BUILTIN_PNG_COLOR_MASK_ALPHA) != 0 ? 1 : 0;
-    *has_trns_chunk_out = has_trns_chunk;
-    *has_bkgd_chunk_out = has_bkgd_chunk;
 
     return 1;
 }
 
 static int
 sixel_builtin_png_keycolor_mode_enabled(
-    sixel_chunk_t const *pchunk,
+    sixel_builtin_png_header_info_t const *info,
     unsigned char const *bgcolor,
     int enable_cms)
 {
     int trns_keycolor_mode;
-    int color_type;
-    int has_alpha_chunk;
-    int has_trns_chunk;
-    int has_bkgd_chunk;
 
     trns_keycolor_mode = 0;
-    color_type = (-1);
-    has_alpha_chunk = 0;
-    has_trns_chunk = 0;
-    has_bkgd_chunk = 0;
-
+    if (info == NULL) {
+        return 0;
+    }
     trns_keycolor_mode = loader_png_trns_keycolor_mode();
     if (trns_keycolor_mode == 0) {
         return 0;
@@ -1994,42 +1989,10 @@ sixel_builtin_png_keycolor_mode_enabled(
     if (bgcolor != NULL || enable_cms) {
         return 0;
     }
-    if (!sixel_builtin_parse_png_transparency_info(
-            pchunk,
-            &color_type,
-            &has_alpha_chunk,
-            &has_trns_chunk,
-            &has_bkgd_chunk)) {
-        return 0;
-    }
-
-    return ((has_trns_chunk && !has_alpha_chunk)
-            || (has_alpha_chunk && trns_keycolor_mode == 2))
+    return ((info->has_trns_chunk && !info->has_alpha_chunk)
+            || (info->has_alpha_chunk && trns_keycolor_mode == 2))
         ? 1
         : 0;
-}
-
-static int
-sixel_builtin_png_has_bkgd_chunk(sixel_chunk_t const *pchunk)
-{
-    int color_type;
-    int has_alpha_chunk;
-    int has_trns_chunk;
-    int has_bkgd_chunk;
-
-    color_type = (-1);
-    has_alpha_chunk = 0;
-    has_trns_chunk = 0;
-    has_bkgd_chunk = 0;
-    if (!sixel_builtin_parse_png_transparency_info(
-            pchunk,
-            &color_type,
-            &has_alpha_chunk,
-            &has_trns_chunk,
-            &has_bkgd_chunk)) {
-        return 0;
-    }
-    return has_bkgd_chunk;
 }
 
 static SIXELSTATUS
@@ -2298,6 +2261,9 @@ typedef struct sixel_builtin_apng_runtime {
     int emit_callback;
     int seen_fctl;
     int seen_idat;
+    int idat_is_animation_frame;
+    int raster_decode_started;
+    int start_frame_error;
     int alpha_zero_is_transparent;
     int color_type;
     int has_alpha_chunk;
@@ -3097,6 +3063,7 @@ sixel_builtin_apng_begin_loop_iteration(
     runtime->frames_in_loop = 0;
     runtime->seen_fctl = 0;
     runtime->seen_idat = 0;
+    runtime->idat_is_animation_frame = 0;
     runtime->alpha_zero_is_transparent = 0;
     runtime->color_type = (-1);
     runtime->has_alpha_chunk = 0;
@@ -3193,6 +3160,8 @@ sixel_builtin_apng_flush_pending_frame(
         return SIXEL_OK;
     }
 
+    /* Once raster work starts, static fallback would repeat expensive work. */
+    runtime->raster_decode_started = 1;
     status = sixel_builtin_apng_emit_pending_frame(
         state,
         control,
@@ -3320,6 +3289,7 @@ sixel_builtin_apng_process_chunk(
                 runtime->num_frames,
                 start_frame_no);
             if (SIXEL_FAILED(status)) {
+                runtime->start_frame_error = 1;
                 return status;
             }
         }
@@ -3385,8 +3355,21 @@ sixel_builtin_apng_process_chunk(
             return SIXEL_BAD_ALLOCATION;
         }
     } else if (memcmp(runtime->p + 4, "IDAT", 4) == 0) {
-        if (runtime->seen_actl != 0 && runtime->has_frame == 0) {
-            return SIXEL_BAD_INPUT;
+        if (runtime->seen_actl != 0 && runtime->seen_idat == 0) {
+            runtime->idat_is_animation_frame =
+                runtime->seen_fctl != 0 ? 1 : 0;
+        }
+        if (runtime->seen_actl != 0 &&
+            runtime->idat_is_animation_frame == 0) {
+            if (runtime->seen_fctl != 0) {
+                return SIXEL_BAD_INPUT;
+            }
+            /*
+             * Without a preceding fcTL, IDAT is only the static default
+             * image. It is not counted or emitted as an animation frame.
+             */
+            runtime->seen_idat = 1;
+            return SIXEL_OK;
         }
         if (!sixel_builtin_apng_append_chunk(state,
                                              "IDAT",
@@ -3394,17 +3377,6 @@ sixel_builtin_apng_process_chunk(
                                              runtime->length,
                                              allocator)) {
             return SIXEL_BAD_ALLOCATION;
-        }
-        if (runtime->seen_actl != 0 &&
-            runtime->seen_fctl == 0 &&
-            runtime->seen_idat == 0) {
-            control->width = (uint32_t)canvas->width;
-            control->height = (uint32_t)canvas->height;
-            control->x_offset = 0u;
-            control->y_offset = 0u;
-            control->delay_cs = 0u;
-            control->dispose_op = 0u;
-            control->blend_op = 0u;
         }
         runtime->seen_idat = 1;
         runtime->has_frame = 1;
@@ -3426,6 +3398,7 @@ sixel_builtin_apng_process_chunk(
                memcmp(runtime->p + 4, "fdAT", 4) != 0 &&
                memcmp(runtime->p + 4, "IHDR", 4) != 0 &&
                memcmp(runtime->p + 4, "IEND", 4) != 0 &&
+               runtime->seen_idat == 0 &&
                state->chunk_size == 0u) {
         if (!sixel_builtin_apng_append_shared_chunk(state,
                                                     runtime->p,
@@ -3561,7 +3534,8 @@ sixel_builtin_load_apng_frames(
     int start_frame_no,
     sixel_load_image_function fn_load,
     void *callback_context,
-    void *cancel_context)
+    void *cancel_context,
+    int *static_fallback_allowed)
 {
     SIXELSTATUS status;
     sixel_builtin_apng_state_t state;
@@ -3582,6 +3556,9 @@ sixel_builtin_load_apng_frames(
     stop_decode = 0;
     stop_loop = 0;
     trns_keycolor_mode = loader_png_trns_keycolor_mode();
+    if (static_fallback_allowed != NULL) {
+        *static_fallback_allowed = 0;
+    }
     sixel_builtin_apng_init_runtime(&runtime, trns_keycolor_mode);
     sixel_trace_topic_message(
         "apng",
@@ -3631,6 +3608,10 @@ sixel_builtin_load_apng_frames(
         if (status != SIXEL_OK) {
             goto end;
         }
+        if (stop_decode != 0) {
+            status = SIXEL_OK;
+            goto end;
+        }
         if (!runtime.seen_actl || !runtime.has_frame) {
             status = SIXEL_FALSE;
             goto end;
@@ -3672,12 +3653,21 @@ sixel_builtin_load_apng_frames(
     }
 
 end:
+    if (static_fallback_allowed != NULL &&
+        runtime.raster_decode_started == 0 &&
+        runtime.start_frame_error == 0 &&
+        (status == SIXEL_BAD_INPUT || status == SIXEL_FALSE)) {
+        *static_fallback_allowed = 1;
+    }
     sixel_trace_topic_message(
         "apng",
-        "decode end status=%s loops=%d saw_animation=%d",
+        "decode end status=%s loops=%d saw_animation=%d raster_started=%d "
+        "static_fallback=%d",
         sixel_helper_format_error(status),
         runtime.loop_no,
-        runtime.saw_animation);
+        runtime.saw_animation,
+        runtime.raster_decode_started,
+        static_fallback_allowed != NULL ? *static_fallback_allowed : 0);
     sixel_allocator_free(allocator, canvas.pixels);
     sixel_allocator_free(allocator, canvas.backup);
     sixel_builtin_apng_release_loop_buffers(&state, allocator);
@@ -4088,53 +4078,6 @@ sixel_builtin_decode_path_name(sixel_builtin_decode_path_t path)
     default:
         return "stbi";
     }
-}
-
-static int
-sixel_builtin_chunk_has_apng_control(sixel_chunk_t const *chunk)
-{
-    static unsigned char const png_signature[8] = {
-        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
-    };
-    sixel_chunk_bytes_view_t view;
-    unsigned char const *p;
-    size_t remain;
-    uint32_t chunk_length;
-
-    view.bytes = NULL;
-    view.size = 0u;
-    p = NULL;
-    remain = 0u;
-    chunk_length = 0u;
-    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
-        view.bytes == NULL || view.size < 8u) {
-        return 0;
-    }
-    /*
-     * Start-frame parsing must only run for animated input. A lightweight
-     * acTL probe keeps static PNG decode tolerant to invalid env values.
-     */
-    if (memcmp(view.bytes, png_signature, sizeof(png_signature)) != 0) {
-        return 0;
-    }
-
-    p = view.bytes + 8;
-    remain = view.size - 8u;
-    while (remain >= 12u) {
-        chunk_length = sixel_builtin_read_be32(p);
-        if ((size_t)chunk_length > remain - 12u) {
-            return 0;
-        }
-        if (memcmp(p + 4, "acTL", 4) == 0) {
-            return 1;
-        }
-        if (memcmp(p + 4, "IEND", 4) == 0) {
-            break;
-        }
-        p += (size_t)chunk_length + 12u;
-        remain -= (size_t)chunk_length + 12u;
-    }
-    return 0;
 }
 
 /*
@@ -6418,19 +6361,22 @@ sixel_builtin_load_stbi_png_path(
     int chunk_size,
     stbi__context *stb_context,
     stbi__result_info *ri,
-    int png_keycolor_mode,
-    int has_bkgd_chunk,
+    sixel_builtin_png_header_info_t const *png_header_info,
     int *animation_handled)
 {
     SIXELSTATUS status;
     sixel_builtin_frame_callback_context_t callback_context;
-    int has_apng_control;
+    int static_fallback_allowed;
+    int png_keycolor_mode;
+    int has_bkgd_chunk;
 
     status = SIXEL_FALSE;
     callback_context.request = NULL;
     callback_context.load_context = NULL;
     callback_context.cancel_context = NULL;
-    has_apng_control = 0;
+    static_fallback_allowed = 0;
+    png_keycolor_mode = 0;
+    has_bkgd_chunk = 0;
     if (animation_handled != NULL) {
         *animation_handled = 0;
     }
@@ -6441,12 +6387,12 @@ sixel_builtin_load_stbi_png_path(
         frame == NULL ||
         stb_context == NULL ||
         ri == NULL ||
+        png_header_info == NULL ||
         animation_handled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    has_apng_control = sixel_builtin_chunk_has_apng_control(load_request->chunk);
-    if (has_apng_control != 0) {
+    if (png_header_info->has_apng_control != 0) {
         callback_context.request = load_request;
         callback_context.load_context = load_context;
         callback_context.cancel_context = load_request->callback_context;
@@ -6460,21 +6406,27 @@ sixel_builtin_load_stbi_png_path(
             load_context->start_frame_no,
             sixel_builtin_finalize_frame_callback,
             &callback_context,
-            callback_context.cancel_context);
+            callback_context.cancel_context,
+            &static_fallback_allowed);
         if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
             *animation_handled = 1;
             return status;
         }
-        if (status == SIXEL_BAD_ALLOCATION) {
+        if (static_fallback_allowed == 0) {
             /*
-             * A resource failure is not evidence that the APNG is a static
-             * PNG. Falling back here would silently emit only the default
-             * image and report success after truncating the animation.
+             * Fallback is limited to structural errors found before raster
+             * decode. Resource, option, callback, and late animation errors
+             * must stay visible instead of truncating the animation.
              */
             return status;
         }
     }
 
+    png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
+        png_header_info,
+        load_request->bgcolor,
+        load_request->enable_cms);
+    has_bkgd_chunk = png_header_info->has_bkgd_chunk;
     status = sixel_builtin_load_png_single_frame(load_request->chunk,
                                                  load_request->allocator,
                                                  chunk_size,
@@ -6497,6 +6449,7 @@ typedef struct sixel_builtin_stbi_route_options {
     int is_psd;
     int is_pic;
     int is_tiff;
+    sixel_builtin_png_header_info_t const *png_header_info;
     unsigned char **icc_profile;
     size_t *icc_profile_length;
     unsigned char **psd_transparent_mask;
@@ -6515,13 +6468,9 @@ sixel_builtin_load_stbi_path(
 {
     SIXELSTATUS status;
     int chunk_size;
-    int png_keycolor_mode;
-    int has_bkgd_chunk;
 
     status = SIXEL_FALSE;
     chunk_size = 0;
-    png_keycolor_mode = 0;
-    has_bkgd_chunk = 0;
     if (load_request == NULL ||
         load_request->chunk == NULL ||
         load_request->allocator == NULL ||
@@ -6534,6 +6483,7 @@ sixel_builtin_load_stbi_path(
         route->icc_profile_length == NULL ||
         route->psd_transparent_mask == NULL ||
         route->psd_transparent_mask_size == NULL ||
+        route->png_header_info == NULL ||
         route->animation_handled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -6549,20 +6499,13 @@ sixel_builtin_load_stbi_path(
 
     stbi_allocator = load_request->allocator;
     if (route->is_png) {
-        has_bkgd_chunk = sixel_builtin_png_has_bkgd_chunk(
-            load_request->chunk);
-        png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
-            load_request->chunk,
-            load_request->bgcolor,
-            load_request->enable_cms);
         return sixel_builtin_load_stbi_png_path(load_request,
                                                 load_context,
                                                 *pframe,
                                                 chunk_size,
                                                 stb_context,
                                                 ri,
-                                                png_keycolor_mode,
-                                                has_bkgd_chunk,
+                                                route->png_header_info,
                                                 route->animation_handled);
     }
     /*
@@ -6631,6 +6574,7 @@ sixel_builtin_load_with_builtin_impl(
     sixel_builtin_load_context_t load_context;
     sixel_builtin_decode_path_t decode_path;
     sixel_builtin_stbi_route_options_t stbi_route;
+    sixel_builtin_png_header_info_t png_header_info;
     sixel_builtin_frame_callback_context_t webp_callback_context;
     int animation_handled;
     int webp_animation_handled;
@@ -6691,6 +6635,8 @@ sixel_builtin_load_with_builtin_impl(
     load_request.callback_context = context;
     memset(&load_context, 0, sizeof(load_context));
     memset(&stbi_route, 0, sizeof(stbi_route));
+    memset(&png_header_info, 0, sizeof(png_header_info));
+    png_header_info.color_type = (-1);
     memset(&webp_callback_context, 0, sizeof(webp_callback_context));
     decode_path = SIXEL_BUILTIN_DECODE_PATH_STBI;
     animation_handled = 0;
@@ -6705,11 +6651,15 @@ sixel_builtin_load_with_builtin_impl(
     is_psd = chunk_is_psd(pchunk);
     is_pic = chunk_is_pic(pchunk);
     is_tiff = chunk_is_tiff(pchunk);
+    if (is_png) {
+        (void)sixel_builtin_probe_png_header(pchunk, &png_header_info);
+    }
     stbi_route.is_png = is_png;
     stbi_route.is_jpeg = is_jpeg;
     stbi_route.is_psd = is_psd;
     stbi_route.is_pic = is_pic;
     stbi_route.is_tiff = is_tiff;
+    stbi_route.png_header_info = &png_header_info;
     stbi_route.icc_profile = &icc_profile;
     stbi_route.icc_profile_length = &icc_profile_length;
     stbi_route.psd_transparent_mask = &psd_transparent_mask;
@@ -6722,7 +6672,7 @@ sixel_builtin_load_with_builtin_impl(
         apply_start_frame = 1;
     } else if (decode_path == SIXEL_BUILTIN_DECODE_PATH_STBI &&
                is_png &&
-               sixel_builtin_chunk_has_apng_control(pchunk)) {
+               png_header_info.has_apng_control != 0) {
         /* Only APNG should validate animation start-frame controls. */
         apply_start_frame = 1;
     }

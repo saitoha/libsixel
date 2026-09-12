@@ -534,6 +534,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0174_LOADER_BUILTIN_PNG_CHRM_GAMA_FLOAT_NUMERIC \
     -DBUILD_TEST_0175_LOADER_BUILTIN_PNG_SINGULAR_CHRM_FALLBACK_NUMERIC \
     -DBUILD_TEST_0176_LOADER_BUILTIN_PNG_FILE_BACKGROUND_CHRM_NUMERIC \
+    -DBUILD_TEST_0177_LOADER_BUILTIN_PNG_POST_IDAT_ACTL_STATIC_NUMERIC \
+    -DBUILD_TEST_0178_LOADER_BUILTIN_APNG_DEFAULT_IMAGE_EXCLUDED_NUMERIC \
+    -DBUILD_TEST_0179_LOADER_BUILTIN_APNG_EARLY_ERROR_STATIC_FALLBACK_NUMERIC \
+    -DBUILD_TEST_0180_LOADER_BUILTIN_APNG_LATE_FRAME_COUNT_REJECT \
+    -DBUILD_TEST_0181_LOADER_BUILTIN_APNG_LATE_SEQUENCE_REJECT \
+    -DBUILD_TEST_0182_LOADER_BUILTIN_APNG_CALLBACK_ERROR_NO_FALLBACK \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -846,6 +852,12 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0174_loader_builtin_png_chrm_gama_float_numeric.c \
     loader/builtin/0175_loader_builtin_png_singular_chrm_fallback_numeric.c \
     loader/builtin/0176_loader_builtin_png_file_background_chrm_numeric.c \
+    loader/builtin/0177_loader_builtin_png_post_idat_actl_static_numeric.c \
+    loader/builtin/0178_loader_builtin_apng_default_image_excluded_numeric.c \
+    loader/builtin/0179_loader_builtin_apng_early_error_static_fallback_numeric.c \
+    loader/builtin/0180_loader_builtin_apng_late_frame_count_reject.c \
+    loader/builtin/0181_loader_builtin_apng_late_sequence_reject.c \
+    loader/builtin/0182_loader_builtin_apng_callback_error_no_fallback.c \
     loader/builtin/loader_builtin_png_color_test_common.h \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \

@@ -43,7 +43,7 @@ PNG specifies CRC validation, but these in-memory builtin paths currently read p
 
 ## Static decode pipeline and output forms
 
-The dispatcher recognizes the PNG signature, probes for `acTL`, and chooses animation or static decode. Static decode first inspects depth, color, `bKGD`, `tRNS`, and color metadata, then chooses one of several paths instead of forcing every source through RGBA8.
+The dispatcher recognizes the PNG signature and performs one header probe from the signature through the first `IDAT`. That single bounded pass records `tRNS`, `bKGD`, and whether an `acTL` appeared before image data, then chooses animation or static decode. It does not scan the compressed raster or later chunks merely to classify an ordinary PNG. An `acTL` after the first `IDAT` is outside the APNG recognition rule and remains an ancillary chunk on the static path. Static decode then inspects depth, color, and color metadata and chooses one of several paths instead of forcing every source through RGBA8.
 
 | Condition | Possible initial frame |
 | --- | --- |
@@ -58,7 +58,7 @@ Indexed palette conversion happens before later resize and quantization. If the 
 
 ## APNG pipeline
 
-`acTL` declares frame count and play count. Each `fcTL` gives a canvas sub-rectangle, delay numerator/denominator, disposal, and blend operator. `fdAT` carries frame zlib bytes after a sequence number; the default image can instead use `IDAT`. The implementation checks sequence numbers, declared frame count, chunk order, rectangle overflow, and canvas bounds.
+`acTL` declares frame count and play count. Each `fcTL` gives a canvas sub-rectangle, delay numerator/denominator, disposal, and blend operator. `fdAT` carries frame zlib bytes after a sequence number; the default image uses `IDAT`. The [PNG Third Edition APNG structure](https://www.w3.org/TR/png-3/) makes the position of the first `fcTL` decisive: if it precedes `IDAT`, the static default image is also animation frame zero; otherwise the default image is not in the animation, is not emitted through the animation callback, and is not included in `acTL.num_frames`. The implementation checks sequence numbers, declared frame count, chunk order, rectangle overflow, and canvas bounds.
 
 Each frame is reconstructed as a synthetic PNG using shared chunks, decoded through `stbi__load_and_postprocess_8bit()`, and composited onto an RGBA8 canvas. This is a distinct path from `sixel_frompng_load_nonindexed()` and its precision-preserving static pipeline. Shared metadata being copied into the synthetic PNG does not imply that static PNG's float/CMS processing runs before animation blending:
 
@@ -70,7 +70,20 @@ Each frame is reconstructed as a synthetic PNG using shared chunks, decoded thro
 | Dispose 1 (`BACKGROUND`) | Clear the frame rectangle after emission. |
 | Dispose 2 (`PREVIOUS`) | Restore the saved pre-frame canvas after emission. |
 
-The delay denominator defaults to 100 when encoded as zero. Delay is converted to libsixel's centisecond frame unit, so finer fractions are truncated by that boundary. A default image not participating in the animation remains the static fallback defined by APNG structure; invalid attempts to mix frame controls and data are rejected.
+The delay denominator defaults to 100 when encoded as zero. Delay is converted to libsixel's centisecond frame unit, so finer fractions are truncated by that boundary. A default image not participating in the animation is skipped while a valid animation is decoded, but remains available as the recovery image for an eligible early APNG error.
+
+### APNG recognition and recovery policy
+
+The PNG specification requires `acTL` before the first `IDAT` for APNG recognition and requires out-of-order APNG chunks to be treated as errors. Its error-handling section strongly recommends reverting to the static image after an animation error; this is recovery guidance, not a requirement to speculatively decode every static PNG as APNG or to repeat an arbitrarily expensive decode. The builtin component applies that guidance with an explicit bounded policy:
+
+| Situation | Builtin behavior | Reason |
+| --- | --- | --- |
+| No `acTL` before the first `IDAT` | Decode once as static PNG. APNG options are not parsed or range-checked. | A static PNG must not pay for APNG traversal, canvas allocation, or a failed animation attempt. |
+| APNG structural error before any frame raster decode | Abandon APNG parsing and attempt the static PNG exactly once. | This recovers the default image while duplicated work is still bounded. Examples include zero `num_frames`, an invalid first frame rectangle, or an invalid blend/dispose value. |
+| Error after any APNG frame raster decode starts | Stop and return the animation error; do not restart as static PNG. | A late frame-count or sequence error must not hide a truncated animation or repeat already-expensive inflate/composition work. Frames already delivered are not retracted. |
+| Allocation failure, cancellation, callback failure, or invalid animation option | Return that status without static fallback. | These failures do not show that the byte stream is merely a malformed animation, and retrying can mask resource, caller, or policy failures. |
+
+Static fallback means only that the ordinary PNG decoder gets one opportunity to decode the default image. If that image is itself invalid, the load still fails. Successful static recovery does not certify the discarded animation chunks as valid. `-Lbuiltin!` prevents another loader component from adding a second backend-level fallback, but it does not disable this format-internal recovery policy.
 
 ### Implementation and test map
 
@@ -80,11 +93,11 @@ The static branches are alternatives, not a forced trip through each box: an ind
 
 | ID | Implementation boundary | State entering → state leaving | Correctness obligation |
 | --- | --- | --- | --- |
-| `PNG-01` | `sixel_builtin_load_stbi_png_path()` and `sixel_builtin_chunk_has_apng_control()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | PNG chunk → static path or APNG state machine | `acTL` controls animation routing; `-S` may request one emitted frame without changing the structural classification. |
+| `PNG-01` | `sixel_builtin_probe_png_header()` and `sixel_builtin_load_stbi_png_path()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | PNG header through first IDAT → cached static/APNG and transparency/background route facts | Only `acTL` before `IDAT` controls animation routing; the bounded probe is reused rather than rescanning the file. `-S` may request one emitted frame without changing structural classification. |
 | `PNG-02` | `sixel_builtin_try_load_indexed_png()` and `sixel_builtin_load_png_keycolor_or_rgba()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | PLTE/tRNS raster → `PAL8`, key-color, or RGBA branch | Palette size, fusion policy, CMS/background needs, and multiple transparent entries must select a representable output. |
 | `PNG-03` | `sixel_frompng_load_nonindexed()` in [`frompng.c`](../../../src/frompng.c), backed by the adapted inflate/filter code in [`stb_image.h`](../../../src/stb_image.h) | Compressed scanlines → canonical byte or float RGB(A) samples | DEFLATE, PNG filters, Adam7 ordering, source depth, and alpha expansion must preserve numeric sample precision. |
 | `PNG-04` | `sixel_frompng_build_profile_from_chunks()` and `sixel_frompng_apply_colorspace_fallback_internal()` in [`frompng.c`](../../../src/frompng.c) | Decoded samples plus iCCP/sRGB/cHRM/gAMA/bKGD → transformed pixels/background | Metadata precedence and source transfer must be applied in the same precision and colorspace as alpha/background composition. |
-| `PNG-05` | `sixel_builtin_apng_process_chunk()`, `sixel_builtin_apng_blend_rect()`, and `sixel_builtin_apng_emit_pending_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | acTL/fcTL/IDAT/fdAT stream → completed animation canvases | Sequence numbers, frame rectangles, shared chunks, blend/dispose, timing, loop count, and pre-roll must remain coherent. |
+| `PNG-05` | `sixel_builtin_apng_process_chunk()`, `sixel_builtin_apng_flush_pending_frame()`, and `sixel_builtin_apng_emit_pending_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | acTL/fcTL/IDAT/fdAT stream → validated animation frames or bounded early static recovery | Default-image participation, sequence numbers, frame rectangles, shared chunks, blend/dispose, timing, loop count, pre-roll, and the no-late-fallback boundary must remain coherent. |
 | `PNG-06` | `sixel_builtin_finalize_frame_callback()` and `sixel_builtin_finalize_loaded_frame()` in [`loader-builtin.c`](../../../src/loader-builtin.c) | Format-owned temporary frame → public typed frame callback | Alpha must become composition or a separate transparency representation, and Exif orientation must rotate pixels and mask together. |
 
 The generated SVG and stage/test manifest are maintained by [`plot_builtin_loader_format_figures.py`](../../../tools/plot_builtin_loader_format_figures.py); its `--check` mode verifies regeneration and all named source/document/test anchors.
@@ -107,7 +120,7 @@ img2sixel -Lbuiltin:cms_engine=auto:cms_target=linear:prefer_8bit=0! image.png
 | `-B`, `background_policy`, `background_colorspace` | Resolve `bKGD` versus explicit background and define the explicit color's transfer interpretation before composition. |
 | `-A auto|composite|clear|keep` | Controls final treatment of zero-alpha pixels after PNG/APNG decode. A resolved background may already have flattened partial alpha. |
 | `-p COLORS`, resize options, and non-default encoder color modes | Affect whether indexed `PAL8` can be fused through the loader. Resize disables that fast path because resampling requires component pixels. |
-| `-S`, `-T`, `-l`, `-g` | Apply only to APNG. Their start-frame, loop, static, and presentation-delay meanings match the GIF description; prior frames may be decoded for canvas state. |
+| `-S`, `-T`, `-l`, `-g` | Apply only when `acTL` precedes `IDAT`. Their start-frame, loop, static, and presentation-delay meanings match the GIF description; prior animation frames may be decoded for canvas state. Invalid animation controls are terminal and do not select static fallback. |
 | HDR, PNM, and BMP-specific suboptions | No effect. |
 
 ## Comparison with the libpng loader
@@ -196,7 +209,7 @@ python3 tools/measure_png_loaders.py --check \
 
 ## Unsupported behavior and security boundary
 
-MNG and JNG are separate formats and are not decoded. Unknown critical chunks, invalid standard depth/type combinations, inconsistent APNG sequence graphs, and out-of-canvas frames fail. Arbitrary per-frame color profiles and general ancillary metadata preservation are not implemented.
+MNG and JNG are separate formats and are not decoded. Unknown critical chunks, invalid standard depth/type combinations, inconsistent APNG sequence graphs, and out-of-canvas frames fail unless the error is eligible for the bounded pre-raster static recovery described above. Arbitrary per-frame color profiles and general ancillary metadata preservation are not implemented.
 
 PNG combines attacker-controlled chunk lengths, DEFLATE expansion, filters, interlace passes, profiles, and animation canvases. CRC skipping makes bounds validation especially important and means another integrity layer is required when checksums are part of the trust model. `-Lbuiltin!` prevents a fallback decoder from accepting a rejected dialect but does not isolate this parser.
 
@@ -240,6 +253,11 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 | PNG-20 | A partially transparent indexed source and its `bKGD` entry are interpreted through the same cHRM/gAMA transform before exact float composition. | [tests/loader/builtin/2042_loader_builtin_png_file_background_chrm_numeric.t](../../../tests/loader/builtin/2042_loader_builtin_png_file_background_chrm_numeric.t) |
 | PNG-21 | APNG allocation failure cannot be mistaken for a malformed animation and silently succeed through the static-PNG fallback. | [tests/loader/builtin/2032_loader_builtin_apng_allocation_failures.t](../../../tests/loader/builtin/2032_loader_builtin_apng_allocation_failures.t) |
 | PNG-22 | Allocation failures while applying optional embedded ICC metadata do not leak and may use the documented unmanaged fallback. | [tests/loader/builtin/2035_loader_builtin_png_icc_allocation_failures.t](../../../tests/loader/builtin/2035_loader_builtin_png_icc_allocation_failures.t) |
+| PNG-23 | An `acTL` after the first `IDAT` remains static PNG even when an APNG-only start-frame request would be invalid for its payload. | [tests/loader/builtin/2043_loader_builtin_png_post_idat_actl_static_numeric.t](../../../tests/loader/builtin/2043_loader_builtin_png_post_idat_actl_static_numeric.t) |
+| PNG-24 | When no `fcTL` precedes `IDAT`, the static default image is excluded and exactly the declared animation frame is emitted. | [tests/loader/builtin/0038_apng_builtin_default_image_first_valid.t](../../../tests/loader/builtin/0038_apng_builtin_default_image_first_valid.t) |
+| PNG-25 | A zero frame count found before raster decode performs exactly one successful static fallback callback. | [tests/loader/builtin/0025_apng_builtin_invalid_num_frames_zero.t](../../../tests/loader/builtin/0025_apng_builtin_invalid_num_frames_zero.t) |
+| PNG-26 | A frame-count mismatch and a sequence gap discovered after raster decode remain errors without a trailing static callback. | [tests/loader/builtin/0026_apng_builtin_invalid_num_frames_mismatch.t](../../../tests/loader/builtin/0026_apng_builtin_invalid_num_frames_mismatch.t), [tests/loader/builtin/0036_apng_builtin_invalid_fctl_sequence_gap.t](../../../tests/loader/builtin/0036_apng_builtin_invalid_fctl_sequence_gap.t) |
+| PNG-27 | An error returned by the frame callback is terminal and cannot cause the callback to run again through static fallback. | [tests/loader/builtin/2044_loader_builtin_apng_callback_error_no_fallback.t](../../../tests/loader/builtin/2044_loader_builtin_apng_callback_error_no_fallback.t) |
 
 ### Quality regression tests
 
@@ -252,7 +270,11 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| PNG-90 | An `fcTL` placed after image data in an invalid structural position is rejected. | [tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t](../../../tests/loader/builtin/0035_apng_builtin_invalid_fctl_after_idat.t) |
+| PNG-90 | An excluded-default stream whose declared animation count exceeds its actual `fcTL` frames is rejected after animation decode starts. | [tests/loader/builtin/0035_apng_builtin_default_excluded_count_mismatch_reject.t](../../../tests/loader/builtin/0035_apng_builtin_default_excluded_count_mismatch_reject.t) |
+| PNG-91 | An out-of-canvas first frame is eligible for early static recovery because no frame raster decode has started. | [tests/loader/builtin/0027_apng_builtin_invalid_fctl_bounds.t](../../../tests/loader/builtin/0027_apng_builtin_invalid_fctl_bounds.t) |
+| PNG-92 | Invalid first-frame dispose and blend values are eligible for early static recovery rather than partial animation output. | [tests/loader/builtin/0028_apng_builtin_invalid_dispose_op.t](../../../tests/loader/builtin/0028_apng_builtin_invalid_dispose_op.t), [tests/loader/builtin/0029_apng_builtin_invalid_blend_op.t](../../../tests/loader/builtin/0029_apng_builtin_invalid_blend_op.t) |
+| PNG-93 | An `fdAT` sequence gap discovered after the first frame decode remains an error. | [tests/loader/builtin/0037_apng_builtin_invalid_fdat_sequence_gap.t](../../../tests/loader/builtin/0037_apng_builtin_invalid_fdat_sequence_gap.t) |
+| PNG-94 | A positive or negative out-of-range APNG start-frame request is a policy error and cannot silently select the static default image. | [tests/loader/builtin/0041_apng_builtin_start_frame_positive_oob.t](../../../tests/loader/builtin/0041_apng_builtin_start_frame_positive_oob.t), [tests/loader/builtin/0042_apng_builtin_start_frame_negative_oob.t](../../../tests/loader/builtin/0042_apng_builtin_start_frame_negative_oob.t) |
 
 Coverage audit note: direct owners now fix all five scanline filters in one image, all seven Adam7 passes for one indexed/depth combination, one sub-eight-bit Gray16 boundary, cHRM/gAMA float conversion and singular-matrix fallback, profile-consistent file-background composition, CgBI channel/unpremultiplication normalization, APNG cancellation and allocation boundaries, and representative `SOURCE`/`OVER`/`BACKGROUND`/`PREVIOUS` animation canvases. They do not establish the full filter × pass × depth × color-type product, every valid or invalid chromaticity tuple, every private CgBI variant, or every APNG ordering, blend, disposal, depth, and alpha combination. CRC validation is not an uncovered promised behavior: the implementation deliberately does not validate stored CRCs, as documented above.
 

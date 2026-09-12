@@ -1,24 +1,19 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
-# TAP test: APNG default image first input is handled on builtin loader path.
+# Policy: docs/loader/builtin/png.md
+# Verify a default image outside the animation is not emitted or counted.
 
 set -eux
-
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n";
-    exit 0
-}
-
 
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Lbuiltin! \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_libpng_default_image_first_valid.png" \
-    -o/dev/null || {
-    echo "not ok" 1 - "APNG default image first input failed"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    "loader/0178_loader_builtin_apng_default_image_excluded_numeric" \
+    1>&2 || {
+    echo "not ok" 1 - "APNG excluded default image was counted"
     exit 0
 }
 
-echo "ok" 1 - "APNG default image first input is handled"
+echo "ok" 1 - "APNG excluded default image is not counted"
 exit 0

@@ -289,6 +289,15 @@ edge_load_chunk_custom(char const *label,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    if (options->set_start_frame_no != 0) {
+        status = sixel_loader_component_setopt(
+            component,
+            SIXEL_LOADER_OPTION_START_FRAME_NO,
+            &options->start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
     status = sixel_loader_component_setopt(
         component,
         SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
