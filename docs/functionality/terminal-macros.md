@@ -4,9 +4,15 @@
 
 ## What is stored
 
-A terminal macro stores a sequence of terminal input bytes. DECDMAC defines those bytes, and DECINVM asks the terminal to process them. In libsixel, the stored bytes are a complete SIXEL image, including its SIXEL DCS introducer, palette and bitmap commands, and string terminator. Invoking the macro replays that image through the terminal parser; it does not ask the terminal to copy a retained bitmap object. Cursor and palette effects of the replay remain in effect. See the DEC [DECDMAC](https://vt100.net/docs/vt510-rm/DECDMAC.html) and [DECINVM](https://vt100.net/docs/vt510-rm/DECINVM.html) definitions.
+A terminal macro stores a sequence of terminal input bytes. DECDMAC defines those bytes, and DECINVM asks the terminal to process them. In libsixel, the stored bytes are a complete SIXEL image, including its SIXEL DCS introducer, palette and bitmap commands, and string terminator. This describes the protocol-level contents; a receiver can optimize image replay by retaining a decoded picture, as [mlterm does](#mlterm-image-reuse-on-invocation). Invocation does not automatically save and restore cursor or palette state. See the DEC [DECDMAC](https://vt100.net/docs/vt510-rm/DECDMAC.html) and [DECINVM](https://vt100.net/docs/vt510-rm/DECINVM.html) definitions.
 
 This is separate from the legacy SIXEL DCS `P1` parameter, also called a “macro parameter” in descriptions of pixel aspect ratio. `-n` does not select `P1`. It selects the ID of an outer terminal macro that contains a SIXEL stream. See the [SIXEL wire format](../sixel-format.md#dcs-envelope) for the inner format and [project history](../project-history.md#araki-kens-experiments-around-mlterm) for the origin of the libsixel macro path.
+
+## Origin and emulation model
+
+Araki Ken (`@arakiken`) proposed image preloading with terminal macros as a speed improvement during libsixel's formative 2014 period. mlterm's [2014-07-21 history](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L11508-L11515) records both DECDMAC/DECINVM support and caching of macro images. libsixel added [`-u` on July 21](https://github.com/saitoha/libsixel/commit/fc93d97631a6c1556b8af0ceceab2a5cf8c9fa35), incorporated [Araki Ken's faster hexadecimal output patch on July 22](https://github.com/saitoha/libsixel/commit/45bd1b2c9a6ad20b6681adb48ec3a2052d13a5b4), and added [`-n` on August 2](https://github.com/saitoha/libsixel/commit/7f12bdb00456f43a260c03cba9986227744d46cd).
+
+The technique combines capabilities from different DEC terminal generations. DECDMAC and DECINVM belong to the [VT420 / VT class 4 command set](https://vt100.net/docs/vt420-uu/chapter9.html), while DECSIXEL graphics were available on the [VT330/VT340](https://vt100.net/docs/vt3xx-gp/chapter14.html). Those physical terminals did not provide both capabilities together. The combined behavior is an emulator interpretation of the control functions, so the DEC macro references explain the individual commands without establishing an original-hardware SIXEL preload feature. Combining SIXEL with VT420-style DECSLRM horizontal margins for image scrolling has the same historical boundary; see the [related experiments](../project-history.md#araki-kens-experiments-around-mlterm).
 
 ## Choosing an option
 
@@ -95,7 +101,7 @@ The definition's `0` replaces only the selected ID, and `1` selects hexadecimal 
 
 ## Transfer cost and execution cost
 
-Macro reuse trades a larger first transfer and terminal storage for shorter later transfers. If a frame's complete ordinary SIXEL stream has `S` bytes, its macro definition carries `2S` hex bytes plus definition overhead `H`. Each invocation costs `I` bytes. With a one-digit ID, `H` is 11 bytes and `I` is five bytes for the current emitter.
+With libsixel's current hexadecimal emitter, macro reuse trades a larger first transfer and terminal storage for shorter later transfers. If a frame's complete ordinary SIXEL stream has `S` bytes, its macro definition carries `2S` hex bytes plus definition overhead `H`. Each invocation costs `I` bytes. With a one-digit ID, `H` is 11 bytes and `I` is five bytes for the current emitter.
 
 For `R` displays of the same encoded frame, excluding cursor controls and assuming an unchanged ordinary SIXEL payload:
 
@@ -106,7 +112,31 @@ For `R` displays of the same encoded frame, excluding cursor controls and assumi
 
 Under those assumptions, macros save transfer bytes when `R * (S - I) > 2 * S + H`. A single display increases traffic, and even two displays do not recover the definition overhead. For a sufficiently large image, the third and later displays can make reuse worthwhile. This is a byte-count model, not a measured speed claim; changing frame encodings, palette reuse, delta output, or transport wrapping changes the comparison.
 
-The terminal still processes the stored SIXEL on every invocation. On the host, later loops skip `sixel_encode()` in the macro output branch, but the surrounding loading, frame preparation, palette processing, and allocation work is not all bypassed. Do not interpret the smaller wire stream as a guarantee that either endpoint has no decoding or image-processing cost. The cached first-pass frame also freezes its encoded dithering and palette choices for later replay.
+Receiver execution cost depends on the implementation: a terminal can parse the stored SIXEL again or reuse a decoded image. On the host, later loops skip `sixel_encode()` in the macro output branch, but the surrounding loading, frame preparation, palette processing, and allocation work is not all bypassed. Do not interpret the smaller wire stream as a guarantee that either endpoint has no decoding or image-processing cost. The cached first-pass frame also freezes its encoded dithering and palette choices for later replay.
+
+## Emulator implementation references
+
+RLogin's alternative definition encodings and mlterm's image cache address different costs: bytes sent to define a macro and work done to display it. Both are useful implementation references for understanding the preload technique.
+
+### RLogin: alternative definition encodings
+
+RLogin documents two extensions to DECDMAC's `Pen` encoding selector, available since version 2.31.1. See its [DECDMAC control-sequence reference](https://kmiya-culti.github.io/RLogin/ctrlcode.html#DECDMAC).
+
+| `Pen` | Definition payload | Size consequence |
+| --- | --- | --- |
+| `1` | Hexadecimal pairs, with optional repeat syntax. | libsixel emits plain pairs, giving the `2S` payload above. |
+| `2` | Text with backslash escapes, including `\e` for ESC and `\\` for a literal backslash. | Printable SIXEL text can remain literal; expansion depends on the bytes requiring escapes instead of uniformly doubling every byte. |
+| `3` | Base64, optionally applied after gzip compression. | Uncompressed Base64 is approximately four thirds of the input size; gzip's effect depends on the data. |
+
+For `Pen=2`, a SIXEL paint byte can itself be a literal backslash, so escaping only ESC is insufficient. These encodings change the definition payload, not the DECINVM invocation. Current libsixel always selects `Pen=1`; `-u` and `-n` neither select nor negotiate the RLogin extensions. Their size benefits therefore require a sender that emits the corresponding encoding and a receiver that supports it.
+
+### mlterm: image reuse on invocation
+
+In mlterm revision [`c48d69a36499`](https://github.com/arakiken/mlterm/tree/c48d69a36499f650139815c9610db0a2f39fcbc0), [`define_macro()`](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/vtemu/vt_parser.c#L3384-L3469) recognizes a macro containing a SIXEL image after decoding `Pen=1` or `Pen=2`. With image support enabled and successful file creation, it writes the SIXEL stream to a `.six` file and retains that path as the macro reference. [`invoke_macro()`](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/vtemu/vt_parser.c#L3478-L3491) then uses the picture display path; ordinary macros use parser loopback.
+
+The first display loads the image. Later displays can reuse an active cached picture with a matching path, display, terminal, and requested dimensions in [`ui_load_inline_picture()`](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/uitoolkit/ui_picture.c#L898-L929). Thus a cache hit avoids decoding the SIXEL body again. Macro replacement [removes the old file and advances its filename generation](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/vtemu/vt_parser.c#L3276-L3287), preventing reuse of the previous definition through the same cache key. Cache retention is subject to mlterm's [inline-picture cleanup](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/uitoolkit/ui_picture.c#L393-L478).
+
+This optimization already benefits libsixel's hexadecimal definitions. It reduces receiver decoding work on cache hits while leaving the initial `2S` wire payload unchanged. It is specific to the recognized image path, not a guarantee that arbitrary terminal macros or all terminal implementations retain decoded bitmaps.
 
 ## Receiver state and option interactions
 
@@ -155,3 +185,5 @@ Each test compares the complete emitted control stream, including the hex-encode
 The [builtin animation macro smoke test](../../tests/loader/builtin/0107_builtin_disable_update_mode.t) and the [optional libwebp macro smoke test](../../tests/loader/libwebp/0007_webp_use_macro.t) provide additional command-success coverage and discard output. They do not replace the exact stream assertions above.
 
 The exact tests cover the static/animation definition boundary and the listed playback contracts. They do not establish a timing tolerance, other loaders' frame metadata, all numeric validation cases, repeated `-n` precedence, C1 output, DRCS rejection, or file/multiplexer handling. Receiver capacity, macro lifetime, visual placement, and rendering require terminal integration checks; a successful local test does not prove those receiver-dependent properties. No perceptual quality threshold or malformed-input inventory is substituted for these exact stream tests.
+
+The RLogin and mlterm descriptions above are based on their documentation and source. This suite does not execute those terminals, test the alternative encodings, or measure receiver cache hits.

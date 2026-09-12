@@ -57,13 +57,7 @@ that materially changed the modern interpretation of SIXEL:
    experimental 15-bit implementation entered libsixel in
    [November 2014](https://github.com/saitoha/libsixel/commit/0382aef1afa5333ad2d69f4412900accca866ef2)
    and became `img2sixel -I`, the high-color mode.
-2. **Image preloading with terminal macros.** DECDMAC can store SIXEL data in
-   the terminal before it is needed and the stored macro can then be invoked
-   without retransmitting the image body. libsixel adopted this work in its
-   2014 macro path and incorporated
-   [Araki Ken's optimization](https://github.com/saitoha/libsixel/commit/45bd1b2c9a6ad20b6681adb48ec3a2052d13a5b4).
-   In the current CLI, `img2sixel -n` defines and stores an image without
-   displaying it, while `-u` uses DECDMAC and DECINVM for animation rendering.
+2. **Image preloading with terminal macros.** Araki Ken proposed combining DECDMAC with SIXEL as a speed improvement during libsixel's formative 2014 period: preload the image, then invoke its macro without retransmitting the body. mlterm's [2014-07-21 history](https://github.com/arakiken/mlterm/blob/c48d69a36499f650139815c9610db0a2f39fcbc0/ChangeLog#L11508-L11515) records macro support and caching of the resulting images. libsixel added [`-u` on July 21](https://github.com/saitoha/libsixel/commit/fc93d97631a6c1556b8af0ceceab2a5cf8c9fa35), incorporated [Araki Ken's hexadecimal output optimization on July 22](https://github.com/saitoha/libsixel/commit/45bd1b2c9a6ad20b6681adb48ec3a2052d13a5b4), and added [`-n` on August 2](https://github.com/saitoha/libsixel/commit/7f12bdb00456f43a260c03cba9986227744d46cd). In the current CLI, `img2sixel -n` defines an image without displaying it, while `-u` uses DECDMAC and DECINVM for playback. See [terminal macros](functionality/terminal-macros.md) for the wire format and the RLogin and mlterm implementation references.
 3. **Scrolling images by using terminal margins.** Araki Ken's
    [GNU Screen SIXEL branch](https://github.com/arakiken/screen/tree/sixel)
    forwards the SIXEL stream rather than storing and reconstructing its
@@ -73,6 +67,8 @@ that materially changed the modern interpretation of SIXEL:
    without Screen retransmitting the original SIXEL data. This did not make
    Screen retain images for a later full redraw; it was specifically a
    terminal-side scrolling technique.
+
+The preload and horizontal-margin scrolling techniques combine features from different DEC terminal generations. DECDMAC/DECINVM and DECSLRM appear in the [VT420 / VT class 4 command set](https://vt100.net/docs/vt420-uu/chapter9.html), while DECSIXEL graphics were available on the [VT330/VT340](https://vt100.net/docs/vt3xx-gp/chapter14.html). Those physical terminals did not provide the combined feature set. These techniques grew out of emulator interpretations that composed the separate control functions and defined their interaction with graphics.
 
 The first technique is now often discussed as libsixel's high-color mode. The
 DECDMAC preload and margin-scrolling techniques are less visible in accounts
