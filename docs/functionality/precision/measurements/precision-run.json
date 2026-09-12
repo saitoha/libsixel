@@ -19,7 +19,7 @@
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-12T15:04:04.840248+00:00",
+  "generated_at_utc": "2026-09-12T16:59:03.269434+00:00",
   "host": {
     "matplotlib": "3.10.3",
     "platform": "macOS-26.5.1-arm64-arm-64bit",
@@ -35,7 +35,7 @@
       "launcher": "converters/img2sixel",
       "launcher_sha256": "2832f418537a24bb158c5e66183389fe726c9b7b2f9f3ed9778113523024e6e4",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "662d338a10127bb357537cd41ab773c085ef2cfb908002264796418ac9aa17c6"
+      "payload_sha256": "174e48874182db871f5de6c544aa2892faa65da628067b10517b5cb335efee02"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
@@ -338,7 +338,7 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "c26da16e79d75081c0f76a461b16aaed7814f8f5",
+    "revision": "85a2674e53a2d7b75c6944b5a87b04ee9ea182b1",
     "tracked_worktree_state_at_start": "clean"
   }
 }

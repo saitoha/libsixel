@@ -60,16 +60,16 @@ The [conversion implementation](../../src/colorspace.c) and [focused conversion 
 
 ## What the image measurements show
 
-The corrected implementation was measured on `images/snake.png` (600 × 450), with float32, exact lookup, one CPU thread, full-frame sampling, seeded K-means, six-bit hard binning, no merge, cover off, and no dithering. These examples change only the indicated stage relative to gamma/gamma within each measurement family:
+The corrected implementation was measured on `images/snake.png` (600 × 450), with the builtin loader, loader CMS disabled (`SIXEL_LOADER_CMS_ENGINE=none`), float32, exact lookup, one CPU thread, full-frame sampling, seeded K-means, six-bit hard binning, no merge, cover off, and no dithering. These examples change only the indicated stage relative to gamma/gamma within each measurement family:
 
 | Use case | Clustering / working | MS-SSIM ↑ | Mean ΔE00 ↓ | SIXEL bytes | Median time |
 | --- | --- | ---: | ---: | ---: | ---: |
-| 8-color palette, reference | gamma / gamma | 0.872289 | 5.575620 | 37,306 | 48.10 ms |
-| 8-color palette, perceptual construction | DIN99d / gamma | 0.908985 | 5.214225 | 39,678 | 66.97 ms |
-| 256-color palette, reference | gamma / gamma | 0.991358 | 1.871517 | 255,299 | 215.41 ms |
-| 256-color palette, perceptual lookup | gamma / DIN99d | 0.988698 | 1.635661 | 254,625 | 256.17 ms |
+| 8-color palette, reference | gamma / gamma | 0.872289 | 5.575620 | 37,306 | 51.39 ms |
+| 8-color palette, perceptual construction | DIN99d / gamma | 0.908985 | 5.214225 | 39,678 | 68.75 ms |
+| 256-color palette, reference | gamma / gamma | 0.991358 | 1.871517 | 255,299 | 218.01 ms |
+| 256-color palette, perceptual lookup | gamma / DIN99d | 0.988698 | 1.635661 | 254,625 | 261.84 ms |
 
-At eight colors, DIN99d construction improves both reported quality metrics against gamma in this fixture, with more bytes and time. At 256 colors, DIN99d lookup reduces mean color error by about 12.6%, with a small decrease in structural similarity and about 18.9% more time. These are distinct controlled comparisons: the first pair comes from the nine-run clustering suite, the second from the seven-run working-space suite; both use two warmups. Compare times within each pair.
+At eight colors, DIN99d construction improves both reported quality metrics against gamma in this fixture, with more bytes and time. At 256 colors, DIN99d lookup reduces mean color error by about 12.6%, with a small decrease in structural similarity and about 20.1% more time. These are distinct controlled comparisons: the first pair comes from the nine-run clustering suite, the second from the seven-run working-space suite; both use two warmups. Compare times within each pair.
 
 ![Quality across all five working spaces, palette sizes, and dither conditions](../functionality/working-colorspaces/measurements/working-colorspace-quality.png)
 
