@@ -204,13 +204,15 @@ jobs:
                 "$GITHUB_WORKSPACE/configure" \
                   --disable-dependency-tracking \
                   --disable-tests
-                make -j2 V=1
+                make -j2 V=1 -C src
+                make -j2 V=1 -C converters
                 IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
                 SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
               else
                 meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE" \
                   -Dtests=false
-                meson compile -C /tmp/libsixel-build -j 2 -v
+                meson compile -C /tmp/libsixel-build -j 2 -v \
+                  img2sixel sixel2png
                 IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
                 SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
               fi
@@ -288,13 +290,15 @@ jobs:
               "$GITHUB_WORKSPACE/configure" \
                 --disable-dependency-tracking \
                 --disable-tests
-              gmake V=1
+              gmake V=1 -C src
+              gmake V=1 -C converters
               IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
               SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
             else
               meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE" \
                 -Dtests=false
-              meson compile -C /tmp/libsixel-build -v
+              meson compile -C /tmp/libsixel-build -v \
+                img2sixel sixel2png
               IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
               SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
             fi
