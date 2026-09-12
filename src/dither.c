@@ -2023,6 +2023,7 @@ sixel_dither_new(
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppdither)->prefer_float32 = 0;
+    (*ppdither)->palette_snap_exact = 0;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_override = 0;
@@ -2537,6 +2538,7 @@ sixel_dither_initialize_internal(
     palette_request.quality_mode = dither->quality_mode;
     palette_request.force_palette = dither->force_palette;
     palette_request.use_reversible = sixel_palette_snap_is_enabled();
+    dither->palette_snap_exact = sixel_palette_snap_is_exact();
     palette_request.quantize_model = dither->quantize_model;
     palette_request.final_merge_mode = dither->final_merge_mode;
     palette_request.lut_policy = dither->lut_policy;
@@ -2567,16 +2569,25 @@ sixel_dither_initialize_internal(
      * The legacy make_palette() path returned only byte palette entries to
      * dither.  Some quantizers keep float32 entries in their internal sample
      * domain, and 6cells does not yet tag palette float views with that domain.
-     * Drop them here so PaletteApply rebuilds byte-derived float entries in
+     * Normally drop them so PaletteApply rebuilds byte-derived float entries in
      * the active source pixelformat, keeping lookup and emitted palette entries
      * consistent with the pre-component behavior.
      */
-    memset(&drop_float_request, 0, sizeof(drop_float_request));
-    status = dither->palette->vtbl->init_entries_float32(
-        dither->palette,
-        &drop_float_request);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    /*
+     * A snapped typed palette has an explicit palette_pixelformat domain.
+     * Preserve that authoritative view: packing perceptual coordinates to
+     * bytes here would move the selected RGB fixed points off the safe grid.
+     * Keep the existing byte-derived path when snapping is disabled.
+     */
+    if (!palette_request.use_reversible
+            || !SIXEL_PIXELFORMAT_IS_FLOAT32(palette_pixelformat)) {
+        memset(&drop_float_request, 0, sizeof(drop_float_request));
+        status = dither->palette->vtbl->init_entries_float32(
+            dither->palette,
+            &drop_float_request);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
     memset(&palette_metadata, 0, sizeof(palette_metadata));
     status = dither->palette->vtbl->get_metadata(dither->palette,
@@ -2847,6 +2858,7 @@ sixel_dither_set_palette(
     request.colors = (unsigned int)dither->ncolors;
     request.depth = 3;
     (void)dither->palette->vtbl->init_entries(dither->palette, &request);
+    dither->palette_snap_exact = 0;
 }
 
 

@@ -13,17 +13,18 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
+# Convert typed CIELAB coordinates before packing the output RGB bytes.
 expected_palette='GIMP Palette
 Name: libsixel export
 Columns: 16
 # Exported by libsixel
-106  92  53	Index 0
- 64  50   0	Index 1
+106  91  54	Index 0
+ 64  50   6	Index 1
 126 117  69	Index 2
-101  88  13	Index 3
+101  89   8	Index 3
 141 167 122	Index 4
-148 138 120	Index 5
-151 134  13	Index 6
+149 138 120	Index 5
+151 134  14	Index 6
 140 130  93	Index 7'
 
 actual_palette=$(

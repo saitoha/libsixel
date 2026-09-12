@@ -4079,6 +4079,13 @@ sixel_encoder_capture_quantized_palette_only(
     size_t palette_bytes;
     unsigned char *new_palette;
     int ncolors;
+    sixel_palette_float32_entries_view_t float_view;
+    size_t index;
+    int channel;
+    int source_format;
+    int output_format;
+    int use_float;
+    float triplet[3];
 
     status = SIXEL_OK;
     quantized_pixels = 0u;
@@ -4165,19 +4172,70 @@ sixel_encoder_capture_quantized_palette_only(
      * coordinates.  Mirror that boundary on this separate capture copy so
      * palette files never receive the internal working representation.
      */
-    if (source_colorspace != output_colorspace) {
-        status = sixel_helper_convert_colorspace(
-            encoder->capture_palette,
-            palette_bytes,
-            SIXEL_PIXELFORMAT_RGB888,
-            source_colorspace,
-            output_colorspace);
+    if (source_colorspace != output_colorspace
+            || dither->palette_snap_exact != 0) {
+        memset(&float_view, 0, sizeof(float_view));
+        status = palette_obj->vtbl->get_entries_float32(palette_obj,
+                                                        &float_view);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        source_format = sixel_encoder_pixelformat_for_colorspace(
+            source_colorspace, 1);
+        output_format = sixel_encoder_pixelformat_for_colorspace(
+            output_colorspace, 1);
+        use_float = float_view.entries != NULL
+            && float_view.entry_count == palette_count
+            && float_view.depth == (int)(3U * sizeof(float));
+        /* Match the wire path: a changed byte palette invalidates its view. */
+        for (index = 0U; use_float && index < palette_bytes; ++index) {
+            channel = (int)(index % 3U);
+            if (palette_view.entries[index]
+                    != sixel_pixelformat_float_channel_to_byte(
+                        source_format, channel, float_view.entries[index])) {
+                use_float = 0;
+            }
+        }
+        if (use_float) {
+            /* Convert before packing, preserving snapped non-RGB targets. */
+            for (index = 0U; index < palette_count; ++index) {
+                memcpy(triplet, float_view.entries + index * 3U,
+                       sizeof(triplet));
+                status = sixel_helper_convert_colorspace(
+                    (unsigned char *)triplet, sizeof(triplet),
+                    source_format, source_colorspace, output_colorspace);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                for (channel = 0; channel < 3; ++channel) {
+                    encoder->capture_palette[index * 3U + (size_t)channel]
+                        = sixel_pixelformat_float_channel_to_byte(
+                            output_format, channel, triplet[channel]);
+                }
+                if (dither->palette_snap_exact != 0) {
+                    sixel_palette_snap_output(
+                        encoder->capture_palette + index * 3U, triplet, 1U);
+                }
+            }
+        } else {
+            status = sixel_helper_convert_colorspace(
+                encoder->capture_palette,
+                palette_bytes,
+                SIXEL_PIXELFORMAT_RGB888,
+                source_colorspace,
+                output_colorspace);
+        }
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_capture_quantized_palette_only: "
                 "palette colorspace conversion failed.");
             return status;
         }
+    }
+
+    if (dither->palette_snap_exact != 0) {
+        sixel_palette_snap_output(encoder->capture_palette, NULL,
+                                   (unsigned int)palette_count);
     }
 
     encoder->capture_width = width;

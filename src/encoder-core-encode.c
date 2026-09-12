@@ -67,6 +67,7 @@
 #include "dither.h"
 #include "options.h"
 #include "pixelformat.h"
+#include "palette-common-snap.h"
 #include "timeline-logger.h"
 #include "threading.h"
 #include "encoder-core-highcolor.h"
@@ -4906,6 +4907,10 @@ sixel_encode_dither(
                 goto end;
             }
         }
+    }
+    if (dither->palette_snap_exact != 0) {
+        sixel_palette_snap_output(palette_entries, palette_entries_float32,
+                                   (unsigned int)palette_count);
     }
     if (SIXEL_FAILED(status) || palette_entries == NULL) {
         sixel_helper_set_additional_message(

@@ -7569,9 +7569,8 @@ sixel_palette_build_kcenter_internal(sixel_kcenter_internal_ctx_t *ctx)
     }
 
     if (SIXEL_PALETTE_CONTEXT(palette)->use_reversible && entries != NULL) {
-        sixel_palette_reversible_palette(entries,
-                                         ncolors,
-                                         SIXEL_PIXELFORMAT_RGB888);
+        sixel_palette_snap_entries(entries, entries_float32,
+                                   ncolors, pixelformat);
     }
 
     payload_size = (size_t)ncolors * (size_t)entry_depth;

@@ -12738,9 +12738,8 @@ sixel_palette_build_kmedoids_internal(sixel_palette_t *palette,
     }
 
     if (SIXEL_PALETTE_CONTEXT(palette)->use_reversible && entries != NULL) {
-        sixel_palette_reversible_palette(entries,
-                                         ncolors,
-                                         SIXEL_PIXELFORMAT_RGB888);
+        sixel_palette_snap_entries(entries, entries_float32,
+                                   ncolors, pixelformat);
     }
 
     payload_size = (size_t)ncolors * (size_t)entry_depth;

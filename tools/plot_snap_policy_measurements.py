@@ -8,6 +8,7 @@ import csv
 import datetime
 import json
 import os
+import re
 import platform
 import shlex
 import shutil
@@ -350,6 +351,21 @@ def measure_quality_point(
             f"Command failed ({proc.returncode}): "
             f"{shlex.join(command)}\n{diagnostic}"
         )
+    snap = next(token.split("=", 1)[1] for token in command
+                if token.startswith("--snap-policy="))
+    tuning = dict(part.split("=", 1) for part in snap.split(":")[1:])
+    if snap.split(":")[0] != "none" and float(tuning.get("rate", "1")) == 1:
+        # Check the output boundary, including the typed palette used on wire.
+        data = palette_path.read_bytes()
+        count = int.from_bytes(data[768:770], "big") or 256
+        definitions = re.findall(rb"#(\d+);2;(\d+);(\d+);(\d+)", proc.stdout)
+        if len(definitions) != count:
+            raise ValueError("Exact snap lacks a complete output palette")
+        for definition in definitions:
+            index, *channels = map(int, definition)
+            decoded = bytes((255 * value + 50) // 100 for value in channels)
+            if index >= count or decoded != data[index * 3:index * 3 + 3]:
+                raise ValueError("Exact snap ACT and SIXEL palettes disagree")
     metrics, assessment = assess_stream(
         proc.stdout,
         lsqa,

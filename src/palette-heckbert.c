@@ -3607,9 +3607,11 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                 SIXEL_PALETTE_STORAGE(palette)->entries[index * depth + plane]
                     = (unsigned char)colormap.table[index]->tuple[plane];
                 if (float_entries != NULL) {
+                    /* Preserve the typed opponent-axis bounds, not [0,1]. */
                     float_entries[index * depth + plane]
-                        = sixel_palette_heckbert_sample_to_float(
-                            colormap.table[index]->tuple[plane]);
+                        = sixel_pixelformat_byte_to_float(
+                            pixelformat, (int)plane,
+                            (unsigned char)colormap.table[index]->tuple[plane]);
                 }
             }
         }

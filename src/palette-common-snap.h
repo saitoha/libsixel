@@ -30,6 +30,8 @@
 #ifndef LIBSIXEL_PALETTE_COMMON_SNAP_H
 #define LIBSIXEL_PALETTE_COMMON_SNAP_H
 
+#include <sixel.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -43,6 +45,13 @@ void
 sixel_palette_reversible_palette_float(float *palette,
                                        unsigned int colors,
                                        int pixelformat);
+
+/* Snap typed coordinates once, then refresh their packed byte view. */
+SIXEL_INTERNAL_API void
+sixel_palette_snap_entries(unsigned char *entries,
+                          float *entries_float32,
+                          unsigned int colors,
+                          int pixelformat);
 
 enum sixel_palette_snap_stage {
     SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT = 0,
@@ -77,12 +86,21 @@ typedef struct sixel_palette_snap_options {
     double channel_factor_l;
 } sixel_palette_snap_options_t;
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_palette_snap_override(
     sixel_palette_snap_options_t const *options);
 
 int
 sixel_palette_snap_is_enabled(void);
+
+SIXEL_INTERNAL_API int
+sixel_palette_snap_is_exact(void);
+
+/* Resolve output rounding after colorspace conversion, only for rate=1. */
+void
+sixel_palette_snap_output(unsigned char *entries,
+                         float *entries_float32,
+                         unsigned int colors);
 
 int
 sixel_palette_should_snap(enum sixel_palette_snap_stage stage);

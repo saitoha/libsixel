@@ -472,6 +472,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0042_kcenter_large_buffer.c \
 	quant/palette/0043_kcenter_float_legacy_grid.c \
 	quant/palette/0044_kcenter_packed_alpha_layouts.c \
+	quant/palette/0045_snap_output_grid.c \
+	quant/palette/0048_snap_partial_once.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/status/0001_status_timeout.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -842,6 +844,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0042_kcenter_large_buffer.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0043_kcenter_float_legacy_grid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0045_snap_output_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0048_snap_partial_once.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
@@ -1296,6 +1300,8 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po \
 	quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po \
 	quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po \
+	quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Po \
+	quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po \
 	quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po \
 	quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
@@ -1962,6 +1968,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DIN99D_FORWARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_DIN99D_INVERSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_DIN99D_BYTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ORMODE_TEST_COMMON \
@@ -2732,6 +2740,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0042_kcenter_large_buffer.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0043_kcenter_float_legacy_grid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0044_kcenter_packed_alpha_layouts.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0045_snap_output_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0048_snap_partial_once.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/status/0001_status_timeout.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
@@ -4133,6 +4143,12 @@ quant/palette/test_runner-0043_kcenter_float_legacy_grid.$(OBJEXT):  \
 quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0045_snap_output_grid.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0048_snap_partial_once.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
 	@$(MKDIR_P) diagnostics/probe
 	@: >>diagnostics/probe/$(am__dirstamp)
@@ -4670,6 +4686,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po@am__quote@ # am--include-marker
@@ -9562,6 +9580,34 @@ quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.obj: quant/palette/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0044_kcenter_packed_alpha_layouts.obj `if test -f 'quant/palette/0044_kcenter_packed_alpha_layouts.c'; then $(CYGPATH_W) 'quant/palette/0044_kcenter_packed_alpha_layouts.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0044_kcenter_packed_alpha_layouts.c'; fi`
 
+quant/palette/test_runner-0045_snap_output_grid.o: quant/palette/0045_snap_output_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0045_snap_output_grid.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Tpo -c -o quant/palette/test_runner-0045_snap_output_grid.o `test -f 'quant/palette/0045_snap_output_grid.c' || echo '$(srcdir)/'`quant/palette/0045_snap_output_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Tpo quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0045_snap_output_grid.c' object='quant/palette/test_runner-0045_snap_output_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0045_snap_output_grid.o `test -f 'quant/palette/0045_snap_output_grid.c' || echo '$(srcdir)/'`quant/palette/0045_snap_output_grid.c
+
+quant/palette/test_runner-0045_snap_output_grid.obj: quant/palette/0045_snap_output_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0045_snap_output_grid.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Tpo -c -o quant/palette/test_runner-0045_snap_output_grid.obj `if test -f 'quant/palette/0045_snap_output_grid.c'; then $(CYGPATH_W) 'quant/palette/0045_snap_output_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0045_snap_output_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Tpo quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0045_snap_output_grid.c' object='quant/palette/test_runner-0045_snap_output_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0045_snap_output_grid.obj `if test -f 'quant/palette/0045_snap_output_grid.c'; then $(CYGPATH_W) 'quant/palette/0045_snap_output_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0045_snap_output_grid.c'; fi`
+
+quant/palette/test_runner-0048_snap_partial_once.o: quant/palette/0048_snap_partial_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0048_snap_partial_once.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Tpo -c -o quant/palette/test_runner-0048_snap_partial_once.o `test -f 'quant/palette/0048_snap_partial_once.c' || echo '$(srcdir)/'`quant/palette/0048_snap_partial_once.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Tpo quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0048_snap_partial_once.c' object='quant/palette/test_runner-0048_snap_partial_once.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0048_snap_partial_once.o `test -f 'quant/palette/0048_snap_partial_once.c' || echo '$(srcdir)/'`quant/palette/0048_snap_partial_once.c
+
+quant/palette/test_runner-0048_snap_partial_once.obj: quant/palette/0048_snap_partial_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0048_snap_partial_once.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Tpo -c -o quant/palette/test_runner-0048_snap_partial_once.obj `if test -f 'quant/palette/0048_snap_partial_once.c'; then $(CYGPATH_W) 'quant/palette/0048_snap_partial_once.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0048_snap_partial_once.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Tpo quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0048_snap_partial_once.c' object='quant/palette/test_runner-0048_snap_partial_once.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0048_snap_partial_once.obj `if test -f 'quant/palette/0048_snap_partial_once.c'; then $(CYGPATH_W) 'quant/palette/0048_snap_partial_once.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0048_snap_partial_once.c'; fi`
+
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
@@ -10675,6 +10721,8 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po
@@ -11090,6 +11138,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0042_kcenter_large_buffer.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0043_kcenter_float_legacy_grid.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0044_kcenter_packed_alpha_layouts.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0045_snap_output_grid.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0048_snap_partial_once.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0006_palette_fallback_conversion.Po
 	-rm -f quant/palette/fallback/$(DEPDIR)/test_runner-0007_palette_fallback_output.Po
 	-rm -f quant/palette/usage/$(DEPDIR)/test_runner-0174_transparent_offset_ormode_geometry.Po

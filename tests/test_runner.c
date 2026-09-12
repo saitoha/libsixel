@@ -304,6 +304,8 @@ int test_palette_0041_kcenter_binning_filter(int argc, char **argv);
 int test_palette_0042_kcenter_large_buffer(int argc, char **argv);
 int test_palette_0043_kcenter_float_legacy_grid(int argc, char **argv);
 int test_palette_0044_kcenter_packed_alpha_layouts(int argc, char **argv);
+int test_palette_0045_snap_grid(int argc, char **argv);
+int test_palette_0048_snap_partial(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
 int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
@@ -1094,6 +1096,8 @@ static test_entry_t const test_entries[] = {
       test_palette_0043_kcenter_float_legacy_grid },
     { "palette/0044_kcenter_packed_alpha_layouts",
       test_palette_0044_kcenter_packed_alpha_layouts },
+    { "palette/0045_snap_output_grid", test_palette_0045_snap_grid },
+    { "palette/0048_snap_partial_once", test_palette_0048_snap_partial },
     { "cli/0029_cli_token_is_known_option",
       test_cli_0029_cli_token_is_known_option },
     { "cli/0030_cli_option_requires_argument",

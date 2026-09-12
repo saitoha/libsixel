@@ -107,6 +107,8 @@ struct sixel_dither {
     int force_palette;              /* keep palette size when non-zero */
     int ncolors;                    /* active colors */
     int origcolors;                 /* original colors */
+    /* Generated rate=1 palettes retain their grid at the output boundary. */
+    int palette_snap_exact;
     int optimized;                  /* pixel is 15bpp compressible */
     int bodyonly;                   /* do not output palette section if true */
     int method_for_largest;         /* method for finding the largest dimension

@@ -182,6 +182,8 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_DIN99D_FORWARD \
+    -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
+    -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
     -DBUILD_TEST_0002_DIN99D_INVERSE \
     -DBUILD_TEST_0003_DIN99D_BYTE \
     -DBUILD_ORMODE_TEST_COMMON \
@@ -927,6 +929,8 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0042_kcenter_large_buffer.c \
     quant/palette/0043_kcenter_float_legacy_grid.c \
     quant/palette/0044_kcenter_packed_alpha_layouts.c \
+    quant/palette/0045_snap_output_grid.c \
+    quant/palette/0048_snap_partial_once.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \

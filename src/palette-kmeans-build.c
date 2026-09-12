@@ -3311,9 +3311,8 @@ sixel_palette_build_kmeans_internal(
     }
 
     if (reversible_for_quantizer) {
-        sixel_palette_reversible_palette(entries,
-                                         ncolors,
-                                         SIXEL_PIXELFORMAT_RGB888);
+        sixel_palette_snap_entries(entries, entries_float32,
+                                   ncolors, pixelformat);
     }
 
     payload_size = (size_t)ncolors * (size_t)entry_depth;

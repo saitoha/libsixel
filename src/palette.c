@@ -1656,9 +1656,8 @@ after_quantizer:
     origcolors = storage->original_colors;
     depth = (unsigned int)storage->depth;
     if (context.use_reversible && storage->entries != NULL) {
-        sixel_palette_reversible_palette(storage->entries,
-                                         ncolors,
-                                         SIXEL_PIXELFORMAT_RGB888);
+        sixel_palette_snap_entries(storage->entries, storage->entries_float32,
+                                   ncolors, request->pixelformat);
     }
     status = SIXEL_OK;
 

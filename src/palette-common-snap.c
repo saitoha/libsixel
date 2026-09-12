@@ -160,7 +160,8 @@ int
 sixel_palette_snap_is_enabled(void)
 {
     return sixel_palette_get_snap_policy()
-        != SIXEL_PALETTE_SNAP_POLICY_NONE;
+        != SIXEL_PALETTE_SNAP_POLICY_NONE
+        && sixel_palette_get_snap_approach_rate() > 0.0;
 }
 
 static enum sixel_palette_snap_timing_policy
@@ -218,6 +219,46 @@ sixel_palette_get_snap_channel_factor(void)
             snap_policy_channel_factor_l_override),
         &value);
     return value;
+}
+
+int
+sixel_palette_snap_is_exact(void)
+{
+    return sixel_palette_snap_is_enabled()
+        && sixel_palette_get_snap_approach_rate() >= 1.0;
+}
+
+/*
+ * Typed safe targets can drift during an approximate colorspace round trip.
+ * Resolve the actual SIXEL percentage once, then expose that same fixed point
+ * to byte exports and float wire emission. Partial approach rates never call
+ * this helper, and fixed palettes never acquire the generated-palette flag.
+ */
+void
+sixel_palette_snap_output(unsigned char *entries,
+                         float *entries_float32,
+                         unsigned int colors)
+{
+    size_t index;
+    size_t count;
+    int percent;
+    float value;
+
+    count = (size_t)colors * 3U;
+    for (index = 0U; index < count; ++index) {
+        if (entries_float32 != NULL) {
+            value = sixel_pixelformat_float_channel_clamp(
+                SIXEL_PIXELFORMAT_RGBFLOAT32, (int)(index % 3U),
+                entries_float32[index]);
+            percent = (int)(value * 100.0f + 0.5f);
+        } else {
+            percent = (entries[index] * 100 + 127) / 255;
+        }
+        entries[index] = (unsigned char)((percent * 255 + 50) / 100);
+        if (entries_float32 != NULL) {
+            entries_float32[index] = (float)entries[index] / 255.0f;
+        }
+    }
 }
 
 int
@@ -474,6 +515,41 @@ sixel_palette_reversible_palette_float(float *palette,
         if (SIXEL_FAILED(status)) {
             return;
         }
+    }
+}
+
+/*
+ * Byte entries in a perceptual palette are packed coordinates, not RGB codes.
+ * Snap the authoritative typed view and repack it so later float/byte
+ * consistency checks retain the selected safe RGB target and its precision.
+ * The caller owns enablement; this is the single final snap, including rate.
+ */
+void
+sixel_palette_snap_entries(unsigned char *entries,
+                          float *entries_float32,
+                          unsigned int colors,
+                          int pixelformat)
+{
+    size_t index;
+    size_t count;
+    int channel;
+
+    if (entries == NULL || colors == 0U) {
+        return;
+    }
+    if (entries_float32 == NULL
+            || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        sixel_palette_reversible_palette(entries, colors,
+                                         SIXEL_PIXELFORMAT_RGB888);
+        return;
+    }
+    sixel_palette_reversible_palette_float(entries_float32, colors,
+                                            pixelformat);
+    count = (size_t)colors * 3U;
+    for (index = 0U; index < count; ++index) {
+        channel = (int)(index % 3U);
+        entries[index] = sixel_pixelformat_float_channel_to_byte(
+            pixelformat, channel, entries_float32[index]);
     }
 }
 
