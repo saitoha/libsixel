@@ -138,6 +138,18 @@ The first display loads the image. Later displays can reuse an active cached pic
 
 This optimization already benefits libsixel's hexadecimal definitions. It reduces receiver decoding work on cache hits while leaving the initial `2S` wire payload unchanged. It is specific to the recognized image path, not a guarantee that arbitrary terminal macros or all terminal implementations retain decoded bitmaps.
 
+## Related image-reference mechanisms
+
+Keeping an image under a reusable reference also serves applications that track images as objects. A browser such as w3m can associate an image with its source, dimensions, and visible rectangle, then request another placement or crop when the page changes. Separating image identity from each drawing operation makes receiver storage and short redraw requests a natural fit for that application model. The [tanasinn w3m integration](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/tools/w3m/image.c#L111-L129) is a concrete example: its drawing requests carry a cache index, image dimensions, destination coordinates, a source rectangle, and a filename.
+
+| Mechanism | Reference and reuse |
+| --- | --- |
+| DECDMAC / DECINVM | A numeric macro ID selects stored terminal input. libsixel stores a complete SIXEL frame; the application positions the cursor before invoking it. |
+| tanasinn image overlays | [`OSC 212`](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/optional/overlayimage.js#L122-L177) draws an image using a filename or URI as the cache key and separate placement coordinates. `OSC 213` clears a screen rectangle. The key is a string rather than a numeric image register. |
+| RLogin's SIXEL index extension | The fourth SIXEL DCS parameter, `Pn4`, selects an image index from `0` through `1023`. The receiver can redisplay an image using only its index. This is a [RLogin extension since 2.17.3](https://kmiya-culti.github.io/RLogin/ctrlcode.html#DECSIXEL), separate from DECDMAC and its `Pen` encodings. |
+
+These mechanisms share the idea of retaining image content and referring to it again, while their loading, placement, clipping, and lifetime rules differ. In particular, a macro ID alone supplies no per-image move, crop, or delete operation. tanasinn's rectangle clearing does not remove the cached source image. See [image references and application redraw in the project history](../project-history.md#image-references-and-application-redraw) for the early implementations and their w3m context. libsixel's `-n` selects a DECDMAC ID; it does not select RLogin's `Pn4` or emit tanasinn's OSC commands.
+
 ## Receiver state and option interactions
 
 libsixel's macro emitter does not negotiate macro support, check available storage, or acknowledge successful storage before invoking an ID. A zero converter exit status establishes that the local conversion/output path succeeded; it does not establish that the receiver retained the definition. For diagnosis, first try ordinary SIXEL, then a small definition and explicit invocation on the same terminal connection.
@@ -186,4 +198,4 @@ The [builtin animation macro smoke test](../../tests/loader/builtin/0107_builtin
 
 The exact tests cover the static/animation definition boundary and the listed playback contracts. They do not establish a timing tolerance, other loaders' frame metadata, all numeric validation cases, repeated `-n` precedence, C1 output, DRCS rejection, or file/multiplexer handling. Receiver capacity, macro lifetime, visual placement, and rendering require terminal integration checks; a successful local test does not prove those receiver-dependent properties. No perceptual quality threshold or malformed-input inventory is substituted for these exact stream tests.
 
-The RLogin and mlterm descriptions above are based on their documentation and source. This suite does not execute those terminals, test the alternative encodings, or measure receiver cache hits.
+The RLogin, mlterm, and tanasinn descriptions above are based on their documentation and source. This suite does not execute those terminals, test the alternative encodings or image-reference extensions, or measure receiver cache hits.

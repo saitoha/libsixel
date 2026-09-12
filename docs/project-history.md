@@ -76,6 +76,16 @@ outside the Japanese-language community, but they are equally important
 examples of SIXEL being used as a stateful terminal protocol rather than only
 as an image encoding.
 
+### Image references and application redraw
+
+Image preloading also fits the needs of applications that track images as objects. A browser such as w3m keeps an image associated with its source, dimensions, and currently visible region. Scrolling or redrawing a page changes the required placement or crop without necessarily changing the source image. Keeping image content in the receiver under a reusable reference lets the application express those drawing operations separately. This application model helps explain the interest in image references alongside the transfer-speed improvements of terminal macros.
+
+Hayaki Saito's tanasinn added an [image overlay plugin on 2012-03-11](https://github.com/saitoha/tanasinn/commit/e73817ae444c0fe275e145fa67c1fded870b0782). In revision `e432aeec6345`, [`OSC 212`](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/optional/overlayimage.js#L122-L177) takes `x;y;w;h;filename`, reuses an image cached by filename or URI, and converts character-cell placement coordinates to canvas pixels. [`OSC 213`](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/optional/overlayimage.js#L180-L208) clears a rectangle without deleting that cache entry. These are source-string references, not numeric image IDs. In the same revision, OSC 200/201 belong to the [popup display handlers](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/session_components/popup.js#L336-L469).
+
+tanasinn's separate [`OSC 99` w3m interface](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/session_components/w3m.js#L154-L209) dispatches drawing commands and reuses loaded images by filename. Its [w3m-side drawing code](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/tools/w3m/image.c#L111-L129) sends an image-cache index together with geometry and the filename; the receiver uses the filename as its cache key and [draws the requested source rectangle at the destination](https://github.com/saitoha/tanasinn/blob/e432aeec63452e8c4d1e40e93f5f88f1bc729dca/modules/session_components/w3m.js#L274-L297). This is a concrete connection between application image tracking and receiver image reuse.
+
+RLogin introduced a numeric image-index extension in [2.17.3 on 2014-11-21](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html#L1378-L1383). Its [DECSIXEL reference](https://kmiya-culti.github.io/RLogin/ctrlcode.html#DECSIXEL) assigns `Pn4`, the fourth SIXEL DCS parameter, to an index from `0` through `1023` and permits redisplay using only that index. This puts the image reference inside the SIXEL envelope. DECDMAC preloading instead assigns an ID to an outer macro containing the complete SIXEL stream. See [terminal macros and related image references](functionality/terminal-macros.md#related-image-reference-mechanisms) for their relationship to the current libsixel CLI.
+
 ### DRCS-SIXEL and Unicode Plane 16
 
 A related line of work made SIXEL images addressable as text. RLogin introduced
@@ -120,7 +130,7 @@ implementation:
   source introduced its true-color variant only months after libsixel
   branched. RLogin 2.17.2 accepted 0-255 RGB components, and its
   [2.17.3 history](https://github.com/kmiya-culti/RLogin/blob/9dd0003380067e7fb1e2fa46fa7cc65162d93d80/docs/history.html)
-  records SIXEL extensions for indexed selection and 24-bit color. The
+  records SIXEL extensions for image-index selection and 24-bit color. The
   [`v20141206`](https://github.com/saitoha/sixel/tree/v20141206) standalone
   version then merged the true-color extension into kmiya's main utility.
 - The later
