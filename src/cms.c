@@ -183,7 +183,7 @@ sixel_cms_engine_lock_init_once(PINIT_ONCE once,
  * partial pthread struct initializers.
  */
 static pthread_mutex_t g_sixel_cms_engine_mutex;
-static pthread_once_t g_sixel_cms_engine_mutex_once = SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(g_sixel_cms_engine_mutex_once);
 static int g_sixel_cms_engine_mutex_ready = 0;
 
 static void

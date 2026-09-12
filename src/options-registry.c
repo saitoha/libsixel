@@ -4805,8 +4805,7 @@ sixel_option_registry_validate_once_cb(PINIT_ONCE once,
     return TRUE;
 }
 # else
-static pthread_once_t sixel_option_registry_validation_once =
-    SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(sixel_option_registry_validation_once);
 
 static void
 sixel_option_registry_validate_once_cb(void)

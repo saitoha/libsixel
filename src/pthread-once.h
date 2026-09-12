@@ -28,13 +28,15 @@
 /*
  * GNU/Hurd defines PTHREAD_ONCE_INIT as a compound literal.  GCC accepts it
  * at file scope, but -Wpedantic diagnoses the initializer as non-constant.
- * Limit the extension marker to that standard macro so other pedantic
- * diagnostics remain errors.
+ * Prefix the complete declaration with the extension marker so other
+ * pedantic diagnostics remain errors.
  */
 #if defined(__GNU__) && defined(__GNUC__)
-# define SIXEL_PTHREAD_ONCE_INIT __extension__ PTHREAD_ONCE_INIT
+# define SIXEL_PTHREAD_ONCE_DECLARE(name) \
+    __extension__ static pthread_once_t name = PTHREAD_ONCE_INIT
 #else
-# define SIXEL_PTHREAD_ONCE_INIT PTHREAD_ONCE_INIT
+# define SIXEL_PTHREAD_ONCE_DECLARE(name) \
+    static pthread_once_t name = PTHREAD_ONCE_INIT
 #endif
 
 #endif /* SIXEL_PTHREAD_ONCE_H */

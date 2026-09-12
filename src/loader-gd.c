@@ -61,7 +61,7 @@
 static INIT_ONCE g_sixel_loader_gd_support_once = INIT_ONCE_STATIC_INIT;
 # else
 #  include <pthread.h>
-static pthread_once_t g_sixel_loader_gd_support_once = SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(g_sixel_loader_gd_support_once);
 # endif
 #endif
 

@@ -92,9 +92,8 @@ static INIT_ONCE sixel_colorspace_parallel_min_pixels_once =
     INIT_ONCE_STATIC_INIT;
 # else
 #  include <pthread.h>
-static pthread_once_t sixel_colorspace_once = SIXEL_PTHREAD_ONCE_INIT;
-static pthread_once_t sixel_colorspace_parallel_min_pixels_once =
-    SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(sixel_colorspace_once);
+SIXEL_PTHREAD_ONCE_DECLARE(sixel_colorspace_parallel_min_pixels_once);
 # endif
 #endif
 

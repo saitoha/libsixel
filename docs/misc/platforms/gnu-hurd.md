@@ -8,7 +8,7 @@ GNU/Hurd is a distinct target platform, not a GNU/Linux variant. The maintained 
 
 Do not infer a Linux kernel from GCC, GNU userland tools, glibc, or the `gnu` component of the host triplet. Kernel interfaces selected by `__linux__` remain Linux-only. Code shared with GNU/Hurd should instead follow the configure or Meson result for the header, declaration, function, library, or POSIX facility it needs.
 
-GNU/Hurd defines `PTHREAD_ONCE_INIT` as a compound literal. GCC accepts that form as a file-scope initializer, but diagnoses it as non-constant under the Meson warning policy's `-Wpedantic -Werror` combination. All internal pthread once objects must therefore use `SIXEL_PTHREAD_ONCE_INIT` from [`src/pthread-once.h`](../../../src/pthread-once.h). On GNU/Hurd, that wrapper limits GCC's `__extension__` marker to the standard initializer expression; elsewhere it preserves the platform's unmodified `PTHREAD_ONCE_INIT`. Do not weaken the job's warning policy or copy this workaround into individual translation units.
+GNU/Hurd defines `PTHREAD_ONCE_INIT` as a compound literal. GCC accepts that form as a file-scope initializer, but diagnoses it as non-constant under the Meson warning policy's `-Wpedantic -Werror` combination. All internal pthread once objects must therefore be declared with `SIXEL_PTHREAD_ONCE_DECLARE(name)` from [`src/pthread-once.h`](../../../src/pthread-once.h). On GNU/Hurd, that wrapper prefixes the complete declaration with GCC's `__extension__` marker; elsewhere it emits an ordinary static declaration with the platform's unmodified `PTHREAD_ONCE_INIT`. Applying `__extension__` only to the initializer expression is insufficient: the Hurd compiler still diagnoses the containing declaration. Do not weaken the job's warning policy or copy this workaround into individual translation units.
 
 This small `__GNU__` branch is not evidence that GNU/Hurd is covered by Linux CI. Any additional use of `__GNU__`, `__gnu_hurd__`, or another reserved platform selector must enter the machine-readable macro inventory and this document in the same change. Prefer a capability probe unless the difference is genuinely an operating-system semantic that cannot be expressed that way.
 
@@ -26,7 +26,7 @@ These machine and provisioning rules are runner requirements, not reasons to add
 
 - Keep GNU/Hurd separate from Debian GNU/Linux when assigning CI ownership; a Linux GCC job does not duplicate this platform/compiler pair.
 - Run both the Autotools and Meson jobs after changing portability code, build discovery, shell helpers, or the test harness.
-- Initialize pthread once objects through `SIXEL_PTHREAD_ONCE_INIT`; the platform staticcheck rejects direct source use of `PTHREAD_ONCE_INIT` and preserves the wrapper in both build-system source lists.
+- Declare pthread once objects through `SIXEL_PTHREAD_ONCE_DECLARE(name)`; the platform staticcheck rejects direct source use of `PTHREAD_ONCE_INIT` and preserves the wrapper in both build-system source lists.
 - Preserve Q35, the current disk and network device choices, and the single-vCPU limit until a replacement image and hypervisor pairing is demonstrated green.
 - Revalidate runner SSH, sudo, compiler, build tools, and a complete source transfer whenever the base image is rebuilt.
 - Add a source selector only when feature detection cannot express the required semantic, then extend the platform macro inventory and staticcheck assertions with the same change.
@@ -38,7 +38,7 @@ These machine and provisioning rules are runner requirements, not reasons to add
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | HURD-01 | GNU/Hurd remains a distinct Tier 2 platform with both maintained build systems, its host triplet and capability-probe policy stay documented, and its `__GNU__` selector remains in the platform inventory. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
-| HURD-02 | Pthread once objects use the shared `SIXEL_PTHREAD_ONCE_INIT` wrapper, the GNU/Hurd branch keeps its narrow `__extension__` treatment, direct use of `PTHREAD_ONCE_INIT` stays absent outside the wrapper, and both build systems distribute the header. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| HURD-02 | Pthread once objects use the shared `SIXEL_PTHREAD_ONCE_DECLARE(name)` wrapper, the GNU/Hurd branch applies `__extension__` to the complete declaration, direct use of `PTHREAD_ONCE_INIT` stays absent outside the wrapper, and both build systems distribute the header. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 
 ### Coverage boundary
 

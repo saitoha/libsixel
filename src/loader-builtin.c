@@ -172,8 +172,7 @@ load_with_builtin(
  * serialize builtin loader decode sections to preserve allocator integrity.
  */
 static pthread_mutex_t sixel_loader_builtin_decode_lock;
-static pthread_once_t sixel_loader_builtin_decode_lock_once
-    = SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(sixel_loader_builtin_decode_lock_once);
 static int sixel_loader_builtin_decode_lock_ready = 0;
 
 static void
