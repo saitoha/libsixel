@@ -941,26 +941,16 @@ static cli_option_help_t const g_option_help_table[] = {
     },
     {
         'Z',
-        "6delta-threshold",
-        "-Z DELTA, --6delta-threshold=DELTA\n"
-        "    enable 6delta encoding and set its lookup shortcut.\n"
-        "    keep a valid retained RGB pixel before lookup when each\n"
-        "    channel differs by at most DELTA. At 0 this requires an\n"
-        "    exact RGB match. Otherwise, keep after lookup when retained\n"
-        "    RGB is at least as close to the compared sample as the\n"
-        "    selected palette color, using squared RGB distance.\n"
-        "    Larger thresholds can skip more lookups but retain stale\n"
-        "    colors; 255 keeps every valid retained RGB888 pixel.\n"
-        "    DELTA must be 0..255; 0 enables 6delta (default: disabled).\n"
-        "    Requires alpha-policy=auto or keep.\n"
-    },
-    {
-        'Y',
-        "6delta-error",
-        "-Y MODE, --6delta-error=MODE\n"
-        "    choose 6delta kept-pixel error handling.\n"
-        "      diffuse -> diffuse error from the retained RGB (default)\n"
-        "      skip    -> skip diffusion on kept pixels for speed\n"
+        "update-policy",
+        "-Z POLICY, --update-policy=POLICY\n"
+        "    choose full output or retained-plane delta updates.\n"
+        "      full  -> disable temporal keeps (default)\n"
+        "      delta -> enable 6delta; requires alpha-policy=auto or keep\n"
+        "    delta suboptions: threshold=0..255 (T), error=diffuse|skip (E).\n"
+        "    Defaults: threshold=0, error=diffuse. At 0 the early keep\n"
+        "    requires exact RGB; later keeps compare palette error.\n"
+        "    Larger thresholds trade freshness for fewer lookups.\n"
+        "    full preserves the source-alpha policy.\n"
     },
     {
         'P',
@@ -1352,17 +1342,19 @@ static cli_env_help_t const g_env_help_table[] = {
         "specify palette size (default 256). Overrides -p/--colors when set."
     },
     {
-        "SIXEL_6DELTA_THRESHOLD",
-        "enable 6delta encoding and set the default RGB per-channel\n"
-        "tolerance.\n"
-        "Accepts 0..255. Invalid values keep the built-in default disabled.\n"
-        "Overridden by -Z/--6delta-threshold."
+        "SIXEL_UPDATE_POLICY",
+        "set the default update policy: full or delta (no suboptions).\n"
+        "Invalid values keep full. Overridden by -Z/--update-policy."
     },
     {
-        "SIXEL_6DELTA_ERROR",
-        "set default 6delta kept-pixel error handling.\n"
-        "Accepts diffuse or skip. Invalid values keep diffuse.\n"
-        "Overridden by -Y/--6delta-error."
+        "SIXEL_UPDATE_DELTA_THRESHOLD",
+        "set delta:threshold (0..255, default 0). Does not enable delta.\n"
+        "The update-policy suboption takes precedence."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_ERROR",
+        "set delta:error (diffuse or skip, default diffuse).\n"
+        "Does not enable delta. The update-policy suboption takes precedence."
     },
     {
         "SIXEL_FLOAT32_DITHER",
@@ -2248,7 +2240,7 @@ static char const g_img2sixel_optstring[] =
     ".:"
     "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:_:~:G:j:x:J:y:z:K:"
     "kil:T:t:ugvSn:"
-    "PE:U:B:N:A:+:Z:Y:C:D@:"
+    "PE:U:B:N:A:+:Z:C:D@:"
     "OVX:W:H%:1:2:3:4:5:";
 
 static int
@@ -3297,8 +3289,7 @@ img2sixel_main(int argc, char *argv[])
         {"background-policy", required_argument, &long_opt, 'N'},
         {"alpha-policy",          required_argument,  &long_opt, 'A'},
         {"transparent-offset",    required_argument,  &long_opt, '+'},
-        {"6delta-threshold",      required_argument,  &long_opt, 'Z'},
-        {"6delta-error",          required_argument,  &long_opt, 'Y'},
+        {"update-policy",         required_argument,  &long_opt, 'Z'},
         {"complexion-score",      required_argument,  &long_opt, 'C'}, /* deprecated */
         {"pipe-mode",             no_argument,        &long_opt, 'D'}, /* deprecated */
         {"drcs",                  required_argument,  &long_opt, '@'},

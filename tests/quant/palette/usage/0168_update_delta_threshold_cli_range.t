@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify 6delta-threshold accepts only the documented byte range.
+# Verify update delta threshold accepts only the documented byte range.
 # Policy: docs/functionality/delta-encoding.md
 
 set -eux
@@ -20,46 +20,46 @@ status_text=0
 status_error_mode=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --alpha-policy=keep --6delta-threshold=8 \
+    --alpha-policy=keep --update-policy=delta:threshold=8 \
     -L builtin -e -o - "${input_image}" >/dev/null || {
-    echo "not ok" 1 - "valid 6delta-threshold was rejected"
+    echo "not ok" 1 - "valid update delta threshold was rejected"
     exit 0
 }
 
 set +e
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --alpha-policy=keep --6delta-threshold=256 \
+    --alpha-policy=keep --update-policy=delta:threshold=256 \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
 status_256=$?
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --alpha-policy=keep --6delta-threshold=-1 \
+    --alpha-policy=keep --update-policy=delta:threshold=-1 \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
 status_negative=$?
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --alpha-policy=keep --6delta-threshold=fast \
+    --alpha-policy=keep --update-policy=delta:threshold=fast \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
 status_text=$?
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --alpha-policy=keep --6delta-threshold=8 --6delta-error=skip \
+    --alpha-policy=keep --update-policy=delta:threshold=8:error=skip \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
 status_error_mode=$?
 set -e
 test "${status_256}" -ne 0 || {
-    echo "not ok" 1 - "out-of-range 6delta-threshold was accepted"
+    echo "not ok" 1 - "out-of-range update delta threshold was accepted"
     exit 0
 }
 test "${status_negative}" -ne 0 || {
-    echo "not ok" 1 - "negative 6delta-threshold was accepted"
+    echo "not ok" 1 - "negative update delta threshold was accepted"
     exit 0
 }
 test "${status_text}" -ne 0 || {
-    echo "not ok" 1 - "non-numeric 6delta-threshold was accepted"
+    echo "not ok" 1 - "non-numeric update delta threshold was accepted"
     exit 0
 }
 test "${status_error_mode}" -eq 0 || {
-    echo "not ok" 1 - "valid 6delta-error was rejected"
+    echo "not ok" 1 - "valid update delta error was rejected"
     exit 0
 }
 
-echo "ok" 1 - "6delta-threshold validates the byte range"
+echo "ok" 1 - "update delta threshold validates the byte range"
 exit 0

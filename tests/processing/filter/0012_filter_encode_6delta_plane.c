@@ -242,8 +242,8 @@ plane_make_encoder(sixel_encoder_t **encoder_out, int declare_plane)
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder,
-                                      SIXEL_OPTFLAG_6DELTA_THRESHOLD,
-                                      "16");
+                                      SIXEL_OPTFLAG_UPDATE_POLICY,
+                                      "delta:threshold=16");
     }
     if (SIXEL_SUCCEEDED(status) && declare_plane) {
         status = sixel_encoder_set_6delta_plane_size(encoder,
@@ -328,6 +328,44 @@ test_filter_0012_filter_encode_6delta_plane(int argc, char **argv)
         fprintf(stderr,
                 "moved rectangle kept never-painted pixels: %ld\n",
                 kept_moved);
+        goto end;
+    }
+
+    /* A rejected policy must preserve both parameters and usable history. */
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+                                  "full:threshold=0");
+    if (SIXEL_SUCCEEDED(status) || !encoder->sixdelta_enabled ||
+        encoder->sixdelta_threshold != 16u) {
+        fprintf(stderr, "invalid full suboption changed policy\n");
+        goto end;
+    }
+    status = plane_encode_frame(encoder, 12, 6, 1, &kept_repeat);
+    if (SIXEL_FAILED(status) || kept_repeat == 0) {
+        fprintf(stderr, "rejected policy discarded history\n");
+        goto end;
+    }
+
+    /* Full must paint all opaque pixels even when retained history exists. */
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+                                  "full");
+    if (SIXEL_FAILED(status) || encoder->sixdelta_enabled) {
+        goto end;
+    }
+    status = plane_encode_frame(encoder, 12, 6, 1, &kept_repeat);
+    if (SIXEL_FAILED(status) || kept_repeat != 0) {
+        fprintf(stderr, "full policy kept opaque pixels\n");
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+                                  "delta");
+    if (SIXEL_FAILED(status) || encoder->sixdelta_threshold != 0u ||
+        encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_DIFFUSE) {
+        fprintf(stderr, "delta did not reset its parameters\n");
+        goto end;
+    }
+    status = plane_encode_frame(encoder, 12, 6, 1, &kept_repeat);
+    if (SIXEL_FAILED(status) || kept_repeat != 0) {
+        fprintf(stderr, "re-enabled delta reused full-policy history\n");
         goto end;
     }
 

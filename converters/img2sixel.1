@@ -971,22 +971,17 @@ add transparent left/top pixel offset with DCS P2=1 image-plane reuse.
 \fB--alpha-policy=auto\fP or \fBkeep\fP. Incompatible with \fB-O\fP and
 \fB-I\fP.
 .TP 5
-.B \-Z \fIDELTA\fP, \-\-6delta\-threshold=\fIDELTA\fP
-enable 6delta encoding and set its RGB per-channel early-keep tolerance.
-A valid retained RGB pixel is kept before lookup when every channel differs by at most DELTA.
-At 0 this requires an exact RGB match.
-Otherwise, the retained color is kept after lookup when it is at least as close to the compared sample as the selected palette color, using squared RGB distance.
-Larger thresholds can skip more lookups but retain stale colors; 255 keeps every valid retained RGB888 pixel.
-DELTA must be 0..255; 0 enables 6delta (default: disabled).
-Requires \fB--alpha-policy=auto\fP or \fBkeep\fP.
-History belongs to the encoder instance and must match the receiver's display and frame placement.
-.TP 5
-.B \-Y \fIMODE\fP, \-\-6delta\-error=\fIMODE\fP
-choose 6delta kept-pixel error handling.
-.br
-diffuse -> diffuse error from the retained RGB (default)
-.br
-skip -> skip diffusion on kept pixels for speed
+.B \-Z \fIPOLICY\fP, \-\-update\-policy=\fIPOLICY\fP
+Select full output (default) or retained-plane delta updates.
+\fBfull\fP disables temporal keeps and discards retained history, while preserving source-alpha handling.
+\fBdelta\fP enables 6delta with optional \fB:threshold=0..255\fP (short key T) and \fB:error=diffuse|skip\fP (short key E).
+Defaults are threshold=0 and error=diffuse; full accepts no suboptions.
+A valid retained RGB pixel is kept before lookup when every channel differs by at most the threshold; at 0 this requires an exact match.
+Otherwise, a pixel is kept when the retained color is at least as close to the compared sample as the selected palette color, using squared RGB distance.
+Larger thresholds trade freshness for fewer lookups; 255 keeps every valid retained RGB888 pixel.
+Diffuse propagates the error from retained RGB; skip omits kept-pixel diffusion.
+Delta requires \fB--alpha-policy=auto\fP or \fBkeep\fP.
+History must match the receiver's display and frame placement.
 .TP 5
 .B \-P, \-\-penetrate
 [[deprecated]] penetrate GNU Screen using DCS pass-through sequence.
@@ -1717,17 +1712,20 @@ control source alpha and omitted SIXEL pixel handling.
 The values and semantics are identical to \fB-A\fP/\fB--alpha-policy\fP.
 The default is "auto".
 .TP 5
-.B SIXEL_6DELTA_THRESHOLD
+.B SIXEL_UPDATE_POLICY
 .br
-enable 6delta encoding and set the default RGB per-channel tolerance.
-accepts 0..255. invalid values keep the built-in default disabled.
-overrided by \fB-Z\fP/\fB--6delta-threshold\fP.
+Set the default update policy: full or delta, without suboptions.
+Invalid values keep full. Overridden by \fB-Z\fP/\fB--update-policy\fP.
 .TP 5
-.B SIXEL_6DELTA_ERROR
+.B SIXEL_UPDATE_DELTA_THRESHOLD
 .br
-set default 6delta kept-pixel error handling.
-accepts "diffuse" or "skip". invalid values keep "diffuse".
-overrided by \fB-Y\fP/\fB--6delta-error\fP.
+Set delta:threshold (0..255, default 0). Invalid values keep 0.
+Does not enable delta. An explicit threshold suboption takes precedence.
+.TP 5
+.B SIXEL_UPDATE_DELTA_ERROR
+.br
+Set delta:error (diffuse or skip, default diffuse). Invalid values keep diffuse.
+Does not enable delta. An explicit error suboption takes precedence.
 .TP 5
 .B SIXEL_LOADER_ORIENTATION
 .br

@@ -390,6 +390,8 @@ SIXEL_ALPHA_POLICY_KEEP    = 2   # request DCS P2=1 preservation
 SIXEL_ALPHA_POLICY_AUTO    = 3   # clear or keep for retained output
 SIXEL_BACKGROUND_POLICY_FILE_FIRST = 0
 SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST = 1
+SIXEL_UPDATE_POLICY_FULL = 0
+SIXEL_UPDATE_POLICY_DELTA = 1
 SIXEL_6DELTA_ERROR_DIFFUSE = 0   # diffuse error from kept RGB
 SIXEL_6DELTA_ERROR_SKIP    = 1   # skip diffusion on kept pixels
 
@@ -693,10 +695,8 @@ SIXEL_OPTFLAG_ALPHA_POLICY = 'A'  # -A POLICY, --alpha-policy=POLICY:
                                   #        SIXEL pixel handling.
 SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+'  # -+ ROWS, --transparent-offset=ROWS:
                                         #        delay transparent rows.
-SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z'  # -Z DELTA, --6delta-threshold=DELTA:
-                                      #        set per-channel keep tolerance.
-SIXEL_OPTFLAG_6DELTA_ERROR     = 'Y'  # -Y MODE, --6delta-error=MODE:
-                                      #        select kept-pixel error handling.
+SIXEL_OPTFLAG_UPDATE_POLICY = 'Z'  # -Z POLICY, --update-policy=POLICY:
+                                      #        choose full or delta updates.
 
 SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
                                       #        specify background color

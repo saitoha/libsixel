@@ -324,7 +324,9 @@ struct sixel_encoder {
     int accumulation_pixelformat;
     int sixdelta_enabled;
     unsigned int sixdelta_threshold;
+    int sixdelta_threshold_override;
     int sixdelta_error_mode;
+    int sixdelta_error_mode_override;
     /*
      * 6delta retains one plane for the whole displayed surface.  When the
      * caller declares a plane larger than the encoded frame, each frame is

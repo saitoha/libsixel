@@ -8699,7 +8699,10 @@ sixel_encoder_new(
     sixel_option_argument_schema_t const *gpu_policy_schema;
     sixel_option_argument_schema_t const *policy_schema;
     sixel_option_argument_resolution_t gpu_policy_resolution;
+    sixel_option_argument_resolution_t update_policy_resolution;
+    char const *update_policy_environment;
 
+    memset(&update_policy_resolution, 0, sizeof(update_policy_resolution));
     policy_value = 0;
     memset(&env_value, 0, sizeof(env_value));
     gpu_policy_environment = NULL;
@@ -9020,7 +9023,9 @@ sixel_encoder_new(
     (*ppencoder)->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppencoder)->sixdelta_enabled      = 0;
     (*ppencoder)->sixdelta_threshold    = 0u;
+    (*ppencoder)->sixdelta_threshold_override = 0;
     (*ppencoder)->sixdelta_error_mode   = SIXEL_6DELTA_ERROR_DIFFUSE;
+    (*ppencoder)->sixdelta_error_mode_override = 0;
     (*ppencoder)->sixdelta_plane_width  = 0;
     (*ppencoder)->sixdelta_plane_height = 0;
     (*ppencoder)->sixdelta_origin_x     = 0;
@@ -9114,24 +9119,25 @@ sixel_encoder_new(
     }
     sixel_option_free_argument_resolution(&gpu_policy_resolution);
 
-    env_result = sixel_option_resolve_scalar_environment(
-        SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
-        &env_value,
-        NULL,
-        0u);
-    if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        (*ppencoder)->sixdelta_enabled = 1;
-        (*ppencoder)->sixdelta_threshold = env_value.uint_value;
+    /* The base environment selects a policy; tuning alone never enables it. */
+    policy_schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_UPDATE_POLICY);
+    update_policy_environment = sixel_option_resolve_argument_environment(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY);
+    if (update_policy_environment != NULL &&
+        SIXEL_SUCCEEDED(sixel_option_parse_argument_with_suboptions(
+            update_policy_environment, policy_schema,
+            SIXEL_OPTION_SCOPE_ENCODER, &update_policy_resolution,
+            NULL, 0u)) &&
+        update_policy_resolution.assignment_count == 0u) {
+        (*ppencoder)->sixdelta_enabled =
+            update_policy_resolution.resolved_base_value ==
+                SIXEL_UPDATE_POLICY_DELTA;
+        sixel_option_apply_suboption_environment(
+            policy_schema, update_policy_resolution.base_def,
+            SIXEL_OPTION_SCOPE_ENCODER, *ppencoder,
+            SIXEL_SUBOPTION_TARGET_ENCODER);
     }
-
-    env_result = sixel_option_resolve_scalar_environment(
-        SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
-        &env_value,
-        NULL,
-        0u);
-    if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        (*ppencoder)->sixdelta_error_mode = env_value.int_value;
-    }
+    sixel_option_free_argument_resolution(&update_policy_resolution);
 
     policy_schema = sixel_option_registry_get(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL);
@@ -10613,27 +10619,42 @@ sixel_encoder_apply_macro_number_option(
 }
 
 static SIXELSTATUS
-sixel_encoder_apply_6delta_threshold_option(
+sixel_encoder_apply_update_policy_option(
     sixel_encoder_t *encoder,
-    char const *value)
+    char const *value,
+    char *detail,
+    size_t detail_size)
 {
     SIXELSTATUS status;
-    sixel_suboption_value_t parsed;
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
 
-    memset(&parsed, 0, sizeof(parsed));
-    status = sixel_option_parse_scalar_argument(
-        SIXEL_OPTION_SCHEMA_6DELTA_THRESHOLD,
-        SIXEL_OPTION_SCOPE_ENCODER,
-        value,
-        &parsed,
-        NULL,
-        0u);
+    memset(&resolution, 0, sizeof(resolution));
+    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_UPDATE_POLICY);
+    /* Parse the entire argument before changing any retained-plane state. */
+    status = sixel_option_parse_argument_with_suboptions(
+        value, schema, SIXEL_OPTION_SCOPE_ENCODER, &resolution,
+        detail, detail_size);
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    encoder->sixdelta_enabled = 1;
-    encoder->sixdelta_threshold = parsed.uint_value;
-    return SIXEL_OK;
+
+    /* Each selection starts from defaults, then environment, then suffixes. */
+    encoder->sixdelta_threshold = 0u;
+    encoder->sixdelta_threshold_override = 0;
+    encoder->sixdelta_error_mode = SIXEL_6DELTA_ERROR_DIFFUSE;
+    encoder->sixdelta_error_mode_override = 0;
+    status = sixel_encoder_apply_bound_suboptions(encoder, schema, &resolution);
+    if (SIXEL_SUCCEEDED(status)) {
+        encoder->sixdelta_enabled =
+            resolution.resolved_base_value == SIXEL_UPDATE_POLICY_DELTA;
+        if (!encoder->sixdelta_enabled) {
+            /* Full output breaks the relationship to the retained plane. */
+            sixel_encoder_invalidate_6delta_plane(encoder);
+        }
+    }
+    sixel_option_free_argument_resolution(&resolution);
+    return status;
 }
 
 
@@ -11770,25 +11791,12 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case SIXEL_OPTFLAG_6DELTA_THRESHOLD:  /* Z */
-        status = sixel_encoder_apply_6delta_threshold_option(encoder,
-                                                             value);
+    case SIXEL_OPTFLAG_UPDATE_POLICY:  /* Z */
+        status = sixel_encoder_apply_update_policy_option(
+            encoder, value, match_detail, sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        break;
-    case SIXEL_OPTFLAG_6DELTA_ERROR:  /* Y */
-        status = sixel_option_parse_scalar_argument(
-            SIXEL_OPTION_SCHEMA_6DELTA_ERROR,
-            SIXEL_OPTION_SCOPE_ENCODER,
-            value,
-            &scalar_value,
-            match_detail,
-            sizeof(match_detail));
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        encoder->sixdelta_error_mode = scalar_value.int_value;
         break;
     case SIXEL_OPTFLAG_INSECURE:  /* k */
         encoder->finsecure = 1;

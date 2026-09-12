@@ -124,6 +124,8 @@ final class Constants
     public const SIXEL_BACKGROUND_POLICY_FILE_FIRST = 0;
     public const SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST = 1;
 
+    public const SIXEL_UPDATE_POLICY_FULL = 0;
+    public const SIXEL_UPDATE_POLICY_DELTA = 1;
     public const SIXEL_6DELTA_ERROR_DIFFUSE = 0;
     public const SIXEL_6DELTA_ERROR_SKIP = 1;
 
@@ -198,8 +200,7 @@ final class Constants
     public const SIXEL_OPTFLAG_ALPHA_POLICY = 'A';
     public const SIXEL_OPTFLAG_BACKGROUND_POLICY = 'N';
     public const SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+';
-    public const SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z';
-    public const SIXEL_OPTFLAG_6DELTA_ERROR = 'Y';
+    public const SIXEL_OPTFLAG_UPDATE_POLICY = 'Z';
     public const SIXEL_OPTFLAG_BGCOLOR = 'B';
     public const SIXEL_OPTFLAG_PENETRATE = 'P';
     public const SIXEL_OPTFLAG_DRCS = '@';

@@ -193,8 +193,6 @@ function argument_is_reviewed(file, argument) {
          argument == "SIXEL_ENCODER_GPU_POLICY_ENVVAR" ||
          argument == "SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR" ||
          argument == "SIXEL_ENCODER_LUT_POLICY_ENVVAR" ||
-         argument == "SIXEL_ENCODER_6DELTA_THRESHOLD_ENVVAR" ||
-         argument == "SIXEL_ENCODER_6DELTA_ERROR_ENVVAR" ||
          argument == "SIXEL_ENCODER_SAMPLE_TARGET_ENVVAR")) {
         return 1
     }
