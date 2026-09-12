@@ -49,9 +49,29 @@ The `.trs` collector counts `PASS`, `SKIP`, `XFAIL`, `FAIL`, `XPASS`, and `ERROR
 
 Meson normally parses the same TAP producers directly. Its expected-failure adapter and different log format are described in the [Meson chapter](meson.md#test-registration-and-execution).
 
+## What happened when the suite passed 2,000 tests?
+
+The 2,000-test milestone did coincide with command-length failures. On March 26, 2026, [a CI failure](https://github.com/saitoha/libsixel/actions/runs/23599461022/job/68725092300) was reported with `make[3]: /bin/bash: Argument list too long`. Recounting the tracked scripts immediately before [`ce7a8a488`](https://github.com/saitoha/libsixel/commit/ce7a8a488), using that revision's discovery rules with Ruby included, gives **2,047 runnable scripts**. Their relative paths occupy **133,960 bytes** with one separator per entry. This count includes numbered language-binding tests and excludes the static-only script excluded by that helper; it is not simply the number of `.t` files or assertions that passed.
+
+Related limits had already appeared at a smaller inventory size. They affected several operations and were removed in stages:
+
+| Author date | Affected operation | Local adaptation and evidence |
+| --- | --- | --- |
+| 2026-03-13 | Result aggregation, reported as `/bin/sh: Bad address` at `test-suite.log` on DragonFlyBSD. | [`e1ca48f3b`](https://github.com/saitoha/libsixel/commit/e1ca48f3b) introduces the short `sixel-check-test-logs` target and `.trs` manifest aggregation. The [failure report](https://github.com/saitoha/libsixel/actions/runs/23030473982/job/66887601664) locates the error in summary generation. |
+| 2026-03-22 | Fixture distribution expanded all data filenames. | [`e9a2ef5b8`](https://github.com/saitoha/libsixel/commit/e9a2ef5b8) distributes the fixture directory as a tree. |
+| 2026-03-26 | Test setup expanded the entire recheck-log list for cleanup. | The build-rule part of [`b8a840a58`](https://github.com/saitoha/libsixel/commit/b8a840a58) replaces that expansion with filesystem discovery and bounded removal. |
+| 2026-03-27 | `distdir` and `clean-local` still expanded whole script inventories. | [`ce7a8a488`](https://github.com/saitoha/libsixel/commit/ce7a8a488) moves script copying into `dist-hook` and processes copied test paths incrementally during cleanup. This is the revision whose parent has the 2,047-script inventory above. |
+| 2026-03-27 | `mostlyclean-generic` still expanded the full `TEST_LOGS` list. | [`cc213e7a5`](https://github.com/saitoha/libsixel/commit/cc213e7a5) replaces that remaining expansion with bounded filesystem cleanup. Fixing launch or distribution alone had not fixed every cleanup path. |
+
+These are author dates; the commits shown were subsequently replayed, so their committer dates can be later. The inventory measurement describes a historical snapshot, not a universal failure threshold. Path lengths, repeated expansion inside a recipe, selected tests, environment strings, and platform limits determine which command fails. A make dependency list that is valid in memory can become invalid when flattened into an argument to another process.
+
+This experience is part of the project's reason for retaining Autotools + Libtool. Mature tools still have assumptions that break under unusually large workloads. Here, the useful escape route was already available: override the affected Automake rules, introduce a make target with the large list as prerequisites, use a manifest for collection, and use `dist-hook` for bounded copying. The changes stayed in the project's `Makefile.am` files and their generated outputs; they did not require patching the installed Autotools tools or migrating the whole build. For a maintainer familiar with make and shell, that was a straightforward way to work past the limitation.
+
+The lesson includes both sides: the standard machinery did not automatically handle this scale, and its customization mechanisms made the repairs practical. Preserving small, independently reported tests remained possible while changing how the infrastructure carried their names between processes.
+
 ## Command-length and record-length boundaries
 
-The inventory has grown to thousands of individually named tests, often with descriptive paths. Its flattened size can exceed a platform's command or argument limits before any test starts. There are several separate boundaries:
+The inventory has grown to thousands of individually named tests, often with descriptive paths. Its flattened size can exceed a platform's command or argument limits before a launch, cleanup, distribution, or aggregation step can execute. There are several separate boundaries:
 
 Before the manifest-based collector, the project's `check-TESTS` recipe expanded `TEST_LOGS`, assigned the result to a shell variable, and passed it to recursive make as `TEST_LOGS="$$log_list"` while requesting `test-suite.log`. This made the complete inventory one process argument. Commit `e1ca48f3b` replaced that path with the short log target and file-based result collection; the fix changes how the inventory crosses the process boundary, while retaining per-test make rules.
 
@@ -66,6 +86,8 @@ Before the manifest-based collector, the project's `check-TESTS` recipe expanded
 | Meson wrapper launch on Windows | Embedding a substantial shell program in `sh -c` introduces command-string and quoting hazards. | A configured wrapper file is passed to `sh` instead of carrying its program text in each command. |
 
 The relevant limit may be the combined argument/environment budget, a single argument or command-string limit, or an OpenVMS record-length limit. These are not interchangeable. The ordinary Autotools path still substitutes `TESTS` into a configured Makefile; it avoids the dangerous external-command expansions rather than eliminating every large make variable. The discovery helper's optional `make` output emits bounded `TESTS +=` lines, but the current normal configure path uses its space-separated mode and OpenVMS uses newline mode.
+
+The history uses `ARG_MAX` as shorthand for this family of process-launch limits. For example, Linux also imposes a per-string limit separate from the combined argument/environment budget, as documented in [execve(2)](https://man7.org/linux/man-pages/man2/execve.2.html). A large `sh -c` program or a single `TEST_LOGS=...` argument can hit that boundary even if the combined budget is larger. Moving the same complete inventory into one environment variable therefore does not generally solve the problem.
 
 To inspect the inventory scale without running tests or putting its contents in command arguments:
 
