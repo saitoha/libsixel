@@ -1,8 +1,7 @@
 #!/bin/sh
 # Run lsqa checks for float32 FHEDT in the DIN99d colorspace.
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
-# Quality floors tuned to requested QA thresholds:
-# - MS-SSIM floor: 0.97
+# Enforce MS-SSIM >= 0.99 for the decoded DIN99d result.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -14,7 +13,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
 
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"

@@ -65,7 +65,7 @@ cmp -s "${short_output}" "${none_output}" && {
     exit 0
 }
 lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -b "MS-SSIM:0.98" "${reference_image}" "${short_output}" 2>&1) || \
+    -b "MS-SSIM:0.99" "${reference_image}" "${short_output}" 2>&1) || \
     lsqa_status=$?
 test "${lsqa_status:-0}" -eq 0 || {
     echo "not ok" 1 - "snap policy image quality regressed"
