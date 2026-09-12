@@ -525,19 +525,19 @@ def passes_wide() -> str:
     height = 790
     body = [rect(0, 0, width, height, PANEL)]
     body.extend([
-        text(55, 62, "-I turns a 15-bit color field into repeated 255-slot passes", 38, 800),
-        text(55, 100, "Five bits per channel create 32 × 32 × 32 possible RGB values; register #255 remains the skip key.", 20, 500, MUTED),
+        text(55, 62, "-I maps 15-bit color keys through repeated 255-slot passes", 38, 800),
+        text(55, 100, "Five bits per channel create 32 × 32 × 32 lookup keys; register #255 remains the skip key.", 20, 500, MUTED),
         card(55, 150, 260, 390, "1  RGB pixels", BLUE),
         color_cloud(92, 225, 8, 9, 23),
         text(92, 465, "8-bit source channels", 17, 700, BLUE),
         text(92, 495, "many distinct colors", 17, 500, MUTED),
         line(320, 345, 380, 345, BLUE, 5, "arrow-blue"),
-        card(390, 150, 275, 390, "2  Quantize to 15bpp", TEAL),
+        card(390, 150, 275, 390, "2  Form a 15-bit key", TEAL),
         badge(430, 235, "R: 5 bits", MAGENTA, 120),
         badge(430, 300, "G: 5 bits", TEAL, 120),
         badge(430, 365, "B: 5 bits", BLUE, 120),
         text(430, 455, "32³ = 32,768", 24, 800, TEAL),
-        text(430, 490, "possible colors", 18, 500, MUTED),
+        text(430, 490, "lookup keys", 18, 500, MUTED),
         line(670, 345, 730, 345, TEAL, 5, "arrow-blue"),
         card(740, 150, 320, 390, "3  Fill one pass", GOLD, GOLD_LIGHT),
         badge(780, 230, "#0 … #254", GOLD, 160),
@@ -561,7 +561,7 @@ def passes_wide() -> str:
         width,
         height,
         "High color uses repeated 255-slot passes",
-        "RGB pixels are reduced to five bits per channel, assigned to palette registers zero through 254, painted and marked, then remaining colors are emitted in later passes while register 255 remains a skip key.",
+        "RGB top bits form lookup keys. Original RGB representatives are assigned to registers zero through 254, painted and marked, then remaining colors are emitted in later passes; register 255 is a skip key.",
         "\n".join(body),
     )
 
@@ -572,12 +572,12 @@ def passes_mobile() -> str:
     height = 1570
     body = [rect(0, 0, width, height, PANEL)]
     body.extend([
-        text(38, 58, "15-bit color, 255 slots at a time", 35, 800),
+        text(38, 58, "15-bit keys, 255 slots at a time", 35, 800),
         text(38, 92, "#255 is kept as the skip key.", 18, 500, MUTED),
         pass_stage(55, 135, 650, "1  Normalize RGB", ("Source pixels enter as RGB888.", "High color bypasses palette construction."), BLUE),
         color_cloud(500, 190, 6, 4, 22),
         line(380, 300, 380, 345, BLUE, 5, "arrow-blue"),
-        pass_stage(55, 355, 650, "2  Keep five bits per channel", ("R5 + G5 + B5 = 15 bits", "32³ = 32,768 possible colors"), TEAL),
+        pass_stage(55, 355, 650, "2  Key on five bits per channel", ("R5 + G5 + B5 = 15 bits", "32³ = 32,768 lookup keys"), TEAL),
         line(380, 520, 380, 565, TEAL, 5, "arrow-blue"),
         pass_stage(55, 575, 650, "3  Build one paint pass", ("Assign up to 255 new colors to #0…#254.", "Other pixels use #255 and wait."), GOLD),
         line(380, 740, 380, 785, GOLD, 5, "arrow-gold"),
@@ -587,7 +587,7 @@ def passes_mobile() -> str:
         rect(75, 1095, 610, 225, PAPER, GRID, 1.5, 15),
         text(380, 1140, "Tradeoff", 23, 800, INK, "middle"),
         text(115, 1185, "+ bypasses fixed-palette construction and lookup", 17, 700, TEAL),
-        text(115, 1225, "+ offers a 32,768-color lattice", 17, 700, TEAL),
+        text(115, 1225, "+ groups colors into 32,768 keys", 17, 700, TEAL),
         text(115, 1265, "− repeats palette definitions and paint passes", 17, 700, MAGENTA),
         rect(75, 1370, 610, 100, MAGENTA_LIGHT, MAGENTA, 1.5, 15),
         text(380, 1412, "Requires paint-time register semantics", 20, 800, MAGENTA, "middle"),
@@ -597,7 +597,7 @@ def passes_mobile() -> str:
         width,
         height,
         "High color uses 255 palette slots at a time",
-        "Mobile pipeline from RGB pixels through five-bit channel quantization, one 255-color paint pass, marking, register reuse, and repetition.",
+        "Mobile pipeline from RGB pixels through five-bit channel keys, original RGB representatives, one 255-color paint pass, marking, register reuse, and repetition.",
         "\n".join(body),
     )
 
