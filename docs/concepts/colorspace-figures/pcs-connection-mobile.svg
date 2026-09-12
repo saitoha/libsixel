@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="780" viewBox="0 0 380 780" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">ICC Profile Connection Space</title>
+<desc id="desc">A source profile maps device values to the common PCS, represented as XYZ or Lab under D50 reference conditions. A destination profile maps the connection to destination values, such as sRGB. Rendering intent governs the connection. PCS is a connecting role, distinct from the loader target and encoder working color space.</desc>
+<rect x="0" y="0" width="380" height="780" rx="0" fill="#ffffff" stroke="none"/>
+<defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 1 1 L 7 4 L 1 7" fill="none" stroke="#4c6070" stroke-width="1.3"/></marker></defs>
+<text x="20" y="35" font-size="21" fill="#183247" font-weight="700" text-anchor="start">Different devices. One connection.</text>
+<text x="20" y="65" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">Profiles share a reference through PCS.</text>
+<g data-role="stage" data-stage="source">
+<rect x="30" y="106" width="320" height="90" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="145.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Source values</text>
+<text x="190" y="166.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">RGB / gray / CMYK</text>
+</g>
+<text x="94" y="244" font-size="17" fill="#17618c" font-weight="700" text-anchor="start">Source profile</text>
+<path data-from="source" data-to="pcs" d="M 65 197 L 65 287" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g data-role="stage" data-stage="pcs">
+<rect x="30" y="290" width="320" height="90" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="none"/>
+<text x="190" y="329.5" font-size="15" fill="#17618c" font-weight="700" text-anchor="middle">PCS</text>
+<text x="190" y="350.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">XYZ or Lab · D50</text>
+</g>
+<text x="94" y="428" font-size="17" fill="#17618c" font-weight="700" text-anchor="start">Destination profile</text>
+<path data-from="pcs" data-to="destination" d="M 65 381 L 65 471" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g data-role="stage" data-stage="destination">
+<rect x="30" y="474" width="320" height="90" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="513.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Destination values</text>
+<text x="190" y="534.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">sRGB, for example</text>
+</g>
+<text x="20" y="617" font-size="20" fill="#17618c" font-weight="700" text-anchor="start">PCS is the shared reference</text>
+<text x="20" y="648" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">Profile mappings and rendering intent</text>
+<text x="20" y="671" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">govern the connection.</text>
+<text x="20" y="694" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">The loader target and encoder work space</text>
+<text x="20" y="717" font-size="15" fill="#4c6070" font-weight="400" text-anchor="start">are separate choices.</text>
+<text x="20" y="767" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">ICC v2/v4 profile connection; schematic.</text>
+</svg>

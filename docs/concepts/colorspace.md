@@ -102,46 +102,14 @@ The [background policy](../loader/background-policy.md#colorspace) distinguishes
 
 ## End-to-end pipeline
 
-The useful mental model is a sequence of explicit interpretation and conversion boundaries:
+The useful mental model is a sequence of explicit interpretation and conversion boundaries. Follow the two branches separately: the palette-building view supplies colors in `-X`, while the main image supplies pixels in `-W`. Palette entries enter `-W` before lookup and dithering use both inputs.
 
-```text
-encoded image bytes
-  + format metadata or an embedded ICC profile
-                    |
-                    v
-              image loader
-                    |
-                    v
-       optional loader CMS conversion
-       source description -> cms_target
-                    |
-                    v
-       frame {pixels, pixel format, color space}
-                    |
-       optional resize: enter linear RGB,
-       resample, then enter the work format
-                    |
-          +---------+--------------------------+
-          |                                    |
-          v                                    v
- palette-building view                    main image view
-          |                               converted to -W
-       sampling                                 |
-          |                                    |
- converted to -X                               |
-          |                                    |
- binning -> quantizer                           |
-          |                                    |
- generated palette in -X                       |
-          +----------- convert -X -> -W -------+
-                                               |
-                                    lookup and dithering
-                                               |
-                                  palette conversion -W -> -U
-                                               |
-                                    SIXEL palette percentages
-                                      and palette indices
-```
+<picture>
+  <source media="(max-width: 640px)" srcset="colorspace-figures/encoding-pipeline-mobile.svg">
+  <img src="colorspace-figures/encoding-pipeline-wide.svg" alt="Encoding pipeline: loader and optional resize feed palette-building and main-image branches; both meet in working space, and only final palette entries convert to output space." loading="lazy">
+</picture>
+
+This figure shows the generated-palette route; fixed-palette shortcuts can bypass its palette-building branch. The final `-W` to `-U` conversion changes palette entries, while pixel indices keep their assignments. A stage box represents a contract, not a promise of a separate buffer or worker.
 
 The implementation may reuse storage, clone only the palette-building view, or skip a conversion when source and destination already match. Those optimizations do not change the conceptual contracts. The frame carries its effective pixel format and color space so later stages can choose the correct conversion instead of inferring it from whether resize or another option was requested.
 
@@ -159,19 +127,14 @@ Here, "lazy" means converting when a consuming operation needs different coordin
 
 For resize, `sixel_encoding_planner_analyze()` compares the actual frame format with the required resize input and work formats. The encoder inserts pre-resize and post-resize conversion steps only where those formats differ. An already linear float frame needs no pre-resize transfer decoding; an Oklab frame must return to linear RGB for the default resize path and can re-enter Oklab afterward. If resize is absent, there is no resize buffer, although CMS or `-X`/`-W` may independently require conversion. The general color converter likewise skips matching source and destination color spaces.
 
-For example, an opaque `RGB888` source with no applied CMS transform, no resize, and gamma palette policies can stay on the gamma byte path. Adding a resize with `--precision=8bit -Wgamma` introduces a temporary linear float stage:
+For example, an opaque `RGB888` source with no applied CMS transform, no resize, and gamma palette policies can stay on the gamma byte path. Adding a resize with `--precision=8bit -Wgamma` introduces a temporary linear float stage, shown in case A below. If a loader's background-composition path instead returns linear float and `-Woklab` is selected, case B applies: resize already has its required input coordinates, and conversion to Oklab follows the resize.
 
-```text
-RGB888 gamma -> LINEARRGBFLOAT32 -> resize -> RGB888 gamma
-```
+<picture>
+  <source media="(max-width: 640px)" srcset="colorspace-figures/resize-boundaries-mobile.svg">
+  <img src="colorspace-figures/resize-boundaries-wide.svg" alt="Two resize routes: gamma RGB888 decodes to linear float and returns to gamma bytes; an already linear float loader result skips decoding and converts to Oklab after resize." loading="lazy">
+</picture>
 
-If a loader's background-composition path instead returns linear float and `-Woklab` is selected, default resize processing follows this route:
-
-```text
-linear float loader result -> resize in linear RGB -> Oklab work
-```
-
-No extra sRGB decoding is needed before that resize. The planner retains loader-originated float precision for subsequent work. These are examples of stage-dependent conversion, not a promise of globally minimal transforms: individual loaders can have additional CMS-target round trips, and alpha/high-depth paths can produce float frames even without actual background blending.
+Case B needs no extra sRGB decoding before resize. The planner retains loader-originated float precision for subsequent work. These are examples of stage-dependent conversion, not a promise of globally minimal transforms: individual loaders can have additional CMS-target round trips, and alpha/high-depth paths can produce float frames even without actual background blending.
 
 ### Inspecting and controlling the effective path
 
@@ -256,12 +219,10 @@ For matrix-based RGB conversion, the primaries and white point determine a matri
 
 PCS means **Profile Connection Space**. It gives profiles a common connection: the source profile describes device values relative to the PCS, and a destination profile describes how to obtain destination device values from that connection. A CMS can pair profiles without requiring a separately authored transform for every source/destination combination.
 
-```text
-source device values          PCS                 destination values
-(RGB, gray, CMYK, ...)   XYZ or Lab, D50           (for example, sRGB)
-          |                    |                          ^
-          +-- source profile ->+-- destination profile ---+
-```
+<picture>
+  <source media="(max-width: 640px)" srcset="colorspace-figures/pcs-connection-mobile.svg">
+  <img src="colorspace-figures/pcs-connection-wide.svg" alt="A source profile maps device values to XYZ or Lab PCS under D50; a destination profile maps that common connection to destination values such as sRGB." loading="lazy">
+</picture>
 
 ICC v2/v4 color profiles use XYZ or Lab PCS representations under D50 reference conditions. PCS names the connecting role; it is not a third coordinate system in addition to XYZ and Lab. Rendering intent also governs the connection, so interpreting PCS requires more than a three-number tuple. See the [ICC introduction](https://www.color.org/getting-started/) and [ICC.1:2022](https://www.color.org/specifications/ICC.1-2022-05.pdf).
 
@@ -377,7 +338,7 @@ This distinction is especially important when evaluating `-X` or `-W`: a percept
 
 The static SVGs above require no scripts or interactive viewer. Each has an accessible title and description, a separate mobile layout, and a wide layout that can also be embedded with ordinary Markdown image syntax. The responsive `picture` elements choose between those checked-in assets.
 
-[`tools/plot_colorspace_figures.py`](../../tools/plot_colorspace_figures.py) generates the diagrams and calculated interpolation examples. [`figures.json`](colorspace-figures/figures.json) records the coordinate data, midpoint values, route assumptions, color roles, and sources. The chromaticity plot uses Matplotlib with equal axis scales. To regenerate with Python 3.12 and Matplotlib 3.10.3 in an optional environment, run:
+[`tools/plot_colorspace_figures.py`](../../tools/plot_colorspace_figures.py) generates the diagrams and calculated interpolation examples. Maintain pipeline stages and connections in the generator's `PIPELINE` and `PIPELINE_EDGES` definitions, with layout geometry kept separately; edit `RESIZE_CASES` for the resize examples. Regenerate the SVGs rather than editing them by hand or maintaining a second ASCII diagram. [`figures.json`](colorspace-figures/figures.json) records the coordinate data, midpoint values, pipeline graph, route assumptions, color roles, and sources. The chromaticity plot uses Matplotlib with equal axis scales. To regenerate with Python 3.12 and Matplotlib 3.10.3 in an optional environment, run:
 
 ```sh
 python tools/plot_colorspace_figures.py

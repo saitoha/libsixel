@@ -141,11 +141,17 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/concepts/colorspace.md \
 	docs/concepts/colorspace-figures/conversion-routes-mobile.svg \
 	docs/concepts/colorspace-figures/conversion-routes-wide.svg \
+	docs/concepts/colorspace-figures/encoding-pipeline-mobile.svg \
+	docs/concepts/colorspace-figures/encoding-pipeline-wide.svg \
 	docs/concepts/colorspace-figures/figures.json \
 	docs/concepts/colorspace-figures/mixing-mobile.svg \
 	docs/concepts/colorspace-figures/mixing-wide.svg \
+	docs/concepts/colorspace-figures/pcs-connection-mobile.svg \
+	docs/concepts/colorspace-figures/pcs-connection-wide.svg \
 	docs/concepts/colorspace-figures/primaries-whitepoints-mobile.svg \
 	docs/concepts/colorspace-figures/primaries-whitepoints-wide.svg \
+	docs/concepts/colorspace-figures/resize-boundaries-mobile.svg \
+	docs/concepts/colorspace-figures/resize-boundaries-wide.svg \
 	tools/plot_colorspace_figures.py \
 	docs/concepts/pixelformat-precision.md \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-paths.csv \

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="1080" viewBox="0 0 380 1080" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">Lazy conversion before and after resize</title>
+<desc id="desc">Case A: an opaque gamma RGB888 input is decoded to linear float for default resize, then encoded back to RGB888 for 8-bit gamma work. Case B: a linear float loader result enters resize without transfer decoding, then converts to Oklab float for -Woklab. The resize operation needs the same linear representation in both cases.</desc>
+<rect x="0" y="0" width="380" height="1080" rx="0" fill="#ffffff" stroke="none"/>
+<defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 1 1 L 7 4 L 1 7" fill="none" stroke="#4c6070" stroke-width="1.3"/></marker></defs>
+<text x="20" y="35" font-size="23" fill="#183247" font-weight="700" text-anchor="start">Resize reveals the boundary</text>
+<text x="20" y="65" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">The actual input format decides the conversions.</text>
+<text x="20" y="105" font-size="17" fill="#183247" font-weight="700" text-anchor="start">A · Gamma input / gamma work</text>
+<text x="20" y="130" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">--precision=8bit -Wgamma</text>
+<g data-role="stage" data-stage="case-0-stage-0">
+<rect x="40" y="153" width="300" height="78" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="186.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">RGB888</text>
+<text x="190" y="207.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Gamma-encoded source</text>
+</g>
+<text x="88" y="266" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">decode sRGB</text>
+<path data-from="case-0-stage-0" data-to="case-0-stage-1" d="M 64 232 L 64 288" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g data-role="stage" data-stage="case-0-stage-1">
+<rect x="40" y="291" width="300" height="78" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="none"/>
+<text x="190" y="324.5" font-size="15" fill="#17618c" font-weight="700" text-anchor="middle">LINEARRGBFLOAT32</text>
+<text x="190" y="345.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Resize in linear light</text>
+</g>
+<text x="88" y="404" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">encode sRGB</text>
+<path data-from="case-0-stage-1" data-to="case-0-stage-2" d="M 64 370 L 64 426" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g data-role="stage" data-stage="case-0-stage-2">
+<rect x="40" y="429" width="300" height="78" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="462.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">RGB888</text>
+<text x="190" y="483.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Gamma work · -Wgamma</text>
+</g>
+<text x="20" y="581" font-size="17" fill="#183247" font-weight="700" text-anchor="start">B · Linear input / OKLab work</text>
+<text x="20" y="606" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Linear-light composition, then -Woklab</text>
+<g data-role="stage" data-stage="case-1-stage-0">
+<rect x="40" y="629" width="300" height="78" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="662.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">LINEARRGBFLOAT32</text>
+<text x="190" y="683.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">From loader composition</text>
+</g>
+<text x="88" y="742" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">no decode</text>
+<path data-from="case-1-stage-0" data-to="case-1-stage-1" d="M 64 708 L 64 764" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g data-role="stage" data-stage="case-1-stage-1">
+<rect x="40" y="767" width="300" height="78" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="none"/>
+<text x="190" y="800.5" font-size="15" fill="#17618c" font-weight="700" text-anchor="middle">LINEARRGBFLOAT32</text>
+<text x="190" y="821.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Resize in linear light</text>
+</g>
+<text x="88" y="880" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">to OKLab</text>
+<path data-from="case-1-stage-1" data-to="case-1-stage-2" d="M 64 846 L 64 902" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g data-role="stage" data-stage="case-1-stage-2">
+<rect x="40" y="905" width="300" height="78" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="190" y="938.5" font-size="15" fill="#183247" font-weight="700" text-anchor="middle">Oklab float</text>
+<text x="190" y="959.5" font-size="14" fill="#4c6070" font-weight="400" text-anchor="middle">Perceptual work · -Woklab</text>
+</g>
+<text x="20" y="1024" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Default resize; convert only at differing boundaries.</text>
+<text x="20" y="1046" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">Schematic examples. Loaders may have</text>
+<text x="20" y="1068" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">additional CMS-target conversions.</text>
+</svg>
