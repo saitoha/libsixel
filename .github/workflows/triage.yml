@@ -157,6 +157,7 @@ jobs:
             --env BUILD_TOOL \
             --env CI=true \
             --env DEBIAN_FRONTEND=noninteractive \
+            --env GITHUB_WORKSPACE \
             --env LC_ALL=C \
             --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE:ro" \
             --workdir "$GITHUB_WORKSPACE" \
