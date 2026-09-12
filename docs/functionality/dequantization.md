@@ -42,6 +42,21 @@ There is also a useful limit to what the geometry tells the implementation. Movi
 
 P guides the decision; it is not a third color inserted into this pair's output. The weighted average still combines the actual center and neighboring pixel colors. With only A and B contributing, that average lies on A–B before byte rounding. With several differently colored neighbors, their normalized contributions determine the output. The next chapter gives libsixel's coefficients and normalization explicitly.
 
+### Position cases around the midpoint
+
+The nearest-color test partitions the possible positions of P into concentric regions around M. In full RGB space these boundaries are spheres; a plane through M cuts them into circles. Keep A and B fixed and move the nearest other palette color P through these regions. Its squared-distance ratio `r = |M−P|² / |M−A|²` selects a weight. The diagram compares the upstream rule with libsixel at its default similarity bias.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="dequantization-figures/position-cases-mobile.svg">
+  <img alt="Concentric position cases around M: four upstream regions have weights 0,1,6,8; eight libsixel regions have weights 0,2,4,7,5,7,8,5. Numbered P positions illustrate the regions and their distance-ratio intervals." src="dequantization-figures/position-cases-wide.svg">
+</picture>
+
+*Each numbered P is a separate possible nearest-color result, not a palette containing all the numbered points. A and B are excluded from the search. Directions were chosen to separate the labels; direction itself does not select a case. The outermost region continues beyond the drawn disk.*
+
+The radii follow the **square root** of each ratio threshold. For example, the upstream first boundary is at distance `sqrt(2/3) * |M−A|`, not `(2/3) * |M−A|`. The gold circle is `r=1`, passing through A and B in this exact-midpoint geometry. A point exactly on a threshold belongs to the region outside that boundary, as the interval labels indicate. Points on the same circle receive the same pair weight, even when their A–P–B triangles have different shapes.
+
+These are neighbor weights before normalization and gradient protection, not percentages or confidence probabilities. The libsixel rings deliberately show its non-monotonic coefficients: crossing outward can reduce the weight. The geometric drawing assumes a nonzero endpoint distance and an exact midpoint; byte rounding, the minimum comparison base, repeated palette indexes, and absence of a third entry are covered in the implementation details below.
+
 ### From a palette gap to a mixing weight
 
 For each center/neighbor pair, [`Similarity::compare`](https://github.com/kornelski/undither/blob/844241504c7f2b224c67761de277c2bb5c56ab81/src/acc.rs) computes the RGB midpoint M, the squared distance `d` from M to A, and the nearest squared distance `q` from M to another palette entry, excluding the two endpoint entries. Small `q` relative to `d` discourages mixing; large `q` permits it. The resulting weight is used in a normalized average of the center and eligible neighbors. The implementation caches these pair decisions and uses a nearest-neighbor search that its own comment describes as approximate.

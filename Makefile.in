@@ -857,6 +857,8 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	docs/functionality/dequantization.md \
 	tools/plot_dequantization_figures.py \
 	docs/functionality/dequantization-figures/figures.json \
+	docs/functionality/dequantization-figures/position-cases-wide.svg \
+	docs/functionality/dequantization-figures/position-cases-mobile.svg \
 	docs/functionality/dequantization-figures/rgb-geometry-wide.svg \
 	docs/functionality/dequantization-figures/rgb-geometry-mobile.svg \
 	docs/functionality/dequantization-figures/palette-clue-wide.svg \
