@@ -115,13 +115,7 @@ Each configuration is measured once with a true `rgb888` path and once with a
 true `rgb-f32` path. The figures keep four user-visible outcomes together:
 MS-SSIM, mean Delta E00, end-to-end latency, and exact SIXEL byte size.
 
-The controlled fixture is the 600-by-450 RGB
-[`images/snake.png`](../../images/snake.png) at `K=64`. Commands use the
-builtin loader, one thread, full quality, gamma working coordinates, and no GPU
-assistance. Each domain reuses the command builder owned by its detailed
-measurement document, then changes only `--precision` within a matched pair.
-Thus a pair is a valid precision comparison, while absolute values from two
-different domains need not share every other policy.
+The controlled fixture is the 600-by-450 RGB [`images/snake.png`](../../images/snake.png) at `K=64`. Commands use the builtin loader with loader CMS disabled (`SIXEL_LOADER_CMS_ENGINE=none`), one thread, full quality, gamma working coordinates, and no GPU assistance. Each domain reuses the command builder owned by its detailed measurement document, then changes only `--precision` within a matched pair. Thus a pair is a valid precision comparison, while absolute values from two different domains need not share every other policy.
 
 The plots use paired markers rather than bars from zero. This makes small
 precision changes visible without implying that a narrow quality-axis range is
@@ -131,17 +125,17 @@ grayscale reproduction. Timing whiskers show the interquartile range.
 
 ## Measured results
 
-The checked-in run was recorded on 2026-09-12 UTC from clean revision `c26da16e7` on macOS arm64, including the corrected DIN99d transform and common coordinate scale. The table summarizes float32 relative to the matching 8-bit row. Counts report the direction of the metric, not its statistical or practical significance.
+The checked-in run was recorded on 2026-09-12 UTC from clean revision `85a2674e5` on macOS arm64, including the corrected DIN99d transform and common coordinate scale. The table summarizes float32 relative to the matching 8-bit row. Counts report the direction of the metric, not its statistical or practical significance.
 
 | Domain | Configurations | Median float32 / 8-bit time | Float32 has higher MS-SSIM | Float32 has lower mean Delta E00 | Stream-size range |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| quantize model | 11 | 1.19x | 2 / 11 | 3 / 11 | -0.07% to +0.09% |
-| dither policy | 13 | 1.23x | 7 / 13 | 0 / 13 | +0.09% to +18.80% |
-| lookup policy | 9 | 1.18x | 4 / 9 | 5 / 9 | -4.98% to +0.22% |
-| sampling and binning | 5 | 1.15x | 2 / 5 | 3 / 5 | -0.06% to +0.09% |
-| clustering configuration | 5 | 1.18x | 2 / 5 | 5 / 5 | -0.02% to +0.41% |
+| quantize model | 11 | 1.20x | 2 / 11 | 3 / 11 | -0.07% to +0.09% |
+| dither policy | 13 | 1.26x | 7 / 13 | 0 / 13 | +0.09% to +18.80% |
+| lookup policy | 9 | 1.17x | 4 / 9 | 5 / 9 | -4.98% to +0.22% |
+| sampling and binning | 5 | 1.18x | 2 / 5 | 3 / 5 | -0.06% to +0.09% |
+| clustering configuration | 5 | 1.16x | 2 / 5 | 5 / 5 | -0.02% to +0.41% |
 
-The quantizer rows change MS-SSIM by at most `0.000080`, mean Delta E00 by at most `0.0009`, and size by at most `0.09%` on this fixture. Their float32 time ratios range from 1.16x to 1.21x. The controlled solvers are relatively insensitive to base precision here, while conversion and float palette application still have a measurable cost. Sampling/binning configurations also show small output changes, with time ratios from 1.04x to 1.26x.
+The quantizer rows change MS-SSIM by at most `0.000080`, mean Delta E00 by at most `0.0009`, and size by at most `0.09%` on this fixture. Their float32 time ratios range from 1.14x to 1.23x. The controlled solvers are relatively insensitive to base precision here, while conversion and float palette application still have a measurable cost. Sampling/binning configurations also show small output changes, with time ratios from 1.05x to 1.28x.
 
 Dithering changes the tradeoff. Float32 increases mean Delta E00 for 13 of 13 methods, while MS-SSIM improves for 7. Delta E00 averages pointwise perceptual color error, whereas MS-SSIM rewards spatial structure created by redistributed error. All measured dither rows increase stream size; precision is part of their observable behavior.
 
@@ -153,11 +147,11 @@ Selected output movements are shown below. Positive deltas mean that float32 rep
 
 | Domain and configuration | Time ratio | MS-SSIM delta | Mean Delta E00 delta | Size delta |
 | --- | ---: | ---: | ---: | ---: |
-| dither `fs` | 1.23x | -0.004429 | +0.2892 | +4.98% |
+| dither `fs` | 1.25x | -0.004429 | +0.2892 | +4.98% |
 | dither `atkinson` | 1.30x | +0.003680 | +0.1170 | +18.80% |
-| lookup `5bit` | 1.26x | +0.005444 | -0.2039 | -4.75% |
+| lookup `5bit` | 1.24x | +0.005444 | -0.2039 | -4.75% |
 | lookup `eytzinger` | 1.03x | -0.001964 | -0.1016 | -4.98% |
-| lookup `fhedt` | 1.05x | +0.001638 | -0.0413 | -0.06% |
+| lookup `fhedt` | 1.07x | +0.001638 | -0.0413 | -0.06% |
 
 ### Quantize models
 

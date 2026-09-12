@@ -79,20 +79,20 @@
       "width": 600
     }
   ],
-  "generated_at_utc": "2026-09-08T12:19:31.380700+00:00",
+  "generated_at_utc": "2026-09-12T16:53:25.813412+00:00",
   "measurement_mode": "durable",
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "afb59207a35910194756f094bdd62c1b37a9c8ff116c578a68db8d31fcf814e6",
+      "launcher_sha256": "2832f418537a24bb158c5e66183389fe726c9b7b2f9f3ed9778113523024e6e4",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "e13b9a63375c7923ecb6afb5ddb6bfd0cebbac53f1295875d895c0c04fbdae4e"
+      "payload_sha256": "174e48874182db871f5de6c544aa2892faa65da628067b10517b5cb335efee02"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "fcfa66e7988a0c0d21c2d76b5ac8b796c68be5db19223b1004853e17b561cfba",
+      "launcher_sha256": "90fbd19027bbdd0d801ed1c0241591adb3011d35452832d83c2936eef04f5c03",
       "payload": "assessment/.libs/lsqa",
-      "payload_sha256": "4e00a07c17523529fd186549afa02c96dbedc94d1a7878c3c27b4b12eeed9408"
+      "payload_sha256": "0e689ac52c26032cdd0ae183f9a6e3354183e4241c3fcd798d66961d2445682e"
     }
   },
   "protocol": {
@@ -275,9 +275,9 @@
     "machine": "arm64",
     "manifest": "tools/snap_policy_suite.json",
     "manifest_sha256": "1b6dda1f4ae3d9b28cff59672508f53bcdb867a97660ee00fbf4c2bb6853afe1",
-    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
-    "python": "3.14.5",
-    "revision": "bd00a0a034ff1e8fd4f233911f686a4aed0ea9ac",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "python": "3.12.14",
+    "revision": "85a2674e53a2d7b75c6944b5a87b04ee9ea182b1",
     "tracked_worktree_state_at_start": "clean"
   }
 }

@@ -57,7 +57,7 @@
       "width": 600
     }
   ],
-  "generated_at_utc": "2026-09-12T15:02:22.960574+00:00",
+  "generated_at_utc": "2026-09-12T17:18:14.355888+00:00",
   "host": {
     "matplotlib": "3.10.3",
     "platform": "macOS-26.5.1-arm64-arm-64bit",
@@ -69,7 +69,7 @@
       {
         "path": "src/.libs/libsixel.1.dylib",
         "role": "shared",
-        "sha256": "6745d4f1935f06227655900373a0490e6edf6b1b1f7727f16d418bd2996fe130"
+        "sha256": "88fab1fe041fefcd12ba9e5b3f1a5436baaf51ec973b6f9136133186f1567521"
       }
     ],
     "mode": "library"
@@ -83,7 +83,7 @@
       "launcher": "converters/img2sixel",
       "launcher_sha256": "2832f418537a24bb158c5e66183389fe726c9b7b2f9f3ed9778113523024e6e4",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "662d338a10127bb357537cd41ab773c085ef2cfb908002264796418ac9aa17c6"
+      "payload_sha256": "174e48874182db871f5de6c544aa2892faa65da628067b10517b5cb335efee02"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
@@ -156,7 +156,7 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "c26da16e79d75081c0f76a461b16aaed7814f8f5",
+    "revision": "85a2674e53a2d7b75c6944b5a87b04ee9ea182b1",
     "suite_end_snapshot_matches": true,
     "top_source_directory": "/Users/saitoha/.codex/visualizations/2026/09/12/01a0956c-08e5-72e0-9815-b1d4dc1070bf/din99d-audit/measurement-source",
     "tracked_worktree_state_at_start": "clean"

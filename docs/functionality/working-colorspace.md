@@ -19,32 +19,10 @@ The working color space changes the geometry used by palette lookup and the comp
 
 For a generated palette, the relevant path is:
 
-```text
-loaded or preprocessed frame
-          |
-          +------------------------+
-          |                        |
-          v                        v
-palette-building view        main image view
-converted to -X              converted to -W
-          |                        |
-sampling, binning,                 |
-and quantization                   |
-          |                        |
-palette in -X                      |
-          |                        |
-convert K entries -X -> -W         |
-          +------------+-----------+
-                       |
-                       v
-          lookup and dithering in -W
-                       |
-                       v
-          convert palette -W -> -U
-                       |
-                       v
-             SIXEL palette and indices
-```
+<picture>
+  <source media="(max-width: 640px)" srcset="../concepts/colorspace-figures/encoding-pipeline-mobile.svg">
+  <img src="../concepts/colorspace-figures/encoding-pipeline-wide.svg" alt="Generated-palette pipeline: palette-building colors enter clustering space, main-image pixels enter working space, and both meet for lookup and dithering before final palette output conversion." loading="lazy">
+</picture>
 
 The three encoder color-space controls own different boundaries:
 
@@ -137,13 +115,13 @@ The CIELAB equations and D50/D65 adaptation context are summarized in [CSS Color
 
 DIN99d was designed to improve the uniformity of Euclidean color differences relative to CIELAB. With the common scale, exact lookup uses its Euclidean geometry, subject to numeric approximation and clipping. This differs from evaluating Delta E00 for each candidate. The transformation follows Cui et al., [Uniform colour spaces based on the DIN99 colour-difference formula](https://onlinelibrary.wiley.com/doi/abs/10.1002/col.10066).
 
-This was the slowest working space in the checked-in end-to-end run. That observation includes conversion, typed-format handling, lookup, and optional diffusion; it is not an isolated benchmark of the DIN99d equations.
+Its runtime cost includes conversion, typed-format handling, lookup, and optional diffusion. The working-space comparison below measures those operations together; it is not an isolated benchmark of the DIN99d equations.
 
 ## Measurement design
 
 The checked-in comparison asks one narrow question: how does `-W` change decoded quality, wall time, and stream size when palette construction and numeric precision are held fixed?
 
-The fixture is the 600-by-450 RGB [`images/snake.png`](../../images/snake.png). The sweep covers `K = 8, 16, 32, 64, 128, 256`, with both `--diffusion=none` and Floyd--Steinberg `--diffusion=fs`. Every row fixes `--precision=float32`, `-Xgamma`, `-Ugamma`, exact `--lookup-policy=none`, one CPU thread, GPU off, the builtin loader, full-frame sampling, hard binning, `kmeans:seed=1:binbits=6`, no merge, cover off, RGB palette output, full quality, and fast encoding.
+The fixture is the 600-by-450 RGB [`images/snake.png`](../../images/snake.png). The sweep covers `K = 8, 16, 32, 64, 128, 256`, with both `--diffusion=none` and Floyd--Steinberg `--diffusion=fs`. Every row fixes `--precision=float32`, `-Xgamma`, `-Ugamma`, exact `--lookup-policy=none`, one CPU thread, GPU off, the builtin loader, loader CMS disabled (`SIXEL_LOADER_CMS_ENGINE=none`), full-frame sampling, hard binning, `kmeans:seed=1:binbits=6`, no merge, cover off, RGB palette output, full quality, and fast encoding.
 
 The preflight validates the exact typed working format, explicit `-X` and `-W` state, K-means model, hard binning, exact lookup, and zero quantizer retries. Quality and size come from one deterministic SIXEL stream: `lsqa` compares its decoded image with the source, and the stream byte length is recorded exactly. Runtime uses a fresh process with output discarded, two warmups, seven measured runs, rotated and reversed configuration order, and the median with an interquartile interval.
 
@@ -180,14 +158,14 @@ There is no single quality ordering. A working space changes both the nearest pa
 
 Figure: `img2sixel` fresh-process runtime and encoded size on `images/snake.png`; `-Xgamma`, float32, exact lookup, CPU, one thread, two warmups, and a seven-run median. Runtime whiskers show the interquartile range; stream size is measured from the quality-pass SIXEL bytes.
 
-Gamma is the fastest measured working space at every `K` under both dither conditions, even though the experiment forces its float32 path. Relative to gamma, the observed median runtime ranges are:
+Gamma has the shortest median runtime in 12 of the 12 measured palette-size/dither conditions, even though the experiment forces its float32 path. Relative to gamma, the observed median runtime ranges are:
 
 | Working space | No dither | Floyd--Steinberg |
 | --- | ---: | ---: |
-| linear | 1.06x to 1.23x | 1.06x to 1.22x |
-| oklab | 1.09x to 1.34x | 1.08x to 1.28x |
-| cielab | 1.10x to 1.41x | 1.09x to 1.33x |
-| din99d | 1.19x to 1.86x | 1.18x to 1.72x |
+| linear | 1.06x to 1.24x | 1.06x to 1.24x |
+| oklab | 1.09x to 1.37x | 1.08x to 1.30x |
+| cielab | 1.11x to 1.36x | 1.09x to 1.32x |
+| din99d | 1.20x to 1.83x | 1.19x to 1.77x |
 
 These are end-to-end timings, not conversion-only microbenchmarks. Exact lookup remains `O(NK)` for every row; the growing curves primarily reflect the common exhaustive search, while color conversion and working-format operations alter the constant cost.
 
@@ -212,7 +190,7 @@ tools/reproduce_working_colorspace_measurements.sh
 
 The plotter requires Python 3 and Matplotlib. `img2sixel` and `lsqa` must be enabled in the selected build. Set `PYTHON`, `BUILD_DIR`, `IMG2SIXEL_PATH`, or `LSQA_PATH` when they are not at their defaults. The wrapper refuses a dirty tracked worktree so that durable measurements identify one reproducible source revision.
 
-The checked-in run was recorded on 2026-09-12 UTC from clean revision `c26da16e7` on macOS arm64, including the corrected DIN99d XYZ transform and common coordinate scale. The full configure arguments, compiler identity, binary hashes, input hash, command controls, and timing protocol are recorded in [`working-colorspace-run.json`](working-colorspaces/measurements/working-colorspace-run.json). The complete numeric data are in [`working-colorspace-comparison.csv`](working-colorspaces/measurements/working-colorspace-comparison.csv).
+The checked-in run was recorded on 2026-09-12 UTC from clean revision `85a2674e5` on macOS arm64. The full configure arguments, compiler identity, binary hashes, input hash, command controls, and timing protocol are recorded in [`working-colorspace-run.json`](working-colorspaces/measurements/working-colorspace-run.json). The complete numeric data are in [`working-colorspace-comparison.csv`](working-colorspaces/measurements/working-colorspace-comparison.csv).
 
 Validate existing artifacts without rerunning the benchmark:
 

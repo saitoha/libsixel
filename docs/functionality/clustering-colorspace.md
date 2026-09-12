@@ -23,30 +23,10 @@ palette values, or choose the space used by all later image processing.
 
 For a generated palette, the relevant path is:
 
-```text
-loaded or preprocessed frame
-          |
-          v
-sampling policy
-          |
-          v
-convert a palette-only frame to -X
-          |
-          v
-binning policy in -X coordinates
-          |
-          v
-quantizer distance and optimization in -X
-          |
-          v
-convert K palette entries from -X to -W
-          |
-          v
-lookup and dithering in -W
-          |
-          v
-SIXEL palette and indexed bands
-```
+<picture>
+  <source media="(max-width: 640px)" srcset="../concepts/colorspace-figures/encoding-pipeline-mobile.svg">
+  <img src="../concepts/colorspace-figures/encoding-pipeline-wide.svg" alt="Generated-palette pipeline: palette-building colors enter clustering space, main-image pixels enter working space, and both meet for lookup and dithering before final palette output conversion." loading="lazy">
+</picture>
 
 The encoder clones the frame when palette construction needs a different
 pixel format or color space. The main image path is not converted merely
@@ -377,7 +357,7 @@ rounds. The left panel sums complete top-level `palette/build` spans from a
 separate instrumented run. It excludes clustering-frame conversion. The right
 panel measures the complete uninstrumented command.
 
-OKLab and CIELAB have the shortest solver spans for most of this fixture even though their coordinate transforms are more complex than gamma RGB. This is not evidence that their transforms are cheaper: hard-bin occupancy, bound pruning, and convergence also change with the geometry. At `K=64`, the median solver spans are 23.624 ms for gamma, 10.056 ms for OKLab, and 10.449 ms for CIELAB; the corresponding end-to-end times are 86.97, 83.38, and 84.24 ms. At `K=256`, OKLab is fastest end to end at 177.88 ms, compared with 216.42 ms for gamma and 201.93 ms for DIN99d.
+Hard-bin occupancy, bound pruning, and convergence change the amount of solver work when clustering coordinates change. At `K=64`, the median solver spans are 23.558 ms for gamma, 10.081 ms for OKLab, and 10.519 ms for CIELAB; the corresponding end-to-end times are 88.25, 83.80, and 84.72 ms. At `K=256`, OKLab has the shortest end-to-end median at 181.05 ms, compared with 220.54 ms for gamma and 206.10 ms for DIN99d. These end-to-end results do not establish the relative cost of the coordinate transforms alone.
 
 ### Encoded size
 
@@ -505,7 +485,7 @@ There is no defensible total ordering from this run:
   spans on this fixture;
 - `cielab` is competitive in both quality and solver time, including the best
   mean Delta E00 at `K=256`; and
-- `din99d` is strongest at very small `K` here; it has the highest end-to-end latency through `K=64`, while at `K=256` it is faster than gamma but slower than OKLab and CIELAB.
+- `din99d` is strongest at very small `K` here. At `K=8`, its end-to-end median is 68.75 ms versus 51.39 ms for gamma; at `K=256`, the corresponding medians are 206.10 and 220.54 ms.
 
 Do not change a project default from this one image. A default proposal needs
 multiple natural images, smooth luminance and chroma gradients, rare saturated
@@ -516,7 +496,9 @@ without error diffusion.
 
 ## Reproduction and raw data
 
-The color-space comparison and hard-binning threshold study were remeasured from clean revision `c26da16e7` on 2026-09-12 UTC with the corrected DIN99d transform and common scale. Every comparison space was rerun; timings describe this recorded build and host, not an isolated before/after transform microbenchmark.
+Both studies use the builtin loader with loader CMS disabled (`SIXEL_LOADER_CMS_ENGINE=none`). This keeps source-profile conversion out of the clustering comparison; it does not disable the internal conversions required by `-X` and `-W`.
+
+The color-space comparison and hard-binning threshold study were measured from clean revision `85a2674e5` on 2026-09-12 UTC. Every comparison space was run under the same controls; timings describe this recorded build and host, not an isolated transform microbenchmark.
 
 The exact tables are
 [`clustering-colorspace-quality.csv`](clustering-color-spaces/measurements/clustering-colorspace-quality.csv),
