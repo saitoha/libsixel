@@ -15,7 +15,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Requirements and support
 
-- [Build system architecture](build/README.md) explains Autotools and Meson ownership, configure and build orchestration, the custom test harness and command-length limits, and Meson adoption and remaining differences.
+- [Build system architecture](build/README.md) explains why Autotools + Libtool and Meson remain complementary, why generated build files are committed for repository users, configure and build orchestration, the custom test harness and command-length limits, and Meson adoption and remaining differences.
 - [Build, runtime, and platform support](platform-support.md) defines the
   build requirements, runtime assumptions, CI-backed support tiers, and the
   OS, architecture, compiler, and build-system matrix.

@@ -55,6 +55,8 @@ After installation, `meson compile -C builddir installcheck` runs the regular TA
 
 `meson compile -C builddir docs` delegates to the same optional `tools/build-docs` program as Autotools. Documentation navigation and private Python dependencies are shared; there is no second maintained Meson documentation tree.
 
-## Relationship to Autotools
+## Relationship to Autotools + Libtool
+
+The reason to maintain both systems is their [complementary coverage](README.md#why-maintain-two-build-systems): Meson addresses the orchestration cost of Autotools + Libtool on Windows, while the latter preserves distribution, portable library linking, and adaptation capabilities needed on other platforms. Matching the library's behavior across both paths does not require using the same build mechanisms.
 
 Meson supports the main library, converter, binding, extension, test, analyzer, sanitizer, and amalgamation surfaces. The maintained build descriptions nevertheless differ in concrete details, including static consumer metadata, WIC deregistration, and the construction of the C runner when amalgamated tools are selected. [Meson adoption and remaining differences](meson-history.md) records those distinctions and their evidence rather than assuming complete parity from successful compilation.
