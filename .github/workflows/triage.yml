@@ -183,19 +183,18 @@ jobs:
               cc -dumpmachine
               file /bin/sh
 
-              # The generic runners own the complete suite. These emulated
-              # guests exercise representative ABI, byte-order, codec,
-              # threading, and security contracts on the target CPU.
+              # The generic runners own the complete suite and its large
+              # aggregate test binary. These emulated guests run existing
+              # black-box contracts through target-native converter binaries.
               set -- \
                 cli/core/0002_version.t \
                 cli/core/0007_basic_stdin_snake.t \
+                cli/core/0019_basic_parallel_cli_override.t \
                 cli/sixel2png/0005_stdin_default_output.t \
+                codec/format/0009_gray8_output.t \
                 codec/output/0003_direct_sixel_encode.t \
-                processing/decoder/0008_decoder_pixels_output_formats.t \
-                processing/dither/0001_dither_policy.t \
-                processing/frame/0001_frame_factory.t \
-                processing/scale/0004_g8_normalized_rgb888.t \
-                processing/threadpool/0001_threadpool_service.t \
+                quant/mapfile/0109_mapfile_export_act_256_color_count.t \
+                writer/png/0004_builtin_ihdr_crc.t \
                 security/issue/0012_issue220_dcs_signed_integer_overflow.t
 
               rm -rf /tmp/libsixel-build
@@ -203,15 +202,28 @@ jobs:
               if test "$BUILD_TOOL" = autotools; then
                 cd /tmp/libsixel-build
                 "$GITHUB_WORKSPACE/configure" \
-                  --disable-dependency-tracking
+                  --disable-dependency-tracking \
+                  --disable-tests
                 make -j2 V=1
-                make -j2 check TESTS="$*"
+                IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
+                SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
               else
-                meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE"
+                meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE" \
+                  -Dtests=false
                 meson compile -C /tmp/libsixel-build -j 2 -v
-                meson test -C /tmp/libsixel-build \
-                  --num-processes 2 --print-errorlogs "$@"
+                IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
+                SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
               fi
+              export IMG2SIXEL_PATH SIXEL2PNG_PATH
+              export HAVE_IMG2SIXEL=1 HAVE_SIXEL2PNG=1
+              export TOP_BUILDDIR=/tmp/libsixel-build
+              export TOP_SRCDIR="$GITHUB_WORKSPACE"
+              for smoke_test in "$@"; do
+                ARTIFACT_LOCAL_DIR="/tmp/libsixel-artifacts/${smoke_test%.*}"
+                export ARTIFACT_LOCAL_DIR
+                sh "$GITHUB_WORKSPACE/tests/meson-tap-exitcode-wrapper.sh" \
+                  "$GITHUB_WORKSPACE/tests/$smoke_test"
+              done
             '
 
   sparc64-netbsd:
@@ -257,33 +269,45 @@ jobs:
             uname -a
             cc -dumpmachine
             file /bin/sh
-            # Keep the same target-executed smoke contracts as the Linux
-            # emulation matrix while the generic runners own the full suite.
+            # Keep the same target-executed black-box contracts as the Linux
+            # emulation matrix while generic runners own the aggregate tests.
             set -- \
               cli/core/0002_version.t \
               cli/core/0007_basic_stdin_snake.t \
+              cli/core/0019_basic_parallel_cli_override.t \
               cli/sixel2png/0005_stdin_default_output.t \
+              codec/format/0009_gray8_output.t \
               codec/output/0003_direct_sixel_encode.t \
-              processing/decoder/0008_decoder_pixels_output_formats.t \
-              processing/dither/0001_dither_policy.t \
-              processing/frame/0001_frame_factory.t \
-              processing/scale/0004_g8_normalized_rgb888.t \
-              processing/threadpool/0001_threadpool_service.t \
+              quant/mapfile/0109_mapfile_export_act_256_color_count.t \
+              writer/png/0004_builtin_ihdr_crc.t \
               security/issue/0012_issue220_dcs_signed_integer_overflow.t
             rm -rf /tmp/libsixel-build
             mkdir /tmp/libsixel-build
             if test '${{ matrix.buildtool }}' = autotools; then
               cd /tmp/libsixel-build
               "$GITHUB_WORKSPACE/configure" \
-                --disable-dependency-tracking
+                --disable-dependency-tracking \
+                --disable-tests
               gmake V=1
-              gmake check TESTS="$*"
+              IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
+              SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
             else
-              meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE"
+              meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE" \
+                -Dtests=false
               meson compile -C /tmp/libsixel-build -v
-              meson test -C /tmp/libsixel-build \
-                --num-processes 1 --print-errorlogs "$@"
+              IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
+              SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
             fi
+            export IMG2SIXEL_PATH SIXEL2PNG_PATH
+            export HAVE_IMG2SIXEL=1 HAVE_SIXEL2PNG=1
+            export TOP_BUILDDIR=/tmp/libsixel-build
+            export TOP_SRCDIR="$GITHUB_WORKSPACE"
+            for smoke_test in "$@"; do
+              ARTIFACT_LOCAL_DIR="/tmp/libsixel-artifacts/${smoke_test%.*}"
+              export ARTIFACT_LOCAL_DIR
+              sh "$GITHUB_WORKSPACE/tests/meson-tap-exitcode-wrapper.sh" \
+                "$GITHUB_WORKSPACE/tests/$smoke_test"
+            done
 
   collect:
     name: Collect failed jobs
