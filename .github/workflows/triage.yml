@@ -77,14 +77,200 @@ env:
   UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
 
 jobs:
+  multiarch-linux:
+    name: ${{ matrix.label }}
+    if: >-
+      ${{
+        github.event_name == 'push'
+        && startsWith(github.ref, 'refs/heads/ci/triage/multiarch')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - label: Autotools-debian-trixie-ppc64le-gcc
+            buildtool: autotools
+            platform: linux/ppc64le
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Meson-debian-trixie-ppc64le-gcc
+            buildtool: meson
+            platform: linux/ppc64le
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Autotools-debian-trixie-s390x-gcc
+            buildtool: autotools
+            platform: linux/s390x
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Meson-debian-trixie-s390x-gcc
+            buildtool: meson
+            platform: linux/s390x
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Autotools-debian-trixie-riscv64-gcc
+            buildtool: autotools
+            platform: linux/riscv64
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Meson-debian-trixie-riscv64-gcc
+            buildtool: meson
+            platform: linux/riscv64
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          # Debian 13 dropped MIPS. Keep this target on the dated Debian 12
+          # image so the job remains explicit legacy-architecture evidence.
+          - label: Autotools-debian-bookworm-mips64le-gcc-legacy
+            buildtool: autotools
+            platform: linux/mips64le
+            image: debian:bookworm-20260713@sha256:9344f8b8992482f80cba753f323adeaf17690076c095ccff6cc9536be98185dc
+
+          - label: Meson-debian-bookworm-mips64le-gcc-legacy
+            buildtool: meson
+            platform: linux/mips64le
+            image: debian:bookworm-20260713@sha256:9344f8b8992482f80cba753f323adeaf17690076c095ccff6cc9536be98185dc
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up target-architecture execution
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+        with:
+          cache-image: false
+          image: tonistiigi/binfmt:latest@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0
+          platforms: mips64le,ppc64le,riscv64,s390x
+
+      - name: Build and test inside the target architecture
+        env:
+          BUILD_TOOL: ${{ matrix.buildtool }}
+          TARGET_IMAGE: ${{ matrix.image }}
+          TARGET_PLATFORM: ${{ matrix.platform }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          docker run \
+            --rm \
+            --platform "$TARGET_PLATFORM" \
+            --env BUILD_TOOL \
+            --env CI=true \
+            --env DEBIAN_FRONTEND=noninteractive \
+            --env LC_ALL=C \
+            --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE:ro" \
+            --workdir "$GITHUB_WORKSPACE" \
+            "$TARGET_IMAGE" \
+            sh -euxc '
+              attempt=1
+              while test "$attempt" -le 3; do
+                if apt-get -o Acquire::Retries=3 update &&
+                   apt-get -o Acquire::Retries=3 install -y \
+                     --no-install-recommends \
+                     autoconf automake build-essential diffutils file \
+                     libtool make meson ninja-build pkg-config python3; then
+                  break
+                fi
+                test "$attempt" -lt 3
+                sleep $((attempt * 10))
+                attempt=$((attempt + 1))
+              done
+
+              uname -a
+              dpkg --print-architecture
+              getconf LONG_BIT
+              cc -dumpmachine
+              file /bin/sh
+
+              rm -rf /tmp/libsixel-build
+              mkdir /tmp/libsixel-build
+              if test "$BUILD_TOOL" = autotools; then
+                cd /tmp/libsixel-build
+                "$GITHUB_WORKSPACE/configure" \
+                  --disable-dependency-tracking
+                make -j2 V=1
+                make check
+              else
+                meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE"
+                meson compile -C /tmp/libsixel-build -j 2 -v
+                meson test -C /tmp/libsixel-build \
+                  --num-processes 1 --print-errorlogs
+              fi
+            '
+
+  sparc64-netbsd:
+    name: ${{ matrix.label }}
+    if: >-
+      ${{
+        github.event_name == 'push'
+        && startsWith(github.ref, 'refs/heads/ci/triage/multiarch')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - label: Autotools-netbsd-11.0-sparc64-system-cc
+            buildtool: autotools
+
+          - label: Meson-netbsd-11.0-sparc64-system-cc
+            buildtool: meson
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build and test inside NetBSD/sparc64
+        uses: vmactions/netbsd-vm@20ee93a005c9fc78743e6e05269f4cb023b87413 # v1.5.0
+        with:
+          arch: sparc64
+          copyback: false
+          cpu: 1
+          mem: 4096
+          release: '11.0'
+          sync: scp
+          prepare: |
+            set -eux
+            if test '${{ matrix.buildtool }}' = autotools; then
+              /usr/sbin/pkg_add -u gmake
+            else
+              /usr/sbin/pkg_add -u meson ninja-build
+            fi
+          run: |
+            set -eux
+            uname -a
+            getconf LONG_BIT
+            cc -dumpmachine
+            file /bin/sh
+            rm -rf /tmp/libsixel-build
+            mkdir /tmp/libsixel-build
+            if test '${{ matrix.buildtool }}' = autotools; then
+              cd /tmp/libsixel-build
+              "$GITHUB_WORKSPACE/configure" \
+                --disable-dependency-tracking
+              gmake V=1
+              gmake check
+            else
+              meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE"
+              meson compile -C /tmp/libsixel-build -v
+              meson test -C /tmp/libsixel-build \
+                --num-processes 1 --print-errorlogs
+            fi
+
   collect:
     name: Collect failed jobs
     if: >-
       ${{
-        github.event_name != 'workflow_run'
-        || (
-          github.event.workflow_run.conclusion == 'failure'
-          && github.event.workflow_run.head_branch == 'develop'
+        (
+          github.event_name != 'push'
+          || !startsWith(github.ref, 'refs/heads/ci/triage/multiarch')
+        )
+        && (
+          github.event_name != 'workflow_run'
+          || (
+            github.event.workflow_run.conclusion == 'failure'
+            && github.event.workflow_run.head_branch == 'develop'
+          )
         )
       }}
     runs-on: ubuntu-latest
