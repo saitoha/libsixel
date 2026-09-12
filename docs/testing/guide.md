@@ -2,6 +2,8 @@
 
 ## Test strategy
 
+For discovery, C dispatch, build-system execution, and command-length limits, see [Test Harness and Command-Length Limits](../build/test-harness.md).
+
 Place a test at the narrowest boundary that owns the behavior. Use functional or unit-style tests for local contracts, regression tests for previously broken behavior, quality tests for perceptual output, [staticcheck](staticcheck.md) for repository-wide invariants and test meta-checks, and fuzz tests for parser and state-space exploration.
 
 An end-to-end test is valuable when integration is the contract. It is not a substitute for a smaller test that identifies the failing layer.

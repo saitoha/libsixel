@@ -50,6 +50,8 @@ binaries.
 
 See [`build.md`](../build.md) for build commands and the complete option list.
 
+See [Build System Architecture](build/README.md) for the maintained build descriptions, generated files, custom test execution, and the distinction between Meson implementation gaps and unverified platform paths.
+
 ### Optional dependencies
 
 The core library does not require every optional image or network library.
