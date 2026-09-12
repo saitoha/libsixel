@@ -1,0 +1,141 @@
+{
+  "generator": "tools/plot_din99d_figures.py",
+  "kinds": {
+    "nearest-color": "constructed analytical example",
+    "conversion-route": "schematic transform stages, not buffer allocations"
+  },
+  "route": {
+    "nodes": {
+      "input": [
+        "sRGB",
+        [
+          "Encoded RGB values"
+        ]
+      ],
+      "linear": [
+        "Linear RGB",
+        [
+          "Decode sRGB curve"
+        ]
+      ],
+      "xyz": [
+        "XYZ \u00b7 D65",
+        [
+          "RGB \u2192 XYZ matrix"
+        ]
+      ],
+      "labprime": [
+        [
+          "Corrected",
+          "Lab-like values"
+        ],
+        [
+          "Correct X + white",
+          "Apply Lab functions"
+        ]
+      ],
+      "din": [
+        "DIN99d",
+        [
+          "Reshape L / chroma",
+          "Divide all axes by 100"
+        ]
+      ]
+    },
+    "edges": [
+      [
+        "input",
+        "linear"
+      ],
+      [
+        "linear",
+        "xyz"
+      ],
+      [
+        "xyz",
+        "labprime"
+      ],
+      [
+        "labprime",
+        "din"
+      ]
+    ]
+  },
+  "dependencies": [
+    "numpy",
+    "Pillow"
+  ],
+  "example": {
+    "rgb8": {
+      "target": [
+        128,
+        128,
+        128
+      ],
+      "A": [
+        135,
+        124,
+        128
+      ],
+      "B": [
+        136,
+        136,
+        136
+      ]
+    },
+    "din99d_divided_by_100": {
+      "target": [
+        0.573663345877168,
+        -1.497812299865318e-07,
+        6.641571280976183e-08
+      ],
+      "A": [
+        0.5687620273685988,
+        0.06791344519570452,
+        -0.012307954270510906
+      ],
+      "B": [
+        0.6041261162497967,
+        -1.5649355591507005e-07,
+        6.939207918679171e-08
+      ]
+    },
+    "distances": {
+      "gamma": {
+        "A": 0.031616697052151185,
+        "B": 0.054338848864905955
+      },
+      "din99d": {
+        "A": 0.06919368958962992,
+        "B": 0.030462770372629566
+      }
+    },
+    "delta_e00": {
+      "A": 6.393181812205634,
+      "B": 2.946794034466812
+    },
+    "appendix_native_coordinates": [
+      [
+        25.572012752049066,
+        -0.9627387887377785,
+        -30.873060445320426
+      ],
+      [
+        25.907123375148977,
+        -3.516260164379288,
+        -29.156139947127624
+      ]
+    ]
+  },
+  "sources": [
+    "https://doi.org/10.1002/col.10066",
+    "tools/evaluate.py",
+    "src/colorspace.c"
+  ],
+  "notes": [
+    "DIN99d reference uses exact cube roots; the C implementation uses a lookup table.",
+    "All three DIN99d axes share divisor 100.",
+    "CIEDE2000 is computed independently in ordinary D65 CIELAB.",
+    "Swatches precede SIXEL palette percentage rounding."
+  ]
+}

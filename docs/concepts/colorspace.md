@@ -36,7 +36,7 @@ The [pixel-format guide](pixelformat.md) describes memory layout. A pixel-format
 
 Within this project, `gamma` is not shorthand for an arbitrary power-law curve. It specifically means the sRGB encoded representation. SMPTE-C output uses a different primary conversion and a nominal 2.2 power transfer.
 
-Gamma, linear RGB, and SMPTE-C are device-oriented RGB spaces: their coordinates ultimately describe amounts or encodings of red, green, and blue primaries. Oklab, CIELAB, and DIN99d are opponent or perceptual working spaces designed so that geometric distance is more useful for color decisions. They are internal calculation spaces, not SIXEL palette syntaxes.
+Gamma, linear RGB, and SMPTE-C are device-oriented RGB spaces: their coordinates ultimately describe amounts or encodings of red, green, and blue primaries. Oklab, CIELAB, and DIN99d are opponent or perceptual working spaces designed so that geometric distance is more useful for color decisions. They are internal calculation spaces, not SIXEL palette syntaxes. The [DIN99d guide](din99d.md) shows why a color-difference-oriented space can change a nearest-palette-color decision, explains the corrected XYZ transform and common coordinate scale, and connects that example to measured image results.
 
 The CMS chapter introduces [primaries, white point, and transfer function](#primaries-white-point-and-transfer-function), including what D50 and D65 mean. Those properties explain why two RGB spaces can assign different colors to the same numbers.
 

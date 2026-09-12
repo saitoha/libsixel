@@ -17,7 +17,7 @@ The float32 family stores three 32-bit floating-point channels and therefore occ
 | `LINEARRGBFLOAT32` (`linear-f32`) | 3 x float32 | linear-light sRGB primaries |
 | `OKLABFLOAT32` (`oklab-f32`) | 3 x float32 | Oklab |
 | `CIELABFLOAT32` (`cielab-f32`) | 3 x float32 | CIELAB |
-| `DIN99DFLOAT32` (`din99d-f32`) | 3 x float32 | DIN99d |
+| `DIN99DFLOAT32` (`din99d-f32`) | 3 x float32 | [DIN99d](din99d.md), with all three native coordinates divided by 100 |
 
 A float32 value is not automatically linear light, and an 8-bit triplet cannot be reinterpreted as Oklab merely by changing a label. Every conversion must know both the source and destination color spaces. Palette-index formats such as `PAL8` describe index storage rather than color-sample precision and belong to the separate [pixel-format and alpha contract](pixelformat.md).
 

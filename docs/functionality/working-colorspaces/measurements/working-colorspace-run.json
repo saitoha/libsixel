@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-09-08T16:34:29.331557+00:00",
+  "generated_at_utc": "2026-09-12T14:26:20.742184+00:00",
   "source": {
-    "revision": "d1aa5b4da1be912273f20dc8f5c1b321898341a4",
+    "revision": "c26da16e79d75081c0f76a461b16aaed7814f8f5",
     "tracked_worktree_state_at_start": "clean"
   },
   "input": {
@@ -12,22 +12,22 @@
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "376bfd216cc852112e7214c0072d87feca5159d814d31e6dd08e2aef99aac139",
+      "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "02ddafd92cdd21c66caf5a201547351b715d1e899135783b61834f37af76655a"
+      "payload_sha256": "662d338a10127bb357537cd41ab773c085ef2cfb908002264796418ac9aa17c6"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "66366eac0c0e00563745c6eb5d725430a3402595ec700010ca9930094a3108da",
+      "launcher_sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
       "payload": "assessment/.libs/lsqa",
-      "payload_sha256": "769e5064417a5b8c8677bfb187da420424e745a0fef298dfff788a2d3be48b74"
+      "payload_sha256": "0e689ac52c26032cdd0ae183f9a6e3354183e4241c3fcd798d66961d2445682e"
     }
   },
   "build": {
     "directory": ".",
-    "configure_arguments": "--disable-quicklook-extension --disable-quicklook-preview BASH=/bin/sh",
+    "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
     "cc": "gcc",
-    "cflags": "-g -O2 -std=c99",
+    "cflags": "-O3 -std=c99",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
     "ldflags": "",
     "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin"

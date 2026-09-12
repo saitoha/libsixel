@@ -836,8 +836,9 @@ general, a unit vector in the transformed metric. The stopping test is
 therefore not a proof for those formats, and this document classifies those
 queries as approximate.
 
-This distinction is easy to miss: continuing until a bound is exceeded is exact
-only when the value being compared really is a lower bound.
+DIN99d's [common coordinate divisor](../concepts/din99d.md#coordinates-and-normalization) preserves native Euclidean geometry, but its declared storage bounds are still `[0,1]` for lightness and `[-1,1]` for the two opponent axes. This range-based projection issue therefore remains after the DIN99d conversion correction.
+
+This distinction is easy to miss: continuing until a bound is exceeded is exact only when the value being compared really is a lower bound.
 
 ### Cost
 

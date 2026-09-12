@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="385" viewBox="0 0 960 385" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">The corrected sRGB to DIN99d conversion route</title>
+<desc id="desc">sRGB decodes into linear RGB, which maps to D65 XYZ. The sample and reference-white X become 1.12 X minus 0.12 Z before the Lab-like stage. DIN99d reshapes lightness and chroma and stores every axis divided by 100. The inverse undoes the X correction before ordinary XYZ-to-RGB conversion.</desc>
+<rect x="0" y="0" width="960" height="385" rx="0" fill="#ffffff" stroke="none"/>
+<defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 1 1 L 7 4 L 1 7" fill="none" stroke="#4c6070" stroke-width="1.3"/></marker></defs>
+<text x="20" y="36" font-size="30" fill="#183247" font-weight="700" text-anchor="start">DIN99d begins before Lab</text>
+<text x="20" y="65" font-size="18" fill="#4c6070" font-weight="400" text-anchor="start">The sample and its reference white change together.</text>
+<path data-from="input" data-to="linear" d="M 189 176 L 199 176" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="linear" data-to="xyz" d="M 379 176 L 389 176" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="xyz" data-to="labprime" d="M 569 176 L 579 176" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path data-from="labprime" data-to="din" d="M 759 176 L 769 176" fill="none" stroke="#4c6070" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g data-role="stage" data-stage="input">
+<rect x="12" y="108" width="176" height="136" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="100" y="169" font-size="20" fill="#183247" font-weight="700" text-anchor="middle">sRGB</text>
+<text x="100" y="193" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">Encoded RGB values</text>
+</g>
+<g data-role="stage" data-stage="linear">
+<rect x="202" y="108" width="176" height="136" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="290" y="169" font-size="20" fill="#183247" font-weight="700" text-anchor="middle">Linear RGB</text>
+<text x="290" y="193" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">Decode sRGB curve</text>
+</g>
+<g data-role="stage" data-stage="xyz">
+<rect x="392" y="108" width="176" height="136" rx="10" fill="#f5f7f9" stroke="#c4ced6" stroke-dasharray="none"/>
+<text x="480" y="169" font-size="20" fill="#183247" font-weight="700" text-anchor="middle">XYZ · D65</text>
+<text x="480" y="193" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">RGB → XYZ matrix</text>
+</g>
+<g data-role="stage" data-stage="labprime">
+<rect x="582" y="108" width="176" height="136" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="none"/>
+<text x="670" y="145" font-size="20" fill="#17618c" font-weight="700" text-anchor="middle">Corrected</text>
+<text x="670" y="169" font-size="20" fill="#17618c" font-weight="700" text-anchor="middle">Lab-like values</text>
+<text x="670" y="193" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">Correct X + white</text>
+<text x="670" y="217" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">Apply Lab functions</text>
+</g>
+<g data-role="stage" data-stage="din">
+<rect x="772" y="108" width="176" height="136" rx="10" fill="#eaf3f8" stroke="#17618c" stroke-dasharray="none"/>
+<text x="860" y="157" font-size="20" fill="#17618c" font-weight="700" text-anchor="middle">DIN99d</text>
+<text x="860" y="181" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">Reshape L / chroma</text>
+<text x="860" y="205" font-size="17" fill="#4c6070" font-weight="400" text-anchor="middle">Divide all axes by 100</text>
+</g>
+<text x="20" y="292" font-size="18" fill="#4c6070" font-weight="400" text-anchor="start">Sample: X′ = 1.12X − 0.12Z.  White: X′n = 1.12Xn − 0.12Zn.</text>
+<text x="20" y="317" font-size="18" fill="#4c6070" font-weight="400" text-anchor="start">The inverse restores ordinary X before the XYZ → linear-RGB matrix.</text>
+<text x="20" y="342" font-size="18" fill="#4c6070" font-weight="400" text-anchor="start">A shared coordinate divisor preserves the relative weights of L, a and b.</text>
+<text x="20" y="367" font-size="18" fill="#4c6070" font-weight="400" text-anchor="start">Schematic stages; a separate XYZ image buffer is not implied.</text>
+</svg>

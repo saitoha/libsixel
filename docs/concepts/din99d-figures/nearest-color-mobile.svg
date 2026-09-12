@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="1110" viewBox="0 0 380 1110" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
+<title id="title">DIN99d can avoid a tinted nearest-color choice</title>
+<desc id="desc">Target #808080 has two candidate palette colors: tinted #877c80 and brighter neutral #888888. Encoded sRGB Euclidean distance chooses the tinted candidate, whose CIEDE2000 error is 6.39. DIN99d chooses the neutral candidate, whose CIEDE2000 error is 2.95. The inset is the target gray. This is a constructed analytical example before SIXEL percentage rounding, not an image benchmark.</desc>
+<rect x="0" y="0" width="380" height="1110" rx="0" fill="#ffffff" stroke="none"/>
+<text x="20" y="36" font-size="23" fill="#183247" font-weight="700" text-anchor="start">Which palette color is closer?</text>
+<text x="20" y="65" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">A small color cast can matter more than brightness.</text>
+<rect x="20" y="96" width="104" height="82" rx="5" fill="#808080" stroke="#c4ced6"/>
+<text x="20" y="201" font-size="14" fill="#183247" font-weight="700" text-anchor="start">Target gray</text>
+<text x="20" y="225" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">#808080</text>
+<rect x="138" y="96" width="104" height="82" rx="5" fill="#877c80" stroke="#c4ced6"/>
+<text x="138" y="201" font-size="14" fill="#183247" font-weight="700" text-anchor="start">A · Tinted</text>
+<text x="138" y="225" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">#877c80</text>
+<rect x="256" y="96" width="104" height="82" rx="5" fill="#888888" stroke="#c4ced6"/>
+<text x="256" y="201" font-size="14" fill="#183247" font-weight="700" text-anchor="start">B · Brighter</text>
+<text x="256" y="225" font-size="14" fill="#4c6070" font-weight="400" text-anchor="start">#888888</text>
+<rect x="20" y="260" width="340" height="356" rx="10" fill="#f5f7f9" stroke="#c4ced6"/>
+<text x="36" y="293" font-size="20" fill="#996015" font-weight="700" text-anchor="start">sRGB encoded distance</text>
+<text x="36" y="320" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Shorter distance wins within this panel.</text>
+<text x="36" y="369" font-size="17" fill="#183247" font-weight="700" text-anchor="start">A</text>
+<rect x="63" y="350" width="93.2693" height="24" rx="0" fill="#996015" stroke="none"/>
+<text x="348" y="368" font-size="14" fill="#183247" font-weight="400" text-anchor="end">0.0316</text>
+<text x="36" y="413" font-size="17" fill="#183247" font-weight="700" text-anchor="start">B</text>
+<rect x="63" y="394" width="160.3" height="24" rx="0" fill="#b6c1c9" stroke="none"/>
+<text x="348" y="412" font-size="14" fill="#183247" font-weight="400" text-anchor="end">0.0543</text>
+<text x="36" y="450" font-size="19" fill="#996015" font-weight="700" text-anchor="start">Choose A</text>
+<rect x="36" y="468" width="308" height="82" rx="5" fill="#877c80" stroke="none"/>
+<rect x="158" y="488" width="64" height="42" rx="0" fill="#808080" stroke="none"/>
+<text x="36" y="576" font-size="17" fill="#183247" font-weight="700" text-anchor="start">Selected color: ΔE00 = 6.39</text>
+<text x="36" y="601" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Center inset = target; field = selected color.</text>
+<rect x="20" y="652" width="340" height="356" rx="10" fill="#f5f7f9" stroke="#c4ced6"/>
+<text x="36" y="685" font-size="20" fill="#17618c" font-weight="700" text-anchor="start">DIN99d distance (÷100)</text>
+<text x="36" y="712" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Shorter distance wins within this panel.</text>
+<text x="36" y="761" font-size="17" fill="#183247" font-weight="700" text-anchor="start">A</text>
+<rect x="63" y="742" width="204.121" height="24" rx="0" fill="#b6c1c9" stroke="none"/>
+<text x="348" y="760" font-size="14" fill="#183247" font-weight="400" text-anchor="end">0.0692</text>
+<text x="36" y="805" font-size="17" fill="#183247" font-weight="700" text-anchor="start">B</text>
+<rect x="63" y="786" width="89.8652" height="24" rx="0" fill="#17618c" stroke="none"/>
+<text x="348" y="804" font-size="14" fill="#183247" font-weight="400" text-anchor="end">0.0305</text>
+<text x="36" y="842" font-size="19" fill="#17618c" font-weight="700" text-anchor="start">Choose B</text>
+<rect x="36" y="860" width="308" height="82" rx="5" fill="#888888" stroke="none"/>
+<rect x="158" y="880" width="64" height="42" rx="0" fill="#808080" stroke="none"/>
+<text x="36" y="968" font-size="17" fill="#183247" font-weight="700" text-anchor="start">Selected color: ΔE00 = 2.95</text>
+<text x="36" y="993" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Center inset = target; field = selected color.</text>
+<text x="20" y="1029" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Constructed example; exact formulas, no dithering.</text>
+<text x="20" y="1051" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Each distance belongs to its own space.</text>
+<text x="20" y="1073" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">ΔE00 is a separate check of the selected color.</text>
+<text x="20" y="1095" font-size="13" fill="#4c6070" font-weight="400" text-anchor="start">Whole-image results depend on content and settings.</text>
+</svg>

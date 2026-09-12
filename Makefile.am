@@ -140,6 +140,14 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/misc/platforms/windows-paths.md \
 	docs/misc/platforms/windows.md \
 	docs/concepts/colorspace.md \
+	docs/concepts/din99d.md \
+	docs/concepts/din99d-figures/nearest-color-wide.svg \
+	docs/concepts/din99d-figures/nearest-color-mobile.svg \
+	docs/concepts/din99d-figures/conversion-route-wide.svg \
+	docs/concepts/din99d-figures/conversion-route-mobile.svg \
+	docs/concepts/din99d-figures/figures.json \
+	tools/plot_din99d_figures.py \
+	tools/evaluate.py \
 	docs/concepts/colorspace-figures/conversion-routes-mobile.svg \
 	docs/concepts/colorspace-figures/conversion-routes-wide.svg \
 	docs/concepts/colorspace-figures/encoding-pipeline-mobile.svg \

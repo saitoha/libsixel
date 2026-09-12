@@ -4,7 +4,7 @@
     "cflags": "-O3 -std=c99",
     "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
     "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
-    "configured_source_directory": "/Users/saitoha/repo/libsixel",
+    "configured_source_directory": "/Users/saitoha/.codex/visualizations/2026/09/12/01a0956c-08e5-72e0-9815-b1d4dc1070bf/din99d-audit/measurement-source",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
     "directory": ".",
     "ldflags": "",
@@ -57,19 +57,19 @@
       "width": 600
     }
   ],
-  "generated_at_utc": "2026-09-05T21:06:07.101011+00:00",
+  "generated_at_utc": "2026-09-12T15:02:22.960574+00:00",
   "host": {
-    "matplotlib": "3.11.1",
-    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "matplotlib": "3.10.3",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
     "processor": "arm",
-    "python": "3.13.13"
+    "python": "3.12.14"
   },
   "libsixel_linkage": {
     "artifacts": [
       {
         "path": "src/.libs/libsixel.1.dylib",
         "role": "shared",
-        "sha256": "0039320a2739adf8fb5ccca1ccadd3f995315e6cb814485dbeb5e89f18f1ea16"
+        "sha256": "6745d4f1935f06227655900373a0490e6edf6b1b1f7727f16d418bd2996fe130"
       }
     ],
     "mode": "library"
@@ -81,15 +81,15 @@
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
+      "launcher_sha256": "2832f418537a24bb158c5e66183389fe726c9b7b2f9f3ed9778113523024e6e4",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "ac363a143663c5b8bd93e729b46b387a3f33f4886ce46c0434d0fc3b1f8c5cc7"
+      "payload_sha256": "662d338a10127bb357537cd41ab773c085ef2cfb908002264796418ac9aa17c6"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "c2e72759e439620dad45418ff4b90bbf9f86a413bdb155edeb9d76bf82ad31da",
+      "launcher_sha256": "90fbd19027bbdd0d801ed1c0241591adb3011d35452832d83c2936eef04f5c03",
       "payload": "assessment/.libs/lsqa",
-      "payload_sha256": "b200ce01de72675a10f18bb580fd807ec887d3423506accfc3bad319a2d60aa1"
+      "payload_sha256": "0e689ac52c26032cdd0ae183f9a6e3354183e4241c3fcd798d66961d2445682e"
     }
   },
   "protocol": {
@@ -135,6 +135,7 @@
     "pass_rate_target": 0.8,
     "precision": "float32",
     "quality": "full",
+    "required_work_format": "rgb-f32",
     "sampling_policy": "full-frame",
     "seeds": [
       1,
@@ -155,9 +156,9 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "02fb78ff507b3ed54dd04f3bab42935450dd4fc9",
+    "revision": "c26da16e79d75081c0f76a461b16aaed7814f8f5",
     "suite_end_snapshot_matches": true,
-    "top_source_directory": "/Users/saitoha/repo/libsixel",
+    "top_source_directory": "/Users/saitoha/.codex/visualizations/2026/09/12/01a0956c-08e5-72e0-9815-b1d4dc1070bf/din99d-audit/measurement-source",
     "tracked_worktree_state_at_start": "clean"
   }
 }

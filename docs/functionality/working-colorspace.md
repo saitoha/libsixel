@@ -155,7 +155,7 @@ This protocol deliberately does not measure the implicit `-X` coupling of a lone
 
 Figure: `img2sixel` working-color-space quality on `images/snake.png`; `-Xgamma`, float32, exact lookup, CPU, and one thread. Higher MS-SSIM is better; lower mean Delta E00 is better.
 
-Without dithering, Oklab has the highest MS-SSIM at `K = 8, 16, 128, 256`, while linear RGB leads at `K = 32, 64`. Mean Delta E00 instead favors gamma at `K = 8`, CIELAB from `K = 16` through `128`, and DIN99d at `K = 256`. With Floyd--Steinberg, Oklab leads MS-SSIM and gamma leads mean Delta E00 at every measured `K`.
+Without dithering, Oklab has the highest MS-SSIM at `K = 8, 16, 128, 256`, while linear RGB leads at `K = 32, 64`. Mean Delta E00 instead favors gamma at `K = 8`, CIELAB from `K = 16` through `64`, and DIN99d at `K = 128, 256`. With Floyd--Steinberg, Oklab leads MS-SSIM and gamma leads mean Delta E00 at every measured `K`.
 
 The `K = 256` endpoint makes the metric disagreement concrete:
 
@@ -165,12 +165,12 @@ The `K = 256` endpoint makes the metric disagreement concrete:
 | none | linear | 0.992071 | 1.888680 | 1.902482 |
 | none | oklab | 0.994156 | 1.799481 | 1.657200 |
 | none | cielab | 0.987537 | 1.731550 | 1.181970 |
-| none | din99d | 0.974573 | 1.721529 | 1.222570 |
+| none | din99d | 0.988698 | 1.635661 | 1.458599 |
 | fs | gamma | 0.990880 | 2.281684 | 1.825853 |
 | fs | linear | 0.991998 | 2.384097 | 2.620727 |
 | fs | oklab | 0.994171 | 2.378958 | 2.258366 |
 | fs | cielab | 0.984748 | 2.420114 | 1.760536 |
-| fs | din99d | 0.968514 | 2.671829 | 1.989471 |
+| fs | din99d | 0.985794 | 2.327304 | 2.127198 |
 
 There is no single quality ordering. A working space changes both the nearest palette index and, under error diffusion, the future spatial error field. Choosing solely from one average metric would hide that interaction. Oklab is a strong choice when structural similarity is the priority on this fixture; gamma, CIELAB, or DIN99d can report lower pointwise color error under particular dither and palette-size conditions.
 
@@ -184,21 +184,21 @@ Gamma is the fastest measured working space at every `K` under both dither condi
 
 | Working space | No dither | Floyd--Steinberg |
 | --- | ---: | ---: |
-| linear | 1.03x to 1.24x | 1.04x to 1.17x |
-| oklab | 1.06x to 1.44x | 1.05x to 1.24x |
-| cielab | 1.08x to 1.33x | 1.08x to 1.25x |
-| din99d | 1.20x to 1.72x | 1.22x to 1.65x |
+| linear | 1.06x to 1.23x | 1.06x to 1.22x |
+| oklab | 1.09x to 1.34x | 1.08x to 1.28x |
+| cielab | 1.10x to 1.41x | 1.09x to 1.33x |
+| din99d | 1.19x to 1.86x | 1.18x to 1.72x |
 
 These are end-to-end timings, not conversion-only microbenchmarks. Exact lookup remains `O(NK)` for every row; the growing curves primarily reflect the common exhaustive search, while color conversion and working-format operations alter the constant cost.
 
-Stream size also changes because different working geometry selects different palette indices and therefore changes SIXEL plane occupancy and run structure. Relative to gamma, measured size ranges are 1.097x--1.231x for linear, 1.097x--1.209x for Oklab, 0.962x--1.270x for CIELAB, and 0.924x--1.249x for DIN99d without dithering. With Floyd--Steinberg they narrow to 1.029x--1.097x, 0.920x--1.046x, 0.985x--1.015x, and 0.922x--1.087x respectively. A perceptual working space is therefore not inherently larger or smaller on the wire.
+Stream size also changes because different working geometry selects different palette indices and therefore changes SIXEL plane occupancy and run structure. Relative to gamma, measured size ranges are 1.097x--1.231x for linear, 1.097x--1.209x for Oklab, 0.962x--1.270x for CIELAB, and 0.892x--1.069x for DIN99d without dithering. With Floyd--Steinberg the ranges are 1.029x--1.097x for linear, 0.920x--1.046x for Oklab, 0.985x--1.015x for CIELAB, and 0.938x--1.043x for DIN99d. A perceptual working space is therefore not inherently larger or smaller on the wire.
 
 ## Choosing a working space
 
 - Start with `gamma` when compatibility, lower memory, and speed are more important than changing the palette-application geometry.
 - Evaluate `oklab` when spatial structure and smooth perceived transitions are important; on this fixture it provides the strongest MS-SSIM results, especially with Floyd--Steinberg.
 - Use `linear` when the arithmetic should follow additive light, but do not assume linear Euclidean distance is perceptually uniform.
-- Evaluate `cielab` or `din99d` when pointwise perceptual color error is the primary concern, while accounting for their normalized project-specific geometry and measured runtime cost.
+- Evaluate `cielab` or `din99d` when pointwise perceptual color error is the primary concern, while accounting for the documented coordinate scales and measured runtime cost. DIN99d now uses one common scale that preserves its native Euclidean geometry; see the [DIN99d guide](../concepts/din99d.md).
 - Match `-X` and `-W` when one coherent geometry is desired. Set both explicitly when benchmarking, or when intentionally using different palette-construction and palette-application spaces.
 - Re-measure representative content. The checked-in run is evidence for one image and one controlled pipeline, not a universal default-selection study.
 
@@ -212,7 +212,7 @@ tools/reproduce_working_colorspace_measurements.sh
 
 The plotter requires Python 3 and Matplotlib. `img2sixel` and `lsqa` must be enabled in the selected build. Set `PYTHON`, `BUILD_DIR`, `IMG2SIXEL_PATH`, or `LSQA_PATH` when they are not at their defaults. The wrapper refuses a dirty tracked worktree so that durable measurements identify one reproducible source revision.
 
-The checked-in run was recorded on 2026-09-09 from clean revision `d1aa5b4da` on macOS arm64. Its build disabled the two Quick Look targets; the full configure arguments, compiler identity, binary hashes, input hash, command controls, and timing protocol are recorded in [`working-colorspace-run.json`](working-colorspaces/measurements/working-colorspace-run.json). The complete numeric data are in [`working-colorspace-comparison.csv`](working-colorspaces/measurements/working-colorspace-comparison.csv).
+The checked-in run was recorded on 2026-09-12 UTC from clean revision `c26da16e7` on macOS arm64, including the corrected DIN99d XYZ transform and common coordinate scale. The full configure arguments, compiler identity, binary hashes, input hash, command controls, and timing protocol are recorded in [`working-colorspace-run.json`](working-colorspaces/measurements/working-colorspace-run.json). The complete numeric data are in [`working-colorspace-comparison.csv`](working-colorspaces/measurements/working-colorspace-comparison.csv).
 
 Validate existing artifacts without rerunning the benchmark:
 

@@ -131,69 +131,33 @@ grayscale reproduction. Timing whiskers show the interquartile range.
 
 ## Measured results
 
-The checked-in run was recorded on 2026-09-06 from clean revision
-`194bc9060` on macOS arm64. The table summarizes the float32 result relative to
-the matching 8-bit row. Counts report the direction of the metric, not its
-statistical or practical significance.
+The checked-in run was recorded on 2026-09-12 UTC from clean revision `c26da16e7` on macOS arm64, including the corrected DIN99d transform and common coordinate scale. The table summarizes float32 relative to the matching 8-bit row. Counts report the direction of the metric, not its statistical or practical significance.
 
 | Domain | Configurations | Median float32 / 8-bit time | Float32 has higher MS-SSIM | Float32 has lower mean Delta E00 | Stream-size range |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| quantize model | 11 | 1.18x | 2 / 11 | 3 / 11 | -0.07% to +0.09% |
-| dither policy | 13 | 1.22x | 7 / 13 | 0 / 13 | +0.09% to +18.80% |
-| lookup policy | 9 | 1.17x | 4 / 9 | 5 / 9 | -4.98% to +0.22% |
-| sampling and binning | 5 | 1.18x | 2 / 5 | 3 / 5 | -0.06% to +0.09% |
+| quantize model | 11 | 1.19x | 2 / 11 | 3 / 11 | -0.07% to +0.09% |
+| dither policy | 13 | 1.23x | 7 / 13 | 0 / 13 | +0.09% to +18.80% |
+| lookup policy | 9 | 1.18x | 4 / 9 | 5 / 9 | -4.98% to +0.22% |
+| sampling and binning | 5 | 1.15x | 2 / 5 | 3 / 5 | -0.06% to +0.09% |
 | clustering configuration | 5 | 1.18x | 2 / 5 | 5 / 5 | -0.02% to +0.41% |
 
-The quantizer rows change MS-SSIM by at most `0.000080`, mean Delta E00 by at
-most `0.0009`, and size by less than `0.09%` on this fixture. Their median
-float32 overhead ranges from 1.15x through 1.25x. This suggests that the
-controlled palette solvers are relatively insensitive to base precision here,
-while conversion and float palette application still have a measurable cost.
-The sampling/binning rows show similarly small output changes, although their
-timing ratios range from 1.05x for no binning through 1.29x for adaptive-grid
-hard binning.
+The quantizer rows change MS-SSIM by at most `0.000080`, mean Delta E00 by at most `0.0009`, and size by at most `0.09%` on this fixture. Their float32 time ratios range from 1.16x to 1.21x. The controlled solvers are relatively insensitive to base precision here, while conversion and float palette application still have a measurable cost. Sampling/binning configurations also show small output changes, with time ratios from 1.04x to 1.26x.
 
-Dithering is different. Float32 increases mean Delta E00 for all thirteen
-methods, but increases MS-SSIM for seven. The two metrics answer different
-questions: Delta E00 averages pointwise perceptual color error, whereas
-MS-SSIM rewards spatial structure created by the redistributed error. Float32
-also increases every measured dithered stream size. Atkinson has the largest
-size increase, 18.80%, while its MS-SSIM improves by `0.003680` and mean Delta
-E00 worsens by `0.1170`. Floyd--Steinberg loses `0.004429` MS-SSIM, adds
-`0.2892` mean Delta E00, and produces a 4.98% larger stream. Precision is
-therefore part of a dither policy's observable behavior, not merely an
-arithmetic implementation detail.
+Dithering changes the tradeoff. Float32 increases mean Delta E00 for 13 of 13 methods, while MS-SSIM improves for 7. Delta E00 averages pointwise perceptual color error, whereas MS-SSIM rewards spatial structure created by redistributed error. All measured dither rows increase stream size; precision is part of their observable behavior.
 
-The lookup comparison shows the largest changes for address-quantized or
-approximate policies. The float32 `5bit` row gains `0.005444` MS-SSIM, lowers
-mean Delta E00 by `0.2039`, and produces a 4.75% smaller stream. `eytzinger`
-lowers mean Delta E00 by `0.1016` and size by 4.98%, but loses `0.001964`
-MS-SSIM. `fhedt` gains `0.001638` MS-SSIM and lowers mean Delta E00 by
-`0.0413`. Exact `none`, `certlut`, and the tree-like policies change much less
-on this input. The float32 `vptree` median is slightly lower than 8-bit, but
-their timing interquartile ranges overlap; this run does not establish a
-float32 speed advantage.
+The lookup comparison shows larger output changes for address-quantized or approximate policies such as `5bit`, `eytzinger`, and `fhedt`. Exact `none`, `certlut`, and the tree-like policies change much less on this input. Runtime is measured end to end; small differences should be read alongside the interquartile ranges rather than treated as portable speed rankings.
 
-Across the five clustering configurations, the float32 row lowers mean Delta
-E00 in every pair, while MS-SSIM moves in both directions and size stays
-within 0.41%. The gamma row has the largest Delta E00 reduction, `0.0186`, and
-is the only row that includes a change in clustering-coordinate precision.
-The Linear RGB and Lab-family clustering calculations remain float32 in both
-rows; their differences come from the samples entering that stage and palette
-application afterward. Those four rows must not be cited as
-8-bit-versus-float32 comparisons of the named color spaces.
+Across the five clustering configurations, float32 lowers mean Delta E00 in 5 pairs, while MS-SSIM moves in both directions and size stays within 0.41%. Only the gamma pair changes clustering-coordinate precision. Linear RGB, OKLab, CIELAB, and [DIN99d](../concepts/din99d.md) clustering calculations remain float32 in both rows; their differences come from samples entering that stage and palette application afterward. Those four rows are not 8-bit-versus-float32 comparisons of the named spaces.
 
-The largest output movements are summarized below. A positive quality delta
-means that float32 reports a larger value; a positive size delta means a larger
-SIXEL stream.
+Selected output movements are shown below. Positive deltas mean that float32 reports a larger value or produces a larger stream.
 
 | Domain and configuration | Time ratio | MS-SSIM delta | Mean Delta E00 delta | Size delta |
 | --- | ---: | ---: | ---: | ---: |
-| dither `fs` | 1.25x | -0.004429 | +0.2892 | +4.98% |
-| dither `atkinson` | 1.29x | +0.003680 | +0.1170 | +18.80% |
-| lookup `5bit` | 1.24x | +0.005444 | -0.2039 | -4.75% |
-| lookup `eytzinger` | 1.06x | -0.001964 | -0.1016 | -4.98% |
-| lookup `fhedt` | 1.04x | +0.001638 | -0.0413 | -0.06% |
+| dither `fs` | 1.23x | -0.004429 | +0.2892 | +4.98% |
+| dither `atkinson` | 1.30x | +0.003680 | +0.1170 | +18.80% |
+| lookup `5bit` | 1.26x | +0.005444 | -0.2039 | -4.75% |
+| lookup `eytzinger` | 1.03x | -0.001964 | -0.1016 | -4.98% |
+| lookup `fhedt` | 1.05x | +0.001638 | -0.0413 | -0.06% |
 
 ### Quantize models
 

@@ -190,7 +190,7 @@ uniform than tristimulus coordinates.
 The normative space and Euclidean color-difference methods are described by
 [ISO/CIE 11664-4](https://www.cie.co.at/publications/colorimetry-part-4-cie-1976-lab-colour-space-1).
 
-## `din99d`: compressed and rotated CIELAB coordinates
+## `din99d`: XYZ-corrected perceptual coordinates
 
 `-X din99d` applies the DIN99d transform described by Cui, Luo, Rigg, Roesler, and Witt. It first replaces `X` with `1.12X − 0.12Z` for both the D65 sample and its reference white. The usual Lab equations applied to those corrected tristimulus values supply the `L*`, `a*`, and `b*` below; they are not ordinary CIELAB coordinates:
 
@@ -317,12 +317,7 @@ spatial structure, mean Delta E00 estimates average perceptual color error,
 and mean Delta Chroma exposes saturation-related error. Their rankings do not
 coincide.
 
-DIN99d is strongest in all three quality panels at `K=8` on this image, while
-gamma is strongest in MS-SSIM and mean Delta E00 at `K=16`. OKLab has the best
-MS-SSIM at `K=32`, `64`, and `128`; gamma still has the lowest mean Delta E00
-at those three points. At `K=256`, gamma has the best MS-SSIM and chroma result,
-while CIELAB has the lowest mean Delta E00. A perceptually motivated coordinate
-space is therefore not an automatic winner for every metric or palette size.
+DIN99d is strongest in all three quality panels at `K=8` on this image and leads MS-SSIM and mean Delta E00 at `K=16`. OKLab has the best MS-SSIM at `K=32`, `64`, and `128`; gamma has the lowest mean Delta E00 at those three points. At `K=256`, gamma has the best MS-SSIM and chroma result, while CIELAB has the lowest mean Delta E00. A perceptually motivated coordinate space is therefore not an automatic winner for every metric or palette size. The [DIN99d guide](../concepts/din99d.md) explains its color-difference objective and shows a nearest-color example.
 
 ### Hard-binning occupancy
 
@@ -338,14 +333,9 @@ hard bins after transforming the same samples into each clustering space:
 | linear RGB | 560 | 2,197 | 7,400 | 19,853 | 38,564 |
 | OKLab | 126 | 472 | 2,145 | 9,368 | 31,855 |
 | CIELAB | 135 | 538 | 2,519 | 11,187 | 37,601 |
-| DIN99d | 507 | 2,301 | 9,705 | 29,370 | 53,380 |
+| DIN99d | 208 | 933 | 4,206 | 16,161 | 41,675 |
 
-At the fixed 6-bit setting, OKLab and CIELAB pass only 16.2% and 19.1% as
-many weighted points as gamma RGB to K-means. This explains much of their
-shorter `palette/build` spans: the solver is receiving less work. It also means
-that the main quality plot combines two effects, clustering geometry and
-space-dependent hard-binning loss. It must not be read as a pure comparison of
-the color-space objectives.
+At the fixed 6-bit setting, OKLab, CIELAB, and DIN99d pass only 16.2%, 19.1%, and 31.9% as many weighted points as gamma RGB to K-means. This explains much of their shorter `palette/build` spans: the solver is receiving less work. It also means that the main quality plot combines two effects, clustering geometry and space-dependent hard-binning loss. It must not be read as a pure comparison of the color-space objectives.
 
 ### Quality sensitivity to hard binning
 
@@ -362,7 +352,7 @@ Chroma. At `K=256`, the comparison is:
 | linear RGB | 0.988400 | 0.990912 | 2.128480 | 2.039005 |
 | OKLab | 0.988582 | 0.992108 | 1.945648 | 1.803799 |
 | CIELAB | 0.989611 | 0.990109 | 1.854451 | 1.818770 |
-| DIN99d | 0.987915 | 0.989767 | 1.916042 | 1.784310 |
+| DIN99d | 0.989565 | 0.990282 | 1.895345 | 1.773426 |
 
 The suspected bias is therefore real on this fixture, especially for OKLab:
 removing hard binning raises its `K=256` MS-SSIM by 0.003526 and lowers mean
@@ -387,14 +377,7 @@ rounds. The left panel sums complete top-level `palette/build` spans from a
 separate instrumented run. It excludes clustering-frame conversion. The right
 panel measures the complete uninstrumented command.
 
-OKLab and CIELAB have the shortest solver spans for most of this fixture even
-though their coordinate transforms are more complex than gamma RGB. This is
-not evidence that their transforms are cheaper: hard-bin occupancy, bound
-pruning, and convergence also change with the geometry. At `K=64`, the median
-solver spans are 26.209 ms for gamma, 11.328 ms for OKLab, and 11.556 ms for
-CIELAB; the corresponding end-to-end times are 104.38, 98.78, and 100.40 ms.
-At `K=256`, OKLab is fastest end to end at 205.92 ms, compared with 250.16 ms
-for gamma and 265.28 ms for DIN99d.
+OKLab and CIELAB have the shortest solver spans for most of this fixture even though their coordinate transforms are more complex than gamma RGB. This is not evidence that their transforms are cheaper: hard-bin occupancy, bound pruning, and convergence also change with the geometry. At `K=64`, the median solver spans are 23.624 ms for gamma, 10.056 ms for OKLab, and 10.449 ms for CIELAB; the corresponding end-to-end times are 86.97, 83.38, and 84.24 ms. At `K=256`, OKLab is fastest end to end at 177.88 ms, compared with 216.42 ms for gamma and 201.93 ms for DIN99d.
 
 ### Encoded size
 
@@ -404,12 +387,7 @@ Size is the exact byte length of the same no-dither stream assessed for
 quality. It is not a direct objective of any clustering space. A palette can
 improve color error while creating a less compressible index pattern.
 
-At `K=64`, linear RGB is smallest at 120.9 KiB, gamma is 121.1 KiB, OKLab is
-130.2 KiB, CIELAB is 131.9 KiB, and DIN99d is 122.8 KiB. At `K=256`, linear
-RGB is again smallest at 237.3 KiB, followed by DIN99d at 240.6 KiB; gamma,
-CIELAB, and OKLab produce 249.3, 251.3, and 253.1 KiB respectively. These size
-rankings are properties of this image and encoder configuration, not general
-compression guarantees.
+At `K=64`, linear RGB is smallest at 120.9 KiB, gamma is 121.1 KiB, OKLab is 130.2 KiB, CIELAB is 131.9 KiB, and DIN99d is 122.6 KiB. At `K=256`, linear RGB is again smallest at 237.3 KiB; gamma, CIELAB, OKLab, and DIN99d produce 249.3, 251.3, 253.1, and 257.4 KiB respectively. These size rankings are properties of this image and encoder configuration, not general compression guarantees.
 
 ## Adaptive hard-binning design
 
@@ -472,28 +450,15 @@ not monotonic in grid depth.
 
 | Palette size | Stable conditions | Median stable points | Median `S / K` | Passing conditions at 6 / 7 / 8 bits |
 | ---: | ---: | ---: | ---: | ---: |
-| 64 | 10 / 25 | 8,488.5 | 132.63 | 7 / 7 / 10 |
-| 128 | 16 / 25 | 3,034.5 | 23.71 | 12 / 13 / 16 |
-| 256 | 21 / 25 | 8,256 | 32.25 | 12 / 15 / 21 |
+| 64 | 10 / 25 | 8,488.5 | 132.63 | 6 / 6 / 10 |
+| 128 | 15 / 25 | 2,534 | 19.80 | 12 / 14 / 15 |
+| 256 | 20 / 25 | 6,946 | 27.13 | 11 / 16 / 20 |
 
-Medians exclude conditions that never reach a stable threshold by 8 bits, so
-they are descriptive values rather than safe lower bounds. At `K=256`, the 21
-stable conditions range from 125 through 86,680 effective points, while four
-conditions remain censored at 8 bits. Across every palette size, only 47 of 75
-conditions have a stable balanced threshold. Fixed 6-, 7-, and 8-bit grids pass
-31, 35, and 47 conditions respectively.
+Medians exclude conditions that never reach a stable threshold by 8 bits, so they are descriptive values rather than safe lower bounds. At `K=256`, the 20 stable conditions range from 125 through 86,680 effective points, while 5 conditions remain censored at 8 bits. Across every palette size, 45 of 75 conditions have a stable balanced threshold. Fixed 6-, 7-, and 8-bit grids pass 29, 36, and 45 conditions respectively.
 
 ![Hard-binning paired-seed pass rate](clustering-color-spaces/threshold-measurements/clustering-binning-threshold-pass-rate.png)
 
-Point count alone does not predict the result. Among the 166 measured
-depth/condition cells with at least 32 effective points per palette color, only
-76, or 45.8 percent, pass the balanced condition. Near the same population,
-5-bit linear-RGB binning at about 19 points per color passes for the flat
-artwork fixture but fails for the rare-color fixture. Counts do not describe
-the distances collapsed inside a cell, and changing the weighted point set can
-also send finite-restart K-means to a different local minimum. More points can
-therefore produce a worse final palette even though they represent the source
-distribution more finely.
+Point count alone does not predict the result. Among the 161 measured depth/condition cells with at least 32 effective points per palette color, only 71, or 44.1 percent, pass the balanced condition. At about 19 effective points per palette color, 5-bit linear-RGB binning passes for flat artwork at `K=64` but fails for the rare-color fixture at `K=128`. Counts do not describe the distances collapsed inside a cell, and changing the weighted point set can also send finite-restart K-means to a different local minimum. More points can therefore produce a worse final palette even though they represent the source distribution more finely.
 
 The measurement supports using `S_b / K` as a deficiency warning, but not as an
 automatic acceptance test. An adaptive resolver should combine it with
@@ -540,8 +505,7 @@ There is no defensible total ordering from this run:
   spans on this fixture;
 - `cielab` is competitive in both quality and solver time, including the best
   mean Delta E00 at `K=256`; and
-- `din99d` is strongest at very small `K` here but has the highest end-to-end
-  latency at several larger palette sizes.
+- `din99d` is strongest at very small `K` here; it has the highest end-to-end latency through `K=64`, while at `K=256` it is faster than gamma but slower than OKLab and CIELAB.
 
 Do not change a project default from this one image. A default proposal needs
 multiple natural images, smooth luminance and chroma gradients, rare saturated
@@ -551,6 +515,8 @@ policy, because the current experiment deliberately measures the palette
 without error diffusion.
 
 ## Reproduction and raw data
+
+The color-space comparison and hard-binning threshold study were remeasured from clean revision `c26da16e7` on 2026-09-12 UTC with the corrected DIN99d transform and common scale. Every comparison space was rerun; timings describe this recorded build and host, not an isolated before/after transform microbenchmark.
 
 The exact tables are
 [`clustering-colorspace-quality.csv`](clustering-color-spaces/measurements/clustering-colorspace-quality.csv),
