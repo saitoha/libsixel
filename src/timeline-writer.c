@@ -143,7 +143,7 @@ sixel_timeline_writer_init_once(PINIT_ONCE once,
     return TRUE;
 }
 #elif SIXEL_ENABLE_THREADS
-static pthread_once_t g_sixel_timeline_writer_once = SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(g_sixel_timeline_writer_once);
 
 static void
 sixel_timeline_writer_init_once(void)

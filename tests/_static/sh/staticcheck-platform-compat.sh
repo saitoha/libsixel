@@ -383,7 +383,9 @@ require_fixed '`x86_64-unknown-gnu0.9`' \
     docs/misc/platforms/gnu-hurd.md
 require_fixed '#if defined(__GNU__) && defined(__GNUC__)' \
     src/pthread-once.h
-require_fixed '# define SIXEL_PTHREAD_ONCE_INIT __extension__ PTHREAD_ONCE_INIT' \
+require_fixed '# define SIXEL_PTHREAD_ONCE_DECLARE(name)' \
+    src/pthread-once.h
+require_fixed '    __extension__ static pthread_once_t name = PTHREAD_ONCE_INIT' \
     src/pthread-once.h
 # The make variable is literal source-list syntax.
 # shellcheck disable=SC2016

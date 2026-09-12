@@ -1454,7 +1454,7 @@ static sixel_tty_response_dispatcher_t g_tty_response_dispatcher;
 
 #if SIXEL_ENABLE_THREADS
 static pthread_mutex_t g_tty_response_dispatcher_mutex;
-static pthread_once_t g_tty_response_dispatcher_once = SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(g_tty_response_dispatcher_once);
 static int g_tty_response_dispatcher_mutex_ready;
 
 static void

@@ -167,7 +167,7 @@ sixel_decoder_threads_lock_init_once(PINIT_ONCE once,
 }
 # else
 #  include <pthread.h>
-static pthread_once_t g_decoder_threads_once = SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(g_decoder_threads_once);
 
 static void
 sixel_decoder_threads_lock_init_once(void)

@@ -748,7 +748,7 @@ sixel_thread_config_lock_init_once(PINIT_ONCE once,
     return TRUE;
 }
 # elif SIXEL_USE_PTHREADS
-static pthread_once_t g_thread_config_once = SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(g_thread_config_once);
 
 static void
 sixel_thread_config_lock_init_once(void)

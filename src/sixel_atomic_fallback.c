@@ -95,8 +95,7 @@ sixel_atomic_fallback_unlock(void)
  * partial pthread struct initializers.
  */
 static pthread_mutex_t sixel_atomic_fallback_mutex;
-static pthread_once_t sixel_atomic_fallback_mutex_once =
-    SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(sixel_atomic_fallback_mutex_once);
 static int sixel_atomic_fallback_mutex_ready = 0;
 
 static void

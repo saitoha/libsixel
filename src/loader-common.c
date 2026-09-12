@@ -152,7 +152,7 @@ loader_background_lock_init_once(PINIT_ONCE once,
  * partial pthread struct initializers.
  */
 static pthread_mutex_t loader_background_mutex;
-static pthread_once_t loader_background_mutex_once = SIXEL_PTHREAD_ONCE_INIT;
+SIXEL_PTHREAD_ONCE_DECLARE(loader_background_mutex_once);
 static int loader_background_mutex_ready = 0;
 
 static void
