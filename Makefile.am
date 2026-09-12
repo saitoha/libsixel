@@ -171,6 +171,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-run.json \
 	docs/concepts/pixelformat.md \
 	docs/loader/README.md \
+	docs/loader/libpng.md \
 	docs/loader/color-management.md \
 	docs/loader/cms-default-measurements.json \
 	tools/measure_cms_default.py \

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # TAP test verifying libpng EXIF orientation for static PNG and APNG frames.
 
 set -eux

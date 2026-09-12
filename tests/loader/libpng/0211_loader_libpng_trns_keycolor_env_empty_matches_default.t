@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR matches default behavior in libpng PNG path.
 
 set -eux

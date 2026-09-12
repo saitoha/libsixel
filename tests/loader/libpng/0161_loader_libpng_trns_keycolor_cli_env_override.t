@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify long --env overrides process env for keycolor opt-in.
 
 set -eux

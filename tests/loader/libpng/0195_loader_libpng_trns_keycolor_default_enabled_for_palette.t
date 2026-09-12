@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # Verify libpng loader enables tRNS keycolor by default for palette PNG.
 
 set -eux

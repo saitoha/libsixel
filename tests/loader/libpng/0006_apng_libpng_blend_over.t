@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # TAP test: libpng APNG blend-over start frame matches static reference.
 
 set -eux

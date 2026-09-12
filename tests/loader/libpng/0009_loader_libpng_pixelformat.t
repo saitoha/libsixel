@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libpng.md
 # TAP wrapper that dispatches to the unified C test runner.
 
 set -eux

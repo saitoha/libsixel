@@ -6,7 +6,7 @@ For engine selection and its limits, read [Loader CMS: builtin and Little CMS](c
 
 Image loading in libsixel is an ordered component pipeline rather than one decoder hidden behind a uniform RGBA buffer. The loader manager builds a candidate chain, gives each candidate an opportunity to recognize and decode the input, and returns the first accepted frame. Each backend owns format recognition, decoding, metadata precedence, animation delivery, orientation, alpha finalization, and any CMS path that it supports.
 
-This document defines that shared architecture and the `-L` policy surface. Backend-specific parsing and format behavior belongs in a separate document, beginning with the [Builtin Image Loader](builtin.md).
+This document defines that shared architecture and the `-L` policy surface. Backend-specific parsing and format behavior belongs in the [libpng Image Loader](libpng.md) and [Builtin Image Loader](builtin.md) references.
 
 ## Loader-chain mental model
 
@@ -66,7 +66,7 @@ The registry order below is also the automatic priority order for components pre
 
 | Loader name | Availability | Primary role | Representative output character |
 | --- | --- | --- | --- |
-| `libpng` | With libpng | PNG and APNG | Indexed or RGB/RGBA; 16-bit and CMS paths can produce float32. |
+| [`libpng`](libpng.md) | With libpng | PNG and APNG | Indexed or RGB/RGBA; static 16-bit and CMS paths can produce float32. APNG has a separate RGBA8 pipeline. |
 | `libjpeg` | With libjpeg | JPEG, including library-supported high-depth variants | RGB float32 on precision-preserving paths; CMS may produce a typed target colorspace. |
 | `libwebp` | With libwebp | Static and animated WebP | RGB/RGBA or indexed animation frames; float32 after supported color management. |
 | `libtiff` | With libtiff | TIFF | RGB/RGBA or float32, including source- or CMS-derived typed colorspaces. |
@@ -102,8 +102,9 @@ Those benefits do not make builtin inherently safer. Every in-tree parser, decom
 
 ## Backend documentation boundaries
 
-The shared manager contract stays here. Each detailed backend document should separately specify its recognized formats, depth and colorspace behavior, metadata precedence, animation model, alpha representation, suboptions, fallback statuses, host dependencies, security considerations, and implementation/test landmarks. The current detailed builtin references are:
+The shared manager contract stays here. Each detailed backend document should separately specify its recognized formats, depth and colorspace behavior, metadata precedence, animation model, alpha representation, suboptions, fallback statuses, host dependencies, security considerations, and implementation/test landmarks. The current detailed backend references are:
 
+- [libpng Image Loader](libpng.md), including the desired policy boundaries, current implementation gaps, and static/APNG differences.
 - [Builtin Image Loader](builtin.md), including its stb_image lineage and format-specific extraction history.
 - [Builtin Format Components](builtin/README.md), indexing the exact accepted variants, metadata semantics, output precision/colorspace, history, and unsupported features of each builtin decoder family.
 
