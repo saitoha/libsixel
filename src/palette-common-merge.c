@@ -45,6 +45,7 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kmeans.h"
+#include "pthread-once.h"
 #include "status.h"
 
 
@@ -120,7 +121,8 @@ sixel_final_merge_env_lock_init_once(PINIT_ONCE once,
  * -Wmissing-field-initializers on pthread internals.
  */
 static pthread_mutex_t sixel_final_merge_env_mutex;
-static pthread_once_t sixel_final_merge_env_mutex_once = PTHREAD_ONCE_INIT;
+static pthread_once_t sixel_final_merge_env_mutex_once =
+    SIXEL_PTHREAD_ONCE_INIT;
 static int sixel_final_merge_env_mutex_ready = 0;
 
 static void

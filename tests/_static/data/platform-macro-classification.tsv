@@ -62,6 +62,7 @@ __EMSCRIPTEN__	platform	docs/misc/platforms/emscripten.md
 __FMA__	architecture	-
 __FreeBSD__	platform	docs/misc/platforms/posix-runtimes.md
 __GLIBC__	platform	docs/misc/platforms/posix-runtimes.md
+__GNU__	platform	docs/misc/platforms/gnu-hurd.md
 __GNUC__	compiler	-
 __MACH__	platform	docs/misc/platforms/macos.md
 __MINGW32__	platform	docs/misc/platforms/mingw.md
@@ -92,6 +93,7 @@ __builtin_types_compatible_p	compiler	-
 __clang__	compiler	-
 __cplusplus	language	-
 __declspec	compiler	-
+__extension__	compiler	-
 __format__	compiler	-
 __has_attribute	compiler	-
 __has_include	compiler	-

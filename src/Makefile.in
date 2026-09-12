@@ -337,8 +337,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
 	$(srcdir)/tty.h $(srcdir)/threading.c $(srcdir)/threading.h \
-	$(srcdir)/threadpool.c $(srcdir)/threadpool.h \
-	$(srcdir)/probe.c $(srcdir)/probe.h \
+	$(srcdir)/pthread-once.h $(srcdir)/threadpool.c \
+	$(srcdir)/threadpool.h $(srcdir)/probe.c $(srcdir)/probe.h \
 	$(srcdir)/sixel_decode_pixels.c \
 	$(srcdir)/sixel_decode_pixels.h \
 	$(srcdir)/sixel_atomic_fallback.c $(srcdir)/sixel_atomic.h \
@@ -1324,6 +1324,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tty.c $(srcdir)/tty.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/threading.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/threading.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/pthread-once.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/threadpool.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/threadpool.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/probe.c \

@@ -61,6 +61,7 @@
 #include "palette.h"
 #include "options.h"
 #include "pixelformat.h"
+#include "pthread-once.h"
 #include "status.h"
 #include "timer.h"
 
@@ -154,7 +155,8 @@ sixel_kmeans_override_lock_init_once(PINIT_ONCE once,
  * partial pthread struct initializers.
  */
 static pthread_mutex_t sixel_kmeans_override_mutex;
-static pthread_once_t sixel_kmeans_override_mutex_once = PTHREAD_ONCE_INIT;
+static pthread_once_t sixel_kmeans_override_mutex_once =
+    SIXEL_PTHREAD_ONCE_INIT;
 static int sixel_kmeans_override_mutex_ready = 0;
 
 static void

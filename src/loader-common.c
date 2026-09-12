@@ -58,6 +58,7 @@
 #include "loader-common.h"
 #include "options.h"
 #include "options-registry.h"
+#include "pthread-once.h"
 #include "timeline-logger.h"
 
 #if defined(__PCC__) || defined(__TINYC__)
@@ -151,7 +152,7 @@ loader_background_lock_init_once(PINIT_ONCE once,
  * partial pthread struct initializers.
  */
 static pthread_mutex_t loader_background_mutex;
-static pthread_once_t loader_background_mutex_once = PTHREAD_ONCE_INIT;
+static pthread_once_t loader_background_mutex_once = SIXEL_PTHREAD_ONCE_INIT;
 static int loader_background_mutex_ready = 0;
 
 static void

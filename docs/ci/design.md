@@ -77,7 +77,7 @@ prove that a branch is green.
 
 ## @saitoha local desktop CI
 
-The private local CI complements GitHub Actions only with platform/compiler pairs that are not represented there. Its active catalog covers Debian GNU/Linux Bookworm with GCC, OpenIndiana 2025.10 with GCC 13, and OpenVMS 9.2-3 with the GNV `cc` environment. Autotools and Meson variants may coexist within an owned pair, but they do not create a reason to duplicate that pair across CI systems.
+The private local CI complements GitHub Actions only with platform/compiler pairs that are not represented there. Its active catalog covers Debian GNU/Linux Bookworm with GCC, Debian GNU/Hurd from the 2026-03-14 amd64 image with GCC, OpenIndiana 2025.10 with GCC 13, and OpenVMS 9.2-3 with the GNV `cc` environment. Autotools and Meson variants may coexist within an owned pair, but they do not create a reason to duplicate that pair across CI systems.
 
 The implementation, job catalog, runner configuration, and deployment procedure are private operational details. Repository documentation must not name their repository paths because contributors cannot inspect those paths from this source tree. The Tier 2 table in [Build, Runtime, and Platform Support](../platform-support.md) is the public inventory of local-CI coverage.
 

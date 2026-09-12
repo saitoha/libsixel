@@ -38,6 +38,7 @@
 #include "colorspace.h"
 #include "cpu.h"
 #include "loader-common.h"
+#include "pthread-once.h"
 #include "timeline-logger.h"
 #include "threading.h"
 #if SIXEL_ENABLE_THREADS
@@ -91,9 +92,9 @@ static INIT_ONCE sixel_colorspace_parallel_min_pixels_once =
     INIT_ONCE_STATIC_INIT;
 # else
 #  include <pthread.h>
-static pthread_once_t sixel_colorspace_once = PTHREAD_ONCE_INIT;
+static pthread_once_t sixel_colorspace_once = SIXEL_PTHREAD_ONCE_INIT;
 static pthread_once_t sixel_colorspace_parallel_min_pixels_once =
-    PTHREAD_ONCE_INIT;
+    SIXEL_PTHREAD_ONCE_INIT;
 # endif
 #endif
 

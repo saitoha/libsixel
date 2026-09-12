@@ -45,6 +45,7 @@
 #include "icc-parse.h"
 #include "loader-common.h"
 #include "options.h"
+#include "pthread-once.h"
 #include <sixel.h>
 
 #ifndef SIZE_MAX
@@ -182,7 +183,7 @@ sixel_cms_engine_lock_init_once(PINIT_ONCE once,
  * partial pthread struct initializers.
  */
 static pthread_mutex_t g_sixel_cms_engine_mutex;
-static pthread_once_t g_sixel_cms_engine_mutex_once = PTHREAD_ONCE_INIT;
+static pthread_once_t g_sixel_cms_engine_mutex_once = SIXEL_PTHREAD_ONCE_INIT;
 static int g_sixel_cms_engine_mutex_ready = 0;
 
 static void

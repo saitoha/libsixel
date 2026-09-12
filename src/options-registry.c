@@ -63,6 +63,7 @@
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
+#include "pthread-once.h"
 #include "threading.h"
 
 #define SIXEL_REGISTRY_ARRAY_LENGTH(array_) \
@@ -4805,7 +4806,7 @@ sixel_option_registry_validate_once_cb(PINIT_ONCE once,
 }
 # else
 static pthread_once_t sixel_option_registry_validation_once =
-    PTHREAD_ONCE_INIT;
+    SIXEL_PTHREAD_ONCE_INIT;
 
 static void
 sixel_option_registry_validate_once_cb(void)

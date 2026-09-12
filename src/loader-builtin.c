@@ -75,6 +75,7 @@
 #include "loader-common.h"
 #include "loader.h"
 #include "options.h"
+#include "pthread-once.h"
 #include "sixel_atomic.h"
 #include "threading.h"
 
@@ -172,7 +173,7 @@ load_with_builtin(
  */
 static pthread_mutex_t sixel_loader_builtin_decode_lock;
 static pthread_once_t sixel_loader_builtin_decode_lock_once
-    = PTHREAD_ONCE_INIT;
+    = SIXEL_PTHREAD_ONCE_INIT;
 static int sixel_loader_builtin_decode_lock_ready = 0;
 
 static void
