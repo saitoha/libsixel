@@ -413,7 +413,8 @@ require_fixed "build_os=\"\${RUNTIME_ENV_BUILD_OS-unknown}\"" tests/loader/libwe
 require_fixed 'SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE' tests/loader/builtin/1021_loader_builtin_psd_cmyk8_values_named_cmyk_trace.t
 require_fixed 'meson test -C builddir --no-rebuild --num-processes 1' .github/actions/ci-steps/action.yml
 require_fixed "--slice \"\${slice}/\${slice_count}\" --print-errorlogs" .github/actions/ci-steps/action.yml
-require_fixed 'if pkgman refresh &&' .github/actions/ci-steps/action.yml
+require_fixed 'if pkgman install -y' .github/actions/ci-steps/action.yml
+require_fixed 'pkgman refresh || true' .github/actions/ci-steps/action.yml
 require_fixed 'slice_count=16' .github/actions/ci-steps/action.yml
 require_fixed 'for attempt in 1 2 3; do' .github/actions/ci-steps/action.yml
 haiku_psd_skip_count=$(grep -lF 'SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE' \
