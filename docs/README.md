@@ -64,8 +64,7 @@ are grouped by domain so each area can grow without overloading one document.
 - [Encoder working precision](functionality/precision.md) explains the
   cross-cutting `--precision` axis, effective 8-bit and float32 paths, and the
   shared quality, speed, and size comparison across processing policies.
-- [Dithering](functionality/dithering.md) explains `-d`, error shaping, scan
-  order, temporal behavior, per-pixel cost, and its interaction with lookup.
+- [Dithering](functionality/dithering.md) explains `-d`, error shaping, scan order, temporal behavior, per-pixel cost, and its interaction with lookup. The [FS coefficient perturbation measurements](functionality/dither-policies/perturb.md) document the optional texture adjustment with RAPSD, flat-field and photographic comparisons, strength and seed controls, and reproducible measurement conditions.
 - [Lookup policy](functionality/lookup-policy.md) defines the `-~` /
   `--lookup-policy` interface provided by `img2sixel`, its mathematical basis, exactness guarantees, and
   preparation/query costs. It contains one detailed chapter per policy and a

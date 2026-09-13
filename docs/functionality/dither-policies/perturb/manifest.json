@@ -1,0 +1,2324 @@
+{
+  "schema": 1,
+  "revision": "d88905ace2ae7fa7a2655cb908f83369e104322b",
+  "measured_at_utc": "2026-09-13T07:52:48.355210+00:00",
+  "runtime_source_state": "clean",
+  "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+  "requested_precision": "8bit",
+  "effective_format": "rgb888",
+  "environment": "Inherited SIXEL_* variables removed",
+  "dependencies": {
+    "numpy": "2.4.6",
+    "pillow": "12.3.0",
+    "matplotlib": "3.11.2"
+  },
+  "build": {
+    "directory": ".",
+    "configure_arguments": "--without-libcurl --without-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-quicklook --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "cc": "gcc",
+    "cflags": "-O3 -std=c99",
+    "cppflags": " -D_DARWIN_C_SOURCE=1",
+    "ldflags": "",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin"
+  },
+  "encoder": {
+    "launcher": "converters/img2sixel",
+    "launcher_sha256": "9515c14be62cc9e049bb2e04525d10a0a274715dcef3ae86a5fe7af7fe589fad",
+    "payload": "converters/.libs/img2sixel",
+    "payload_sha256": "aafdca4fc012a6d7c531663f8004021e5f420bd3649368db50961082c5d0b580"
+  },
+  "decoder": {
+    "launcher": "converters/sixel2png",
+    "launcher_sha256": "b7b512951e1e6e4dafe1bc9490e2bf82c9de8bf8cca885f3db5601f9a8bdc917",
+    "payload": "converters/.libs/sixel2png",
+    "payload_sha256": "901bd28122ccc86af7a07ff56a1af2d351f0bc1a5c7f1a89a225ac476026e216"
+  },
+  "script_sha256": "638410daa33a04e50d85003a317743c4f877312ce0c1cf1242179290afa3de86",
+  "commands": [
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "--quality=full",
+      "--sampling-policy=full-frame",
+      "-Qheckbert",
+      "--cover-policy=off",
+      "-p",
+      "16",
+      "-dnone",
+      "-M",
+      "{output}/photo-16.pal",
+      "-o",
+      "/dev/null",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "--quality=full",
+      "--sampling-policy=full-frame",
+      "-Qheckbert",
+      "--cover-policy=off",
+      "-p",
+      "256",
+      "-dnone",
+      "-M",
+      "{output}/photo-256.pal",
+      "-o",
+      "/dev/null",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "--quality=full",
+      "--sampling-policy=full-frame",
+      "-Qheckbert",
+      "--cover-policy=off",
+      "-p",
+      "16",
+      "-dnone",
+      "-M",
+      "{output}/color-16.pal",
+      "-o",
+      "/dev/null",
+      "{output}/color-source.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "--quality=full",
+      "--sampling-policy=full-frame",
+      "-Qheckbert",
+      "--cover-policy=off",
+      "-p",
+      "256",
+      "-dnone",
+      "-M",
+      "{output}/color-256.pal",
+      "-o",
+      "/dev/null",
+      "{output}/color-source.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g32-fs-0.pal",
+      "-d",
+      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/g32-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g32-fs-0.six",
+      "-o",
+      "{output}/g32-fs-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g32-fs-05.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/g32-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g32-fs-05.six",
+      "-o",
+      "{output}/g32-fs-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g32-serp-0.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/g32-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g32-serp-0.six",
+      "-o",
+      "{output}/g32-serp-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g32-serp-05.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/g32-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g32-serp-05.six",
+      "-o",
+      "{output}/g32-serp-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g64-fs-0.pal",
+      "-d",
+      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/g64-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g64-fs-0.six",
+      "-o",
+      "{output}/g64-fs-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g64-fs-05.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/g64-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g64-fs-05.six",
+      "-o",
+      "{output}/g64-fs-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g64-serp-0.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/g64-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g64-serp-0.six",
+      "-o",
+      "{output}/g64-serp-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g64-serp-05.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/g64-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g64-serp-05.six",
+      "-o",
+      "{output}/g64-serp-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g85-fs-0.pal",
+      "-d",
+      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/g85-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g85-fs-0.six",
+      "-o",
+      "{output}/g85-fs-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g85-fs-05.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/g85-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g85-fs-05.six",
+      "-o",
+      "{output}/g85-fs-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g85-serp-0.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/g85-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g85-serp-0.six",
+      "-o",
+      "{output}/g85-serp-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g85-serp-05.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/g85-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g85-serp-05.six",
+      "-o",
+      "{output}/g85-serp-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g128-fs-0.pal",
+      "-d",
+      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/g128-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g128-fs-0.six",
+      "-o",
+      "{output}/g128-fs-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g128-fs-05.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/g128-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g128-fs-05.six",
+      "-o",
+      "{output}/g128-fs-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g128-serp-0.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/g128-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g128-serp-0.six",
+      "-o",
+      "{output}/g128-serp-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g128-serp-05.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/g128-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g128-serp-05.six",
+      "-o",
+      "{output}/g128-serp-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/ramp-fs-0.pal",
+      "-d",
+      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/ramp-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/ramp-fs-0.six",
+      "-o",
+      "{output}/ramp-fs-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/ramp-fs-05.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/ramp-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/ramp-fs-05.six",
+      "-o",
+      "{output}/ramp-fs-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/ramp-serp-0.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/ramp-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/ramp-serp-0.six",
+      "-o",
+      "{output}/ramp-serp-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/ramp-serp-05.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/ramp-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/ramp-serp-05.six",
+      "-o",
+      "{output}/ramp-serp-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/photo-16.pal",
+      "-M",
+      "{output}/photo-16-fs-0.pal",
+      "-d",
+      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/photo-16-fs-0.six",
+      "-o",
+      "{output}/photo-16-fs-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/photo-16.pal",
+      "-M",
+      "{output}/photo-16-fs-05.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/photo-16-fs-05.six",
+      "-o",
+      "{output}/photo-16-fs-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/photo-16.pal",
+      "-M",
+      "{output}/photo-16-serp-0.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/photo-16-serp-0.six",
+      "-o",
+      "{output}/photo-16-serp-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/photo-16.pal",
+      "-M",
+      "{output}/photo-16-serp-05.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/photo-16-serp-05.six",
+      "-o",
+      "{output}/photo-16-serp-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/photo-256.pal",
+      "-M",
+      "{output}/photo-256-fs-0.pal",
+      "-d",
+      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/photo-256-fs-0.six",
+      "-o",
+      "{output}/photo-256-fs-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/photo-256.pal",
+      "-M",
+      "{output}/photo-256-fs-05.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/photo-256-fs-05.six",
+      "-o",
+      "{output}/photo-256-fs-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/photo-256.pal",
+      "-M",
+      "{output}/photo-256-serp-0.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/photo-256-serp-0.six",
+      "-o",
+      "{output}/photo-256-serp-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/photo-256.pal",
+      "-M",
+      "{output}/photo-256-serp-05.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/photo-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/photo-256-serp-05.six",
+      "-o",
+      "{output}/photo-256-serp-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/color-16.pal",
+      "-M",
+      "{output}/color-16-fs-0.pal",
+      "-d",
+      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/color-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/color-16-fs-0.six",
+      "-o",
+      "{output}/color-16-fs-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/color-16.pal",
+      "-M",
+      "{output}/color-16-fs-05.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/color-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/color-16-fs-05.six",
+      "-o",
+      "{output}/color-16-fs-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/color-16.pal",
+      "-M",
+      "{output}/color-16-serp-0.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/color-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/color-16-serp-0.six",
+      "-o",
+      "{output}/color-16-serp-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/color-16.pal",
+      "-M",
+      "{output}/color-16-serp-05.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/color-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/color-16-serp-05.six",
+      "-o",
+      "{output}/color-16-serp-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/color-256.pal",
+      "-M",
+      "{output}/color-256-fs-0.pal",
+      "-d",
+      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/color-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/color-256-fs-0.six",
+      "-o",
+      "{output}/color-256-fs-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/color-256.pal",
+      "-M",
+      "{output}/color-256-fs-05.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/color-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/color-256-fs-05.six",
+      "-o",
+      "{output}/color-256-fs-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/color-256.pal",
+      "-M",
+      "{output}/color-256-serp-0.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "{output}/color-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/color-256-serp-0.six",
+      "-o",
+      "{output}/color-256-serp-0.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/color-256.pal",
+      "-M",
+      "{output}/color-256-serp-05.pal",
+      "-d",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "{output}/color-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/color-256-serp-05.six",
+      "-o",
+      "{output}/color-256-serp-05.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g64-fs-025.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.25:perturb_seed=0:threads_max=1",
+      "{output}/g64-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g64-fs-025.six",
+      "-o",
+      "{output}/g64-fs-025.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g64-fs-1.pal",
+      "-d",
+      "fs:scan=raster:perturb=1:perturb_seed=0:threads_max=1",
+      "{output}/g64-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g64-fs-1.six",
+      "-o",
+      "{output}/g64-fs-1.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g64-fs-05-seed1.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=1:threads_max=1",
+      "{output}/g64-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g64-fs-05-seed1.six",
+      "-o",
+      "{output}/g64-fs-05-seed1.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g64-fs-05-seed2.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=2:threads_max=1",
+      "{output}/g64-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g64-fs-05-seed2.six",
+      "-o",
+      "{output}/g64-fs-05-seed2.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g128-fs-025.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.25:perturb_seed=0:threads_max=1",
+      "{output}/g128-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g128-fs-025.six",
+      "-o",
+      "{output}/g128-fs-025.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g128-fs-1.pal",
+      "-d",
+      "fs:scan=raster:perturb=1:perturb_seed=0:threads_max=1",
+      "{output}/g128-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g128-fs-1.six",
+      "-o",
+      "{output}/g128-fs-1.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g128-fs-05-seed1.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=1:threads_max=1",
+      "{output}/g128-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g128-fs-05-seed1.six",
+      "-o",
+      "{output}/g128-fs-05-seed1.png"
+    ],
+    [
+      "{img2sixel}",
+      "-v",
+      "--threads=1",
+      "--precision=8bit",
+      "--gpu-policy=off",
+      "--lookup-policy=none",
+      "-Wgamma",
+      "-Ugamma",
+      "-m",
+      "{output}/bw.pal",
+      "-M",
+      "{output}/g128-fs-05-seed2.pal",
+      "-d",
+      "fs:scan=raster:perturb=0.5:perturb_seed=2:threads_max=1",
+      "{output}/g128-source.png"
+    ],
+    [
+      "{sixel2png}",
+      "-i",
+      "{output}/g128-fs-05-seed2.six",
+      "-o",
+      "{output}/g128-fs-05-seed2.png"
+    ]
+  ],
+  "sources": {
+    "g32": {
+      "path": "g32-source.png",
+      "origin": "constant gamma RGB = (32, 32, 32)",
+      "sha256": "391a18032cf1aeeb8719f97a78dfa8693de9f1060c72834e5a6262eba7d7d2be",
+      "size": [
+        256,
+        256
+      ]
+    },
+    "g64": {
+      "path": "g64-source.png",
+      "origin": "constant gamma RGB = (64, 64, 64)",
+      "sha256": "9eb15f7f32b62ca2f8b0f2ffceafa400c3ffbdec0bb0069467fe5c1c650f7a05",
+      "size": [
+        256,
+        256
+      ]
+    },
+    "g85": {
+      "path": "g85-source.png",
+      "origin": "constant gamma RGB = (85, 85, 85)",
+      "sha256": "499cf6294ceb8b642c633b17e016677c0d58c5cc5392425f64c61d1859a28c19",
+      "size": [
+        256,
+        256
+      ]
+    },
+    "g128": {
+      "path": "g128-source.png",
+      "origin": "constant gamma RGB = (128, 128, 128)",
+      "sha256": "0450a3ca2ac200aa8eb5161791e275e2dc6ca74b237492067ebb0f141a1ac712",
+      "size": [
+        256,
+        256
+      ]
+    },
+    "ramp": {
+      "path": "ramp-source.png",
+      "origin": "round(linspace(16,144,256)); repeated for 256 rows",
+      "sha256": "67f60f9c51419f2ed6c9f8de7256b8db19dbe8c7b7332fbc4145d0b0da02ee16",
+      "size": [
+        256,
+        256
+      ]
+    },
+    "photo": {
+      "path": "photo-source.png",
+      "origin": {
+        "path": "images/egret.jpg",
+        "sha256": "b54d3d2ebdf8bd63ebd0bd39bc77fd69511e6306ba3eb2206213dca27a984faa"
+      },
+      "sha256": "3adea5d3c5839bd0e87e51d8d1e00b9a60965b8492e35c608d1ed42b69bac30e",
+      "size": [
+        600,
+        450
+      ]
+    },
+    "color": {
+      "path": "color-source.png",
+      "origin": {
+        "path": "images/measurements/palette-pipeline/smooth-gradient-600x450.png",
+        "sha256": "47de1f7508b0bb9d1ebdf6b0b2278cb5ccd1db1ad82ff2fbee365dab40510a93"
+      },
+      "sha256": "f8e81b1a223d9723d1cb3468a46fa92b619721d8319eed1539e09a6b48f98ef7",
+      "size": [
+        600,
+        450
+      ]
+    }
+  },
+  "outputs": [
+    {
+      "name": "g32-fs-0",
+      "file": "g32-fs-0.png",
+      "sha256": "65f3b622bcfe6b99ffb625c29512f9f86629c5eeb09a83fec853e5c90636063d",
+      "sixel_sha256": "7d3a8e333fa17c5790f1d37e86c339e5bf944fc81309410ac26dadc60404d613",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "1ce566fb6dfbf74f025b50ab2de548d38443e1fc1da36e031f6846ef83bacbeb",
+      "bytes": 22274,
+      "mean_rgb": [
+        32.34580993652344,
+        32.34580993652344,
+        32.34580993652344
+      ]
+    },
+    {
+      "name": "g32-fs-05",
+      "file": "g32-fs-05.png",
+      "sha256": "9b10c87686ca404f3fc485852db14033d0630076ee2d89501418e82fe7be2cc5",
+      "sixel_sha256": "c637f9d1a795b963e430e278ec3b899b94800497f9bcebb4b9e1d013dd4bafef",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "6b62df0897cdf188d33e47234968748ef67608aa20150cb6b9637d5a09a96945",
+      "bytes": 22275,
+      "mean_rgb": [
+        32.8399658203125,
+        32.8399658203125,
+        32.8399658203125
+      ]
+    },
+    {
+      "name": "g32-serp-0",
+      "file": "g32-serp-0.png",
+      "sha256": "4604eeed4bcb6375928c757d5c7f89f2159430934850cea8334153bfadff247a",
+      "sixel_sha256": "30d0a76d74f3aef1c24e2fa64f497a96615ededd19da4d0752bc412e8af8c98b",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "49510fa8231379bb3de9515e90013218b665eeedbeb208f7632dda1dace12694",
+      "bytes": 22262,
+      "mean_rgb": [
+        32.3419189453125,
+        32.3419189453125,
+        32.3419189453125
+      ]
+    },
+    {
+      "name": "g32-serp-05",
+      "file": "g32-serp-05.png",
+      "sha256": "751694e6bbf4726c8f2229a5702de245df4ee127b5a3f344ae508022467c07b4",
+      "sixel_sha256": "941321e3d3e68e65945e7caa10b92a097cac9610ee85a94d4da93f2d72acccd4",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "d80bec50da2245caee4944712f25291ab4b134f3d0fa7b548a2f2bb877788bf4",
+      "bytes": 22272,
+      "mean_rgb": [
+        32.72712707519531,
+        32.72712707519531,
+        32.72712707519531
+      ]
+    },
+    {
+      "name": "g64-fs-0",
+      "file": "g64-fs-0.png",
+      "sha256": "196eb5afc5da8fd6518995b50dad549957c6ac964a022ba89401d77441575f79",
+      "sixel_sha256": "fb5e286b4f5825891f5b181538a48a9e9c049d7302add0831be9aa512d34fea7",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "001246bfb17505bc5f101df2c89dc329dc028c94ba458bd43ce1cb9a254d0094",
+      "bytes": 22309,
+      "mean_rgb": [
+        64.85115051269531,
+        64.85115051269531,
+        64.85115051269531
+      ]
+    },
+    {
+      "name": "g64-fs-05",
+      "file": "g64-fs-05.png",
+      "sha256": "1895b9e57f181489f06282b349b4c7b56ad1f4d3967f77167029bf934ab7d77f",
+      "sixel_sha256": "656dc6fa53b69708317d5cef88f2c91e0dd3fcd1a9a3cc0fa12ffbd890a09162",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "dfb335cfee7761128376e3fd84fa50bfa575046ecde6ded45737641f95fa98a7",
+      "bytes": 22301,
+      "mean_rgb": [
+        64.94064331054688,
+        64.94064331054688,
+        64.94064331054688
+      ]
+    },
+    {
+      "name": "g64-serp-0",
+      "file": "g64-serp-0.png",
+      "sha256": "21a55430d645764fa4088a8da7d36b565e742e55014260007a59033c4aec2fdc",
+      "sixel_sha256": "1b4a221c3ca31ba65d5d67b5b96bbc19fc34e6f3d50ef1ab3f653073eb827077",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "85949aa45eb1b8edc9025696020854131900d45fe7d46c6768ed39a85710752a",
+      "bytes": 22258,
+      "mean_rgb": [
+        64.9639892578125,
+        64.9639892578125,
+        64.9639892578125
+      ]
+    },
+    {
+      "name": "g64-serp-05",
+      "file": "g64-serp-05.png",
+      "sha256": "460704fae70027eedc503236f8d3b1dc58920a30ec35f1ed6999e253a44bdacf",
+      "sixel_sha256": "b9e0035b3ba23e6b2b3747817406b4caa100a146b12bf53d028fe5156ea42fb6",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "b4095af1f4f8b4d5d41dcae8538193ae16ca09fe991943f18ff3ecbe92451c38",
+      "bytes": 22260,
+      "mean_rgb": [
+        65.09628295898438,
+        65.09628295898438,
+        65.09628295898438
+      ]
+    },
+    {
+      "name": "g85-fs-0",
+      "file": "g85-fs-0.png",
+      "sha256": "9377ea14bd4b924078706891c39a229380307d4ed0a126ff475841ab867a8e99",
+      "sixel_sha256": "06fc3a5b40c20a48dab614a8bda7b98e9606245f89ad1c6fe0d039813fcf0c66",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "877e3a42c64193af383d1428d9ac0ce51c4f6778388efd60539b0fe6e509b2ce",
+      "bytes": 22316,
+      "mean_rgb": [
+        86.3177490234375,
+        86.3177490234375,
+        86.3177490234375
+      ]
+    },
+    {
+      "name": "g85-fs-05",
+      "file": "g85-fs-05.png",
+      "sha256": "ef833caafbf2b1fe3514d25424b73fc304b7d2d7d734ce8e32125cdfd1668ddf",
+      "sixel_sha256": "1f5d34f7a6666c0c742a784ae6be12b024c9e1ac3ffa154c2e752cf16e5d9783",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "69f201f8dcdbbd3835daaaf8eb3ca8ca9ae83a9a3b8c00a30c97cdb03279d04b",
+      "bytes": 22284,
+      "mean_rgb": [
+        86.27883911132812,
+        86.27883911132812,
+        86.27883911132812
+      ]
+    },
+    {
+      "name": "g85-serp-0",
+      "file": "g85-serp-0.png",
+      "sha256": "44497b82441527caae09f5eacd330431fe6ec06e16154964b29746bd5d4065dc",
+      "sixel_sha256": "796847ed389e6b9ca2e0e1d0fd138bd0054f05bf654d212033642179f20306db",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "189a2cbf87ba7a7a0f572febb5fa3c7cede7c2123ffe96f2700f617d8c20d726",
+      "bytes": 22271,
+      "mean_rgb": [
+        86.25160217285156,
+        86.25160217285156,
+        86.25160217285156
+      ]
+    },
+    {
+      "name": "g85-serp-05",
+      "file": "g85-serp-05.png",
+      "sha256": "25f7fec0512eb20a386fe60434aabb17d420f0bf8dade9b1e5de7f4763320f74",
+      "sixel_sha256": "d58441969a8c2343a5d6e754103cad537bb36e4a47d338de67097e1881c537a8",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "8fafca9adb089d366c75ac72b7de9635c068fbee2f8f9c69690ae68a6938f063",
+      "bytes": 22272,
+      "mean_rgb": [
+        86.24771118164062,
+        86.24771118164062,
+        86.24771118164062
+      ]
+    },
+    {
+      "name": "g128-fs-0",
+      "file": "g128-fs-0.png",
+      "sha256": "331e9142e3fc68ef4856718d78e47c7d0ab87af40718a00b24317c2adc06aed6",
+      "sixel_sha256": "8035ff88444e7f471754d584a202305705dfca57e0835fb805ba4c14464a664b",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "c496fd2c16943e573293e9fccae60b28a880331ffc67012b14c59d476447061f",
+      "bytes": 22316,
+      "mean_rgb": [
+        130.00579833984375,
+        130.00579833984375,
+        130.00579833984375
+      ]
+    },
+    {
+      "name": "g128-fs-05",
+      "file": "g128-fs-05.png",
+      "sha256": "b6ef5f3b1c6c6592d4aa4342ed5fd1e4ed6516cc07a95b841415b242a776a0cf",
+      "sixel_sha256": "235dafae3ebe41798c80af055339be0aee8edb83eaa75ef14f62035008a33fc3",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "7a54f8fe6bab5e44557dce65f25d6276efca78b63e90a5f09add706ad940c43f",
+      "bytes": 22310,
+      "mean_rgb": [
+        130.0096893310547,
+        130.0096893310547,
+        130.0096893310547
+      ]
+    },
+    {
+      "name": "g128-serp-0",
+      "file": "g128-serp-0.png",
+      "sha256": "88aba828510d97ea0f66c00b0b1639847c69ee49d37fca09bf78e23176c4a0e1",
+      "sixel_sha256": "30e27fbdf68169e3742dd871de329047401320778715e529c599dd06d24e95d1",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "f8d7c9aef2e0fcf8ed6f9c0db19863cae1e8d7e0676e01b3fb09771455a2605c",
+      "bytes": 22276,
+      "mean_rgb": [
+        130.05638122558594,
+        130.05638122558594,
+        130.05638122558594
+      ]
+    },
+    {
+      "name": "g128-serp-05",
+      "file": "g128-serp-05.png",
+      "sha256": "d830eedafd04ea165902fe74bf3ac239ae40c873668af20451ab45c82fdb487c",
+      "sixel_sha256": "a14dcf00bd5596eaaa2d06ad3a8e4fa2e8d0cddd25b274904b9b298463c0d564",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "636a7f19732f2dcfc11b73572b57083eb925ebc3188ba59e4973c49a98e9e1a3",
+      "bytes": 22278,
+      "mean_rgb": [
+        129.990234375,
+        129.990234375,
+        129.990234375
+      ]
+    },
+    {
+      "name": "ramp-fs-0",
+      "file": "ramp-fs-0.png",
+      "sha256": "020b4983611f188a86a980fff889500ee3dc308e069db4373cbe047a0b2f031b",
+      "sixel_sha256": "b375225fe0129d8b6e26834c460dfd9272524d63a11954f609de9cba74f3ada4",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "8090e69177898b736f12719d156ced24f284f382fb5e1a861aecafac83ff660b",
+      "bytes": 22306,
+      "mean_rgb": [
+        81.34117126464844,
+        81.34117126464844,
+        81.34117126464844
+      ]
+    },
+    {
+      "name": "ramp-fs-05",
+      "file": "ramp-fs-05.png",
+      "sha256": "9f0456aee8717e179282db5744e2c6c480cb5e0e9ebf86fc2afda91c79e51118",
+      "sixel_sha256": "52626bbc8f287bf74bd1849acb6652bfe934cea1b414282186fbd729e2a5afba",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "af7dfbb8f7fc0492ed655955f308c71cb29275326b8580bf008612504ab929a5",
+      "bytes": 22307,
+      "mean_rgb": [
+        81.39564514160156,
+        81.39564514160156,
+        81.39564514160156
+      ]
+    },
+    {
+      "name": "ramp-serp-0",
+      "file": "ramp-serp-0.png",
+      "sha256": "36bf20922c494eaf45641606475398aecac69ece5c08ddea1012af000b44d199",
+      "sixel_sha256": "7672fda1ac5a08af05dc09668bd84d99654fbcc06c9d7529a5edbe529a39ac1b",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "8ae5b619c9ba4d909400facf29cf1400b37e56bc989cbc54800e6f801af091e4",
+      "bytes": 22303,
+      "mean_rgb": [
+        81.27113342285156,
+        81.27113342285156,
+        81.27113342285156
+      ]
+    },
+    {
+      "name": "ramp-serp-05",
+      "file": "ramp-serp-05.png",
+      "sha256": "368b4f44e982518faab815cba69407954d88ac184183173e1b4145262aaace9f",
+      "sixel_sha256": "feb491190a8365a974a47d8e2da9251ce68f7a5ba770b83a20fd01ba71412df9",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "serpentine",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "2e6f5fd8029256a99bde62f8979b2c5bfeba55acc6a850caf151d520b59feb10",
+      "bytes": 22308,
+      "mean_rgb": [
+        81.35673522949219,
+        81.35673522949219,
+        81.35673522949219
+      ]
+    },
+    {
+      "name": "photo-16-fs-0",
+      "file": "photo-16-fs-0.png",
+      "sha256": "099a74fde868d6bf0032b0a5d1fbbb150da035d4c47e0d802a3c2f308e9b90bb",
+      "sixel_sha256": "356378559ad9d676bb4e4a65a49d2df1eb74bdfe30825c1e44fc4f09ec534543",
+      "palette_sha256": "a8745d62d91cd44c19c6321d5cc7614ae1d1f060cb5ba00647bff7419842b853",
+      "scan": "raster",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "eca7009b4d0bdb793cdd9931d64b50e5fd0d68b19d687062a7e81f3e1546aa16",
+      "bytes": 136393,
+      "mean_rgb": [
+        105.71423703703704,
+        98.15042962962963,
+        88.70886296296297
+      ]
+    },
+    {
+      "name": "photo-16-fs-05",
+      "file": "photo-16-fs-05.png",
+      "sha256": "b3434873515e184eac7e5c0311083d168664795464eb10319dbd19181a06eeae",
+      "sixel_sha256": "2578f616acf39fdc68e5013e94e11428ac0bfff25cec7d41a1719e5d992775ba",
+      "palette_sha256": "a8745d62d91cd44c19c6321d5cc7614ae1d1f060cb5ba00647bff7419842b853",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "7bdad6497baecf23f0a67a45bb39d4e051c18dd3e2ad5bd14bcb4d3dd92c448e",
+      "bytes": 138411,
+      "mean_rgb": [
+        105.68842962962962,
+        98.09952592592593,
+        88.68790370370371
+      ]
+    },
+    {
+      "name": "photo-16-serp-0",
+      "file": "photo-16-serp-0.png",
+      "sha256": "54271c15fea18051bcb8f42b1d29a268388f73bd1f32e4407e7c2a7b8997a640",
+      "sixel_sha256": "a689aca3e6e488c36bfba2b4a1a5db2db8fea31e8dcac914ae598ab986ee1670",
+      "palette_sha256": "a8745d62d91cd44c19c6321d5cc7614ae1d1f060cb5ba00647bff7419842b853",
+      "scan": "serpentine",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "4caeb78612b2085bd8f8be898c0cd7c53970fbaf2329cbfc8788bf3f05bbaa9f",
+      "bytes": 136856,
+      "mean_rgb": [
+        105.70766296296296,
+        98.1477925925926,
+        88.715
+      ]
+    },
+    {
+      "name": "photo-16-serp-05",
+      "file": "photo-16-serp-05.png",
+      "sha256": "86ee6c20b33717b51d52c5844c258d73267193f11fa9a3cb3bcec66b06ac1492",
+      "sixel_sha256": "a465787e7c93d30e883d3de5a867f857a114840277e765ce760e8a605daf9a0b",
+      "palette_sha256": "a8745d62d91cd44c19c6321d5cc7614ae1d1f060cb5ba00647bff7419842b853",
+      "scan": "serpentine",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "499e7fe4a505f86ef83f80fdce02bcac73741303d10ceb071bd893cd1880ecc0",
+      "bytes": 138547,
+      "mean_rgb": [
+        105.68335925925926,
+        98.09598888888888,
+        88.69346666666667
+      ]
+    },
+    {
+      "name": "photo-256-fs-0",
+      "file": "photo-256-fs-0.png",
+      "sha256": "417d635df0f9eaa129f7ef1a6bcc10051259515e0117fb05d8bf28abd652f9c8",
+      "sixel_sha256": "bf3d40c3593f442af6623582e0b2751b0ededb1635fed878f8277253ac52ba6e",
+      "palette_sha256": "8f00b96f69340bf244fa8d66141d88306a596e310456c0c11e476ba6447eaee4",
+      "scan": "raster",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "7281844df968b9a3880b624f68e446123343bcbce6db894ddf505a7a490a5eaf",
+      "bytes": 209826,
+      "mean_rgb": [
+        104.77245925925926,
+        97.08585925925927,
+        86.81748888888889
+      ]
+    },
+    {
+      "name": "photo-256-fs-05",
+      "file": "photo-256-fs-05.png",
+      "sha256": "b69d231efbee74a46f9e4a0493b19527d8f61d1c3bb2066438600d75271edc7d",
+      "sixel_sha256": "1b6525d908126e043c5d9c92dd5a005c204258fc82b9710cfa5e42e03a49be87",
+      "palette_sha256": "8f00b96f69340bf244fa8d66141d88306a596e310456c0c11e476ba6447eaee4",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "80cb87de3af53932a15e0f098bd4271bab5365c8dce20c15cf41acada9d59cb4",
+      "bytes": 228946,
+      "mean_rgb": [
+        104.78553333333333,
+        97.11630370370371,
+        86.83882962962963
+      ]
+    },
+    {
+      "name": "photo-256-serp-0",
+      "file": "photo-256-serp-0.png",
+      "sha256": "2f01ed416e3303404ab0cc57ace4bb31e163489e2250fc1c0ec7668e0637e218",
+      "sixel_sha256": "fcea6ee5960ab5094992a528df4f01694c9523daaf6aea113ed3d50fed230fc1",
+      "palette_sha256": "8f00b96f69340bf244fa8d66141d88306a596e310456c0c11e476ba6447eaee4",
+      "scan": "serpentine",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "1c9b7f4f62b35695c2845462ac00ea807385722df0d172d4cf6c515ccd2c5aea",
+      "bytes": 210986,
+      "mean_rgb": [
+        104.76496666666667,
+        97.08507037037037,
+        86.81876666666666
+      ]
+    },
+    {
+      "name": "photo-256-serp-05",
+      "file": "photo-256-serp-05.png",
+      "sha256": "e083b0289ddd642b9b423ac6b0c59ae0941cc88afb40f388e906c5b766e1bb92",
+      "sixel_sha256": "a69ae9df90e0bb23c35355ca9144afd7dfaf78834ae2f326f449a2f40e9b5f7f",
+      "palette_sha256": "8f00b96f69340bf244fa8d66141d88306a596e310456c0c11e476ba6447eaee4",
+      "scan": "serpentine",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "e5ece4bcfe4a37c55ded4e06860fa57f063da6c7f37f36ddfc2ef81ef84de51c",
+      "bytes": 230189,
+      "mean_rgb": [
+        104.7827074074074,
+        97.11758148148148,
+        86.83927407407407
+      ]
+    },
+    {
+      "name": "color-16-fs-0",
+      "file": "color-16-fs-0.png",
+      "sha256": "087374c333fc634845532b23e5acdfa7161664464a95822533c9b6afe91eeb57",
+      "sixel_sha256": "fd832af17ea92612208319a20e4a670d1dfe4245480a5da27e90bdc836d0d88e",
+      "palette_sha256": "4069e4e8b154085c4f9b554d69824095beeadb1c04e361497b59c7c87f312f62",
+      "scan": "raster",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "a168bebfa2bdb799041f33fb1a9677e02ed267c1e9e8d758cf31c48a9a54d99f",
+      "bytes": 118186,
+      "mean_rgb": [
+        128.43905555555557,
+        128.42932962962962,
+        167.08347407407408
+      ]
+    },
+    {
+      "name": "color-16-fs-05",
+      "file": "color-16-fs-05.png",
+      "sha256": "af83ad20311ee1b19379e7cf27515220bec61fc80915ad9e7744c2800f33bcc5",
+      "sixel_sha256": "1de7b9ffa777fc3a453e48fa122b9c34291cf21b55f938743e06bf5325779c92",
+      "palette_sha256": "4069e4e8b154085c4f9b554d69824095beeadb1c04e361497b59c7c87f312f62",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "66932814a38ab1af0d59ab8a438bc57e7d9ab68b5866cade61f74819ca4421e4",
+      "bytes": 120975,
+      "mean_rgb": [
+        128.41637037037037,
+        128.44063333333332,
+        167.0858851851852
+      ]
+    },
+    {
+      "name": "color-16-serp-0",
+      "file": "color-16-serp-0.png",
+      "sha256": "d3f258aeb4b51d617619575faa2624c2a146a0704c926734e240c6a28688eca8",
+      "sixel_sha256": "4182d5a50fa0bcfd0520f37f19b9c19e5ec5f9bf6df6983b3d7f6b49cb81891f",
+      "palette_sha256": "4069e4e8b154085c4f9b554d69824095beeadb1c04e361497b59c7c87f312f62",
+      "scan": "serpentine",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "557078bc9196a1f7d53e78f5ee94f22701b663dc8bad1684d7548052b278918d",
+      "bytes": 118134,
+      "mean_rgb": [
+        128.43896296296296,
+        128.43980740740741,
+        167.09817777777778
+      ]
+    },
+    {
+      "name": "color-16-serp-05",
+      "file": "color-16-serp-05.png",
+      "sha256": "24303d0262e4c2e51ce6f3e398a8f7a712e6e468e9629f304d8762e6e9a93313",
+      "sixel_sha256": "444a99847487bd82a50f31db789a3118a55be80130cc2d5753465f8d2c9e76c6",
+      "palette_sha256": "4069e4e8b154085c4f9b554d69824095beeadb1c04e361497b59c7c87f312f62",
+      "scan": "serpentine",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "8546012eddafe12f088d7df31cc02fdab574f7ef068c13e3c8102a27db64aa81",
+      "bytes": 120839,
+      "mean_rgb": [
+        128.40086666666667,
+        128.45364444444445,
+        167.09496296296297
+      ]
+    },
+    {
+      "name": "color-256-fs-0",
+      "file": "color-256-fs-0.png",
+      "sha256": "94f638417446b80692e4815c8d60263da7eca595cbf00162d2ef7ef4b4e02f7d",
+      "sixel_sha256": "67820ff21afaaf489b0976af4f83a339e4bce6a0c0a7378eb08ad34343ee9fb0",
+      "palette_sha256": "6f0b2cf3695e3caa119f61e06b8264e55ee16b3b367c8fefde2dc29808061de1",
+      "scan": "raster",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "641dbdb096b080322cb8f1301fb3ce40341d588054f05ec2c9bf3e4c9e52eb8c",
+      "bytes": 153935,
+      "mean_rgb": [
+        128.94792222222222,
+        128.81683333333334,
+        171.00796666666668
+      ]
+    },
+    {
+      "name": "color-256-fs-05",
+      "file": "color-256-fs-05.png",
+      "sha256": "a7e532ee27e7d894c3015bede881dabc06fb9c60843fff69850c9c587a16c33b",
+      "sixel_sha256": "785c331e03c90d88889badcb3fbc33d785ba472a097ac23a216aab05f50da200",
+      "palette_sha256": "6f0b2cf3695e3caa119f61e06b8264e55ee16b3b367c8fefde2dc29808061de1",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "7fae7f72b91d096a814e5ce5783eed938425f67428c8b4e5c71da1bb39afdd6f",
+      "bytes": 155850,
+      "mean_rgb": [
+        128.90265555555555,
+        128.78179259259258,
+        170.96616296296295
+      ]
+    },
+    {
+      "name": "color-256-serp-0",
+      "file": "color-256-serp-0.png",
+      "sha256": "2aa2e26149fc851f3d96fd62b6cf9e6cddf941878ac36565b5c7e0d46aa27390",
+      "sixel_sha256": "379044149a6722bcb206da6542f28d5627d317b5cfcc664ff3239f518e5762f1",
+      "palette_sha256": "6f0b2cf3695e3caa119f61e06b8264e55ee16b3b367c8fefde2dc29808061de1",
+      "scan": "serpentine",
+      "amount": 0,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "ea7c9e2daa0db428fc90c73110be86278eb67fcb92f82d3c8f8216ae7c25b702",
+      "bytes": 154161,
+      "mean_rgb": [
+        128.9253148148148,
+        128.82227777777777,
+        171.00086666666667
+      ]
+    },
+    {
+      "name": "color-256-serp-05",
+      "file": "color-256-serp-05.png",
+      "sha256": "43ccaa926b5e34ed5a14dd841ae1d6edb8517325ee9e4fce0ad41ad65c502696",
+      "sixel_sha256": "fcfaba01041e0c36db9d4b098bceaa691c955c929644c869822bedff967a1059",
+      "palette_sha256": "6f0b2cf3695e3caa119f61e06b8264e55ee16b3b367c8fefde2dc29808061de1",
+      "scan": "serpentine",
+      "amount": 0.5,
+      "seed": 0,
+      "size": [
+        600,
+        450
+      ],
+      "pixel_sha256": "a92b3d5b89dfb1ca4de433617d590bc2becfd6655627de4e49097880e5459621",
+      "bytes": 156271,
+      "mean_rgb": [
+        128.87716666666665,
+        128.7830925925926,
+        170.95553333333334
+      ]
+    },
+    {
+      "name": "g64-fs-025",
+      "file": "g64-fs-025.png",
+      "sha256": "e9ecca7b908b5016c21d26ee0d20a584df1b0a790057d4838b3e48b398d1e782",
+      "sixel_sha256": "a2332655c282f51f57ed7d00a8aa82b2c5aa7526e675b09ba8fb6b5af8fe2ce0",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.25,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "fd1ce3bf1412a258b2304db14858c724c6e4981027be5d45057a667b871c04ff",
+      "bytes": 22303,
+      "mean_rgb": [
+        64.808349609375,
+        64.808349609375,
+        64.808349609375
+      ]
+    },
+    {
+      "name": "g64-fs-1",
+      "file": "g64-fs-1.png",
+      "sha256": "d54c887363b494a5e733841c5bbf6100b41dc98221b6e6c52248674f3bbc10b3",
+      "sixel_sha256": "480de781e0d94c5d8950537b919714a19225db866adc71146867647b5d006001",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 1,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "fbd4e7e054e3586b524c699f89f61a52fed66e37ad8d3b6f9bfbc3e9a459ff0e",
+      "bytes": 22281,
+      "mean_rgb": [
+        65.3375244140625,
+        65.3375244140625,
+        65.3375244140625
+      ]
+    },
+    {
+      "name": "g64-fs-05-seed1",
+      "file": "g64-fs-05-seed1.png",
+      "sha256": "3ec8322d373d65b959e5226e5a0600eb9923982d3b2d52e00d9d03fbf48ff597",
+      "sixel_sha256": "0ab5b0de0cf9a2ee67e63a0c491293be247b28c716d9b2d6f66fb411560103a0",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 1,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "8b2a81f6f481818c75fff65f2ee404b4107ed31de2bc90ab219da4a84f887757",
+      "bytes": 22288,
+      "mean_rgb": [
+        64.90562438964844,
+        64.90562438964844,
+        64.90562438964844
+      ]
+    },
+    {
+      "name": "g64-fs-05-seed2",
+      "file": "g64-fs-05-seed2.png",
+      "sha256": "53a39fbcd1ab15e068e070cf94aea377631f706ddce5500805ab19bcc8897c50",
+      "sixel_sha256": "8a680e9a1b3b50a040743f03d9c4ee283baf4886466775b8f9cc01e8bfc44806",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 2,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "4a0606448c5bdfffab3fe725d0fe0769e5c7a661592ac70cbbd431cf0dab6409",
+      "bytes": 22282,
+      "mean_rgb": [
+        64.92507934570312,
+        64.92507934570312,
+        64.92507934570312
+      ]
+    },
+    {
+      "name": "g128-fs-025",
+      "file": "g128-fs-025.png",
+      "sha256": "93cb6b47adb63eee29e6da1bbaf9de346df700ddb7e16da52460795063422765",
+      "sixel_sha256": "5b4a46a6e0420aefa5d1a6b636e3e471b347111c12c58e8bee372cdcd7286b2e",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.25,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "40132e5aab1f4e7e9f66526a7a6b1babdd1e0ca7e7f6ae4b2ef1ed601d01b899",
+      "bytes": 22316,
+      "mean_rgb": [
+        129.98245239257812,
+        129.98245239257812,
+        129.98245239257812
+      ]
+    },
+    {
+      "name": "g128-fs-1",
+      "file": "g128-fs-1.png",
+      "sha256": "49a328e55623ed920a6f51c1df7497fc255605e9c7dbd5a4a46fd00de0b976c2",
+      "sixel_sha256": "b8ebd1068459ee795fd45acd55f3b87bdd99389de894b89a454355d6813774bd",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 1,
+      "seed": 0,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "83334b22f64df7351e30ddb5bcda8344f8d80ed3179568a7300c077ac210f496",
+      "bytes": 22274,
+      "mean_rgb": [
+        130.01358032226562,
+        130.01358032226562,
+        130.01358032226562
+      ]
+    },
+    {
+      "name": "g128-fs-05-seed1",
+      "file": "g128-fs-05-seed1.png",
+      "sha256": "43d520b254de4956519277aa3fdfc8907cf0f2ae01e6ec48d9c8afb14526ef47",
+      "sixel_sha256": "e28a23614b372cbe067bee622190d8cd72eb40b0ca76dd39fa820543ecc413be",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 1,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "8b2f0a013bf8dc768271df9a2bf62101ed7f11895378d41bb80453d9ba72230e",
+      "bytes": 22298,
+      "mean_rgb": [
+        129.99412536621094,
+        129.99412536621094,
+        129.99412536621094
+      ]
+    },
+    {
+      "name": "g128-fs-05-seed2",
+      "file": "g128-fs-05-seed2.png",
+      "sha256": "cabfa3d34eb947d1b2159b15ee2c403a22329b2f21f2551c7c133caa32245e01",
+      "sixel_sha256": "a52586058e66a7a5fed5fc2ac10bf25131552952a1bf512d671a7bf2378c9ba0",
+      "palette_sha256": "9fed6f5211ef1cb954628d55b3201cd33cb9ec5bfff45de38ba66f31ccd36312",
+      "scan": "raster",
+      "amount": 0.5,
+      "seed": 2,
+      "size": [
+        256,
+        256
+      ],
+      "pixel_sha256": "147a70a62ba74dd5ce62ae4770b911a49317e3f9644526aa40bfce6025f75002",
+      "bytes": 22308,
+      "mean_rgb": [
+        130.0019073486328,
+        130.0019073486328,
+        130.0019073486328
+      ]
+    }
+  ],
+  "sheets": [
+    {
+      "file": "01-flat-native.png",
+      "size": [
+        1112,
+        1402
+      ],
+      "zoom": 1,
+      "exact_panels": 16,
+      "sha256": "08474ed79d1d54b924ceaa73510cd35616a517dde24bb1147e3088b8e43d8042"
+    },
+    {
+      "file": "02-flat-4x.png",
+      "size": [
+        1112,
+        1402
+      ],
+      "zoom": 4,
+      "exact_panels": 16,
+      "sha256": "d7c01e4bf9b797b63cd17f4d9da8c9fde5ad2358c1ae8e9ec4d1a4affbf289a7"
+    },
+    {
+      "file": "03-gray-ramp.png",
+      "size": [
+        1384,
+        472
+      ],
+      "zoom": 1,
+      "exact_panels": 5,
+      "sha256": "9f83b6eecd9fdd10a71ded8b9697a64736f097ca85a6ac20fbda296e8cb14584"
+    },
+    {
+      "file": "05-photo-16-2x.png",
+      "size": [
+        1384,
+        1092
+      ],
+      "zoom": 2,
+      "exact_panels": 15,
+      "sha256": "f7fd5f4120f7be8ea701868026bf86d56865f8e2b99c456405d313da1798ed6f"
+    },
+    {
+      "file": "06-color-16-2x.png",
+      "size": [
+        1384,
+        472
+      ],
+      "zoom": 2,
+      "exact_panels": 5,
+      "sha256": "672addf0db00f0a1cfc1d55d33dc15c49d5061564a8f56582a89484e3eda3bde"
+    },
+    {
+      "file": "05-photo-256-2x.png",
+      "size": [
+        1384,
+        1092
+      ],
+      "zoom": 2,
+      "exact_panels": 15,
+      "sha256": "8cd2c1761231a2fe69f5505d6f75b39c19a6e6a5b7609da5dfbde87fd72d5a39"
+    },
+    {
+      "file": "06-color-256-2x.png",
+      "size": [
+        1384,
+        472
+      ],
+      "zoom": 2,
+      "exact_panels": 5,
+      "sha256": "0fda1627e8edce0c5efcfd71cbd59f26776572c01b996502aeb6427b188cb1df"
+    },
+    {
+      "file": "07-strength-4x.png",
+      "size": [
+        1112,
+        782
+      ],
+      "zoom": 4,
+      "exact_panels": 8,
+      "sha256": "3ebf623cece3e6c14be3aeb8477f05bf8cebfc8c6d9baabc8d48ea74f89508cf"
+    },
+    {
+      "file": "08-seeds-4x.png",
+      "size": [
+        840,
+        782
+      ],
+      "zoom": 4,
+      "exact_panels": 6,
+      "sha256": "d324e7f7abb4fe5b5f6d1f078592d4c6b2e7d190f3aa0343c365f2d0d53b1545"
+    }
+  ],
+  "libraries": [
+    {
+      "file": "src/.libs/libsixel.1.dylib",
+      "sha256": "680192593962f0e1c55540466d8db1ab3f3790cbf54ae4c9312e375f042724f9"
+    },
+    {
+      "file": "src/.libs/libsixel.a",
+      "sha256": "7c49ce2faf732e827a5f1d1be7f41c5f0f9a90e156e9eff1ff9c6ce9823034db"
+    }
+  ],
+  "photo_crops": [
+    [
+      "Background",
+      [
+        48,
+        24,
+        176,
+        152
+      ]
+    ],
+    [
+      "Feather shading",
+      [
+        432,
+        288,
+        560,
+        416
+      ]
+    ],
+    [
+      "Eye and contour",
+      [
+        320,
+        144,
+        448,
+        272
+      ]
+    ]
+  ],
+  "spectrum": {
+    "size": 256,
+    "window": "none",
+    "mean_subtracted": true,
+    "normalization": "none",
+    "dc_power": 0,
+    "radial_bin": "floor(hypot(fftfreq(y), fftfreq(x)) * 256 + 0.5)",
+    "peak_ratio": "max(non-DC radial means) / mean(non-DC radial means)",
+    "low_percent": "100 * sum(power[radius < sqrt(g/255)]) / sum(power)",
+    "half_tone_limit": "g=128 cutoff is outside the grid; share saturates",
+    "summary_rows": 16,
+    "curve_rows": 2912
+  }
+}

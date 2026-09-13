@@ -954,6 +954,77 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/functionality/snap-policies/measurements/snap-policy-speed.csv \
 	docs/functionality/snap-policies/measurements/snap-policy-speed.png \
 	docs/functionality/dithering.md \
+	docs/functionality/dither-policies/perturb.md \
+	docs/functionality/dither-policies/perturb/01-flat-native.png \
+	docs/functionality/dither-policies/perturb/02-flat-4x.png \
+	docs/functionality/dither-policies/perturb/03-gray-ramp.png \
+	docs/functionality/dither-policies/perturb/04-photo-crop-locations.png \
+	docs/functionality/dither-policies/perturb/05-photo-16-2x.png \
+	docs/functionality/dither-policies/perturb/05-photo-256-2x.png \
+	docs/functionality/dither-policies/perturb/06-color-16-2x.png \
+	docs/functionality/dither-policies/perturb/06-color-256-2x.png \
+	docs/functionality/dither-policies/perturb/07-strength-4x.png \
+	docs/functionality/dither-policies/perturb/08-seeds-4x.png \
+	docs/functionality/dither-policies/perturb/bw.pal \
+	docs/functionality/dither-policies/perturb/color-16-fs-0.png \
+	docs/functionality/dither-policies/perturb/color-16-fs-05.png \
+	docs/functionality/dither-policies/perturb/color-16-serp-0.png \
+	docs/functionality/dither-policies/perturb/color-16-serp-05.png \
+	docs/functionality/dither-policies/perturb/color-16.pal \
+	docs/functionality/dither-policies/perturb/color-256-fs-0.png \
+	docs/functionality/dither-policies/perturb/color-256-fs-05.png \
+	docs/functionality/dither-policies/perturb/color-256-serp-0.png \
+	docs/functionality/dither-policies/perturb/color-256-serp-05.png \
+	docs/functionality/dither-policies/perturb/color-256.pal \
+	docs/functionality/dither-policies/perturb/color-source.png \
+	docs/functionality/dither-policies/perturb/g128-fs-0.png \
+	docs/functionality/dither-policies/perturb/g128-fs-025.png \
+	docs/functionality/dither-policies/perturb/g128-fs-05-seed1.png \
+	docs/functionality/dither-policies/perturb/g128-fs-05-seed2.png \
+	docs/functionality/dither-policies/perturb/g128-fs-05.png \
+	docs/functionality/dither-policies/perturb/g128-fs-1.png \
+	docs/functionality/dither-policies/perturb/g128-serp-0.png \
+	docs/functionality/dither-policies/perturb/g128-serp-05.png \
+	docs/functionality/dither-policies/perturb/g128-source.png \
+	docs/functionality/dither-policies/perturb/g32-fs-0.png \
+	docs/functionality/dither-policies/perturb/g32-fs-05.png \
+	docs/functionality/dither-policies/perturb/g32-serp-0.png \
+	docs/functionality/dither-policies/perturb/g32-serp-05.png \
+	docs/functionality/dither-policies/perturb/g32-source.png \
+	docs/functionality/dither-policies/perturb/g64-fs-0.png \
+	docs/functionality/dither-policies/perturb/g64-fs-025.png \
+	docs/functionality/dither-policies/perturb/g64-fs-05-seed1.png \
+	docs/functionality/dither-policies/perturb/g64-fs-05-seed2.png \
+	docs/functionality/dither-policies/perturb/g64-fs-05.png \
+	docs/functionality/dither-policies/perturb/g64-fs-1.png \
+	docs/functionality/dither-policies/perturb/g64-serp-0.png \
+	docs/functionality/dither-policies/perturb/g64-serp-05.png \
+	docs/functionality/dither-policies/perturb/g64-source.png \
+	docs/functionality/dither-policies/perturb/g85-fs-0.png \
+	docs/functionality/dither-policies/perturb/g85-fs-05.png \
+	docs/functionality/dither-policies/perturb/g85-serp-0.png \
+	docs/functionality/dither-policies/perturb/g85-serp-05.png \
+	docs/functionality/dither-policies/perturb/g85-source.png \
+	docs/functionality/dither-policies/perturb/manifest.json \
+	docs/functionality/dither-policies/perturb/measurements.csv \
+	docs/functionality/dither-policies/perturb/photo-16-fs-0.png \
+	docs/functionality/dither-policies/perturb/photo-16-fs-05.png \
+	docs/functionality/dither-policies/perturb/photo-16-serp-0.png \
+	docs/functionality/dither-policies/perturb/photo-16-serp-05.png \
+	docs/functionality/dither-policies/perturb/photo-16.pal \
+	docs/functionality/dither-policies/perturb/photo-256-fs-0.png \
+	docs/functionality/dither-policies/perturb/photo-256-fs-05.png \
+	docs/functionality/dither-policies/perturb/photo-256-serp-0.png \
+	docs/functionality/dither-policies/perturb/photo-256-serp-05.png \
+	docs/functionality/dither-policies/perturb/photo-256.pal \
+	docs/functionality/dither-policies/perturb/photo-source.png \
+	docs/functionality/dither-policies/perturb/ramp-fs-0.png \
+	docs/functionality/dither-policies/perturb/ramp-fs-05.png \
+	docs/functionality/dither-policies/perturb/ramp-serp-0.png \
+	docs/functionality/dither-policies/perturb/ramp-serp-05.png \
+	docs/functionality/dither-policies/perturb/ramp-source.png \
+	docs/functionality/dither-policies/perturb/rapsd-curves.csv \
+	docs/functionality/dither-policies/perturb/rapsd.png \
 	docs/functionality/dither-policies/measurements/dither-policy-delta-e00.png \
 	docs/functionality/dither-policies/measurements/dither-policy-ms-ssim.png \
 	docs/functionality/dither-policies/measurements/dither-policy-quality.csv \
@@ -1136,6 +1207,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/plot_clustering_colorspace_measurements.py \
 	tools/plot_cover_policy_figures.py \
 	tools/plot_dither_policy_measurements.py \
+	tools/plot_diffusion_perturb_measurements.py \
 	tools/plot_decoding_pipeline_figures.py \
 	tools/plot_encoder_execution_map_figures.py \
 	tools/plot_encoding_pipeline_figures.py \
