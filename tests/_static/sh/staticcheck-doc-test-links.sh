@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify reciprocal links between enforced policy documents and owning tests.
+# Policy: docs/loader/png-color-metadata.md
 # Policy: docs/AGENTS.md
 # Policy: docs/testing/guide.md
 # Policy: docs/testing/staticcheck.md
@@ -164,6 +165,14 @@ while IFS='|' read -r doc_rel test_rel; do
     printf '%s: Policy reference is missing its document link to %s\n' \
         "$test_rel" "$doc_rel" >> "$errors"
 done < "$missing_doc_links"
+
+python_bin=${PYTHON_STATICCHECK:-python3}
+(CDPATH='' cd -- "$src_root" &&
+    "$python_bin" tools/generate_png_cms_matrix.py --check) \
+    >"$tmpdir/png-cms-check" 2>&1 || {
+    printf '%s\n' "PNG CMS matrix documentation is stale or invalid" >> "$errors"
+    cat "$tmpdir/png-cms-check" >> "$errors"
+}
 
 test ! -s "$errors" || {
     echo "not ok 1 - policy document and test links are reciprocal"

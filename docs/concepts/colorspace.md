@@ -255,7 +255,7 @@ The global selection applies to the builtin, libpng, libjpeg, libwebp, and libti
 
 ### Source interpretation and internal target
 
-When an enabled loader recognizes usable color metadata, it first resolves the file's source interpretation and converts profile-managed samples to the project's known RGB basis. It then converts the frame to the requested internal CMS target. Source-declaration rules belong to the format: the [common PNG precedence](../loader/color-management.md#png-metadata-precedence-and-colorsync-compatibility), including builtin PNG, preserves ColorSync-compatible handling of conflicting declarations. Supported profile classes, validation, and malformed-profile fallback still depend on the decoder and CMS integration; a shared precedence rule does not imply identical metadata acceptance.
+When an enabled loader recognizes usable color metadata, it first resolves the file's source interpretation and converts profile-managed samples to the project's known RGB basis. It then converts the frame to the requested internal CMS target. Source-declaration rules belong to the format: the [common PNG precedence](../loader/png-color-metadata.md), including builtin PNG, preserves ColorSync-compatible handling of conflicting declarations. Supported profile classes, validation, and malformed-profile fallback still depend on the decoder and CMS integration; a shared precedence rule does not imply identical metadata acceptance.
 
 The common loader suboption is:
 

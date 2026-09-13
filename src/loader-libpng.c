@@ -636,7 +636,7 @@ png_source_color_chunks(unsigned char const *buffer, size_t size)
  * Convert source metadata to linear sRGB without touching alpha. Preserve the
  * shared ColorSync compatibility rule: iCCP+sRGB+cHRM uses sRGB; iCCP+sRGB
  * without cHRM still tries the validated ICC profile. See the PNG precedence
- * section in docs/loader/color-management.md before changing this decision.
+ * section in docs/loader/png-color-metadata.md before changing this decision.
  * An unavailable transform falls back to supported PNG metadata.
  */
 static int

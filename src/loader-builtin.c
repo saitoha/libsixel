@@ -2232,6 +2232,7 @@ typedef struct sixel_builtin_apng_canvas {
     unsigned char *backup;
     int width;
     int height;
+    int enable_cms;
 } sixel_builtin_apng_canvas_t;
 
 typedef struct sixel_builtin_apng_state {
@@ -2676,9 +2677,12 @@ sixel_builtin_apng_emit_frame(
     size_t png_size;
     unsigned char *png_data;
     unsigned char *subframe;
+    unsigned char *rgb_pixels;
     unsigned char *emitted;
     unsigned char ihdr_copy[13];
     size_t canvas_bytes;
+    size_t pixel_count;
+    size_t index;
     int width;
     int height;
     int depth;
@@ -2689,6 +2693,7 @@ sixel_builtin_apng_emit_frame(
     stb_context = (stbi__context){ 0 };
     png_data = NULL;
     subframe = NULL;
+    rgb_pixels = NULL;
     emitted = NULL;
     width = 0;
     height = 0;
@@ -2794,6 +2799,35 @@ sixel_builtin_apng_emit_frame(
         goto end;
     }
 
+    /*
+     * stb expands the samples but does not evaluate the shared PNG color
+     * declarations. Normalize each rectangle to sRGB before storing it in
+     * the gamma RGBA8 canvas, using the same source choice as static PNG.
+     * Pack only RGB so neither the ICC transform nor its fallback changes
+     * coverage. The canvas remains byte based; this is not float decoding.
+     */
+    if (canvas->enable_cms) {
+        pixel_count = (size_t)width * (size_t)height;
+        rgb_pixels = (unsigned char *)sixel_allocator_malloc(
+            allocator, pixel_count * 3u);
+        if (rgb_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        for (index = 0u; index < pixel_count; ++index) {
+            memcpy(rgb_pixels + index * 3u, subframe + index * 4u, 3u);
+        }
+        sixel_frompng_apply_colorspace_fallback(rgb_pixels,
+                                                width,
+                                                height,
+                                                png_data,
+                                                png_size,
+                                                allocator);
+        for (index = 0u; index < pixel_count; ++index) {
+            memcpy(subframe + index * 4u, rgb_pixels + index * 3u, 3u);
+        }
+    }
+
     canvas_bytes = (size_t)canvas->width * (size_t)canvas->height * 4;
     if (control->dispose_op == 2) {
         memcpy(canvas->backup, canvas->pixels, canvas_bytes);
@@ -2867,6 +2901,7 @@ dispose:
 
 end:
     sixel_allocator_free(allocator, png_data);
+    sixel_allocator_free(allocator, rgb_pixels);
     stbi_free(subframe);
     sixel_allocator_free(allocator, emitted);
     sixel_frame_unref(frame);
@@ -3551,6 +3586,7 @@ sixel_builtin_load_apng_frames(
     memset(&state, 0, sizeof(state));
     memset(&control, 0, sizeof(control));
     memset(&canvas, 0, sizeof(canvas));
+    canvas.enable_cms = enable_cms;
     memset(&runtime, 0, sizeof(runtime));
     apng_start_frame_no = start_frame_no;
     stop_decode = 0;

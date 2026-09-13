@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/png-color-metadata.md
 # TAP test: libpng loader colormgmt parity for rgb/img_rgb_icc0_srgb0_chrm1_gama0.png
 
 set -eux

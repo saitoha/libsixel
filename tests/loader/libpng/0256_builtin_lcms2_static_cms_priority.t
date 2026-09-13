@@ -1,6 +1,5 @@
 #!/bin/sh
-# Policy: docs/loader/color-management.md
-# Policy: docs/loader/libpng.md
+# Policy: docs/loader/png-color-metadata.md
 # Verify ColorSync-compatible metadata selection with constant RGBA samples.
 set -eux
 

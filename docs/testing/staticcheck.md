@@ -84,6 +84,8 @@ The umbrella target remains the completion criterion because a focused check doe
 
 A staticcheck should fail with enough normalized evidence to locate the divergent representation. It must not silently rewrite committed outputs: automatic correction can be a separate developer command, but the verification target remains read-only with respect to tracked repository state.
 
+The documentation-link check also validates the [generated PNG CMS matrix](../loader/png-color-metadata.md#maintaining-the-tables) against its input chunks, committed reference bytes, test ownership, and recorded quality floors. Adding or remapping a matrix test requires reviewing and regenerating that shared table.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
