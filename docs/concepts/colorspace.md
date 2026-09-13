@@ -180,7 +180,7 @@ The mathematical role of each accepted space and the controlled quality, runtime
 
 ### `-U`: serialized palette coordinates
 
-`-U` does not rerun palette generation or palette lookup. It converts the final palette entries from the frame's working color space to the requested output RGB space before the encoder writes SIXEL color definitions.
+In the ordinary palette encoder, `-U` does not rerun palette generation or palette lookup. It converts the final palette entries from the frame's working color space to the requested output RGB space before the encoder writes SIXEL color definitions. [Output color space](../functionality/output-colorspace.md) explains the three representations, rounding, fixed-palette preparation differences, and the current high-color path's missing output conversion.
 
 The same boundary applies when `-M` writes ACT, PAL, RIFF PAL, or GPL output. These formats receive the `-U` representation, not the internal `-W` coordinates. In particular, the default `-Ugamma` converts a perceptual working palette back to gamma-encoded RGB before it is stored in a reusable palette file.
 

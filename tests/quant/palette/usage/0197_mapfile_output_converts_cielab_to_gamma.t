@@ -2,6 +2,7 @@
 # Verify -M converts a CIELAB working palette to gamma RGB for export.
 # Policy: docs/functionality/external-palettes.md
 # Policy: docs/functionality/working-colorspace.md
+# Policy: docs/functionality/output-colorspace.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify working/output colorspaces do not reinterpret built-in palettes.
+# Policy: docs/functionality/output-colorspace.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
