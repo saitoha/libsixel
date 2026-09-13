@@ -9,10 +9,15 @@ set -v
 
 input="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_trace_ignored_tags.png"
 
+# Solaris sh traces the stdout redirection after applying stderr capture, so
+# its own xtrace text would be mistaken for a CMS diagnostic.
+set +x
 message=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=builtin -L "builtin!" -m MS-SSIM --env SIXEL_TRACE_TOPIC= "$input" "$input" 2>&1 1>/dev/null) || {
+    set -x
     echo "not ok 1 - profiled image must remain loadable"
     exit 0
 }
+set -x
 
 test -z "$message" || {
     echo "not ok 1 - disabled trace must remain quiet"
