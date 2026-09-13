@@ -45,7 +45,7 @@ icc0008_build_mft2_identity(unsigned char *tag, size_t capacity)
     size_t shift;
     int bit;
 
-    clut_points = 1u << input_channels;
+    clut_points = (size_t)1u << input_channels;
     length = 52u +
         (input_channels * 2u +
          clut_points * output_channels +
