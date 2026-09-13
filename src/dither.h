@@ -116,6 +116,11 @@ struct sixel_dither {
     int method_for_rep;             /* method for choosing a color from the box */
     int method_for_diffuse;         /* method for diffusing */
     int method_for_scan;            /* scan order for diffusing */
+    /* Paired FS coefficient perturbation; zero preserves classic weights. */
+    float diffusion_perturb;
+    int diffusion_perturb_override;
+    int diffusion_perturb_seed;
+    int diffusion_perturb_seed_override;
     int dither_parallel_band_overwrap_override; /* explicit overlap flag */
     unsigned int dither_parallel_band_overwrap; /* requested overlap */
     int dither_parallel_band_width_override; /* explicit height flag */

@@ -1221,6 +1221,22 @@ sixel_dither_set_diffusion_scan(
     sixel_dither_t /* in */ *dither, /* dither context object */
     int /* in */ method_for_scan);   /* one of enum methodForScan */
 
+/*
+ * Set paired FS coefficient perturbation (default zero). Other diffusion
+ * methods ignore this setting. Non-finite or out-of-range values, and a
+ * null dither, return SIXEL_BAD_ARGUMENT without changing the setting.
+ */
+SIXELAPI SIXELSTATUS
+sixel_dither_set_diffusion_perturb(
+    sixel_dither_t *dither,
+    float perturb);
+
+/* Set the deterministic coordinate-hash seed (default zero). */
+SIXELAPI SIXELSTATUS
+sixel_dither_set_diffusion_perturb_seed(
+    sixel_dither_t *dither,
+    int seed);
+
 /* get number of palette colors */
 SIXELAPI int
 sixel_dither_get_num_of_palette_colors(

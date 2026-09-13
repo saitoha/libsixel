@@ -503,6 +503,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_ENCODER_DOUBLE" ||
         macro == "SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP" ||
         macro == "SIXEL_REGISTRY_ENCODER_FLOAT" ||
+        macro == "SIXEL_REGISTRY_ENCODER_FLOAT_RANGE" ||
         macro == "SIXEL_REGISTRY_ENCODER_INT" ||
         macro == "SIXEL_REGISTRY_ENCODER_INT_PAIR" ||
         macro == "SIXEL_REGISTRY_ENCODER_MIRROR_CHOICE" ||
@@ -1066,7 +1067,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
             ((fields[2] == "NULL" &&
               (name == "scan" || name == "band_overwrap" ||
                name == "band_width" || name == "threads_max" ||
-               name == "pin_threads")) ||
+               name == "pin_threads" || name == "perturb" ||
+               name == "perturb_seed")) ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_SIERRA/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_A_DITHER/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_X_DITHER/ ||

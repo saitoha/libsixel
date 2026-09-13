@@ -68,6 +68,11 @@ struct sixel_encoder {
     int loader_start_frame_no_set;
     int builtin_palette;
     int method_for_diffuse;
+    /* Paired FS coefficient perturbation; zero preserves classic weights. */
+    float diffusion_perturb;
+    int diffusion_perturb_override;
+    int diffusion_perturb_seed;
+    int diffusion_perturb_seed_override;
     int dither_parallel_band_overwrap_override;
     unsigned int dither_parallel_band_overwrap;
     int dither_parallel_band_width_override;
