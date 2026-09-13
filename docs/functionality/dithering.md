@@ -162,6 +162,8 @@ The lowbias32 coordinate hash uses the absolute image row, horizontal position, 
 
 Zero, including an omitted `perturb`, retains the original arithmetic and output. Only FS applies these settings, including `auto` when the palette-size rule selects FS. Other kernels, positional methods, interframe policies, and GPU paths accept the settings without applying them. The public setters are `sixel_dither_set_diffusion_perturb()` and `sixel_dither_set_diffusion_perturb_seed()`; both return a status, and the amount setter rejects non-finite or out-of-range values without changing the previous setting.
 
+Use perturbation as an opt-in texture adjustment when regular FS patterns are objectionable. The [coefficient perturbation measurements](dither-policies/perturb.md) pair per-tone RAPSD curves with native-resolution and enlarged comparisons of flat fields, gradients, and photographic regions. They support weaker periodic structure in the tested cases, while also showing residual grain, scan-dependent results, and small differences in the 256-color photograph. `perturb=0.5` is a measured comparison point, not a universal optimum; larger values can introduce more conspicuous clumps. The default remains `0.0`.
+
 ## `atkinson`: partial-residual diffusion
 
 ```text
