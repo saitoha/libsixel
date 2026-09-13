@@ -181,6 +181,29 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
+    -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
+    -DBUILD_TEST_0009_ICC_LENGTH_OWNERSHIP \
+    -DBUILD_TEST_0010_P3_FLOAT_ROUNDTRIP \
+    -DBUILD_TEST_0011_SEPARATE_INTENTS \
+    -DBUILD_TEST_0012_ENGINE_INDEPENDENCE \
+    -DBUILD_TEST_0013_QUEUED_TRANSFORM_LIFETIME \
+    -DBUILD_TEST_0001_NAMED_XYZ \
+    -DBUILD_TEST_0002_SIMPLE_POWER \
+    -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
+    -DBUILD_TEST_0004_TRANSFORM_OWNS_ENDPOINTS \
+    -DBUILD_TEST_0005_MATRIX_ICC_OUTPUT \
+    -DBUILD_TEST_0006_FORWARD_LUT_REJECTED_OUTPUT \
+    -DBUILD_TEST_0007_PAIRED_LUT_APPLIES \
+    -DBUILD_TEST_0009_PARAMETRIC_TYPE4 \
+    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
+    -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
+    -DBUILD_TEST_0006_EXTENDED_OKLAB_FORWARD \
+    -DBUILD_TEST_0007_EXTENDED_OKLAB_INVERSE \
+    -DBUILD_TEST_0008_EXTENDED_LAB_FORWARD \
+    -DBUILD_TEST_0009_EXTENDED_LAB_INVERSE \
+    -DBUILD_TEST_0010_EXTENDED_DIN99D_FORWARD \
+    -DBUILD_TEST_0011_EXTENDED_DIN99D_INVERSE \
     -DBUILD_TEST_0053_PERCENTAGE_RGB8 \
     -DBUILD_TEST_0001_DIN99D_FORWARD \
     -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
@@ -587,6 +610,29 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
+    processing/cms/0011_separate_intents.c \
+    processing/cms/0012_engine_independence.c \
+    processing/cms/0013_queued_transform_lifetime.c \
+    processing/colorspace/0012_extended_failure_atomic.c \
+    processing/cms/0008_invalid_rgb_definition.c \
+    processing/cms/0009_icc_length_ownership.c \
+    processing/cms/0010_p3_float_roundtrip.c \
+    processing/cms/0001_named_xyz.c \
+    processing/cms/0002_simple_power.c \
+    processing/cms/0003_icc_source_lifetime.c \
+    processing/cms/0004_transform_owns_endpoints.c \
+    processing/cms/0005_matrix_icc_output.c \
+    processing/cms/0006_forward_lut_rejected_output.c \
+    processing/cms/0007_paired_lut_applies.c \
+    diagnostics/icc/0009_parametric_type4.c \
+    processing/colorspace/0004_extended_srgb_decode.c \
+    processing/colorspace/0005_extended_srgb_encode.c \
+    processing/colorspace/0006_extended_oklab_forward.c \
+    processing/colorspace/0007_extended_oklab_inverse.c \
+    processing/colorspace/0008_extended_lab_forward.c \
+    processing/colorspace/0009_extended_lab_inverse.c \
+    processing/colorspace/0010_extended_din99d_forward.c \
+    processing/colorspace/0011_extended_din99d_inverse.c \
     processing/decoder/0053_percentage_rgb8.c \
     processing/colorspace/0001_din99d_forward.c \
     processing/colorspace/0002_din99d_inverse.c \

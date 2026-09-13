@@ -202,6 +202,66 @@ sixel_cms_do_transform(sixel_cms_transform_t const *transform,
 SIXEL_INTERNAL_API void
 sixel_cms_delete_transform(sixel_cms_transform_t *transform);
 
+/*
+ * Job-local color definitions are independent of a frame's working-space
+ * tag. A transform owns clones of both definitions. No profile byte buffer
+ * or definition supplied by its caller must outlive transform creation.
+ *
+ * This internal foundation currently uses the builtin ICC PCS evaluator.
+ * It does not change loader defaults or select a terminal color policy.
+ */
+typedef struct sixel_color_def sixel_color_def_t;
+typedef struct sixel_color_xform sixel_color_xform_t;
+
+typedef enum sixel_color_trc {
+    SIXEL_COLOR_TRC_SRGB = 0,
+    SIXEL_COLOR_TRC_POWER = 1
+} sixel_color_trc_t;
+
+SIXEL_INTERNAL_API sixel_color_def_t *
+sixel_cdef_name(char const *name);
+
+/* xy order: white, red, green, blue. Gamma is the decoding exponent. */
+SIXEL_INTERNAL_API sixel_color_def_t *
+sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
+                double const gamma[3]);
+
+SIXEL_INTERNAL_API sixel_color_def_t *
+sixel_cdef_icc(void const *bytes, size_t length);
+
+SIXEL_INTERNAL_API sixel_color_def_t *
+sixel_cdef_clone(sixel_color_def_t const *definition);
+
+SIXEL_INTERNAL_API void
+sixel_cdef_free(sixel_color_def_t *definition);
+
+/* XYZ is D50 PCS (Y=1); an ICC slot supplies its rendering semantics.
+ * No additional black-point compensation or absolute adaptation is added.
+ * Analytic definitions use relative colorimetry, never clipped to sRGB. */
+SIXEL_INTERNAL_API int
+sixel_cdef_to_xyz(sixel_color_def_t const *definition,
+                   double const rgb[3], double xyz[3], int intent);
+
+SIXEL_INTERNAL_API int
+sixel_cdef_from_xyz(sixel_color_def_t const *definition,
+                     double const xyz[3], double rgb[3], int intent);
+
+/* This checks actual apply in both directions, not mathematical inversion. */
+SIXEL_INTERNAL_API int
+sixel_cdef_output_ready(sixel_color_def_t const *definition,
+                         int encoding_intent, int evaluation_intent);
+
+SIXEL_INTERNAL_API sixel_color_xform_t *
+sixel_cxform_new(sixel_color_def_t const *source,
+                  sixel_color_def_t const *destination, int intent);
+
+SIXEL_INTERNAL_API int
+sixel_cxform_apply(sixel_color_xform_t const *transform,
+                    double const source[3], double destination[3]);
+
+SIXEL_INTERNAL_API void
+sixel_cxform_free(sixel_color_xform_t *transform);
+
 #ifdef __cplusplus
 }
 #endif

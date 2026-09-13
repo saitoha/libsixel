@@ -34,6 +34,24 @@ extern "C" {
 int
 sixel_colorspace_supports_pixelformat(int pixelformat);
 
+/* Analytic, sign-preserving TRCs for intermediate extended RGB values. */
+SIXEL_INTERNAL_API double
+sixel_color_decode_srgb(double value);
+
+SIXEL_INTERNAL_API double
+sixel_color_encode_srgb(double value);
+
+/*
+ * Convert one extended triplet in the existing working-space conventions.
+ * Unlike the public storage converter, this internal path neither encodes
+ * bytes nor restricts the RGB gamut. It accepts gamma, linear, Oklab,
+ * CIELAB and DIN99d. Nonfinite/domain errors return 0 without changing out.
+ * Exact aliasing is supported. The caller owns eventual float32 rounding.
+ */
+SIXEL_INTERNAL_API int
+sixel_color_convert(double out[3], double const in[3],
+                    int source, int target);
+
 #ifdef __cplusplus
 }
 #endif

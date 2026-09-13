@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <limits.h>
 
@@ -976,9 +977,23 @@ sixel_din99d_decode_ab(unsigned char v)
     return sixel_din99d_clamp_ab_norm((encoded - 0.5) * 2.0);
 }
 
+/* The extended path uses exact cube roots, including beyond the LUT. */
+static double
+sixel_color_lab_f(double t, int extended)
+{
+    if (!extended) {
+        return sixel_cielab_f(t);
+    }
+    if (t > 216.0 / 24389.0) {
+        return cbrt(t);
+    }
+    return (24389.0 / 27.0 * t + 16.0) / 116.0;
+}
+
 static void
-sixel_linear_to_cielab(double r, double g, double b,
-                       double *L, double *A, double *B)
+sixel_linear_to_cielab_impl(double r, double g, double b,
+                       double *L, double *A, double *B,
+                            int extended)
 {
     const double Xn = 0.95047;
     const double Yn = 1.00000;
@@ -997,22 +1012,36 @@ sixel_linear_to_cielab(double r, double g, double b,
     Y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b;
     Z = 0.0193339 * r + 0.1191920 * g + 0.9503041 * b;
 
-    fx = sixel_cielab_f(X / Xn);
-    fy = sixel_cielab_f(Y / Yn);
-    fz = sixel_cielab_f(Z / Zn);
+    fx = sixel_color_lab_f(X / Xn, extended);
+    fy = sixel_color_lab_f(Y / Yn, extended);
+    fz = sixel_color_lab_f(Z / Zn, extended);
 
     L_component = 116.0 * fy - 16.0;
     a_component = 500.0 * (fx - fy);
     b_component = 200.0 * (fy - fz);
 
-    *L = sixel_clamp_unit(L_component / SIXEL_CIELAB_L_SCALE);
-    *A = sixel_cielab_clamp_ab(a_component / SIXEL_CIELAB_AB_SCALE);
-    *B = sixel_cielab_clamp_ab(b_component / SIXEL_CIELAB_AB_SCALE);
+    *L = L_component / SIXEL_CIELAB_L_SCALE;
+    *A = a_component / SIXEL_CIELAB_AB_SCALE;
+    *B = b_component / SIXEL_CIELAB_AB_SCALE;
+    if (!extended) {
+        *L = sixel_clamp_unit(*L);
+        *A = sixel_cielab_clamp_ab(*A);
+        *B = sixel_cielab_clamp_ab(*B);
+    }
 }
 
 static void
-sixel_cielab_to_linear(double L, double A, double B,
-                       double *r, double *g, double *b)
+sixel_linear_to_cielab(double r, double g, double b,
+                       double *L, double *A, double *B)
+{
+    sixel_linear_to_cielab_impl(
+        r, g, b, L, A, B, 0);
+}
+
+static void
+sixel_cielab_to_linear_impl(double L, double A, double B,
+                       double *r, double *g, double *b,
+                            int extended)
 {
     const double Xn = 0.95047;
     const double Yn = 1.00000;
@@ -1027,9 +1056,11 @@ sixel_cielab_to_linear(double L, double A, double B,
     double Y;
     double Z;
 
-    L_component = sixel_clamp_unit(L) * SIXEL_CIELAB_L_SCALE;
-    a_component = sixel_cielab_clamp_ab(A) * SIXEL_CIELAB_AB_SCALE;
-    b_component = sixel_cielab_clamp_ab(B) * SIXEL_CIELAB_AB_SCALE;
+    L_component = (extended ? L : sixel_clamp_unit(L)) * SIXEL_CIELAB_L_SCALE;
+    a_component = (extended ? A : sixel_cielab_clamp_ab(A))
+                  * SIXEL_CIELAB_AB_SCALE;
+    b_component = (extended ? B : sixel_cielab_clamp_ab(B))
+                  * SIXEL_CIELAB_AB_SCALE;
 
     fy = (L_component + 16.0) / 116.0;
     fx = fy + (a_component / 500.0);
@@ -1043,9 +1074,19 @@ sixel_cielab_to_linear(double L, double A, double B,
     *g = -0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z;
     *b = 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z;
 
-    *r = sixel_clamp_unit(*r);
-    *g = sixel_clamp_unit(*g);
-    *b = sixel_clamp_unit(*b);
+    if (!extended) {
+        *r = sixel_clamp_unit(*r);
+        *g = sixel_clamp_unit(*g);
+        *b = sixel_clamp_unit(*b);
+    }
+}
+
+static void
+sixel_cielab_to_linear(double L, double A, double B,
+                       double *r, double *g, double *b)
+{
+    sixel_cielab_to_linear_impl(
+        L, A, B, r, g, b, 0);
 }
 
 static void
@@ -1135,12 +1176,12 @@ sixel_din99d_to_cielab(double L99d,
 }
 
 static void
-sixel_linear_to_din99d(double r,
+sixel_linear_to_din99d_impl(double r,
                        double g,
                        double b,
                        double *L99d_norm,
                        double *A99d_norm,
-                       double *B99d_norm)
+                       double *B99d_norm, int extended)
 {
     const double Xn = 1.12 * 0.95047 - 0.12 * 1.08883;
     const double Zn = 1.08883;
@@ -1163,29 +1204,44 @@ sixel_linear_to_din99d(double r,
 
     /* Transform the sample and white together so neutrals stay neutral. */
     X = 1.12 * X - 0.12 * Z;
-    fx = sixel_cielab_f(X / Xn);
-    fy = sixel_cielab_f(Y);
-    fz = sixel_cielab_f(Z / Zn);
+    fx = sixel_color_lab_f(X / Xn, extended);
+    fy = sixel_color_lab_f(Y, extended);
+    fz = sixel_color_lab_f(Z / Zn, extended);
     L_star = 116.0 * fy - 16.0;
     a_star = 500.0 * (fx - fy);
     b_star = 200.0 * (fy - fz);
 
     sixel_cielab_to_din99d(L_star, a_star, b_star, &L99d, &A99d, &B99d);
 
-    *L99d_norm = sixel_clamp_unit(L99d / SIXEL_DIN99D_SCALE);
-    *A99d_norm = sixel_din99d_clamp_ab_norm(
-        A99d / SIXEL_DIN99D_SCALE);
-    *B99d_norm = sixel_din99d_clamp_ab_norm(
-        B99d / SIXEL_DIN99D_SCALE);
+    *L99d_norm = L99d / SIXEL_DIN99D_SCALE;
+    *A99d_norm = A99d / SIXEL_DIN99D_SCALE;
+    *B99d_norm = B99d / SIXEL_DIN99D_SCALE;
+    if (!extended) {
+        *L99d_norm = sixel_clamp_unit(*L99d_norm);
+        *A99d_norm = sixel_din99d_clamp_ab_norm(*A99d_norm);
+        *B99d_norm = sixel_din99d_clamp_ab_norm(*B99d_norm);
+    }
 }
 
 static void
-sixel_din99d_to_linear(double L99d_norm,
+sixel_linear_to_din99d(double r,
+                       double g,
+                       double b,
+                       double *L99d_norm,
+                       double *A99d_norm,
+                       double *B99d_norm)
+{
+    sixel_linear_to_din99d_impl(
+        r, g, b, L99d_norm, A99d_norm, B99d_norm, 0);
+}
+
+static void
+sixel_din99d_to_linear_impl(double L99d_norm,
                        double A99d_norm,
                        double B99d_norm,
                        double *r,
                        double *g,
-                       double *b)
+                       double *b, int extended)
 {
     const double Xn = 1.12 * 0.95047 - 0.12 * 1.08883;
     const double Zn = 1.08883;
@@ -1202,9 +1258,12 @@ sixel_din99d_to_linear(double L99d_norm,
     double Y;
     double Z;
 
-    L = sixel_clamp_unit(L99d_norm) * SIXEL_DIN99D_SCALE;
-    A = sixel_din99d_clamp_ab_norm(A99d_norm) * SIXEL_DIN99D_SCALE;
-    B = sixel_din99d_clamp_ab_norm(B99d_norm) * SIXEL_DIN99D_SCALE;
+    L = (extended ? L99d_norm :
+        sixel_clamp_unit(L99d_norm)) * SIXEL_DIN99D_SCALE;
+    A = (extended ? A99d_norm :
+        sixel_din99d_clamp_ab_norm(A99d_norm)) * SIXEL_DIN99D_SCALE;
+    B = (extended ? B99d_norm :
+        sixel_din99d_clamp_ab_norm(B99d_norm)) * SIXEL_DIN99D_SCALE;
 
     sixel_din99d_to_cielab(L, A, B, &L_star, &a_star, &b_star);
 
@@ -1217,14 +1276,32 @@ sixel_din99d_to_linear(double L99d_norm,
 
     /* Undo X' before the ordinary XYZ-to-linear-sRGB matrix. */
     X = (X + 0.12 * Z) / 1.12;
-    *r = sixel_clamp_unit(3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z);
-    *g = sixel_clamp_unit(-0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z);
-    *b = sixel_clamp_unit(0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z);
+    *r = 3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z;
+    *g = -0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z;
+    *b = 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z;
+    if (!extended) {
+        *r = sixel_clamp_unit(*r);
+        *g = sixel_clamp_unit(*g);
+        *b = sixel_clamp_unit(*b);
+    }
 }
 
 static void
-sixel_linear_to_oklab(double r, double g, double b,
-                      double *L, double *A, double *B)
+sixel_din99d_to_linear(double L99d_norm,
+                       double A99d_norm,
+                       double B99d_norm,
+                       double *r,
+                       double *g,
+                       double *b)
+{
+    sixel_din99d_to_linear_impl(
+        L99d_norm, A99d_norm, B99d_norm, r, g, b, 0);
+}
+
+static void
+sixel_linear_to_oklab_impl(double r, double g, double b,
+                      double *L, double *A, double *B,
+                            int extended)
 {
     double l;
     double m;
@@ -1237,9 +1314,12 @@ sixel_linear_to_oklab(double r, double g, double b,
     m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
     s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
 
-    l_ = sixel_colorspace_cbrt_lookup_double(l);
-    m_ = sixel_colorspace_cbrt_lookup_double(m);
-    s_ = sixel_colorspace_cbrt_lookup_double(s);
+    l_ = extended ? cbrt(l) :
+        sixel_colorspace_cbrt_lookup_double(l);
+    m_ = extended ? cbrt(m) :
+        sixel_colorspace_cbrt_lookup_double(m);
+    s_ = extended ? cbrt(s) :
+        sixel_colorspace_cbrt_lookup_double(s);
 
     *L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_;
     *A = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
@@ -1247,8 +1327,17 @@ sixel_linear_to_oklab(double r, double g, double b,
 }
 
 static void
-sixel_oklab_to_linear(double L, double A, double B,
-                      double *r, double *g, double *b)
+sixel_linear_to_oklab(double r, double g, double b,
+                      double *L, double *A, double *B)
+{
+    sixel_linear_to_oklab_impl(
+        r, g, b, L, A, B, 0);
+}
+
+static void
+sixel_oklab_to_linear_impl(double L, double A, double B,
+                      double *r, double *g, double *b,
+                            int extended)
 {
     double l_;
     double m_;
@@ -1269,15 +1358,23 @@ sixel_oklab_to_linear(double L, double A, double B,
     *g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
     *b = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
 
-    if (*r < 0.0) {
+    if (!extended && *r < 0.0) {
         *r = 0.0;
     }
-    if (*g < 0.0) {
+    if (!extended && *g < 0.0) {
         *g = 0.0;
     }
-    if (*b < 0.0) {
+    if (!extended && *b < 0.0) {
         *b = 0.0;
     }
+}
+
+static void
+sixel_oklab_to_linear(double L, double A, double B,
+                      double *r, double *g, double *b)
+{
+    sixel_oklab_to_linear_impl(
+        L, A, B, r, g, b, 0);
 }
 
 static void
@@ -3069,6 +3166,111 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
     }
 
     return SIXEL_OK;
+}
+
+/*
+ * These internal entry points preserve intermediate coordinates. Their
+ * callers, not the transfer function, own device-gamut handling. Keep the
+ * bounded legacy entry points above until each pipeline boundary migrates.
+ */
+double
+sixel_color_decode_srgb(double value)
+{
+    double magnitude;
+    double result;
+
+    magnitude = fabs(value);
+    result = magnitude <= 0.04045 ? magnitude / 12.92 :
+        pow((magnitude + 0.055) / 1.055, 2.4);
+    return copysign(result, value);
+}
+
+double
+sixel_color_encode_srgb(double value)
+{
+    double magnitude;
+    double result;
+
+    magnitude = fabs(value);
+    result = magnitude <= 0.0031308 ? magnitude * 12.92 :
+        1.055 * pow(magnitude, 1.0 / 2.4) - 0.055;
+    return copysign(result, value);
+}
+
+static int
+sixel_color_triplet_finite(double const value[3])
+{
+    return isfinite(value[0]) && isfinite(value[1]) && isfinite(value[2]);
+}
+
+int
+sixel_color_convert(double out[3], double const in[3],
+                    int source, int target)
+{
+    double linear[3];
+    double result[3];
+    int i;
+
+    if (out == NULL || in == NULL || !sixel_color_triplet_finite(in)) {
+        return 0;
+    }
+    switch (source) {
+    case SIXEL_COLORSPACE_GAMMA:
+        for (i = 0; i < 3; ++i) {
+            linear[i] = sixel_color_decode_srgb(in[i]);
+        }
+        break;
+    case SIXEL_COLORSPACE_LINEAR:
+        memcpy(linear, in, sizeof(linear));
+        break;
+    case SIXEL_COLORSPACE_OKLAB:
+        sixel_oklab_to_linear_impl(in[0], in[1], in[2],
+            &linear[0], &linear[1], &linear[2], 1);
+        break;
+    case SIXEL_COLORSPACE_CIELAB:
+        sixel_cielab_to_linear_impl(in[0], in[1], in[2],
+            &linear[0], &linear[1], &linear[2], 1);
+        break;
+    case SIXEL_COLORSPACE_DIN99D:
+        sixel_din99d_to_linear_impl(in[0], in[1], in[2],
+            &linear[0], &linear[1], &linear[2], 1);
+        break;
+    default:
+        return 0;
+    }
+    if (!sixel_color_triplet_finite(linear)) {
+        return 0;
+    }
+    switch (target) {
+    case SIXEL_COLORSPACE_GAMMA:
+        for (i = 0; i < 3; ++i) {
+            result[i] = sixel_color_encode_srgb(linear[i]);
+        }
+        break;
+    case SIXEL_COLORSPACE_LINEAR:
+        memcpy(result, linear, sizeof(result));
+        break;
+    case SIXEL_COLORSPACE_OKLAB:
+        sixel_linear_to_oklab_impl(linear[0], linear[1], linear[2],
+            &result[0], &result[1], &result[2], 1);
+        break;
+    case SIXEL_COLORSPACE_CIELAB:
+        sixel_linear_to_cielab_impl(linear[0], linear[1], linear[2],
+            &result[0], &result[1], &result[2], 1);
+        break;
+    case SIXEL_COLORSPACE_DIN99D:
+        sixel_linear_to_din99d_impl(linear[0], linear[1], linear[2],
+            &result[0], &result[1], &result[2], 1);
+        break;
+    default:
+        return 0;
+    }
+    /* Domain failures (for example DIN99d's log) never publish NaN/Inf. */
+    if (!sixel_color_triplet_finite(result)) {
+        return 0;
+    }
+    memcpy(out, result, sizeof(result));
+    return 1;
 }
 
 /* emacs Local Variables:      */

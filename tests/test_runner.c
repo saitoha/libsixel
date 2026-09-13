@@ -90,6 +90,29 @@ int test_filter_0001_filter_clip(int argc, char **argv);
 int test_color_0001_din99d_forward(int argc, char **argv);
 int test_color_0002_din99d_inverse(int argc, char **argv);
 int test_color_0003_din99d_byte(int argc, char **argv);
+int test_color_0004(int argc, char **argv);
+int test_color_0005(int argc, char **argv);
+int test_color_0006(int argc, char **argv);
+int test_color_0007(int argc, char **argv);
+int test_color_0008(int argc, char **argv);
+int test_color_0009(int argc, char **argv);
+int test_color_0010(int argc, char **argv);
+int test_color_0011(int argc, char **argv);
+int test_cdef_0001(int argc, char **argv);
+int test_cdef_0002(int argc, char **argv);
+int test_cdef_0003(int argc, char **argv);
+int test_cdef_0004(int argc, char **argv);
+int test_cdef_0005(int argc, char **argv);
+int test_cdef_0006(int argc, char **argv);
+int test_cdef_0007(int argc, char **argv);
+int test_icc_0009(int argc, char **argv);
+int test_color_0012(int argc, char **argv);
+int test_cdef_0008(int argc, char **argv);
+int test_cdef_0009(int argc, char **argv);
+int test_cdef_0010(int argc, char **argv);
+int test_cdef_0011(int argc, char **argv);
+int test_cdef_0012(int argc, char **argv);
+int test_cdef_0013(int argc, char **argv);
 int test_pmap_0053(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -1021,6 +1044,29 @@ static test_entry_t const test_entries[] = {
     { "colorspace/0002_din99d_inverse", test_color_0002_din99d_inverse },
     { "colorspace/0003_din99d_byte", test_color_0003_din99d_byte },
     { "decoder/0053_percentage_rgb8", test_pmap_0053 },
+    { "colorspace/0012_extended_failure_atomic", test_color_0012 },
+    { "cms/0008_invalid_rgb_definition", test_cdef_0008 },
+    { "cms/0009_icc_length_ownership", test_cdef_0009 },
+    { "cms/0010_p3_float_roundtrip", test_cdef_0010 },
+    { "cms/0011_separate_intents", test_cdef_0011 },
+    { "cms/0012_engine_independence", test_cdef_0012 },
+    { "cms/0013_queued_transform_lifetime", test_cdef_0013 },
+    { "cms/0001_named_xyz", test_cdef_0001 },
+    { "cms/0002_simple_power", test_cdef_0002 },
+    { "cms/0003_icc_source_lifetime", test_cdef_0003 },
+    { "cms/0004_transform_owns_endpoints", test_cdef_0004 },
+    { "cms/0005_matrix_icc_output", test_cdef_0005 },
+    { "cms/0006_forward_lut_rejected_output", test_cdef_0006 },
+    { "cms/0007_paired_lut_applies", test_cdef_0007 },
+    { "icc/0009_parametric_type4", test_icc_0009 },
+    { "colorspace/0004_extended_srgb_decode", test_color_0004 },
+    { "colorspace/0005_extended_srgb_encode", test_color_0005 },
+    { "colorspace/0006_extended_oklab_forward", test_color_0006 },
+    { "colorspace/0007_extended_oklab_inverse", test_color_0007 },
+    { "colorspace/0008_extended_lab_forward", test_color_0008 },
+    { "colorspace/0009_extended_lab_inverse", test_color_0009 },
+    { "colorspace/0010_extended_din99d_forward", test_color_0010 },
+    { "colorspace/0011_extended_din99d_inverse", test_color_0011 },
     { "scale/0004_g8_normalized_rgb888",
       test_scale_0004_g8_rgb888 },
     { "scale/0005_rgb565_normalized_rgb888",

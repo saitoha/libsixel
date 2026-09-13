@@ -110,6 +110,29 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	processing/cms/0011_separate_intents.c \
+	processing/cms/0012_engine_independence.c \
+	processing/cms/0013_queued_transform_lifetime.c \
+	processing/colorspace/0012_extended_failure_atomic.c \
+	processing/cms/0008_invalid_rgb_definition.c \
+	processing/cms/0009_icc_length_ownership.c \
+	processing/cms/0010_p3_float_roundtrip.c \
+	processing/cms/0001_named_xyz.c \
+	processing/cms/0002_simple_power.c \
+	processing/cms/0003_icc_source_lifetime.c \
+	processing/cms/0004_transform_owns_endpoints.c \
+	processing/cms/0005_matrix_icc_output.c \
+	processing/cms/0006_forward_lut_rejected_output.c \
+	processing/cms/0007_paired_lut_applies.c \
+	diagnostics/icc/0009_parametric_type4.c \
+	processing/colorspace/0004_extended_srgb_decode.c \
+	processing/colorspace/0005_extended_srgb_encode.c \
+	processing/colorspace/0006_extended_oklab_forward.c \
+	processing/colorspace/0007_extended_oklab_inverse.c \
+	processing/colorspace/0008_extended_lab_forward.c \
+	processing/colorspace/0009_extended_lab_inverse.c \
+	processing/colorspace/0010_extended_din99d_forward.c \
+	processing/colorspace/0011_extended_din99d_inverse.c \
 	processing/decoder/0053_percentage_rgb8.c \
 	processing/colorspace/0001_din99d_forward.c \
 	processing/colorspace/0002_din99d_inverse.c \
@@ -519,6 +542,29 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0009_icc_length_ownership.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0010_p3_float_roundtrip.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0001_named_xyz.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0002_simple_power.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0003_icc_source_lifetime.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0004_transform_owns_endpoints.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0005_matrix_icc_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0006_forward_lut_rejected_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0007_paired_lut_applies.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0009_parametric_type4.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0005_extended_srgb_encode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0006_extended_oklab_forward.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0007_extended_oklab_inverse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0008_extended_lab_forward.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0009_extended_lab_inverse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0010_extended_din99d_forward.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0011_extended_din99d_inverse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0053_percentage_rgb8.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0001_din99d_forward.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0002_din99d_inverse.$(OBJEXT) \
@@ -997,6 +1043,7 @@ am__depfiles_remade =  \
 	diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0008_icc_builtin_d2b_b2d_legacy_lut.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po \
 	diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po \
 	diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po \
@@ -1169,9 +1216,31 @@ am__depfiles_remade =  \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
+	processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po \
+	processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po \
+	processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po \
+	processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Po \
+	processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Po \
+	processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Po \
+	processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Po \
+	processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Po \
+	processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Po \
+	processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Po \
+	processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Po \
+	processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po \
+	processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po \
@@ -2028,6 +2097,29 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_ICC_LENGTH_OWNERSHIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_P3_FLOAT_ROUNDTRIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_SEPARATE_INTENTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_ENGINE_INDEPENDENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_QUEUED_TRANSFORM_LIFETIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_NAMED_XYZ \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SIMPLE_POWER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_TRANSFORM_OWNS_ENDPOINTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_MATRIX_ICC_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_FORWARD_LUT_REJECTED_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_PAIRED_LUT_APPLIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PARAMETRIC_TYPE4 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_EXTENDED_OKLAB_FORWARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_EXTENDED_OKLAB_INVERSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_EXTENDED_LAB_FORWARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_EXTENDED_LAB_INVERSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_EXTENDED_DIN99D_FORWARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_EXTENDED_DIN99D_INVERSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_PERCENTAGE_RGB8 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DIN99D_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
@@ -2459,6 +2551,29 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0013_queued_transform_lifetime.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0008_invalid_rgb_definition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0009_icc_length_ownership.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0010_p3_float_roundtrip.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0001_named_xyz.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0002_simple_power.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0003_icc_source_lifetime.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0004_transform_owns_endpoints.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0005_matrix_icc_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0006_forward_lut_rejected_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0007_paired_lut_applies.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0009_parametric_type4.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0004_extended_srgb_decode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0005_extended_srgb_encode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0006_extended_oklab_forward.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0007_extended_oklab_inverse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0008_extended_lab_forward.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0009_extended_lab_inverse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0010_extended_din99d_forward.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0011_extended_din99d_inverse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0053_percentage_rgb8.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0001_din99d_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0002_din99d_inverse.c \
@@ -3035,6 +3150,93 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+processing/cms/$(am__dirstamp):
+	@$(MKDIR_P) processing/cms
+	@: >>processing/cms/$(am__dirstamp)
+processing/cms/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/cms/$(DEPDIR)
+	@: >>processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0011_separate_intents.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0012_engine_independence.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/$(am__dirstamp):
+	@$(MKDIR_P) processing/colorspace
+	@: >>processing/colorspace/$(am__dirstamp)
+processing/colorspace/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/colorspace/$(DEPDIR)
+	@: >>processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0009_icc_length_ownership.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0010_p3_float_roundtrip.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0001_named_xyz.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0002_simple_power.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0003_icc_source_lifetime.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0004_transform_owns_endpoints.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0005_matrix_icc_output.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0006_forward_lut_rejected_output.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0007_paired_lut_applies.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/$(am__dirstamp):
+	@$(MKDIR_P) diagnostics/icc
+	@: >>diagnostics/icc/$(am__dirstamp)
+diagnostics/icc/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) diagnostics/icc/$(DEPDIR)
+	@: >>diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0009_parametric_type4.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0004_extended_srgb_decode.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0005_extended_srgb_encode.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0006_extended_oklab_forward.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0007_extended_oklab_inverse.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0008_extended_lab_forward.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0009_extended_lab_inverse.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0010_extended_din99d_forward.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0011_extended_din99d_inverse.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/$(am__dirstamp):
 	@$(MKDIR_P) processing/decoder
 	@: >>processing/decoder/$(am__dirstamp)
@@ -3044,12 +3246,6 @@ processing/decoder/$(DEPDIR)/$(am__dirstamp):
 processing/decoder/test_runner-0053_percentage_rgb8.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
-processing/colorspace/$(am__dirstamp):
-	@$(MKDIR_P) processing/colorspace
-	@: >>processing/colorspace/$(am__dirstamp)
-processing/colorspace/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) processing/colorspace/$(DEPDIR)
-	@: >>processing/colorspace/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/test_runner-0001_din99d_forward.$(OBJEXT):  \
 	processing/colorspace/$(am__dirstamp) \
 	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
@@ -4335,12 +4531,6 @@ diagnostics/status/$(DEPDIR)/$(am__dirstamp):
 diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT):  \
 	diagnostics/status/$(am__dirstamp) \
 	diagnostics/status/$(DEPDIR)/$(am__dirstamp)
-diagnostics/icc/$(am__dirstamp):
-	@$(MKDIR_P) diagnostics/icc
-	@: >>diagnostics/icc/$(am__dirstamp)
-diagnostics/icc/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) diagnostics/icc/$(DEPDIR)
-	@: >>diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
 diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT):  \
 	diagnostics/icc/$(am__dirstamp) \
 	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
@@ -4465,6 +4655,7 @@ mostlyclean-compile:
 	-rm -f loader/wic/*.$(OBJEXT)
 	-rm -f platform/path/*.$(OBJEXT)
 	-rm -f processing/chunk/*.$(OBJEXT)
+	-rm -f processing/cms/*.$(OBJEXT)
 	-rm -f processing/colorspace/*.$(OBJEXT)
 	-rm -f processing/decoder/*.$(OBJEXT)
 	-rm -f processing/dither/*.$(OBJEXT)
@@ -4511,6 +4702,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0008_icc_builtin_d2b_b2d_legacy_lut.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po@am__quote@ # am--include-marker
@@ -4683,9 +4875,31 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po@am__quote@ # am--include-marker
@@ -4924,6 +5138,328 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+processing/cms/test_runner-0011_separate_intents.o: processing/cms/0011_separate_intents.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0011_separate_intents.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo -c -o processing/cms/test_runner-0011_separate_intents.o `test -f 'processing/cms/0011_separate_intents.c' || echo '$(srcdir)/'`processing/cms/0011_separate_intents.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0011_separate_intents.c' object='processing/cms/test_runner-0011_separate_intents.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0011_separate_intents.o `test -f 'processing/cms/0011_separate_intents.c' || echo '$(srcdir)/'`processing/cms/0011_separate_intents.c
+
+processing/cms/test_runner-0011_separate_intents.obj: processing/cms/0011_separate_intents.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0011_separate_intents.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo -c -o processing/cms/test_runner-0011_separate_intents.obj `if test -f 'processing/cms/0011_separate_intents.c'; then $(CYGPATH_W) 'processing/cms/0011_separate_intents.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0011_separate_intents.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0011_separate_intents.c' object='processing/cms/test_runner-0011_separate_intents.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0011_separate_intents.obj `if test -f 'processing/cms/0011_separate_intents.c'; then $(CYGPATH_W) 'processing/cms/0011_separate_intents.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0011_separate_intents.c'; fi`
+
+processing/cms/test_runner-0012_engine_independence.o: processing/cms/0012_engine_independence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0012_engine_independence.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Tpo -c -o processing/cms/test_runner-0012_engine_independence.o `test -f 'processing/cms/0012_engine_independence.c' || echo '$(srcdir)/'`processing/cms/0012_engine_independence.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Tpo processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0012_engine_independence.c' object='processing/cms/test_runner-0012_engine_independence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0012_engine_independence.o `test -f 'processing/cms/0012_engine_independence.c' || echo '$(srcdir)/'`processing/cms/0012_engine_independence.c
+
+processing/cms/test_runner-0012_engine_independence.obj: processing/cms/0012_engine_independence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0012_engine_independence.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Tpo -c -o processing/cms/test_runner-0012_engine_independence.obj `if test -f 'processing/cms/0012_engine_independence.c'; then $(CYGPATH_W) 'processing/cms/0012_engine_independence.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0012_engine_independence.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Tpo processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0012_engine_independence.c' object='processing/cms/test_runner-0012_engine_independence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0012_engine_independence.obj `if test -f 'processing/cms/0012_engine_independence.c'; then $(CYGPATH_W) 'processing/cms/0012_engine_independence.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0012_engine_independence.c'; fi`
+
+processing/cms/test_runner-0013_queued_transform_lifetime.o: processing/cms/0013_queued_transform_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0013_queued_transform_lifetime.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Tpo -c -o processing/cms/test_runner-0013_queued_transform_lifetime.o `test -f 'processing/cms/0013_queued_transform_lifetime.c' || echo '$(srcdir)/'`processing/cms/0013_queued_transform_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Tpo processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0013_queued_transform_lifetime.c' object='processing/cms/test_runner-0013_queued_transform_lifetime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0013_queued_transform_lifetime.o `test -f 'processing/cms/0013_queued_transform_lifetime.c' || echo '$(srcdir)/'`processing/cms/0013_queued_transform_lifetime.c
+
+processing/cms/test_runner-0013_queued_transform_lifetime.obj: processing/cms/0013_queued_transform_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0013_queued_transform_lifetime.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Tpo -c -o processing/cms/test_runner-0013_queued_transform_lifetime.obj `if test -f 'processing/cms/0013_queued_transform_lifetime.c'; then $(CYGPATH_W) 'processing/cms/0013_queued_transform_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0013_queued_transform_lifetime.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Tpo processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0013_queued_transform_lifetime.c' object='processing/cms/test_runner-0013_queued_transform_lifetime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0013_queued_transform_lifetime.obj `if test -f 'processing/cms/0013_queued_transform_lifetime.c'; then $(CYGPATH_W) 'processing/cms/0013_queued_transform_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0013_queued_transform_lifetime.c'; fi`
+
+processing/colorspace/test_runner-0012_extended_failure_atomic.o: processing/colorspace/0012_extended_failure_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0012_extended_failure_atomic.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Tpo -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.o `test -f 'processing/colorspace/0012_extended_failure_atomic.c' || echo '$(srcdir)/'`processing/colorspace/0012_extended_failure_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Tpo processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0012_extended_failure_atomic.c' object='processing/colorspace/test_runner-0012_extended_failure_atomic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.o `test -f 'processing/colorspace/0012_extended_failure_atomic.c' || echo '$(srcdir)/'`processing/colorspace/0012_extended_failure_atomic.c
+
+processing/colorspace/test_runner-0012_extended_failure_atomic.obj: processing/colorspace/0012_extended_failure_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0012_extended_failure_atomic.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Tpo -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.obj `if test -f 'processing/colorspace/0012_extended_failure_atomic.c'; then $(CYGPATH_W) 'processing/colorspace/0012_extended_failure_atomic.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0012_extended_failure_atomic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Tpo processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0012_extended_failure_atomic.c' object='processing/colorspace/test_runner-0012_extended_failure_atomic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.obj `if test -f 'processing/colorspace/0012_extended_failure_atomic.c'; then $(CYGPATH_W) 'processing/colorspace/0012_extended_failure_atomic.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0012_extended_failure_atomic.c'; fi`
+
+processing/cms/test_runner-0008_invalid_rgb_definition.o: processing/cms/0008_invalid_rgb_definition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0008_invalid_rgb_definition.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Tpo -c -o processing/cms/test_runner-0008_invalid_rgb_definition.o `test -f 'processing/cms/0008_invalid_rgb_definition.c' || echo '$(srcdir)/'`processing/cms/0008_invalid_rgb_definition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Tpo processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0008_invalid_rgb_definition.c' object='processing/cms/test_runner-0008_invalid_rgb_definition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0008_invalid_rgb_definition.o `test -f 'processing/cms/0008_invalid_rgb_definition.c' || echo '$(srcdir)/'`processing/cms/0008_invalid_rgb_definition.c
+
+processing/cms/test_runner-0008_invalid_rgb_definition.obj: processing/cms/0008_invalid_rgb_definition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0008_invalid_rgb_definition.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Tpo -c -o processing/cms/test_runner-0008_invalid_rgb_definition.obj `if test -f 'processing/cms/0008_invalid_rgb_definition.c'; then $(CYGPATH_W) 'processing/cms/0008_invalid_rgb_definition.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0008_invalid_rgb_definition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Tpo processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0008_invalid_rgb_definition.c' object='processing/cms/test_runner-0008_invalid_rgb_definition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0008_invalid_rgb_definition.obj `if test -f 'processing/cms/0008_invalid_rgb_definition.c'; then $(CYGPATH_W) 'processing/cms/0008_invalid_rgb_definition.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0008_invalid_rgb_definition.c'; fi`
+
+processing/cms/test_runner-0009_icc_length_ownership.o: processing/cms/0009_icc_length_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0009_icc_length_ownership.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Tpo -c -o processing/cms/test_runner-0009_icc_length_ownership.o `test -f 'processing/cms/0009_icc_length_ownership.c' || echo '$(srcdir)/'`processing/cms/0009_icc_length_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Tpo processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0009_icc_length_ownership.c' object='processing/cms/test_runner-0009_icc_length_ownership.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0009_icc_length_ownership.o `test -f 'processing/cms/0009_icc_length_ownership.c' || echo '$(srcdir)/'`processing/cms/0009_icc_length_ownership.c
+
+processing/cms/test_runner-0009_icc_length_ownership.obj: processing/cms/0009_icc_length_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0009_icc_length_ownership.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Tpo -c -o processing/cms/test_runner-0009_icc_length_ownership.obj `if test -f 'processing/cms/0009_icc_length_ownership.c'; then $(CYGPATH_W) 'processing/cms/0009_icc_length_ownership.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0009_icc_length_ownership.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Tpo processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0009_icc_length_ownership.c' object='processing/cms/test_runner-0009_icc_length_ownership.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0009_icc_length_ownership.obj `if test -f 'processing/cms/0009_icc_length_ownership.c'; then $(CYGPATH_W) 'processing/cms/0009_icc_length_ownership.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0009_icc_length_ownership.c'; fi`
+
+processing/cms/test_runner-0010_p3_float_roundtrip.o: processing/cms/0010_p3_float_roundtrip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0010_p3_float_roundtrip.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Tpo -c -o processing/cms/test_runner-0010_p3_float_roundtrip.o `test -f 'processing/cms/0010_p3_float_roundtrip.c' || echo '$(srcdir)/'`processing/cms/0010_p3_float_roundtrip.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Tpo processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0010_p3_float_roundtrip.c' object='processing/cms/test_runner-0010_p3_float_roundtrip.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0010_p3_float_roundtrip.o `test -f 'processing/cms/0010_p3_float_roundtrip.c' || echo '$(srcdir)/'`processing/cms/0010_p3_float_roundtrip.c
+
+processing/cms/test_runner-0010_p3_float_roundtrip.obj: processing/cms/0010_p3_float_roundtrip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0010_p3_float_roundtrip.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Tpo -c -o processing/cms/test_runner-0010_p3_float_roundtrip.obj `if test -f 'processing/cms/0010_p3_float_roundtrip.c'; then $(CYGPATH_W) 'processing/cms/0010_p3_float_roundtrip.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0010_p3_float_roundtrip.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Tpo processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0010_p3_float_roundtrip.c' object='processing/cms/test_runner-0010_p3_float_roundtrip.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0010_p3_float_roundtrip.obj `if test -f 'processing/cms/0010_p3_float_roundtrip.c'; then $(CYGPATH_W) 'processing/cms/0010_p3_float_roundtrip.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0010_p3_float_roundtrip.c'; fi`
+
+processing/cms/test_runner-0001_named_xyz.o: processing/cms/0001_named_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0001_named_xyz.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Tpo -c -o processing/cms/test_runner-0001_named_xyz.o `test -f 'processing/cms/0001_named_xyz.c' || echo '$(srcdir)/'`processing/cms/0001_named_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Tpo processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0001_named_xyz.c' object='processing/cms/test_runner-0001_named_xyz.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0001_named_xyz.o `test -f 'processing/cms/0001_named_xyz.c' || echo '$(srcdir)/'`processing/cms/0001_named_xyz.c
+
+processing/cms/test_runner-0001_named_xyz.obj: processing/cms/0001_named_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0001_named_xyz.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Tpo -c -o processing/cms/test_runner-0001_named_xyz.obj `if test -f 'processing/cms/0001_named_xyz.c'; then $(CYGPATH_W) 'processing/cms/0001_named_xyz.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0001_named_xyz.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Tpo processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0001_named_xyz.c' object='processing/cms/test_runner-0001_named_xyz.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0001_named_xyz.obj `if test -f 'processing/cms/0001_named_xyz.c'; then $(CYGPATH_W) 'processing/cms/0001_named_xyz.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0001_named_xyz.c'; fi`
+
+processing/cms/test_runner-0002_simple_power.o: processing/cms/0002_simple_power.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0002_simple_power.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Tpo -c -o processing/cms/test_runner-0002_simple_power.o `test -f 'processing/cms/0002_simple_power.c' || echo '$(srcdir)/'`processing/cms/0002_simple_power.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Tpo processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0002_simple_power.c' object='processing/cms/test_runner-0002_simple_power.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0002_simple_power.o `test -f 'processing/cms/0002_simple_power.c' || echo '$(srcdir)/'`processing/cms/0002_simple_power.c
+
+processing/cms/test_runner-0002_simple_power.obj: processing/cms/0002_simple_power.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0002_simple_power.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Tpo -c -o processing/cms/test_runner-0002_simple_power.obj `if test -f 'processing/cms/0002_simple_power.c'; then $(CYGPATH_W) 'processing/cms/0002_simple_power.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0002_simple_power.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Tpo processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0002_simple_power.c' object='processing/cms/test_runner-0002_simple_power.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0002_simple_power.obj `if test -f 'processing/cms/0002_simple_power.c'; then $(CYGPATH_W) 'processing/cms/0002_simple_power.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0002_simple_power.c'; fi`
+
+processing/cms/test_runner-0003_icc_source_lifetime.o: processing/cms/0003_icc_source_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0003_icc_source_lifetime.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Tpo -c -o processing/cms/test_runner-0003_icc_source_lifetime.o `test -f 'processing/cms/0003_icc_source_lifetime.c' || echo '$(srcdir)/'`processing/cms/0003_icc_source_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Tpo processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0003_icc_source_lifetime.c' object='processing/cms/test_runner-0003_icc_source_lifetime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0003_icc_source_lifetime.o `test -f 'processing/cms/0003_icc_source_lifetime.c' || echo '$(srcdir)/'`processing/cms/0003_icc_source_lifetime.c
+
+processing/cms/test_runner-0003_icc_source_lifetime.obj: processing/cms/0003_icc_source_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0003_icc_source_lifetime.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Tpo -c -o processing/cms/test_runner-0003_icc_source_lifetime.obj `if test -f 'processing/cms/0003_icc_source_lifetime.c'; then $(CYGPATH_W) 'processing/cms/0003_icc_source_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0003_icc_source_lifetime.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Tpo processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0003_icc_source_lifetime.c' object='processing/cms/test_runner-0003_icc_source_lifetime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0003_icc_source_lifetime.obj `if test -f 'processing/cms/0003_icc_source_lifetime.c'; then $(CYGPATH_W) 'processing/cms/0003_icc_source_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0003_icc_source_lifetime.c'; fi`
+
+processing/cms/test_runner-0004_transform_owns_endpoints.o: processing/cms/0004_transform_owns_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0004_transform_owns_endpoints.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Tpo -c -o processing/cms/test_runner-0004_transform_owns_endpoints.o `test -f 'processing/cms/0004_transform_owns_endpoints.c' || echo '$(srcdir)/'`processing/cms/0004_transform_owns_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Tpo processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0004_transform_owns_endpoints.c' object='processing/cms/test_runner-0004_transform_owns_endpoints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0004_transform_owns_endpoints.o `test -f 'processing/cms/0004_transform_owns_endpoints.c' || echo '$(srcdir)/'`processing/cms/0004_transform_owns_endpoints.c
+
+processing/cms/test_runner-0004_transform_owns_endpoints.obj: processing/cms/0004_transform_owns_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0004_transform_owns_endpoints.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Tpo -c -o processing/cms/test_runner-0004_transform_owns_endpoints.obj `if test -f 'processing/cms/0004_transform_owns_endpoints.c'; then $(CYGPATH_W) 'processing/cms/0004_transform_owns_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0004_transform_owns_endpoints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Tpo processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0004_transform_owns_endpoints.c' object='processing/cms/test_runner-0004_transform_owns_endpoints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0004_transform_owns_endpoints.obj `if test -f 'processing/cms/0004_transform_owns_endpoints.c'; then $(CYGPATH_W) 'processing/cms/0004_transform_owns_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0004_transform_owns_endpoints.c'; fi`
+
+processing/cms/test_runner-0005_matrix_icc_output.o: processing/cms/0005_matrix_icc_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0005_matrix_icc_output.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Tpo -c -o processing/cms/test_runner-0005_matrix_icc_output.o `test -f 'processing/cms/0005_matrix_icc_output.c' || echo '$(srcdir)/'`processing/cms/0005_matrix_icc_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Tpo processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0005_matrix_icc_output.c' object='processing/cms/test_runner-0005_matrix_icc_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0005_matrix_icc_output.o `test -f 'processing/cms/0005_matrix_icc_output.c' || echo '$(srcdir)/'`processing/cms/0005_matrix_icc_output.c
+
+processing/cms/test_runner-0005_matrix_icc_output.obj: processing/cms/0005_matrix_icc_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0005_matrix_icc_output.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Tpo -c -o processing/cms/test_runner-0005_matrix_icc_output.obj `if test -f 'processing/cms/0005_matrix_icc_output.c'; then $(CYGPATH_W) 'processing/cms/0005_matrix_icc_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0005_matrix_icc_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Tpo processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0005_matrix_icc_output.c' object='processing/cms/test_runner-0005_matrix_icc_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0005_matrix_icc_output.obj `if test -f 'processing/cms/0005_matrix_icc_output.c'; then $(CYGPATH_W) 'processing/cms/0005_matrix_icc_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0005_matrix_icc_output.c'; fi`
+
+processing/cms/test_runner-0006_forward_lut_rejected_output.o: processing/cms/0006_forward_lut_rejected_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0006_forward_lut_rejected_output.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Tpo -c -o processing/cms/test_runner-0006_forward_lut_rejected_output.o `test -f 'processing/cms/0006_forward_lut_rejected_output.c' || echo '$(srcdir)/'`processing/cms/0006_forward_lut_rejected_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Tpo processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0006_forward_lut_rejected_output.c' object='processing/cms/test_runner-0006_forward_lut_rejected_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0006_forward_lut_rejected_output.o `test -f 'processing/cms/0006_forward_lut_rejected_output.c' || echo '$(srcdir)/'`processing/cms/0006_forward_lut_rejected_output.c
+
+processing/cms/test_runner-0006_forward_lut_rejected_output.obj: processing/cms/0006_forward_lut_rejected_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0006_forward_lut_rejected_output.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Tpo -c -o processing/cms/test_runner-0006_forward_lut_rejected_output.obj `if test -f 'processing/cms/0006_forward_lut_rejected_output.c'; then $(CYGPATH_W) 'processing/cms/0006_forward_lut_rejected_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0006_forward_lut_rejected_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Tpo processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0006_forward_lut_rejected_output.c' object='processing/cms/test_runner-0006_forward_lut_rejected_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0006_forward_lut_rejected_output.obj `if test -f 'processing/cms/0006_forward_lut_rejected_output.c'; then $(CYGPATH_W) 'processing/cms/0006_forward_lut_rejected_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0006_forward_lut_rejected_output.c'; fi`
+
+processing/cms/test_runner-0007_paired_lut_applies.o: processing/cms/0007_paired_lut_applies.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0007_paired_lut_applies.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Tpo -c -o processing/cms/test_runner-0007_paired_lut_applies.o `test -f 'processing/cms/0007_paired_lut_applies.c' || echo '$(srcdir)/'`processing/cms/0007_paired_lut_applies.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Tpo processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0007_paired_lut_applies.c' object='processing/cms/test_runner-0007_paired_lut_applies.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0007_paired_lut_applies.o `test -f 'processing/cms/0007_paired_lut_applies.c' || echo '$(srcdir)/'`processing/cms/0007_paired_lut_applies.c
+
+processing/cms/test_runner-0007_paired_lut_applies.obj: processing/cms/0007_paired_lut_applies.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0007_paired_lut_applies.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Tpo -c -o processing/cms/test_runner-0007_paired_lut_applies.obj `if test -f 'processing/cms/0007_paired_lut_applies.c'; then $(CYGPATH_W) 'processing/cms/0007_paired_lut_applies.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0007_paired_lut_applies.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Tpo processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0007_paired_lut_applies.c' object='processing/cms/test_runner-0007_paired_lut_applies.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0007_paired_lut_applies.obj `if test -f 'processing/cms/0007_paired_lut_applies.c'; then $(CYGPATH_W) 'processing/cms/0007_paired_lut_applies.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0007_paired_lut_applies.c'; fi`
+
+diagnostics/icc/test_runner-0009_parametric_type4.o: diagnostics/icc/0009_parametric_type4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0009_parametric_type4.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Tpo -c -o diagnostics/icc/test_runner-0009_parametric_type4.o `test -f 'diagnostics/icc/0009_parametric_type4.c' || echo '$(srcdir)/'`diagnostics/icc/0009_parametric_type4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0009_parametric_type4.c' object='diagnostics/icc/test_runner-0009_parametric_type4.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0009_parametric_type4.o `test -f 'diagnostics/icc/0009_parametric_type4.c' || echo '$(srcdir)/'`diagnostics/icc/0009_parametric_type4.c
+
+diagnostics/icc/test_runner-0009_parametric_type4.obj: diagnostics/icc/0009_parametric_type4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0009_parametric_type4.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Tpo -c -o diagnostics/icc/test_runner-0009_parametric_type4.obj `if test -f 'diagnostics/icc/0009_parametric_type4.c'; then $(CYGPATH_W) 'diagnostics/icc/0009_parametric_type4.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0009_parametric_type4.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0009_parametric_type4.c' object='diagnostics/icc/test_runner-0009_parametric_type4.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0009_parametric_type4.obj `if test -f 'diagnostics/icc/0009_parametric_type4.c'; then $(CYGPATH_W) 'diagnostics/icc/0009_parametric_type4.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0009_parametric_type4.c'; fi`
+
+processing/colorspace/test_runner-0004_extended_srgb_decode.o: processing/colorspace/0004_extended_srgb_decode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0004_extended_srgb_decode.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Tpo -c -o processing/colorspace/test_runner-0004_extended_srgb_decode.o `test -f 'processing/colorspace/0004_extended_srgb_decode.c' || echo '$(srcdir)/'`processing/colorspace/0004_extended_srgb_decode.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Tpo processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0004_extended_srgb_decode.c' object='processing/colorspace/test_runner-0004_extended_srgb_decode.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0004_extended_srgb_decode.o `test -f 'processing/colorspace/0004_extended_srgb_decode.c' || echo '$(srcdir)/'`processing/colorspace/0004_extended_srgb_decode.c
+
+processing/colorspace/test_runner-0004_extended_srgb_decode.obj: processing/colorspace/0004_extended_srgb_decode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0004_extended_srgb_decode.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Tpo -c -o processing/colorspace/test_runner-0004_extended_srgb_decode.obj `if test -f 'processing/colorspace/0004_extended_srgb_decode.c'; then $(CYGPATH_W) 'processing/colorspace/0004_extended_srgb_decode.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0004_extended_srgb_decode.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Tpo processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0004_extended_srgb_decode.c' object='processing/colorspace/test_runner-0004_extended_srgb_decode.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0004_extended_srgb_decode.obj `if test -f 'processing/colorspace/0004_extended_srgb_decode.c'; then $(CYGPATH_W) 'processing/colorspace/0004_extended_srgb_decode.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0004_extended_srgb_decode.c'; fi`
+
+processing/colorspace/test_runner-0005_extended_srgb_encode.o: processing/colorspace/0005_extended_srgb_encode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0005_extended_srgb_encode.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Tpo -c -o processing/colorspace/test_runner-0005_extended_srgb_encode.o `test -f 'processing/colorspace/0005_extended_srgb_encode.c' || echo '$(srcdir)/'`processing/colorspace/0005_extended_srgb_encode.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Tpo processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0005_extended_srgb_encode.c' object='processing/colorspace/test_runner-0005_extended_srgb_encode.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0005_extended_srgb_encode.o `test -f 'processing/colorspace/0005_extended_srgb_encode.c' || echo '$(srcdir)/'`processing/colorspace/0005_extended_srgb_encode.c
+
+processing/colorspace/test_runner-0005_extended_srgb_encode.obj: processing/colorspace/0005_extended_srgb_encode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0005_extended_srgb_encode.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Tpo -c -o processing/colorspace/test_runner-0005_extended_srgb_encode.obj `if test -f 'processing/colorspace/0005_extended_srgb_encode.c'; then $(CYGPATH_W) 'processing/colorspace/0005_extended_srgb_encode.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0005_extended_srgb_encode.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Tpo processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0005_extended_srgb_encode.c' object='processing/colorspace/test_runner-0005_extended_srgb_encode.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0005_extended_srgb_encode.obj `if test -f 'processing/colorspace/0005_extended_srgb_encode.c'; then $(CYGPATH_W) 'processing/colorspace/0005_extended_srgb_encode.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0005_extended_srgb_encode.c'; fi`
+
+processing/colorspace/test_runner-0006_extended_oklab_forward.o: processing/colorspace/0006_extended_oklab_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0006_extended_oklab_forward.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Tpo -c -o processing/colorspace/test_runner-0006_extended_oklab_forward.o `test -f 'processing/colorspace/0006_extended_oklab_forward.c' || echo '$(srcdir)/'`processing/colorspace/0006_extended_oklab_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Tpo processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0006_extended_oklab_forward.c' object='processing/colorspace/test_runner-0006_extended_oklab_forward.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0006_extended_oklab_forward.o `test -f 'processing/colorspace/0006_extended_oklab_forward.c' || echo '$(srcdir)/'`processing/colorspace/0006_extended_oklab_forward.c
+
+processing/colorspace/test_runner-0006_extended_oklab_forward.obj: processing/colorspace/0006_extended_oklab_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0006_extended_oklab_forward.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Tpo -c -o processing/colorspace/test_runner-0006_extended_oklab_forward.obj `if test -f 'processing/colorspace/0006_extended_oklab_forward.c'; then $(CYGPATH_W) 'processing/colorspace/0006_extended_oklab_forward.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0006_extended_oklab_forward.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Tpo processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0006_extended_oklab_forward.c' object='processing/colorspace/test_runner-0006_extended_oklab_forward.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0006_extended_oklab_forward.obj `if test -f 'processing/colorspace/0006_extended_oklab_forward.c'; then $(CYGPATH_W) 'processing/colorspace/0006_extended_oklab_forward.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0006_extended_oklab_forward.c'; fi`
+
+processing/colorspace/test_runner-0007_extended_oklab_inverse.o: processing/colorspace/0007_extended_oklab_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0007_extended_oklab_inverse.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Tpo -c -o processing/colorspace/test_runner-0007_extended_oklab_inverse.o `test -f 'processing/colorspace/0007_extended_oklab_inverse.c' || echo '$(srcdir)/'`processing/colorspace/0007_extended_oklab_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Tpo processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0007_extended_oklab_inverse.c' object='processing/colorspace/test_runner-0007_extended_oklab_inverse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0007_extended_oklab_inverse.o `test -f 'processing/colorspace/0007_extended_oklab_inverse.c' || echo '$(srcdir)/'`processing/colorspace/0007_extended_oklab_inverse.c
+
+processing/colorspace/test_runner-0007_extended_oklab_inverse.obj: processing/colorspace/0007_extended_oklab_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0007_extended_oklab_inverse.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Tpo -c -o processing/colorspace/test_runner-0007_extended_oklab_inverse.obj `if test -f 'processing/colorspace/0007_extended_oklab_inverse.c'; then $(CYGPATH_W) 'processing/colorspace/0007_extended_oklab_inverse.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0007_extended_oklab_inverse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Tpo processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0007_extended_oklab_inverse.c' object='processing/colorspace/test_runner-0007_extended_oklab_inverse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0007_extended_oklab_inverse.obj `if test -f 'processing/colorspace/0007_extended_oklab_inverse.c'; then $(CYGPATH_W) 'processing/colorspace/0007_extended_oklab_inverse.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0007_extended_oklab_inverse.c'; fi`
+
+processing/colorspace/test_runner-0008_extended_lab_forward.o: processing/colorspace/0008_extended_lab_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0008_extended_lab_forward.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Tpo -c -o processing/colorspace/test_runner-0008_extended_lab_forward.o `test -f 'processing/colorspace/0008_extended_lab_forward.c' || echo '$(srcdir)/'`processing/colorspace/0008_extended_lab_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Tpo processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0008_extended_lab_forward.c' object='processing/colorspace/test_runner-0008_extended_lab_forward.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0008_extended_lab_forward.o `test -f 'processing/colorspace/0008_extended_lab_forward.c' || echo '$(srcdir)/'`processing/colorspace/0008_extended_lab_forward.c
+
+processing/colorspace/test_runner-0008_extended_lab_forward.obj: processing/colorspace/0008_extended_lab_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0008_extended_lab_forward.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Tpo -c -o processing/colorspace/test_runner-0008_extended_lab_forward.obj `if test -f 'processing/colorspace/0008_extended_lab_forward.c'; then $(CYGPATH_W) 'processing/colorspace/0008_extended_lab_forward.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0008_extended_lab_forward.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Tpo processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0008_extended_lab_forward.c' object='processing/colorspace/test_runner-0008_extended_lab_forward.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0008_extended_lab_forward.obj `if test -f 'processing/colorspace/0008_extended_lab_forward.c'; then $(CYGPATH_W) 'processing/colorspace/0008_extended_lab_forward.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0008_extended_lab_forward.c'; fi`
+
+processing/colorspace/test_runner-0009_extended_lab_inverse.o: processing/colorspace/0009_extended_lab_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0009_extended_lab_inverse.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Tpo -c -o processing/colorspace/test_runner-0009_extended_lab_inverse.o `test -f 'processing/colorspace/0009_extended_lab_inverse.c' || echo '$(srcdir)/'`processing/colorspace/0009_extended_lab_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Tpo processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0009_extended_lab_inverse.c' object='processing/colorspace/test_runner-0009_extended_lab_inverse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0009_extended_lab_inverse.o `test -f 'processing/colorspace/0009_extended_lab_inverse.c' || echo '$(srcdir)/'`processing/colorspace/0009_extended_lab_inverse.c
+
+processing/colorspace/test_runner-0009_extended_lab_inverse.obj: processing/colorspace/0009_extended_lab_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0009_extended_lab_inverse.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Tpo -c -o processing/colorspace/test_runner-0009_extended_lab_inverse.obj `if test -f 'processing/colorspace/0009_extended_lab_inverse.c'; then $(CYGPATH_W) 'processing/colorspace/0009_extended_lab_inverse.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0009_extended_lab_inverse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Tpo processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0009_extended_lab_inverse.c' object='processing/colorspace/test_runner-0009_extended_lab_inverse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0009_extended_lab_inverse.obj `if test -f 'processing/colorspace/0009_extended_lab_inverse.c'; then $(CYGPATH_W) 'processing/colorspace/0009_extended_lab_inverse.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0009_extended_lab_inverse.c'; fi`
+
+processing/colorspace/test_runner-0010_extended_din99d_forward.o: processing/colorspace/0010_extended_din99d_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0010_extended_din99d_forward.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Tpo -c -o processing/colorspace/test_runner-0010_extended_din99d_forward.o `test -f 'processing/colorspace/0010_extended_din99d_forward.c' || echo '$(srcdir)/'`processing/colorspace/0010_extended_din99d_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Tpo processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0010_extended_din99d_forward.c' object='processing/colorspace/test_runner-0010_extended_din99d_forward.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0010_extended_din99d_forward.o `test -f 'processing/colorspace/0010_extended_din99d_forward.c' || echo '$(srcdir)/'`processing/colorspace/0010_extended_din99d_forward.c
+
+processing/colorspace/test_runner-0010_extended_din99d_forward.obj: processing/colorspace/0010_extended_din99d_forward.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0010_extended_din99d_forward.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Tpo -c -o processing/colorspace/test_runner-0010_extended_din99d_forward.obj `if test -f 'processing/colorspace/0010_extended_din99d_forward.c'; then $(CYGPATH_W) 'processing/colorspace/0010_extended_din99d_forward.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0010_extended_din99d_forward.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Tpo processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0010_extended_din99d_forward.c' object='processing/colorspace/test_runner-0010_extended_din99d_forward.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0010_extended_din99d_forward.obj `if test -f 'processing/colorspace/0010_extended_din99d_forward.c'; then $(CYGPATH_W) 'processing/colorspace/0010_extended_din99d_forward.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0010_extended_din99d_forward.c'; fi`
+
+processing/colorspace/test_runner-0011_extended_din99d_inverse.o: processing/colorspace/0011_extended_din99d_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0011_extended_din99d_inverse.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Tpo -c -o processing/colorspace/test_runner-0011_extended_din99d_inverse.o `test -f 'processing/colorspace/0011_extended_din99d_inverse.c' || echo '$(srcdir)/'`processing/colorspace/0011_extended_din99d_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Tpo processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0011_extended_din99d_inverse.c' object='processing/colorspace/test_runner-0011_extended_din99d_inverse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0011_extended_din99d_inverse.o `test -f 'processing/colorspace/0011_extended_din99d_inverse.c' || echo '$(srcdir)/'`processing/colorspace/0011_extended_din99d_inverse.c
+
+processing/colorspace/test_runner-0011_extended_din99d_inverse.obj: processing/colorspace/0011_extended_din99d_inverse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0011_extended_din99d_inverse.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Tpo -c -o processing/colorspace/test_runner-0011_extended_din99d_inverse.obj `if test -f 'processing/colorspace/0011_extended_din99d_inverse.c'; then $(CYGPATH_W) 'processing/colorspace/0011_extended_din99d_inverse.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0011_extended_din99d_inverse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Tpo processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0011_extended_din99d_inverse.c' object='processing/colorspace/test_runner-0011_extended_din99d_inverse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0011_extended_din99d_inverse.obj `if test -f 'processing/colorspace/0011_extended_din99d_inverse.c'; then $(CYGPATH_W) 'processing/colorspace/0011_extended_din99d_inverse.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0011_extended_din99d_inverse.c'; fi`
 
 processing/decoder/test_runner-0053_percentage_rgb8.o: processing/decoder/0053_percentage_rgb8.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0053_percentage_rgb8.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Tpo -c -o processing/decoder/test_runner-0053_percentage_rgb8.o `test -f 'processing/decoder/0053_percentage_rgb8.c' || echo '$(srcdir)/'`processing/decoder/0053_percentage_rgb8.c
@@ -10776,6 +11312,8 @@ distclean-generic:
 	-$(am__rm_f) platform/path/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(am__dirstamp)
+	-$(am__rm_f) processing/cms/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/cms/$(am__dirstamp)
 	-$(am__rm_f) processing/colorspace/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/colorspace/$(am__dirstamp)
 	-$(am__rm_f) processing/decoder/$(DEPDIR)/$(am__dirstamp)
@@ -10848,6 +11386,7 @@ distclean: distclean-am
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0008_icc_builtin_d2b_b2d_legacy_lut.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
@@ -11020,9 +11559,31 @@ distclean: distclean-am
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po
@@ -11285,6 +11846,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0006_icc_builtin_pixel_format_matrix.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0007_icc_builtin_float_special_values.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0008_icc_builtin_d2b_b2d_legacy_lut.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0009_parametric_type4.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f diagnostics/status/$(DEPDIR)/test_runner-0001_status_timeout.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
@@ -11457,9 +12019,31 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0003_icc_source_lifetime.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0004_transform_owns_endpoints.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0005_matrix_icc_output.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0006_forward_lut_rejected_output.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0007_paired_lut_applies.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0009_icc_length_ownership.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0010_p3_float_roundtrip.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0004_extended_srgb_decode.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0005_extended_srgb_encode.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0006_extended_oklab_forward.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0007_extended_oklab_inverse.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0008_extended_lab_forward.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0009_extended_lab_inverse.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po

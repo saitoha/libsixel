@@ -27,6 +27,7 @@
 #endif
 
 #include "cms.h"
+#include "colorspace.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -3946,6 +3947,453 @@ sixel_cms_convert_to_cielab_with_profile_bytes(
     return converted;
 }
 
+
+/*
+ * Color definitions connect RGB endpoints through XYZ D50, without the
+ * legacy CMS convenience route through bounded sRGB. Definitions contain
+ * either an analytic matrix/TRC or an owned, parsed ICC profile. The job
+ * transform owns independent endpoint copies, so queue/clone lifetimes
+ * never depend on the loader's temporary metadata buffers.
+ */
+struct sixel_color_def {
+    double to_xyz[9];
+    double from_xyz[9];
+    double gamma[3];
+    sixel_color_trc_t trc;
+    unsigned char *bytes;
+    size_t length;
+    sixel_icc_profile_t icc;
+    int matrix_valid;
+};
+
+struct sixel_color_xform {
+    sixel_color_def_t *source;
+    sixel_color_def_t *destination;
+    int intent;
+};
+
+static int
+sixel_cdef_finite(double const values[3])
+{
+    return values != NULL && isfinite(values[0]) &&
+        isfinite(values[1]) && isfinite(values[2]);
+}
+
+static void
+sixel_cdef_matrix(double const matrix[9], double const in[3], double out[3])
+{
+    int row;
+
+    for (row = 0; row < 3; ++row) {
+        out[row] = matrix[row * 3] * in[0] +
+            matrix[row * 3 + 1] * in[1] + matrix[row * 3 + 2] * in[2];
+    }
+}
+
+/*
+ * Legacy ICC LUT evaluators return normalized encoded PCS samples. XYZ
+ * LUT8 is u1.7 and LUT16/mAB is u1.15, whereas matrix tags are s15.16
+ * tristimulus values. Decode this boundary only on the new descriptor path;
+ * changing the legacy global PCS helper would also affect unrelated users.
+ */
+static double
+sixel_cdef_pcs_scale(sixel_icc_lut_t const *lut)
+{
+    if (lut->kind == SIXEL_ICC_LUT_MFT1 ||
+        lut->kind == SIXEL_ICC_LUT_MFT1_RGB_GRAY_A2B0) {
+        return 255.0 / 128.0;
+    }
+    return 65535.0 / 32768.0;
+}
+
+sixel_color_def_t *
+sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
+                double const gamma[3])
+{
+    static double const bradford[9] = {
+        0.8951, 0.2664, -0.1614,
+        -0.7502, 1.7135, 0.0367,
+        0.0389, -0.0685, 1.0296
+    };
+    static double const d50[3] = {0.9642, 1.0, 0.8249};
+    sixel_color_def_t *definition;
+    double matrix[9];
+    double inverse[9];
+    double white[3];
+    double source_cone[3];
+    double target_cone[3];
+    double column[3];
+    double cone[3];
+    int i;
+    int j;
+
+    if (xy == NULL || gamma == NULL ||
+        (trc != SIXEL_COLOR_TRC_SRGB && trc != SIXEL_COLOR_TRC_POWER)) {
+        return NULL;
+    }
+    for (i = 0; i < 4; ++i) {
+        if (!isfinite(xy[2 * i]) || !isfinite(xy[2 * i + 1]) ||
+            xy[2 * i] < 0.0 || xy[2 * i + 1] <= 0.0 ||
+            xy[2 * i] + xy[2 * i + 1] > 1.0 + 1e-12) {
+            return NULL;
+        }
+    }
+    for (i = 0; i < 3; ++i) {
+        if (!isfinite(gamma[i]) || gamma[i] <= 0.0 || gamma[i] > 10.0) {
+            return NULL;
+        }
+    }
+    if (!sixel_cms_build_rgb_to_xyz_matrix_internal(
+            xy[0], xy[1], xy[2], xy[3], xy[4], xy[5], xy[6], xy[7],
+            matrix) || !sixel_cms_matrix3_invert_internal(bradford, inverse)) {
+        return NULL;
+    }
+    white[0] = xy[0] / xy[1];
+    white[1] = 1.0;
+    white[2] = (1.0 - xy[0] - xy[1]) / xy[1];
+    sixel_cdef_matrix(bradford, white, source_cone);
+    sixel_cdef_matrix(bradford, d50, target_cone);
+    for (i = 0; i < 3; ++i) {
+        if (!isfinite(source_cone[i]) || source_cone[i] <= 1e-12) {
+            return NULL;
+        }
+    }
+    definition = calloc(1, sizeof(*definition));
+    if (definition == NULL) {
+        return NULL;
+    }
+    for (i = 0; i < 3; ++i) {
+        if (matrix[3 + i] <= 0.0) {
+            sixel_cdef_free(definition);
+            return NULL;
+        }
+    }
+    definition->trc = trc;
+    memcpy(definition->gamma, gamma, sizeof(definition->gamma));
+    /* Adapt the native white and every primary exactly once to the PCS. */
+    for (i = 0; i < 3; ++i) {
+        for (j = 0; j < 3; ++j) {
+            column[j] = matrix[j * 3 + i];
+        }
+        sixel_cdef_matrix(bradford, column, cone);
+        for (j = 0; j < 3; ++j) {
+            cone[j] *= target_cone[j] / source_cone[j];
+        }
+        sixel_cdef_matrix(inverse, cone, column);
+        for (j = 0; j < 3; ++j) {
+            definition->to_xyz[j * 3 + i] = column[j];
+        }
+    }
+    if (!sixel_cms_matrix3_invert_internal(definition->to_xyz,
+                                           definition->from_xyz)) {
+        sixel_cdef_free(definition);
+        return NULL;
+    }
+    for (i = 0; i < 9; ++i) {
+        if (!isfinite(definition->to_xyz[i]) ||
+            !isfinite(definition->from_xyz[i])) {
+            sixel_cdef_free(definition);
+            return NULL;
+        }
+    }
+    return definition;
+}
+
+sixel_color_def_t *
+sixel_cdef_name(char const *name)
+{
+    static double const srgb[8] = {
+        0.3127, 0.3290, 0.64, 0.33, 0.30, 0.60, 0.15, 0.06
+    };
+    static double const p3[8] = {
+        0.3127, 0.3290, 0.68, 0.32, 0.265, 0.69, 0.15, 0.06
+    };
+    static double const gamma[3] = {1.0, 1.0, 1.0};
+
+    if (name == NULL) {
+        return NULL;
+    }
+    if (strcmp(name, "srgb") == 0) {
+        return sixel_cdef_rgb(srgb, SIXEL_COLOR_TRC_SRGB, gamma);
+    }
+    if (strcmp(name, "display-p3") == 0) {
+        return sixel_cdef_rgb(p3, SIXEL_COLOR_TRC_SRGB, gamma);
+    }
+    return NULL;
+}
+
+sixel_color_def_t *
+sixel_cdef_icc(void const *bytes, size_t length)
+{
+    sixel_color_def_t *definition;
+    unsigned char const *header;
+    size_t declared;
+    int i;
+
+    if (bytes == NULL || length < 128u || length > 16u * 1024u * 1024u) {
+        return NULL;
+    }
+    header = bytes;
+    declared = (size_t)header[0] * 16777216u + (size_t)header[1] * 65536u
+        + (size_t)header[2] * 256u + (size_t)header[3];
+    /* This owned endpoint requires an exact ICC envelope, unlike the
+     * legacy parser's more permissive embedded-profile compatibility path.
+     * This is not a complete class-specific ICC conformance check. */
+    if (declared != length || memcmp(header + 36, "acsp", 4) != 0) {
+        return NULL;
+    }
+    definition = calloc(1, sizeof(*definition));
+    if (definition == NULL) {
+        return NULL;
+    }
+    definition->bytes = malloc(length);
+    if (definition->bytes == NULL) {
+        sixel_cdef_free(definition);
+        return NULL;
+    }
+    memcpy(definition->bytes, bytes, length);
+    definition->length = length;
+    if (!sixel_icc_parse_profile(definition->bytes, length, &definition->icc)
+        || definition->icc.kind != SIXEL_ICC_PROFILE_KIND_RGB ||
+        (definition->icc.pcs == SIXEL_ICC_PROFILE_PCS_LAB && header[8] < 4)) {
+        /* Legacy v2 Lab LUT scaling needs a separate validated adapter. */
+        sixel_cdef_free(definition);
+        return NULL;
+    }
+    memcpy(definition->to_xyz, definition->icc.matrix_to_xyz_d50,
+           sizeof(definition->to_xyz));
+    definition->matrix_valid = sixel_cms_matrix3_invert_internal(
+        definition->to_xyz, definition->from_xyz);
+    for (i = 0; i < 3; ++i) {
+        if (definition->icc.curves[i].kind == SIXEL_ICC_CURVE_INVALID) {
+            definition->matrix_valid = 0;
+        }
+    }
+    return definition;
+}
+
+sixel_color_def_t *
+sixel_cdef_clone(sixel_color_def_t const *definition)
+{
+    sixel_color_def_t *clone;
+
+    if (definition == NULL) {
+        return NULL;
+    }
+    if (definition->bytes != NULL) {
+        return sixel_cdef_icc(definition->bytes, definition->length);
+    }
+    clone = malloc(sizeof(*clone));
+    if (clone != NULL) {
+        memcpy(clone, definition, sizeof(*clone));
+    }
+    return clone;
+}
+
+void
+sixel_cdef_free(sixel_color_def_t *definition)
+{
+    if (definition != NULL) {
+        sixel_icc_profile_destroy(&definition->icc);
+        free(definition->bytes);
+        free(definition);
+    }
+}
+
+int
+sixel_cdef_to_xyz(sixel_color_def_t const *definition,
+                   double const rgb[3], double xyz[3], int intent)
+{
+    double linear[3];
+    double result[3];
+    int i;
+
+    /* Absolute intent requires media-white handling, which is not enabled. */
+    if (definition == NULL || xyz == NULL || !sixel_cdef_finite(rgb) ||
+        intent < 0 || intent > 2) {
+        return 0;
+    }
+    if (definition->bytes != NULL) {
+        if (definition->icc.a2b_lut[intent].kind != SIXEL_ICC_LUT_INVALID ||
+            definition->icc.a2b_mab[intent].type !=
+                SIXEL_ICC_MAB_TYPE_INVALID ||
+            definition->icc.d2b_lut[intent].kind != SIXEL_ICC_LUT_INVALID ||
+            definition->icc.d2b_mab[intent].type !=
+                SIXEL_ICC_MAB_TYPE_INVALID) {
+            if (!sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
+                    result, rgb, 3u, &definition->icc,
+                    (unsigned int)intent, 0)) {
+                return 0;
+            }
+            if (definition->icc.pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
+                for (i = 0; i < 3; ++i) {
+                    result[i] *= sixel_cdef_pcs_scale(
+                        definition->icc.a2b_lut[intent].kind !=
+                        SIXEL_ICC_LUT_INVALID
+                            ? &definition->icc.a2b_lut[intent]
+                            : &definition->icc.d2b_lut[intent]);
+                }
+            }
+        } else {
+            if (!definition->matrix_valid) {
+                return 0;
+            }
+            for (i = 0; i < 3; ++i) {
+                if (!sixel_icc_curve_device(&definition->icc.curves[i],
+                                               rgb[i], 0, &linear[i])) {
+                    return 0;
+                }
+            }
+            sixel_cdef_matrix(definition->to_xyz, linear, result);
+        }
+    } else {
+        for (i = 0; i < 3; ++i) {
+            linear[i] = definition->trc == SIXEL_COLOR_TRC_SRGB
+                ? sixel_color_decode_srgb(rgb[i])
+                : copysign(pow(fabs(rgb[i]), definition->gamma[i]), rgb[i]);
+        }
+        sixel_cdef_matrix(definition->to_xyz, linear, result);
+    }
+    if (!sixel_cdef_finite(result)) {
+        return 0;
+    }
+    memcpy(xyz, result, sizeof(result));
+    return 1;
+}
+
+int
+sixel_cdef_from_xyz(sixel_color_def_t const *definition,
+                     double const xyz[3], double rgb[3], int intent)
+{
+    double linear[3];
+    double result[3];
+    int i;
+
+    if (definition == NULL || rgb == NULL || !sixel_cdef_finite(xyz) ||
+        intent < 0 || intent > 2) {
+        return 0;
+    }
+    if (definition->bytes != NULL) {
+        if (definition->icc.b2a_lut[intent].kind != SIXEL_ICC_LUT_INVALID ||
+            definition->icc.b2a_mab[intent].type !=
+                SIXEL_ICC_MAB_TYPE_INVALID ||
+            definition->icc.b2d_lut[intent].kind != SIXEL_ICC_LUT_INVALID ||
+            definition->icc.b2d_mab[intent].type !=
+                SIXEL_ICC_MAB_TYPE_INVALID) {
+            memcpy(linear, xyz, sizeof(linear));
+            if (definition->icc.pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
+                for (i = 0; i < 3; ++i) {
+                    linear[i] /= sixel_cdef_pcs_scale(
+                        definition->icc.b2a_lut[intent].kind !=
+                        SIXEL_ICC_LUT_INVALID
+                            ? &definition->icc.b2a_lut[intent]
+                            : &definition->icc.b2d_lut[intent]);
+                }
+            }
+            if (!sixel_icc_apply_xyz_d50_to_device_with_b2a_slot(
+                    result, 3u, linear, &definition->icc,
+                    (unsigned int)intent)) {
+                return 0;
+            }
+        } else {
+            if (!definition->matrix_valid) {
+                return 0;
+            }
+            sixel_cdef_matrix(definition->from_xyz, xyz, linear);
+            for (i = 0; i < 3; ++i) {
+                if (!sixel_icc_curve_device(&definition->icc.curves[i],
+                                               linear[i], 1, &result[i])) {
+                    return 0;
+                }
+            }
+        }
+    } else {
+        sixel_cdef_matrix(definition->from_xyz, xyz, linear);
+        for (i = 0; i < 3; ++i) {
+            result[i] = definition->trc == SIXEL_COLOR_TRC_SRGB
+                ? sixel_color_encode_srgb(linear[i])
+                : copysign(pow(fabs(linear[i]), 1.0 / definition->gamma[i]),
+                           linear[i]);
+        }
+    }
+    if (!sixel_cdef_finite(result)) {
+        return 0;
+    }
+    memcpy(rgb, result, sizeof(result));
+    return 1;
+}
+
+int
+sixel_cdef_output_ready(sixel_color_def_t const *definition,
+                         int encoding_intent, int evaluation_intent)
+{
+    static double const probes[][3] = {
+        {0.0, 0.0, 0.0}, {1.0, 1.0, 1.0}, {0.5, 0.5, 0.5},
+        {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}
+    };
+    double xyz[3];
+    double encoded[3];
+    double evaluated[3];
+    size_t i;
+
+    for (i = 0; i < sizeof(probes) / sizeof(probes[0]); ++i) {
+        if (!sixel_cdef_to_xyz(definition, probes[i], xyz,
+                                evaluation_intent) ||
+            !sixel_cdef_from_xyz(definition, xyz, encoded,
+                                  encoding_intent) ||
+            !sixel_cdef_to_xyz(definition, encoded, evaluated,
+                                evaluation_intent)) {
+            return 0;
+        }
+    }
+    /* M6 must additionally evaluate every finalized, quantized wire entry. */
+    return 1;
+}
+
+sixel_color_xform_t *
+sixel_cxform_new(sixel_color_def_t const *source,
+                  sixel_color_def_t const *destination, int intent)
+{
+    sixel_color_xform_t *transform;
+
+    if (source == NULL || destination == NULL || intent < 0 || intent > 2) {
+        return NULL;
+    }
+    transform = calloc(1, sizeof(*transform));
+    if (transform == NULL) {
+        return NULL;
+    }
+    transform->source = sixel_cdef_clone(source);
+    transform->destination = sixel_cdef_clone(destination);
+    transform->intent = intent;
+    if (transform->source == NULL || transform->destination == NULL) {
+        sixel_cxform_free(transform);
+        return NULL;
+    }
+    return transform;
+}
+
+int
+sixel_cxform_apply(sixel_color_xform_t const *transform,
+                    double const source[3], double destination[3])
+{
+    double xyz[3];
+
+    return transform != NULL &&
+        sixel_cdef_to_xyz(transform->source, source, xyz, transform->intent)
+        && sixel_cdef_from_xyz(transform->destination, xyz, destination,
+                                transform->intent);
+}
+
+void
+sixel_cxform_free(sixel_color_xform_t *transform)
+{
+    if (transform != NULL) {
+        sixel_cdef_free(transform->destination);
+        sixel_cdef_free(transform->source);
+        free(transform);
+    }
+}
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

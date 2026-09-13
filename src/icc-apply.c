@@ -1957,6 +1957,93 @@ sixel_icc_apply_cmyk_float32_to_rgb_float32(float *dst_pixels,
 }
 
 
+/*
+ * ICC curves have a specified device domain. Keep that boundary separate
+ * from extended standard-RGB intermediates: evaluating a device curve must
+ * not introduce a bounded sRGB connection space. The inverse is used only
+ * at an ICC output endpoint, where values outside the curve's range map to
+ * its device endpoints. A non-monotone/constant table has no usable inverse.
+ */
+int
+sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
+                        int inverse, double *out)
+{
+    double result;
+    double first;
+    double last;
+    double low_value;
+    double high_value;
+    size_t low;
+    size_t high;
+    size_t mid;
+    size_t count;
+    size_t i;
+
+    if (curve == NULL || out == NULL || !isfinite(value)) {
+        return 0;
+    }
+    value = sixel_icc_clamp_unit(value);
+    switch (curve->kind) {
+    case SIXEL_ICC_CURVE_IDENTITY:
+        result = value;
+        break;
+    case SIXEL_ICC_CURVE_GAMMA:
+        if (!isfinite(curve->gamma) || curve->gamma <= 0.0) {
+            return 0;
+        }
+        result = pow(value, inverse ? 1.0 / curve->gamma : curve->gamma);
+        break;
+    case SIXEL_ICC_CURVE_TABLE:
+    case SIXEL_ICC_CURVE_SEGM_TABLE:
+        count = curve->table_length;
+        if (curve->table == NULL || count < 2u) {
+            return 0;
+        }
+        if (!inverse) {
+            result = sixel_icc_eval_curve(curve, value);
+            break;
+        }
+        for (i = 1; i < count; ++i) {
+            if (curve->table[i] < curve->table[i - 1u]) {
+                return 0;
+            }
+        }
+        first = (double)curve->table[0] / 65535.0;
+        last = (double)curve->table[count - 1u] / 65535.0;
+        if (last <= first) {
+            return 0;
+        }
+        if (value <= first) {
+            result = 0.0;
+        } else if (value >= last) {
+            result = 1.0;
+        } else {
+            low = 0u;
+            high = count - 1u;
+            while (high - low > 1u) {
+                mid = low + (high - low) / 2u;
+                if ((double)curve->table[mid] / 65535.0 < value) {
+                    low = mid;
+                } else {
+                    high = mid;
+                }
+            }
+            low_value = (double)curve->table[low] / 65535.0;
+            high_value = (double)curve->table[high] / 65535.0;
+            result = ((double)low + (value - low_value) /
+                      (high_value - low_value)) / (double)(count - 1u);
+        }
+        break;
+    default:
+        return 0;
+    }
+    if (!isfinite(result)) {
+        return 0;
+    }
+    *out = result;
+    return 1;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

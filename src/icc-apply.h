@@ -142,6 +142,10 @@ sixel_icc_apply_cmyk_float32_to_rgb_float32_with_a2b_slot(
     sixel_icc_profile_t const *profile,
     unsigned int a2b_slot);
 
+SIXEL_INTERNAL_API int
+sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
+                          int inverse, double *out);
+
 #endif
 
 

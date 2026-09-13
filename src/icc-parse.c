@@ -541,8 +541,9 @@ sixel_icc_eval_parametric(uint16_t function_type,
             }
             return 0.0;
         }
-        if (x >= params[5]) {
-            y = pow(params[1] * x + params[2], params[0]) + params[4];
+        /* ICC.1:2022 Table 68: g,a,b,c,d,e,f; d is the threshold. */
+        if (x >= params[4]) {
+            y = pow(params[1] * x + params[2], params[0]) + params[5];
         } else {
             y = params[3] * x + params[6];
         }
