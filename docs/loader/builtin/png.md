@@ -37,7 +37,7 @@ The adapted path also recognizes Apple's private `CgBI` form and performs its ch
 | Unknown ancillary chunks | Bounds-checked and skipped. |
 | Unknown critical chunks | Rejected. |
 
-The [shared PNG metadata precedence](../color-management.md#png-metadata-precedence-and-colorsync-compatibility) describes the ColorSync-compatible source choice, including the `iCCP+sRGB+cHRM` exception and the distinction from `iCCP+sRGB` alone. Malformed or non-applicable metadata follows the format path's fallback rules rather than becoming a generic metadata object. Text chunks, `pHYs`, `tIME`, and HDR signaling such as `cICP`, `mDCv`, and `cLLi` have no semantic effect in the current decoder.
+The [shared PNG metadata precedence](../png-color-metadata.md) describes the ColorSync-compatible source choice, including the `iCCP+sRGB+cHRM` exception and the distinction from `iCCP+sRGB` alone. Malformed or non-applicable metadata follows the format path's fallback rules rather than becoming a generic metadata object. Text chunks, `pHYs`, `tIME`, and HDR signaling such as `cICP`, `mDCv`, and `cLLi` have no semantic effect in the current decoder.
 
 PNG specifies CRC validation, but these in-memory builtin paths currently read past stored CRC fields without verifying them. Successful decode therefore proves structural acceptance by this parser, not checksum authentication.
 
@@ -60,7 +60,7 @@ Indexed palette conversion happens before later resize and quantization. If the 
 
 `acTL` declares frame count and play count. Each `fcTL` gives a canvas sub-rectangle, delay numerator/denominator, disposal, and blend operator. `fdAT` carries frame zlib bytes after a sequence number; the default image uses `IDAT`. The [PNG Third Edition APNG structure](https://www.w3.org/TR/png-3/) makes the position of the first `fcTL` decisive: if it precedes `IDAT`, the static default image is also animation frame zero; otherwise the default image is not in the animation, is not emitted through the animation callback, and is not included in `acTL.num_frames`. The implementation checks sequence numbers, declared frame count, chunk order, rectangle overflow, and canvas bounds.
 
-Each frame is reconstructed as a synthetic PNG using shared chunks, decoded through `stbi__load_and_postprocess_8bit()`, and composited onto an RGBA8 canvas. This is a distinct path from `sixel_frompng_load_nonindexed()` and its precision-preserving static pipeline. Shared metadata being copied into the synthetic PNG does not imply that static PNG's float/CMS processing runs before animation blending:
+Each frame is reconstructed as a synthetic PNG using shared chunks, decoded through `stbi__load_and_postprocess_8bit()`, and composited onto an RGBA8 canvas. This is a distinct path from `sixel_frompng_load_nonindexed()` and its precision-preserving static pipeline. When CMS is enabled, its shared declarations are evaluated through the static PNG source-choice policy and each decoded rectangle's RGB channels are normalized to eight-bit sRGB before blending. Alpha is retained independently. This does not invoke the static float pipeline or change the canvas to linear-light composition:
 
 | APNG field | Behavior |
 | --- | --- |
@@ -89,7 +89,7 @@ Static fallback means only that the ordinary PNG decoder gets one opportunity to
 
 ![A vertical implementation map of the builtin PNG and APNG loader. It follows static-versus-animation classification into indexed and non-indexed raster paths, profile and transfer conversion, APNG frame reconstruction and canvas composition, then common alpha, orientation, and typed-frame finalization. Every node carries a coverage ID used by the tables below.](pipeline-figures/png.svg)
 
-The static branches are alternatives, not a forced trip through each box: an indexed image may finish through `sixel_builtin_try_load_indexed_png()`, while non-indexed and high-depth images enter `sixel_frompng_load_nonindexed()`. APNG takes its own RGBA8 raster/canvas branch. Its integer `OVER` operation blends the stored component values; it is not switched to a float linear-light canvas by `background_colorspace`. Background flattening at emission is a separate operation.
+The static branches are alternatives, not a forced trip through each box: an indexed image may finish through `sixel_builtin_try_load_indexed_png()`, while non-indexed and high-depth images enter `sixel_frompng_load_nonindexed()`. APNG takes its own RGBA8 raster/canvas branch with source-color normalization before blending. Its integer `OVER` operation blends the stored component values; it is not switched to a float linear-light canvas by `background_colorspace`. Background flattening at emission is a separate operation.
 
 | ID | Implementation boundary | State entering → state leaving | Correctness obligation |
 | --- | --- | --- | --- |

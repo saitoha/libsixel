@@ -1,10 +1,10 @@
 # Image Loader Architecture
 
-For engine selection and its limits, read [Loader CMS: builtin and Little CMS](color-management.md). It distinguishes decoder support from CMS support and covers unsupported profiles, best-effort fallback, quality, and performance. For the subsystem design, read [Builtin CMS specification and architecture](builtin-cms.md).
+For engine selection and its limits, read [Loader CMS: builtin and Little CMS](color-management.md). It distinguishes decoder support from CMS support and covers unsupported profiles, best-effort fallback, quality, and performance. For shared PNG metadata precedence and its reference matrix, read [PNG color metadata](png-color-metadata.md). For the subsystem design, read [Builtin CMS specification and architecture](builtin-cms.md).
 
 ## Scope
 
-Image loading in libsixel is an ordered component pipeline rather than one decoder hidden behind a uniform RGBA buffer. The loader manager builds a candidate chain, gives each candidate an opportunity to recognize and decode the input, and returns the first accepted frame. Each backend owns format recognition, decoding, metadata precedence, animation delivery, orientation, alpha finalization, and any CMS path that it supports.
+Image loading in libsixel is an ordered component pipeline rather than one decoder hidden behind a uniform RGBA buffer. The loader manager builds a candidate chain, gives each candidate an opportunity to recognize and decode the input, and returns the first accepted frame. Each backend implements shared format metadata policy and owns format recognition, decoding, animation delivery, orientation, alpha finalization, and any CMS path that it supports.
 
 This document defines that shared architecture and the `-L` policy surface. Backend-specific parsing and format behavior belongs in the [libpng Image Loader](libpng.md) and [Builtin Image Loader](builtin.md) references.
 
@@ -104,7 +104,7 @@ Those benefits do not make builtin inherently safer. Every in-tree parser, decom
 
 ## Backend documentation boundaries
 
-The shared manager contract stays here. Each detailed backend document should separately specify its recognized formats, depth and colorspace behavior, metadata precedence, animation model, alpha representation, suboptions, fallback statuses, host dependencies, security considerations, and implementation/test landmarks. The current detailed backend references are:
+The shared manager contract stays here. Each detailed backend document should separately specify its recognized formats, depth and colorspace behavior, implementation of shared format metadata policy, animation model, alpha representation, suboptions, fallback statuses, host dependencies, security considerations, and implementation/test landmarks. The current detailed backend references are:
 
 - [libpng Image Loader](libpng.md), including alpha/background policy, source precision, shared static/APNG CMS, and input validation.
 - [Builtin Image Loader](builtin.md), including its stb_image lineage and format-specific extraction history.

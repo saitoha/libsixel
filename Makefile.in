@@ -763,6 +763,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/loader/README.md \
 	docs/loader/libpng.md \
 	docs/loader/color-management.md \
+	docs/loader/png-color-metadata.md \
 	docs/loader/cms-default-measurements.json \
 	tools/measure_cms_default.py \
 	docs/loader/builtin-cms.md \
@@ -1122,6 +1123,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/check_snap_policy_measurements.py \
 	tools/check_threading_measurements.py \
 	tools/generate_builtin_loader_coverage.py \
+	tools/generate_png_cms_matrix.py \
 	tools/generate_palette_pipeline_suite_fixtures.py \
 	tools/gen_perl_constants.pl \
 	tools/gen_perl_attach.pl \

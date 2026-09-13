@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/png-color-metadata.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin loader colormgmt parity for idx/img_idx_icc1_srgb1_chrm0_gama0.png
 

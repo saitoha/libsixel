@@ -197,28 +197,25 @@ The final `!` closes the loader chain. It does not require a successful ICC conv
 
 Autotools detects lcms2 by default and accepts `--with-lcms2` / `--without-lcms2`; Meson exposes the `lcms2` feature option. Inspect the configuration result and, for Autotools builds, `HAVE_LCMS2` in `config.h`. Pin the build, dependency version, loader, CMS settings, and encoder settings when exact reproducibility matters. See [platform support](../platform-support.md).
 
+## Format-specific CMS regression matrices
+
+Color-management regression testing spans CMS-aware formats; PNG is one container-specific matrix within that larger policy. The axes follow each format's declarations and source models. A PNG chunk-presence table must not be applied to JPEG, TIFF, WebP, BMP, or PSD merely because they also carry an ICC profile.
+
+| Format | Existing verification axes | Maintained entry points |
+| --- | --- | --- |
+| PNG/APNG | iCCP/sRGB/cHRM/gAMA presence × grayscale/indexed/RGB, shared by builtin and libpng; separate exact static/APNG source-choice probes. | [Shared PNG matrix](png-color-metadata.md), [builtin PNG](builtin/png.md#test-coverage), [libpng](libpng.md#test-coverage). |
+| TIFF | ICC/WhitePoint/PrimaryChromaticities/TransferFunction presence × RGB/Lab/grayscale/palette × CMS enabled/disabled: 128 matrix tests, with additional cases outside that product. | [TIFF test category](../../tests/loader/libtiff), [input matrices](../../tests/data/colormgmt/input/tiff), [reference matrices](../../tests/data/colormgmt/reference/tiff), [fixture generator](../../tools/generate_tiff_colormgmt_matrix.py). |
+| JPEG | Embedded ICC, RGB/CMYK/YCCK input, source precision, CMS enabled/disabled, and lcms2 availability, subject to each decoder's retained source domain. | [libjpeg tests](../../tests/loader/libjpeg), [builtin JPEG contracts](builtin/jpeg.md#test-coverage), [builtin test inventory](../testing/builtin-loader-coverage.md). |
+| WebP | ICCP presence/validity/size, ICCP versus XMP fallback, CMS selection, static/animated and lossy/lossless paths. | [libwebp tests](../../tests/loader/libwebp), [builtin WebP contracts](builtin/webp.md#test-coverage), [builtin test inventory](../testing/builtin-loader-coverage.md). |
+| BMP/DIB | Calibrated endpoints/gamma versus embedded ICC, RGB/CMYK domain compatibility, CMS enabled/disabled, alpha preservation, and nested PNG/JPEG color handling. | [BMP contracts](builtin/bmp.md#test-coverage), [BMP/DIB test inventory](../testing/builtin-loader-coverage.md#bmp-and-dib). |
+| PSD/PSB | Embedded ICC validity and source-domain compatibility, color model, depth, compression, and composite/layer reconstruction paths. | [PSD/PSB contracts](builtin/psd.md#test-coverage), [builtin test inventory](../testing/builtin-loader-coverage.md). |
+| Radiance HDR | GAMMA/PRIMARIES, exposure, tone mapping, target colorspace, CMS selection, and fallback, with numerical and LSQA matrices. | [HDR contracts](builtin/hdr.md#test-coverage), [builtin test inventory](../testing/builtin-loader-coverage.md). |
+
+These are coverage dimensions and navigation, not a claim that every cross-product is complete or every reference originated from Apple. Keep expected values, provenance, and coverage limits with the format's policy. The builtin inventory distinguishes numerical assertions, complete-buffer comparisons, perceptual floors, and trace-only observations; successful decoding alone does not prove color interpretation.
+
 ## PNG metadata precedence and ColorSync compatibility
 
-PNG source interpretation is a shared loader policy, including the builtin decoder. It was aligned with Apple's ColorSync image-loading behavior; it is not a libpng-only rule or a consequence of selecting `cms_engine=colorsync`. The image decoder chooses the source declaration before the selected CMS engine evaluates a profile. On Apple systems the complete reference path includes ImageIO's metadata interpretation and CoreGraphics/ColorSync drawing into sRGB; calling ColorSync with an already selected ICC profile cannot reproduce that container-level choice by itself.
-
-For the supported PNG declarations, the compatibility decision is ordered as follows:
-
-| Order | Declarations and applicable interpretation | Source choice |
-| --- | --- | --- |
-| 1 | `iCCP`, `sRGB`, and `cHRM` coexist, with or without `gAMA`. | Use the sRGB interpretation; skip the embedded ICC transform and gAMA/cHRM conversion. |
-| 2 | Otherwise an applicable `iCCP` profile is available to the selected engine. | Use that ICC transform. In particular, `iCCP+sRGB` without `cHRM` still takes this branch. |
-| 3 | No ICC transform applies and `sRGB` is present. | Use sRGB; lower-level `gAMA` and `cHRM` do not replace its transfer function or primaries. |
-| 4 | No higher-priority interpretation applies. | Use the supported `gAMA` transfer and `cHRM` chromaticity fallback for that format path, or its default sRGB assumption. |
-
-This is source interpretation, not permission to skip structural parsing or alpha/background processing. Using sRGB may still require transfer decoding to linear storage, composition, or conversion to the requested `cms_target`. Conversely, `cms_engine=none` disables the libsixel metadata transform. Profile validation, source-channel compatibility, and fallback after rejected or unsupported metadata remain explicit loader boundaries; the order does not guarantee that every decoder accepts the same malformed profile or every isolated cHRM declaration.
-
-The [PNG Third Edition specification](https://www.w3.org/TR/png-3/#11sRGB) recommends avoiding simultaneous `iCCP` and `sRGB`; this is not an unconditional prohibition. Its [general color-chunk priority table](https://www.w3.org/TR/png-3/#4Concepts.ColourSpaces) orders understood declarations as cICP, iCCP, sRGB, then cHRM/gAMA. The three-chunk exception above records libsixel's established Apple-compatible handling of overlapping declarations, which differs from that general table. Current builtin/libpng paths do not interpret cICP. Do not simplify it to either “ICC always wins” or “sRGB always overrides ICC”: each changes one of the first two rows.
-
-The [March 2026 builtin alignment](https://github.com/saitoha/libsixel/commit/95ddf26b67f8f8619cac90faabb2cf459631a07c), [raw-chunk priority fix in libpng](https://github.com/saitoha/libsixel/commit/56e53f27a7f2b2ab719aa414af994b92e628c415), and [April no-lcms parity fix](https://github.com/saitoha/libsixel/commit/157db06319e557abab3bfb660dad958c5019ee6d) record deliberate cross-loader and cross-build compatibility work. Metadata getters can suppress or synthesize declarations, so their results alone must not silently change the original coexistence decision. Preserve the validated-profile boundary while retaining the relevant original chunk flags.
-
-The shared rule describes the source choice where the PNG path applies CMS. An existing builtin APNG eight-bit RGBA path emits the same unmanaged samples for all four declarations in the direct comparison, including ICC-only input; its missing ICC application is an implementation gap, not a separate intended precedence rule. Static builtin PNG and static/animated libpng are covered by the owners below.
-
-The direct contract probes below use fixed RGBA samples with changing metadata, so a source-choice change cannot be hidden by an updated image reference or an MS-SSIM threshold. The broader [PNG matrix fixtures and references](../../tests/data/colormgmt/) cover RGB, gray, and indexed examples. Neither establishes identical pixels for every ColorSync version, rendering intent, ICC dialect, or decoder path; platform comparisons must record the OS, source profile, output colorspace, and raster precision.
+The shared [PNG color metadata and ColorSync compatibility](png-color-metadata.md) document owns the source-selection rules, the grayscale/indexed/RGB 16-case tables derived from existing reference tests, their provenance, and exact source-choice probes. The policy applies across PNG decoders, including builtin; it is independent of selecting `cms_engine=colorsync`.
 
 ## Supported profile structures and practical differences
 
@@ -259,7 +256,7 @@ The lcms2 wrapper tries creating a transform with each allowed intent using norm
 
 | Loader path | Consequence for CMS users |
 | --- | --- |
-| [Builtin PNG/APNG](builtin/png.md) and [libpng](libpng.md) | Follow the [common PNG source-choice policy](#png-metadata-precedence-and-colorsync-compatibility), including the three-chunk exception. Profile acceptance and rejected-profile fallback remain path-specific; libpng never revives ICC bytes rejected by its decoder. Current builtin PNG HDR chunks such as `cICP` do not acquire semantics by selecting lcms2. |
+| [Builtin PNG/APNG](builtin/png.md) and [libpng](libpng.md) | Follow the [common PNG source-choice policy](png-color-metadata.md), including the three-chunk exception. Profile acceptance and rejected-profile fallback remain path-specific; libpng never revives ICC bytes rejected by its decoder. Current builtin PNG HDR chunks such as `cICP` do not acquire semantics by selecting lcms2. |
 | [Builtin JPEG](builtin/jpeg.md) | The ICC stage receives RGB after JPEG component conversion and applies RGB-domain profiles. It cannot retroactively apply a CMYK profile to the original CMYK planes. Choosing lcms2 with this decoder does not remove that limitation. |
 | [Builtin PSD/PSB](builtin/psd.md) | Applicable RGB, CMYK, and Lab profiles are applied to matching source domains; failed or inapplicable profiles leave format-specific fallback conversion. |
 | [Builtin WebP](builtin/webp.md) | ICCP/XMP handling normalizes an RGBA8 boundary. Requesting a float target does not restore precision lost at this boundary. Metadata precedence, bounds, and best-effort handling belong to the WebP path. |
@@ -322,7 +319,6 @@ Compare decoded managed pixels against an independently prepared color-managed r
 | CMS-18 | ignored tags preserve pixels. | [tests/diagnostics/cms_trace/0006_ignored_tags_preserve_pixels.t](../../tests/diagnostics/cms_trace/0006_ignored_tags_preserve_pixels.t) |
 | CMS-19 | lsqa defaults to auto and normalizes a profiled image differently from none. | [tests/quality_gate/cms/0009_lsqa_cms_default_auto.t](../../tests/quality_gate/cms/0009_lsqa_cms_default_auto.t) |
 | CMS-20 | img2sixel defaults to auto and normalizes a profiled image differently from none. | [tests/quality_gate/cms/0010_img2sixel_cms_default_auto.t](../../tests/quality_gate/cms/0010_img2sixel_cms_default_auto.t) |
-| CMS-21 | Static PNG through libpng/builtin and APNG through libpng preserve the ColorSync-compatible choice with builtin/lcms2 CMS. Exact samples distinguish ICC-only, iCCP+sRGB, iCCP+sRGB+cHRM+gAMA, and sRGB+cHRM+gAMA. | [tests/loader/libpng/0251_libpng_builtin_static_cms_priority.t](../../tests/loader/libpng/0251_libpng_builtin_static_cms_priority.t), [tests/loader/libpng/0252_libpng_builtin_apng_cms_priority.t](../../tests/loader/libpng/0252_libpng_builtin_apng_cms_priority.t), [tests/loader/libpng/0253_libpng_lcms2_static_cms_priority.t](../../tests/loader/libpng/0253_libpng_lcms2_static_cms_priority.t), [tests/loader/libpng/0254_libpng_lcms2_apng_cms_priority.t](../../tests/loader/libpng/0254_libpng_lcms2_apng_cms_priority.t), [tests/loader/libpng/0255_builtin_builtin_static_cms_priority.t](../../tests/loader/libpng/0255_builtin_builtin_static_cms_priority.t), [tests/loader/libpng/0256_builtin_lcms2_static_cms_priority.t](../../tests/loader/libpng/0256_builtin_lcms2_static_cms_priority.t) |
 
 ### Defensive and malformed-input tests
 

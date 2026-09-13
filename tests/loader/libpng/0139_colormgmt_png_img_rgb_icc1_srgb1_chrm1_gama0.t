@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/png-color-metadata.md
 # A usable ICC profile wins even when contradictory lower-priority chunks exist.
 # TAP test: libpng loader colormgmt parity for rgb/img_rgb_icc1_srgb1_chrm1_gama0.png
 

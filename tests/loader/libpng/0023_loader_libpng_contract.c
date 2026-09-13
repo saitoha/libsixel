@@ -12,10 +12,13 @@
 /* Fault injection distinguishes optional cache/canvas work from decoding. */
 static int lp_allocation_mode;
 static int lp_matching_allocations;
+static int lp_live_allocations;
 
 static void *
 lp_malloc(size_t size)
 {
+    void *memory;
+
     if ((lp_allocation_mode == 1 && size == 2u * sizeof(void *)) ||
         (lp_allocation_mode == 2 && size == 8u)) {
         ++lp_matching_allocations;
@@ -24,7 +27,41 @@ lp_malloc(size_t size)
             return NULL;
         }
     }
-    return malloc(size);
+    memory = malloc(size);
+    if (memory != NULL) {
+        ++lp_live_allocations;
+    }
+    return memory;
+}
+
+static void *
+lp_realloc(void *memory, size_t size)
+{
+    void *resized;
+    int was_null;
+
+    was_null = memory == NULL;
+    if (size == 0u) {
+        if (!was_null) {
+            --lp_live_allocations;
+        }
+        free(memory);
+        return NULL;
+    }
+    resized = realloc(memory, size);
+    if (resized != NULL && was_null) {
+        ++lp_live_allocations;
+    }
+    return resized;
+}
+
+static void
+lp_free(void *memory)
+{
+    if (memory != NULL) {
+        --lp_live_allocations;
+    }
+    free(memory);
 }
 
 static void *
@@ -273,7 +310,7 @@ lp_load_backend(char const *backend, lp_fixture_t const *f, lp_probe_t *probe,
     callback.fn = lp_capture;
     callback.context = probe;
     status = sixel_allocator_new(&allocator, lp_malloc, lp_calloc,
-                                  realloc, free);
+                                  lp_realloc, lp_free);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -361,10 +398,17 @@ lp_load(lp_fixture_t const *f, lp_probe_t *probe,
  * the three-chunk exception from both ICC-always and sRGB-always policies.
  */
 static int
-lp_check_priority(char const *backend, int cms, int animated)
+lp_check_priority(char const *backend, int cms, int animated,
+                  char const *model)
 {
     unsigned char metadata[EDGE_BUFFER_CAPACITY];
     unsigned char rgba[9] = {0, 128, 128, 128, 255, 128, 128, 128, 255};
+    unsigned char gray[5] = {0, 128, 255, 128, 255};
+    unsigned char indexed[3] = {0, 0, 1};
+    unsigned char palette[6] = {128, 128, 128, 128, 128, 128};
+    unsigned char const *raw;
+    char const *fixture;
+    size_t raw_size;
     size_t metadata_size;
     size_t offset;
     size_t length;
@@ -372,19 +416,42 @@ lp_check_priority(char const *backend, int cms, int animated)
     lp_probe_t probes[4];
     SIXELSTATUS status;
     int variant;
+    int frame;
+    int frames;
+    int color_type;
     int channel;
     int include;
     int result;
     double expected;
     double difference;
 
-    if (edge_read_fixture("/tests/data/colormgmt/input/png/rgb/"
-        "img_rgb_icc1_srgb1_chrm1_gama1.png", metadata, sizeof(metadata),
-        &metadata_size) != 0) {
+    frames = animated ? 2 : 1;
+    color_type = 6;
+    raw = rgba;
+    raw_size = sizeof(rgba);
+    fixture = "/tests/data/colormgmt/input/png/rgb/"
+              "img_rgb_icc1_srgb1_chrm1_gama1.png";
+    if (strcmp(model, "gray") == 0) {
+        color_type = 4;
+        raw = gray;
+        raw_size = sizeof(gray);
+        fixture = "/tests/data/colormgmt/input/png/gray/"
+                  "img_gray_icc1_srgb1_chrm1_gama1.png";
+    } else if (strcmp(model, "idx") == 0) {
+        color_type = 3;
+        raw = indexed;
+        raw_size = sizeof(indexed);
+    }
+    if (animated) {
+        rgba[4] = 0;
+        gray[2] = 0;
+    }
+    if (edge_read_fixture(fixture, metadata, sizeof(metadata),
+                          &metadata_size) != 0) {
         return 1;
     }
     for (variant = 0; variant < 4; ++variant) {
-        lp_header(&f, 8, 6);
+        lp_header(&f, 8, color_type);
         for (offset = 8u; offset + 12u <= metadata_size;
              offset += length + 12u) {
             length = ((size_t)metadata[offset] << 24) |
@@ -407,31 +474,164 @@ lp_check_priority(char const *backend, int cms, int animated)
                           metadata + offset + 8u, length);
             }
         }
+        if (color_type == 3) {
+            lp_chunk(&f, "PLTE", palette, sizeof(palette));
+        }
         if (animated) {
-            lp_actl(&f, 1, 1);
+            lp_actl(&f, frames, 1);
             lp_fctl(&f, 0, 0, 0);
         }
-        lp_data(&f, -1, rgba, sizeof(rgba));
+        lp_data(&f, -1, raw, raw_size);
+        if (animated) {
+            lp_fctl(&f, 1, 0, 0);
+            lp_data(&f, 2, raw, raw_size);
+        }
         lp_chunk(&f, "IEND", NULL, 0u);
         status = lp_load_backend(backend, &f, &probes[variant], cms, 256,
                                  NULL, SIXEL_LOOP_DISABLE, 0);
-        if (status != SIXEL_OK || probes[variant].count != 1 ||
-            probes[variant].hidden[0][0] || probes[variant].hidden[0][1]) {
+        if (status != SIXEL_OK || probes[variant].count != frames) {
             return 1;
+        }
+        for (frame = 0; frame < frames; ++frame) {
+            if (probes[variant].hidden[frame][0] !=
+                    (animated && color_type != 3) ||
+                probes[variant].hidden[frame][1] ||
+                probes[variant].frame_no[frame] != frame) {
+                return 1;
+            }
         }
     }
     result = 0;
     difference = 0.0;
     expected = lp_linear(128.0 / 255.0);
-    for (channel = 0; channel < 6; ++channel) {
-        result |= fabs(probes[0].linear[0][channel] -
-                       probes[1].linear[0][channel]) > 1e-6;
-        result |= fabs(probes[2].linear[0][channel] - expected) > 1e-6;
-        result |= fabs(probes[3].linear[0][channel] - expected) > 1e-6;
-        difference += fabs(probes[0].linear[0][channel] - expected);
+    for (frame = 0; frame < frames; ++frame) {
+        for (channel = 0; channel < 6; ++channel) {
+            /* Hidden RGB is unspecified; its coverage is asserted above. */
+            if (animated && color_type != 3 && channel < 3) {
+                continue;
+            }
+            result |= fabs(probes[0].linear[frame][channel] -
+                           probes[1].linear[frame][channel]) > 1e-6;
+            result |= fabs(probes[2].linear[frame][channel] - expected)
+                      > 1e-6;
+            result |= fabs(probes[3].linear[frame][channel] - expected)
+                      > 1e-6;
+            difference += fabs(probes[0].linear[frame][channel] - expected);
+            if (cms != SIXEL_CMS_ENGINE_NONE) {
+                /* Bound ICC rounding, including the RGBA8 canvas boundary. */
+                result |= fabs(probes[0].linear[frame][channel] -
+                               128.0 / 255.0) > 0.005;
+            }
+        }
+    }
+    if (cms == SIXEL_CMS_ENGINE_NONE) {
+        return result || difference > 1e-6;
     }
     return result || difference < 0.02;
 }
+/* Occupied pixels distinguish PREVIOUS from clearing or keeping the frame. */
+static int
+lp_check_occupied_previous(void)
+{
+    lp_fixture_t f;
+    lp_probe_t probe;
+    SIXELSTATUS status;
+    unsigned char base[9] = {0, 255, 0, 0, 255, 0, 255, 0, 255};
+    unsigned char overlay[9] = {0, 0, 0, 255, 255, 0, 0, 0, 0};
+    unsigned char empty[9] = {0};
+    int frame;
+    int channel;
+    int result;
+    double expected[3][6] = {
+        {1, 0, 0, 0, 1, 0}, {0, 0, 1, 0, 0, 0}, {1, 0, 0, 0, 1, 0}
+    };
+
+    lp_header(&f, 8, 6);
+    lp_actl(&f, 3, 1);
+    lp_fctl(&f, 0, 0, 0);
+    lp_data(&f, -1, base, sizeof(base));
+    lp_fctl(&f, 1, 0, 2);
+    lp_data(&f, 2, overlay, sizeof(overlay));
+    lp_fctl(&f, 3, 1, 0);
+    lp_data(&f, 4, empty, sizeof(empty));
+    lp_chunk(&f, "IEND", NULL, 0u);
+    status = lp_load(&f, &probe, SIXEL_CMS_ENGINE_NONE, 256, NULL,
+                     SIXEL_LOOP_DISABLE, 0);
+    result = status != SIXEL_OK || probe.count != 3;
+    for (frame = 0; frame < 3; ++frame) {
+        result |= probe.frame_no[frame] != frame ||
+            probe.loop_no[frame] != 0 || probe.delay[frame] != 10 ||
+            probe.hidden[frame][0] ||
+            probe.hidden[frame][1] != (frame == 1);
+        for (channel = 0; channel < 6; ++channel) {
+            result |= fabs(probe.linear[frame][channel] -
+                           expected[frame][channel]) > 1e-6;
+        }
+    }
+    return result;
+}
+
+/* Keep PNG/chunk/zlib structure valid so bad filters reach png_read_image.
+ * The fdAT variant corrupts only its stored CRC, before reconstruction. */
+static int
+lp_check_raster_error(char const *kind)
+{
+    lp_fixture_t f;
+    lp_fixture_t valid;
+    lp_probe_t probe;
+    SIXELSTATUS status;
+    unsigned char raw[9] = {0, 255, 0, 0, 255, 0, 255, 0, 255};
+    int animated;
+    int crc;
+    int variant;
+    int result;
+
+    animated = strcmp(kind, "static_longjmp") != 0;
+    crc = strcmp(kind, "fdat_crc") == 0;
+    for (variant = 0; variant < 2; ++variant) {
+        lp_header(&f, 8, 6);
+        raw[0] = 0;
+        if (animated) {
+            lp_actl(&f, 2, 1);
+            lp_fctl(&f, 0, 0, 0);
+            lp_data(&f, -1, raw, sizeof(raw));
+            lp_fctl(&f, 1, 0, 0);
+        }
+        if (variant != 0 && !crc) {
+            raw[0] = 5;  /* PNG permits only filter methods 0 through 4. */
+        }
+        lp_data(&f, animated ? 2 : -1, raw, sizeof(raw));
+        if (variant != 0 && crc) {
+            f.bytes[f.size - 1u] ^= 1u;
+        }
+        lp_chunk(&f, "IEND", NULL, 0u);
+        if (variant == 0) {
+            valid = f;
+        }
+    }
+    status = lp_load(&valid, &probe, SIXEL_CMS_ENGINE_NONE, 256, NULL,
+                     SIXEL_LOOP_DISABLE, 0);
+    result = status != SIXEL_OK || probe.count != (animated ? 2 : 1) ||
+             lp_live_allocations != 0;
+    status = lp_load(&f, &probe, SIXEL_CMS_ENGINE_NONE, 256, NULL,
+                     SIXEL_LOOP_DISABLE, animated && !crc ? 2 : 0);
+    result |= status != SIXEL_PNG_ERROR ||
+              probe.count != (animated && !crc ? 1 : 0) ||
+              lp_live_allocations != 0;
+    if (crc) {
+        result |= strcmp(sixel_helper_get_additional_message(),
+                         "APNG: original CRC error") != 0;
+    } else {
+        /* The error callback must report the raster error, not a size guard. */
+        result |= strstr(sixel_helper_get_additional_message(), "filter")
+                  == NULL;
+    }
+    status = lp_load(&valid, &probe, SIXEL_CMS_ENGINE_NONE, 256, NULL,
+                     SIXEL_LOOP_DISABLE, 0);
+    return result || status != SIXEL_OK || lp_live_allocations != 0 ||
+        probe.count != (animated ? 2 : 1);
+}
+
 #endif
 
 int
@@ -481,20 +681,31 @@ test_loader_libpng_contract(int argc, char **argv)
     bg = NULL;
     cms = SIXEL_CMS_ENGINE_NONE;
     colors = 256;
-    if (argc == 5 && strcmp(argv[1], "priority") == 0) {
+    if ((argc == 5 || argc == 6) && strcmp(argv[1], "priority") == 0) {
         if (strcmp(argv[3], "lcms2") == 0) {
 #if !HAVE_LCMS2
             return SIXEL_TEST_SKIP;
 #endif
             cms = SIXEL_CMS_ENGINE_LCMS2;
+        } else if (strcmp(argv[3], "none") == 0) {
+            cms = SIXEL_CMS_ENGINE_NONE;
         } else {
             cms = SIXEL_CMS_ENGINE_BUILTIN;
         }
         return lp_check_priority(argv[2], cms,
-                                  strcmp(argv[4], "apng") == 0);
+                                  strcmp(argv[4], "apng") == 0,
+                                  argc == 6 ? argv[5] : "rgb");
     }
     if (argc != 2) {
         return 1;
+    }
+    if (strcmp(argv[1], "occupied_previous") == 0) {
+        return lp_check_occupied_previous();
+    }
+    if (strcmp(argv[1], "fdat_crc") == 0 ||
+        strcmp(argv[1], "static_longjmp") == 0 ||
+        strcmp(argv[1], "apng_longjmp") == 0) {
+        return lp_check_raster_error(argv[1]);
     }
     lp_header(&f, 8, 2);
     if (strcmp(argv[1], "rejected_icc") == 0) {
