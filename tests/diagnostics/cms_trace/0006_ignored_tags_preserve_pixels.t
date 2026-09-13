@@ -13,6 +13,8 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=builtin -L "builtin!" -m M
     echo "not ok 1 - profiled image must remain loadable"
     exit 0
 }
+carriage_return=$(printf '\r')
+value=${value%"${carriage_return}"}
 
 test "$value" = 1.000000 || {
     echo "not ok 1 - ignored tags must preserve normalized pixels"
