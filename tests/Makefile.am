@@ -303,6 +303,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0043_FILTER_DITHER_TRANSPARENT_MASK_FENCE_SERIAL \
     -DBUILD_TEST_0044_FILTER_DITHER_TRANSPARENT_MASK_FENCE_PARALLEL \
     -DBUILD_TEST_0045_FILTER_BINNING_STREAM_ALPHA_ZERO_DISABLED \
+    -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
+    -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
+    -DBUILD_TEST_0002_PERTURB_API \
+    -DBUILD_TEST_0001_PERTURB_WEIGHTS \
+    -DBUILD_TEST_0003_PERTURB_ROW_8BIT \
+    -DBUILD_TEST_0004_PERTURB_ROW_FLOAT \
     -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
     -DBUILD_TEST_0025_SAMPLE_STREAM \
     -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -737,6 +743,12 @@ test_runner_SOURCES = test_runner.c \
     processing/lookup/0012_lookup_packing_registry_direct.c \
     processing/lookup/0013_lookup_parallel_dense_cache.c \
     processing/dither/0001_dither_policy.c \
+    processing/dither/perturb/0018_perturb_keep_lookup.c \
+    processing/dither/perturb/0017_perturb_keep_early.c \
+    processing/dither/perturb/0002_perturb_api.c \
+    processing/dither/perturb/0001_perturb_weights.c \
+    processing/dither/perturb/0003_perturb_row_8bit.c \
+    processing/dither/perturb/0004_perturb_row_float.c \
     processing/filter/filter_test_common.h \
     loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
     loader/wic/0009_loader_wic_pixelformat.c \
