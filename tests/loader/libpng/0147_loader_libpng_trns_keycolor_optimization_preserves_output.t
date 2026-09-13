@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify opt-in tRNS keycolor mode preserves ColorType 2 output.
+# Policy: docs/loader/libpng.md
+# Verify keycolor modes preserve ColorType 2 samples and coverage.
 
 set -eux
 
@@ -8,38 +9,14 @@ test "${HAVE_LIBPNG-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n"
-    exit 0
-}
-
-
 echo "1..1"
 set -v
 
-input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbrn2c08.png"
-default_out="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_trns_keycolor_default.six"
-optin_out="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_trns_keycolor_optin.six"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-              -Llibpng:cms_engine=none! \
-              "${input_png}" >"${default_out}" || {
-    echo "not ok" 1 - "libpng default decode failed"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    loader/libpng_contract keycolor_rgb8 || {
+    echo "not ok 1 - keycolor modes changed ColorType 2 samples or coverage"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              -Llibpng:cms_engine=none! \
-              "${input_png}" >"${optin_out}" || {
-    echo "not ok" 1 - "libpng opt-in keycolor decode failed"
-    exit 0
-}
-
-cmp -s "${default_out}" "${optin_out}" || {
-    echo "not ok" 1 - "opt-in keycolor mode changed output"
-    exit 0
-}
-
-
-echo "ok" 1 - "opt-in keycolor mode preserves ColorType 2+tRNS output"
+echo "ok 1 - keycolor modes preserve ColorType 2 samples and coverage"
 exit 0

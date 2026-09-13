@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/libpng.md
-# Verify libpng loader enables tRNS keycolor by default for palette PNG.
+# Verify keycolor modes preserve indexed samples and coverage.
 
 set -eux
 
@@ -9,42 +9,14 @@ test "${HAVE_LIBPNG-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo "1..0 # SKIP img2sixel is disabled in this build"
-    exit 0
-}
-
-
 echo "1..1"
 set -v
 
-input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn3p08.png"
-out_default="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_trns_keycolor_palette_default.six"
-out_off="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_trns_keycolor_palette_env0.six"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
-              -Llibpng:cms_engine=none! \
-              -d fs:scan=raster \
-              "${input_png}" >"${out_default}" || {
-    echo "not ok" 1 - "libpng palette+tRNS default decode failed"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    loader/libpng_contract keycolor_indexed || {
+    echo "not ok 1 - keycolor modes changed indexed samples or coverage"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-              --env SIXEL_THREADS=4 \
-              -Llibpng:cms_engine=none! \
-              -d fs:scan=raster \
-              "${input_png}" >"${out_off}" || {
-    echo "not ok" 1 - "libpng palette+tRNS SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 decode failed"
-    exit 0
-}
-
-cmp -s "${out_default}" "${out_off}" || {
-    echo "not ok" 1 - "libpng default palette+tRNS keycolor mode is changed by the compatibility switch"
-    exit 0
-}
-
-    echo "ok" 1 - "libpng default enables palette+tRNS keycolor mode"
-
-
+echo "ok 1 - keycolor modes preserve indexed samples and coverage"
 exit 0

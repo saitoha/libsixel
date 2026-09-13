@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify opt-in keycolor mode changes RGBA16 PNG output in libpng loader path.
+# Policy: docs/loader/libpng.md
+# Verify keycolor modes preserve RGBA16 samples and coverage.
 
 set -eux
 
@@ -8,41 +9,14 @@ test "${HAVE_LIBPNG-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n"
-    exit 0
-}
-
-
 echo "1..1"
 set -v
 
-input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn6a16.png"
-out_default="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng-trns-keycolor-rgba16-default.six"
-out_optin="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng-trns-keycolor-rgba16-optin.six"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-              -Llibpng:cms_engine=none! \
-              -d fs:scan=raster \
-              "${input_png}" >"${out_default}" || {
-    echo "not ok 1 - libpng rgba16 default render failed"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    loader/libpng_contract keycolor_rgba16 || {
+    echo "not ok 1 - keycolor modes changed RGBA16 samples or coverage"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              -Llibpng:cms_engine=none! \
-              -d fs:scan=raster \
-              "${input_png}" >"${out_optin}" || {
-    echo "not ok 1 - libpng rgba16 opt-in render failed"
-    exit 0
-}
-
-cmp -s "${out_default}" "${out_optin}" || {
-    echo "not ok 1 - opt-in changed pixels for libpng rgba16 PNG"
-    exit 0
-}
-
-    echo "ok 1 - opt-in changes libpng rgba16 PNG output"
-
-
+echo "ok 1 - keycolor modes preserve RGBA16 samples and coverage"
 exit 0

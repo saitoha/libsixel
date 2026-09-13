@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdint.h>
 #include "tests/loader/pixelformat_test_common.h"
+#include "src/compat_stub.h"
 #include "src/loader-common.h"
 #include "src/cms.h"
 #include "src/loader-manager.h"
@@ -346,6 +347,69 @@ end:
     sixel_allocator_unref(allocator);
     return status;
 }
+
+/* Representation switches may change storage without changing image data. */
+static int
+lp_probe_matches(lp_probe_t const *left, lp_probe_t const *right)
+{
+    int n;
+    int x;
+    int c;
+
+    if (left->count != right->count) {
+        return 0;
+    }
+    for (n = 0; n < left->count; ++n) {
+        if (left->frame_no[n] != right->frame_no[n] ||
+            left->loop_no[n] != right->loop_no[n] ||
+            left->delay[n] != right->delay[n]) {
+            return 0;
+        }
+        for (x = 0; x < 2; ++x) {
+            if (left->hidden[n][x] != right->hidden[n][x]) {
+                return 0;
+            }
+            for (c = 0; c < 3; ++c) {
+                if (fabs(left->linear[n][x * 3 + c] -
+                         right->linear[n][x * 3 + c]) > 1e-6) {
+                    return 0;
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+static int
+lp_compare_keycolor_modes(lp_fixture_t const *f)
+{
+    lp_probe_t disabled;
+    lp_probe_t enabled;
+    SIXELSTATUS disabled_status;
+    SIXELSTATUS enabled_status;
+
+    if (sixel_compat_setenv(
+            "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR", "0") != 0) {
+        return 1;
+    }
+    disabled_status = lp_load(f, &disabled, SIXEL_CMS_ENGINE_NONE,
+                              256, NULL, SIXEL_LOOP_DISABLE, 0);
+    if (sixel_compat_setenv(
+            "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR", "1") != 0) {
+        return 1;
+    }
+    enabled_status = lp_load(f, &enabled, SIXEL_CMS_ENGINE_NONE,
+                             256, NULL, SIXEL_LOOP_DISABLE, 0);
+    if (disabled_status != SIXEL_OK || enabled_status != SIXEL_OK ||
+        !lp_probe_matches(&disabled, &enabled)) {
+        fprintf(stderr,
+                "keycolor: disabled=%x enabled=%x frames=%d,%d\n",
+                disabled_status, enabled_status,
+                disabled.count, enabled.count);
+        return 1;
+    }
+    return 0;
+}
 #endif
 
 int
@@ -380,6 +444,9 @@ test_loader_libpng_contract(int argc, char **argv)
     unsigned char gray16[5] = {0, 0x80, 1, 0x80, 2};
     unsigned char grayalpha16[9] = {0, 0x80, 1, 255, 255,
                                     0x80, 2, 255, 255};
+    unsigned char gray4[2] = {0, 0x0f};
+    unsigned char gray_trns[2] = {0, 0};
+    unsigned char gray16_trns[2] = {0x80, 1};
     unsigned char invalid_zlib[7] = {0, 0, 0, 2, 0, 0, 0};
     size_t metadata_size;
     size_t offset;
@@ -389,6 +456,7 @@ test_loader_libpng_contract(int argc, char **argv)
     int loops;
     int j;
     int result;
+    int compare_keycolor;
     FILE *output;
 
     mode = 0;
@@ -396,12 +464,51 @@ test_loader_libpng_contract(int argc, char **argv)
     bg = NULL;
     cms = SIXEL_CMS_ENGINE_NONE;
     colors = 256;
+    compare_keycolor = 0;
     if (argc != 2 &&
         (argc != 3 || strcmp(argv[1], "emit_trns") != 0)) {
         return 1;
     }
     lp_header(&f, 8, 2);
-    if (strcmp(argv[1], "rejected_icc") == 0) {
+    if (strcmp(argv[1], "keycolor_rgb8") == 0) {
+        lp_chunk(&f, "tRNS", trns, sizeof(trns));
+        lp_data(&f, -1, opaque, sizeof(opaque));
+        compare_keycolor = 1;
+    } else if (strcmp(argv[1], "keycolor_gray4") == 0) {
+        lp_header(&f, 4, 0);
+        lp_chunk(&f, "tRNS", gray_trns, sizeof(gray_trns));
+        lp_data(&f, -1, gray4, sizeof(gray4));
+        compare_keycolor = 1;
+    } else if (strcmp(argv[1], "keycolor_gray16") == 0) {
+        lp_header(&f, 16, 0);
+        lp_chunk(&f, "tRNS", gray16_trns, sizeof(gray16_trns));
+        lp_data(&f, -1, gray16, sizeof(gray16));
+        compare_keycolor = 1;
+    } else if (strcmp(argv[1], "keycolor_apng") == 0) {
+        lp_header(&f, 8, 6);
+        lp_actl(&f, 1, 1);
+        lp_fctl(&f, 0, 0, 0);
+        lp_data(&f, -1, rgba, sizeof(rgba));
+        compare_keycolor = 1;
+    } else if (strcmp(argv[1], "keycolor_indexed") == 0) {
+        lp_header(&f, 8, 3);
+        lp_chunk(&f, "PLTE", palette, sizeof(palette));
+        lp_chunk(&f, "tRNS", alphas, sizeof(alphas));
+        lp_data(&f, -1, indexes, sizeof(indexes));
+        compare_keycolor = 1;
+    } else if (strcmp(argv[1], "keycolor_rgba16") == 0) {
+        lp_header(&f, 16, 6);
+        rgba16[7] = 0;
+        rgba16[8] = 0;
+        lp_data(&f, -1, rgba16, sizeof(rgba16));
+        compare_keycolor = 1;
+    } else if (strcmp(argv[1], "keycolor_ga16") == 0) {
+        lp_header(&f, 16, 4);
+        grayalpha16[3] = 0;
+        grayalpha16[4] = 0;
+        lp_data(&f, -1, grayalpha16, sizeof(grayalpha16));
+        compare_keycolor = 1;
+    } else if (strcmp(argv[1], "rejected_icc") == 0) {
         lp_header(&f, 8, 6);
         lp_header(&reference, 8, 6);
         if (edge_read_fixture("/tests/data/colormgmt/input/custom/"
@@ -600,6 +707,9 @@ test_loader_libpng_contract(int argc, char **argv)
         return 1;
     }
     lp_chunk(&f, "IEND", NULL, 0u);
+    if (compare_keycolor) {
+        return lp_compare_keycolor_modes(&f);
+    }
     if (strcmp(argv[1], "emit_trns") == 0) {
         /* Emscripten's Node stdout path is text-oriented.  Let callers write
          * binary PNG bytes through NODERAWFS instead of a shell pipeline. */
