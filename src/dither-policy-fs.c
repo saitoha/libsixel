@@ -63,7 +63,92 @@ typedef struct sixel_dither_policy_fs_context {
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
+    sixel_dither_perturb_t perturb;
 } sixel_dither_policy_fs_context_t;
+
+/*
+ * lowbias32 by Chris Wellons (hash-prospector, public domain).
+ * Low bias on sequential integer inputs avoids coordinate-aligned patterns.
+ */
+static uint32_t
+sixel_dither_perturb_mix32(uint32_t v)
+{
+    v ^= v >> 16;
+    v *= 0x7feb352du;
+    v ^= v >> 15;
+    v *= 0x846ca68bu;
+    v ^= v >> 16;
+    return v;
+}
+
+uint32_t
+sixel_dither_perturb_hash(int x, int absolute_y, uint32_t seed, int pair)
+{
+    uint32_t h;
+
+    h = sixel_dither_perturb_mix32((uint32_t)x + seed * 0x9e3779b9u);
+    h = sixel_dither_perturb_mix32(h + (uint32_t)absolute_y);
+    h = sixel_dither_perturb_mix32(h + (uint32_t)(pair + 1) * 0x9e3779b9u);
+    return h;
+}
+
+void
+sixel_dither_perturb_init(sixel_dither_perturb_t *context,
+                          float amount, int seed)
+{
+    context->enabled = amount > 0.0f;
+    context->seed = (uint32_t)seed;
+    context->float_amp[0] = amount * 5.0f;
+    context->float_amp[1] = amount;
+    /* Round positive amplitudes once, then truncate signed deltas toward 0. */
+    context->amp[0] = (int)(amount * 1280.0f + 0.5f);
+    context->amp[1] = (int)(amount * 256.0f + 0.5f);
+}
+
+void
+sixel_dither_perturb_weights(sixel_dither_perturb_t const *context,
+                             int x, int absolute_y, int num[4])
+{
+    int pair;
+    int u16;
+    int delta;
+    uint32_t h;
+
+    num[0] = 7 << 8;
+    num[1] = 3 << 8;
+    num[2] = 5 << 8;
+    num[3] = 1 << 8;
+    for (pair = 0; pair < 2; ++pair) {
+        h = sixel_dither_perturb_hash(x, absolute_y, context->seed, pair);
+        u16 = (int)(h >> 16) - 32768;
+        delta = (int)(((int64_t)u16 * context->amp[pair]) / 32768);
+        num[pair] += delta;
+        num[pair + 2] -= delta;
+    }
+}
+
+void
+sixel_dither_perturb_float(sixel_dither_perturb_t const *context,
+                           int x, int absolute_y, float weights[4])
+{
+    int pair;
+    int u16;
+    float delta;
+    uint32_t h;
+
+    weights[0] = 7.0f / 16.0f;
+    weights[1] = 3.0f / 16.0f;
+    weights[2] = 5.0f / 16.0f;
+    weights[3] = 1.0f / 16.0f;
+    for (pair = 0; pair < 2; ++pair) {
+        h = sixel_dither_perturb_hash(x, absolute_y, context->seed, pair);
+        u16 = (int)(h >> 16) - 32768;
+        delta = ((float)u16 / 32768.0f) * context->float_amp[pair]
+            / 16.0f;
+        weights[pair] += delta;
+        weights[pair + 2] -= delta;
+    }
+}
 
 static void
 fs_sixel_dither_scanline_params_fixed_8bit(int serpentine,
@@ -119,7 +204,9 @@ static void fs_diffuse_fs(unsigned char *data,
                        int y,
                        int depth,
                        int error,
-                       int direction);
+                       int direction,
+                       int absolute_y,
+                       sixel_dither_perturb_t const *perturb);
 
 static SIXELSTATUS
 sixel_dither_apply_fs_8bit(
@@ -133,7 +220,8 @@ sixel_dither_apply_fs_8bit(
     unsigned char *palette,
     int method_for_scan,
     sixel_lookup_policy_interface_t const *lookup_policy,
-    sixel_dither_t *dither)
+    sixel_dither_t *dither,
+    sixel_dither_perturb_t const *perturb)
 {
     SIXELSTATUS status;
     int serpentine;
@@ -259,7 +347,8 @@ sixel_dither_apply_fs_8bit(
                         offset = (int)source_pixel[n]
                             - (int)accumulation_pixel[n];
                         fs_diffuse_fs(data + n, width, height, x, y,
-                                      depth, offset, direction);
+                                          depth, offset, direction,
+                              absolute_y, perturb);
                     }
                 }
                 continue;
@@ -295,7 +384,8 @@ sixel_dither_apply_fs_8bit(
                             offset = (int)source_pixel[n]
                                 - (int)accumulation_pixel[n];
                             fs_diffuse_fs(data + n, width, height, x, y,
-                                          depth, offset, direction);
+                                          depth, offset, direction,
+                                          absolute_y, perturb);
                         }
                     }
                     continue;
@@ -315,7 +405,8 @@ sixel_dither_apply_fs_8bit(
                 palette_value = palette[color_index * depth + n];
                 offset = (int)source_pixel[n] - palette_value;
                 fs_diffuse_fs(data + n, width, height, x, y,
-                          depth, offset, direction);
+                          depth, offset, direction,
+                                      absolute_y, perturb);
             }
         }
         if (absolute_y >= output_start) {
@@ -331,7 +422,8 @@ end:
 
 static void
 fs_diffuse_fs(unsigned char *data, int width, int height,
-           int x, int y, int depth, int error, int direction)
+           int x, int y, int depth, int error, int direction,
+           int absolute_y, sixel_dither_perturb_t const *perturb)
 {
     /* Floyd Steinberg Method
      *          curr    7/16
@@ -339,9 +431,38 @@ fs_diffuse_fs(unsigned char *data, int width, int height,
      */
     int pos;
     int forward;
+    int num[4];
+    int step;
 
     pos = y * width + x;
     forward = direction >= 0;
+
+    if (perturb->enabled) {
+        /* Absolute coordinates give overlapping bands identical weights.
+         * Mirror only the horizontal offsets on serpentine return rows.
+         * Pair sums remain exact before edge clipping and pixel rounding.
+         */
+        sixel_dither_perturb_weights(perturb, x, absolute_y, num);
+        step = forward ? 1 : -1;
+        if (x + step >= 0 && x + step < width) {
+            fs_error_diffuse_normal(data, pos + step, depth, error,
+                                    num[0], 16 << 8);
+        }
+        if (y < height - 1) {
+            if (x - step >= 0 && x - step < width) {
+                fs_error_diffuse_normal(data, pos + width - step,
+                                        depth, error, num[1], 16 << 8);
+            }
+            fs_error_diffuse_normal(data, pos + width, depth, error,
+                                    num[2], 16 << 8);
+            if (x + step >= 0 && x + step < width) {
+                fs_error_diffuse_normal(data, pos + width + step,
+                                        depth, error, num[3], 16 << 8);
+            }
+        }
+        return;
+    }
+    /* Preserve the original constants and arithmetic when disabled. */
 
     if (forward) {
         if (x < width - 1) {
@@ -389,7 +510,7 @@ fs_error_diffuse_float(float *data,
                     int pos,
                     int depth,
                     float error,
-                    int numerator,
+                    float numerator,
                     int denominator,
                     int pixelformat,
                     int channel_index)
@@ -437,13 +558,42 @@ fs_diffuse_fs_float(float *data,
                  float error,
                  int direction,
                  int pixelformat,
-                 int channel_index)
+                 int channel_index,
+                 int absolute_y,
+                 sixel_dither_perturb_t const *perturb)
 {
     int pos;
     int forward;
+    float weights[4];
+    int step;
 
     pos = y * width + x;
     forward = direction >= 0;
+
+    if (perturb->enabled) {
+        sixel_dither_perturb_float(perturb, x, absolute_y, weights);
+        step = forward ? 1 : -1;
+        if (x + step >= 0 && x + step < width) {
+            fs_error_diffuse_float(data, pos + step, depth, error,
+                                  weights[0], 1, pixelformat, channel_index);
+        }
+        if (y < height - 1) {
+            if (x - step >= 0 && x - step < width) {
+                fs_error_diffuse_float(data, pos + width - step,
+                                      depth, error, weights[1], 1,
+                                      pixelformat, channel_index);
+            }
+            fs_error_diffuse_float(data, pos + width, depth, error,
+                                  weights[2], 1, pixelformat, channel_index);
+            if (x + step >= 0 && x + step < width) {
+                fs_error_diffuse_float(data, pos + width + step,
+                                      depth, error, weights[3], 1,
+                                      pixelformat, channel_index);
+            }
+        }
+        return;
+    }
+    /* Preserve the original constants and arithmetic when disabled. */
 
     if (forward) {
         if (x < width - 1) {
@@ -529,25 +679,6 @@ fs_diffuse_fs_float(float *data,
         }
     }
 }
-
-/*
- * Atkinson's kernel spreads the error within a 3x3 neighborhood using
- * symmetric 1/8 weights.  The float variant mirrors the integer version
- * but keeps the higher precision samples intact.
- */
-
-/*
- * Shared helper that applies a row of diffusion weights to neighbors on the
- * current or subsequent scanlines.  Each caller provides the offset table and
- * numerator/denominator pairs so the classic kernels can be described using a
- * compact table instead of open-coded loops.
- */
-
-/*
- * Jarvis, Judice, and Ninke kernel using the canonical 5x3 mask.  Three rows
- * of weights are applied with consistent 1/48 denominators to preserve the
- * reference diffusion matrix.
- */
 
 static SIXELSTATUS
 sixel_dither_apply_fs_float32(
@@ -699,7 +830,9 @@ sixel_dither_apply_fs_float32(
                           error,
                           direction,
                           context->pixelformat,
-                          n);
+                          n,
+                          absolute_y,
+                          &context->perturb);
             }
         }
         if (absolute_y >= context->output_start) {
@@ -828,6 +961,9 @@ sixel_dither_policy_fs_build_context(
     sixel_dither_policy_fs_context_t *context)
 {
     sixel_dither_t *dither;
+    sixel_palette_t *palette_object;
+    sixel_palette_float32_entries_view_t float32_view;
+    int float_components;
 
     dither = NULL;
 
@@ -860,11 +996,12 @@ sixel_dither_policy_fs_build_context(
     }
 
     dither = request->dither;
+    if (dither != NULL) {
+        sixel_dither_perturb_init(&context->perturb,
+                                  dither->diffusion_perturb,
+                                  dither->diffusion_perturb_seed);
+    }
     if (dither != NULL && dither->palette != NULL) {
-        sixel_palette_t *palette_object;
-        sixel_palette_float32_entries_view_t float32_view;
-        int float_components;
-
         palette_object = dither->palette;
         memset(&float32_view, 0, sizeof(float32_view));
         if (palette_object->vtbl != NULL
@@ -932,7 +1069,8 @@ sixel_dither_policy_fs_apply_8bit(
         context.palette,
         context.method_for_scan,
         context.lookup_policy,
-        effective.dither);
+        effective.dither,
+        &context.perturb);
 }
 
 static SIXELSTATUS
