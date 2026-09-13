@@ -27,6 +27,10 @@ _diffusiontype() {
     'sierra:variant=1[Sierra Lite method]' \
     'sierra:variant=2[Sierra Two-row method]' \
     'sierra:variant=3[Sierra-3 method]' \
+    'fs:perturb=0.5[paired FS weight perturbation]' \
+    'fs:perturb=0.5:perturb_seed=1[perturbed FS with position seed]' \
+    'fs:U0.5:R1[compact perturbation and seed]' \
+    'fs:perturb=0.5:scan=serpentine[perturbed serpentine FS]' \
     'fs:scan=serpentine[Floyd-Steinberg with serpentine scan]' \
     'sierra:variant=2:scan=serpentine[Sierra Two-row with serpentine scan]' \
     'a_dither[positionally stable arithmetic dither]' \

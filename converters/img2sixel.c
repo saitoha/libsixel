@@ -532,6 +532,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "-d DIFFUSION, --diffusion=DIFFUSION\n"
         "    choose diffusion method used with -p option (color reduction).\n"
         "    common sub-option:\n"
+        "      perturb=P           -> paired FS weight perturbation, 0.0-1.0\n"
+        "                              (default 0.0; FS only)\n"
+        "      UP                  -> short form of perturb\n"
+        "      perturb_seed=S      -> signed 32-bit position seed (default 0)\n"
+        "      RS                  -> short form of perturb_seed\n"
+        "      other methods accept and ignore perturbation settings.\n"
+        "      auto applies them only when it resolves to fs.\n"
+        "      example: fs:perturb=0.5:scan=serpentine\n"
         "      band_overwrap=LINES -> overlap adjacent parallel bands\n"
         "                              (default depends on palette size)\n"
         "      OLINES              -> short form of band_overwrap\n"
@@ -635,7 +643,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                   (default raster)\n"
         "      compact suboption names (uppercase letter + value):\n"
         "        all methods: scan=N, band_overwrap=O, band_width=B,\n"
-        "                     threads_max=J, pin_threads=I\n"
+        "                     threads_max=J, pin_threads=I, perturb=U,\n"
+        "                     perturb_seed=R\n"
         "        sierra: variant=V\n"
         "        a_dither, x_dither: strength=T\n"
         "        interframe: diffusion=D\n"
@@ -1483,6 +1492,17 @@ static cli_env_help_t const g_env_help_table[] = {
         "override the band height assigned to each dither worker.\n"
         "Values are rounded to a multiple of six scanlines. The -d\n"
         "suboption band_width (short form BVALUE) takes precedence."
+    },
+    {
+        "SIXEL_DITHER_PERTURB",
+        "set paired FS weight perturbation, 0.0-1.0 (default 0.0).\n"
+        "The -d suboption perturb (short form UVALUE) takes precedence.\n"
+        "Other methods ignore this setting; auto uses it only for fs."
+    },
+    {
+        "SIXEL_DITHER_PERTURB_SEED",
+        "set the signed 32-bit FS position-hash seed (default 0).\n"
+        "The -d suboption perturb_seed (short form RVALUE) takes precedence."
     },
     {
         "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP",

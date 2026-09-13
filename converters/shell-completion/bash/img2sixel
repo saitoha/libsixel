@@ -814,6 +814,10 @@ _img2sixel()
                                    stbn:perceptual_weight=1 \
                                    stbn:fastpath=1 \
                                    stbn:source=pmj:fastpath=1 \
+                                   fs:perturb=0.5 \
+                                   fs:perturb=0.5:perturb_seed=1 \
+                                   fs:U0.5:R1 \
+                                   fs:perturb=0.5:scan=serpentine \
                                    fs:scan=raster \
                                    fs:scan=serpentine \
                                    sierra:variant=1:scan=raster \

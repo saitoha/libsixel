@@ -152,6 +152,16 @@ at every measured `K`, and produces streams 2.493x and 1.259x as large at
 `K=8` and `K=256`. It is therefore a conventional general-purpose choice, not
 a guarantee of better quality or smaller output for every image or precision.
 
+### Paired coefficient perturbation
+
+`img2sixel -d fs:perturb=0.5:perturb_seed=1:scan=serpentine` enables paired coefficient perturbation in the CPU FS policy. `perturb` (`U`) is a finite fraction from 0.0 through 1.0, with default 0.0. `perturb_seed` (`R`) is a signed 32-bit integer, with default 0. `SIXEL_DITHER_PERTURB` and `SIXEL_DITHER_PERTURB_SEED` provide environment defaults; explicit suboptions win. Invalid environment values are ignored, while invalid CLI values are rejected. A repeated `-d` resets its settings before reapplying the environment and the new argument.
+
+The forward/down pair `(7, 5)` receives opposite deltas with amplitude `5 * perturb`; the backward-down/forward-down pair `(3, 1)` receives opposite deltas with amplitude `perturb`. Each pair retains its coefficient sum and all weights remain nonnegative. This preserves the ideal interior filter's DC gain, but does not guarantee exact image-mean preservation after integer rounding, clipping, or omitted edge taps. Perturbation can break periodic textures; a spectral improvement is image- and scan-dependent, not guaranteed.
+
+The lowbias32 coordinate hash uses the absolute image row, horizontal position, seed, and pair number. Serpentine scanning mirrors horizontal offsets while retaining the pairs. Overlapping bands therefore use the same coefficients for the same absolute pixel. Different band boundaries can still change incoming diffusion error and output; position-hash determinism does not remove that existing dependency. The 8bit path rounds amplitudes once to eight fractional bits and truncates signed deltas toward zero. The float32 path uses the same hash samples without fixed-point amplitude rounding.
+
+Zero, including an omitted `perturb`, retains the original arithmetic and output. Only FS applies these settings, including `auto` when the palette-size rule selects FS. Other kernels, positional methods, interframe policies, and GPU paths accept the settings without applying them. The public setters are `sixel_dither_set_diffusion_perturb()` and `sixel_dither_set_diffusion_perturb_seed()`; both return a status, and the amount setter rejects non-finite or out-of-range values without changing the previous setting.
+
 ## `atkinson`: partial-residual diffusion
 
 ```text
