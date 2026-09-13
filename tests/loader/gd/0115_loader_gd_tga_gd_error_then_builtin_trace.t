@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test for TGA chain: gd failure reaches builtin.
+# TAP test for TGA chain: gd failure reaches a strict builtin decoder.
 
 set -eux
 
@@ -27,8 +27,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
 trace_log=$(set +xv; head -c 64 "${input_tga}" | \
     SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -L gd,builtin! -ldisable - \
-    2>&1 >/dev/null) || {
-    echo "not ok 1 - gd,builtin chain failed for truncated TGA"
+    2>&1 >/dev/null) || trace_status=$?
+
+test "${trace_status:-0}" -ne 0 || {
+    echo "not ok 1 - truncated TGA was unexpectedly accepted"
     exit 0
 }
 
@@ -38,11 +40,11 @@ test "${after_gd}" != "${trace_log}" || {
     exit 0
 }
 
-test "${after_gd#*LSXLOAD1|event=ok|loader=builtin|code=L_OK*}" \
+test "${after_gd#*LSXLOAD1|event=try|loader=builtin|code=L_TRY*}" \
     != "${after_gd}" || {
-    echo "not ok 1 - builtin success code was not reported after gd"
+    echo "not ok 1 - builtin was not attempted after gd"
     exit 0
 }
 
-echo "ok 1 - truncated TGA reaches builtin after gd failure"
+echo "ok 1 - truncated TGA progresses from gd to strict builtin rejection"
 exit 0
