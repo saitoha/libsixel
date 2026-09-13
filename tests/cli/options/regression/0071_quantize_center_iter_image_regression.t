@@ -25,7 +25,8 @@ env_output="${artifact_dir}/0071-quantize-center-iter-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! \
-    -p 16 "-Qcenter:Aswap:I2" "${input_image}" 2>&1 >"${short_output}") || {
+    -qhigh -p 16 "-Qcenter:Aswap:I2" "${input_image}" \
+    2>&1 >"${short_output}") || {
     echo "not ok" 1 - "center:iter short conversion failed"
     exit 0
 }
@@ -38,7 +39,8 @@ test "${short_trace#*LSXSUB1\|*key=iter\|stored=1\|binding=quantize_model_kcente
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! \
-    --env "SIXEL_PALETTE_KCENTER_ITER=2" -p 16 "-Qcenter:Aswap" \
+    --env "SIXEL_PALETTE_KCENTER_ITER=2" -qhigh -p 16 \
+    "-Qcenter:Aswap" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "center:iter env conversion failed"
     exit 0
@@ -53,7 +55,8 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! \
     --env "SIXEL_PALETTE_KCENTER_ITER=4294967296" \
-    -p 16 "-Qcenter:Aswap" "${input_image}" 2>&1 >/dev/null) || {
+    -qhigh -p 16 "-Qcenter:Aswap" "${input_image}" \
+    2>&1 >/dev/null) || {
     echo "not ok" 1 - "center:iter width conversion failed"
     exit 0
 }
