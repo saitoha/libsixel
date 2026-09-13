@@ -279,6 +279,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/lookup/0012_lookup_packing_registry_direct.c \
 	processing/lookup/0013_lookup_parallel_dense_cache.c \
 	processing/dither/0001_dither_policy.c \
+	processing/dither/perturb/0018_perturb_keep_lookup.c \
+	processing/dither/perturb/0017_perturb_keep_early.c \
+	processing/dither/perturb/0002_perturb_api.c \
+	processing/dither/perturb/0001_perturb_weights.c \
+	processing/dither/perturb/0003_perturb_row_8bit.c \
+	processing/dither/perturb/0004_perturb_row_float.c \
 	processing/filter/filter_test_common.h \
 	loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 	loader/wic/0009_loader_wic_pixelformat.c \
@@ -662,6 +668,12 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0012_lookup_packing_registry_direct.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0013_lookup_parallel_dense_cache.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0018_perturb_keep_lookup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0017_perturb_keep_early.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0002_perturb_api.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0001_perturb_weights.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0003_perturb_row_8bit.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0004_perturb_row_float.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/wic/test_runner-0009_loader_wic_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
@@ -1176,6 +1188,12 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0041_ormode_legacy_zero_is_color.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
+	processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po \
+	processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po \
+	processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po \
+	processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Po \
+	processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Po \
+	processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po \
@@ -2092,6 +2110,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_FILTER_DITHER_TRANSPARENT_MASK_FENCE_SERIAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_FILTER_DITHER_TRANSPARENT_MASK_FENCE_PARALLEL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_FILTER_BINNING_STREAM_ALPHA_ZERO_DISABLED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PERTURB_API \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PERTURB_WEIGHTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PERTURB_ROW_8BIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_PERTURB_ROW_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_PALETTE_POLICY_RESOLUTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_SAMPLE_STREAM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SAMPLING_AUTO_RESOLUTION \
@@ -2551,6 +2575,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0012_lookup_packing_registry_direct.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0013_lookup_parallel_dense_cache.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0018_perturb_keep_lookup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0017_perturb_keep_early.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0002_perturb_api.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0001_perturb_weights.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0003_perturb_row_8bit.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0004_perturb_row_float.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/wic/0009_loader_wic_pixelformat.c \
@@ -3540,6 +3570,30 @@ processing/dither/$(DEPDIR)/$(am__dirstamp):
 processing/dither/test_runner-0001_dither_policy.$(OBJEXT):  \
 	processing/dither/$(am__dirstamp) \
 	processing/dither/$(DEPDIR)/$(am__dirstamp)
+processing/dither/perturb/$(am__dirstamp):
+	@$(MKDIR_P) processing/dither/perturb
+	@: >>processing/dither/perturb/$(am__dirstamp)
+processing/dither/perturb/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/dither/perturb/$(DEPDIR)
+	@: >>processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
+processing/dither/perturb/test_runner-0018_perturb_keep_lookup.$(OBJEXT):  \
+	processing/dither/perturb/$(am__dirstamp) \
+	processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
+processing/dither/perturb/test_runner-0017_perturb_keep_early.$(OBJEXT):  \
+	processing/dither/perturb/$(am__dirstamp) \
+	processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
+processing/dither/perturb/test_runner-0002_perturb_api.$(OBJEXT):  \
+	processing/dither/perturb/$(am__dirstamp) \
+	processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
+processing/dither/perturb/test_runner-0001_perturb_weights.$(OBJEXT):  \
+	processing/dither/perturb/$(am__dirstamp) \
+	processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
+processing/dither/perturb/test_runner-0003_perturb_row_8bit.$(OBJEXT):  \
+	processing/dither/perturb/$(am__dirstamp) \
+	processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
+processing/dither/perturb/test_runner-0004_perturb_row_float.$(OBJEXT):  \
+	processing/dither/perturb/$(am__dirstamp) \
+	processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
 loader/coregraphics/$(am__dirstamp):
 	@$(MKDIR_P) loader/coregraphics
 	@: >>loader/coregraphics/$(am__dirstamp)
@@ -4308,6 +4362,7 @@ mostlyclean-compile:
 	-rm -f processing/colorspace/*.$(OBJEXT)
 	-rm -f processing/decoder/*.$(OBJEXT)
 	-rm -f processing/dither/*.$(OBJEXT)
+	-rm -f processing/dither/perturb/*.$(OBJEXT)
 	-rm -f processing/encoder-core/*.$(OBJEXT)
 	-rm -f processing/filter/*.$(OBJEXT)
 	-rm -f processing/frame/*.$(OBJEXT)
@@ -4568,6 +4623,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0041_ormode_legacy_zero_is_color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po@am__quote@ # am--include-marker
@@ -7026,6 +7087,90 @@ processing/dither/test_runner-0001_dither_policy.obj: processing/dither/0001_dit
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/0001_dither_policy.c' object='processing/dither/test_runner-0001_dither_policy.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/test_runner-0001_dither_policy.obj `if test -f 'processing/dither/0001_dither_policy.c'; then $(CYGPATH_W) 'processing/dither/0001_dither_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/0001_dither_policy.c'; fi`
+
+processing/dither/perturb/test_runner-0018_perturb_keep_lookup.o: processing/dither/perturb/0018_perturb_keep_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0018_perturb_keep_lookup.o -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Tpo -c -o processing/dither/perturb/test_runner-0018_perturb_keep_lookup.o `test -f 'processing/dither/perturb/0018_perturb_keep_lookup.c' || echo '$(srcdir)/'`processing/dither/perturb/0018_perturb_keep_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0018_perturb_keep_lookup.c' object='processing/dither/perturb/test_runner-0018_perturb_keep_lookup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0018_perturb_keep_lookup.o `test -f 'processing/dither/perturb/0018_perturb_keep_lookup.c' || echo '$(srcdir)/'`processing/dither/perturb/0018_perturb_keep_lookup.c
+
+processing/dither/perturb/test_runner-0018_perturb_keep_lookup.obj: processing/dither/perturb/0018_perturb_keep_lookup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0018_perturb_keep_lookup.obj -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Tpo -c -o processing/dither/perturb/test_runner-0018_perturb_keep_lookup.obj `if test -f 'processing/dither/perturb/0018_perturb_keep_lookup.c'; then $(CYGPATH_W) 'processing/dither/perturb/0018_perturb_keep_lookup.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0018_perturb_keep_lookup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0018_perturb_keep_lookup.c' object='processing/dither/perturb/test_runner-0018_perturb_keep_lookup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0018_perturb_keep_lookup.obj `if test -f 'processing/dither/perturb/0018_perturb_keep_lookup.c'; then $(CYGPATH_W) 'processing/dither/perturb/0018_perturb_keep_lookup.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0018_perturb_keep_lookup.c'; fi`
+
+processing/dither/perturb/test_runner-0017_perturb_keep_early.o: processing/dither/perturb/0017_perturb_keep_early.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0017_perturb_keep_early.o -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Tpo -c -o processing/dither/perturb/test_runner-0017_perturb_keep_early.o `test -f 'processing/dither/perturb/0017_perturb_keep_early.c' || echo '$(srcdir)/'`processing/dither/perturb/0017_perturb_keep_early.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0017_perturb_keep_early.c' object='processing/dither/perturb/test_runner-0017_perturb_keep_early.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0017_perturb_keep_early.o `test -f 'processing/dither/perturb/0017_perturb_keep_early.c' || echo '$(srcdir)/'`processing/dither/perturb/0017_perturb_keep_early.c
+
+processing/dither/perturb/test_runner-0017_perturb_keep_early.obj: processing/dither/perturb/0017_perturb_keep_early.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0017_perturb_keep_early.obj -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Tpo -c -o processing/dither/perturb/test_runner-0017_perturb_keep_early.obj `if test -f 'processing/dither/perturb/0017_perturb_keep_early.c'; then $(CYGPATH_W) 'processing/dither/perturb/0017_perturb_keep_early.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0017_perturb_keep_early.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0017_perturb_keep_early.c' object='processing/dither/perturb/test_runner-0017_perturb_keep_early.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0017_perturb_keep_early.obj `if test -f 'processing/dither/perturb/0017_perturb_keep_early.c'; then $(CYGPATH_W) 'processing/dither/perturb/0017_perturb_keep_early.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0017_perturb_keep_early.c'; fi`
+
+processing/dither/perturb/test_runner-0002_perturb_api.o: processing/dither/perturb/0002_perturb_api.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0002_perturb_api.o -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Tpo -c -o processing/dither/perturb/test_runner-0002_perturb_api.o `test -f 'processing/dither/perturb/0002_perturb_api.c' || echo '$(srcdir)/'`processing/dither/perturb/0002_perturb_api.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0002_perturb_api.c' object='processing/dither/perturb/test_runner-0002_perturb_api.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0002_perturb_api.o `test -f 'processing/dither/perturb/0002_perturb_api.c' || echo '$(srcdir)/'`processing/dither/perturb/0002_perturb_api.c
+
+processing/dither/perturb/test_runner-0002_perturb_api.obj: processing/dither/perturb/0002_perturb_api.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0002_perturb_api.obj -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Tpo -c -o processing/dither/perturb/test_runner-0002_perturb_api.obj `if test -f 'processing/dither/perturb/0002_perturb_api.c'; then $(CYGPATH_W) 'processing/dither/perturb/0002_perturb_api.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0002_perturb_api.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0002_perturb_api.c' object='processing/dither/perturb/test_runner-0002_perturb_api.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0002_perturb_api.obj `if test -f 'processing/dither/perturb/0002_perturb_api.c'; then $(CYGPATH_W) 'processing/dither/perturb/0002_perturb_api.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0002_perturb_api.c'; fi`
+
+processing/dither/perturb/test_runner-0001_perturb_weights.o: processing/dither/perturb/0001_perturb_weights.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0001_perturb_weights.o -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Tpo -c -o processing/dither/perturb/test_runner-0001_perturb_weights.o `test -f 'processing/dither/perturb/0001_perturb_weights.c' || echo '$(srcdir)/'`processing/dither/perturb/0001_perturb_weights.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0001_perturb_weights.c' object='processing/dither/perturb/test_runner-0001_perturb_weights.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0001_perturb_weights.o `test -f 'processing/dither/perturb/0001_perturb_weights.c' || echo '$(srcdir)/'`processing/dither/perturb/0001_perturb_weights.c
+
+processing/dither/perturb/test_runner-0001_perturb_weights.obj: processing/dither/perturb/0001_perturb_weights.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0001_perturb_weights.obj -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Tpo -c -o processing/dither/perturb/test_runner-0001_perturb_weights.obj `if test -f 'processing/dither/perturb/0001_perturb_weights.c'; then $(CYGPATH_W) 'processing/dither/perturb/0001_perturb_weights.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0001_perturb_weights.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0001_perturb_weights.c' object='processing/dither/perturb/test_runner-0001_perturb_weights.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0001_perturb_weights.obj `if test -f 'processing/dither/perturb/0001_perturb_weights.c'; then $(CYGPATH_W) 'processing/dither/perturb/0001_perturb_weights.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0001_perturb_weights.c'; fi`
+
+processing/dither/perturb/test_runner-0003_perturb_row_8bit.o: processing/dither/perturb/0003_perturb_row_8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0003_perturb_row_8bit.o -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Tpo -c -o processing/dither/perturb/test_runner-0003_perturb_row_8bit.o `test -f 'processing/dither/perturb/0003_perturb_row_8bit.c' || echo '$(srcdir)/'`processing/dither/perturb/0003_perturb_row_8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0003_perturb_row_8bit.c' object='processing/dither/perturb/test_runner-0003_perturb_row_8bit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0003_perturb_row_8bit.o `test -f 'processing/dither/perturb/0003_perturb_row_8bit.c' || echo '$(srcdir)/'`processing/dither/perturb/0003_perturb_row_8bit.c
+
+processing/dither/perturb/test_runner-0003_perturb_row_8bit.obj: processing/dither/perturb/0003_perturb_row_8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0003_perturb_row_8bit.obj -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Tpo -c -o processing/dither/perturb/test_runner-0003_perturb_row_8bit.obj `if test -f 'processing/dither/perturb/0003_perturb_row_8bit.c'; then $(CYGPATH_W) 'processing/dither/perturb/0003_perturb_row_8bit.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0003_perturb_row_8bit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0003_perturb_row_8bit.c' object='processing/dither/perturb/test_runner-0003_perturb_row_8bit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0003_perturb_row_8bit.obj `if test -f 'processing/dither/perturb/0003_perturb_row_8bit.c'; then $(CYGPATH_W) 'processing/dither/perturb/0003_perturb_row_8bit.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0003_perturb_row_8bit.c'; fi`
+
+processing/dither/perturb/test_runner-0004_perturb_row_float.o: processing/dither/perturb/0004_perturb_row_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0004_perturb_row_float.o -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Tpo -c -o processing/dither/perturb/test_runner-0004_perturb_row_float.o `test -f 'processing/dither/perturb/0004_perturb_row_float.c' || echo '$(srcdir)/'`processing/dither/perturb/0004_perturb_row_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0004_perturb_row_float.c' object='processing/dither/perturb/test_runner-0004_perturb_row_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0004_perturb_row_float.o `test -f 'processing/dither/perturb/0004_perturb_row_float.c' || echo '$(srcdir)/'`processing/dither/perturb/0004_perturb_row_float.c
+
+processing/dither/perturb/test_runner-0004_perturb_row_float.obj: processing/dither/perturb/0004_perturb_row_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/perturb/test_runner-0004_perturb_row_float.obj -MD -MP -MF processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Tpo -c -o processing/dither/perturb/test_runner-0004_perturb_row_float.obj `if test -f 'processing/dither/perturb/0004_perturb_row_float.c'; then $(CYGPATH_W) 'processing/dither/perturb/0004_perturb_row_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0004_perturb_row_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Tpo processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0004_perturb_row_float.c' object='processing/dither/perturb/test_runner-0004_perturb_row_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0004_perturb_row_float.obj `if test -f 'processing/dither/perturb/0004_perturb_row_float.c'; then $(CYGPATH_W) 'processing/dither/perturb/0004_perturb_row_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0004_perturb_row_float.c'; fi`
 
 loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o: loader/coregraphics/0008_loader_coregraphics_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o -MD -MP -MF loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo -c -o loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o `test -f 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`loader/coregraphics/0008_loader_coregraphics_pixelformat.c
@@ -10336,6 +10481,8 @@ distclean-generic:
 	-$(am__rm_f) processing/decoder/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(am__dirstamp)
+	-$(am__rm_f) processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/dither/perturb/$(am__dirstamp)
 	-$(am__rm_f) processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/encoder-core/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(DEPDIR)/$(am__dirstamp)
@@ -10618,6 +10765,12 @@ distclean: distclean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0041_ormode_legacy_zero_is_color.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po
@@ -11036,6 +11189,12 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0041_ormode_legacy_zero_is_color.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0004_perturb_row_float.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0017_perturb_keep_early.Po
+	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0018_perturb_keep_lookup.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po

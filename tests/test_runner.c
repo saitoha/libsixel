@@ -104,6 +104,12 @@ int test_filter_0012_filter_encode_6delta_plane(int argc, char **argv);
 int test_filter_0013_filter_encode_6delta_keycolor(int argc, char **argv);
 int test_filter_0014_filter_sample_solid(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
+int test_perturb_0002_api(int argc, char **argv);
+int test_perturb_0001_weights(int argc, char **argv);
+int test_perturb_0018_keep_lookup(int argc, char **argv);
+int test_perturb_0017_keep_early(int argc, char **argv);
+int test_perturb_0003_row_8bit(int argc, char **argv);
+int test_perturb_0004_row_float(int argc, char **argv);
 int test_filter_0016_filter_dither_6delta_jajuni(int argc, char **argv);
 int test_filter_0017_filter_dither_6delta_stucki(int argc, char **argv);
 int test_filter_0018_filter_dither_6delta_burkes(int argc, char **argv);
@@ -772,6 +778,12 @@ static test_entry_t const test_entries[] = {
       test_filter_0013_filter_encode_6delta_keycolor },
     { "filter/0014_filter_sample_solid",
       test_filter_0014_filter_sample_solid },
+    { "perturb/0004_perturb_row_float", test_perturb_0004_row_float },
+    { "perturb/0003_perturb_row_8bit", test_perturb_0003_row_8bit },
+    { "perturb/0017_perturb_keep_early", test_perturb_0017_keep_early },
+    { "perturb/0018_perturb_keep_lookup", test_perturb_0018_keep_lookup },
+    { "perturb/0001_perturb_weights", test_perturb_0001_weights },
+    { "perturb/0002_perturb_api", test_perturb_0002_api },
     { "filter/0015_filter_dither_6delta_lso2",
       test_filter_0015_filter_dither_6delta_lso2 },
     { "filter/0016_filter_dither_6delta_jajuni",
