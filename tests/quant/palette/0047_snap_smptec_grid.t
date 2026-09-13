@@ -1,5 +1,6 @@
 #!/bin/sh
 # Policy: docs/functionality/snap-policy.md
+# Policy: docs/functionality/output-colorspace.md
 # Verify generated exact snap agrees at ACT and SIXEL output boundaries.
 set -eux
 

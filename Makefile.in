@@ -894,6 +894,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/functionality/resampling/measurements/resampling-speed.png \
 	docs/functionality/clustering-colorspace.md \
 	docs/functionality/working-colorspace.md \
+	docs/functionality/output-colorspace.md \
 	docs/functionality/merge-policy.md \
 	docs/functionality/merge-policies/measurements/merge-policy-comparison.csv \
 	docs/functionality/merge-policies/measurements/merge-policy-mechanics.png \

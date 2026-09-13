@@ -60,6 +60,7 @@ are grouped by domain so each area can grow without overloading one document.
   explains `-X`, its coordinate geometry and normalization, option
   interactions, and measured quality, speed, and size tradeoffs.
 - [Palette working color space](functionality/working-colorspace.md) explains `-W`, its palette-application geometry, lookup and dither interactions, precision requirements, and measured quality, speed, and size tradeoffs.
+- [Output color space](functionality/output-colorspace.md) explains `-U`, gamma/linear/SMPTE-C output, receiver interpretation, percentage rounding, fixed-palette and `-M` interactions, the high-color gap, and test coverage.
 - [Encoder working precision](functionality/precision.md) explains the
   cross-cutting `--precision` axis, effective 8-bit and float32 paths, and the
   shared quality, speed, and size comparison across processing policies.
