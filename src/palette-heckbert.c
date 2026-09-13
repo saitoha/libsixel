@@ -200,26 +200,6 @@ sixel_palette_heckbert_float32_to_u8(float value,
 }
 
 /*
- * Convert tuple samples into normalized float entries so the palette builder
- * can preserve float32 precision when RGBFLOAT32 inputs reach the median-cut
- * implementation.
- */
-static float
-sixel_palette_heckbert_sample_to_float(sample value)
-{
-    sample clamped;
-    float normalized;
-
-    clamped = value;
-    if (clamped > 255UL) {
-        clamped = 255UL;
-    }
-    normalized = (float)clamped / 255.0f;
-
-    return normalized;
-}
-
-/*
  * Convert each histogram tuple component onto the reversible SIXEL tone grid.
  * The conversion mirrors sixel_palette_reversible_palette but operates on the
  * temporary tuple tables used during Heckbert processing.
