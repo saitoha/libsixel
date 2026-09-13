@@ -434,6 +434,18 @@ choose diffusion method used with color reduction.
 .br
 common sub-option:
 .br
+\fBperturb=P\fP -> paired FS weight perturbation, 0.0-1.0 (default 0.0)
+.br
+\fBUP\fP -> short form of \fBperturb\fP
+.br
+\fBperturb_seed=S\fP -> signed 32-bit position seed (default 0)
+.br
+\fBRS\fP -> short form of \fBperturb_seed\fP
+.br
+These settings affect only FS, including auto when it resolves to FS.
+Other methods accept and ignore them. Zero preserves the original output.
+For example: \fBfs:perturb=0.5:scan=serpentine\fP.
+.br
 \fBband_overwrap=LINES\fP -> overlap adjacent parallel bands
 (default depends on palette size)
 .br
@@ -582,7 +594,7 @@ sub-option:
 .br
 Compact diffusion suboption names use one uppercase letter plus the value:
 all methods scan=N, band_overwrap=O, band_width=B, threads_max=J,
-pin_threads=I;
+pin_threads=I, perturb=U, perturb_seed=R;
 sierra variant=V; a_dither/x_dither strength=T;
 interframe diffusion=D;
 stbn source=S, diffusion=D, strength=T, motion_adapt=M,
@@ -1580,6 +1592,18 @@ positive integers. The \fB-d\fP suboption \fBthreads_max=COUNT\fP
 override the band height assigned to each dither worker. Values are rounded to
 a multiple of six scanlines. The \fB-d\fP suboption
 \fBband_width=LINES\fP (short form \fB:BLINES\fP) takes precedence.
+.TP 5
+.B SIXEL_DITHER_PERTURB
+.br
+set paired FS weight perturbation, 0.0-1.0 (default 0.0).
+The \fB-d\fP suboption \fBperturb=P\fP (short form \fB:UP\fP)
+takes precedence. Other methods ignore the setting; auto uses it only for FS.
+.TP 5
+.B SIXEL_DITHER_PERTURB_SEED
+.br
+set the signed 32-bit FS position-hash seed (default 0).
+The \fB-d\fP suboption \fBperturb_seed=S\fP (short form \fB:RS\fP)
+takes precedence.
 .TP 5
 .B SIXEL_DITHER_PARALLEL_BAND_OVERWRAP
 .br
