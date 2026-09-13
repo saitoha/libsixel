@@ -26,6 +26,7 @@
 #define LIBSIXEL_DITHER_H
 
 #include <sixel.h>
+#include <stdint.h>
 
 #include "sixel_atomic.h"
 #include "palette.h"
@@ -98,6 +99,26 @@ typedef struct sixel_dither_interframe_state {
 /* apply mode for sixel_dither_apply_palette_with_mode() */
 #define SIXEL_DITHER_APPLY_PRESERVE_INTERFRAME_STATE 0
 #define SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE  1
+
+/* Internal FS perturbation parameters, prepared once per policy request. */
+typedef struct sixel_dither_perturb {
+    int enabled;
+    uint32_t seed;
+    int amp[2];
+    float float_amp[2];
+} sixel_dither_perturb_t;
+
+SIXEL_INTERNAL_API void
+sixel_dither_perturb_init(sixel_dither_perturb_t *context,
+                          float amount, int seed);
+SIXEL_INTERNAL_API uint32_t
+sixel_dither_perturb_hash(int x, int absolute_y, uint32_t seed, int pair);
+SIXEL_INTERNAL_API void
+sixel_dither_perturb_weights(sixel_dither_perturb_t const *context,
+                             int x, int absolute_y, int num[4]);
+SIXEL_INTERNAL_API void
+sixel_dither_perturb_float(sixel_dither_perturb_t const *context,
+                           int x, int absolute_y, float weights[4]);
 
 /* dither context object */
 struct sixel_dither {
