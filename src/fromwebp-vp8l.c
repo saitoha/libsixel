@@ -975,7 +975,13 @@ sixel_webp_distance_code_to_distance(unsigned int distance_code,
 static unsigned int
 sixel_webp_color_cache_hash(uint32_t argb, int cache_bits)
 {
-    return (unsigned int)((0x1e35a7bdu * argb) >> (32 - cache_bits));
+    uint32_t hash_product;
+
+    /* WebP defines this product modulo 2^32. Widen before truncation so
+     * unsigned-overflow instrumentation does not reject the defined wrap.
+     */
+    hash_product = (uint32_t)(UINT64_C(0x1e35a7bd) * (uint64_t)argb);
+    return (unsigned int)(hash_product >> (32 - cache_bits));
 }
 
 static SIXELSTATUS
