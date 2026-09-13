@@ -19,7 +19,7 @@ echo "1..1"
 set -v
 
 input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/rgb/img_rgb_icc1_srgb1_chrm1_gama0.png"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_icc1_srgb0_chrm0_gama0.six"
+reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_icc1_srgb1_chrm1_gama0.six"
 output_six="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-img_rgb_icc1_srgb1_chrm1_gama0_libpng.six"
 
 test -f "${input_png}" || {

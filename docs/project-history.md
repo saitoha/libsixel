@@ -218,6 +218,8 @@ Discussions and patches from terminal, operating-system, and packaging
 developers repeatedly turned terminal-specific behavior into reusable library
 contracts.
 
+The [libpng reader introduced in October 2014](https://github.com/saitoha/libsixel/commit/1dc22c25810f08c345be36e707abe76b9970e16e) began with yaft as a source reference, according to the maintainer. Its [loader history](loader/libpng.md#origin-and-stages-of-support) follows the later expansion through grayscale and transparency support, libpng version workarounds, independent loader selection, APNG, color management, and precision. The initial raster adapter did not provide all of those capabilities at once.
+
 ### 2015-2017: API and ecosystem expansion
 
 The library gained higher-level encoder, decoder, frame, allocator, image-load,

@@ -243,7 +243,7 @@ lp_capture(sixel_frame_t *frame, void *data)
 }
 
 static SIXELSTATUS
-lp_load(lp_fixture_t const *f, lp_probe_t *probe,
+lp_load_backend(char const *backend, lp_fixture_t const *f, lp_probe_t *probe,
         int cms, int colors, unsigned char const *bg, int loops,
         int through_manager)
 {
@@ -310,7 +310,7 @@ lp_load(lp_fixture_t const *f, lp_probe_t *probe,
             capture_frame_trampoline, &callback);
         goto end;
     }
-    status = create_loader_component_by_name("libpng", allocator,
+    status = create_loader_component_by_name(backend, allocator,
                                               (void **)&component);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -344,6 +344,93 @@ end:
     }
     sixel_allocator_unref(allocator);
     return status;
+}
+
+static SIXELSTATUS
+lp_load(lp_fixture_t const *f, lp_probe_t *probe,
+        int cms, int colors, unsigned char const *bg, int loops,
+        int through_manager)
+{
+    return lp_load_backend("libpng", f, probe, cms, colors, bg, loops,
+                           through_manager);
+}
+
+/*
+ * A linear source ICC makes the same midtone observably different from sRGB.
+ * Hold samples constant while varying only declarations. This distinguishes
+ * the three-chunk exception from both ICC-always and sRGB-always policies.
+ */
+static int
+lp_check_priority(char const *backend, int cms, int animated)
+{
+    unsigned char metadata[EDGE_BUFFER_CAPACITY];
+    unsigned char rgba[9] = {0, 128, 128, 128, 255, 128, 128, 128, 255};
+    size_t metadata_size;
+    size_t offset;
+    size_t length;
+    lp_fixture_t f;
+    lp_probe_t probes[4];
+    SIXELSTATUS status;
+    int variant;
+    int channel;
+    int include;
+    int result;
+    double expected;
+    double difference;
+
+    if (edge_read_fixture("/tests/data/colormgmt/input/png/rgb/"
+        "img_rgb_icc1_srgb1_chrm1_gama1.png", metadata, sizeof(metadata),
+        &metadata_size) != 0) {
+        return 1;
+    }
+    for (variant = 0; variant < 4; ++variant) {
+        lp_header(&f, 8, 6);
+        for (offset = 8u; offset + 12u <= metadata_size;
+             offset += length + 12u) {
+            length = ((size_t)metadata[offset] << 24) |
+                     ((size_t)metadata[offset + 1u] << 16) |
+                     ((size_t)metadata[offset + 2u] << 8) |
+                     metadata[offset + 3u];
+            if (length > metadata_size - offset - 12u) {
+                return 1;
+            }
+            include =
+                (memcmp(metadata + offset + 4u, "iCCP", 4u) == 0 &&
+                 variant != 3) ||
+                (memcmp(metadata + offset + 4u, "sRGB", 4u) == 0 &&
+                 variant != 0) ||
+                ((memcmp(metadata + offset + 4u, "cHRM", 4u) == 0 ||
+                  memcmp(metadata + offset + 4u, "gAMA", 4u) == 0) &&
+                 variant >= 2);
+            if (include) {
+                lp_chunk(&f, (char const *)metadata + offset + 4u,
+                          metadata + offset + 8u, length);
+            }
+        }
+        if (animated) {
+            lp_actl(&f, 1, 1);
+            lp_fctl(&f, 0, 0, 0);
+        }
+        lp_data(&f, -1, rgba, sizeof(rgba));
+        lp_chunk(&f, "IEND", NULL, 0u);
+        status = lp_load_backend(backend, &f, &probes[variant], cms, 256,
+                                 NULL, SIXEL_LOOP_DISABLE, 0);
+        if (status != SIXEL_OK || probes[variant].count != 1 ||
+            probes[variant].hidden[0][0] || probes[variant].hidden[0][1]) {
+            return 1;
+        }
+    }
+    result = 0;
+    difference = 0.0;
+    expected = lp_linear(128.0 / 255.0);
+    for (channel = 0; channel < 6; ++channel) {
+        result |= fabs(probes[0].linear[0][channel] -
+                       probes[1].linear[0][channel]) > 1e-6;
+        result |= fabs(probes[2].linear[0][channel] - expected) > 1e-6;
+        result |= fabs(probes[3].linear[0][channel] - expected) > 1e-6;
+        difference += fabs(probes[0].linear[0][channel] - expected);
+    }
+    return result || difference < 0.02;
 }
 #endif
 
@@ -394,6 +481,18 @@ test_loader_libpng_contract(int argc, char **argv)
     bg = NULL;
     cms = SIXEL_CMS_ENGINE_NONE;
     colors = 256;
+    if (argc == 5 && strcmp(argv[1], "priority") == 0) {
+        if (strcmp(argv[3], "lcms2") == 0) {
+#if !HAVE_LCMS2
+            return SIXEL_TEST_SKIP;
+#endif
+            cms = SIXEL_CMS_ENGINE_LCMS2;
+        } else {
+            cms = SIXEL_CMS_ENGINE_BUILTIN;
+        }
+        return lp_check_priority(argv[2], cms,
+                                  strcmp(argv[4], "apng") == 0);
+    }
     if (argc != 2) {
         return 1;
     }
