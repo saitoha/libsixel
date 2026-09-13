@@ -110,6 +110,7 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	processing/decoder/0053_percentage_rgb8.c \
 	processing/colorspace/0001_din99d_forward.c \
 	processing/colorspace/0002_din99d_inverse.c \
 	processing/colorspace/0003_din99d_byte.c \
@@ -518,6 +519,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0053_percentage_rgb8.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0001_din99d_forward.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0002_din99d_inverse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0003_din99d_byte.$(OBJEXT) \
@@ -1222,6 +1224,7 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
 	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
@@ -2025,6 +2028,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_PERCENTAGE_RGB8 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DIN99D_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
@@ -2455,6 +2459,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0053_percentage_rgb8.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0001_din99d_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0002_din99d_inverse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0003_din99d_byte.c \
@@ -3030,6 +3035,15 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+processing/decoder/$(am__dirstamp):
+	@$(MKDIR_P) processing/decoder
+	@: >>processing/decoder/$(am__dirstamp)
+processing/decoder/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/decoder/$(DEPDIR)
+	@: >>processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0053_percentage_rgb8.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/$(am__dirstamp):
 	@$(MKDIR_P) processing/colorspace
 	@: >>processing/colorspace/$(am__dirstamp)
@@ -3476,12 +3490,6 @@ processing/scale/test_runner-0005_rgb565_normalized_rgb888.$(OBJEXT):  \
 processing/scale/test_runner-0006_rgba8888_normalized_rgb888.$(OBJEXT):  \
 	processing/scale/$(am__dirstamp) \
 	processing/scale/$(DEPDIR)/$(am__dirstamp)
-processing/decoder/$(am__dirstamp):
-	@$(MKDIR_P) processing/decoder
-	@: >>processing/decoder/$(am__dirstamp)
-processing/decoder/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) processing/decoder/$(DEPDIR)
-	@: >>processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
@@ -4730,6 +4738,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
@@ -4915,6 +4924,20 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+processing/decoder/test_runner-0053_percentage_rgb8.o: processing/decoder/0053_percentage_rgb8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0053_percentage_rgb8.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Tpo -c -o processing/decoder/test_runner-0053_percentage_rgb8.o `test -f 'processing/decoder/0053_percentage_rgb8.c' || echo '$(srcdir)/'`processing/decoder/0053_percentage_rgb8.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Tpo processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0053_percentage_rgb8.c' object='processing/decoder/test_runner-0053_percentage_rgb8.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0053_percentage_rgb8.o `test -f 'processing/decoder/0053_percentage_rgb8.c' || echo '$(srcdir)/'`processing/decoder/0053_percentage_rgb8.c
+
+processing/decoder/test_runner-0053_percentage_rgb8.obj: processing/decoder/0053_percentage_rgb8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0053_percentage_rgb8.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Tpo -c -o processing/decoder/test_runner-0053_percentage_rgb8.obj `if test -f 'processing/decoder/0053_percentage_rgb8.c'; then $(CYGPATH_W) 'processing/decoder/0053_percentage_rgb8.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0053_percentage_rgb8.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Tpo processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0053_percentage_rgb8.c' object='processing/decoder/test_runner-0053_percentage_rgb8.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0053_percentage_rgb8.obj `if test -f 'processing/decoder/0053_percentage_rgb8.c'; then $(CYGPATH_W) 'processing/decoder/0053_percentage_rgb8.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0053_percentage_rgb8.c'; fi`
 
 processing/colorspace/test_runner-0001_din99d_forward.o: processing/colorspace/0001_din99d_forward.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0001_din99d_forward.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Tpo -c -o processing/colorspace/test_runner-0001_din99d_forward.o `test -f 'processing/colorspace/0001_din99d_forward.c' || echo '$(srcdir)/'`processing/colorspace/0001_din99d_forward.c
@@ -11052,6 +11075,7 @@ distclean: distclean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
@@ -11488,6 +11512,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0053_percentage_rgb8.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po

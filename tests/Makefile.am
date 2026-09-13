@@ -181,6 +181,7 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0053_PERCENTAGE_RGB8 \
     -DBUILD_TEST_0001_DIN99D_FORWARD \
     -DBUILD_TEST_0045_SNAP_OUTPUT_GRID \
     -DBUILD_TEST_0048_SNAP_PARTIAL_ONCE \
@@ -586,6 +587,7 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
+    processing/decoder/0053_percentage_rgb8.c \
     processing/colorspace/0001_din99d_forward.c \
     processing/colorspace/0002_din99d_inverse.c \
     processing/colorspace/0003_din99d_byte.c \

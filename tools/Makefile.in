@@ -480,6 +480,7 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 bin_SCRIPTS = libsixel-config $(am__append_1)
 EXTRA_DIST = libsixel-config.in \
+             generate_color_fixtures.py \
              build-docs \
              docs/mkdocs_hooks.py \
              docs/requirements.txt \

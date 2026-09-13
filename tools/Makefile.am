@@ -18,6 +18,7 @@ noinst_PROGRAMS += lso-timeout
 endif
 
 EXTRA_DIST = libsixel-config.in \
+             generate_color_fixtures.py \
              build-docs \
              docs/mkdocs_hooks.py \
              docs/requirements.txt \

@@ -90,6 +90,7 @@ int test_filter_0001_filter_clip(int argc, char **argv);
 int test_color_0001_din99d_forward(int argc, char **argv);
 int test_color_0002_din99d_inverse(int argc, char **argv);
 int test_color_0003_din99d_byte(int argc, char **argv);
+int test_pmap_0053(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
 int test_filter_0004_filter_colors(int argc, char **argv);
@@ -1019,6 +1020,7 @@ static test_entry_t const test_entries[] = {
     { "colorspace/0001_din99d_forward", test_color_0001_din99d_forward },
     { "colorspace/0002_din99d_inverse", test_color_0002_din99d_inverse },
     { "colorspace/0003_din99d_byte", test_color_0003_din99d_byte },
+    { "decoder/0053_percentage_rgb8", test_pmap_0053 },
     { "scale/0004_g8_normalized_rgb888",
       test_scale_0004_g8_rgb888 },
     { "scale/0005_rgb565_normalized_rgb888",
