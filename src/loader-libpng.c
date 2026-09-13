@@ -595,19 +595,59 @@ png_error_callback(png_structp png_ptr, png_const_charp error_message)
 }
 
 /*
- * Convert validated source metadata to linear sRGB without touching alpha.
- * Usable ICC wins; an unavailable transform falls back to valid PNG metadata.
- * gAMA/cHRM interpretation is arithmetic shared by every configured CMS engine.
+ * libpng can hide conflicting color declarations in its info structure.
+ * Keep their original pre-IDAT presence for the ColorSync-compatible priority
+ * shared with builtin PNG. These flags never authorize rejected ICC bytes.
+ */
+static unsigned int
+png_source_color_chunks(unsigned char const *buffer, size_t size)
+{
+    size_t offset;
+    size_t length;
+    unsigned int flags;
+    unsigned char const *type;
+
+    flags = 0u;
+    for (offset = 8u; offset <= size && size - offset >= 12u;
+         offset += length + 12u) {
+        length = ((size_t)buffer[offset] << 24) |
+                 ((size_t)buffer[offset + 1u] << 16) |
+                 ((size_t)buffer[offset + 2u] << 8) |
+                 (size_t)buffer[offset + 3u];
+        if (length > size - offset - 12u) {
+            break;
+        }
+        type = buffer + offset + 4u;
+        if (memcmp(type, "IDAT", 4u) == 0 ||
+            memcmp(type, "IEND", 4u) == 0) {
+            break;
+        }
+        if (memcmp(type, "sRGB", 4u) == 0 && length == 1u &&
+            buffer[offset + 8u] <= 3u) {
+            flags |= PNG_INFO_sRGB;
+        } else if (memcmp(type, "cHRM", 4u) == 0 && length == 32u) {
+            flags |= PNG_INFO_cHRM;
+        }
+    }
+    return flags;
+}
+
+/*
+ * Convert source metadata to linear sRGB without touching alpha. Preserve the
+ * shared ColorSync compatibility rule: iCCP+sRGB+cHRM uses sRGB; iCCP+sRGB
+ * without cHRM still tries the validated ICC profile. See the PNG precedence
+ * section in docs/loader/color-management.md before changing this decision.
+ * An unavailable transform falls back to supported PNG metadata.
  */
 static int
 png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
-                      float *pixels, int width, int height, int enable_cms)
+                      float *pixels, int width, int height, int enable_cms,
+                      unsigned int color_chunks)
 {
     png_charp name;
     png_bytep profile;
     png_uint_32 profile_size;
     int compression;
-    int intent;
     int converted;
     int has_gamma;
     int has_matrix;
@@ -629,7 +669,10 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
     has_gamma = 0;
     has_matrix = 0;
     gamma = 0.0;
-    if (enable_cms && png_get_iCCP(png_ptr, info_ptr, &name, &compression,
+    if (enable_cms &&
+        (color_chunks & (PNG_INFO_sRGB | PNG_INFO_cHRM)) !=
+            (PNG_INFO_sRGB | PNG_INFO_cHRM) &&
+        png_get_iCCP(png_ptr, info_ptr, &name, &compression,
                                   &profile, &profile_size) == PNG_INFO_iCCP) {
         converted = sixel_cms_convert_to_srgb_with_profile_bytes(
             (unsigned char *)pixels, width, height,
@@ -639,8 +682,7 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
                                  "using supported PNG color metadata");
         }
     }
-    if (enable_cms && !converted &&
-        png_get_sRGB(png_ptr, info_ptr, &intent) != PNG_INFO_sRGB) {
+    if (enable_cms && !converted && !(color_chunks & PNG_INFO_sRGB)) {
         has_gamma = png_get_gAMA(png_ptr, info_ptr, &gamma) == PNG_INFO_gAMA
                     && gamma > 0.0;
         if (png_get_cHRM(png_ptr, info_ptr, &wx, &wy, &rx, &ry,
@@ -810,6 +852,7 @@ load_png(unsigned char      /* out */ **result,
     size_t dst_index;
     unsigned int palette_index;
     unsigned int sample;
+    unsigned int color_chunks;
     size_t sample_bytes;
     size_t color_count;
     int palette_colors;
@@ -877,6 +920,7 @@ load_png(unsigned char      /* out */ **result,
     png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
 #endif
     png_read_info(png_ptr, info_ptr);
+    color_chunks = png_source_color_chunks(buffer, size);
     width = png_get_image_width(png_ptr, info_ptr);
     height = png_get_image_height(png_ptr, info_ptr);
 
@@ -1069,13 +1113,14 @@ load_png(unsigned char      /* out */ **result,
             }
         }
         cms_converted = png_source_to_linear(png_ptr, info_ptr, float_pixels,
-                                             *psx, *psy, enable_cms);
+                                             *psx, *psy, enable_cms,
+                                             color_chunks);
         for (channel = 0; channel < 3; ++channel) {
             bg_pixel[channel] = (float)bg_unit[channel];
         }
         if (background_from_file) {
             (void)png_source_to_linear(png_ptr, info_ptr, bg_pixel,
-                                       1, 1, enable_cms);
+                                       1, 1, enable_cms, color_chunks);
         } else if (background_colorspace != SIXEL_COLORSPACE_LINEAR) {
             for (channel = 0; channel < 3; ++channel) {
                 bg_pixel[channel] = (float)png_decode_srgb_unit(
@@ -1434,7 +1479,8 @@ load_png(unsigned char      /* out */ **result,
             }
         }
         cms_converted = png_source_to_linear(png_ptr, info_ptr, cms_pixels,
-            palette_colors ? *pncolors : *psx, palette_colors ? 1 : *psy, 1);
+            palette_colors ? *pncolors : *psx, palette_colors ? 1 : *psy, 1,
+            color_chunks);
         if (*pixelformat == SIXEL_PIXELFORMAT_G8 && cms_converted) {
             sixel_allocator_free(allocator, *result);
             *result = (unsigned char *)sixel_allocator_malloc(

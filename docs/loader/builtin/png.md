@@ -37,7 +37,7 @@ The adapted path also recognizes Apple's private `CgBI` form and performs its ch
 | Unknown ancillary chunks | Bounds-checked and skipped. |
 | Unknown critical chunks | Rejected. |
 
-The color interpretation order is usable `iCCP`, then `sRGB`, then the applicable `cHRM`/`gAMA` combination. Malformed or non-applicable metadata follows the format path's fallback rules rather than becoming a generic metadata object. Text chunks, `pHYs`, `tIME`, and HDR signaling such as `cICP`, `mDCv`, and `cLLi` have no semantic effect in the current decoder.
+The [shared PNG metadata precedence](../color-management.md#png-metadata-precedence-and-colorsync-compatibility) describes the ColorSync-compatible source choice, including the `iCCP+sRGB+cHRM` exception and the distinction from `iCCP+sRGB` alone. Malformed or non-applicable metadata follows the format path's fallback rules rather than becoming a generic metadata object. Text chunks, `pHYs`, `tIME`, and HDR signaling such as `cICP`, `mDCv`, and `cLLi` have no semantic effect in the current decoder.
 
 PNG specifies CRC validation, but these in-memory builtin paths currently read past stored CRC fields without verifying them. Successful decode therefore proves structural acceptance by this parser, not checksum authentication.
 
