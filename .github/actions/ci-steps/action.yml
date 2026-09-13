@@ -558,16 +558,23 @@ runs:
           module_name=$1
           for attempt in 1 2 3; do
             cpanm_attempt_home="${RUNNER_TEMP:-$PWD/.ci-tools}/cpanm-$attempt"
+            case "$attempt" in
+              1) cpanm_mirror=https://cpan.metacpan.org ;;
+              2) cpanm_mirror=https://www.cpan.org ;;
+              *) cpanm_mirror=https://cpan.metacpan.org ;;
+            esac
             if test "$use_sudo" -eq 1; then
               if sudo env PERL_CPANM_HOME="$cpanm_attempt_home" \
                   "$perl_bin" "$cpanm_bin" --quiet --notest \
-                  --skip-satisfied "$module_name"; then
+                  --skip-satisfied --mirror "$cpanm_mirror" \
+                  --mirror-only "$module_name"; then
                 return 0
               fi
             else
               if PERL_CPANM_HOME="$cpanm_attempt_home" \
                   "$perl_bin" "$cpanm_bin" --quiet --notest \
-                  --skip-satisfied "$module_name"; then
+                  --skip-satisfied --mirror "$cpanm_mirror" \
+                  --mirror-only "$module_name"; then
                 return 0
               fi
             fi
