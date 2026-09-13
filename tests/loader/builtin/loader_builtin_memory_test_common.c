@@ -1094,6 +1094,37 @@ edge_expect_failure(char const *label,
     return 0;
 }
 
+static uint64_t
+edge_mul_low64(uint64_t left, uint64_t right)
+{
+#if defined(__SIZEOF_INT128__) && !defined(__STRICT_ANSI__)
+    return (uint64_t)((unsigned __int128)left * right);
+#else
+    uint64_t left_lo;
+    uint64_t left_hi;
+    uint64_t right_lo;
+    uint64_t right_hi;
+    uint64_t low;
+    uint64_t cross;
+    uint64_t high;
+
+    left_lo = left & UINT64_C(0xffffffff);
+    left_hi = left >> 32;
+    right_lo = right & UINT64_C(0xffffffff);
+    right_hi = right >> 32;
+    low = left_lo * right_lo;
+    cross = (uint64_t)(uint32_t)(left_lo * right_hi)
+        + (uint64_t)(uint32_t)(left_hi * right_lo);
+    high = cross << 32;
+
+    if (low <= UINT64_MAX - high) {
+        return low + high;
+    }
+
+    return high - (UINT64_MAX - low) - UINT64_C(1);
+#endif
+}
+
 uint64_t
 edge_digest_bytes(unsigned char const *bytes, size_t byte_count)
 {
@@ -1103,7 +1134,8 @@ edge_digest_bytes(unsigned char const *bytes, size_t byte_count)
     digest = UINT64_C(14695981039346656037);
     for (index = 0u; index < byte_count; ++index) {
         digest ^= (uint64_t)bytes[index];
-        digest *= UINT64_C(1099511628211);
+        /* Preserve the FNV modulo result without sanitizer-visible overflow. */
+        digest = edge_mul_low64(digest, UINT64_C(1099511628211));
     }
     return digest;
 }
