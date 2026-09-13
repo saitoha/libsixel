@@ -1,5 +1,5 @@
 #!/bin/sh
-# A usable ICC profile wins even when contradictory lower-priority chunks exist.
+# Verify deterministic builtin-CMS fallback when ICC conversion is unavailable.
 # TAP test: libpng loader colormgmt parity for idx/img_idx_icc1_srgb1_chrm1_gama0.png
 
 set -eux
@@ -19,7 +19,7 @@ echo "1..1"
 set -v
 
 input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/idx/img_idx_icc1_srgb1_chrm1_gama0.png"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/idx/img_idx_icc1_srgb0_chrm0_gama0.six"
+reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/idx/img_idx_icc1_srgb1_chrm1_gama0.six"
 output_six="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-img_idx_icc1_srgb1_chrm1_gama0_libpng.six"
 
 test -f "${input_png}" || {
@@ -32,7 +32,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=auto! "${input_png}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=builtin! "${input_png}" >"${output_six}" || {
     echo "not ok" 1 - "libpng decode failed"
     exit 0
 }

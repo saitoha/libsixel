@@ -22,6 +22,7 @@ env_output="${artifact_dir}/0136-dense-packing-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    -Lbuiltin:cms_engine=none! \
     "-~5bit:Pmorton" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "5bit packing short conversion failed"
     exit 0
@@ -38,6 +39,7 @@ test "${short_trace#*LSXLUT1|*packing=morton*}" != \
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    -Lbuiltin:cms_engine=none! \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" "-~5bit" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "5bit packing environment conversion failed"
@@ -61,6 +63,7 @@ cmp -s "${short_output}" "${env_output}" || {
 bit6_short_trace=$(set +xv; \
     SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    -Lbuiltin:cms_engine=none! \
     "-~6bit:Pmorton" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "6bit packing short conversion failed"
     exit 0
@@ -78,6 +81,7 @@ test "${bit6_short_trace#*LSXLUT1|*packing=morton*}" != \
 bit6_env_trace=$(set +xv; \
     SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    -Lbuiltin:cms_engine=none! \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" "-~6bit" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "6bit packing environment conversion failed"
@@ -94,7 +98,8 @@ test "${bit6_env_trace#*LSXLUT1|*packing=morton*}" != \
 }
 
 set +e
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-~fhedt:Pmorton" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! \
+    "-~fhedt:Pmorton" \
     "${input_image}" >/dev/null 2>&1
 invalid_status=$?
 set -e

@@ -15,6 +15,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Goff -dnone \
+    -Lbuiltin:cms_engine=none! \
     -m pal:- --lookup-policy=fhedt -o/dev/null "${input_image}" \
     2>&1 >/dev/null <<'PAL'
 JASC-PAL

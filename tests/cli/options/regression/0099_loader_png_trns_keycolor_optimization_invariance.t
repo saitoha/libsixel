@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify PNG keycolor policy through short and environment paths.
+# Verify the PNG keycolor optimization through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|NULL|trns_keycolor
 # Registry binding: png_trns_keycolor
 
@@ -66,8 +66,8 @@ cmp -s "${short_output}" "${env_output}" || {
     exit 0
 }
 
-cmp -s "${short_output}" "${control_output}" && {
-    echo "not ok" 1 - "trns_keycolor did not affect image output"
+cmp -s "${short_output}" "${control_output}" || {
+    echo "not ok" 1 - "trns_keycolor optimization changed image output"
     exit 0
 }
 
@@ -80,5 +80,5 @@ test "${lsqa_status:-0}" -eq 0 || {
     exit 0
 }
 
-echo "ok" 1 - "trns_keycolor preserves image output"
+echo "ok" 1 - "trns_keycolor optimization preserves image output"
 exit 0

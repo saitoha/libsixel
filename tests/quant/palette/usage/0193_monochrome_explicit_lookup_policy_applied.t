@@ -14,6 +14,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Goff -dnone \
+    -Lbuiltin:cms_engine=none! \
     -e --lookup-policy=5bit -o/dev/null "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "monochrome conversion with 5bit lookup failed"

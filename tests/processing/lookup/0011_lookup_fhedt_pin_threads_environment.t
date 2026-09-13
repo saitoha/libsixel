@@ -13,6 +13,7 @@ set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    -Lbuiltin:cms_engine=none! \
     --env "SIXEL_FHEDT_PIN_THREADS=0" \
     --env "SIXEL_LOOKUP_FHEDT_PIN_THREADS=1" -p 16 "-~fhedt" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {

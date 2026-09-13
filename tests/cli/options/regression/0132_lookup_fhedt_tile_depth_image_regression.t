@@ -22,6 +22,7 @@ env_output="${artifact_dir}/0132-fhedt-tile-depth-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    -Lbuiltin:cms_engine=none! \
     "-~fhedt:T6" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "fhedt:tile_depth short conversion failed"
     exit 0
@@ -38,6 +39,7 @@ test "${short_trace#*LSXFHD1|*precision=8bit|*tile_depth=6*}" != \
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    -Lbuiltin:cms_engine=none! \
     --env "SIXEL_LOOKUP_FHEDT_TILE_DEPTH=6" "-~fhedt" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "fhedt:tile_depth environment conversion failed"
@@ -54,6 +56,7 @@ test "${env_trace#*LSXFHD1|*precision=8bit|*tile_depth=6*}" != \
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    -Lbuiltin:cms_engine=none! \
     --precision=float32 "-~fhedt:T6" "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "fhedt tile_depth float32 conversion failed"
@@ -72,6 +75,7 @@ cmp -s "${short_output}" "${env_output}" || {
 
 legacy_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    -Lbuiltin:cms_engine=none! \
     --env "SIXEL_FHEDT_TILE_DEPTH=6" "-~fhedt" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "legacy tile_depth conversion failed"

@@ -1049,6 +1049,7 @@ convert_palette_to_rgb(
     int palette_colors,
     int palette_comp,
     unsigned char *bgcolor,
+    int preserve_uncomposited_color,
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -1100,9 +1101,11 @@ convert_palette_to_rgb(
     for (i = 0; i < palette_colors; ++i) {
         if (palette_comp == 4) {
             alpha = palette_src[i * 4 + 3];
-            if (alpha < 0xff) {
+            if (alpha < 0xff &&
+                (bgcolor != NULL || !preserve_uncomposited_color)) {
                 /*
-                 * Keep integer blending consistent with the libpng loader.
+                 * Indexed TGA keeps its documented black fallback. Indexed
+                 * PNG preserves source color when no background was resolved.
                  */
                 rgb_palette[i * 3 + 0] =
                     (unsigned char)(((0xff - alpha) * bg_r
@@ -4534,6 +4537,7 @@ sixel_builtin_try_load_indexed_png(
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
+                                    1,
                                     allocator);
     if (SIXEL_FAILED(status)) {
         stbi_free(palette);
@@ -4656,6 +4660,7 @@ sixel_builtin_try_load_indexed_tga(
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
+                                    0,
                                     allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -4799,6 +4804,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
                                         palette_colors,
                                         palette_comp,
                                         bgcolor,
+                                        1,
                                         allocator);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
