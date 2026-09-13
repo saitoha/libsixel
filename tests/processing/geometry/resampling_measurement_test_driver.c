@@ -309,9 +309,9 @@ rmb_load_baselines(char const *path,
 }
 
 static void
-rmb_init_accumulators(
-    rmb_accumulator_t values[RMB_SCENARIO_COUNT][RMB_METHOD_COUNT])
+rmb_init_accumulators(rmb_accumulator_t *values)
 {
+    rmb_accumulator_t *value;
     int scenario;
     int method;
 
@@ -319,9 +319,10 @@ rmb_init_accumulators(
            RMB_SCENARIO_COUNT * RMB_METHOD_COUNT);
     for (scenario = 0; scenario < RMB_SCENARIO_COUNT; ++scenario) {
         for (method = 0; method < RMB_METHOD_COUNT; ++method) {
-            values[scenario][method].nearest_distance = DBL_MAX;
-            values[scenario][method].isotropy_minimum = DBL_MAX;
-            values[scenario][method].isotropy_maximum = -DBL_MAX;
+            value = &values[scenario * RMB_METHOD_COUNT + method];
+            value->nearest_distance = DBL_MAX;
+            value->isotropy_minimum = DBL_MAX;
+            value->isotropy_maximum = -DBL_MAX;
         }
     }
 }
@@ -685,7 +686,7 @@ test_geometry_resampling_measurement_baseline(int argc, char **argv)
         fprintf(stderr, "unknown measurement type: %s\n", argv[1]);
         return EXIT_FAILURE;
     }
-    rmb_init_accumulators(values);
+    rmb_init_accumulators(&values[0][0]);
     if (!rmb_load_baselines(argv[2],
                             measurement,
                             baselines,
