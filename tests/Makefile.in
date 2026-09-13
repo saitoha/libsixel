@@ -272,6 +272,19 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0039_ormode_decoder_reuse_resets_mode.c \
 	processing/decoder/0040_ormode_direct_zero_is_opaque.c \
 	processing/decoder/0041_ormode_legacy_zero_is_color.c \
+	processing/decoder/0042_default_palette_direct.c \
+	processing/decoder/0043_palette_map_definitions.c \
+	processing/decoder/0044_palette_map_redefinition.c \
+	processing/decoder/0045_palette_map_ormode.c \
+	processing/decoder/0046_palette_map_parallel.c \
+	processing/decoder/0047_palette_map_dequant.c \
+	processing/decoder/0048_palette_map_invalid.c \
+	processing/decoder/0049_palette_map_clip_background.c \
+	processing/decoder/0050_palette_map_identity.c \
+	processing/decoder/0051_palette_map_gpu.c \
+	processing/decoder/0052_palette_map_parallel_fallback.c \
+	processing/decoder/palette_map_test_common.c \
+	processing/decoder/palette_map_test_common.h \
 	processing/decoder/ormode_test_common.c \
 	processing/decoder/ormode_test_common.h \
 	processing/decoder/kundither_test_common.h \
@@ -663,6 +676,18 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0039_ormode_decoder_reuse_resets_mode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0040_ormode_direct_zero_is_opaque.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0041_ormode_legacy_zero_is_color.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0042_default_palette_direct.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0043_palette_map_definitions.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0044_palette_map_redefinition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0045_palette_map_ormode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0046_palette_map_parallel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0047_palette_map_dequant.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0048_palette_map_invalid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0049_palette_map_clip_background.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0050_palette_map_identity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0051_palette_map_gpu.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0052_palette_map_parallel_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-palette_map_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-ormode_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0012_lookup_packing_registry_direct.$(OBJEXT) \
@@ -1186,7 +1211,19 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0039_ormode_decoder_reuse_resets_mode.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0040_ormode_direct_zero_is_opaque.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0041_ormode_legacy_zero_is_color.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
+	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
 	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
 	processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po \
 	processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po \
@@ -1994,6 +2031,18 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_DIN99D_INVERSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_DIN99D_BYTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ORMODE_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_MAP_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_DEFAULT_PALETTE_DIRECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_PALETTE_MAP_DEFINITIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_PALETTE_MAP_REDEFINITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_PALETTE_MAP_ORMODE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_PALETTE_MAP_PARALLEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_PALETTE_MAP_DEQUANT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_PALETTE_MAP_INVALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_PALETTE_MAP_CLIP_BACKGROUND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_PALETTE_MAP_IDENTITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_PALETTE_MAP_GPU \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_PALETTE_MAP_PARALLEL_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_ORMODE_PUBLIC_OUTPUT_DISABLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_ORMODE_PIPELINE_SIZE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_ORMODE_OFFSET_DISABLES_PIPELINE \
@@ -2568,6 +2617,19 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0039_ormode_decoder_reuse_resets_mode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0040_ormode_direct_zero_is_opaque.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0041_ormode_legacy_zero_is_color.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0042_default_palette_direct.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0043_palette_map_definitions.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0044_palette_map_redefinition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0045_palette_map_ormode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0046_palette_map_parallel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0047_palette_map_dequant.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0048_palette_map_invalid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0049_palette_map_clip_background.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0050_palette_map_identity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0051_palette_map_gpu.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0052_palette_map_parallel_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/palette_map_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/palette_map_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/ormode_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/ormode_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/kundither_test_common.h \
@@ -3541,6 +3603,42 @@ processing/decoder/test_runner-0040_ormode_direct_zero_is_opaque.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0041_ormode_legacy_zero_is_color.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0042_default_palette_direct.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0043_palette_map_definitions.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0044_palette_map_redefinition.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0045_palette_map_ormode.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0046_palette_map_parallel.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0047_palette_map_dequant.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0048_palette_map_invalid.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0049_palette_map_clip_background.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0050_palette_map_identity.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0051_palette_map_gpu.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0052_palette_map_parallel_fallback.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-palette_map_test_common.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-ormode_test_common.$(OBJEXT):  \
@@ -4621,7 +4719,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0039_ormode_decoder_reuse_resets_mode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0040_ormode_direct_zero_is_opaque.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0041_ormode_legacy_zero_is_color.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po@am__quote@ # am--include-marker
@@ -7017,6 +7127,174 @@ processing/decoder/test_runner-0041_ormode_legacy_zero_is_color.obj: processing/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0041_ormode_legacy_zero_is_color.c' object='processing/decoder/test_runner-0041_ormode_legacy_zero_is_color.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0041_ormode_legacy_zero_is_color.obj `if test -f 'processing/decoder/0041_ormode_legacy_zero_is_color.c'; then $(CYGPATH_W) 'processing/decoder/0041_ormode_legacy_zero_is_color.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0041_ormode_legacy_zero_is_color.c'; fi`
+
+processing/decoder/test_runner-0042_default_palette_direct.o: processing/decoder/0042_default_palette_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0042_default_palette_direct.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Tpo -c -o processing/decoder/test_runner-0042_default_palette_direct.o `test -f 'processing/decoder/0042_default_palette_direct.c' || echo '$(srcdir)/'`processing/decoder/0042_default_palette_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Tpo processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0042_default_palette_direct.c' object='processing/decoder/test_runner-0042_default_palette_direct.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0042_default_palette_direct.o `test -f 'processing/decoder/0042_default_palette_direct.c' || echo '$(srcdir)/'`processing/decoder/0042_default_palette_direct.c
+
+processing/decoder/test_runner-0042_default_palette_direct.obj: processing/decoder/0042_default_palette_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0042_default_palette_direct.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Tpo -c -o processing/decoder/test_runner-0042_default_palette_direct.obj `if test -f 'processing/decoder/0042_default_palette_direct.c'; then $(CYGPATH_W) 'processing/decoder/0042_default_palette_direct.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0042_default_palette_direct.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Tpo processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0042_default_palette_direct.c' object='processing/decoder/test_runner-0042_default_palette_direct.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0042_default_palette_direct.obj `if test -f 'processing/decoder/0042_default_palette_direct.c'; then $(CYGPATH_W) 'processing/decoder/0042_default_palette_direct.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0042_default_palette_direct.c'; fi`
+
+processing/decoder/test_runner-0043_palette_map_definitions.o: processing/decoder/0043_palette_map_definitions.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0043_palette_map_definitions.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Tpo -c -o processing/decoder/test_runner-0043_palette_map_definitions.o `test -f 'processing/decoder/0043_palette_map_definitions.c' || echo '$(srcdir)/'`processing/decoder/0043_palette_map_definitions.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Tpo processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0043_palette_map_definitions.c' object='processing/decoder/test_runner-0043_palette_map_definitions.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0043_palette_map_definitions.o `test -f 'processing/decoder/0043_palette_map_definitions.c' || echo '$(srcdir)/'`processing/decoder/0043_palette_map_definitions.c
+
+processing/decoder/test_runner-0043_palette_map_definitions.obj: processing/decoder/0043_palette_map_definitions.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0043_palette_map_definitions.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Tpo -c -o processing/decoder/test_runner-0043_palette_map_definitions.obj `if test -f 'processing/decoder/0043_palette_map_definitions.c'; then $(CYGPATH_W) 'processing/decoder/0043_palette_map_definitions.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0043_palette_map_definitions.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Tpo processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0043_palette_map_definitions.c' object='processing/decoder/test_runner-0043_palette_map_definitions.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0043_palette_map_definitions.obj `if test -f 'processing/decoder/0043_palette_map_definitions.c'; then $(CYGPATH_W) 'processing/decoder/0043_palette_map_definitions.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0043_palette_map_definitions.c'; fi`
+
+processing/decoder/test_runner-0044_palette_map_redefinition.o: processing/decoder/0044_palette_map_redefinition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0044_palette_map_redefinition.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Tpo -c -o processing/decoder/test_runner-0044_palette_map_redefinition.o `test -f 'processing/decoder/0044_palette_map_redefinition.c' || echo '$(srcdir)/'`processing/decoder/0044_palette_map_redefinition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Tpo processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0044_palette_map_redefinition.c' object='processing/decoder/test_runner-0044_palette_map_redefinition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0044_palette_map_redefinition.o `test -f 'processing/decoder/0044_palette_map_redefinition.c' || echo '$(srcdir)/'`processing/decoder/0044_palette_map_redefinition.c
+
+processing/decoder/test_runner-0044_palette_map_redefinition.obj: processing/decoder/0044_palette_map_redefinition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0044_palette_map_redefinition.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Tpo -c -o processing/decoder/test_runner-0044_palette_map_redefinition.obj `if test -f 'processing/decoder/0044_palette_map_redefinition.c'; then $(CYGPATH_W) 'processing/decoder/0044_palette_map_redefinition.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0044_palette_map_redefinition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Tpo processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0044_palette_map_redefinition.c' object='processing/decoder/test_runner-0044_palette_map_redefinition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0044_palette_map_redefinition.obj `if test -f 'processing/decoder/0044_palette_map_redefinition.c'; then $(CYGPATH_W) 'processing/decoder/0044_palette_map_redefinition.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0044_palette_map_redefinition.c'; fi`
+
+processing/decoder/test_runner-0045_palette_map_ormode.o: processing/decoder/0045_palette_map_ormode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0045_palette_map_ormode.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Tpo -c -o processing/decoder/test_runner-0045_palette_map_ormode.o `test -f 'processing/decoder/0045_palette_map_ormode.c' || echo '$(srcdir)/'`processing/decoder/0045_palette_map_ormode.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Tpo processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0045_palette_map_ormode.c' object='processing/decoder/test_runner-0045_palette_map_ormode.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0045_palette_map_ormode.o `test -f 'processing/decoder/0045_palette_map_ormode.c' || echo '$(srcdir)/'`processing/decoder/0045_palette_map_ormode.c
+
+processing/decoder/test_runner-0045_palette_map_ormode.obj: processing/decoder/0045_palette_map_ormode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0045_palette_map_ormode.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Tpo -c -o processing/decoder/test_runner-0045_palette_map_ormode.obj `if test -f 'processing/decoder/0045_palette_map_ormode.c'; then $(CYGPATH_W) 'processing/decoder/0045_palette_map_ormode.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0045_palette_map_ormode.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Tpo processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0045_palette_map_ormode.c' object='processing/decoder/test_runner-0045_palette_map_ormode.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0045_palette_map_ormode.obj `if test -f 'processing/decoder/0045_palette_map_ormode.c'; then $(CYGPATH_W) 'processing/decoder/0045_palette_map_ormode.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0045_palette_map_ormode.c'; fi`
+
+processing/decoder/test_runner-0046_palette_map_parallel.o: processing/decoder/0046_palette_map_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0046_palette_map_parallel.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Tpo -c -o processing/decoder/test_runner-0046_palette_map_parallel.o `test -f 'processing/decoder/0046_palette_map_parallel.c' || echo '$(srcdir)/'`processing/decoder/0046_palette_map_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Tpo processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0046_palette_map_parallel.c' object='processing/decoder/test_runner-0046_palette_map_parallel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0046_palette_map_parallel.o `test -f 'processing/decoder/0046_palette_map_parallel.c' || echo '$(srcdir)/'`processing/decoder/0046_palette_map_parallel.c
+
+processing/decoder/test_runner-0046_palette_map_parallel.obj: processing/decoder/0046_palette_map_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0046_palette_map_parallel.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Tpo -c -o processing/decoder/test_runner-0046_palette_map_parallel.obj `if test -f 'processing/decoder/0046_palette_map_parallel.c'; then $(CYGPATH_W) 'processing/decoder/0046_palette_map_parallel.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0046_palette_map_parallel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Tpo processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0046_palette_map_parallel.c' object='processing/decoder/test_runner-0046_palette_map_parallel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0046_palette_map_parallel.obj `if test -f 'processing/decoder/0046_palette_map_parallel.c'; then $(CYGPATH_W) 'processing/decoder/0046_palette_map_parallel.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0046_palette_map_parallel.c'; fi`
+
+processing/decoder/test_runner-0047_palette_map_dequant.o: processing/decoder/0047_palette_map_dequant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0047_palette_map_dequant.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Tpo -c -o processing/decoder/test_runner-0047_palette_map_dequant.o `test -f 'processing/decoder/0047_palette_map_dequant.c' || echo '$(srcdir)/'`processing/decoder/0047_palette_map_dequant.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Tpo processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0047_palette_map_dequant.c' object='processing/decoder/test_runner-0047_palette_map_dequant.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0047_palette_map_dequant.o `test -f 'processing/decoder/0047_palette_map_dequant.c' || echo '$(srcdir)/'`processing/decoder/0047_palette_map_dequant.c
+
+processing/decoder/test_runner-0047_palette_map_dequant.obj: processing/decoder/0047_palette_map_dequant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0047_palette_map_dequant.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Tpo -c -o processing/decoder/test_runner-0047_palette_map_dequant.obj `if test -f 'processing/decoder/0047_palette_map_dequant.c'; then $(CYGPATH_W) 'processing/decoder/0047_palette_map_dequant.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0047_palette_map_dequant.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Tpo processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0047_palette_map_dequant.c' object='processing/decoder/test_runner-0047_palette_map_dequant.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0047_palette_map_dequant.obj `if test -f 'processing/decoder/0047_palette_map_dequant.c'; then $(CYGPATH_W) 'processing/decoder/0047_palette_map_dequant.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0047_palette_map_dequant.c'; fi`
+
+processing/decoder/test_runner-0048_palette_map_invalid.o: processing/decoder/0048_palette_map_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0048_palette_map_invalid.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Tpo -c -o processing/decoder/test_runner-0048_palette_map_invalid.o `test -f 'processing/decoder/0048_palette_map_invalid.c' || echo '$(srcdir)/'`processing/decoder/0048_palette_map_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Tpo processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0048_palette_map_invalid.c' object='processing/decoder/test_runner-0048_palette_map_invalid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0048_palette_map_invalid.o `test -f 'processing/decoder/0048_palette_map_invalid.c' || echo '$(srcdir)/'`processing/decoder/0048_palette_map_invalid.c
+
+processing/decoder/test_runner-0048_palette_map_invalid.obj: processing/decoder/0048_palette_map_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0048_palette_map_invalid.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Tpo -c -o processing/decoder/test_runner-0048_palette_map_invalid.obj `if test -f 'processing/decoder/0048_palette_map_invalid.c'; then $(CYGPATH_W) 'processing/decoder/0048_palette_map_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0048_palette_map_invalid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Tpo processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0048_palette_map_invalid.c' object='processing/decoder/test_runner-0048_palette_map_invalid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0048_palette_map_invalid.obj `if test -f 'processing/decoder/0048_palette_map_invalid.c'; then $(CYGPATH_W) 'processing/decoder/0048_palette_map_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0048_palette_map_invalid.c'; fi`
+
+processing/decoder/test_runner-0049_palette_map_clip_background.o: processing/decoder/0049_palette_map_clip_background.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0049_palette_map_clip_background.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Tpo -c -o processing/decoder/test_runner-0049_palette_map_clip_background.o `test -f 'processing/decoder/0049_palette_map_clip_background.c' || echo '$(srcdir)/'`processing/decoder/0049_palette_map_clip_background.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Tpo processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0049_palette_map_clip_background.c' object='processing/decoder/test_runner-0049_palette_map_clip_background.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0049_palette_map_clip_background.o `test -f 'processing/decoder/0049_palette_map_clip_background.c' || echo '$(srcdir)/'`processing/decoder/0049_palette_map_clip_background.c
+
+processing/decoder/test_runner-0049_palette_map_clip_background.obj: processing/decoder/0049_palette_map_clip_background.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0049_palette_map_clip_background.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Tpo -c -o processing/decoder/test_runner-0049_palette_map_clip_background.obj `if test -f 'processing/decoder/0049_palette_map_clip_background.c'; then $(CYGPATH_W) 'processing/decoder/0049_palette_map_clip_background.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0049_palette_map_clip_background.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Tpo processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0049_palette_map_clip_background.c' object='processing/decoder/test_runner-0049_palette_map_clip_background.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0049_palette_map_clip_background.obj `if test -f 'processing/decoder/0049_palette_map_clip_background.c'; then $(CYGPATH_W) 'processing/decoder/0049_palette_map_clip_background.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0049_palette_map_clip_background.c'; fi`
+
+processing/decoder/test_runner-0050_palette_map_identity.o: processing/decoder/0050_palette_map_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0050_palette_map_identity.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Tpo -c -o processing/decoder/test_runner-0050_palette_map_identity.o `test -f 'processing/decoder/0050_palette_map_identity.c' || echo '$(srcdir)/'`processing/decoder/0050_palette_map_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Tpo processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0050_palette_map_identity.c' object='processing/decoder/test_runner-0050_palette_map_identity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0050_palette_map_identity.o `test -f 'processing/decoder/0050_palette_map_identity.c' || echo '$(srcdir)/'`processing/decoder/0050_palette_map_identity.c
+
+processing/decoder/test_runner-0050_palette_map_identity.obj: processing/decoder/0050_palette_map_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0050_palette_map_identity.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Tpo -c -o processing/decoder/test_runner-0050_palette_map_identity.obj `if test -f 'processing/decoder/0050_palette_map_identity.c'; then $(CYGPATH_W) 'processing/decoder/0050_palette_map_identity.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0050_palette_map_identity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Tpo processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0050_palette_map_identity.c' object='processing/decoder/test_runner-0050_palette_map_identity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0050_palette_map_identity.obj `if test -f 'processing/decoder/0050_palette_map_identity.c'; then $(CYGPATH_W) 'processing/decoder/0050_palette_map_identity.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0050_palette_map_identity.c'; fi`
+
+processing/decoder/test_runner-0051_palette_map_gpu.o: processing/decoder/0051_palette_map_gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0051_palette_map_gpu.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Tpo -c -o processing/decoder/test_runner-0051_palette_map_gpu.o `test -f 'processing/decoder/0051_palette_map_gpu.c' || echo '$(srcdir)/'`processing/decoder/0051_palette_map_gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Tpo processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0051_palette_map_gpu.c' object='processing/decoder/test_runner-0051_palette_map_gpu.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0051_palette_map_gpu.o `test -f 'processing/decoder/0051_palette_map_gpu.c' || echo '$(srcdir)/'`processing/decoder/0051_palette_map_gpu.c
+
+processing/decoder/test_runner-0051_palette_map_gpu.obj: processing/decoder/0051_palette_map_gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0051_palette_map_gpu.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Tpo -c -o processing/decoder/test_runner-0051_palette_map_gpu.obj `if test -f 'processing/decoder/0051_palette_map_gpu.c'; then $(CYGPATH_W) 'processing/decoder/0051_palette_map_gpu.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0051_palette_map_gpu.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Tpo processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0051_palette_map_gpu.c' object='processing/decoder/test_runner-0051_palette_map_gpu.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0051_palette_map_gpu.obj `if test -f 'processing/decoder/0051_palette_map_gpu.c'; then $(CYGPATH_W) 'processing/decoder/0051_palette_map_gpu.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0051_palette_map_gpu.c'; fi`
+
+processing/decoder/test_runner-0052_palette_map_parallel_fallback.o: processing/decoder/0052_palette_map_parallel_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0052_palette_map_parallel_fallback.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Tpo -c -o processing/decoder/test_runner-0052_palette_map_parallel_fallback.o `test -f 'processing/decoder/0052_palette_map_parallel_fallback.c' || echo '$(srcdir)/'`processing/decoder/0052_palette_map_parallel_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Tpo processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0052_palette_map_parallel_fallback.c' object='processing/decoder/test_runner-0052_palette_map_parallel_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0052_palette_map_parallel_fallback.o `test -f 'processing/decoder/0052_palette_map_parallel_fallback.c' || echo '$(srcdir)/'`processing/decoder/0052_palette_map_parallel_fallback.c
+
+processing/decoder/test_runner-0052_palette_map_parallel_fallback.obj: processing/decoder/0052_palette_map_parallel_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0052_palette_map_parallel_fallback.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Tpo -c -o processing/decoder/test_runner-0052_palette_map_parallel_fallback.obj `if test -f 'processing/decoder/0052_palette_map_parallel_fallback.c'; then $(CYGPATH_W) 'processing/decoder/0052_palette_map_parallel_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0052_palette_map_parallel_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Tpo processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0052_palette_map_parallel_fallback.c' object='processing/decoder/test_runner-0052_palette_map_parallel_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0052_palette_map_parallel_fallback.obj `if test -f 'processing/decoder/0052_palette_map_parallel_fallback.c'; then $(CYGPATH_W) 'processing/decoder/0052_palette_map_parallel_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0052_palette_map_parallel_fallback.c'; fi`
+
+processing/decoder/test_runner-palette_map_test_common.o: processing/decoder/palette_map_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-palette_map_test_common.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Tpo -c -o processing/decoder/test_runner-palette_map_test_common.o `test -f 'processing/decoder/palette_map_test_common.c' || echo '$(srcdir)/'`processing/decoder/palette_map_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Tpo processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/palette_map_test_common.c' object='processing/decoder/test_runner-palette_map_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-palette_map_test_common.o `test -f 'processing/decoder/palette_map_test_common.c' || echo '$(srcdir)/'`processing/decoder/palette_map_test_common.c
+
+processing/decoder/test_runner-palette_map_test_common.obj: processing/decoder/palette_map_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-palette_map_test_common.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Tpo -c -o processing/decoder/test_runner-palette_map_test_common.obj `if test -f 'processing/decoder/palette_map_test_common.c'; then $(CYGPATH_W) 'processing/decoder/palette_map_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/palette_map_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Tpo processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/palette_map_test_common.c' object='processing/decoder/test_runner-palette_map_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-palette_map_test_common.obj `if test -f 'processing/decoder/palette_map_test_common.c'; then $(CYGPATH_W) 'processing/decoder/palette_map_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/palette_map_test_common.c'; fi`
 
 processing/decoder/test_runner-ormode_test_common.o: processing/decoder/ormode_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-ormode_test_common.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Tpo -c -o processing/decoder/test_runner-ormode_test_common.o `test -f 'processing/decoder/ormode_test_common.c' || echo '$(srcdir)/'`processing/decoder/ormode_test_common.c
@@ -10763,7 +11041,19 @@ distclean: distclean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0039_ormode_decoder_reuse_resets_mode.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0040_ormode_direct_zero_is_opaque.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0041_ormode_legacy_zero_is_color.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po
 	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po
@@ -11187,7 +11477,19 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0039_ormode_decoder_reuse_resets_mode.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0040_ormode_direct_zero_is_opaque.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0041_ormode_legacy_zero_is_color.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0042_default_palette_direct.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0043_palette_map_definitions.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0044_palette_map_redefinition.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0045_palette_map_ormode.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0046_palette_map_parallel.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0047_palette_map_dequant.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0048_palette_map_invalid.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0049_palette_map_clip_background.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0050_palette_map_identity.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0051_palette_map_gpu.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0052_palette_map_parallel_fallback.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po
 	-rm -f processing/dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po

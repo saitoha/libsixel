@@ -348,15 +348,11 @@ sixel_decode_pixels_finish_rgba(unsigned char **decoded,
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_decode_pixels_try(unsigned char const *data,
-                        size_t size,
-                        unsigned int decode_flags,
-                        unsigned char **out_pixels,
-                        int *out_width,
-                        int *out_height,
-                        unsigned int *result_flags,
-                        sixel_allocator_t *allocator)
+static SIXELSTATUS sixel_decode_pixels_try(
+    unsigned char const *data, size_t size, unsigned int decode_flags,
+    sixel_palette_transform_t const *transform, unsigned char **out_pixels,
+    int *out_width, int *out_height, unsigned int *result_flags,
+    sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
     unsigned char *buffer;
@@ -378,29 +374,18 @@ sixel_decode_pixels_try(unsigned char const *data,
      * normal path and allocate a mutable work buffer only for terminator retry.
      */
     buffer = (unsigned char *)(void const *)data;
-    status = sixel_decode_direct_with_options(buffer,
-                                              (int)size,
-                                              decode_flags,
-                                              out_pixels,
-                                              out_width,
-                                              out_height,
-                                              NULL,
-                                              NULL,
-                                              result_flags,
-                                              allocator);
+    status = sixel_decode_direct_mapped(
+        buffer, (int)size, decode_flags, transform, 0, NULL, 0U, out_pixels,
+        out_width, out_height, NULL, NULL, result_flags, allocator);
 
     return status;
 }
 
-static SIXELSTATUS
-sixel_decode_pixels_terminated_attempts(unsigned char *workbuf,
-                                        size_t size,
-                                        unsigned int decode_flags,
-                                        unsigned char **out_pixels,
-                                        int *out_width,
-                                        int *out_height,
-                                        unsigned int *result_flags,
-                                        sixel_allocator_t *allocator)
+static SIXELSTATUS sixel_decode_pixels_terminated_attempts(
+    unsigned char *workbuf, size_t size, unsigned int decode_flags,
+    sixel_palette_transform_t const *transform, unsigned char **out_pixels,
+    int *out_width, int *out_height, unsigned int *result_flags,
+    sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
     unsigned int second_flags;
@@ -411,14 +396,9 @@ sixel_decode_pixels_terminated_attempts(unsigned char *workbuf,
 
     /* Retry with a synthetic BEL terminator for truncated streams. */
     workbuf[size] = 0x07U;
-    status = sixel_decode_pixels_try(workbuf,
-                                     size + 1U,
-                                     decode_flags,
-                                     out_pixels,
-                                     out_width,
-                                     out_height,
-                                     &second_flags,
-                                     allocator);
+    status = sixel_decode_pixels_try(workbuf, size + 1U, decode_flags,
+                                     transform, out_pixels, out_width,
+                                     out_height, &second_flags, allocator);
     if (status == SIXEL_OK) {
         *result_flags = second_flags;
         return status;
@@ -427,14 +407,9 @@ sixel_decode_pixels_terminated_attempts(unsigned char *workbuf,
     /* Retry with ESC \ (ST) in case BEL is not accepted. */
     workbuf[size] = 0x1bU;
     workbuf[size + 1U] = '\\';
-    status = sixel_decode_pixels_try(workbuf,
-                                     size + 2U,
-                                     decode_flags,
-                                     out_pixels,
-                                     out_width,
-                                     out_height,
-                                     &third_flags,
-                                     allocator);
+    status = sixel_decode_pixels_try(workbuf, size + 2U, decode_flags,
+                                     transform, out_pixels, out_width,
+                                     out_height, &third_flags, allocator);
     if (status == SIXEL_OK) {
         *result_flags = third_flags;
     }
@@ -443,11 +418,11 @@ sixel_decode_pixels_terminated_attempts(unsigned char *workbuf,
 }
 
 SIXELAPI SIXELSTATUS
-sixel_decode_pixels(unsigned char const *data,
-                    size_t size,
-                    sixel_decode_options_t const *options,
-                    sixel_decode_result_t *result,
-                    sixel_allocator_t *allocator)
+sixel_decode_pixels_mapped(
+    unsigned char const *data, size_t size,
+    sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform, sixel_decode_result_t *result,
+    sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
     sixel_allocator_t *work_allocator;
@@ -486,6 +461,9 @@ sixel_decode_pixels(unsigned char const *data,
     result->pixelformat = 0;
     result->stride = 0;
     result->flags = 0U;
+    if (transform != NULL && transform->map_rgb == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     if (options != NULL) {
         decode_flags = options->flags;
@@ -523,14 +501,9 @@ sixel_decode_pixels(unsigned char const *data,
         }
     }
 
-    status = sixel_decode_pixels_try(data,
-                                     size,
-                                     decode_flags,
-                                     &decoded,
-                                     &width,
-                                     &height,
-                                     &first_flags,
-                                     work_allocator);
+    status =
+        sixel_decode_pixels_try(data, size, decode_flags, transform, &decoded,
+                                &width, &height, &first_flags, work_allocator);
     if (status == SIXEL_OK) {
         result_flags = first_flags;
     } else {
@@ -544,14 +517,9 @@ sixel_decode_pixels(unsigned char const *data,
         }
         memcpy(workbuf, data, size);
 
-        status = sixel_decode_pixels_terminated_attempts(workbuf,
-                                                         size,
-                                                         decode_flags,
-                                                         &decoded,
-                                                         &width,
-                                                         &height,
-                                                         &result_flags,
-                                                         work_allocator);
+        status = sixel_decode_pixels_terminated_attempts(
+            workbuf, size, decode_flags, transform, &decoded, &width, &height,
+            &result_flags, work_allocator);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -587,13 +555,11 @@ cleanup:
 }
 
 SIXELAPI SIXELSTATUS
-sixel_decode_pixels_body(unsigned char const *body,
-                         size_t body_size,
-                         int const *params,
-                         size_t nparams,
-                         sixel_decode_options_t const *options,
-                         sixel_decode_result_t *result,
-                         sixel_allocator_t *allocator)
+sixel_decode_pixels_body_mapped(
+    unsigned char const *body, size_t body_size, int const *params,
+    size_t nparams, sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform, sixel_decode_result_t *result,
+    sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
     sixel_allocator_t *work_allocator;
@@ -633,6 +599,9 @@ sixel_decode_pixels_body(unsigned char const *body,
     result->pixelformat = 0;
     result->stride = 0;
     result->flags = 0U;
+    if (transform != NULL && transform->map_rgb == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     if (options != NULL) {
         decode_flags = options->flags;
@@ -670,18 +639,9 @@ sixel_decode_pixels_body(unsigned char const *body,
     }
 
     buffer = body_size == 0U ? &empty_body : (unsigned char *)(void const *)body;
-    status = sixel_decode_direct_body_with_options(buffer,
-                                                   (int)body_size,
-                                                   decode_flags,
-                                                   params,
-                                                   nparams,
-                                                   &decoded,
-                                                   &width,
-                                                   &height,
-                                                   NULL,
-                                                   NULL,
-                                                   &result_flags,
-                                                   work_allocator);
+    status = sixel_decode_direct_mapped(
+        buffer, (int)body_size, decode_flags, transform, 1, params, nparams,
+        &decoded, &width, &height, NULL, NULL, &result_flags, work_allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -709,6 +669,28 @@ cleanup:
     }
 
     return status;
+}
+
+/* Preserve the original ABI and its unmapped behavior. */
+SIXELAPI SIXELSTATUS
+sixel_decode_pixels(unsigned char const *data,
+                    size_t size,
+                    sixel_decode_options_t const *options,
+                    sixel_decode_result_t *result,
+                    sixel_allocator_t *allocator)
+{
+    return sixel_decode_pixels_mapped(data, size, options, NULL, result,
+                                      allocator);
+}
+
+SIXELAPI SIXELSTATUS
+sixel_decode_pixels_body(
+    unsigned char const *body, size_t body_size, int const *params,
+    size_t nparams, sixel_decode_options_t const *options,
+    sixel_decode_result_t *result, sixel_allocator_t *allocator)
+{
+    return sixel_decode_pixels_body_mapped(body, body_size, params, nparams,
+                                           options, NULL, result, allocator);
 }
 
 /* emacs Local Variables:      */
