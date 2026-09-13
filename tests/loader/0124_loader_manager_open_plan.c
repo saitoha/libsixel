@@ -12,7 +12,7 @@ test_loader_0124_loader_manager_open_plan(int argc, char **argv)
     sixel_option_value_schema_t base_defs[3];
     sixel_option_argument_list_item_t items[3];
     sixel_option_argument_list_resolution_t resolution;
-    sixel_loader_entry_t const *plan[4];
+    sixel_loader_entry_t const *plan[4] = { NULL };
     size_t plan_length;
 
     (void)argc;
@@ -21,8 +21,6 @@ test_loader_0124_loader_manager_open_plan(int argc, char **argv)
     memset(base_defs, 0, sizeof(base_defs));
     memset(items, 0, sizeof(items));
     memset(&resolution, 0, sizeof(resolution));
-    memset(plan, 0, sizeof(plan));
-
     entries[0].name = "alpha";
     entries[0].default_enabled = 1;
     entries[1].name = "beta";

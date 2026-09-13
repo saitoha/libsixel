@@ -16,6 +16,7 @@ The fat-binary checks are part of release confidence because a successful build 
 
 - Use Cosmopolitan runtime predicates for OS behavior; reserve `__COSMOPOLITAN__` for API availability and compilation.
 - Keep library and converter path adapters in lockstep.
+- Keep Ninja response files reachable after `cosmocc` changes its working directory.
 - Exercise the same APE on Windows and at least one Unix runtime after changing path logic.
 
 ## Test coverage
@@ -25,6 +26,7 @@ The fat-binary checks are part of release confidence because a successful build 
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | COSMO-01 | Both path adapters compile under `__COSMOPOLITAN__`, retain `IsWindows()` runtime dispatch, and agree on their target-runtime conversion result. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
+| COSMO-02 | The Meson compiler adapter resolves relative Ninja response-file arguments before delegating to `cosmocc`. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 
 ### Coverage boundary
 

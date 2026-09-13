@@ -50,8 +50,8 @@ test_palette_0045_snap_grid(int argc, char **argv)
     seen = 0U;
     cursor = argv[2];
     while ((cursor = strchr(cursor, '#')) != NULL) {
-        if (sscanf(cursor, "#%u;2;%u;%u;%u", &index,
-                   &rgb[0], &rgb[1], &rgb[2]) == 4) {
+        if (sixel_compat_sscanf(cursor, "#%u;2;%u;%u;%u", &index,
+                               &rgb[0], &rgb[1], &rgb[2]) == 4) {
             if (index >= count) {
                 return EXIT_FAILURE;
             }

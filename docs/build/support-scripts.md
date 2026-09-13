@@ -40,7 +40,7 @@ The [CI step implementation](../../.github/actions/ci-steps/action.yml) adds the
 
 ### Cosmopolitan: bypass one setup probe, then use the real compiler
 
-`cosmocc-meson` examines the argument immediately following `-o`. If that output argument matches `sanitycheck*.exe` or `sanity_check_for_*.exe`, it copies the host's `true` executable to that name and returns success. All other invocations use `exec cosmocc "$@"`.
+`cosmocc-meson` examines the argument immediately following `-o`. If that output argument matches `sanitycheck*.exe` or `sanity_check_for_*.exe`, it copies the host's `true` executable to that name and returns success. For real compiler and linker invocations, it first makes relative `@response-file` arguments absolute because `cosmocc` changes its working directory internally, then delegates to `cosmocc`. This matters once a large Meson target crosses Ninja's command-length threshold and switches from inline arguments to a response file.
 
 This is a deliberate bypass of Meson's initial executable sanity check. It accommodates a toolchain whose output and launch conventions do not fit that check; it does not compile the sanity source or establish that a Cosmopolitan executable can run. The two filename patterns accommodate different Meson sanity-check naming conventions. A change to those names can stop the interception from applying.
 

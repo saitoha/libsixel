@@ -3,8 +3,12 @@
 # Verify APNG tRNS coverage requests P2=1 under keep, including keycolor off.
 set -eux
 
-test "${HAVE_LIBPNG-}" = 1 && test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo "1..0 # SKIP libpng and img2sixel are required"
+test "${HAVE_LIBPNG-}" = 1 || {
+    echo "1..0 # SKIP libpng is required"
+    exit 0
+}
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    echo "1..0 # SKIP img2sixel is required"
     exit 0
 }
 echo "1..1"

@@ -784,7 +784,7 @@ load_png(unsigned char      /* out */ **result,
     png_uint_32 read_channels;
     png_size_t rowbytes;
     size_t raw16_size;
-    int promote_to_float32;
+    int volatile promote_to_float32;
     int i;
     int depth;
     int cms_converted;
@@ -799,9 +799,9 @@ load_png(unsigned char      /* out */ **result,
     double bg_unit[3];
     int palette_force_pal8;
     int palette_keycolor_mode;
-    int palette_keycolor_index;
+    int volatile palette_keycolor_index;
     int palette_zero_alpha_count;
-    int palette_remap_zero_alpha_indexes;
+    int volatile palette_remap_zero_alpha_indexes;
     unsigned char palette_zero_alpha_map[SIXEL_PALETTE_MAX];
     size_t pixel_count;
     size_t pixel_index;

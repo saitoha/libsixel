@@ -37,8 +37,23 @@ test "${actual_size}" -eq 1048 || {
 # Word splitting is intentional: each hexadecimal byte becomes one argument.
 # shellcheck disable=SC2046
 set -- $(od -An -tx1 -j20 -N4 "${actual_palette}")
-test "$#" -eq 4 && test "$1" = 00 && test "$2" = 03 && \
-    test "$3" = 00 && test "$4" = 01 || {
+test "$#" -eq 4 || {
+    echo "not ok" 1 - "RIFF PAL 256-color field size changed"
+    exit 0
+}
+test "$1" = 00 || {
+    echo "not ok" 1 - "RIFF PAL 256-color version field changed"
+    exit 0
+}
+test "$2" = 03 || {
+    echo "not ok" 1 - "RIFF PAL 256-color version field changed"
+    exit 0
+}
+test "$3" = 00 || {
+    echo "not ok" 1 - "RIFF PAL 256-color count field changed"
+    exit 0
+}
+test "$4" = 01 || {
     echo "not ok" 1 - "RIFF PAL 256-color version or count field changed"
     exit 0
 }

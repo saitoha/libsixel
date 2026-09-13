@@ -15,7 +15,7 @@
 # Policy: docs/misc/platforms/solaris.md
 # Coverage: PL-01 PL-02 PL-03 PL-04 PL-05 OV-06 WIN-01 WIN-02 MSVC-01
 # Coverage: MSVC-02
-# Coverage: MW-01 MW-02 CYG-01 CYG-02 EM-01 EM-02 COSMO-01
+# Coverage: MW-01 MW-02 CYG-01 CYG-02 EM-01 EM-02 COSMO-01 COSMO-02
 # Coverage: HURD-01 HURD-02
 # Coverage: MAC-01 MAC-02 POSIX-01 POSIX-02 HAIKU-01 HAIKU-02
 # Coverage: SOL-01 SOL-02 SOL-03 SOL-04
@@ -345,6 +345,10 @@ require_fixed '#if defined(__EMSCRIPTEN__)' src/options.c
 
 require_fixed 'return IsWindows() ? 1 : 0;' src/path.c
 require_fixed 'return IsWindows() ? 1 : 0;' converters/path.c
+# The shell substitutions are literal adapter source asserted by this check.
+# shellcheck disable=SC2016
+require_fixed 'a="@$(pwd)/${a#@}"' build-aux/cosmocc-meson
+require_fixed 'COSMO-02' docs/misc/platforms/cosmopolitan.md
 
 require_fixed "CPPFLAGS=\"\$CPPFLAGS -D_DARWIN_C_SOURCE=1\"" configure.ac
 require_fixed "add_project_arguments('-D_DARWIN_C_SOURCE', language: 'c')" meson.build

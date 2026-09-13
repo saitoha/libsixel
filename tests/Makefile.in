@@ -495,7 +495,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
 	$(top_srcdir)/src/lookup-policy.c \
 	$(top_srcdir)/converters/aborttrace.c \
-	$(top_srcdir)/converters/cli.c $(top_srcdir)/converters/path.c
+	$(top_srcdir)/converters/cli.c $(top_srcdir)/src/path.c \
+	$(top_srcdir)/converters/path.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
@@ -869,6 +870,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__objects_1) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-aborttrace.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-cli.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/src/test_runner-path.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-path.$(OBJEXT)
 am__objects_2 =  \
 	$(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT)
@@ -941,6 +943,7 @@ am__depfiles_remade =  \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po \
 	$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po \
+	$(top_builddir)/src/$(DEPDIR)/test_runner-path.Po \
 	./$(DEPDIR)/test_runner-test_runner.Po \
 	cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po \
 	cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po \
@@ -2772,6 +2775,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(TEST_RUNNER_LOOKUP_POLICY_SOURCE) \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/cli.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/src/path.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/path.c
 
 @OPENVMS_GNV_FALSE@test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -4266,6 +4270,9 @@ $(top_builddir)/converters/test_runner-aborttrace.$(OBJEXT):  \
 $(top_builddir)/converters/test_runner-cli.$(OBJEXT):  \
 	$(top_builddir)/converters/$(am__dirstamp) \
 	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/test_runner-path.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/converters/test_runner-path.$(OBJEXT):  \
 	$(top_builddir)/converters/$(am__dirstamp) \
 	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
@@ -4337,6 +4344,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/test_runner-path.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_runner-test_runner.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po@am__quote@ # am--include-marker
@@ -9929,6 +9937,20 @@ $(top_builddir)/converters/test_runner-cli.obj: $(top_builddir)/converters/cli.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
 
+$(top_builddir)/src/test_runner-path.o: $(top_builddir)/src/path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/test_runner-path.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/test_runner-path.Tpo -c -o $(top_builddir)/src/test_runner-path.o `test -f '$(top_builddir)/src/path.c' || echo '$(srcdir)/'`$(top_builddir)/src/path.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/test_runner-path.Tpo $(top_builddir)/src/$(DEPDIR)/test_runner-path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/path.c' object='$(top_builddir)/src/test_runner-path.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/test_runner-path.o `test -f '$(top_builddir)/src/path.c' || echo '$(srcdir)/'`$(top_builddir)/src/path.c
+
+$(top_builddir)/src/test_runner-path.obj: $(top_builddir)/src/path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/test_runner-path.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/test_runner-path.Tpo -c -o $(top_builddir)/src/test_runner-path.obj `if test -f '$(top_builddir)/src/path.c'; then $(CYGPATH_W) '$(top_builddir)/src/path.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/path.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/test_runner-path.Tpo $(top_builddir)/src/$(DEPDIR)/test_runner-path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/path.c' object='$(top_builddir)/src/test_runner-path.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/test_runner-path.obj `if test -f '$(top_builddir)/src/path.c'; then $(CYGPATH_W) '$(top_builddir)/src/path.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/path.c'; fi`
+
 $(top_builddir)/converters/test_runner-path.o: $(top_builddir)/converters/path.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-path.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Tpo -c -o $(top_builddir)/converters/test_runner-path.o `test -f '$(top_builddir)/converters/path.c' || echo '$(srcdir)/'`$(top_builddir)/converters/path.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
@@ -10387,6 +10409,7 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-path.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
@@ -10805,6 +10828,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-path.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po

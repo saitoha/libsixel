@@ -958,6 +958,7 @@ test_runner_SOURCES = test_runner.c \
     $(TEST_RUNNER_LOOKUP_POLICY_SOURCE) \
     $(top_srcdir)/converters/aborttrace.c \
     $(top_srcdir)/converters/cli.c \
+    $(top_srcdir)/src/path.c \
     $(top_srcdir)/converters/path.c
 test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
     $(LIBWEBP_CFLAGS) \

@@ -37,8 +37,23 @@ test "${actual_size}" -eq 772 || {
 # Word splitting is intentional: each hexadecimal byte becomes one argument.
 # shellcheck disable=SC2046
 set -- $(od -An -tx1 -j768 -N4 "${actual_palette}")
-test "$#" -eq 4 && test "$1" = 01 && test "$2" = 00 && \
-    test "$3" = 00 && test "$4" = 00 || {
+test "$#" -eq 4 || {
+    echo "not ok" 1 - "ACT 256-color trailer size changed"
+    exit 0
+}
+test "$1" = 01 || {
+    echo "not ok" 1 - "ACT 256-color count field changed"
+    exit 0
+}
+test "$2" = 00 || {
+    echo "not ok" 1 - "ACT 256-color count field changed"
+    exit 0
+}
+test "$3" = 00 || {
+    echo "not ok" 1 - "ACT 256-color transparency field changed"
+    exit 0
+}
+test "$4" = 00 || {
     echo "not ok" 1 - "ACT 256-color count or transparency field changed"
     exit 0
 }

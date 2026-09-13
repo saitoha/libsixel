@@ -15,4 +15,19 @@ for a in "$@"; do
   prev="$a"
 done
 
+# Cosmocc changes its working directory before invoking the compiler driver.
+# Preserve Ninja response-file lookup by resolving relative paths first.
+original_argc=$#
+for a in "$@"; do
+  case "$a" in
+    @/*)
+      ;;
+    @*)
+      a="@$(pwd)/${a#@}"
+      ;;
+  esac
+  set -- "$@" "$a"
+done
+shift "$original_argc"
+
 exec cosmocc "$@"
