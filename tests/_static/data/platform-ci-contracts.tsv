@@ -14,5 +14,5 @@ WPATH-01	Autotools-ubuntu-x86_64-mingw-w64-x86_64-win32-wine64-static	autotools	
 WPATH-01	Autotools-ubuntu-aarch64-emscripten-static	autotools	ubuntu-24.04-arm	bash	-	--host=wasm32-unknown-emscripten	--with-shebang-file="$PWD/build-aux/shebang/node"
 WPATH-01	Autotools-macos-aarch64-emscripten-static	autotools	macos-latest	bash	-	--host=wasm32-unknown-emscripten	--with-shebang-file="$PWD/build-aux/shebang/node"
 SOL-02	Autotools-solaris-11.4-x86_64	autotools	ubuntu-latest	solaris-vm	-	--disable-dependency-tracking	make: gmake
-HAIKU-02	Autotools-haiku-r1beta5-x86-64	autotools	ubuntu-latest	cross-platform-vms	-	cp_os: haiku	cp_version: r1beta5
-HAIKU-02	Meson-haiku-r1beta5-x86-64	meson	ubuntu-latest	cross-platform-vms	-	cp_os: haiku	check_target: test --num-processes 1
+HAIKU-02	Autotools-haiku-r1beta6-x86-64	autotools	ubuntu-latest	cross-platform-vms	-	cp_os: haiku	cp_version: r1beta6
+HAIKU-02	Meson-haiku-r1beta6-x86-64	meson	ubuntu-latest	cross-platform-vms	-	cp_os: haiku	check_target: test --num-processes 1
