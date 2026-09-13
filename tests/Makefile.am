@@ -574,6 +574,7 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
+    test_runner_io.h \
     processing/colorspace/0001_din99d_forward.c \
     processing/colorspace/0002_din99d_inverse.c \
     processing/colorspace/0003_din99d_byte.c \

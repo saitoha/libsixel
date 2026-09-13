@@ -109,7 +109,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__test_runner_SOURCES_DIST = test_runner.c \
+am__test_runner_SOURCES_DIST = test_runner.c test_runner_io.h \
 	processing/colorspace/0001_din99d_forward.c \
 	processing/colorspace/0002_din99d_inverse.c \
 	processing/colorspace/0003_din99d_byte.c \
@@ -2392,6 +2392,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    test_runner_io.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0001_din99d_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0002_din99d_inverse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0003_din99d_byte.c \
