@@ -18,6 +18,7 @@
 #include <sixel.h>
 
 #include "compat_stub.h"
+#include "tests/test_runner_io.h"
 
 typedef struct resampling_exact_image {
     sixel_allocator_t *allocator;
@@ -89,7 +90,7 @@ resampling_exact_read_file(char const *path,
     *bytes = NULL;
     *size = 0u;
 
-    stream = sixel_compat_fopen(path, "rb");
+    stream = test_runner_fopen(path, "rb");
     if (stream == NULL || fseek(stream, 0L, SEEK_END) != 0) {
         goto fail;
     }

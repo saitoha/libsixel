@@ -96,6 +96,8 @@ The CTRL_BREAK test runner has another native process boundary. [`tests/test_run
 
 The unified test runner also receives slash-separated logical selectors such as `loader/0174_loader_builtin_png_chrm_gama_float_numeric`. Git Bash and MSYS2 can mistake those selectors for relative POSIX paths when launching a native MSVC or MinGW executable. Both Autotools and Meson test environments therefore set `MSYS2_ARG_CONV_EXCL` to the complete selector-prefix ledger. Do not disable all argv conversion here: TAP tests still pass real POSIX paths that the native tools need converted. When a new top-level test-runner selector prefix is added, update both test environments and the reciprocal static check.
 
+A `FILE *` also carries a C-runtime ownership boundary; it is not an interchangeable operating-system handle. A native MSVC test executable must not call `fread()`, `ferror()`, or `fclose()` on a stream created inside the libsixel DLL by `sixel_compat_fopen()`, because the runner and DLL can have distinct CRT state even when they use the same toolchain. Test code that consumes a stream therefore opens it through [`tests/test_runner_io.h`](../../../tests/test_runner_io.h), whose `test_runner_fopen()` implementation is compiled into the test runner and selects `fopen_s()` for MSVC. Application code continues to use the library compatibility adapter because its stream remains within the library's ownership domain.
+
 ## Boundary 3: application paths passed to libc
 
 The library implementation in [`src/path.c`](../../../src/path.c) and the standalone converter implementation in [`converters/path.c`](../../../converters/path.c) provide the same two-phase contract:
@@ -127,6 +129,7 @@ The two path implementations are a deliberate build boundary rather than acciden
 - Assign path conversion to exactly one boundary. Do not let shell argv rewriting, the test launcher, and the application libc adapter all normalize the same token speculatively.
 - Extend the MSYS2/MSVC argv classifier only for an identified path-bearing option and retain the `link.exe` provenance check.
 - Preserve libtool wrapper-versus-real-executable resolution, `EXEEXT`, colon-separated shell path lists, external DLL injection, and `SIXEL_RUNTIME` as separate decisions.
+- Keep every test-owned `FILE *` inside the test runner's CRT; use `test_runner_fopen()` rather than returning a library-owned stream to test code.
 - Preserve pseudo-paths, relative paths, UNC detection, mixed-form recovery, Wine behavior, and buffer ownership when changing the application path layer.
 - Update `src/path.c` and `converters/path.c` together and exercise split-library, standalone-converter, and amalgamated builds where the change can affect symbol ownership.
 - Do not claim Windows-hosted Emscripten support until a public Windows job builds and runs the relevant test suite.
@@ -147,6 +150,7 @@ The path layer was established and narrowed through `e388ab2dc` (`cygwin_conv_pa
 | WPATH-04 | Both application path implementations retain the two-phase ownership API, target-directed conversion, mixed-path recovery, pseudo-path preservation, Wine exclusion, and converter/amalgamation symbol split. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
 | WPATH-05 | The native CTRL_BREAK launcher retains POSIX-drive normalization before `CreateProcessA`. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh) |
 | WPATH-06 | Autotools and Meson preserve every slash-separated logical test-runner selector while leaving real file-path conversion enabled. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh) |
+| WPATH-07 | Test-owned `FILE *` streams are created inside the test runner CRT and test sources cannot obtain them from the libsixel DLL or call `fopen()` outside the runner-local helper. | [tests/_static/sh/staticcheck-test-no-direct-getenv.sh](../../../tests/_static/sh/staticcheck-test-no-direct-getenv.sh), [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh) |
 
 ### Coverage boundary
 

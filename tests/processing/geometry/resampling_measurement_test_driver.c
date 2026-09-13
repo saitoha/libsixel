@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "compat_stub.h"
+#include "tests/test_runner_io.h"
 
 #define RMB_METHOD_COUNT 10
 #define RMB_SCENARIO_COUNT 2
@@ -245,7 +246,7 @@ rmb_load_baselines(char const *path,
     int duplicate;
     int index;
 
-    stream = sixel_compat_fopen(path, "rb");
+    stream = test_runner_fopen(path, "rb");
     if (stream == NULL) {
         fprintf(stderr, "cannot open numeric baseline: %s\n", path);
         return 0;
@@ -524,7 +525,7 @@ rmb_load_measurement(
     char header[RMB_LINE_MAX];
     int valid;
 
-    stream = sixel_compat_fopen(path, "rb");
+    stream = test_runner_fopen(path, "rb");
     if (stream == NULL) {
         fprintf(stderr, "cannot open resampling measurement: %s\n", path);
         return 0;

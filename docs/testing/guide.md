@@ -111,7 +111,7 @@ Follow [Quality Measurement Policy](../quality/measurement-policy.md). In partic
 
 - Follow the repository C style: English comments, 80-column source lines, C99 with K&R braces, and all local variables declared at function scope at the beginning of the function.
 - Use the project's allocation, I/O, environment, and compatibility wrappers when they own cross-platform behavior.
-- Avoid direct CRT-sensitive calls such as `getenv()` or `fopen()` where static policy requires a libsixel wrapper.
+- Avoid direct CRT-sensitive calls such as `getenv()` where static policy requires a libsixel wrapper. Test code that consumes a `FILE *` must use `test_runner_fopen()` so the stream is created and closed by the test runner's CRT; it must not consume a stream returned by the libsixel DLL's `sixel_compat_fopen()`.
 - Keep setup, one observation, and cleanup focused on the contract.
 - The unified `test_runner` executable is only a build and dispatch container. Keep each independently reportable observation in its own C source, runner entry, and TAP wrapper; sharing one executable does not permit unrelated observations to be combined in one C test function or source file.
 - Register test-runner defines in every applicable normal and amalgamated path.

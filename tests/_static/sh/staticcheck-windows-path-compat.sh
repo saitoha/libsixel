@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify Windows cross-runtime CI and path conversion boundaries.
 # Policy: docs/misc/platforms/windows-paths.md
-# Coverage: WPATH-01 WPATH-02 WPATH-03 WPATH-04 WPATH-05 WPATH-06
+# Coverage: WPATH-01 WPATH-02 WPATH-03 WPATH-04 WPATH-05 WPATH-06 WPATH-07
 
 set -eu
 
@@ -179,6 +179,15 @@ require_fixed 'test_runner_duplicate_win32_path(char const *path)' \
 require_fixed 'strncmp(path, "/cygdrive/", 10u) == 0' tests/test_runner.c
 require_fixed 'create_ok = CreateProcessA(program,' tests/test_runner.c
 require_fixed 'GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT,' tests/test_runner.c
+
+# Test-owned FILE streams must not cross the native DLL CRT boundary.
+require_fixed 'test_runner_fopen(char const *path, char const *mode)' \
+    tests/test_runner_io.h
+require_fixed 'if (fopen_s(&stream, path, mode) != 0) {' \
+    tests/test_runner_io.h
+require_fixed 'stream = fopen(path, mode);' tests/test_runner_io.h
+require_fixed 'created by the libsixel DLL through sixel_compat_fopen().' \
+    tests/test_runner_io.h
 
 test "$failed" -eq 0 || {
     echo "not ok 1 - Windows cross-runtime path contracts are synchronized"

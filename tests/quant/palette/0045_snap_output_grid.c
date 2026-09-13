@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "compat_stub.h"
+#include "tests/test_runner_io.h"
 
 int
 test_palette_0045_snap_grid(int argc, char **argv)
@@ -25,7 +26,7 @@ test_palette_0045_snap_grid(int argc, char **argv)
     if (argc != 3) {
         return EXIT_FAILURE;
     }
-    stream = sixel_compat_fopen(argv[1], "rb");
+    stream = test_runner_fopen(argv[1], "rb");
     if (stream == NULL) {
         return EXIT_FAILURE;
     }

@@ -7,6 +7,7 @@
 #include "src/cms.h"
 #include "src/loader-manager.h"
 #include "tests/loader/builtin/loader_builtin_memory_test_common.h"
+#include "tests/test_runner_io.h"
 
 #if HAVE_LIBPNG
 /* Fault injection distinguishes optional cache/canvas work from decoding. */
@@ -604,7 +605,7 @@ test_loader_libpng_contract(int argc, char **argv)
          * binary PNG bytes through NODERAWFS instead of a shell pipeline. */
         output = stdout;
         if (argc == 3) {
-            output = sixel_compat_fopen(argv[2], "wb");
+            output = test_runner_fopen(argv[2], "wb");
             if (output == NULL) {
                 return 1;
             }

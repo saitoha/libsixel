@@ -17,6 +17,7 @@
 #include "src/factory.h"
 #include "src/loader.h"
 #include "src/loader-common.h"
+#include "tests/test_runner_io.h"
 #include "loader_builtin_memory_test_common.h"
 
 void
@@ -116,7 +117,7 @@ edge_read_fixture(char const *relative_path,
                          sizeof(image_path)) != 0) {
         return 1;
     }
-    fp = sixel_compat_fopen(image_path, "rb");
+    fp = test_runner_fopen(image_path, "rb");
     if (fp == NULL) {
         return 1;
     }
