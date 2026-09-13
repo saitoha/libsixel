@@ -1975,6 +1975,10 @@ sixel_dither_new(
     (*ppdither)->method_for_rep = SIXEL_REP_CENTER_BOX;
     (*ppdither)->method_for_diffuse = SIXEL_DIFFUSE_FS;
     (*ppdither)->method_for_scan = SIXEL_SCAN_AUTO;
+    (*ppdither)->diffusion_perturb = 0.0f;
+    (*ppdither)->diffusion_perturb_override = 0;
+    (*ppdither)->diffusion_perturb_seed = 0;
+    (*ppdither)->diffusion_perturb_seed_override = 0;
     (*ppdither)->dither_parallel_band_overwrap_override = 0;
     (*ppdither)->dither_parallel_band_overwrap = 0u;
     (*ppdither)->dither_parallel_band_width_override = 0;
@@ -2790,6 +2794,32 @@ sixel_dither_set_diffusion_scan(
         method_for_scan = SIXEL_SCAN_RASTER;
     }
     dither->method_for_scan = method_for_scan;
+}
+
+
+/* Set paired FS coefficient perturbation without accepting NaN. */
+SIXELAPI SIXELSTATUS
+sixel_dither_set_diffusion_perturb(sixel_dither_t *dither, float perturb)
+{
+    if (dither == NULL || !(perturb >= 0.0f && perturb <= 1.0f)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    dither->diffusion_perturb = perturb;
+    dither->diffusion_perturb_override = 1;
+    return SIXEL_OK;
+}
+
+
+/* The signed seed is converted modulo 2^32 by the FS policy. */
+SIXELAPI SIXELSTATUS
+sixel_dither_set_diffusion_perturb_seed(sixel_dither_t *dither, int seed)
+{
+    if (dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    dither->diffusion_perturb_seed = seed;
+    dither->diffusion_perturb_seed_override = 1;
+    return SIXEL_OK;
 }
 
 

@@ -945,7 +945,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "band_width=%u|band_width_override=%d|dither_threads=%d|"
             "encode_threads=%d|threads_max=%u|threads_max_override=%d|"
             "pin_threads=%d|pin_threads_override=%d|gpu_threshold=%zu|"
-            "gpu_threshold_override=%d|codes=",
+            "gpu_threshold_override=%d|perturb=%.9g|perturb_override=%d|"
+            "perturb_seed=%d|perturb_seed_override=%d|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -992,7 +993,11 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->pipeline_pin_threads,
             dither->dither_pin_threads_override,
             dither->gpu_palette_threshold,
-            encoder->gpu_palette_threshold_override);
+            encoder->gpu_palette_threshold_override,
+            (double)dither->diffusion_perturb,
+            dither->diffusion_perturb_override,
+            dither->diffusion_perturb_seed,
+            dither->diffusion_perturb_seed_override);
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }
@@ -5242,6 +5247,14 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
     sixel_dither_set_diffusion_type(context->dither, method_for_diffuse);
+    context->dither->diffusion_perturb =
+        context->encoder->diffusion_perturb;
+    context->dither->diffusion_perturb_override =
+        context->encoder->diffusion_perturb_override;
+    context->dither->diffusion_perturb_seed =
+        context->encoder->diffusion_perturb_seed;
+    context->dither->diffusion_perturb_seed_override =
+        context->encoder->diffusion_perturb_seed_override;
     context->dither->dither_parallel_band_overwrap_override =
         context->encoder->dither_parallel_band_overwrap_override;
     context->dither->dither_parallel_band_overwrap =
@@ -8812,6 +8825,10 @@ sixel_encoder_new(
     (*ppencoder)->color_option          = SIXEL_COLOR_OPTION_DEFAULT;
     (*ppencoder)->builtin_palette       = 0;
     (*ppencoder)->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
+    (*ppencoder)->diffusion_perturb = 0.0f;
+    (*ppencoder)->diffusion_perturb_override = 0;
+    (*ppencoder)->diffusion_perturb_seed = 0;
+    (*ppencoder)->diffusion_perturb_seed_override = 0;
     (*ppencoder)->dither_parallel_band_overwrap_override = 0;
     (*ppencoder)->dither_parallel_band_overwrap = 0u;
     (*ppencoder)->dither_parallel_band_width_override = 0;
@@ -9924,6 +9941,8 @@ sixel_encoder_apply_diffusion_resolution(
      */
     encoder->method_for_diffuse = resolution->resolved_base_value;
     encoder->method_for_scan = SIXEL_SCAN_AUTO;
+    encoder->diffusion_perturb = 0.0f;
+    encoder->diffusion_perturb_seed = 0;
     encoder->dither_parallel_band_overwrap = 0u;
     encoder->dither_parallel_band_width = 0u;
     encoder->dither_parallel_threads_max = 0u;

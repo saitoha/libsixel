@@ -899,6 +899,17 @@
         SIXEL_SUBOPTION_OFFSET_NONE, override_, \
         SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
 
+#define SIXEL_REGISTRY_ENCODER_FLOAT_RANGE( \
+    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
+    maximum_, message_, field_, override_) \
+    SIXEL_REGISTRY_ENCODER_NUMBER( \
+        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
+        SIXEL_SUBOPTION_VALUE_FLOAT, minimum_, maximum_, 1, 1, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
+        SIXEL_SUBOPTION_STORAGE_FLOAT, float, field_, \
+        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
+        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
+
 #define SIXEL_REGISTRY_ENCODER_DOUBLE( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
     maximum_, message_, field_, override_) \
@@ -1826,6 +1837,16 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
         "scan", 'N', "SIXEL_DITHER_SCAN", NULL, NULL,
         g_diffusion_scan_choices, method_for_scan),
+    SIXEL_REGISTRY_ENCODER_FLOAT_RANGE(
+        SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
+        "perturb", 'U', "SIXEL_DITHER_PERTURB", NULL, NULL, 0.0, 1.0,
+        "-d perturb must be in range 0.0-1.0.",
+        diffusion_perturb, diffusion_perturb_override),
+    SIXEL_REGISTRY_ENCODER_INT(
+        SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
+        "perturb_seed", 'R', "SIXEL_DITHER_PERTURB_SEED", NULL, NULL,
+        "-d perturb_seed must be a 32-bit signed integer.",
+        diffusion_perturb_seed, diffusion_perturb_seed_override),
     SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_MAXIMUM_SIGNED(
         SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
         "band_overwrap", 'O', "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP",
