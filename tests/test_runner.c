@@ -158,6 +158,17 @@ int test_or_enc_0027(int argc, char **argv);
 int test_or_enc_0028(int argc, char **argv);
 int test_or_enc_0029(int argc, char **argv);
 int test_or_dec_0041(int argc, char **argv);
+int test_pmap_0042(int argc, char **argv);
+int test_pmap_0043(int argc, char **argv);
+int test_pmap_0044(int argc, char **argv);
+int test_pmap_0045(int argc, char **argv);
+int test_pmap_0046(int argc, char **argv);
+int test_pmap_0047(int argc, char **argv);
+int test_pmap_0048(int argc, char **argv);
+int test_pmap_0049(int argc, char **argv);
+int test_pmap_0050(int argc, char **argv);
+int test_pmap_0051(int argc, char **argv);
+int test_pmap_0052(int argc, char **argv);
 int test_or_enc_0007(int argc, char **argv);
 int test_or_enc_0008(int argc, char **argv);
 int test_or_enc_0009(int argc, char **argv);
@@ -862,6 +873,28 @@ static test_entry_t const test_entries[] = {
       test_or_enc_0029 },
     { "decoder/0041_ormode_legacy_zero_is_color",
       test_or_dec_0041 },
+    { "decoder/0042_default_palette_direct",
+      test_pmap_0042 },
+    { "decoder/0043_palette_map_definitions",
+      test_pmap_0043 },
+    { "decoder/0044_palette_map_redefinition",
+      test_pmap_0044 },
+    { "decoder/0045_palette_map_ormode",
+      test_pmap_0045 },
+    { "decoder/0046_palette_map_parallel",
+      test_pmap_0046 },
+    { "decoder/0047_palette_map_dequant",
+      test_pmap_0047 },
+    { "decoder/0048_palette_map_invalid",
+      test_pmap_0048 },
+    { "decoder/0049_palette_map_clip_background",
+      test_pmap_0049 },
+    { "decoder/0050_palette_map_identity",
+      test_pmap_0050 },
+    { "decoder/0051_palette_map_gpu",
+      test_pmap_0051 },
+    { "decoder/0052_palette_map_parallel_fallback",
+      test_pmap_0052 },
     { "encoder-core/0007_ormode_one_color_plane",
       test_or_enc_0007 },
     { "encoder-core/0008_ormode_two_color_plane",

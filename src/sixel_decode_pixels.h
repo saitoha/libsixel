@@ -32,6 +32,20 @@
 
 #include <sixel.h>
 
+SIXEL_INTERNAL_API SIXELSTATUS sixel_decode_direct_mapped(
+    unsigned char *p, int len, unsigned int decode_flags,
+    sixel_palette_transform_t const *transform, int body_only,
+    int const *body_params, size_t body_nparams, unsigned char **pixels,
+    int *pwidth, int *pheight, unsigned char **palette, int *ncolors,
+    unsigned int *result_flags, sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS sixel_decode_raw_mapped(
+    unsigned char *p, int len, unsigned int decode_flags,
+    sixel_palette_transform_t const *transform, unsigned char **pixels,
+    unsigned char **paint_mask, int *pwidth, int *pheight,
+    unsigned char **palette, int *ncolors, unsigned int *result_flags,
+    sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decode_raw_with_options(unsigned char *p,
                               int len,

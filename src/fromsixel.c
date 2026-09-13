@@ -114,6 +114,26 @@ static int const sixel_default_color_table[] = {
     SIXEL_XRGB(80, 80, 80),  /* 15 Gray 75% */
 };
 
+/*
+ * Map source coordinates when a palette value is created. Keeping this at
+ * the definition boundary preserves paint-time colors and lets parallel
+ * workers and OR-mode consume the same already-mapped palette.
+ */
+static int sixel_palette_map_rgb(int color,
+                                 sixel_palette_transform_t const *transform,
+                                 int is_default)
+{
+    unsigned char rgb[3];
+
+    if (transform == NULL) {
+        return color;
+    }
+    rgb[0] = (unsigned char)((color >> 16) & 0xff);
+    rgb[1] = (unsigned char)((color >> 8) & 0xff);
+    rgb[2] = (unsigned char)(color & 0xff);
+    transform->map_rgb(transform->context, rgb, is_default);
+    return SIXEL_RGB(rgb[0], rgb[1], rgb[2]);
+}
 
 /*
  * Store a single pixel in the image buffer. When the decoder is in direct
@@ -434,6 +454,7 @@ typedef enum parse_state {
 
 typedef struct parser_context {
     parse_state_t state;
+    sixel_palette_transform_t const *palette_transform;
     int pos_x;
     int pos_y;
     int max_x;
@@ -607,33 +628,33 @@ image_buffer_init(
                 image_buffer_store_pixel(image, n, bgindex);
             }
         }
+    }
 
-        /* palette initialization */
-        for (n = 0; n < 16; n++) {
-            image->palette[n] = sixel_default_color_table[n];
-        }
+    /* Every output depth uses the same defined initial palette. */
+    for (n = 0; n < 16; n++) {
+        image->palette[n] = sixel_default_color_table[n];
+    }
 
-        /* colors 16-231 are a 6x6x6 color cube */
-        for (r = 0; r < 6; r++) {
-            for (g = 0; g < 6; g++) {
-                for (b = 0; b < 6; b++) {
-                    image->palette[n++] = SIXEL_RGB(r * 51, g * 51, b * 51);
-                }
+    /* colors 16-231 are a 6x6x6 color cube */
+    for (r = 0; r < 6; r++) {
+        for (g = 0; g < 6; g++) {
+            for (b = 0; b < 6; b++) {
+                image->palette[n++] = SIXEL_RGB(r * 51, g * 51, b * 51);
             }
         }
+    }
 
-        /* colors 232-255 are a grayscale ramp, intentionally leaving out */
-        for (i = 0; i < 24; i++) {
-            image->palette[n++] = SIXEL_RGB(i * 11, i * 11, i * 11);
-        }
+    /* colors 232-255 are a grayscale ramp, intentionally leaving out */
+    for (i = 0; i < 24; i++) {
+        image->palette[n++] = SIXEL_RGB(i * 11, i * 11, i * 11);
+    }
 
 #if HAVE_ASSERT
-        assert(n == 256);
+    assert(n == 256);
 #endif  /* HAVE_ASSERT */
 
     for (n = 256; n < SIXEL_PALETTE_MAX_DECODER; n++) {
         image->palette[n] = SIXEL_RGB(255, 255, 255);
-    }
     }
     if (keep_paint_mask) {
         status = image_buffer_enable_paint_mask(image, allocator);
@@ -862,6 +883,7 @@ parser_context_init(parser_context_t *context)
     SIXELSTATUS status = SIXEL_FALSE;
 
     context->state = PS_GROUND;
+    context->palette_transform = NULL;
     context->pos_x = 0;
     context->pos_y = 0;
     context->max_x = 0;
@@ -1703,6 +1725,12 @@ sixel_decode_raw_impl(
                         image->palette[context->color_index]
                             = SIXEL_XRGB(context->params[2], context->params[3], context->params[4]);
                     }
+                    if (context->params[1] == 1 || context->params[1] == 2) {
+                        image->palette[context->color_index] =
+                            sixel_palette_map_rgb(
+                                image->palette[context->color_index],
+                                context->palette_transform, 0);
+                    }
 #if SIXEL_ENABLE_THREADS
                     parallel_anchor = p;
 #endif  /* SIXEL_ENABLE_THREADS */
@@ -1750,29 +1778,21 @@ end:
     return status;
 }
 
-
 static SIXELSTATUS
-sixel_decode_image(
-    unsigned char     *p,
-    int                len,
-    int                initial_width,
-    int                initial_height,
-    int                depth,
-    int                keep_paint_mask,
-    image_buffer_t    *image,
-    parser_context_t  *context,
-    sixel_allocator_t *allocator,
-    unsigned int       decode_flags,
-    sixel_decoder_undither_context_t *undither,
-    int                body_only,
-    int const         *body_params,
-    size_t             body_nparams)
+sixel_decode_image(unsigned char *p, int len, int initial_width,
+                   int initial_height, int depth, int keep_paint_mask,
+                   image_buffer_t *image, parser_context_t *context,
+                   sixel_allocator_t *allocator, unsigned int decode_flags,
+                   sixel_decoder_undither_context_t *undither, int body_only,
+                   int const *body_params, size_t body_nparams,
+                   sixel_palette_transform_t const *transform)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_timeline_logger_t *logger;
     int logger_prepared;
     size_t i;
     size_t nparams;
+    int white;
 
     image->pixels.p = NULL;
     image->paint_mask = NULL;
@@ -1808,6 +1828,8 @@ sixel_decode_image(
         goto end;
     }
 
+    context->palette_transform = transform;
+
     /*
      * The serial parser always runs first. When palette and raster
      * attributes become available, the parser may request a parallel worker
@@ -1840,6 +1862,19 @@ sixel_decode_image(
                                allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+
+    if (transform != NULL) {
+        /* Defaults above 255 are all white. A pure transform needs only one
+         * evaluation for that repeated source value, not 65,280 callbacks. */
+        for (i = 0U; i < 256U; i++) {
+            image->palette[i] =
+                sixel_palette_map_rgb(image->palette[i], transform, 1);
+        }
+        white = sixel_palette_map_rgb(SIXEL_RGB(255, 255, 255), transform, 1);
+        for (i = 256U; i < SIXEL_PALETTE_MAX_DECODER; i++) {
+            image->palette[i] = white;
+        }
     }
 
     if (body_only) {
@@ -1923,20 +1958,12 @@ end:
     return status;
 }
 
-
-static SIXELSTATUS
-sixel_decode_raw_with_options_internal(
-    unsigned char     *p,
-    int                len,
-    unsigned int       decode_flags,
-    unsigned char    **pixels,
-    unsigned char    **paint_mask,
-    int               *pwidth,
-    int               *pheight,
-    unsigned char    **palette,
-    int               *ncolors,
-    unsigned int      *result_flags,
-    sixel_allocator_t *allocator)
+static SIXELSTATUS sixel_decode_raw_with_options_internal(
+    unsigned char *p, int len, unsigned int decode_flags,
+    unsigned char **pixels, unsigned char **paint_mask, int *pwidth,
+    int *pheight, unsigned char **palette, int *ncolors,
+    unsigned int *result_flags, sixel_allocator_t *allocator,
+    sixel_palette_transform_t const *transform)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     parser_context_t context;
@@ -1986,20 +2013,11 @@ sixel_decode_raw_with_options_internal(
     image->pixels.p = NULL;
     image->paint_mask = NULL;
 
-    status = sixel_decode_image(p,
-                                len,
-                                1,  /* initial_width */
-                                1,  /* initial_height */
-                                1,  /* depth */
-                                paint_mask != NULL,
-                                image,
-                                &context,
-                                allocator,
-                                decode_flags,
-                                NULL,
-                                0,
-                                NULL,
-                                0U);
+    status = sixel_decode_image(p, len, 1, /* initial_width */
+                                1,         /* initial_height */
+                                1,         /* depth */
+                                paint_mask != NULL, image, &context, allocator,
+                                decode_flags, NULL, 0, NULL, 0U, transform);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -2075,6 +2093,19 @@ end:
     return status;
 }
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_raw_mapped(
+    unsigned char *p, int len, unsigned int decode_flags,
+    sixel_palette_transform_t const *transform, unsigned char **pixels,
+    unsigned char **paint_mask, int *pwidth, int *pheight,
+    unsigned char **palette, int *ncolors, unsigned int *result_flags,
+    sixel_allocator_t *allocator)
+{
+    return sixel_decode_raw_with_options_internal(
+        p, len, decode_flags, pixels, paint_mask, pwidth, pheight, palette,
+        ncolors, result_flags, allocator, transform);
+}
+
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decode_raw_with_options(
@@ -2089,17 +2120,9 @@ sixel_decode_raw_with_options(
     unsigned int      *result_flags,
     sixel_allocator_t *allocator)
 {
-    return sixel_decode_raw_with_options_internal(p,
-                                                  len,
-                                                  decode_flags,
-                                                  pixels,
-                                                  NULL,
-                                                  pwidth,
-                                                  pheight,
-                                                  palette,
-                                                  ncolors,
-                                                  result_flags,
-                                                  allocator);
+    return sixel_decode_raw_with_options_internal(
+        p, len, decode_flags, pixels, NULL, pwidth, pheight, palette, ncolors,
+        result_flags, allocator, NULL);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -2116,17 +2139,9 @@ sixel_decode_raw_with_options_mask(
     unsigned int      *result_flags,
     sixel_allocator_t *allocator)
 {
-    return sixel_decode_raw_with_options_internal(p,
-                                                  len,
-                                                  decode_flags,
-                                                  pixels,
-                                                  paint_mask,
-                                                  pwidth,
-                                                  pheight,
-                                                  palette,
-                                                  ncolors,
-                                                  result_flags,
-                                                  allocator);
+    return sixel_decode_raw_with_options_internal(
+        p, len, decode_flags, pixels, paint_mask, pwidth, pheight, palette,
+        ncolors, result_flags, allocator, NULL);
 }
 
 SIXELAPI SIXELSTATUS
@@ -2269,20 +2284,8 @@ sixel_decode_kundither_fast4_with_options(unsigned char *p,
     undither.similarity_bias = similarity_bias;
     undither.allocator = allocator;
 
-    status = sixel_decode_image(p,
-                                len,
-                                1,
-                                1,
-                                1,
-                                0,
-                                image,
-                                &context,
-                                allocator,
-                                decode_flags,
-                                &undither,
-                                0,
-                                NULL,
-                                0U);
+    status = sixel_decode_image(p, len, 1, 1, 1, 0, image, &context, allocator,
+                                decode_flags, &undither, 0, NULL, 0U, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2414,20 +2417,11 @@ sixel_decode_wide(
     }
     image->pixels.p = NULL;
 
-    status = sixel_decode_image(p,
-                                len,
-                                1,  /* initial width */
-                                1,  /* initial height */
-                                2,  /* depth */
-                                0,
-                                image,
-                                &context,
-                                allocator,
-                                0U,
-                                NULL,
-                                0,
-                                NULL,
-                                0U);
+    status = sixel_decode_image(p, len, 1, /* initial width */
+                                1,         /* initial height */
+                                2,         /* depth */
+                                0, image, &context, allocator, 0U, NULL, 0,
+                                NULL, 0U, NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -2482,22 +2476,13 @@ end:
     return status;
 }
 
-
-static SIXELSTATUS
-sixel_decode_direct_context_with_options(
-    unsigned char       *p,
-    int                  len,
-    unsigned int         decode_flags,
-    int                  body_only,
-    int const           *body_params,
-    size_t               body_nparams,
-    unsigned char      **pixels,
-    int                 *pwidth,
-    int                 *pheight,
-    unsigned char      **palette,
-    int                 *ncolors,
-    unsigned int        *result_flags,
-    sixel_allocator_t   *allocator)
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_direct_mapped(
+    unsigned char *p, int len, unsigned int decode_flags,
+    sixel_palette_transform_t const *transform, int body_only,
+    int const *body_params, size_t body_nparams, unsigned char **pixels,
+    int *pwidth, int *pheight, unsigned char **palette, int *ncolors,
+    unsigned int *result_flags, sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     parser_context_t context;
@@ -2543,20 +2528,9 @@ sixel_decode_direct_context_with_options(
     image->pixels.p = NULL;
     image->paint_mask = NULL;
 
-    status = sixel_decode_image(p,
-                                len,
-                                1,
-                                1,
-                                4U,
-                                0,
-                                image,
-                                &context,
-                                allocator,
-                                decode_flags,
-                                NULL,
-                                body_only,
-                                body_params,
-                                body_nparams);
+    status = sixel_decode_image(p, len, 1, 1, 4U, 0, image, &context, allocator,
+                                decode_flags, NULL, body_only, body_params,
+                                body_nparams, transform);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -2634,19 +2608,9 @@ sixel_decode_direct_with_options(
     unsigned int        *result_flags,
     sixel_allocator_t   *allocator)
 {
-    return sixel_decode_direct_context_with_options(p,
-                                                    len,
-                                                    decode_flags,
-                                                    0,
-                                                    NULL,
-                                                    0U,
-                                                    pixels,
-                                                    pwidth,
-                                                    pheight,
-                                                    palette,
-                                                    ncolors,
-                                                    result_flags,
-                                                    allocator);
+    return sixel_decode_direct_mapped(p, len, decode_flags, NULL, 0, NULL, 0U,
+                                      pixels, pwidth, pheight, palette, ncolors,
+                                      result_flags, allocator);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -2664,19 +2628,9 @@ sixel_decode_direct_body_with_options(
     unsigned int        *result_flags,
     sixel_allocator_t   *allocator)
 {
-    return sixel_decode_direct_context_with_options(p,
-                                                    len,
-                                                    decode_flags,
-                                                    1,
-                                                    params,
-                                                    nparams,
-                                                    pixels,
-                                                    pwidth,
-                                                    pheight,
-                                                    palette,
-                                                    ncolors,
-                                                    result_flags,
-                                                    allocator);
+    return sixel_decode_direct_mapped(p, len, decode_flags, NULL, 1, params,
+                                      nparams, pixels, pwidth, pheight, palette,
+                                      ncolors, result_flags, allocator);
 }
 
 

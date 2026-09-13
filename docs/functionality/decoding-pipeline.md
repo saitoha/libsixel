@@ -87,6 +87,16 @@ The returned stride is part of the contract. Consumers must not infer it from wi
 
 The broader distinction among memory layout, alpha, palette, and color interpretation is defined in [Pixel Formats and Alpha Representation](../concepts/pixelformat.md).
 
+### Mapping palette colors before painting
+
+The `sixel_decode_pixels_mapped()`, `sixel_decode_pixels_body_mapped()`, and `sixel_decoder_decode_mapped()` entry points accept a call-scoped `sixel_palette_transform_t`. They preserve the existing options/result layouts and expose `SIXEL_HAVE_PALETTE_TRANSFORM` for compile-time detection. Passing a null transform retains the original API's behavior. A nonnull transform with a null `map_rgb` callback returns `SIXEL_BAD_ARGUMENT`.
+
+The callback receives RGB8 source coordinates and `is_default`: `1` for the initial palette and `0` for a valid explicit RGB or HLS definition. It replaces those coordinates with RGB8 values in a caller-selected output basis before the decoder paints with them. A terminal can therefore map default sRGB entries into Display P3 while leaving explicitly supplied P3 entries unchanged, even when the original numeric values are identical. The direct decoder initializes the same default palette as the indexed decoder, including higher registers that default to white.
+
+Register selection consumes the stored mapped color without mapping it again. Later definitions start from their new source values and preserve pixels painted with earlier definitions. OR-mode keeps its existing index-composition and final-palette resolution semantics, using the mapped palette at that resolution point. Parallel workers borrow mapped palette values; they do not repeat the transformation of stored entries. A transform must be deterministic and reentrant because independent decode calls, retries, and reconstruction fallback can evaluate the same source definition more than once. Callback invocation counts and ordering are not an API guarantee. The decoder borrows the transform and its context only until the call and its workers finish.
+
+Mapping leaves alpha, paint masks, raster policy, and result flags unchanged. The caller supplies `options->bgcolor` directly in the output RGB basis; the callback does not process that background. No CMS, gamut mapping, or color-distance model is supplied by this interface. CPU/GPU reconstruction evaluates similarity and interpolation on the mapped RGB values. Mapping after reconstruction is a different operation and is not guaranteed to produce the same samples. Returning RGB8 adds the output-basis rounding inherent in that representation but does not re-encode colors through SIXEL's percentage palette syntax.
+
 ## Stateful reconstruction, resize, and PNG output
 
 The stateful decoder used by `sixel2png` adds output policy after protocol parsing. These stages can change memory representation or image samples; they do not retroactively change what the SIXEL parser observed.
@@ -224,6 +234,17 @@ Each row is one independently reportable observation. Every owning test links ba
 | DP-23 | Every direct paint worker reaches the release barrier before paint begins. | [tests/cli/sixel2png/0012_parallel_paint_barrier.t](../../tests/cli/sixel2png/0012_parallel_paint_barrier.t) |
 | DP-24 | Parallel decoder scan and paint timeline spans have paired start and finish events. | [tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t](../../tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t) |
 | DP-25 | A repeat that crosses a parallel span boundary falls back without retaining partial direct paint. | [tests/processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.t](../../tests/processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.t) |
+| DP-26 | Default palette entries are initialized identically for direct, packed full/body, and decoder-object output. | [tests/processing/decoder/0042_default_palette_direct.t](../../tests/processing/decoder/0042_default_palette_direct.t) |
+| DP-27 | RGB/HLS definitions are mapped from source values while selection reuses the stored color. | [tests/processing/decoder/0043_palette_map_definitions.t](../../tests/processing/decoder/0043_palette_map_definitions.t) |
+| DP-28 | Register redefinition preserves the mapped colors of earlier paint and high-color reconstruction fallback. | [tests/processing/decoder/0044_palette_map_redefinition.t](../../tests/processing/decoder/0044_palette_map_redefinition.t) |
+| DP-29 | OR-mode resolves composed indexes through the mapped final palette. | [tests/processing/decoder/0045_palette_map_ormode.t](../../tests/processing/decoder/0045_palette_map_ormode.t) |
+| DP-30 | Mapped default and explicit entries retain exact colors across parallel bands. | [tests/processing/decoder/0046_palette_map_parallel.t](../../tests/processing/decoder/0046_palette_map_parallel.t) |
+| DP-31 | CPU reconstruction consumes mapped palette values for each supported reconstruction method. | [tests/processing/decoder/0047_palette_map_dequant.t](../../tests/processing/decoder/0047_palette_map_dequant.t) |
+| DP-32 | All mapped public routes reject a nonnull transform without a callback. | [tests/processing/decoder/0048_palette_map_invalid.t](../../tests/processing/decoder/0048_palette_map_invalid.t) |
+| DP-33 | Mapping preserves raster clipping flags and alpha/background semantics in the caller-selected output basis. | [tests/processing/decoder/0049_palette_map_clip_background.t](../../tests/processing/decoder/0049_palette_map_clip_background.t) |
+| DP-34 | Identity and null mapping preserve the original packed decode contract. | [tests/processing/decoder/0050_palette_map_identity.t](../../tests/processing/decoder/0050_palette_map_identity.t) |
+| DP-35 | GPU fast4 reconstruction uses mapped pixels and palette on available backends. | [tests/processing/decoder/0051_palette_map_gpu.t](../../tests/processing/decoder/0051_palette_map_gpu.t) |
+| DP-36 | A later palette definition selects clean parallel fallback without losing or remapping stored colors. | [tests/processing/decoder/0052_palette_map_parallel_fallback.t](../../tests/processing/decoder/0052_palette_map_parallel_fallback.t) |
 
 ### Coverage boundary
 

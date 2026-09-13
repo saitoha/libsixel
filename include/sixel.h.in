@@ -1412,6 +1412,47 @@ typedef struct sixel_decode_result {
     unsigned int flags;        /* bitwise OR of SIXEL_DECODE_PIXELS_RESULT_* */
 } sixel_decode_result_t;
 
+#define SIXEL_HAVE_PALETTE_TRANSFORM 1
+
+/*
+ * Map palette RGB8 values before painting, preserving the distinction between
+ * a default color (is_default == 1) and an explicit RGB/HLS definition (0).
+ * The callback replaces rgb with coordinates in the caller's output space.
+ * It must be deterministic and reentrant: retries may repeat a definition,
+ * and callers may run independent decodes concurrently with the same context.
+ * No invocation count or ordering is promised. Selection alone does not map
+ * an already mapped entry again. Transform and context are borrowed only for
+ * the duration of the decode call, including any workers it joins.
+ *
+ * This interface supplies no CMS or color-distance model. Reconstruction in
+ * a decoder object operates on the mapped RGB values. options->bgcolor must
+ * already use that same output space; it is not passed through the callback.
+ * A null transform preserves the unmapped API. A nonnull transform requires
+ * a nonnull map_rgb callback. The existing options/result layouts are intact.
+ */
+typedef struct sixel_palette_transform {
+    void *context;
+    void (*map_rgb)(void *context, unsigned char rgb[3], int is_default);
+} sixel_palette_transform_t;
+
+SIXELAPI SIXELSTATUS
+sixel_decode_pixels_mapped(unsigned char const *data,
+                           size_t size,
+                           sixel_decode_options_t const *options,
+                           sixel_palette_transform_t const *transform,
+                           sixel_decode_result_t *result,
+                           sixel_allocator_t *allocator);
+
+SIXELAPI SIXELSTATUS
+sixel_decode_pixels_body_mapped(unsigned char const *body,
+                                size_t body_size,
+                                int const *params,
+                                size_t nparams,
+                                sixel_decode_options_t const *options,
+                                sixel_palette_transform_t const *transform,
+                                sixel_decode_result_t *result,
+                                sixel_allocator_t *allocator);
+
 SIXELAPI SIXELSTATUS
 sixel_decode_pixels(unsigned char const /* in */ *data,
                     size_t              /* in */ size,
@@ -2084,6 +2125,15 @@ sixel_decoder_decode(
  * allocator.
  */
 #define SIXEL_HAVE_DECODER_DECODE_PIXELS 1
+
+/* Object reconstruction in the output RGB basis selected by transform. */
+SIXELAPI SIXELSTATUS
+sixel_decoder_decode_mapped(sixel_decoder_t *decoder,
+                            unsigned char const *data,
+                            size_t size,
+                            sixel_decode_options_t const *options,
+                            sixel_palette_transform_t const *transform,
+                            sixel_decode_result_t *result);
 
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode_pixels(

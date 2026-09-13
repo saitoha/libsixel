@@ -3001,15 +3001,10 @@ sixel_decoder_promote_rgb888_to_rgba8888(unsigned char **out_pixels,
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_decoder_decode_pixels_gpu_fast4_try(
-    sixel_decoder_t *decoder,
-    unsigned char const *data,
-    size_t size,
-    unsigned int decode_flags,
-    unsigned char **out_pixels,
-    int *out_width,
-    int *out_height,
+static SIXELSTATUS sixel_decoder_decode_pixels_gpu_fast4_try(
+    sixel_decoder_t *decoder, unsigned char const *data, size_t size,
+    unsigned int decode_flags, sixel_palette_transform_t const *transform,
+    unsigned char **out_pixels, int *out_width, int *out_height,
     unsigned int *result_flags)
 {
     SIXELSTATUS status;
@@ -3037,16 +3032,9 @@ sixel_decoder_decode_pixels_gpu_fast4_try(
     }
 
     buffer = (unsigned char *)(void const *)data;
-    status = sixel_decode_direct_with_options(
-        buffer,
-        (int)size,
-        decode_flags,
-        &direct_pixels,
-        out_width,
-        out_height,
-        &palette,
-        &ncolors,
-        result_flags,
+    status = sixel_decode_direct_mapped(
+        buffer, (int)size, decode_flags, transform, 0, NULL, 0U, &direct_pixels,
+        out_width, out_height, &palette, &ncolors, result_flags,
         decoder->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -3102,15 +3090,10 @@ end:
     return status;
 }
 
-static SIXELSTATUS
-sixel_decoder_decode_pixels_dequant_try(
-    sixel_decoder_t *decoder,
-    unsigned char const *data,
-    size_t size,
-    unsigned int decode_flags,
-    unsigned char **out_pixels,
-    int *out_width,
-    int *out_height,
+static SIXELSTATUS sixel_decoder_decode_pixels_dequant_try(
+    sixel_decoder_t *decoder, unsigned char const *data, size_t size,
+    unsigned int decode_flags, sixel_palette_transform_t const *transform,
+    unsigned char **out_pixels, int *out_width, int *out_height,
     unsigned int *result_flags)
 {
     SIXELSTATUS status;
@@ -3159,14 +3142,9 @@ sixel_decoder_decode_pixels_dequant_try(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = sixel_decoder_decode_pixels_gpu_fast4_try(decoder,
-                                                       data,
-                                                       size,
-                                                       decode_flags,
-                                                       out_pixels,
-                                                       out_width,
-                                                       out_height,
-                                                       result_flags);
+    status = sixel_decoder_decode_pixels_gpu_fast4_try(
+        decoder, data, size, decode_flags, transform, out_pixels, out_width,
+        out_height, result_flags);
     if (status == SIXEL_OK) {
         return SIXEL_OK;
     }
@@ -3180,17 +3158,10 @@ sixel_decoder_decode_pixels_dequant_try(
      * retry path appends a synthetic terminator.
      */
     buffer = (unsigned char *)(void const *)data;
-    status = sixel_decode_raw_with_options_mask(buffer,
-                                                (int)size,
-                                                decode_flags,
-                                                &indexed_pixels,
-                                                &paint_mask,
-                                                out_width,
-                                                out_height,
-                                                &palette,
-                                                &ncolors,
-                                                result_flags,
-                                                decoder->allocator);
+    status = sixel_decode_raw_mapped(buffer, (int)size, decode_flags, transform,
+                                     &indexed_pixels, &paint_mask, out_width,
+                                     out_height, &palette, &ncolors,
+                                     result_flags, decoder->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3259,15 +3230,10 @@ end:
     return status;
 }
 
-static SIXELSTATUS
-sixel_decoder_decode_pixels_dequant_terminated_attempts(
-    sixel_decoder_t *decoder,
-    unsigned char *workbuf,
-    size_t size,
-    unsigned int decode_flags,
-    unsigned char **out_pixels,
-    int *out_width,
-    int *out_height,
+static SIXELSTATUS sixel_decoder_decode_pixels_dequant_terminated_attempts(
+    sixel_decoder_t *decoder, unsigned char *workbuf, size_t size,
+    unsigned int decode_flags, sixel_palette_transform_t const *transform,
+    unsigned char **out_pixels, int *out_width, int *out_height,
     unsigned int *result_flags)
 {
     SIXELSTATUS status;
@@ -3279,14 +3245,9 @@ sixel_decoder_decode_pixels_dequant_terminated_attempts(
 
     /* Retry with a synthetic BEL terminator for truncated streams. */
     workbuf[size] = 0x07U;
-    status = sixel_decoder_decode_pixels_dequant_try(decoder,
-                                                     workbuf,
-                                                     size + 1U,
-                                                     decode_flags,
-                                                     out_pixels,
-                                                     out_width,
-                                                     out_height,
-                                                     &second_flags);
+    status = sixel_decoder_decode_pixels_dequant_try(
+        decoder, workbuf, size + 1U, decode_flags, transform, out_pixels,
+        out_width, out_height, &second_flags);
     if (status == SIXEL_OK) {
         *result_flags = second_flags;
         return status;
@@ -3295,14 +3256,9 @@ sixel_decoder_decode_pixels_dequant_terminated_attempts(
     /* Retry with ESC \ (ST) in case BEL is not accepted. */
     workbuf[size] = 0x1bU;
     workbuf[size + 1U] = '\\';
-    status = sixel_decoder_decode_pixels_dequant_try(decoder,
-                                                     workbuf,
-                                                     size + 2U,
-                                                     decode_flags,
-                                                     out_pixels,
-                                                     out_width,
-                                                     out_height,
-                                                     &third_flags);
+    status = sixel_decoder_decode_pixels_dequant_try(
+        decoder, workbuf, size + 2U, decode_flags, transform, out_pixels,
+        out_width, out_height, &third_flags);
     if (status == SIXEL_OK) {
         *result_flags = third_flags;
     }
@@ -3311,11 +3267,10 @@ sixel_decoder_decode_pixels_dequant_terminated_attempts(
 }
 
 SIXELAPI SIXELSTATUS
-sixel_decoder_decode_pixels(sixel_decoder_t *decoder,
-                            unsigned char const *data,
-                            size_t size,
-                            sixel_decode_options_t const *options,
-                            sixel_decode_result_t *result)
+sixel_decoder_decode_mapped(
+    sixel_decoder_t *decoder, unsigned char const *data, size_t size,
+    sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform, sixel_decode_result_t *result)
 {
     SIXELSTATUS status;
     unsigned char *workbuf;
@@ -3351,6 +3306,10 @@ sixel_decoder_decode_pixels(sixel_decoder_t *decoder,
     result->pixelformat = 0;
     result->stride = 0;
     result->flags = 0U;
+    if (transform != NULL && transform->map_rgb == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
 
     if (options != NULL) {
         decode_flags = options->flags;
@@ -3361,11 +3320,8 @@ sixel_decoder_decode_pixels(sixel_decoder_t *decoder,
     }
 
     if (decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
-        status = sixel_decode_pixels(data,
-                                     size,
-                                     options,
-                                     result,
-                                     decoder->allocator);
+        status = sixel_decode_pixels_mapped(data, size, options, transform,
+                                            result, decoder->allocator);
         goto end;
     }
 
@@ -3377,22 +3333,14 @@ sixel_decoder_decode_pixels(sixel_decoder_t *decoder,
         goto end;
     }
 
-    status = sixel_decoder_decode_pixels_dequant_try(decoder,
-                                                     data,
-                                                     size,
-                                                     decode_flags,
-                                                     &rgba_pixels,
-                                                     &width,
-                                                     &height,
-                                                     &first_flags);
+    status = sixel_decoder_decode_pixels_dequant_try(
+        decoder, data, size, decode_flags, transform, &rgba_pixels, &width,
+        &height, &first_flags);
     if ((first_flags & SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED) != 0U) {
         /* Indexed dequantization cannot describe this stream; decode it
          * directly instead of retrying the same conversion. */
-        status = sixel_decode_pixels(data,
-                                     size,
-                                     options,
-                                     result,
-                                     decoder->allocator);
+        status = sixel_decode_pixels_mapped(data, size, options, transform,
+                                            result, decoder->allocator);
         goto end;
     }
     if (status == SIXEL_OK) {
@@ -3410,14 +3358,8 @@ sixel_decoder_decode_pixels(sixel_decoder_t *decoder,
         memcpy(workbuf, data, size);
 
         status = sixel_decoder_decode_pixels_dequant_terminated_attempts(
-            decoder,
-            workbuf,
-            size,
-            decode_flags,
-            &rgba_pixels,
-            &width,
-            &height,
-            &result_flags);
+            decoder, workbuf, size, decode_flags, transform, &rgba_pixels,
+            &width, &height, &result_flags);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -3437,6 +3379,15 @@ end:
     sixel_allocator_free(decoder->allocator, workbuf);
     sixel_decoder_unref(decoder);
     return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_decoder_decode_pixels(
+    sixel_decoder_t *decoder, unsigned char const *data, size_t size,
+    sixel_decode_options_t const *options, sixel_decode_result_t *result)
+{
+    return sixel_decoder_decode_mapped(decoder, data, size, options, NULL,
+                                       result);
 }
 
 /* load source data from stdin or the file specified with
@@ -3631,14 +3582,8 @@ sixel_decoder_decode(
                                   0);
             }
             status = sixel_decoder_decode_pixels_gpu_fast4_try(
-                decoder,
-                raw_data,
-                (size_t)raw_len,
-                0U,
-                &fast4_pixels,
-                &sx,
-                &sy,
-                &gpu_result_flags);
+                decoder, raw_data, (size_t)raw_len, 0U, NULL, &fast4_pixels,
+                &sx, &sy, &gpu_result_flags);
             if (logger_prepared && status != SIXEL_FALSE) {
                 sixel_timeline_logger_logf(
                     logger,

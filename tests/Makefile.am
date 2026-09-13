@@ -187,6 +187,18 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_DIN99D_INVERSE \
     -DBUILD_TEST_0003_DIN99D_BYTE \
     -DBUILD_ORMODE_TEST_COMMON \
+    -DBUILD_PALETTE_MAP_TEST_COMMON \
+    -DBUILD_TEST_0042_DEFAULT_PALETTE_DIRECT \
+    -DBUILD_TEST_0043_PALETTE_MAP_DEFINITIONS \
+    -DBUILD_TEST_0044_PALETTE_MAP_REDEFINITION \
+    -DBUILD_TEST_0045_PALETTE_MAP_ORMODE \
+    -DBUILD_TEST_0046_PALETTE_MAP_PARALLEL \
+    -DBUILD_TEST_0047_PALETTE_MAP_DEQUANT \
+    -DBUILD_TEST_0048_PALETTE_MAP_INVALID \
+    -DBUILD_TEST_0049_PALETTE_MAP_CLIP_BACKGROUND \
+    -DBUILD_TEST_0050_PALETTE_MAP_IDENTITY \
+    -DBUILD_TEST_0051_PALETTE_MAP_GPU \
+    -DBUILD_TEST_0052_PALETTE_MAP_PARALLEL_FALLBACK \
     -DBUILD_TEST_0027_ORMODE_PUBLIC_OUTPUT_DISABLE \
     -DBUILD_TEST_0028_ORMODE_PIPELINE_SIZE \
     -DBUILD_TEST_0029_ORMODE_OFFSET_DISABLES_PIPELINE \
@@ -736,6 +748,19 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0039_ormode_decoder_reuse_resets_mode.c \
     processing/decoder/0040_ormode_direct_zero_is_opaque.c \
     processing/decoder/0041_ormode_legacy_zero_is_color.c \
+    processing/decoder/0042_default_palette_direct.c \
+    processing/decoder/0043_palette_map_definitions.c \
+    processing/decoder/0044_palette_map_redefinition.c \
+    processing/decoder/0045_palette_map_ormode.c \
+    processing/decoder/0046_palette_map_parallel.c \
+    processing/decoder/0047_palette_map_dequant.c \
+    processing/decoder/0048_palette_map_invalid.c \
+    processing/decoder/0049_palette_map_clip_background.c \
+    processing/decoder/0050_palette_map_identity.c \
+    processing/decoder/0051_palette_map_gpu.c \
+    processing/decoder/0052_palette_map_parallel_fallback.c \
+    processing/decoder/palette_map_test_common.c \
+    processing/decoder/palette_map_test_common.h \
     processing/decoder/ormode_test_common.c \
     processing/decoder/ormode_test_common.h \
     processing/decoder/kundither_test_common.h \
