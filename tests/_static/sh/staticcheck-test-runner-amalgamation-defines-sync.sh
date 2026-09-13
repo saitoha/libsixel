@@ -19,19 +19,23 @@ function remember_source(path, basename, macro, parts, part_count) {
     part_count = split(path, parts, "/")
     basename = parts[part_count]
     sub(/\.c$/, "", basename)
-    macro = "BUILD_TEST_" toupper(basename)
+    if (basename ~ /^[0-9][0-9][0-9][0-9]_/) {
+        macro = "BUILD_TEST_" toupper(basename)
+    } else {
+        macro = "BUILD_" toupper(basename)
+    }
     gsub(/[^A-Z0-9]/, "_", macro)
     sources[macro] = path
 }
 function scan_sources(line, token) {
-    while (match(line, /[A-Za-z0-9_.\/-]*[0-9]{4}_[A-Za-z0-9_.-]+\.c/)) {
+    while (match(line, /[A-Za-z0-9_.$()\/-]+\.c/)) {
         token = substr(line, RSTART, RLENGTH)
         remember_source(token)
         line = substr(line, RSTART + RLENGTH)
     }
 }
 function scan_defines(line, token) {
-    while (match(line, /-DBUILD_TEST_[A-Z0-9_]+/)) {
+    while (match(line, /-DBUILD_[A-Z0-9_]+/)) {
         token = substr(line, RSTART + 2, RLENGTH - 2)
         defines[token] = 1
         line = substr(line, RSTART + RLENGTH)

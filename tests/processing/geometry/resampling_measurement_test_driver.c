@@ -251,7 +251,11 @@ rmb_load_baselines(char const *path,
         return 0;
     }
     count = 0;
-    (void)fgets(line, sizeof(line), stream);
+    if (fgets(line, sizeof(line), stream) == NULL) {
+        fprintf(stderr, "numeric baseline has no header: %s\n", path);
+        fclose(stream);
+        return 0;
+    }
     while (fgets(line, sizeof(line), stream) != NULL) {
         field_count = rmb_split(line, fields);
         if (field_count != 6) {
