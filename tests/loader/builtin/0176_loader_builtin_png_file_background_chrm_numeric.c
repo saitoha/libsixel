@@ -1,4 +1,4 @@
-/* Fix bKGD conversion through the same cHRM/gAMA source profile. */
+/* Fix dependency-free bKGD conversion through the cHRM/gAMA profile. */
 
 #include "src/cms.h"
 #include "loader_builtin_memory_test_common.h"

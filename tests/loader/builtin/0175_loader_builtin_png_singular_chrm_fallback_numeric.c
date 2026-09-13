@@ -1,5 +1,6 @@
-/* Fix singular cHRM fallback to the usable gAMA interpretation. */
+/* Fix the dependency-free singular cHRM fallback to the usable gAMA path. */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "src/cms.h"
@@ -13,23 +14,32 @@ test_loader_0175_loader_builtin_png_singular_chrm_numeric(
 {
     unsigned char png[EDGE_BUFFER_CAPACITY];
     edge_loader_options_t options;
-    edge_frame_probe_t actual;
-    edge_frame_probe_t expected;
+    edge_frame_probe_t *actual;
+    edge_frame_probe_t *expected;
     SIXELSTATUS actual_status;
     SIXELSTATUS expected_status;
     size_t png_size;
     size_t chrm_offset;
     size_t chrm_size;
+    int result;
 
     (void)argc;
     (void)argv;
-    memset(&actual, 0, sizeof(actual));
-    memset(&expected, 0, sizeof(expected));
+    actual = (edge_frame_probe_t *)malloc(sizeof(*actual));
+    expected = (edge_frame_probe_t *)malloc(sizeof(*expected));
+    if (actual == NULL || expected == NULL) {
+        free(actual);
+        free(expected);
+        return 1;
+    }
+    memset(actual, 0, sizeof(*actual));
+    memset(expected, 0, sizeof(*expected));
     actual_status = SIXEL_FALSE;
     expected_status = SIXEL_FALSE;
     png_size = 0u;
     chrm_offset = 0u;
     chrm_size = 0u;
+    result = 1;
     edge_loader_options_init(&options);
     options.require_static = 1;
     options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
@@ -47,7 +57,7 @@ test_loader_0175_loader_builtin_png_singular_chrm_numeric(
                               &chrm_offset,
                               &chrm_size) ||
         chrm_size != 44u) {
-        return 1;
+        goto end;
     }
     memcpy(png + chrm_offset + 8u + 16u,
            png + chrm_offset + 8u + 8u,
@@ -59,24 +69,29 @@ test_loader_0175_loader_builtin_png_singular_chrm_numeric(
                                  png,
                                  png_size,
                                  &options,
-                                 &actual,
+                                 actual,
                                  &actual_status) != 0 ||
         edge_load_fixture_options(
             "PNG gAMA reference",
             "/tests/data/colormgmt/input/png/rgb/"
             "img_rgb_icc0_srgb0_chrm0_gama1.png",
             &options,
-            &expected,
+            expected,
             &expected_status) != 0 ||
         actual_status != SIXEL_OK || expected_status != SIXEL_OK ||
-        actual.callback_count != 1 || expected.callback_count != 1 ||
-        actual.pixelformat[0] != expected.pixelformat[0] ||
-        actual.colorspace[0] != expected.colorspace[0] ||
-        actual.rgb_size[0] != expected.rgb_size[0] ||
-        memcmp(actual.rgb[0],
-               expected.rgb[0],
-               actual.rgb_size[0]) != 0) {
-        return 1;
+        actual->callback_count != 1 || expected->callback_count != 1 ||
+        actual->pixelformat[0] != expected->pixelformat[0] ||
+        actual->colorspace[0] != expected->colorspace[0] ||
+        actual->rgb_size[0] != expected->rgb_size[0] ||
+        memcmp(actual->rgb[0],
+               expected->rgb[0],
+               actual->rgb_size[0]) != 0) {
+        goto end;
     }
-    return 0;
+    result = 0;
+
+end:
+    free(actual);
+    free(expected);
+    return result;
 }

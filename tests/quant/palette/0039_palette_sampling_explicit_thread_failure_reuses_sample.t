@@ -20,7 +20,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_JOB_FAILURE=thread \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=4 \
     --sampling-policy=adaptive-grid \
-    -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
+    -Qheckbert -d none -p 16 "-~none" -L builtin --cms-engine=none -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - explicit sampling thread fallback stopped encoding"
     exit 0

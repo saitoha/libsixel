@@ -175,6 +175,17 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Meson does not export this automatically, so Windows jobs otherwise look
   # up extension-less paths and mark many tests as skipped.
   base_env_settings += [['SIXEL_BIN_EXT', '.exe']]
+  # Git Bash and MSYS2 otherwise rewrite slash-separated test selectors when
+  # they launch the native test runner. Preserve those logical names while
+  # retaining automatic conversion for actual POSIX file paths.
+  base_env_settings += [[
+    'MSYS2_ARG_CONV_EXCL',
+    'aborttrace/;chunk/;cli/;colorspace/;decoder/;dither/;' +
+    'encoder-core/;filter/;frame/;gdk-pixbuf-loader/;geometry/;' +
+    'gpu-dequant/;gpu-palette/;icc/;loader/;lookup/;palette/;' +
+    'planner/;platform/;probe/;scale/;security/;sixel-writer/;' +
+    'status/;threadpool/;timeline/',
+  ]]
 endif
 
 env = environment()

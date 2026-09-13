@@ -14,7 +14,7 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
     -4adaptive-grid \
-    -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
+    -Qheckbert -d none -p 16 "-~none" -L builtin --cms-engine=none -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - explicit single-thread adaptive sampling failed"
     exit 0

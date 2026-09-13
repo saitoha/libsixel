@@ -388,13 +388,15 @@ test_loader_libpng_contract(int argc, char **argv)
     int loops;
     int j;
     int result;
+    FILE *output;
 
     mode = 0;
     loops = SIXEL_LOOP_DISABLE;
     bg = NULL;
     cms = SIXEL_CMS_ENGINE_NONE;
     colors = 256;
-    if (argc != 2) {
+    if (argc != 2 &&
+        (argc != 3 || strcmp(argv[1], "emit_trns") != 0)) {
         return 1;
     }
     lp_header(&f, 8, 2);
@@ -598,7 +600,20 @@ test_loader_libpng_contract(int argc, char **argv)
     }
     lp_chunk(&f, "IEND", NULL, 0u);
     if (strcmp(argv[1], "emit_trns") == 0) {
-        return fwrite(f.bytes, 1u, f.size, stdout) != f.size;
+        /* Emscripten's Node stdout path is text-oriented.  Let callers write
+         * binary PNG bytes through NODERAWFS instead of a shell pipeline. */
+        output = stdout;
+        if (argc == 3) {
+            output = sixel_compat_fopen(argv[2], "wb");
+            if (output == NULL) {
+                return 1;
+            }
+        }
+        result = fwrite(f.bytes, 1u, f.size, output) != f.size;
+        if (output != stdout && fclose(output) != 0) {
+            result = 1;
+        }
+        return result;
     }
     if (strcmp(argv[1], "iend") == 0) {
         f.bytes[f.size - 1u] ^= 1u;

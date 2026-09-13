@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify Windows cross-runtime CI and path conversion boundaries.
 # Policy: docs/misc/platforms/windows-paths.md
-# Coverage: WPATH-01 WPATH-02 WPATH-03 WPATH-04 WPATH-05
+# Coverage: WPATH-01 WPATH-02 WPATH-03 WPATH-04 WPATH-05 WPATH-06
 
 set -eu
 
@@ -135,6 +135,20 @@ require_fixed "test_env.prepend('PATH', dll_path)" tests/meson.build
 require_fixed "export SIXEL_RUNTIME=''" tests/Makefile.am
 # shellcheck disable=SC2016
 require_fixed '$(SIXEL_RUNTIME) "$$test_runner_probe"' tests/Makefile.am
+
+# Logical test selectors must not be mistaken for native filesystem paths.
+selector_prefixes='aborttrace/;chunk/;cli/;colorspace/;decoder/;dither/;encoder-core/;filter/;frame/;gdk-pixbuf-loader/;geometry/;gpu-dequant/;gpu-palette/;icc/;loader/;lookup/;palette/;planner/;platform/;probe/;scale/;security/;sixel-writer/;status/;threadpool/;timeline/'
+require_fixed "TEST_RUNNER_SELECTOR_PREFIXES = $selector_prefixes" \
+    tests/Makefile.am
+require_fixed "MSYS2_ARG_CONV_EXCL='\$(TEST_RUNNER_SELECTOR_PREFIXES)'" \
+    tests/Makefile.am
+require_fixed "'MSYS2_ARG_CONV_EXCL'," tests/meson.build
+old_ifs=$IFS
+IFS=';'
+for selector_prefix in $selector_prefixes; do
+    require_fixed "$selector_prefix" tests/meson.build
+done
+IFS=$old_ifs
 
 # Library and standalone-converter copies must retain equivalent semantics.
 require_path_copy 'parse_nested_cygdrive(char const *path,'

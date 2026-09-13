@@ -4491,6 +4491,7 @@ jobs:
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
+              MESON_RSP_THRESHOLD=1048576
               CC=cosmocc-meson
               LD=cosmocc-meson
               AR=cosmoar
@@ -4535,6 +4536,7 @@ jobs:
             buildtool: meson
             runner: ubuntu-24.04
             setup_prefix: >-
+              MESON_RSP_THRESHOLD=1048576
               CC=cosmocc-meson
               LD=cosmocc-meson
               AR=cosmoar
@@ -4584,6 +4586,7 @@ jobs:
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
+              MESON_RSP_THRESHOLD=1048576
               CC=cosmocc-meson
               LD=cosmocc-meson
               AR=cosmoar
@@ -4638,6 +4641,7 @@ jobs:
             buildtool: meson
             runner: macos-15-intel
             setup_prefix: >-
+              MESON_RSP_THRESHOLD=1048576
               CC=cosmocc-meson
               LD=cosmocc-meson
               AR=cosmoar

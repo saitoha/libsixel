@@ -94,6 +94,8 @@ The runtime shared-library variable may itself be `PATH`, but the shell that ass
 
 The CTRL_BREAK test runner has another native process boundary. [`tests/test_runner.c`](../../../tests/test_runner.c) converts `/cygdrive/c/...` and `/c/...` command tokens before calling `CreateProcessA`, then applies Windows command-line quoting rules. Replacing that helper with ordinary shell quoting would not be equivalent because `CreateProcessA` receives one native command-line string rather than a POSIX argv array.
 
+The unified test runner also receives slash-separated logical selectors such as `loader/0174_loader_builtin_png_chrm_gama_float_numeric`. Git Bash and MSYS2 can mistake those selectors for relative POSIX paths when launching a native MSVC or MinGW executable. Both Autotools and Meson test environments therefore set `MSYS2_ARG_CONV_EXCL` to the complete selector-prefix ledger. Do not disable all argv conversion here: TAP tests still pass real POSIX paths that the native tools need converted. When a new top-level test-runner selector prefix is added, update both test environments and the reciprocal static check.
+
 ## Boundary 3: application paths passed to libc
 
 The library implementation in [`src/path.c`](../../../src/path.c) and the standalone converter implementation in [`converters/path.c`](../../../converters/path.c) provide the same two-phase contract:
@@ -144,6 +146,7 @@ The path layer was established and narrowed through `e388ab2dc` (`cygwin_conv_pa
 | WPATH-03 | Autotools and Meson retain executable, libtool-wrapper, DLL-search, path-separator, executable-suffix, and runtime-prefix handoff points needed by mixed-runtime tests. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh) |
 | WPATH-04 | Both application path implementations retain the two-phase ownership API, target-directed conversion, mixed-path recovery, pseudo-path preservation, Wine exclusion, and converter/amalgamation symbol split. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
 | WPATH-05 | The native CTRL_BREAK launcher retains POSIX-drive normalization before `CreateProcessA`. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh) |
+| WPATH-06 | Autotools and Meson preserve every slash-separated logical test-runner selector while leaving real file-path conversion enabled. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh) |
 
 ### Coverage boundary
 

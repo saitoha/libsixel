@@ -6,6 +6,11 @@
 
 set -eux
 
+test "${HAVE_LCMS2-}" != 1 || {
+    printf "1..0 # SKIP dependency-free PNG CMS fallback is not selected\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 

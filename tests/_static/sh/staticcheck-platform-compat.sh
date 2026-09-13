@@ -345,9 +345,13 @@ require_fixed '#if defined(__EMSCRIPTEN__)' src/options.c
 
 require_fixed 'return IsWindows() ? 1 : 0;' src/path.c
 require_fixed 'return IsWindows() ? 1 : 0;' converters/path.c
-# The shell substitutions are literal adapter source asserted by this check.
-# shellcheck disable=SC2016
-require_fixed 'a="@$(pwd)/${a#@}"' build-aux/cosmocc-meson
+cosmopolitan_meson_rsp_jobs=$(awk '
+    /label: Meson-.*-cosmopolitan-static/ { in_job = 1; next }
+    in_job && /MESON_RSP_THRESHOLD=1048576/ { count++; in_job = 0 }
+    END { print count + 0 }
+' "$src_root/.github/workflows/ci.yml")
+test "$cosmopolitan_meson_rsp_jobs" -eq 4 ||
+    fail "every Meson Cosmopolitan job must suppress response files"
 require_fixed 'COSMO-02' docs/misc/platforms/cosmopolitan.md
 
 require_fixed "CPPFLAGS=\"\$CPPFLAGS -D_DARWIN_C_SOURCE=1\"" configure.ac

@@ -56,6 +56,8 @@ ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 SIXEL_INSTALLCHECK ?= 0
 SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null || printf "")
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
+TEST_RUNNER_SELECTOR_PREFIXES = aborttrace/;chunk/;cli/;colorspace/;decoder/;dither/;encoder-core/;filter/;frame/;gdk-pixbuf-loader/;geometry/;gpu-dequant/;gpu-palette/;icc/;loader/;lookup/;palette/;planner/;platform/;probe/;scale/;security/;sixel-writer/;status/;threadpool/;timeline/
+AM_TESTS_ENVIRONMENT += MSYS2_ARG_CONV_EXCL='$(TEST_RUNNER_SELECTOR_PREFIXES)'; export MSYS2_ARG_CONV_EXCL;
 AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR;
 AM_TESTS_ENVIRONMENT += TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR;
 # Keep executable suffix in sync with the configured target so TAP

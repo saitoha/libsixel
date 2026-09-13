@@ -14813,12 +14813,6 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     if (strcmp(path, "-") == 0) {
         stream = stdout;
     } else {
-        if (format_final == SIXEL_PALETTE_FORMAT_PAL_JASC ||
-                format_final == SIXEL_PALETTE_FORMAT_GPL) {
-            mode = "w";
-        } else {
-            mode = "wb";
-        }
         stream = sixel_compat_fopen(path, mode);
         if (stream == NULL) {
             sixel_helper_set_additional_message(

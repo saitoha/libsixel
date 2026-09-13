@@ -1,4 +1,4 @@
-/* Fix cHRM plus gAMA matrix conversion at float precision. */
+/* Fix dependency-free cHRM plus gAMA conversion at float precision. */
 
 #include "src/cms.h"
 #include "loader_builtin_memory_test_common.h"

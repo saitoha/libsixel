@@ -14,8 +14,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract emit_trns |
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -Llibpng:cms_engine=none! ) || {
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+input_png="${ARTIFACT_LOCAL_DIR}/apng-trns-keycolor-default.png"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract emit_trns \
+    "${input_png}" || {
+    echo "not ok 1 - APNG fixture generation failed"
+    exit 0
+}
+output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep \
+    -Llibpng:cms_engine=none! "${input_png}") || {
     echo "not ok 1 - APNG conversion failed"
     exit 0
 }

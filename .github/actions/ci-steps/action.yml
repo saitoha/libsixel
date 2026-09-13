@@ -557,12 +557,17 @@ runs:
         cpan_install() {
           module_name=$1
           for attempt in 1 2 3; do
+            cpanm_attempt_home="${RUNNER_TEMP:-$PWD/.ci-tools}/cpanm-$attempt"
             if test "$use_sudo" -eq 1; then
-              if sudo "$perl_bin" "$cpanm_bin" --quiet --notest --skip-satisfied "$module_name"; then
+              if sudo env PERL_CPANM_HOME="$cpanm_attempt_home" \
+                  "$perl_bin" "$cpanm_bin" --quiet --notest \
+                  --skip-satisfied "$module_name"; then
                 return 0
               fi
             else
-              if "$perl_bin" "$cpanm_bin" --quiet --notest --skip-satisfied "$module_name"; then
+              if PERL_CPANM_HOME="$cpanm_attempt_home" \
+                  "$perl_bin" "$cpanm_bin" --quiet --notest \
+                  --skip-satisfied "$module_name"; then
                 return 0
               fi
             fi

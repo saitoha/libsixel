@@ -1863,7 +1863,9 @@ SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null 
 # Keep executable suffix in sync with the configured target so TAP
 # wrappers can resolve cross-built Windows binaries under Wine.
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
-	ARTIFACT_ROOT; TOP_SRCDIR='$(abs_top_srcdir)'; export \
+	ARTIFACT_ROOT; \
+	MSYS2_ARG_CONV_EXCL='$(TEST_RUNNER_SELECTOR_PREFIXES)'; export \
+	MSYS2_ARG_CONV_EXCL; TOP_SRCDIR='$(abs_top_srcdir)'; export \
 	TOP_SRCDIR; TOP_BUILDDIR='$(abs_top_builddir)'; export \
 	TOP_BUILDDIR; SIXEL_BIN_EXT='@EXEEXT@'; export SIXEL_BIN_EXT; \
 	SIXEL_TSAN_BUILD='@SIXEL_TSAN_BUILD@'; export \
@@ -1892,6 +1894,7 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	SIXEL_TEST_HOST_ARCH; \
 	RUNTIME_ENV_IS_OPENVMS='@RUNTIME_ENV_IS_OPENVMS@'; export \
 	RUNTIME_ENV_IS_OPENVMS;
+TEST_RUNNER_SELECTOR_PREFIXES = aborttrace/;chunk/;cli/;colorspace/;decoder/;dither/;encoder-core/;filter/;frame/;gdk-pixbuf-loader/;geometry/;gpu-dequant/;gpu-palette/;icc/;loader/;lookup/;palette/;planner/;platform/;probe/;scale/;security/;sixel-writer/;status/;threadpool/;timeline/
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \

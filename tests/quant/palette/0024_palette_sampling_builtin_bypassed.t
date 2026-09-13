@@ -13,7 +13,7 @@ set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    -b xterm16 -d none "-~none" -L builtin -ldisable \
+    -b xterm16 -d none "-~none" -L builtin --cms-engine=none -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - built-in palette encode failed"
     exit 0

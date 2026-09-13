@@ -19,7 +19,8 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=2 \
     -c 64x64+0+0 -Qheckbert -d none -p 16 "-~none" \
-    -L builtin -ldisable "${TOP_SRCDIR}/images/snake.png" \
+    -L builtin --cms-engine=none -ldisable \
+    "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {
     echo "not ok 1 - two-thread cropped palette encode failed"
     exit 0

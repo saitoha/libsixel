@@ -1,11 +1,14 @@
 #!/bin/sh
-# Verify deterministic builtin-CMS fallback when ICC conversion is unavailable.
 # TAP test: libpng loader colormgmt parity for gray/img_gray_icc1_srgb1_chrm1_gama0.png
 
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {
     printf "1..0 # SKIP libpng support is disabled in this build\n"
+    exit 0
+}
+test "${HAVE_LCMS2-}" = 1 || {
+    printf "1..0 # SKIP Little CMS support is disabled in this build\n"
     exit 0
 }
 
@@ -19,7 +22,7 @@ echo "1..1"
 set -v
 
 input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/gray/img_gray_icc1_srgb1_chrm1_gama0.png"
-reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/gray/img_gray_icc1_srgb1_chrm1_gama0.six"
+reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/gray/img_gray_icc1_srgb0_chrm0_gama0.six"
 output_six="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-img_gray_icc1_srgb1_chrm1_gama0_libpng.six"
 
 test -f "${input_png}" || {
@@ -32,7 +35,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=builtin! "${input_png}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=auto! "${input_png}" >"${output_six}" || {
     echo "not ok" 1 - "libpng decode failed"
     exit 0
 }

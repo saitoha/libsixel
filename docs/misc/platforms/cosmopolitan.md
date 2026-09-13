@@ -16,7 +16,7 @@ The fat-binary checks are part of release confidence because a successful build 
 
 - Use Cosmopolitan runtime predicates for OS behavior; reserve `__COSMOPOLITAN__` for API availability and compilation.
 - Keep library and converter path adapters in lockstep.
-- Keep Ninja response files reachable after `cosmocc` changes its working directory.
+- Keep Meson from generating response files for `cosmocc`. Cosmopolitan's compiler wrapper treats `@file` as an input filename rather than expanding compiler arguments, so the four Meson jobs raise `MESON_RSP_THRESHOLD` above the current link command size. Revisit both the threshold and the host argument limit when the test runner grows substantially.
 - Exercise the same APE on Windows and at least one Unix runtime after changing path logic.
 
 ## Test coverage
@@ -26,7 +26,7 @@ The fat-binary checks are part of release confidence because a successful build 
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | COSMO-01 | Both path adapters compile under `__COSMOPOLITAN__`, retain `IsWindows()` runtime dispatch, and agree on their target-runtime conversion result. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
-| COSMO-02 | The Meson compiler adapter resolves relative Ninja response-file arguments before delegating to `cosmocc`. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
+| COSMO-02 | Every Meson Cosmopolitan job suppresses response-file generation with the audited `MESON_RSP_THRESHOLD`; the compiler adapter must pass ordinary arguments through unchanged. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 
 ### Coverage boundary
 
