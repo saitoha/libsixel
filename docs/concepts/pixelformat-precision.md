@@ -29,6 +29,35 @@ q8(x) = round(255 * clamp(x, 0, 1)) / 255
 
 so one crossing has at most `1 / 510` encoded-coordinate rounding error before clipping. The error is not uniform in linear light because the sRGB transfer curve is nonlinear. A normal float32 value carries 24 bits of significand precision, but this does not guarantee a 24-bit-accurate final color: transform approximations, clipping, palette reduction, 101-level SIXEL palette serialization, lookup, and dithering impose separate errors. The practical advantage is that intermediate transforms can retain far more information and avoid repeated byte quantization until a boundary that truly requires it.
 
+## Storage precision and arithmetic precision
+
+A float32 path describes the stored samples, not the required type of every intermediate expression. Color-space conversion can require `double` for matrix products, chromatic adaptation, transfer functions, and accumulation even when both input and output buffers are float32. Signed matrix terms can nearly cancel, and a sequence of nonlinear and inverse operations can magnify earlier rounding. A result that fits float32 does not establish that all intermediate float32 operations are accurate or even finite.
+
+Widen the operands before the sensitive calculation. Assigning an already rounded or overflowing float expression to a double variable cannot recover its information. Likewise, promoting an image after an earlier byte conversion or gamut clamp cannot undo that loss. The internal `sixel_color_convert_rgbf32()` in [`src/colorspace.c`](../../src/colorspace.c) loads float samples into double triplets, performs the coordinate conversion there, validates the result, and only then stores float samples. This does not imply double image buffers or that every CMS/SIMD backend uses identical arithmetic.
+
+For IEEE binary32 and binary64, normal values have 24 and 53 significant binary digits, respectively. These are relative precisions: the spacing between representable numbers grows with their magnitude. A wider exponent range reduces overflow risk, while more significant digits reduce rounding error; neither property makes arbitrary arithmetic exact. Goldberg's [What Every Computer Scientist Should Know About Floating-Point Arithmetic](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html) explains the distinction between representable range, rounding, and cancellation.
+
+### Double does not eliminate cancellation
+
+Let `M = 2^100`, which is exactly representable in both binary32 and binary64. With binary64 operations and ordinary round-to-nearest evaluation:
+
+```text
+exact arithmetic:   M + (1 - M) = 1
+binary64:           1 - M rounds to -M; the final sum is 0
+```
+
+The problem is the difference in scale between `M` and `1`, not whether either input fits in storage. Converting the final zero to float32 cannot restore the lost one. In a color matrix or a weighted sum, a small component can similarly disappear between large positive and negative terms. Mathematically equivalent rearrangements therefore need not have equivalent numerical behavior.
+
+Resampling is the weighted mean `sum(w_i * x_i) / sum(w_i)`. Rewriting it as `a + sum(w_i * (x_i - a)) / sum(w_i)` introduces an arbitrary reference value `a`; it is not a required neighboring-pixel difference operation. If a zero-weight extreme sample supplies `a`, this rearrangement can erase the sole contributing ordinary sample. Direct compensated accumulation, excluding zero-weight terms, and preserving one-contributor or constant identities address different failure modes. Symmetric filter weights also need symmetric evaluation: compensation for addition cannot repair coefficients that were already rounded differently. The implemented choices and their storage limits are in [Float geometry and failure state](#float-geometry-and-failure-state).
+
+Underflow is a separate concern. Two contributions of half the smallest positive float32 subnormal can each round to zero even though their sum should be that subnormal. A SIMD recovery decision must account for this absolute rounding error as well as cancellation between normal values. Wider arithmetic and recovery checks also have a cost; measure ordinary images as well as extreme numerical specimens before adopting an implementation strategy.
+
+### Numerical validation follows the operation
+
+Validate color conversion with independent expected coordinates in each direction, including mixed channels, transfer-curve boundaries, negative and above-one values, and mathematical-domain failures. A forward/reverse pair can share an error and still roundtrip successfully. Validate resampling with independent weights, zero-weight extremes, small residuals between opposite large contributions, constants, and subnormal inputs. Compare a small expected residual at its own scale; a tolerance scaled by the largest input can accept its complete loss. The [coordinate and geometry coverage](#test-coverage) separates these value contracts from image-quality thresholds and checks the executed SIMD or scalar path.
+
+Numerical range checks and color-gamut decisions are separate. Keeping extended coordinates does not mean accepting NaN, infinity, undefined nonlinear operations, or a value that cannot fit the next storage representation. Conversely, clamping finite coordinates into `[0,1]` is not a numerical-accuracy repair. See [Out-of-gamut and imaginary colors](colorspace.md#out-of-gamut-and-imaginary-colors) for the color meaning of those intermediates.
+
 ## Float frame coordinate changes
 
 Converting an existing float frame between gamma sRGB, linear sRGB, Oklab, CIELAB, and DIN99d preserves finite RGB values below zero and above one. These are intermediate coordinates, not a request to store a bounded device RGB value. The conversion validates the entire result before modifying the frame; a nonfinite input, a mathematical domain error, or a result that cannot fit finite float32 returns `SIXEL_BAD_INPUT` and preserves the pixel buffer and its format/color-space tags. The validation pass repeats the arithmetic to avoid allocating another full image buffer.
