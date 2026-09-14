@@ -20,6 +20,8 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tm3n3p02.png"
 out_builtin="${ARTIFACT_LOCAL_DIR}/builtin_trns_keycolor_tm3n3p02.six"
 out_libpng="${ARTIFACT_LOCAL_DIR}/libpng_trns_keycolor_tm3n3p02.six"
