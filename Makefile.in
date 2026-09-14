@@ -1220,6 +1220,14 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	tools/plot_lookup_policy_quality.sh \
 	tools/plot_lookup_policy_speed.py \
 	tools/plot_merge_policy_measurements.py \
+	tools/palette_gradient.py \
+	tools/palette-gradient-requirements.txt \
+	docs/quality/palette-gradient-analysis.md \
+	tests/tools/palette-gradient/run.py \
+	tests/tools/palette-gradient/0001_geometry.py \
+	tests/tools/palette-gradient/0002_extraction.py \
+	tests/tools/palette-gradient/0003_inputs.py \
+	tests/tools/palette-gradient/0004_workflow.py \
 	tools/plot_palette_pipeline_measurements.py \
 	tools/plot_palette_pipeline_suite_measurements.py \
 	tools/plot_quality_curve.py \
