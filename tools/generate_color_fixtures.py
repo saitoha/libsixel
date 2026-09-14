@@ -10,6 +10,7 @@ here so the reference does not depend on the host's image or CMS libraries.
 import argparse
 from decimal import Decimal as D, getcontext
 import hashlib
+import itertools
 import json
 import math
 from pathlib import Path
@@ -321,6 +322,142 @@ def png_sample_oracles(profile):
 
 
 
+def cmyk_sample_oracles():
+    """An affine CMYK input model with a complete v4 Input profile.
+
+    The synthetic D50-referred model is not a characterization of a printer.
+    Integer-affine CLUT vertices avoid making the oracle depend on a CMM's
+    choice of multidimensional interpolation. XYZ endpoint units are u1.15.
+    """
+    base = [int((v * 32768).to_integral_value()) for v in D50]
+    columns = [adapt(column) for column in zip(*SRGB)]
+    weights = [[int((D('.9') * v * 32768).to_integral_value())
+                for v in column] for column in columns]
+    weights.append([base[j] - sum(w[j] for w in weights) for j in range(3)])
+    vertices = [[base[j] - sum(bit * weights[k][j]
+                              for k, bit in enumerate(bits))
+                 for j in range(3)]
+                for bits in itertools.product((0, 1), repeat=4)]
+    assert all(0 <= value <= 65535 for row in vertices for value in row)
+    lut = b'mft2' + bytes(4) + bytes([4, 3, 2, 0])
+    lut += b''.join(fixed(D(i == j)) for i in range(3) for j in range(3))
+    lut += struct.pack('>HH', 2, 2)
+    lut += struct.pack('>2H', 0, 65535) * 4
+    lut += b''.join(struct.pack('>3H', *row) for row in vertices)
+    lut += struct.pack('>2H', 0, 65535) * 3
+    # Slot 1 makes the physical colorimetric model directly selectable.
+    # Slot 0 is required for an Input profile; perceptual CMM adjustments
+    # are deliberately outside the colorimetric numeric oracle below.
+    profile = pack_profile([(b'A2B0', lut), (b'A2B1', lut)], b'scnr', b'CMYK',
+                           'Independent affine CMYK PCS')
+    # A separate narrow input-curve ramp makes 32768/65535 observably
+    # different from 0.5, even after an external CMM's PCS quantization.
+    knee_lut = lut[:48] + struct.pack('>HH', 256, 2)
+    knee_lut += struct.pack('>256H', *([0] * 128 + [65535] * 128)) * 4
+    knee_lut += b''.join(struct.pack('>3H', *row) for row in vertices)
+    knee_lut += struct.pack('>2H', 0, 65535) * 3
+    knee_profile = pack_profile([(b'A2B0', knee_lut), (b'A2B1', knee_lut)],
+        b'scnr', b'CMYK', 'Independent CMYK input curve knee')
+    samples = [[0, 255, 255, 0], [255, 0, 255, 0], [255, 255, 0, 0],
+               [0, 0, 0, 0], [255, 255, 255, 255], [64, 128, 192, 32],
+               [127, 127, 127, 0], [255, 0, 0, 255]]
+    samples16 = [[0, 65535, 65535, 0], [65535, 0, 65535, 0],
+                 [65535, 65535, 0, 0], [0, 0, 0, 0], [65535] * 4,
+                 [16384, 32768, 49152, 8192], [32768, 32768, 32768, 0],
+                 [65535, 0, 0, 65535]]
+    inverse_srgb50 = inverse([list(row) for row in zip(*columns)])
+    xyz = [[(D(base[j]) - sum(D(v) / 255 * weights[k][j]
+                            for k, v in enumerate(sample))) / 32768
+            for j in range(3)] for sample in samples]
+    linear = [apply(inverse_srgb50, row) for row in xyz]
+    gamma = [list(map(encode, row)) for row in linear]
+    xyz16 = [[(D(base[j]) - sum(D(v) / 65535 * weights[k][j]
+                              for k, v in enumerate(sample))) / 32768
+              for j in range(3)] for sample in samples16]
+    linear16 = [apply(inverse_srgb50, row) for row in xyz16]
+    gamma16 = [list(map(encode, row)) for row in linear16]
+    knee_units = [[min(D(1), max(D(0), D(v) / 65535 * 255 - 127))
+                   for v in sample] for sample in samples16]
+    knee_xyz = [[(D(base[j]) - sum(v * weights[k][j]
+                                 for k, v in enumerate(sample))) / 32768
+                 for j in range(3)] for sample in knee_units]
+    knee_linear = [apply(inverse_srgb50, row) for row in knee_xyz]
+    # Propagate a two-bin u1.15 PCS precision budget through XYZ-to-RGB.
+    # Backends retaining float PCS use their tighter float-rounding gate.
+    lut_bound = [D(2) / 32768 * sum(abs(v) for v in row)
+                 for row in inverse_srgb50]
+    # PSD stores inverted CMYK, in four raw channel planes.
+    resource = (b'8BIM' + struct.pack('>H', 1039) + bytes(2)
+                + struct.pack('>I', len(profile)) + profile)
+    resource += bytes(len(resource) % 2)
+    psd = b'8BPS' + struct.pack('>H', 1) + bytes(6)
+    psd += struct.pack('>HIIHH', 4, 1, len(samples), 8, 4)
+    psd += bytes(4) + struct.pack('>I', len(resource)) + resource
+    psd += bytes(4) + bytes(2)
+    psd += bytes(255 - sample[channel] for channel in range(4)
+                 for sample in samples)
+    raster = bytes(int(min(D(1), max(D(0), v)) * 255 + D('.5'))
+                   for row in gamma for v in row)
+    reference = (b'\x89PNG\r\n\x1a\n'
+        + chunk(b'IHDR', struct.pack('>IIBBBBB', len(samples), 1, 8, 2, 0, 0, 0))
+        + chunk(b'sRGB', bytes(1))
+        + chunk(b'IDAT', zlib.compress(bytes(1) + raster, 9)) + chunk(b'IEND', b''))
+    header = '/* Generated by tools/generate_color_fixtures.py. */\n'
+    for symbol, data in [('icc', profile), ('knee_icc', knee_profile)]:
+        header += f'static unsigned char const color_cmyk_{symbol}[] = {{\n'
+        for offset in range(0, len(data), 12):
+            header += '    ' + ', '.join(
+                f'0x{v:02x}' for v in data[offset:offset+12]) + ',\n'
+        header += '};\n'
+    for name, rows in [('source', samples), ('xyz', xyz),
+                       ('linear', linear), ('gamma', gamma),
+                       ('source16', samples16), ('xyz16', xyz16),
+                       ('linear16', linear16), ('gamma16', gamma16),
+                       ('knee_linear16', knee_linear)]:
+        header += f'static double const color_cmyk_{name}[8][{len(rows[0])}] = {{\n'
+        for row in rows:
+            header += '    {' + fmt(row) + '},\n'
+        header += '};\n'
+    header += 'static double const color_cmyk_lut_bound[3] = {\n'
+    header += '    ' + fmt(lut_bound) + '\n};\n'
+    record = {'generator': 'tools/generate_color_fixtures.py',
+        'model': 'Synthetic D50-referred affine CMYK, not a real printer',
+        'arithmetic': '60-digit Decimal; no CMM or production decoder',
+        'profile_class': 'scnr', 'input': 'CMYK', 'PCS': 'XYZ u1.15',
+        'required_tags': ['A2B0', 'desc', 'cprt', 'wtpt'],
+        'numeric_intent': 'relative, explicit A2B1; no perceptual oracle',
+        'adopted_white': 'D50; no chromaticAdaptationTag required',
+        'lut_matrix': 'identity; input is not PCSXYZ',
+        'base_u1_15': base, 'weights_u1_15': weights, 'source': samples,
+        'xyz': [[float(v) for v in row] for row in xyz],
+        'linear': [[float(v) for v in row] for row in linear],
+        'gamma': [[float(v) for v in row] for row in gamma],
+        'source16': samples16,
+        'xyz16': [[float(v) for v in row] for row in xyz16],
+        'linear16': [[float(v) for v in row] for row in linear16],
+        'gamma16': [[float(v) for v in row] for row in gamma16],
+        'input_knee_control': {
+            'profile': 'cmyk-knee.icc',
+            'profile_sha256': hashlib.sha256(knee_profile).hexdigest(),
+            'input_curve': '256 entries: 128 zeros followed by 128 ones',
+            'formula': 'clamp(source16 / 65535 * 255 - 127, 0, 1)',
+            'purpose': 'Reject normalization by 65536 at original word input',
+            'xyz16': [[float(v) for v in row] for row in knee_xyz],
+            'linear16': [[float(v) for v in row] for row in knee_linear]},
+        'lut_precision_budget': {
+            'PCS_bins': 2, 'XYZ_step': 1 / 32768,
+            'formula': '2 / 32768 * row_sum(abs(inverse_srgb_D50))',
+            'linear_rgb': list(map(float, lut_bound)),
+            'builtin': 'float rounding only; this fixed-point budget not used'},
+        'reference_rgb8': list(raster),
+        'profile_sha256': hashlib.sha256(profile).hexdigest(),
+        'psd_sha256': hashlib.sha256(psd).hexdigest()}
+    return {'cmyk.icc': profile, 'cmyk-knee.icc': knee_profile,
+            'cmyk.psd': psd, 'cmyk-reference.png': reference,
+            'cmyk.h': header.encode(),
+            'cmyk.json': (json.dumps(record, indent=2) + '\n').encode()}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -424,6 +561,7 @@ def main():
                'display-p3.icc': profile, 'display-p3.png': png}
     outputs.update(lut_outputs)
     outputs.update(png_sample_oracles(profile))
+    outputs.update(cmyk_sample_oracles())
     # Keep the exact M0 parser probes, explicitly outside conformance and
     # color accuracy claims. Complete profiles own the numeric tests above.
     minimal_header = banner

@@ -3578,6 +3578,75 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
                                                            pixel_count);
 }
 
+#if SIXEL_CMS_HAVE_COLORSYNC
+static int
+sixel_cms_colorsync_promote_source(
+    sixel_cms_transform_t const *transform,
+    void const *src, void *dst, size_t count)
+{
+    float input[256u * 4u];
+    unsigned char const *source8;
+    uint16_t const *source16;
+    ColorSyncDataLayout layout;
+    size_t channels;
+    size_t remaining;
+    size_t batch;
+    size_t first;
+    size_t i;
+    double peak;
+
+    /* Native mixed integer/float conversion can report success with
+     * incorrect colors. Pass homogeneous float buffers to ColorSync,
+     * retaining the caller's original format
+     * and exact integer normalization here. This is still a ColorSync
+     * transform: no alternate CMS or bounded RGB intermediate is involved. */
+    channels = transform->src_bytes_per_pixel;
+    peak = 255.0;
+    if (transform->src_depth == kColorSync16BitInteger) {
+        channels /= sizeof(uint16_t);
+        peak = 65535.0;
+    }
+    if (channels == 0u || channels > 4u) {
+        return 0;
+    }
+    source8 = (unsigned char const *)src;
+    source16 = (uint16_t const *)src;
+    layout = transform->src_layout & kColorSyncAlphaInfoMask;
+#if WORDS_BIGENDIAN
+    layout |= kColorSyncByteOrder32Big;
+#else
+    layout |= kColorSyncByteOrder32Little;
+#endif
+    loader_trace_message("LSXCMS2|event=source-promotion|engine=colorsync|"
+                         "src=%d|dst=%d|via=float32", transform->src_format,
+                         transform->dst_format);
+    remaining = count;
+    while (remaining != 0u) {
+        batch = remaining < 256u ? remaining : 256u;
+        /* Copy a complete tail batch before an aliased expansion writes
+         * over its source. Separate buffers keep forward traversal. */
+        first = src == dst ? remaining - batch : count - remaining;
+        for (i = 0u; i < batch * channels; ++i) {
+            input[i] = (float)((transform->src_depth == kColorSync16BitInteger
+                ? source16[first * channels + i]
+                : source8[first * channels + i]) / peak);
+        }
+        if (!ColorSyncTransformConvert(transform->colorsync_handle,
+                batch, 1u,
+                (unsigned char *)dst + first * transform->dst_bytes_per_pixel,
+                transform->dst_depth, transform->dst_layout,
+                batch * transform->dst_bytes_per_pixel,
+                input, kColorSync32BitFloat, layout,
+                batch * channels * sizeof(float), NULL)) {
+            return 0;
+        }
+        remaining -= batch;
+    }
+    return 1;
+}
+
+#endif
+
 static int
 sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
                        void const *src,
@@ -3624,6 +3693,15 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
 
         src_rowbytes = pixel_count * transform->src_bytes_per_pixel;
         dst_rowbytes = pixel_count * transform->dst_bytes_per_pixel;
+
+        if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
+            (transform->src_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_RGBA_8 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_8 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_16)) {
+            return sixel_cms_colorsync_promote_source(transform, src, dst,
+                                                       pixel_count);
+        }
 
         copy_alpha = ((transform->flags & SIXEL_CMS_TRANSFORM_COPY_ALPHA) != 0 &&
                       transform->src_format == SIXEL_CMS_PIXELFORMAT_RGBA_8 &&
