@@ -147,6 +147,8 @@ CMS promotion occurs only when the selected loader actually applies a color tran
 
 A float output buffer does not by itself prove that earlier native drawing or color-conversion stages retained source precision. The [CoreGraphics PNG source path](../loader/coregraphics.md#why-a-float-destination-is-insufficient) reads original integer samples and keeps alpha separate before explicit float CMS conversion. Its observed native drawing controls are scoped to the tested path, while source normalization, canonical storage and final byte conversion remain distinct boundaries.
 
+The [native RGB power preparation](../loader/color-management.md#behavioral-contract-tests) copies source float bits when a paired channel/profile exchange is necessary; it does not predecode into another float buffer. This avoids adding an intermediate rounding or underflow point before the native matrix. Remaining native arithmetic is a separate precision boundary: subnormal results and small residuals from large matrix cancellation can still be lost or inaccurate. The dark relative tests cover their stated original 16-bit vectors and ordinary stored matrices, not every representable normalized float.
+
 ## Measured effective paths
 
 The checked-in path inventory was recorded on 2026-09-09 from clean revision `8aa4fab9a` using planner and loader contract diagnostics. The selected rows below use `K=256`, K-means with fixed seed, hard binning, exact lookup, no dither, one thread, and CPU execution. Plain rows use [`images/snake.png`](../../images/snake.png); CMS rows use the embedded Adobe RGB fixture [`images/measurements/palette-pipeline/a98-gamut-600x450.png`](../../images/measurements/palette-pipeline/a98-gamut-600x450.png).

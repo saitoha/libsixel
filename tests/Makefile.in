@@ -140,6 +140,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/0033_integer_cmyk_float.c \
 	processing/cms/0044_linear_failure_atomic.c \
 	processing/cms/0045_linear_gray_samples.c \
+	processing/cms/0053_colorsync_rgb_power.c \
+	processing/cms/0128_colorsync_rgb_profile_reuse.c \
+	processing/cms/0129_colorsync_rgb_backend_mismatch.c \
+	processing/cms/0130_colorsync_rgb_passthrough.c \
 	processing/colorspace/0012_extended_failure_atomic.c \
 	processing/cms/0008_invalid_rgb_definition.c \
 	processing/cms/0009_icc_length_ownership.c \
@@ -612,6 +616,10 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0033_integer_cmyk_float.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0044_linear_failure_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0045_linear_gray_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0053_colorsync_rgb_power.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0130_colorsync_rgb_passthrough.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0009_icc_length_ownership.$(OBJEXT) \
@@ -1342,6 +1350,10 @@ am__depfiles_remade =  \
 	processing/cms/$(DEPDIR)/test_runner-0033_integer_cmyk_float.Po \
 	processing/cms/$(DEPDIR)/test_runner-0044_linear_failure_atomic.Po \
 	processing/cms/$(DEPDIR)/test_runner-0045_linear_gray_samples.Po \
+	processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Po \
+	processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Po \
+	processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Po \
+	processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po \
@@ -2250,6 +2262,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_INTEGER_CMYK_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_LINEAR_FAILURE_ATOMIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_LINEAR_GRAY_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_COLORSYNC_RGB_POWER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0128_COLORSYNC_RGB_PROFILE_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0129_COLORSYNC_RGB_BACKEND_MISMATCH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0130_COLORSYNC_RGB_PASSTHROUGH \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_NAMED_XYZ \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SIMPLE_POWER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
@@ -2740,6 +2756,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0033_integer_cmyk_float.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0044_linear_failure_atomic.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0045_linear_gray_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0053_colorsync_rgb_power.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0128_colorsync_rgb_profile_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0129_colorsync_rgb_backend_mismatch.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0130_colorsync_rgb_passthrough.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0008_invalid_rgb_definition.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0009_icc_length_ownership.c \
@@ -3455,6 +3475,18 @@ processing/cms/test_runner-0044_linear_failure_atomic.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/cms/test_runner-0045_linear_gray_samples.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0053_colorsync_rgb_power.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0130_colorsync_rgb_passthrough.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/$(am__dirstamp):
@@ -5261,6 +5293,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0033_integer_cmyk_float.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0044_linear_failure_atomic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0045_linear_gray_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po@am__quote@ # am--include-marker
@@ -5938,6 +5974,62 @@ processing/cms/test_runner-0045_linear_gray_samples.obj: processing/cms/0045_lin
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0045_linear_gray_samples.c' object='processing/cms/test_runner-0045_linear_gray_samples.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0045_linear_gray_samples.obj `if test -f 'processing/cms/0045_linear_gray_samples.c'; then $(CYGPATH_W) 'processing/cms/0045_linear_gray_samples.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0045_linear_gray_samples.c'; fi`
+
+processing/cms/test_runner-0053_colorsync_rgb_power.o: processing/cms/0053_colorsync_rgb_power.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0053_colorsync_rgb_power.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Tpo -c -o processing/cms/test_runner-0053_colorsync_rgb_power.o `test -f 'processing/cms/0053_colorsync_rgb_power.c' || echo '$(srcdir)/'`processing/cms/0053_colorsync_rgb_power.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Tpo processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0053_colorsync_rgb_power.c' object='processing/cms/test_runner-0053_colorsync_rgb_power.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0053_colorsync_rgb_power.o `test -f 'processing/cms/0053_colorsync_rgb_power.c' || echo '$(srcdir)/'`processing/cms/0053_colorsync_rgb_power.c
+
+processing/cms/test_runner-0053_colorsync_rgb_power.obj: processing/cms/0053_colorsync_rgb_power.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0053_colorsync_rgb_power.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Tpo -c -o processing/cms/test_runner-0053_colorsync_rgb_power.obj `if test -f 'processing/cms/0053_colorsync_rgb_power.c'; then $(CYGPATH_W) 'processing/cms/0053_colorsync_rgb_power.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0053_colorsync_rgb_power.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Tpo processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0053_colorsync_rgb_power.c' object='processing/cms/test_runner-0053_colorsync_rgb_power.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0053_colorsync_rgb_power.obj `if test -f 'processing/cms/0053_colorsync_rgb_power.c'; then $(CYGPATH_W) 'processing/cms/0053_colorsync_rgb_power.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0053_colorsync_rgb_power.c'; fi`
+
+processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.o: processing/cms/0128_colorsync_rgb_profile_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Tpo -c -o processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.o `test -f 'processing/cms/0128_colorsync_rgb_profile_reuse.c' || echo '$(srcdir)/'`processing/cms/0128_colorsync_rgb_profile_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Tpo processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0128_colorsync_rgb_profile_reuse.c' object='processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.o `test -f 'processing/cms/0128_colorsync_rgb_profile_reuse.c' || echo '$(srcdir)/'`processing/cms/0128_colorsync_rgb_profile_reuse.c
+
+processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.obj: processing/cms/0128_colorsync_rgb_profile_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Tpo -c -o processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.obj `if test -f 'processing/cms/0128_colorsync_rgb_profile_reuse.c'; then $(CYGPATH_W) 'processing/cms/0128_colorsync_rgb_profile_reuse.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0128_colorsync_rgb_profile_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Tpo processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0128_colorsync_rgb_profile_reuse.c' object='processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0128_colorsync_rgb_profile_reuse.obj `if test -f 'processing/cms/0128_colorsync_rgb_profile_reuse.c'; then $(CYGPATH_W) 'processing/cms/0128_colorsync_rgb_profile_reuse.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0128_colorsync_rgb_profile_reuse.c'; fi`
+
+processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.o: processing/cms/0129_colorsync_rgb_backend_mismatch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Tpo -c -o processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.o `test -f 'processing/cms/0129_colorsync_rgb_backend_mismatch.c' || echo '$(srcdir)/'`processing/cms/0129_colorsync_rgb_backend_mismatch.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Tpo processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0129_colorsync_rgb_backend_mismatch.c' object='processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.o `test -f 'processing/cms/0129_colorsync_rgb_backend_mismatch.c' || echo '$(srcdir)/'`processing/cms/0129_colorsync_rgb_backend_mismatch.c
+
+processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.obj: processing/cms/0129_colorsync_rgb_backend_mismatch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Tpo -c -o processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.obj `if test -f 'processing/cms/0129_colorsync_rgb_backend_mismatch.c'; then $(CYGPATH_W) 'processing/cms/0129_colorsync_rgb_backend_mismatch.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0129_colorsync_rgb_backend_mismatch.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Tpo processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0129_colorsync_rgb_backend_mismatch.c' object='processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0129_colorsync_rgb_backend_mismatch.obj `if test -f 'processing/cms/0129_colorsync_rgb_backend_mismatch.c'; then $(CYGPATH_W) 'processing/cms/0129_colorsync_rgb_backend_mismatch.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0129_colorsync_rgb_backend_mismatch.c'; fi`
+
+processing/cms/test_runner-0130_colorsync_rgb_passthrough.o: processing/cms/0130_colorsync_rgb_passthrough.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0130_colorsync_rgb_passthrough.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Tpo -c -o processing/cms/test_runner-0130_colorsync_rgb_passthrough.o `test -f 'processing/cms/0130_colorsync_rgb_passthrough.c' || echo '$(srcdir)/'`processing/cms/0130_colorsync_rgb_passthrough.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Tpo processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0130_colorsync_rgb_passthrough.c' object='processing/cms/test_runner-0130_colorsync_rgb_passthrough.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0130_colorsync_rgb_passthrough.o `test -f 'processing/cms/0130_colorsync_rgb_passthrough.c' || echo '$(srcdir)/'`processing/cms/0130_colorsync_rgb_passthrough.c
+
+processing/cms/test_runner-0130_colorsync_rgb_passthrough.obj: processing/cms/0130_colorsync_rgb_passthrough.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0130_colorsync_rgb_passthrough.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Tpo -c -o processing/cms/test_runner-0130_colorsync_rgb_passthrough.obj `if test -f 'processing/cms/0130_colorsync_rgb_passthrough.c'; then $(CYGPATH_W) 'processing/cms/0130_colorsync_rgb_passthrough.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0130_colorsync_rgb_passthrough.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Tpo processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0130_colorsync_rgb_passthrough.c' object='processing/cms/test_runner-0130_colorsync_rgb_passthrough.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0130_colorsync_rgb_passthrough.obj `if test -f 'processing/cms/0130_colorsync_rgb_passthrough.c'; then $(CYGPATH_W) 'processing/cms/0130_colorsync_rgb_passthrough.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0130_colorsync_rgb_passthrough.c'; fi`
 
 processing/colorspace/test_runner-0012_extended_failure_atomic.o: processing/colorspace/0012_extended_failure_atomic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0012_extended_failure_atomic.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Tpo -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.o `test -f 'processing/colorspace/0012_extended_failure_atomic.c' || echo '$(srcdir)/'`processing/colorspace/0012_extended_failure_atomic.c
@@ -12551,6 +12643,10 @@ distclean: distclean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0033_integer_cmyk_float.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0044_linear_failure_atomic.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0045_linear_gray_samples.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
@@ -13051,6 +13147,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0033_integer_cmyk_float.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0044_linear_failure_atomic.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0045_linear_gray_samples.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0053_colorsync_rgb_power.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0128_colorsync_rgb_profile_reuse.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0129_colorsync_rgb_backend_mismatch.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0130_colorsync_rgb_passthrough.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po

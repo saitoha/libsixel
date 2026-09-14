@@ -214,6 +214,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0033_INTEGER_CMYK_FLOAT \
     -DBUILD_TEST_0044_LINEAR_FAILURE_ATOMIC \
     -DBUILD_TEST_0045_LINEAR_GRAY_SAMPLES \
+    -DBUILD_TEST_0053_COLORSYNC_RGB_POWER \
+    -DBUILD_TEST_0128_COLORSYNC_RGB_PROFILE_REUSE \
+    -DBUILD_TEST_0129_COLORSYNC_RGB_BACKEND_MISMATCH \
+    -DBUILD_TEST_0130_COLORSYNC_RGB_PASSTHROUGH \
     -DBUILD_TEST_0001_NAMED_XYZ \
     -DBUILD_TEST_0002_SIMPLE_POWER \
     -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
@@ -679,6 +683,10 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0033_integer_cmyk_float.c \
     processing/cms/0044_linear_failure_atomic.c \
     processing/cms/0045_linear_gray_samples.c \
+    processing/cms/0053_colorsync_rgb_power.c \
+    processing/cms/0128_colorsync_rgb_profile_reuse.c \
+    processing/cms/0129_colorsync_rgb_backend_mismatch.c \
+    processing/cms/0130_colorsync_rgb_passthrough.c \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \

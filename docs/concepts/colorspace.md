@@ -309,6 +309,8 @@ img2sixel --cms-engine=auto --loaders='builtin:cms_target=linear!' -Xoklab -Wokl
 
 A native named color space and an exported ICC byte representation need not use identical numerical transfer curves. The [CoreGraphics PNG source contract](../loader/coregraphics.md#source-and-format-boundaries) distinguishes a verified named sRGB source from an adopted ICC source. Missing embedded ICC alone does not select sRGB, and changing global CMS preferences does not disable native color interpretation on that backend.
 
+For native pure-power RGB profiles, [direct-linear source preparation](../loader/color-management.md#behavioral-contract-tests) can change the spelling of an equivalent curve and exchange channels together with their matrix columns. Exchanging only the sample values or only the profile would change the physical color. The paired exchange preserves the original float bits and ICC coefficients and leaves transfer evaluation and color adaptation to ColorSync. This equivalence at the source boundary does not imply exact native arithmetic for arbitrary subnormal inputs or matrices with large cancellation.
+
 ### Loader precision preference
 
 `prefer_8bit=0|1` (`V0` or `V1`, environment fallback `SIXEL_LOADER_PREFER_8BIT`) controls the representation requested after CMS conversion. The default `0` preserves the selected target in float32. The current `prefer_8bit=1` contract requests `RGB888`; because `RGB888` is gamma-encoded sRGB storage, it trades the selected float target for an 8-bit gamma representation. It can reduce memory and conversion cost, but it is not a byte-precision encoding of Oklab, CIELAB, DIN99d, or linear RGB.

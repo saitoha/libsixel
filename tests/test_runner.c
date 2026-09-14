@@ -138,6 +138,10 @@ int test_cms_0025(int argc, char **argv);
 int test_cms_0033(int argc, char **argv);
 int test_cms_0044(int argc, char **argv);
 int test_cms_0045(int argc, char **argv);
+int test_cms_0053(int argc, char **argv);
+int test_cms_0128(int argc, char **argv);
+int test_cms_0129(int argc, char **argv);
+int test_cms_0130(int argc, char **argv);
 int test_pmap_0053(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -1109,6 +1113,10 @@ static test_entry_t const test_entries[] = {
     { "cms/0033_integer_cmyk_float", test_cms_0033 },
     { "cms/0044_linear_failure_atomic", test_cms_0044 },
     { "cms/0045_linear_gray_samples", test_cms_0045 },
+    { "cms/0053_colorsync_rgb_power", test_cms_0053 },
+    { "cms/0128_colorsync_rgb_profile_reuse", test_cms_0128 },
+    { "cms/0129_colorsync_rgb_backend_mismatch", test_cms_0129 },
+    { "cms/0130_colorsync_rgb_passthrough", test_cms_0130 },
     { "assessment/0001_ciede2000_reference", test_qa_0001 },
     { "assessment/0002_same_physical_coordinates", test_qa_0002 },
     { "assessment/0003_same_rgb_different_definition", test_qa_0003 },

@@ -280,6 +280,151 @@ def gray_sample_oracles():
             'gray-variants.json': (json.dumps(records, indent=2)+'\n').encode()}
 
 
+def rgb_power_oracles():
+    """Exact stored ICC powers/matrices evaluated from original binary32 RGB."""
+    neutral = [0, 1, 2, 16, 128, 256, 257, 1024, 2048, 4095, 4096, 4097,
+               8192, 16384, 32768, 40001, 65534, 65535]
+    samples = [[v, v, v] for v in neutral] + [
+        [1, 257, 4096], [4096, 1, 257], [257, 4096, 1],
+        [65535, 0, 0], [0, 65535, 0], [0, 0, 65535]]
+    source = [[D(struct.unpack('>f', struct.pack('>f', v / 65535))[0])
+               for v in pixel] for pixel in samples]
+    definitions = []
+    for mask in range(8):
+        gammas = [D(1) if mask & (1 << c) else D(g)
+                  for c, g in enumerate([2, 4, 3])]
+        for kind in [0, 3, 4]:
+            definitions.append((f'mask{mask}-para{kind}', gammas, kind,
+                                SRGB, D65))
+    for channel in range(3):
+        for value in [65535, 65537]:
+            gammas = list(map(D, [[2, 4, 1], [1, 4, 1], [1, 1, 1]][channel]))
+            gammas[[2, 0, 1][channel]] = D(value) / 65536
+            definitions.append((f'near{channel}-{value}', gammas, 0, SRGB, D65))
+    for gamma in ['.5', '1.8', '2.2', '2', '4']:
+        definitions.append(('uniform' + gamma, [D(gamma)] * 3, 0, SRGB, D65))
+    # A different source white and wide primaries exercise actual adaptation.
+    # Solve its matrix independently; do not borrow a generated CMM profile.
+    source_white = white('.3457', '.3585')
+    basis = list(map(list, zip(*[white(x, y) for x, y in
+        [('.708', '.292'), ('.17', '.797'), ('.131', '.046')]])))
+    weights = apply(inverse(basis), source_white)
+    wide = [[v * weights[c] for c, v in enumerate(row)] for row in basis]
+    definitions.append(('wide-white-gamma4', [D(4)] * 3, 0, wide, source_white))
+    destination = list(map(list, zip(*(adapt(col) for col in zip(*SRGB)))))
+    inv_destination = inverse(destination)
+    norm = max(sum(map(abs, row)) for row in inv_destination)
+    quantum = 1 / D(65536)
+    matrix_budget = norm * 4 * quantum / (1 - norm * 3 * quantum)
+    float_budget = D(64) / D(2) ** 24
+    budget = (1 + matrix_budget) * (1 + float_budget) - 1
+    records = []
+    header = ('/* Generated from stored ICC tags; no CMM or libsixel oracle. */\n'
+              '#include <stddef.h>\n'
+              f'#define COLOR_RGB_POWER_SAMPLES {len(samples)}\n'
+              f'#define COLOR_RGB_POWER_PROFILES {len(definitions)}\n'
+              'static double const color_rgb_power_relative = '
+              + format(float(budget), '.17g') + ';\n'
+              'static unsigned int const color_rgb_power_source[][3] = {\n')
+    header += ''.join('    { ' + ', '.join(map(str, p)) + ' },\n' for p in samples)
+    header += ('};\nstatic struct {\n    char const *name;\n    size_t length;\n'
+               '    unsigned char bytes[1024];\n'
+               '    double linear[COLOR_RGB_POWER_SAMPLES][3];\n'
+               '} const color_rgb_power_profiles[] = {\n')
+    for name, gammas, kind, source_matrix, source_white in definitions:
+        src_cone, dst_cone = apply(BRADFORD, source_white), apply(BRADFORD, D50)
+        def to_pcs(xyz):
+            return apply(inverse(BRADFORD), [c * d / s for c, d, s in
+                zip(apply(BRADFORD, xyz), dst_cone, src_cone)])
+        tags = [(key, b'XYZ ' + bytes(4) + b''.join(map(fixed, to_pcs(col))))
+                for key, col in zip([b'rXYZ', b'gXYZ', b'bXYZ'], zip(*source_matrix))]
+        for key, gamma in zip([b'rTRC', b'gTRC', b'bTRC'], gammas):
+            params = [gamma] + {0: [], 3: [D(1), D(0), D(0), D(0)],
+                               4: [D(1), D(0), D(0), D(0), D(0), D(0)]}[kind]
+            tags.append((key, b'para' + bytes(4) + struct.pack('>HH', kind, 0)
+                         + b''.join(map(fixed, params))))
+        chad = list(zip(*(to_pcs([D(i == j) for i in range(3)]) for j in range(3))))
+        tags.append((b'chad', b'sf32' + bytes(4) + b''.join(
+            fixed(v) for row in chad for v in row)))
+        data = pack_profile(tags, name='Independent RGB ' + name)
+        assert len(data) <= 1024
+        # Read the serialized fields back so expectations include ICC's
+        # s15Fixed16 rounding, without depending on production's parser.
+        stored = {}
+        for offset in range(132, 132 + 12 * struct.unpack_from('>I', data, 128)[0], 12):
+            key, start, length = struct.unpack_from('>4sII', data, offset)
+            stored[key] = data[start:start + length]
+        columns = [[D(v) / 65536 for v in struct.unpack_from('>3i', stored[key], 8)]
+                   for key in [b'rXYZ', b'gXYZ', b'bXYZ']]
+        pcs_matrix = list(map(list, zip(*columns)))
+        stored_gammas = [D(struct.unpack_from('>i', stored[key], 12)[0]) / 65536
+                         for key in [b'rTRC', b'gTRC', b'bTRC']]
+        linear = [apply(inv_destination, apply(pcs_matrix,
+            [v ** g for v, g in zip(pixel, stored_gammas)])) for pixel in source]
+        header += f'    {{ "{name}", {len(data)}, {{\n'
+        for offset in range(0, len(data), 12):
+            header += '        ' + ', '.join(f'0x{v:02x}' for v in data[offset:offset+12]) + ',\n'
+        header += '    }, {\n'
+        for pixel in linear:
+            header += '        {\n' + ''.join(
+                '            ' + format(float(v), '.17g') + ',\n' for v in pixel) + '        },\n'
+        header += '    } },\n'
+        records.append({'name': name, 'kind': kind, 'profile_hex': data.hex(),
+            'sha256': hashlib.sha256(data).hexdigest(),
+            'gamma_stored': list(map(str, stored_gammas)),
+            'matrix_stored': [list(map(str, row)) for row in pcs_matrix],
+            'linear': [list(map(str, pixel)) for pixel in linear]})
+    header += '};\n'
+    record = {'generator': 'tools/generate_color_fixtures.py',
+        'source_u16': samples, 'source_f32': [list(map(str, p)) for p in source],
+        'model': 'original binary32 powers, stored XYZ, independent inverse sRGB D50',
+        'black': 'exact zero; no absolute error floor',
+        'positive': 'max channel absolute error / max absolute expected channel',
+        'relative_budget': str(budget), 'matrix_budget': str(matrix_budget),
+        'float_budget': str(float_budget),
+        'budget_scope': 'same gray native allowance; gamma <= 4 and these matrices/samples only',
+        'profiles': records}
+    exclusions = '#include <stddef.h>\nstatic struct {\n'
+    exclusions += ('    size_t length;\n    unsigned char bytes[768];\n'
+                   '} const color_rgb_power_exclusions[] = {\n')
+    excluded_records = []
+    for kind in [0, 3, 4]:
+        tags = [(key, b'XYZ ' + bytes(4) + b''.join(map(fixed, adapt(col))))
+                for key, col in zip([b'rXYZ', b'gXYZ', b'bXYZ'], zip(*SRGB))]
+        if kind == 0:
+            # A complete legacy v2 envelope uses desc/text metadata and a
+            # one-entry curveType gamma, not a v4 parametricCurveType tag.
+            name = b'Independent v2 gamma 2\0'
+            tags += [(b'desc', b'desc' + bytes(4) + struct.pack('>I', len(name))
+                      + name + bytes(4 + 4 + 2 + 1 + 67)),
+                     (b'cprt', b'text' + bytes(4) + b'libsixel; MIT\0')]
+            curve = b'curv' + bytes(4) + struct.pack('>IH', 1, 512)
+        else:
+            params = [D(2), D(1), D(0), D('.125'), D('.125')]
+            if kind == 4:
+                params += [D(0), D(0)]
+            curve = (b'para' + bytes(4) + struct.pack('>HH', kind, 0)
+                     + b''.join(map(fixed, params)))
+        tags += [(key, curve) for key in [b'rTRC', b'gTRC', b'bTRC']]
+        data = bytearray(pack_profile(tags, name=f'Nonpure RGB para{kind}'))
+        if kind == 0:
+            data[8:12] = bytes([2, 0x40, 0, 0])
+        assert len(data) <= 768
+        exclusions += f'    {{ {len(data)}, {{\n'
+        for offset in range(0, len(data), 12):
+            exclusions += '        ' + ', '.join(
+                f'0x{v:02x}' for v in data[offset:offset+12]) + ',\n'
+        exclusions += '    } },\n'
+        excluded_records.append({'name': 'v2-curv' if kind == 0 else f'nonpure-para{kind}',
+            'profile_hex': data.hex(), 'sha256': hashlib.sha256(data).hexdigest(),
+            'purpose': 'native passthrough identity, not a CMM accuracy oracle'})
+    exclusions += '};\n'
+    return {'rgb-power.h': header.encode(),
+            'rgb-power.json': (json.dumps(record, indent=2) + '\n').encode(),
+            'rgb-power-exclusions.h': exclusions.encode(),
+            'rgb-power-exclusions.json': (json.dumps(excluded_records, indent=2) + '\n').encode()}
+
+
 def lut_profile(reverse, minimal=False):
     # Constant 2x2x2 LUTs are intentionally non-invertible. They test
     # directional capability, not a false exact-roundtrip requirement.
@@ -1238,6 +1383,7 @@ def main():
     outputs.update(png_byte_target_oracles())
     outputs.update(cmyk_sample_oracles())
     outputs.update(gray_sample_oracles())
+    outputs.update(rgb_power_oracles())
     outputs.update(jpeg_sample_oracles())
     outputs.update(cli_rgb_oracles())
     outputs.update(hdr_sample_oracles())

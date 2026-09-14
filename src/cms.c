@@ -4050,6 +4050,313 @@ sixel_cms_convert_rgbf32_gamma_to_linear(float *pixels, size_t pixel_count)
 }
 
 #if SIXEL_CMS_HAVE_COLORSYNC
+/* Recognize only exact positive power curves on the normalized domain.
+ * Ordinary sRGB/P3 piecewise curves and sampled curves are not equivalent
+ * to this spelling and must keep their original native interpretation. */
+static int
+sixel_cms_rgb_power_tag(CFDataRef tag, uint32_t *gamma, int *kind)
+{
+    unsigned char const *bytes;
+    size_t length;
+    size_t i;
+
+    length = (size_t)CFDataGetLength(tag);
+    bytes = CFDataGetBytePtr(tag);
+    if (length < 16u || memcmp(bytes, "para\0\0\0\0", 8) != 0 ||
+        bytes[8] != 0u || bytes[10] != 0u || bytes[11] != 0u ||
+        bytes[12] >= 128u) {
+        return 0;
+    }
+    *kind = bytes[9];
+    if (!((*kind == 0 && length == 16u) ||
+          (*kind == 3 && length == 32u) ||
+          (*kind == 4 && length == 40u))) {
+        return 0;
+    }
+    for (i = 16u; i < length; ++i) {
+        if (bytes[i] != (i == 17u ? 1u : 0u)) {
+            return 0;
+        }
+    }
+    *gamma = ((uint32_t)bytes[12] << 24) |
+             ((uint32_t)bytes[13] << 16) |
+             ((uint32_t)bytes[14] << 8) | bytes[15];
+    return *gamma != 0u;
+}
+
+/* SetTag has no return value. Never use an unverified partially changed
+ * source definition, even when the setter silently rejects a replacement. */
+static int
+sixel_cms_rgb_set_tag(ColorSyncMutableProfileRef profile,
+                       CFStringRef key, CFDataRef value)
+{
+    CFDataRef check;
+    int ok;
+
+    ColorSyncProfileSetTag(profile, key, value);
+    check = ColorSyncProfileCopyTag(profile, key);
+    ok = check != NULL && CFEqual(check, value);
+    if (check != NULL) {
+        CFRelease(check);
+    }
+    return ok;
+}
+
+/* Keep native source preparation mathematically equivalent without decoding
+ * into another float buffer. ColorSync adds a toe to para0; exact para3
+ * preserves the same power on [0,1]. A nonlinear RGB profile with identity
+ * blue can also produce constant blue. Move a nonidentity channel to that
+ * slot by exchanging BOTH source sample bits and matrix/TRC tag bytes.
+ * No matrix coefficient, source sample, or transfer value is recalculated.
+ * Native arithmetic still has its own precision limits after this boundary. */
+static int
+sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
+    float const *pixels, size_t count, sixel_cms_profile_t *prepared,
+    ColorSyncMutableProfileRef *owned, float **reordered)
+{
+    static CFStringRef const curve_keys[3] = {
+        CFSTR("rTRC"), CFSTR("gTRC"), CFSTR("bTRC")
+    };
+    static CFStringRef const xyz_keys[3] = {
+        CFSTR("rXYZ"), CFSTR("gXYZ"), CFSTR("bXYZ")
+    };
+    static CFStringRef const forward_keys[7] = {
+        CFSTR("A2B0"), CFSTR("A2B1"), CFSTR("A2B2"),
+        CFSTR("D2B0"), CFSTR("D2B1"), CFSTR("D2B2"), CFSTR("D2B3")
+    };
+    CFDataRef curves[3];
+    CFDataRef xyz[3];
+    CFDataRef header;
+    CFDataRef white;
+    CFDataRef replacement;
+    CFDataRef check;
+    CFMutableDataRef new_header;
+    ColorSyncMutableProfileRef copy;
+    unsigned char const *bytes;
+    unsigned char curve[32];
+    uint32_t gamma[3];
+    uint32_t version;
+    uint32_t device_class;
+    uint32_t color_space;
+    uint32_t pcs;
+    float *samples;
+    size_t order[3];
+    size_t swap_channel;
+    size_t i;
+    size_t c;
+    int kind;
+    int change_curve;
+    int ok;
+
+    *owned = NULL;
+    *reordered = NULL;
+    if (profile->backend != SIXEL_CMS_PROFILE_BACKEND_COLORSYNC ||
+        profile->colorspace != SIXEL_CMS_COLORSPACE_RGB ||
+        profile->is_srgb_profile) {
+        return 1;
+    }
+    memset(curves, 0, sizeof(curves));
+    memset(xyz, 0, sizeof(xyz));
+    header = NULL;
+    white = NULL;
+    replacement = NULL;
+    check = NULL;
+    new_header = NULL;
+    copy = NULL;
+    samples = NULL;
+    change_curve = 0;
+    ok = 0;
+    header = ColorSyncProfileCopyHeader(profile->colorsync_handle);
+    if (header == NULL || CFDataGetLength(header) < 128) {
+        goto cleanup;
+    }
+    /* CopyHeader returns host-endian fields, unlike serialized tag bytes. */
+    bytes = CFDataGetBytePtr(header);
+    memcpy(&version, bytes + 8, sizeof(version));
+    memcpy(&device_class, bytes + 12, sizeof(device_class));
+    memcpy(&color_space, bytes + 16, sizeof(color_space));
+    memcpy(&pcs, bytes + 20, sizeof(pcs));
+    if ((version >> 24) != 4u ||
+        (device_class != 0x73636e72u && device_class != 0x6d6e7472u) ||
+        color_space != 0x52474220u || pcs != 0x58595a20u) {
+        /* Only v4 input/display RGB profiles with XYZ PCS are candidates. */
+        ok = 1;
+        goto cleanup;
+    }
+    CFRelease(header);
+    header = NULL;
+    for (i = 0u; i < 7u; ++i) {
+        if (ColorSyncProfileContainsTag(profile->colorsync_handle,
+                                           forward_keys[i])) {
+            ok = 1;
+            goto cleanup;
+        }
+    }
+    for (c = 0u; c < 3u; ++c) {
+        if (!ColorSyncProfileContainsTag(profile->colorsync_handle,
+                                            curve_keys[c])) {
+            ok = 1;
+            goto cleanup;
+        }
+        curves[c] = ColorSyncProfileCopyTag(profile->colorsync_handle,
+                                              curve_keys[c]);
+        if (curves[c] == NULL) {
+            goto cleanup;
+        }
+        if (!sixel_cms_rgb_power_tag(curves[c], &gamma[c], &kind)) {
+            ok = 1;
+            goto cleanup;
+        }
+        change_curve |= kind != 3;
+        order[c] = c;
+    }
+    swap_channel = 3u;
+    if (gamma[2] == 65536u) {
+        if (gamma[0] != 65536u) {
+            swap_channel = 0u;
+        } else if (gamma[1] != 65536u) {
+            swap_channel = 1u;
+        }
+    }
+    if (swap_channel == 3u && !change_curve) {
+        ok = 1;
+        goto cleanup;
+    }
+    for (i = 0u; i < count * 3u; ++i) {
+        if (!isfinite(pixels[i]) || pixels[i] < 0.0f || pixels[i] > 1.0f) {
+            ok = 1;
+            goto cleanup;
+        }
+    }
+    /* Require the complete matrix/white tag set. Presence and copying are
+     * separate checks so an allocation failure is not a missing-tag skip. */
+    for (c = 0u; c < 3u; ++c) {
+        if (!ColorSyncProfileContainsTag(profile->colorsync_handle,
+                                            xyz_keys[c])) {
+            ok = 1;
+            goto cleanup;
+        }
+        xyz[c] = ColorSyncProfileCopyTag(profile->colorsync_handle,
+                                           xyz_keys[c]);
+        if (xyz[c] == NULL) {
+            goto cleanup;
+        }
+        if (CFDataGetLength(xyz[c]) != 20 ||
+            memcmp(CFDataGetBytePtr(xyz[c]), "XYZ \0\0\0\0", 8) != 0) {
+            ok = 1;
+            goto cleanup;
+        }
+    }
+    if (!ColorSyncProfileContainsTag(profile->colorsync_handle,
+                                        CFSTR("wtpt"))) {
+        ok = 1;
+        goto cleanup;
+    }
+    white = ColorSyncProfileCopyTag(profile->colorsync_handle, CFSTR("wtpt"));
+    if (white == NULL) {
+        goto cleanup;
+    }
+    if (CFDataGetLength(white) != 20 ||
+        memcmp(CFDataGetBytePtr(white), "XYZ \0\0\0\0", 8) != 0) {
+        ok = 1;
+        goto cleanup;
+    }
+    copy = ColorSyncProfileCreateMutableCopy(profile->colorsync_handle);
+    if (copy == NULL) {
+        goto cleanup;
+    }
+    if (swap_channel != 3u) {
+        order[swap_channel] = 2u;
+        order[2] = swap_channel;
+        samples = (float *)malloc(count * 3u * sizeof(float));
+        if (samples == NULL) {
+            goto cleanup;
+        }
+        for (i = 0u; i < count; ++i) {
+            for (c = 0u; c < 3u; ++c) {
+                memcpy(samples + i * 3u + c, pixels + i * 3u + order[c],
+                       sizeof(float));
+            }
+        }
+    }
+    for (c = 0u; c < 3u; ++c) {
+        memset(curve, 0, sizeof(curve));
+        memcpy(curve, "para", 4);
+        curve[9] = 3u;
+        /* Preserve the original fixed-point exponent without a float cast. */
+        memcpy(curve + 12, CFDataGetBytePtr(curves[order[c]]) + 12, 4);
+        curve[17] = 1u;
+        replacement = CFDataCreate(NULL, curve, sizeof(curve));
+        if (replacement == NULL ||
+            !sixel_cms_rgb_set_tag(copy, curve_keys[c], replacement)) {
+            goto cleanup;
+        }
+        CFRelease(replacement);
+        replacement = NULL;
+        if (order[c] != c &&
+            !sixel_cms_rgb_set_tag(copy, xyz_keys[c], xyz[order[c]])) {
+            goto cleanup;
+        }
+    }
+    header = ColorSyncProfileCopyHeader(copy);
+    if (header == NULL || CFDataGetLength(header) < 128) {
+        goto cleanup;
+    }
+    new_header = CFDataCreateMutableCopy(NULL, 0, header);
+    if (new_header == NULL) {
+        goto cleanup;
+    }
+    /* A changed profile must not retain its original content-derived ID. */
+    memset(CFDataGetMutableBytePtr(new_header) + 84, 0, 16);
+    ColorSyncProfileSetHeader(copy, new_header);
+    check = ColorSyncProfileCopyHeader(copy);
+    if (check == NULL || !CFEqual(check, new_header)) {
+        goto cleanup;
+    }
+    *prepared = *profile;
+    prepared->colorsync_handle = copy;
+    *owned = copy;
+    *reordered = samples;
+    copy = NULL;
+    samples = NULL;
+    ok = 1;
+    sixel_trace_topic_message("loader",
+        "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
+        "path=rgb-pure-gamma|curve=para3|order=%u%u%u",
+        (unsigned int)order[0], (unsigned int)order[1],
+        (unsigned int)order[2]);
+
+cleanup:
+    for (c = 0u; c < 3u; ++c) {
+        if (curves[c] != NULL) {
+            CFRelease(curves[c]);
+        }
+        if (xyz[c] != NULL) {
+            CFRelease(xyz[c]);
+        }
+    }
+    if (header != NULL) {
+        CFRelease(header);
+    }
+    if (white != NULL) {
+        CFRelease(white);
+    }
+    if (replacement != NULL) {
+        CFRelease(replacement);
+    }
+    if (check != NULL) {
+        CFRelease(check);
+    }
+    if (new_header != NULL) {
+        CFRelease(new_header);
+    }
+    if (copy != NULL) {
+        CFRelease(copy);
+    }
+    free(samples);
+    return ok;
+}
+
 /*
  * ColorSync gives a pure-gamma tag a linear toe even on positive float input.
  * For normalized gray samples, para3 [g, 1, 0, 0, 0] is exactly x^g without
@@ -4174,7 +4481,12 @@ sixel_cms_convert_colorsync_linear(float *pixels,
 #if SIXEL_CMS_HAVE_COLORSYNC
     sixel_cms_profile_t *source;
     sixel_cms_profile_t *destination;
+    sixel_cms_profile_t const *transform_source;
+    sixel_cms_profile_t prepared;
     sixel_cms_transform_t *transform;
+    ColorSyncMutableProfileRef owned_profile;
+    float const *transform_input;
+    float *reordered;
     float *output;
     size_t count;
     size_t i;
@@ -4183,6 +4495,8 @@ sixel_cms_convert_colorsync_linear(float *pixels,
     source = NULL;
     destination = NULL;
     transform = NULL;
+    owned_profile = NULL;
+    reordered = NULL;
     output = NULL;
     converted = 0;
     if (pixels == NULL || width <= 0 || height <= 0 ||
@@ -4228,7 +4542,19 @@ sixel_cms_convert_colorsync_linear(float *pixels,
             SIXEL_SRGB_BLUE_X, SIXEL_SRGB_BLUE_Y)) {
         goto cleanup;
     }
-    transform = sixel_cms_create_transform_colorsync(source,
+    transform_source = source;
+    transform_input = pixels;
+    if (!sixel_cms_prepare_linear_rgb(source, pixels, count, &prepared,
+                                        &owned_profile, &reordered)) {
+        goto cleanup;
+    }
+    if (owned_profile != NULL) {
+        transform_source = &prepared;
+    }
+    if (reordered != NULL) {
+        transform_input = reordered;
+    }
+    transform = sixel_cms_create_transform_colorsync(transform_source,
         SIXEL_CMS_PIXELFORMAT_RGB_F32, destination,
         SIXEL_CMS_PIXELFORMAT_RGB_F32, SIXEL_CMS_TRANSFORM_DEFAULT);
     if (transform == NULL) {
@@ -4236,7 +4562,7 @@ sixel_cms_convert_colorsync_linear(float *pixels,
     }
     output = (float *)malloc(count * 3u * sizeof(float));
     if (output == NULL ||
-        !sixel_cms_do_transform(transform, pixels, output, count)) {
+        !sixel_cms_do_transform(transform, transform_input, output, count)) {
         goto cleanup;
     }
     for (i = 0u; i < count * 3u; ++i) {
@@ -4252,6 +4578,11 @@ sixel_cms_convert_colorsync_linear(float *pixels,
 cleanup:
     free(output);
     sixel_cms_delete_transform(transform);
+    /* Transforms borrow the prepared profile. Release it only afterwards. */
+    if (owned_profile != NULL) {
+        CFRelease(owned_profile);
+    }
+    free(reordered);
     sixel_cms_close_profile(destination);
     sixel_cms_close_profile(source);
     return converted;
@@ -4279,6 +4610,7 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
 #if SIXEL_CMS_HAVE_COLORSYNC
     sixel_cms_profile_t prepared;
     ColorSyncMutableProfileRef owned_profile;
+    float *reordered;
 #endif
     sixel_cms_color_space_t source_space;
     sixel_cms_pixel_format_t source_format;
@@ -4297,6 +4629,7 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
     transform_source = src_profile;
 #if SIXEL_CMS_HAVE_COLORSYNC
     owned_profile = NULL;
+    reordered = NULL;
 #endif
     if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
         return 0;
@@ -4341,6 +4674,21 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
         }
 #endif
     }
+#if SIXEL_CMS_HAVE_COLORSYNC
+    if (source_space == SIXEL_CMS_COLORSPACE_RGB) {
+        if (!sixel_cms_prepare_linear_rgb(src_profile, source, pixel_count,
+                                            &prepared, &owned_profile,
+                                            &reordered)) {
+            goto cleanup;
+        }
+        if (owned_profile != NULL) {
+            transform_source = &prepared;
+        }
+        if (reordered != NULL) {
+            source = reordered;
+        }
+    }
+#endif
     /*
      * A native apply may fail after writing a prefix. Publish only a complete
      * finite result, so the loader's existing metadata fallback still sees
@@ -4377,6 +4725,7 @@ cleanup:
     if (owned_profile != NULL) {
         CFRelease(owned_profile);
     }
+    free(reordered);
 #endif
     free(output);
     free(gray);
