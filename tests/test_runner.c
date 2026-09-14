@@ -98,6 +98,18 @@ int test_color_0008(int argc, char **argv);
 int test_color_0009(int argc, char **argv);
 int test_color_0010(int argc, char **argv);
 int test_color_0011(int argc, char **argv);
+int test_qa_0001(int argc, char **argv);
+int test_qa_0002(int argc, char **argv);
+int test_qa_0003(int argc, char **argv);
+int test_qa_0004(int argc, char **argv);
+int test_qa_0005(int argc, char **argv);
+int test_qa_0006(int argc, char **argv);
+int test_qa_0007(int argc, char **argv);
+int test_qa_0008(int argc, char **argv);
+int test_qa_0009(int argc, char **argv);
+int test_qa_0010(int argc, char **argv);
+int test_qa_0011(int argc, char **argv);
+int test_qa_0012(int argc, char **argv);
 int test_cdef_0001(int argc, char **argv);
 int test_cdef_0002(int argc, char **argv);
 int test_cdef_0003(int argc, char **argv);
@@ -1051,6 +1063,18 @@ static test_entry_t const test_entries[] = {
     { "cms/0011_separate_intents", test_cdef_0011 },
     { "cms/0012_engine_independence", test_cdef_0012 },
     { "cms/0013_queued_transform_lifetime", test_cdef_0013 },
+    { "assessment/0001_ciede2000_reference", test_qa_0001 },
+    { "assessment/0002_same_physical_coordinates", test_qa_0002 },
+    { "assessment/0003_same_rgb_different_definition", test_qa_0003 },
+    { "assessment/0004_p3_clipping_negative_control", test_qa_0004 },
+    { "assessment/0005_region_physical_average", test_qa_0005 },
+    { "assessment/0006_region_spatial_cancellation", test_qa_0006 },
+    { "assessment/0007_region_partial_edge", test_qa_0007 },
+    { "assessment/0008_frame_linear_lab", test_qa_0008 },
+    { "assessment/0009_frame_linear_oklab", test_qa_0009 },
+    { "assessment/0010_frame_linear_din99d", test_qa_0010 },
+    { "assessment/0011_spec_parse_valid", test_qa_0011 },
+    { "assessment/0012_spec_parse_invalid", test_qa_0012 },
     { "cms/0001_named_xyz", test_cdef_0001 },
     { "cms/0002_simple_power", test_cdef_0002 },
     { "cms/0003_icc_source_lifetime", test_cdef_0003 },

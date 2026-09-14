@@ -9,6 +9,8 @@ lsqa_args = libsixel_posix_defs
 src_build_dir = join_paths(meson.project_build_root(), 'src')
 lsqa_sources = ['lsqa.c',
                 'assessment.c',
+                'color.c',
+                'color.h',
                 'assessment.h',
                 '../converters/cli.c']
 lsqa_dependencies = lsqa_deps

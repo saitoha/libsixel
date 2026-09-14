@@ -181,6 +181,19 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_ASSESSMENT -DBUILD_COLOR \
+    -DBUILD_TEST_0001_CIEDE2000_REFERENCE \
+    -DBUILD_TEST_0002_SAME_PHYSICAL_COORDINATES \
+    -DBUILD_TEST_0003_SAME_RGB_DIFFERENT_DEFINITION \
+    -DBUILD_TEST_0004_P3_CLIPPING_NEGATIVE_CONTROL \
+    -DBUILD_TEST_0005_REGION_PHYSICAL_AVERAGE \
+    -DBUILD_TEST_0006_REGION_SPATIAL_CANCELLATION \
+    -DBUILD_TEST_0007_REGION_PARTIAL_EDGE \
+    -DBUILD_TEST_0008_FRAME_LINEAR_LAB \
+    -DBUILD_TEST_0009_FRAME_LINEAR_OKLAB \
+    -DBUILD_TEST_0010_FRAME_LINEAR_DIN99D \
+    -DBUILD_TEST_0011_SPEC_PARSE_VALID \
+    -DBUILD_TEST_0012_SPEC_PARSE_INVALID \
     -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
     -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
     -DBUILD_TEST_0009_ICC_LENGTH_OWNERSHIP \
@@ -610,6 +623,20 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 test_runner_SOURCES = test_runner.c \
+    $(top_srcdir)/assessment/assessment.c \
+    $(top_srcdir)/assessment/color.c \
+    processing/assessment/0001_ciede2000_reference.c \
+    processing/assessment/0002_same_physical_coordinates.c \
+    processing/assessment/0003_same_rgb_different_definition.c \
+    processing/assessment/0004_p3_clipping_negative_control.c \
+    processing/assessment/0005_region_physical_average.c \
+    processing/assessment/0006_region_spatial_cancellation.c \
+    processing/assessment/0007_region_partial_edge.c \
+    processing/assessment/0008_frame_linear_lab.c \
+    processing/assessment/0009_frame_linear_oklab.c \
+    processing/assessment/0010_frame_linear_din99d.c \
+    processing/assessment/0011_spec_parse_valid.c \
+    processing/assessment/0012_spec_parse_invalid.c \
     processing/cms/0011_separate_intents.c \
     processing/cms/0012_engine_independence.c \
     processing/cms/0013_queued_transform_lifetime.c \

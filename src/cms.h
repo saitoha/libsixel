@@ -229,6 +229,13 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_icc(void const *bytes, size_t length);
 
+/* Strict shared input grammar. On success, the caller owns *definition;
+ * auto and icc:FILE leave it NULL. ICC paths borrow the input string.
+ * No file I/O occurs here; the adapter loads and validates ICC bytes. */
+SIXEL_INTERNAL_API int
+sixel_cdef_parse(char const *text, sixel_color_def_t **definition,
+                  char const **icc_path, int *intent);
+
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_clone(sixel_color_def_t const *definition);
 

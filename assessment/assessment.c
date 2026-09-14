@@ -80,6 +80,7 @@
 #include <sixel.h>
 
 #include "assessment.h"
+#include "color.h"
 #include "encoder.h"
 #include "timer.h"
 #include "sixel_atomic.h"
@@ -455,6 +456,16 @@ assessment_pixelformat_name(int pixelformat)
         return "RGB565";
     case SIXEL_PIXELFORMAT_RGB888:
         return "RGB888";
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+        return "RGBFLOAT32";
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+        return "LINEARRGBFLOAT32";
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+        return "OKLABFLOAT32";
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+        return "CIELABFLOAT32";
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+        return "DIN99DFLOAT32";
     case SIXEL_PIXELFORMAT_BGR555:
         return "BGR555";
     case SIXEL_PIXELFORMAT_BGR565:
@@ -483,6 +494,12 @@ assessment_colorspace_name(int colorspace)
         return "gamma";
     case SIXEL_COLORSPACE_LINEAR:
         return "linear";
+    case SIXEL_COLORSPACE_OKLAB:
+        return "oklab";
+    case SIXEL_COLORSPACE_CIELAB:
+        return "cielab";
+    case SIXEL_COLORSPACE_DIN99D:
+        return "din99d";
     case SIXEL_COLORSPACE_SMPTEC:
         return "smpte-c";
     default:
@@ -1166,6 +1183,20 @@ frame_to_rgb_float(sixel_frame_t *frame,
         }
         for (index = 0; index < count; ++index) {
             converted[index] = pixels[index] / 255.0f;
+        }
+        for (index = 0; index < count; index += 3) {
+            if (sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_OKLAB) {
+                converted[index + 1] -= 0.5f;
+                converted[index + 2] -= 0.5f;
+            } else if (sixel_frame_get_colorspace(frame)
+                           == SIXEL_COLORSPACE_CIELAB) {
+                converted[index + 1] = (converted[index + 1] - 0.5f) * 3;
+                converted[index + 2] = (converted[index + 2] - 0.5f) * 3;
+            } else if (sixel_frame_get_colorspace(frame)
+                           == SIXEL_COLORSPACE_DIN99D) {
+                converted[index + 1] = (converted[index + 1] - 0.5f) * 2;
+                converted[index + 2] = (converted[index + 2] - 0.5f) * 2;
+            }
         }
     }
     *pixels_out = converted;
@@ -2303,139 +2334,24 @@ static void clipping_rates(const float *pixels,
     float_buffer_free(&bch);
 }
 
-/*
- * sRGB <-> CIELAB conversions
- */
-static void
-srgb_to_linear(const float *src, float *dst, size_t count)
-{
-    size_t i;
-    float c;
-    float result;
-    for (i = 0; i < count; ++i) {
-        c = src[i];
-        if (c <= 0.04045f) {
-            result = c / 12.92f;
-        } else {
-            result = powf((c + 0.055f) / 1.055f, 2.4f);
-        }
-        dst[i] = result;
-    }
-}
-
-static void
-linear_to_xyz(const float *rgb, float *xyz, size_t pixels)
-{
-    size_t i;
-    size_t base;
-    size_t channel_count;
-    float r;
-    float g;
-    float b;
-    float X;
-    float Y;
-    float Z;
-    if (rgb == NULL || xyz == NULL || pixels == 0u) {
-        return;
-    }
-    if (pixels > SIZE_MAX / 3u) {
-        return;
-    }
-    channel_count = pixels * 3u;
-    for (i = 0; i < pixels; ++i) {
-        base = i * 3u;
-        if (base > channel_count - 3u) {
-            return;
-        }
-        r = rgb[base + 0u];
-        g = rgb[base + 1u];
-        b = rgb[base + 2u];
-        X = 0.4124564f * r + 0.3575761f * g + 0.1804375f * b;
-        Y = 0.2126729f * r + 0.7151522f * g + 0.0721750f * b;
-        Z = 0.0193339f * r + 0.1191920f * g + 0.9503041f * b;
-        xyz[base + 0u] = X;
-        xyz[base + 1u] = Y;
-        xyz[base + 2u] = Z;
-    }
-}
-
-static float
-f_lab(float t)
-{
-    float delta;
-    delta = 6.0f / 29.0f;
-    if (t > delta * delta * delta) {
-        return cbrtf(t);
-    }
-    return t / (3.0f * delta * delta) + 4.0f / 29.0f;
-}
-
-static void
-xyz_to_lab(const float *xyz, float *lab, size_t pixels)
-{
-    const float Xn = 0.95047f;
-    const float Yn = 1.00000f;
-    const float Zn = 1.08883f;
-    size_t i;
-    size_t base;
-    size_t channel_count;
-    float X;
-    float Y;
-    float Z;
-    float fx;
-    float fy;
-    float fz;
-    float L;
-    float a;
-    float b;
-
-    if (xyz == NULL || lab == NULL || pixels == 0u) {
-        return;
-    }
-    if (pixels > SIZE_MAX / 3u) {
-        return;
-    }
-    channel_count = pixels * 3u;
-    for (i = 0; i < pixels; ++i) {
-        base = i * 3u;
-        if (base > channel_count - 3u) {
-            return;
-        }
-        X = xyz[base + 0u] / Xn;
-        Y = xyz[base + 1u] / Yn;
-        Z = xyz[base + 2u] / Zn;
-        fx = f_lab(X);
-        fy = f_lab(Y);
-        fz = f_lab(Z);
-        L = 116.0f * fy - 16.0f;
-        a = 500.0f * (fx - fy);
-        b = 200.0f * (fy - fz);
-        lab[base + 0u] = L;
-        lab[base + 1u] = a;
-        lab[base + 2u] = b;
-    }
-}
-
+/* XYZ already has the common D50 white; Lab uses ordinary CIE units. */
 static sixel_assessment_float_buffer_t
-rgb_to_lab(const float *pixels, int width, int height)
+pcs_to_lab(const double *xyz, int width, int height)
 {
     sixel_assessment_float_buffer_t lab;
-    float *linear;
-    float *xyz;
-    size_t pixel_count;
+    size_t i;
+    size_t count;
+    int c;
+    double value[3];
 
-    pixel_count = (size_t)width * (size_t)height;
-    lab = float_buffer_create(pixel_count * 3);
-    linear = (float *)xmalloc(pixel_count * 3 * sizeof(float));
-    xyz = (float *)xmalloc(pixel_count * 3 * sizeof(float));
-    memset(lab.values, 0, pixel_count * 3 * sizeof(float));
-    memset(linear, 0, pixel_count * 3 * sizeof(float));
-    memset(xyz, 0, pixel_count * 3 * sizeof(float));
-    srgb_to_linear(pixels, linear, pixel_count * 3);
-    linear_to_xyz(linear, xyz, pixel_count);
-    xyz_to_lab(xyz, lab.values, pixel_count);
-    free(linear);
-    free(xyz);
+    count = (size_t)width * (size_t)height;
+    lab = float_buffer_create(count * 3);
+    for (i = 0; i < count; ++i) {
+        sixel_qa_lab(xyz + i * 3, value);
+        for (c = 0; c < 3; ++c) {
+            lab.values[i * 3 + c] = (float)value[c];
+        }
+    }
     return lab;
 }
 
@@ -2461,110 +2377,17 @@ deltaE00(const sixel_assessment_float_buffer_t *lab1,
 {
     sixel_assessment_float_buffer_t out;
     size_t i;
-    double L1;
-    double a1;
-    double b1;
-    double L2;
-    double a2;
-    double b2;
-    double Lbar;
-    double C1;
-    double C2;
-    double Cbar;
-    double G;
-    double a1p;
-    double a2p;
-    double C1p;
-    double C2p;
-    double h1p;
-    double h2p;
-    double dLp;
-    double dCp;
-    double dhp;
-    double dHp;
-    double Lpm;
-    double Cpm;
-    double hp_sum;
-    double hp_diff;
-    double Hpm;
-    double T;
-    double Sl;
-    double Sc;
-    double Sh;
-    double dTheta;
-    double Rc;
-    double Rt;
-    double de;
+    int c;
+    double a[3];
+    double b[3];
+
     out = float_buffer_create(pixels);
     for (i = 0; i < pixels; ++i) {
-        L1 = lab1->values[i * 3 + 0];
-        a1 = lab1->values[i * 3 + 1];
-        b1 = lab1->values[i * 3 + 2];
-        L2 = lab2->values[i * 3 + 0];
-        a2 = lab2->values[i * 3 + 1];
-        b2 = lab2->values[i * 3 + 2];
-        Lbar = 0.5 * (L1 + L2);
-        C1 = sqrt(a1 * a1 + b1 * b1);
-        C2 = sqrt(a2 * a2 + b2 * b2);
-        Cbar = 0.5 * (C1 + C2);
-        G = 0.5 * (1.0 - sqrt(pow(Cbar, 7.0) /
-                               (pow(Cbar, 7.0) + pow(25.0, 7.0) + 1e-12)));
-        a1p = (1.0 + G) * a1;
-        a2p = (1.0 + G) * a2;
-        C1p = sqrt(a1p * a1p + b1 * b1);
-        C2p = sqrt(a2p * a2p + b2 * b2);
-        h1p = atan2(b1, a1p);
-        if (h1p < 0.0) {
-            h1p += 2.0 * M_PI;
+        for (c = 0; c < 3; ++c) {
+            a[c] = lab1->values[i * 3 + c];
+            b[c] = lab2->values[i * 3 + c];
         }
-        h2p = atan2(b2, a2p);
-        if (h2p < 0.0) {
-            h2p += 2.0 * M_PI;
-        }
-        dLp = L2 - L1;
-        dCp = C2p - C1p;
-        dhp = h2p - h1p;
-        if (dhp > M_PI) {
-            dhp -= 2.0 * M_PI;
-        }
-        if (dhp < -M_PI) {
-            dhp += 2.0 * M_PI;
-        }
-        dHp = 2.0 * sqrt(C1p * C2p + 1e-12) * sin(dhp / 2.0);
-        Lpm = Lbar;
-        Cpm = 0.5 * (C1p + C2p);
-        hp_sum = h1p + h2p;
-        hp_diff = fabs(h1p - h2p);
-        if (C1p * C2p == 0.0) {
-            Hpm = hp_sum;
-        } else {
-            if (hp_diff <= M_PI) {
-                Hpm = 0.5 * hp_sum;
-            } else {
-                if (hp_sum < 2.0 * M_PI) {
-                    Hpm = 0.5 * (hp_sum + 2.0 * M_PI);
-                } else {
-                    Hpm = 0.5 * (hp_sum - 2.0 * M_PI);
-                }
-            }
-        }
-        T = 1.0 - 0.17 * cos(Hpm - M_PI / 6.0) +
-            0.24 * cos(2.0 * Hpm) +
-            0.32 * cos(3.0 * Hpm + M_PI / 30.0) -
-            0.20 * cos(4.0 * Hpm - 7.0 * M_PI / 20.0);
-        Sl = 1.0 + ((0.015 * pow(Lpm - 50.0, 2.0)) /
-                    sqrt(20.0 + pow(Lpm - 50.0, 2.0)));
-        Sc = 1.0 + 0.045 * Cpm;
-        Sh = 1.0 + 0.015 * Cpm * T;
-        dTheta = 30.0 * exp(-pow((Hpm - 275.0 * M_PI / 180.0) /
-                                 (25.0 * M_PI / 180.0), 2.0));
-        Rc = 2.0 * sqrt(pow(Cpm, 7.0) /
-                        (pow(Cpm, 7.0) + pow(25.0, 7.0) + 1e-12));
-        Rt = -Rc * sin(2.0 * dTheta * M_PI / 180.0);
-        de = sqrt(pow(dLp / (Sl), 2.0) + pow(dCp / (Sc), 2.0) +
-                  pow(dHp / (Sh), 2.0) +
-                  Rt * (dCp / Sc) * (dHp / Sh));
-        out.values[i] = (float)de;
+        out.values[i] = (float)sixel_qa_de00(a, b);
     }
     return out;
 }
@@ -2754,10 +2577,86 @@ assessment_metrics_init(sixel_assessment_metrics_t *metrics)
     metrics->valid_mask = 0u;
 }
 
+/* Produce physical PCS and a separate, documented luma signal.
+ * Never overwrite the source frame or reinterpret opponent channels as RGB.
+ * An unchanged gamma/linear signal is copied exactly for legacy MS-SSIM. */
+static int
+assessment_color_pixels(float *pixels, double *xyz, size_t count,
+                         int coordinate, int signal, int bytes,
+                         int source_bytes, int grayscale)
+{
+    sixel_color_def_t *srgb;
+    size_t i;
+    int c;
+    int ok;
+    double sample[3];
+    double value[3];
+    float gray;
+
+    /* Byte samples in the selected basis already have the requested
+     * representation. Preserve the established spatial-metric fast path. */
+    if (xyz == NULL && source_bytes && coordinate == signal && !grayscale) {
+        return 1;
+    }
+    srgb = xyz != NULL ? sixel_cdef_name("srgb") : NULL;
+    if (xyz != NULL && srgb == NULL) {
+        return 0;
+    }
+    ok = 1;
+    for (i = 0; i < count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            sample[c] = pixels[i * 3 + c];
+        }
+        if (coordinate == signal) {
+            /* Identical working coordinates need no TRC round trip. */
+            memcpy(value, sample, sizeof(value));
+        }
+        if (!isfinite(sample[0]) || !isfinite(sample[1])
+                || !isfinite(sample[2])
+                || (xyz != NULL
+                    && !sixel_qa_xyz(srgb, coordinate, sample, xyz + i * 3))
+                || (coordinate != signal
+                    && !sixel_color_convert(value, sample,
+                                             coordinate, signal))) {
+            ok = 0;
+            break;
+        }
+        for (c = 0; c < 3; ++c) {
+            if (bytes && (!source_bytes || coordinate != signal)) {
+                value[c] = floor(fmin(1.0, fmax(0.0, value[c]))
+                                   * 255.0 + 0.5) / 255.0;
+            }
+            pixels[i * 3 + c] = (float)value[c];
+            if (!isfinite(pixels[i * 3 + c])) {
+                ok = 0;
+                break;
+            }
+        }
+        if (!ok) {
+            break;
+        }
+        if (grayscale) {
+            gray = 0.2126f * pixels[i * 3]
+                + 0.7152f * pixels[i * 3 + 1]
+                + 0.0722f * pixels[i * 3 + 2];
+            if (bytes) {
+                gray = floorf(gray * 255.0f + 0.5f) / 255.0f;
+            }
+            for (c = 0; c < 3; ++c) {
+                pixels[i * 3 + c] = gray;
+            }
+        }
+    }
+    sixel_cdef_free(srgb);
+    return ok;
+}
+
 static sixel_assessment_metrics_t
 evaluate_metrics(sixel_assessment_t *assessment,
                  const float *ref_pixels,
                  const float *out_pixels,
+                 const double *ref_xyz,
+                 const double *out_xyz,
                  int width,
                  int height)
 {
@@ -3045,8 +2944,8 @@ evaluate_metrics(sixel_assessment_t *assessment,
         }
     }
     if (need_lab != 0) {
-        ref_lab = rgb_to_lab(ref_pixels, width, height);
-        out_lab = rgb_to_lab(out_pixels, width, height);
+        ref_lab = pcs_to_lab(ref_xyz, width, height);
+        out_lab = pcs_to_lab(out_xyz, width, height);
         pixels = (size_t)width * (size_t)height;
         if (want_delta_chroma_mean) {
             ref_chroma = chroma_ab(&ref_lab, pixels);
@@ -3203,6 +3102,8 @@ static const MetricDescriptor g_metric_table[] = {
     {SIXEL_ASSESSMENT_METRIC_DELTA_E00, "Δ E00_mean"},
     {SIXEL_ASSESSMENT_METRIC_GMSD, "GMSD"},
     {SIXEL_ASSESSMENT_METRIC_PSNR_Y, "PSNR_Y"},
+    {SIXEL_ASSESSMENT_METRIC_REGION_MEAN, "DE00_region_mean"},
+    {SIXEL_ASSESSMENT_METRIC_REGION_MAX, "DE00_region_max"},
 };
 
 static void
@@ -3696,6 +3597,18 @@ sixel_assessment_new(sixel_assessment_t **ppassessment,
     assessment->metrics_mask = assessment_metric_mask_all();
     assessment->sections_mask = SIXEL_ASSESSMENT_SECTION_NONE;
     assessment->view_mask = SIXEL_ASSESSMENT_VIEW_ENCODED;
+    assessment->signal_space = -1;
+    assessment->signal_bytes = 0;
+    assessment->grayscale = 0;
+    assessment->region_window = 16;
+    assessment->region_count = 0;
+    memset(assessment->current_space, 0, sizeof(assessment->current_space));
+    memset(assessment->current_format, 0, sizeof(assessment->current_format));
+    memset(assessment->background, 0, sizeof(assessment->background));
+    assessment->color_spec[0] = "auto";
+    assessment->color_spec[1] = "auto";
+    assessment->color_origin[0] = "frame-working-srgb";
+    assessment->color_origin[1] = "frame-working-srgb";
 
     *ppassessment = assessment;
     return SIXEL_OK;
@@ -3746,28 +3659,63 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
                          sixel_frame_t *reference,
                          sixel_frame_t *output)
 {
+    struct qa_owned_buffers {
+        float *ref_pixels;
+        float *out_pixels;
+        double *ref_xyz;
+        double *out_xyz;
+    } *buffers;
     sixel_assessment_metrics_t metrics;
     SIXELSTATUS status;
     int bail;
-    float *ref_pixels;
-    float *out_pixels;
     int ref_width;
     int ref_height;
     int out_width;
     int out_height;
-    int reference_pixelformat;
+    double region_mean;
+    double region_max;
+    size_t pixels;
+    int signal;
+    int need_xyz;
+    int need_regions;
 
-    if (assessment == NULL || reference == NULL || output == NULL) {
+    if (assessment == NULL || reference == NULL || output == NULL
+            || (assessment->region_window != 8
+                && assessment->region_window != 16
+                && assessment->region_window != 32
+                && assessment->region_window != 64)) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    ref_pixels = NULL;
-    out_pixels = NULL;
+    /* The existing metric allocator reports failure with longjmp.
+     * Keep buffer ownership in heap storage so cleanup remains defined. */
+    buffers = (struct qa_owned_buffers *)calloc(1, sizeof(*buffers));
+    if (buffers == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    region_mean = 0.0;
+    region_max = 0.0;
+    buffers->ref_pixels = NULL;
+    buffers->out_pixels = NULL;
     ref_width = 0;
     ref_height = 0;
     out_width = 0;
     out_height = 0;
-    reference_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    buffers->ref_xyz = NULL;
+    buffers->out_xyz = NULL;
+    signal = assessment->signal_space;
+    if (signal < 0) {
+        signal = sixel_frame_get_colorspace(reference);
+    }
+    /* Opponent comparison choices use physical linear-sRGB Y. */
+    if (signal != SIXEL_COLORSPACE_GAMMA) {
+        signal = SIXEL_COLORSPACE_LINEAR;
+    }
+    assessment->signal_space = signal;
+    assessment->current_space[0] = sixel_frame_get_colorspace(reference);
+    assessment->current_space[1] = sixel_frame_get_colorspace(output);
+    assessment->current_format[0] = sixel_frame_get_pixelformat(reference);
+    assessment->current_format[1] = sixel_frame_get_pixelformat(output);
 
     assessment->last_error = SIXEL_OK;
     assessment->error_message[0] = '\0';
@@ -3790,52 +3738,104 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    reference_pixelformat = sixel_frame_get_pixelformat(reference);
-    if (sixel_frame_get_pixelformat(output) != reference_pixelformat) {
-        status = sixel_frame_set_pixelformat(output, reference_pixelformat);
-        if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-    }
-
     status = frame_to_rgb_float(reference,
-                                &ref_pixels,
+                                &buffers->ref_pixels,
                                 &ref_width,
                                 &ref_height);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
     status = frame_to_rgb_float(output,
-                                &out_pixels,
+                                &buffers->out_pixels,
                                 &out_width,
                                 &out_height);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
-    align_frame_pixels(&ref_pixels,
+    align_frame_pixels(&buffers->ref_pixels,
                        &ref_width,
                        &ref_height,
-                       &out_pixels,
+                       &buffers->out_pixels,
                        &out_width,
                        &out_height);
 
+    pixels = (size_t)ref_width * (size_t)ref_height;
+    if (pixels > SIZE_MAX / (3 * sizeof(double))) {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    need_regions = assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_REGION_MEAN)
+        || assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_REGION_MAX);
+    need_xyz = need_regions || assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_DELTA_E00)
+        || assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA);
+    if (need_xyz) {
+        buffers->ref_xyz = (double *)malloc(pixels * 3 * sizeof(double));
+        buffers->out_xyz = (double *)malloc(pixels * 3 * sizeof(double));
+        if (buffers->ref_xyz == NULL || buffers->out_xyz == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+    }
+    if (!assessment_color_pixels(buffers->ref_pixels, buffers->ref_xyz, pixels,
+            assessment->current_space[0], signal, assessment->signal_bytes,
+            !SIXEL_PIXELFORMAT_IS_FLOAT32(assessment->current_format[0]),
+            assessment->grayscale)
+            || !assessment_color_pixels(buffers->out_pixels,
+            buffers->out_xyz, pixels,
+            assessment->current_space[1], signal, assessment->signal_bytes,
+            !SIXEL_PIXELFORMAT_IS_FLOAT32(assessment->current_format[1]),
+            assessment->grayscale)) {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+
     metrics = evaluate_metrics(assessment,
-                               ref_pixels,
-                               out_pixels,
+                               buffers->ref_pixels,
+                               buffers->out_pixels,
+                               buffers->ref_xyz,
+                               buffers->out_xyz,
                                ref_width,
                                ref_height);
     store_metrics(assessment, &metrics);
+    assessment->region_count =
+        ((size_t)ref_width + assessment->region_window - 1)
+        / assessment->region_window
+        * (((size_t)ref_height + assessment->region_window - 1)
+           / assessment->region_window);
+    if (need_regions) {
+        sixel_qa_regions(buffers->ref_xyz, buffers->out_xyz,
+                          ref_width, ref_height,
+                          assessment->region_window, &region_mean, &region_max,
+                          &assessment->region_count);
+    }
+    if (assessment_metric_selected(assessment,
+                                  SIXEL_ASSESSMENT_METRIC_REGION_MEAN)) {
+        assessment->results[25] = region_mean;
+        assessment->results_valid_mask |= 1u << 25;
+    }
+    if (assessment_metric_selected(assessment,
+                                  SIXEL_ASSESSMENT_METRIC_REGION_MAX)) {
+        assessment->results[26] = region_max;
+        assessment->results_valid_mask |= 1u << 26;
+    }
     assessment->results_ready = 1;
     status = SIXEL_OK;
 
 cleanup:
-    if (ref_pixels != NULL) {
-        free(ref_pixels);
+    free(buffers->ref_xyz);
+    free(buffers->out_xyz);
+    if (buffers->ref_pixels != NULL) {
+        free(buffers->ref_pixels);
     }
-    if (out_pixels != NULL) {
-        free(out_pixels);
+    if (buffers->out_pixels != NULL) {
+        free(buffers->out_pixels);
     }
+    free(buffers);
     g_assessment_context = NULL;
     return status;
 }
@@ -3900,6 +3900,82 @@ assessment_emit_quality_lines(sixel_assessment_t *assessment,
     return SIXEL_OK;
 }
 
+/* Strings come from CLI input, so escape each value before emitting it. */
+static SIXELSTATUS
+assessment_emit_color_context(sixel_assessment_t *assessment,
+                                sixel_assessment_json_callback_t callback,
+                                void *user_data)
+{
+    char escaped[PATH_MAX * 6 + 1];
+    char line[PATH_MAX * 6 + 1024];
+    char const *cms;
+    int i;
+    int n;
+
+    cms = getenv("SIXEL_LOADER_CMS_ENGINE");
+    if (assessment_escape_json(cms == NULL ? "auto" : cms,
+                               escaped, sizeof(escaped)) != 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    n = snprintf(line, sizeof(line),
+        "  \"color_evaluation\": {\n"
+        "    \"pcs\": \"XYZ D50, Y=1\",\n"
+        "    \"lab_units\": \"CIE L*, a*, b*\",\n"
+        "    \"evaluator\": \"builtin\",\n"
+        "    \"requested_loader_cms\": \"%s\",\n"
+        "    \"plain_sixel_default\": \"srgb\",\n"
+        "    \"background_definition\": \"srgb\",\n"
+        "    \"background_rgb8\": [%u, %u, %u],\n"
+        "    \"signal\": \"%s\",\n"
+        "    \"signal_precision\": \"%s\",\n"
+        "    \"signal_range\": \"%s\",\n"
+        "    \"pcs_precision\": \"float64 from current samples\",\n"
+        "    \"grayscale_signal\": %s,\n"
+        "    \"region_window\": %d,\n"
+        "    \"region_count\": %zu,\n"
+        "    \"region_layout\": \"top-left fixed tiles, partial edges\",\n"
+        "    \"region_mean_weighting\": \"pixel area\",\n",
+        escaped, (unsigned int)assessment->background[0],
+        (unsigned int)assessment->background[1],
+        (unsigned int)assessment->background[2],
+        assessment->signal_space == SIXEL_COLORSPACE_GAMMA
+            ? "encoded sRGB luma (0.2126,0.7152,0.0722)"
+            : "linear sRGB Y (0.2126,0.7152,0.0722)",
+        assessment->signal_bytes ? "8bit" : "float32",
+        assessment->signal_bytes ? "0..1" : "extended, nominal 0..1",
+        assessment->grayscale ? "true" : "false",
+        assessment->region_window, assessment->region_count);
+    if (n < 0 || (size_t)n >= sizeof(line)) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+    callback(line, (size_t)n, user_data);
+    for (i = 0; i < 2; ++i) {
+        if (assessment_escape_json(assessment->color_spec[i], escaped,
+                                   sizeof(escaped)) != 0) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        n = snprintf(line, sizeof(line),
+            "    \"%s\": {\n"
+            "      \"requested_definition\": \"%s\",\n"
+            "      \"origin\": \"%s\",\n"
+            "      \"current_basis\": \"srgb\",\n"
+            "      \"current_coordinate\": \"%s\",\n"
+            "      \"current_format\": \"%s\"\n"
+            "    }%s\n",
+            i == 0 ? "reference" : "target", escaped,
+            assessment->color_origin[i],
+            assessment_colorspace_name(assessment->current_space[i]),
+            assessment_pixelformat_name(assessment->current_format[i]),
+            i == 0 ? "," : "");
+        if (n < 0 || (size_t)n >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)n, user_data);
+    }
+    callback("  },\n", 5, user_data);
+    return SIXEL_OK;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_assessment_get_json(sixel_assessment_t *assessment,
                           unsigned int sections,
@@ -3960,6 +4036,13 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
 
     callback("{\n", sizeof("{\n") - 1, user_data);
     remaining_sections = requested_sections;
+    if ((requested_sections & SIXEL_ASSESSMENT_SECTION_QUALITY) != 0u) {
+        status = assessment_emit_color_context(assessment, callback, user_data);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
 
     if ((requested_sections & SIXEL_ASSESSMENT_SECTION_BASIC) != 0u) {
         assessment_guess_format(assessment);

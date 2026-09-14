@@ -98,7 +98,7 @@ sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
 #define SIXEL_ASSESSMENT_INDEX_MASK      0x00000fff
 #define SIXEL_ASSESSMENT_INDEX(value) \
     ((value) & SIXEL_ASSESSMENT_INDEX_MASK)
-#define SIXEL_ASSESSMENT_METRIC_COUNT    25
+#define SIXEL_ASSESSMENT_METRIC_COUNT    27
 
 #define SIXEL_ASSESSMENT_METRIC_MS_SSIM \
     (SIXEL_ASSESSMENT_KIND_RELATIVE | \
@@ -176,6 +176,13 @@ sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
     (SIXEL_ASSESSMENT_KIND_RELATIVE | \
      SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x0018)
 
+#define SIXEL_ASSESSMENT_METRIC_REGION_MEAN \
+    (SIXEL_ASSESSMENT_KIND_RELATIVE | \
+     SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x0019)
+#define SIXEL_ASSESSMENT_METRIC_REGION_MAX \
+    (SIXEL_ASSESSMENT_KIND_RELATIVE | \
+     SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x001a)
+
 #define SIXEL_ASSESSMENT_METRIC_MASK(metric_id) \
     (1u << SIXEL_ASSESSMENT_INDEX(metric_id))
 #define SIXEL_ASSESSMENT_METRIC_MASK_ALL \
@@ -251,6 +258,17 @@ struct sixel_assessment {
     unsigned int metrics_mask;
     unsigned int sections_mask;
     unsigned int view_mask;
+    /* Measurement configuration; strings are borrowed for the job lifetime. */
+    int signal_space;
+    int signal_bytes;
+    int grayscale;
+    int region_window;
+    size_t region_count;
+    int current_space[2];
+    int current_format[2];
+    char const *color_spec[2];
+    char const *color_origin[2];
+    unsigned char background[3];
 };
 
 #if defined(_MSC_VER)

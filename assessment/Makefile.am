@@ -75,6 +75,8 @@ lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
 else
 lsqa_SOURCES = $(srcdir)/lsqa.c \
                $(srcdir)/assessment.c \
+               $(srcdir)/color.c \
+               $(srcdir)/color.h \
                $(srcdir)/assessment.h \
                $(top_srcdir)/converters/cli.c
 lsqa_CPPFLAGS = -I$(top_builddir)/include/ \

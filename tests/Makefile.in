@@ -110,6 +110,20 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	$(top_srcdir)/assessment/assessment.c \
+	$(top_srcdir)/assessment/color.c \
+	processing/assessment/0001_ciede2000_reference.c \
+	processing/assessment/0002_same_physical_coordinates.c \
+	processing/assessment/0003_same_rgb_different_definition.c \
+	processing/assessment/0004_p3_clipping_negative_control.c \
+	processing/assessment/0005_region_physical_average.c \
+	processing/assessment/0006_region_spatial_cancellation.c \
+	processing/assessment/0007_region_partial_edge.c \
+	processing/assessment/0008_frame_linear_lab.c \
+	processing/assessment/0009_frame_linear_oklab.c \
+	processing/assessment/0010_frame_linear_din99d.c \
+	processing/assessment/0011_spec_parse_valid.c \
+	processing/assessment/0012_spec_parse_invalid.c \
 	processing/cms/0011_separate_intents.c \
 	processing/cms/0012_engine_independence.c \
 	processing/cms/0013_queued_transform_lifetime.c \
@@ -542,6 +556,20 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-assessment.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-color.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0001_ciede2000_reference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0002_same_physical_coordinates.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0003_same_rgb_different_definition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0004_p3_clipping_negative_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0005_region_physical_average.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0006_region_spatial_cancellation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0007_region_partial_edge.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0008_frame_linear_lab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0009_frame_linear_oklab.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0010_frame_linear_din99d.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0011_spec_parse_valid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/assessment/test_runner-0012_spec_parse_invalid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT) \
@@ -1021,6 +1049,8 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po \
+	$(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po \
+	$(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po \
@@ -1215,6 +1245,18 @@ am__depfiles_remade =  \
 	loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po \
+	processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
 	processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po \
 	processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po \
@@ -2097,6 +2139,19 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ASSESSMENT -DBUILD_COLOR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CIEDE2000_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SAME_PHYSICAL_COORDINATES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_SAME_RGB_DIFFERENT_DEFINITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_P3_CLIPPING_NEGATIVE_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_REGION_PHYSICAL_AVERAGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_REGION_SPATIAL_CANCELLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_REGION_PARTIAL_EDGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_FRAME_LINEAR_LAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_FRAME_LINEAR_OKLAB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FRAME_LINEAR_DIN99D \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_SPEC_PARSE_VALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_SPEC_PARSE_INVALID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_EXTENDED_FAILURE_ATOMIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_INVALID_RGB_DEFINITION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_ICC_LENGTH_OWNERSHIP \
@@ -2551,6 +2606,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/assessment.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/color.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0001_ciede2000_reference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0002_same_physical_coordinates.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0003_same_rgb_different_definition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0004_p3_clipping_negative_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0005_region_physical_average.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0006_region_spatial_cancellation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0007_region_partial_edge.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0008_frame_linear_lab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0009_frame_linear_oklab.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0010_frame_linear_din99d.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0011_spec_parse_valid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/assessment/0012_spec_parse_invalid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0013_queued_transform_lifetime.c \
@@ -3150,6 +3219,60 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+$(top_builddir)/assessment/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/assessment
+	@: >>$(top_builddir)/assessment/$(am__dirstamp)
+$(top_builddir)/assessment/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/assessment/$(DEPDIR)
+	@: >>$(top_builddir)/assessment/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/assessment/test_runner-assessment.$(OBJEXT):  \
+	$(top_builddir)/assessment/$(am__dirstamp) \
+	$(top_builddir)/assessment/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/assessment/test_runner-color.$(OBJEXT):  \
+	$(top_builddir)/assessment/$(am__dirstamp) \
+	$(top_builddir)/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/$(am__dirstamp):
+	@$(MKDIR_P) processing/assessment
+	@: >>processing/assessment/$(am__dirstamp)
+processing/assessment/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/assessment/$(DEPDIR)
+	@: >>processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0001_ciede2000_reference.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0002_same_physical_coordinates.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0003_same_rgb_different_definition.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0004_p3_clipping_negative_control.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0005_region_physical_average.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0006_region_spatial_cancellation.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0007_region_partial_edge.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0008_frame_linear_lab.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0009_frame_linear_oklab.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0010_frame_linear_din99d.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0011_spec_parse_valid.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
+processing/assessment/test_runner-0012_spec_parse_invalid.$(OBJEXT):  \
+	processing/assessment/$(am__dirstamp) \
+	processing/assessment/$(DEPDIR)/$(am__dirstamp)
 processing/cms/$(am__dirstamp):
 	@$(MKDIR_P) processing/cms
 	@: >>processing/cms/$(am__dirstamp)
@@ -4632,6 +4755,7 @@ test_runner$(EXEEXT): $(test_runner_OBJECTS) $(test_runner_DEPENDENCIES) $(EXTRA
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
+	-rm -f $(top_builddir)/assessment/*.$(OBJEXT)
 	-rm -f $(top_builddir)/converters/*.$(OBJEXT)
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
 	-rm -f $(top_builddir)/src/*.$(OBJEXT)
@@ -4654,6 +4778,7 @@ mostlyclean-compile:
 	-rm -f loader/quicklook/*.$(OBJEXT)
 	-rm -f loader/wic/*.$(OBJEXT)
 	-rm -f platform/path/*.$(OBJEXT)
+	-rm -f processing/assessment/*.$(OBJEXT)
 	-rm -f processing/chunk/*.$(OBJEXT)
 	-rm -f processing/cms/*.$(OBJEXT)
 	-rm -f processing/colorspace/*.$(OBJEXT)
@@ -4680,6 +4805,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po@am__quote@ # am--include-marker
@@ -4874,6 +5001,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po@am__quote@ # am--include-marker
@@ -5138,6 +5277,202 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+$(top_builddir)/assessment/test_runner-assessment.o: $(top_builddir)/assessment/assessment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-assessment.o -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Tpo -c -o $(top_builddir)/assessment/test_runner-assessment.o `test -f '$(top_builddir)/assessment/assessment.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/assessment.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Tpo $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/assessment/assessment.c' object='$(top_builddir)/assessment/test_runner-assessment.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/assessment/test_runner-assessment.o `test -f '$(top_builddir)/assessment/assessment.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/assessment.c
+
+$(top_builddir)/assessment/test_runner-assessment.obj: $(top_builddir)/assessment/assessment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-assessment.obj -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Tpo -c -o $(top_builddir)/assessment/test_runner-assessment.obj `if test -f '$(top_builddir)/assessment/assessment.c'; then $(CYGPATH_W) '$(top_builddir)/assessment/assessment.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/assessment/assessment.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Tpo $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/assessment/assessment.c' object='$(top_builddir)/assessment/test_runner-assessment.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/assessment/test_runner-assessment.obj `if test -f '$(top_builddir)/assessment/assessment.c'; then $(CYGPATH_W) '$(top_builddir)/assessment/assessment.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/assessment/assessment.c'; fi`
+
+$(top_builddir)/assessment/test_runner-color.o: $(top_builddir)/assessment/color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-color.o -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Tpo -c -o $(top_builddir)/assessment/test_runner-color.o `test -f '$(top_builddir)/assessment/color.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/color.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Tpo $(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/assessment/color.c' object='$(top_builddir)/assessment/test_runner-color.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/assessment/test_runner-color.o `test -f '$(top_builddir)/assessment/color.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/color.c
+
+$(top_builddir)/assessment/test_runner-color.obj: $(top_builddir)/assessment/color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-color.obj -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Tpo -c -o $(top_builddir)/assessment/test_runner-color.obj `if test -f '$(top_builddir)/assessment/color.c'; then $(CYGPATH_W) '$(top_builddir)/assessment/color.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/assessment/color.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Tpo $(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/assessment/color.c' object='$(top_builddir)/assessment/test_runner-color.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/assessment/test_runner-color.obj `if test -f '$(top_builddir)/assessment/color.c'; then $(CYGPATH_W) '$(top_builddir)/assessment/color.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/assessment/color.c'; fi`
+
+processing/assessment/test_runner-0001_ciede2000_reference.o: processing/assessment/0001_ciede2000_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0001_ciede2000_reference.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Tpo -c -o processing/assessment/test_runner-0001_ciede2000_reference.o `test -f 'processing/assessment/0001_ciede2000_reference.c' || echo '$(srcdir)/'`processing/assessment/0001_ciede2000_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Tpo processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0001_ciede2000_reference.c' object='processing/assessment/test_runner-0001_ciede2000_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0001_ciede2000_reference.o `test -f 'processing/assessment/0001_ciede2000_reference.c' || echo '$(srcdir)/'`processing/assessment/0001_ciede2000_reference.c
+
+processing/assessment/test_runner-0001_ciede2000_reference.obj: processing/assessment/0001_ciede2000_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0001_ciede2000_reference.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Tpo -c -o processing/assessment/test_runner-0001_ciede2000_reference.obj `if test -f 'processing/assessment/0001_ciede2000_reference.c'; then $(CYGPATH_W) 'processing/assessment/0001_ciede2000_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0001_ciede2000_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Tpo processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0001_ciede2000_reference.c' object='processing/assessment/test_runner-0001_ciede2000_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0001_ciede2000_reference.obj `if test -f 'processing/assessment/0001_ciede2000_reference.c'; then $(CYGPATH_W) 'processing/assessment/0001_ciede2000_reference.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0001_ciede2000_reference.c'; fi`
+
+processing/assessment/test_runner-0002_same_physical_coordinates.o: processing/assessment/0002_same_physical_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0002_same_physical_coordinates.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Tpo -c -o processing/assessment/test_runner-0002_same_physical_coordinates.o `test -f 'processing/assessment/0002_same_physical_coordinates.c' || echo '$(srcdir)/'`processing/assessment/0002_same_physical_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Tpo processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0002_same_physical_coordinates.c' object='processing/assessment/test_runner-0002_same_physical_coordinates.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0002_same_physical_coordinates.o `test -f 'processing/assessment/0002_same_physical_coordinates.c' || echo '$(srcdir)/'`processing/assessment/0002_same_physical_coordinates.c
+
+processing/assessment/test_runner-0002_same_physical_coordinates.obj: processing/assessment/0002_same_physical_coordinates.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0002_same_physical_coordinates.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Tpo -c -o processing/assessment/test_runner-0002_same_physical_coordinates.obj `if test -f 'processing/assessment/0002_same_physical_coordinates.c'; then $(CYGPATH_W) 'processing/assessment/0002_same_physical_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0002_same_physical_coordinates.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Tpo processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0002_same_physical_coordinates.c' object='processing/assessment/test_runner-0002_same_physical_coordinates.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0002_same_physical_coordinates.obj `if test -f 'processing/assessment/0002_same_physical_coordinates.c'; then $(CYGPATH_W) 'processing/assessment/0002_same_physical_coordinates.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0002_same_physical_coordinates.c'; fi`
+
+processing/assessment/test_runner-0003_same_rgb_different_definition.o: processing/assessment/0003_same_rgb_different_definition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0003_same_rgb_different_definition.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Tpo -c -o processing/assessment/test_runner-0003_same_rgb_different_definition.o `test -f 'processing/assessment/0003_same_rgb_different_definition.c' || echo '$(srcdir)/'`processing/assessment/0003_same_rgb_different_definition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Tpo processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0003_same_rgb_different_definition.c' object='processing/assessment/test_runner-0003_same_rgb_different_definition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0003_same_rgb_different_definition.o `test -f 'processing/assessment/0003_same_rgb_different_definition.c' || echo '$(srcdir)/'`processing/assessment/0003_same_rgb_different_definition.c
+
+processing/assessment/test_runner-0003_same_rgb_different_definition.obj: processing/assessment/0003_same_rgb_different_definition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0003_same_rgb_different_definition.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Tpo -c -o processing/assessment/test_runner-0003_same_rgb_different_definition.obj `if test -f 'processing/assessment/0003_same_rgb_different_definition.c'; then $(CYGPATH_W) 'processing/assessment/0003_same_rgb_different_definition.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0003_same_rgb_different_definition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Tpo processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0003_same_rgb_different_definition.c' object='processing/assessment/test_runner-0003_same_rgb_different_definition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0003_same_rgb_different_definition.obj `if test -f 'processing/assessment/0003_same_rgb_different_definition.c'; then $(CYGPATH_W) 'processing/assessment/0003_same_rgb_different_definition.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0003_same_rgb_different_definition.c'; fi`
+
+processing/assessment/test_runner-0004_p3_clipping_negative_control.o: processing/assessment/0004_p3_clipping_negative_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0004_p3_clipping_negative_control.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Tpo -c -o processing/assessment/test_runner-0004_p3_clipping_negative_control.o `test -f 'processing/assessment/0004_p3_clipping_negative_control.c' || echo '$(srcdir)/'`processing/assessment/0004_p3_clipping_negative_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Tpo processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0004_p3_clipping_negative_control.c' object='processing/assessment/test_runner-0004_p3_clipping_negative_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0004_p3_clipping_negative_control.o `test -f 'processing/assessment/0004_p3_clipping_negative_control.c' || echo '$(srcdir)/'`processing/assessment/0004_p3_clipping_negative_control.c
+
+processing/assessment/test_runner-0004_p3_clipping_negative_control.obj: processing/assessment/0004_p3_clipping_negative_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0004_p3_clipping_negative_control.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Tpo -c -o processing/assessment/test_runner-0004_p3_clipping_negative_control.obj `if test -f 'processing/assessment/0004_p3_clipping_negative_control.c'; then $(CYGPATH_W) 'processing/assessment/0004_p3_clipping_negative_control.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0004_p3_clipping_negative_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Tpo processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0004_p3_clipping_negative_control.c' object='processing/assessment/test_runner-0004_p3_clipping_negative_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0004_p3_clipping_negative_control.obj `if test -f 'processing/assessment/0004_p3_clipping_negative_control.c'; then $(CYGPATH_W) 'processing/assessment/0004_p3_clipping_negative_control.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0004_p3_clipping_negative_control.c'; fi`
+
+processing/assessment/test_runner-0005_region_physical_average.o: processing/assessment/0005_region_physical_average.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0005_region_physical_average.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Tpo -c -o processing/assessment/test_runner-0005_region_physical_average.o `test -f 'processing/assessment/0005_region_physical_average.c' || echo '$(srcdir)/'`processing/assessment/0005_region_physical_average.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Tpo processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0005_region_physical_average.c' object='processing/assessment/test_runner-0005_region_physical_average.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0005_region_physical_average.o `test -f 'processing/assessment/0005_region_physical_average.c' || echo '$(srcdir)/'`processing/assessment/0005_region_physical_average.c
+
+processing/assessment/test_runner-0005_region_physical_average.obj: processing/assessment/0005_region_physical_average.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0005_region_physical_average.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Tpo -c -o processing/assessment/test_runner-0005_region_physical_average.obj `if test -f 'processing/assessment/0005_region_physical_average.c'; then $(CYGPATH_W) 'processing/assessment/0005_region_physical_average.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0005_region_physical_average.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Tpo processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0005_region_physical_average.c' object='processing/assessment/test_runner-0005_region_physical_average.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0005_region_physical_average.obj `if test -f 'processing/assessment/0005_region_physical_average.c'; then $(CYGPATH_W) 'processing/assessment/0005_region_physical_average.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0005_region_physical_average.c'; fi`
+
+processing/assessment/test_runner-0006_region_spatial_cancellation.o: processing/assessment/0006_region_spatial_cancellation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0006_region_spatial_cancellation.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Tpo -c -o processing/assessment/test_runner-0006_region_spatial_cancellation.o `test -f 'processing/assessment/0006_region_spatial_cancellation.c' || echo '$(srcdir)/'`processing/assessment/0006_region_spatial_cancellation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Tpo processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0006_region_spatial_cancellation.c' object='processing/assessment/test_runner-0006_region_spatial_cancellation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0006_region_spatial_cancellation.o `test -f 'processing/assessment/0006_region_spatial_cancellation.c' || echo '$(srcdir)/'`processing/assessment/0006_region_spatial_cancellation.c
+
+processing/assessment/test_runner-0006_region_spatial_cancellation.obj: processing/assessment/0006_region_spatial_cancellation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0006_region_spatial_cancellation.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Tpo -c -o processing/assessment/test_runner-0006_region_spatial_cancellation.obj `if test -f 'processing/assessment/0006_region_spatial_cancellation.c'; then $(CYGPATH_W) 'processing/assessment/0006_region_spatial_cancellation.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0006_region_spatial_cancellation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Tpo processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0006_region_spatial_cancellation.c' object='processing/assessment/test_runner-0006_region_spatial_cancellation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0006_region_spatial_cancellation.obj `if test -f 'processing/assessment/0006_region_spatial_cancellation.c'; then $(CYGPATH_W) 'processing/assessment/0006_region_spatial_cancellation.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0006_region_spatial_cancellation.c'; fi`
+
+processing/assessment/test_runner-0007_region_partial_edge.o: processing/assessment/0007_region_partial_edge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0007_region_partial_edge.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Tpo -c -o processing/assessment/test_runner-0007_region_partial_edge.o `test -f 'processing/assessment/0007_region_partial_edge.c' || echo '$(srcdir)/'`processing/assessment/0007_region_partial_edge.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Tpo processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0007_region_partial_edge.c' object='processing/assessment/test_runner-0007_region_partial_edge.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0007_region_partial_edge.o `test -f 'processing/assessment/0007_region_partial_edge.c' || echo '$(srcdir)/'`processing/assessment/0007_region_partial_edge.c
+
+processing/assessment/test_runner-0007_region_partial_edge.obj: processing/assessment/0007_region_partial_edge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0007_region_partial_edge.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Tpo -c -o processing/assessment/test_runner-0007_region_partial_edge.obj `if test -f 'processing/assessment/0007_region_partial_edge.c'; then $(CYGPATH_W) 'processing/assessment/0007_region_partial_edge.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0007_region_partial_edge.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Tpo processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0007_region_partial_edge.c' object='processing/assessment/test_runner-0007_region_partial_edge.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0007_region_partial_edge.obj `if test -f 'processing/assessment/0007_region_partial_edge.c'; then $(CYGPATH_W) 'processing/assessment/0007_region_partial_edge.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0007_region_partial_edge.c'; fi`
+
+processing/assessment/test_runner-0008_frame_linear_lab.o: processing/assessment/0008_frame_linear_lab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0008_frame_linear_lab.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Tpo -c -o processing/assessment/test_runner-0008_frame_linear_lab.o `test -f 'processing/assessment/0008_frame_linear_lab.c' || echo '$(srcdir)/'`processing/assessment/0008_frame_linear_lab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Tpo processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0008_frame_linear_lab.c' object='processing/assessment/test_runner-0008_frame_linear_lab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0008_frame_linear_lab.o `test -f 'processing/assessment/0008_frame_linear_lab.c' || echo '$(srcdir)/'`processing/assessment/0008_frame_linear_lab.c
+
+processing/assessment/test_runner-0008_frame_linear_lab.obj: processing/assessment/0008_frame_linear_lab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0008_frame_linear_lab.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Tpo -c -o processing/assessment/test_runner-0008_frame_linear_lab.obj `if test -f 'processing/assessment/0008_frame_linear_lab.c'; then $(CYGPATH_W) 'processing/assessment/0008_frame_linear_lab.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0008_frame_linear_lab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Tpo processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0008_frame_linear_lab.c' object='processing/assessment/test_runner-0008_frame_linear_lab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0008_frame_linear_lab.obj `if test -f 'processing/assessment/0008_frame_linear_lab.c'; then $(CYGPATH_W) 'processing/assessment/0008_frame_linear_lab.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0008_frame_linear_lab.c'; fi`
+
+processing/assessment/test_runner-0009_frame_linear_oklab.o: processing/assessment/0009_frame_linear_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0009_frame_linear_oklab.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Tpo -c -o processing/assessment/test_runner-0009_frame_linear_oklab.o `test -f 'processing/assessment/0009_frame_linear_oklab.c' || echo '$(srcdir)/'`processing/assessment/0009_frame_linear_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Tpo processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0009_frame_linear_oklab.c' object='processing/assessment/test_runner-0009_frame_linear_oklab.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0009_frame_linear_oklab.o `test -f 'processing/assessment/0009_frame_linear_oklab.c' || echo '$(srcdir)/'`processing/assessment/0009_frame_linear_oklab.c
+
+processing/assessment/test_runner-0009_frame_linear_oklab.obj: processing/assessment/0009_frame_linear_oklab.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0009_frame_linear_oklab.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Tpo -c -o processing/assessment/test_runner-0009_frame_linear_oklab.obj `if test -f 'processing/assessment/0009_frame_linear_oklab.c'; then $(CYGPATH_W) 'processing/assessment/0009_frame_linear_oklab.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0009_frame_linear_oklab.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Tpo processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0009_frame_linear_oklab.c' object='processing/assessment/test_runner-0009_frame_linear_oklab.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0009_frame_linear_oklab.obj `if test -f 'processing/assessment/0009_frame_linear_oklab.c'; then $(CYGPATH_W) 'processing/assessment/0009_frame_linear_oklab.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0009_frame_linear_oklab.c'; fi`
+
+processing/assessment/test_runner-0010_frame_linear_din99d.o: processing/assessment/0010_frame_linear_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0010_frame_linear_din99d.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Tpo -c -o processing/assessment/test_runner-0010_frame_linear_din99d.o `test -f 'processing/assessment/0010_frame_linear_din99d.c' || echo '$(srcdir)/'`processing/assessment/0010_frame_linear_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Tpo processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0010_frame_linear_din99d.c' object='processing/assessment/test_runner-0010_frame_linear_din99d.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0010_frame_linear_din99d.o `test -f 'processing/assessment/0010_frame_linear_din99d.c' || echo '$(srcdir)/'`processing/assessment/0010_frame_linear_din99d.c
+
+processing/assessment/test_runner-0010_frame_linear_din99d.obj: processing/assessment/0010_frame_linear_din99d.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0010_frame_linear_din99d.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Tpo -c -o processing/assessment/test_runner-0010_frame_linear_din99d.obj `if test -f 'processing/assessment/0010_frame_linear_din99d.c'; then $(CYGPATH_W) 'processing/assessment/0010_frame_linear_din99d.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0010_frame_linear_din99d.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Tpo processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0010_frame_linear_din99d.c' object='processing/assessment/test_runner-0010_frame_linear_din99d.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0010_frame_linear_din99d.obj `if test -f 'processing/assessment/0010_frame_linear_din99d.c'; then $(CYGPATH_W) 'processing/assessment/0010_frame_linear_din99d.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0010_frame_linear_din99d.c'; fi`
+
+processing/assessment/test_runner-0011_spec_parse_valid.o: processing/assessment/0011_spec_parse_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0011_spec_parse_valid.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Tpo -c -o processing/assessment/test_runner-0011_spec_parse_valid.o `test -f 'processing/assessment/0011_spec_parse_valid.c' || echo '$(srcdir)/'`processing/assessment/0011_spec_parse_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Tpo processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0011_spec_parse_valid.c' object='processing/assessment/test_runner-0011_spec_parse_valid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0011_spec_parse_valid.o `test -f 'processing/assessment/0011_spec_parse_valid.c' || echo '$(srcdir)/'`processing/assessment/0011_spec_parse_valid.c
+
+processing/assessment/test_runner-0011_spec_parse_valid.obj: processing/assessment/0011_spec_parse_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0011_spec_parse_valid.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Tpo -c -o processing/assessment/test_runner-0011_spec_parse_valid.obj `if test -f 'processing/assessment/0011_spec_parse_valid.c'; then $(CYGPATH_W) 'processing/assessment/0011_spec_parse_valid.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0011_spec_parse_valid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Tpo processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0011_spec_parse_valid.c' object='processing/assessment/test_runner-0011_spec_parse_valid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0011_spec_parse_valid.obj `if test -f 'processing/assessment/0011_spec_parse_valid.c'; then $(CYGPATH_W) 'processing/assessment/0011_spec_parse_valid.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0011_spec_parse_valid.c'; fi`
+
+processing/assessment/test_runner-0012_spec_parse_invalid.o: processing/assessment/0012_spec_parse_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0012_spec_parse_invalid.o -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Tpo -c -o processing/assessment/test_runner-0012_spec_parse_invalid.o `test -f 'processing/assessment/0012_spec_parse_invalid.c' || echo '$(srcdir)/'`processing/assessment/0012_spec_parse_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Tpo processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0012_spec_parse_invalid.c' object='processing/assessment/test_runner-0012_spec_parse_invalid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0012_spec_parse_invalid.o `test -f 'processing/assessment/0012_spec_parse_invalid.c' || echo '$(srcdir)/'`processing/assessment/0012_spec_parse_invalid.c
+
+processing/assessment/test_runner-0012_spec_parse_invalid.obj: processing/assessment/0012_spec_parse_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/assessment/test_runner-0012_spec_parse_invalid.obj -MD -MP -MF processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Tpo -c -o processing/assessment/test_runner-0012_spec_parse_invalid.obj `if test -f 'processing/assessment/0012_spec_parse_invalid.c'; then $(CYGPATH_W) 'processing/assessment/0012_spec_parse_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0012_spec_parse_invalid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Tpo processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/assessment/0012_spec_parse_invalid.c' object='processing/assessment/test_runner-0012_spec_parse_invalid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/assessment/test_runner-0012_spec_parse_invalid.obj `if test -f 'processing/assessment/0012_spec_parse_invalid.c'; then $(CYGPATH_W) 'processing/assessment/0012_spec_parse_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/assessment/0012_spec_parse_invalid.c'; fi`
 
 processing/cms/test_runner-0011_separate_intents.o: processing/cms/0011_separate_intents.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0011_separate_intents.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo -c -o processing/cms/test_runner-0011_separate_intents.o `test -f 'processing/cms/0011_separate_intents.c' || echo '$(srcdir)/'`processing/cms/0011_separate_intents.c
@@ -11266,6 +11601,8 @@ distclean-generic:
 	-$(am__rm_f) $(DISTCLEANFILES)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/assessment/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/assessment/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/converters/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
@@ -11310,6 +11647,8 @@ distclean-generic:
 	-$(am__rm_f) loader/wic/$(am__dirstamp)
 	-$(am__rm_f) platform/path/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) platform/path/$(am__dirstamp)
+	-$(am__rm_f) processing/assessment/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/assessment/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(am__dirstamp)
 	-$(am__rm_f) processing/cms/$(DEPDIR)/$(am__dirstamp)
@@ -11364,6 +11703,8 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
+	-rm -f $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po
+	-rm -f $(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
@@ -11558,6 +11899,18 @@ distclean: distclean-am
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po
@@ -11824,6 +12177,8 @@ installcheck-am: installcheck-local
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
+	-rm -f $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po
+	-rm -f $(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
@@ -12018,6 +12373,18 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0003_same_rgb_different_definition.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0004_p3_clipping_negative_control.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0005_region_physical_average.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0006_region_spatial_cancellation.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0007_region_partial_edge.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0008_frame_linear_lab.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0009_frame_linear_oklab.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0010_frame_linear_din99d.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0011_spec_parse_valid.Po
+	-rm -f processing/assessment/$(DEPDIR)/test_runner-0012_spec_parse_invalid.Po
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0001_named_xyz.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0002_simple_power.Po

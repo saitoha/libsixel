@@ -208,6 +208,8 @@ test_runner_sources = test_runner_tests_sources + files(
   '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
   '../converters/aborttrace.c',
   '../converters/cli.c',
+  '../assessment/assessment.c',
+  '../assessment/color.c',
   '../converters/path.c',
 )
 

@@ -580,6 +580,10 @@ emit_all_units() {
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_${guard})"
                 ;;
+            assessment/color.c)
+                emit_unit "${unit}" \
+                    "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT) || defined(BUILD_COLOR)"
+                ;;
             assessment/assessment.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_LSQA) || defined(BUILD_${guard})"

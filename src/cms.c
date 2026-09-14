@@ -4395,6 +4395,89 @@ sixel_cxform_free(sixel_color_xform_t *transform)
     }
 }
 
+/* Parse exact tokens and consume every numeric field, including the end.
+ * Whitespace and nonfinite numbers are rejected rather than normalized. */
+int
+sixel_cdef_parse(char const *text, sixel_color_def_t **definition,
+                  char const **icc_path, int *intent)
+{
+    sixel_color_def_t *result;
+    char const *cursor;
+    char const *path;
+    char *end;
+    double xy[8];
+    double gamma[3];
+    int slot;
+    int i;
+
+    if (text == NULL || definition == NULL || icc_path == NULL
+            || intent == NULL) {
+        return 0;
+    }
+    result = NULL;
+    path = NULL;
+    slot = 1;
+    if (strcmp(text, "auto") == 0) {
+        /* The loader resolves metadata; this is not an sRGB profile tag. */
+    } else if (strncmp(text, "icc:", 4) == 0) {
+        path = text + 4;
+        if (strncmp(path, "perceptual:", 11) == 0) {
+            slot = 0;
+            path += 11;
+        } else if (strncmp(path, "relative:", 9) == 0) {
+            path += 9;
+        } else if (strncmp(path, "saturation:", 11) == 0) {
+            slot = 2;
+            path += 11;
+        }
+        if (*path == '\0' || strcmp(path, "-") == 0) {
+            return 0;
+        }
+    } else if (strncmp(text, "rgb:", 4) == 0) {
+        for (cursor = text; *cursor != '\0'; ++cursor) {
+            if (isspace((unsigned char)*cursor)) {
+                return 0;
+            }
+        }
+        cursor = text + 4;
+        for (i = 0; i < 8; ++i) {
+            xy[i] = strtod(cursor, &end);
+            if (cursor == end || !isfinite(xy[i])
+                    || *end != (i == 7 ? ':' : ',')) {
+                return 0;
+            }
+            cursor = end + 1;
+        }
+        if (strcmp(cursor, "srgb") == 0) {
+            gamma[0] = gamma[1] = gamma[2] = 1.0;
+            result = sixel_cdef_rgb(xy, SIXEL_COLOR_TRC_SRGB, gamma);
+        } else if (strncmp(cursor, "gamma=", 6) == 0) {
+            cursor += 6;
+            for (i = 0; i < 3; ++i) {
+                gamma[i] = strtod(cursor, &end);
+                if (cursor == end || !isfinite(gamma[i])
+                        || *end != (i == 2 ? '\0' : ',')) {
+                    return 0;
+                }
+                cursor = end + (i != 2);
+            }
+            result = sixel_cdef_rgb(xy, SIXEL_COLOR_TRC_POWER, gamma);
+        }
+        if (result == NULL) {
+            return 0;
+        }
+    } else {
+        result = sixel_cdef_name(text);
+        if (result == NULL) {
+            return 0;
+        }
+    }
+    *definition = result;
+    *icc_path = path;
+    *intent = slot;
+    return 1;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

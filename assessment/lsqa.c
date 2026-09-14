@@ -61,6 +61,8 @@
 #include <sixel.h>
 
 #include "assessment.h"
+#include "color.h"
+#include "sixel_decode_pixels.h"
 #include "chunk-factory.h"
 #include "chunk-view.h"
 #include "getopt_stub.h"
@@ -546,6 +548,182 @@ error:
     return -1;
 }
 
+/* Explicit definitions are applied to original SIXEL palette samples.
+ * PNG overrides need the pre-CMS loader seam validated in M3. Never attach
+ * a source profile to RGB which a legacy loader has already normalized. */
+static int
+load_defined_frame(char const *path, char const *spec,
+                    sixel_allocator_t *allocator, unsigned char const *bg,
+                    sixel_frame_t **out_frame)
+{
+    sixel_color_def_t *definition;
+    sixel_color_def_t *srgb;
+    sixel_chunk_t *chunk;
+    unsigned char const *bytes;
+    unsigned char *indices;
+    unsigned char *mask;
+    unsigned char *palette;
+    unsigned char *profile;
+    float *pixels;
+    float mapped[256 * 3];
+    float background[3];
+    double rgb[3];
+    double xyz[3];
+    double encoded[3];
+    char const *icc_path;
+    FILE *file;
+    long length;
+    size_t count;
+    size_t i;
+    int c;
+    int n;
+    int width;
+    int height;
+    int intent;
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+
+    definition = NULL;
+    srgb = NULL;
+    chunk = NULL;
+    indices = NULL;
+    mask = NULL;
+    palette = NULL;
+    profile = NULL;
+    pixels = NULL;
+    file = NULL;
+    frame = NULL;
+    status = SIXEL_BAD_INPUT;
+    *out_frame = NULL;
+    if (!sixel_cdef_parse(spec, &definition, &icc_path, &intent)) {
+        goto cleanup;
+    }
+    if (icc_path != NULL) {
+        file = fopen(icc_path, "rb");
+        if (file == NULL || fseek(file, 0, SEEK_END) != 0) {
+            goto cleanup;
+        }
+        length = ftell(file);
+        if (length < 128 || length > 16 * 1024 * 1024
+                || fseek(file, 0, SEEK_SET) != 0) {
+            goto cleanup;
+        }
+        profile = (unsigned char *)malloc((size_t)length);
+        if (profile == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        if (fread(profile, 1, (size_t)length, file) != (size_t)length) {
+            goto cleanup;
+        }
+        definition = sixel_cdef_icc(profile, (size_t)length);
+    }
+    srgb = sixel_cdef_name("srgb");
+    if (definition == NULL || srgb == NULL) {
+        goto cleanup;
+    }
+    status = sixel_chunk_create_from_source(&chunk, path, 0, NULL, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    bytes = sixel_chunk_get_buffer(chunk);
+    count = sixel_chunk_get_size(chunk);
+    status = SIXEL_BAD_INPUT;
+    if (bytes == NULL || count < 2 || count > INT_MAX
+            || !(bytes[0] == 0x90
+                 || (bytes[0] == 0x1b && bytes[1] == 'P'))) {
+        sixel_helper_set_additional_message(
+            "explicit input colorspace currently requires standalone SIXEL; "
+            "PNG overrides need pre-normalization support.");
+        goto cleanup;
+    }
+    status = sixel_decode_raw_with_options_mask((unsigned char *)bytes,
+        (int)count, 0, &indices, &mask, &width, &height, &palette, &n,
+        NULL, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = SIXEL_BAD_INPUT;
+    if (width <= 0 || height <= 0 || width > SIXEL_WIDTH_LIMIT
+            || height > SIXEL_HEIGHT_LIMIT || n < 1 || n > 256) {
+        goto cleanup;
+    }
+    count = (size_t)width * (size_t)height;
+    if (count / (size_t)width != (size_t)height
+            || count > SIZE_MAX / (3 * sizeof(float))) {
+        goto cleanup;
+    }
+    for (i = 0; i < (size_t)n; ++i) {
+        for (c = 0; c < 3; ++c) {
+            rgb[c] = palette[i * 3 + c] / 255.0;
+        }
+        if (!sixel_cdef_to_xyz(definition, rgb, xyz, intent)
+                || !sixel_cdef_from_xyz(srgb, xyz, encoded, 1)) {
+            goto cleanup;
+        }
+        for (c = 0; c < 3; ++c) {
+            mapped[i * 3 + c] = (float)sixel_color_decode_srgb(encoded[c]);
+            if (!isfinite(mapped[i * 3 + c])) {
+                goto cleanup;
+            }
+        }
+    }
+    /* Background is always encoded sRGB, independently of the palette.
+     * The mask retains unpainted pixels even with all 256 entries in use. */
+    for (c = 0; c < 3; ++c) {
+        background[c] = (float)sixel_color_decode_srgb(
+            bg == NULL ? 0.0 : bg[c] / 255.0);
+    }
+    pixels = (float *)sixel_allocator_malloc(allocator,
+                                             count * 3 * sizeof(float));
+    if (pixels == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+    for (i = 0; i < count; ++i) {
+        if ((mask == NULL || mask[i] != 0) && indices[i] >= n) {
+            goto cleanup;
+        }
+        for (c = 0; c < 3; ++c) {
+            pixels[i * 3 + c] = mask != NULL && mask[i] == 0
+                ? background[c] : mapped[(size_t)indices[i] * 3 + c];
+        }
+    }
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_frame_init(frame, (unsigned char *)pixels, width, height,
+                              SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, 0);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    pixels = NULL;
+    *out_frame = frame;
+    frame = NULL;
+cleanup:
+    if (file != NULL) {
+        fclose(file);
+    }
+    free(profile);
+    sixel_cdef_free(definition);
+    sixel_cdef_free(srgb);
+    sixel_frame_unref(frame);
+    sixel_allocator_free(allocator, pixels);
+    sixel_allocator_free(allocator, indices);
+    sixel_allocator_free(allocator, mask);
+    sixel_allocator_free(allocator, palette);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "Cannot interpret %s as %s: %s\n", path, spec,
+                sixel_helper_get_additional_message());
+        return -1;
+    }
+    return 0;
+}
+
 typedef struct Metrics {
     float ms_ssim;
     float high_freq_out;
@@ -572,6 +750,8 @@ typedef struct Metrics {
     float delta_e00_mean;
     float gmsd_value;
     float psnr_y;
+    float region_mean;
+    float region_max;
     unsigned int valid_mask;
 } Metrics;
 
@@ -582,6 +762,10 @@ typedef struct MetricBinding {
 } MetricBinding;
 
 static const MetricBinding g_metric_bindings[] = {
+    {"DE00_region_mean", offsetof(Metrics, region_mean),
+     SIXEL_ASSESSMENT_METRIC_REGION_MEAN},
+    {"DE00_region_max", offsetof(Metrics, region_max),
+     SIXEL_ASSESSMENT_METRIC_REGION_MAX},
     {"MS-SSIM", offsetof(Metrics, ms_ssim),
      SIXEL_ASSESSMENT_METRIC_MS_SSIM},
     {"HighFreqRatio_out", offsetof(Metrics, high_freq_out),
@@ -641,6 +825,10 @@ typedef struct MetricSpec {
 } MetricSpec;
 
 static const MetricSpec sixel_metric_specs[] = {
+    {"DE00_region_mean", "DE00_region_mean",
+     SIXEL_ASSESSMENT_METRIC_REGION_MEAN},
+    {"DE00_region_max", "DE00_region_max",
+     SIXEL_ASSESSMENT_METRIC_REGION_MAX},
     {"MS-SSIM", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
     {"MS_SSIM", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
     {"SSIM", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
@@ -1304,227 +1492,6 @@ lsqa_precision_from_pixelformat(int pixelformat)
 }
 
 static int
-lsqa_float32_pixelformat_for_colorspace(int colorspace)
-{
-    switch (colorspace) {
-    case SIXEL_COLORSPACE_LINEAR:
-        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    case SIXEL_COLORSPACE_OKLAB:
-        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
-    case SIXEL_COLORSPACE_CIELAB:
-        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
-    case SIXEL_COLORSPACE_DIN99D:
-        return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
-    default:
-        return SIXEL_PIXELFORMAT_RGBFLOAT32;
-    }
-}
-
-static int
-lsqa_target_pixelformat(int colorspace, int precision)
-{
-    if (precision == LSQA_COMPARE_PRECISION_FLOAT32) {
-        return lsqa_float32_pixelformat_for_colorspace(colorspace);
-    }
-    return SIXEL_PIXELFORMAT_RGB888;
-}
-
-static SIXELSTATUS
-lsqa_convert_frame_colorspace(sixel_frame_t *frame,
-                              int target_colorspace)
-{
-    SIXELSTATUS status;
-    int source_colorspace;
-    int pixelformat;
-    int width;
-    int height;
-    int depth;
-    size_t size;
-    unsigned char *pixels;
-    sixel_frame_pixels_view_t view;
-
-    memset(&view, 0, sizeof(view));
-    if (frame == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    source_colorspace = sixel_frame_get_colorspace(frame);
-    if (source_colorspace == target_colorspace) {
-        return SIXEL_OK;
-    }
-
-    width = sixel_frame_get_width(frame);
-    height = sixel_frame_get_height(frame);
-    pixelformat = sixel_frame_get_pixelformat(frame);
-    if (width <= 0 || height <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    size = (size_t)width * (size_t)height;
-    if (size / (size_t)width != (size_t)height) {
-        return SIXEL_BAD_INPUT;
-    }
-    depth = sixel_helper_compute_depth(pixelformat);
-    if (depth <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-    if (size > SIZE_MAX / (size_t)depth) {
-        return SIXEL_BAD_INPUT;
-    }
-    size *= (size_t)depth;
-
-    status = sixel_assessment_frame_get_pixels_view(frame, &view);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    pixels = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
-        ? (unsigned char *)view.pixels_float32
-        : view.pixels;
-    if (pixels == NULL) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    status = sixel_helper_convert_colorspace(pixels,
-                                             size,
-                                             pixelformat,
-                                             source_colorspace,
-                                             target_colorspace);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    sixel_frame_set_colorspace(frame, target_colorspace);
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-lsqa_apply_grayscale(sixel_frame_t *frame)
-{
-    int width;
-    int height;
-    int pixelformat;
-    size_t pixels;
-    size_t i;
-    sixel_frame_pixels_view_t view;
-    float *float_values;
-    unsigned char *byte_values;
-    size_t base;
-    float float_y;
-    unsigned int r;
-    unsigned int g;
-    unsigned int b;
-    unsigned int byte_y;
-    SIXELSTATUS status;
-
-    memset(&view, 0, sizeof(view));
-    float_values = NULL;
-    byte_values = NULL;
-    base = 0u;
-    float_y = 0.0f;
-    r = 0u;
-    g = 0u;
-    b = 0u;
-    byte_y = 0u;
-    status = SIXEL_FALSE;
-    if (frame == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    width = sixel_frame_get_width(frame);
-    height = sixel_frame_get_height(frame);
-    pixelformat = sixel_frame_get_pixelformat(frame);
-    if (width <= 0 || height <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-    pixels = (size_t)width * (size_t)height;
-    if (pixels / (size_t)width != (size_t)height) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        status = sixel_assessment_frame_get_pixels_view(frame, &view);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-        float_values = view.pixels_float32;
-        if (float_values == NULL) {
-            return SIXEL_BAD_INPUT;
-        }
-        for (i = 0; i < pixels; ++i) {
-            base = i * 3u;
-            float_y = 0.2126f * float_values[base + 0u]
-                    + 0.7152f * float_values[base + 1u]
-                    + 0.0722f * float_values[base + 2u];
-            float_values[base + 0u] = float_y;
-            float_values[base + 1u] = float_y;
-            float_values[base + 2u] = float_y;
-        }
-    } else {
-        byte_values = sixel_frame_get_pixels(frame);
-        if (byte_values == NULL) {
-            return SIXEL_BAD_INPUT;
-        }
-        for (i = 0; i < pixels; ++i) {
-            base = i * 3u;
-            r = (unsigned int)byte_values[base + 0u];
-            g = (unsigned int)byte_values[base + 1u];
-            b = (unsigned int)byte_values[base + 2u];
-            byte_y = (2126u * r + 7152u * g + 722u * b + 5000u) /
-                     10000u;
-            if (byte_y > 255u) {
-                byte_y = 255u;
-            }
-            byte_values[base + 0u] = (unsigned char)byte_y;
-            byte_values[base + 1u] = (unsigned char)byte_y;
-            byte_values[base + 2u] = (unsigned char)byte_y;
-        }
-    }
-
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-lsqa_prepare_frame_for_comparison(sixel_frame_t *frame,
-                                  int target_colorspace,
-                                  int target_precision,
-                                  unsigned char *bgcolor,
-                                  int grayscale_enabled)
-{
-    SIXELSTATUS status;
-    int target_pixelformat;
-
-    if (frame == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    /* Flatten RGBA using the requested background before metric analysis. */
-    status = sixel_frame_strip_alpha(frame, bgcolor);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    target_pixelformat = lsqa_target_pixelformat(target_colorspace,
-                                                 target_precision);
-    status = sixel_frame_set_pixelformat(frame, target_pixelformat);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    status = lsqa_convert_frame_colorspace(frame, target_colorspace);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    if (grayscale_enabled != 0) {
-        status = lsqa_apply_grayscale(frame);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-    }
-
-    return SIXEL_OK;
-}
-
-static int
 lsqa_parse_compare_colorspace(char const *argument,
                               int *out_colorspace,
                               char *detail,
@@ -1747,6 +1714,9 @@ lsqa_copy_option_text(char *buffer,
 }
 
 typedef struct Options {
+    const char *ref_spec;
+    const char *out_spec;
+    int region_window;
     const char *ref_path;
     const char *out_path;
     char loader_order_buffer[PATH_MAX];
@@ -1962,21 +1932,46 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         'g',
         "grayscale",
-        "-g, --grayscale            compare using grayscale luminance.\n"
+        "-g, --grayscale            grayscale signal; "
+        "color metrics unchanged.\n"
+    },
+    {
+        'R', "reference-colorspace",
+        "-R SPEC, --reference-colorspace=SPEC (default auto).\n"
+        "                           Original input definition: auto, srgb,\n"
+        "                           display-p3, icc:[INTENT:]FILE, or\n"
+        "                           rgb:wx,wy,rx,ry,gx,gy,bx,by:srgb or\n"
+        "                           rgb:wx,wy,rx,ry,gx,gy,bx,by:gamma=r,g,b.\n"
+        "                           INTENT: perceptual, relative (default),\n"
+        "                           saturation. Explicit: SIXEL only.\n"
+    },
+    {
+        'T', "target-colorspace",
+        "-T SPEC, --target-colorspace=SPEC (default auto).\n"
+        "                           Independent target input definition.\n"
+    },
+    {
+        'w', "region-window",
+        "-w SIZE, --region-window=SIZE: 8, 16 (default), 32, 64.\n"
+        "                           Fixed XYZ mean tiles with partial edges.\n"
+        "                           Metrics: DE00_region_mean,\n"
+        "                           DE00_region_max.\n"
     },
     {
         'W',
         "compare-colorspace",
         "-W COLORSPACE, --compare-colorspace=COLORSPACE\n"
-        "                           comparison colorspace (reference,\n"
-        "                           gamma, linear, oklab,\n"
-        "                           cielab, din99d).\n"
+        "                           luma signal basis: reference, gamma,\n"
+        "                           linear, oklab, cielab, din99d.\n"
+        "                           Gamma uses encoded luma; the other\n"
+        "                           spaces use linear Y. Color metrics\n"
+        "                           keep the original physical colors.\n"
     },
     {
         'P',
         "compare-precision",
         "-P PRECISION, --compare-precision=PRECISION\n"
-        "                           comparison precision (reference,\n"
+        "                           signal precision (reference,\n"
         "                           8bit, float32).\n"
     },
     {
@@ -2062,7 +2057,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "m:b:%:gW:P:L:#:B:d:S:e:Hh";
+static char const g_lsqa_optstring[] = "R:T:w:m:b:%:gW:P:L:#:B:d:S:e:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -2599,6 +2594,20 @@ error:
 }
 
 static int
+lsqa_valid_color_spec(char const *spec)
+{
+    sixel_color_def_t *definition;
+    char const *path;
+    int intent;
+    int ok;
+
+    definition = NULL;
+    ok = sixel_cdef_parse(spec, &definition, &path, &intent);
+    sixel_cdef_free(definition);
+    return ok;
+}
+
+static int
 parse_args(int argc, char **argv, Options *opts)
 {
     const char *ref_arg;
@@ -2620,6 +2629,9 @@ parse_args(int argc, char **argv, Options *opts)
     int option_index;
 #endif
 
+    opts->ref_spec = "auto";
+    opts->out_spec = "auto";
+    opts->region_window = 16;
     opts->ref_path = NULL;
     opts->out_path = "-";
     opts->metric_spec = NULL;
@@ -2679,6 +2691,9 @@ parse_args(int argc, char **argv, Options *opts)
     for (;;) {
 #if HAVE_GETOPT_LONG
         struct option long_options[] = {
+            {"reference-colorspace", required_argument, &long_opt, 'R'},
+            {"target-colorspace", required_argument, &long_opt, 'T'},
+            {"region-window", required_argument, &long_opt, 'w'},
             {"metrics", required_argument, &long_opt, 'm'},
             {"baseline", required_argument, &long_opt, 'b'},
             {"env", required_argument, &long_opt, '%'},
@@ -2717,6 +2732,22 @@ parse_args(int argc, char **argv, Options *opts)
         }
 
         switch (opt) {
+        case 'R':
+            opts->ref_spec = optarg;
+            break;
+        case 'T':
+            opts->out_spec = optarg;
+            break;
+        case 'w':
+            if (strcmp(optarg, "8") != 0 && strcmp(optarg, "16") != 0
+                    && strcmp(optarg, "32") != 0
+                    && strcmp(optarg, "64") != 0) {
+                lsqa_set_parse_error("region-window expects 8, 16, 32 or 64");
+                parse_status = -1;
+                goto cleanup;
+            }
+            opts->region_window = atoi(optarg);
+            break;
         case 'H':
         case 'h':
             parse_status = 1;
@@ -2926,6 +2957,20 @@ parse_args(int argc, char **argv, Options *opts)
         }
     }
 
+    if (!lsqa_valid_color_spec(opts->ref_spec)
+            || !lsqa_valid_color_spec(opts->out_spec)) {
+        lsqa_set_parse_error("invalid input colorspace SPEC; see --help");
+        parse_status = -1;
+        goto cleanup;
+    }
+    if (strcmp(opts->out_spec, "auto") != 0
+            && opts->dequantize_method != SIXEL_DEQUANTIZE_NONE) {
+        lsqa_set_parse_error(
+            "explicit target colorspace with dequantize is not supported");
+        parse_status = -1;
+        goto cleanup;
+    }
+
     argi = optind;
     if (scan_argc - argi < 1 || scan_argc - argi > 2) {
         lsqa_set_parse_error("lsqa: invalid number of arguments.");
@@ -2946,6 +2991,12 @@ parse_args(int argc, char **argv, Options *opts)
         }
     }
 
+    if (strcmp(opts->ref_path, "-") == 0
+            && strcmp(opts->out_path, "-") == 0) {
+        lsqa_set_parse_error("only one image input may use stdin");
+        parse_status = -1;
+        goto cleanup;
+    }
     if (lsqa_apply_env_overrides(opts) != 0) {
         parse_status = -1;
         goto cleanup;
@@ -3052,11 +3103,12 @@ main(int argc, char **argv)
         return LSQA_EXIT_RUNTIME_FAILED;
     }
 
-    if (load_frame(opts.ref_path,
-                   allocator,
-                   opts.loader_order,
-                   opts.has_bgcolor ? opts.bgcolor : NULL,
-                   &ref_frame) != 0) {
+    if ((strcmp(opts.ref_spec, "auto") == 0
+            ? load_frame(opts.ref_path, allocator, opts.loader_order,
+                         opts.has_bgcolor ? opts.bgcolor : NULL, &ref_frame)
+            : load_defined_frame(opts.ref_path, opts.ref_spec, allocator,
+                         opts.has_bgcolor ? opts.bgcolor : NULL, &ref_frame))
+            != 0) {
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
     }
@@ -3073,11 +3125,12 @@ main(int argc, char **argv)
             sixel_allocator_unref(allocator);
             return LSQA_EXIT_LOAD_FAILED;
         }
-    } else if (load_frame(opts.out_path,
-                          allocator,
-                          opts.loader_order,
-                          opts.has_bgcolor ? opts.bgcolor : NULL,
-                          &out_frame) != 0) {
+    } else if ((strcmp(opts.out_spec, "auto") == 0
+            ? load_frame(opts.out_path, allocator, opts.loader_order,
+                         opts.has_bgcolor ? opts.bgcolor : NULL, &out_frame)
+            : load_defined_frame(opts.out_path, opts.out_spec, allocator,
+                         opts.has_bgcolor ? opts.bgcolor : NULL, &out_frame))
+            != 0) {
         sixel_frame_unref(ref_frame);
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
@@ -3097,60 +3150,17 @@ main(int argc, char **argv)
         target_precision = opts.compare_precision;
     }
 
-    status = lsqa_prepare_frame_for_comparison(ref_frame,
-                                               target_colorspace,
-                                               target_precision,
-                                               opts.has_bgcolor
-                                                   ? opts.bgcolor
-                                                   : NULL,
-                                               opts.grayscale_compare);
-    if (SIXEL_FAILED(status)) {
-        char const *detail;
-
-        detail = sixel_helper_get_additional_message();
-        if (detail != NULL && detail[0] != '\0') {
-            fprintf(stderr,
-                    "Failed to normalize reference frame: %s (%s)\n",
-                    sixel_helper_format_error(status),
-                    detail);
-        } else {
-            fprintf(stderr,
-                    "Failed to normalize reference frame: %s\n",
-                    sixel_helper_format_error(status));
-        }
-        sixel_frame_unref(ref_frame);
-        sixel_frame_unref(out_frame);
-        sixel_allocator_unref(allocator);
-        return LSQA_EXIT_RUNTIME_FAILED;
+    /* Preserve legacy post-loader alpha handling for auto inputs. Explicit
+     * SIXEL frames have already selected the independent sRGB background. */
+    status = sixel_frame_strip_alpha(ref_frame,
+                                      opts.has_bgcolor ? opts.bgcolor : NULL);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_frame_strip_alpha(out_frame,
+                    opts.has_bgcolor ? opts.bgcolor : NULL);
     }
-    status = lsqa_prepare_frame_for_comparison(out_frame,
-                                               target_colorspace,
-                                               target_precision,
-                                               opts.has_bgcolor
-                                                   ? opts.bgcolor
-                                                   : NULL,
-                                               opts.grayscale_compare);
-    if (SIXEL_FAILED(status)) {
-        char const *detail;
-
-        detail = sixel_helper_get_additional_message();
-        if (detail != NULL && detail[0] != '\0') {
-            fprintf(stderr,
-                    "Failed to normalize target frame: %s (%s)\n",
-                    sixel_helper_format_error(status),
-                    detail);
-        } else {
-            fprintf(stderr,
-                    "Failed to normalize target frame: %s\n",
-                    sixel_helper_format_error(status));
-        }
-        sixel_frame_unref(ref_frame);
-        sixel_frame_unref(out_frame);
-        sixel_allocator_unref(allocator);
-        return LSQA_EXIT_RUNTIME_FAILED;
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_assessment_new(&assessment, allocator);
     }
-
-    status = sixel_assessment_new(&assessment, allocator);
     if (SIXEL_FAILED(status) || assessment == NULL) {
         fprintf(stderr,
                 "Failed to create assessment object: %s\n",
@@ -3160,6 +3170,18 @@ main(int argc, char **argv)
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_RUNTIME_FAILED;
     }
+
+    assessment->signal_space = target_colorspace;
+    assessment->signal_bytes = target_precision == LSQA_COMPARE_PRECISION_8BIT;
+    assessment->grayscale = opts.grayscale_compare;
+    assessment->region_window = opts.region_window;
+    assessment->color_spec[0] = opts.ref_spec;
+    assessment->color_spec[1] = opts.out_spec;
+    assessment->color_origin[0] = strcmp(opts.ref_spec, "auto") == 0
+        ? "legacy-loader-managed" : "explicit-original-sixel";
+    assessment->color_origin[1] = strcmp(opts.out_spec, "auto") == 0
+        ? "legacy-loader-managed" : "explicit-original-sixel";
+    memcpy(assessment->background, opts.bgcolor, 3);
 
     sixel_assessment_select_sections(assessment,
                                      SIXEL_ASSESSMENT_SECTION_QUALITY);
