@@ -94,7 +94,65 @@ test_frame_0018_resampling(int argc, char **argv)
     magnitude = 1.0;
     memset(pixels, 0, sizeof(pixels));
     memset(expected, 0, sizeof(expected));
-    if (strcmp(argv[1], "constant") == 0) {
+    if (strncmp(argv[1], "tiny_", 5) == 0) {
+        sw = 2;
+        sh = 1;
+        dw = 3;
+        dh = 1;
+        if (strstr(argv[1], "_y") != NULL) {
+            sw = 1;
+            sh = 2;
+            dw = 1;
+            dh = 3;
+        }
+        for (i = 0; i < 2; ++i) {
+            for (c = 0; c < 3; ++c) {
+                pixels[i * 3 + c] = ldexpf(1.0f, -149);
+                if (strstr(argv[1], "mixed") != NULL) {
+                    pixels[i * 3 + c] = ldexpf((float)(4 * i + c + 1), -149);
+                } else if (strstr(argv[1], "zero") != NULL) {
+                    pixels[i * 3 + c] = 0.0f;
+                }
+                if (c == 2) {
+                    pixels[i * 3 + c] = -pixels[i * 3 + c];
+                }
+            }
+        }
+        for (c = 0; c < 3; ++c) {
+            expected[c] = pixels[c];
+            /* The center has exact weights 1/2 and 1/2. */
+            expected[3 + c] = ((double)pixels[c] + pixels[3 + c]) / 2.0;
+            expected[6 + c] = pixels[3 + c];
+        }
+        tolerance = 0.0;
+    } else if (strncmp(argv[1], "identity_", 9) == 0) {
+        /* A one-sample weighted mean is exactly that sample, for any tap. */
+        sw = 1;
+        sh = 1;
+        dw = strstr(argv[1], "large") != NULL ? 6 : 2;
+        dh = 1;
+        if (strstr(argv[1], "_y") != NULL) {
+            dh = dw;
+            dw = 1;
+        }
+        if (strstr(argv[1], "large") != NULL) {
+            pixels[0] = FLT_MAX;
+            pixels[1] = -FLT_MAX;
+            pixels[2] = FLT_MAX / 2.0f;
+        } else if (strstr(argv[1], "subnormal") != NULL) {
+            pixels[0] = ldexpf(1.0f, -149);
+            pixels[1] = ldexpf(1.0f, -148);
+            pixels[2] = -pixels[1];
+        } else {
+            pixels[0] = 0.1f;
+            pixels[1] = 0.3f;
+            pixels[2] = -0.9f;
+        }
+        for (i = 0; i < dw * dh * 3; ++i) {
+            expected[i] = pixels[i % 3];
+        }
+        tolerance = 0.0;
+    } else if (strcmp(argv[1], "constant") == 0) {
         sw = 3;
         dh = 3;
         dw = 1;
