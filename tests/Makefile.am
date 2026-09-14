@@ -408,6 +408,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0018_FRAME_FLOAT_RESAMPLING \
     -DBUILD_TEST_0054_FRAME_FLOAT_GEOMETRY_STATE \
     -DBUILD_TEST_0098_FRAME_FLOAT_DYNAMIC_RANGE \
+    -DBUILD_TEST_0178_FRAME_FLOAT_BYTE_BOUNDARY \
     -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
     -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
@@ -802,6 +803,7 @@ test_runner_SOURCES = test_runner.c \
     processing/frame/0018_frame_float_resampling.c \
     processing/frame/0054_frame_float_geometry_state.c \
     processing/frame/0098_frame_float_dynamic_range.c \
+    processing/frame/0178_frame_float_byte_boundary.c \
     processing/frame/frame_transparent_mask_resize_test_common.c \
     processing/frame/frame_transparent_mask_resize_test_common.h \
     processing/geometry/resampling_exact_test_driver.c \

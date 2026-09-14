@@ -273,6 +273,7 @@ int test_frame_0015_atomic(int argc, char **argv);
 int test_frame_0018_resampling(int argc, char **argv);
 int test_frame_0054_geometry(int argc, char **argv);
 int test_frame_0098_dynamic(int argc, char **argv);
+int test_frame_0178_byte(int argc, char **argv);
 int test_frame_0003_transparent_mask_clip(int argc, char **argv);
 int test_frame_0004_transparent_mask_resize(int argc, char **argv);
 int test_frame_0005_transparent_mask_resize_bilinear(int argc, char **argv);
@@ -1044,6 +1045,7 @@ static test_entry_t const test_entries[] = {
     { "frame/0018_float_resampling", test_frame_0018_resampling },
     { "frame/0054_float_geometry_state", test_frame_0054_geometry },
     { "frame/0098_float_dynamic_range", test_frame_0098_dynamic },
+    { "frame/0178_float_byte_boundary", test_frame_0178_byte },
     { "frame/0003_frame_transparent_mask_clip",
       test_frame_0003_transparent_mask_clip },
     { "frame/0004_frame_transparent_mask_resize",

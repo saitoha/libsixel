@@ -264,6 +264,7 @@ The rows below are pipeline landmarks rather than the complete suite. The [PNG/A
 | PNG-25 | A zero frame count found before raster decode performs exactly one successful static fallback callback. | [tests/loader/builtin/0025_apng_builtin_invalid_num_frames_zero.t](../../../tests/loader/builtin/0025_apng_builtin_invalid_num_frames_zero.t) |
 | PNG-26 | A frame-count mismatch and a sequence gap discovered after raster decode remain errors without a trailing static callback. | [tests/loader/builtin/0026_apng_builtin_invalid_num_frames_mismatch.t](../../../tests/loader/builtin/0026_apng_builtin_invalid_num_frames_mismatch.t), [tests/loader/builtin/0036_apng_builtin_invalid_fctl_sequence_gap.t](../../../tests/loader/builtin/0036_apng_builtin_invalid_fctl_sequence_gap.t) |
 | PNG-27 | An error returned by the frame callback is terminal and cannot cause the callback to run again through static fallback. | [tests/loader/builtin/2044_loader_builtin_apng_callback_error_no_fallback.t](../../../tests/loader/builtin/2044_loader_builtin_apng_callback_error_no_fallback.t) |
+| PNG-28 | With CMS disabled and no background, both RGBA8 keycolor settings retain nonzero-alpha source RGB; single-thread CPU K-means with exact gamma samples and no palette adjustments emits the known colors at both pixel positions, allowing either palette-index order. | [tests/loader/builtin/0141_loader_builtin_png_rgba_keycolor_exact_output.t](../../../tests/loader/builtin/0141_loader_builtin_png_rgba_keycolor_exact_output.t) |
 
 ### Quality regression tests
 

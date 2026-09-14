@@ -963,6 +963,128 @@ def legacy_png_icc_oracle():
             'legacy-png-icc.json': (json.dumps(manifest, indent=2) + '\n').encode()}
 
 
+def frame_byte_oracles():
+    """Round exact stored floats only after independent inverse coordinates."""
+    def as_bits(value):
+        return struct.unpack('>I', struct.pack('>f', float(value)))[0]
+
+    def from_bits(value):
+        return D.from_float(struct.unpack('>f', struct.pack('>I', value))[0])
+
+    # Solve the published forward matrices independently; do not call the
+    # production inverse or derive expected colors by a production roundtrip.
+    lms_inverse = inverse(matrix([
+        ['.4122214708', '.5363325363', '.0514459929'],
+        ['.2119034982', '.6806995451', '.1073969566'],
+        ['.0883024619', '.2817188376', '.6299787005']]))
+    oklab_inverse = inverse(matrix([
+        ['.2104542553', '.7936177850', '-.0040720468'],
+        ['1.9779984951', '-2.4285922050', '.4505937099'],
+        ['.0259040371', '.7827717662', '-.8086757660']]))
+    xyz_inverse = inverse(matrix([
+        ['.4124564', '.3575761', '.1804375'],
+        ['.2126729', '.7151522', '.0721750'],
+        ['.0193339', '.1191920', '.9503041']]))
+    angle = D('3.141592653589793238462643383279502884197169399375105820974944') * 50 / 180
+    sine = term = angle
+    cosine = cterm = D(1)
+    for n in range(1, 60):
+        term *= -angle * angle / ((2 * n) * (2 * n + 1))
+        cterm *= -angle * angle / ((2 * n - 1) * (2 * n))
+        sine += term
+        cosine += cterm
+
+    def lab_inverse(value, din=False):
+        light, a, b = value
+        if din:
+            light, a, b = light * 100, a * 100, b * 100
+            light = ((light / D('325.22')).exp() - 1) / D('.0036')
+            chroma = (a * a + b * b).sqrt()
+            gain = (((chroma / D('22.5')).exp() - 1) /
+                    D('.06') / chroma) if chroma else D(0)
+            e = gain * (cosine * a + sine * b)
+            f = gain * (-sine * a + cosine * b) / D('1.14')
+            a, b = cosine * e - sine * f, sine * e + cosine * f
+        else:
+            light, a, b = light * 100, a * 128, b * 128
+        fy = (light + 16) / 116
+        roots = [fy + a / 500, fy, fy - b / 200]
+        values = [v ** 3 if v > D(6) / 29 else
+                  (116 * v - 16) * 27 / 24389 for v in roots]
+        white_x = (D('1.12') * D('.95047') - D('.12') * D('1.08883')) if din else D('.95047')
+        xyz = [values[0] * white_x, values[1], values[2] * D('1.08883')]
+        if din:
+            xyz[0] = (xyz[0] + D('.12') * xyz[2]) / D('1.12')
+        return apply(xyz_inverse, xyz)
+
+    records, offsets = [], [0]
+    names = ['gamma', 'linear', 'oklab', 'cielab', 'din99d']
+    for space in names:
+        sources = []
+        if space in ('gamma', 'linear'):
+            values = [as_bits(v) for v in ['-2', '-.1', '-0', '0', '1e-40',
+                '.0000001', '.0001', '.001', '.0031307', '.0031308',
+                '.0031309', '.01', '.1', '.5', '.9999', '1', '1.2', '2']]
+            values += [0x7f7fffff, 0xff7fffff]
+            for n in range(255):
+                value = (D(n) + D('.5')) / 255
+                midpoint = as_bits(decode(value) if space == 'linear' else value)
+                values += [midpoint - 1, midpoint, midpoint + 1]
+            sources = [[bits, values[(i + 1) % len(values)],
+                        values[(i + 2) % len(values)]]
+                       for i, bits in enumerate(values)]
+        else:
+            samples = [[D('.5'), D(0), D(0)], [D('.65'), D('.2'), D('-.1')],
+                       [D('1.2'), D('-.7'), D('.4')], [D('-.1'), D(0), D(0)],
+                       [D(0), D(0), D(0)], [D(1), D(0), D(0)]]
+            samples += [list(map(D, row)) for row in
+                        [('0.2', '-0.02', '0.03'), ('0.01', '0', '0'),
+                         ('0.75', '0.1', '-0.15')]]
+            sources = [[as_bits(v) for v in row] for row in samples]
+            # These fit double throughout but cannot pass through an
+            # intermediate linear float32 buffer. The byte result is valid.
+            sources += ([[0x7f7fffff, 0, 0], [0xff7fffff, 0, 0]]
+                        if space != 'din99d' else [[as_bits(100), 0, 0]])
+        for bits in sources:
+            source = [from_bits(v) for v in bits]
+            if space == 'gamma':
+                gamma = source
+                linear = None
+            else:
+                linear = source if space == 'linear' else (
+                    apply(lms_inverse, [v ** 3 for v in
+                                        apply(oklab_inverse, source)])
+                    if space == 'oklab' else
+                    lab_inverse(source, space == 'din99d'))
+                gamma = list(map(encode, linear))
+            encoded = [max(D(0), min(D(1), v)) * 255 for v in gamma]
+            byte = [int((v + D('.5')).to_integral_value(rounding='ROUND_FLOOR'))
+                    for v in encoded]
+            records.append({'space': space, 'source_bits': bits,
+                'source_float': [str(v) for v in source],
+                'linear': None if linear is None else [str(v) for v in linear],
+                'gamma': [str(v) for v in gamma], 'byte': byte,
+                'half_byte_distance': [str(abs(v - (int(v) + D('.5'))))
+                                       for v in encoded]})
+        offsets.append(len(records))
+    header = '/* Generated from exact stored floats and independent math. */\n'
+    header += 'static unsigned int const color_frame_byte_offsets[6] = {\n'
+    header += '    ' + ', '.join(map(str, offsets)) + '\n};\n'
+    header += 'static struct {\n    unsigned int bits[3];\n'
+    header += '    unsigned char bytes[3];\n} const color_frame_byte[] = {\n'
+    for record in records:
+        header += '    {{' + ', '.join(f'0x{v:08x}u' for v in record['source_bits'])
+        header += '}, {' + ', '.join(map(str, record['byte'])) + '}},\n'
+    header += '};\n'
+    manifest = {'generator': 'tools/generate_color_fixtures.py',
+        'arithmetic': '60-digit Decimal; exact IEEE binary32 source; inverse '
+                      'forward Oklab/legacy Lab matrices; scalar DIN99d inverse; '
+                      'gamma identity; final clamp and half-up byte rounding',
+        'offsets': offsets, 'samples': records}
+    return {'frame-byte.h': header.encode(),
+            'frame-byte.json': (json.dumps(manifest, indent=2) + '\n').encode()}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -1067,6 +1189,7 @@ def main():
     outputs.update(lut_outputs)
     outputs.update(png_sample_oracles(profile))
     outputs.update(legacy_png_icc_oracle())
+    outputs.update(frame_byte_oracles())
     outputs.update(cmyk_sample_oracles())
     outputs.update(gray_sample_oracles())
     outputs.update(jpeg_sample_oracles())

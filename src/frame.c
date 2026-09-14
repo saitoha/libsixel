@@ -1391,6 +1391,79 @@ sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* Publish a byte view only after every original float triplet has converted.
+ * The storage normalizer handles channel layouts, not color interpretation:
+ * using it first would quantize linear or opponent coordinates before their
+ * transfer/matrix conversion. A separate byte buffer also makes allocation
+ * and numeric failures atomic for both owned and borrowed source storage. */
+static SIXELSTATUS
+sixel_frame_quantize_float_rgb(sixel_frame_t *frame)
+{
+    SIXELSTATUS status;
+    unsigned char *pixels;
+    double input[3];
+    double output[3];
+    double value;
+    size_t count;
+    size_t bytes;
+    size_t i;
+    int c;
+    int converted;
+
+    if (frame->width <= 0 || frame->height <= 0 ||
+        (size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return SIXEL_BAD_INPUT;
+    }
+    count = (size_t)frame->width * (size_t)frame->height;
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INPUT;
+    }
+    status = sixel_frame_validate_size("sixel_frame_set_pixelformat",
+        frame->width, frame->height, SIXEL_PIXELFORMAT_RGB888,
+        &count, &bytes, NULL);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, bytes);
+    if (pixels == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    for (i = 0u; i < count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            input[c] = frame->pixels.f32ptr[i * 3u + c];
+        }
+        if (frame->colorspace == SIXEL_COLORSPACE_GAMMA) {
+            /* Gamma storage already has the requested coordinates. Keep
+             * exact rounding ties and avoid a redundant transfer roundtrip. */
+            memcpy(output, input, sizeof(output));
+            converted = isfinite(input[0]) && isfinite(input[1]) &&
+                        isfinite(input[2]);
+        } else {
+            converted = sixel_color_convert(output, input, frame->colorspace,
+                                            SIXEL_COLORSPACE_GAMMA);
+        }
+        if (!converted) {
+            sixel_allocator_free(frame->allocator, pixels);
+            sixel_helper_set_additional_message(
+                "frame byte conversion: nonfinite or domain error.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (c = 0; c < 3; ++c) {
+            /* Only this final gamma byte boundary restricts the gamut.
+             * Widening source floats preserves their exact stored value. */
+            value = output[c] < 0.0 ? 0.0 :
+                    output[c] > 1.0 ? 1.0 : output[c];
+            pixels[i * 3u + c] = (unsigned char)(value * 255.0 + 0.5);
+        }
+    }
+    sixel_frame_release_owned_pixels(frame);
+    frame->pixels.u8ptr = pixels;
+    frame->owns_pixels = 1;
+    sixel_frame_apply_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
+    return SIXEL_OK;
+}
+
+
 /* set pixelformat */
 SIXELAPI SIXELSTATUS
 sixel_frame_set_pixelformat(
@@ -1417,6 +1490,10 @@ sixel_frame_set_pixelformat(
     if (frame->pixels.u8ptr == NULL) {
         sixel_frame_apply_pixelformat(frame, pixelformat);
         return SIXEL_OK;
+    }
+    if (pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+        SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+        return sixel_frame_quantize_float_rgb(frame);
     }
 
     status = SIXEL_OK;
