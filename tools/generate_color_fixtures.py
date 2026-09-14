@@ -190,6 +190,96 @@ def pack_profile(tags, profile_class=b'mntr', space=b'RGB ',
     return bytes(header) + struct.pack('>I', len(tags)) + table + payload
 
 
+def gray_sample_oracles():
+    """A D50-referred gray input profile with the exact kTRC y = x**2."""
+    curve = b'para' + bytes(4) + struct.pack('>HH', 0, 0) + fixed(D(2))
+    profile = pack_profile([(b'kTRC', curve)], b'scnr', b'GRAY',
+                           'Independent gray gamma 2')
+    samples = [0, 1, 2, 16, 128, 256, 257, 1024, 2048, 4095, 4096, 4097,
+               8192, 16384, 32768, 40001, 65534, 65535]
+    # A neutral has XYZ = Y*D50. Bound a full s15Fixed16 bin in each
+    # white component and each destination-matrix entry, independently of
+    # any native output. ||inv(M)|| * (q + 3q) / (1 - ||inv(M)|| * 3q)
+    # bounds the RGB gain error. It scales with Y; black gets no floor.
+    destination = [list(row) for row in zip(*[
+        adapt(column) for column in zip(*SRGB)])]
+    inverse_norm = max(sum(map(abs, row)) for row in inverse(destination))
+    quantum = 1 / D(65536)
+    matrix_budget = inverse_norm * 4 * quantum / (1 - inverse_norm * 3 * quantum)
+    # Reserve 64 binary32 unit roundoffs for input normalization, x^g
+    # (g <= 4 here), float curve evaluation, matrix arithmetic and storage.
+    # This is a test-design allowance, not a proved ColorSync pow error bound.
+    float_budget = D(64) / D(2) ** 24
+    native_budget = (1 + matrix_budget) * (1 + float_budget) - 1
+    expected = [(D(value) / 65535) ** 2 for value in samples]
+    header = '/* Generated independently; gray PCS is kTRC times D50. */\n'
+    header += f'#define COLOR_GRAY_SAMPLE_COUNT {len(samples)}\n'
+    header += ('static double const color_gray_float_relative = '
+               + format(float(float_budget), '.17g') + ';\n')
+    header += ('static double const color_gray_native_relative = '
+               + format(float(native_budget), '.17g') + ';\n')
+    header += 'static unsigned char const color_gray_icc[] = {\n'
+    for offset in range(0, len(profile), 12):
+        header += '    ' + ', '.join(
+            f'0x{v:02x}' for v in profile[offset:offset+12]) + ',\n'
+    header += '};\nstatic unsigned int const color_gray_source[] = {\n'
+    for offset in range(0, len(samples), 8):
+        header += '    ' + ', '.join(map(str, samples[offset:offset+8])) + ',\n'
+    header += '};\n'
+    header += 'static double const color_gray_linear[] = {\n'
+    for value in expected:
+        header += '    ' + format(float(value), '.17g') + ',\n'
+    header += '};\n'
+    record = {'generator': 'tools/generate_color_fixtures.py',
+        'model': 'D50-referred gray with kTRC y=x**2, no CMM oracle',
+        'profile_class': 'scnr', 'input': 'GRAY', 'PCS': 'XYZ',
+        'required_tags': ['kTRC', 'desc', 'cprt', 'wtpt'],
+        'source': samples, 'peak': 65535,
+        'error_contract': {
+            'black': 'exact zero in every channel, no absolute floor',
+            'positive': 'abs(actual - expected) <= expected * relative_budget',
+            'float_relative_budget': float(float_budget),
+            'native_relative_budget': float(native_budget),
+            'matrix_quantum': str(quantum),
+            'destination_inverse_infinity_norm': str(inverse_norm),
+            'matrix_gain_budget': str(matrix_budget),
+            'matrix_model': 'one fixed-point bin per white/matrix component',
+            'float_model': '64 binary32 unit roundoffs; source gamma at most 4',
+            'native_composition': '(1 + matrix_budget)*(1 + float_budget) - 1',
+            'budget_scope': 'test allowance, not a proven native CMM error bound'},
+        'linear_srgb_neutral': [float(value) for value in expected]}
+    variants = '#include <stddef.h>\n'
+    variants += ('static struct {\n    size_t length;\n'
+                 '    unsigned char bytes[512];\n'
+                 f'    double linear[{len(samples)}];\n'
+                 '} const color_gray_variants[6] = {\n')
+    records = []
+    for gamma in map(D, ['.5', '1', '1.8', '2', '2.4', '4']):
+        encoded = fixed(gamma)
+        stored = D(struct.unpack('>i', encoded)[0]) / 65536
+        curve = b'para' + bytes(4) + struct.pack('>HH', 0, 0) + encoded
+        data = pack_profile([(b'kTRC', curve)], b'scnr', b'GRAY',
+                            f'Independent gray gamma {gamma}')
+        assert len(data) <= 512
+        expected = [(D(value) / 65535) ** stored for value in samples]
+        variants += f'    {{ {len(data)}, {{\n'
+        for offset in range(0, len(data), 12):
+            variants += '        ' + ', '.join(
+                f'0x{v:02x}' for v in data[offset:offset+12]) + ',\n'
+        variants += '    }, {\n'
+        for value in expected:
+            variants += '        ' + format(float(value), '.17g') + ',\n'
+        variants += '    } },\n'
+        records.append({'gamma_requested': str(gamma), 'gamma_stored': str(stored),
+            'sha256': hashlib.sha256(data).hexdigest(), 'profile_length': len(data),
+            'source': samples, 'linear': [float(value) for value in expected]})
+    variants += '};\n'
+    return {'gray-gamma2.icc': profile, 'gray-samples.h': header.encode(),
+            'gray-samples.json': (json.dumps(record, indent=2)+'\n').encode(),
+            'gray-variants.h': variants.encode(),
+            'gray-variants.json': (json.dumps(records, indent=2)+'\n').encode()}
+
+
 def lut_profile(reverse, minimal=False):
     # Constant 2x2x2 LUTs are intentionally non-invertible. They test
     # directional capability, not a false exact-roundtrip requirement.
@@ -232,7 +322,7 @@ def png_sample_oracles(profile):
     header = '/* Generated independently from original PNG samples. */\n'
     header += 'static unsigned int const color_png_source[2][8][4] = {\n'
     expected = {'p3_xyz': [], 'p3_linear': [], 'icc_xyz': [],
-                'icc_linear': [], 'srgb_linear': []}
+                'icc_linear': [], 'srgb_linear': [], 'wide_chrm_linear': []}
     for depth in (8, 16):
         peak = 2 ** depth - 1
         samples = ([[255, 0, 0, 255], [0, 255, 0, 128], [0, 0, 255, 0],
@@ -250,6 +340,10 @@ def png_sample_oracles(profile):
             encoded = [D(v) / peak for v in sample[:3]]
             linear = list(map(decode, encoded))
             xyz = apply(P3, linear)
+            wide_chrm = rgb_matrix([('0.67', '0.32'), ('0.265', '0.69'),
+                                    ('0.15', '0.06')])
+            values['wide_chrm_linear'].append(apply(inverse(SRGB),
+                                                     apply(wide_chrm, linear)))
             icc_linear = [(a * v + b) ** gamma if v >= knee else c * v
                           for v in encoded]
             icc_xyz = apply(icc_matrix, icc_linear)
@@ -273,11 +367,14 @@ def png_sample_oracles(profile):
                                             *pixel) for pixel in row)
             ihdr = chunk(b'IHDR', struct.pack('>IIBBBBB', 4, 2, depth,
                          6 if channels == 4 else 2, 0, 0, 0))
-            for variant in ('p3', 'raw', 'p3-oriented', 'p3-background'):
+            for variant in ('p3', 'raw', 'p3-oriented', 'p3-background', 'wide-chrm'):
                 metadata = b''
-                if variant != 'raw':
+                if variant not in ('raw', 'wide-chrm'):
                     metadata += chunk(b'iCCP', b'Independent P3\0\0'
                                       + zlib.compress(profile, 9))
+                if variant == 'wide-chrm':
+                    metadata += chunk(b'cHRM', struct.pack('>8I',
+                        31270, 32900, 67000, 32000, 26500, 69000, 15000, 6000))
                 if variant == 'p3-oriented':
                     # A single SHORT Orientation tag with inline value 6.
                     tiff = (b'II*\0' + struct.pack('<IH', 8, 1)
@@ -297,7 +394,9 @@ def png_sample_oracles(profile):
                     'orientation': 6 if variant == 'p3-oriented' else 1,
                     'background': [0, peak, 0] if variant == 'p3-background'
                                   else None,
-                    'definition': 'display-p3.icc' if variant != 'raw' else None,
+                    'definition': ('cHRM D65/(.67,.32)/(.265,.69)/(.15,.06); '
+                                   'default sRGB transfer' if variant == 'wide-chrm'
+                                   else 'display-p3.icc' if variant != 'raw' else None),
                     'sha256': hashlib.sha256(data).hexdigest()})
     header += '};\n'
     for key, depths in expected.items():
@@ -893,6 +992,7 @@ def main():
     outputs.update(lut_outputs)
     outputs.update(png_sample_oracles(profile))
     outputs.update(cmyk_sample_oracles())
+    outputs.update(gray_sample_oracles())
     outputs.update(jpeg_sample_oracles())
     outputs.update(cli_rgb_oracles())
     outputs.update(hdr_sample_oracles())

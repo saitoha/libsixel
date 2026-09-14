@@ -212,6 +212,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0024_MINIMAL_ICC_ACCEPTANCE \
     -DBUILD_TEST_0025_INTEGER_RGB_FLOAT \
     -DBUILD_TEST_0033_INTEGER_CMYK_FLOAT \
+    -DBUILD_TEST_0044_LINEAR_FAILURE_ATOMIC \
+    -DBUILD_TEST_0045_LINEAR_GRAY_SAMPLES \
     -DBUILD_TEST_0001_NAMED_XYZ \
     -DBUILD_TEST_0002_SIMPLE_POWER \
     -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
@@ -620,6 +622,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0182_LOADER_BUILTIN_APNG_CALLBACK_ERROR_NO_FALLBACK \
     -DBUILD_TEST_0183_LOADER_BUILTIN_JPEG_SOURCE_NUMERIC \
     -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
+    -DBUILD_TEST_0185_PNG_SOURCE_NUMERIC \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -670,6 +673,8 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0024_minimal_icc_acceptance.c \
     processing/cms/0025_integer_rgb_float.c \
     processing/cms/0033_integer_cmyk_float.c \
+    processing/cms/0044_linear_failure_atomic.c \
+    processing/cms/0045_linear_gray_samples.c \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \
@@ -1018,6 +1023,7 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0182_loader_builtin_apng_callback_error_no_fallback.c \
     loader/builtin/0183_loader_builtin_jpeg_source_numeric.c \
     loader/builtin/0184_loader_builtin_psd_cmyk_icc_numeric.c \
+    loader/unit/0185_png_source_numeric.c \
     loader/builtin/loader_builtin_png_color_test_common.h \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \

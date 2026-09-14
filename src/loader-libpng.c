@@ -435,9 +435,10 @@ png_apply_linear_matrix_triplet(double rgb[3],
     out_b = source_to_srgb[2][0] * in_r
           + source_to_srgb[2][1] * in_g
           + source_to_srgb[2][2] * in_b;
-    rgb[0] = png_clamp_unit(out_r);
-    rgb[1] = png_clamp_unit(out_g);
-    rgb[2] = png_clamp_unit(out_b);
+    /* Linear RGB is an intermediate coordinate, not bounded storage. */
+    rgb[0] = out_r;
+    rgb[1] = out_g;
+    rgb[2] = out_b;
 }
 
 static void
@@ -674,9 +675,14 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
             (PNG_INFO_sRGB | PNG_INFO_cHRM) &&
         png_get_iCCP(png_ptr, info_ptr, &name, &compression,
                                   &profile, &profile_size) == PNG_INFO_iCCP) {
-        converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+        converted = sixel_cms_convert_to_linearrgb_with_profile_bytes(
             (unsigned char *)pixels, width, height,
             SIXEL_PIXELFORMAT_RGBFLOAT32, profile, profile_size);
+        if (converted) {
+            /* Native ICC gamma extensions need not match our signed TRC.
+             * The destination is already linear; never decode it again. */
+            return 1;
+        }
         if (!converted) {
             loader_trace_message("libpng: ICC transform unavailable; "
                                  "using supported PNG color metadata");
@@ -1481,24 +1487,27 @@ load_png(unsigned char      /* out */ **result,
         cms_converted = png_source_to_linear(png_ptr, info_ptr, cms_pixels,
             palette_colors ? *pncolors : *psx, palette_colors ? 1 : *psy, 1,
             color_chunks);
-        if (*pixelformat == SIXEL_PIXELFORMAT_G8 && cms_converted) {
+        if (cms_converted && !palette_colors) {
+            /* Retain CMS output as the canonical frame. Re-encoding it into
+             * the original RGB8/16 buffer loses gamut before promotion. */
             sixel_allocator_free(allocator, *result);
-            *result = (unsigned char *)sixel_allocator_malloc(
-                allocator, color_count * 3u);
-            if (*result == NULL) {
-                status = SIXEL_BAD_ALLOCATION;
-                goto cleanup;
-            }
-            *pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        }
-        for (dst_index = 0u; dst_index < color_count * 3u; ++dst_index) {
-            value = png_encode_srgb_unit(cms_pixels[dst_index]);
-            if (*pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
-                ((float *)*result)[dst_index] = (float)value;
-            } else if (palette_colors) {
-                (*ppalette)[dst_index] = (unsigned char)(value * 255.0 + 0.5);
-            } else if (*pixelformat != SIXEL_PIXELFORMAT_G8) {
-                (*result)[dst_index] = (unsigned char)(value * 255.0 + 0.5);
+            *result = (unsigned char *)cms_pixels;
+            cms_pixels = NULL;
+            *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        } else {
+            /* Indexed palettes still have their explicit byte boundary.
+             * Untagged byte sources keep the existing storage policy. */
+            for (dst_index = 0u; dst_index < color_count * 3u; ++dst_index) {
+                value = png_encode_srgb_unit(cms_pixels[dst_index]);
+                if (*pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+                    ((float *)*result)[dst_index] = (float)value;
+                } else if (palette_colors) {
+                    (*ppalette)[dst_index] =
+                        (unsigned char)(value * 255.0 + 0.5);
+                } else if (*pixelformat != SIXEL_PIXELFORMAT_G8) {
+                    (*result)[dst_index] =
+                        (unsigned char)(value * 255.0 + 0.5);
+                }
             }
         }
         *cms_applied = cms_converted;
@@ -3212,9 +3221,20 @@ load_with_libpng(
         }
     }
     if (cms_applied
-            && ((frame->pixelformat & SIXEL_FORMATTYPE_PALETTE) == 0)
-            && frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+            && ((frame->pixelformat & SIXEL_FORMATTYPE_PALETTE) == 0)) {
+        /* Working coordinates and an explicit byte request apply only after
+         * source interpretation and linear-light alpha composition. */
         cms_target_pixelformat = loader_cms_target_pixelformat();
+        if (cms_target_pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+            /* Encode the transfer while samples are still float. Going
+             * straight to bytes quantizes linear light before the byte
+             * gamma LUT, adding an avoidable second rounding boundary. */
+            status = sixel_frame_set_pixelformat(frame,
+                                                 SIXEL_PIXELFORMAT_RGBFLOAT32);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
         status = sixel_frame_set_pixelformat(frame, cms_target_pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;

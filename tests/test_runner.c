@@ -136,6 +136,8 @@ int test_cms_0021(int argc, char **argv);
 int test_cms_0024(int argc, char **argv);
 int test_cms_0025(int argc, char **argv);
 int test_cms_0033(int argc, char **argv);
+int test_cms_0044(int argc, char **argv);
+int test_cms_0045(int argc, char **argv);
 int test_pmap_0053(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -794,6 +796,7 @@ int test_loader_0182_apng_callback_no_fallback(
     char **argv);
 int test_loader_0183_jpeg_source_numeric(int argc, char **argv);
 int test_loader_0184_psd_cmyk_icc_numeric(int argc, char **argv);
+int test_loader_0185_png_source_numeric(int argc, char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -1099,6 +1102,8 @@ static test_entry_t const test_entries[] = {
     { "cms/0024_minimal_icc_acceptance", test_cms_0024 },
     { "cms/0025_integer_rgb_float", test_cms_0025 },
     { "cms/0033_integer_cmyk_float", test_cms_0033 },
+    { "cms/0044_linear_failure_atomic", test_cms_0044 },
+    { "cms/0045_linear_gray_samples", test_cms_0045 },
     { "assessment/0001_ciede2000_reference", test_qa_0001 },
     { "assessment/0002_same_physical_coordinates", test_qa_0002 },
     { "assessment/0003_same_rgb_different_definition", test_qa_0003 },
@@ -1609,6 +1614,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0183_jpeg_source_numeric },
     { "loader/0184_loader_builtin_psd_cmyk_icc_numeric",
       test_loader_0184_psd_cmyk_icc_numeric },
+    { "loader/0185_png_source_numeric",
+      test_loader_0185_png_source_numeric },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
