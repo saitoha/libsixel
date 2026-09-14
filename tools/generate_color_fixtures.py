@@ -188,6 +188,111 @@ def fmt(values):
     return ', '.join(format(float(v), '.17g') for v in values)
 
 
+def png_sample_oracles(profile):
+    """Keep source integers, analytic colors and quantized ICC colors apart."""
+    outputs = {}
+    records = []
+    adaptation = [list(row) for row in zip(*[
+        adapt([D(i == j) for i in range(3)]) for j in range(3)])]
+    icc_matrix = [[D(struct.unpack('>i', fixed(v))[0]) / 65536
+                   for v in row] for row in [list(row) for row in zip(*[
+                       adapt(column) for column in zip(*P3)])]]
+    params = [D(struct.unpack('>i', fixed(v))[0]) / 65536 for v in
+              [D('2.4'), 1 / D('1.055'), D('.055') / D('1.055'),
+               1 / D('12.92'), D('.04045')]]
+    gamma, a, b, c, knee = params
+    header = '/* Generated independently from original PNG samples. */\n'
+    header += 'static unsigned int const color_png_source[2][8][4] = {\n'
+    expected = {'p3_xyz': [], 'p3_linear': [], 'icc_xyz': [],
+                'icc_linear': [], 'srgb_linear': []}
+    for depth in (8, 16):
+        peak = 2 ** depth - 1
+        samples = ([[255, 0, 0, 255], [0, 255, 0, 128], [0, 0, 255, 0],
+                    [128, 128, 128, 255], [13, 77, 219, 64],
+                    [255, 255, 255, 255], [0, 0, 0, 255], [103, 151, 197, 193]]
+                   if depth == 8 else
+                   [[65535, 0, 0, 65535], [0, 65535, 0, 32768],
+                    [0, 0, 65535, 0], [32768, 32768, 32768, 65535],
+                    [1000, 19001, 60001, 16384], [65535, 65535, 65535, 65535],
+                    [0, 0, 0, 65535], [26369, 38903, 50201, 49513]])
+        header += '    {\n' + ''.join('        {' + ', '.join(map(str, row))
+                                     + '},\n' for row in samples) + '    },\n'
+        values = {key: [] for key in expected}
+        for sample in samples:
+            encoded = [D(v) / peak for v in sample[:3]]
+            linear = list(map(decode, encoded))
+            xyz = apply(P3, linear)
+            icc_linear = [(a * v + b) ** gamma if v >= knee else c * v
+                          for v in encoded]
+            icc_xyz = apply(icc_matrix, icc_linear)
+            values['p3_xyz'].append(adapt(xyz))
+            values['p3_linear'].append(apply(inverse(SRGB), xyz))
+            values['icc_xyz'].append(icc_xyz)
+            values['icc_linear'].append(apply(inverse(SRGB),
+                                              apply(inverse(adaptation), icc_xyz)))
+            values['srgb_linear'].append(linear)
+        for key in expected:
+            expected[key].append(values[key])
+        for channels in (3, 4):
+            mode = 'rgb' if channels == 3 else 'rgba'
+            packed = [[sample[:channels] for sample in samples[y:y + 4]]
+                      for y in (0, 4)]
+            raw = b''
+            for row in packed:
+                raw += b'\0'
+                raw += b''.join(bytes(pixel) if depth == 8 else
+                                struct.pack('>4H' if channels == 4 else '>3H',
+                                            *pixel) for pixel in row)
+            ihdr = chunk(b'IHDR', struct.pack('>IIBBBBB', 4, 2, depth,
+                         6 if channels == 4 else 2, 0, 0, 0))
+            for variant in ('p3', 'raw', 'p3-oriented', 'p3-background'):
+                metadata = b''
+                if variant != 'raw':
+                    metadata += chunk(b'iCCP', b'Independent P3\0\0'
+                                      + zlib.compress(profile, 9))
+                if variant == 'p3-oriented':
+                    # A single SHORT Orientation tag with inline value 6.
+                    tiff = (b'II*\0' + struct.pack('<IH', 8, 1)
+                            + struct.pack('<HHIHH', 0x112, 3, 1, 6, 0)
+                            + struct.pack('<I', 0))
+                    metadata += chunk(b'eXIf', tiff)
+                if variant == 'p3-background':
+                    metadata += chunk(b'bKGD', struct.pack('>3H', 0, peak, 0))
+                name = f'png-{variant}-{depth}-{mode}.png'
+                data = (b'\x89PNG\r\n\x1a\n' + ihdr + metadata
+                        + chunk(b'IDAT', zlib.compress(raw, 9))
+                        + chunk(b'IEND', b''))
+                outputs[name] = data
+                records.append({'file': name, 'width': 4, 'height': 2,
+                    'bit_depth': depth, 'channels': channels,
+                    'samples': [sample[:channels] for sample in samples],
+                    'orientation': 6 if variant == 'p3-oriented' else 1,
+                    'background': [0, peak, 0] if variant == 'p3-background'
+                                  else None,
+                    'definition': 'display-p3.icc' if variant != 'raw' else None,
+                    'sha256': hashlib.sha256(data).hexdigest()})
+    header += '};\n'
+    for key, depths in expected.items():
+        header += f'static double const color_png_{key}[2][8][3] = {{\n'
+        for rows in depths:
+            header += '    {\n'
+            for row in rows:
+                header += '        {' + fmt(row) + '},\n'
+            header += '    },\n'
+        header += '};\n'
+    outputs['png-samples.h'] = header.encode()
+    outputs['png-samples.json'] = (json.dumps({
+        'generator': 'tools/generate_color_fixtures.py',
+        'arithmetic': '60-digit Decimal; no production transforms',
+        'icc_expectations': 'Exact s15Fixed16 matrix and parametric curve fields',
+        'alpha': 'Independent coverage: source alpha integer / source peak',
+        'pngs': records,
+        'expected': {key: [[[float(v) for v in row] for row in rows]
+                           for rows in depths] for key, depths in expected.items()}
+    }, indent=2) + '\n').encode()
+    return outputs
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -290,6 +395,7 @@ def main():
                'vectors.h': header.encode(), 'trc.h': trc_header.encode(),
                'display-p3.icc': profile, 'display-p3.png': png}
     outputs.update(lut_outputs)
+    outputs.update(png_sample_oracles(profile))
     if not args.check:
         args.output.mkdir(parents=True, exist_ok=True)
     for name, content in outputs.items():
