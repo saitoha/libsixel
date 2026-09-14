@@ -75,6 +75,7 @@
 #include "frame-factory.h"
 #include "loader.h"
 #include "loader-libpng.h"
+#include "loader-libpng-chrm.h"
 #include "timeline-logger.h"
 #include "options.h"
 
@@ -344,6 +345,7 @@ png_build_chrm_to_srgb_matrix(double white_x,
         { 0.055630079696993, -0.203976958888977, 1.056971514242878 }
     };
     double primaries[3][3];
+    double primary_xyz[3][3];
     double primaries_inv[3][3];
     double source_to_xyz[3][3];
     double white_xyz[3];
@@ -354,33 +356,22 @@ png_build_chrm_to_srgb_matrix(double white_x,
     if (source_to_srgb == NULL) {
         return 0;
     }
-    if (white_y <= 0.0 || red_y <= 0.0 || green_y <= 0.0 || blue_y <= 0.0) {
+    if (!png_chrm_xy_to_xyz(white_x, white_y, white_xyz) ||
+        !png_chrm_xy_to_xyz(red_x, red_y, primary_xyz[0]) ||
+        !png_chrm_xy_to_xyz(green_x, green_y, primary_xyz[1]) ||
+        !png_chrm_xy_to_xyz(blue_x, blue_y, primary_xyz[2])) {
         return 0;
     }
-    if (white_x < 0.0 || white_x + white_y >= 1.0 ||
-        red_x < 0.0 || red_x + red_y >= 1.0 ||
-        green_x < 0.0 || green_x + green_y >= 1.0 ||
-        blue_x < 0.0 || blue_x + blue_y >= 1.0) {
-        return 0;
+    for (row = 0; row < 3; ++row) {
+        for (col = 0; col < 3; ++col) {
+            primaries[row][col] = primary_xyz[col][row];
+        }
     }
-
-    primaries[0][0] = red_x / red_y;
-    primaries[1][0] = 1.0;
-    primaries[2][0] = (1.0 - red_x - red_y) / red_y;
-    primaries[0][1] = green_x / green_y;
-    primaries[1][1] = 1.0;
-    primaries[2][1] = (1.0 - green_x - green_y) / green_y;
-    primaries[0][2] = blue_x / blue_y;
-    primaries[1][2] = 1.0;
-    primaries[2][2] = (1.0 - blue_x - blue_y) / blue_y;
 
     if (!png_invert_3x3(primaries, primaries_inv)) {
         return 0;
     }
 
-    white_xyz[0] = white_x / white_y;
-    white_xyz[1] = 1.0;
-    white_xyz[2] = (1.0 - white_x - white_y) / white_y;
     scale[0] = primaries_inv[0][0] * white_xyz[0]
              + primaries_inv[0][1] * white_xyz[1]
              + primaries_inv[0][2] * white_xyz[2];

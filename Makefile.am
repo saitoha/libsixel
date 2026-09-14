@@ -638,6 +638,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/quality/measurement-policy.md \
 	docs/testing/builtin-loader-coverage.md \
 	docs/testing/guide.md \
+	docs/testing/png-chrm-boundaries.md \
 	docs/writers/png.md \
 	docs/writers/png-figures/measurements.json \
 	docs/writers/png-figures/writer-time.svg \

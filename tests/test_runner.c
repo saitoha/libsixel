@@ -811,6 +811,12 @@ int test_loader_0191_png_palette_paint(int argc, char **argv);
 int test_loader_0192_png_metadata_samples(int argc, char **argv);
 int test_loader_0193_png_metadata_failures(int argc, char **argv);
 int test_loader_0194_png_metadata_ownership(int argc, char **argv);
+int test_loader_0195_png_chrm_roundtrip(int argc, char **argv);
+int test_loader_0196_png_chrm_boundary(int argc, char **argv);
+int test_loader_0197_png_chrm_reject(int argc, char **argv);
+int test_loader_0198_png_chrm_samples(int argc, char **argv);
+int test_loader_0199_png_chrm_getter_reject(int argc, char **argv);
+int test_loader_0200_png_chrm_trace_control(int argc, char **argv);
 
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
@@ -1651,6 +1657,18 @@ static test_entry_t const test_entries[] = {
       test_loader_0193_png_metadata_failures },
     { "loader/0194_png_metadata_ownership",
       test_loader_0194_png_metadata_ownership },
+    { "loader/0195_png_chrm_roundtrip",
+      test_loader_0195_png_chrm_roundtrip },
+    { "loader/0196_png_chrm_boundary",
+      test_loader_0196_png_chrm_boundary },
+    { "loader/0197_png_chrm_reject",
+      test_loader_0197_png_chrm_reject },
+    { "loader/0198_png_chrm_samples",
+      test_loader_0198_png_chrm_samples },
+    { "loader/0199_png_chrm_getter_reject",
+      test_loader_0199_png_chrm_getter_reject },
+    { "loader/0200_png_chrm_trace_control",
+      test_loader_0200_png_chrm_trace_control },
 
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },

@@ -125,6 +125,8 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Testing
 
+- [libpng cHRM boundary test plan](testing/png-chrm-boundaries.md) inventories integer-grid, original-sample, metadata-fallback, background, and CMS control observations.
+
 - [Testing guide](testing/guide.md) covers test organization, shell TAP rules,
   registration, portability, and required checks.
 - [Builtin loader coverage inventory](testing/builtin-loader-coverage.md) maps every builtin-loader shell test to its primary format, observation, and traceability role while keeping pipeline landmarks distinct from the exhaustive regression suite.

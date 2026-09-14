@@ -637,6 +637,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0192_PNG_METADATA_SAMPLES \
     -DBUILD_TEST_0193_PNG_METADATA_FAILURES \
     -DBUILD_TEST_0194_PNG_METADATA_OWNERSHIP \
+    -DBUILD_TEST_0195_PNG_CHRM_ROUNDTRIP \
+    -DBUILD_TEST_0196_PNG_CHRM_BOUNDARY \
+    -DBUILD_TEST_0197_PNG_CHRM_REJECT \
+    -DBUILD_TEST_0198_PNG_CHRM_SAMPLES \
+    -DBUILD_TEST_0199_PNG_CHRM_GETTER_REJECT \
+    -DBUILD_TEST_0200_PNG_CHRM_TRACE_CONTROL \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -1052,6 +1058,14 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0192_png_metadata_samples.c \
     loader/builtin/0193_png_metadata_failures.c \
     loader/builtin/0194_png_metadata_ownership.c \
+    loader/libpng/0195_png_chrm_roundtrip.c \
+    loader/libpng/0196_png_chrm_boundary.c \
+    loader/libpng/0197_png_chrm_reject.c \
+    loader/libpng/0198_png_chrm_samples.c \
+    loader/libpng/0199_png_chrm_getter_reject.c \
+    loader/libpng/0200_png_chrm_trace_control.c \
+    loader/libpng/loader_libpng_chrm_test_common.h \
+    loader/libpng/loader_libpng_chrm_grid_test_common.h \
     loader/builtin/loader_builtin_png_metadata_test_common.h \
     loader/builtin/loader_builtin_png_color_test_common.h \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
@@ -2886,7 +2900,8 @@ check-php: prepare-binding-artifacts
 # distdir does not hit shell ARG_MAX limits on some platforms.
 TEST_DATA_DIRS = data
 
-EXTRA_DIST = $(HELPER_FILES) \
+EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
+    $(HELPER_FILES) \
     loader/builtin/0014_loader_builtin_pixelformat_common.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_hdr.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_gif_psd.inc.c \

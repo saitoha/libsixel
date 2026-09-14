@@ -291,6 +291,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-gnome-thumbnailer.h \
                 $(srcdir)/loader-libjpeg.h \
                 $(srcdir)/loader-libpng.h \
+                $(srcdir)/loader-libpng-chrm.h \
                 $(srcdir)/loader-libtiff.h \
                 $(srcdir)/loader-librsvg.h \
                 $(srcdir)/loader-libwebp.h \

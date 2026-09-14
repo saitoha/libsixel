@@ -169,6 +169,7 @@ srcs = [
   'loader-wic.c',
   'loader-gd.c',
   'loader-libpng.c',
+  'loader-libpng-chrm.h',
   'loader-libtiff.c',
   'loader-librsvg.c',
   'loader-libjpeg.c',
