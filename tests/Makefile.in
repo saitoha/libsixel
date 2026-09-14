@@ -490,6 +490,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/0183_loader_builtin_jpeg_source_numeric.c \
 	loader/builtin/0184_loader_builtin_psd_cmyk_icc_numeric.c \
 	loader/unit/0185_png_source_numeric.c \
+	loader/unit/0186_png_byte_target.c \
 	loader/builtin/loader_builtin_png_color_test_common.h \
 	loader/quicklook/0015_loader_quicklook_pixelformat.c \
 	loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
@@ -946,6 +947,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0183_loader_builtin_jpeg_source_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0184_loader_builtin_psd_cmyk_icc_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/unit/test_runner-0185_png_source_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/unit/test_runner-0186_png_byte_target.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.$(OBJEXT) \
@@ -1292,6 +1294,7 @@ am__depfiles_remade =  \
 	loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po \
 	loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
 	loader/unit/$(DEPDIR)/test_runner-0185_png_source_numeric.Po \
+	loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Po \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po \
@@ -2651,6 +2654,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0183_LOADER_BUILTIN_JPEG_SOURCE_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0185_PNG_SOURCE_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0186_PNG_BYTE_TARGET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -3078,6 +3082,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0183_loader_builtin_jpeg_source_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0184_loader_builtin_psd_cmyk_icc_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/unit/0185_png_source_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/unit/0186_png_byte_target.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/loader_builtin_png_color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/quicklook/0015_loader_quicklook_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
@@ -4628,6 +4633,9 @@ loader/unit/$(DEPDIR)/$(am__dirstamp):
 loader/unit/test_runner-0185_png_source_numeric.$(OBJEXT):  \
 	loader/unit/$(am__dirstamp) \
 	loader/unit/$(DEPDIR)/$(am__dirstamp)
+loader/unit/test_runner-0186_png_byte_target.$(OBJEXT):  \
+	loader/unit/$(am__dirstamp) \
+	loader/unit/$(DEPDIR)/$(am__dirstamp)
 loader/quicklook/$(am__dirstamp):
 	@$(MKDIR_P) loader/quicklook
 	@: >>loader/quicklook/$(am__dirstamp)
@@ -5193,6 +5201,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/unit/$(DEPDIR)/test_runner-0185_png_source_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po@am__quote@ # am--include-marker
@@ -10630,6 +10639,20 @@ loader/unit/test_runner-0185_png_source_numeric.obj: loader/unit/0185_png_source
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/unit/test_runner-0185_png_source_numeric.obj `if test -f 'loader/unit/0185_png_source_numeric.c'; then $(CYGPATH_W) 'loader/unit/0185_png_source_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/unit/0185_png_source_numeric.c'; fi`
 
+loader/unit/test_runner-0186_png_byte_target.o: loader/unit/0186_png_byte_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/unit/test_runner-0186_png_byte_target.o -MD -MP -MF loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Tpo -c -o loader/unit/test_runner-0186_png_byte_target.o `test -f 'loader/unit/0186_png_byte_target.c' || echo '$(srcdir)/'`loader/unit/0186_png_byte_target.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Tpo loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/unit/0186_png_byte_target.c' object='loader/unit/test_runner-0186_png_byte_target.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/unit/test_runner-0186_png_byte_target.o `test -f 'loader/unit/0186_png_byte_target.c' || echo '$(srcdir)/'`loader/unit/0186_png_byte_target.c
+
+loader/unit/test_runner-0186_png_byte_target.obj: loader/unit/0186_png_byte_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/unit/test_runner-0186_png_byte_target.obj -MD -MP -MF loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Tpo -c -o loader/unit/test_runner-0186_png_byte_target.obj `if test -f 'loader/unit/0186_png_byte_target.c'; then $(CYGPATH_W) 'loader/unit/0186_png_byte_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/unit/0186_png_byte_target.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Tpo loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/unit/0186_png_byte_target.c' object='loader/unit/test_runner-0186_png_byte_target.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/unit/test_runner-0186_png_byte_target.obj `if test -f 'loader/unit/0186_png_byte_target.c'; then $(CYGPATH_W) 'loader/unit/0186_png_byte_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/unit/0186_png_byte_target.c'; fi`
+
 loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o: loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
@@ -12438,6 +12461,7 @@ distclean: distclean-am
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/unit/$(DEPDIR)/test_runner-0185_png_source_numeric.Po
+	-rm -f loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po
@@ -12935,6 +12959,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/unit/$(DEPDIR)/test_runner-0185_png_source_numeric.Po
+	-rm -f loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po
 	-rm -f processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po

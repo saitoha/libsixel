@@ -3225,16 +3225,8 @@ load_with_libpng(
         /* Working coordinates and an explicit byte request apply only after
          * source interpretation and linear-light alpha composition. */
         cms_target_pixelformat = loader_cms_target_pixelformat();
-        if (cms_target_pixelformat == SIXEL_PIXELFORMAT_RGB888) {
-            /* Encode the transfer while samples are still float. Going
-             * straight to bytes quantizes linear light before the byte
-             * gamma LUT, adding an avoidable second rounding boundary. */
-            status = sixel_frame_set_pixelformat(frame,
-                                                 SIXEL_PIXELFORMAT_RGBFLOAT32);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-        }
+        /* The setter keeps gamma in double until the final byte rounding.
+         * An intermediate gamma float store could cross a half-byte tie. */
         status = sixel_frame_set_pixelformat(frame, cms_target_pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;

@@ -1,0 +1,35 @@
+{
+  "arithmetic": "60-digit Decimal; explicit IEEE binary32 source/linear storage; signed sRGB transfer and half-up final byte rounding",
+  "cases": [
+    {
+      "file": "png-byte-target-0.png",
+      "gAMA": 45455,
+      "source_u16": 33524,
+      "sha256": "4f85b9ba3be18a28fd4a4679369efa7cdcfc106b9b7961178dd7c8e4161b4fa2",
+      "source_float": "0.511543452739715576171875",
+      "source_bits": 1057158275,
+      "linear_float": "0.22884844243526458740234375",
+      "linear_bits": 1047156543,
+      "gamma": "0.515686295309484730728732692945378969101363608330602573920915",
+      "gamma_float": "0.5156862735748291015625",
+      "gamma_bits": 1057227780,
+      "byte": 132,
+      "gamma_float_byte": 131
+    },
+    {
+      "file": "png-byte-target-1.png",
+      "gAMA": 33333,
+      "source_u16": 57717,
+      "sha256": "3b008e0ecc262ade3c75b79557da4a56a96d6374a4b4a699f0d4fe7c3c9066d9",
+      "source_float": "0.880704939365386962890625",
+      "source_bits": 1063351777,
+      "linear_float": "0.68310844898223876953125",
+      "linear_bits": 1060036658,
+      "gamma": "0.845098041392014462459036358405254864045576324759072842026668",
+      "gamma_float": "0.845098018646240234375",
+      "gamma_bits": 1062754392,
+      "byte": 216,
+      "gamma_float_byte": 215
+    }
+  ]
+}

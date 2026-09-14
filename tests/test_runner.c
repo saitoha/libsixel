@@ -798,6 +798,7 @@ int test_loader_0182_apng_callback_no_fallback(
 int test_loader_0183_jpeg_source_numeric(int argc, char **argv);
 int test_loader_0184_psd_cmyk_icc_numeric(int argc, char **argv);
 int test_loader_0185_png_source_numeric(int argc, char **argv);
+int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -1618,6 +1619,7 @@ static test_entry_t const test_entries[] = {
       test_loader_0184_psd_cmyk_icc_numeric },
     { "loader/0185_png_source_numeric",
       test_loader_0185_png_source_numeric },
+    { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",

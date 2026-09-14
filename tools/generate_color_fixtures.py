@@ -963,6 +963,51 @@ def legacy_png_icc_oracle():
             'legacy-png-icc.json': (json.dumps(manifest, indent=2) + '\n').encode()}
 
 
+def png_byte_target_oracles():
+    """Resolve final byte ties from original PNG samples and float storage."""
+    outputs = {}
+    records = []
+    header = '/* Independent original PNG -> stored float -> final byte. */\n'
+    header += 'static struct {\n    unsigned int source;\n'
+    header += '    unsigned int linear;\n    unsigned int gamma;\n'
+    header += '    unsigned char byte;\n} const color_png_byte_target[2] = {\n'
+    for index, (gama, sample) in enumerate(((45455, 33524), (33333, 57717))):
+        def stored(value):
+            packed = struct.pack('>f', float(value))
+            return (D.from_float(struct.unpack('>f', packed)[0]),
+                    struct.unpack('>I', packed)[0])
+        source, source_bits = stored(D(sample) / 65535)
+        linear, linear_bits = stored(source ** (D(100000) / gama))
+        gamma = encode(linear)
+        gamma_float, gamma_bits = stored(gamma)
+        final_byte = int(gamma * 255 + D('.5'))
+        intermediate_byte = int(gamma_float * 255 + D('.5'))
+        assert final_byte != intermediate_byte
+        name = f'png-byte-target-{index}.png'
+        image = (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack(
+            '>IIBBBBB', 1, 1, 16, 2, 0, 0, 0)) + chunk(b'gAMA',
+            struct.pack('>I', gama)) + chunk(b'IDAT', zlib.compress(
+            b'\0' + struct.pack('>3H', sample, sample, sample), 9))
+            + chunk(b'IEND', b''))
+        outputs[name] = image
+        records.append({'file': name, 'gAMA': gama, 'source_u16': sample,
+            'sha256': hashlib.sha256(image).hexdigest(),
+            'source_float': str(source), 'source_bits': source_bits,
+            'linear_float': str(linear), 'linear_bits': linear_bits,
+            'gamma': str(gamma), 'gamma_float': str(gamma_float),
+            'gamma_bits': gamma_bits, 'byte': final_byte,
+            'gamma_float_byte': intermediate_byte})
+        header += (f'    {{0x{source_bits:08x}u, 0x{linear_bits:08x}u, '
+                   f'0x{gamma_bits:08x}u, {final_byte}}},\n')
+    header += '};\n'
+    outputs['png-byte-target.h'] = header.encode()
+    outputs['png-byte-target.json'] = (json.dumps({'arithmetic':
+        '60-digit Decimal; explicit IEEE binary32 source/linear storage; '
+        'signed sRGB transfer and half-up final byte rounding',
+        'cases': records}, indent=2) + '\n').encode()
+    return outputs
+
+
 def frame_byte_oracles():
     """Round exact stored floats only after independent inverse coordinates."""
     def as_bits(value):
@@ -1190,6 +1235,7 @@ def main():
     outputs.update(png_sample_oracles(profile))
     outputs.update(legacy_png_icc_oracle())
     outputs.update(frame_byte_oracles())
+    outputs.update(png_byte_target_oracles())
     outputs.update(cmyk_sample_oracles())
     outputs.update(gray_sample_oracles())
     outputs.update(jpeg_sample_oracles())

@@ -2016,14 +2016,8 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     }
     if (converted || source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA) {
         target = loader_cms_target_pixelformat();
-        if (target == SIXEL_PIXELFORMAT_RGB888) {
-            /* Encode gamma in float before the single final byte rounding. */
-            status = sixel_frame_set_pixelformat(frame,
-                                                 SIXEL_PIXELFORMAT_RGBFLOAT32);
-            if (SIXEL_FAILED(status)) {
-                goto cleanup;
-            }
-        }
+        /* The setter keeps gamma in double until the final byte rounding.
+         * An intermediate gamma float store could cross a half-byte tie. */
         status = sixel_frame_set_pixelformat(frame, target);
     }
 
