@@ -617,6 +617,10 @@ run_case_tap "staticcheck-platform-ci-contracts" \
     "$src_root/tests/_static/sh/staticcheck-platform-ci-contracts.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-experimental-full-tests" \
+    "$src_root/tests/_static/sh/staticcheck-experimental-full-tests.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-windows-path-compat" \
     "$src_root/tests/_static/sh/staticcheck-windows-path-compat.sh" \
     "$src_root" || fail_and_exit $?

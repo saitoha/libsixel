@@ -2749,6 +2749,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-platform-compat.sh \
     _static/sh/staticcheck-platform-ci-contracts.sh \
+    _static/sh/staticcheck-experimental-full-tests.sh \
     _static/sh/staticcheck-windows-path-compat.sh \
     _static/data/platform-macro-classification.tsv \
     _static/data/platform-non-c-classification.tsv \
