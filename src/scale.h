@@ -42,6 +42,19 @@ sixel_helper_scale_image_float32(
     int               /* in */  method_for_resampling,
     sixel_allocator_t /* in */  *allocator);
 
+/* Extended color only; callers publish the destination after success. */
+SIXEL_INTERNAL_API int
+sixel_scale_image_rgbf32(
+    float *dst,
+    float const *src,
+    int srcw,
+    int srch,
+    int pixelformat,
+    int dstw,
+    int dsth,
+    int method_for_resampling,
+    sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API size_t
 sixel_scale_parallel_min_bytes(void);
 SIXEL_INTERNAL_API int

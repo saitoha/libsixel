@@ -25,6 +25,8 @@
 #ifndef LIBSIXEL_CPU_H
 #define LIBSIXEL_CPU_H
 
+#include <sixel.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,7 +38,7 @@ enum sixel_simd_level {
     SIXEL_SIMD_LEVEL_NEON
 };
 
-int
+SIXEL_INTERNAL_API int
 sixel_cpu_simd_level(void);
 
 void

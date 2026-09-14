@@ -2553,7 +2553,7 @@ sixel_frame_resize_float32(
         goto end;
     }
 
-    status = sixel_helper_scale_image_float32(
+    status = sixel_scale_image_rgbf32(
         scaled_frame,
         frame->pixels.f32ptr,
         frame->width,
@@ -2777,6 +2777,22 @@ sixel_frame_clip(
     src_width = frame->width;
     src_height = frame->height;
     raw_pixels_owned = frame->owns_pixels;
+
+    /*
+     * Float crop is an exact storage move, including nonfinite samples.
+     * Validate its rectangle before moving either pixels or the mask. The
+     * CLI filter already trims oversized requests and skips empty regions;
+     * direct frame callers must supply a rectangle inside the source.
+     * Subtraction after checking the origin avoids signed addition overflow.
+     */
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
+            && (x < 0 || y < 0 || x >= src_width || y >= src_height
+                || width > src_width - x || height > src_height - y)) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_clip: float crop rectangle is outside the frame.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
 
     /* check parameters */
     if (width <= 0) {

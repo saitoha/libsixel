@@ -28,6 +28,7 @@
 
 /* STDC_HEADERS */
 #include <stdlib.h>
+#include <float.h>
 
 #if HAVE_ERRNO_H
 # include <errno.h>
@@ -324,9 +325,9 @@ static float
 sixel_clamp_unit_f32(float value)
 {
     /*
-     * Resampling kernels with negative lobes can push linear RGB values
-     * outside the unit interval. Clamp here so downstream conversions do
-     * not collapse to black.
+     * The bounded helper also resizes transparent-mask coverage. Keep its
+     * unit-interval policy separate from extended float color components;
+     * negative filter lobes are valid intermediate color values.
      */
     if (value < 0.0f) {
         return 0.0f;
@@ -405,13 +406,14 @@ sixel_avx_load_rgb_f32(float const *psrc)
 {
     __m256 pixf;
 
-    pixf = _mm256_set_ps(0.0f, 0.0f, 0.0f, 0.0f,
-                         psrc[2], psrc[1], psrc[0], 0.0f);
+    /* Store consumes lanes 0..2; do not shift RGB by one lane. */
+    pixf = _mm256_setr_ps(psrc[0], psrc[1], psrc[2], 0.0f,
+                          0.0f, 0.0f, 0.0f, 0.0f);
     return pixf;
 }
 
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX void
-sixel_avx_store_rgb_f32(__m256 acc, double total, float *dst)
+sixel_avx_store_rgb_f32(__m256 acc, double total, float *dst, int bounded)
 {
     __m256 scalev;
     __m256 minv;
@@ -422,7 +424,9 @@ sixel_avx_store_rgb_f32(__m256 acc, double total, float *dst)
     acc = _mm256_mul_ps(acc, scalev);
     minv = _mm256_set1_ps(0.0f);
     maxv = _mm256_set1_ps(1.0f);
-    acc = _mm256_max_ps(minv, _mm256_min_ps(acc, maxv));
+    if (bounded) {
+        acc = _mm256_max_ps(minv, _mm256_min_ps(acc, maxv));
+    }
     _mm256_storeu_ps(out, acc);
     dst[0] = out[0];
     dst[1] = out[1];
@@ -1540,6 +1544,28 @@ scale_with_resampling(
     return SIXEL_OK;
 }
 
+/* Validate arithmetic storage, without imposing a color gamut. */
+static SIXELSTATUS
+sixel_scale_float_range(float const *pixels, size_t count, double *maximum)
+{
+    size_t i;
+    double value;
+
+    *maximum = 0.0;
+    for (i = 0; i < count; ++i) {
+        value = pixels[i];
+        if (!isfinite(value)) {
+            sixel_helper_set_additional_message(
+                "float resize: nonfinite color component.");
+            return SIXEL_BAD_INPUT;
+        }
+        if (fabs(value) > *maximum) {
+            *maximum = fabs(value);
+        }
+    }
+    return SIXEL_OK;
+}
+
 /*
  * Floating-point scaler mirrors the byte-path SSE2 usage. Keep it noinline
  * on i386 so the SIXEL_ALIGN_STACK prologue stays in place when SSE2 locals
@@ -1556,7 +1582,8 @@ scale_with_resampling_float32(
     int const depth,
     resample_fn_t const f_resample,
     double n,
-    sixel_allocator_t *allocator)
+    sixel_allocator_t *allocator,
+    int bounded)
 {
     int w;
     int h;
@@ -1574,7 +1601,15 @@ scale_with_resampling_float32(
     double diff_y;
     double weight;
     double total;
+    double value;
+    double maximum;
+    double vector_limit;
     double offsets[8];
+    double origin[8];
+    SIXELSTATUS status;
+#if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
+    float const *psrc;
+#endif
     size_t tmp_bytes;
     size_t dst_bytes;
     float *tmp;
@@ -1601,6 +1636,16 @@ scale_with_resampling_float32(
     float32x4_t maxv_neon;
 #endif
 
+    status = SIXEL_OK;
+    maximum = 0.0;
+    vector_limit = (double)FLT_MAX / (16.0 * MAX(srcw, srch));
+    if (!bounded) {
+        status = sixel_scale_float_range(src,
+            (size_t)srcw * (size_t)srch * (size_t)depth, &maximum);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
     tmp_bytes = (size_t)dstw * (size_t)srch * (size_t)depth
         * sizeof(float);
     dst_bytes = (size_t)dstw * (size_t)dsth * (size_t)depth
@@ -1620,6 +1665,14 @@ scale_with_resampling_float32(
     memset(dst, 0, dst_bytes);
 
     simd_level = sixel_scale_simd_level();
+    /*
+     * A finite mean can have a nonrepresentable float weighted sum. Keep
+     * ordinary color values on SIMD, and accumulate extreme magnitudes in
+     * double. The margin covers all current unit-bounded filter weights.
+     */
+    if (!bounded && maximum > vector_limit) {
+        simd_level = SIXEL_SIMD_LEVEL_SCALAR;
+    }
 #if !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
     !defined(SIXEL_USE_NEON)
     /*
@@ -1666,7 +1719,7 @@ scale_with_resampling_float32(
                 }
                 if (total > 0.0) {
                     pos = (y * dstw + w) * depth;
-                    sixel_avx_store_rgb_f32(acc256, total, tmp + pos);
+                    sixel_avx_store_rgb_f32(acc256, total, tmp + pos, bounded);
                 }
             } else
 #endif
@@ -1693,7 +1746,7 @@ scale_with_resampling_float32(
                                  : (x + 0.5) * dstw / srcw - center_x;
                     weight = f_resample(fabs(diff_x));
                     pos = (y * srcw + x) * depth;
-                    const float *psrc = src + pos;
+                    psrc = src + pos;
 #if defined(SIXEL_USE_SSE2)
                     pixf128 = _mm_set_ps(
                         0.0f, psrc[2], psrc[1], psrc[0]);
@@ -1719,15 +1772,19 @@ scale_with_resampling_float32(
 #if defined(SIXEL_USE_SSE2)
                     scalev128 = _mm_set1_ps((float)(1.0 / total));
                     acc128 = _mm_mul_ps(acc128, scalev128);
-                    acc128 = _mm_max_ps(minv128,
-                                        _mm_min_ps(acc128, maxv128));
+                    if (bounded) {
+                        acc128 = _mm_max_ps(minv128,
+                            _mm_min_ps(acc128, maxv128));
+                    }
                     _mm_storeu_ps(vecbuf, acc128);
 #else /* NEON */
                     scalev_neon = vdupq_n_f32(
                         (float)(1.0 / total));
                     acc_neon = vmulq_f32(acc_neon, scalev_neon);
-                    acc_neon = vmaxq_f32(minv_neon,
-                                         vminq_f32(acc_neon, maxv_neon));
+                    if (bounded) {
+                        acc_neon = vmaxq_f32(minv_neon,
+                            vminq_f32(acc_neon, maxv_neon));
+                    }
                     vst1q_f32(vecbuf, acc_neon);
 #endif
                     pos = (y * dstw + w) * depth;
@@ -1738,6 +1795,15 @@ scale_with_resampling_float32(
             } else
 #endif
             {
+                /*
+                 * Center the double sum on one source value. Constant
+                 * FLT_MAX inputs then have exact zero deltas, avoiding a
+                 * false overflow from rounding sum(value * weight) / sum(w).
+                 * The bounded coverage arithmetic keeps its old ordering.
+                 */
+                for (i = 0; i < depth; i++) {
+                    origin[i] = src[(y * srcw + x_first) * depth + i];
+                }
                 for (x = x_first; x <= x_last; x++) {
                     diff_x = (dstw >= srcw)
                                  ? (x + 0.5) - center_x
@@ -1745,7 +1811,8 @@ scale_with_resampling_float32(
                     weight = f_resample(fabs(diff_x));
                     for (i = 0; i < depth; i++) {
                         pos = (y * srcw + x) * depth + i;
-                        offsets[i] += src[pos] * weight;
+                        offsets[i] += bounded ? src[pos] * weight
+                            : ((double)src[pos] - origin[i]) * weight;
                     }
                     total += weight;
                 }
@@ -1753,11 +1820,33 @@ scale_with_resampling_float32(
                 if (total > 0.0) {
                     for (i = 0; i < depth; i++) {
                         pos = (y * dstw + w) * depth + i;
-                        tmp[pos] = sixel_clamp_unit_f32(
-                            (float)(offsets[i] / total));
+                        value = offsets[i] / total;
+                        if (!bounded) {
+                            value += origin[i];
+                        }
+                        if (!bounded && (!isfinite(value)
+                                || fabs(value) > FLT_MAX)) {
+                            goto bad_numeric;
+                        }
+                        tmp[pos] = bounded
+                            ? sixel_clamp_unit_f32((float)value)
+                            : (float)value;
                     }
                 }
             }
+        }
+    }
+
+    if (!bounded) {
+        status = sixel_scale_float_range(tmp,
+            tmp_bytes / sizeof(float), &maximum);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        /* Negative lobes can increase the intermediate peak magnitude. */
+        simd_level = sixel_scale_simd_level();
+        if (maximum > vector_limit) {
+            simd_level = SIXEL_SIMD_LEVEL_SCALAR;
         }
     }
 
@@ -1797,7 +1886,7 @@ scale_with_resampling_float32(
                 }
                 if (total > 0.0) {
                     pos = (h * dstw + w) * depth;
-                    sixel_avx_store_rgb_f32(acc256, total, dst + pos);
+                    sixel_avx_store_rgb_f32(acc256, total, dst + pos, bounded);
                 }
             } else
 #endif
@@ -1824,7 +1913,7 @@ scale_with_resampling_float32(
                                  : (y + 0.5) * dsth / srch - center_y;
                     weight = f_resample(fabs(diff_y));
                     pos = (y * dstw + w) * depth;
-                    const float *psrc = tmp + pos;
+                    psrc = tmp + pos;
 #if defined(SIXEL_USE_SSE2)
                     pixf128 = _mm_set_ps(
                         0.0f, psrc[2], psrc[1], psrc[0]);
@@ -1850,15 +1939,19 @@ scale_with_resampling_float32(
 #if defined(SIXEL_USE_SSE2)
                     scalev128 = _mm_set1_ps((float)(1.0 / total));
                     acc128 = _mm_mul_ps(acc128, scalev128);
-                    acc128 = _mm_max_ps(minv128,
-                                        _mm_min_ps(acc128, maxv128));
+                    if (bounded) {
+                        acc128 = _mm_max_ps(minv128,
+                            _mm_min_ps(acc128, maxv128));
+                    }
                     _mm_storeu_ps(vecbuf, acc128);
 #else /* NEON */
                     scalev_neon = vdupq_n_f32(
                         (float)(1.0 / total));
                     acc_neon = vmulq_f32(acc_neon, scalev_neon);
-                    acc_neon = vmaxq_f32(minv_neon,
-                                         vminq_f32(acc_neon, maxv_neon));
+                    if (bounded) {
+                        acc_neon = vmaxq_f32(minv_neon,
+                            vminq_f32(acc_neon, maxv_neon));
+                    }
                     vst1q_f32(vecbuf, acc_neon);
 #endif
                     pos = (h * dstw + w) * depth;
@@ -1869,6 +1962,15 @@ scale_with_resampling_float32(
             } else
 #endif
             {
+                /*
+                 * Center the double sum on one source value. Constant
+                 * FLT_MAX inputs then have exact zero deltas, avoiding a
+                 * false overflow from rounding sum(value * weight) / sum(w).
+                 * The bounded coverage arithmetic keeps its old ordering.
+                 */
+                for (i = 0; i < depth; i++) {
+                    origin[i] = tmp[(y_first * dstw + w) * depth + i];
+                }
                 for (y = y_first; y <= y_last; y++) {
                     diff_y = (dsth >= srch)
                                  ? (y + 0.5) - center_y
@@ -1876,7 +1978,8 @@ scale_with_resampling_float32(
                     weight = f_resample(fabs(diff_y));
                     for (i = 0; i < depth; i++) {
                         pos = (y * dstw + w) * depth + i;
-                        offsets[i] += tmp[pos] * weight;
+                        offsets[i] += bounded ? tmp[pos] * weight
+                            : ((double)tmp[pos] - origin[i]) * weight;
                     }
                     total += weight;
                 }
@@ -1884,16 +1987,36 @@ scale_with_resampling_float32(
                 if (total > 0.0) {
                     for (i = 0; i < depth; i++) {
                         pos = (h * dstw + w) * depth + i;
-                        dst[pos] = sixel_clamp_unit_f32(
-                            (float)(offsets[i] / total));
+                        value = offsets[i] / total;
+                        if (!bounded) {
+                            value += origin[i];
+                        }
+                        if (!bounded && (!isfinite(value)
+                                || fabs(value) > FLT_MAX)) {
+                            goto bad_numeric;
+                        }
+                        dst[pos] = bounded
+                            ? sixel_clamp_unit_f32((float)value)
+                            : (float)value;
                     }
                 }
             }
         }
     }
 
+    if (!bounded) {
+        status = sixel_scale_float_range(dst,
+            dst_bytes / sizeof(float), &maximum);
+    }
+    goto end;
+
+bad_numeric:
+    sixel_helper_set_additional_message(
+        "float resize: color result exceeds finite float32 storage.");
+    status = SIXEL_BAD_INPUT;
+end:
     sixel_allocator_free(allocator, tmp);
-    return SIXEL_OK;
+    return status;
 }
 
 
@@ -1998,8 +2121,8 @@ sixel_helper_scale_image(
     return nret;
 }
 
-SIXELAPI int
-sixel_helper_scale_image_float32(
+static int
+sixel_scale_image_float32(
     float             /* out */ *dst,
     float const       /* in */  *src,
     int               /* in */  srcw,
@@ -2008,10 +2131,25 @@ sixel_helper_scale_image_float32(
     int               /* in */  dstw,
     int               /* in */  dsth,
     int               /* in */  method_for_resampling,
-    sixel_allocator_t /* in */  *allocator)
+    sixel_allocator_t /* in */  *allocator,
+    int bounded)
 {
     int depth;
     int depth_bytes;
+    double maximum;
+    SIXELSTATUS status;
+
+    if (!bounded && (dst == NULL || src == NULL
+            || srcw <= 0 || srch <= 0 || dstw <= 0 || dsth <= 0
+            || (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32
+                && pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32))) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!bounded
+            && ((size_t)MAX(srcw, dstw) > SIZE_MAX
+                / (size_t)MAX(srch, dsth) / (3u * sizeof(float)))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
 
     depth_bytes = sixel_helper_compute_depth(pixelformat);
     if (depth_bytes <= 0) {
@@ -2025,49 +2163,88 @@ sixel_helper_scale_image_float32(
 
     switch (method_for_resampling) {
     case SIXEL_RES_NEAREST:
+        if (!bounded) {
+            status = sixel_scale_float_range(src,
+                (size_t)srcw * (size_t)srch * (size_t)depth, &maximum);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
         scale_without_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth);
         return SIXEL_OK;
     case SIXEL_RES_GAUSSIAN:
         return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
-            gaussian, 1.0, allocator);
+            gaussian, 1.0, allocator, bounded);
     case SIXEL_RES_HANNING:
         return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
-            hanning, 1.0, allocator);
+            hanning, 1.0, allocator, bounded);
     case SIXEL_RES_HAMMING:
         return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
-            hamming, 1.0, allocator);
+            hamming, 1.0, allocator, bounded);
     case SIXEL_RES_WELSH:
         return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
-            welsh, 1.0, allocator);
+            welsh, 1.0, allocator, bounded);
     case SIXEL_RES_BICUBIC:
         return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
-            bicubic, 2.0, allocator);
+            bicubic, 2.0, allocator, bounded);
     case SIXEL_RES_LANCZOS2:
         return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
-            lanczos2, 2.0, allocator);
+            lanczos2, 2.0, allocator, bounded);
     case SIXEL_RES_LANCZOS3:
         return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
-            lanczos3, 3.0, allocator);
+            lanczos3, 3.0, allocator, bounded);
     case SIXEL_RES_LANCZOS4:
         return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
-            lanczos4, 4.0, allocator);
+            lanczos4, 4.0, allocator, bounded);
     case SIXEL_RES_BILINEAR:
     default:
         return scale_with_resampling_float32(
             dst, src, srcw, srch, dstw, dsth, depth,
-            bilinear, 1.0, allocator);
+            bilinear, 1.0, allocator, bounded);
     }
 }
 
+
+SIXEL_INTERNAL_API int
+sixel_helper_scale_image_float32(
+    float *dst,
+    float const *src,
+    int srcw,
+    int srch,
+    int pixelformat,
+    int dstw,
+    int dsth,
+    int method_for_resampling,
+    sixel_allocator_t *allocator)
+{
+    return sixel_scale_image_float32(dst, src, srcw, srch, pixelformat,
+        dstw, dsth, method_for_resampling, allocator, 1);
+}
+
+SIXEL_INTERNAL_API int
+sixel_scale_image_rgbf32(
+    float *dst,
+    float const *src,
+    int srcw,
+    int srch,
+    int pixelformat,
+    int dstw,
+    int dsth,
+    int method_for_resampling,
+    sixel_allocator_t *allocator)
+{
+    return sixel_scale_image_float32(dst, src, srcw, srch, pixelformat,
+        dstw, dsth, method_for_resampling, allocator, 0);
+}
 
 #if defined(__GNUC__) && !defined(__clang__) && !defined(__PCC__)
 # pragma GCC diagnostic pop

@@ -218,7 +218,7 @@ sixel_cpu_min(enum sixel_simd_level lhs, enum sixel_simd_level rhs)
     return rhs;
 }
 
-int
+SIXEL_INTERNAL_API int
 sixel_cpu_simd_level(void)
 {
     int cached;

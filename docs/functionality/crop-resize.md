@@ -51,6 +51,8 @@ img2sixel -c 320x200+40+20 input.png
 
 Cropping does not add padding. When a requested rectangle starts inside the frame but extends past its right or bottom edge, libsixel shortens the effective width or height to the available pixels. When its origin is on or beyond an edge, the effective rectangle is empty and the CLI crop filter leaves the frame unchanged. Callers that need an empty result, padding, or an error for a non-overlapping rectangle must validate the region before invoking `img2sixel`.
 
+Float frame crop moves samples without changing their bit representation, including nonfinite values. The direct frame API requires an in-bounds rectangle; the CLI filter performs the trimming and empty-intersection handling described above before entering that API. Float resize uses arithmetic and has a separate finite-storage and failure-state contract, documented under [float geometry](../concepts/pixelformat-precision.md#float-geometry-and-failure-state).
+
 ## Resize dimensions
 
 `-w WIDTH` / `--width=WIDTH` and `-h HEIGHT` / `--height=HEIGHT` configure the two axes of one resize operation.

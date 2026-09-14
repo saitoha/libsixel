@@ -262,6 +262,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/frame/0006_frame_extended_coordinates.c \
 	processing/frame/0014_frame_clone_float_canonical.c \
 	processing/frame/0015_frame_float_failure_atomic.c \
+	processing/frame/0018_frame_float_resampling.c \
+	processing/frame/0054_frame_float_geometry_state.c \
 	processing/frame/frame_transparent_mask_resize_test_common.c \
 	processing/frame/frame_transparent_mask_resize_test_common.h \
 	processing/geometry/resampling_exact_test_driver.c \
@@ -721,6 +723,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0006_frame_extended_coordinates.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0014_frame_clone_float_canonical.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0015_frame_float_failure_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0018_frame_float_resampling.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0054_frame_float_geometry_state.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-frame_transparent_mask_resize_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/geometry/test_runner-resampling_exact_test_driver.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/geometry/test_runner-resampling_measurement_test_driver.$(OBJEXT) \
@@ -1475,6 +1479,8 @@ am__depfiles_remade =  \
 	processing/frame/$(DEPDIR)/test_runner-0006_frame_extended_coordinates.Po \
 	processing/frame/$(DEPDIR)/test_runner-0014_frame_clone_float_canonical.Po \
 	processing/frame/$(DEPDIR)/test_runner-0015_frame_float_failure_atomic.Po \
+	processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Po \
+	processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Po \
 	processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po \
 	processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po \
 	processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po \
@@ -2409,6 +2415,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_FRAME_EXTENDED_COORDINATES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_FRAME_CLONE_FLOAT_CANONICAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_FRAME_FLOAT_FAILURE_ATOMIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_FRAME_FLOAT_RESAMPLING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_FRAME_FLOAT_GEOMETRY_STATE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
@@ -2822,6 +2830,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0006_frame_extended_coordinates.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0014_frame_clone_float_canonical.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0015_frame_float_failure_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0018_frame_float_resampling.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0054_frame_float_geometry_state.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/frame_transparent_mask_resize_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/frame_transparent_mask_resize_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/geometry/resampling_exact_test_driver.c \
@@ -3827,6 +3837,12 @@ processing/frame/test_runner-0014_frame_clone_float_canonical.$(OBJEXT):  \
 	processing/frame/$(am__dirstamp) \
 	processing/frame/$(DEPDIR)/$(am__dirstamp)
 processing/frame/test_runner-0015_frame_float_failure_atomic.$(OBJEXT):  \
+	processing/frame/$(am__dirstamp) \
+	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/frame/test_runner-0018_frame_float_resampling.$(OBJEXT):  \
+	processing/frame/$(am__dirstamp) \
+	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/frame/test_runner-0054_frame_float_geometry_state.$(OBJEXT):  \
 	processing/frame/$(am__dirstamp) \
 	processing/frame/$(DEPDIR)/$(am__dirstamp)
 processing/frame/test_runner-frame_transparent_mask_resize_test_common.$(OBJEXT):  \
@@ -5327,6 +5343,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0006_frame_extended_coordinates.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0014_frame_clone_float_canonical.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0015_frame_float_failure_atomic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po@am__quote@ # am--include-marker
@@ -7507,6 +7525,34 @@ processing/frame/test_runner-0015_frame_float_failure_atomic.obj: processing/fra
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0015_frame_float_failure_atomic.c' object='processing/frame/test_runner-0015_frame_float_failure_atomic.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0015_frame_float_failure_atomic.obj `if test -f 'processing/frame/0015_frame_float_failure_atomic.c'; then $(CYGPATH_W) 'processing/frame/0015_frame_float_failure_atomic.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0015_frame_float_failure_atomic.c'; fi`
+
+processing/frame/test_runner-0018_frame_float_resampling.o: processing/frame/0018_frame_float_resampling.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0018_frame_float_resampling.o -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Tpo -c -o processing/frame/test_runner-0018_frame_float_resampling.o `test -f 'processing/frame/0018_frame_float_resampling.c' || echo '$(srcdir)/'`processing/frame/0018_frame_float_resampling.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Tpo processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0018_frame_float_resampling.c' object='processing/frame/test_runner-0018_frame_float_resampling.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0018_frame_float_resampling.o `test -f 'processing/frame/0018_frame_float_resampling.c' || echo '$(srcdir)/'`processing/frame/0018_frame_float_resampling.c
+
+processing/frame/test_runner-0018_frame_float_resampling.obj: processing/frame/0018_frame_float_resampling.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0018_frame_float_resampling.obj -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Tpo -c -o processing/frame/test_runner-0018_frame_float_resampling.obj `if test -f 'processing/frame/0018_frame_float_resampling.c'; then $(CYGPATH_W) 'processing/frame/0018_frame_float_resampling.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0018_frame_float_resampling.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Tpo processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0018_frame_float_resampling.c' object='processing/frame/test_runner-0018_frame_float_resampling.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0018_frame_float_resampling.obj `if test -f 'processing/frame/0018_frame_float_resampling.c'; then $(CYGPATH_W) 'processing/frame/0018_frame_float_resampling.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0018_frame_float_resampling.c'; fi`
+
+processing/frame/test_runner-0054_frame_float_geometry_state.o: processing/frame/0054_frame_float_geometry_state.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0054_frame_float_geometry_state.o -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Tpo -c -o processing/frame/test_runner-0054_frame_float_geometry_state.o `test -f 'processing/frame/0054_frame_float_geometry_state.c' || echo '$(srcdir)/'`processing/frame/0054_frame_float_geometry_state.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Tpo processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0054_frame_float_geometry_state.c' object='processing/frame/test_runner-0054_frame_float_geometry_state.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0054_frame_float_geometry_state.o `test -f 'processing/frame/0054_frame_float_geometry_state.c' || echo '$(srcdir)/'`processing/frame/0054_frame_float_geometry_state.c
+
+processing/frame/test_runner-0054_frame_float_geometry_state.obj: processing/frame/0054_frame_float_geometry_state.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0054_frame_float_geometry_state.obj -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Tpo -c -o processing/frame/test_runner-0054_frame_float_geometry_state.obj `if test -f 'processing/frame/0054_frame_float_geometry_state.c'; then $(CYGPATH_W) 'processing/frame/0054_frame_float_geometry_state.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0054_frame_float_geometry_state.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Tpo processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0054_frame_float_geometry_state.c' object='processing/frame/test_runner-0054_frame_float_geometry_state.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0054_frame_float_geometry_state.obj `if test -f 'processing/frame/0054_frame_float_geometry_state.c'; then $(CYGPATH_W) 'processing/frame/0054_frame_float_geometry_state.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0054_frame_float_geometry_state.c'; fi`
 
 processing/frame/test_runner-frame_transparent_mask_resize_test_common.o: processing/frame/frame_transparent_mask_resize_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-frame_transparent_mask_resize_test_common.o -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Tpo -c -o processing/frame/test_runner-frame_transparent_mask_resize_test_common.o `test -f 'processing/frame/frame_transparent_mask_resize_test_common.c' || echo '$(srcdir)/'`processing/frame/frame_transparent_mask_resize_test_common.c
@@ -12465,6 +12511,8 @@ distclean: distclean-am
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0006_frame_extended_coordinates.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0014_frame_clone_float_canonical.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0015_frame_float_failure_atomic.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po
 	-rm -f processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po
 	-rm -f processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po
@@ -12955,6 +13003,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0006_frame_extended_coordinates.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0014_frame_clone_float_canonical.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0015_frame_float_failure_atomic.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0018_frame_float_resampling.Po
+	-rm -f processing/frame/$(DEPDIR)/test_runner-0054_frame_float_geometry_state.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po
 	-rm -f processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po
 	-rm -f processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po

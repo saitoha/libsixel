@@ -229,7 +229,7 @@ sixel_filter_clip_dispose(sixel_filter_t *filter)
     }
 }
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_clip_init(sixel_filter_t *filter,
                        const sixel_filter_clip_config_t *config)
 {
