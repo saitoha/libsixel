@@ -500,6 +500,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/0189_png_palette_samples.c \
 	loader/builtin/0190_png_palette_failure.c \
 	loader/builtin/0191_png_palette_paint.c \
+	loader/builtin/0192_png_metadata_samples.c \
+	loader/builtin/0193_png_metadata_failures.c \
+	loader/builtin/0194_png_metadata_ownership.c \
+	loader/builtin/loader_builtin_png_metadata_test_common.h \
 	loader/builtin/loader_builtin_png_color_test_common.h \
 	loader/quicklook/0015_loader_quicklook_pixelformat.c \
 	loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
@@ -966,6 +970,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0189_png_palette_samples.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0190_png_palette_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0191_png_palette_paint.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0192_png_metadata_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0193_png_metadata_failures.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0194_png_metadata_ownership.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.$(OBJEXT) \
@@ -1290,6 +1297,9 @@ am__depfiles_remade =  \
 	loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Po \
 	loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po \
@@ -2691,6 +2701,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0189_PNG_PALETTE_SAMPLES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0190_PNG_PALETTE_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0191_PNG_PALETTE_PAINT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0192_PNG_METADATA_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0193_PNG_METADATA_FAILURES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0194_PNG_METADATA_OWNERSHIP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -3128,6 +3141,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0189_png_palette_samples.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0190_png_palette_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0191_png_palette_paint.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0192_png_metadata_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0193_png_metadata_failures.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0194_png_metadata_ownership.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/loader_builtin_png_metadata_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/loader_builtin_png_color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/quicklook/0015_loader_quicklook_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
@@ -4708,6 +4725,15 @@ loader/builtin/test_runner-0190_png_palette_failure.$(OBJEXT):  \
 loader/builtin/test_runner-0191_png_palette_paint.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0192_png_metadata_samples.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0193_png_metadata_failures.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0194_png_metadata_ownership.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
 loader/quicklook/$(am__dirstamp):
 	@$(MKDIR_P) loader/quicklook
 	@: >>loader/quicklook/$(am__dirstamp)
@@ -5251,6 +5277,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po@am__quote@ # am--include-marker
@@ -10860,6 +10889,48 @@ loader/builtin/test_runner-0191_png_palette_paint.obj: loader/builtin/0191_png_p
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0191_png_palette_paint.obj `if test -f 'loader/builtin/0191_png_palette_paint.c'; then $(CYGPATH_W) 'loader/builtin/0191_png_palette_paint.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0191_png_palette_paint.c'; fi`
 
+loader/builtin/test_runner-0192_png_metadata_samples.o: loader/builtin/0192_png_metadata_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0192_png_metadata_samples.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Tpo -c -o loader/builtin/test_runner-0192_png_metadata_samples.o `test -f 'loader/builtin/0192_png_metadata_samples.c' || echo '$(srcdir)/'`loader/builtin/0192_png_metadata_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Tpo loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0192_png_metadata_samples.c' object='loader/builtin/test_runner-0192_png_metadata_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0192_png_metadata_samples.o `test -f 'loader/builtin/0192_png_metadata_samples.c' || echo '$(srcdir)/'`loader/builtin/0192_png_metadata_samples.c
+
+loader/builtin/test_runner-0192_png_metadata_samples.obj: loader/builtin/0192_png_metadata_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0192_png_metadata_samples.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Tpo -c -o loader/builtin/test_runner-0192_png_metadata_samples.obj `if test -f 'loader/builtin/0192_png_metadata_samples.c'; then $(CYGPATH_W) 'loader/builtin/0192_png_metadata_samples.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0192_png_metadata_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Tpo loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0192_png_metadata_samples.c' object='loader/builtin/test_runner-0192_png_metadata_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0192_png_metadata_samples.obj `if test -f 'loader/builtin/0192_png_metadata_samples.c'; then $(CYGPATH_W) 'loader/builtin/0192_png_metadata_samples.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0192_png_metadata_samples.c'; fi`
+
+loader/builtin/test_runner-0193_png_metadata_failures.o: loader/builtin/0193_png_metadata_failures.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0193_png_metadata_failures.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Tpo -c -o loader/builtin/test_runner-0193_png_metadata_failures.o `test -f 'loader/builtin/0193_png_metadata_failures.c' || echo '$(srcdir)/'`loader/builtin/0193_png_metadata_failures.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Tpo loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0193_png_metadata_failures.c' object='loader/builtin/test_runner-0193_png_metadata_failures.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0193_png_metadata_failures.o `test -f 'loader/builtin/0193_png_metadata_failures.c' || echo '$(srcdir)/'`loader/builtin/0193_png_metadata_failures.c
+
+loader/builtin/test_runner-0193_png_metadata_failures.obj: loader/builtin/0193_png_metadata_failures.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0193_png_metadata_failures.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Tpo -c -o loader/builtin/test_runner-0193_png_metadata_failures.obj `if test -f 'loader/builtin/0193_png_metadata_failures.c'; then $(CYGPATH_W) 'loader/builtin/0193_png_metadata_failures.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0193_png_metadata_failures.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Tpo loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0193_png_metadata_failures.c' object='loader/builtin/test_runner-0193_png_metadata_failures.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0193_png_metadata_failures.obj `if test -f 'loader/builtin/0193_png_metadata_failures.c'; then $(CYGPATH_W) 'loader/builtin/0193_png_metadata_failures.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0193_png_metadata_failures.c'; fi`
+
+loader/builtin/test_runner-0194_png_metadata_ownership.o: loader/builtin/0194_png_metadata_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0194_png_metadata_ownership.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Tpo -c -o loader/builtin/test_runner-0194_png_metadata_ownership.o `test -f 'loader/builtin/0194_png_metadata_ownership.c' || echo '$(srcdir)/'`loader/builtin/0194_png_metadata_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Tpo loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0194_png_metadata_ownership.c' object='loader/builtin/test_runner-0194_png_metadata_ownership.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0194_png_metadata_ownership.o `test -f 'loader/builtin/0194_png_metadata_ownership.c' || echo '$(srcdir)/'`loader/builtin/0194_png_metadata_ownership.c
+
+loader/builtin/test_runner-0194_png_metadata_ownership.obj: loader/builtin/0194_png_metadata_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0194_png_metadata_ownership.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Tpo -c -o loader/builtin/test_runner-0194_png_metadata_ownership.obj `if test -f 'loader/builtin/0194_png_metadata_ownership.c'; then $(CYGPATH_W) 'loader/builtin/0194_png_metadata_ownership.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0194_png_metadata_ownership.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Tpo loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0194_png_metadata_ownership.c' object='loader/builtin/test_runner-0194_png_metadata_ownership.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0194_png_metadata_ownership.obj `if test -f 'loader/builtin/0194_png_metadata_ownership.c'; then $(CYGPATH_W) 'loader/builtin/0194_png_metadata_ownership.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0194_png_metadata_ownership.c'; fi`
+
 loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o: loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
@@ -12646,6 +12717,9 @@ distclean: distclean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po
@@ -13153,6 +13227,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0192_png_metadata_samples.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0193_png_metadata_failures.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0194_png_metadata_ownership.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po

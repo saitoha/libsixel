@@ -1353,6 +1353,220 @@ def png_palette_oracles(power_records):
     return outputs
 
 
+def png_metadata_oracles():
+    """Derive PNG metadata fixtures without importing a product decoder."""
+    from decimal import Decimal as N, localcontext
+
+    def mm(a, b):
+        return [[sum((a[i][k] * b[k][j] for k in range(len(b)))) for j in range(len(b[0]))] for i in range(len(a))]
+
+    def inv(m):
+        # Pivoted elimination is independent of the product's cofactor inverse.
+        a = [r[:] + [N(i == j) for j in range(3)] for i, r in enumerate(m)]
+        for c in range(3):
+            k = max(range(c, 3), key=lambda i: abs(a[i][c]))
+            a[c], a[k] = (a[k], a[c])
+            div = a[c][c]
+            if div == 0:
+                raise ValueError('singular')
+            a[c] = [v / div for v in a[c]]
+            for i in range(3):
+                if i != c:
+                    q = a[i][c]
+                    a[i] = [a[i][j] - q * a[c][j] for j in range(6)]
+        return [r[3:] for r in a]
+
+    def space(grid):
+        if any((x > 100000 or y <= 0 or x + y > 100000 for x, y in zip(grid[::2], grid[1::2]))):
+            raise ValueError('invalid grid')
+        xyz = [[N(x) / y, N(1), N(100000 - x - y) / y] for x, y in zip(grid[::2], grid[1::2])]
+        m = [[xyz[j + 1][i] for j in range(3)] for i in range(3)]
+        scale = mm(inv(m), [[x] for x in xyz[0]])
+        if any((v[0] <= 0 for v in scale)):
+            raise ValueError('nonpositive primary scale')
+        return ([[m[i][j] * scale[j][0] for j in range(3)] for i in range(3)], [[v] for v in xyz[0]])
+
+    def transform(grid):
+        src, sw = space(grid)
+        dst, dw = space([31270, 32900, 64000, 33000, 30000, 60000, 15000, 6000])
+        br = [list(map(N, line.split())) for line in ['.8951 .2664 -.1614', '-.7502 1.7135 .0367', '.0389 -.0685 1.0296']]
+        sc, dc = (mm(br, sw), mm(br, dw))
+        if any((v[0] <= 0 for v in sc)):
+            raise ValueError('nonpositive source cone')
+        diag = [[dc[i][0] / sc[i][0] if i == j else N(0) for j in range(3)] for i in range(3)]
+        return mm(inv(dst), mm(inv(br), mm(diag, mm(br, src))))
+
+    def f32(x):
+        return struct.unpack('>f', struct.pack('>f', float(x)))[0]
+
+    def pack(t, v):
+        return struct.pack('>I', len(v)) + t + v + struct.pack('>I', zlib.crc32(t + v))
+
+    def png(depth, kind, pixels, grid, gama=25000, bg=None, srgb=False, apng=False):
+        channels = {2: 3, 3: 1, 6: 4}[kind]
+        raw = b'\x00' + (bytes(range(len(pixels))) if kind == 3 else b''.join((struct.pack('>H', v) if depth == 16 else bytes([v]) for p in pixels for v in p[:channels])))
+        out = b'\x89PNG\r\n\x1a\n' + pack(b'IHDR', struct.pack('>IIBBBBB', len(pixels), 1, depth, kind, 0, 0, 0))
+        if grid is not None:
+            out += pack(b'cHRM', struct.pack('>8I', *grid))
+        if gama is not None:
+            out += pack(b'gAMA', struct.pack('>I', gama))
+        if srgb:
+            out += pack(b'sRGB', b'\x00')
+        if kind == 3:
+            out += pack(b'PLTE', bytes((v for p in pixels for v in p[:3]))) + pack(b'tRNS', bytes((p[3] for p in pixels)))
+        if bg is not None:
+            out += pack(b'bKGD', bytes([bg]) if kind == 3 else struct.pack('>3H', *bg))
+        if apng:
+            out += pack(b'acTL', struct.pack('>2I', 1, 0)) + pack(b'fcTL', struct.pack('>5I2H2B', 0, len(pixels), 1, 0, 0, 1, 10, 0, 0))
+        return out + pack(b'IDAT', zlib.compress(raw)) + pack(b'IEND', b'')
+    base = [34570, 35850, 70800, 29200, 17000, 79700, 13100, 4600]
+    gridzero = base[:]
+    gridzero[4:6] = [272, 99728]
+    gridinside = gridzero[:]
+    gridinside[5] -= 1
+    gridoutside = gridzero[:]
+    gridoutside[5] += 1
+    singular = base[:2] + base[2:4] * 3
+    pixels8 = [(0, 0, 0, 0), (255, 255, 255, 255), (10, 20, 30, 40), (50, 100, 150, 85), (200, 80, 30, 192), (255, 0, 0, 255), (0, 255, 0, 0), (0, 0, 255, 255)]
+    pixels16 = [
+        (0, 0, 0, 0), (65535, 65535, 65535, 65535),
+        (2571, 5141, 7711, 10281), (12851, 25701, 38551, 21846),
+        (51401, 20561, 7711, 49345), (65535, 0, 0, 65535),
+        (0, 65535, 0, 0), (0, 0, 65535, 65535)]
+    specs = []
+    for depth, pixels in [(8, pixels8), (16, pixels16)]:
+        for kind in [2, 6]:
+            for label, grid in [
+                    ('boundary', base), ('singular', singular),
+                    ('grid-zero', gridzero), ('grid-inside', gridinside),
+                    ('grid-outside', gridoutside), ('gamma-only', None),
+                    ('chrm-only', base), ('srgb', base)]:
+                specs.append(dict(name=f'{label}-{depth}-{kind}', depth=depth, kind=kind, pixels=pixels, grid=grid, gama=None if label == 'chrm-only' else 25000, srgb=label == 'srgb'))
+        for label, grid in [('boundary', base), ('singular', singular)]:
+            specs.append(dict(name=f'{label}-filebg-{depth}', depth=depth, kind=6, pixels=pixels, grid=grid, bg=pixels[4][:3]))
+    for label, grid in [('boundary', base), ('singular', singular)]:
+        specs.append(dict(name=f'{label}-filebg-indexed', depth=8, kind=3, pixels=pixels8, grid=grid, bg=4))
+    specs.append(dict(name='boundary-palette', depth=8, kind=3, pixels=pixels8, grid=base))
+    specs.append(dict(name='boundary-apng', depth=8, kind=6, pixels=pixels8, grid=base, apng=True))
+    records = []
+    outputs = {}
+    for spec in specs:
+        name = spec['name']
+        data = png(**{k: v for k, v in spec.items() if k != 'name'})
+        filename = 'png-metadata-' + name + '.png'
+        outputs[filename] = data
+        records.append(spec | {'file': filename, 'sha256': hashlib.sha256(data).hexdigest()})
+
+    def oracle(s, precision):
+        with localcontext() as ctx:
+            ctx.prec = precision
+            m = None
+            reason = 'absent'
+            if s['grid'] is not None:
+                try:
+                    m = transform(s['grid'])
+                    reason = 'valid'
+                except ValueError as e:
+                    reason = str(e)
+            maximum = N(65535 if s['depth'] == 16 else 255)
+            rows = []
+            for p in s['pixels']:
+                n = [N(f32(N(v) / maximum)) for v in p[:3]]
+                # gAMA=25000 makes the transfer an exact fourth power. Keep
+                # this matrix model separate from metadata priority below.
+                gamma = [v ** 4 for v in n]
+                v = mm(m, [[q] for q in gamma]) if m else [[q] for q in gamma]
+                rows.append({
+                    'normalized_f32': list(map(str, n)),
+                    'alpha': str(N(p[3]) / maximum),
+                    'gamma_double': list(map(str, gamma)),
+                    'linear_exact': [str(q[0]) for q in v],
+                    'linear_f32': [f32(q[0]) for q in v],
+                    'intermediate_f32_model': [f32(q[0]) for q in
+                        mm(m, [[N(f32(q))] for q in gamma])] if m else None})
+            return {'metadata': reason, 'matrix': [[str(q) for q in row] for row in m] if m else None, 'samples': rows}
+    header = (
+        '/* Generated from original PNG chunks and Decimal80 equations. */\n'
+        '#ifndef COLOR_PNG_METADATA_H\n#define COLOR_PNG_METADATA_H\n'
+        '#include <stddef.h>\n'
+        'typedef struct {\n'
+        '    unsigned char const *bytes;\n'
+        '    size_t length;\n'
+        '    int depth, type, background, usable_profile, transfer;\n'
+        '    float linear[24], gamma[24], source[24], srgb[24];\n'
+        '    float explicit_gamma[24], explicit_linear[24];\n'
+        '    unsigned short rgba[32];\n'
+        '    unsigned char byte_rgb[24];\n'
+        '} color_png_metadata_t;\n')
+    for number, r in enumerate(records):
+        data = outputs[r['file']]
+        header += f'static unsigned char const color_pm_{number}[] = {{\n'
+        header += ''.join(('    ' + ', '.join((f'0x{v:02x}' for v in data[i:i + 12])) + ',\n' for i in range(0, len(data), 12))) + '};\n'
+    header += 'static color_png_metadata_t const color_png_metadata[] = {\n'
+    for number, r in enumerate(records):
+        o = oracle(r, 80)
+        r['oracle'] = o
+        with localcontext() as ctx:
+            ctx.prec = 80
+            samples = o['samples']
+            valid = o['metadata'] == 'valid'
+            units = [[N(v) for v in p['normalized_f32']] for p in samples]
+            srgb = [[f32(v / N('12.92') if v <= N('.04045') else ((v + N('.055')) / N('1.055')) ** N('2.4')) for v in row] for row in units]
+            gamma = [[f32(N(v)) for v in p['gamma_double']] for p in samples]
+            linear = [p['linear_f32'][:] for p in samples]
+            transfer = 0 if r.get('srgb') or r.get('gama', 25000) is None else 1
+            if not transfer:
+                linear = [row[:] for row in srgb]
+
+            def composite(values, bg):
+                return [[f32(N(v) * N(p['alpha']) + N(bg[c]) * (1 - N(p['alpha']))) if N(p['alpha']) else v for c, v in enumerate(row)] for row, p in zip(values, samples)]
+            exp_unit = [N(f32(N(v) / 255)) for v in [200, 80, 30]]
+            exp_gamma = [f32(v / N('12.92') if v <= N('.04045') else ((v + N('.055')) / N('1.055')) ** N('2.4')) for v in exp_unit]
+            explicit_gamma = composite(linear, exp_gamma)
+            explicit_linear = composite(linear, exp_unit)
+            if 'bg' in r:
+                linear = composite(linear, linear[4])
+                gamma = composite(gamma, gamma[4])
+            byte_rgb = []
+            # Only the paired gAMA/cHRM palette and APNG tests consume this
+            # legacy byte projection; canonical tests use the arrays above.
+            m = [[N(v) for v in row] for row in o['matrix']] if valid else None
+            for p in r['pixels']:
+                v = [(N(c) / (65535 if r['depth'] == 16 else 255)) ** 4 for c in p[:3]]
+                if m:
+                    v = [q[0] for q in mm(m, [[q] for q in v])]
+                for c in v:
+                    c = max(N(0), min(N(1), c))
+                    e = N('12.92') * c if c <= N('.0031308') else N('1.055') * c ** (N(1) / N('2.4')) - N('.055')
+                    byte_rgb.append(int(e * 255 + N('.5')))
+            rgba = [v for p in r['pixels'] for v in p]
+            arrays = [linear, gamma, units, srgb, explicit_gamma, explicit_linear]
+            header += f'    {{ color_pm_{number}, sizeof(color_pm_{number}),\n'
+            header += f"      {r['depth']}, {r['kind']}, {int('bg' in r)}, {int(valid or o['metadata'] == 'absent')}, {transfer},\n"
+            for values in arrays:
+                flat = [v for row in values for v in row]
+                header += '      {\n' + ''.join(('        ' + ', '.join((float(v).hex() + 'f' for v in flat[i:i + 3])) + ',\n' for i in range(0, 24, 3))) + '      },\n'
+            header += '      {\n' + ''.join(('        ' + ', '.join(map(str, rgba[i:i + 8])) + ',\n' for i in range(0, 32, 8))) + '      },\n'
+            header += '      {\n' + ''.join(('        ' + ', '.join(map(str, byte_rgb[i:i + 8])) + ',\n' for i in range(0, 24, 8))) + '      } },\n'
+            r['expected'] = {
+                name: [[float(v) for v in row] for row in values]
+                for name, values in zip([
+                    'linear', 'gamma_fallback', 'normalized_source',
+                    'default_srgb', 'explicit_gamma', 'explicit_linear'], arrays)}
+            r['expected']['byte_rgb'] = byte_rgb
+    header += '};\n#endif /* COLOR_PNG_METADATA_H */\n'
+    outputs['png-metadata.h'] = header.encode()
+    outputs['png-metadata.json'] = (json.dumps({
+        'generator': 'tools/generate_color_fixtures.py',
+        'precision': 80,
+        'model': 'Original uint32 cHRM and integer samples normalized to F32; '
+                 'independent power, source primary solve, Bradford to D65, '
+                 'final linear F32; distinct background transforms and linear '
+                 'composition. Source byte projection is separate.',
+        'fixtures': records}, indent=2) + '\n').encode()
+    return outputs
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -1459,6 +1673,7 @@ def main():
     outputs.update(legacy_png_icc_oracle())
     outputs.update(frame_byte_oracles())
     outputs.update(png_byte_target_oracles())
+    outputs.update(png_metadata_oracles())
     outputs.update(cmyk_sample_oracles())
     outputs.update(gray_sample_oracles())
     power_outputs = rgb_power_oracles()

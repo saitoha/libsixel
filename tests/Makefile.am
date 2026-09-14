@@ -634,6 +634,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0189_PNG_PALETTE_SAMPLES \
     -DBUILD_TEST_0190_PNG_PALETTE_FAILURE \
     -DBUILD_TEST_0191_PNG_PALETTE_PAINT \
+    -DBUILD_TEST_0192_PNG_METADATA_SAMPLES \
+    -DBUILD_TEST_0193_PNG_METADATA_FAILURES \
+    -DBUILD_TEST_0194_PNG_METADATA_OWNERSHIP \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -1046,6 +1049,10 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0189_png_palette_samples.c \
     loader/builtin/0190_png_palette_failure.c \
     loader/builtin/0191_png_palette_paint.c \
+    loader/builtin/0192_png_metadata_samples.c \
+    loader/builtin/0193_png_metadata_failures.c \
+    loader/builtin/0194_png_metadata_ownership.c \
+    loader/builtin/loader_builtin_png_metadata_test_common.h \
     loader/builtin/loader_builtin_png_color_test_common.h \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \

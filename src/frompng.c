@@ -81,6 +81,10 @@ static int
 sixel_frompng_extract_icc(unsigned char const *buffer, size_t size,
                            unsigned char **profile, size_t *profile_length);
 
+static int
+sixel_frompng_build_chrm_to_srgb_matrix(uint32_t const chrm_xy[8],
+                                        double source_to_srgb[3][3]);
+
 #if HAVE_LCMS2
 static uint32_t
 sixel_frompng_read_be32(unsigned char const *p)
@@ -149,7 +153,8 @@ sixel_frompng_expand_sample_to_bg(uint16_t sample,
             value16 = 0u;
         } else {
             value8 = ((unsigned int)sample * 255u + max_value / 2u) / max_value;
-            value16 = ((unsigned int)sample * 65535u + max_value / 2u) / max_value;
+            value16 = ((unsigned int)sample * 65535u + max_value / 2u)
+                / max_value;
         }
     }
     *out8 = (unsigned char)value8;
@@ -266,15 +271,18 @@ sixel_frompng_parse_bkgd(unsigned char const *buffer,
         if (bkgd_length < 6u) {
             return 0;
         }
-        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 0u),
+        sixel_frompng_expand_sample_to_bg(
+            sixel_frompng_read_be16(bkgd_data + 0u),
                                           bitdepth,
                                           &red8,
                                           &red16);
-        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 2u),
+        sixel_frompng_expand_sample_to_bg(
+            sixel_frompng_read_be16(bkgd_data + 2u),
                                           bitdepth,
                                           &green8,
                                           &green16);
-        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 4u),
+        sixel_frompng_expand_sample_to_bg(
+            sixel_frompng_read_be16(bkgd_data + 4u),
                                           bitdepth,
                                           &blue8,
                                           &blue16);
@@ -463,7 +471,8 @@ sixel_frompng_detect_chunk_flags(unsigned char const *buffer,
 static int
 sixel_frompng_build_profile_from_chunks(unsigned char const *buffer,
                                         size_t size,
-                                        sixel_cms_profile_t **profile)
+                                        sixel_cms_profile_t **profile,
+                                        int *invalid_chrm)
 {
     static unsigned char const png_signature[8] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
@@ -485,11 +494,17 @@ sixel_frompng_build_profile_from_chunks(unsigned char const *buffer,
     double blue_x;
     double blue_y;
     double file_gamma;
+    double validation_matrix[3][3];
+    uint32_t chrm_grid[8];
+    int i;
 
     if (profile == NULL) {
         return 0;
     }
     *profile = NULL;
+    if (invalid_chrm != NULL) {
+        *invalid_chrm = 0;
+    }
     if (buffer == NULL || size < sizeof(png_signature) + 12u) {
         return 0;
     }
@@ -537,6 +552,9 @@ sixel_frompng_build_profile_from_chunks(unsigned char const *buffer,
                 / 100000.0;
             blue_y = (double)sixel_frompng_read_be32(chunk_data + 28u)
                 / 100000.0;
+            for (i = 0; i < 8; ++i) {
+                chrm_grid[i] = sixel_frompng_read_be32(chunk_data + 4 * i);
+            }
             has_chrm = 1;
         } else if (memcmp(chunk_type, "gAMA", 4u) == 0
                    && chunk_length >= 4u) {
@@ -561,6 +579,15 @@ sixel_frompng_build_profile_from_chunks(unsigned char const *buffer,
         blue_y = 0.0600;
     }
     if (file_gamma <= 0.0) {
+        return 0;
+    }
+
+    /* Metadata rejection is independent of a later allocation or CMM
+     * failure. Only this result authorizes the opaque gAMA fallback. */
+    if (invalid_chrm != NULL && has_chrm &&
+        !sixel_frompng_build_chrm_to_srgb_matrix(chrm_grid,
+                                                  validation_matrix)) {
+        *invalid_chrm = 1;
         return 0;
     }
 
@@ -641,7 +668,7 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
     } else if (has_gama
                && sixel_frompng_build_profile_from_chunks(buffer,
                                                           size,
-                                                          &chunk_profile)) {
+                &chunk_profile, NULL)) {
         converted = sixel_cms_convert_profile_to_srgb(
             pixels,
             width,
@@ -701,11 +728,7 @@ sixel_frompng_parse_transfer_chunks(unsigned char const *buffer,
                                     double *file_gamma,
                                     int *has_iccp,
                                     int *has_chrm,
-                                    double chrm_xy[8]);
-
-static int
-sixel_frompng_build_chrm_to_srgb_matrix(double const chrm_xy[8],
-                                        double source_to_srgb[3][3]);
+                                    uint32_t chrm_xy[8]);
 
 static void
 sixel_frompng_apply_gama_to_srgb_u8(unsigned char *pixels,
@@ -756,7 +779,7 @@ sixel_frompng_apply_colorspace_fallback_pixelformat(
     int has_chrm_chunk;
     double file_gamma;
     int cms_applied;
-    double source_chrm_xy[8];
+    uint32_t source_chrm_xy[8];
     double source_to_srgb_matrix[3][3];
     int apply_chrm_matrix;
     sixel_icc_profile_t icc_profile;
@@ -919,7 +942,8 @@ sixel_frompng_expand_sample_to_bg(uint16_t sample,
             value16 = 0u;
         } else {
             value8 = ((unsigned int)sample * 255u + max_value / 2u) / max_value;
-            value16 = ((unsigned int)sample * 65535u + max_value / 2u) / max_value;
+            value16 = ((unsigned int)sample * 65535u + max_value / 2u)
+                / max_value;
         }
     }
     *out8 = (unsigned char)value8;
@@ -1036,15 +1060,18 @@ sixel_frompng_parse_bkgd(unsigned char const *buffer,
         if (bkgd_length < 6u) {
             return 0;
         }
-        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 0u),
+        sixel_frompng_expand_sample_to_bg(
+            sixel_frompng_read_be16(bkgd_data + 0u),
                                           bitdepth,
                                           &red8,
                                           &red16);
-        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 2u),
+        sixel_frompng_expand_sample_to_bg(
+            sixel_frompng_read_be16(bkgd_data + 2u),
                                           bitdepth,
                                           &green8,
                                           &green16);
-        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 4u),
+        sixel_frompng_expand_sample_to_bg(
+            sixel_frompng_read_be16(bkgd_data + 4u),
                                           bitdepth,
                                           &blue8,
                                           &blue16);
@@ -1307,7 +1334,8 @@ sixel_frompng_encode_srgb_unit(double value)
 #endif  /* !HAVE_LCMS2 */
 
 static double
-sixel_frompng_decode_source_unit(double value, int transfer_mode, double file_gamma)
+sixel_frompng_decode_source_unit(double value, int transfer_mode,
+                                  double file_gamma)
 {
     value = sixel_frompng_clamp_unit(value);
     if (transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA && file_gamma > 0.0) {
@@ -1324,7 +1352,7 @@ sixel_frompng_parse_transfer_chunks(unsigned char const *buffer,
                                     double *file_gamma,
                                     int *has_iccp,
                                     int *has_chrm,
-                                    double chrm_xy[8])
+                                    uint32_t chrm_xy[8])
 {
     static unsigned char const png_signature[8] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
@@ -1348,7 +1376,7 @@ sixel_frompng_parse_transfer_chunks(unsigned char const *buffer,
         *has_chrm = 0;
     }
     if (chrm_xy != NULL) {
-        memset(chrm_xy, 0, sizeof(double) * 8u);
+        memset(chrm_xy, 0, sizeof(uint32_t) * 8u);
     }
 
     if (buffer == NULL || size < sizeof(png_signature) + 12u) {
@@ -1379,18 +1407,19 @@ sixel_frompng_parse_transfer_chunks(unsigned char const *buffer,
                 *has_chrm = 1;
             }
             if (chrm_xy != NULL) {
-                chrm_xy[0] = (double)sixel_frompng_read_be32(chunk_data + 0u) / 100000.0;
-                chrm_xy[1] = (double)sixel_frompng_read_be32(chunk_data + 4u) / 100000.0;
-                chrm_xy[2] = (double)sixel_frompng_read_be32(chunk_data + 8u) / 100000.0;
-                chrm_xy[3] = (double)sixel_frompng_read_be32(chunk_data + 12u) / 100000.0;
-                chrm_xy[4] = (double)sixel_frompng_read_be32(chunk_data + 16u) / 100000.0;
-                chrm_xy[5] = (double)sixel_frompng_read_be32(chunk_data + 20u) / 100000.0;
-                chrm_xy[6] = (double)sixel_frompng_read_be32(chunk_data + 24u) / 100000.0;
-                chrm_xy[7] = (double)sixel_frompng_read_be32(chunk_data + 28u) / 100000.0;
+                chrm_xy[0] = sixel_frompng_read_be32(chunk_data + 0u);
+                chrm_xy[1] = sixel_frompng_read_be32(chunk_data + 4u);
+                chrm_xy[2] = sixel_frompng_read_be32(chunk_data + 8u);
+                chrm_xy[3] = sixel_frompng_read_be32(chunk_data + 12u);
+                chrm_xy[4] = sixel_frompng_read_be32(chunk_data + 16u);
+                chrm_xy[5] = sixel_frompng_read_be32(chunk_data + 20u);
+                chrm_xy[6] = sixel_frompng_read_be32(chunk_data + 24u);
+                chrm_xy[7] = sixel_frompng_read_be32(chunk_data + 28u);
             }
         } else if (memcmp(chunk_type, "gAMA", 4u) == 0 && chunk_length >= 4u) {
             *has_gama = 1;
-            *file_gamma = (double)sixel_frompng_read_be32(chunk_data) / 100000.0;
+            *file_gamma = (double)sixel_frompng_read_be32(chunk_data)
+                / 100000.0;
         } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
             break;
         }
@@ -1401,7 +1430,6 @@ sixel_frompng_parse_transfer_chunks(unsigned char const *buffer,
     return 1;
 }
 
-#if !HAVE_LCMS2
 static int
 sixel_frompng_invert_3x3(double in[3][3], double out[3][3])
 {
@@ -1411,7 +1439,7 @@ sixel_frompng_invert_3x3(double in[3][3], double out[3][3])
     det = in[0][0] * (in[1][1] * in[2][2] - in[1][2] * in[2][1])
         - in[0][1] * (in[1][0] * in[2][2] - in[1][2] * in[2][0])
         + in[0][2] * (in[1][0] * in[2][1] - in[1][1] * in[2][0]);
-    if (fabs(det) < 1.0e-12) {
+    if (!isfinite(det) || fabs(det) < 1.0e-12) {
         return 0;
     }
     inv_det = 1.0 / det;
@@ -1429,7 +1457,7 @@ sixel_frompng_invert_3x3(double in[3][3], double out[3][3])
 }
 
 static int
-sixel_frompng_build_chrm_to_srgb_matrix(double const chrm_xy[8],
+sixel_frompng_build_chrm_to_srgb_matrix(uint32_t const chrm_xy[8],
                                         double source_to_srgb[3][3])
 {
     static double const xyz_to_srgb[3][3] = {
@@ -1437,88 +1465,110 @@ sixel_frompng_build_chrm_to_srgb_matrix(double const chrm_xy[8],
         { -0.969243636280880, 1.875967501507721, 0.041555057407176 },
         { 0.055630079696993, -0.203976958888977, 1.056971514242878 }
     };
-    double white_x;
-    double white_y;
-    double red_x;
-    double red_y;
-    double green_x;
-    double green_y;
-    double blue_x;
-    double blue_y;
+    double bradford[3][3] = {
+        { 0.8951, 0.2664, -0.1614 },
+        { -0.7502, 1.7135, 0.0367 },
+        { 0.0389, -0.0685, 1.0296 }
+    };
+    double xyz[4][3];
     double primaries[3][3];
-    double primaries_inv[3][3];
-    double source_to_xyz[3][3];
-    double white_xyz[3];
+    double inverse[3][3];
+    double bradford_inverse[3][3];
+    double adapted[3][3];
+    double result[3][3];
+    double target_white[3];
     double scale[3];
+    double ratio[3];
+    double cone[3];
+    double source_cone;
+    double target_cone;
+    uint32_t x;
+    uint32_t y;
+    uint32_t z;
     int row;
     int col;
+    int i;
 
     if (chrm_xy == NULL || source_to_srgb == NULL) {
         return 0;
     }
-
-    white_x = chrm_xy[0];
-    white_y = chrm_xy[1];
-    red_x = chrm_xy[2];
-    red_y = chrm_xy[3];
-    green_x = chrm_xy[4];
-    green_y = chrm_xy[5];
-    blue_x = chrm_xy[6];
-    blue_y = chrm_xy[7];
-
-    if (white_y <= 0.0 || red_y <= 0.0 || green_y <= 0.0 || blue_y <= 0.0) {
-        return 0;
+    for (i = 0; i < 4; ++i) {
+        x = chrm_xy[2 * i];
+        y = chrm_xy[2 * i + 1];
+        if (x > 100000u || y == 0u || y > 100000u - x) {
+            return 0;
+        }
+        /* cHRM uses an integer grid. Subtract there before division: a
+         * boundary primary has exact Z=0, not a floating-point residual. */
+        z = 100000u - x - y;
+        xyz[i][0] = (double)x / y;
+        xyz[i][1] = 1.0;
+        xyz[i][2] = (double)z / y;
     }
-    if (white_x < 0.0 || white_x + white_y >= 1.0 ||
-        red_x < 0.0 || red_x + red_y >= 1.0 ||
-        green_x < 0.0 || green_x + green_y >= 1.0 ||
-        blue_x < 0.0 || blue_x + blue_y >= 1.0) {
-        return 0;
-    }
-
-    primaries[0][0] = red_x / red_y;
-    primaries[1][0] = 1.0;
-    primaries[2][0] = (1.0 - red_x - red_y) / red_y;
-    primaries[0][1] = green_x / green_y;
-    primaries[1][1] = 1.0;
-    primaries[2][1] = (1.0 - green_x - green_y) / green_y;
-    primaries[0][2] = blue_x / blue_y;
-    primaries[1][2] = 1.0;
-    primaries[2][2] = (1.0 - blue_x - blue_y) / blue_y;
-
-    if (!sixel_frompng_invert_3x3(primaries, primaries_inv)) {
-        return 0;
-    }
-
-    white_xyz[0] = white_x / white_y;
-    white_xyz[1] = 1.0;
-    white_xyz[2] = (1.0 - white_x - white_y) / white_y;
-    scale[0] = primaries_inv[0][0] * white_xyz[0]
-             + primaries_inv[0][1] * white_xyz[1]
-             + primaries_inv[0][2] * white_xyz[2];
-    scale[1] = primaries_inv[1][0] * white_xyz[0]
-             + primaries_inv[1][1] * white_xyz[1]
-             + primaries_inv[1][2] * white_xyz[2];
-    scale[2] = primaries_inv[2][0] * white_xyz[0]
-             + primaries_inv[2][1] * white_xyz[1]
-             + primaries_inv[2][2] * white_xyz[2];
-
-    for (row = 0; row < 3; ++row) {
-        source_to_xyz[row][0] = primaries[row][0] * scale[0];
-        source_to_xyz[row][1] = primaries[row][1] * scale[1];
-        source_to_xyz[row][2] = primaries[row][2] * scale[2];
-    }
-
     for (row = 0; row < 3; ++row) {
         for (col = 0; col < 3; ++col) {
-            source_to_srgb[row][col] = xyz_to_srgb[row][0] * source_to_xyz[0][col]
-                                     + xyz_to_srgb[row][1] * source_to_xyz[1][col]
-                                     + xyz_to_srgb[row][2] * source_to_xyz[2][col];
+            primaries[row][col] = xyz[col + 1][row];
         }
     }
+    if (!sixel_frompng_invert_3x3(primaries, inverse) ||
+        !sixel_frompng_invert_3x3(bradford, bradford_inverse)) {
+        return 0;
+    }
+    for (row = 0; row < 3; ++row) {
+        scale[row] = inverse[row][0] * xyz[0][0] +
+            inverse[row][1] + inverse[row][2] * xyz[0][2];
+        if (!isfinite(scale[row]) || scale[row] <= 0.0) {
+            return 0;
+        }
+    }
+    target_white[0] = 31270.0 / 32900.0;
+    target_white[1] = 1.0;
+    target_white[2] = 35830.0 / 32900.0;
+    for (row = 0; row < 3; ++row) {
+        source_cone = 0.0;
+        target_cone = 0.0;
+        for (i = 0; i < 3; ++i) {
+            source_cone += bradford[row][i] * xyz[0][i];
+            target_cone += bradford[row][i] * target_white[i];
+        }
+        if (!isfinite(source_cone) || source_cone <= 0.0 ||
+            !isfinite(target_cone) || target_cone <= 0.0) {
+            return 0;
+        }
+        ratio[row] = target_cone / source_cone;
+    }
+    /* Adapt each source primary to D65 before the sRGB matrix. The source
+     * white and primary columns must undergo the same Bradford transform. */
+    for (col = 0; col < 3; ++col) {
+        for (row = 0; row < 3; ++row) {
+            cone[row] = 0.0;
+            for (i = 0; i < 3; ++i) {
+                cone[row] += bradford[row][i] *
+                    primaries[i][col] * scale[col];
+            }
+            cone[row] *= ratio[row];
+        }
+        for (row = 0; row < 3; ++row) {
+            adapted[row][col] = bradford_inverse[row][0] * cone[0] +
+                bradford_inverse[row][1] * cone[1] +
+                bradford_inverse[row][2] * cone[2];
+        }
+    }
+    for (row = 0; row < 3; ++row) {
+        for (col = 0; col < 3; ++col) {
+            result[row][col] = xyz_to_srgb[row][0] * adapted[0][col] +
+                xyz_to_srgb[row][1] * adapted[1][col] +
+                xyz_to_srgb[row][2] * adapted[2][col];
+            if (!isfinite(result[row][col])) {
+                return 0;
+            }
+        }
+    }
+    memcpy(source_to_srgb, result, sizeof(result));
     return 1;
 }
 
+#if !HAVE_LCMS2
 static void
 sixel_frompng_apply_linear_matrix_triplet(double rgb[3],
                                           double source_to_srgb[3][3])
@@ -1649,8 +1699,9 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
     int flag_srgb;
     int flag_chrm;
     int flag_gama;
+    int invalid_chrm;
 #endif
-    double chrm_xy[8];
+    uint32_t chrm_xy[8];
 
     memset(source, 0, sizeof(*source));
     if (!enable_cms) {
@@ -1663,6 +1714,7 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
 #if HAVE_LCMS2
     /* Retain the raw-chunk coexistence decision used by this build. The
      * legacy scanner also accepts late chunks; do not move that boundary. */
+    invalid_chrm = 0;
     flags_valid = sixel_frompng_detect_chunk_flags(buffer, size,
         &flag_iccp, &flag_srgb, &flag_chrm, &flag_gama);
     if (flags_valid && !(flag_iccp && flag_srgb && flag_chrm)) {
@@ -1671,12 +1723,14 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
             source->profile = sixel_cms_open_profile_from_mem(icc, icc_size);
         } else if (!flag_iccp && !flag_srgb && flag_gama) {
             (void)sixel_frompng_build_profile_from_chunks(buffer, size,
-                                                          &source->profile);
+                                                          &source->profile,
+                                                          &invalid_chrm);
         }
     }
-    /* Historically only the alpha path in lcms-enabled builds falls back
-     * to gAMA when an ICC or chunk-profile conversion is unavailable. */
-    if (has_alpha && !has_srgb && has_gama && source->file_gamma > 0.0) {
+    /* Preserve the alpha failure fallback. An opaque image gains gAMA
+     * only after independently rejecting unusable cHRM metadata above. */
+    if ((has_alpha || invalid_chrm) && !has_srgb && has_gama &&
+        source->file_gamma > 0.0) {
         source->transfer_mode = SIXEL_FROMPNG_TRANSFER_GAMA;
     }
 #else
@@ -1726,18 +1780,17 @@ sixel_frompng_decode_samples(float *pixels, size_t count,
     int row;
 #endif
 
-    for (i = 0u; i < count * 3u; ++i) {
-        pixels[i] = (float)sixel_frompng_decode_source_unit(pixels[i],
-            source->transfer_mode, source->file_gamma);
-    }
 #if !HAVE_LCMS2
     if (source->has_matrix) {
-        /* The legacy palette helpers still bound their byte view. This
-         * canonical float result retains negative and above-one components. */
+        /* Keep the decoded triplet in double until the final linear F32
+         * store. Canonical output retains extended components; the legacy
+         * palette/APNG byte projection has its own bounded output. */
         for (i = 0u; i < count; ++i) {
-            rgb[0] = pixels[i * 3u];
-            rgb[1] = pixels[i * 3u + 1u];
-            rgb[2] = pixels[i * 3u + 2u];
+            for (row = 0; row < 3; ++row) {
+                rgb[row] = sixel_frompng_decode_source_unit(
+                    pixels[i * 3u + row], source->transfer_mode,
+                    source->file_gamma);
+            }
             for (row = 0; row < 3; ++row) {
                 pixels[i * 3u + row] = (float)(
                     source->matrix[row][0] * rgb[0] +
@@ -1745,8 +1798,13 @@ sixel_frompng_decode_samples(float *pixels, size_t count,
                     source->matrix[row][2] * rgb[2]);
             }
         }
+        return;
     }
 #endif
+    for (i = 0u; i < count * 3u; ++i) {
+        pixels[i] = (float)sixel_frompng_decode_source_unit(pixels[i],
+            source->transfer_mode, source->file_gamma);
+    }
 }
 
 static int

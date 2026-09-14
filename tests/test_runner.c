@@ -808,6 +808,10 @@ int test_loader_0188_colorsync_linear(int argc, char **argv);
 int test_loader_0189_png_palette_samples(int argc, char **argv);
 int test_loader_0190_png_palette_failure(int argc, char **argv);
 int test_loader_0191_png_palette_paint(int argc, char **argv);
+int test_loader_0192_png_metadata_samples(int argc, char **argv);
+int test_loader_0193_png_metadata_failures(int argc, char **argv);
+int test_loader_0194_png_metadata_ownership(int argc, char **argv);
+
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -1641,6 +1645,13 @@ static test_entry_t const test_entries[] = {
       test_loader_0190_png_palette_failure },
     { "loader/0191_png_palette_paint",
       test_loader_0191_png_palette_paint },
+    { "loader/0192_png_metadata_samples",
+      test_loader_0192_png_metadata_samples },
+    { "loader/0193_png_metadata_failures",
+      test_loader_0193_png_metadata_failures },
+    { "loader/0194_png_metadata_ownership",
+      test_loader_0194_png_metadata_ownership },
+
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
