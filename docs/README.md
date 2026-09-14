@@ -102,6 +102,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Quality
 
+- [Palette gradient analysis](quality/palette-gradient-analysis.md) provides a local command to select a source-image gradient and inspect its quantized output through RGB scatter plots, exact Voronoi slices, actual pixel profiles and reusable source selections.
 - [Quality measurement policy](quality/measurement-policy.md) defines
   perceptual metrics, fixtures, thresholds, baselines, and performance
   comparisons.
