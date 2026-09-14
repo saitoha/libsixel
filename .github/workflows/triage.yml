@@ -719,6 +719,65 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
+  netbsd-sparc64:
+    if: inputs.job_name == 'Meson-netbsd-11.0-sparc64-system-cc'
+    name: Meson-netbsd-11.0-sparc64-system-cc
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.checkout_sha }}
+          fetch-depth: 1
+
+      - name: Build and test inside NetBSD/sparc64
+        uses: vmactions/netbsd-vm@20ee93a005c9fc78743e6e05269f4cb023b87413 # v1.5.0
+        with:
+          arch: sparc64
+          copyback: false
+          cpu: 2
+          mem: 4096
+          release: '11.0'
+          sync: nfs
+          prepare: |
+            set -eux
+            /usr/sbin/pkg_add -u meson ninja-build
+          run: |
+            set -eux
+            uname -a
+            cc -dumpmachine
+            file /bin/sh
+            CFLAGS='-O0 -g0'
+            export CFLAGS
+            set -- \
+              cli/core/0002_version.t \
+              cli/core/0007_basic_stdin_snake.t \
+              cli/core/0019_basic_parallel_cli_override.t \
+              cli/sixel2png/0005_stdin_default_output.t \
+              codec/format/0009_gray8_output.t \
+              codec/output/0003_direct_sixel_encode.t \
+              quant/mapfile/0109_mapfile_export_act_256_color_count.t \
+              writer/png/0004_builtin_ihdr_crc.t \
+              security/issue/0012_issue220_dcs_signed_integer_overflow.t
+            rm -rf /tmp/libsixel-build
+            mkdir /tmp/libsixel-build
+            meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE" \
+              -Dtests=false
+            meson compile -C /tmp/libsixel-build -j 2 -v \
+              img2sixel sixel2png
+            IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
+            SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
+            export IMG2SIXEL_PATH SIXEL2PNG_PATH
+            export HAVE_IMG2SIXEL=1 HAVE_SIXEL2PNG=1
+            export TOP_BUILDDIR=/tmp/libsixel-build
+            export TOP_SRCDIR="$GITHUB_WORKSPACE"
+            for smoke_test in "$@"; do
+              ARTIFACT_LOCAL_DIR="/tmp/libsixel-artifacts/${smoke_test%.*}"
+              export ARTIFACT_LOCAL_DIR
+              sh "$GITHUB_WORKSPACE/tests/meson-tap-exitcode-wrapper.sh" \
+                "$GITHUB_WORKSPACE/tests/$smoke_test"
+            done
+
   fuzzing:
     needs: collect
     if: >-
