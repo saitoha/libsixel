@@ -786,6 +786,8 @@ int test_loader_0181_apng_late_sequence_reject(
 int test_loader_0182_apng_callback_no_fallback(
     int argc,
     char **argv);
+int test_loader_0183_jpeg_source_numeric(int argc, char **argv);
+int test_loader_0184_psd_cmyk_icc_numeric(int argc, char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -1591,6 +1593,10 @@ static test_entry_t const test_entries[] = {
       test_loader_0181_apng_late_sequence_reject },
     { "loader/0182_loader_builtin_apng_callback_error_no_fallback",
       test_loader_0182_apng_callback_no_fallback },
+    { "loader/0183_loader_builtin_jpeg_source_numeric",
+      test_loader_0183_jpeg_source_numeric },
+    { "loader/0184_loader_builtin_psd_cmyk_icc_numeric",
+      test_loader_0184_psd_cmyk_icc_numeric },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",

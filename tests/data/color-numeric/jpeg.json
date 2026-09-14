@@ -1,0 +1,110 @@
+{
+  "generator": "tools/generate_color_fixtures.py",
+  "input": "tests/data/inputs/formats/snake-64-embedded-esrgb.jpg",
+  "sha256": "fb0df9b3753bae4a9c3c7b563dfcc2e123c31418b53ff18531213c53b32dfadc",
+  "introduced": "51c6dbe9e7ea5a3f98663560ed5cd0a6eb290b08",
+  "old_numeric_test": "39c99395fd8c74dc32c5b56e9d248f475d04e6c3",
+  "old_literal_generator": "unresolved; not used by this oracle",
+  "source_probe": "tools/verify_jpeg_color_source.c",
+  "source_decoder": "libjpeg-turbo 3.2.0; YCbCr, integer slow IDCT, fancy upsampling",
+  "sample_pixels": [
+    0,
+    2048,
+    4095
+  ],
+  "YCbCr": [
+    [
+      135,
+      121,
+      133
+    ],
+    [
+      150,
+      98,
+      137
+    ],
+    [
+      143,
+      123,
+      132
+    ]
+  ],
+  "equations": "https://www.w3.org/Graphics/JPEG/jfif.pdf",
+  "arithmetic": "60-digit Decimal; JFIF inverse, stored ICC, derived sRGB D50 inverse",
+  "profile_sha256": "4e09b5549edaff8a229e385306215991481b7d70f02d3ed891cfcd78f196e359",
+  "profile_description": "Artifex Software esRGB ICCProfile",
+  "matrix_columns_s15Fixed16": [
+    [
+      0.43609619140625,
+      0.2224884033203125,
+      0.013885498046875
+    ],
+    [
+      0.38519287109375,
+      0.716888427734375,
+      0.0970916748046875
+    ],
+    [
+      0.143096923828125,
+      0.0605926513671875,
+      0.7140960693359375
+    ]
+  ],
+  "TRC": "three curv tables, 2048 u16 entries each; linear interpolation",
+  "raw_rgb": [
+    [
+      0.5569019607843138,
+      0.5248559708721648,
+      0.48076862745098037
+    ],
+    [
+      0.6377176470588235,
+      0.6035171059224371,
+      0.37976470588235295
+    ],
+    [
+      0.5827764705882353,
+      0.5563299462203961,
+      0.5260392156862745
+    ]
+  ],
+  "XYZ_D50": [
+    [
+      0.08155869209097223,
+      0.07948662129462365,
+      0.035164327774147935
+    ],
+    [
+      0.1734469720092911,
+      0.18104531710101143,
+      0.021141263874384076
+    ],
+    [
+      0.11604660740849493,
+      0.11502765128355392,
+      0.0660594145432846
+    ]
+  ],
+  "srgb": [
+    [
+      0.3652757314378044,
+      0.3008427431334994,
+      0.21239721979861842
+    ],
+    [
+      0.5275704828658113,
+      0.45877998919196405,
+      0.009600432710276515
+    ],
+    [
+      0.4172400504076916,
+      0.3640251354381992,
+      0.30328057876529607
+    ]
+  ],
+  "bounds": {
+    "raw": 5e-07,
+    "srgb": 1e-06,
+    "reason": "Rounded decoder YCbCr coefficients and float storage; old CMS threshold unchanged"
+  }
+}

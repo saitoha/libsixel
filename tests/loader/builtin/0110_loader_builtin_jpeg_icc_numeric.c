@@ -1,18 +1,14 @@
-/* Fix builtin-CMS float output for an embedded-profile JPEG. */
+/* Check JPEG ICC output against independently decoded source and ICC math. */
 
 #include "src/cms.h"
 #include "loader_builtin_memory_test_common.h"
+#include "tests/data/color-numeric/jpeg.h"
 
 int
 test_loader_0110_loader_builtin_jpeg_icc_numeric(int argc, char **argv)
 {
     edge_loader_options_t options;
     size_t const sample_pixels[3] = { 0u, 2048u, 4095u };
-    float const expected[9] = {
-        0.365308553f, 0.300839454f, 0.212312579f,
-        0.527615607f, 0.458774656f, 0.00942262448f,
-        0.417279929f, 0.364021719f, 0.303173751f
-    };
 
     (void)argc;
     (void)argv;
@@ -28,6 +24,6 @@ test_loader_0110_loader_builtin_jpeg_icc_numeric(int argc, char **argv)
         SIXEL_PIXELFORMAT_RGBFLOAT32,
         SIXEL_COLORSPACE_GAMMA,
         sample_pixels,
-        expected,
+        color_jpeg_srgb,
         0.000001f);
 }

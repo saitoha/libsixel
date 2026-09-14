@@ -458,6 +458,101 @@ def cmyk_sample_oracles():
             'cmyk.json': (json.dumps(record, indent=2) + '\n').encode()}
 
 
+def jpeg_sample_oracles():
+    """Recompute a legacy JPEG reference without a libsixel/CMM golden."""
+    path = 'tests/data/inputs/formats/snake-64-embedded-esrgb.jpg'
+    data = (ROOT / path).read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    assert digest == 'fb0df9b3753bae4a9c3c7b563dfcc2e123c31418b53ff18531213c53b32dfadc'
+    # Independently extracted by verify_jpeg_color_source.c, libjpeg-turbo
+    # 3.2.0, JCS_YCbCr/JDCT_ISLOW/fancy upsampling. No RGB or ICC conversion.
+    samples = [[135, 121, 133], [150, 98, 137], [143, 123, 132]]
+    parts = {}
+    count = None
+    offset = 2
+    assert data[:2] == b'\xff\xd8'
+    while data[offset:offset+2] != b'\xff\xda':
+        assert data[offset] == 255
+        marker = data[offset + 1]
+        size = struct.unpack_from('>H', data, offset + 2)[0]
+        payload = data[offset+4:offset+2+size]
+        if marker == 0xe2 and payload.startswith(b'ICC_PROFILE\0'):
+            sequence, total = payload[12:14]
+            assert 1 <= sequence <= total and sequence not in parts
+            assert count is None or count == total
+            count = total
+            parts[sequence] = payload[14:]
+        offset += 2 + size
+    assert count == len(parts)
+    profile = b''.join(parts[i] for i in range(1, count + 1))
+    assert struct.unpack_from('>I', profile)[0] == len(profile)
+    assert profile[36:40] == b'acsp' and profile[16:24] == b'RGB XYZ '
+    tags = {}
+    for offset in range(132, 132 + 12 * struct.unpack_from('>I', profile, 128)[0], 12):
+        name, start, size = struct.unpack_from('>4sII', profile, offset)
+        tags[name] = profile[start:start+size]
+    columns = [[D(v) / 65536 for v in struct.unpack_from('>3i', tags[name], 8)]
+               for name in (b'rXYZ', b'gXYZ', b'bXYZ')]
+    matrix50 = list(map(list, zip(*columns)))
+    curves = []
+    for name in (b'rTRC', b'gTRC', b'bTRC'):
+        curve = tags[name]
+        count = struct.unpack_from('>I', curve, 8)[0]
+        assert curve[:4] == b'curv' and count == 2048
+        curves.append([D(v) / 65535 for v in struct.unpack_from(
+            '>' + str(count) + 'H', curve, 12)])
+    inverse_srgb50 = inverse(list(map(list, zip(*[
+        adapt(column) for column in zip(*SRGB)]) )))
+    raw, xyz, rgb = [], [], []
+    for y, cb, cr in samples:
+        y, cb, cr = D(y), D(cb - 128), D(cr - 128)
+        # Solve JFIF's .299/.587/.114 luma equations, rather than copying
+        # the decoder's rounded .34414/.71414 inverse coefficients.
+        source = [(y + D('1.402') * cr) / 255,
+                  (y - D('.202008') / D('.587') * cb
+                   - D('.419198') / D('.587') * cr) / 255,
+                  (y + D('1.772') * cb) / 255]
+        units = []
+        for value, curve in zip(source, curves):
+            position = value * (len(curve) - 1)
+            index = int(position)
+            fraction = position - index
+            units.append(curve[index] * (1 - fraction)
+                         + curve[index + 1] * fraction)
+        physical = apply(matrix50, units)
+        raw.append(source)
+        xyz.append(physical)
+        rgb.append(list(map(encode, apply(inverse_srgb50, physical))))
+    record = {'generator': 'tools/generate_color_fixtures.py',
+        'input': path, 'sha256': digest,
+        'introduced': '51c6dbe9e7ea5a3f98663560ed5cd0a6eb290b08',
+        'old_numeric_test': '39c99395fd8c74dc32c5b56e9d248f475d04e6c3',
+        'old_literal_generator': 'unresolved; not used by this oracle',
+        'source_probe': 'tools/verify_jpeg_color_source.c',
+        'source_decoder': 'libjpeg-turbo 3.2.0; YCbCr, integer slow IDCT, fancy upsampling',
+        'sample_pixels': [0, 2048, 4095], 'YCbCr': samples,
+        'equations': 'https://www.w3.org/Graphics/JPEG/jfif.pdf',
+        'arithmetic': '60-digit Decimal; JFIF inverse, stored ICC, derived sRGB D50 inverse',
+        'profile_sha256': hashlib.sha256(profile).hexdigest(),
+        'profile_description': 'Artifex Software esRGB ICCProfile',
+        'matrix_columns_s15Fixed16': [[float(v) for v in row] for row in columns],
+        'TRC': 'three curv tables, 2048 u16 entries each; linear interpolation',
+        'raw_rgb': [[float(v) for v in row] for row in raw],
+        'XYZ_D50': [[float(v) for v in row] for row in xyz],
+        'srgb': [[float(v) for v in row] for row in rgb],
+        'bounds': {'raw': 5e-7, 'srgb': 1e-6,
+            'reason': 'Rounded decoder YCbCr coefficients and float storage; old CMS threshold unchanged'}}
+    header = '/* Generated independently from libjpeg YCbCr and stored ICC. */\n'
+    for name, rows in [('raw', raw), ('srgb', rgb)]:
+        header += f'static float const color_jpeg_{name}[9] = {{\n'
+        for row in rows:
+            header += '    ' + ', '.join(format(float(v), '.17g') + 'f'
+                                       for v in row) + ',\n'
+        header += '};\n'
+    return {'jpeg.h': header.encode(),
+            'jpeg.json': (json.dumps(record, indent=2) + '\n').encode()}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -562,6 +657,7 @@ def main():
     outputs.update(lut_outputs)
     outputs.update(png_sample_oracles(profile))
     outputs.update(cmyk_sample_oracles())
+    outputs.update(jpeg_sample_oracles())
     # Keep the exact M0 parser probes, explicitly outside conformance and
     # color accuracy claims. Complete profiles own the numeric tests above.
     minimal_header = banner

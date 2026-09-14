@@ -16,15 +16,15 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
 | [PNG and APNG](../loader/builtin/png.md) | 121 | 13 | 59 | 0 | 11 | 2 | 36 |
-| [JPEG](../loader/builtin/jpeg.md) | 32 | 11 | 14 | 1 | 2 | 0 | 4 |
+| [JPEG](../loader/builtin/jpeg.md) | 33 | 12 | 14 | 1 | 2 | 0 | 4 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
-| [PSD and PSB](../loader/builtin/psd.md) | 992 | 12 | 551 | 402 | 9 | 3 | 15 |
+| [PSD and PSB](../loader/builtin/psd.md) | 994 | 13 | 551 | 402 | 9 | 3 | 16 |
 | [BMP and DIB](../loader/builtin/bmp.md) | 125 | 121 | 0 | 4 | 0 | 0 | 0 |
 | [WebP](../loader/builtin/webp.md) | 308 | 13 | 48 | 241 | 0 | 1 | 5 |
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 25 | 11 | 8 | 0 | 4 | 0 | 2 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2025** | **457** | **724** | **652** | **51** | **8** | **133** |
+| **Total** | **2028** | **459** | **724** | **652** | **51** | **8** | **134** |
 
 ## Complete inventory
 
@@ -329,7 +329,7 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t](../../tests/loader/builtin/1667_loader_builtin_jpeg_orientation_toggle.t) | TAP test confirming builtin orientation toggle affects JPEG EXIF decode. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t](../../tests/loader/builtin/1963_loader_builtin_jpeg_ycck8_rgb_digest.t) | Verify JPEG YCCK conversion with an exact decoded RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t](../../tests/loader/builtin/1976_loader_builtin_jpeg_rgb8_sequential_digest.t) | Fix the byte-exact output of baseline sequential RGB JPEG decoding. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
-| [tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t](../../tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t) | Fix builtin-CMS output type and representative samples for a profiled JPEG. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t](../../tests/loader/builtin/1978_loader_builtin_jpeg_icc_numeric.t) | Verify JPEG ICC float samples against independent JFIF and ICC calculation. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t](../../tests/loader/builtin/1983_loader_builtin_jpeg_rgb16_lossless_numeric.t) | Fix decoded float samples from 16-bit lossless JPEG input. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/2006_loader_builtin_jpeg_gray16_sub8bit_numeric.t](../../tests/loader/builtin/2006_loader_builtin_jpeg_gray16_sub8bit_numeric.t) | Verify JPEG gray16 preserves sub-eight-bit samples. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/2007_loader_builtin_jpeg_progressive_420_digest.t](../../tests/loader/builtin/2007_loader_builtin_jpeg_progressive_420_digest.t) | Verify JPEG progressive 4:2:0 scans produce exact RGB. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
@@ -338,6 +338,7 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader/builtin/2010_loader_builtin_jpeg_cmyk8_digest.t](../../tests/loader/builtin/2010_loader_builtin_jpeg_cmyk8_digest.t) | Verify JPEG CMYK conversion stays exact. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/2030_loader_builtin_jpeg_lossless_predictors_numeric.t](../../tests/loader/builtin/2030_loader_builtin_jpeg_lossless_predictors_numeric.t) | Verify all lossless predictors together while paying one process startup. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 | [tests/loader/builtin/2031_loader_builtin_jpeg_rgb_restart_numeric.t](../../tests/loader/builtin/2031_loader_builtin_jpeg_rgb_restart_numeric.t) | Verify RGB lossless samples across component restart resets. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
+| [tests/loader/builtin/2045_loader_builtin_jpeg_source_numeric.t](../../tests/loader/builtin/2045_loader_builtin_jpeg_source_numeric.t) | Verify unmanaged JPEG samples against independently decoded JFIF values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 
 ### Radiance HDR
 
@@ -1290,7 +1291,7 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/1196_loader_builtin_psd_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_xxlarge_channel_window_overrun_trace.t](../../tests/loader/builtin/1196_loader_builtin_psd_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_xxlarge_channel_window_overrun_trace.t) | Verify PSB mode7(4ch->CMYK)32 xxlarge high-offset channel-window overrun emits dedicated malformed trace. Fixture is prepared under TOP_BUILDDIR/tests/data/inputs/formats by tests/_static/sh/prepare-psb-large-fixtures.sh. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/1197_loader_builtin_psd_psb_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxlarge_rle_payload_window_overrun_trace.t](../../tests/loader/builtin/1197_loader_builtin_psd_psb_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxlarge_rle_payload_window_overrun_trace.t) | Verify PSB mode4 CMYK32 xxlarge high-offset RLE payload-window overrun emits dedicated malformed trace. Fixture is prepared under TOP_BUILDDIR/tests/data/inputs/formats by tests/_static/sh/prepare-psb-large-fixtures.sh. | Trace/status observation | Inventory only |
 | [tests/loader/builtin/1198_loader_builtin_psd_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxlarge_rle_payload_window_overrun_trace.t](../../tests/loader/builtin/1198_loader_builtin_psd_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxlarge_rle_payload_window_overrun_trace.t) | Verify PSB mode7(4ch->CMYK)32 xxlarge high-offset RLE payload-window overrun emits dedicated malformed trace. Fixture is prepared under TOP_BUILDDIR/tests/data/inputs/formats by tests/_static/sh/prepare-psb-large-fixtures.sh. | Trace/status observation | Inventory only |
-| [tests/loader/builtin/1200_loader_builtin_psd_mode7_cmyk8_mft2_valid_builtin_cms_lsqa.t](../../tests/loader/builtin/1200_loader_builtin_psd_mode7_cmyk8_mft2_valid_builtin_cms_lsqa.t) | Verify builtin PSD mode7 CMYK8 path applies embedded mft2 ICC via builtin CMS. | Perceptual quality threshold | Inventory only |
+| [tests/loader/builtin/1200_loader_builtin_psd_mode7_cmyk8_incomplete_icc_acceptance.t](../../tests/loader/builtin/1200_loader_builtin_psd_mode7_cmyk8_incomplete_icc_acceptance.t) | Preserve permissive acceptance of the historical incomplete CMYK ICC. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/1201_loader_builtin_psd_mode7_cmyk8_mft2_truncated_builtin_fallback_lsqa.t](../../tests/loader/builtin/1201_loader_builtin_psd_mode7_cmyk8_mft2_truncated_builtin_fallback_lsqa.t) | Verify builtin PSD mode7 CMYK8 path rejects truncated mft2 ICC and falls back. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/1202_loader_builtin_psd_cmyk8_tysh_enginedata_stylesheetset_runstyle_precedence_trace.t](../../tests/loader/builtin/1202_loader_builtin_psd_cmyk8_tysh_enginedata_stylesheetset_runstyle_precedence_trace.t) | Verify PSD CMYK8 TySh EngineData StyleRun RunStyle precedence: RunLength-weighted RunArray entries should resolve through /RunStyle into StyleSheetSet deterministically. | Perceptual quality threshold | Inventory only |
 | [tests/loader/builtin/1203_loader_builtin_psd_psb_mode7_cmyk8_tysh_enginedata_stylesheetset_runstyle_precedence_trace.t](../../tests/loader/builtin/1203_loader_builtin_psd_psb_mode7_cmyk8_tysh_enginedata_stylesheetset_runstyle_precedence_trace.t) | Verify PSB mode7 CMYK8 TySh EngineData StyleRun RunStyle precedence: RunLength-weighted RunArray entries should resolve through /RunStyle into StyleSheetSet deterministically. | Perceptual quality threshold | Inventory only |
@@ -1610,6 +1611,8 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 | [tests/loader/builtin/2026_loader_builtin_psd_mask_digest.t](../../tests/loader/builtin/2026_loader_builtin_psd_mask_digest.t) | Verify PSD raster-mask reconstruction with a complete RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/2027_loader_builtin_psd_effect_digest.t](../../tests/loader/builtin/2027_loader_builtin_psd_effect_digest.t) | Verify representative PSD layer effects with a complete RGB digest. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 | [tests/loader/builtin/2034_loader_builtin_psd_effect_allocation_failures.t](../../tests/loader/builtin/2034_loader_builtin_psd_effect_allocation_failures.t) | Verify PSD layer-effect allocation failures leave no live allocation. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/2046_loader_builtin_psd_cmyk_icc_numeric.t](../../tests/loader/builtin/2046_loader_builtin_psd_cmyk_icc_numeric.t) | Verify every CMYK PSD sample through an independent colorimetric ICC. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
+| [tests/loader/builtin/2047_loader_builtin_psd_cmyk_icc_lsqa.t](../../tests/loader/builtin/2047_loader_builtin_psd_cmyk_icc_lsqa.t) | Compare normal CMYK ICC encoding with an independently generated PNG. | Perceptual quality threshold | Policy-linked: [`docs/loader/builtin/psd.md`](../loader/builtin/psd.md) |
 
 ### BMP and DIB
 

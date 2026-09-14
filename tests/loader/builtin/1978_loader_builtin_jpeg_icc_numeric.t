@@ -1,7 +1,7 @@
 #!/bin/sh
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/jpeg.md
-# Fix builtin-CMS output type and representative samples for a profiled JPEG.
+# Verify JPEG ICC float samples against independent JFIF and ICC calculation.
 
 set -eux
 
