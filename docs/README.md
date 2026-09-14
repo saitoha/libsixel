@@ -83,6 +83,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 - [Network access](loader/network-access.md) explains img2sixel's libcurl, libfetch, WinHTTP, and Emscripten bindings, build-dependent URL schemes and TLS support, backend selection, and the behavior and risks of `-k` certificate-verification bypass.
 - [Image loader architecture](loader/README.md) explains the compiled loader registry, `-L` chain construction, predicate and fallback control flow, typed frame outputs, backend inventory, and quality/security tradeoffs.
+- [CoreGraphics PNG source precision](loader/coregraphics.md#png-source-precision): original samples, native color definitions, alpha, and failure boundaries.
 - [libpng image loader](loader/libpng.md) separates desired PNG/APNG behavior from current implementation gaps, then documents format support, precision, CMS, alpha/background handling, animation, and test coverage.
 - [Loader CMS: builtin and Little CMS](loader/color-management.md) compares profile support, unsupported cases, fallback, rendering intents, quality, and speed/memory tradeoffs.
 - [PNG color metadata and ColorSync compatibility](loader/png-color-metadata.md): shared grayscale/indexed/RGB reference matrix and source-selection policy.

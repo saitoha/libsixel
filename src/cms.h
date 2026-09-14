@@ -133,6 +133,17 @@ sixel_cms_convert_to_linearrgb_with_profile_bytes(
     unsigned char const *profile,
     size_t profile_length);
 
+/* CoreGraphics supplies either its adopted ICC or a verified named sRGB
+ * definition (NULL bytes, zero length). This entry uses only ColorSync and
+ * never reads or changes the requested CMS engine. Failure is atomic. */
+SIXEL_INTERNAL_API int
+sixel_cms_convert_colorsync_linear(float *pixels,
+                                   int width,
+                                   int height,
+                                   int source_is_srgb,
+                                   void const *profile_bytes,
+                                   size_t profile_length);
+
 SIXEL_INTERNAL_API int
 sixel_cms_convert_profile_to_cielab(unsigned char *pixels,
                                     int width,

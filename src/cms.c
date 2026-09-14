@@ -31,6 +31,7 @@
 
 #include <ctype.h>
 #include <float.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -4161,6 +4162,109 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
     return 1;
 }
 #endif
+
+int
+sixel_cms_convert_colorsync_linear(float *pixels,
+                                   int width,
+                                   int height,
+                                   int source_is_srgb,
+                                   void const *profile_bytes,
+                                   size_t profile_length)
+{
+#if SIXEL_CMS_HAVE_COLORSYNC
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *destination;
+    sixel_cms_transform_t *transform;
+    float *output;
+    size_t count;
+    size_t i;
+    int converted;
+
+    source = NULL;
+    destination = NULL;
+    transform = NULL;
+    output = NULL;
+    converted = 0;
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        (size_t)width > SIZE_MAX / (size_t)height ||
+        (source_is_srgb != 0 && source_is_srgb != 1)) {
+        return 0;
+    }
+    if (source_is_srgb ? (profile_bytes != NULL || profile_length != 0u) :
+        (profile_bytes == NULL || profile_length == 0u ||
+         profile_length > (size_t)LONG_MAX)) {
+        return 0;
+    }
+    count = (size_t)width * (size_t)height;
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return 0;
+    }
+    for (i = 0u; i < count * 3u; ++i) {
+        if (!isfinite(pixels[i])) {
+            return 0;
+        }
+    }
+    source = sixel_cms_allocate_profile();
+    destination = sixel_cms_allocate_profile();
+    if (source == NULL || destination == NULL) {
+        goto cleanup;
+    }
+    /* The generic factories may fall back to builtin. CoreGraphics already
+     * selected the source definition, so native failure must remain failure.
+     * Named sRGB uses its native definition, not its serialized curve table. */
+    if (source_is_srgb) {
+        if (!sixel_cms_profile_create_srgb_colorsync(source)) {
+            goto cleanup;
+        }
+    } else if (!sixel_cms_profile_open_colorsync(source, profile_bytes,
+                                                 profile_length)) {
+        goto cleanup;
+    }
+    if (source->colorspace != SIXEL_CMS_COLORSPACE_RGB ||
+        !sixel_cms_profile_create_rgb_gamma_chrm_colorsync(destination,
+            1.0, 1.0, 1.0, SIXEL_SRGB_WHITE_X, SIXEL_SRGB_WHITE_Y,
+            SIXEL_SRGB_RED_X, SIXEL_SRGB_RED_Y,
+            SIXEL_SRGB_GREEN_X, SIXEL_SRGB_GREEN_Y,
+            SIXEL_SRGB_BLUE_X, SIXEL_SRGB_BLUE_Y)) {
+        goto cleanup;
+    }
+    transform = sixel_cms_create_transform_colorsync(source,
+        SIXEL_CMS_PIXELFORMAT_RGB_F32, destination,
+        SIXEL_CMS_PIXELFORMAT_RGB_F32, SIXEL_CMS_TRANSFORM_DEFAULT);
+    if (transform == NULL) {
+        goto cleanup;
+    }
+    output = (float *)malloc(count * 3u * sizeof(float));
+    if (output == NULL ||
+        !sixel_cms_do_transform(transform, pixels, output, count)) {
+        goto cleanup;
+    }
+    for (i = 0u; i < count * 3u; ++i) {
+        if (!isfinite(output[i])) {
+            goto cleanup;
+        }
+    }
+    /* A failed native apply may have written a prefix. Publish only after
+     * complete finite output, preserving every source sample on failure. */
+    memcpy(pixels, output, count * 3u * sizeof(float));
+    converted = 1;
+
+cleanup:
+    free(output);
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(destination);
+    sixel_cms_close_profile(source);
+    return converted;
+#else
+    (void)pixels;
+    (void)width;
+    (void)height;
+    (void)source_is_srgb;
+    (void)profile_bytes;
+    (void)profile_length;
+    return 0;
+#endif
+}
 
 SIXELAPI int
 sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,

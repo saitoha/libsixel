@@ -639,7 +639,9 @@ sixel_loader_manager_apply_component_options(
         return status;
     }
 
-    if (component_name != NULL && strcmp(component_name, "builtin") == 0) {
+    if (component_name != NULL &&
+        (strcmp(component_name, "builtin") == 0 ||
+         strcmp(component_name, "coregraphics") == 0)) {
         suboption_value = manager->prefer_float32;
         status = sixel_loader_component_setopt(
             component,

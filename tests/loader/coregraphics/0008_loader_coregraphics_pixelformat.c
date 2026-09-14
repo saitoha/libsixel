@@ -1734,42 +1734,45 @@ static int
 run_coregraphics_pixelformat_case_by_id(
     coregraphics_pixelformat_case_id_t case_id)
 {
+    /* The default clear policy retains coverage with a background. These
+     * two source pixels have nonzero alpha, so their mask entries and the
+     * alpha-zero flag are exactly zero even when the mask is allocated. */
     static unsigned char const white_bg[3] = { 255u, 255u, 255u };
     static loader_component_case_spec_t const specs[] = {
         {
-            "coregraphics rgba no background emits rgb+mask",
+            "coregraphics rgba no background emits linear float+mask",
             RGBA_IMAGE_PATH,
             {
-                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                 2,
                 1,
                 1,
                 -1,
                 FRAME_METADATA_ANY,
                 1,
-                FRAME_MASK_VALUE_ANY,
-                1,
-                FRAME_METADATA_ANY,
-                0
+                0,
+                0,
+                SIXEL_COLORSPACE_LINEAR,
+                1
             },
             { 1, 0, 256, NULL },
             new_coregraphics_component
         },
         {
-            "coregraphics rgba with background emits rgb",
+            "coregraphics rgba with background emits linear float",
             RGBA_IMAGE_PATH,
             {
-                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                 2,
                 1,
                 1,
                 -1,
                 FRAME_METADATA_ANY,
+                1,
                 0,
-                FRAME_MASK_VALUE_ANY,
                 0,
-                FRAME_METADATA_ANY,
-                0
+                SIXEL_COLORSPACE_LINEAR,
+                1
             },
             { 1, 0, 256, white_bg },
             new_coregraphics_component

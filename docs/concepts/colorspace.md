@@ -305,6 +305,10 @@ This command keeps palette construction and palette application in Oklab after t
 img2sixel --cms-engine=auto --loaders='builtin:cms_target=linear!' -Xoklab -Woklab -Ugamma image.png
 ```
 
+### Adopted native source definitions
+
+A native named color space and an exported ICC byte representation need not use identical numerical transfer curves. The [CoreGraphics PNG source contract](../loader/coregraphics.md#source-and-format-boundaries) distinguishes a verified named sRGB source from an adopted ICC source. Missing embedded ICC alone does not select sRGB, and changing global CMS preferences does not disable native color interpretation on that backend.
+
 ### Loader precision preference
 
 `prefer_8bit=0|1` (`V0` or `V1`, environment fallback `SIXEL_LOADER_PREFER_8BIT`) controls the representation requested after CMS conversion. The default `0` preserves the selected target in float32. The current `prefer_8bit=1` contract requests `RGB888`; because `RGB888` is gamma-encoded sRGB storage, it trades the selected float target for an 8-bit gamma representation. It can reduce memory and conversion cost, but it is not a byte-precision encoding of Oklab, CIELAB, DIN99d, or linear RGB.

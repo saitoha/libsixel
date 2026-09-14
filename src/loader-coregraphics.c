@@ -50,6 +50,7 @@
 #include <sixel.h>
 
 #include "chunk-view.h"
+#include "cms.h"
 #include "frame-private.h"
 #include "frame-factory.h"
 #include "loader-common.h"
@@ -117,6 +118,7 @@ typedef struct sixel_loader_coregraphics_component {
     int has_start_frame_no;
     int start_frame_no;
     int enable_orientation;
+    int prefer_float32;
 } sixel_loader_coregraphics_component_t;
 
 typedef struct coregraphics_srgb_lut_cache {
@@ -155,6 +157,7 @@ typedef struct coregraphics_loader_state {
     int fuse_palette;
     int reqcolors;
     int enable_orientation;
+    int prefer_float32;
     unsigned char *bgcolor;
     int loop_control;
     int start_frame_no_set;
@@ -1962,6 +1965,318 @@ cleanup:
 }
 
 
+static size_t
+coregraphics_png_be32(unsigned char const *p)
+{
+    return ((size_t)p[0] << 24) | ((size_t)p[1] << 16) |
+        ((size_t)p[2] << 8) | p[3];
+}
+
+static int
+coregraphics_png_depth(sixel_chunk_t const *chunk)
+{
+    unsigned char const *bytes;
+    size_t size;
+    size_t offset;
+    size_t length;
+    int depth;
+
+    bytes = sixel_chunk_get_buffer(chunk);
+    size = sixel_chunk_get_size(chunk);
+    if (size < 33u || memcmp(bytes, "\211PNG\r\n\032\n", 8u) != 0 ||
+        memcmp(bytes + 12u, "IHDR", 4u) != 0 ||
+        coregraphics_png_be32(bytes + 8u) != 13u ||
+        (bytes[25] != 2u && bytes[25] != 6u)) {
+        return 0;
+    }
+    depth = bytes[24];
+    if (depth != 8 && depth != 16) {
+        return 0;
+    }
+    /* A single-frame ImageIO result can still be an APNG. Inspect acTL,
+     * rather than treating the native frame count as the format boundary.
+     * ImageIO remains responsible for decoding and PNG validity. */
+    offset = 33u;
+    while (offset <= size && size - offset >= 12u) {
+        length = coregraphics_png_be32(bytes + offset);
+        if (length > size - offset - 12u) {
+            return -1;
+        }
+        if (memcmp(bytes + offset + 4u, "acTL", 4u) == 0) {
+            return 0;
+        }
+        if (memcmp(bytes + offset + 4u, "IEND", 4u) == 0) {
+            return depth;
+        }
+        offset += length + 12u;
+    }
+    return -1;
+}
+
+static unsigned int
+coregraphics_png_sample(unsigned char const *p, int depth, int little)
+{
+    if (depth == 8) {
+        return p[0];
+    }
+    return little ? p[0] + 256u * p[1] : 256u * p[0] + p[1];
+}
+
+static SIXELSTATUS
+coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+    CGColorSpaceRef source_space;
+    CGColorSpaceRef named_space;
+    CGDataProviderRef provider;
+    CFStringRef name;
+    CFDataRef data;
+    CFDataRef icc;
+    CGBitmapInfo info;
+    CGImageAlphaInfo alpha_info;
+    unsigned char const *bytes;
+    unsigned char const *pixel;
+    float *pixels;
+    unsigned char *mask;
+    double background[3];
+    double alpha;
+    double peak;
+    size_t count;
+    size_t stride;
+    size_t pixel_bytes;
+    size_t row_bytes;
+    size_t needed;
+    size_t i;
+    int depth;
+    int channels;
+    int first;
+    int alpha_index;
+    int source_is_srgb;
+    int little;
+    int preserve_zero;
+    int has_zero;
+    int c;
+
+    *handled = 0;
+    depth = coregraphics_png_depth(state->chunk);
+    if (depth == 0) {
+        return SIXEL_OK;
+    }
+    *handled = 1;
+    status = SIXEL_BAD_INPUT;
+    frame = state->decode_frame;
+    named_space = NULL;
+    name = NULL;
+    data = NULL;
+    icc = NULL;
+    pixels = NULL;
+    mask = NULL;
+    has_zero = 0;
+    source_is_srgb = 0;
+    little = 0;
+    source_space = CGImageGetColorSpace(state->image);
+    if (depth < 0 || source_space == NULL ||
+        CGColorSpaceGetModel(source_space) != kCGColorSpaceModelRGB ||
+        CGColorSpaceGetNumberOfComponents(source_space) != 3u ||
+        CGImageIsMask(state->image) ||
+        CGImageGetDecode(state->image) != NULL ||
+        CGImageGetBitsPerComponent(state->image) != (size_t)depth) {
+        goto cleanup;
+    }
+    /* Missing ICC is not evidence of sRGB: ImageIO can adopt cHRM/gAMA.
+     * Only a matching native name and color-space identity use the named
+     * source definition. Every other adopted RGB space keeps its own ICC. */
+    name = CGColorSpaceCopyName(source_space);
+    named_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    if (named_space == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
+    }
+    source_is_srgb = name != NULL && CFEqual(name, kCGColorSpaceSRGB) &&
+        CFEqual(source_space, named_space);
+    alpha_info = CGImageGetAlphaInfo(state->image);
+    alpha_index = -1;
+    first = 0;
+    switch (alpha_info) {
+    case kCGImageAlphaNone:
+        channels = 3;
+        break;
+    case kCGImageAlphaNoneSkipLast:
+        channels = 4;
+        break;
+    case kCGImageAlphaNoneSkipFirst:
+        channels = 4;
+        first = 1;
+        break;
+    case kCGImageAlphaLast:
+        channels = 4;
+        alpha_index = 3;
+        break;
+    case kCGImageAlphaFirst:
+        channels = 4;
+        first = 1;
+        alpha_index = 0;
+        break;
+    default:
+        /* Premultiplication can destroy hidden RGB before a division could
+         * recover it. Do not claim canonical source precision for it. */
+        goto cleanup;
+    }
+    if (sixel_chunk_get_buffer(state->chunk)[25] == 6u && alpha_index < 0) {
+        goto cleanup;
+    }
+    if (depth == 8 && alpha_index < 0 && source_is_srgb &&
+        state->bgcolor == NULL && !state->prefer_float32) {
+        *handled = 0;
+        status = SIXEL_OK;
+        goto cleanup;
+    }
+    info = CGImageGetBitmapInfo(state->image);
+    if ((info & ~(kCGBitmapAlphaInfoMask | kCGBitmapByteOrderMask)) != 0 ||
+        CGImageGetBitsPerPixel(state->image) != (size_t)(depth * channels)) {
+        goto cleanup;
+    }
+    info &= kCGBitmapByteOrderMask;
+    if (depth == 16) {
+        if (info != kCGBitmapByteOrder16Big &&
+            info != kCGBitmapByteOrder16Little) {
+            goto cleanup;
+        }
+        little = info == kCGBitmapByteOrder16Little;
+    } else if (info != kCGBitmapByteOrderDefault &&
+               info != kCGBitmapByteOrder32Big) {
+        goto cleanup;
+    }
+    count = (size_t)frame->width * (size_t)frame->height;
+    pixel_bytes = (size_t)channels * (size_t)(depth / 8);
+    if (count > SIZE_MAX / (3u * sizeof(float)) ||
+        (size_t)frame->width > SIZE_MAX / pixel_bytes) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+    row_bytes = (size_t)frame->width * pixel_bytes;
+    stride = CGImageGetBytesPerRow(state->image);
+    if (stride < row_bytes ||
+        (size_t)(frame->height - 1) > (SIZE_MAX - row_bytes) / stride) {
+        goto cleanup;
+    }
+    needed = (size_t)(frame->height - 1) * stride + row_bytes;
+    provider = CGImageGetDataProvider(state->image);
+    if (provider == NULL) {
+        goto cleanup;
+    }
+    data = CGDataProviderCopyData(provider);
+    if (data == NULL || CFDataGetLength(data) < 0 ||
+        (size_t)CFDataGetLength(data) < needed) {
+        goto cleanup;
+    }
+    bytes = CFDataGetBytePtr(data);
+    if (bytes == NULL) {
+        goto cleanup;
+    }
+    if (!source_is_srgb) {
+        icc = CGColorSpaceCopyICCData(source_space);
+        if (icc == NULL || CFDataGetLength(icc) <= 0) {
+            goto cleanup;
+        }
+    }
+    pixels = (float *)sixel_allocator_malloc(frame->allocator,
+                                               count * 3u * sizeof(float));
+    if (pixels == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+    peak = depth == 16 ? 65535.0 : 255.0;
+    for (i = 0u; i < count; ++i) {
+        pixel = bytes + (i / (size_t)frame->width) * stride +
+            (i % (size_t)frame->width) * pixel_bytes;
+        for (c = 0; c < 3; ++c) {
+            pixels[i * 3u + c] = (float)(coregraphics_png_sample(
+                pixel + (size_t)(first + c) * (size_t)(depth / 8),
+                depth, little) / peak);
+        }
+    }
+    /* Float destination alone does not prevent lower-precision native draw
+     * intermediates. Feed original straight samples directly to the CMM and
+     * keep alpha out of color transfer, including fully transparent RGB. */
+    if (!sixel_cms_convert_colorsync_linear(pixels,
+        frame->width, frame->height, source_is_srgb,
+        icc == NULL ? NULL : CFDataGetBytePtr(icc),
+        icc == NULL ? 0u : (size_t)CFDataGetLength(icc))) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
+    }
+    preserve_zero = state->bgcolor == NULL ||
+        SIXEL_LOADER_ALPHA_POLICY_PRESERVES_ZERO(loader_transparent_policy());
+    if (alpha_index >= 0 && preserve_zero) {
+        mask = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                         count);
+        if (mask == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+    }
+    for (c = 0; c < 3; ++c) {
+        background[c] = state->bgcolor == NULL ? 0.0 :
+            state->bgcolor[c] / 255.0;
+        if (loader_background_colorspace() != SIXEL_COLORSPACE_LINEAR) {
+            background[c] = coregraphics_decode_srgb_unit(background[c]);
+        }
+    }
+    for (i = 0u; alpha_index >= 0 && i < count; ++i) {
+        pixel = bytes + (i / (size_t)frame->width) * stride +
+            (i % (size_t)frame->width) * pixel_bytes;
+        alpha = coregraphics_png_sample(
+            pixel + (size_t)alpha_index * (size_t)(depth / 8),
+            depth, little) / peak;
+        if (mask != NULL) {
+            mask[i] = alpha == 0.0;
+            has_zero |= mask[i];
+        }
+        if (state->bgcolor == NULL || (preserve_zero && alpha == 0.0)) {
+            continue;
+        }
+        for (c = 0; c < 3; ++c) {
+            pixels[i * 3u + c] = (float)(pixels[i * 3u + c] * alpha +
+                background[c] * (1.0 - alpha));
+        }
+    }
+    /* Publish the complete owned frame only after extraction, profile
+     * application, coverage allocation and composition have succeeded. */
+    frame->pixels.f32ptr = pixels;
+    pixels = NULL;
+    frame->owns_pixels = 1;
+    frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+    frame->transparent_mask = mask;
+    frame->transparent_mask_size = mask == NULL ? 0u : count;
+    frame->alpha_zero_is_transparent = has_zero;
+    mask = NULL;
+    status = SIXEL_OK;
+
+cleanup:
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: original PNG source conversion failed.");
+    }
+    if (name != NULL) {
+        CFRelease(name);
+    }
+    if (named_space != NULL) {
+        CGColorSpaceRelease(named_space);
+    }
+    if (data != NULL) {
+        CFRelease(data);
+    }
+    if (icc != NULL) {
+        CFRelease(icc);
+    }
+    sixel_allocator_free(frame->allocator, pixels);
+    sixel_allocator_free(frame->allocator, mask);
+    return status;
+}
+
 static SIXELSTATUS
 coregraphics_parse_animation_start_frame_no(int *start_frame_no)
 {
@@ -2167,6 +2482,7 @@ coregraphics_loader_state_init(
     int fuse_palette,
     int reqcolors,
     int enable_orientation,
+    int prefer_float32,
     unsigned char *bgcolor,
     int loop_control,
     int start_frame_no_set,
@@ -2185,6 +2501,7 @@ coregraphics_loader_state_init(
     state->fuse_palette = fuse_palette;
     state->reqcolors = reqcolors;
     state->enable_orientation = enable_orientation;
+    state->prefer_float32 = prefer_float32;
     state->bgcolor = bgcolor;
     state->loop_control = loop_control;
     state->start_frame_no_set = start_frame_no_set;
@@ -2502,6 +2819,7 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
     SIXELSTATUS status;
     coregraphics_frame_meta_slot_t *slot;
     coregraphics_cache_slot_t *cache_slot;
+    int source_handled;
 
     status = SIXEL_OK;
     slot = NULL;
@@ -2633,25 +2951,33 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
         }
 
         coregraphics_reset_frame_storage(state->decode_frame);
-        status = coregraphics_try_handle_indexed_frame(
-            state->chunk,
-            state->decode_frame,
-            state->image,
-            state->frame_props,
-            &state->png_trns_chunk_cache,
-            state->fuse_palette,
-            state->reqcolors,
-            state->bgcolor,
-            &state->indexed_handled,
-            &state->force_alpha_from_indexed);
+        /* ImageIO may have taken time while another thread canceled this
+         * load. Keep the decode checkpoint before either source path. */
+        status = coregraphics_check_cancel(state->context);
+        if (status != SIXEL_OK) {
+            return status;
+        }
+        status = coregraphics_try_source_png(state, &source_handled);
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        if (state->indexed_handled == 0) {
-            status = coregraphics_check_cancel(state->context);
-            if (status != SIXEL_OK) {
+        if (!source_handled) {
+            status = coregraphics_try_handle_indexed_frame(
+                state->chunk,
+                state->decode_frame,
+                state->image,
+                state->frame_props,
+                &state->png_trns_chunk_cache,
+                state->fuse_palette,
+                state->reqcolors,
+                state->bgcolor,
+                &state->indexed_handled,
+                &state->force_alpha_from_indexed);
+            if (SIXEL_FAILED(status)) {
                 return status;
             }
+        }
+        if (!source_handled && state->indexed_handled == 0) {
             state->has_alpha_like = state->force_alpha_from_indexed != 0 ||
                 slot->has_alpha != 0;
             state->promote_float32 = slot->promote_float32;
@@ -2872,6 +3198,7 @@ load_with_coregraphics(
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
     int                       /* in */     enable_orientation,
+    int                       /* in */     prefer_float32,
     unsigned char             /* in */     *bgcolor,
     int                       /* in */     loop_control,
     int                       /* in */     start_frame_no_set,
@@ -2890,6 +3217,7 @@ load_with_coregraphics(
                                    fuse_palette,
                                    reqcolors,
                                    enable_orientation,
+                                   prefer_float32,
                                    bgcolor,
                                    loop_control,
                                    start_frame_no_set,
@@ -3087,6 +3415,10 @@ sixel_loader_coregraphics_setopt(sixel_loader_component_t *component,
         self->start_frame_no = *flag;
         self->has_start_frame_no = 1;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32:
+        flag = (int const *)value;
+        self->prefer_float32 = flag != NULL && *flag != 0;
+        return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_COREGRAPHICS_ENABLE_ORIENTATION:
         flag = (int const *)value;
         self->enable_orientation = (flag == NULL || *flag != 0) ? 1 : 0;
@@ -3137,6 +3469,7 @@ sixel_loader_coregraphics_load(sixel_loader_component_t *component,
                                     self->fuse_palette,
                                     self->reqcolors,
                                     self->enable_orientation,
+                                    self->prefer_float32,
                                     bgcolor,
                                     self->loop_control,
                                     self->has_start_frame_no,

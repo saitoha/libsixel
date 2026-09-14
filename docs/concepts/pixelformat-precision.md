@@ -143,6 +143,10 @@ When a loader applies an ICC transform, `cms_target` selects the target color sp
 
 CMS promotion occurs only when the selected loader actually applies a color transform. A plain image without an applicable profile may remain `RGB888`; the presence of `--cms-engine` or a float-capable target name alone does not prove that a transform ran.
 
+### Native loader intermediates
+
+A float output buffer does not by itself prove that earlier native drawing or color-conversion stages retained source precision. The [CoreGraphics PNG source path](../loader/coregraphics.md#why-a-float-destination-is-insufficient) reads original integer samples and keeps alpha separate before explicit float CMS conversion. Its observed native drawing controls are scoped to the tested path, while source normalization, canonical storage and final byte conversion remain distinct boundaries.
+
 ## Measured effective paths
 
 The checked-in path inventory was recorded on 2026-09-09 from clean revision `8aa4fab9a` using planner and loader contract diagnostics. The selected rows below use `K=256`, K-means with fixed seed, hard binning, exact lookup, no dither, one thread, and CPU execution. Plain rows use [`images/snake.png`](../../images/snake.png); CMS rows use the embedded Adobe RGB fixture [`images/measurements/palette-pipeline/a98-gamut-600x450.png`](../../images/measurements/palette-pipeline/a98-gamut-600x450.png).

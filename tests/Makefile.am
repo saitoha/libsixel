@@ -625,6 +625,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
     -DBUILD_TEST_0185_PNG_SOURCE_NUMERIC \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
+    -DBUILD_TEST_0187_COREGRAPHICS_PNG \
+    -DBUILD_TEST_0188_COLORSYNC_LINEAR \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -1028,6 +1030,8 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0184_loader_builtin_psd_cmyk_icc_numeric.c \
     loader/unit/0185_png_source_numeric.c \
     loader/unit/0186_png_byte_target.c \
+    loader/unit/0187_coregraphics_png.c \
+    loader/unit/0188_colorsync_linear.c \
     loader/builtin/loader_builtin_png_color_test_common.h \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \

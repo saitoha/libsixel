@@ -2,6 +2,8 @@
 
 For engine selection and its limits, read [Loader CMS: builtin and Little CMS](color-management.md). It distinguishes decoder support from CMS support and covers unsupported profiles, best-effort fallback, quality, and performance. For shared PNG metadata precedence and its reference matrix, read [PNG color metadata](png-color-metadata.md). For the subsystem design, read [Builtin CMS specification and architecture](builtin-cms.md).
 
+For the static PNG source and native conversion boundary, see [CoreGraphics PNG source precision](coregraphics.md#png-source-precision).
+
 ## Scope
 
 For URL input, [Network access](network-access.md) describes the transport bindings, supported-scheme differences, and `-k` certificate-verification behavior and risks. Transport selection happens before image decoding and is independent of `-L`.
