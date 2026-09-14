@@ -3609,6 +3609,9 @@ sixel_assessment_new(sixel_assessment_t **ppassessment,
     assessment->color_spec[1] = "auto";
     assessment->color_origin[0] = "frame-working-srgb";
     assessment->color_origin[1] = "frame-working-srgb";
+    assessment->direct = 0;
+    assessment->drawing[0] = "not-selected";
+    assessment->drawing[1] = "not-selected";
 
     *ppassessment = assessment;
     return SIXEL_OK;
@@ -3924,6 +3927,7 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         "    \"evaluator\": \"builtin\",\n"
         "    \"requested_loader_cms\": \"%s\",\n"
         "    \"plain_sixel_default\": \"srgb\",\n"
+        "    \"requested_sixel_drawing\": \"%s\",\n"
         "    \"background_definition\": \"srgb\",\n"
         "    \"background_rgb8\": [%u, %u, %u],\n"
         "    \"signal\": \"%s\",\n"
@@ -3935,7 +3939,8 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         "    \"region_count\": %zu,\n"
         "    \"region_layout\": \"top-left fixed tiles, partial edges\",\n"
         "    \"region_mean_weighting\": \"pixel area\",\n",
-        escaped, (unsigned int)assessment->background[0],
+        escaped, assessment->direct ? "direct" : "indexed",
+        (unsigned int)assessment->background[0],
         (unsigned int)assessment->background[1],
         (unsigned int)assessment->background[2],
         assessment->signal_space == SIXEL_COLORSPACE_GAMMA
@@ -3958,12 +3963,13 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
             "    \"%s\": {\n"
             "      \"requested_definition\": \"%s\",\n"
             "      \"origin\": \"%s\",\n"
+            "      \"drawing\": \"%s\",\n"
             "      \"current_basis\": \"srgb\",\n"
             "      \"current_coordinate\": \"%s\",\n"
             "      \"current_format\": \"%s\"\n"
             "    }%s\n",
             i == 0 ? "reference" : "target", escaped,
-            assessment->color_origin[i],
+            assessment->color_origin[i], assessment->drawing[i],
             assessment_colorspace_name(assessment->current_space[i]),
             assessment_pixelformat_name(assessment->current_format[i]),
             i == 0 ? "," : "");

@@ -268,6 +268,8 @@ struct sixel_assessment {
     int current_format[2];
     char const *color_spec[2];
     char const *color_origin[2];
+    int direct;
+    char const *drawing[2];
     unsigned char background[3];
 };
 

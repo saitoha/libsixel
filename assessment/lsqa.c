@@ -68,6 +68,7 @@
 #include "getopt_stub.h"
 #include "cli.h"
 #include "decoder.h"
+#include "loader.h"
 #include "options.h"
 #include "tty.h"
 
@@ -222,7 +223,8 @@ capture_first_frame(sixel_frame_t *frame, void *context)
 }
 
 static int
-load_frame(char const *path, sixel_allocator_t *allocator,
+load_frame(char const *path, sixel_chunk_t *chunk,
+           sixel_allocator_t *allocator,
            char const *loader_order,
            unsigned char *bgcolor,
            sixel_frame_t **out_frame)
@@ -310,9 +312,9 @@ load_frame(char const *path, sixel_allocator_t *allocator,
         goto error;
     }
 
-    status = sixel_loader_load_file(loader,
-                                    path,
-                                    capture_first_frame);
+    status = chunk == NULL
+        ? sixel_loader_load_file(loader, path, capture_first_frame)
+        : sixel_loader_load_chunk(loader, chunk, capture_first_frame);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -352,6 +354,63 @@ error:
     return -1;
 }
 
+/* Decode original sRGB samples and compose holes before frame conversion.
+ * Reuse the stateful CPU reconstruction path: it preserves masks and already
+ * bypasses indexed reconstruction when palette registers are redefined. */
+static SIXELSTATUS
+load_direct_chunk(sixel_chunk_t *chunk, sixel_allocator_t *allocator,
+                   unsigned char const *bg, int method, int similarity,
+                   int edge, int threshold, sixel_frame_t **out_frame)
+{
+    sixel_decoder_t *decoder;
+    sixel_decode_options_t options;
+    sixel_decode_result_t result;
+    sixel_frame_t *frame;
+    SIXELSTATUS status;
+
+    decoder = NULL;
+    frame = NULL;
+    memset(&options, 0, sizeof(options));
+    memset(&result, 0, sizeof(result));
+    options.preferred_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    if (bg != NULL) {
+        memcpy(options.bgcolor, bg, 3);
+    }
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    /* lsqa has no GPU policy option. Keep reconstruction on its existing
+     * CPU algorithms, independently of converter environment defaults. */
+    decoder->gpu_policy = SIXEL_GPU_POLICY_OFF;
+    decoder->dequantize_method = method;
+    decoder->dequantize_similarity_bias = similarity;
+    decoder->dequantize_edge_strength = edge;
+    decoder->dequantize_selective_blur_threshold = threshold;
+    status = sixel_decoder_decode_pixels(decoder,
+        sixel_chunk_get_buffer(chunk), sixel_chunk_get_size(chunk),
+        &options, &result);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_frame_init(frame, result.pixels, result.width,
+        result.height, result.pixelformat, NULL, 0);
+    if (SIXEL_SUCCEEDED(status)) {
+        result.pixels = NULL;
+        *out_frame = frame;
+        frame = NULL;
+    }
+cleanup:
+    sixel_allocator_free(allocator, result.pixels);
+    sixel_frame_unref(frame);
+    sixel_decoder_unref(decoder);
+    return status;
+}
+
 static int
 load_dequantized_target_frame(char const *path,
                               sixel_allocator_t *allocator,
@@ -359,6 +418,7 @@ load_dequantized_target_frame(char const *path,
                               int similarity_bias,
                               int edge_strength,
                               int selective_blur_threshold,
+                              int direct, unsigned char const *bg,
                               sixel_frame_t **out_frame)
 {
     SIXELSTATUS status;
@@ -412,6 +472,17 @@ load_dequantized_target_frame(char const *path,
             "target SIXEL input is too large to decode.");
         status = SIXEL_BAD_INPUT;
         goto error;
+    }
+
+    if (direct) {
+        status = load_direct_chunk(chunk, allocator, bg, dequantize_method,
+            similarity_bias, edge_strength, selective_blur_threshold,
+            out_frame);
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
+        chunk->vtbl->unref(chunk);
+        return 0;
     }
 
     /*
@@ -548,19 +619,20 @@ error:
     return -1;
 }
 
-/* Explicit definitions are applied to original SIXEL palette samples.
+/* Explicit definitions are applied to original SIXEL palette or paint samples.
  * PNG overrides need the pre-CMS loader seam validated in M3. Never attach
  * a source profile to RGB which a legacy loader has already normalized. */
 static int
 load_defined_frame(char const *path, char const *spec,
                     sixel_allocator_t *allocator, unsigned char const *bg,
-                    sixel_frame_t **out_frame)
+                    int direct, sixel_frame_t **out_frame)
 {
     sixel_color_def_t *definition;
     sixel_color_def_t *srgb;
     sixel_chunk_t *chunk;
     unsigned char const *bytes;
     unsigned char *indices;
+    unsigned char *rgba;
     unsigned char *mask;
     unsigned char *palette;
     unsigned char *profile;
@@ -587,6 +659,7 @@ load_defined_frame(char const *path, char const *spec,
     srgb = NULL;
     chunk = NULL;
     indices = NULL;
+    rgba = NULL;
     mask = NULL;
     palette = NULL;
     profile = NULL;
@@ -637,15 +710,24 @@ load_defined_frame(char const *path, char const *spec,
             "PNG overrides need pre-normalization support.");
         goto cleanup;
     }
-    status = sixel_decode_raw_with_options_mask((unsigned char *)bytes,
-        (int)count, 0, &indices, &mask, &width, &height, &palette, &n,
-        NULL, allocator);
+    n = 0;
+    if (direct) {
+        /* Never put transformed colors into an RGB8 palette callback: P3
+         * colors can lie outside sRGB. Preserve paint-time RGBA first. */
+        status = sixel_decode_direct((unsigned char *)bytes, (int)count,
+            &rgba, &width, &height, allocator);
+    } else {
+        status = sixel_decode_raw_with_options_mask((unsigned char *)bytes,
+            (int)count, 0, &indices, &mask, &width, &height, &palette, &n,
+            NULL, allocator);
+    }
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
     status = SIXEL_BAD_INPUT;
     if (width <= 0 || height <= 0 || width > SIXEL_WIDTH_LIMIT
-            || height > SIXEL_HEIGHT_LIMIT || n < 1 || n > 256) {
+            || height > SIXEL_HEIGHT_LIMIT
+            || (!direct && (n < 1 || n > 256))) {
         goto cleanup;
     }
     count = (size_t)width * (size_t)height;
@@ -681,12 +763,33 @@ load_defined_frame(char const *path, char const *spec,
         goto cleanup;
     }
     for (i = 0; i < count; ++i) {
-        if ((mask == NULL || mask[i] != 0) && indices[i] >= n) {
-            goto cleanup;
-        }
-        for (c = 0; c < 3; ++c) {
-            pixels[i * 3 + c] = mask != NULL && mask[i] == 0
-                ? background[c] : mapped[(size_t)indices[i] * 3 + c];
+        if (direct) {
+            if (rgba[i * 4 + 3] == 0) {
+                memcpy(pixels + i * 3, background, sizeof(background));
+                continue;
+            }
+            for (c = 0; c < 3; ++c) {
+                rgb[c] = rgba[i * 4 + c] / 255.0;
+            }
+            if (!sixel_cdef_to_xyz(definition, rgb, xyz, intent)
+                    || !sixel_cdef_from_xyz(srgb, xyz, encoded, 1)) {
+                goto cleanup;
+            }
+            for (c = 0; c < 3; ++c) {
+                pixels[i * 3 + c] =
+                    (float)sixel_color_decode_srgb(encoded[c]);
+                if (!isfinite(pixels[i * 3 + c])) {
+                    goto cleanup;
+                }
+            }
+        } else {
+            if ((mask == NULL || mask[i] != 0) && indices[i] >= n) {
+                goto cleanup;
+            }
+            for (c = 0; c < 3; ++c) {
+                pixels[i * 3 + c] = mask != NULL && mask[i] == 0
+                    ? background[c] : mapped[(size_t)indices[i] * 3 + c];
+            }
         }
     }
     status = sixel_frame_new(&frame, allocator);
@@ -711,6 +814,7 @@ cleanup:
     sixel_frame_unref(frame);
     sixel_allocator_free(allocator, pixels);
     sixel_allocator_free(allocator, indices);
+    sixel_allocator_free(allocator, rgba);
     sixel_allocator_free(allocator, mask);
     sixel_allocator_free(allocator, palette);
     if (chunk != NULL) {
@@ -722,6 +826,58 @@ cleanup:
         return -1;
     }
     return 0;
+}
+
+/* Keep format detection local to the opt-in adapter. Other formats still
+ * use their original loader and source metadata, including when piped in. */
+static int
+load_input_frame(char const *path, char const *spec, int direct,
+                   sixel_allocator_t *allocator, char const *loader_order,
+                   unsigned char *bg, char const **drawing,
+                   sixel_frame_t **out_frame)
+{
+    sixel_chunk_t *chunk;
+    unsigned char const *bytes;
+    size_t count;
+    SIXELSTATUS status;
+    int result;
+
+    if (strcmp(spec, "auto") != 0) {
+        *drawing = direct ? "direct" : "indexed";
+        return load_defined_frame(path, spec, allocator, bg, direct,
+                                   out_frame);
+    }
+    *drawing = "loader-managed";
+    if (!direct) {
+        return load_frame(path, NULL, allocator, loader_order, bg, out_frame);
+    }
+    chunk = NULL;
+    status = sixel_chunk_create_from_source(&chunk, path, 0, NULL, allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "Cannot read %s: %s\n", path,
+                sixel_helper_get_additional_message());
+        return -1;
+    }
+    bytes = sixel_chunk_get_buffer(chunk);
+    count = sixel_chunk_get_size(chunk);
+    if (count >= 2 && (bytes[0] == 0x90
+            || (bytes[0] == 0x1b && bytes[1] == 'P'))) {
+        *drawing = "direct";
+        status = load_direct_chunk(chunk, allocator, bg,
+            SIXEL_DEQUANTIZE_NONE, 100, 0,
+            SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT, out_frame);
+        result = SIXEL_FAILED(status) ? -1 : 0;
+        if (result != 0) {
+            fprintf(stderr, "Cannot decode %s directly: %s\n", path,
+                    sixel_helper_get_additional_message());
+        }
+    } else {
+        *drawing = "not-applicable";
+        result = load_frame(path, chunk, allocator, loader_order, bg,
+                             out_frame);
+    }
+    chunk->vtbl->unref(chunk);
+    return result;
 }
 
 typedef struct Metrics {
@@ -1717,6 +1873,7 @@ typedef struct Options {
     const char *ref_spec;
     const char *out_spec;
     int region_window;
+    int direct;
     const char *ref_path;
     const char *out_path;
     char loader_order_buffer[PATH_MAX];
@@ -1911,6 +2068,12 @@ cleanup:
  */
 static cli_option_help_t const g_option_help_table[] = {
     {
+        'D', "direct",
+        "-D, --direct              render both SIXEL inputs at paint time.\n"
+        "                           Independent of -R/-T color definitions.\n"
+        "                           Default indexed; other formats unchanged.\n"
+    },
+    {
         'm',
         "metrics",
         "-m NAME, --metrics=NAME    limit computation to NAME and print\n"
@@ -2057,7 +2220,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "R:T:w:m:b:%:gW:P:L:#:B:d:S:e:Hh";
+static char const g_lsqa_optstring[] = "DR:T:w:m:b:%:gW:P:L:#:B:d:S:e:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -2273,6 +2436,8 @@ print_usage(const char *prog)
             "  -B, --bgcolor BGCOLOR\n");
     fprintf(stderr,
             "                        background color for alpha composition\n");
+    fprintf(stderr,
+            "  -D, --direct       paint-time colors for both SIXEL inputs\n");
     fprintf(stderr,
             "  -d, --dequantize METHOD\n");
     fprintf(stderr,
@@ -2646,6 +2811,7 @@ parse_args(int argc, char **argv, Options *opts)
     opts->grayscale_compare = 0;
     opts->compare_colorspace = LSQA_COMPARE_COLORSPACE_REFERENCE;
     opts->compare_precision = LSQA_COMPARE_PRECISION_REFERENCE;
+    opts->direct = 0;
     opts->dequantize_method = SIXEL_DEQUANTIZE_NONE;
     opts->dequantize_similarity_bias = 100;
     opts->dequantize_edge_strength = 0;
@@ -2691,6 +2857,7 @@ parse_args(int argc, char **argv, Options *opts)
     for (;;) {
 #if HAVE_GETOPT_LONG
         struct option long_options[] = {
+            {"direct", no_argument, &long_opt, 'D'},
             {"reference-colorspace", required_argument, &long_opt, 'R'},
             {"target-colorspace", required_argument, &long_opt, 'T'},
             {"region-window", required_argument, &long_opt, 'w'},
@@ -2732,6 +2899,9 @@ parse_args(int argc, char **argv, Options *opts)
         }
 
         switch (opt) {
+        case 'D':
+            opts->direct = 1;
+            break;
         case 'R':
             opts->ref_spec = optarg;
             break;
@@ -3042,6 +3212,7 @@ int
 main(int argc, char **argv)
 {
     Options opts;
+    char const *drawing[2];
     sixel_allocator_t *allocator;
     sixel_assessment_t *assessment;
     SIXELSTATUS status;
@@ -3103,11 +3274,9 @@ main(int argc, char **argv)
         return LSQA_EXIT_RUNTIME_FAILED;
     }
 
-    if ((strcmp(opts.ref_spec, "auto") == 0
-            ? load_frame(opts.ref_path, allocator, opts.loader_order,
-                         opts.has_bgcolor ? opts.bgcolor : NULL, &ref_frame)
-            : load_defined_frame(opts.ref_path, opts.ref_spec, allocator,
-                         opts.has_bgcolor ? opts.bgcolor : NULL, &ref_frame))
+    if (load_input_frame(opts.ref_path, opts.ref_spec, opts.direct,
+            allocator, opts.loader_order,
+            opts.has_bgcolor ? opts.bgcolor : NULL, &drawing[0], &ref_frame)
             != 0) {
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
@@ -3120,16 +3289,16 @@ main(int argc, char **argv)
                     opts.dequantize_similarity_bias,
                     opts.dequantize_edge_strength,
                     opts.dequantize_selective_blur_threshold,
+                    opts.direct, opts.has_bgcolor ? opts.bgcolor : NULL,
                     &out_frame) != 0) {
             sixel_frame_unref(ref_frame);
             sixel_allocator_unref(allocator);
             return LSQA_EXIT_LOAD_FAILED;
         }
-    } else if ((strcmp(opts.out_spec, "auto") == 0
-            ? load_frame(opts.out_path, allocator, opts.loader_order,
-                         opts.has_bgcolor ? opts.bgcolor : NULL, &out_frame)
-            : load_defined_frame(opts.out_path, opts.out_spec, allocator,
-                         opts.has_bgcolor ? opts.bgcolor : NULL, &out_frame))
+        drawing[1] = opts.direct ? "direct" : "indexed";
+    } else if (load_input_frame(opts.out_path, opts.out_spec, opts.direct,
+            allocator, opts.loader_order,
+            opts.has_bgcolor ? opts.bgcolor : NULL, &drawing[1], &out_frame)
             != 0) {
         sixel_frame_unref(ref_frame);
         sixel_allocator_unref(allocator);
@@ -3175,12 +3344,19 @@ main(int argc, char **argv)
     assessment->signal_bytes = target_precision == LSQA_COMPARE_PRECISION_8BIT;
     assessment->grayscale = opts.grayscale_compare;
     assessment->region_window = opts.region_window;
+    assessment->direct = opts.direct;
+    assessment->drawing[0] = drawing[0];
+    assessment->drawing[1] = drawing[1];
     assessment->color_spec[0] = opts.ref_spec;
     assessment->color_spec[1] = opts.out_spec;
     assessment->color_origin[0] = strcmp(opts.ref_spec, "auto") == 0
-        ? "legacy-loader-managed" : "explicit-original-sixel";
+        ? (strcmp(drawing[0], "direct") == 0
+           ? "original-sixel-srgb" : "legacy-loader-managed")
+        : "explicit-original-sixel";
     assessment->color_origin[1] = strcmp(opts.out_spec, "auto") == 0
-        ? "legacy-loader-managed" : "explicit-original-sixel";
+        ? (strcmp(drawing[1], "direct") == 0
+           ? "original-sixel-srgb" : "legacy-loader-managed")
+        : "explicit-original-sixel";
     memcpy(assessment->background, opts.bgcolor, 3);
 
     sixel_assessment_select_sections(assessment,

@@ -34,6 +34,11 @@
 extern "C" {
 #endif
 
+/* Borrow an already loaded source while preserving loader policy. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_loader_load_chunk(sixel_loader_t *loader, sixel_chunk_t *chunk,
+                        sixel_load_image_function fn_load);
+
 SIXEL_INTERNAL_API void
 sixel_loader_component_ref(sixel_loader_component_t *component);
 

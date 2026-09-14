@@ -1255,11 +1255,10 @@ loader_resolution_assigns_binding(
     return 0;
 }
 
-SIXELAPI SIXELSTATUS
-sixel_loader_load_file(
-    sixel_loader_t         /* in */ *loader,
-    char const             /* in */ *filename,
-    sixel_load_image_function /* in */ fn_load)
+static SIXELSTATUS
+loader_load_source(sixel_loader_t *loader, char const *filename,
+                    sixel_chunk_t *input_chunk,
+                    sixel_load_image_function fn_load)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_chunk_t *pchunk;
@@ -1442,11 +1441,19 @@ sixel_loader_load_file(
                               "chunk/create",
                               "start",
                               chunk_job_id);
-    status = sixel_chunk_create_from_source(&pchunk,
-                             filename,
-                             loader->finsecure,
-                             loader->cancel_flag,
-                             loader->allocator);
+    /* A caller that inspected stdin must reuse those bytes. Borrow the
+     * chunk through a local reference and retain normal backend selection. */
+    if (input_chunk != NULL) {
+        pchunk = input_chunk;
+        pchunk->vtbl->ref(pchunk);
+        status = SIXEL_OK;
+    } else {
+        status = sixel_chunk_create_from_source(&pchunk,
+                                 filename,
+                                 loader->finsecure,
+                                 loader->cancel_flag,
+                                 loader->allocator);
+    }
     if (status != SIXEL_OK) {
         loader_log_timeline_event(loader,
                                   "loader/manager",
@@ -1606,6 +1613,24 @@ end:
 
 end0:
     return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_loader_load_file(sixel_loader_t *loader, char const *filename,
+                       sixel_load_image_function fn_load)
+{
+    return loader_load_source(loader, filename, NULL, fn_load);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_loader_load_chunk(sixel_loader_t *loader, sixel_chunk_t *chunk,
+                        sixel_load_image_function fn_load)
+{
+    if (chunk == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return loader_load_source(loader, sixel_chunk_get_source_path(chunk),
+                               chunk, fn_load);
 }
 
 /* load image from file */

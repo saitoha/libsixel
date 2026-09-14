@@ -30,11 +30,28 @@ producer | lsqa --target-colorspace=display-p3 reference.six -
 
 Names and field counts are exact. Invalid xy coordinates, nonfinite numbers, missing fields, unreadable or inapplicable ICC profiles are errors. An ICC profile is a local file, never standard input. The shared parser performs no file access; each adapter owns profile loading and lifetime.
 
-Explicit definitions currently require a standalone SIXEL DCS stream. They apply to the decoded **original palette samples**, before background selection and before conversion to extended linear sRGB. SIXEL's integer percentage to RGB8 rounding is unchanged. The raw decoder has no new CMS policy.
+Explicit definitions currently require a standalone SIXEL DCS stream. They apply to the decoded **original palette or paint-time samples**, before background selection and before conversion to extended linear sRGB. SIXEL's integer percentage to RGB8 rounding is unchanged. The raw decoder has no new CMS policy.
 
 Explicit PNG overrides report an error until the pre-normalization loader connection is validated. They must never reinterpret already normalized sRGB as though it were the original P3 samples. `auto` PNG keeps its existing loader CMS behavior. Explicit target definitions with `-d` dequantization are also rejected because that reconstruction needs its own color-space contract.
 
 The new descriptor evaluator uses the builtin ICC PCS implementation. `--cms-engine` continues to select the legacy image-loader CMS; it does not change the descriptor evaluator. ICC input only needs a usable forward transform. An inverse table is not required. Slot selection does not add black-point compensation, absolute adaptation, or an external CMS profile-link operation.
+
+## SIXEL drawing mode
+
+`-D / --direct` selects direct rendering for **both** SIXEL inputs. Drawing mode is independent of `-R` and `-T`: `auto`, sRGB, P3, custom RGB and ICC definitions all accept it. With no `-D`, the existing indexed path remains the default, including final-palette interpretation after register redefinition. Choose the same drawing mode when comparing measurement tools or decoded reference images.
+
+```sh
+lsqa -D -Rdisplay-p3 -Tdisplay-p3 -m DELTA_E00 stable.six redefined.six
+producer | lsqa --direct -Tdisplay-p3 reference.png -
+```
+
+Direct rendering executes the existing decoder's painting semantics. For ordinary SIXEL paint, a later register definition does not recolor already painted pixels; repainting replaces only the covered pixels. The adapter first retains original RGBA samples and unpainted alpha, then applies explicit input definitions into extended float32 linear sRGB. It does not use the RGB8 palette-transform callback for that conversion, which would clip extended colors. The decoder's existing OR-mode semantics remain as described in the [decoding pipeline](../functionality/decoding-pipeline.md).
+
+For direct SIXEL, unpainted regions use `-B`, or black, in encoded sRGB independently of the input definition. Painted RGB endpoints remain exact before explicit color conversion. Other formats keep their normal loader behavior; this includes PNG from a file or either input's stdin. The opt-in format check reuses the loaded chunk, so a pipe is consumed only once and loader source metadata remains available. Explicit PNG overrides remain unsupported.
+
+`-D -d METHOD` accepts the existing target reconstruction methods `k_undither`, `lso_undither:Vfs` and `selective_blur`, with their existing similarity, edge and threshold controls. It reuses the stateful decoder's CPU RGBA reconstruction and paint mask, including its existing bypass to direct paint-time samples when a palette register was redefined after paint. That bypass means the requested reconstruction does not run on those streams. The reference receives direct decoding without reconstruction. `-d none` leaves direct rendering enabled. An explicit target definition with non-`none` reconstruction is still rejected, including with `-D`; its color-space contract is not yet defined. Neither the converter's reconstruction policy nor its fallback implementation changes here.
+
+Full JSON records `requested_sixel_drawing` as `direct` or `indexed`. Each input's `drawing` reports `direct`, explicit `indexed`, `loader-managed` for the unchanged auto loader route, or `not-applicable` when `-D` encounters another format. `original-sixel-srgb` identifies the direct auto adapter's origin; explicit definitions retain `explicit-original-sixel`. These fields describe drawing and interpretation, not a claim that requested reconstruction ran on a redefined-palette stream.
 
 ## Physical color and comparison signal
 
@@ -57,7 +74,7 @@ Unchanged sRGB gamma/linear samples retain the existing luma coefficients and fl
 
 `-g` makes the comparison signal grayscale. Color difference and region color means still measure the physical input colors. Neither `-W`, `-P`, nor `-g` changes the XYZ used for those color measurements.
 
-Explicit SIXEL inputs use linear float32 after interpretation. Unpainted pixels use the requested `-B` background, or black, interpreted as encoded sRGB independently of the palette definition. The paint mask distinguishes holes from painted pixels even when all 256 palette entries are used. For `auto` inputs, legacy loader/frame alpha-composition behavior is retained; it is path-dependent and must be tested separately.
+Explicit SIXEL inputs use linear float32 after interpretation. Unpainted pixels use the requested `-B` background, or black, interpreted as encoded sRGB independently of the palette definition. The paint mask distinguishes holes from painted pixels even when all 256 palette entries are used. For `auto` inputs without `-D`, legacy loader/frame alpha-composition behavior is retained; it is path-dependent and must be tested separately.
 
 ## Per-pixel and regional differences
 
@@ -72,7 +89,7 @@ The regional metrics first average XYZ within each tile, convert the two mean co
 
 A black/white dither with linear mean 0.5 can have zero regional error against a constant Y=0.5 patch while retaining substantial per-pixel error. Conversely, swapping black and white regions can preserve the whole-image mean while every local tile is wrong. Report both regional mean and maximum alongside spatial metrics: correct mean color does not imply acceptable grain, streaks, edges or banding. Natural images use the same fixed grid, not windows selected after seeing the result.
 
-Scalar `-m` output remains one number. Full JSON includes `color_evaluation`: requested per-input definitions and their origin, actual current frame formats and coordinates, requested loader CMS, actual builtin evaluator, plain SIXEL and background definitions, signal precision/range, PCS white/units, and tile layout/count. `legacy-loader-managed` records a pipeline origin; it does not claim that metadata was successfully applied merely because it existed.
+Scalar `-m` output remains one number. Full JSON includes `color_evaluation`: requested per-input definitions and their origin, selected SIXEL drawing mode and per-input route, actual current frame formats and coordinates, requested loader CMS, actual builtin evaluator, plain SIXEL and background definitions, signal precision/range, PCS white/units, and tile layout/count. `legacy-loader-managed` records a pipeline origin; it does not claim that metadata was successfully applied merely because it existed.
 
 The existing `-b` CLI contract tests whether a metric is below a baseline. It is useful for similarity metrics such as MS-SSIM; it is not an upper-bound quality gate for color differences. Compare these lower-is-better values with an explicitly defined upper limit in the measurement driver.
 
@@ -123,6 +140,46 @@ See the [measurement policy](measurement-policy.md) for unchanged sRGB MS-SSIM g
 | CE-29 | Unsupported window sizes are rejected. | [tests/quality_gate/cms/0031_invalid_region_window_error.t](../../tests/quality_gate/cms/0031_invalid_region_window_error.t) |
 | CE-30 | Explicit target definition and dequantization are rejected together. | [tests/quality_gate/cms/0032_explicit_dequantize_error.t](../../tests/quality_gate/cms/0032_explicit_dequantize_error.t) |
 
+| CE-31 | Direct auto target retains paint-time colors. | [tests/quality_gate/direct/0001_auto_target.t](../../tests/quality_gate/direct/0001_auto_target.t) |
+| CE-32 | Direct auto reference retains paint-time colors. | [tests/quality_gate/direct/0002_auto_reference.t](../../tests/quality_gate/direct/0002_auto_reference.t) |
+| CE-33 | Direct explicit sRGB preserves palette redefinition. | [tests/quality_gate/direct/0003_srgb_target.t](../../tests/quality_gate/direct/0003_srgb_target.t) |
+| CE-34 | Direct P3 target preserves palette redefinition. | [tests/quality_gate/direct/0004_p3_target.t](../../tests/quality_gate/direct/0004_p3_target.t) |
+| CE-35 | Direct P3 reference preserves palette redefinition. | [tests/quality_gate/direct/0005_p3_reference.t](../../tests/quality_gate/direct/0005_p3_reference.t) |
+| CE-36 | Direct custom RGB matches named P3. | [tests/quality_gate/direct/0006_simple_rgb.t](../../tests/quality_gate/direct/0006_simple_rgb.t) |
+| CE-37 | Direct ICC interpretation retains paint history. | [tests/quality_gate/direct/0007_icc_redefinition.t](../../tests/quality_gate/direct/0007_icc_redefinition.t) |
+| CE-38 | Direct ICC interpretation changes physical color. | [tests/quality_gate/direct/0008_icc_definition.t](../../tests/quality_gate/direct/0008_icc_definition.t) |
+| CE-39 | Direct target definition remains independent. | [tests/quality_gate/direct/0009_target_definition.t](../../tests/quality_gate/direct/0009_target_definition.t) |
+| CE-40 | Direct reference definition remains independent. | [tests/quality_gate/direct/0010_reference_definition.t](../../tests/quality_gate/direct/0010_reference_definition.t) |
+| CE-41 | Direct auto reference accepts stdin. | [tests/quality_gate/direct/0011_reference_stdin.t](../../tests/quality_gate/direct/0011_reference_stdin.t) |
+| CE-42 | Direct P3 target accepts stdin. | [tests/quality_gate/direct/0012_target_p3_stdin.t](../../tests/quality_gate/direct/0012_target_p3_stdin.t) |
+| CE-43 | Repainting after redefinition changes only overwritten pixels. | [tests/quality_gate/direct/0013_repaint.t](../../tests/quality_gate/direct/0013_repaint.t) |
+| CE-44 | Sparse P3 paint keeps earlier colors and unpainted background. | [tests/quality_gate/direct/0014_sparse_p3.t](../../tests/quality_gate/direct/0014_sparse_p3.t) |
+| CE-45 | Reference holes use sRGB background independently of P3. | [tests/quality_gate/direct/0015_reference_background.t](../../tests/quality_gate/direct/0015_reference_background.t) |
+| CE-46 | Target holes use sRGB background independently of P3. | [tests/quality_gate/direct/0016_target_background.t](../../tests/quality_gate/direct/0016_target_background.t) |
+| CE-47 | Omitting -D retains auto indexed evaluation. | [tests/quality_gate/direct/0017_default_indexed.t](../../tests/quality_gate/direct/0017_default_indexed.t) |
+| CE-48 | Omitting -D retains P3 indexed evaluation. | [tests/quality_gate/direct/0018_default_p3_indexed.t](../../tests/quality_gate/direct/0018_default_p3_indexed.t) |
+| CE-49 | Direct selection leaves png file loader results unchanged. | [tests/quality_gate/direct/0019_png_file.t](../../tests/quality_gate/direct/0019_png_file.t) |
+| CE-50 | Direct selection leaves png target stdin loader results unchanged. | [tests/quality_gate/direct/0020_png_target_stdin.t](../../tests/quality_gate/direct/0020_png_target_stdin.t) |
+| CE-51 | Direct selection leaves png reference stdin loader results unchanged. | [tests/quality_gate/direct/0021_png_reference_stdin.t](../../tests/quality_gate/direct/0021_png_reference_stdin.t) |
+| CE-52 | JSON reports direct drawing selection and both input routes. | [tests/quality_gate/direct/0022_direct_json.t](../../tests/quality_gate/direct/0022_direct_json.t) |
+| CE-53 | JSON reports png drawing selection and both input routes. | [tests/quality_gate/direct/0023_png_json.t](../../tests/quality_gate/direct/0023_png_json.t) |
+| CE-54 | JSON reports indexed drawing selection and both input routes. | [tests/quality_gate/direct/0024_indexed_json.t](../../tests/quality_gate/direct/0024_indexed_json.t) |
+| CE-55 | Help advertises both direct option spellings. | [tests/quality_gate/direct/0025_help.t](../../tests/quality_gate/direct/0025_help.t) |
+| CE-56 | Reject direct value. | [tests/quality_gate/direct/0026_direct_value_error.t](../../tests/quality_gate/direct/0026_direct_value_error.t) |
+| CE-57 | Reject explicit dequantize. | [tests/quality_gate/direct/0027_explicit_dequantize_error.t](../../tests/quality_gate/direct/0027_explicit_dequantize_error.t) |
+| CE-58 | Dequantize none does not disable direct drawing. | [tests/quality_gate/direct/0028_dequantize_none.t](../../tests/quality_gate/direct/0028_dequantize_none.t) |
+| CE-59 | Direct kundither target reconstruction matches the established opaque result through stdin. | [tests/quality_gate/direct/0029_reconstruct_kundither.t](../../tests/quality_gate/direct/0029_reconstruct_kundither.t) |
+| CE-60 | Direct fast4 target reconstruction matches the established opaque result through stdin. | [tests/quality_gate/direct/0030_reconstruct_fast4.t](../../tests/quality_gate/direct/0030_reconstruct_fast4.t) |
+| CE-61 | Direct selective_blur target reconstruction matches the established opaque result through stdin. | [tests/quality_gate/direct/0031_reconstruct_selective_blur.t](../../tests/quality_gate/direct/0031_reconstruct_selective_blur.t) |
+| CE-62 | Direct kundither uses the existing redefinition bypass. | [tests/quality_gate/direct/0032_redefined_kundither.t](../../tests/quality_gate/direct/0032_redefined_kundither.t) |
+| CE-63 | Direct fast4 uses the existing redefinition bypass. | [tests/quality_gate/direct/0033_redefined_fast4.t](../../tests/quality_gate/direct/0033_redefined_fast4.t) |
+| CE-64 | Direct selective_blur uses the existing redefinition bypass. | [tests/quality_gate/direct/0034_redefined_selective_blur.t](../../tests/quality_gate/direct/0034_redefined_selective_blur.t) |
+| CE-65 | Direct kundither retains unpainted background. | [tests/quality_gate/direct/0035_background_kundither.t](../../tests/quality_gate/direct/0035_background_kundither.t) |
+| CE-66 | Direct fast4 retains unpainted background. | [tests/quality_gate/direct/0036_background_fast4.t](../../tests/quality_gate/direct/0036_background_fast4.t) |
+| CE-67 | Direct selective_blur retains unpainted background. | [tests/quality_gate/direct/0037_background_selective_blur.t](../../tests/quality_gate/direct/0037_background_selective_blur.t) |
+| CE-68 | Direct auto target accepts stdin. | [tests/quality_gate/direct/0038_target_auto_stdin.t](../../tests/quality_gate/direct/0038_target_auto_stdin.t) |
+| CE-69 | Direct P3 reference accepts stdin. | [tests/quality_gate/direct/0039_reference_p3_stdin.t](../../tests/quality_gate/direct/0039_reference_p3_stdin.t) |
+
 ### Quality regression tests
 
 The existing [sRGB quality gates](../../tests/quality_gate/ms_ssim/) and [legacy CMS comparisons](../../tests/quality_gate/cms/) retain their established thresholds. The color-coordinate tests above do not establish a perceptual quality floor for a newly encoded image.
@@ -130,3 +187,5 @@ The existing [sRGB quality gates](../../tests/quality_gate/ms_ssim/) and [legacy
 ### Defensive and malformed-input tests
 
 The [measurement unit suite](../../tests/processing/assessment/) also exercises malformed numeric definitions, negative clipping controls, and the strict shared grammar. The source fixtures `red.six` and `hole.six` are hand-authored 16 by 16 standalone DCS streams: the first paints exact RGB endpoints; the second leaves its raster unpainted. They test adapter interpretation and background selection independently of the image encoder. The PNG integration boundary still requires separate loader validation.
+
+The direct adapter fixtures use 16 by 18 rasters: `stable.six` and `redefined.six` paint the same red-left/green-right image using stable and reused registers; `repaint-reference.six` and `repaint.six` independently specify green-left/red-right output; `sparse.six` and `sparse-redefined.six` leave the right half unpainted. They are hand-authored endpoint streams, with no encoder or production color transform used to generate expected paint. Without `-D`, the first pair retains its archived six-decimal indexed differences (42.156315 for auto/sRGB and 44.478863 for P3); direct rendering yields 0.000000 in each interpretation.
