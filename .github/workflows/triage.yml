@@ -60,6 +60,11 @@ on:
         required: true
         default: '8'
         type: string
+      job_name:
+        description: Optional exact failed job name to replay
+        required: false
+        default: ''
+        type: string
 
 permissions:
   actions: read
@@ -107,6 +112,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CHECKOUT_REF: ${{ inputs.checkout_ref || '' }}
           CHECKOUT_SHA: ${{ inputs.checkout_sha || '' }}
+          JOB_NAME: ${{ inputs.job_name || '' }}
           MAX_JOBS: ${{ inputs.max_jobs || '8' }}
           SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch || inputs.source_branch || 'develop' }}
           SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id || '' }}
@@ -497,6 +503,13 @@ jobs:
 
           workflow_file = ENV.fetch('WORKFLOW_FILE')
           failed_jobs = JSON.parse(ENV.fetch('FAILED_JOBS_JSON'))
+          job_name = ENV.fetch('JOB_NAME')
+          unless job_name.empty?
+            unless failed_jobs.include?(job_name)
+              abort "requested job is not failed in the source run: #{job_name}"
+            end
+            failed_jobs = [job_name]
+          end
           max_jobs = Integer(ENV.fetch('MAX_JOBS'))
           run_meta = JSON.parse(ENV.fetch('RUN_META_JSON'))
           source = {
