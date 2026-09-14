@@ -128,6 +128,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/0012_engine_independence.c \
 	processing/cms/0013_queued_transform_lifetime.c \
 	processing/cms/0014_colorsync_linear_primaries.c \
+	processing/cms/0015_builtin_float_samples.c \
+	processing/cms/0016_builtin_extended_transfer.c \
+	processing/cms/0017_builtin_byte_to_float.c \
+	processing/cms/0018_gamma_decode_extended.c \
+	processing/cms/0019_gamma_decode_invalid.c \
+	processing/cms/0020_builtin_lut_physical_pcs.c \
+	processing/cms/0021_builtin_inplace_expansion.c \
 	processing/colorspace/0012_extended_failure_atomic.c \
 	processing/cms/0008_invalid_rgb_definition.c \
 	processing/cms/0009_icc_length_ownership.c \
@@ -575,6 +582,13 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0014_colorsync_linear_primaries.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0015_builtin_float_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0016_builtin_extended_transfer.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0017_builtin_byte_to_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0018_gamma_decode_extended.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0019_gamma_decode_invalid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0020_builtin_lut_physical_pcs.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0021_builtin_inplace_expansion.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0009_icc_length_ownership.$(OBJEXT) \
@@ -1274,6 +1288,13 @@ am__depfiles_remade =  \
 	processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po \
 	processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po \
 	processing/cms/$(DEPDIR)/test_runner-0014_colorsync_linear_primaries.Po \
+	processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Po \
+	processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Po \
+	processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Po \
+	processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Po \
+	processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po \
+	processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po \
+	processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po \
@@ -2163,6 +2184,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_ENGINE_INDEPENDENCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_QUEUED_TRANSFORM_LIFETIME \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_COLORSYNC_LINEAR_PRIMARIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_BUILTIN_FLOAT_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_BUILTIN_EXTENDED_TRANSFER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_BUILTIN_BYTE_TO_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_GAMMA_DECODE_EXTENDED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_GAMMA_DECODE_INVALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_BUILTIN_LUT_PHYSICAL_PCS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_BUILTIN_INPLACE_EXPANSION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_NAMED_XYZ \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SIMPLE_POWER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
@@ -2628,6 +2656,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0013_queued_transform_lifetime.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0014_colorsync_linear_primaries.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0015_builtin_float_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0016_builtin_extended_transfer.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0017_builtin_byte_to_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0018_gamma_decode_extended.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0019_gamma_decode_invalid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0020_builtin_lut_physical_pcs.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0021_builtin_inplace_expansion.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0008_invalid_rgb_definition.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0009_icc_length_ownership.c \
@@ -3294,6 +3329,27 @@ processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/cms/test_runner-0014_colorsync_linear_primaries.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0015_builtin_float_samples.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0016_builtin_extended_transfer.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0017_builtin_byte_to_float.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0018_gamma_decode_extended.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0019_gamma_decode_invalid.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0020_builtin_lut_physical_pcs.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0021_builtin_inplace_expansion.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/$(am__dirstamp):
@@ -5036,6 +5092,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0014_colorsync_linear_primaries.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po@am__quote@ # am--include-marker
@@ -5538,6 +5601,104 @@ processing/cms/test_runner-0014_colorsync_linear_primaries.obj: processing/cms/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0014_colorsync_linear_primaries.c' object='processing/cms/test_runner-0014_colorsync_linear_primaries.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0014_colorsync_linear_primaries.obj `if test -f 'processing/cms/0014_colorsync_linear_primaries.c'; then $(CYGPATH_W) 'processing/cms/0014_colorsync_linear_primaries.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0014_colorsync_linear_primaries.c'; fi`
+
+processing/cms/test_runner-0015_builtin_float_samples.o: processing/cms/0015_builtin_float_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0015_builtin_float_samples.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Tpo -c -o processing/cms/test_runner-0015_builtin_float_samples.o `test -f 'processing/cms/0015_builtin_float_samples.c' || echo '$(srcdir)/'`processing/cms/0015_builtin_float_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Tpo processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0015_builtin_float_samples.c' object='processing/cms/test_runner-0015_builtin_float_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0015_builtin_float_samples.o `test -f 'processing/cms/0015_builtin_float_samples.c' || echo '$(srcdir)/'`processing/cms/0015_builtin_float_samples.c
+
+processing/cms/test_runner-0015_builtin_float_samples.obj: processing/cms/0015_builtin_float_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0015_builtin_float_samples.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Tpo -c -o processing/cms/test_runner-0015_builtin_float_samples.obj `if test -f 'processing/cms/0015_builtin_float_samples.c'; then $(CYGPATH_W) 'processing/cms/0015_builtin_float_samples.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0015_builtin_float_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Tpo processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0015_builtin_float_samples.c' object='processing/cms/test_runner-0015_builtin_float_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0015_builtin_float_samples.obj `if test -f 'processing/cms/0015_builtin_float_samples.c'; then $(CYGPATH_W) 'processing/cms/0015_builtin_float_samples.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0015_builtin_float_samples.c'; fi`
+
+processing/cms/test_runner-0016_builtin_extended_transfer.o: processing/cms/0016_builtin_extended_transfer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0016_builtin_extended_transfer.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Tpo -c -o processing/cms/test_runner-0016_builtin_extended_transfer.o `test -f 'processing/cms/0016_builtin_extended_transfer.c' || echo '$(srcdir)/'`processing/cms/0016_builtin_extended_transfer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Tpo processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0016_builtin_extended_transfer.c' object='processing/cms/test_runner-0016_builtin_extended_transfer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0016_builtin_extended_transfer.o `test -f 'processing/cms/0016_builtin_extended_transfer.c' || echo '$(srcdir)/'`processing/cms/0016_builtin_extended_transfer.c
+
+processing/cms/test_runner-0016_builtin_extended_transfer.obj: processing/cms/0016_builtin_extended_transfer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0016_builtin_extended_transfer.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Tpo -c -o processing/cms/test_runner-0016_builtin_extended_transfer.obj `if test -f 'processing/cms/0016_builtin_extended_transfer.c'; then $(CYGPATH_W) 'processing/cms/0016_builtin_extended_transfer.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0016_builtin_extended_transfer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Tpo processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0016_builtin_extended_transfer.c' object='processing/cms/test_runner-0016_builtin_extended_transfer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0016_builtin_extended_transfer.obj `if test -f 'processing/cms/0016_builtin_extended_transfer.c'; then $(CYGPATH_W) 'processing/cms/0016_builtin_extended_transfer.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0016_builtin_extended_transfer.c'; fi`
+
+processing/cms/test_runner-0017_builtin_byte_to_float.o: processing/cms/0017_builtin_byte_to_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0017_builtin_byte_to_float.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Tpo -c -o processing/cms/test_runner-0017_builtin_byte_to_float.o `test -f 'processing/cms/0017_builtin_byte_to_float.c' || echo '$(srcdir)/'`processing/cms/0017_builtin_byte_to_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Tpo processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0017_builtin_byte_to_float.c' object='processing/cms/test_runner-0017_builtin_byte_to_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0017_builtin_byte_to_float.o `test -f 'processing/cms/0017_builtin_byte_to_float.c' || echo '$(srcdir)/'`processing/cms/0017_builtin_byte_to_float.c
+
+processing/cms/test_runner-0017_builtin_byte_to_float.obj: processing/cms/0017_builtin_byte_to_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0017_builtin_byte_to_float.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Tpo -c -o processing/cms/test_runner-0017_builtin_byte_to_float.obj `if test -f 'processing/cms/0017_builtin_byte_to_float.c'; then $(CYGPATH_W) 'processing/cms/0017_builtin_byte_to_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0017_builtin_byte_to_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Tpo processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0017_builtin_byte_to_float.c' object='processing/cms/test_runner-0017_builtin_byte_to_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0017_builtin_byte_to_float.obj `if test -f 'processing/cms/0017_builtin_byte_to_float.c'; then $(CYGPATH_W) 'processing/cms/0017_builtin_byte_to_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0017_builtin_byte_to_float.c'; fi`
+
+processing/cms/test_runner-0018_gamma_decode_extended.o: processing/cms/0018_gamma_decode_extended.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0018_gamma_decode_extended.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Tpo -c -o processing/cms/test_runner-0018_gamma_decode_extended.o `test -f 'processing/cms/0018_gamma_decode_extended.c' || echo '$(srcdir)/'`processing/cms/0018_gamma_decode_extended.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Tpo processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0018_gamma_decode_extended.c' object='processing/cms/test_runner-0018_gamma_decode_extended.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0018_gamma_decode_extended.o `test -f 'processing/cms/0018_gamma_decode_extended.c' || echo '$(srcdir)/'`processing/cms/0018_gamma_decode_extended.c
+
+processing/cms/test_runner-0018_gamma_decode_extended.obj: processing/cms/0018_gamma_decode_extended.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0018_gamma_decode_extended.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Tpo -c -o processing/cms/test_runner-0018_gamma_decode_extended.obj `if test -f 'processing/cms/0018_gamma_decode_extended.c'; then $(CYGPATH_W) 'processing/cms/0018_gamma_decode_extended.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0018_gamma_decode_extended.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Tpo processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0018_gamma_decode_extended.c' object='processing/cms/test_runner-0018_gamma_decode_extended.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0018_gamma_decode_extended.obj `if test -f 'processing/cms/0018_gamma_decode_extended.c'; then $(CYGPATH_W) 'processing/cms/0018_gamma_decode_extended.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0018_gamma_decode_extended.c'; fi`
+
+processing/cms/test_runner-0019_gamma_decode_invalid.o: processing/cms/0019_gamma_decode_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0019_gamma_decode_invalid.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Tpo -c -o processing/cms/test_runner-0019_gamma_decode_invalid.o `test -f 'processing/cms/0019_gamma_decode_invalid.c' || echo '$(srcdir)/'`processing/cms/0019_gamma_decode_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Tpo processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0019_gamma_decode_invalid.c' object='processing/cms/test_runner-0019_gamma_decode_invalid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0019_gamma_decode_invalid.o `test -f 'processing/cms/0019_gamma_decode_invalid.c' || echo '$(srcdir)/'`processing/cms/0019_gamma_decode_invalid.c
+
+processing/cms/test_runner-0019_gamma_decode_invalid.obj: processing/cms/0019_gamma_decode_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0019_gamma_decode_invalid.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Tpo -c -o processing/cms/test_runner-0019_gamma_decode_invalid.obj `if test -f 'processing/cms/0019_gamma_decode_invalid.c'; then $(CYGPATH_W) 'processing/cms/0019_gamma_decode_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0019_gamma_decode_invalid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Tpo processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0019_gamma_decode_invalid.c' object='processing/cms/test_runner-0019_gamma_decode_invalid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0019_gamma_decode_invalid.obj `if test -f 'processing/cms/0019_gamma_decode_invalid.c'; then $(CYGPATH_W) 'processing/cms/0019_gamma_decode_invalid.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0019_gamma_decode_invalid.c'; fi`
+
+processing/cms/test_runner-0020_builtin_lut_physical_pcs.o: processing/cms/0020_builtin_lut_physical_pcs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0020_builtin_lut_physical_pcs.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Tpo -c -o processing/cms/test_runner-0020_builtin_lut_physical_pcs.o `test -f 'processing/cms/0020_builtin_lut_physical_pcs.c' || echo '$(srcdir)/'`processing/cms/0020_builtin_lut_physical_pcs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Tpo processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0020_builtin_lut_physical_pcs.c' object='processing/cms/test_runner-0020_builtin_lut_physical_pcs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0020_builtin_lut_physical_pcs.o `test -f 'processing/cms/0020_builtin_lut_physical_pcs.c' || echo '$(srcdir)/'`processing/cms/0020_builtin_lut_physical_pcs.c
+
+processing/cms/test_runner-0020_builtin_lut_physical_pcs.obj: processing/cms/0020_builtin_lut_physical_pcs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0020_builtin_lut_physical_pcs.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Tpo -c -o processing/cms/test_runner-0020_builtin_lut_physical_pcs.obj `if test -f 'processing/cms/0020_builtin_lut_physical_pcs.c'; then $(CYGPATH_W) 'processing/cms/0020_builtin_lut_physical_pcs.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0020_builtin_lut_physical_pcs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Tpo processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0020_builtin_lut_physical_pcs.c' object='processing/cms/test_runner-0020_builtin_lut_physical_pcs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0020_builtin_lut_physical_pcs.obj `if test -f 'processing/cms/0020_builtin_lut_physical_pcs.c'; then $(CYGPATH_W) 'processing/cms/0020_builtin_lut_physical_pcs.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0020_builtin_lut_physical_pcs.c'; fi`
+
+processing/cms/test_runner-0021_builtin_inplace_expansion.o: processing/cms/0021_builtin_inplace_expansion.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0021_builtin_inplace_expansion.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Tpo -c -o processing/cms/test_runner-0021_builtin_inplace_expansion.o `test -f 'processing/cms/0021_builtin_inplace_expansion.c' || echo '$(srcdir)/'`processing/cms/0021_builtin_inplace_expansion.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Tpo processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0021_builtin_inplace_expansion.c' object='processing/cms/test_runner-0021_builtin_inplace_expansion.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0021_builtin_inplace_expansion.o `test -f 'processing/cms/0021_builtin_inplace_expansion.c' || echo '$(srcdir)/'`processing/cms/0021_builtin_inplace_expansion.c
+
+processing/cms/test_runner-0021_builtin_inplace_expansion.obj: processing/cms/0021_builtin_inplace_expansion.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0021_builtin_inplace_expansion.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Tpo -c -o processing/cms/test_runner-0021_builtin_inplace_expansion.obj `if test -f 'processing/cms/0021_builtin_inplace_expansion.c'; then $(CYGPATH_W) 'processing/cms/0021_builtin_inplace_expansion.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0021_builtin_inplace_expansion.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Tpo processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0021_builtin_inplace_expansion.c' object='processing/cms/test_runner-0021_builtin_inplace_expansion.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0021_builtin_inplace_expansion.obj `if test -f 'processing/cms/0021_builtin_inplace_expansion.c'; then $(CYGPATH_W) 'processing/cms/0021_builtin_inplace_expansion.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0021_builtin_inplace_expansion.c'; fi`
 
 processing/colorspace/test_runner-0012_extended_failure_atomic.o: processing/colorspace/0012_extended_failure_atomic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0012_extended_failure_atomic.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Tpo -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.o `test -f 'processing/colorspace/0012_extended_failure_atomic.c' || echo '$(srcdir)/'`processing/colorspace/0012_extended_failure_atomic.c
@@ -11949,6 +12110,13 @@ distclean: distclean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0014_colorsync_linear_primaries.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
@@ -12424,6 +12592,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0012_engine_independence.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0013_queued_transform_lifetime.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0014_colorsync_linear_primaries.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0015_builtin_float_samples.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0016_builtin_extended_transfer.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0017_builtin_byte_to_float.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0018_gamma_decode_extended.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po

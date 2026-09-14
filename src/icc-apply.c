@@ -1973,6 +1973,8 @@ sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
     double last;
     double low_value;
     double high_value;
+    double midpoint;
+    double midpoint_value;
     size_t low;
     size_t high;
     size_t mid;
@@ -1983,6 +1985,9 @@ sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
         return 0;
     }
     value = sixel_icc_clamp_unit(value);
+    if (!inverse && curve->param_count != 0u) {
+        return sixel_icc_parametric_device(curve, value, out);
+    }
     switch (curve->kind) {
     case SIXEL_ICC_CURVE_IDENTITY:
         result = value;
@@ -2010,6 +2015,11 @@ sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
         }
         first = (double)curve->table[0] / 65535.0;
         last = (double)curve->table[count - 1u] / 65535.0;
+        if (curve->param_count != 0u &&
+            (!sixel_icc_parametric_device(curve, 0.0, &first) ||
+             !sixel_icc_parametric_device(curve, 1.0, &last))) {
+            return 0;
+        }
         if (last <= first) {
             return 0;
         }
@@ -2017,6 +2027,24 @@ sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
             result = 0.0;
         } else if (value >= last) {
             result = 1.0;
+        } else if (curve->param_count != 0u) {
+            /* Invert the retained formula, without quantizing its range
+             * into the legacy table. Table monotonicity was checked above. */
+            low_value = 0.0;
+            high_value = 1.0;
+            for (i = 0u; i < 48u; ++i) {
+                midpoint = (low_value + high_value) * 0.5;
+                if (!sixel_icc_parametric_device(curve, midpoint,
+                                                   &midpoint_value)) {
+                    return 0;
+                }
+                if (midpoint_value < value) {
+                    low_value = midpoint;
+                } else {
+                    high_value = midpoint;
+                }
+            }
+            result = (low_value + high_value) * 0.5;
         } else {
             low = 0u;
             high = count - 1u;

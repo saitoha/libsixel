@@ -126,6 +126,13 @@ int test_cdef_0011(int argc, char **argv);
 int test_cdef_0012(int argc, char **argv);
 int test_cdef_0013(int argc, char **argv);
 int test_cms_0014(int argc, char **argv);
+int test_cms_0015(int argc, char **argv);
+int test_cms_0016(int argc, char **argv);
+int test_cms_0017(int argc, char **argv);
+int test_cms_0018(int argc, char **argv);
+int test_cms_0019(int argc, char **argv);
+int test_cms_0020(int argc, char **argv);
+int test_cms_0021(int argc, char **argv);
 int test_pmap_0053(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -1065,6 +1072,13 @@ static test_entry_t const test_entries[] = {
     { "cms/0012_engine_independence", test_cdef_0012 },
     { "cms/0013_queued_transform_lifetime", test_cdef_0013 },
     { "cms/0014_colorsync_linear_primaries", test_cms_0014 },
+    { "cms/0015_builtin_float_samples", test_cms_0015 },
+    { "cms/0016_builtin_extended_transfer", test_cms_0016 },
+    { "cms/0017_builtin_byte_to_float", test_cms_0017 },
+    { "cms/0018_gamma_decode_extended", test_cms_0018 },
+    { "cms/0019_gamma_decode_invalid", test_cms_0019 },
+    { "cms/0020_builtin_lut_physical_pcs", test_cms_0020 },
+    { "cms/0021_builtin_inplace_expansion", test_cms_0021 },
     { "assessment/0001_ciede2000_reference", test_qa_0001 },
     { "assessment/0002_same_physical_coordinates", test_qa_0002 },
     { "assessment/0003_same_rgb_different_definition", test_qa_0003 },

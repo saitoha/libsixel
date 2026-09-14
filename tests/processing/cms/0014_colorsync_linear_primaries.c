@@ -16,6 +16,8 @@ test_cms_0014(int argc, char **argv)
 {
     sixel_cms_engine_t previous;
     sixel_cms_profile_t *profile;
+    sixel_cms_profile_t *linear;
+    sixel_cms_transform_t *transform;
     float pixels[8 * 3];
     double peak;
     double expected;
@@ -33,7 +35,12 @@ test_cms_0014(int argc, char **argv)
         return 77;
     }
     profile = sixel_cms_open_profile_from_mem(color_icc, sizeof(color_icc));
-    ok = profile != NULL;
+    linear = sixel_cms_create_linear_srgb_profile();
+    transform = sixel_cms_create_transform(profile,
+        SIXEL_CMS_PIXELFORMAT_RGB_F32, linear, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        SIXEL_CMS_TRANSFORM_DEFAULT);
+    /* A requested engine can still fall back while opening a profile. */
+    ok = sixel_cms_transform_engine(transform) == SIXEL_CMS_ENGINE_COLORSYNC;
     for (depth = 0; ok && depth < 2; ++depth) {
         peak = depth == 0 ? 255.0 : 65535.0;
         for (pixel = 0; pixel < 8; ++pixel) {
@@ -42,8 +49,7 @@ test_cms_0014(int argc, char **argv)
                     color_png_source[depth][pixel][channel] / peak);
             }
         }
-        ok = sixel_cms_convert_profile_to_linearrgb((unsigned char *)pixels,
-            8, 1, SIXEL_PIXELFORMAT_RGBFLOAT32, profile);
+        ok = sixel_cms_do_transform(transform, pixels, pixels, 8u);
         for (pixel = 0; ok && pixel < 8; ++pixel) {
             for (channel = 0; channel < 3; ++channel) {
                 expected = color_png_icc_linear[depth][pixel][channel];
@@ -59,6 +65,8 @@ test_cms_0014(int argc, char **argv)
             }
         }
     }
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(linear);
     sixel_cms_close_profile(profile);
     sixel_cms_set_engine(previous);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

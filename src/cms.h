@@ -199,6 +199,10 @@ sixel_cms_do_transform(sixel_cms_transform_t const *transform,
                        void *dst,
                        size_t pixel_count);
 
+/* Report the transform's actual backend, including profile-open fallback. */
+SIXEL_INTERNAL_API sixel_cms_engine_t
+sixel_cms_transform_engine(sixel_cms_transform_t const *transform);
+
 SIXEL_INTERNAL_API void
 sixel_cms_delete_transform(sixel_cms_transform_t *transform);
 

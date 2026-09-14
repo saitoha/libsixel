@@ -148,6 +148,8 @@ Records use `LSXCMS1|engine=builtin`. `event=ignored-tag` includes `tag`, payloa
 
 A present transformation slot that fails parsing or channel validation emits `event=pipeline-rejected` with its tag and `reason=invalid-or-unsupported-pipeline`. The parser may still accept another path. `event=profile-rejected` identifies an unsupported PCS or the absence of a usable profile path; an invalid tag table emits `event=invalid-table`. These messages do not distinguish every malformed nested element from every unsupported feature, and a successfully parsed profile is not proof that a loader ultimately applied it. They describe the builtin parser, not decisions inside Little CMS or ColorSync. Profiles that do not reach the parser, including CMS-disabled loads, are outside this diagnostic boundary.
 
+The facade separately emits `LSXCMS2|event=apply` after a transform executes. Its `engine` comes from the transform backend, including profile-open fallback, rather than the requested global selector. `path=extended-rgb` identifies builtin analytic float RGB, `bounded-device` identifies the legacy builtin device path, and `external` identifies an external CMS call. `src` and `dst` are internal CMS pixel-format enum values; `ok=1` records apply success. This proves that invocation executed, not that later loader/frame stages preserved its output. With the loader topic disabled, the apply record is also silent.
+
 The tag audit checks offsets and lengths before reading payload signatures, limits detailed records to 64 per parse, and then emits `event=tag-audit-truncated`. Repeated parsing can produce repeated records. With the loader trace topic disabled, this audit is skipped and no new diagnostics are emitted. Trace selection does not change profile acceptance, fallback, or output pixels.
 
 The diagnostic fixture `tests/data/colormgmt/input/custom/rgb_trace_ignored_tags.png` preserves the PNG pixels and original profile tags from `rgb_parametric_012.png`. Its iCCP profile adds D2B0 and D2B3 mpet payloads containing a three-channel identity matrix element, plus a private tag whose signature contains ESC. Profile size, tag offsets, compressed iCCP data, and PNG CRC are updated. It exercises unsupported paths and escaped logging while retaining the original usable normalization path; it is not an mpet conformance fixture.
@@ -240,7 +242,7 @@ Builtin CMS is therefore more capable than a gamma-only correction or an RGB mat
 - **Unimplemented curves or stages:** parametric function types outside 0–4 and payloads outside the implemented curve/LUT grammar cannot be evaluated merely because the enclosing file is ICC. A usable alternate path can still be selected.
 - **Distinct absolute-colorimetric intent:** builtin maps both `relative` and `absolute` to slot 1. It does not implement a separate intent-dependent media-white adaptation step. Selecting `absolute` therefore must not be interpreted as an lcms2-equivalent paper-white simulation.
 - **Full device-link, named-color, spectral, or iccMAX workflows:** the builtin API is not a general implementation of these workflows. Nor does selecting lcms2 expose all of them through `img2sixel`; the loader wrapper has a fixed set of pixel formats and targets.
-- **Unbounded scene-referred color preservation:** builtin curve, CLUT, and RGB conversion stages clamp bounded values, and some curves are sampled into 16-bit tables. A float32 frame does not imply an unbounded floating-point ICC pipeline. HDR metadata interpretation and tone mapping remain loader-specific.
+- **Unbounded scene-referred ICC processing:** ICC device curves and CLUT stages retain their bounded domains. The builtin facade preserves extended values when its float destination is analytic sRGB or a synthetic RGB definition; this does not make arbitrary ICC pipelines unbounded. HDR metadata interpretation and tone mapping remain loader-specific.
 
 There is no loader option here for an arbitrary output/printer ICC profile, a proofing profile, gamut warnings, or black-preserving separation. Little CMS offers additional facilities, but this wrapper creates ordinary transforms and does not enable `cmsFLAGS_BLACKPOINTCOMPENSATION`. Do not infer black-point compensation or soft proofing from `cms_engine=lcms2`.
 
@@ -299,6 +301,8 @@ Compare decoded managed pixels against an independently prepared color-managed r
 
 Generated ColorSync RGB profiles preserve the requested primary matrix: each primary's XYZ column is supplied in the CoreGraphics calibrated-RGB layout. The linear-sRGB output probe checks actual P3 ICC transformation against independent 8/16-bit source oracles, including negative and above-one components, with an absolute 0.0001 linear-component bound for the generated profile's rounding. This CMS-only probe does not establish that a PNG loader preserves those components.
 
+Builtin float transforms into analytic sRGB or a synthetic RGB definition connect through physical XYZ D50. Original parametric RGB TRC coefficients are evaluated without the legacy 16-bit table approximation, native RGB white points are adapted once, and finite negative/above-one intermediate RGB is preserved. ICC device curves and LUT domains remain bounded; byte export and arbitrary ICC output-device endpoints retain their existing bounded contract. The independent 8/16-bit P3 sample tests use an absolute 0.0000005 linear-component bound, including float input/storage rounding. These CMS-only guarantees do not imply that every loader, alpha compositor, or frame conversion already preserves the result.
+
 | ID | Tested boundary | Owning test |
 | --- | --- | --- |
 | CMS-01 | Builtin RGB/gray segmented-curve and selected A2B0 paths are evaluated. | [tests/diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.t](../../tests/diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.t) |
@@ -322,6 +326,14 @@ Generated ColorSync RGB profiles preserve the requested primary matrix: each pri
 | CMS-19 | lsqa defaults to auto and normalizes a profiled image differently from none. | [tests/quality_gate/cms/0009_lsqa_cms_default_auto.t](../../tests/quality_gate/cms/0009_lsqa_cms_default_auto.t) |
 | CMS-20 | img2sixel defaults to auto and normalizes a profiled image differently from none. | [tests/quality_gate/cms/0010_img2sixel_cms_default_auto.t](../../tests/quality_gate/cms/0010_img2sixel_cms_default_auto.t) |
 | CMS-21 | ColorSync's generated linear-sRGB profile preserves declared primaries and actual extended P3 samples. | [tests/processing/cms/0014_colorsync_linear_primaries.t](../../tests/processing/cms/0014_colorsync_linear_primaries.t) |
+| CMS-22 | Builtin float ICC normalization preserves independent 8/16-bit P3 samples without clipping. | [tests/processing/cms/0015_builtin_float_samples.t](../../tests/processing/cms/0015_builtin_float_samples.t) |
+| CMS-23 | Analytic float RGB source and destination retain the signed sRGB transfer function and correct white adaptation. | [tests/processing/cms/0016_builtin_extended_transfer.t](../../tests/processing/cms/0016_builtin_extended_transfer.t) |
+| CMS-24 | Original RGB8 ICC samples convert directly to extended linear float RGB. | [tests/processing/cms/0017_builtin_byte_to_float.t](../../tests/processing/cms/0017_builtin_byte_to_float.t) |
+| CMS-25 | In-place gamma decoding preserves finite extended RGB. | [tests/processing/cms/0018_gamma_decode_extended.t](../../tests/processing/cms/0018_gamma_decode_extended.t) |
+| CMS-26 | Builtin float RGB decodes the selected LUT PCS into physical XYZ before conversion. | [tests/processing/cms/0020_builtin_lut_physical_pcs.t](../../tests/processing/cms/0020_builtin_lut_physical_pcs.t) |
+| CMS-27 | In-place RGB8-to-float expansion preserves every original sample. | [tests/processing/cms/0021_builtin_inplace_expansion.t](../../tests/processing/cms/0021_builtin_inplace_expansion.t) |
+| CMS-28 | The apply trace reports the actual builtin backend, extended RGB path, pixel layouts, and successful execution. | [tests/processing/cms/0022_actual_apply_trace.t](../../tests/processing/cms/0022_actual_apply_trace.t) |
+| CMS-29 | CMS apply tracing is silent when the loader trace topic is disabled. | [tests/processing/cms/0023_apply_trace_quiet.t](../../tests/processing/cms/0023_apply_trace_quiet.t) |
 
 ### Defensive and malformed-input tests
 

@@ -50,6 +50,11 @@ typedef struct sixel_icc_curve {
     double gamma;
     uint16_t *table;
     size_t table_length;
+    /* Retain the original para coefficients for precision-preserving RGB.
+     * Legacy CLUT/byte evaluators may continue using the sampled table. */
+    size_t param_count;
+    uint16_t function_type;
+    double params[7];
 } sixel_icc_curve_t;
 
 typedef enum sixel_icc_lut_kind {
@@ -132,6 +137,10 @@ typedef struct sixel_icc_profile {
     sixel_icc_lut_t b2d_lut[SIXEL_ICC_B2D_SLOT_COUNT];
     sixel_icc_mab_pipeline_t b2d_mab[SIXEL_ICC_B2D_SLOT_COUNT];
 } sixel_icc_profile_t;
+
+SIXEL_INTERNAL_API int
+sixel_icc_parametric_device(sixel_icc_curve_t const *curve, double value,
+                              double *out);
 
 SIXEL_INTERNAL_API int
 sixel_icc_parse_profile(void const *data,

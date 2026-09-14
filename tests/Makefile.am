@@ -202,6 +202,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0012_ENGINE_INDEPENDENCE \
     -DBUILD_TEST_0013_QUEUED_TRANSFORM_LIFETIME \
     -DBUILD_TEST_0014_COLORSYNC_LINEAR_PRIMARIES \
+    -DBUILD_TEST_0015_BUILTIN_FLOAT_SAMPLES \
+    -DBUILD_TEST_0016_BUILTIN_EXTENDED_TRANSFER \
+    -DBUILD_TEST_0017_BUILTIN_BYTE_TO_FLOAT \
+    -DBUILD_TEST_0018_GAMMA_DECODE_EXTENDED \
+    -DBUILD_TEST_0019_GAMMA_DECODE_INVALID \
+    -DBUILD_TEST_0020_BUILTIN_LUT_PHYSICAL_PCS \
+    -DBUILD_TEST_0021_BUILTIN_INPLACE_EXPANSION \
     -DBUILD_TEST_0001_NAMED_XYZ \
     -DBUILD_TEST_0002_SIMPLE_POWER \
     -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
@@ -642,6 +649,13 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0012_engine_independence.c \
     processing/cms/0013_queued_transform_lifetime.c \
     processing/cms/0014_colorsync_linear_primaries.c \
+    processing/cms/0015_builtin_float_samples.c \
+    processing/cms/0016_builtin_extended_transfer.c \
+    processing/cms/0017_builtin_byte_to_float.c \
+    processing/cms/0018_gamma_decode_extended.c \
+    processing/cms/0019_gamma_decode_invalid.c \
+    processing/cms/0020_builtin_lut_physical_pcs.c \
+    processing/cms/0021_builtin_inplace_expansion.c \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \

@@ -178,6 +178,9 @@ sixel_icc_curve_reset(sixel_icc_curve_t *curve)
     curve->gamma = 1.0;
     curve->table = NULL;
     curve->table_length = 0u;
+    curve->param_count = 0u;
+    curve->function_type = 0u;
+    memset(curve->params, 0, sizeof(curve->params));
 }
 
 static void
@@ -556,6 +559,26 @@ sixel_icc_eval_parametric(uint16_t function_type,
     }
 
     return sixel_icc_parse_clamp_unit(y);
+}
+
+int
+sixel_icc_parametric_device(sixel_icc_curve_t const *curve, double value,
+                              double *out)
+{
+    double result;
+    int ok;
+
+    if (curve == NULL || curve->param_count == 0u || out == NULL ||
+        !isfinite(value)) {
+        return 0;
+    }
+    result = sixel_icc_eval_parametric(curve->function_type, curve->params,
+                                        curve->param_count, value, &ok);
+    if (!ok || !isfinite(result)) {
+        return 0;
+    }
+    *out = result;
+    return 1;
 }
 
 typedef struct sixel_icc_segm_segment {
@@ -1011,6 +1034,9 @@ sixel_icc_parse_curve_data(unsigned char const *tag_data,
             out_curve->table[i] = (uint16_t)(sixel_icc_parse_clamp_unit(y)
                                              * 65535.0 + 0.5);
         }
+        out_curve->param_count = param_count;
+        out_curve->function_type = function_type;
+        memcpy(out_curve->params, params, sizeof(params));
         return 1;
     }
     if (memcmp(tag_data + 0u, "segm", 4u) == 0) {

@@ -30,6 +30,7 @@
 #include "colorspace.h"
 
 #include <ctype.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -88,6 +89,8 @@ struct sixel_cms_profile {
     int is_cielab_d50_profile;
     int builtin_profile_valid;
     sixel_icc_profile_t builtin_profile;
+    /* Analytic RGB endpoints retain extended values in float transforms. */
+    sixel_color_def_t *rgb_definition;
 #if HAVE_LCMS2
     cmsHPROFILE lcms_handle;
 #endif
@@ -1447,6 +1450,10 @@ sixel_cms_profile_create_srgb_builtin(sixel_cms_profile_t *profile)
         return 0;
     }
 
+    profile->rgb_definition = sixel_cdef_name("srgb");
+    if (profile->rgb_definition == NULL) {
+        return 0;
+    }
     profile->backend = SIXEL_CMS_PROFILE_BACKEND_BUILTIN;
     profile->colorspace = SIXEL_CMS_COLORSPACE_RGB;
     profile->is_srgb_profile = 1;
@@ -1489,6 +1496,7 @@ sixel_cms_profile_create_rgb_gamma_chrm_builtin(
 {
     double matrix[9];
     double gamma_values[3];
+    double xy[8];
     size_t i;
 
     i = 0u;
@@ -1515,6 +1523,19 @@ sixel_cms_profile_create_rgb_gamma_chrm_builtin(
     gamma_values[0] = 1.0 / gamma_r;
     gamma_values[1] = 1.0 / gamma_g;
     gamma_values[2] = 1.0 / gamma_b;
+    xy[0] = white_x;
+    xy[1] = white_y;
+    xy[2] = red_x;
+    xy[3] = red_y;
+    xy[4] = green_x;
+    xy[5] = green_y;
+    xy[6] = blue_x;
+    xy[7] = blue_y;
+    profile->rgb_definition = sixel_cdef_rgb(xy, SIXEL_COLOR_TRC_POWER,
+                                             gamma_values);
+    if (profile->rgb_definition == NULL) {
+        return 0;
+    }
     sixel_icc_profile_destroy(&profile->builtin_profile);
     profile->backend = SIXEL_CMS_PROFILE_BACKEND_BUILTIN;
     profile->colorspace = SIXEL_CMS_COLORSPACE_RGB;
@@ -1804,6 +1825,7 @@ sixel_cms_close_profile(sixel_cms_profile_t *profile)
         sixel_icc_profile_destroy(&profile->builtin_profile);
         profile->builtin_profile_valid = 0;
     }
+    sixel_cdef_free(profile->rgb_definition);
 
     free(profile);
 }
@@ -3397,6 +3419,132 @@ sixel_cms_do_transform_builtin_to_srgb(
     return 0;
 }
 
+static double
+sixel_cdef_pcs_scale(sixel_icc_lut_t const *lut);
+
+/*
+ * Float working RGB is an analytic endpoint, not an ICC device or a byte
+ * export. Connect through physical XYZ D50 and preserve extended RGB. Keep
+ * ICC device/LUT-domain validation inside the profile evaluator. Legacy
+ * byte transforms retain their existing bounded conversion contract.
+ */
+static int
+sixel_cms_float_source_xyz(double xyz[3], double const source[4],
+                            size_t channels,
+                            sixel_cms_transform_t const *transform)
+{
+    sixel_cms_profile_t const *profile;
+    sixel_icc_profile_t const *icc;
+    sixel_icc_lut_t const *lut;
+    unsigned int slot;
+    size_t i;
+    size_t channel;
+    double scale;
+    double linear[3];
+
+    profile = transform->src_profile;
+    if (profile->rgb_definition != NULL) {
+        return channels == 3u && sixel_cdef_to_xyz(profile->rgb_definition,
+                                                    source, xyz, 1);
+    }
+    if (!profile->builtin_profile_valid) {
+        return 0;
+    }
+    icc = &profile->builtin_profile;
+    for (i = 0u; i < transform->builtin_a2b_slot_count; ++i) {
+        slot = transform->builtin_a2b_slots[i];
+        if (sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(xyz, source,
+                channels, icc, slot, 0)) {
+            if (icc->pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
+                /* LUT PCS uses u1.7/u1.15; matrix tags already contain
+                 * physical XYZ. A selected LUT never uses matrix fallback. */
+                lut = icc->a2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID
+                    ? &icc->a2b_lut[slot] : &icc->d2b_lut[slot];
+                scale = sixel_cdef_pcs_scale(lut);
+                for (channel = 0u; channel < 3u; ++channel) {
+                    xyz[channel] *= scale;
+                }
+            }
+            return 1;
+        }
+    }
+    if (icc->kind == SIXEL_ICC_PROFILE_KIND_RGB && channels == 3u) {
+        /* Evaluate retained parametric TRCs directly. The legacy helper's
+         * sampled 16-bit table discards precision before float storage. */
+        for (channel = 0u; channel < 3u; ++channel) {
+            if (!sixel_icc_curve_device(&icc->curves[channel],
+                                           source[channel], 0,
+                                           &linear[channel])) {
+                return 0;
+            }
+        }
+        for (channel = 0u; channel < 3u; ++channel) {
+            xyz[channel] = icc->matrix_to_xyz_d50[channel][0] * linear[0] +
+                icc->matrix_to_xyz_d50[channel][1] * linear[1] +
+                icc->matrix_to_xyz_d50[channel][2] * linear[2];
+        }
+        return 1;
+    }
+    return sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(xyz, source,
+        channels, icc, SIXEL_ICC_A2B_SLOT_COUNT, 1);
+}
+
+static int
+sixel_cms_float_rgb(sixel_cms_transform_t const *transform,
+                      void const *src, float *dst, size_t count)
+{
+    double source[4];
+    double xyz[3];
+    double rgb[3];
+    float const *input;
+    size_t channels;
+    size_t pixel;
+    size_t step;
+    size_t channel;
+    size_t base;
+
+    input = src;
+    if (count > SIZE_MAX / (4u * sizeof(float))) {
+        return 0;
+    }
+    for (step = 0u; step < count; ++step) {
+        /* Expanding an aliased byte/gray buffer must read its tail first.
+         * CMYK float shrinks and therefore keeps forward traversal. */
+        pixel = src == (void const *)dst &&
+            transform->src_format != SIXEL_CMS_PIXELFORMAT_CMYK_F32
+            ? count - step - 1u : step;
+        base = pixel * 3u;
+        if (transform->src_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
+            channels = 3u;
+            for (channel = 0u; channel < 3u; ++channel) {
+                source[channel] = input[base + channel];
+                /* Preserve the facade's NaN/Inf normalization separately
+                 * from finite RGB, whose extended range is intentional. */
+                if (!isfinite(source[channel])) {
+                    source[channel] = sixel_cms_clamp_unit(source[channel]);
+                }
+            }
+        } else if (!sixel_cms_builtin_load_src_unit(source, &channels, NULL,
+                       transform->src_format, src, pixel)) {
+            return 0;
+        }
+        if (!sixel_cms_float_source_xyz(xyz, source, channels, transform) ||
+            !sixel_cdef_from_xyz(transform->dst_profile->rgb_definition,
+                                   xyz, rgb, 1)) {
+            return 0;
+        }
+        for (channel = 0u; channel < 3u; ++channel) {
+            if (!isfinite(rgb[channel]) || fabs(rgb[channel]) > FLT_MAX) {
+                return 0;
+            }
+        }
+        for (channel = 0u; channel < 3u; ++channel) {
+            dst[base + channel] = (float)rgb[channel];
+        }
+    }
+    return 1;
+}
+
 static int
 sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
                                void const *src,
@@ -3414,6 +3562,10 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
     if (dst_profile == NULL) {
         return 0;
     }
+    if (dst_profile->rgb_definition != NULL &&
+        transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
+        return sixel_cms_float_rgb(transform, src, dst, pixel_count);
+    }
     if (sixel_cms_builtin_profile_is_srgb(dst_profile)) {
         return sixel_cms_do_transform_builtin_to_srgb(transform,
                                                       src,
@@ -3426,8 +3578,8 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
                                                            pixel_count);
 }
 
-int
-sixel_cms_do_transform(sixel_cms_transform_t const *transform,
+static int
+sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
                        void const *src,
                        void *dst,
                        size_t pixel_count)
@@ -3531,6 +3683,48 @@ sixel_cms_do_transform(sixel_cms_transform_t const *transform,
     }
 
     return 0;
+}
+
+sixel_cms_engine_t
+sixel_cms_transform_engine(sixel_cms_transform_t const *transform)
+{
+    if (transform == NULL) {
+        return SIXEL_CMS_ENGINE_NONE;
+    }
+    switch (transform->backend) {
+    case SIXEL_CMS_PROFILE_BACKEND_BUILTIN:
+        return SIXEL_CMS_ENGINE_BUILTIN;
+    case SIXEL_CMS_PROFILE_BACKEND_LCMS2:
+        return SIXEL_CMS_ENGINE_LCMS2;
+    case SIXEL_CMS_PROFILE_BACKEND_COLORSYNC:
+        return SIXEL_CMS_ENGINE_COLORSYNC;
+    default:
+        return SIXEL_CMS_ENGINE_NONE;
+    }
+}
+
+int
+sixel_cms_do_transform(sixel_cms_transform_t const *transform,
+                       void const *src, void *dst, size_t pixel_count)
+{
+    int result;
+    char const *path;
+
+    result = sixel_cms_apply_backend(transform, src, dst, pixel_count);
+    if (transform != NULL) {
+        path = "external";
+        if (transform->backend == SIXEL_CMS_PROFILE_BACKEND_BUILTIN) {
+            path = transform->dst_profile->rgb_definition != NULL &&
+                transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32
+                ? "extended-rgb" : "bounded-device";
+        }
+        sixel_trace_topic_message("loader",
+            "LSXCMS2|event=apply|engine=%s|path=%s|src=%d|dst=%d|ok=%d",
+            sixel_cms_engine_to_string(sixel_cms_transform_engine(transform)),
+            path, (int)transform->src_format, (int)transform->dst_format,
+            result);
+    }
+    return result;
 }
 
 void
@@ -3740,24 +3934,27 @@ sixel_cms_convert_to_srgb_with_profile_bytes(
 int
 sixel_cms_convert_rgbf32_gamma_to_linear(float *pixels, size_t pixel_count)
 {
-    SIXELSTATUS status;
-    size_t float_bytes;
+    size_t i;
+    double value;
 
-    status = SIXEL_FALSE;
-    float_bytes = 0u;
     if (pixels == NULL || pixel_count == 0u) {
         return 0;
     }
     if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return 0;
     }
-    float_bytes = pixel_count * 3u * sizeof(float);
-    status = sixel_helper_convert_colorspace((unsigned char *)pixels,
-                                             float_bytes,
-                                             SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                             SIXEL_COLORSPACE_GAMMA,
-                                             SIXEL_COLORSPACE_LINEAR);
-    return SIXEL_SUCCEEDED(status);
+    /* Validate the entire in-place operation before changing any samples.
+     * Transfer decoding is not a gamut or byte-storage boundary. */
+    for (i = 0u; i < pixel_count * 3u; ++i) {
+        value = sixel_color_decode_srgb(pixels[i]);
+        if (!isfinite(value) || fabs(value) > FLT_MAX) {
+            return 0;
+        }
+    }
+    for (i = 0u; i < pixel_count * 3u; ++i) {
+        pixels[i] = (float)sixel_color_decode_srgb(pixels[i]);
+    }
+    return 1;
 }
 
 SIXELAPI int
@@ -3811,19 +4008,9 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
     if (dst_profile != NULL) {
         sixel_cms_close_profile(dst_profile);
     }
-    if (converted) {
-        return 1;
-    }
-
-    if (!sixel_cms_convert_profile_to_srgb((unsigned char *)pixels,
-                                           width,
-                                           height,
-                                           SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                           src_profile)) {
-        return 0;
-    }
-    return sixel_cms_convert_rgbf32_gamma_to_linear((float *)pixels,
-                                                    pixel_count);
+    /* A failed apply may already have changed part of the input. Retrying
+     * through a bounded sRGB fallback can both reinterpret and clip it. */
+    return converted;
 }
 
 int
