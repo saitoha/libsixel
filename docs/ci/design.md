@@ -54,10 +54,7 @@ Fuzz jobs should:
 
 ### Nightly builds
 
-`.github/workflows/nightly.yml` performs scheduled pre-release builds across
-maintained branches and a platform/architecture matrix. Nightly jobs cover
-packaging and combinations that are too costly or release-oriented for every
-small change.
+`.github/workflows/nightly.yml` is the scheduled pre-release artifact publisher. It builds representative Linux, macOS, and Windows architectures from `master` and `develop`, runs `make check` as an artifact gate, stages each installation, and packages it as a ZIP archive. After every matrix build succeeds, the release job collects those archives and uploads them to the `nightly-latest` GitHub pre-release, replacing assets with the same names. This representative release matrix is not the authoritative inventory of supported platform/compiler pairs; that compatibility evidence belongs to the primary and experimental workflows.
 
 ### Failure triage and replay
 
