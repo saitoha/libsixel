@@ -26,7 +26,7 @@ jobs:
   multiarch-linux:
     name: ${{ matrix.label }}
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -124,55 +124,28 @@ jobs:
               cc -dumpmachine
               file /bin/sh
 
-              # The generic runners own the complete suite and its large
-              # aggregate test binary. These emulated guests run existing
-              # black-box contracts through target-native converter binaries.
-              set -- \
-                cli/core/0002_version.t \
-                cli/core/0007_basic_stdin_snake.t \
-                cli/core/0019_basic_parallel_cli_override.t \
-                cli/sixel2png/0005_stdin_default_output.t \
-                codec/format/0009_gray8_output.t \
-                codec/output/0003_direct_sixel_encode.t \
-                quant/mapfile/0109_mapfile_export_act_256_color_count.t \
-                writer/png/0004_builtin_ihdr_crc.t \
-                security/issue/0012_issue220_dcs_signed_integer_overflow.t
-
               rm -rf /tmp/libsixel-build
               mkdir /tmp/libsixel-build
               if test "$BUILD_TOOL" = autotools; then
                 cd /tmp/libsixel-build
                 "$GITHUB_WORKSPACE/configure" \
-                  --disable-dependency-tracking \
-                  --disable-tests
-                make -j2 V=1 -C src
-                make -j2 V=1 -C converters
-                IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
-                SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
+                  --disable-dependency-tracking
+                make -j2 V=1
+                make -j2 check
               else
-                meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE" \
-                  -Dtests=false
-                meson compile -C /tmp/libsixel-build -j 2 -v \
-                  img2sixel sixel2png
-                IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
-                SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
+                meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE"
+                meson compile -C /tmp/libsixel-build -j 2 -v
+                meson test -C /tmp/libsixel-build \
+                  --no-rebuild \
+                  --num-processes 2 \
+                  --print-errorlogs
               fi
-              export IMG2SIXEL_PATH SIXEL2PNG_PATH
-              export HAVE_IMG2SIXEL=1 HAVE_SIXEL2PNG=1
-              export TOP_BUILDDIR=/tmp/libsixel-build
-              export TOP_SRCDIR="$GITHUB_WORKSPACE"
-              for smoke_test in "$@"; do
-                ARTIFACT_LOCAL_DIR="/tmp/libsixel-artifacts/${smoke_test%.*}"
-                export ARTIFACT_LOCAL_DIR
-                sh "$GITHUB_WORKSPACE/tests/meson-tap-exitcode-wrapper.sh" \
-                  "$GITHUB_WORKSPACE/tests/$smoke_test"
-              done
             '
 
   sparc64-netbsd:
     name: ${{ matrix.label }}
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -210,50 +183,25 @@ jobs:
             cc -dumpmachine
             file /bin/sh
             # SPARC64 uses full-system TCG emulation on x86_64 runners. Keep
-            # this ABI/runtime probe focused by avoiding optimizer cost.
+            # the full suite practical by avoiding optimizer cost.
             CFLAGS='-O0 -g0'
             export CFLAGS
-            # Keep the same target-executed black-box contracts as the Linux
-            # emulation matrix while generic runners own the aggregate tests.
-            set -- \
-              cli/core/0002_version.t \
-              cli/core/0007_basic_stdin_snake.t \
-              cli/core/0019_basic_parallel_cli_override.t \
-              cli/sixel2png/0005_stdin_default_output.t \
-              codec/format/0009_gray8_output.t \
-              codec/output/0003_direct_sixel_encode.t \
-              quant/mapfile/0109_mapfile_export_act_256_color_count.t \
-              writer/png/0004_builtin_ihdr_crc.t \
-              security/issue/0012_issue220_dcs_signed_integer_overflow.t
             rm -rf /tmp/libsixel-build
             mkdir /tmp/libsixel-build
             if test '${{ matrix.buildtool }}' = autotools; then
               cd /tmp/libsixel-build
               "$GITHUB_WORKSPACE/configure" \
-                --disable-dependency-tracking \
-                --disable-tests
-              gmake -j2 V=1 -C src
-              gmake -j2 V=1 -C converters
-              IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
-              SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
+                --disable-dependency-tracking
+              gmake -j2 V=1
+              gmake -j2 check
             else
-              meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE" \
-                -Dtests=false
-              meson compile -C /tmp/libsixel-build -j 2 -v \
-                img2sixel sixel2png
-              IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
-              SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
+              meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE"
+              meson compile -C /tmp/libsixel-build -j 2 -v
+              meson test -C /tmp/libsixel-build \
+                --no-rebuild \
+                --num-processes 2 \
+                --print-errorlogs
             fi
-            export IMG2SIXEL_PATH SIXEL2PNG_PATH
-            export HAVE_IMG2SIXEL=1 HAVE_SIXEL2PNG=1
-            export TOP_BUILDDIR=/tmp/libsixel-build
-            export TOP_SRCDIR="$GITHUB_WORKSPACE"
-            for smoke_test in "$@"; do
-              ARTIFACT_LOCAL_DIR="/tmp/libsixel-artifacts/${smoke_test%.*}"
-              export ARTIFACT_LOCAL_DIR
-              sh "$GITHUB_WORKSPACE/tests/meson-tap-exitcode-wrapper.sh" \
-                "$GITHUB_WORKSPACE/tests/$smoke_test"
-            done
 
   icx-x86_64:
     name: ${{ matrix.label }}
@@ -330,7 +278,6 @@ jobs:
           icx -dumpmachine
           CC=icx meson setup builddir-icx \
             -Ddefault_library=static \
-            -Dtests=false \
             -Dpng=disabled \
             -Djpeg=disabled \
             -Dtiff=disabled \
@@ -341,9 +288,10 @@ jobs:
             -Dlcms2=disabled \
             -Dcurl=disabled \
             -Dfetch=disabled
-          meson compile -C builddir-icx -v img2sixel sixel2png
-          builddir-icx/converters/img2sixel --version
-          builddir-icx/converters/sixel2png --version
+          meson compile -C builddir-icx -v
+          meson test -C builddir-icx \
+            --no-rebuild \
+            --print-errorlogs
 
       - name: Cache Intel oneAPI compiler (Windows)
         if: runner.os == 'Windows'
@@ -383,13 +331,15 @@ jobs:
           for /f "tokens=* usebackq" %%f in (`dir /b "C:\Program Files (x86)\Intel\oneAPI\compiler\" ^| findstr /V latest ^| sort`) do set "ONEAPI_COMPILER_VERSION=%%f"
           call "C:\Program Files (x86)\Intel\oneAPI\compiler\%ONEAPI_COMPILER_VERSION%\env\vars.bat"
           if not "%PROCESSOR_ARCHITECTURE%" == "AMD64" exit /b 1
+          set "PATH=C:\Program Files\Git\bin;C:\Program Files\Git\usr\bin;%PATH%"
           where icx
+          where sh
+          where cp
           icx --version
           set "CC=icx"
-          meson setup builddir-icx -Ddefault_library=static -Dtests=false -Dpng=disabled -Djpeg=disabled -Dtiff=disabled -Dwebp=disabled -Dlibrsvg=disabled -Dgd=disabled -Dgdk_pixbuf2=disabled -Dlcms2=disabled -Dcurl=disabled -Dfetch=disabled
-          meson compile -C builddir-icx -v img2sixel sixel2png
-          builddir-icx\converters\img2sixel.exe --version
-          builddir-icx\converters\sixel2png.exe --version
+          meson setup builddir-icx -Ddefault_library=static -Dpng=disabled -Djpeg=disabled -Dtiff=disabled -Dwebp=disabled -Dlibrsvg=disabled -Dgd=disabled -Dgdk_pixbuf2=disabled -Dlcms2=disabled -Dcurl=disabled -Dfetch=disabled
+          meson compile -C builddir-icx -v
+          meson test -C builddir-icx --no-rebuild --print-errorlogs
 
   vcpkg-msvc-autotools:
     name: ${{ matrix.label }}

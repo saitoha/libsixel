@@ -31,10 +31,7 @@ Do not treat one passing job as a substitute for the required job families.
 
 ### Experimental configurations
 
-`.github/workflows/experimental.yml` exercises less conventional Windows build
-combinations and targeted Clang sanitizer families. These jobs expose undefined
-behavior, truncation, sign changes, object-bound errors, control-flow issues,
-and portability gaps that ordinary builds may not diagnose.
+`.github/workflows/experimental.yml` exercises emulated Linux architectures, NetBSD/SPARC64, Intel oneAPI C on Linux and Windows, less conventional Windows build combinations, and targeted Clang sanitizer families. These jobs expose undefined behavior, truncation, sign changes, object-bound errors, control-flow issues, and portability gaps that ordinary builds may not diagnose.
 
 An experimental failure can identify a real defect. Classify it from the
 compiler or runtime evidence rather than dismissing it because the primary
@@ -136,6 +133,12 @@ Prefer lightweight static synchronization checks when a repository invariant
 can be verified without building a full matrix. Keep an end-to-end build job as
 evidence that the synchronized inputs actually work.
 
+### Test depth is part of support evidence
+
+A platform/compiler configuration counts as CI support only when that configuration builds the default target set and invokes every test registered for the configured feature set. A hand-picked smoke-test subset, a build configured with `--disable-tests` or `-Dtests=false`, or converter `--version` checks establish bring-up evidence only; they do not establish platform support.
+
+Expected skips remain valid when the job deliberately disables an optional dependency or language binding. The test harness, rather than the workflow, must make and report that decision. When a platform has both Autotools and Meson jobs, each job must run its build system's complete registered suite. [CI-02](#test-coverage) statically guards this contract for the experimental architecture and ICX families; live green jobs remain the runtime evidence.
+
 ## Dependency and infrastructure policy
 
 - Pin external bootstrap inputs that are not safe to float.
@@ -228,3 +231,4 @@ change and directly required source, test, or generated-file updates.
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | CI-01 | CI documentation does not direct contributors to repositories or configuration paths that are unavailable from this source tree. | [tests/_static/sh/staticcheck-ci-doc-public-surface.sh](../../tests/_static/sh/staticcheck-ci-doc-public-surface.sh) |
+| CI-02 | Experimental architecture and ICX jobs enable tests, build all default targets, and invoke the complete registered suite instead of a smoke-test subset. | [tests/_static/sh/staticcheck-experimental-full-tests.sh](../../tests/_static/sh/staticcheck-experimental-full-tests.sh) |
