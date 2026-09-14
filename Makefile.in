@@ -792,6 +792,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/loader/builtin/netpbm.md \
 	docs/loader/builtin/pic.md \
 	docs/loader/builtin/png.md \
+	docs/loader/builtin/png-source-precision.md \
 	docs/loader/builtin/measurements/png-loaders.json \
 	docs/loader/builtin/measurements/png-loaders.svg \
 	docs/loader/builtin/psd.md \

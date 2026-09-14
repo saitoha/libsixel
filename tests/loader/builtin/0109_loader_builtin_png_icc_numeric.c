@@ -1,6 +1,7 @@
 /* Fix builtin-CMS float output for an embedded-profile PNG. */
 
 #include "src/cms.h"
+#include "tests/data/color-numeric/legacy-png-icc.h"
 #include "loader_builtin_memory_test_common.h"
 
 int
@@ -8,11 +9,7 @@ test_loader_0109_loader_builtin_png_icc_numeric(int argc, char **argv)
 {
     edge_loader_options_t options;
     size_t const sample_pixels[3] = { 0u, 651u, 1301u };
-    float const expected[9] = {
-        0.319717675f, 0.023515204f, 0.022885453f,
-        0.319717675f, 0.023515204f, 0.022885453f,
-        0.0f, 0.0f, 0.0f
-    };
+
 
     (void)argc;
     (void)argv;
@@ -28,6 +25,6 @@ test_loader_0109_loader_builtin_png_icc_numeric(int argc, char **argv)
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
         SIXEL_COLORSPACE_LINEAR,
         sample_pixels,
-        expected,
+        color_legacy_png_linear,
         0.000001f);
 }

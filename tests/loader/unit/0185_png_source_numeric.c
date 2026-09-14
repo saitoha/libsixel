@@ -19,12 +19,16 @@ typedef struct {
     int rgba;
     int managed;
     int chrm;
+    int default_srgb;
     int calls;
     int oriented;
     int background;
     int policy;
     int target;
+    int native_target;
+    int reference_stage;
     double tolerance;
+    double native_linear[24];
 } png_numeric_t;
 
 static SIXELSTATUS
@@ -60,6 +64,15 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     expected_space = probe->target ? SIXEL_COLORSPACE_GAMMA :
         SIXEL_COLORSPACE_LINEAR;
+    if (probe->default_srgb && probe->managed) {
+        /* Builtin requires gAMA before using isolated cHRM. Its documented
+         * fallback keeps opaque bytes/words in their original sRGB transfer. */
+        expected_format = probe->rgba ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
+            probe->depth ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
+            SIXEL_PIXELFORMAT_RGB888;
+        expected_space = probe->rgba ? SIXEL_COLORSPACE_LINEAR :
+            SIXEL_COLORSPACE_GAMMA;
+    }
     if (frame->width != (probe->oriented ? 2 : 4) ||
         frame->height != (probe->oriented ? 4 : 2) ||
         (probe->managed &&
@@ -108,7 +121,7 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
             if (probe->managed && probe->chrm) {
                 expected =
                     color_png_wide_chrm_linear[probe->depth][source_pixel][c];
-            } else if (probe->managed) {
+            } else if (probe->managed && !probe->default_srgb) {
                 expected = color_png_icc_linear[probe->depth][source_pixel][c];
             } else if (frame->colorspace == SIXEL_COLORSPACE_LINEAR) {
                 expected = color_png_srgb_linear[probe->depth][source_pixel][c];
@@ -134,6 +147,12 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
                 expected = expected * alpha + background * (1.0 - alpha);
             }
             if (probe->managed && probe->target) {
+                if (probe->native_target) {
+                    /* Native linear accuracy was independently checked in
+                     * the first load. Now isolate the requested view from
+                     * that native matrix error, with exact byte rounding. */
+                    expected = probe->native_linear[p * 3 + c];
+                }
                 /* Derive the requested view after linear-light composition.
                  * Float gamma keeps sign and gamut; byte export bounds and
                  * rounds only this final view. No production TRC is called. */
@@ -155,6 +174,9 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
                     p, c, actual, expected);
                 return SIXEL_BAD_INPUT;
             }
+            if (probe->reference_stage) {
+                probe->native_linear[p * 3 + c] = actual;
+            }
         }
     }
     return SIXEL_OK;
@@ -169,12 +191,14 @@ test_loader_0185_png_source_numeric(int argc, char **argv)
     sixel_loader_t *loader;
     SIXELSTATUS status;
     char order[224];
+    char reference_order[224];
     unsigned char bgcolor[3] = {64, 128, 192};
     int previous_policy;
     int explicit_first;
     int no;
     int prefer;
     int length;
+    int target;
 
     if ((argc != 7 && argc != 9 && argc != 10) ||
         !sixel_cms_engine_from_string(argv[2], &engine)) {
@@ -196,6 +220,7 @@ test_loader_0185_png_source_numeric(int argc, char **argv)
     probe.tolerance = engine == SIXEL_CMS_ENGINE_COLORSYNC
         ? 0.0001 : 0.0000005;
     probe.chrm = argc >= 9 && strcmp(argv[7], "chrm") == 0;
+    probe.default_srgb = argc >= 9 && strcmp(argv[7], "chrm-default") == 0;
     probe.oriented = argc >= 9 && strcmp(argv[7], "orientation") == 0;
     probe.background = argc < 9 ? 0 :
         strcmp(argv[7], "file") == 0 ? 1 :
@@ -203,6 +228,8 @@ test_loader_0185_png_source_numeric(int argc, char **argv)
         strcmp(argv[7], "linear") == 0 ? 3 : 0;
     probe.policy = argc >= 9 ? atoi(argv[8]) : SIXEL_ALPHA_POLICY_COMPOSITE;
     probe.target = argc == 10 ? atoi(argv[9]) : 0;
+    probe.native_target = engine == SIXEL_CMS_ENGINE_COLORSYNC &&
+        probe.target != 0;
     previous_policy = loader_transparent_policy();
     explicit_first = SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST;
     no = 0;
@@ -250,10 +277,44 @@ test_loader_0185_png_source_numeric(int argc, char **argv)
         }
     }
     sixel_helper_set_loader_transparent_policy(probe.policy);
+    if (probe.native_target) {
+        /* A linear-domain CMS error bound cannot be reused after a nonlinear
+         * transfer, especially at zero or a byte threshold. Validate native
+         * canonical samples first, then use independent scalar transfer math
+         * to check the target. Both loads must deliver the requested frame. */
+        length = snprintf(reference_order, sizeof(reference_order),
+            "%s:cms_engine=%s:background_colorspace=%s:"
+            "cms_target=linear:prefer_8bit=0!", argv[1], argv[2],
+            probe.background == 3 ? "linear" : "gamma");
+        if (length < 0 || (size_t)length >= sizeof(reference_order)) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        status = sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER,
+                                     reference_order);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        target = probe.target;
+        probe.target = 0;
+        probe.reference_stage = 1;
+        status = sixel_loader_load_file(loader, argv[6], png_numeric_capture);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        probe.target = target;
+        probe.reference_stage = 0;
+        probe.tolerance = 0.0000005;
+        status = sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER,
+                                     order);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
     status = sixel_loader_load_file(loader, argv[6], png_numeric_capture);
 end:
     sixel_helper_set_loader_transparent_policy(previous_policy);
     sixel_loader_unref(loader);
     sixel_cms_set_engine(previous);
-    return SIXEL_FAILED(status) || probe.calls != 1;
+    return SIXEL_FAILED(status) || probe.calls != (probe.native_target ? 2 : 1);
 }

@@ -16,10 +16,11 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 echo "1..1"
 set -v
 
+# Keep this scheduling contract free of loader color-conversion work.
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=3 \
     -c 64x64+0+0 -Qheckbert -d none -p 16 "-~none" \
-    -L builtin -ldisable "${TOP_SRCDIR}/images/snake.png" \
+    --cms-engine=none -L builtin -ldisable "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {
     echo "not ok 1 - three-thread cropped palette encode failed"
     exit 0

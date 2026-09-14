@@ -1890,6 +1890,7 @@ typedef union _fn_pointer {
 } fn_pointer;
 
 typedef struct sixel_builtin_png_header_info {
+    int bit_depth;
     int color_type;
     int has_alpha_chunk;
     int has_trns_chunk;
@@ -1936,6 +1937,7 @@ sixel_builtin_probe_png_header(
         return 0;
     }
 
+    info->bit_depth = (int)buffer[24u];
     info->color_type = (int)buffer[25u];
     info->has_alpha_chunk =
         (info->color_type & SIXEL_BUILTIN_PNG_COLOR_MASK_ALPHA) != 0 ? 1 : 0;
@@ -1980,6 +1982,11 @@ sixel_builtin_png_keycolor_mode_enabled(
 
     trns_keycolor_mode = 0;
     if (info == NULL) {
+        return 0;
+    }
+    /* The keycolor/RGBA fast path decodes bytes. Keep original 16-bit color
+     * and alpha samples for the float path, including when CMS is disabled. */
+    if (info->bit_depth == 16) {
         return 0;
     }
     trns_keycolor_mode = loader_png_trns_keycolor_mode();

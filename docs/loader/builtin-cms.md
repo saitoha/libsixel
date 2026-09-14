@@ -8,6 +8,8 @@ The principal loader use is to interpret source colors before reducing them to t
 
 This document describes the implemented subset and its limitations. It is not a claim of complete ICC v2/v4 conformance or equivalence to Little CMS. A format signature accepted by the parser is weaker evidence than a correctly evaluated transform, and neither establishes that a particular loader actually applied it.
 
+The [static builtin PNG entrance](builtin/png-source-precision.md) sends original normalized float RGB to the selected engine and a linear-sRGB destination, including when Little CMS is not compiled. Its image and file-background results are published together only after successful conversion; optional-metadata fallback restores both original inputs. Palette/APNG adapters keep their separate contracts.
+
 ## Specification model
 
 ICC separates a tag's role from its payload representation. A2B0 identifies a device-to-PCS rendering path; mAB identifies a way of encoding a transformation. PCS, the profile connection space, connects source and destination profiles. ICC v4 defines XYZ and Lab PCS representations and multiple rendering intents. D2B/B2D use the floating-point mpet representation, including an explicit absolute-intent slot. These definitions are in [ICC.1:2022, sections 6, 9, and 10](https://www.color.org/specification/ICC.1-2022-05.pdf). The [ICC introduction](https://www.color.org/getting-started/) gives the broader profile model.

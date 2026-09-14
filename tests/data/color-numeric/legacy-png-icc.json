@@ -1,0 +1,50 @@
+{
+  "fixture": "tests/data/inputs/formats/map8_embedded_icc.png",
+  "sha256": "82d373b8a14bb8c14e9b9747f1009373b592fe5f59fbe22e0513194e0f3793da",
+  "icc_sha256": "40e0c163de6c0273c125942dc54fa2520c260a4c25790a37e000d96e10397e40",
+  "method": "Original RGBA8; stored 1024-point curv interpolation and XYZ matrix; independently derived D50 sRGB inverse",
+  "samples": [
+    {
+      "pixel": 0,
+      "rgba": [
+        159,
+        3,
+        3,
+        255
+      ],
+      "linear_srgb": [
+        0.31968446937825745,
+        0.023517267097312115,
+        0.022905349625491428
+      ]
+    },
+    {
+      "pixel": 651,
+      "rgba": [
+        159,
+        3,
+        3,
+        255
+      ],
+      "linear_srgb": [
+        0.31968446937825745,
+        0.023517267097312115,
+        0.022905349625491428
+      ]
+    },
+    {
+      "pixel": 1301,
+      "rgba": [
+        0,
+        0,
+        0,
+        255
+      ],
+      "linear_srgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

@@ -715,8 +715,8 @@
           "role": "color",
           "source": "src/frompng.c",
           "symbols": [
-            "sixel_frompng_build_profile_from_chunks",
-            "sixel_frompng_apply_colorspace_fallback_internal"
+            "sixel_frompng_select_source",
+            "sixel_frompng_load_nonindexed"
           ],
           "title": "Resolve profile and transfer metadata"
         },
@@ -761,7 +761,7 @@
           "tests/loader/builtin/0143_loader_builtin_png_trns_keycolor_default_enabled_for_palette.t"
         ],
         "PNG-03": [
-          "tests/loader/builtin/0166_loader_builtin_trns_keycolor_optin_changes_rgba16_output.t"
+          "tests/loader/builtin/0166_loader_builtin_rgba16_keycolor_precision_parity.t"
         ],
         "PNG-04": [
           "tests/loader/builtin/1977_loader_builtin_png_icc_numeric.t"
