@@ -168,7 +168,7 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 
 | ID | Covered observation | Owning test |
 | --- | --- | --- |
-| OC-01 | A generated CIELAB working palette exports the exact expected gamma RGB values through `-Ugamma -M gpl:-`. | [tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t](../../tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t) |
+| OC-01 | A generated two-entry CIELAB byte palette exports independently derived gamma RGB8 values through `-M gpl:-`; solver entry order is not fixed. | [tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t](../../tests/quant/palette/usage/0197_mapfile_output_converts_cielab_to_gamma.t) |
 | OC-02 | A built-in palette preserves its supplied bytes under the current `-Wlinear -Ulinear` preparation/export path. | [tests/quant/palette/usage/0143_builtin_palette_working_output_colorspace_stable.t](../../tests/quant/palette/usage/0143_builtin_palette_working_output_colorspace_stable.t) |
 | OC-03 | A structured PAL palette preserves its supplied bytes under the current `-Wlinear -Ulinear` preparation/export path. | [tests/quant/palette/usage/0144_mapfile_pal_working_output_colorspace_stable.t](../../tests/quant/palette/usage/0144_mapfile_pal_working_output_colorspace_stable.t) |
 | OC-04 | A PNG image mapfile exports the exact expected converted palette under `-Wlinear -Ulinear` with CMS disabled. | [tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t) |
@@ -188,3 +188,7 @@ Defaults, alias and case handling, invalid values, repeated-option precedence, u
 - [`src/colorspace.c`](../../src/colorspace.c): transfer curves, SMPTE-C matrices, conversion through linear RGB, clipping, and byte/float dispatch.
 - [`src/encoder-core-highcolor.c`](../../src/encoder-core-highcolor.c): the alternate high-color implementation and its current output-conversion gap.
 - [Color spaces and loader color management](../concepts/colorspace.md): the wider source-profile, working-space, and output-space model.
+
+The CIELAB export test uses black and white source pixels and the existing typed byte palette boundary. [Independent inverse CIELAB/XYZ/sRGB calculations](../../tests/data/color-numeric/palette-export.json) predict `(3,0,0)` and `(255,254,254)` after that boundary because the byte a/b representation has no exact neutral midpoint. This exact storage-conversion assertion does not establish lossless float palette retention or freeze K-means representatives from a natural image.
+
+Replacing the typed byte palette boundary requires re-deriving this storage-specific expectation from independent values. The current byte artifacts are not an ideal black/white color contract for a future canonical float palette. Natural-image clustering and decoded-output quality remain covered by the existing working-space quality tests (WC-04 through WC-08 in [Working color space](working-colorspace.md#test-coverage)), including CIELAB with the unchanged MS-SSIM floor.

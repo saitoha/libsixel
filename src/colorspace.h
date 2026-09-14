@@ -52,6 +52,15 @@ SIXEL_INTERNAL_API int
 sixel_color_convert(double out[3], double const in[3],
                     int source, int target);
 
+/*
+ * Convert a nonempty packed RGB float32 buffer in place without gamut
+ * clipping. Validate every result before writing any pixels, so a rejected
+ * nonfinite, domain or float32 overflow value leaves the buffer untouched.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_color_convert_rgbf32(float *pixels, size_t count,
+                           int source, int target);
+
 #ifdef __cplusplus
 }
 #endif

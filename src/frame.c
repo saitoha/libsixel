@@ -43,6 +43,7 @@
 
 #include "frame-private.h"
 #include "pixelformat.h"
+#include "colorspace.h"
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "scale.h"
@@ -1495,14 +1496,23 @@ sixel_frame_set_pixelformat(
 
         pixels = frame->pixels.u8ptr;
         if (SIXEL_PIXELFORMAT_IS_FLOAT32(working_pixelformat)) {
-            pixels = (unsigned char *)frame->pixels.f32ptr;
+            /*
+             * Float frames carry intermediate coordinates, including
+             * colors outside sRGB. The public storage converter clamps
+             * RGB and must remain confined to explicit byte boundaries.
+             * Failed conversion preserves all pixels and the old tags.
+             */
+            status = sixel_color_convert_rgbf32(frame->pixels.f32ptr,
+                                                pixel_total,
+                                                source_colorspace,
+                                                target_colorspace);
+        } else {
+            status = sixel_helper_convert_colorspace(pixels,
+                                                     pixel_size,
+                                                     working_pixelformat,
+                                                     source_colorspace,
+                                                     target_colorspace);
         }
-
-        status = sixel_helper_convert_colorspace(pixels,
-                                                 pixel_size,
-                                                 working_pixelformat,
-                                                 source_colorspace,
-                                                 target_colorspace);
         if (SIXEL_FAILED(status)) {
             return status;
         }

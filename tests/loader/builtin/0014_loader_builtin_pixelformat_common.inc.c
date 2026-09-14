@@ -339,63 +339,18 @@ hdr_test_configure_loader_env_default(char const *use_header_exposure)
                                          use_header_exposure);
 }
 
-static int
-hdr_test_is_linear_srgb(double gamma,
-                        double white_x,
-                        double white_y,
-                        double red_x,
-                        double red_y,
-                        double green_x,
-                        double green_y,
-                        double blue_x,
-                        double blue_y)
-{
-    double const gamma_epsilon = 0.000001;
-    double const chroma_epsilon = 0.0001;
-
-    if (fabs(gamma - 1.0) > gamma_epsilon) {
-        return 0;
-    }
-    if (fabs(white_x - HDR_TEST_SRGB_WHITE_X) > chroma_epsilon) {
-        return 0;
-    }
-    if (fabs(white_y - HDR_TEST_SRGB_WHITE_Y) > chroma_epsilon) {
-        return 0;
-    }
-    if (fabs(red_x - HDR_TEST_SRGB_RED_X) > chroma_epsilon) {
-        return 0;
-    }
-    if (fabs(red_y - HDR_TEST_SRGB_RED_Y) > chroma_epsilon) {
-        return 0;
-    }
-    if (fabs(green_x - HDR_TEST_SRGB_GREEN_X) > chroma_epsilon) {
-        return 0;
-    }
-    if (fabs(green_y - HDR_TEST_SRGB_GREEN_Y) > chroma_epsilon) {
-        return 0;
-    }
-    if (fabs(blue_x - HDR_TEST_SRGB_BLUE_X) > chroma_epsilon) {
-        return 0;
-    }
-    if (fabs(blue_y - HDR_TEST_SRGB_BLUE_Y) > chroma_epsilon) {
-        return 0;
-    }
-    return 1;
-}
-
+/* The final gamma float target retains the HDR exposure range. This
+ * independent analytic TRC never calls the production color converter. */
 static float
-srgb_from_linear_unit_clamped(float linear_value)
+hdr_test_encode_srgb(float linear_value)
 {
-    if (!(linear_value > 0.0f)) {
-        return 0.0f;
-    }
-    if (linear_value >= 1.0f) {
-        return 1.0f;
-    }
-    if (linear_value <= 0.0031308f) {
-        return linear_value * 12.92f;
-    }
-    return 1.055f * powf(linear_value, 1.0f / 2.4f) - 0.055f;
+    double value;
+    double encoded;
+
+    value = fabs((double)linear_value);
+    encoded = value <= 0.0031308 ? 12.92 * value
+        : 1.055 * pow(value, 1.0 / 2.4) - 0.055;
+    return (float)(linear_value < 0.0f ? -encoded : encoded);
 }
 
 static void
@@ -452,102 +407,24 @@ hdr_test_apply_dynamic_range(float *rgb,
     }
 }
 
+/* Original RGBE samples and header xy/TRC are evaluated by the fixture
+ * generator. A production CMS result must never define this expectation. */
 static void
 hdr_test_apply_source_profile(float *rgb,
                               hdr_test_gamma_mode_t gamma_mode,
                               hdr_test_primaries_mode_t primaries_mode,
                               hdr_test_fallback_mode_t fallback_mode)
 {
-    double effective_gamma;
-    double effective_white_x;
-    double effective_white_y;
-    double effective_red_x;
-    double effective_red_y;
-    double effective_green_x;
-    double effective_green_y;
-    double effective_blue_x;
-    double effective_blue_y;
-    int has_header_hint;
-    int header_linear_override;
-    int converted;
-    sixel_cms_profile_t *src_profile;
+    int index;
+    int channel;
 
-    if (rgb == NULL) {
-        return;
+    index = (gamma_mode == HDR_TEST_GAMMA_22 ? 1 : 0)
+        + (primaries_mode == HDR_TEST_PRIMARIES_BT2020 ? 2 : 0);
+    if (index == 0 && fallback_mode == HDR_TEST_FALLBACK_SRGB) {
+        index = 4;
     }
-
-    effective_gamma = 1.0;
-    effective_white_x = HDR_TEST_SRGB_WHITE_X;
-    effective_white_y = HDR_TEST_SRGB_WHITE_Y;
-    effective_red_x = HDR_TEST_SRGB_RED_X;
-    effective_red_y = HDR_TEST_SRGB_RED_Y;
-    effective_green_x = HDR_TEST_SRGB_GREEN_X;
-    effective_green_y = HDR_TEST_SRGB_GREEN_Y;
-    effective_blue_x = HDR_TEST_SRGB_BLUE_X;
-    effective_blue_y = HDR_TEST_SRGB_BLUE_Y;
-    has_header_hint = 0;
-    header_linear_override = 0;
-    converted = 0;
-    src_profile = NULL;
-
-    if (gamma_mode == HDR_TEST_GAMMA_22) {
-        has_header_hint = 1;
-        effective_gamma = 2.2;
-    }
-    if (primaries_mode == HDR_TEST_PRIMARIES_BT2020) {
-        has_header_hint = 1;
-        effective_red_x = HDR_TEST_BT2020_RED_X;
-        effective_red_y = HDR_TEST_BT2020_RED_Y;
-        effective_green_x = HDR_TEST_BT2020_GREEN_X;
-        effective_green_y = HDR_TEST_BT2020_GREEN_Y;
-        effective_blue_x = HDR_TEST_BT2020_BLUE_X;
-        effective_blue_y = HDR_TEST_BT2020_BLUE_Y;
-    }
-
-    if (has_header_hint) {
-        if (hdr_test_is_linear_srgb(effective_gamma,
-                                    effective_white_x,
-                                    effective_white_y,
-                                    effective_red_x,
-                                    effective_red_y,
-                                    effective_green_x,
-                                    effective_green_y,
-                                    effective_blue_x,
-                                    effective_blue_y)) {
-            header_linear_override = 1;
-        } else {
-            src_profile = sixel_cms_create_rgb_profile_from_gamma_chrm(
-                effective_gamma,
-                effective_white_x,
-                effective_white_y,
-                effective_red_x,
-                effective_red_y,
-                effective_green_x,
-                effective_green_y,
-                effective_blue_x,
-                effective_blue_y);
-        }
-    }
-
-    if (src_profile == NULL && !header_linear_override) {
-        if (fallback_mode == HDR_TEST_FALLBACK_SRGB) {
-            src_profile = sixel_cms_create_srgb_profile();
-        }
-    }
-
-    if (src_profile != NULL) {
-        converted = sixel_cms_convert_profile_to_linearrgb(
-            (unsigned char *)rgb,
-            1,
-            1,
-            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-            src_profile);
-        sixel_cms_close_profile(src_profile);
-        if (!converted) {
-            rgb[0] = 0.5f;
-            rgb[1] = 0.25f;
-            rgb[2] = 0.125f;
-        }
+    for (channel = 0; channel < 3; ++channel) {
+        rgb[channel] = (float)color_hdr_linear[index][channel];
     }
 }
 
@@ -579,9 +456,9 @@ hdr_test_expected_first_pixel(float out_rgb[3],
 
     if (cms_engine != SIXEL_CMS_ENGINE_NONE &&
         target_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
-        out_rgb[0] = srgb_from_linear_unit_clamped(out_rgb[0]);
-        out_rgb[1] = srgb_from_linear_unit_clamped(out_rgb[1]);
-        out_rgb[2] = srgb_from_linear_unit_clamped(out_rgb[2]);
+        out_rgb[0] = hdr_test_encode_srgb(out_rgb[0]);
+        out_rgb[1] = hdr_test_encode_srgb(out_rgb[1]);
+        out_rgb[2] = hdr_test_encode_srgb(out_rgb[2]);
     }
 
     return 0;

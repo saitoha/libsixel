@@ -31,6 +31,7 @@
 #include "src/frombmp.h"
 #include "src/frompsd.h"
 #include "src/loader-common.h"
+#include "tests/data/color-numeric/hdr.h"
 
 /*
  * pcc warns on long internal test helper identifiers.

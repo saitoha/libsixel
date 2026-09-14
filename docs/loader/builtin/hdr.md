@@ -60,11 +60,15 @@ output[c] = decoded[c] * 2^hdr_exposure / header_EXPOSURE / COLORCORR[c]
 
 The `header_EXPOSURE` divisor is present only when `hdr_header_exposure=1`. `COLORCORR` compensation is independent of that switch. Overflowing or non-finite controls are ignored in favor of a safe unit scale. With `hdr_tonemap=none`, finite nonnegative values above 1.0 remain available to later float processing, up to float range. With `hdr_tonemap=reinhard`, each scaled component becomes `x / (1 + x)`.
 
+A gamma float target applies the analytic sRGB transfer function after the linear exposure and tone-map operations. It retains finite values above one; selecting gamma coordinates does not itself apply a tone map or an eight-bit storage clamp.
+
 This work occurs before encoder sampling, resize, crop, palette initialization, and quantization. A later encoder colorspace conversion or quantizer preprocessing is a separate stage and must not be mistaken for HDR decode.
 
 ### Implementation and test map
 
 ![A vertical implementation map of the builtin Radiance HDR loader. It follows signature and metadata parsing into resolution and orientation mapping, new-RLE, old-RLE, or legacy scanline decode, RGBE or XYZE expansion to linear RGB float, profile and dynamic-range postprocessing, and typed-frame output. Every node carries a coverage ID used by the tables below.](pipeline-figures/hdr.svg)
+
+The numeric metadata matrix uses [independent RGBE and color reference data](../../../tests/data/color-numeric/hdr.json): the generator reads the original mantissa/exponent bytes and stored header chromaticities, evaluates the source transfer and XYZ D65 matrices with Decimal arithmetic, and records both exposure-only and Reinhard controls. Its expected source-profile values do not call the production CMS. RGBE values use the existing libsixel lower-edge reconstruction, `mantissa * 2^(exponent - 136)`; this is distinct from the `+0.5` mantissa midpoint in the Radiance `colr_color()` reference routine. The legacy fixture named BT.2020 stores red `y=0.2919`; the oracle uses that original value and does not silently replace it with `0.2920`. The HDR header-gamma policy uses the reciprocal of `GAMMA` as its source decoding exponent.
 
 HDR is decoded directly to a three-component float buffer; there is no RGBA intermediate. The profile and dynamic-range passes are ordered operations on that same buffer, and `sixel_frame_set_pixelformat()` may then convert it to the configured CMS target. Tests therefore need to state both numeric values and the expected semantic pixel format.
 

@@ -29,6 +29,12 @@ q8(x) = round(255 * clamp(x, 0, 1)) / 255
 
 so one crossing has at most `1 / 510` encoded-coordinate rounding error before clipping. The error is not uniform in linear light because the sRGB transfer curve is nonlinear. A normal float32 value carries 24 bits of significand precision, but this does not guarantee a 24-bit-accurate final color: transform approximations, clipping, palette reduction, 101-level SIXEL palette serialization, lookup, and dithering impose separate errors. The practical advantage is that intermediate transforms can retain far more information and avoid repeated byte quantization until a boundary that truly requires it.
 
+## Float frame coordinate changes
+
+Converting an existing float frame between gamma sRGB, linear sRGB, Oklab, CIELAB, and DIN99d preserves finite RGB values below zero and above one. These are intermediate coordinates, not a request to store a bounded device RGB value. The conversion validates the entire result before modifying the frame; a nonfinite input, a mathematical domain error, or a result that cannot fit finite float32 returns `SIXEL_BAD_INPUT` and preserves the pixel buffer and its format/color-space tags. The validation pass repeats the arithmetic to avoid allocating another full image buffer.
+
+The frame component's pixel view exposes the current float storage and its matching tags. A clone owns an independent copy of those float samples. Converting that clone to `RGB888` intentionally clips and quantizes the clone while the original float frame retains its samples. Callers must keep the original frame when they need both representations; converting the original frame to bytes is a destructive storage boundary. These frame guarantees do not by themselves establish source-loader, alpha-composition, resize, queue, or palette preservation.
+
 ## Requested precision is not an upper bound
 
 `--precision=8bit` requests the gamma `RGB888` base path. It is a preference for the lowest sufficient representation, not a prohibition on float32 intermediates. An operation whose mathematical domain requires linear RGB or a Lab-family space promotes the relevant part of the pipeline instead of rounding those coordinates into an undefined byte format.
@@ -176,3 +182,26 @@ Effective path selection is implemented in [`src/planner.c`](../../src/planner.c
 Focused regression coverage includes [`tests/cli/options/matching/0269_option_matching_precision_8bit_working_gamma_order.t`](../../tests/cli/options/matching/0269_option_matching_precision_8bit_working_gamma_order.t), [`tests/cli/options/matching/0270_option_matching_precision_8bit_float_working_space.t`](../../tests/cli/options/matching/0270_option_matching_precision_8bit_float_working_space.t), [`tests/cli/options/matching/0272_option_matching_precision_float32_working_gamma.t`](../../tests/cli/options/matching/0272_option_matching_precision_float32_working_gamma.t), [`tests/processing/planner/0001_resize_linear_float32.c`](../../tests/processing/planner/0001_resize_linear_float32.c), [`tests/processing/planner/0002_resize_allocation_failure.c`](../../tests/processing/planner/0002_resize_allocation_failure.c), [`tests/cli/options/regression/0109_loader_cms_target_image_regression.t`](../../tests/cli/options/regression/0109_loader_cms_target_image_regression.t), and [`tests/cli/options/regression/0110_loader_prefer_8bit_image_regression.t`](../../tests/cli/options/regression/0110_loader_prefer_8bit_image_regression.t).
 
 The measurement driver is [`tools/plot_pixelformat_precision_measurements.py`](../../tools/plot_pixelformat_precision_measurements.py), the one-command wrapper is [`tools/reproduce_pixelformat_precision_measurements.sh`](../../tools/reproduce_pixelformat_precision_measurements.sh), and the artifact contract is enforced by [`tools/check_pixelformat_precision_measurements.py`](../../tools/check_pixelformat_precision_measurements.py).
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+The coordinate tests use independent Decimal-derived reference values and a `1e-6` absolute tolerance for float32 input/output rounding and the stored opponent-space matrices. Each direction has its own expected values; a production roundtrip is not the oracle.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FP-01 | Extended linear RGB to gamma sRGB. | [tests/processing/frame/0006_frame_extended_linear_gamma.t](../../tests/processing/frame/0006_frame_extended_linear_gamma.t) |
+| FP-02 | Extended gamma sRGB to linear RGB. | [tests/processing/frame/0007_frame_extended_gamma_linear.t](../../tests/processing/frame/0007_frame_extended_gamma_linear.t) |
+| FP-03 | Extended linear RGB to Oklab. | [tests/processing/frame/0008_frame_extended_linear_oklab.t](../../tests/processing/frame/0008_frame_extended_linear_oklab.t) |
+| FP-04 | Oklab to extended linear RGB. | [tests/processing/frame/0009_frame_extended_oklab_linear.t](../../tests/processing/frame/0009_frame_extended_oklab_linear.t) |
+| FP-05 | Extended linear RGB to CIELAB. | [tests/processing/frame/0010_frame_extended_linear_cielab.t](../../tests/processing/frame/0010_frame_extended_linear_cielab.t) |
+| FP-06 | CIELAB to extended linear RGB. | [tests/processing/frame/0011_frame_extended_cielab_linear.t](../../tests/processing/frame/0011_frame_extended_cielab_linear.t) |
+| FP-07 | Extended linear RGB to DIN99d. | [tests/processing/frame/0012_frame_extended_linear_din99d.t](../../tests/processing/frame/0012_frame_extended_linear_din99d.t) |
+| FP-08 | DIN99d to extended linear RGB. | [tests/processing/frame/0013_frame_extended_din99d_linear.t](../../tests/processing/frame/0013_frame_extended_din99d_linear.t) |
+| FP-09 | A clone starts with identical float samples; its byte conversion preserves the original float frame. | [tests/processing/frame/0014_frame_clone_float_canonical.t](../../tests/processing/frame/0014_frame_clone_float_canonical.t) |
+| FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/processing/frame/0015_frame_float_nonfinite_atomic.t](../../tests/processing/frame/0015_frame_float_nonfinite_atomic.t) |
+| FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/processing/frame/0016_frame_float_domain_atomic.t](../../tests/processing/frame/0016_frame_float_domain_atomic.t) |
+| FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/processing/frame/0017_frame_float_overflow_atomic.t](../../tests/processing/frame/0017_frame_float_overflow_atomic.t) |

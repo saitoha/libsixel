@@ -400,6 +400,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_FRAME_TRANSPARENT_MASK_RESIZE_TEST_COMMON \
     -DBUILD_TEST_0004_FRAME_TRANSPARENT_MASK_RESIZE \
     -DBUILD_TEST_0005_FRAME_TRANSPARENT_MASK_RESIZE_BILINEAR \
+    -DBUILD_TEST_0006_FRAME_EXTENDED_COORDINATES \
+    -DBUILD_TEST_0014_FRAME_CLONE_FLOAT_CANONICAL \
+    -DBUILD_TEST_0015_FRAME_FLOAT_FAILURE_ATOMIC \
     -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
     -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
@@ -785,6 +788,9 @@ test_runner_SOURCES = test_runner.c \
     processing/frame/0003_frame_transparent_mask_clip.c \
     processing/frame/0004_frame_transparent_mask_resize.c \
     processing/frame/0005_frame_transparent_mask_resize_bilinear.c \
+    processing/frame/0006_frame_extended_coordinates.c \
+    processing/frame/0014_frame_clone_float_canonical.c \
+    processing/frame/0015_frame_float_failure_atomic.c \
     processing/frame/frame_transparent_mask_resize_test_common.c \
     processing/frame/frame_transparent_mask_resize_test_common.h \
     processing/geometry/resampling_exact_test_driver.c \

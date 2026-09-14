@@ -1,0 +1,74 @@
+{
+  "generator": "tools/generate_color_fixtures.py",
+  "arithmetic": "60-digit Decimal; CIELAB inverse, D65 RGB matrix and sRGB TRC",
+  "source": "PPM black and white; two palette entries with binning disabled",
+  "storage": "Existing byte palette: L/100 * 255; (a/128/3 + 0.5) * 255, rounded",
+  "boundary": "CIELAB8 to float coordinates to bounded gamma RGB8 export",
+  "limitation": "CIELAB8 has no exact neutral a/b code; this tests existing export storage, not canonical float palette accuracy",
+  "rows": [
+    {
+      "CIELAB8": [
+        0,
+        128,
+        128
+      ],
+      "CIELAB": [
+        0.0,
+        0.7529411764705882,
+        0.7529411764705882
+      ],
+      "XYZ_D65": [
+        0.00018380495600475624,
+        0.0,
+        -0.0005264036483178289
+      ],
+      "linear_sRGB": [
+        0.0008580402894274225,
+        -0.00020003112449640175,
+        -0.0005462996696845913
+      ],
+      "gamma_sRGB": [
+        0.011085880539402298,
+        -0.002584402128493511,
+        -0.00705819173232492
+      ],
+      "RGB8": [
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "CIELAB8": [
+        255,
+        128,
+        128
+      ],
+      "CIELAB": [
+        100.0,
+        0.7529411764705882,
+        0.7529411764705882
+      ],
+      "XYZ_D65": [
+        0.9547703573358884,
+        1.0,
+        1.076578863782094
+      ],
+      "linear_sRGB": [
+        1.0200427462928836,
+        0.9953226660898015,
+        0.987287073479181
+      ],
+      "gamma_sRGB": [
+        1.0087594909096091,
+        0.997941110075694,
+        0.9943907477994438
+      ],
+      "RGB8": [
+        255,
+        254,
+        254
+      ]
+    }
+  ]
+}

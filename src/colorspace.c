@@ -33,6 +33,7 @@
 #include <string.h>
 #include <errno.h>
 #include <limits.h>
+#include <float.h>
 
 #include <sixel.h>
 
@@ -3271,6 +3272,56 @@ sixel_color_convert(double out[3], double const in[3],
     }
     memcpy(out, result, sizeof(result));
     return 1;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_color_convert_rgbf32(float *pixels, size_t count,
+                           int source, int target)
+{
+    double input[3];
+    double output[3];
+    size_t i;
+    int channel;
+    int pass;
+
+    if (pixels == NULL || count == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    /*
+     * A full validation pass avoids a second image allocation while
+     * preserving borrowed storage on failure. Repeat the deterministic
+     * conversion only after every result fits finite float32 storage.
+     * Negative RGB and values above one are valid intermediate colors;
+     * storage representability, not the RGB gamut, bounds this operation.
+     */
+    for (pass = 0; pass < 2; ++pass) {
+        for (i = 0u; i < count; ++i) {
+            for (channel = 0; channel < 3; ++channel) {
+                input[channel] = pixels[i * 3u + channel];
+            }
+            if (!sixel_color_convert(output, input, source, target)) {
+                sixel_helper_set_additional_message(
+                    "float frame conversion: nonfinite or domain error.");
+                return SIXEL_BAD_INPUT;
+            }
+            for (channel = 0; channel < 3; ++channel) {
+                if (fabs(output[channel]) > FLT_MAX) {
+                    sixel_helper_set_additional_message(
+                        "float frame conversion: float32 overflow.");
+                    return SIXEL_BAD_INPUT;
+                }
+            }
+            if (pass != 0) {
+                for (channel = 0; channel < 3; ++channel) {
+                    pixels[i * 3u + channel] = (float)output[channel];
+                }
+            }
+        }
+    }
+    return SIXEL_OK;
 }
 
 /* emacs Local Variables:      */

@@ -1,0 +1,237 @@
+{
+  "generator": "tools/generate_color_fixtures.py",
+  "arithmetic": "60-digit Decimal; independent RGBE, matrix and TRC equations",
+  "RGBE_equation": "mantissa * 2 ** (exponent - 136)",
+  "RGBE_convention": "Existing libsixel lower-edge reconstruction; Radiance colr_color uses a +0.5 mantissa midpoint",
+  "header_gamma_policy": "source component ** (1 / GAMMA)",
+  "matrix_policy": "original header xy to XYZ D65 to linear sRGB; shared D65",
+  "fixture_caveat": "The nominal BT.2020 fixture stores red y=0.2919, not 0.2920; use stored xy.",
+  "specimens": [
+    {
+      "file": "stbi_midtones.hdr",
+      "sha256": "fedddd8aacd3e32899afa2f533f19eb3bf1fa9e40a7e39a8e3e66f9816b4d3ea",
+      "header": "#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n",
+      "RGBE": [
+        128,
+        64,
+        32,
+        128
+      ],
+      "source": [
+        0.5,
+        0.25,
+        0.125
+      ],
+      "source_gamma": 1.0,
+      "primaries": [
+        [
+          "0.64",
+          "0.33"
+        ],
+        [
+          "0.30",
+          "0.60"
+        ],
+        [
+          "0.15",
+          "0.06"
+        ]
+      ],
+      "white_xy": [
+        0.3127,
+        0.329
+      ],
+      "XYZ_D65": [
+        0.3181515830291785,
+        0.2941357120477859,
+        0.15828062333766
+      ],
+      "linear_sRGB": [
+        0.5,
+        0.25,
+        0.125
+      ],
+      "EV2_gamma_no_tonemap": [
+        1.3532560461493863,
+        1.0,
+        0.7353569830524495
+      ],
+      "EV2_gamma_reinhard": [
+        0.8360069706715787,
+        0.7353569830524495,
+        0.6125010248518401
+      ]
+    },
+    {
+      "file": "stbi_midtones_hdrmeta_gamma22.hdr",
+      "sha256": "8cf87e7858ca3679d6aec4ec691994d38de2e9468866dd27b93a07bf7edeb461",
+      "header": "#?RADIANCE\nGAMMA=2.200000\nFORMAT=32-bit_rle_rgbe\n",
+      "RGBE": [
+        128,
+        64,
+        32,
+        128
+      ],
+      "source": [
+        0.5,
+        0.25,
+        0.125
+      ],
+      "source_gamma": 2.2,
+      "primaries": [
+        [
+          "0.64",
+          "0.33"
+        ],
+        [
+          "0.30",
+          "0.60"
+        ],
+        [
+          "0.15",
+          "0.06"
+        ]
+      ],
+      "white_xy": [
+        0.3127,
+        0.329
+      ],
+      "XYZ_D65": [
+        0.5614942086471015,
+        0.5640672608878274,
+        0.44695842885550896
+      ],
+      "linear_sRGB": [
+        0.7297400528407231,
+        0.5325205447199813,
+        0.3886015704427298
+      ],
+      "EV2_gamma_no_tonemap": [
+        1.5935325726359286,
+        1.3907202888797305,
+        1.2128591787461651
+      ],
+      "EV2_gamma_reinhard": [
+        0.8781318432263779,
+        0.8436751183971228,
+        0.8027621203635088
+      ]
+    },
+    {
+      "file": "stbi_midtones_hdrmeta_bt2020.hdr",
+      "sha256": "f27d9ec493ac6ebe1330cfcc17a4b79cb1eb70c8eb7e55e7a23fc8a39735ab6b",
+      "header": "#?RADIANCE\nPRIMARIES=0.7080 0.2919 0.1700 0.7970 0.1310 0.0460 0.3127 0.3290\nFORMAT=32-bit_rle_rgbe\n",
+      "RGBE": [
+        128,
+        64,
+        32,
+        128
+      ],
+      "source": [
+        0.5,
+        0.25,
+        0.125
+      ],
+      "source_gamma": 1.0,
+      "primaries": [
+        [
+          "0.7080",
+          "0.2919"
+        ],
+        [
+          "0.1700",
+          "0.7970"
+        ],
+        [
+          "0.1310",
+          "0.0460"
+        ]
+      ],
+      "white_xy": [
+        0.3127,
+        0.329
+      ],
+      "XYZ_D65": [
+        0.37574377677491294,
+        0.30823989953030445,
+        0.13967554768731905
+      ],
+      "linear_sRGB": [
+        0.6742477191646734,
+        0.21986499507815352,
+        0.10566189407497162
+      ],
+      "EV2_gamma_no_tonemap": [
+        1.5400914061122981,
+        0.9450210927291708,
+        0.6819026514241747
+      ],
+      "EV2_gamma_reinhard": [
+        0.8700859478046719,
+        0.7138271462095047,
+        0.5812379434928533
+      ]
+    },
+    {
+      "file": "stbi_midtones_hdrmeta_gamma22_bt2020.hdr",
+      "sha256": "0b1c8b4bcf459392967f91356b911fa26d57b4bea276ce3c1b47e959753a11b9",
+      "header": "#?RADIANCE\nGAMMA=2.200000\nPRIMARIES=0.7080 0.2919 0.1700 0.7970 0.1310 0.0460 0.3127 0.3290\nFORMAT=32-bit_rle_rgbe\n",
+      "RGBE": [
+        128,
+        64,
+        32,
+        128
+      ],
+      "source": [
+        0.5,
+        0.25,
+        0.125
+      ],
+      "source_gamma": 2.2,
+      "primaries": [
+        [
+          "0.7080",
+          "0.2919"
+        ],
+        [
+          "0.1700",
+          "0.7970"
+        ],
+        [
+          "0.1310",
+          "0.0460"
+        ]
+      ],
+      "white_xy": [
+        0.3127,
+        0.329
+      ],
+      "XYZ_D65": [
+        0.6074536816151983,
+        0.5757780456144962,
+        0.42728101778042926
+      ],
+      "linear_sRGB": [
+        0.8705007287379164,
+        0.5091259736363644,
+        0.36797110635162095
+      ],
+      "EV2_gamma_no_tonemap": [
+        1.7192491150239075,
+        1.3639093320348916,
+        1.1843667446549293
+      ],
+      "EV2_gamma_reinhard": [
+        0.8946594068647673,
+        0.8382346135888528,
+        0.7950375383415705
+      ]
+    }
+  ],
+  "srgb_fallback_linear": [
+    0.21404114048223244,
+    0.05087608817155679,
+    0.014349874706802558
+  ],
+  "source": "https://radsite.lbl.gov/radiance/refer/Notes/picture_format.html"
+}
