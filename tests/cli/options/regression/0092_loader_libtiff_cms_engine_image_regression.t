@@ -1,68 +1,82 @@
 #!/bin/sh
-# Verify libtiff:cms_engine preserves image output through short and env paths.
+# Verify libtiff:cms_engine applies the independent RGB ICC through short/env paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|g_loader_values + SIXEL_LOADER_INDEX_LIBTIFF|cms_engine
 # Registry binding: libtiff_cms_engine
-
+# Policy: docs/loader/color-management.md
 set -eux
-
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\\n"
-    exit 0
-}
-test "${HAVE_LIBTIFF-}" = 1 || {
-    printf "1..0 # SKIP libtiff is unavailable\\n"
-    exit 0
-}
-
 echo "1..1"
 set -v
 
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    echo "ok 1 - CMS image regression # SKIP img2sixel unavailable"
+    exit 0
+}
+
+test "${HAVE_TIFF-}" = 1 || {
+    echo "ok 1 - CMS image regression # SKIP libtiff unavailable"
+    exit 0
+}
+
+# The harness supplies this path but does not create the directory.
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_image="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_mab_valid.tiff"
-reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/rgb_mab_valid_tiff_builtin.six"
-artifact_dir="${ARTIFACT_LOCAL_DIR}"
-short_output="${artifact_dir}/0092-loader-libtiff-cms_engine-short-$$.six"
-env_output="${artifact_dir}/0092-loader-libtiff-cms_engine-env-$$.six"
+input="${TOP_SRCDIR}/tests/data/color-numeric/cli-rgb.tiff"
+reference="${TOP_SRCDIR}/tests/data/color-numeric/cli-rgb-reference.png"
+short_output="${ARTIFACT_LOCAL_DIR}/0092-cms-short.six"
+env_output="${ARTIFACT_LOCAL_DIR}/0092-cms-env.six"
 
-short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibtiff:Ebuiltin!" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "libtiff:cms_engine short conversion failed"
+trace=$(SIXEL_TRACE_TOPIC=suboption_contract,loader ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" "-Llibtiff:Ebuiltin!" \
+    "$input" 2>&1 >"${short_output}") || {
+    echo "not ok 1 - short CMS conversion failed"
+    exit 0
+}
+record=${trace##*"LSXSUB1|schema=9|base=libtiff|key=cms_engine|"}
+test "${record%%[![:print:]]*}" = \
+    "stored=1|binding=libtiff_cms_engine|value=2" || {
+    echo "not ok 1 - final short CMS setting is not builtin"
+    exit 0
+}
+# Inspect one complete actual-apply record, never a selector/parser record.
+record=${trace##*"LSXCMS2|event=apply|"}
+record=${record%%[![:print:]]*}
+test "${record#engine=builtin|}" != "$record" && \
+    test "${record%|ok=1}" != "$record" || {
+    echo "not ok 1 - short input profile was not applied by builtin"
     exit 0
 }
 
-test "${short_trace#*LSXSUB1|*key=cms_engine|stored=1|binding=libtiff_cms_engine*}" != "${short_trace}" || {
-    echo "not ok" 1 - "cms_engine short value was not stored"
+trace=$(SIXEL_TRACE_TOPIC=suboption_contract,loader ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" --env "SIXEL_LOADER_LIBTIFF_CMS_ENGINE=builtin" "-Llibtiff!" \
+    "$input" 2>&1 >"${env_output}") || {
+    echo "not ok 1 - env CMS conversion failed"
+    exit 0
+}
+record=${trace##*"LSXSUB1|schema=9|base=libtiff|key=cms_engine|"}
+test "${record%%[![:print:]]*}" = \
+    "stored=1|binding=libtiff_cms_engine|value=2" || {
+    echo "not ok 1 - final env CMS setting is not builtin"
+    exit 0
+}
+# Inspect one complete actual-apply record, never a selector/parser record.
+record=${trace##*"LSXCMS2|event=apply|"}
+record=${record%%[![:print:]]*}
+test "${record#engine=builtin|}" != "$record" && \
+    test "${record%|ok=1}" != "$record" || {
+    echo "not ok 1 - env input profile was not applied by builtin"
     exit 0
 }
 
-env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_LIBTIFF_CMS_ENGINE=builtin" "-Llibtiff!" \
-    "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "libtiff:cms_engine env conversion failed"
+cmp -s "$short_output" "$env_output" || {
+    echo "not ok 1 - short and environment CMS output differ"
     exit 0
 }
 
-test "${env_trace#*LSXSUB1|*key=cms_engine|stored=1|binding=libtiff_cms_engine*}" != "${env_trace}" || {
-    echo "not ok" 1 - "cms_engine environment value was not stored"
+${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=none -m MS-SSIM \
+    -b MS-SSIM:0.98 "$reference" "$short_output" >/dev/null || {
+    echo "not ok 1 - independent managed RGB quality below 0.98"
     exit 0
 }
 
-cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "libtiff:cms_engine short and env output differ"
-    exit 0
-}
-
-lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -b "MS-SSIM:0.98" "${reference_image}" \
-    "${short_output}" 2>&1) || lsqa_status=$?
-test "${lsqa_status:-0}" -eq 0 || {
-    echo "not ok" 1 - "libtiff:cms_engine image quality regressed"
-    printf "# %s\\n" "${lsqa_error}"
-    exit 0
-}
-
-echo "ok" 1 - "libtiff:cms_engine preserves image output"
+echo "ok 1 - builtin CMS applies and matches independent RGB colors"
 exit 0

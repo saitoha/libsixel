@@ -1,45 +1,44 @@
 #!/bin/sh
-# TAP test verifying --cms-engine=color-sync alias matches colorsync.
-
+# Verify --cms-engine=color-sync reaches the canonical loader setting.
+# Policy: docs/loader/color-management.md
+# This owns alias/precedence resolution, not CMS execution or color accuracy.
+# Inspect the last complete record for this loader and key.
 set -eux
-
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n";
-    exit 0
-}
-
-test "${HAVE_WEBP-}" = 1 || {
-    printf "1..0 # SKIP libwebp loader is unavailable\n";
-    exit 0
-}
-
-
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
-output_colorsync="${ARTIFACT_LOCAL_DIR}/cms_engine_alias_colorsync_ref.six"
-output_color_sync="${ARTIFACT_LOCAL_DIR}/cms_engine_alias_color_sync_alias.six"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --cms-engine=colorsync \
-    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_colorsync}" || {
-    echo "not ok" 1 - "--cms-engine=colorsync run failed"
+test "${HAVE_IMG2SIXEL-}" = 1 && test "${HAVE_WEBP-}" = 1 || {
+    echo "ok 1 - CMS alias resolution # SKIP img2sixel/libwebp unavailable"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --cms-engine=color-sync \
-    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_color_sync}" || {
-    echo "not ok" 1 - "--cms-engine=color-sync alias was rejected"
+input="${TOP_SRCDIR}/tests/data/color-numeric/cli-rgb.webp"
+
+canonical=$(SIXEL_TRACE_TOPIC=suboption_contract ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" --cms-engine=colorsync \
+    -Llibwebp! "$input" 2>&1 >/dev/null) || {
+    echo "not ok 1 - canonical CMS selection failed"
+    exit 0
+}
+record=${canonical##*"LSXSUB1|schema=9|base=libwebp|key=cms_engine|"}
+test "${record%%[![:print:]]*}" = \
+    "stored=1|binding=libwebp_cms_engine|value=4" || {
+    echo "not ok 1 - last canonical CMS selection has the wrong value"
     exit 0
 }
 
-cmp -s "${output_colorsync}" "${output_color_sync}" || {
-    echo "not ok" 1 - "--cms-engine=color-sync diverged from --cms-engine=colorsync"
+alias=$(SIXEL_TRACE_TOPIC=suboption_contract ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" --cms-engine=color-sync \
+    -Llibwebp! "$input" 2>&1 >/dev/null) || {
+    echo "not ok 1 - alias CMS selection failed"
+    exit 0
+}
+record=${alias##*"LSXSUB1|schema=9|base=libwebp|key=cms_engine|"}
+test "${record%%[![:print:]]*}" = \
+    "stored=1|binding=libwebp_cms_engine|value=4" || {
+    echo "not ok 1 - last alias CMS selection has the wrong value"
     exit 0
 }
 
-echo "ok" 1 - "--cms-engine=color-sync matches --cms-engine=colorsync"
+echo "ok 1 - CMS alias resolves to the expected loader setting"
 exit 0

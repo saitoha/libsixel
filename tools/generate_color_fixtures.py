@@ -553,6 +553,157 @@ def jpeg_sample_oracles():
             'jpeg.json': (json.dumps(record, indent=2) + '\n').encode()}
 
 
+def cli_rgb_oracles():
+    """Encode known RGB patches directly, without a codec or CMM golden."""
+    size = 64
+    samples = list(itertools.product((32, 128), repeat=3))
+    pixels = bytes(v for y in range(size) for x in range(size)
+                   for v in samples[((y // 16) * 4 + x // 16) % 8])
+    columns = [adapt(column) for column in zip(*SRGB)]
+    stored = [[D(struct.unpack('>i', fixed(v))[0]) / 65536 for v in col]
+              for col in columns]
+    tags = [(name, b'XYZ ' + bytes(4) + b''.join(map(fixed, col)))
+            for name, col in zip((b'rXYZ', b'gXYZ', b'bXYZ'), columns)]
+    curve = b'para' + bytes(4) + struct.pack('>HH', 0, 0) + fixed(D(1))
+    tags.extend((name, curve) for name in (b'rTRC', b'gTRC', b'bTRC'))
+    adaptation = list(zip(*(adapt([D(i == j) for i in range(3)])
+                             for j in range(3))))
+    tags.append((b'chad', b'sf32' + bytes(4) + b''.join(
+        fixed(v) for row in adaptation for v in row)))
+    profile = pack_profile(tags, name='Independent linear sRGB patches')
+    srgb_inverse = inverse(list(map(list, zip(*columns))))
+    xyz = [apply(list(map(list, zip(*stored))), [D(v) / 255 for v in rgb])
+           for rgb in samples]
+    gamma = [list(map(encode, apply(srgb_inverse, row))) for row in xyz]
+    reference_samples = [bytes(int((v * 255).to_integral_value()) for v in row)
+                         for row in gamma]
+    reference = b''.join(reference_samples[((y // 16) * 4 + x // 16) % 8]
+                         for y in range(size) for x in range(size))
+
+    def png(raster, metadata):
+        rows = b''.join(b'\0' + raster[y*size*3:(y+1)*size*3]
+                        for y in range(size))
+        return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack(
+            '>IIBBBBB', size, size, 8, 2, 0, 0, 0)) + metadata
+            + chunk(b'IDAT', zlib.compress(rows, 9)) + chunk(b'IEND', b''))
+
+    outputs = {'cli-rgb.icc': profile,
+        'cli-rgb.png': png(pixels, chunk(b'iCCP',
+            b'Independent linear RGB\0\0' + zlib.compress(profile, 9))),
+        'cli-rgb-reference.png': png(reference, chunk(b'sRGB', b'\0'))}
+
+    # Baseline RGB JPEG: constant 8x8 blocks have only a DC coefficient.
+    # DQT=1 makes DC=(sample-128)*8 exact, with no YCbCr or chroma sampling.
+    # T.81 Annexes B/C/F define the marker, Huffman and difference syntax.
+    def segment(marker, payload):
+        return bytes((255, marker)) + struct.pack('>H', len(payload) + 2) + payload
+
+    jpeg_bits = []
+    previous = [0, 0, 0]
+    for y in range(0, size, 8):
+        for x in range(0, size, 8):
+            for channel in range(3):
+                dc = (pixels[(y * size + x) * 3 + channel] - 128) * 8
+                difference = dc - previous[channel]
+                previous[channel] = dc
+                count = abs(difference).bit_length()
+                jpeg_bits.append(format(count, '04b'))
+                if count:
+                    amplitude = difference if difference > 0 else (
+                        difference + (1 << count) - 1)
+                    jpeg_bits.append(format(amplitude, f'0{count}b'))
+                jpeg_bits.append('0')  # EOB; all 63 AC coefficients are zero.
+    bits = ''.join(jpeg_bits)
+    bits += '1' * (-len(bits) % 8)
+    entropy = bytes(int(bits[i:i+8], 2) for i in range(0, len(bits), 8))
+    entropy = entropy.replace(b'\xff', b'\xff\0')
+    dc_table = bytes([0]) + bytes([0, 0, 0, 12] + [0] * 12) + bytes(range(12))
+    ac_table = bytes([16]) + bytes([1] + [0] * 15) + bytes([0])
+    outputs['cli-rgb.jpg'] = (b'\xff\xd8'
+        + segment(0xee, b'Adobe' + struct.pack('>HHHB', 100, 0, 0, 0))
+        + segment(0xe2, b'ICC_PROFILE\0\1\1' + profile)
+        + segment(0xdb, bytes([0]) + bytes([1] * 64))
+        + segment(0xc0, struct.pack('>BHHB', 8, size, size, 3)
+                  + b'R\x11\0G\x11\0B\x11\0')
+        + segment(0xc4, dc_table + ac_table)
+        + segment(0xda, b'\3R\0G\0B\0\0\x3f\0')
+        + entropy + b'\xff\xd9')
+
+    # Literal-only WebP lossless, with simple two-symbol G/R/B trees.
+    # No transforms, caches, backward references or color interpretation.
+    webp_bits = []
+    def put(value, count):
+        webp_bits.extend((value >> i) & 1 for i in range(count))
+    put(0, 3)  # No transform, no color cache, one prefix-code group.
+    for symbols in [(32, 128)] * 3 + [(255,), (0,)]:
+        put(1, 1)
+        put(len(symbols) - 1, 1)
+        put(symbols[0] > 1, 1)
+        put(symbols[0], 8 if symbols[0] > 1 else 1)
+        if len(symbols) == 2:
+            put(symbols[1], 8)
+    for offset in range(0, len(pixels), 3):
+        for channel in (1, 0, 2):
+            put(pixels[offset + channel] == 128, 1)
+    webp_bits.extend([0] * (-len(webp_bits) % 8))
+    entropy = bytes(sum(webp_bits[i + j] << j for j in range(8))
+                    for i in range(0, len(webp_bits), 8))
+    def riff_chunk(name, data):
+        return name + struct.pack('<I', len(data)) + data + bytes(len(data) % 2)
+    vp8x = bytes([32, 0, 0, 0]) + (size - 1).to_bytes(3, 'little') * 2
+    vp8l = b'\x2f' + struct.pack('<I', (size - 1) | ((size - 1) << 14)) + entropy
+    body = (b'WEBP' + riff_chunk(b'VP8X', vp8x)
+            + riff_chunk(b'ICCP', profile) + riff_chunk(b'VP8L', vp8l))
+    outputs['cli-rgb.webp'] = b'RIFF' + struct.pack('<I', len(body)) + body
+
+    # One uncompressed RGB TIFF strip; ICC tag 34675 is the only color hint.
+    entries = [(256, 4, 1, struct.pack('<I', size)),
+        (257, 4, 1, struct.pack('<I', size)),
+        (258, 3, 3, struct.pack('<3H', 8, 8, 8)),
+        (259, 3, 1, struct.pack('<H', 1)),
+        (262, 3, 1, struct.pack('<H', 2)),
+        (273, 4, 1, None), (277, 3, 1, struct.pack('<H', 3)),
+        (278, 4, 1, struct.pack('<I', size)),
+        (279, 4, 1, struct.pack('<I', len(pixels))),
+        (284, 3, 1, struct.pack('<H', 1)),
+        (34675, 7, len(profile), profile)]
+    offset = 8 + 2 + len(entries) * 12 + 4
+    raster_offset = offset + sum((len(v) + 1) & ~1 for _, _, _, v in entries
+                                 if v is not None and len(v) > 4)
+    table, payload = b'', b''
+    for tag, kind, count, value in entries:
+        if value is None:
+            value = struct.pack('<I', raster_offset)
+        if len(value) <= 4:
+            field = value + bytes(4 - len(value))
+        else:
+            field = struct.pack('<I', offset)
+            value += bytes(len(value) % 2)
+            payload += value
+            offset += len(value)
+        table += struct.pack('<HHI', tag, kind, count) + field
+    outputs['cli-rgb.tiff'] = (b'II\x2a\0' + struct.pack('<I', 8)
+        + struct.pack('<H', len(entries)) + table + bytes(4) + payload + pixels)
+    record = {'generator': 'tools/generate_color_fixtures.py',
+        'arithmetic': '60-digit Decimal, original integer RGB / 255, stored ICC matrix, independent XYZ D50 to sRGB',
+        'size': [size, size], 'patch_size': [16, 16],
+        'patch_index': '((y // 16) * 4 + x // 16) % 8',
+        'source_RGB8': samples, 'XYZ_D50': [[float(v) for v in row] for row in xyz],
+        'gamma_sRGB': [[float(v) for v in row] for row in gamma],
+        'reference_RGB8': [list(row) for row in reference_samples],
+        'profile': 'complete v4 RGB matrix/TRC, linear transfer, D65 adopted white, Bradford chad to ICC D50',
+        'JPEG': 'SOF0, direct RGB, unit quantization, constant 8x8 DC blocks, no YCbCr or chroma subsampling',
+        'WebP': 'VP8L, literal-only simple two-symbol RGB trees, no transforms',
+        'TIFF': 'one uncompressed contiguous RGB strip, ICC tag 34675',
+        'sources': ['https://www.w3.org/Graphics/JPEG/itu-t81.pdf',
+            'https://developers.google.com/speed/webp/docs/webp_lossless_bitstream_specification',
+            'https://www.color.org/specification/ICC.1-2022-05.pdf'],
+        'sha256': {name: hashlib.sha256(data).hexdigest()
+                   for name, data in outputs.items()}}
+    outputs['cli-rgb.json'] = (json.dumps(record, indent=2) + '\n').encode()
+    return outputs
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -658,6 +809,7 @@ def main():
     outputs.update(png_sample_oracles(profile))
     outputs.update(cmyk_sample_oracles())
     outputs.update(jpeg_sample_oracles())
+    outputs.update(cli_rgb_oracles())
     # Keep the exact M0 parser probes, explicitly outside conformance and
     # color accuracy claims. Complete profiles own the numeric tests above.
     minimal_header = banner

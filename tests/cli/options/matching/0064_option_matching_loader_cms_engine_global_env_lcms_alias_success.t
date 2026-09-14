@@ -1,43 +1,44 @@
 #!/bin/sh
-# TAP test verifying global env alias lcms maps to lcms2 behavior.
-
+# Verify --env SIXEL_LOADER_CMS_ENGINE=lcms reaches the canonical loader setting.
+# Policy: docs/loader/color-management.md
+# This owns alias/precedence resolution, not CMS execution or color accuracy.
+# Inspect the last complete record for this loader and key.
 set -eux
-
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n";
-    exit 0
-}
-
-test "${HAVE_WEBP-}" = 1 || {
-    printf "1..0 # SKIP libwebp loader is unavailable\n";
-    exit 0
-}
-
-
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
-output_ref_cms1="${ARTIFACT_LOCAL_DIR}/cms_env_lcms_alias_ref_cms1.six"
-output_env_lcms="${ARTIFACT_LOCAL_DIR}/cms_env_lcms_alias_actual.six"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
-    echo "not ok" 1 - "cms=1 reference decode failed"
+test "${HAVE_IMG2SIXEL-}" = 1 && test "${HAVE_WEBP-}" = 1 || {
+    echo "ok 1 - CMS alias resolution # SKIP img2sixel/libwebp unavailable"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_CMS_ENGINE=lcms" \
-    -Llibwebp! "${input_webp}" >"${output_env_lcms}" || {
-    echo "not ok" 1 - "SIXEL_LOADER_CMS_ENGINE=lcms decode failed"
+input="${TOP_SRCDIR}/tests/data/color-numeric/cli-rgb.webp"
+
+canonical=$(SIXEL_TRACE_TOPIC=suboption_contract ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_CMS_ENGINE=lcms2 \
+    -Llibwebp! "$input" 2>&1 >/dev/null) || {
+    echo "not ok 1 - canonical CMS selection failed"
+    exit 0
+}
+record=${canonical##*"LSXSUB1|schema=9|base=libwebp|key=cms_engine|"}
+test "${record%%[![:print:]]*}" = \
+    "stored=1|binding=libwebp_cms_engine|value=3" || {
+    echo "not ok 1 - last canonical CMS selection has the wrong value"
     exit 0
 }
 
-cmp -s "${output_ref_cms1}" "${output_env_lcms}" || {
-    echo "not ok" 1 - "SIXEL_LOADER_CMS_ENGINE=lcms did not map to lcms2 behavior"
+alias=$(SIXEL_TRACE_TOPIC=suboption_contract ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_CMS_ENGINE=lcms \
+    -Llibwebp! "$input" 2>&1 >/dev/null) || {
+    echo "not ok 1 - alias CMS selection failed"
+    exit 0
+}
+record=${alias##*"LSXSUB1|schema=9|base=libwebp|key=cms_engine|"}
+test "${record%%[![:print:]]*}" = \
+    "stored=1|binding=libwebp_cms_engine|value=3" || {
+    echo "not ok 1 - last alias CMS selection has the wrong value"
     exit 0
 }
 
-echo "ok" 1 - "SIXEL_LOADER_CMS_ENGINE=lcms maps to lcms2 behavior"
+echo "ok 1 - CMS alias resolves to the expected loader setting"
 exit 0
