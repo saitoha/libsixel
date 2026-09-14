@@ -194,7 +194,9 @@ jobs:
           cpu: 2
           mem: 4096
           release: '11.0'
-          sync: scp
+          # Whole-workspace SCP can wedge the TCG guest before the build.
+          # Keep source reads on the host and write build output inside the VM.
+          sync: nfs
           prepare: |
             set -eux
             if test '${{ matrix.buildtool }}' = autotools; then
