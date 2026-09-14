@@ -497,6 +497,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/unit/0186_png_byte_target.c \
 	loader/unit/0187_coregraphics_png.c \
 	loader/unit/0188_colorsync_linear.c \
+	loader/builtin/0189_png_palette_samples.c \
+	loader/builtin/0190_png_palette_failure.c \
+	loader/builtin/0191_png_palette_paint.c \
 	loader/builtin/loader_builtin_png_color_test_common.h \
 	loader/quicklook/0015_loader_quicklook_pixelformat.c \
 	loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
@@ -960,6 +963,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/unit/test_runner-0186_png_byte_target.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/unit/test_runner-0187_coregraphics_png.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/unit/test_runner-0188_colorsync_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0189_png_palette_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0190_png_palette_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0191_png_palette_paint.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.$(OBJEXT) \
@@ -1281,6 +1287,9 @@ am__depfiles_remade =  \
 	loader/builtin/$(DEPDIR)/test_runner-0182_loader_builtin_apng_callback_error_no_fallback.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0183_loader_builtin_jpeg_source_numeric.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0184_loader_builtin_psd_cmyk_icc_numeric.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po \
 	loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po \
@@ -2679,6 +2688,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0186_PNG_BYTE_TARGET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0187_COREGRAPHICS_PNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0188_COLORSYNC_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0189_PNG_PALETTE_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0190_PNG_PALETTE_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0191_PNG_PALETTE_PAINT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -3113,6 +3125,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/unit/0186_png_byte_target.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/unit/0187_coregraphics_png.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/unit/0188_colorsync_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0189_png_palette_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0190_png_palette_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0191_png_palette_paint.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/loader_builtin_png_color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/quicklook/0015_loader_quicklook_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
@@ -4684,6 +4699,15 @@ loader/unit/test_runner-0187_coregraphics_png.$(OBJEXT):  \
 loader/unit/test_runner-0188_colorsync_linear.$(OBJEXT):  \
 	loader/unit/$(am__dirstamp) \
 	loader/unit/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0189_png_palette_samples.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0190_png_palette_failure.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0191_png_palette_paint.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
 loader/quicklook/$(am__dirstamp):
 	@$(MKDIR_P) loader/quicklook
 	@: >>loader/quicklook/$(am__dirstamp)
@@ -5224,6 +5248,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0182_loader_builtin_apng_callback_error_no_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0183_loader_builtin_jpeg_source_numeric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0184_loader_builtin_psd_cmyk_icc_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po@am__quote@ # am--include-marker
@@ -10791,6 +10818,48 @@ loader/unit/test_runner-0188_colorsync_linear.obj: loader/unit/0188_colorsync_li
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/unit/test_runner-0188_colorsync_linear.obj `if test -f 'loader/unit/0188_colorsync_linear.c'; then $(CYGPATH_W) 'loader/unit/0188_colorsync_linear.c'; else $(CYGPATH_W) '$(srcdir)/loader/unit/0188_colorsync_linear.c'; fi`
 
+loader/builtin/test_runner-0189_png_palette_samples.o: loader/builtin/0189_png_palette_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0189_png_palette_samples.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Tpo -c -o loader/builtin/test_runner-0189_png_palette_samples.o `test -f 'loader/builtin/0189_png_palette_samples.c' || echo '$(srcdir)/'`loader/builtin/0189_png_palette_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Tpo loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0189_png_palette_samples.c' object='loader/builtin/test_runner-0189_png_palette_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0189_png_palette_samples.o `test -f 'loader/builtin/0189_png_palette_samples.c' || echo '$(srcdir)/'`loader/builtin/0189_png_palette_samples.c
+
+loader/builtin/test_runner-0189_png_palette_samples.obj: loader/builtin/0189_png_palette_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0189_png_palette_samples.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Tpo -c -o loader/builtin/test_runner-0189_png_palette_samples.obj `if test -f 'loader/builtin/0189_png_palette_samples.c'; then $(CYGPATH_W) 'loader/builtin/0189_png_palette_samples.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0189_png_palette_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Tpo loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0189_png_palette_samples.c' object='loader/builtin/test_runner-0189_png_palette_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0189_png_palette_samples.obj `if test -f 'loader/builtin/0189_png_palette_samples.c'; then $(CYGPATH_W) 'loader/builtin/0189_png_palette_samples.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0189_png_palette_samples.c'; fi`
+
+loader/builtin/test_runner-0190_png_palette_failure.o: loader/builtin/0190_png_palette_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0190_png_palette_failure.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Tpo -c -o loader/builtin/test_runner-0190_png_palette_failure.o `test -f 'loader/builtin/0190_png_palette_failure.c' || echo '$(srcdir)/'`loader/builtin/0190_png_palette_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Tpo loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0190_png_palette_failure.c' object='loader/builtin/test_runner-0190_png_palette_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0190_png_palette_failure.o `test -f 'loader/builtin/0190_png_palette_failure.c' || echo '$(srcdir)/'`loader/builtin/0190_png_palette_failure.c
+
+loader/builtin/test_runner-0190_png_palette_failure.obj: loader/builtin/0190_png_palette_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0190_png_palette_failure.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Tpo -c -o loader/builtin/test_runner-0190_png_palette_failure.obj `if test -f 'loader/builtin/0190_png_palette_failure.c'; then $(CYGPATH_W) 'loader/builtin/0190_png_palette_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0190_png_palette_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Tpo loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0190_png_palette_failure.c' object='loader/builtin/test_runner-0190_png_palette_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0190_png_palette_failure.obj `if test -f 'loader/builtin/0190_png_palette_failure.c'; then $(CYGPATH_W) 'loader/builtin/0190_png_palette_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0190_png_palette_failure.c'; fi`
+
+loader/builtin/test_runner-0191_png_palette_paint.o: loader/builtin/0191_png_palette_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0191_png_palette_paint.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Tpo -c -o loader/builtin/test_runner-0191_png_palette_paint.o `test -f 'loader/builtin/0191_png_palette_paint.c' || echo '$(srcdir)/'`loader/builtin/0191_png_palette_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Tpo loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0191_png_palette_paint.c' object='loader/builtin/test_runner-0191_png_palette_paint.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0191_png_palette_paint.o `test -f 'loader/builtin/0191_png_palette_paint.c' || echo '$(srcdir)/'`loader/builtin/0191_png_palette_paint.c
+
+loader/builtin/test_runner-0191_png_palette_paint.obj: loader/builtin/0191_png_palette_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0191_png_palette_paint.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Tpo -c -o loader/builtin/test_runner-0191_png_palette_paint.obj `if test -f 'loader/builtin/0191_png_palette_paint.c'; then $(CYGPATH_W) 'loader/builtin/0191_png_palette_paint.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0191_png_palette_paint.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Tpo loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0191_png_palette_paint.c' object='loader/builtin/test_runner-0191_png_palette_paint.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0191_png_palette_paint.obj `if test -f 'loader/builtin/0191_png_palette_paint.c'; then $(CYGPATH_W) 'loader/builtin/0191_png_palette_paint.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0191_png_palette_paint.c'; fi`
+
 loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o: loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
@@ -12574,6 +12643,9 @@ distclean: distclean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0182_loader_builtin_apng_callback_error_no_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0183_loader_builtin_jpeg_source_numeric.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0184_loader_builtin_psd_cmyk_icc_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po
@@ -13078,6 +13150,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0182_loader_builtin_apng_callback_error_no_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0183_loader_builtin_jpeg_source_numeric.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0184_loader_builtin_psd_cmyk_icc_numeric.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0189_png_palette_samples.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0190_png_palette_failure.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0191_png_palette_paint.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po

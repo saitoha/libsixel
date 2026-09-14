@@ -1042,6 +1042,12 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
     return 0;
 }
 
+/* PNG retains source RGB without a background; TGA keeps its legacy blend. */
+enum palette_no_bg_policy {
+    PALETTE_NO_BG_PRESERVE,
+    PALETTE_NO_BG_BLEND_BLACK
+};
+
 static SIXELSTATUS
 convert_palette_to_rgb(
     unsigned char **ppalette_rgb,
@@ -1049,6 +1055,7 @@ convert_palette_to_rgb(
     int palette_colors,
     int palette_comp,
     unsigned char *bgcolor,
+    enum palette_no_bg_policy no_bg_policy,
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -1100,9 +1107,12 @@ convert_palette_to_rgb(
     for (i = 0; i < palette_colors; ++i) {
         if (palette_comp == 4) {
             alpha = palette_src[i * 4 + 3];
-            if (alpha < 0xff) {
+            if (alpha < 0xff &&
+                (bgcolor != NULL ||
+                 no_bg_policy == PALETTE_NO_BG_BLEND_BLACK)) {
                 /*
-                 * Keep integer blending consistent with the libpng loader.
+                 * Retain the byte blend for an explicit background and for TGA.
+                 * PNG without a background keeps even hidden source RGB.
                  */
                 rgb_palette[i * 3 + 0] =
                     (unsigned char)(((0xff - alpha) * bg_r
@@ -4516,6 +4526,57 @@ sixel_builtin_prepare_frame_and_chunk_size(
     return status;
 }
 
+/*
+ * Retained PNG palettes carry coverage separately from their RGB samples.
+ * SIXEL has one transparent index, so merge only zero-alpha raster indices
+ * into the first zero entry. Partial and implicit opaque entries stay painted.
+ * Run before palette conversion releases the original RGBA allocation; this
+ * requires no allocation and cannot publish a partially prepared frame.
+ */
+static void
+sixel_builtin_png_zero_index(
+    sixel_frame_t *frame,
+    unsigned char *pixels,
+    unsigned char const *palette,
+    int palette_colors,
+    int palette_comp,
+    unsigned char const *bgcolor)
+{
+    unsigned char zero_map[SIXEL_PALETTE_MAX];
+    int first_zero;
+    int zero_count;
+    int i;
+    size_t pixel_count;
+    size_t p;
+
+    first_zero = -1;
+    zero_count = 0;
+    memset(zero_map, 0, sizeof(zero_map));
+    if (bgcolor != NULL || palette_comp != 4) {
+        return;
+    }
+    for (i = 0; i < palette_colors && i < SIXEL_PALETTE_MAX; ++i) {
+        if (palette[i * 4 + 3] == 0) {
+            if (first_zero < 0) {
+                first_zero = i;
+            }
+            zero_map[i] = 1;
+            ++zero_count;
+        }
+    }
+    sixel_frame_set_transparent(frame, first_zero);
+    if (zero_count <= 1 || frame->width <= 0 || frame->height <= 0 ||
+        (size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return;
+    }
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    for (p = 0; p < pixel_count; ++p) {
+        if (zero_map[pixels[p]] != 0) {
+            pixels[p] = (unsigned char)first_zero;
+        }
+    }
+}
+
 static SIXELSTATUS
 sixel_builtin_try_load_indexed_png(
     sixel_chunk_t const *chunk,
@@ -4572,11 +4633,14 @@ sixel_builtin_try_load_indexed_png(
         return SIXEL_OK;
     }
 
+    sixel_builtin_png_zero_index(frame, pixels, palette, palette_colors,
+                                 palette_comp, bgcolor);
     status = convert_palette_to_rgb(&frame->palette,
                                     &palette,
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
+                                    PALETTE_NO_BG_PRESERVE,
                                     allocator);
     if (SIXEL_FAILED(status)) {
         stbi_free(palette);
@@ -4699,6 +4763,7 @@ sixel_builtin_try_load_indexed_tga(
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
+                                    PALETTE_NO_BG_BLEND_BLACK,
                                     allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -4783,12 +4848,6 @@ sixel_builtin_load_png_keycolor_or_rgba(
     int depth;
     int palette_comp;
     int palette_colors;
-    int palette_keycolor_index;
-    int palette_zero_alpha_count;
-    size_t palette_pixel_count;
-    size_t palette_pixel_index;
-    unsigned int palette_index;
-    unsigned char palette_zero_alpha_map[SIXEL_PALETTE_MAX];
 
     status = SIXEL_OK;
     pixels = NULL;
@@ -4796,12 +4855,6 @@ sixel_builtin_load_png_keycolor_or_rgba(
     depth = 0;
     palette_comp = 0;
     palette_colors = 0;
-    palette_keycolor_index = -1;
-    palette_zero_alpha_count = 0;
-    palette_pixel_count = 0u;
-    palette_pixel_index = 0u;
-    palette_index = 0u;
-    memset(palette_zero_alpha_map, 0, sizeof(palette_zero_alpha_map));
     if (chunk == NULL ||
         chunk_size <= 0 ||
         frame == NULL ||
@@ -4824,51 +4877,21 @@ sixel_builtin_load_png_keycolor_or_rgba(
         palette_comp == 4 &&
         palette_colors > 0 &&
         palette_colors <= reqcolors) {
-        for (palette_index = 0u;
-             palette_index < (unsigned int)palette_colors &&
-             palette_index < SIXEL_PALETTE_MAX;
-             ++palette_index) {
-            if (palette[palette_index * 4u + 3u] == 0u) {
-                if (palette_keycolor_index < 0) {
-                    palette_keycolor_index = (int)palette_index;
-                }
-                palette_zero_alpha_map[palette_index] = 1u;
-                ++palette_zero_alpha_count;
-            }
-        }
+        sixel_builtin_png_zero_index(frame, pixels, palette, palette_colors,
+                                     palette_comp, bgcolor);
 
         status = convert_palette_to_rgb(&frame->palette,
                                         &palette,
                                         palette_colors,
                                         palette_comp,
                                         bgcolor,
+                                        PALETTE_NO_BG_PRESERVE,
                                         allocator);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
         palette = NULL;
 
-        if (palette_keycolor_index >= 0) {
-            sixel_frame_set_transparent(frame, palette_keycolor_index);
-        }
-        if (palette_zero_alpha_count > 1 &&
-            palette_keycolor_index >= 0 &&
-            frame->width > 0 &&
-            frame->height > 0 &&
-            (size_t)frame->width <= SIZE_MAX / (size_t)frame->height) {
-            palette_pixel_count = (size_t)frame->width * (size_t)frame->height;
-            for (palette_pixel_index = 0u;
-                 palette_pixel_index < palette_pixel_count;
-                 ++palette_pixel_index) {
-                palette_index = pixels[palette_pixel_index];
-                if ((int)palette_index != palette_keycolor_index &&
-                    palette_index < SIXEL_PALETTE_MAX &&
-                    palette_zero_alpha_map[palette_index] != 0u) {
-                    pixels[palette_pixel_index] =
-                        (unsigned char)palette_keycolor_index;
-                }
-            }
-        }
         status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
             sixel_frame_as_interface(frame),
             &(sixel_frame_pixels_request_t){

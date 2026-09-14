@@ -1275,6 +1275,84 @@ def frame_byte_oracles():
             'frame-byte.json': (json.dumps(manifest, indent=2) + '\n').encode()}
 
 
+def png_palette_oracles(power_records):
+    """Build indexed PNGs and expectations from original PLTE, tRNS and ICC."""
+    colors = bytes([41, 83, 127, 67, 109, 151, 89, 137, 181, 113, 157, 211])
+    indices = bytes([0, 1, 2, 3, 3, 2, 1, 0])
+    alpha = [bytes([0, 85, 170]), bytes([85, 0, 0]),
+             bytes([1, 85, 170]), bytes(4)]
+    names = ['single', 'multi', 'none', 'all']
+    record = next(p for p in json.loads(power_records)['profiles']
+                  if p['name'] == 'mask0-para0')
+    profile = bytes.fromhex(record['profile_hex'])
+    stored_matrix = [[D(v) for v in row] for row in record['matrix_stored']]
+    gammas = list(map(D, record['gamma_stored']))
+    destination = list(map(list, zip(*(adapt(col) for col in zip(*SRGB)))))
+    inv_destination = inverse(destination)
+    expected = []
+    units = []
+    for i in range(4):
+        linear = apply(inv_destination, apply(stored_matrix,
+            [(D(colors[i * 3 + c]) / 255) ** gammas[c] for c in range(3)]))
+        unit = [max(D(0), min(D(1), encode(v))) for v in linear]
+        expected.extend(int((v * 255 + D('.5')).to_integral_value(
+            rounding='ROUND_FLOOR')) for v in unit)
+        units.append(list(map(str, unit)))
+
+    def chunk(kind, data):
+        return (struct.pack('>I', len(data)) + kind + data
+                + struct.pack('>I', zlib.crc32(kind + data)))
+
+    def make_png(transparency, managed):
+        raw = b'\0' + indices[:4] + b'\0' + indices[4:]
+        return (b'\x89PNG\r\n\x1a\n'
+                + chunk(b'IHDR', struct.pack('>IIBBBBB', 4, 2, 8, 3, 0, 0, 0))
+                + (chunk(b'iCCP', b'independent\0\0' + zlib.compress(profile))
+                   if managed else b'')
+                + chunk(b'PLTE', colors) + chunk(b'tRNS', transparency)
+                + chunk(b'IDAT', zlib.compress(raw, 0)) + chunk(b'IEND', b''))
+
+    header = ('/* Generated from source PLTE/tRNS and stored ICC tags. */\n'
+              '#include <stddef.h>\n')
+
+    def array(name, data):
+        return (f'static unsigned char const {name}[] = {{\n'
+                + ''.join('    ' + ', '.join(f'0x{v:02x}' for v in data[p:p+12])
+                          + ',\n' for p in range(0, len(data), 12)) + '};\n')
+
+    header += array('color_pal_rgb', colors)
+    header += array('color_pal_indices', indices)
+    header += array('color_pal_cms', bytes(expected))
+    header += ('static unsigned char const color_pal_alpha[][4] = {\n'
+               + ''.join('    { ' + ', '.join(map(str, a.ljust(4, b'\xff')))
+                         + ' },\n' for a in alpha) + '};\n')
+    outputs = {}
+    for name, a in zip(names + ['cms'], alpha + alpha[:1]):
+        data = make_png(a, name == 'cms')
+        outputs['palette-trns-' + name + '.png'] = data
+        header += array('color_pal_png_' + name, data)
+    header += ('static struct {\n    unsigned char const *bytes;\n'
+               '    size_t length;\n} const color_pal_png[] = {\n'
+               + ''.join(f'    {{ color_pal_png_{n}, '
+                         f'sizeof(color_pal_png_{n}) }},\n'
+                         for n in names + ['cms']) + '};\n')
+    outputs['palette-trns.h'] = header.encode()
+    outputs['palette-trns.json'] = (json.dumps({
+        'generator': 'tools/generate_color_fixtures.py',
+        'rgb': colors.hex(), 'indices': indices.hex(),
+        'alpha': {n: a.hex() for n, a in zip(names, alpha)},
+        'implicit_alpha': 255, 'profile': record,
+        'cms_units': units, 'cms_expected': bytes(expected).hex(),
+        'cms_model': '60-digit Decimal powers of original RGB8/255, stored XYZ '
+                     'matrix, independent inverse sRGB D50, sRGB transfer, '
+                     'clamp and nearest byte; no CMM oracle',
+        'files_scope': 'PNG fixture bytes; the C header is verified by --check.',
+        'files': {n: hashlib.sha256(v).hexdigest() for n, v in outputs.items()
+                  if n.endswith('.png')}
+    }, indent=2) + '\n').encode()
+    return outputs
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -1383,7 +1461,9 @@ def main():
     outputs.update(png_byte_target_oracles())
     outputs.update(cmyk_sample_oracles())
     outputs.update(gray_sample_oracles())
-    outputs.update(rgb_power_oracles())
+    power_outputs = rgb_power_oracles()
+    outputs.update(power_outputs)
+    outputs.update(png_palette_oracles(power_outputs['rgb-power.json']))
     outputs.update(jpeg_sample_oracles())
     outputs.update(cli_rgb_oracles())
     outputs.update(hdr_sample_oracles())
