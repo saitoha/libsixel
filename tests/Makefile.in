@@ -135,6 +135,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/0019_gamma_decode_invalid.c \
 	processing/cms/0020_builtin_lut_physical_pcs.c \
 	processing/cms/0021_builtin_inplace_expansion.c \
+	processing/cms/0024_minimal_icc_acceptance.c \
 	processing/colorspace/0012_extended_failure_atomic.c \
 	processing/cms/0008_invalid_rgb_definition.c \
 	processing/cms/0009_icc_length_ownership.c \
@@ -589,6 +590,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0019_gamma_decode_invalid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0020_builtin_lut_physical_pcs.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0021_builtin_inplace_expansion.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0024_minimal_icc_acceptance.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0009_icc_length_ownership.$(OBJEXT) \
@@ -1295,6 +1297,7 @@ am__depfiles_remade =  \
 	processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po \
 	processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po \
 	processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po \
+	processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po \
@@ -2191,6 +2194,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_GAMMA_DECODE_INVALID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_BUILTIN_LUT_PHYSICAL_PCS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_BUILTIN_INPLACE_EXPANSION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_MINIMAL_ICC_ACCEPTANCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_NAMED_XYZ \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SIMPLE_POWER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
@@ -2663,6 +2667,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0019_gamma_decode_invalid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0020_builtin_lut_physical_pcs.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0021_builtin_inplace_expansion.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0024_minimal_icc_acceptance.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0008_invalid_rgb_definition.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0009_icc_length_ownership.c \
@@ -3350,6 +3355,9 @@ processing/cms/test_runner-0020_builtin_lut_physical_pcs.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/cms/test_runner-0021_builtin_inplace_expansion.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0024_minimal_icc_acceptance.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/$(am__dirstamp):
@@ -5099,6 +5107,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po@am__quote@ # am--include-marker
@@ -5699,6 +5708,20 @@ processing/cms/test_runner-0021_builtin_inplace_expansion.obj: processing/cms/00
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0021_builtin_inplace_expansion.c' object='processing/cms/test_runner-0021_builtin_inplace_expansion.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0021_builtin_inplace_expansion.obj `if test -f 'processing/cms/0021_builtin_inplace_expansion.c'; then $(CYGPATH_W) 'processing/cms/0021_builtin_inplace_expansion.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0021_builtin_inplace_expansion.c'; fi`
+
+processing/cms/test_runner-0024_minimal_icc_acceptance.o: processing/cms/0024_minimal_icc_acceptance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0024_minimal_icc_acceptance.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Tpo -c -o processing/cms/test_runner-0024_minimal_icc_acceptance.o `test -f 'processing/cms/0024_minimal_icc_acceptance.c' || echo '$(srcdir)/'`processing/cms/0024_minimal_icc_acceptance.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Tpo processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0024_minimal_icc_acceptance.c' object='processing/cms/test_runner-0024_minimal_icc_acceptance.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0024_minimal_icc_acceptance.o `test -f 'processing/cms/0024_minimal_icc_acceptance.c' || echo '$(srcdir)/'`processing/cms/0024_minimal_icc_acceptance.c
+
+processing/cms/test_runner-0024_minimal_icc_acceptance.obj: processing/cms/0024_minimal_icc_acceptance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0024_minimal_icc_acceptance.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Tpo -c -o processing/cms/test_runner-0024_minimal_icc_acceptance.obj `if test -f 'processing/cms/0024_minimal_icc_acceptance.c'; then $(CYGPATH_W) 'processing/cms/0024_minimal_icc_acceptance.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0024_minimal_icc_acceptance.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Tpo processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0024_minimal_icc_acceptance.c' object='processing/cms/test_runner-0024_minimal_icc_acceptance.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0024_minimal_icc_acceptance.obj `if test -f 'processing/cms/0024_minimal_icc_acceptance.c'; then $(CYGPATH_W) 'processing/cms/0024_minimal_icc_acceptance.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0024_minimal_icc_acceptance.c'; fi`
 
 processing/colorspace/test_runner-0012_extended_failure_atomic.o: processing/colorspace/0012_extended_failure_atomic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0012_extended_failure_atomic.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Tpo -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.o `test -f 'processing/colorspace/0012_extended_failure_atomic.c' || echo '$(srcdir)/'`processing/colorspace/0012_extended_failure_atomic.c
@@ -12117,6 +12140,7 @@ distclean: distclean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
@@ -12599,6 +12623,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0019_gamma_decode_invalid.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0020_builtin_lut_physical_pcs.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0021_builtin_inplace_expansion.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0024_minimal_icc_acceptance.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po

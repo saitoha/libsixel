@@ -209,6 +209,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0019_GAMMA_DECODE_INVALID \
     -DBUILD_TEST_0020_BUILTIN_LUT_PHYSICAL_PCS \
     -DBUILD_TEST_0021_BUILTIN_INPLACE_EXPANSION \
+    -DBUILD_TEST_0024_MINIMAL_ICC_ACCEPTANCE \
     -DBUILD_TEST_0001_NAMED_XYZ \
     -DBUILD_TEST_0002_SIMPLE_POWER \
     -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
@@ -656,6 +657,7 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0019_gamma_decode_invalid.c \
     processing/cms/0020_builtin_lut_physical_pcs.c \
     processing/cms/0021_builtin_inplace_expansion.c \
+    processing/cms/0024_minimal_icc_acceptance.c \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \

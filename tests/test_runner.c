@@ -133,6 +133,7 @@ int test_cms_0018(int argc, char **argv);
 int test_cms_0019(int argc, char **argv);
 int test_cms_0020(int argc, char **argv);
 int test_cms_0021(int argc, char **argv);
+int test_cms_0024(int argc, char **argv);
 int test_pmap_0053(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -1079,6 +1080,7 @@ static test_entry_t const test_entries[] = {
     { "cms/0019_gamma_decode_invalid", test_cms_0019 },
     { "cms/0020_builtin_lut_physical_pcs", test_cms_0020 },
     { "cms/0021_builtin_inplace_expansion", test_cms_0021 },
+    { "cms/0024_minimal_icc_acceptance", test_cms_0024 },
     { "assessment/0001_ciede2000_reference", test_qa_0001 },
     { "assessment/0002_same_physical_coordinates", test_qa_0002 },
     { "assessment/0003_same_rgb_different_definition", test_qa_0003 },

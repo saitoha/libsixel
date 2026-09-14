@@ -55,7 +55,7 @@
       "orientation": 1,
       "background": null,
       "definition": "display-p3.icc",
-      "sha256": "c24ed6c729305cf8467b46f1e9d98765bc50352ee842aca7d7df772a1412cca9"
+      "sha256": "91c3f5a924fcef6befbac6603d7a189bd109e4a0187859fa3751efca6cc91d48"
     },
     {
       "file": "png-raw-8-rgb.png",
@@ -161,7 +161,7 @@
       "orientation": 6,
       "background": null,
       "definition": "display-p3.icc",
-      "sha256": "a48c7bf9e7b968beac160e40a59803d409391d916041a3dfcdd1becb7078bf3a"
+      "sha256": "318d8dd47f9fc53145d18b634024e8fa7de95e75eeae5e2054df05f13d04dbed"
     },
     {
       "file": "png-p3-background-8-rgb.png",
@@ -218,7 +218,7 @@
         0
       ],
       "definition": "display-p3.icc",
-      "sha256": "b3fad7843b788008c206f6b8c3415c1a34811bfb5bf114ad1653f4652db42d1e"
+      "sha256": "3b5eca0b935dfee515b70d02477f96ddbdb43f1a28d9360ab7b267819b612699"
     },
     {
       "file": "png-p3-8-rgba.png",
@@ -279,7 +279,7 @@
       "orientation": 1,
       "background": null,
       "definition": "display-p3.icc",
-      "sha256": "c375c1bf42ef6a194e8d83b1a11b185f699137d1d01c7598591db4228b32cb25"
+      "sha256": "b89bc7e255c3ceed487c34d9d237f196f073873f7fb2fe71d3e4f804010b6ebc"
     },
     {
       "file": "png-raw-8-rgba.png",
@@ -401,7 +401,7 @@
       "orientation": 6,
       "background": null,
       "definition": "display-p3.icc",
-      "sha256": "ad893f416d6fb842009f3e3dae1006ac299d651bc6422654ac254ed3b22ca918"
+      "sha256": "f9a771ed765c080781b15a7dafd8ebba97746904d915f33f36d5cf5ad500f625"
     },
     {
       "file": "png-p3-background-8-rgba.png",
@@ -466,7 +466,7 @@
         0
       ],
       "definition": "display-p3.icc",
-      "sha256": "c053ad577f0f2d655826ef3c7676e6ed4fe305c932d8edd1c7deed12ccc6d492"
+      "sha256": "9781728d00f988807febbaac0d15a32610001c5c7ba7b34f5ffa20b9e921f0f1"
     },
     {
       "file": "png-p3-16-rgb.png",
@@ -519,7 +519,7 @@
       "orientation": 1,
       "background": null,
       "definition": "display-p3.icc",
-      "sha256": "83e21f771cd84f7604aa1aeb6f755f38c9b2ab782c2d27f8420b237d22c89f63"
+      "sha256": "41c8dddddd060219f4b3151437efc056a7d80283a25914c880ce1587fdf7a7fe"
     },
     {
       "file": "png-raw-16-rgb.png",
@@ -625,7 +625,7 @@
       "orientation": 6,
       "background": null,
       "definition": "display-p3.icc",
-      "sha256": "c9fc474fc91148fcdb0ea4c306222269944952070c62d967858c790cb34c8d29"
+      "sha256": "ef111308ff1f4f90445d2632081a3b336ea28976192af4c498ff88cfc466c245"
     },
     {
       "file": "png-p3-background-16-rgb.png",
@@ -682,7 +682,7 @@
         0
       ],
       "definition": "display-p3.icc",
-      "sha256": "fa2a7ce0dd8191bfa8855cc07232b105b1fef3932a82063580cf09d8c19944a5"
+      "sha256": "f43301ce23edeb28a28889216d8d8806e7580527d9071fc0770831c653f41d31"
     },
     {
       "file": "png-p3-16-rgba.png",
@@ -743,7 +743,7 @@
       "orientation": 1,
       "background": null,
       "definition": "display-p3.icc",
-      "sha256": "c9132241bd50be222dbf0acdb3bca582146a2278cceac16c5a1c9d5afdde4f9c"
+      "sha256": "0fd64b949ea7dc4b236cb4fe212ab0c44c9014e134274c28cf931ea75431ea69"
     },
     {
       "file": "png-raw-16-rgba.png",
@@ -865,7 +865,7 @@
       "orientation": 6,
       "background": null,
       "definition": "display-p3.icc",
-      "sha256": "0712f757bbc7e79afe9005d8f04975e8b540de834f93e3617f7dab527c6e56c7"
+      "sha256": "fa7d2ac1410d21d815b9eb16698bd742c15bec841aace0c5011f476ba877c72d"
     },
     {
       "file": "png-p3-background-16-rgba.png",
@@ -930,7 +930,7 @@
         0
       ],
       "definition": "display-p3.icc",
-      "sha256": "2305fcbec27c89139d5131ed39718e6fbb9847725e9577c7f209b7ebc832368b"
+      "sha256": "66fefda49a8dcd971c978ed1cab049c4d4a30a853411c47aeeb5efafa74af3db"
     }
   ],
   "expected": {

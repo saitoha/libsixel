@@ -25,8 +25,8 @@
     ],
     "metadata": "iCCP only",
     "profile": "display-p3.icc",
-    "profile_sha256": "33ba37ab802a83588a7c112cc05c10e40018e019e781ad38acd482879c3e8a9f",
-    "png_sha256": "4b6570fe78f27663443758d31ab583bdf8fb5c9bc879c84007175ddc04821db2"
+    "profile_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
+    "png_sha256": "2c1de267a35f56e8e40ee073b0a98dc1f16fa9d459d2d71604a99aae03090508"
   },
   "tolerances": {
     "trc_double": 1e-12,
@@ -628,5 +628,28 @@
       0.4,
       0.6
     ]
+  },
+  "minimal_profiles": [
+    {
+      "file": "minimal-display-p3.icc",
+      "sha256": "33ba37ab802a83588a7c112cc05c10e40018e019e781ad38acd482879c3e8a9f",
+      "purpose": "M0 byte-identical builtin parser acceptance only"
+    },
+    {
+      "file": "minimal-forward-lut.icc",
+      "sha256": "8f0c0517243c03d76be827712100033f505e86568bee25b7f4a21cfe04958341",
+      "purpose": "M0 byte-identical builtin parser acceptance only"
+    },
+    {
+      "file": "minimal-paired-lut.icc",
+      "sha256": "9ba0e7fda4da9aec6a0242bfcbc679e894b8ee9e68fba9348f4e4af97017723d",
+      "purpose": "M0 byte-identical builtin parser acceptance only"
+    }
+  ],
+  "profile_structure": {
+    "display-p3.icc": "mntr: matrix/TRC + wtpt, chad, desc, cprt",
+    "forward-lut.icc": "scnr: A2B0 + wtpt, desc, cprt",
+    "paired-lut.icc": "mntr: A2B0, B2A0 + wtpt, desc, cprt",
+    "change": "Required metadata/class only; numeric matrix/TRC/LUT unchanged"
   }
 }

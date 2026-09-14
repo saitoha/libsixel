@@ -131,7 +131,13 @@ def fixed(value):
     return struct.pack('>i', int((value * 65536).to_integral_value()))
 
 
-def icc_profile():
+def mluc(text):
+    encoded = text.encode('utf-16-be')
+    return (b'mluc' + bytes(4) + struct.pack('>II', 1, 12) + b'enUS'
+            + struct.pack('>II', len(encoded), 28) + encoded)
+
+
+def icc_profile(minimal=False):
     tags = []
     for name, column in zip((b'rXYZ', b'gXYZ', b'bXYZ'), zip(*P3)):
         tags.append((name, b'XYZ \0\0\0\0' + b''.join(
@@ -142,13 +148,32 @@ def icc_profile():
                      D('0.04045'), D(0), D(0)])
     tags.extend((name, curve) for name in (b'rTRC', b'gTRC', b'bTRC'))
     tags.append((b'wtpt', b'XYZ ' + bytes(4) + b''.join(map(fixed, D50))))
-    return pack_profile(tags)
+    if minimal:
+        return pack_profile(tags, minimal=True)
+    # Matrix/TRC tags are already PCS-adapted. Record the actual D65-to-D50
+    # adaptation as required for the display's non-D50 adopted white.
+    adaptation = list(zip(*(adapt([D(i == j) for i in range(3)])
+                             for j in range(3))))
+    tags.append((b'chad', b'sf32' + bytes(4) + b''.join(
+        fixed(v) for row in adaptation for v in row)))
+    return pack_profile(tags, name='Independent Display P3')
 
 
-def pack_profile(tags):
+def pack_profile(tags, profile_class=b'mntr', space=b'RGB ',
+                 name='Independent color fixture', minimal=False):
+    # The older minimal envelopes were parser probes. Numeric image oracles
+    # must also include the class-independent required ICC v4 tags.
+    tags = list(tags)
+    supplied = {name for name, _ in tags}
+    for tag, payload in [(b'desc', mluc(name)),
+                         (b'cprt', mluc('Copyright libsixel contributors; MIT')),
+                         (b'wtpt', b'XYZ ' + bytes(4)
+                          + b''.join(map(fixed, D50)))]:
+        if not minimal and tag not in supplied:
+            tags.append((tag, payload))
     header = bytearray(128)
     header[8:12] = bytes([4, 0x30, 0, 0])
-    header[12:24] = b'mntrRGB XYZ '
+    header[12:24] = profile_class + space + b'XYZ '
     header[24:36] = struct.pack('>6H', 2026, 9, 14, 0, 0, 0)
     header[36:40] = b'acsp'
     header[64:68] = struct.pack('>I', 1)
@@ -164,7 +189,7 @@ def pack_profile(tags):
     return bytes(header) + struct.pack('>I', len(tags)) + table + payload
 
 
-def lut_profile(reverse):
+def lut_profile(reverse, minimal=False):
     # Constant 2x2x2 LUTs are intentionally non-invertible. They test
     # directional capability, not a false exact-roundtrip requirement.
     def lut(values):
@@ -176,7 +201,9 @@ def lut_profile(reverse):
     tags = [(b'A2B0', lut([8192, 16384, 24576]))]
     if reverse:
         tags.append((b'B2A0', lut([13107, 26214, 39321])))
-    return pack_profile(tags)
+    return pack_profile(tags,
+        profile_class=b'mntr' if reverse or minimal else b'scnr',
+        minimal=minimal)
 
 
 def chunk(kind, content):
@@ -293,6 +320,7 @@ def png_sample_oracles(profile):
     return outputs
 
 
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -396,6 +424,32 @@ def main():
                'display-p3.icc': profile, 'display-p3.png': png}
     outputs.update(lut_outputs)
     outputs.update(png_sample_oracles(profile))
+    # Keep the exact M0 parser probes, explicitly outside conformance and
+    # color accuracy claims. Complete profiles own the numeric tests above.
+    minimal_header = banner
+    minimal_records = []
+    for name, data in [('display-p3', icc_profile(minimal=True)),
+                       ('forward-lut', lut_profile(False, minimal=True)),
+                       ('paired-lut', lut_profile(True, minimal=True))]:
+        filename = 'minimal-' + name + '.icc'
+        symbol = 'color_minimal_' + name.replace('-', '_')
+        minimal_header += f'static unsigned char const {symbol}[] = {{\n'
+        for offset in range(0, len(data), 12):
+            minimal_header += '    ' + ', '.join(
+                f'0x{v:02x}' for v in data[offset:offset+12]) + ',\n'
+        minimal_header += '};\n'
+        outputs[filename] = data
+        minimal_records.append({'file': filename,
+            'sha256': hashlib.sha256(data).hexdigest(),
+            'purpose': 'M0 byte-identical builtin parser acceptance only'})
+    outputs['minimal-profiles.h'] = minimal_header.encode()
+    manifest['minimal_profiles'] = minimal_records
+    manifest['profile_structure'] = {
+        'display-p3.icc': 'mntr: matrix/TRC + wtpt, chad, desc, cprt',
+        'forward-lut.icc': 'scnr: A2B0 + wtpt, desc, cprt',
+        'paired-lut.icc': 'mntr: A2B0, B2A0 + wtpt, desc, cprt',
+        'change': 'Required metadata/class only; numeric matrix/TRC/LUT unchanged'}
+    outputs['manifest.json'] = (json.dumps(manifest, indent=2) + '\n').encode()
     if not args.check:
         args.output.mkdir(parents=True, exist_ok=True)
     for name, content in outputs.items():

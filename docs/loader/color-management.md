@@ -334,6 +334,9 @@ Builtin float transforms into analytic sRGB or a synthetic RGB definition connec
 | CMS-27 | In-place RGB8-to-float expansion preserves every original sample. | [tests/processing/cms/0021_builtin_inplace_expansion.t](../../tests/processing/cms/0021_builtin_inplace_expansion.t) |
 | CMS-28 | The apply trace reports the actual builtin backend, extended RGB path, pixel layouts, and successful execution. | [tests/processing/cms/0022_actual_apply_trace.t](../../tests/processing/cms/0022_actual_apply_trace.t) |
 | CMS-29 | CMS apply tracing is silent when the loader trace topic is disabled. | [tests/processing/cms/0023_apply_trace_quiet.t](../../tests/processing/cms/0023_apply_trace_quiet.t) |
+| CMS-30 | Historical incomplete M0 ICC envelopes remain builtin acceptance probes, separately from conforming-profile numeric oracles. | [tests/processing/cms/0024_minimal_icc_acceptance.t](../../tests/processing/cms/0024_minimal_icc_acceptance.t) |
+
+The independent [color fixture generator](../../tools/generate_color_fixtures.py) supplies descriptive/copyright tags and the D50 media white for its normal ICC v4 fixtures. The Display P3 matrix profile also records its D65-to-D50 chromatic adaptation; the forward-only LUT uses Input (`scnr`) class, while the paired LUT retains Display (`mntr`) class. These structural corrections leave the encoded matrix, TRC, and LUT payloads and their independently computed numeric expectations unchanged. The `minimal-*.icc` files preserve the exact older M0 envelopes for permissive builtin acceptance only; neither their acceptance nor native profile verification substitutes for testing an actual color transform. The [fixture manifest](../../tests/data/color-numeric/manifest.json) records the separate roles and byte hashes.
 
 ### Defensive and malformed-input tests
 
