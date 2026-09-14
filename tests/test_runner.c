@@ -125,6 +125,7 @@ int test_cdef_0010(int argc, char **argv);
 int test_cdef_0011(int argc, char **argv);
 int test_cdef_0012(int argc, char **argv);
 int test_cdef_0013(int argc, char **argv);
+int test_cms_0014(int argc, char **argv);
 int test_pmap_0053(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -1063,6 +1064,7 @@ static test_entry_t const test_entries[] = {
     { "cms/0011_separate_intents", test_cdef_0011 },
     { "cms/0012_engine_independence", test_cdef_0012 },
     { "cms/0013_queued_transform_lifetime", test_cdef_0013 },
+    { "cms/0014_colorsync_linear_primaries", test_cms_0014 },
     { "assessment/0001_ciede2000_reference", test_qa_0001 },
     { "assessment/0002_same_physical_coordinates", test_qa_0002 },
     { "assessment/0003_same_rgb_different_definition", test_qa_0003 },

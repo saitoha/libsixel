@@ -1110,8 +1110,10 @@ sixel_cms_profile_create_rgb_gamma_chrm_colorsync(
     gamma[0] = (CGFloat)(1.0 / gamma_r);
     gamma[1] = (CGFloat)(1.0 / gamma_g);
     gamma[2] = (CGFloat)(1.0 / gamma_b);
+    /* Calibrated RGB stores each primary's XYZ column consecutively;
+     * the internal matrix uses rows. Passing rows changes the primaries. */
     for (i = 0u; i < 9u; ++i) {
-        cg_matrix[i] = (CGFloat)matrix[i];
+        cg_matrix[i] = (CGFloat)matrix[(i % 3u) * 3u + i / 3u];
     }
 
     color_space = CGColorSpaceCreateCalibratedRGB(white_point,

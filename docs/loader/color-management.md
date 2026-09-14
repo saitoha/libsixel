@@ -297,6 +297,8 @@ Compare decoded managed pixels against an independently prepared color-managed r
 
 ### Behavioral contract tests
 
+Generated ColorSync RGB profiles preserve the requested primary matrix: each primary's XYZ column is supplied in the CoreGraphics calibrated-RGB layout. The linear-sRGB output probe checks actual P3 ICC transformation against independent 8/16-bit source oracles, including negative and above-one components, with an absolute 0.0001 linear-component bound for the generated profile's rounding. This CMS-only probe does not establish that a PNG loader preserves those components.
+
 | ID | Tested boundary | Owning test |
 | --- | --- | --- |
 | CMS-01 | Builtin RGB/gray segmented-curve and selected A2B0 paths are evaluated. | [tests/diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.t](../../tests/diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.t) |
@@ -319,6 +321,7 @@ Compare decoded managed pixels against an independently prepared color-managed r
 | CMS-18 | ignored tags preserve pixels. | [tests/diagnostics/cms_trace/0006_ignored_tags_preserve_pixels.t](../../tests/diagnostics/cms_trace/0006_ignored_tags_preserve_pixels.t) |
 | CMS-19 | lsqa defaults to auto and normalizes a profiled image differently from none. | [tests/quality_gate/cms/0009_lsqa_cms_default_auto.t](../../tests/quality_gate/cms/0009_lsqa_cms_default_auto.t) |
 | CMS-20 | img2sixel defaults to auto and normalizes a profiled image differently from none. | [tests/quality_gate/cms/0010_img2sixel_cms_default_auto.t](../../tests/quality_gate/cms/0010_img2sixel_cms_default_auto.t) |
+| CMS-21 | ColorSync's generated linear-sRGB profile preserves declared primaries and actual extended P3 samples. | [tests/processing/cms/0014_colorsync_linear_primaries.t](../../tests/processing/cms/0014_colorsync_linear_primaries.t) |
 
 ### Defensive and malformed-input tests
 

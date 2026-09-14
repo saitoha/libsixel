@@ -201,6 +201,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0011_SEPARATE_INTENTS \
     -DBUILD_TEST_0012_ENGINE_INDEPENDENCE \
     -DBUILD_TEST_0013_QUEUED_TRANSFORM_LIFETIME \
+    -DBUILD_TEST_0014_COLORSYNC_LINEAR_PRIMARIES \
     -DBUILD_TEST_0001_NAMED_XYZ \
     -DBUILD_TEST_0002_SIMPLE_POWER \
     -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
@@ -640,6 +641,7 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0011_separate_intents.c \
     processing/cms/0012_engine_independence.c \
     processing/cms/0013_queued_transform_lifetime.c \
+    processing/cms/0014_colorsync_linear_primaries.c \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \
