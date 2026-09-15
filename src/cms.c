@@ -3673,6 +3673,52 @@ sixel_cms_colorsync_promote_source(
 
 #endif
 
+#if HAVE_LCMS2
+static int
+sixel_cms_lcms_input_units(sixel_cms_transform_t const *transform,
+                           void const *src, void *dst, size_t count)
+{
+    float input[256u * 4u];
+    float const *source;
+    float *target;
+    size_t channels;
+    size_t first;
+    size_t batch;
+    size_t pixel;
+    size_t channel;
+    float scale;
+
+    /* The facade stores unit CMYK and L/100, a/128, b/128 Lab. LCMS float
+     * formatters instead consume ink percentages and physical Lab values.
+     * Change units only: native device-domain and special-value handling
+     * remain native, and extended RGB output must not be clipped here. */
+    channels = transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_F32
+        ? 4u : 3u;
+    if (count > SIZE_MAX / (channels * sizeof(float)) ||
+        count > SIZE_MAX / (3u * sizeof(float))) {
+        return 0;
+    }
+    source = src;
+    target = dst;
+    for (first = 0u; first < count; first += batch) {
+        batch = count - first < 256u ? count - first : 256u;
+        /* Copy a complete batch before writing. RGB output contracts CMYK
+         * and preserves Lab's size, so forward batches also support exact
+         * source/destination aliases without altering separate inputs. */
+        for (pixel = 0u; pixel < batch; ++pixel) {
+            for (channel = 0u; channel < channels; ++channel) {
+                scale = channels == 4u || channel == 0u ? 100.0f : 128.0f;
+                input[pixel * channels + channel] =
+                    source[(first + pixel) * channels + channel] * scale;
+            }
+        }
+        cmsDoTransform(transform->lcms_handle, input, target + first * 3u,
+                       (cmsUInt32Number)batch);
+    }
+    return 1;
+}
+#endif
+
 static int
 sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
                        void const *src,
@@ -3687,6 +3733,12 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
     if (transform->backend == SIXEL_CMS_PROFILE_BACKEND_LCMS2) {
         if (transform->lcms_handle == NULL) {
             return 0;
+        }
+        if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
+            (transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_F32 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32)) {
+            return sixel_cms_lcms_input_units(transform, src, dst,
+                                              pixel_count);
         }
         cmsDoTransform(transform->lcms_handle,
                        src,

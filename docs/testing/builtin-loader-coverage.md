@@ -12,7 +12,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 
 | Area | Tests | Direct values | Quality floor | Trace/status | Accept/reject | Robustness | Other/smoke |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| [Shared loader integration and policy](../loader/builtin.md) | 49 | 1 | 3 | 1 | 4 | 0 | 40 |
+| [Shared loader integration and policy](../loader/builtin.md) | 52 | 1 | 3 | 1 | 4 | 0 | 43 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
 | [PNG and APNG](../loader/builtin/png.md) | 282 | 22 | 59 | 0 | 13 | 7 | 181 |
@@ -24,7 +24,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 27 | 11 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2191** | **468** | **724** | **652** | **53** | **13** | **281** |
+| **Total** | **2194** | **468** | **724** | **652** | **53** | **13** | **284** |
 
 ## Complete inventory
 
@@ -85,6 +85,9 @@ Primary implementation context: [Builtin Image Loader](../loader/builtin.md).
 | [tests/loader/builtin/1992_loader_builtin_unknown_selector_reject.t](../../tests/loader/builtin/1992_loader_builtin_unknown_selector_reject.t) | Verify an unknown unified-runner selector cannot pass through the baseline. | Acceptance/rejection | Inventory only |
 | [tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t](../../tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t) | Verify builtin formats handle allocation failures atomically. | Other integration/smoke | Policy-linked: [`docs/loader/builtin.md`](../loader/builtin.md) |
 | [tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t](../../tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t) | Verify builtin formats propagate callback interruption. | Trace/status observation | Policy-linked: [`docs/loader/builtin.md`](../loader/builtin.md) |
+| [tests/loader/builtin/2211_loader_builtin_lcms_cmyk32_main.t](../../tests/loader/builtin/2211_loader_builtin_lcms_cmyk32_main.t) | Verify a public float frame after an actual LCMS device-unit transform. | Other integration/smoke | Policy-linked: [`docs/loader/color-management.md`](../loader/color-management.md) |
+| [tests/loader/builtin/2212_loader_builtin_lcms_cmyk32_missing.t](../../tests/loader/builtin/2212_loader_builtin_lcms_cmyk32_missing.t) | Verify a public float frame after an actual LCMS device-unit transform. | Other integration/smoke | Policy-linked: [`docs/loader/color-management.md`](../loader/color-management.md) |
+| [tests/loader/builtin/2213_loader_builtin_lcms_cmyk32_layers.t](../../tests/loader/builtin/2213_loader_builtin_lcms_cmyk32_layers.t) | Verify a public float frame after an actual LCMS device-unit transform. | Other integration/smoke | Policy-linked: [`docs/loader/color-management.md`](../loader/color-management.md) |
 
 ### Netpbm
 

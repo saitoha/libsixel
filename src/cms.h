@@ -70,7 +70,9 @@ typedef enum sixel_cms_pixel_format {
     SIXEL_CMS_PIXELFORMAT_RGB_F32,
     SIXEL_CMS_PIXELFORMAT_CMYK_8,
     SIXEL_CMS_PIXELFORMAT_CMYK_16,
+    /* Normalized device inks, not native LCMS percentages. */
     SIXEL_CMS_PIXELFORMAT_CMYK_F32,
+    /* L/100, a/128, b/128, independently of the selected backend. */
     SIXEL_CMS_PIXELFORMAT_LAB_F32,
     SIXEL_CMS_PIXELFORMAT_GRAY_F32
 } sixel_cms_pixel_format_t;

@@ -808,6 +808,18 @@ int test_loader_0184_psd_cmyk_icc_numeric(int argc, char **argv);
 int test_loader_0185_png_source_numeric(int argc, char **argv);
 int test_tiff_0142(int argc, char **argv);
 int test_cms_0231(int argc, char **argv);
+int test_loader_0195_main(int argc, char **argv);
+int test_loader_0196_missing(int argc, char **argv);
+int test_loader_0197_layers(int argc, char **argv);
+int test_loader_0172_lab(int argc, char **argv);
+int test_cms_0238(int argc, char **argv);
+int test_cms_0239(int argc, char **argv);
+int test_cms_0240(int argc, char **argv);
+int test_cms_0241(int argc, char **argv);
+int test_cms_0242(int argc, char **argv);
+int test_cms_0243(int argc, char **argv);
+int test_cms_0244(int argc, char **argv);
+int test_cms_0245(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -1666,6 +1678,18 @@ static test_entry_t const test_entries[] = {
       test_loader_0185_png_source_numeric },
     { "loader/libtiff/0142_rgb16_source", test_tiff_0142 },
     { "cms/0231_tiff_icc_numeric", test_cms_0231 },
+    { "loader/0195_lcms_cmyk32_main", test_loader_0195_main },
+    { "loader/0196_lcms_cmyk32_missing", test_loader_0196_missing },
+    { "loader/0197_lcms_cmyk32_layers", test_loader_0197_layers },
+    { "loader/0172_lcms_lab_frame", test_loader_0172_lab },
+    { "cms/0238_lcms_cmyk_linear", test_cms_0238 },
+    { "cms/0239_lcms_cmyk_linear_alias", test_cms_0239 },
+    { "cms/0240_lcms_cmyk_gamma", test_cms_0240 },
+    { "cms/0241_lcms_cmyk_gamma_alias", test_cms_0241 },
+    { "cms/0242_lcms_lab_linear", test_cms_0242 },
+    { "cms/0243_lcms_lab_linear_alias", test_cms_0243 },
+    { "cms/0244_lcms_lab_gamma", test_cms_0244 },
+    { "cms/0245_lcms_lab_gamma_alias", test_cms_0245 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

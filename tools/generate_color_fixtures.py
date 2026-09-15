@@ -1787,6 +1787,8 @@ def main():
     outputs.update(tiff_fixtures(profile))
     from generate_tiff_icc_tests import build as tiff_icc_tests
     outputs.update(tiff_icc_tests())
+    from generate_lcms_input_tests import build as lcms_input_tests
+    outputs.update(lcms_input_tests(outputs['cmyk.icc'], outputs['cmyk.json']))
     outputs.update(cli_rgb_oracles())
     outputs.update(hdr_sample_oracles())
     outputs.update(palette_export_oracles())

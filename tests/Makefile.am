@@ -634,6 +634,18 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0185_PNG_SOURCE_NUMERIC \
     -DBUILD_TEST_0142_RGB16_SOURCE \
     -DBUILD_TEST_0231_TIFF_ICC_NUMERIC \
+    -DBUILD_TEST_0195_LCMS_CMYK32_MAIN \
+    -DBUILD_TEST_0196_LCMS_CMYK32_MISSING \
+    -DBUILD_TEST_0197_LCMS_CMYK32_LAYERS \
+    -DBUILD_TEST_0172_LCMS_LAB_FRAME \
+    -DBUILD_TEST_0238_LCMS_CMYK_LINEAR \
+    -DBUILD_TEST_0239_LCMS_CMYK_LINEAR_ALIAS \
+    -DBUILD_TEST_0240_LCMS_CMYK_GAMMA \
+    -DBUILD_TEST_0241_LCMS_CMYK_GAMMA_ALIAS \
+    -DBUILD_TEST_0242_LCMS_LAB_LINEAR \
+    -DBUILD_TEST_0243_LCMS_LAB_LINEAR_ALIAS \
+    -DBUILD_TEST_0244_LCMS_LAB_GAMMA \
+    -DBUILD_TEST_0245_LCMS_LAB_GAMMA_ALIAS \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
     -DBUILD_TEST_0187_COREGRAPHICS_PNG \
     -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -723,6 +735,20 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0181_gamma_option.c \
     processing/cms/0195_native_gamma.c \
     processing/cms/0231_tiff_icc_numeric.c \
+    loader/builtin/0195_lcms_cmyk32_main.c \
+    loader/builtin/0196_lcms_cmyk32_missing.c \
+    loader/builtin/0197_lcms_cmyk32_layers.c \
+    loader/libtiff/0172_lcms_lab_frame.c \
+    loader/cms_input_frame_common.h \
+    processing/cms/0238_lcms_cmyk_linear.c \
+    processing/cms/0239_lcms_cmyk_linear_alias.c \
+    processing/cms/0240_lcms_cmyk_gamma.c \
+    processing/cms/0241_lcms_cmyk_gamma_alias.c \
+    processing/cms/0242_lcms_lab_linear.c \
+    processing/cms/0243_lcms_lab_linear_alias.c \
+    processing/cms/0244_lcms_lab_gamma.c \
+    processing/cms/0245_lcms_lab_gamma_alias.c \
+    processing/cms/lcms_input_units_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \

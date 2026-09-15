@@ -318,6 +318,18 @@ Numeric tests reuse the existing per-triplet magnitude policy. The builtin/LCMS2
 
 Canonical frame accuracy and final displayed SIXEL quality are separate measurements. Retaining an out-of-range linear component does not by itself prove an improvement after display-gamut handling, palette reduction and dithering.
 
+### Normalized float input units at the LCMS boundary
+
+The common `CMYK_F32` representation stores ink amounts in `[0,1]`; `LAB_F32` stores `L/100`, `a/128`, and `b/128`. For an LCMS transform into `RGB_F32`, the adapter converts these to the native formatter units: ink percentages, or physical `L`, `a`, and `b`. Linear and gamma RGB destinations use the same input adapter. This is a representation conversion, not an additional color transform.
+
+A bounded 256-pixel stack buffer copies and scales a complete input batch before native conversion. Separate inputs remain byte-identical. Exact aliases are supported for these two source layouts because CMYK-to-RGB contracts storage and Lab-to-RGB preserves it; bytes outside the RGB output span remain unchanged. Source and destination byte-count overflow is rejected before any output write. This does not establish support for partial overlaps or other expanding aliases.
+
+The adapter adds no device-domain or intermediate RGB clamp. Native handling of out-of-domain and non-finite device inputs is retained. The native sRGB parametric inverse uses a linear extension for negative values; this change does not replace that extension with the builtin endpoint's sign-symmetric transfer function. Other CMS engines and Lab/CMYK destination-unit contracts are outside this adapter.
+
+[`tools/generate_lcms_input_tests.py`](../../tools/generate_lcms_input_tests.py) independently reads the original identity Lab LUT8 and the existing synthetic affine CMYK LUT16. The numerical tests compare against intervals propagated from one encoded input grid bin, two u1.15 PCS bins for the CMYK LUT, and the existing 64-binary32-unit-roundoff triplet allowance. Lab intervals pass through the physical Lab-to-XYZ equations; signed inverse-matrix rows propagate XYZ intervals to RGB. Gamma intervals use the native sRGB inverse's mathematical definition. These intervals include the unquantized ideal, so a future engine with less quantization error also passes. They are scoped test allowances for these profiles, not a universal native-CMM error proof. The verified LCMS table quantization residual is not treated as an input-unit defect.
+
+Each source/target/alias condition checks 521 pixels, with different sample sequences across batch boundaries, actual LCMS application, complete separate-input immutability and output/alias-tail guards. Independent public-frame tests cover profiled PSD32 main composites, one-layer missing composites, two-layer normal composition, and the original float Lab TIFF. The PSD fixtures retain inverted binary32 ink planes and exercise half-opacity linear composition in the two-layer case. The TIFF test retains its existing gamma-to-bounded-linear adapter behavior; it does not claim to preserve TIFF Lab out-of-gamut values. These value contracts are separate from perceptual image-quality measurements.
+
 ### Normalized Lab float input to builtin RGB endpoints
 
 The CMS facade represents `LAB_F32` as `L/100`, `a/128`, and `b/128`. Before the builtin float RGB endpoint evaluates an ICC device table, it maps each normalized a/b component with `(value * 128 + 128) / 255` and bounds that device coordinate to `[0,1]`. The signed facade representation is not itself a LUT coordinate. This boundary applies to both linear and analytic gamma RGB destinations, including aliased input/output buffers. Legacy device transforms retain their existing input normalization; they must not receive a second mapping.
@@ -606,6 +618,18 @@ The unsupported-feature list above is an implementation audit, not a guarantee t
 | CMS-204 | lcms2 RGB conversion is bit-identical with the setting invalid; no original-curve branch is consumed. | [tests/processing/cms/0228_native_gamma_lcms2_rgb_invalid_generic.t](../../tests/processing/cms/0228_native_gamma_lcms2_rgb_invalid_generic.t) |
 | CMS-205 | lcms2 gray conversion is bit-identical with the setting 1; no original-curve branch is consumed. | [tests/processing/cms/0229_native_gamma_lcms2_gray_one_generic.t](../../tests/processing/cms/0229_native_gamma_lcms2_gray_one_generic.t) |
 | CMS-206 | lcms2 gray conversion is bit-identical with the setting invalid; no original-curve branch is consumed. | [tests/processing/cms/0230_native_gamma_lcms2_gray_invalid_generic.t](../../tests/processing/cms/0230_native_gamma_lcms2_gray_invalid_generic.t) |
+| CMS-207 | LCMS lcms cmyk linear input units, independent values, 521 pixels and buffer integrity. | [tests/processing/cms/0238_lcms_cmyk_linear.t](../../tests/processing/cms/0238_lcms_cmyk_linear.t) |
+| CMS-208 | LCMS lcms cmyk linear alias input units, independent values, 521 pixels and buffer integrity. | [tests/processing/cms/0239_lcms_cmyk_linear_alias.t](../../tests/processing/cms/0239_lcms_cmyk_linear_alias.t) |
+| CMS-209 | LCMS lcms cmyk gamma input units, independent values, 521 pixels and buffer integrity. | [tests/processing/cms/0240_lcms_cmyk_gamma.t](../../tests/processing/cms/0240_lcms_cmyk_gamma.t) |
+| CMS-210 | LCMS lcms cmyk gamma alias input units, independent values, 521 pixels and buffer integrity. | [tests/processing/cms/0241_lcms_cmyk_gamma_alias.t](../../tests/processing/cms/0241_lcms_cmyk_gamma_alias.t) |
+| CMS-211 | LCMS lcms lab linear input units, independent values, 521 pixels and buffer integrity. | [tests/processing/cms/0242_lcms_lab_linear.t](../../tests/processing/cms/0242_lcms_lab_linear.t) |
+| CMS-212 | LCMS lcms lab linear alias input units, independent values, 521 pixels and buffer integrity. | [tests/processing/cms/0243_lcms_lab_linear_alias.t](../../tests/processing/cms/0243_lcms_lab_linear_alias.t) |
+| CMS-213 | LCMS lcms lab gamma input units, independent values, 521 pixels and buffer integrity. | [tests/processing/cms/0244_lcms_lab_gamma.t](../../tests/processing/cms/0244_lcms_lab_gamma.t) |
+| CMS-214 | LCMS lcms lab gamma alias input units, independent values, 521 pixels and buffer integrity. | [tests/processing/cms/0245_lcms_lab_gamma_alias.t](../../tests/processing/cms/0245_lcms_lab_gamma_alias.t) |
+| CMS-215 | Actual LCMS device-unit conversion and independent public frame values for main PSD32. | [tests/loader/builtin/2211_loader_builtin_lcms_cmyk32_main.t](../../tests/loader/builtin/2211_loader_builtin_lcms_cmyk32_main.t) |
+| CMS-216 | Actual LCMS device-unit conversion and independent public frame values for missing PSD32. | [tests/loader/builtin/2212_loader_builtin_lcms_cmyk32_missing.t](../../tests/loader/builtin/2212_loader_builtin_lcms_cmyk32_missing.t) |
+| CMS-217 | Actual LCMS device-unit conversion and independent public frame values for layers PSD32. | [tests/loader/builtin/2213_loader_builtin_lcms_cmyk32_layers.t](../../tests/loader/builtin/2213_loader_builtin_lcms_cmyk32_layers.t) |
+| CMS-218 | Actual LCMS device-unit conversion and independent public frame values for TIFF Lab. | [tests/loader/libtiff/0172_lcms_lab_frame.t](../../tests/loader/libtiff/0172_lcms_lab_frame.t) |
 
 ### TIFF RGB16 input contract tests
 
