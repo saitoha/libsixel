@@ -163,6 +163,10 @@ The following test images in the `images/` directory came from public-domain-pho
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
 
+The `images/snake*` samples, including `images/snake.png` and the DDS,
+JPEG XR (HDP), HEIC, AVIF, and JPEG XL variants, are derived from that
+public-domain snake photograph. See `images/README.md` for regeneration.
+
 `images/vimperator3.png` is in the public domain.
   - author: @k_wizard
   - url: http://quadrantem.com/~k_wizard/vimprtan/

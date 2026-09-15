@@ -188,7 +188,6 @@ def benchmark(args):
 def generate_fixtures(build, output):
     fixtures = {}
     for name, path in (("snake", "images/snake.png"),
-                       ("autumn", "images/autumn.png"),
                        ("gradient", "images/measurements/palette-pipeline/"
                         "smooth-gradient-600x450.png")):
         source = Image.open(build / path).convert("RGB")
@@ -355,7 +354,7 @@ def render(output):
     rows = {(x["fixture"], x["mode"]): x for x in metadata["rows"]}
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 11,
                          "axes.spines.top": False, "axes.spines.right": False})
-    for name in ("snake", "autumn", "gradient", "gray", "revisit"):
+    for name in ("snake", "gradient", "gray", "revisit"):
         source = rgb(output / f"{name}-source.png")
         images = [rgb(output / f"{name}-{mode}.png")[:source.shape[0], :source.shape[1]] for mode in MODES]
         fig, axes = plt.subplots(2, 3, figsize=(15, 3.8 if name == "gray" else 7), layout="constrained")
@@ -438,7 +437,7 @@ def render(output):
     fig.savefig(output / "thread-scaling.png", dpi=120)
     plt.close(fig)
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.5), layout="constrained")
-    names = ("snake", "autumn", "gradient", "gray")
+    names = ("snake", "gradient", "gray")
     for ax, metric, title in zip(axes, ("ms_ssim", "delta_e00", "bytes"),
                                  ("MS-SSIM (higher is better)", "Mean ΔE00 (lower is better)", "SIXEL size (KiB)")):
         for i, (mode, label, color) in enumerate(zip(MODES, LABELS, COLORS)):

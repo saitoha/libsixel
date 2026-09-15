@@ -82,7 +82,12 @@ def summarize(rows):
 def main():
     enc = json.loads((OUT / "encode.json").read_text())
     dec = json.loads((OUT / "decode.json").read_text())
-    assert len(enc) == 164 and len(dec) == 264
+    inputs = json.loads((OUT / "inputs.json").read_text())
+    # Each control shares one point between the color and thread sweeps;
+    # the final Full HD input only participates in the thread sweep.
+    pairs = (len(inputs) - 1) * (len(COLORS) + len(THREADS) - 1)
+    pairs += len(THREADS)
+    assert len(enc) == pairs and len(dec) == pairs + 100
     for record in dec:
         folder = (
             ROOT / "results" if record["name"].startswith("picsum-") else OUT / "encode"
@@ -97,7 +102,6 @@ def main():
                 len(t["samples"]) == count and min(t["samples"]) > 0
                 for t in record[metric + "_seconds"]
             )
-    inputs = json.loads((OUT / "inputs.json").read_text())
     names = [i["name"] for i in inputs]
     lookup = {(r["name"], r["threads"]): r for r in dec}
     rows = []
@@ -152,7 +156,7 @@ def main():
         [r for r in rows if r["threads"] == 1 and r["image"] != "snake-fullhd"],
         names[:-1],
         "colors",
-        "OR mode across palette budgets\nEight fixed images; one encoder and decoder thread; ordinary -E size baseline",
+        f"OR mode across palette budgets\n{len(names) - 1} fixed images; one encoder and decoder thread; ordinary -E size baseline",
         "color-curves.png",
     )
     ratio_plot(

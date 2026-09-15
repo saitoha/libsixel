@@ -596,14 +596,6 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/functionality/high-color/measurements/high-color-run.json \
 	docs/functionality/high-color/measurements/high-color-speed.csv \
 	docs/functionality/high-color/measurements/high-color-visual-comparison.png \
-	docs/functionality/high-color/study/autumn-256-fs.png \
-	docs/functionality/high-color/study/autumn-256-fs.six \
-	docs/functionality/high-color/study/autumn-256-none.png \
-	docs/functionality/high-color/study/autumn-256-none.six \
-	docs/functionality/high-color/study/autumn-comparison.png \
-	docs/functionality/high-color/study/autumn-high.png \
-	docs/functionality/high-color/study/autumn-high.six \
-	docs/functionality/high-color/study/autumn-source.png \
 	docs/functionality/high-color/study/color-occupancy.png \
 	docs/functionality/high-color/study/gradient-256-fs.png \
 	docs/functionality/high-color/study/gradient-256-fs.six \

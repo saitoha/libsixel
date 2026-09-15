@@ -4,6 +4,8 @@ This reference accompanies [High-color output](../high-color.md). It separates o
 
 ## Method and artifacts
 
+AI-generated inputs, their image derivatives, and their measurement rows have been removed from this distributed study. The remaining measurements retain their original values and build provenance; charts and corpus totals reflect only the retained inputs.
+
 Measurements were made on 2026-09-13 JST (2026-09-12 UTC), macOS arm64, with 14 logical CPUs, from clean revision `3c92b3a1cc` (the full hash is in the [run record](study/results.json)). The detached build uses `CFLAGS=-O3` and the builtin loaders, with external image loaders and CMS disabled. The run record retains configure arguments, compiler, library hash, measurement-generator hash, renderer hash, dependency versions, source hashes, exact CLI controls, every timing sample, and raw histogram bins.
 
 Three requested policies are compared: 256 colors without diffusion, 256 colors with Floyd–Steinberg diffusion, and `-I` without diffusion. They share 8-bit precision, high quality, GPU off, RGB palette definitions, and `-E fast`; other policies retain that revision's defaults. FS is included because comparing only against undithered 256 colors would omit a useful quality alternative. The generator also verifies that requesting `-I -d fs` produces identical bytes to `-I -d none` on every fixture: the current easy-encoder path bypasses that diffusion request.
@@ -15,7 +17,6 @@ The reference fixtures are:
 | Input | Raster | Source RGB colors | Occupied 15bit keys | Preparation |
 | --- | ---: | ---: | ---: | --- |
 | [snake](study/snake-source.png) | 600×450 | 62,586 | 2,967 | RGB conversion; fit within 600x450, Lanczos, no enlargement |
-| [autumn](study/autumn-source.png) | 600×302 | 52,222 | 783 | RGB conversion; fit within 600x450, Lanczos, no enlargement |
 | [gradient](study/gradient-source.png) | 600×450 | 131,200 | 2,486 | RGB conversion; fit within 600x450, Lanczos, no enlargement |
 | [gray](study/gray-source.png) | 768×96 | 256 | 32 | 768x96; RGB=(floor(x/3),)*3 |
 | [revisit](study/revisit-source.png) | 256×256 | 65,536 | 32,768 | 256x256; keys 0..32767 twice in row order; RGB=(key channels)*8 + (0 then 7) |
@@ -34,9 +35,6 @@ MS-SSIM is the general perceptual metric; mean ΔE00 describes color error. Thei
 | snake | 256 / none | 254 | 0.986100 | 2.403138 | [247,009](study/snake-256-none.six) |
 | snake | 256 / FS | 254 | 0.991198 | 2.728167 | [326,104](study/snake-256-fs.six) |
 | snake | `-I` / none | 14,838 | 0.989064 | 1.752770 | [675,644](study/snake-high.six) |
-| autumn | 256 / none | 256 | 0.998199 | 1.625273 | [361,425](study/autumn-256-none.six) |
-| autumn | 256 / FS | 256 | 0.998252 | 1.769629 | [401,295](study/autumn-256-fs.six) |
-| autumn | `-I` / none | 4,270 | 0.998061 | 1.374330 | [556,192](study/autumn-high.six) |
 | gradient | 256 / none | 255 | 0.904965 | 2.269080 | [37,059](study/gradient-256-none.six) |
 | gradient | 256 / FS | 256 | 0.964675 | 2.954400 | [155,093](study/gradient-256-fs.six) |
 | gradient | `-I` / none | 1,714 | 0.979565 | 1.446631 | [122,511](study/gradient-high.six) |
@@ -44,21 +42,19 @@ MS-SSIM is the general perceptual metric; mean ΔE00 describes color error. Thei
 | gray | 256 / FS | 64 | 0.983637 | 0.338442 | [7,414](study/gray-256-fs.six) |
 | gray | `-I` / none | 32 | 0.937472 | 1.044751 | [6,490](study/gray-high.six) |
 
-The snake's high-color stream is 2.74× the undithered 256-color stream, yet its MS-SSIM remains below 256-color FS. Autumn gains a little in mean color error while losing a little in MS-SSIM. The gradient improves substantially, but still misses 0.98. On the gray ramp, `-I` is worse than either 256-color request and falls below 0.95. “More colors” is therefore not a quality guarantee, and neither speed nor size has a universal ordering.
+The snake's high-color stream is 2.74× the undithered 256-color stream, yet its MS-SSIM remains below 256-color FS. The gradient improves substantially, but still misses 0.98. On the gray ramp, `-I` is worse than either 256-color request and falls below 0.95. “More colors” is therefore not a quality guarantee, and neither speed nor size has a universal ordering.
 
 ## Visual comparisons
 
 In every comparison, left is requested 256 colors without diffusion, center is requested 256 colors with FS, and right is `-I`. The lower row shows mean absolute RGB8 error against the source, on the same 0–12 scale with values above 12 clipped. It locates deviations, not perceptual severity. Original source images are linked in the fixture table.
 
-### Photographs
+### Photograph
 
 ![Snake: 256 colors without diffusion, 256 colors with FS, and high color, plus common-scale error maps](study/snake-comparison.png)
 
 ![Snake crop: identical nearest-neighbor enlargement and signed RGB error with six-row guides](study/snake-detail.png)
 
 The crop keeps the source pixels and uses nearest-neighbor enlargement. Gray guide lines on the error maps mark six-row boundaries; no guides are added to the decoded images. High color reduces much of the color error, while some texture is better represented by 256-color FS.
-
-![Autumn photograph: all three policies at identical size, with error maps](study/autumn-comparison.png)
 
 ### Smooth gradients and banding
 
@@ -90,7 +86,6 @@ Count these distinct quantities separately:
 | Fixture | Source RGB colors | Source keys | `-I` painted RGB colors | Distinct defined RGB values | Definition events |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | snake | 62,586 | 2,967 | 14,838 | 14,838 | 20,655 |
-| autumn | 52,222 | 783 | 4,270 | 4,270 | 11,985 |
 | gradient | 131,200 | 2,486 | 1,714 | 1,714 | 2,805 |
 | gray | 256 | 32 | 32 | 32 | 255 |
 | revisit | 65,536 | 32,768 | 57,656 | 57,656 | 64,770 |
@@ -139,7 +134,7 @@ The current normal encoder also produces different pixels at different thread bu
 
 ### Repeat-run variability
 
-A later complete repetition used the same prepared fixtures, policies, and codec binary. Every one-thread stream hash, decoded PNG hash, and quality value matched the primary run, but elapsed times varied substantially. Both runs are retained; the primary chart shows the earlier complete run, while [repeat-results.json](study/repeat-results.json) contains all 585 observations from the later repetition. These are different run blocks, not extra independent samples pooled into the first IQR.
+A later complete repetition used the same prepared fixtures, policies, and codec binary. Every one-thread stream hash, decoded PNG hash, and quality value matched the primary run, but elapsed times varied substantially. Both runs are retained; the primary chart shows the earlier complete run, while [repeat-results.json](study/repeat-results.json) contains the 507 retained observations from the later repetition. These are different run blocks, not extra independent samples pooled into the first IQR.
 
 | Threads | Repeated encode 256 / none, ms | Repeated encode 256 / FS, ms | Repeated encode `-I`, ms | Repeated decode `-I`, ms |
 | ---: | ---: | ---: | ---: | ---: |
@@ -151,7 +146,7 @@ A later complete repetition used the same prepared fixtures, policies, and codec
 
 The broad changes include the mostly serial high-color path, so they cannot all be attributed to worker-budget scaling. Host activity was not isolated or instrumented enough to identify the cause. The precise speedup ratios are therefore provisional; the consistent result is that the old two-to-three-thread worker-window spike disappears when the same API boundary is used. The lack of independent high-color bands and the decoder fallback are established by code inspection, not inferred solely from a favorable runtime sample.
 
-The [timing CSV](study/timings.csv) includes the smaller inputs and warmups as well as Full HD. The [quality/size CSV](study/summary.csv) retains exact values for all six fixtures.
+The [timing CSV](study/timings.csv) includes the smaller inputs and warmups as well as Full HD. The [quality/size CSV](study/summary.csv) retains exact values for all five retained fixtures.
 
 ## Reproduction and verification
 
@@ -178,7 +173,7 @@ python3 -m venv /tmp/libsixel-high-color-python
   --output docs/functionality/high-color/study --runs 11
 ```
 
-The exact generator used for the primary retained run is archived as [measurement-generator.py](study/measurement-generator.py); its SHA-256 matches `script_sha256` in the run record. The maintained tool has the same measurement boundary, additional completeness checks, and shorter figure labels. The script loads `src/.libs/libsixel.dylib` or `libsixel.so` from that build explicitly. It verifies each timed encode policy against the CLI at the same thread budget, checks direct decoder pixels for every timed call, and removes ambient `SIXEL_*`/`LSQA_*` settings from subprocesses. It uses real measured output for all figures; no image-generation or retouching step is involved.
+The [measurement-generator.py](study/measurement-generator.py) snapshot has been updated to omit the removed AI-generated input. The run record preserves `script_sha256` for the original historical generator; it is not the hash of this edited snapshot. The maintained tool has the same measurement boundary, additional completeness checks, and shorter figure labels. The script loads `src/.libs/libsixel.dylib` or `libsixel.so` from that build explicitly. It verifies each timed encode policy against the CLI at the same thread budget, checks direct decoder pixels for every timed call, and removes ambient `SIXEL_*`/`LSQA_*` settings from subprocesses. It uses real measured output for all figures; no image-generation or retouching step is involved.
 
 To verify retained data without a build or rerender figures without rerunning timings:
 
