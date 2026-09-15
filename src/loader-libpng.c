@@ -76,6 +76,7 @@
 #include "loader.h"
 #include "loader-libpng.h"
 #include "loader-libpng-chrm.h"
+#include "loader-libpng-chrm-area.h"
 #include "timeline-logger.h"
 #include "options.h"
 
@@ -360,6 +361,14 @@ png_build_chrm_to_srgb_matrix(double white_x,
         !png_chrm_xy_to_xyz(red_x, red_y, primary_xyz[0]) ||
         !png_chrm_xy_to_xyz(green_x, green_y, primary_xyz[1]) ||
         !png_chrm_xy_to_xyz(blue_x, blue_y, primary_xyz[2])) {
+        return 0;
+    }
+    /* Exactly collinear primaries have no source matrix. Floating inverse
+     * cancellation can leave a residue larger than its singular cutoff;
+     * classify zero on the original integer grid to retain the surviving
+     * metadata fallback. Both signs of nonzero area remain admissible. */
+    if (png_chrm_primary_area(red_x, red_y, green_x, green_y,
+                              blue_x, blue_y) == 0) {
         return 0;
     }
     for (row = 0; row < 3; ++row) {

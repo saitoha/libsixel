@@ -509,8 +509,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0198_png_chrm_samples.c \
 	loader/libpng/0199_png_chrm_getter_reject.c \
 	loader/libpng/0200_png_chrm_trace_control.c \
+	loader/libpng/0201_png_chrm_area.c \
+	loader/libpng/0202_png_chrm_accept.c \
 	loader/libpng/loader_libpng_chrm_test_common.h \
 	loader/libpng/loader_libpng_chrm_grid_test_common.h \
+	loader/libpng/loader_libpng_chrm_area_test_common.h \
 	loader/builtin/loader_builtin_png_metadata_test_common.h \
 	loader/builtin/loader_builtin_png_color_test_common.h \
 	loader/quicklook/0015_loader_quicklook_pixelformat.c \
@@ -987,6 +990,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0198_png_chrm_samples.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0199_png_chrm_getter_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0200_png_chrm_trace_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0201_png_chrm_area.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0202_png_chrm_accept.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.$(OBJEXT) \
@@ -1333,6 +1338,8 @@ am__depfiles_remade =  \
 	loader/libpng/$(DEPDIR)/test_runner-0198_png_chrm_samples.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0199_png_chrm_getter_reject.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0200_png_chrm_trace_control.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po \
@@ -2730,6 +2737,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0198_PNG_CHRM_SAMPLES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0199_PNG_CHRM_GETTER_REJECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0200_PNG_CHRM_TRACE_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0201_PNG_CHRM_AREA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0202_PNG_CHRM_ACCEPT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -3176,8 +3185,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0198_png_chrm_samples.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0199_png_chrm_getter_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0200_png_chrm_trace_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0201_png_chrm_area.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0202_png_chrm_accept.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/loader_libpng_chrm_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/loader_libpng_chrm_grid_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/loader_libpng_chrm_area_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/loader_builtin_png_metadata_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/loader_builtin_png_color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/quicklook/0015_loader_quicklook_pixelformat.c \
@@ -4787,6 +4799,12 @@ loader/libpng/test_runner-0199_png_chrm_getter_reject.$(OBJEXT):  \
 loader/libpng/test_runner-0200_png_chrm_trace_control.$(OBJEXT):  \
 	loader/libpng/$(am__dirstamp) \
 	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0201_png_chrm_area.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0202_png_chrm_accept.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
 loader/quicklook/$(am__dirstamp):
 	@$(MKDIR_P) loader/quicklook
 	@: >>loader/quicklook/$(am__dirstamp)
@@ -5352,6 +5370,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0198_png_chrm_samples.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0199_png_chrm_getter_reject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0200_png_chrm_trace_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po@am__quote@ # am--include-marker
@@ -11074,6 +11094,34 @@ loader/libpng/test_runner-0200_png_chrm_trace_control.obj: loader/libpng/0200_pn
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0200_png_chrm_trace_control.obj `if test -f 'loader/libpng/0200_png_chrm_trace_control.c'; then $(CYGPATH_W) 'loader/libpng/0200_png_chrm_trace_control.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0200_png_chrm_trace_control.c'; fi`
 
+loader/libpng/test_runner-0201_png_chrm_area.o: loader/libpng/0201_png_chrm_area.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0201_png_chrm_area.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Tpo -c -o loader/libpng/test_runner-0201_png_chrm_area.o `test -f 'loader/libpng/0201_png_chrm_area.c' || echo '$(srcdir)/'`loader/libpng/0201_png_chrm_area.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Tpo loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0201_png_chrm_area.c' object='loader/libpng/test_runner-0201_png_chrm_area.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0201_png_chrm_area.o `test -f 'loader/libpng/0201_png_chrm_area.c' || echo '$(srcdir)/'`loader/libpng/0201_png_chrm_area.c
+
+loader/libpng/test_runner-0201_png_chrm_area.obj: loader/libpng/0201_png_chrm_area.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0201_png_chrm_area.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Tpo -c -o loader/libpng/test_runner-0201_png_chrm_area.obj `if test -f 'loader/libpng/0201_png_chrm_area.c'; then $(CYGPATH_W) 'loader/libpng/0201_png_chrm_area.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0201_png_chrm_area.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Tpo loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0201_png_chrm_area.c' object='loader/libpng/test_runner-0201_png_chrm_area.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0201_png_chrm_area.obj `if test -f 'loader/libpng/0201_png_chrm_area.c'; then $(CYGPATH_W) 'loader/libpng/0201_png_chrm_area.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0201_png_chrm_area.c'; fi`
+
+loader/libpng/test_runner-0202_png_chrm_accept.o: loader/libpng/0202_png_chrm_accept.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0202_png_chrm_accept.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Tpo -c -o loader/libpng/test_runner-0202_png_chrm_accept.o `test -f 'loader/libpng/0202_png_chrm_accept.c' || echo '$(srcdir)/'`loader/libpng/0202_png_chrm_accept.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Tpo loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0202_png_chrm_accept.c' object='loader/libpng/test_runner-0202_png_chrm_accept.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0202_png_chrm_accept.o `test -f 'loader/libpng/0202_png_chrm_accept.c' || echo '$(srcdir)/'`loader/libpng/0202_png_chrm_accept.c
+
+loader/libpng/test_runner-0202_png_chrm_accept.obj: loader/libpng/0202_png_chrm_accept.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0202_png_chrm_accept.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Tpo -c -o loader/libpng/test_runner-0202_png_chrm_accept.obj `if test -f 'loader/libpng/0202_png_chrm_accept.c'; then $(CYGPATH_W) 'loader/libpng/0202_png_chrm_accept.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0202_png_chrm_accept.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Tpo loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0202_png_chrm_accept.c' object='loader/libpng/test_runner-0202_png_chrm_accept.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0202_png_chrm_accept.obj `if test -f 'loader/libpng/0202_png_chrm_accept.c'; then $(CYGPATH_W) 'loader/libpng/0202_png_chrm_accept.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0202_png_chrm_accept.c'; fi`
+
 loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o: loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
@@ -12882,6 +12930,8 @@ distclean: distclean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0198_png_chrm_samples.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0199_png_chrm_getter_reject.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0200_png_chrm_trace_control.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
@@ -13398,6 +13448,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0198_png_chrm_samples.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0199_png_chrm_getter_reject.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0200_png_chrm_trace_control.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po

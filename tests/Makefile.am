@@ -643,6 +643,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0198_PNG_CHRM_SAMPLES \
     -DBUILD_TEST_0199_PNG_CHRM_GETTER_REJECT \
     -DBUILD_TEST_0200_PNG_CHRM_TRACE_CONTROL \
+    -DBUILD_TEST_0201_PNG_CHRM_AREA \
+    -DBUILD_TEST_0202_PNG_CHRM_ACCEPT \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -1064,8 +1066,11 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0198_png_chrm_samples.c \
     loader/libpng/0199_png_chrm_getter_reject.c \
     loader/libpng/0200_png_chrm_trace_control.c \
+    loader/libpng/0201_png_chrm_area.c \
+    loader/libpng/0202_png_chrm_accept.c \
     loader/libpng/loader_libpng_chrm_test_common.h \
     loader/libpng/loader_libpng_chrm_grid_test_common.h \
+    loader/libpng/loader_libpng_chrm_area_test_common.h \
     loader/builtin/loader_builtin_png_metadata_test_common.h \
     loader/builtin/loader_builtin_png_color_test_common.h \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \

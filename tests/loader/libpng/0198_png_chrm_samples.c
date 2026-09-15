@@ -16,6 +16,7 @@ typedef struct {
     int interpretation;
     int format;
     int calls;
+    int matrix_only;
 } png_chrm_sample_t;
 
 static SIXELSTATUS
@@ -74,6 +75,15 @@ png_chrm_capture(sixel_frame_t *frame, void *context)
                     ? 4 : 3) + c];
                 expected = source->samples[p * 4 + c];
             }
+            /* The separate acceptance entry observes the matrix's frame
+             * boundary, not accuracy for ill-conditioned valid primaries.
+             * Black and finite output still protect successful delivery. */
+            if (probe->matrix_only && p != 0) {
+                if (!isfinite(actual)) {
+                    return SIXEL_BAD_INPUT;
+                }
+                continue;
+            }
             if (!isfinite(actual) || fabs(actual - expected) >
                 (format == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                     ? tolerance : 0.0)) {
@@ -107,7 +117,8 @@ test_loader_0198_png_chrm_samples(int argc, char **argv)
     int old_policy;
     int result;
 
-    if (argc != 3 || !sixel_cms_engine_from_string(argv[2], &engine)) {
+    if ((argc != 3 && (argc != 4 || strcmp(argv[3], "matrix") != 0)) ||
+        !sixel_cms_engine_from_string(argv[2], &engine)) {
         return 1;
     }
     fixture = atoi(argv[1]);
@@ -136,6 +147,7 @@ test_loader_0198_png_chrm_samples(int argc, char **argv)
         return 1;
     }
     memset(&probe, 0, sizeof(probe));
+    probe.matrix_only = argc == 4;
     probe.source = &color_png_chrm[fixture];
     allocator = NULL;
     component = NULL;
@@ -146,6 +158,12 @@ test_loader_0198_png_chrm_samples(int argc, char **argv)
     old_policy = loader_transparent_policy();
     sixel_helper_set_loader_transparent_policy(SIXEL_ALPHA_POLICY_CLEAR);
     if (png_chrm_read_metadata(probe.source, &metadata)) {
+        goto end;
+    }
+    if (probe.matrix_only && (engine == SIXEL_CMS_ENGINE_NONE ||
+        !metadata.chrm || !probe.source->valid_chrm ||
+        probe.source->srgb_priority || probe.source->icc_priority ||
+        probe.source->alpha || probe.source->background)) {
         goto end;
     }
     if (engine != SIXEL_CMS_ENGINE_NONE && !probe.source->srgb_priority) {
@@ -211,8 +229,10 @@ test_loader_0198_png_chrm_samples(int argc, char **argv)
                                           png_chrm_capture, &probe);
     result = status != SIXEL_OK || probe.calls != 1;
     if (!result) {
-        fprintf(stderr, "PNG_CHRM_SAMPLE|fixture=%d|engine=%s|checked=24|"
-            "interpretation=%d\n", fixture, argv[2], probe.interpretation);
+        fprintf(stderr, "%s|fixture=%d|engine=%s|checked=%d|"
+            "interpretation=%d\n", probe.matrix_only ? "PNG_CHRM_ACCEPT"
+                : "PNG_CHRM_SAMPLE", fixture, argv[2],
+            probe.matrix_only ? 3 : 24, probe.interpretation);
     }
 end:
     sixel_loader_component_unref(component);

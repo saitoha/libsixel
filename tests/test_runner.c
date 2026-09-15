@@ -817,6 +817,8 @@ int test_loader_0197_png_chrm_reject(int argc, char **argv);
 int test_loader_0198_png_chrm_samples(int argc, char **argv);
 int test_loader_0199_png_chrm_getter_reject(int argc, char **argv);
 int test_loader_0200_png_chrm_trace_control(int argc, char **argv);
+int test_loader_0201_png_chrm_area(int argc, char **argv);
+int test_loader_0202_png_chrm_accept(int argc, char **argv);
 
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
@@ -1669,6 +1671,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0199_png_chrm_getter_reject },
     { "loader/0200_png_chrm_trace_control",
       test_loader_0200_png_chrm_trace_control },
+    { "loader/0201_png_chrm_area", test_loader_0201_png_chrm_area },
+    { "loader/0202_png_chrm_accept", test_loader_0202_png_chrm_accept },
 
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
