@@ -498,6 +498,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/0183_loader_builtin_jpeg_source_numeric.c \
 	loader/builtin/0184_loader_builtin_psd_cmyk_icc_numeric.c \
 	loader/unit/0185_png_source_numeric.c \
+	loader/libtiff/0142_rgb16_source.c \
 	loader/unit/0186_png_byte_target.c \
 	loader/unit/0187_coregraphics_png.c \
 	loader/unit/0188_colorsync_linear.c \
@@ -995,6 +996,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0183_loader_builtin_jpeg_source_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0184_loader_builtin_psd_cmyk_icc_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/unit/test_runner-0185_png_source_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0142_rgb16_source.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/unit/test_runner-0186_png_byte_target.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/unit/test_runner-0187_coregraphics_png.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/unit/test_runner-0188_colorsync_linear.$(OBJEXT) \
@@ -1388,6 +1390,7 @@ am__depfiles_remade =  \
 	loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po \
@@ -2772,6 +2775,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0183_LOADER_BUILTIN_JPEG_SOURCE_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0185_PNG_SOURCE_NUMERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0142_RGB16_SOURCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0186_PNG_BYTE_TARGET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0187_COREGRAPHICS_PNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -3235,6 +3239,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0183_loader_builtin_jpeg_source_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0184_loader_builtin_psd_cmyk_icc_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/unit/0185_png_source_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0142_rgb16_source.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/unit/0186_png_byte_target.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/unit/0187_coregraphics_png.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/unit/0188_colorsync_linear.c \
@@ -4849,6 +4854,15 @@ loader/unit/$(DEPDIR)/$(am__dirstamp):
 loader/unit/test_runner-0185_png_source_numeric.$(OBJEXT):  \
 	loader/unit/$(am__dirstamp) \
 	loader/unit/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/$(am__dirstamp):
+	@$(MKDIR_P) loader/libtiff
+	@: >>loader/libtiff/$(am__dirstamp)
+loader/libtiff/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/libtiff/$(DEPDIR)
+	@: >>loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0142_rgb16_source.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
 loader/unit/test_runner-0186_png_byte_target.$(OBJEXT):  \
 	loader/unit/$(am__dirstamp) \
 	loader/unit/$(DEPDIR)/$(am__dirstamp)
@@ -5269,6 +5283,7 @@ mostlyclean-compile:
 	-rm -f loader/libjpeg/*.$(OBJEXT)
 	-rm -f loader/libpng/*.$(OBJEXT)
 	-rm -f loader/librsvg/*.$(OBJEXT)
+	-rm -f loader/libtiff/*.$(OBJEXT)
 	-rm -f loader/libwebp/*.$(OBJEXT)
 	-rm -f loader/quicklook/*.$(OBJEXT)
 	-rm -f loader/unit/*.$(OBJEXT)
@@ -5517,6 +5532,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
@@ -11083,6 +11099,20 @@ loader/unit/test_runner-0185_png_source_numeric.obj: loader/unit/0185_png_source
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/unit/test_runner-0185_png_source_numeric.obj `if test -f 'loader/unit/0185_png_source_numeric.c'; then $(CYGPATH_W) 'loader/unit/0185_png_source_numeric.c'; else $(CYGPATH_W) '$(srcdir)/loader/unit/0185_png_source_numeric.c'; fi`
 
+loader/libtiff/test_runner-0142_rgb16_source.o: loader/libtiff/0142_rgb16_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0142_rgb16_source.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Tpo -c -o loader/libtiff/test_runner-0142_rgb16_source.o `test -f 'loader/libtiff/0142_rgb16_source.c' || echo '$(srcdir)/'`loader/libtiff/0142_rgb16_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Tpo loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0142_rgb16_source.c' object='loader/libtiff/test_runner-0142_rgb16_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0142_rgb16_source.o `test -f 'loader/libtiff/0142_rgb16_source.c' || echo '$(srcdir)/'`loader/libtiff/0142_rgb16_source.c
+
+loader/libtiff/test_runner-0142_rgb16_source.obj: loader/libtiff/0142_rgb16_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0142_rgb16_source.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Tpo -c -o loader/libtiff/test_runner-0142_rgb16_source.obj `if test -f 'loader/libtiff/0142_rgb16_source.c'; then $(CYGPATH_W) 'loader/libtiff/0142_rgb16_source.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0142_rgb16_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Tpo loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0142_rgb16_source.c' object='loader/libtiff/test_runner-0142_rgb16_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0142_rgb16_source.obj `if test -f 'loader/libtiff/0142_rgb16_source.c'; then $(CYGPATH_W) 'loader/libtiff/0142_rgb16_source.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0142_rgb16_source.c'; fi`
+
 loader/unit/test_runner-0186_png_byte_target.o: loader/unit/0186_png_byte_target.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/unit/test_runner-0186_png_byte_target.o -MD -MP -MF loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Tpo -c -o loader/unit/test_runner-0186_png_byte_target.o `test -f 'loader/unit/0186_png_byte_target.c' || echo '$(srcdir)/'`loader/unit/0186_png_byte_target.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Tpo loader/unit/$(DEPDIR)/test_runner-0186_png_byte_target.Po
@@ -13020,6 +13050,8 @@ distclean-generic:
 	-$(am__rm_f) loader/libpng/$(am__dirstamp)
 	-$(am__rm_f) loader/librsvg/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/librsvg/$(am__dirstamp)
+	-$(am__rm_f) loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/libtiff/$(am__dirstamp)
 	-$(am__rm_f) loader/libwebp/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/libwebp/$(am__dirstamp)
 	-$(am__rm_f) loader/quicklook/$(DEPDIR)/$(am__dirstamp)
@@ -13302,6 +13334,7 @@ distclean: distclean-am
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
@@ -13835,6 +13868,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0026_loader_librsvg_setopt_compat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0032_loader_librsvg_setopt_ignored_diag.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0033_loader_librsvg_bgcolor_pixelformat.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po

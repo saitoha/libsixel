@@ -1783,6 +1783,8 @@ def main():
     from generate_png_arithmetic_tests import build as png_arithmetic_fixtures
     outputs.update(png_arithmetic_fixtures())
     outputs.update(jpeg_sample_oracles())
+    from generate_tiff_fixtures import build as tiff_fixtures
+    outputs.update(tiff_fixtures(profile))
     outputs.update(cli_rgb_oracles())
     outputs.update(hdr_sample_oracles())
     outputs.update(palette_export_oracles())

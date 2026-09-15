@@ -806,6 +806,7 @@ int test_loader_0182_apng_callback_no_fallback(
 int test_loader_0183_jpeg_source_numeric(int argc, char **argv);
 int test_loader_0184_psd_cmyk_icc_numeric(int argc, char **argv);
 int test_loader_0185_png_source_numeric(int argc, char **argv);
+int test_tiff_0142(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -1662,6 +1663,7 @@ static test_entry_t const test_entries[] = {
       test_loader_0184_psd_cmyk_icc_numeric },
     { "loader/0185_png_source_numeric",
       test_loader_0185_png_source_numeric },
+    { "loader/libtiff/0142_rgb16_source", test_tiff_0142 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

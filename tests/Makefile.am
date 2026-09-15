@@ -632,6 +632,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0183_LOADER_BUILTIN_JPEG_SOURCE_NUMERIC \
     -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
     -DBUILD_TEST_0185_PNG_SOURCE_NUMERIC \
+    -DBUILD_TEST_0142_RGB16_SOURCE \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
     -DBUILD_TEST_0187_COREGRAPHICS_PNG \
     -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -1070,6 +1071,7 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0183_loader_builtin_jpeg_source_numeric.c \
     loader/builtin/0184_loader_builtin_psd_cmyk_icc_numeric.c \
     loader/unit/0185_png_source_numeric.c \
+    loader/libtiff/0142_rgb16_source.c \
     loader/unit/0186_png_byte_target.c \
     loader/unit/0187_coregraphics_png.c \
     loader/unit/0188_colorsync_linear.c \

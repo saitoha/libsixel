@@ -959,16 +959,31 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
 
     if (icc_profile != NULL && icc_profile_length > 0u &&
         tiff_photometric_allows_embedded_icc(photometric, 1)) {
-        cms_converted = tiff_convert_embedded_icc_to_srgb_float32(
-            float_pixels,
-            (int)width,
-            (int)height,
-            float_pixelformat,
-            icc_profile,
-            icc_profile_length);
+        if (decode_mode == TIFF_DECODE_RGB_UINT) {
+            /* Preserve the original normalized words through a direct
+             * linear destination. The shared helper publishes only complete
+             * output; failure keeps device samples without a legacy retry. */
+            cms_converted = sixel_cms_convert_to_linearrgb_with_profile_bytes(
+                (unsigned char *)float_pixels,
+                (int)width,
+                (int)height,
+                float_pixelformat,
+                (unsigned char const *)icc_profile,
+                (size_t)icc_profile_length);
+        } else {
+            cms_converted = tiff_convert_embedded_icc_to_srgb_float32(
+                float_pixels,
+                (int)width,
+                (int)height,
+                float_pixelformat,
+                icc_profile,
+                icc_profile_length);
+        }
     }
 
-    if (cms_converted) {
+    /* RGB_UINT already contains linear CMS output, including signed gamut.
+     * The older helper below is retained only for the other decode modes. */
+    if (cms_converted && decode_mode != TIFF_DECODE_RGB_UINT) {
         status = tiff_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
