@@ -425,6 +425,104 @@ def rgb_power_oracles():
             'rgb-power-exclusions.json': (json.dumps(excluded_records, indent=2) + '\n').encode()}
 
 
+def curv_sample_oracles(power_json):
+    """Read stored u8Fixed8 exponents; retain the established native budget."""
+    power = json.loads(power_json)
+    samples = power['source_u16']
+    source = [[D(v) for v in p] for p in power['source_f32']]
+    destination = list(map(list, zip(*(adapt(col) for col in zip(*SRGB)))))
+    inv_destination = inverse(destination)
+
+    def tags(blob):
+        result = {}
+        for i in range(struct.unpack_from('>I', blob, 128)[0]):
+            key, offset, length = struct.unpack_from('>4sII', blob, 132+12*i)
+            result[key] = blob[offset:offset+length]
+        return result
+
+    def para(gamma, kind=3):
+        params = [gamma] + {0: [], 3: [1, 0, 0, 0],
+                           4: [1, 0, 0, 0, 0, 0]}[kind]
+        return b'para' + bytes(4) + struct.pack('>HH', kind, 0) + b''.join(
+            fixed(D(v)) for v in params)
+
+    base = tags(bytes.fromhex(power['profiles'][33]['profile_hex']))
+    definitions = []
+    for space in ['rgb', 'gray']:
+        for word in [128, 256, 461, 512, 1024]:
+            definitions.append((space, f'word{word}', [word]*3, [-1]*3, 14))
+        definitions.append((space, 'padded', [512]*3, [-1]*3, 16))
+        if space == 'rgb':
+            definitions += [(space, 'mixed', [512, 1024, 256], [-1, 0, 3], 14),
+                            (space, 'mixed-padded', [512, 128, 256],
+                             [4, -1, -1], 16)]
+    records = []
+    header = ('/* Generated from original samples and stored ICC fields. */\n'
+              '#include <stddef.h>\n'
+              f'#define COLOR_CURV_SAMPLES {len(samples)}\n'
+              f'#define COLOR_CURV_PROFILES {len(definitions)}\n'
+              'static double const color_curv_relative = '
+              + format(float(D(power['relative_budget'])), '.17g') + ';\n'
+              'static unsigned int const color_curv_source[][3] = {\n')
+    header += ''.join('    { ' + ', '.join(map(str, p)) + ' },\n' for p in samples)
+    header += ('};\nstatic struct {\n    char const *name;\n    int gray;\n'
+               '    size_t length[2];\n    unsigned char bytes[2][1024];\n'
+               '    double linear[COLOR_CURV_SAMPLES][3];\n'
+               '} const color_curv_profiles[] = {\n')
+    for space, name, words, kinds, length in definitions:
+        keys = [b'kTRC'] if space == 'gray' else [b'rTRC', b'gTRC', b'bTRC']
+        ts = {} if space == 'gray' else dict(base)
+        for key, word, kind in zip(keys, words, kinds):
+            ts[key] = (b'curv'+bytes(4)+struct.pack('>IH', 1, word)
+                       + bytes(length-14)) if kind == -1 else para(D(word)/256, kind)
+        data = pack_profile(list(ts.items()), space=b'GRAY' if space == 'gray'
+                            else b'RGB ', name='Independent curv '+space+' '+name)
+        stored = tags(data)
+        gammas = [(D(struct.unpack_from('>H', stored[k], 12)[0])/256
+                   if stored[k][:4] == b'curv' else
+                   D(struct.unpack_from('>i', stored[k], 12)[0])/65536)
+                  for k in keys]
+        equivalent = dict(stored)
+        for key, gamma in zip(keys, gammas):
+            equivalent[key] = para(gamma)
+        peer = pack_profile(list(equivalent.items()),
+                            space=b'GRAY' if space == 'gray' else b'RGB ')
+        assert {k: v for k, v in tags(peer).items() if k not in keys} == {
+            k: v for k, v in stored.items() if k not in keys}
+        if space == 'rgb':
+            matrix = list(map(list, zip(*[[D(n)/65536 for n in
+                struct.unpack_from('>3i', stored[k], 8)]
+                for k in [b'rXYZ', b'gXYZ', b'bXYZ']])))
+        linear = []
+        for pixel in source:
+            # The generic gray adapter takes the original replicated value.
+            xyz = [v*pixel[0]**gammas[0] for v in D50] if space == 'gray' else apply(
+                matrix, [v**gamma for v, gamma in zip(pixel, gammas)])
+            linear.append(apply(inv_destination, xyz))
+        header += f'    {{ "{space}-{name}", {int(space == "gray")}, '
+        header += '{ '+f'{len(data)}, {len(peer)}'+' }, {\n'
+        for blob in [data, peer]:
+            assert len(blob) <= 1024
+            header += '        {\n'
+            for i in range(0, len(blob), 10):
+                header += '            '+', '.join(f'0x{v:02x}' for v in blob[i:i+10])+',\n'
+            header += '        },\n'
+        header += '    }, {\n'
+        for pixel in linear:
+            header += '        {\n'+''.join('            '+format(float(v), '.17g')+',\n'
+                                            for v in pixel)+'        },\n'
+        header += '    } },\n'
+        records.append(dict(name=space+'-'+name, gray=space=='gray',
+            gamma_stored=list(map(str, gammas)), profile_hex=data.hex(),
+            equivalent_hex=peer.hex(), linear=[list(map(str, v)) for v in linear]))
+    header += '};\n'
+    record = dict(source_u16=samples, source_f32=power['source_f32'],
+                  relative_budget=power['relative_budget'],
+                  budget_scope=power['budget_scope'], profiles=records)
+    return {'curv-samples.h': header.encode(),
+            'curv-samples.json': (json.dumps(record, indent=2)+'\n').encode()}
+
+
 def lut_profile(reverse, minimal=False):
     # Constant 2x2x2 LUTs are intentionally non-invertible. They test
     # directional capability, not a false exact-roundtrip requirement.
@@ -1678,6 +1776,7 @@ def main():
     outputs.update(gray_sample_oracles())
     power_outputs = rgb_power_oracles()
     outputs.update(power_outputs)
+    outputs.update(curv_sample_oracles(power_outputs['rgb-power.json']))
     outputs.update(png_palette_oracles(power_outputs['rgb-power.json']))
     from generate_png_chrm_fixtures import build as png_chrm_fixtures
     outputs.update(png_chrm_fixtures(outputs['palette-trns-cms.png']))

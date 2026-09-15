@@ -142,6 +142,8 @@ int test_cms_0053(int argc, char **argv);
 int test_cms_0128(int argc, char **argv);
 int test_cms_0129(int argc, char **argv);
 int test_cms_0130(int argc, char **argv);
+int test_cms_0146(int argc, char **argv);
+int test_cms_0147(int argc, char **argv);
 int test_pmap_0053(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -1142,6 +1144,8 @@ static test_entry_t const test_entries[] = {
     { "cms/0128_colorsync_rgb_profile_reuse", test_cms_0128 },
     { "cms/0129_colorsync_rgb_backend_mismatch", test_cms_0129 },
     { "cms/0130_colorsync_rgb_passthrough", test_cms_0130 },
+    { "cms/0146_curv_encoding", test_cms_0146 },
+    { "cms/0147_colorsync_curv", test_cms_0147 },
     { "assessment/0001_ciede2000_reference", test_qa_0001 },
     { "assessment/0002_same_physical_coordinates", test_qa_0002 },
     { "assessment/0003_same_rgb_different_definition", test_qa_0003 },

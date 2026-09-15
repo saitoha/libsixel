@@ -27,6 +27,7 @@
 #endif
 
 #include "cms.h"
+#include "cms-curv.h"
 #include "colorspace.h"
 
 #include <ctype.h>
@@ -4062,6 +4063,10 @@ sixel_cms_rgb_power_tag(CFDataRef tag, uint32_t *gamma, int *kind)
 
     length = (size_t)CFDataGetLength(tag);
     bytes = CFDataGetBytePtr(tag);
+    if (sixel_cms_curv_gamma(bytes, length, gamma)) {
+        *kind = -1;
+        return 1;
+    }
     if (length < 16u || memcmp(bytes, "para\0\0\0\0", 8) != 0 ||
         bytes[8] != 0u || bytes[10] != 0u || bytes[11] != 0u ||
         bytes[12] >= 128u) {
@@ -4103,7 +4108,8 @@ sixel_cms_rgb_set_tag(ColorSyncMutableProfileRef profile,
 }
 
 /* Keep native source preparation mathematically equivalent without decoding
- * into another float buffer. ColorSync adds a toe to para0; exact para3
+ * into another float buffer. ColorSync adds a toe to para0 and one-entry
+ * curv; exact para3
  * preserves the same power on [0,1]. A nonlinear RGB profile with identity
  * blue can also produce constant blue. Move a nonidentity channel to that
  * slot by exchanging BOTH source sample bits and matrix/TRC tag bytes.
@@ -4284,7 +4290,7 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
         memcpy(curve, "para", 4);
         curve[9] = 3u;
         /* Preserve the original fixed-point exponent without a float cast. */
-        memcpy(curve + 12, CFDataGetBytePtr(curves[order[c]]) + 12, 4);
+        sixel_cms_write_gamma(curve + 12, gamma[order[c]]);
         curve[17] = 1u;
         replacement = CFDataCreate(NULL, curve, sizeof(curve));
         if (replacement == NULL ||
@@ -4374,11 +4380,12 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
     CFDataRef tag;
     CFDataRef replacement;
     CFDataRef check;
-    unsigned char const *bytes;
     unsigned char curve[32];
     ColorSyncMutableProfileRef copy;
     size_t i;
     uint32_t version;
+    uint32_t gamma;
+    int kind;
     int ok;
 
     *owned = NULL;
@@ -4424,12 +4431,9 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
     if (tag == NULL) {
         return 1;
     }
-    bytes = CFDataGetBytePtr(tag);
-    /* Exact para0 payload: type/reserved/type-number/reserved/gamma. */
-    ok = CFDataGetLength(tag) == 16 &&
-        memcmp(bytes, "para\0\0\0\0\0\0\0\0", 12) == 0 &&
-        bytes[12] < 128u &&
-        (bytes[12] | bytes[13] | bytes[14] | bytes[15]) != 0u;
+    /* Only para0 and single-gamma curv need equivalent toe-free spelling.
+     * Existing para3/4 and sampled curves keep their native behavior. */
+    ok = sixel_cms_rgb_power_tag(tag, &gamma, &kind) && kind <= 0;
     if (!ok) {
         CFRelease(tag);
         return 1;
@@ -4437,7 +4441,7 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
     memset(curve, 0, sizeof(curve));
     memcpy(curve, "para", 4);
     curve[9] = 3u;
-    memcpy(curve + 12, bytes + 12, 4);
+    sixel_cms_write_gamma(curve + 12, gamma);
     curve[17] = 1u;
     CFRelease(tag);
     replacement = CFDataCreate(NULL, curve, (CFIndex)sizeof(curve));
@@ -4465,7 +4469,8 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
     *owned = copy;
     sixel_trace_topic_message("loader",
         "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
-        "path=gray-pure-gamma|tag=kTRC|from=para0|to=para3");
+        "path=gray-pure-gamma|tag=kTRC|from=%s|to=para3",
+        kind < 0 ? "curv" : "para0");
     return 1;
 }
 #endif

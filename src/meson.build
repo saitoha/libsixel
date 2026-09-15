@@ -159,6 +159,7 @@ srcs = [
   'png-chrm-arithmetic.c',
   'png-chrm-arithmetic.h',
   'cms.h',
+  'cms-curv.h',
   'icc-parse.c',
   'icc-parse.h',
   'icc-apply.c',

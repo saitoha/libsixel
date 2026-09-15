@@ -262,6 +262,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/png-chrm-arithmetic.c \
                 $(srcdir)/png-chrm-arithmetic.h \
                 $(srcdir)/cms.h \
+                $(srcdir)/cms-curv.h \
                 $(srcdir)/icc-parse.c \
                 $(srcdir)/icc-parse.h \
                 $(srcdir)/icc-apply.c \
