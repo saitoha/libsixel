@@ -186,7 +186,7 @@ For color-count and thread-count curves, plus indexed/RGBA decoder timing, see t
 
 In [PR #133](https://github.com/saitoha/libsixel/pull/133#issuecomment-3240025194), saitoha compared OR output with ordinary `-E size` and reported that some images, including `egret.jpg`, became larger. Recalculation from the [attached 100-image result](https://github.com/user-attachments/files/22065690/result.txt), preserved as [raw historical data](or-mode/measurements/pr133-result.txt), gives 25 larger images, a 24.11% reduction in total bytes, a 17.42% mean per-image reduction, and a 22.75% median per-image reduction. These are different aggregation methods. The comment's approximate 30–40% average reduction is not the exact aggregate of that attachment.
 
-The original photos and script are no longer available. The new study repeats the scale and comparison method, not the original photo set or historical binary. It uses the first 100 entries returned by the Picsum catalog, fetched by explicit ID at 800×600, plus eight repository fixtures. The [photo manifest](or-mode/measurements/inputs.json) records IDs, source URLs, authors, and SHA-256 hashes; this consecutive catalog sample is not a random sample of all possible images. Repository inputs and the two explicitly resized photos are recorded in the [control manifest](or-mode/measurements/controls.json).
+The original photos and script are no longer available. The new study repeats the scale and comparison method, not the original photo set or historical binary. It uses the first 100 entries returned by the Picsum catalog, fetched by explicit ID at 800×600, plus six retained repository fixtures. The [photo manifest](or-mode/measurements/inputs.json) records IDs, source URLs, authors, and SHA-256 hashes; this consecutive catalog sample is not a random sample of all possible images. Retained repository inputs are recorded in the [control manifest](or-mode/measurements/controls.json).
 
 ### Conditions and timing boundaries
 
@@ -227,20 +227,18 @@ A speed ratio is normal elapsed time divided by OR elapsed time; larger is faste
 
 The box plots summarize per-photo speed ratios: center lines are medians, boxes span the interquartile range, whiskers extend to 1.5 times that range, and individual points beyond them are outliers. They describe differences across images, not confidence intervals for a single timing run.
 
-The following repository controls use 256 colors and one thread. Autumn was resized to 800×402 and fisheye to 714×600 before measurement; all other fixtures retain their original dimensions. Resize time is therefore not part of these CLI timings.
+The following retained repository controls use 256 colors and one thread at their original dimensions. AI-generated controls and their measurements have been removed; surviving measurements retain their original values and build provenance.
 
 | Image | Normal bytes | OR bytes | Size change | Normal / OR CLI ms | CLI speed ratio |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | snake | 299,483 | 312,223 | +4.25% | 54.48 / 49.33 | 1.10× |
 | egret | 187,590 | 232,789 | +24.09% | 31.10 / 29.15 | 1.07× |
-| autumn-resized | 596,776 | 420,598 | -29.52% | 68.80 / 46.83 | 1.47× |
-| fisheye-resized | 631,040 | 484,553 | -23.21% | 81.21 / 60.82 | 1.34× |
 | vimperator3 | 134,748 | 111,121 | -17.53% | 31.80 / 29.01 | 1.10× |
 | map16 | 950 | 1,206 | +26.95% | 7.77 / 8.09 | 0.96× |
 | smooth-gradient-600x450 | 122,620 | 272,455 | +122.19% | 52.38 / 52.01 | 1.01× |
 | rare-colors-600x450 | 106,556 | 191,605 | +79.82% | 25.23 / 24.23 | 1.04× |
 
-At four threads, the 16 additional control pairs range from 0.98× to 1.02× for whole-CLI speed: effectively little difference in this experiment. Faster indexed serialization does not guarantee a similar gain in an overlapping end-to-end pipeline. No terminal-rendering speedup has been measured here.
+At four threads, the 12 retained control pairs range from 0.98× to 1.01× for whole-CLI speed: effectively little difference in this experiment. Faster indexed serialization does not guarantee a similar gain in an overlapping end-to-end pipeline. No terminal-rendering speedup has been measured here.
 
 The article's snake example also illustrates why the baseline must be explicit. On this build with one thread, the [additional policy comparison](or-mode/measurements/qiita-cases.json) gives:
 
@@ -279,11 +277,11 @@ For an absolute-time example, the 1920×1080 snake image at 256 colors gives the
 
 OR painting accumulates palette-index bits with read-modify-write operations; RGBA output also needs an intermediate index buffer and a final palette expansion. These implementation differences help explain why fewer input bytes do not guarantee less decoding work, but the timings do not isolate the cost of each operation. See the [decoder study](or-mode/scaling.md#decoder-timing-boundaries) for the implementation discussion, the [color-count curves](or-mode/scaling.md#color-count-axis), and the complete [1–12-thread curves](or-mode/scaling.md#thread-count-axis), including configurations where adding workers is slower.
 
-The [raw decoder records](or-mode/sweeps/decode.json) retain samples, medians, quartiles, stream hashes, commands, and exact pixel checks. All 264 decoder pairs across the photo and scaling studies passed those checks. The [reproduction instructions](or-mode/scaling.md#reproduction) describe how to rerun the measurements with the retained inputs and pinned build.
+The [raw decoder records](or-mode/sweeps/decode.json) retain samples, medians, quartiles, stream hashes, commands, and exact pixel checks. All 226 retained decoder pairs across the photo and scaling studies passed those checks. The [reproduction instructions](or-mode/scaling.md#reproduction) describe how to rerun the measurements with the retained inputs and pinned build.
 
 ### Is the quality impact exactly zero?
 
-For the tested opaque images, yes at the decoded-RGBA boundary: all 132 normal/OR pairs are byte-for-byte identical after decoding, covering 57,157,152 pixel positions. Both repeated streams for every mode also match exactly. MS-SSIM and Delta E therefore match between modes, not merely within a tolerance. All 116 identical-index comparisons match each other and the normal CLI decode. The [boundary probe](or-mode/measurements/index-boundaries.json) additionally checks every valid palette index for 19 palette sizes around bit-plane boundaries and seven heights (1, 5, 6, 7, 11, 12, 13): all 133 cases match independently constructed expected RGBA pixels.
+For the tested opaque images, yes at the decoded-RGBA boundary: all 124 retained normal/OR pairs are byte-for-byte identical after decoding, covering 54,157,152 pixel positions. Both repeated streams for every mode also match exactly. MS-SSIM and Delta E therefore match between modes, not merely within a tolerance. All 112 retained identical-index comparisons match each other and the normal CLI decode. The [boundary probe](or-mode/measurements/index-boundaries.json) additionally checks every valid palette index for 19 palette sizes around bit-plane boundaries and seven heights (1, 5, 6, 7, 11, 12, 13): all 133 cases match independently constructed expected RGBA pixels.
 
 This is zero additional distortion relative to the normal encoder, not lossless conversion of the source photo. For example, snake at 256 colors has MS-SSIM 0.991198 and mean Delta E00 2.728167 under both modes; at 16 colors it has MS-SSIM 0.918470 under both. The deliberately constrained 16-color case does not meet the usual 0.98 quality target, and no threshold has been lowered to accept it.
 

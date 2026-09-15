@@ -22,28 +22,6 @@
     ]
   },
   {
-    "name": "autumn-resized",
-    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/inputs/autumn-resized.png",
-    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/autumn.png",
-    "source_sha256": "05ae28a9b564fdb7aa2fa0affd6693fcc236f6d04b5d4ca2e6cf36319b12ebbc",
-    "sha256": "6a2cf06538dbf892f0aadb974f68edc113159ee6c510e74fcff42c6cada1864d",
-    "dimensions": [
-      800,
-      402
-    ]
-  },
-  {
-    "name": "fisheye-resized",
-    "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/inputs/fisheye-resized.png",
-    "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/fisheye.png",
-    "source_sha256": "e93a81b0d2a6c5ffdac9cdb544ce7068543914a9892d22de26aa5134d056e789",
-    "sha256": "b02ee2cb26cf4ff7b9c8f801eaa0ed8a0ee6ff45718e52933dd46c782b116b5d",
-    "dimensions": [
-      714,
-      600
-    ]
-  },
-  {
     "name": "vimperator3",
     "path": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/vimperator3.png",
     "source": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/images/vimperator3.png",

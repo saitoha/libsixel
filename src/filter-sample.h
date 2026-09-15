@@ -112,9 +112,8 @@ sixel_filter_sample_init(sixel_filter_t *filter,
  *
  * Selection is farthest-point, not most-seen.  Ranking by how many pixels a
  * color covers puts the background at the top and fills every slot with it:
- * measured on autumn.png, egret.jpg and snake-fs8.png, all 32 slots went to
- * background colors and a 3-pixel bar was crowded out in 17 of 17 phases --
- * the flicker, back again.  The grid pick already represents whatever covers
+ * a 3-pixel bar can be crowded out by background colors in every slot,
+ * bringing back the flicker.  The grid pick already represents whatever covers
  * a lot of the frame; what it misses is small, and small is what this has to
  * find.  Maximising the distance to the colors already chosen keeps a
  * saturated bar in a brown photograph, because it is far from everything.

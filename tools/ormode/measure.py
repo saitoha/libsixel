@@ -185,8 +185,6 @@ def fixtures():
     paths = [
         "snake.png",
         "egret.jpg",
-        "autumn.png",
-        "fisheye.png",
         "vimperator3.png",
         "map16.png",
         "measurements/palette-pipeline/smooth-gradient-600x450.png",

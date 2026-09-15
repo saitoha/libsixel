@@ -119,7 +119,7 @@ preserve float data end-to-end:
        encoder = Encoder()
        encoder.setopt(SIXEL_OPTFLAG_PRECISION, "float32")
        encoder.setopt(SIXEL_OPTFLAG_COLORS, "256")
-       encoder.encode("images/autumn.png")
+       encoder.encode("images/snake.png")
 
 5. Combine the precision flag with the working colorspace option
    (``-W`` in the CLI, ``SIXEL_OPTFLAG_WORKING_COLORSPACE`` in Python)

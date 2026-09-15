@@ -265,9 +265,8 @@ test_filter_0014_filter_sample_solid(int argc, char **argv)
 
     /*
      * Crowding-out.  Selection is farthest-point and not most-seen, because
-     * most-seen fills every slot with the background: measured on autumn.png,
-     * egret.jpg and snake-fs8.png, a 3-pixel bar was crowded out in 17 of 17
-     * phases that way.  Here the frame is paved with solid blocks, every one
+     * most-seen fills every slot with the background and crowds out a thin
+     * bar.  Here the frame is paved with solid blocks, every one
      * of which covers far more area than the bar, so a count ranking cannot
      * keep the bar and a distance ranking must.
      */

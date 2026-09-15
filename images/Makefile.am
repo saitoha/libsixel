@@ -1,21 +1,8 @@
 # List all bundled images so distribution archives stay consistent.
 PNGSUITE_IMAGES = $(shell cd $(srcdir) && find pngsuite -type f -name '*.png' -print)
 
-EXTRA_DIST = .gitattributes \
-    autumn.dds \
-    autumn.hdp \
-    autumn.heic \
-    autumn.png \
-    autumn.webp \
+EXTRA_DIST = .gitattributes README.md \
     egret.jpg \
-    fisheye.dds \
-    fisheye.hdp \
-    fisheye.heic \
-    fisheye.png \
-    fisheye.webp \
-    libsixel.avif \
-    libsixel.jxl \
-    libsixel.webp \
     map16-palette.png \
     map16.png \
     map64.six \
@@ -31,9 +18,14 @@ EXTRA_DIST = .gitattributes \
     snake-palette.png \
     snake-progressive-16x16.jpg \
     snake-progressive.jpg \
+    snake.avif \
     snake.bmp \
+    snake.dds \
     snake.gif \
+    snake.hdp \
+    snake.heic \
     snake.jpg \
+    snake.jxl \
     snake.pbm \
     snake.pgm \
     snake.png \
