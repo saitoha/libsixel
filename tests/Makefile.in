@@ -511,6 +511,17 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0200_png_chrm_trace_control.c \
 	loader/libpng/0201_png_chrm_area.c \
 	loader/libpng/0202_png_chrm_accept.c \
+	loader/libpng/0203_png_arith_dispatch.c \
+	loader/libpng/0204_png_arith_exact.c \
+	loader/libpng/0205_png_arith_double.c \
+	loader/libpng/0206_png_arith_neutral.c \
+	loader/libpng/0207_png_arith_srgb_target.c \
+	loader/libpng/0208_png_arith_singular.c \
+	loader/libpng/0209_png_arith_invalid.c \
+	loader/libpng/0210_png_arith_loader.c \
+	loader/libpng/0211_png_arith_unavailable.c \
+	loader/libpng/png_arithmetic_test_common.c \
+	loader/libpng/png_arithmetic_test_common.h \
 	loader/libpng/loader_libpng_chrm_test_common.h \
 	loader/libpng/loader_libpng_chrm_grid_test_common.h \
 	loader/libpng/loader_libpng_chrm_area_test_common.h \
@@ -992,6 +1003,16 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0200_png_chrm_trace_control.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0201_png_chrm_area.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0202_png_chrm_accept.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0203_png_arith_dispatch.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0204_png_arith_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0205_png_arith_double.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0206_png_arith_neutral.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0207_png_arith_srgb_target.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0208_png_arith_singular.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0209_png_arith_invalid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0210_png_arith_loader.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0211_png_arith_unavailable.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-png_arithmetic_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.$(OBJEXT) \
@@ -1340,6 +1361,16 @@ am__depfiles_remade =  \
 	loader/libpng/$(DEPDIR)/test_runner-0200_png_chrm_trace_control.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po \
+	loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po \
@@ -2739,6 +2770,16 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0200_PNG_CHRM_TRACE_CONTROL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0201_PNG_CHRM_AREA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0202_PNG_CHRM_ACCEPT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PNG_ARITHMETIC_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0203_PNG_ARITH_DISPATCH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0204_PNG_ARITH_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0205_PNG_ARITH_DOUBLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0206_PNG_ARITH_NEUTRAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0207_PNG_ARITH_SRGB_TARGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0208_PNG_ARITH_SINGULAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0209_PNG_ARITH_INVALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0210_PNG_ARITH_LOADER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0211_PNG_ARITH_UNAVAILABLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -3187,6 +3228,17 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0200_png_chrm_trace_control.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0201_png_chrm_area.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0202_png_chrm_accept.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0203_png_arith_dispatch.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0204_png_arith_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0205_png_arith_double.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0206_png_arith_neutral.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0207_png_arith_srgb_target.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0208_png_arith_singular.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0209_png_arith_invalid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0210_png_arith_loader.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0211_png_arith_unavailable.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/png_arithmetic_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/png_arithmetic_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/loader_libpng_chrm_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/loader_libpng_chrm_grid_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/loader_libpng_chrm_area_test_common.h \
@@ -3398,6 +3450,7 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-doc-test-links.sh \
     _static/sh/staticcheck-test-plan-links.sh \
     _static/awk/docs-github-math.awk \
+    _static/awk/dllexport-declarations.awk \
     _static/data/github-math-macros.txt \
     _static/sh/staticcheck-c-header-modeline.sh \
     check-test-exports.list \
@@ -4805,6 +4858,36 @@ loader/libpng/test_runner-0201_png_chrm_area.$(OBJEXT):  \
 loader/libpng/test_runner-0202_png_chrm_accept.$(OBJEXT):  \
 	loader/libpng/$(am__dirstamp) \
 	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0203_png_arith_dispatch.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0204_png_arith_exact.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0205_png_arith_double.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0206_png_arith_neutral.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0207_png_arith_srgb_target.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0208_png_arith_singular.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0209_png_arith_invalid.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0210_png_arith_loader.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0211_png_arith_unavailable.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-png_arithmetic_test_common.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
 loader/quicklook/$(am__dirstamp):
 	@$(MKDIR_P) loader/quicklook
 	@: >>loader/quicklook/$(am__dirstamp)
@@ -5372,6 +5455,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0200_png_chrm_trace_control.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po@am__quote@ # am--include-marker
@@ -11122,6 +11215,146 @@ loader/libpng/test_runner-0202_png_chrm_accept.obj: loader/libpng/0202_png_chrm_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0202_png_chrm_accept.obj `if test -f 'loader/libpng/0202_png_chrm_accept.c'; then $(CYGPATH_W) 'loader/libpng/0202_png_chrm_accept.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0202_png_chrm_accept.c'; fi`
 
+loader/libpng/test_runner-0203_png_arith_dispatch.o: loader/libpng/0203_png_arith_dispatch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0203_png_arith_dispatch.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Tpo -c -o loader/libpng/test_runner-0203_png_arith_dispatch.o `test -f 'loader/libpng/0203_png_arith_dispatch.c' || echo '$(srcdir)/'`loader/libpng/0203_png_arith_dispatch.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Tpo loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0203_png_arith_dispatch.c' object='loader/libpng/test_runner-0203_png_arith_dispatch.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0203_png_arith_dispatch.o `test -f 'loader/libpng/0203_png_arith_dispatch.c' || echo '$(srcdir)/'`loader/libpng/0203_png_arith_dispatch.c
+
+loader/libpng/test_runner-0203_png_arith_dispatch.obj: loader/libpng/0203_png_arith_dispatch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0203_png_arith_dispatch.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Tpo -c -o loader/libpng/test_runner-0203_png_arith_dispatch.obj `if test -f 'loader/libpng/0203_png_arith_dispatch.c'; then $(CYGPATH_W) 'loader/libpng/0203_png_arith_dispatch.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0203_png_arith_dispatch.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Tpo loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0203_png_arith_dispatch.c' object='loader/libpng/test_runner-0203_png_arith_dispatch.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0203_png_arith_dispatch.obj `if test -f 'loader/libpng/0203_png_arith_dispatch.c'; then $(CYGPATH_W) 'loader/libpng/0203_png_arith_dispatch.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0203_png_arith_dispatch.c'; fi`
+
+loader/libpng/test_runner-0204_png_arith_exact.o: loader/libpng/0204_png_arith_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0204_png_arith_exact.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Tpo -c -o loader/libpng/test_runner-0204_png_arith_exact.o `test -f 'loader/libpng/0204_png_arith_exact.c' || echo '$(srcdir)/'`loader/libpng/0204_png_arith_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Tpo loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0204_png_arith_exact.c' object='loader/libpng/test_runner-0204_png_arith_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0204_png_arith_exact.o `test -f 'loader/libpng/0204_png_arith_exact.c' || echo '$(srcdir)/'`loader/libpng/0204_png_arith_exact.c
+
+loader/libpng/test_runner-0204_png_arith_exact.obj: loader/libpng/0204_png_arith_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0204_png_arith_exact.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Tpo -c -o loader/libpng/test_runner-0204_png_arith_exact.obj `if test -f 'loader/libpng/0204_png_arith_exact.c'; then $(CYGPATH_W) 'loader/libpng/0204_png_arith_exact.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0204_png_arith_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Tpo loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0204_png_arith_exact.c' object='loader/libpng/test_runner-0204_png_arith_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0204_png_arith_exact.obj `if test -f 'loader/libpng/0204_png_arith_exact.c'; then $(CYGPATH_W) 'loader/libpng/0204_png_arith_exact.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0204_png_arith_exact.c'; fi`
+
+loader/libpng/test_runner-0205_png_arith_double.o: loader/libpng/0205_png_arith_double.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0205_png_arith_double.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Tpo -c -o loader/libpng/test_runner-0205_png_arith_double.o `test -f 'loader/libpng/0205_png_arith_double.c' || echo '$(srcdir)/'`loader/libpng/0205_png_arith_double.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Tpo loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0205_png_arith_double.c' object='loader/libpng/test_runner-0205_png_arith_double.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0205_png_arith_double.o `test -f 'loader/libpng/0205_png_arith_double.c' || echo '$(srcdir)/'`loader/libpng/0205_png_arith_double.c
+
+loader/libpng/test_runner-0205_png_arith_double.obj: loader/libpng/0205_png_arith_double.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0205_png_arith_double.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Tpo -c -o loader/libpng/test_runner-0205_png_arith_double.obj `if test -f 'loader/libpng/0205_png_arith_double.c'; then $(CYGPATH_W) 'loader/libpng/0205_png_arith_double.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0205_png_arith_double.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Tpo loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0205_png_arith_double.c' object='loader/libpng/test_runner-0205_png_arith_double.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0205_png_arith_double.obj `if test -f 'loader/libpng/0205_png_arith_double.c'; then $(CYGPATH_W) 'loader/libpng/0205_png_arith_double.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0205_png_arith_double.c'; fi`
+
+loader/libpng/test_runner-0206_png_arith_neutral.o: loader/libpng/0206_png_arith_neutral.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0206_png_arith_neutral.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Tpo -c -o loader/libpng/test_runner-0206_png_arith_neutral.o `test -f 'loader/libpng/0206_png_arith_neutral.c' || echo '$(srcdir)/'`loader/libpng/0206_png_arith_neutral.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Tpo loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0206_png_arith_neutral.c' object='loader/libpng/test_runner-0206_png_arith_neutral.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0206_png_arith_neutral.o `test -f 'loader/libpng/0206_png_arith_neutral.c' || echo '$(srcdir)/'`loader/libpng/0206_png_arith_neutral.c
+
+loader/libpng/test_runner-0206_png_arith_neutral.obj: loader/libpng/0206_png_arith_neutral.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0206_png_arith_neutral.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Tpo -c -o loader/libpng/test_runner-0206_png_arith_neutral.obj `if test -f 'loader/libpng/0206_png_arith_neutral.c'; then $(CYGPATH_W) 'loader/libpng/0206_png_arith_neutral.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0206_png_arith_neutral.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Tpo loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0206_png_arith_neutral.c' object='loader/libpng/test_runner-0206_png_arith_neutral.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0206_png_arith_neutral.obj `if test -f 'loader/libpng/0206_png_arith_neutral.c'; then $(CYGPATH_W) 'loader/libpng/0206_png_arith_neutral.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0206_png_arith_neutral.c'; fi`
+
+loader/libpng/test_runner-0207_png_arith_srgb_target.o: loader/libpng/0207_png_arith_srgb_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0207_png_arith_srgb_target.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Tpo -c -o loader/libpng/test_runner-0207_png_arith_srgb_target.o `test -f 'loader/libpng/0207_png_arith_srgb_target.c' || echo '$(srcdir)/'`loader/libpng/0207_png_arith_srgb_target.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Tpo loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0207_png_arith_srgb_target.c' object='loader/libpng/test_runner-0207_png_arith_srgb_target.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0207_png_arith_srgb_target.o `test -f 'loader/libpng/0207_png_arith_srgb_target.c' || echo '$(srcdir)/'`loader/libpng/0207_png_arith_srgb_target.c
+
+loader/libpng/test_runner-0207_png_arith_srgb_target.obj: loader/libpng/0207_png_arith_srgb_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0207_png_arith_srgb_target.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Tpo -c -o loader/libpng/test_runner-0207_png_arith_srgb_target.obj `if test -f 'loader/libpng/0207_png_arith_srgb_target.c'; then $(CYGPATH_W) 'loader/libpng/0207_png_arith_srgb_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0207_png_arith_srgb_target.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Tpo loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0207_png_arith_srgb_target.c' object='loader/libpng/test_runner-0207_png_arith_srgb_target.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0207_png_arith_srgb_target.obj `if test -f 'loader/libpng/0207_png_arith_srgb_target.c'; then $(CYGPATH_W) 'loader/libpng/0207_png_arith_srgb_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0207_png_arith_srgb_target.c'; fi`
+
+loader/libpng/test_runner-0208_png_arith_singular.o: loader/libpng/0208_png_arith_singular.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0208_png_arith_singular.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Tpo -c -o loader/libpng/test_runner-0208_png_arith_singular.o `test -f 'loader/libpng/0208_png_arith_singular.c' || echo '$(srcdir)/'`loader/libpng/0208_png_arith_singular.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Tpo loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0208_png_arith_singular.c' object='loader/libpng/test_runner-0208_png_arith_singular.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0208_png_arith_singular.o `test -f 'loader/libpng/0208_png_arith_singular.c' || echo '$(srcdir)/'`loader/libpng/0208_png_arith_singular.c
+
+loader/libpng/test_runner-0208_png_arith_singular.obj: loader/libpng/0208_png_arith_singular.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0208_png_arith_singular.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Tpo -c -o loader/libpng/test_runner-0208_png_arith_singular.obj `if test -f 'loader/libpng/0208_png_arith_singular.c'; then $(CYGPATH_W) 'loader/libpng/0208_png_arith_singular.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0208_png_arith_singular.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Tpo loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0208_png_arith_singular.c' object='loader/libpng/test_runner-0208_png_arith_singular.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0208_png_arith_singular.obj `if test -f 'loader/libpng/0208_png_arith_singular.c'; then $(CYGPATH_W) 'loader/libpng/0208_png_arith_singular.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0208_png_arith_singular.c'; fi`
+
+loader/libpng/test_runner-0209_png_arith_invalid.o: loader/libpng/0209_png_arith_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0209_png_arith_invalid.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Tpo -c -o loader/libpng/test_runner-0209_png_arith_invalid.o `test -f 'loader/libpng/0209_png_arith_invalid.c' || echo '$(srcdir)/'`loader/libpng/0209_png_arith_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Tpo loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0209_png_arith_invalid.c' object='loader/libpng/test_runner-0209_png_arith_invalid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0209_png_arith_invalid.o `test -f 'loader/libpng/0209_png_arith_invalid.c' || echo '$(srcdir)/'`loader/libpng/0209_png_arith_invalid.c
+
+loader/libpng/test_runner-0209_png_arith_invalid.obj: loader/libpng/0209_png_arith_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0209_png_arith_invalid.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Tpo -c -o loader/libpng/test_runner-0209_png_arith_invalid.obj `if test -f 'loader/libpng/0209_png_arith_invalid.c'; then $(CYGPATH_W) 'loader/libpng/0209_png_arith_invalid.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0209_png_arith_invalid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Tpo loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0209_png_arith_invalid.c' object='loader/libpng/test_runner-0209_png_arith_invalid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0209_png_arith_invalid.obj `if test -f 'loader/libpng/0209_png_arith_invalid.c'; then $(CYGPATH_W) 'loader/libpng/0209_png_arith_invalid.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0209_png_arith_invalid.c'; fi`
+
+loader/libpng/test_runner-0210_png_arith_loader.o: loader/libpng/0210_png_arith_loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0210_png_arith_loader.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Tpo -c -o loader/libpng/test_runner-0210_png_arith_loader.o `test -f 'loader/libpng/0210_png_arith_loader.c' || echo '$(srcdir)/'`loader/libpng/0210_png_arith_loader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Tpo loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0210_png_arith_loader.c' object='loader/libpng/test_runner-0210_png_arith_loader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0210_png_arith_loader.o `test -f 'loader/libpng/0210_png_arith_loader.c' || echo '$(srcdir)/'`loader/libpng/0210_png_arith_loader.c
+
+loader/libpng/test_runner-0210_png_arith_loader.obj: loader/libpng/0210_png_arith_loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0210_png_arith_loader.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Tpo -c -o loader/libpng/test_runner-0210_png_arith_loader.obj `if test -f 'loader/libpng/0210_png_arith_loader.c'; then $(CYGPATH_W) 'loader/libpng/0210_png_arith_loader.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0210_png_arith_loader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Tpo loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0210_png_arith_loader.c' object='loader/libpng/test_runner-0210_png_arith_loader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0210_png_arith_loader.obj `if test -f 'loader/libpng/0210_png_arith_loader.c'; then $(CYGPATH_W) 'loader/libpng/0210_png_arith_loader.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0210_png_arith_loader.c'; fi`
+
+loader/libpng/test_runner-0211_png_arith_unavailable.o: loader/libpng/0211_png_arith_unavailable.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0211_png_arith_unavailable.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Tpo -c -o loader/libpng/test_runner-0211_png_arith_unavailable.o `test -f 'loader/libpng/0211_png_arith_unavailable.c' || echo '$(srcdir)/'`loader/libpng/0211_png_arith_unavailable.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Tpo loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0211_png_arith_unavailable.c' object='loader/libpng/test_runner-0211_png_arith_unavailable.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0211_png_arith_unavailable.o `test -f 'loader/libpng/0211_png_arith_unavailable.c' || echo '$(srcdir)/'`loader/libpng/0211_png_arith_unavailable.c
+
+loader/libpng/test_runner-0211_png_arith_unavailable.obj: loader/libpng/0211_png_arith_unavailable.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0211_png_arith_unavailable.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Tpo -c -o loader/libpng/test_runner-0211_png_arith_unavailable.obj `if test -f 'loader/libpng/0211_png_arith_unavailable.c'; then $(CYGPATH_W) 'loader/libpng/0211_png_arith_unavailable.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0211_png_arith_unavailable.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Tpo loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0211_png_arith_unavailable.c' object='loader/libpng/test_runner-0211_png_arith_unavailable.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0211_png_arith_unavailable.obj `if test -f 'loader/libpng/0211_png_arith_unavailable.c'; then $(CYGPATH_W) 'loader/libpng/0211_png_arith_unavailable.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0211_png_arith_unavailable.c'; fi`
+
+loader/libpng/test_runner-png_arithmetic_test_common.o: loader/libpng/png_arithmetic_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-png_arithmetic_test_common.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Tpo -c -o loader/libpng/test_runner-png_arithmetic_test_common.o `test -f 'loader/libpng/png_arithmetic_test_common.c' || echo '$(srcdir)/'`loader/libpng/png_arithmetic_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Tpo loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/png_arithmetic_test_common.c' object='loader/libpng/test_runner-png_arithmetic_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-png_arithmetic_test_common.o `test -f 'loader/libpng/png_arithmetic_test_common.c' || echo '$(srcdir)/'`loader/libpng/png_arithmetic_test_common.c
+
+loader/libpng/test_runner-png_arithmetic_test_common.obj: loader/libpng/png_arithmetic_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-png_arithmetic_test_common.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Tpo -c -o loader/libpng/test_runner-png_arithmetic_test_common.obj `if test -f 'loader/libpng/png_arithmetic_test_common.c'; then $(CYGPATH_W) 'loader/libpng/png_arithmetic_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/png_arithmetic_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Tpo loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/png_arithmetic_test_common.c' object='loader/libpng/test_runner-png_arithmetic_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-png_arithmetic_test_common.obj `if test -f 'loader/libpng/png_arithmetic_test_common.c'; then $(CYGPATH_W) 'loader/libpng/png_arithmetic_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/png_arithmetic_test_common.c'; fi`
+
 loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o: loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/quicklook/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
@@ -12932,6 +13165,16 @@ distclean: distclean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0200_png_chrm_trace_control.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
@@ -13450,6 +13693,16 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0200_png_chrm_trace_control.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0201_png_chrm_area.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0202_png_chrm_accept.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0203_png_arith_dispatch.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0204_png_arith_exact.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0205_png_arith_double.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0206_png_arith_neutral.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0207_png_arith_srgb_target.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0208_png_arith_singular.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po

@@ -126,6 +126,7 @@ are grouped by domain so each area can grow without overloading one document.
 ## Testing
 
 - [libpng cHRM boundary test plan](testing/png-chrm-boundaries.md) inventories integer-grid, exact-collinear fallback, signed-primary acceptance, original-sample, background, and CMS control observations.
+- [PNG cHRM arithmetic test plan](testing/png-chrm-arithmetic.md) separates mode selection, exact rounding, ordinary double budgets, target definition, white adaptation, and terminal availability errors.
 
 - [Testing guide](testing/guide.md) covers test organization, shell TAP rules,
   registration, portability, and required checks.

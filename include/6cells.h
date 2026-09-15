@@ -1182,6 +1182,7 @@ typedef struct sixel_loader_suboptions {
     int libjpeg_enable_orientation;
     int libpng_enable_cms;
     int libpng_cms_engine;
+    int libpng_chrm_arithmetic;
     int libpng_enable_orientation;
     int libwebp_enable_cms;
     int libwebp_cms_engine;

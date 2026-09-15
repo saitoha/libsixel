@@ -229,6 +229,7 @@ loader_manager_init_loader_suboptions(
     suboptions->libjpeg_enable_orientation = 1;
     suboptions->libpng_enable_cms = 0;
     suboptions->libpng_cms_engine = SIXEL_CMS_ENGINE_NONE;
+    suboptions->libpng_chrm_arithmetic = 0;
     suboptions->libpng_enable_orientation = 1;
     suboptions->libwebp_enable_cms = 0;
     suboptions->libwebp_cms_engine = SIXEL_CMS_ENGINE_NONE;
@@ -578,6 +579,14 @@ sixel_loader_manager_apply_component_options(
         return status;
     }
 #endif
+
+    suboption_value = request->suboptions->libpng_chrm_arithmetic;
+    status = sixel_loader_component_setopt(
+        component, SIXEL_LOADER_COMPONENT_OPTION_PNG_CHRM_ARITHMETIC,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
 
     suboption_value = request->suboptions->libpng_enable_cms;
     status = sixel_loader_component_setopt(

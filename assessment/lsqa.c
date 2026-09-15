@@ -2141,7 +2141,11 @@ static cli_option_help_t const g_option_help_table[] = {
         'L',
         "loaders",
         "-L LIST, --loaders=LIST    override loader order (same syntax\n"
-        "                           as img2sixel -L).\n"
+        "                           as img2sixel -L). libpng supports\n"
+        "                           :chrm_arithmetic=auto|double|512bit\n"
+        "                           (:Avalue, default auto), limited to\n"
+        "                           its selected cHRM matrix. Environment:\n"
+        "                           SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC.\n"
     },
     {
         '#',

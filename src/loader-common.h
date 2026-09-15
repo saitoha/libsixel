@@ -74,6 +74,8 @@ typedef struct sixel_loader_timeline_callback_state {
     (0x1000e)
 #define SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32 \
     (0x1000f)
+#define SIXEL_LOADER_COMPONENT_OPTION_PNG_CHRM_ARITHMETIC \
+    (0x10010)
 
 #define SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO    0
 #define SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_WINDOWS 1
@@ -143,7 +145,8 @@ SIXELSTATUS loader_resolve_size_suboption(
     int *environment_out_of_range);
 
 /* Return the shared builtin/libpng PNG transparency compatibility mode. */
-int loader_png_trns_keycolor_mode(void);
+SIXEL_INTERNAL_API int
+loader_png_trns_keycolor_mode(void);
 
 int loader_thumbnailer_get_size_hint(void);
 int loader_wic_get_ico_minsize(void);
@@ -166,7 +169,8 @@ int loader_cms_prefer_8bit(void);
 unsigned int loader_cms_rendering_intent_order(void);
 SIXEL_INTERNAL_API int
 loader_cms_target_colorspace(void);
-int loader_transparent_policy(void);
+SIXEL_INTERNAL_API int
+loader_transparent_policy(void);
 /*
  * Keep this exported: the test runner references this helper via the shared
  * libsixel DLL on Windows builds.
@@ -175,11 +179,15 @@ SIXEL_INTERNAL_API int loader_background_policy(void);
 /* Keep this exported: test runners call it via the shared libsixel DLL. */
 SIXEL_INTERNAL_API int loader_cms_target_pixelformat(void);
 SIXEL_INTERNAL_API void sixel_helper_set_loader_cms_engine(int engine);
-void loader_trace_try(char const *name);
-void loader_trace_result(char const *name, SIXELSTATUS status);
+SIXEL_INTERNAL_API void
+loader_trace_try(char const *name);
+SIXEL_INTERNAL_API void
+loader_trace_result(char const *name, SIXELSTATUS status);
 int loader_trace_is_enabled(void);
-void loader_trace_message(char const *format, ...);
-int sixel_trace_topic_is_enabled(char const *topic);
+SIXEL_INTERNAL_API void
+loader_trace_message(char const *format, ...);
+SIXEL_INTERNAL_API int
+sixel_trace_topic_is_enabled(char const *topic);
 /*
  * Keep backend helpers exported for Windows test_runner builds. Some tests
  * unity-include a backend source file while still linking the shared libsixel
@@ -190,10 +198,12 @@ SIXEL_INTERNAL_API void
 sixel_trace_topic_message(char const *topic,
                           char const *format, ...);
 
-void loader_timeline_scope_begin(sixel_timeline_logger_t *logger,
+SIXEL_INTERNAL_API void
+loader_timeline_scope_begin(sixel_timeline_logger_t *logger,
                                  char const *worker,
                                  int *job_seq);
-void loader_timeline_scope_end(void);
+SIXEL_INTERNAL_API void
+loader_timeline_scope_end(void);
 SIXEL_INTERNAL_API int loader_timeline_phase_start(char const *role);
 void loader_timeline_phase_finish(char const *role,
                                   int job_id,
@@ -221,7 +231,8 @@ SIXEL_INTERNAL_API SIXELSTATUS
 loader_timeline_emit_frame_callback(sixel_frame_t *frame,
                                     void *data);
 
-int chunk_is_png(sixel_chunk_t const *chunk);
+SIXEL_INTERNAL_API int
+chunk_is_png(sixel_chunk_t const *chunk);
 int chunk_is_jpeg(sixel_chunk_t const *chunk);
 SIXEL_INTERNAL_API int chunk_is_webp(sixel_chunk_t const *chunk);
 int chunk_is_bmp(sixel_chunk_t const *chunk);

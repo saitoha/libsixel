@@ -156,6 +156,8 @@ srcs = [
   'chunk-factory.h',
   'chunk-view.h',
   'cms.c',
+  'png-chrm-arithmetic.c',
+  'png-chrm-arithmetic.h',
   'cms.h',
   'icc-parse.c',
   'icc-parse.h',

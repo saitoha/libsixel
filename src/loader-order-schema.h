@@ -36,7 +36,8 @@ SIXELSTATUS
 sixel_loader_order_validate_resolution(
     sixel_option_argument_list_resolution_t const *resolution);
 
-SIXELSTATUS
+/* Private entry used by the real manager in backend unity tests. */
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_order_parse_and_validate(
     char const *argument,
     sixel_option_argument_list_resolution_t *resolution,

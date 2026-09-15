@@ -649,7 +649,7 @@ sixel_option_resolve_suboption_environment_result(
     sixel_suboption_key_t const *key_def,
     sixel_suboption_value_t *value);
 
-int
+SIXEL_INTERNAL_API int
 sixel_option_apply_suboption_value(
     sixel_suboption_key_t const *key_def,
     sixel_suboption_value_t const *value,
@@ -662,7 +662,7 @@ sixel_option_apply_suboption_assignments(
     void *target,
     sixel_suboption_target_class_t target_class);
 
-void
+SIXEL_INTERNAL_API void
 sixel_option_apply_suboption_environment(
     sixel_option_argument_schema_t const *schema,
     sixel_option_value_schema_t const *base_def,
@@ -753,11 +753,13 @@ sixel_option_parse_argument_list_with_suboptions(
     char *diagnostic,
     size_t diagnostic_size);
 
-void
+/* Unity loader tests retain real manager setup and cleanup. These private
+ * helpers must therefore be available through the shared Windows DLL. */
+SIXEL_INTERNAL_API void
 sixel_option_free_argument_list_resolution(
     sixel_option_argument_list_resolution_t *resolution);
 
-void
+SIXEL_INTERNAL_API void
 sixel_option_init_argument_list_resolution(
     sixel_option_argument_list_resolution_t *resolution);
 

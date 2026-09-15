@@ -1029,7 +1029,7 @@ add transparent left/top pixel offset with DCS P2=1 image-plane reuse.
 .B \-Z \fIPOLICY\fP, \-\-update\-policy=\fIPOLICY\fP
 Select full output (default) or retained-plane delta updates.
 \fBfull\fP disables temporal keeps and discards retained history, while preserving source-alpha handling.
-\fBdelta\fP enables 6delta with optional \fB:threshold=0..255\fP (short key T) and \fB:error=diffuse|skip\fP (short key E).
+\fBdelta\fP enables 6delta with optional \fB:threshold=0..255\fP (short form :Tvalue) and \fB:error=diffuse|skip\fP (short form :Evalue).
 Defaults are threshold=0 and error=diffuse; full accepts no suboptions.
 A valid retained RGB pixel is kept before lookup when every channel differs by at most the threshold; at 0 this requires an exact match.
 Otherwise, a pixel is kept when the retained color is at least as close to the compared sample as the selected palette color, using squared RGB distance.
@@ -1072,6 +1072,14 @@ All loaders also accept \fBhdr_tonemap=none|reinhard\fP
 controls application of Radiance EXPOSURE metadata.
 PNG-capable loaders accept \fBtrns_keycolor=0|1\fP
 (short form \fBK0\fP or \fBK1\fP, default 1).
+The libpng loader accepts \fBchrm_arithmetic=auto|double|512bit\fP
+(short form \fBAvalue\fP, default auto) for its selected cHRM matrix.
+Auto uses double unless normalized primary area or a required Bradford cone
+has magnitude below 0.00001; equality remains double.
+512bit evaluates the supported rational transform and rounds once to float32.
+Double and auto do not promise correct rounding for every color.
+This option does not select an ICC backend or change PNG metadata priority.
+An unavailable selected 512bit implementation is a terminal loader error.
 The librsvg loader accepts \fBrelative_resources=0|1\fP
 (short form \fBA0\fP or \fBA1\fP) and \fBstdin_svgz=0|1\fP
 (short form \fBS0\fP or \fBS1\fP). Both default to 0.
@@ -1112,6 +1120,8 @@ common:osc11_timeout=SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
 common:thumbnail_size=SIXEL_THUMBNAILER_HINT_SIZE
 common:trns_keycolor=SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR
 libpng:cms_engine=SIXEL_LOADER_LIBPNG_CMS_ENGINE
+.br
+libpng:chrm_arithmetic=SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC
 libpng:orientation=SIXEL_LOADER_LIBPNG_ORIENTATION
 libjpeg:cms_engine=SIXEL_LOADER_LIBJPEG_CMS_ENGINE
 libjpeg:orientation=SIXEL_LOADER_LIBJPEG_ORIENTATION
@@ -1946,6 +1956,13 @@ overrides \fBSIXEL_LOADER_CMS_ENGINE\fP.
 .br
 override the libpng loader CMS backend.
 overrides \fBSIXEL_LOADER_CMS_ENGINE\fP.
+.TP 5
+.B SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC
+.br
+select libpng cHRM matrix arithmetic: auto, double, or 512bit.
+Unset, empty, or invalid values retain auto.
+An explicit libpng:chrm_arithmetic suboption overrides this default.
+This setting does not change ICC engines, metadata selection, or other loaders.
 .TP 5
 .B SIXEL_LOADER_LIBJPEG_CMS_ENGINE
 .br

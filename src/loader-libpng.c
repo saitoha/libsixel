@@ -68,6 +68,7 @@
 
 #include "allocator.h"
 #include "cms.h"
+#include "png-chrm-arithmetic.h"
 #include "chunk-view.h"
 #include "compat_stub.h"
 #include "loader-common.h"
@@ -93,6 +94,7 @@ typedef struct sixel_loader_libpng_component {
     int has_start_frame_no;
     int start_frame_no;
     int enable_cms;
+    int chrm_arithmetic;
     int enable_orientation;
 } sixel_loader_libpng_component_t;
 
@@ -298,174 +300,6 @@ png_decode_source_unit(double value, int transfer_mode, double file_gamma)
     return png_decode_srgb_unit(value);
 }
 
-/*
- * Keep stack-matrix parameters non-const in these helpers.  Pre-C23 C treats
- * pointer-to-array qualifiers narrowly enough that passing ordinary stack
- * matrices to const-qualified parameters can trip -Wpedantic.
- */
-static int
-png_invert_3x3(double in[3][3], double out[3][3])
-{
-    double det;
-    double inv_det;
-
-    det = in[0][0] * (in[1][1] * in[2][2] - in[1][2] * in[2][1])
-        - in[0][1] * (in[1][0] * in[2][2] - in[1][2] * in[2][0])
-        + in[0][2] * (in[1][0] * in[2][1] - in[1][1] * in[2][0]);
-    if (fabs(det) < 1.0e-12) {
-        return 0;
-    }
-    inv_det = 1.0 / det;
-
-    out[0][0] =  (in[1][1] * in[2][2] - in[1][2] * in[2][1]) * inv_det;
-    out[0][1] = -(in[0][1] * in[2][2] - in[0][2] * in[2][1]) * inv_det;
-    out[0][2] =  (in[0][1] * in[1][2] - in[0][2] * in[1][1]) * inv_det;
-    out[1][0] = -(in[1][0] * in[2][2] - in[1][2] * in[2][0]) * inv_det;
-    out[1][1] =  (in[0][0] * in[2][2] - in[0][2] * in[2][0]) * inv_det;
-    out[1][2] = -(in[0][0] * in[1][2] - in[0][2] * in[1][0]) * inv_det;
-    out[2][0] =  (in[1][0] * in[2][1] - in[1][1] * in[2][0]) * inv_det;
-    out[2][1] = -(in[0][0] * in[2][1] - in[0][1] * in[2][0]) * inv_det;
-    out[2][2] =  (in[0][0] * in[1][1] - in[0][1] * in[1][0]) * inv_det;
-    return 1;
-}
-
-static int
-png_build_chrm_to_srgb_matrix(double white_x,
-                              double white_y,
-                              double red_x,
-                              double red_y,
-                              double green_x,
-                              double green_y,
-                              double blue_x,
-                              double blue_y,
-                              double source_to_srgb[3][3])
-{
-    static double const xyz_to_srgb[3][3] = {
-        { 3.240969941904521, -1.537383177570093, -0.498610760293003 },
-        { -0.969243636280880, 1.875967501507721, 0.041555057407176 },
-        { 0.055630079696993, -0.203976958888977, 1.056971514242878 }
-    };
-    double primaries[3][3];
-    double primary_xyz[3][3];
-    double primaries_inv[3][3];
-    double source_to_xyz[3][3];
-    double white_xyz[3];
-    double scale[3];
-    int row;
-    int col;
-
-    if (source_to_srgb == NULL) {
-        return 0;
-    }
-    if (!png_chrm_xy_to_xyz(white_x, white_y, white_xyz) ||
-        !png_chrm_xy_to_xyz(red_x, red_y, primary_xyz[0]) ||
-        !png_chrm_xy_to_xyz(green_x, green_y, primary_xyz[1]) ||
-        !png_chrm_xy_to_xyz(blue_x, blue_y, primary_xyz[2])) {
-        return 0;
-    }
-    /* Exactly collinear primaries have no source matrix. Floating inverse
-     * cancellation can leave a residue larger than its singular cutoff;
-     * classify zero on the original integer grid to retain the surviving
-     * metadata fallback. Both signs of nonzero area remain admissible. */
-    if (png_chrm_primary_area(red_x, red_y, green_x, green_y,
-                              blue_x, blue_y) == 0) {
-        return 0;
-    }
-    for (row = 0; row < 3; ++row) {
-        for (col = 0; col < 3; ++col) {
-            primaries[row][col] = primary_xyz[col][row];
-        }
-    }
-
-    if (!png_invert_3x3(primaries, primaries_inv)) {
-        return 0;
-    }
-
-    scale[0] = primaries_inv[0][0] * white_xyz[0]
-             + primaries_inv[0][1] * white_xyz[1]
-             + primaries_inv[0][2] * white_xyz[2];
-    scale[1] = primaries_inv[1][0] * white_xyz[0]
-             + primaries_inv[1][1] * white_xyz[1]
-             + primaries_inv[1][2] * white_xyz[2];
-    scale[2] = primaries_inv[2][0] * white_xyz[0]
-             + primaries_inv[2][1] * white_xyz[1]
-             + primaries_inv[2][2] * white_xyz[2];
-
-    for (row = 0; row < 3; ++row) {
-        source_to_xyz[row][0] = primaries[row][0] * scale[0];
-        source_to_xyz[row][1] = primaries[row][1] * scale[1];
-        source_to_xyz[row][2] = primaries[row][2] * scale[2];
-    }
-
-    for (row = 0; row < 3; ++row) {
-        for (col = 0; col < 3; ++col) {
-            source_to_srgb[row][col] =
-                xyz_to_srgb[row][0] * source_to_xyz[0][col]
-                + xyz_to_srgb[row][1] * source_to_xyz[1][col]
-                + xyz_to_srgb[row][2] * source_to_xyz[2][col];
-        }
-    }
-    return 1;
-}
-
-static void
-png_apply_linear_matrix_triplet(double rgb[3],
-                                double source_to_srgb[3][3])
-{
-    double in_r;
-    double in_g;
-    double in_b;
-    double out_r;
-    double out_g;
-    double out_b;
-
-    if (rgb == NULL || source_to_srgb == NULL) {
-        return;
-    }
-
-    in_r = rgb[0];
-    in_g = rgb[1];
-    in_b = rgb[2];
-    out_r = source_to_srgb[0][0] * in_r
-          + source_to_srgb[0][1] * in_g
-          + source_to_srgb[0][2] * in_b;
-    out_g = source_to_srgb[1][0] * in_r
-          + source_to_srgb[1][1] * in_g
-          + source_to_srgb[1][2] * in_b;
-    out_b = source_to_srgb[2][0] * in_r
-          + source_to_srgb[2][1] * in_g
-          + source_to_srgb[2][2] * in_b;
-    /* Linear RGB is an intermediate coordinate, not bounded storage. */
-    rgb[0] = out_r;
-    rgb[1] = out_g;
-    rgb[2] = out_b;
-}
-
-static void
-png_apply_linear_matrix_float32(float *pixels,
-                                size_t pixel_count,
-                                double source_to_srgb[3][3])
-{
-    size_t index;
-    size_t offset;
-    double rgb[3];
-
-    if (pixels == NULL || source_to_srgb == NULL) {
-        return;
-    }
-
-    for (index = 0u; index < pixel_count; ++index) {
-        offset = index * 3u;
-        rgb[0] = (double)pixels[offset + 0u];
-        rgb[1] = (double)pixels[offset + 1u];
-        rgb[2] = (double)pixels[offset + 2u];
-        png_apply_linear_matrix_triplet(rgb, source_to_srgb);
-        pixels[offset + 0u] = (float)rgb[0];
-        pixels[offset + 1u] = (float)rgb[1];
-        pixels[offset + 2u] = (float)rgb[2];
-    }
-}
-
 static void
 png_expand_background_sample_to_unit(png_uint_16 sample,
                                      png_uint_32 bitdepth,
@@ -633,17 +467,54 @@ png_source_color_chunks(unsigned char const *buffer, size_t size)
     return flags;
 }
 
+static char const *
+png_arithmetic_name(int requested)
+{
+    switch (requested) {
+    case SIXEL_PNG_CHRM_DOUBLE:
+        return "double";
+    case SIXEL_PNG_CHRM_512BIT:
+        return "512bit";
+    default:
+        return "auto";
+    }
+}
+
+static char const *
+png_arithmetic_reason(unsigned reason)
+{
+    switch (reason) {
+    case SIXEL_PNG_CHRM_FORCED:
+        return "forced";
+    case SIXEL_PNG_CHRM_SMALL_AREA:
+        return "small-area";
+    case SIXEL_PNG_CHRM_SMALL_CONE:
+        return "small-cone";
+    case SIXEL_PNG_CHRM_SMALL_AREA | SIXEL_PNG_CHRM_SMALL_CONE:
+        return "small-area+cone";
+    default:
+        return "ordinary";
+    }
+}
+
 /*
  * Convert source metadata to linear sRGB without touching alpha. Preserve the
  * shared ColorSync compatibility rule: iCCP+sRGB+cHRM uses sRGB; iCCP+sRGB
  * without cHRM still tries the validated ICC profile. See the PNG precedence
  * section in docs/loader/png-color-metadata.md before changing this decision.
- * An unavailable transform falls back to supported PNG metadata.
+ * An unavailable ICC transform falls back to supported PNG metadata.
+ *
+ * Interpret that metadata before choosing its internal arithmetic.
+ * A forced arithmetic mode does not force cHRM ahead of ICC or sRGB and does
+ * not revive metadata that libpng rejected. Undefined cHRM still falls back
+ * to the existing transfer interpretation. A selected 512bit evaluation of
+ * valid cHRM may not silently downgrade when that evaluation is unavailable.
  */
 static int
 png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
                       float *pixels, int width, int height, int enable_cms,
-                      unsigned int color_chunks)
+                      unsigned int color_chunks, int arithmetic,
+                      char const *role)
 {
     png_charp name;
     png_bytep profile;
@@ -652,16 +523,14 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
     int converted;
     int has_gamma;
     int has_matrix;
+    int result;
     double gamma;
-    double wx;
-    double wy;
-    double rx;
-    double ry;
-    double gx;
-    double gy;
-    double bx;
-    double by;
-    double matrix[3][3];
+    double xy[8];
+    double xyz[3];
+    int64_t grid[8];
+    sixel_png_chrm_matrix_t matrix;
+    sixel_png_chrm_stats_t stats;
+    char const *reason;
     size_t count;
     size_t i;
 
@@ -670,31 +539,54 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
     has_gamma = 0;
     has_matrix = 0;
     gamma = 0.0;
+    reason = !enable_cms ? "cms-disabled" : "no-selected-chrm";
     if (enable_cms &&
         (color_chunks & (PNG_INFO_sRGB | PNG_INFO_cHRM)) !=
             (PNG_INFO_sRGB | PNG_INFO_cHRM) &&
         png_get_iCCP(png_ptr, info_ptr, &name, &compression,
-                                  &profile, &profile_size) == PNG_INFO_iCCP) {
+                    &profile, &profile_size) == PNG_INFO_iCCP) {
         converted = sixel_cms_convert_to_linearrgb_with_profile_bytes(
             (unsigned char *)pixels, width, height,
             SIXEL_PIXELFORMAT_RGBFLOAT32, profile, profile_size);
         if (converted) {
-            /* Native ICC gamma extensions need not match our signed TRC.
-             * The destination is already linear; never decode it again. */
+            loader_trace_message("PNGCHRM1|role=%s|requested=%s|"
+                "actual=not-applicable|reason=icc-selected", role,
+                png_arithmetic_name(arithmetic));
             return 1;
         }
-        if (!converted) {
-            loader_trace_message("libpng: ICC transform unavailable; "
-                                 "using supported PNG color metadata");
-        }
+        loader_trace_message("libpng: ICC transform unavailable; "
+                             "using supported PNG color metadata");
+    }
+    if (enable_cms && (color_chunks & PNG_INFO_sRGB)) {
+        reason = "srgb-selected";
     }
     if (enable_cms && !converted && !(color_chunks & PNG_INFO_sRGB)) {
         has_gamma = png_get_gAMA(png_ptr, info_ptr, &gamma) == PNG_INFO_gAMA
                     && gamma > 0.0;
-        if (png_get_cHRM(png_ptr, info_ptr, &wx, &wy, &rx, &ry,
-                        &gx, &gy, &bx, &by) == PNG_INFO_cHRM) {
-            has_matrix = png_build_chrm_to_srgb_matrix(
-                wx, wy, rx, ry, gx, gy, bx, by, matrix);
+        if (png_get_cHRM(png_ptr, info_ptr, &xy[0], &xy[1], &xy[2], &xy[3],
+                        &xy[4], &xy[5], &xy[6], &xy[7]) == PNG_INFO_cHRM) {
+            result = 1;
+            for (i = 0; i < 8; i += 2) {
+                if (!png_chrm_xy_to_xyz(xy[i], xy[i+1], xyz)) {
+                    result = 0;
+                    break;
+                }
+                grid[i] = (int64_t)(xy[i] * 100000.0 + 0.5);
+                grid[i+1] = (int64_t)(xy[i+1] * 100000.0 + 0.5);
+            }
+            reason = "undefined-chrm";
+            if (result && png_chrm_primary_area(xy[2], xy[3], xy[4],
+                                                xy[5], xy[6], xy[7])) {
+                result = sixel_png_chrm_build(&matrix, grid, arithmetic, 1);
+                if (result < 0) {
+                    sixel_helper_set_additional_message(
+                        "libpng: selected 512bit cHRM arithmetic "
+                        "is unavailable");
+                    return result == SIXEL_PNG_CHRM_UNSUPPORTED
+                        ? -SIXEL_NOT_IMPLEMENTED : -SIXEL_BAD_ARGUMENT;
+                }
+                has_matrix = result == SIXEL_PNG_CHRM_OK;
+            }
         }
     }
     for (i = 0u; i < count * 3u; ++i) {
@@ -703,7 +595,26 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
             gamma);
     }
     if (has_matrix) {
-        png_apply_linear_matrix_float32(pixels, count, matrix);
+        result = sixel_png_chrm_apply(&matrix, pixels, pixels, count, &stats);
+        if (result != SIXEL_PNG_CHRM_OK) {
+            sixel_helper_set_additional_message(
+                "libpng: selected cHRM arithmetic rejected its input");
+            return -SIXEL_BAD_ARGUMENT;
+        }
+        loader_trace_message("PNGCHRM1|role=%s|requested=%s|selected=%s|"
+            "actual=%s|reason=%s|identity=%lu|double=%lu|integer=%lu", role,
+            png_arithmetic_name(arithmetic),
+            png_arithmetic_name(matrix.selected),
+            stats.integer_pixels ? "512bit" :
+                (stats.double_pixels ? "double" : "identity"),
+            png_arithmetic_reason(matrix.reason),
+            (unsigned long)stats.identity_pixels,
+            (unsigned long)stats.double_pixels,
+            (unsigned long)stats.integer_pixels);
+    } else {
+        loader_trace_message("PNGCHRM1|role=%s|requested=%s|"
+            "actual=not-applicable|reason=%s", role,
+            png_arithmetic_name(arithmetic), reason);
     }
     return converted || has_gamma || has_matrix;
 }
@@ -812,6 +723,7 @@ load_png(unsigned char      /* out */ **result,
          int                /* out */ *alpha_zero_is_transparent,
          int                /* out */ *cms_applied,
          int                /* in */  enable_cms,
+         int                /* in */  chrm_arithmetic,
          sixel_png_alpha_t          *alpha_state,
          sixel_allocator_t  /* in */  *allocator)
 {
@@ -836,6 +748,7 @@ load_png(unsigned char      /* out */ **result,
     int i;
     int depth;
     int cms_converted;
+    int background_converted;
     int has_tRNS_chunk;
     int has_alpha_chunk;
     int has_transparency;
@@ -1120,13 +1033,23 @@ load_png(unsigned char      /* out */ **result,
         }
         cms_converted = png_source_to_linear(png_ptr, info_ptr, float_pixels,
                                              *psx, *psy, enable_cms,
-                                             color_chunks);
+                                             color_chunks, chrm_arithmetic,
+                                             "image");
+        if (cms_converted < 0) {
+            status = (SIXELSTATUS)-cms_converted;
+            goto cleanup;
+        }
         for (channel = 0; channel < 3; ++channel) {
             bg_pixel[channel] = (float)bg_unit[channel];
         }
         if (background_from_file) {
-            (void)png_source_to_linear(png_ptr, info_ptr, bg_pixel,
-                                       1, 1, enable_cms, color_chunks);
+            background_converted = png_source_to_linear(png_ptr, info_ptr,
+                bg_pixel, 1, 1, enable_cms, color_chunks, chrm_arithmetic,
+                "background");
+            if (background_converted < 0) {
+                status = (SIXELSTATUS)-background_converted;
+                goto cleanup;
+            }
         } else if (background_colorspace != SIXEL_COLORSPACE_LINEAR) {
             for (channel = 0; channel < 3; ++channel) {
                 bg_pixel[channel] = (float)png_decode_srgb_unit(
@@ -1486,7 +1409,11 @@ load_png(unsigned char      /* out */ **result,
         }
         cms_converted = png_source_to_linear(png_ptr, info_ptr, cms_pixels,
             palette_colors ? *pncolors : *psx, palette_colors ? 1 : *psy, 1,
-            color_chunks);
+            color_chunks, chrm_arithmetic, "image");
+        if (cms_converted < 0) {
+            status = (SIXELSTATUS)-cms_converted;
+            goto cleanup;
+        }
         if (cms_converted && !palette_colors) {
             /* Retain CMS output as the canonical frame. Re-encoding it into
              * the original RGB8/16 buffer loses gamut before promotion. */
@@ -1511,6 +1438,10 @@ load_png(unsigned char      /* out */ **result,
             }
         }
         *cms_applied = cms_converted;
+    } else {
+        loader_trace_message("PNGCHRM1|role=image|requested=%s|"
+            "actual=not-applicable|reason=cms-disabled",
+            png_arithmetic_name(chrm_arithmetic));
     }
 
     status = SIXEL_OK;
@@ -1947,7 +1878,8 @@ parse_fctl(
 static SIXELSTATUS
 decode_png_rgba(unsigned char **result, int *width, int *height,
                 unsigned char *buffer, size_t size, unsigned char *bgcolor,
-                int enable_cms, sixel_png_alpha_t *alpha_state,
+                int enable_cms, int chrm_arithmetic,
+                sixel_png_alpha_t *alpha_state,
                 sixel_allocator_t *allocator)
 {
     int format;
@@ -1961,7 +1893,7 @@ decode_png_rgba(unsigned char **result, int *width, int *height,
     alpha_state->defer_composition = 1;
     return load_png(result, buffer, size, width, height, NULL, &ncolors, 0,
                     &format, bgcolor, &transparent, &alpha_zero, &cms_applied,
-                    enable_cms, alpha_state, allocator);
+                    enable_cms, chrm_arithmetic, alpha_state, allocator);
 }
 
 static void
@@ -2146,6 +2078,7 @@ emit_apng_frame(
     int                            emit_callback,
     unsigned char                 *bgcolor,
     int                            enable_cms,
+    int                            chrm_arithmetic,
     int                            exif_orientation,
     int                            reqcolors,
     int                            fuse_palette,
@@ -2240,6 +2173,7 @@ emit_apng_frame(
                              png_size,
                              bgcolor,
                              enable_cms,
+                             chrm_arithmetic,
                              &alpha_state,
                              allocator);
 
@@ -2367,6 +2301,7 @@ load_apng_frames(
     unsigned char             *bgcolor,
     int                        exif_orientation,
     int                        enable_cms,
+    int                        chrm_arithmetic,
     int                        loop_control,
     int                        start_frame_no_set,
     int                        start_frame_no_override,
@@ -2690,6 +2625,7 @@ load_apng_frames(
                                          emit_callback,
                                          bgcolor,
                                          enable_cms,
+                                         chrm_arithmetic,
                                          exif_orientation,
                                          reqcolors,
                                          fuse_palette,
@@ -2830,6 +2766,7 @@ load_apng_frames(
                                   emit_callback,
                                   bgcolor,
                                   enable_cms,
+                                  chrm_arithmetic,
                                   exif_orientation,
                                   reqcolors,
                                   fuse_palette,
@@ -3095,6 +3032,7 @@ load_with_libpng(
     int                       /* in */     start_frame_no_set,
     int                       /* in */     start_frame_no_override,
     int                       /* in */     enable_cms_override,
+    int                       /* in */     chrm_arithmetic,
     int                       /* in */     enable_orientation_override,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
@@ -3148,6 +3086,7 @@ load_with_libpng(
                                   bgcolor,
                                   exif_orientation,
                                   enable_cms,
+                                  chrm_arithmetic,
                                   loop_control,
                                   start_frame_no_set,
                                   start_frame_no_override,
@@ -3176,6 +3115,7 @@ load_with_libpng(
                       &alpha_zero_is_transparent,
                       &cms_applied,
                       enable_cms,
+                      chrm_arithmetic,
                       &alpha_state,
                       allocator);
     if (SIXEL_FAILED(status)) {
@@ -3385,6 +3325,14 @@ sixel_loader_libpng_setopt(sixel_loader_component_t *component,
         flag = (int const *)value;
         self->enable_orientation = (flag == NULL || *flag != 0) ? 1 : 0;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_PNG_CHRM_ARITHMETIC:
+        flag = (int const *)value;
+        if (flag != NULL && (*flag < SIXEL_PNG_CHRM_AUTO ||
+            *flag > SIXEL_PNG_CHRM_512BIT)) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        self->chrm_arithmetic = flag != NULL ? *flag : SIXEL_PNG_CHRM_AUTO;
+        return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
         flag = (int const *)value;
         if (flag != NULL && *flag >= 0) {
@@ -3442,6 +3390,7 @@ sixel_loader_libpng_load(sixel_loader_component_t *component,
                               self->has_start_frame_no,
                               self->start_frame_no,
                               self->enable_cms,
+                              self->chrm_arithmetic,
                               self->enable_orientation,
                               loader_timeline_emit_frame_callback,
                               &timeline_state);
@@ -3504,6 +3453,7 @@ sixel_loader_libpng_new(sixel_allocator_t *allocator,
     self->reqcolors = 256;
     self->start_frame_no = INT_MIN;
     self->enable_cms = 0;
+    self->chrm_arithmetic = SIXEL_PNG_CHRM_AUTO;
     self->enable_orientation = 1;
     sixel_allocator_ref(allocator);
     *ppcomponent = &self->base;

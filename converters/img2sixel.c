@@ -961,7 +961,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    choose full output or retained-plane delta updates.\n"
         "      full  -> disable temporal keeps (default)\n"
         "      delta -> enable 6delta; requires alpha-policy=auto or keep\n"
-        "    delta suboptions: threshold=0..255 (T), error=diffuse|skip (E).\n"
+        "    delta suboptions: threshold=0..255 (:Tvalue),\n"
+        "                      error=diffuse|skip (:Evalue).\n"
         "    Defaults: threshold=0, error=diffuse. At 0 the early keep\n"
         "    requires exact RGB; later keeps compare palette error.\n"
         "    Larger thresholds trade freshness for fewer lookups.\n"
@@ -1018,6 +1019,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               controls thumbnail resolution.\n"
         "                               PNG-capable loaders support\n"
         "                               :trns_keycolor=0|1 (:K0/:K1).\n"
+        "                               libpng supports\n"
+        "                               :chrm_arithmetic=auto|double|512bit\n"
+        "                               (:Avalue, default auto) for its\n"
+        "                               selected cHRM matrix only.\n"
         "                               librsvg supports\n"
         "                               :relative_resources=0|1 (:A0/:A1)\n"
         "                               and :stdin_svgz=0|1 (:S0/:S1).\n"
@@ -1063,6 +1068,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      common:trns_keycolor="
         "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR\n"
         "      libpng:cms_engine=SIXEL_LOADER_LIBPNG_CMS_ENGINE\n"
+        "      libpng:chrm_arithmetic="
+        "SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC\n"
         "      libpng:orientation=SIXEL_LOADER_LIBPNG_ORIENTATION\n"
         "      libjpeg:cms_engine=SIXEL_LOADER_LIBJPEG_CMS_ENGINE\n"
         "      libjpeg:orientation=SIXEL_LOADER_LIBJPEG_ORIENTATION\n"
@@ -1702,6 +1709,14 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_LIBPNG_CMS_ENGINE",
         "override CMS backend for libpng loader conversion.\n"
         "Overrides SIXEL_LOADER_CMS_ENGINE."
+    },
+    {
+        "SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC",
+        "select libpng cHRM matrix arithmetic: auto, double, or 512bit.\n"
+        "Default auto uses double except for small matrix denominators.\n"
+        "512bit rounds the supported rational transform to float32.\n"
+        "This does not select an ICC backend or change metadata priority.\n"
+        "Invalid/empty values retain auto; -Llibpng:chrm_arithmetic wins."
     },
     {
         "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",

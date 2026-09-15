@@ -55,10 +55,10 @@ _img2sixel()
     opt_short_completion_policy="-K"
 
     if declare -F _init_completion >/dev/null 2>&1; then
-        _init_completion -n '=' || return
+        _init_completion -n '=:' || return
     else
         if declare -F _get_comp_words_by_ref >/dev/null 2>&1; then
-            _get_comp_words_by_ref -n '=' cur prev words cword
+            _get_comp_words_by_ref -n '=:' cur prev words cword
         else
             words=("${COMP_WORDS[@]}")
             cword=$COMP_CWORD
@@ -948,9 +948,32 @@ _img2sixel()
         return 0
         ;;
     -L|--loaders)
+        # Retain earlier suboptions and loader entries when completing cHRM.
+        loader_cur=${cur##*,}
+        case "$loader_cur" in
+        libpng:chrm_arithmetic=*|libpng:*:chrm_arithmetic=*|libpng:A*|libpng:*:A*)
+            loader_prefix=${cur%:*}
+            loader_cur=${cur##*:}
+            COMPREPLY=( $( compgen -W 'chrm_arithmetic=auto
+                                      chrm_arithmetic=double
+                                      chrm_arithmetic=512bit
+                                      Aauto Adouble A512bit' \
+                                      -- "$loader_cur" ) )
+            for i in "${!COMPREPLY[@]}"; do
+                COMPREPLY[$i]="${loader_prefix}:${COMPREPLY[$i]}"
+            done
+            return 0
+            ;;
+        esac
         loader_prefix=${cur%,*}
         loader_cur=${cur##*,}
         COMPREPLY=( $( compgen -W 'libpng \
+                                   libpng:chrm_arithmetic=auto \
+                                   libpng:chrm_arithmetic=double \
+                                   libpng:chrm_arithmetic=512bit \
+                                   libpng:Aauto \
+                                   libpng:Adouble \
+                                   libpng:A512bit \
                                    libjpeg \
                                    libwebp \
                                    libtiff \

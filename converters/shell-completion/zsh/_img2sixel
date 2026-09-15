@@ -215,6 +215,9 @@ _loaders() {
   _values -s , \
     'LOADER' \
     'libpng[libpng based loader]' \
+    'libpng\:chrm_arithmetic=auto[select cHRM arithmetic at matrix build]' \
+    'libpng\:chrm_arithmetic=double[use double cHRM arithmetic]' \
+    'libpng\:chrm_arithmetic=512bit[use exact bounded cHRM arithmetic]' \
     'libjpeg[libjpeg based loader]' \
     'libwebp[libwebp based loader]' \
     'libtiff[libtiff based loader]' \

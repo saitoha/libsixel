@@ -1681,6 +1681,8 @@ def main():
     outputs.update(png_palette_oracles(power_outputs['rgb-power.json']))
     from generate_png_chrm_fixtures import build as png_chrm_fixtures
     outputs.update(png_chrm_fixtures(outputs['palette-trns-cms.png']))
+    from generate_png_arithmetic_tests import build as png_arithmetic_fixtures
+    outputs.update(png_arithmetic_fixtures())
     outputs.update(jpeg_sample_oracles())
     outputs.update(cli_rgb_oracles())
     outputs.update(hdr_sample_oracles())

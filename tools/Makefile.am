@@ -20,6 +20,7 @@ endif
 EXTRA_DIST = libsixel-config.in \
              generate_color_fixtures.py \
              generate_png_chrm_fixtures.py \
+             generate_png_arithmetic_tests.py \
              verify_jpeg_color_source.c \
              build-docs \
              docs/mkdocs_hooks.py \

@@ -819,6 +819,15 @@ int test_loader_0199_png_chrm_getter_reject(int argc, char **argv);
 int test_loader_0200_png_chrm_trace_control(int argc, char **argv);
 int test_loader_0201_png_chrm_area(int argc, char **argv);
 int test_loader_0202_png_chrm_accept(int argc, char **argv);
+int test_loader_0203_png_arith_dispatch(int argc, char **argv);
+int test_loader_0204_png_arith_exact(int argc, char **argv);
+int test_loader_0205_png_arith_double(int argc, char **argv);
+int test_loader_0206_png_arith_neutral(int argc, char **argv);
+int test_loader_0207_png_arith_srgb_target(int argc, char **argv);
+int test_loader_0208_png_arith_singular(int argc, char **argv);
+int test_loader_0209_png_arith_invalid(int argc, char **argv);
+int test_loader_0210_png_arith_loader(int argc, char **argv);
+int test_loader_0211_png_arith_unavailable(int argc, char **argv);
 
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
@@ -1673,6 +1682,17 @@ static test_entry_t const test_entries[] = {
       test_loader_0200_png_chrm_trace_control },
     { "loader/0201_png_chrm_area", test_loader_0201_png_chrm_area },
     { "loader/0202_png_chrm_accept", test_loader_0202_png_chrm_accept },
+    { "loader/0203_png_arith_dispatch", test_loader_0203_png_arith_dispatch },
+    { "loader/0204_png_arith_exact", test_loader_0204_png_arith_exact },
+    { "loader/0205_png_arith_double", test_loader_0205_png_arith_double },
+    { "loader/0206_png_arith_neutral", test_loader_0206_png_arith_neutral },
+    { "loader/0207_png_arith_srgb_target",
+      test_loader_0207_png_arith_srgb_target },
+    { "loader/0208_png_arith_singular", test_loader_0208_png_arith_singular },
+    { "loader/0209_png_arith_invalid", test_loader_0209_png_arith_invalid },
+    { "loader/0210_png_arith_loader", test_loader_0210_png_arith_loader },
+    { "loader/0211_png_arith_unavailable",
+      test_loader_0211_png_arith_unavailable },
 
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },

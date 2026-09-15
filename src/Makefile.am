@@ -259,6 +259,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/chunk-factory.h \
                 $(srcdir)/chunk-view.h \
                 $(srcdir)/cms.c \
+                $(srcdir)/png-chrm-arithmetic.c \
+                $(srcdir)/png-chrm-arithmetic.h \
                 $(srcdir)/cms.h \
                 $(srcdir)/icc-parse.c \
                 $(srcdir)/icc-parse.h \

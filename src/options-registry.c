@@ -1590,6 +1590,14 @@ static sixel_suboption_choice_t const g_heckbert_profile_choices[] = {
     { "quality", SIXEL_HECKBERT_PROFILE_QUALITY }
 };
 
+#if HAVE_LIBPNG
+static sixel_suboption_choice_t const g_loader_chrm_arithmetic_choices[] = {
+    { "auto", 0 },
+    { "double", 1 },
+    { "512bit", 2 }
+};
+#endif
+
 static sixel_suboption_choice_t const g_loader_cms_engine_choices[] = {
     { "none", SIXEL_CMS_ENGINE_NONE },
     { "auto", SIXEL_CMS_ENGINE_AUTO },
@@ -2625,6 +2633,12 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "SIXEL_LOADER_CMS_ENGINE", NULL, g_loader_cms_engine_choices,
         g_loader_cms_environment_choices,
         libpng_cms_engine),
+    SIXEL_REGISTRY_LOADER_CHOICE(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_LIBPNG,
+        "chrm_arithmetic", 'A', "SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC",
+        NULL, NULL, g_loader_chrm_arithmetic_choices,
+        libpng_chrm_arithmetic),
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS,
         g_loader_values + SIXEL_LOADER_INDEX_LIBPNG,

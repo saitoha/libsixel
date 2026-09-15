@@ -645,6 +645,16 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0200_PNG_CHRM_TRACE_CONTROL \
     -DBUILD_TEST_0201_PNG_CHRM_AREA \
     -DBUILD_TEST_0202_PNG_CHRM_ACCEPT \
+    -DBUILD_PNG_ARITHMETIC_TEST_COMMON \
+    -DBUILD_TEST_0203_PNG_ARITH_DISPATCH \
+    -DBUILD_TEST_0204_PNG_ARITH_EXACT \
+    -DBUILD_TEST_0205_PNG_ARITH_DOUBLE \
+    -DBUILD_TEST_0206_PNG_ARITH_NEUTRAL \
+    -DBUILD_TEST_0207_PNG_ARITH_SRGB_TARGET \
+    -DBUILD_TEST_0208_PNG_ARITH_SINGULAR \
+    -DBUILD_TEST_0209_PNG_ARITH_INVALID \
+    -DBUILD_TEST_0210_PNG_ARITH_LOADER \
+    -DBUILD_TEST_0211_PNG_ARITH_UNAVAILABLE \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -1068,6 +1078,17 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0200_png_chrm_trace_control.c \
     loader/libpng/0201_png_chrm_area.c \
     loader/libpng/0202_png_chrm_accept.c \
+    loader/libpng/0203_png_arith_dispatch.c \
+    loader/libpng/0204_png_arith_exact.c \
+    loader/libpng/0205_png_arith_double.c \
+    loader/libpng/0206_png_arith_neutral.c \
+    loader/libpng/0207_png_arith_srgb_target.c \
+    loader/libpng/0208_png_arith_singular.c \
+    loader/libpng/0209_png_arith_invalid.c \
+    loader/libpng/0210_png_arith_loader.c \
+    loader/libpng/0211_png_arith_unavailable.c \
+    loader/libpng/png_arithmetic_test_common.c \
+    loader/libpng/png_arithmetic_test_common.h \
     loader/libpng/loader_libpng_chrm_test_common.h \
     loader/libpng/loader_libpng_chrm_grid_test_common.h \
     loader/libpng/loader_libpng_chrm_area_test_common.h \
@@ -2999,6 +3020,7 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-doc-test-links.sh \
     _static/sh/staticcheck-test-plan-links.sh \
     _static/awk/docs-github-math.awk \
+    _static/awk/dllexport-declarations.awk \
     _static/data/github-math-macros.txt \
     _static/sh/staticcheck-c-header-modeline.sh \
     check-test-exports.list \

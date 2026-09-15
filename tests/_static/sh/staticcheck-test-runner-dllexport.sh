@@ -40,51 +40,12 @@ find "$tests_root" -type f -name '*.c' -exec awk '
 ' >> "$headers_file"
 LC_ALL=C sort -u "$headers_file" -o "$headers_file"
 
-# shellcheck disable=SC2016
-tr '\n' '\0' < "$headers_file" | xargs -0 awk '
-BEGIN {
-    export_marker = ""
-}
-{
-    if ($0 ~ /^[[:space:]]*(SIXELAPI|SIXEL_INTERNAL_API).*([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*\(/) {
-        token = $0
-        sub(/^.*[[:space:]]/, "", token)
-        sub(/[[:space:]]*\(.*/, "", token)
-        if (token ~ /^[A-Za-z_][A-Za-z0-9_]*$/) {
-            printf "%s\t%s:%d\t1\n", token, FILENAME, FNR
-            export_marker = ""
-            next
-        }
-    }
-
-    if ($0 ~ /^[[:space:]]*SIXELAPI([[:space:]]|$)/) {
-        export_marker = "SIXELAPI"
-        next
-    }
-    if ($0 ~ /^[[:space:]]*SIXEL_INTERNAL_API([[:space:]]|$)/) {
-        export_marker = "SIXEL_INTERNAL_API"
-        next
-    }
-
-    if (match($0, /^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(/)) {
-        token = substr($0, RSTART, RLENGTH)
-        sub(/^[[:space:]]*/, "", token)
-        name = token
-        sub(/[[:space:]]*\(.*/, "", name)
-        exported = 0
-        if (export_marker == "SIXELAPI" || export_marker == "SIXEL_INTERNAL_API") {
-            exported = 1
-        }
-        printf "%s\t%s:%d\t%d\n", name, FILENAME, FNR, exported
-        export_marker = ""
-        next
-    }
-
-    if ($0 !~ /^[[:space:]]*$/) {
-        export_marker = ""
-    }
-}
-' | LC_ALL=C sort -u > "$decls_file"
+# The scanner keeps storage class with its declaration and skips function
+# bodies. Static inline factories are local definitions, not DLL imports.
+tr '\n' '\0' < "$headers_file" | xargs -0 awk \
+    -f "$src_root/tests/_static/awk/dllexport-declarations.awk" \
+    > "$decls_file"
+LC_ALL=C sort -u "$decls_file" -o "$decls_file"
 
 find "$tests_root" -type f -name '*.c' -exec awk '
 {
