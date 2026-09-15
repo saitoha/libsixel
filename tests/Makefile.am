@@ -2747,6 +2747,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/shellcheck.sh \
     _static/sh/staticcheck-suite.sh \
     _static/sh/staticcheck-actionlint.sh \
+    _static/sh/staticcheck-big-endian-compat.sh \
     _static/sh/staticcheck-platform-compat.sh \
     _static/sh/staticcheck-platform-ci-contracts.sh \
     _static/sh/staticcheck-experimental-full-tests.sh \

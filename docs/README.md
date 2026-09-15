@@ -132,7 +132,7 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Platform compatibility
 
-- [Platform compatibility ledger](misc/platforms/README.md) indexes the maintained OpenVMS, Windows runtime, Emscripten, Cosmopolitan, macOS, POSIX libc, Haiku, and Solaris compatibility contracts and their reciprocal static checks.
+- [Platform compatibility ledger](misc/platforms/README.md) indexes the maintained OpenVMS, Windows runtime, Emscripten, Cosmopolitan, macOS, POSIX libc, big-endian, Haiku, and Solaris compatibility contracts and their reciprocal static checks.
 
 ## Documentation governance
 

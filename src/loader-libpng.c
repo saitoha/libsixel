@@ -2927,7 +2927,7 @@ libpng_classify_stream(sixel_chunk_t const *chunk, int *animated)
     unsigned char const *p;
     size_t size;
     size_t offset;
-    size_t length;
+    png_uint_32 length;
     png_uint_32 frames;
     png_uint_32 controls;
     png_uint_32 sequence;

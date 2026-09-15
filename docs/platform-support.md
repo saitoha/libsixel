@@ -103,14 +103,15 @@ The following summary includes active GitHub Actions build configurations. "Syst
 
 | OS or target | CI release/profile | Architecture | Compiler or ABI | Build systems |
 | --- | --- | --- | --- | --- |
-| Ubuntu Linux | 24.04 and `ubuntu-latest` | x86_64, i686, AArch64 | GCC, Clang, TCC, PCC | Autotools, Meson |
+| Ubuntu Linux | 24.04 and `ubuntu-latest` | x86_64, i686, AArch64 | GCC, Clang, Intel oneAPI C, TCC, PCC | Autotools, Meson |
+| Debian GNU/Linux | Bookworm and Trixie target images | PPC64LE, s390x, RISC-V 64, MIPS64LE | GCC | Autotools, Meson |
 | Alpine Linux | 3.20 | x86_64 | GCC with musl | Autotools, Meson |
 | macOS | `macos-15`, `macos-latest` | x86_64, AArch64 | Apple Clang, GNU GCC | Autotools, Meson |
-| Windows and MSYS2 | `windows-latest` | i686, x86_64, AArch64 | MSVC, Clang, clang-cl, MinGW GCC | Autotools, Meson |
+| Windows and MSYS2 | `windows-latest` | i686, x86_64, AArch64 | MSVC, Clang, clang-cl, Intel oneAPI C, MinGW GCC | Autotools, Meson |
 | Cygwin on Windows | current CI image | x86_64 | Cygwin GCC; MSVC and Clang MSVC ABI | Autotools, Meson |
 | FreeBSD | 14.3 | x86_64 | system C compiler | Autotools, Meson |
 | OpenBSD | 7.8 | x86_64 | system C compiler | Autotools, Meson |
-| NetBSD | 10.1 | x86_64 | system C compiler | Autotools, Meson |
+| NetBSD | 10.1 and 11.0 | x86_64, SPARC64 | system C compiler | Autotools, Meson |
 | DragonFly BSD | 6.4.2 | x86_64 | system C compiler | Autotools, Meson |
 | Haiku | R1/beta6 | x86_64 | system C compiler | Autotools, Meson |
 | Solaris | 11.4 | x86_64 | GCC | Autotools, Meson |
