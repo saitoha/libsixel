@@ -19,12 +19,12 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 reference_image="${input_image}"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
-short_output="${artifact_dir}/0166-perturb-short-$$.six"
-env_output="${artifact_dir}/0166-perturb-env-$$.six"
-default_output="${artifact_dir}/0166-perturb-default-$$.six"
-float_short_output="${artifact_dir}/0166-perturb-float-short-$$.six"
-float_env_output="${artifact_dir}/0166-perturb-float-env-$$.six"
-float_default_output="${artifact_dir}/0166-perturb-float-default-$$.six"
+short_output="${artifact_dir}/0165-perturb-short-$$.six"
+env_output="${artifact_dir}/0165-perturb-env-$$.six"
+default_output="${artifact_dir}/0165-perturb-default-$$.six"
+float_short_output="${artifact_dir}/0165-perturb-float-short-$$.six"
+float_env_output="${artifact_dir}/0165-perturb-float-env-$$.six"
+float_default_output="${artifact_dir}/0165-perturb-float-default-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "fs:U0.5" \

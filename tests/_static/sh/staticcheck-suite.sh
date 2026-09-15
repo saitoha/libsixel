@@ -48,42 +48,6 @@ pass_count=0
 skip_count=0
 fail_count=0
 
-strip_tap_log() {
-    log_path=$1
-    awk '
-    /^1\.\.0[[:space:]]*#[[:space:]]*[Ss][Kk][Ii][Pp][[:space:]]*/ {
-        line=$0
-        sub(/^1\.\.0[[:space:]]*#[[:space:]]*[Ss][Kk][Ii][Pp][[:space:]]*/, "SKIP: ", line)
-        print line
-        next
-    }
-    /^ok[[:space:]]+[0-9]+[[:space:]]*#[[:space:]]*[Ss][Kk][Ii][Pp][[:space:]]*/ {
-        line=$0
-        sub(/^ok[[:space:]]+[0-9]+[[:space:]]*#[[:space:]]*[Ss][Kk][Ii][Pp][[:space:]]*/, "SKIP: ", line)
-        print line
-        next
-    }
-    /^1\.\.[0-9]+([[:space:]]|$)/ { next }
-    /^(not[[:space:]]+)?ok([[:space:]]|$)/ { next }
-    {
-        line=$0
-        sub(/^#[[:space:]]?/, "", line)
-        if (line != "") {
-            print line
-        }
-    }
-    ' "$log_path"
-}
-
-is_tap_skip() {
-    log_path=$1
-    awk '
-    /^1\.\.0[[:space:]]*#[[:space:]]*[Ss][Kk][Ii][Pp]([[:space:]]|$)/ { found=1 }
-    /^ok[[:space:]]+[0-9]+[[:space:]]*#[[:space:]]*[Ss][Kk][Ii][Pp]([[:space:]]|$)/ { found=1 }
-    END { exit found ? 0 : 1 }
-    ' "$log_path"
-}
-
 tool_is_available() {
     tool_path=$1
     test -n "$tool_path" || return 1
@@ -91,47 +55,8 @@ tool_is_available() {
     command -v "$tool_path" >/dev/null 2>&1
 }
 
-run_case_tap() {
-    case_name=$1
-    shift
-
-    index=$((index + 1))
-    log_path="$tmpdir/${index}.log"
-    filtered_log="$tmpdir/${index}.filtered"
-
-    printf '==> [%02d/%02d] %s\n' "$index" "$total" "$case_name"
-
-    if "$@" >"$log_path" 2>&1; then
-        case_rc=0
-    else
-        case_rc=$?
-    fi
-
-    strip_tap_log "$log_path" > "$filtered_log"
-
-    if test "$case_rc" -eq 0; then
-        if is_tap_skip "$log_path"; then
-            skip_count=$((skip_count + 1))
-            printf 'SKIP %s\n' "$case_name"
-            if test -s "$filtered_log"; then
-                cat "$filtered_log"
-            fi
-        else
-            pass_count=$((pass_count + 1))
-            printf 'PASS %s\n' "$case_name"
-        fi
-        return 0
-    fi
-
-    fail_count=$((fail_count + 1))
-    printf 'FAIL %s\n' "$case_name"
-    if test -s "$filtered_log"; then
-        cat "$filtered_log"
-    else
-        sed -n '1,120p' "$log_path"
-    fi
-    return "$case_rc"
-}
+# shellcheck source=tests/_static/sh/tap-case.sh
+. "$src_root/tests/_static/sh/tap-case.sh"
 
 run_case_plain() {
     case_name=$1
@@ -368,6 +293,14 @@ EOF
 
 run_case_tap "staticcheck-staticcheck-suite-sync" \
     "$src_root/tests/_static/sh/staticcheck-staticcheck-suite-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-tap-dispatch" \
+    "$src_root/tests/_static/sh/staticcheck-tap-dispatch.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-suboption-image-coverage" \
+    "$src_root/tests/_static/sh/staticcheck-suboption-image-coverage.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-private-includes" \

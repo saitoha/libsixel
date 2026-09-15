@@ -14,8 +14,8 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/images/map8.six"
-auto_output="${ARTIFACT_LOCAL_DIR}/0163-gpu-auto-fallback-$$.png"
-cpu_output="${ARTIFACT_LOCAL_DIR}/0163-gpu-cpu-control-$$.png"
+auto_output="${ARTIFACT_LOCAL_DIR}/0032-gpu-auto-fallback-$$.png"
+cpu_output="${ARTIFACT_LOCAL_DIR}/0032-gpu-cpu-control-$$.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -d lso_undither:Vlight \
     -G auto:D4294967295 <"${input_image}" >"${auto_output}" || {

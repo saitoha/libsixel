@@ -64,6 +64,12 @@ meson compile -C build staticcheck
 
 The suite runs named checks in a deterministic order and prints a concise pass, skip, and fail summary. A failing check makes the umbrella target fail. Some checks require a configured header or built introspection binary; those checks report a skip when the prerequisite is absent, so a run with skips is not evidence for the skipped contract. Optional external lint tools are also reported as skips when unavailable. Use a normal configured build with the documented toolchain when claiming full validation.
 
+For a TAP-producing static check, only standard output is parsed as TAP; standard error is retained separately for diagnostics. The dispatcher requires one leading or trailing plan, consecutive explicit or implicit result numbers, and a result count matching the plan. Missing or malformed results, unknown stdout records, bailout, an unterminated diagnostic block, or a nonzero child status fail the check. A mixture of successful and skipped results passes; only an entirely skipped check is reported as skipped. A failed ordinary result still fails when another result is skipped. TODO does not establish a static invariant and is rejected in this suite. This staticcheck policy does not alter the ordinary behavioral TAP harness.
+
+Failure output retains the original TAP result lines, child standard error, and parser diagnostics. Shell verbose/trace output can contain literal `not ok`, `1..N`, or `Bail out!` strings; because it belongs on standard error, those strings cannot turn a successful TAP stream into a failed or skipped result.
+
+The registry image-coverage check accepts equivalent escaped-pipe shell patterns and complete CMS record assertions without weakening them to partial wildcard checks. It still requires both typed assignments and actual CMS application. Short/environment output equivalence can use exact byte comparison or a checked MS-SSIM 0.98 comparison for documented nondeterministic output. Image correctness must additionally have its own reference: a quality comparison or an independently specified literal pixel reference encoded through the strict loader path. Merely comparing two option spellings does not establish correct pixels.
+
 During development, an individual Autotools check can be run from the test directory, for example:
 
 ```sh
@@ -97,6 +103,8 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-01 | Every standalone `staticcheck-*.sh` implementation other than the runner itself is registered in the umbrella suite, the suite does not reference missing implementations, and both Autotools and Meson invoke that suite. | [tests/_static/sh/staticcheck-staticcheck-suite-sync.sh](../../tests/_static/sh/staticcheck-staticcheck-suite-sync.sh) |
 | SC-02 | This document and its owning meta-checks maintain complete reciprocal links. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
 | SC-03 | Exhaustive test-plan markers, their scoped test links, and reciprocal test comments remain complete and duplicate-free. | [tests/_static/sh/staticcheck-test-plan-links.sh](../../tests/_static/sh/staticcheck-test-plan-links.sh) |
+| SC-04 | The actual TAP dispatcher preserves failure diagnostics and rejects failed, missing, malformed, misnumbered, prematurely terminated, or bailed-out results while distinguishing mixed success/skip from all-skip. | [tests/_static/sh/staticcheck-tap-dispatch.sh](../../tests/_static/sh/staticcheck-tap-dispatch.sh) |
+| SC-05 | Registry image-evidence inspection accepts supported assertion forms but detects missing assignments, wrong bindings, missing consumers, missing output comparisons, and missing independent image references. | [tests/_static/sh/staticcheck-suboption-image-coverage.sh](../../tests/_static/sh/staticcheck-suboption-image-coverage.sh) |
 
 ### Coverage boundary
 

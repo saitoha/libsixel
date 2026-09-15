@@ -683,6 +683,18 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-tap-dispatch',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-tap-dispatch.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-suboption-image-coverage',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-suboption-image-coverage.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-actionlint',
     [meson.current_source_dir() / '_static/sh/staticcheck-actionlint.sh',
       meson.project_source_root(),

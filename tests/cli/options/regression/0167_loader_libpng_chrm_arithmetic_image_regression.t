@@ -23,8 +23,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
-short_output="${artifact_dir}/0168-loader-libpng-chrm_arithmetic-short-$$.six"
-env_output="${artifact_dir}/0168-loader-libpng-chrm_arithmetic-env-$$.six"
+short_output="${artifact_dir}/0167-loader-libpng-chrm_arithmetic-short-$$.six"
+env_output="${artifact_dir}/0167-loader-libpng-chrm_arithmetic-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \

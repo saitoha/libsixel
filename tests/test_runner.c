@@ -828,6 +828,7 @@ int test_loader_0208_png_arith_singular(int argc, char **argv);
 int test_loader_0209_png_arith_invalid(int argc, char **argv);
 int test_loader_0210_png_arith_loader(int argc, char **argv);
 int test_loader_0211_png_arith_unavailable(int argc, char **argv);
+int test_loader_0212_png_arith_tiny(int argc, char **argv);
 
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
@@ -1693,6 +1694,7 @@ static test_entry_t const test_entries[] = {
     { "loader/0210_png_arith_loader", test_loader_0210_png_arith_loader },
     { "loader/0211_png_arith_unavailable",
       test_loader_0211_png_arith_unavailable },
+    { "loader/0212_png_arith_tiny", test_loader_0212_png_arith_tiny },
 
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },

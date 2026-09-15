@@ -520,6 +520,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0209_png_arith_invalid.c \
 	loader/libpng/0210_png_arith_loader.c \
 	loader/libpng/0211_png_arith_unavailable.c \
+	loader/libpng/0212_png_arith_tiny.c \
 	loader/libpng/png_arithmetic_test_common.c \
 	loader/libpng/png_arithmetic_test_common.h \
 	loader/libpng/loader_libpng_chrm_test_common.h \
@@ -1012,6 +1013,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0209_png_arith_invalid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0210_png_arith_loader.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0211_png_arith_unavailable.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0212_png_arith_tiny.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-png_arithmetic_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
@@ -1370,6 +1372,7 @@ am__depfiles_remade =  \
 	loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po \
 	loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po \
@@ -2780,6 +2783,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0209_PNG_ARITH_INVALID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0210_PNG_ARITH_LOADER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0211_PNG_ARITH_UNAVAILABLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0212_PNG_ARITH_TINY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -3237,6 +3241,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0209_png_arith_invalid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0210_png_arith_loader.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0211_png_arith_unavailable.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0212_png_arith_tiny.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/png_arithmetic_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/png_arithmetic_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/loader_libpng_chrm_test_common.h \
@@ -3422,6 +3427,8 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-metal-source-literal-length.sh \
     _static/sh/staticcheck-staticcheck-suite-sync.sh \
+    _static/sh/staticcheck-suboption-image-coverage.sh \
+    _static/sh/staticcheck-tap-dispatch.sh \
     _static/sh/staticcheck-suboption-registry.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-kcenter-suboption-env-sync.sh \
@@ -3449,6 +3456,9 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-docs-github-math.sh \
     _static/sh/staticcheck-doc-test-links.sh \
     _static/sh/staticcheck-test-plan-links.sh \
+    _static/sh/tap-case.sh \
+    _static/awk/tap-status.awk \
+    _static/awk/suboption-image-coverage.awk \
     _static/awk/docs-github-math.awk \
     _static/awk/dllexport-declarations.awk \
     _static/data/github-math-macros.txt \
@@ -4885,6 +4895,9 @@ loader/libpng/test_runner-0210_png_arith_loader.$(OBJEXT):  \
 loader/libpng/test_runner-0211_png_arith_unavailable.$(OBJEXT):  \
 	loader/libpng/$(am__dirstamp) \
 	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0212_png_arith_tiny.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
 loader/libpng/test_runner-png_arithmetic_test_common.$(OBJEXT):  \
 	loader/libpng/$(am__dirstamp) \
 	loader/libpng/$(DEPDIR)/$(am__dirstamp)
@@ -5464,6 +5477,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po@am__quote@ # am--include-marker
@@ -11341,6 +11355,20 @@ loader/libpng/test_runner-0211_png_arith_unavailable.obj: loader/libpng/0211_png
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0211_png_arith_unavailable.obj `if test -f 'loader/libpng/0211_png_arith_unavailable.c'; then $(CYGPATH_W) 'loader/libpng/0211_png_arith_unavailable.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0211_png_arith_unavailable.c'; fi`
 
+loader/libpng/test_runner-0212_png_arith_tiny.o: loader/libpng/0212_png_arith_tiny.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0212_png_arith_tiny.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Tpo -c -o loader/libpng/test_runner-0212_png_arith_tiny.o `test -f 'loader/libpng/0212_png_arith_tiny.c' || echo '$(srcdir)/'`loader/libpng/0212_png_arith_tiny.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Tpo loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0212_png_arith_tiny.c' object='loader/libpng/test_runner-0212_png_arith_tiny.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0212_png_arith_tiny.o `test -f 'loader/libpng/0212_png_arith_tiny.c' || echo '$(srcdir)/'`loader/libpng/0212_png_arith_tiny.c
+
+loader/libpng/test_runner-0212_png_arith_tiny.obj: loader/libpng/0212_png_arith_tiny.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0212_png_arith_tiny.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Tpo -c -o loader/libpng/test_runner-0212_png_arith_tiny.obj `if test -f 'loader/libpng/0212_png_arith_tiny.c'; then $(CYGPATH_W) 'loader/libpng/0212_png_arith_tiny.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0212_png_arith_tiny.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Tpo loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0212_png_arith_tiny.c' object='loader/libpng/test_runner-0212_png_arith_tiny.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0212_png_arith_tiny.obj `if test -f 'loader/libpng/0212_png_arith_tiny.c'; then $(CYGPATH_W) 'loader/libpng/0212_png_arith_tiny.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0212_png_arith_tiny.c'; fi`
+
 loader/libpng/test_runner-png_arithmetic_test_common.o: loader/libpng/png_arithmetic_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-png_arithmetic_test_common.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Tpo -c -o loader/libpng/test_runner-png_arithmetic_test_common.o `test -f 'loader/libpng/png_arithmetic_test_common.c' || echo '$(srcdir)/'`loader/libpng/png_arithmetic_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Tpo loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po
@@ -13174,6 +13202,7 @@ distclean: distclean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
@@ -13702,6 +13731,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0209_png_arith_invalid.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0210_png_arith_loader.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
@@ -14023,6 +14053,8 @@ SIXEL_INSTALLCHECK ?= 0
 .PHONY: \
 	staticcheck \
 	staticcheck-staticcheck-suite-sync \
+	staticcheck-suboption-image-coverage \
+	staticcheck-tap-dispatch \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
@@ -14094,6 +14126,8 @@ SIXEL_INSTALLCHECK ?= 0
 # FAIL/ERROR must propagate as a non-zero exit status.
 staticcheck \
 staticcheck-staticcheck-suite-sync \
+staticcheck-suboption-image-coverage \
+staticcheck-tap-dispatch \
 staticcheck-actionlint \
 staticcheck-shellcheck \
 staticcheck-codespell \
@@ -14190,6 +14224,26 @@ staticcheck-staticcheck-suite-sync:
 		--trs-file staticcheck-staticcheck-suite-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-staticcheck-suite-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-tap-dispatch:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-tap-dispatch" \
+		--log-file staticcheck-tap-dispatch.log \
+		--trs-file staticcheck-tap-dispatch.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-tap-dispatch.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-suboption-image-coverage:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-suboption-image-coverage" \
+		--log-file staticcheck-suboption-image-coverage.log \
+		--trs-file staticcheck-suboption-image-coverage.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-suboption-image-coverage.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-actionlint:

@@ -19,33 +19,23 @@
 int
 png_arith_dispatch(int sample, int requested)
 {
-    static int64_t const grids[][8] = {
-        {31270,32900,20000,20000,21000,20001,20001,20100},
-        {31270,32900,20000,20000,21000,20000,20000,20100},
-        {31270,32900,20000,20000,21000,19999,20001,20100},
-        {31270,32900,20000,20000,20001,20100,21000,20001},
-        {31270,32900,20000,20000,20000,20100,21000,20000},
-        {31270,32900,20000,20000,20001,20100,21000,19999},
-        {14071,2978,64000,33000,30000,60000,15000,6000},
-        {16256,5440,64000,33000,30000,60000,15000,6000},
-        {49348,49240,64000,33000,30000,60000,15000,6000},
-        {14071,2978,59522,6,58680,7,57839,8}
-    };
-    static unsigned const reasons[] = {2,8,8,2,8,8,4,8,8,6};
+    static unsigned const reasons[] = {2,8,8,2,8,8,4,8,8,6,4,8,8};
     sixel_png_chrm_matrix_t matrix;
     sixel_png_chrm_stats_t stats;
     float input[3] = {0.125f, 0.25f, 0.75f};
     float output[3];
+    uint32_t encoded[3];
     unsigned reason;
     int selected;
     int status;
 
-    if (sample < 0 || sample >= 10 || requested < 0 || requested > 2) {
+    if (sample < 0 || sample >= 13 || requested < 0 || requested > 2) {
         return 1;
     }
     reason = requested ? SIXEL_PNG_CHRM_FORCED : reasons[sample];
     selected = requested ? requested : (reasons[sample] == 8 ? 1 : 2);
-    status = sixel_png_chrm_build(&matrix, grids[sample], requested, 1);
+    status = sixel_png_chrm_build(&matrix, png_arith_dispatch_grids[sample],
+                                  requested, 1);
     if (status == SIXEL_PNG_CHRM_UNSUPPORTED) {
         return 77;
     }
@@ -57,6 +47,13 @@ png_arith_dispatch(int sample, int requested)
         stats.identity_pixels != 0 ||
         stats.double_pixels != (size_t)(selected == 1) ||
         stats.integer_pixels != (size_t)(selected == 2)) {
+        return 1;
+    }
+    /* The independent generator proves that this chosen nonneutral vector
+     * has one rounding cell even under the ordinary forward-error bound.
+     * These literal bits therefore test the value as well as the branch. */
+    memcpy(encoded, output, sizeof(encoded));
+    if (memcmp(encoded, png_arith_dispatch_expected[sample], sizeof(encoded))) {
         return 1;
     }
     fprintf(stderr, "PNG_ARITH|dispatch|selected=%d|reason=%u\n",
@@ -109,6 +106,54 @@ png_arith_values(int sample, int requested, int adapt, int exact)
                         (double)output[j], (double)reference);
                 return 1;
             }
+        }
+    }
+    return 0;
+}
+
+int
+png_arith_tiny(int sample, int requested)
+{
+    sixel_png_chrm_matrix_t matrix;
+    sixel_png_chrm_stats_t stats;
+    float input[3];
+    float output[3];
+    uint32_t encoded[3];
+    size_t i;
+    int selected;
+    int status;
+
+    if (sample < 1 || sample > 2 || requested < 0 || requested > 2) {
+        return 1;
+    }
+    selected = requested ? requested : SIXEL_PNG_CHRM_DOUBLE;
+    status = sixel_png_chrm_build(&matrix, png_arith_grids[sample],
+                                  requested, 1);
+    if (status == SIXEL_PNG_CHRM_UNSUPPORTED) {
+        return 77;
+    }
+    if (status != 1 || matrix.selected != selected) {
+        return 1;
+    }
+    for (i = 0; i < sizeof(png_arith_tiny_inputs) /
+                    sizeof(png_arith_tiny_inputs[0]); ++i) {
+        memcpy(input, png_arith_tiny_inputs[i], sizeof(input));
+        if (sixel_png_chrm_apply(&matrix, input, output, 1, &stats) != 1) {
+            return 1;
+        }
+        memcpy(encoded, output, sizeof(encoded));
+        /* Singleton rounding cells are certified from exact mathematical
+         * matrices, never from these observed output values. This finite
+         * vector set does not impose correct rounding on all double input. */
+        if (memcmp(encoded, png_arith_tiny_expected[sample - 1][i],
+                   sizeof(encoded)) || stats.identity_pixels != 0 ||
+            stats.double_pixels != (size_t)(selected == 1) ||
+            stats.integer_pixels != (size_t)(selected == 2)) {
+            fprintf(stderr, "PNG_ARITH|tiny|sample=%d|vector=%lu|"
+                    "actual=%08x,%08x,%08x\n", sample, (unsigned long)i,
+                    (unsigned)encoded[0], (unsigned)encoded[1],
+                    (unsigned)encoded[2]);
+            return 1;
         }
     }
     return 0;
@@ -309,7 +354,7 @@ png_arith_load(int sample, char const *order, int exact)
     int result;
     int old_policy;
 
-    if (sample < 0 || sample >= 8) {
+    if (sample < 0 || sample >= 10) {
         return 1;
     }
     old_policy = loader_transparent_policy();

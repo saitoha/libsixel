@@ -6,9 +6,14 @@
 int
 test_loader_0205_png_arith_double(int argc, char **argv)
 {
-    (void)argv;
-    if (!(argc == 2)) {
+    int requested;
+
+    if (argc != 2 && argc != 3) {
         return 1;
     }
-    return png_arith_values(atoi(argv[1]), 1, 1, 0);
+    requested = argc == 3 ? atoi(argv[2]) : 1;
+    if (requested != 0 && requested != 1) {
+        return 1;
+    }
+    return png_arith_values(atoi(argv[1]), requested, 1, 0);
 }

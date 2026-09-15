@@ -7,6 +7,7 @@ The final rational value is rounded directly to binary32, including ties.
 """
 from fractions import Fraction as F
 import math
+import json
 import struct
 import zlib
 
@@ -186,11 +187,56 @@ def chunk(kind, payload):
             + struct.pack('>I', zlib.crc32(kind + payload)))
 
 
+def absolute(matrix):
+    return [[abs(v) for v in row] for row in matrix]
+
+
+def double_certificate(grid, vector):
+    """Bound the ordinary expression before binary32 rounding, independently.
+
+    All integer factors converted by the double constructor are below 2^53.
+    Source/target/CAT ratios each introduce at most one division rounding.
+    Expanding both three-term matrix sums and the final dot gives fewer than
+    80 rounding factors along any product path. With u=2^-53, gamma(80)
+    times the absolute expanded sum bounds the forward error, including
+    cancellation. This uses only exact mathematical matrices and input bits;
+    it neither reads production coefficients nor fits an observed error.
+    """
+    expanded = absolute(source(grid))
+    if grid[:2] != SRGB[:2]:
+        source_cones = mm(B, white(grid))
+        target_cones = mm(B, white(SRGB))
+        ratios = [[abs(target_cones[i][0] / source_cones[i][0])
+                   if i == j else F(0) for j in range(3)] for i in range(3)]
+        expanded = mm(absolute(inverse(B)),
+                      mm(ratios, mm(absolute(B), expanded)))
+    expanded = mm(absolute(STANDARD), expanded)
+    valid, matrix = model(grid, 1, STANDARD)
+    assert valid == 1
+    exact, expected = output(matrix, vector)
+    unit = F(1, 2**53)
+    gamma = 80 * unit / (1 - 80 * unit)
+    bounds = [gamma * sum(a * abs(F(value(v))) for a, v in zip(row, vector))
+              for row in expanded]
+    # Every point in the certified enclosure rounds to the same float32.
+    assert all(rounded(y - error) == result == rounded(y + error)
+               for y, error, result in zip(exact, bounds, expected))
+    return dict(grid=grid, input_bits=vector, expected_bits=expected,
+                exact_values=list(map(str, exact)),
+                absolute_forward_bounds=list(map(str, bounds)),
+                rounding_cell_is_singleton=True)
+
+
+def hex_row(values):
+    return '    { ' + ', '.join('0x%08xu' % v for v in values) + ' },'
+
+
 def build():
     # This bound is derived from the input domain, not production coefficients.
     certificate = width(STANDARD)
     assert certificate['midpoint_bits'] <= 448
     outputs = {}
+    certificates = dict(dispatch=[], tiny=[], loader_tiny=[])
     cases = [
         SRGB,
         [31270, 32900, 68000, 32000, 26500, 69000, 15000, 6000],
@@ -232,6 +278,40 @@ def build():
             lines += ['        },']
         lines += ['    },']
     lines += ['};']
+    dispatch_grids = [
+        [31270,32900,20000,20000,21000,20001,20001,20100],
+        [31270,32900,20000,20000,21000,20000,20000,20100],
+        [31270,32900,20000,20000,21000,19999,20001,20100],
+        [31270,32900,20000,20000,20001,20100,21000,20001],
+        [31270,32900,20000,20000,20000,20100,21000,20000],
+        [31270,32900,20000,20000,20001,20100,21000,19999],
+        [14071,2978,*SRGB[2:]], [16256,5440,*SRGB[2:]],
+        [49348,49240,*SRGB[2:]], cases[5],
+        [49347,49241,*SRGB[2:]], [49347,49240,*SRGB[2:]],
+        [16257,5440,*SRGB[2:]],
+    ]
+    dispatch_input = list(map(bits, [.125, .25, .75]))
+    lines += ['static int64_t const png_arith_dispatch_grids[][8] = {']
+    lines += ['    { ' + ', '.join(map(str, grid)) + ' },'
+              for grid in dispatch_grids]
+    lines += ['};', 'static uint32_t const png_arith_dispatch_expected[][3] = {']
+    for grid in dispatch_grids:
+        proof = double_certificate(grid, dispatch_input)
+        certificates['dispatch'].append(proof)
+        lines += [hex_row(proof['expected_bits'])]
+    lines += ['};', 'static uint32_t const png_arith_tiny_inputs[][3] = {']
+    tiny = [[bits(2**-100),0,0], [0,bits(2**-100),0], [1,0,0], [0,1,0],
+            [bits(2**-100),bits(2**-101),0]]
+    lines += [hex_row(vector) for vector in tiny]
+    lines += ['};', 'static uint32_t const png_arith_tiny_expected[][5][3] = {']
+    for grid in cases[1:3]:
+        lines += ['    {']
+        for vector in tiny:
+            proof = double_certificate(grid, vector)
+            certificates['tiny'].append(proof)
+            lines += ['    ' + hex_row(proof['expected_bits'])]
+        lines += ['    },']
+    lines += ['};']
     samples = [
         (0, 0, 0), (65535, 65535, 65535), (32768, 32768, 32768),
         (10083, 5136, 0), (15393, 7841, 0), (16661, 8487, 0),
@@ -239,13 +319,15 @@ def build():
     ]
     # Cases 6 and 7 exercise the same exact reference through APNG rectangles
     # and fully transparent RGBA with a colored file background, respectively.
-    loader_cases = cases + [cases[5], cases[5]]
+    loader_cases = cases + [cases[5], cases[5], cases[1], cases[2]]
+    tiny_samples = [(64,0,0), (0,64,0), (64,32,0), (32,64,0),
+                    (128,0,0), (0,128,0), (32,0,0), (0,32,0)]
     for index, grid in enumerate(loader_cases):
         rgba = index == 7
         png = b'\x89PNG\r\n\x1a\n' + chunk(
             b'IHDR', struct.pack('>IIBBBBB', 8, 1, 16, 6 if rgba else 2,
                                  0, 0, 0))
-        png += chunk(b'gAMA', struct.pack('>I', 100000))
+        png += chunk(b'gAMA', struct.pack('>I', 10000 if index >= 8 else 100000))
         png += chunk(b'cHRM', struct.pack('>8I', *grid))
         if index == 6:
             png += chunk(b'acTL', struct.pack('>II', 1, 1))
@@ -255,7 +337,8 @@ def build():
             png += chunk(b'bKGD', struct.pack('>3H', *samples[3]))
             row = b'\0' + struct.pack('>4H', 0, 0, 0, 0) * 8
         else:
-            row = b'\0' + b''.join(struct.pack('>3H', *v) for v in samples)
+            row_samples = tiny_samples if index >= 8 else samples
+            row = b'\0' + b''.join(struct.pack('>3H', *v) for v in row_samples)
         png += chunk(b'IDAT', zlib.compress(row)) + chunk(b'IEND', b'')
         outputs[f'png-arithmetic-{index}.png'] = png
         lines += [f'static unsigned char const png_arith_png_{index}[] = {{']
@@ -271,9 +354,21 @@ def build():
     for index, grid in enumerate(loader_cases):
         valid, matrix = model(grid, 1, STANDARD)
         assert valid == 1
-        input_samples = [samples[3]] * 8 if index == 7 else samples
-        values = [v for sample in input_samples for v in
-                  output(matrix, [bits(x / 65535) for x in sample])[1]]
+        input_samples = ([samples[3]] * 8 if index == 7 else
+                         tiny_samples if index >= 8 else samples)
+        values = []
+        for sample in input_samples:
+            vector = [rounded(F(x, 65535)) for x in sample]
+            if index >= 8:
+                # Static RGB16 stores normalized float32 before its TRC.
+                # These chosen power-10 samples round identically even if
+                # normalization is kept rational through the power operation.
+                vector = [rounded(F(value(v))**10) for v in vector]
+                assert vector == [rounded(F(x, 65535)**10) for x in sample]
+                proof = double_certificate(grid, vector)
+                certificates['loader_tiny'].append(dict(sample=list(sample),
+                                                        **proof))
+            values += output(matrix, vector)[1]
         lines += ['    {']
         for i in range(0, len(values), 4):
             lines += ['        ' + ', '.join('0x%08xu' % v
@@ -281,6 +376,8 @@ def build():
         lines += ['    },']
     lines += ['};', '']
     outputs['png-arithmetic.h'] = '\n'.join(lines).encode()
+    outputs['png-arithmetic-certificates.json'] = (json.dumps(certificates,
+        indent=2, sort_keys=True) + '\n').encode()
     return outputs
 
 

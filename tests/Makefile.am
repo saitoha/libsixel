@@ -655,6 +655,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0209_PNG_ARITH_INVALID \
     -DBUILD_TEST_0210_PNG_ARITH_LOADER \
     -DBUILD_TEST_0211_PNG_ARITH_UNAVAILABLE \
+    -DBUILD_TEST_0212_PNG_ARITH_TINY \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -1087,6 +1088,7 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0209_png_arith_invalid.c \
     loader/libpng/0210_png_arith_loader.c \
     loader/libpng/0211_png_arith_unavailable.c \
+    loader/libpng/0212_png_arith_tiny.c \
     loader/libpng/png_arithmetic_test_common.c \
     loader/libpng/png_arithmetic_test_common.h \
     loader/libpng/loader_libpng_chrm_test_common.h \
@@ -1235,6 +1237,8 @@ AM_LOG_FLAGS =
 .PHONY: \
 	staticcheck \
 	staticcheck-staticcheck-suite-sync \
+	staticcheck-suboption-image-coverage \
+	staticcheck-tap-dispatch \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
@@ -1306,6 +1310,8 @@ AM_LOG_FLAGS =
 # FAIL/ERROR must propagate as a non-zero exit status.
 staticcheck \
 staticcheck-staticcheck-suite-sync \
+staticcheck-suboption-image-coverage \
+staticcheck-tap-dispatch \
 staticcheck-actionlint \
 staticcheck-shellcheck \
 staticcheck-codespell \
@@ -1403,6 +1409,27 @@ staticcheck-staticcheck-suite-sync:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-staticcheck-suite-sync.sh" \
 		"$(abs_top_srcdir)"
+
+staticcheck-tap-dispatch:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-tap-dispatch" \
+		--log-file staticcheck-tap-dispatch.log \
+		--trs-file staticcheck-tap-dispatch.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-tap-dispatch.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-suboption-image-coverage:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-suboption-image-coverage" \
+		--log-file staticcheck-suboption-image-coverage.log \
+		--trs-file staticcheck-suboption-image-coverage.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-suboption-image-coverage.sh" \
+		"$(abs_top_srcdir)"
+
 
 staticcheck-actionlint:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -2992,6 +3019,8 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-metal-source-literal-length.sh \
     _static/sh/staticcheck-staticcheck-suite-sync.sh \
+    _static/sh/staticcheck-suboption-image-coverage.sh \
+    _static/sh/staticcheck-tap-dispatch.sh \
     _static/sh/staticcheck-suboption-registry.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-kcenter-suboption-env-sync.sh \
@@ -3019,6 +3048,9 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-docs-github-math.sh \
     _static/sh/staticcheck-doc-test-links.sh \
     _static/sh/staticcheck-test-plan-links.sh \
+    _static/sh/tap-case.sh \
+    _static/awk/tap-status.awk \
+    _static/awk/suboption-image-coverage.awk \
     _static/awk/docs-github-math.awk \
     _static/awk/dllexport-declarations.awk \
     _static/data/github-math-macros.txt \

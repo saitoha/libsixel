@@ -2,6 +2,7 @@
 # Verify PNM truncated-ASCII policy through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|g_loader_values + SIXEL_LOADER_INDEX_BUILTIN|pnm_truncated_ascii
 # Registry binding: builtin_pnm_truncated_ascii
+# Exact image reference: literal-pnm
 
 set -eux
 
@@ -59,7 +60,19 @@ cmp -s "${short_output}" "${env_output}" || {
     exit 0
 }
 
-# This registry-path test compares exact encoder output. Avoid resampling a
-# two-pixel malformed fixture because resampler rounding is toolchain-specific.
+# The absent second pixel is independently specified as black. Encode that
+# complete literal image through the strict path before comparing exact bytes.
+reference_output="${artifact_dir}/0106-pnm-truncated-reference-$$.six"
+printf 'P3\n2 1\n255\n255 0 0 0 0 0\n' | \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-Lbuiltin:Y0!" \
+    >"${reference_output}" || {
+    echo "not ok 1 - complete literal PNM reference conversion failed"
+    exit 0
+}
+cmp -s "${reference_output}" "${short_output}" || {
+    echo "not ok 1 - truncated PNM differs from its literal pixel reference"
+    exit 0
+}
+
 echo "ok" 1 - "pnm_truncated_ascii preserves exact image output"
 exit 0

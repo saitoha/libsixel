@@ -22,8 +22,9 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input="${TOP_SRCDIR}/tests/data/color-numeric/cli-rgb.png"
 reference="${TOP_SRCDIR}/tests/data/color-numeric/cli-rgb-reference.png"
-short_output="${ARTIFACT_LOCAL_DIR}/0085-cms-short.six"
-env_output="${ARTIFACT_LOCAL_DIR}/0085-cms-env.six"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
+short_output="${artifact_dir}/0085-cms-short-$$.six"
+env_output="${artifact_dir}/0085-cms-env-$$.six"
 
 trace=$(SIXEL_TRACE_TOPIC=suboption_contract,loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" "-Llibpng:Ebuiltin!" \
