@@ -2562,6 +2562,7 @@ sixel_emit_span_from_map(sixel_output_t *output,
     size_t chunk_size;
     unsigned long pattern;
     unsigned long block;
+    unsigned char const *block_bytes;
     int chunk_mismatch;
     int remain;
     int byte_index;
@@ -2589,14 +2590,19 @@ sixel_emit_span_from_map(sixel_output_t *output,
                        chunk_size);
                 block ^= pattern;
                 if (block != 0UL) {
+                    /*
+                     * Inspect the copied word in address order. Shifting the
+                     * integer from its least-significant byte would reverse
+                     * this order on big-endian targets.
+                     */
+                    block_bytes = (unsigned char const *)(void const *)&block;
                     for (byte_index = 0;
                          byte_index < (int)chunk_size;
                          byte_index++) {
-                        if ((block & 0xffUL) != 0UL) {
+                        if (block_bytes[byte_index] != 0U) {
                             chunk_mismatch = 1;
                             break;
                         }
-                        block >>= 8;
                         run_length += 1;
                     }
                     break;

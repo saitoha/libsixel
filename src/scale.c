@@ -718,6 +718,8 @@ scale_vertical_row(
     int y;
     int i;
     int pos;
+    int source_pos;
+    int destination_pos;
     int y_first;
     int y_last;
     double center_y;
@@ -778,6 +780,26 @@ scale_vertical_row(
             y_first = MAX((int)floor((center_y - n) * srch / dsth), 0);
             y_last = MIN((int)floor((center_y + n) * srch / dsth),
                          srch - 1);
+        }
+
+        if (y_first == y_last) {
+            diff_y = (dsth >= srch)
+                         ? (y_first + 0.5) - center_y
+                         : (y_first + 0.5) * dsth / srch - center_y;
+            weight = f_resample(fabs(diff_y));
+            if (weight != 0.0) {
+                source_pos = (y_first * dstw + w) * depth;
+                destination_pos = (h * dstw + w) * depth;
+                /*
+                 * A single weighted sample is an exact identity. Avoid a
+                 * multiply and divide that can cross an integer boundary
+                 * before normalize() on some compilers.
+                 */
+                for (i = 0; i < depth; i++) {
+                    dst[destination_pos + i] = tmp[source_pos + i];
+                }
+                continue;
+            }
         }
 
 #if defined(SIXEL_USE_AVX)

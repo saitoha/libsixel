@@ -143,19 +143,15 @@ jobs:
             '
 
   sparc64-netbsd:
-    name: ${{ matrix.label }}
+    name: ${{ matrix.buildtool }}-netbsd-11.0-sparc64-system-cc-${{ matrix.shard }}-of-8
     runs-on: ubuntu-latest
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 4
       matrix:
-        include:
-          - label: Autotools-netbsd-11.0-sparc64-system-cc
-            buildtool: autotools
-
-          - label: Meson-netbsd-11.0-sparc64-system-cc
-            buildtool: meson
+        buildtool: [autotools, meson]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - uses: actions/checkout@v6
 
@@ -193,13 +189,18 @@ jobs:
               "$GITHUB_WORKSPACE/configure" \
                 --disable-dependency-tracking
               gmake -j2 V=1
-              gmake -j2 check
+              test_list=$("$GITHUB_WORKSPACE/build-aux/read-check-test-list.sh" \
+                tests "$GITHUB_WORKSPACE/tests" include newline | \
+                awk -v shard='${{ matrix.shard }}' \
+                  '((NR - 1) % 8) + 1 == shard { printf "%s ", $0 }')
+              gmake -j2 check TESTS="$test_list"
             else
               meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE"
               meson compile -C /tmp/libsixel-build -j 2 -v
               meson test -C /tmp/libsixel-build \
                 --no-rebuild \
                 --num-processes 2 \
+                --slice '${{ matrix.shard }}/8' \
                 --print-errorlogs
             fi
 
@@ -331,8 +332,9 @@ jobs:
           for /f "tokens=* usebackq" %%f in (`dir /b "C:\Program Files (x86)\Intel\oneAPI\compiler\" ^| findstr /V latest ^| sort`) do set "ONEAPI_COMPILER_VERSION=%%f"
           call "C:\Program Files (x86)\Intel\oneAPI\compiler\%ONEAPI_COMPILER_VERSION%\env\vars.bat"
           if not "%PROCESSOR_ARCHITECTURE%" == "AMD64" exit /b 1
-          set "PATH=C:\Program Files\Git\bin;C:\Program Files\Git\usr\bin;%PATH%"
+          set "PATH=%PATH%;C:\Program Files\Git\bin;C:\Program Files\Git\usr\bin"
           where icx
+          where link
           where sh
           where cp
           icx --version

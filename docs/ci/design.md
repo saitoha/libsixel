@@ -134,7 +134,7 @@ evidence that the synchronized inputs actually work.
 
 A platform/compiler configuration counts as CI support only when that configuration builds the default target set and invokes every test registered for the configured feature set. A hand-picked smoke-test subset, a build configured with `--disable-tests` or `-Dtests=false`, or converter `--version` checks establish bring-up evidence only; they do not establish platform support.
 
-Expected skips remain valid when the job deliberately disables an optional dependency or language binding. The test harness, rather than the workflow, must make and report that decision. When a platform has both Autotools and Meson jobs, each job must run its build system's complete registered suite. [CI-02](#test-coverage) statically guards this contract for the experimental architecture and ICX families; live green jobs remain the runtime evidence.
+Expected skips remain valid when the job deliberately disables an optional dependency or language binding. The test harness, rather than the workflow, must make and report that decision. When a platform has both Autotools and Meson jobs, each build-system job family must cover its complete registered suite. A slow emulated target may divide that suite into disjoint shards, but the family is green only when every shard passes. [CI-02](#test-coverage) statically guards this contract for the experimental architecture and ICX families; live green jobs remain the runtime evidence.
 
 ## Dependency and infrastructure policy
 
@@ -228,4 +228,4 @@ change and directly required source, test, or generated-file updates.
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | CI-01 | CI documentation does not direct contributors to repositories or configuration paths that are unavailable from this source tree. | [tests/_static/sh/staticcheck-ci-doc-public-surface.sh](../../tests/_static/sh/staticcheck-ci-doc-public-surface.sh) |
-| CI-02 | Experimental architecture and ICX jobs enable tests, build all default targets, and invoke the complete registered suite instead of a smoke-test subset. | [tests/_static/sh/staticcheck-experimental-full-tests.sh](../../tests/_static/sh/staticcheck-experimental-full-tests.sh) |
+| CI-02 | Experimental architecture and ICX job families enable tests, build all default targets, and cover the complete registered suite instead of a smoke-test subset. | [tests/_static/sh/staticcheck-experimental-full-tests.sh](../../tests/_static/sh/staticcheck-experimental-full-tests.sh) |
