@@ -208,6 +208,10 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
                            sixel_cms_pixel_format_t dst_format,
                            int flags);
 
+/* LCMS rejects exact src == dst expansion from GRAY_8, RGB_8, RGBA_8,
+ * CMYK_8, CMYK_16 or GRAY_F32 to RGB_F32 before any write, even for one
+ * pixel. Separate buffers and the CMYK_F32/LAB_F32 alias adapters remain
+ * supported. This rule does not define partial-overlap behavior. */
 SIXEL_INTERNAL_API int
 sixel_cms_do_transform(sixel_cms_transform_t const *transform,
                        void const *src,

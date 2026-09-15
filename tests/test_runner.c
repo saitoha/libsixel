@@ -833,6 +833,18 @@ int test_cms_0254(int argc, char **argv);
 int test_cms_0255(int argc, char **argv);
 int test_cms_0256(int argc, char **argv);
 int test_cms_0257(int argc, char **argv);
+int test_cms_0258(int argc, char **argv);
+int test_cms_0259(int argc, char **argv);
+int test_cms_0260(int argc, char **argv);
+int test_cms_0261(int argc, char **argv);
+int test_cms_0262(int argc, char **argv);
+int test_cms_0263(int argc, char **argv);
+int test_cms_0264(int argc, char **argv);
+int test_cms_0265(int argc, char **argv);
+int test_cms_0266(int argc, char **argv);
+int test_cms_0267(int argc, char **argv);
+int test_cms_0268(int argc, char **argv);
+int test_cms_0269(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -1724,6 +1736,30 @@ static test_entry_t const test_entries[] = {
       test_cms_0256 },
     { "cms/0257_builtin_gray_byte_gamma_alias",
       test_cms_0257 },
+    { "cms/0258_lcms_gray_byte_linear_alias_reject",
+      test_cms_0258 },
+    { "cms/0259_lcms_gray_byte_gamma_alias_reject",
+      test_cms_0259 },
+    { "cms/0260_lcms_rgb_byte_linear_alias_reject",
+      test_cms_0260 },
+    { "cms/0261_lcms_rgb_byte_gamma_alias_reject",
+      test_cms_0261 },
+    { "cms/0262_lcms_rgba_byte_linear_alias_reject",
+      test_cms_0262 },
+    { "cms/0263_lcms_rgba_byte_gamma_alias_reject",
+      test_cms_0263 },
+    { "cms/0264_lcms_cmyk_byte_linear_alias_reject",
+      test_cms_0264 },
+    { "cms/0265_lcms_cmyk_byte_gamma_alias_reject",
+      test_cms_0265 },
+    { "cms/0266_lcms_cmyk_word_linear_alias_reject",
+      test_cms_0266 },
+    { "cms/0267_lcms_cmyk_word_gamma_alias_reject",
+      test_cms_0267 },
+    { "cms/0268_lcms_gray_float_linear_alias_reject",
+      test_cms_0268 },
+    { "cms/0269_lcms_gray_float_gamma_alias_reject",
+      test_cms_0269 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

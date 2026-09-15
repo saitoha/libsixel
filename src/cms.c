@@ -3777,6 +3777,24 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         if (transform->lcms_handle == NULL) {
             return 0;
         }
+        /* LCMS only guarantees in-place conversion for matching formats.
+         * These six inputs expand into RGB floats and overwrite unread
+         * samples if passed directly to the native forward traversal.
+         * Reject the layout before all writes, including one-pixel calls;
+         * the float CMYK/Lab adapters below keep their existing aliases. */
+        if (src == dst &&
+            transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
+            (transform->src_format == SIXEL_CMS_PIXELFORMAT_GRAY_8 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_RGBA_8 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_8 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_16 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_GRAY_F32)) {
+            loader_trace_message("LSXCMS2|event=reject|engine=lcms2|"
+                "reason=expanding-alias|src=%d|dst=%d",
+                transform->src_format, transform->dst_format);
+            return 0;
+        }
         if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
             (transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_F32 ||
              transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32)) {

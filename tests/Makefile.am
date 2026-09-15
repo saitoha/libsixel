@@ -659,6 +659,18 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0255_BUILTIN_GRAY_BYTE_LINEAR_ALIAS \
     -DBUILD_TEST_0256_BUILTIN_GRAY_BYTE_GAMMA \
     -DBUILD_TEST_0257_BUILTIN_GRAY_BYTE_GAMMA_ALIAS \
+    -DBUILD_TEST_0258_LCMS_GRAY_BYTE_LINEAR_ALIAS_REJECT \
+    -DBUILD_TEST_0259_LCMS_GRAY_BYTE_GAMMA_ALIAS_REJECT \
+    -DBUILD_TEST_0260_LCMS_RGB_BYTE_LINEAR_ALIAS_REJECT \
+    -DBUILD_TEST_0261_LCMS_RGB_BYTE_GAMMA_ALIAS_REJECT \
+    -DBUILD_TEST_0262_LCMS_RGBA_BYTE_LINEAR_ALIAS_REJECT \
+    -DBUILD_TEST_0263_LCMS_RGBA_BYTE_GAMMA_ALIAS_REJECT \
+    -DBUILD_TEST_0264_LCMS_CMYK_BYTE_LINEAR_ALIAS_REJECT \
+    -DBUILD_TEST_0265_LCMS_CMYK_BYTE_GAMMA_ALIAS_REJECT \
+    -DBUILD_TEST_0266_LCMS_CMYK_WORD_LINEAR_ALIAS_REJECT \
+    -DBUILD_TEST_0267_LCMS_CMYK_WORD_GAMMA_ALIAS_REJECT \
+    -DBUILD_TEST_0268_LCMS_GRAY_FLOAT_LINEAR_ALIAS_REJECT \
+    -DBUILD_TEST_0269_LCMS_GRAY_FLOAT_GAMMA_ALIAS_REJECT \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
     -DBUILD_TEST_0187_COREGRAPHICS_PNG \
     -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -777,6 +789,19 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0256_builtin_gray_byte_gamma.c \
     processing/cms/0257_builtin_gray_byte_gamma_alias.c \
     processing/cms/builtin_device_common.h \
+    processing/cms/0258_lcms_gray_byte_linear_alias_reject.c \
+    processing/cms/0259_lcms_gray_byte_gamma_alias_reject.c \
+    processing/cms/0260_lcms_rgb_byte_linear_alias_reject.c \
+    processing/cms/0261_lcms_rgb_byte_gamma_alias_reject.c \
+    processing/cms/0262_lcms_rgba_byte_linear_alias_reject.c \
+    processing/cms/0263_lcms_rgba_byte_gamma_alias_reject.c \
+    processing/cms/0264_lcms_cmyk_byte_linear_alias_reject.c \
+    processing/cms/0265_lcms_cmyk_byte_gamma_alias_reject.c \
+    processing/cms/0266_lcms_cmyk_word_linear_alias_reject.c \
+    processing/cms/0267_lcms_cmyk_word_gamma_alias_reject.c \
+    processing/cms/0268_lcms_gray_float_linear_alias_reject.c \
+    processing/cms/0269_lcms_gray_float_gamma_alias_reject.c \
+    processing/cms/lcms_expanding_alias_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \
