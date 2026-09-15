@@ -1774,6 +1774,9 @@ def main():
     outputs.update(png_metadata_oracles())
     outputs.update(cmyk_sample_oracles())
     outputs.update(gray_sample_oracles())
+    from generate_builtin_device_tests import build as builtin_device_tests
+    outputs.update(builtin_device_tests(outputs['cmyk.icc'],
+        outputs['cmyk.json'], outputs['gray-gamma2.icc']))
     power_outputs = rgb_power_oracles()
     outputs.update(power_outputs)
     outputs.update(curv_sample_oracles(power_outputs['rgb-power.json']))

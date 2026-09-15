@@ -825,6 +825,14 @@ int test_cms_0246(int argc, char **argv);
 int test_cms_0247(int argc, char **argv);
 int test_cms_0248(int argc, char **argv);
 int test_cms_0249(int argc, char **argv);
+int test_cms_0250(int argc, char **argv);
+int test_cms_0251(int argc, char **argv);
+int test_cms_0252(int argc, char **argv);
+int test_cms_0253(int argc, char **argv);
+int test_cms_0254(int argc, char **argv);
+int test_cms_0255(int argc, char **argv);
+int test_cms_0256(int argc, char **argv);
+int test_cms_0257(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -1700,6 +1708,22 @@ static test_entry_t const test_entries[] = {
     { "cms/0247_colorsync_lab_linear_alias", test_cms_0247 },
     { "cms/0248_colorsync_lab_gamma", test_cms_0248 },
     { "cms/0249_colorsync_lab_gamma_alias", test_cms_0249 },
+    { "cms/0250_builtin_cmyk_float_linear",
+      test_cms_0250 },
+    { "cms/0251_builtin_cmyk_float_linear_alias",
+      test_cms_0251 },
+    { "cms/0252_builtin_cmyk_float_gamma",
+      test_cms_0252 },
+    { "cms/0253_builtin_cmyk_float_gamma_alias",
+      test_cms_0253 },
+    { "cms/0254_builtin_gray_byte_linear",
+      test_cms_0254 },
+    { "cms/0255_builtin_gray_byte_linear_alias",
+      test_cms_0255 },
+    { "cms/0256_builtin_gray_byte_gamma",
+      test_cms_0256 },
+    { "cms/0257_builtin_gray_byte_gamma_alias",
+      test_cms_0257 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

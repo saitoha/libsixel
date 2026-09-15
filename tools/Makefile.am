@@ -25,6 +25,7 @@ EXTRA_DIST = libsixel-config.in \
              generate_tiff_icc_tests.py \
              generate_lcms_input_tests.py \
              generate_colorsync_lab_tests.py \
+             generate_builtin_device_tests.py \
              verify_jpeg_color_source.c \
              build-docs \
              docs/mkdocs_hooks.py \

@@ -651,6 +651,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0247_COLORSYNC_LAB_LINEAR_ALIAS \
     -DBUILD_TEST_0248_COLORSYNC_LAB_GAMMA \
     -DBUILD_TEST_0249_COLORSYNC_LAB_GAMMA_ALIAS \
+    -DBUILD_TEST_0250_BUILTIN_CMYK_FLOAT_LINEAR \
+    -DBUILD_TEST_0251_BUILTIN_CMYK_FLOAT_LINEAR_ALIAS \
+    -DBUILD_TEST_0252_BUILTIN_CMYK_FLOAT_GAMMA \
+    -DBUILD_TEST_0253_BUILTIN_CMYK_FLOAT_GAMMA_ALIAS \
+    -DBUILD_TEST_0254_BUILTIN_GRAY_BYTE_LINEAR \
+    -DBUILD_TEST_0255_BUILTIN_GRAY_BYTE_LINEAR_ALIAS \
+    -DBUILD_TEST_0256_BUILTIN_GRAY_BYTE_GAMMA \
+    -DBUILD_TEST_0257_BUILTIN_GRAY_BYTE_GAMMA_ALIAS \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
     -DBUILD_TEST_0187_COREGRAPHICS_PNG \
     -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -760,6 +768,15 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0249_colorsync_lab_gamma_alias.c \
     processing/cms/lcms_input_units_common.h \
     processing/cms/colorsync_lab_units_common.h \
+    processing/cms/0250_builtin_cmyk_float_linear.c \
+    processing/cms/0251_builtin_cmyk_float_linear_alias.c \
+    processing/cms/0252_builtin_cmyk_float_gamma.c \
+    processing/cms/0253_builtin_cmyk_float_gamma_alias.c \
+    processing/cms/0254_builtin_gray_byte_linear.c \
+    processing/cms/0255_builtin_gray_byte_linear_alias.c \
+    processing/cms/0256_builtin_gray_byte_gamma.c \
+    processing/cms/0257_builtin_gray_byte_gamma_alias.c \
+    processing/cms/builtin_device_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \
