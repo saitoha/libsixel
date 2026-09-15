@@ -3671,6 +3671,49 @@ sixel_cms_colorsync_promote_source(
     return 1;
 }
 
+static int
+sixel_cms_colorsync_lab_units(sixel_cms_transform_t const *transform,
+                              void const *src, void *dst, size_t count)
+{
+    float input[256u * 3u];
+    float const *source;
+    float *target;
+    size_t first;
+    size_t batch;
+    size_t pixel;
+    size_t channel;
+
+    /* The facade stores L/100, a/128, b/128. Native ColorSync float Lab
+     * uses the same L coordinate, but centers a/b at 0.5 with a physical
+     * span of 255. This is neither LCMS physical Lab nor the unsigned ICC
+     * LUT encoding with an offset of 128. Change only these input units;
+     * leave native domain handling and extended RGB output untouched. */
+    source = src;
+    target = dst;
+    for (first = 0u; first < count; first += batch) {
+        batch = count - first < 256u ? count - first : 256u;
+        /* Read the complete batch before writing its equally sized RGB
+         * span, so separate inputs and same-start aliases are both safe.
+         * The caller has already checked both complete byte counts. */
+        for (pixel = 0u; pixel < batch; ++pixel) {
+            input[pixel * 3u] = source[(first + pixel) * 3u];
+            for (channel = 1u; channel < 3u; ++channel) {
+                input[pixel * 3u + channel] = (float)(
+                    source[(first + pixel) * 3u + channel]
+                    * (128.0 / 255.0) + 0.5);
+            }
+        }
+        if (!ColorSyncTransformConvert(transform->colorsync_handle,
+                batch, 1u, target + first * 3u,
+                transform->dst_depth, transform->dst_layout,
+                batch * 3u * sizeof(float), input,
+                transform->src_depth, transform->src_layout,
+                batch * 3u * sizeof(float), NULL)) {
+            return 0;
+        }
+    }
+    return 1;
+}
 #endif
 
 #if HAVE_LCMS2
@@ -3771,6 +3814,12 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
 
         src_rowbytes = pixel_count * transform->src_bytes_per_pixel;
         dst_rowbytes = pixel_count * transform->dst_bytes_per_pixel;
+
+        if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
+            transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
+            return sixel_cms_colorsync_lab_units(transform, src, dst,
+                                                  pixel_count);
+        }
 
         if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
             (transform->src_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||

@@ -1790,6 +1790,8 @@ def main():
     from generate_lcms_input_tests import build as lcms_input_tests
     outputs.update(lcms_input_tests(outputs['cmyk.icc'], outputs['cmyk.json']))
     outputs.update(cli_rgb_oracles())
+    from generate_colorsync_lab_tests import build as colorsync_lab_tests
+    outputs.update(colorsync_lab_tests(outputs['cli-rgb.icc'], pack_profile, fixed))
     outputs.update(hdr_sample_oracles())
     outputs.update(palette_export_oracles())
     # Keep the exact M0 parser probes, explicitly outside conformance and
