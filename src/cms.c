@@ -3544,6 +3544,16 @@ sixel_cms_float_rgb(sixel_cms_transform_t const *transform,
                        transform->src_format, src, pixel)) {
             return 0;
         }
+        if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32) {
+            /* The facade stores a/b divided by 128, whereas ICC device
+             * tables use an unsigned unit interval with a neutral offset.
+             * Keep this conversion at the new float endpoint boundary;
+             * legacy device transforms perform their own normalization. */
+            source[1] = sixel_cms_clamp_unit(
+                (source[1] * 128.0 + 128.0) / 255.0);
+            source[2] = sixel_cms_clamp_unit(
+                (source[2] * 128.0 + 128.0) / 255.0);
+        }
         if (!sixel_cms_float_source_xyz(xyz, source, channels, transform) ||
             !sixel_cdef_from_xyz(transform->dst_profile->rgb_definition,
                                    xyz, rgb, 1)) {

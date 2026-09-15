@@ -318,6 +318,18 @@ Numeric tests reuse the existing per-triplet magnitude policy. The builtin/LCMS2
 
 Canonical frame accuracy and final displayed SIXEL quality are separate measurements. Retaining an out-of-range linear component does not by itself prove an improvement after display-gamut handling, palette reduction and dithering.
 
+### Normalized Lab float input to builtin RGB endpoints
+
+The CMS facade represents `LAB_F32` as `L/100`, `a/128`, and `b/128`. Before the builtin float RGB endpoint evaluates an ICC device table, it maps each normalized a/b component with `(value * 128 + 128) / 255` and bounds that device coordinate to `[0,1]`. The signed facade representation is not itself a LUT coordinate. This boundary applies to both linear and analytic gamma RGB destinations, including aliased input/output buffers. Legacy device transforms retain their existing input normalization; they must not receive a second mapping.
+
+The [original float Lab TIFF](../../tests/data/colormgmt/input/custom/lab_high_precision_icc.tiff) contains a v2 Lab-to-Lab profile with identity `mft1` tables. Its numeric tests distinguish the original normalized samples, encoded LUT inputs, physical XYZ under PCS D50, signed float RGB endpoints, and the existing bounded-linear TIFF frame. The loader-independent CMS tests run even when libtiff is disabled. They do not establish a general TIFF float Lab encoding rule, change the Lab adapter's gamut policy, or add absolute-intent/media-white processing. LUT8 PCS encoding is defined in [ICC.1:2001-04, section 6.5.8 and Annex A](https://www.color.org/specification/ICC.1-2001-04.pdf).
+
+### Independent TIFF ICC references
+
+[`tools/generate_tiff_icc_tests.py`](../../tools/generate_tiff_icc_tests.py) reads the original TIFF raster/profile bytes without libtiff or a CMM. Curve expectations follow [ICC.1:2022 Table 68](https://www.color.org/specifications/ICC.1-2022-05.pdf#page=85), including clipping to the specified curve range. The original RGB type-3/type-4 fixture has zero version/class fields and remains a permissively accepted builtin parser specimen; it is not a conforming-profile or cross-engine acceptance test. Its historical generating program is unknown. Numeric expectations use independent Decimal/cofactor math, and the Lab oracle verifies the stored LUT's exact identity instead of copying production interpolation code.
+
+Double curve/PCS comparisons use a relative allowance of `64 * 2^-53`; float endpoints use `64 * 2^-24`. Vector comparisons scale to the largest expected component magnitude, while scalar curves scale to their expected magnitude. Black is exact and there is no absolute dark floor. These value tests are separate from the `0.98` MS-SSIM quality floors. The RGB quality reference is an independently computed, sRGB-tagged PNG, generated from the original source values and ICC equations without the current loader or encoder. The Lab quality test retains its separate existing SIXEL reference. Both quality tests require an actual builtin CMS apply through libtiff, so a similar-looking unmanaged or alternate-engine image cannot satisfy the route assertion.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -628,3 +640,23 @@ The unsupported-feature list above is an implementation audit, not a guarantee t
 | TIFF16-27 | Invalid ICC with requested lcms2 retains exact normalized RGB16 source bits and RGBFLOAT32/GAMMA without a CMS apply. | [tests/loader/libtiff/0168_rgb16_invalid_icc_lcms2.t](../../tests/loader/libtiff/0168_rgb16_invalid_icc_lcms2.t) |
 | TIFF16-28 | Invalid ICC with requested colorsync retains exact normalized RGB16 source bits and RGBFLOAT32/GAMMA without a CMS apply. | [tests/loader/libtiff/0169_rgb16_invalid_icc_colorsync.t](../../tests/loader/libtiff/0169_rgb16_invalid_icc_colorsync.t) |
 | TIFF16-29 | A real ColorSync preparation failure produces its specific diagnostic, preserves all original source bits as RGBFLOAT32/GAMMA, and performs no CMS apply. | [tests/loader/libtiff/0170_rgb16_prepare_failure_colorsync.t](../../tests/loader/libtiff/0170_rgb16_prepare_failure_colorsync.t) |
+
+### TIFF ICC numerical input contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TIC-01 | Original type-3/type-4 curves obey stored parameter order, threshold neighbors, and required curve-range clipping. | [tests/processing/cms/0231_tiff_para34_curves.t](../../tests/processing/cms/0231_tiff_para34_curves.t) |
+| TIC-02 | Original RGB inputs produce independent signed linear RGB values. | [tests/processing/cms/0232_tiff_para34_linear.t](../../tests/processing/cms/0232_tiff_para34_linear.t) |
+| TIC-03 | Explicitly encoded Lab device inputs produce independent physical XYZ D50 through the original identity LUT8. | [tests/processing/cms/0233_tiff_lab_pcs.t](../../tests/processing/cms/0233_tiff_lab_pcs.t) |
+| TIC-04 | Normalized Lab input is mapped correctly for a separate linear RGB output buffer. | [tests/processing/cms/0234_tiff_lab_linear.t](../../tests/processing/cms/0234_tiff_lab_linear.t) |
+| TIC-05 | Normalized Lab input is mapped correctly for aliased linear RGB output. | [tests/processing/cms/0235_tiff_lab_linear_alias.t](../../tests/processing/cms/0235_tiff_lab_linear_alias.t) |
+| TIC-06 | Normalized Lab input is mapped correctly for a separate analytic gamma RGB output buffer. | [tests/processing/cms/0236_tiff_lab_gamma.t](../../tests/processing/cms/0236_tiff_lab_gamma.t) |
+| TIC-07 | Normalized Lab input is mapped correctly for aliased analytic gamma RGB output. | [tests/processing/cms/0237_tiff_lab_gamma_alias.t](../../tests/processing/cms/0237_tiff_lab_gamma_alias.t) |
+| TIC-08 | The actual libtiff/builtin route publishes the original Lab fixture as the expected bounded-linear float frame. | [tests/loader/libtiff/0171_lab_icc_numeric.t](../../tests/loader/libtiff/0171_lab_icc_numeric.t) |
+
+### TIFF ICC quality regressions
+
+| ID | Quality floor and route | Owning test |
+| --- | --- | --- |
+| TIQ-0139 | Actual libtiff/builtin apply keeps the original RGB specimen above MS-SSIM 0.98 against an independent ICC-formula PNG. | [tests/loader/libtiff/0139_colormgmt_tiff_rgb_parametric_34_builtin_lsqa.t](../../tests/loader/libtiff/0139_colormgmt_tiff_rgb_parametric_34_builtin_lsqa.t) |
+| TIQ-0141 | Actual libtiff/builtin apply keeps the original Lab specimen above MS-SSIM 0.98 against its existing SIXEL reference. | [tests/loader/libtiff/0141_colormgmt_tiff_lab_high_precision_icc_builtin_lsqa.t](../../tests/loader/libtiff/0141_colormgmt_tiff_lab_high_precision_icc_builtin_lsqa.t) |

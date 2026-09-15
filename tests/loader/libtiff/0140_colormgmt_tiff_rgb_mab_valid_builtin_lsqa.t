@@ -8,7 +8,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_TIFF-}" = 1 || {
+# Both build systems publish this loader capability as HAVE_LIBTIFF.
+test "${HAVE_LIBTIFF-}" = 1 || {
     printf "1..0 # SKIP libtiff loader is unavailable\n"
     exit 0
 }

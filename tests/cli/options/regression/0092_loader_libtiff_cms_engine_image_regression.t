@@ -12,7 +12,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_TIFF-}" = 1 || {
+# Both build systems publish this loader capability as HAVE_LIBTIFF.
+test "${HAVE_LIBTIFF-}" = 1 || {
     echo "ok 1 - CMS image regression # SKIP libtiff unavailable"
     exit 0
 }

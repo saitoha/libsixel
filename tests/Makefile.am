@@ -633,6 +633,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
     -DBUILD_TEST_0185_PNG_SOURCE_NUMERIC \
     -DBUILD_TEST_0142_RGB16_SOURCE \
+    -DBUILD_TEST_0231_TIFF_ICC_NUMERIC \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
     -DBUILD_TEST_0187_COREGRAPHICS_PNG \
     -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -721,6 +722,7 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0147_colorsync_curv.c \
     processing/cms/0181_gamma_option.c \
     processing/cms/0195_native_gamma.c \
+    processing/cms/0231_tiff_icc_numeric.c \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \

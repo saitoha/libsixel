@@ -148,6 +148,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/0147_colorsync_curv.c \
 	processing/cms/0181_gamma_option.c \
 	processing/cms/0195_native_gamma.c \
+	processing/cms/0231_tiff_icc_numeric.c \
 	processing/colorspace/0012_extended_failure_atomic.c \
 	processing/cms/0008_invalid_rgb_definition.c \
 	processing/cms/0009_icc_length_ownership.c \
@@ -659,6 +660,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0147_colorsync_curv.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0181_gamma_option.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0195_native_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0231_tiff_icc_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0009_icc_length_ownership.$(OBJEXT) \
@@ -1449,6 +1451,7 @@ am__depfiles_remade =  \
 	processing/cms/$(DEPDIR)/test_runner-0147_colorsync_curv.Po \
 	processing/cms/$(DEPDIR)/test_runner-0181_gamma_option.Po \
 	processing/cms/$(DEPDIR)/test_runner-0195_native_gamma.Po \
+	processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po \
@@ -2776,6 +2779,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0184_LOADER_BUILTIN_PSD_CMYK_ICC_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0185_PNG_SOURCE_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0142_RGB16_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0231_TIFF_ICC_NUMERIC \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0186_PNG_BYTE_TARGET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0187_COREGRAPHICS_PNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -2889,6 +2893,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0147_colorsync_curv.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0181_gamma_option.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0195_native_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0231_tiff_icc_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0008_invalid_rgb_definition.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0009_icc_length_ownership.c \
@@ -3666,6 +3671,9 @@ processing/cms/test_runner-0181_gamma_option.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/cms/test_runner-0195_native_gamma.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0231_tiff_icc_numeric.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/$(am__dirstamp):
@@ -5591,6 +5599,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0147_colorsync_curv.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0181_gamma_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0195_native_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po@am__quote@ # am--include-marker
@@ -6380,6 +6389,20 @@ processing/cms/test_runner-0195_native_gamma.obj: processing/cms/0195_native_gam
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0195_native_gamma.c' object='processing/cms/test_runner-0195_native_gamma.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0195_native_gamma.obj `if test -f 'processing/cms/0195_native_gamma.c'; then $(CYGPATH_W) 'processing/cms/0195_native_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0195_native_gamma.c'; fi`
+
+processing/cms/test_runner-0231_tiff_icc_numeric.o: processing/cms/0231_tiff_icc_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0231_tiff_icc_numeric.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Tpo -c -o processing/cms/test_runner-0231_tiff_icc_numeric.o `test -f 'processing/cms/0231_tiff_icc_numeric.c' || echo '$(srcdir)/'`processing/cms/0231_tiff_icc_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Tpo processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0231_tiff_icc_numeric.c' object='processing/cms/test_runner-0231_tiff_icc_numeric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0231_tiff_icc_numeric.o `test -f 'processing/cms/0231_tiff_icc_numeric.c' || echo '$(srcdir)/'`processing/cms/0231_tiff_icc_numeric.c
+
+processing/cms/test_runner-0231_tiff_icc_numeric.obj: processing/cms/0231_tiff_icc_numeric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0231_tiff_icc_numeric.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Tpo -c -o processing/cms/test_runner-0231_tiff_icc_numeric.obj `if test -f 'processing/cms/0231_tiff_icc_numeric.c'; then $(CYGPATH_W) 'processing/cms/0231_tiff_icc_numeric.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0231_tiff_icc_numeric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Tpo processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0231_tiff_icc_numeric.c' object='processing/cms/test_runner-0231_tiff_icc_numeric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0231_tiff_icc_numeric.obj `if test -f 'processing/cms/0231_tiff_icc_numeric.c'; then $(CYGPATH_W) 'processing/cms/0231_tiff_icc_numeric.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0231_tiff_icc_numeric.c'; fi`
 
 processing/colorspace/test_runner-0012_extended_failure_atomic.o: processing/colorspace/0012_extended_failure_atomic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0012_extended_failure_atomic.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Tpo -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.o `test -f 'processing/colorspace/0012_extended_failure_atomic.c' || echo '$(srcdir)/'`processing/colorspace/0012_extended_failure_atomic.c
@@ -13393,6 +13416,7 @@ distclean: distclean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0147_colorsync_curv.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0181_gamma_option.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0195_native_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
@@ -13927,6 +13951,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0147_colorsync_curv.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0181_gamma_option.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0195_native_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/color-management.md
 # Verify libtiff builtin CMS output for high-precision CIELAB TIFF with Lab ICC.
 
 set -eux
@@ -31,8 +32,22 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=builtin! "${input_tiff}" >"${output_six}" || {
+trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=builtin! "${input_tiff}" \
+    2>&1 >"${output_six}") || {
     echo "not ok" 1 - "libtiff builtin cms decode failed: lab_high_precision_icc.tiff"
+    exit 0
+}
+
+test "${trace#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$trace" || {
+    echo "$trace" >&2
+    echo "not ok" 1 - "libtiff did not deliver the quality input"
+    exit 0
+}
+
+test "${trace#*"LSXCMS2|event=apply|engine=builtin|"}" != "$trace" || {
+    echo "$trace" >&2
+    echo "not ok" 1 - "builtin CMS did not apply to the quality input"
     exit 0
 }
 
