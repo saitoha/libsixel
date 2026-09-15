@@ -2219,24 +2219,6 @@ sixel_option_parse_typed_suboption_value(
     return SIXEL_BAD_ARGUMENT;
 }
 
-int
-sixel_option_parse_boolean_text(char const *text, int *value)
-{
-    if (text == NULL || value == NULL) {
-        return 0;
-    }
-    if (text[0] == '0' && text[1] == '\0') {
-        *value = 0;
-        return 1;
-    }
-    if (text[0] == '1' && text[1] == '\0') {
-        *value = 1;
-        return 1;
-    }
-
-    return 0;
-}
-
 typedef enum sixel_test_environment_kind {
     SIXEL_TEST_ENVIRONMENT_STRING = 0,
     SIXEL_TEST_ENVIRONMENT_BOOLEAN

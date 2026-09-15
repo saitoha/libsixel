@@ -49,6 +49,7 @@
 #include "icc-parse.h"
 #include "loader-common.h"
 #include "options.h"
+#include "options-registry.h"
 #include "pthread-once.h"
 #include <sixel.h>
 
@@ -4107,10 +4108,96 @@ sixel_cms_rgb_set_tag(ColorSyncMutableProfileRef profile,
     return ok;
 }
 
+/* This environment-only compatibility switch changes curve spelling, not
+ * the separate identity-blue sample/matrix permutation. Read it for each
+ * conversion, so borrowed profiles do not cache process environment state. */
+static int
+sixel_cms_native_gamma(int *native_gamma)
+{
+    sixel_option_argument_schema_t const *schema;
+    sixel_suboption_value_t value;
+    char diagnostic[128];
+    int result;
+
+    schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_COLORSYNC_NATIVE_GAMMA);
+    if (schema == NULL) {
+        return 0;
+    }
+    value = schema->default_value;
+    result = sixel_option_resolve_scalar_environment(
+        SIXEL_OPTION_SCHEMA_COLORSYNC_NATIVE_GAMMA, &value,
+        diagnostic, sizeof(diagnostic));
+    if (result < SIXEL_OPTION_ENVIRONMENT_UNSET) {
+        sixel_helper_set_additional_message(diagnostic);
+        return 0;
+    }
+    *native_gamma = value.int_value;
+    return 1;
+}
+
+/* Inspect actual native-boundary payloads only when contract tracing is
+ * requested. The bounded sample prefix includes every numeric test sample;
+ * normal conversions do not allocate tags or scan pixels for this trace. */
+static void
+sixel_cms_trace_gamma(ColorSyncProfileRef profile, float const *pixels,
+                        size_t count, int gray)
+{
+    static char const *const names[8] = {
+        "rTRC", "gTRC", "bTRC", "rXYZ", "gXYZ", "bXYZ", "wtpt", "kTRC"
+    };
+    static CFStringRef const keys[8] = {
+        CFSTR("rTRC"), CFSTR("gTRC"), CFSTR("bTRC"), CFSTR("rXYZ"),
+        CFSTR("gXYZ"), CFSTR("bXYZ"), CFSTR("wtpt"), CFSTR("kTRC")
+    };
+    CFDataRef data;
+    unsigned char const *bytes;
+    char tag_hex[81];
+    char sample_hex[32 * 3 * 8 + 1];
+    uint32_t bits;
+    size_t length;
+    size_t samples;
+    size_t i;
+    size_t j;
+
+    if (!sixel_trace_topic_is_enabled("loader_contract")) {
+        return;
+    }
+    for (i = gray ? 6u : 0u; i < (gray ? 8u : 7u); ++i) {
+        data = ColorSyncProfileCopyTag(profile, keys[i]);
+        if (data == NULL || CFDataGetLength(data) > 40) {
+            if (data != NULL) {
+                CFRelease(data);
+            }
+            continue;
+        }
+        length = (size_t)CFDataGetLength(data);
+        bytes = CFDataGetBytePtr(data);
+        for (j = 0u; j < length; ++j) {
+            (void)sixel_compat_snprintf(tag_hex + j * 2u, 3u,
+                                        "%02x", bytes[j]);
+        }
+        tag_hex[length * 2u] = '\0';
+        sixel_trace_topic_message("loader_contract",
+            "LSXCMS3|event=gamma-source|tag=%s|bytes=%s", names[i], tag_hex);
+        CFRelease(data);
+    }
+    samples = (count < 32u ? count : 32u) * (gray ? 1u : 3u);
+    for (i = 0u; i < samples; ++i) {
+        memcpy(&bits, pixels + i, sizeof(bits));
+        (void)sixel_compat_snprintf(sample_hex + i * 8u, 9u,
+                                    "%08x", (unsigned int)bits);
+    }
+    sample_hex[samples * 8u] = '\0';
+    sixel_trace_topic_message("loader_contract",
+        "LSXCMS3|event=gamma-source|samples=%s", sample_hex);
+}
+
 /* Keep native source preparation mathematically equivalent without decoding
  * into another float buffer. ColorSync adds a toe to para0 and one-entry
- * curv; exact para3
- * preserves the same power on [0,1]. A nonlinear RGB profile with identity
+ * curv; exact para3 preserves the same power on [0,1]. The compatibility
+ * setting retains original curve payloads, including during permutation.
+ * A nonlinear RGB profile with identity
  * blue can also produce constant blue. Move a nonidentity channel to that
  * slot by exchanging BOTH source sample bits and matrix/TRC tag bytes.
  * No matrix coefficient, source sample, or transfer value is recalculated.
@@ -4152,6 +4239,7 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
     size_t c;
     int kind;
     int change_curve;
+    int native_gamma;
     int ok;
 
     *owned = NULL;
@@ -4160,6 +4248,9 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
         profile->colorspace != SIXEL_CMS_COLORSPACE_RGB ||
         profile->is_srgb_profile) {
         return 1;
+    }
+    if (!sixel_cms_native_gamma(&native_gamma)) {
+        return 0;
     }
     memset(curves, 0, sizeof(curves));
     memset(xyz, 0, sizeof(xyz));
@@ -4213,7 +4304,7 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
             ok = 1;
             goto cleanup;
         }
-        change_curve |= kind != 3;
+        change_curve |= !native_gamma && kind != 3;
         order[c] = c;
     }
     swap_channel = 3u;
@@ -4225,6 +4316,13 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
         }
     }
     if (swap_channel == 3u && !change_curve) {
+        if (native_gamma) {
+            sixel_trace_topic_message("loader",
+                "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
+                "path=rgb-pure-gamma|curve=original|order=012");
+            sixel_cms_trace_gamma(profile->colorsync_handle, pixels,
+                                     count, 0);
+        }
         ok = 1;
         goto cleanup;
     }
@@ -4286,13 +4384,18 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
         }
     }
     for (c = 0u; c < 3u; ++c) {
-        memset(curve, 0, sizeof(curve));
-        memcpy(curve, "para", 4);
-        curve[9] = 3u;
-        /* Preserve the original fixed-point exponent without a float cast. */
-        sixel_cms_write_gamma(curve + 12, gamma[order[c]]);
-        curve[17] = 1u;
-        replacement = CFDataCreate(NULL, curve, sizeof(curve));
+        if (native_gamma) {
+            /* Move original payload bytes with their samples and XYZ tags. */
+            replacement = CFDataCreateCopy(NULL, curves[order[c]]);
+        } else {
+            memset(curve, 0, sizeof(curve));
+            memcpy(curve, "para", 4);
+            curve[9] = 3u;
+            /* Preserve the fixed-point exponent without a float cast. */
+            sixel_cms_write_gamma(curve + 12, gamma[order[c]]);
+            curve[17] = 1u;
+            replacement = CFDataCreate(NULL, curve, sizeof(curve));
+        }
         if (replacement == NULL ||
             !sixel_cms_rgb_set_tag(copy, curve_keys[c], replacement)) {
             goto cleanup;
@@ -4323,13 +4426,15 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
     prepared->colorsync_handle = copy;
     *owned = copy;
     *reordered = samples;
+    sixel_cms_trace_gamma(copy, samples != NULL ? samples : pixels, count, 0);
     copy = NULL;
     samples = NULL;
     ok = 1;
     sixel_trace_topic_message("loader",
         "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
-        "path=rgb-pure-gamma|curve=para3|order=%u%u%u",
-        (unsigned int)order[0], (unsigned int)order[1],
+        "path=rgb-pure-gamma|curve=%s|order=%u%u%u",
+        native_gamma ? "original" : "para3", (unsigned int)order[0],
+        (unsigned int)order[1],
         (unsigned int)order[2]);
 
 cleanup:
@@ -4386,12 +4491,16 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
     uint32_t version;
     uint32_t gamma;
     int kind;
+    int native_gamma;
     int ok;
 
     *owned = NULL;
     if (profile->backend != SIXEL_CMS_PROFILE_BACKEND_COLORSYNC ||
         profile->colorspace != SIXEL_CMS_COLORSPACE_GRAY) {
         return 1;
+    }
+    if (!sixel_cms_native_gamma(&native_gamma)) {
+        return 0;
     }
     for (i = 0u; i < count; ++i) {
         if (!isfinite(pixels[i]) || pixels[i] < 0.0f || pixels[i] > 1.0f) {
@@ -4438,6 +4547,15 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
         CFRelease(tag);
         return 1;
     }
+    if (native_gamma) {
+        sixel_trace_topic_message("loader",
+            "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
+            "path=gray-pure-gamma|tag=kTRC|from=%s|to=original",
+            kind < 0 ? "curv" : "para0");
+        sixel_cms_trace_gamma(profile->colorsync_handle, pixels, count, 1);
+        CFRelease(tag);
+        return 1;
+    }
     memset(curve, 0, sizeof(curve));
     memcpy(curve, "para", 4);
     curve[9] = 3u;
@@ -4471,6 +4589,7 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
         "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
         "path=gray-pure-gamma|tag=kTRC|from=%s|to=para3",
         kind < 0 ? "curv" : "para0");
+    sixel_cms_trace_gamma(copy, pixels, count, 1);
     return 1;
 }
 #endif

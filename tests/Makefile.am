@@ -220,6 +220,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0130_COLORSYNC_RGB_PASSTHROUGH \
     -DBUILD_TEST_0146_CURV_ENCODING \
     -DBUILD_TEST_0147_COLORSYNC_CURV \
+    -DBUILD_TEST_0181_GAMMA_OPTION \
+    -DBUILD_TEST_0195_NATIVE_GAMMA \
     -DBUILD_TEST_0001_NAMED_XYZ \
     -DBUILD_TEST_0002_SIMPLE_POWER \
     -DBUILD_TEST_0003_ICC_SOURCE_LIFETIME \
@@ -716,6 +718,8 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0130_colorsync_rgb_passthrough.c \
     processing/cms/0146_curv_encoding.c \
     processing/cms/0147_colorsync_curv.c \
+    processing/cms/0181_gamma_option.c \
+    processing/cms/0195_native_gamma.c \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \

@@ -181,8 +181,13 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_LOG_PATH,
     SIXEL_OPTION_SCHEMA_CLIPBOARD_POLICY,
     SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
+    SIXEL_OPTION_SCHEMA_COLORSYNC_NATIVE_GAMMA,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
+
+/* Environment-only schemas have no CLI character or public setopt identity.
+ * This sentinel does not relax compact suboption naming rules. */
+#define SIXEL_OPTION_NO_OPTFLAG 0
 
 /*
  * Option scopes describe library consumer domains only.  Converter-specific
@@ -486,8 +491,8 @@ typedef enum sixel_clipboard_backend {
 typedef struct sixel_option_argument_schema {
     sixel_option_schema_id_t option_id;
     unsigned int scope;
-    int optflag;
-    /* Canonical long name without leading dashes. */
+    int optflag; /* SIXEL_OPTION_NO_OPTFLAG for environment-only settings */
+    /* Canonical setting name; a CLI long name only with an assigned flag. */
     char const *option_name;
     sixel_option_argument_form_t argument_form;
     sixel_suboption_value_kind_t value_kind;
@@ -594,7 +599,7 @@ sixel_option_report_invalid_choice(
     char *buffer,
     size_t buffer_size);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_scalar_argument(
     sixel_option_schema_id_t option_id,
     unsigned int consumer_scope,

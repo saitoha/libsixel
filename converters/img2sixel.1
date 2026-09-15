@@ -1989,6 +1989,20 @@ Override with \fB-Lloader:cms_intent=INTENT[+INTENT][!]\fP or short form
 \fB-Lloader:Rvalue\fP. When cms_intent is the final suboption, append a
 second "!" to also disable fallback loaders.
 .TP 5
+.B SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA
+.br
+set to 1 to preserve original pure-gamma curve tag payloads during native
+ColorSync input conversion to linear RGB. Default 0 keeps the equivalent
+para3 workaround enabled. Unset and empty values use 0; only exact 0 and 1
+are accepted. Invalid nonempty values fail this CMS conversion before
+publishing changed source pixels; existing loader fallback policy remains.
+The separate identity-blue sample/matrix permutation remains active and
+moves original TRC payloads with their XYZ columns and sample bits.
+This environment-only compatibility setting has no dedicated CLI flag or
+loader suboption. The existing \fB--env NAME=VALUE\fP form is also supported.
+The value is read at each ColorSync source preparation, not at profile open.
+Other CMS engines and linear-to-P3 output conversion are unaffected.
+.TP 5
 .B SIXEL_LOADER_CMS_TARGET_COLORSPACE
 .br
 set the loader CMS output colorspace. Accepts "gamma", "linear", "cielab",

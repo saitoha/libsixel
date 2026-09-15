@@ -1749,6 +1749,15 @@ static cli_env_help_t const g_env_help_table[] = {
         "Overrides SIXEL_LOADER_CMS_ENGINE."
     },
     {
+        "SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA",
+        "keep original pure-gamma curve tags for native ColorSync input\n"
+        "conversion to linear RGB when set to 1. Default: 0 (use equivalent\n"
+        "para3 curves). Unset/empty use 0; only 0 and 1 are valid. Invalid\n"
+        "values fail that CMS conversion before changing source pixels.\n"
+        "The separate identity-blue sample/matrix permutation remains active.\n"
+        "Environment-only compatibility setting; no dedicated CLI flag."
+    },
+    {
         "SIXEL_LOADER_CMS_TARGET_COLORSPACE",
         "set loader CMS output colorspace after loader-side CMS conversion.\n"
         "Accepts gamma, linear, cielab, oklab, or din99d.\n"

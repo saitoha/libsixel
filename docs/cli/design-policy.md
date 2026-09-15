@@ -160,6 +160,12 @@ Suboptions have a narrower propagation path. They extend the value grammar of an
 
 Use suboptions for policy specific to a named subsystem. A public suboption has a typed domain, one canonical long name, one uppercase compact name, and an explicit environment representation. Long `name=value` keys are exact, while the compact `Kvalue` form is a separately registered spelling rather than a key abbreviation. Names describe user-visible behavior in established project terminology rather than a temporary function, data structure, dependency, or optimization. The detailed naming and parsing contracts belong to the [suboption architecture](suboptions.md).
 
+### Environment-only settings without a short assignment
+
+A public compatibility setting can use the common scalar option registry without consuming a short-option character. Such a schema uses `SIXEL_OPTION_NO_OPTFLAG`, has a required environment name, and keeps its type, fixed default and validation in the same registry as ordinary options. The sentinel is not a compact suboption key, getopt character or public `setopt` identity. Environment-only scalar schemas are excluded from dedicated CLI dispatch and reject the scalar argument entry point; ordinary assigned options retain the short/long requirements above. They remain discoverable in environment help and the manual, and the existing `--env NAME=VALUE` mechanism can supply their values.
+
+The ColorSync gamma compatibility setting in [Loader CMS](../loader/color-management.md#original-colorsync-gamma-representation) uses this representation. This is an explicit environment-only setting, not an automatically allocated long-only CLI option. Its strict boolean parser is shared by scalar and suboption settings and remains available to small registry consumers that do not link the full option parser.
+
 ### Internal controls
 
 Fault injection and test-only implementation switches are not public options or environment contracts. Their names use the `_SIXEL_TEST_*` namespace and do not appear in public help, manual pages, shell completion, or language bindings. This boundary prevents a test seam from becoming a compatibility promise or an accidental production control.
@@ -280,3 +286,22 @@ Each automated contract has a stable ID and a corresponding static check or test
 ### Coverage boundary
 
 Structural checks cover paired top-level forms, environment exposure, help, manuals, completion, public-header-to-binding constants, and binding `setopt` case coverage. Behavioral tests cover representative precedence, binary I/O, and both geometry orders. Detailed suboption, prefix-matching, and correction-suggestion contracts and tests belong to their linked documents. Design judgment remains manual: tests cannot decide whether a name is clear, whether a new feature belongs in an existing subsystem, which propagation nodes apply, whether another order-sensitive exception is justified, or whether the compatibility cost of a new spelling is acceptable.
+
+### Environment-only scalar coverage
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| EO-01 | An unset environment value returns UNSET without modifying the output; the registered boolean default remains 0. | [tests/processing/cms/0181_gamma_env_unset.t](../../tests/processing/cms/0181_gamma_env_unset.t) |
+| EO-02 | An empty environment value returns UNSET without modifying the output; the registered boolean default remains 0. | [tests/processing/cms/0182_gamma_env_empty.t](../../tests/processing/cms/0182_gamma_env_empty.t) |
+| EO-03 | Exact 0 is accepted as a boolean value; the schema has no CLI dispatch and rejects scalar arguments. | [tests/processing/cms/0183_gamma_env_zero.t](../../tests/processing/cms/0183_gamma_env_zero.t) |
+| EO-04 | Exact 1 is accepted as a boolean value; the schema has no CLI dispatch and rejects scalar arguments. | [tests/processing/cms/0184_gamma_env_one.t](../../tests/processing/cms/0184_gamma_env_one.t) |
+| EO-05 | The value `2` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0185_gamma_env_two.t](../../tests/processing/cms/0185_gamma_env_two.t) |
+| EO-06 | The value `-1` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0186_gamma_env_negative.t](../../tests/processing/cms/0186_gamma_env_negative.t) |
+| EO-07 | The value `true` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0187_gamma_env_true.t](../../tests/processing/cms/0187_gamma_env_true.t) |
+| EO-08 | The value `false` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0188_gamma_env_false.t](../../tests/processing/cms/0188_gamma_env_false.t) |
+| EO-09 | The value `01` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0189_gamma_env_leading_zero.t](../../tests/processing/cms/0189_gamma_env_leading_zero.t) |
+| EO-10 | The value `+1` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0190_gamma_env_plus.t](../../tests/processing/cms/0190_gamma_env_plus.t) |
+| EO-11 | The value ` 1` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0191_gamma_env_leading_space.t](../../tests/processing/cms/0191_gamma_env_leading_space.t) |
+| EO-12 | The value `1 ` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0192_gamma_env_trailing_space.t](../../tests/processing/cms/0192_gamma_env_trailing_space.t) |
+| EO-13 | The value `1x` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0193_gamma_env_suffix.t](../../tests/processing/cms/0193_gamma_env_suffix.t) |
+| EO-14 | The value `999999999999999999999` is rejected as INVALID with the declared diagnostic and unchanged output; assigned scalar options still parse normally. | [tests/processing/cms/0194_gamma_env_overflow.t](../../tests/processing/cms/0194_gamma_env_overflow.t) |

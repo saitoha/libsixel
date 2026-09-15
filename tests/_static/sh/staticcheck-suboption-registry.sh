@@ -74,6 +74,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA" ||
         macro == "SIXEL_REGISTRY_CLIPBOARD_OPTION_SCHEMA" ||
+        macro == "SIXEL_REGISTRY_SCALAR_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_SCALAR_CHOICE" ||
         macro == "SIXEL_REGISTRY_SCALAR_CHOICE_ENV" ||
         macro == "SIXEL_REGISTRY_SCALAR_INT" ||
@@ -85,6 +86,7 @@ function expected_field_count(macro) {
     if (macro == "SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA") return 7
     if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_OPTION_SCHEMA") return 7
     if (macro == "SIXEL_REGISTRY_CLIPBOARD_OPTION_SCHEMA") return 8
+    if (macro == "SIXEL_REGISTRY_SCALAR_BOOLEAN") return 7
     if (macro == "SIXEL_REGISTRY_SCALAR_CHOICE") return 10
     if (macro == "SIXEL_REGISTRY_SCALAR_CHOICE_ENV") return 11
     if (macro == "SIXEL_REGISTRY_SCALAR_INT") return 22
@@ -153,7 +155,11 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
         scope != "SIXEL_OPTION_SCOPE_ALL") {
         fail(option_id " has an invalid scope: " scope)
     }
-    if (optflag !~ /^SIXEL_OPTFLAG_[A-Z0-9_]+$/) {
+    if (optflag == "SIXEL_OPTION_NO_OPTFLAG") {
+        if (macro !~ /^SIXEL_REGISTRY_SCALAR_/) {
+            fail(option_id " environment-only schema must be scalar")
+        }
+    } else if (optflag !~ /^SIXEL_OPTFLAG_[A-Z0-9_]+$/) {
         fail(option_id " has no registered option flag")
     }
     if (name !~ /^"[a-z0-9][a-z0-9-]*"$/ || name ~ /-"$/) {
@@ -186,12 +192,17 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
             fail(option_id " has no registered value table: " values)
         }
     } else {
-        env_index = (macro == "SIXEL_REGISTRY_SCALAR_UINT" ||
+        env_index = (macro == "SIXEL_REGISTRY_SCALAR_BOOLEAN" ||
+                     macro == "SIXEL_REGISTRY_SCALAR_UINT" ||
                      macro == "SIXEL_REGISTRY_SCALAR_STRING") ? 5 : 7
         env = fields[env_index]
         if (env !~ /^"[A-Z][A-Z0-9_]+"$/) {
             fail(option_id " has no registered environment variable")
         }
+    }
+    if (macro == "SIXEL_REGISTRY_SCALAR_BOOLEAN" &&
+        fields[7] !~ /^[01]$/) {
+        fail(option_id " has no boolean default")
     }
     if (seen_id[option_id]) {
         fail("duplicate top-level schema id: " option_id)
@@ -358,9 +369,9 @@ END {
     exit 0
 }
 
-# Until getopt tables are generated, require every structured registry option
-# to retain the same mandatory short/long pair in parsing, help, and manuals.
-# A numeric flag cannot supply the required short form.
+# CLI-exposed schemas retain their short/long pair across discovery surfaces.
+# An explicit environment-only scalar must have no dedicated getopt entry;
+# it is still listed by the independent environment-help consistency check.
 awk -v registry_file="$registry_file" \
     -v header_file="$public_header" \
     -v encoder_file="$help_file" \
@@ -405,6 +416,13 @@ function inspect(row, fields, count, option_id, scope, optflag, name,
     optflag = trim(fields[3])
     name = trim(fields[4])
     gsub(/^"|"$/, "", name)
+    if (optflag == "SIXEL_OPTION_NO_OPTFLAG") {
+        if (index(source[encoder_file], "{\"" name "\",") != 0 ||
+            index(source[decoder_file], "{\"" name "\",") != 0) {
+            fail(option_id " environment-only schema acquired a CLI flag")
+        }
+        return
+    }
     short_name = option_short[optflag]
     if (short_name == "") {
         fail(option_id " has no one-character short option: " optflag)

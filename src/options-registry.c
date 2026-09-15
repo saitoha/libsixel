@@ -2878,6 +2878,15 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_OPTION_DEFAULT_FIXED, \
         default_value_, values_, SIXEL_REGISTRY_ARRAY_LENGTH(values_))
 
+#define SIXEL_REGISTRY_SCALAR_BOOLEAN( \
+    option_id_, scope_, optflag_, name_, env_, message_, default_value_) \
+    SIXEL_REGISTRY_SCALAR_SCHEMA( \
+        option_id_, scope_, optflag_, name_, SIXEL_SUBOPTION_VALUE_BOOLEAN, \
+        SIXEL_OPTION_MATCH_EXACT, SIXEL_OPTION_MATCH_EXACT, env_, NULL, \
+        0u, 0.0, 0.0, 0, 0, 0.0, 0.0, 0, 0, 0, \
+        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, NULL, NULL, NULL, \
+        NULL, NULL, SIXEL_OPTION_DEFAULT_FIXED, default_value_, NULL, 0u)
+
 #define SIXEL_REGISTRY_SCALAR_CHOICE_ENV( \
     option_id_, scope_, optflag_, name_, argument_flags_, \
     environment_flags_, env_, message_, default_value_, values_, \
@@ -3197,6 +3206,14 @@ static sixel_option_argument_schema_t const g_options[] = {
         "terminal policy must be 0 or 1.",
         0,
         g_terminal_policy_values),
+    SIXEL_REGISTRY_SCALAR_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_COLORSYNC_NATIVE_GAMMA,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        SIXEL_OPTION_NO_OPTFLAG,
+        "colorsync-native-gamma",
+        "SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA",
+        "SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA must be 0 or 1.",
+        0),
 };
 
 typedef char sixel_option_count_check[
@@ -3678,6 +3695,26 @@ sixel_option_registry_resolve_process_binding(
     }
 
     return SIXEL_OPTION_ENVIRONMENT_INVALID;
+}
+
+/* Keep strict boolean parsing in the registry link unit. Quick Look and
+ * other small consumers intentionally do not link the full options parser. */
+int
+sixel_option_parse_boolean_text(char const *text, int *value)
+{
+    if (text == NULL || value == NULL) {
+        return 0;
+    }
+    if (text[0] == '0' && text[1] == '\0') {
+        *value = 0;
+        return 1;
+    }
+    if (text[0] == '1' && text[1] == '\0') {
+        *value = 1;
+        return 1;
+    }
+
+    return 0;
 }
 
 SIXEL_INTERNAL_API sixel_option_environment_result_t
@@ -4350,7 +4387,10 @@ sixel_option_registry_validate_uncached(void)
             schema->scope == 0u ||
             (schema->scope &
              ~(unsigned int)SIXEL_OPTION_SCOPE_ALL) != 0u ||
-            schema->optflag <= 0 ||
+            schema->optflag < 0 ||
+            (schema->optflag == SIXEL_OPTION_NO_OPTFLAG &&
+             (schema->env_name == NULL ||
+              schema->value_kind == SIXEL_SUBOPTION_VALUE_STRUCTURED)) ||
             !sixel_option_registry_option_name_is_valid(
                 schema->option_name) ||
             (schema->argument_form != SIXEL_OPTION_ARGUMENT_SINGLE &&
@@ -4396,7 +4436,8 @@ sixel_option_registry_validate_uncached(void)
             }
         } else {
             if (schema->argument_form != SIXEL_OPTION_ARGUMENT_SINGLE ||
-                (schema->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
+                (schema->value_kind != SIXEL_SUBOPTION_VALUE_BOOLEAN &&
+                 schema->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
                  schema->value_kind != SIXEL_SUBOPTION_VALUE_INT &&
                  schema->value_kind != SIXEL_SUBOPTION_VALUE_UINT &&
                  schema->value_kind != SIXEL_SUBOPTION_VALUE_STRING)) {
@@ -4427,13 +4468,23 @@ sixel_option_registry_validate_uncached(void)
                     schema->environment_maximum)) {
                 return 0;
             }
-            if (schema->value_kind == SIXEL_SUBOPTION_VALUE_STRING &&
+            if ((schema->value_kind == SIXEL_SUBOPTION_VALUE_STRING ||
+                 schema->value_kind == SIXEL_SUBOPTION_VALUE_BOOLEAN) &&
                 (schema->values != NULL || schema->has_minimum ||
                  schema->has_maximum ||
                  schema->environment_has_minimum ||
                  schema->environment_has_maximum || schema->allow_zero ||
                  schema->environment_range_policy !=
                     SIXEL_SUBOPTION_ENV_RANGE_REJECT)) {
+                return 0;
+            }
+            if (schema->value_kind == SIXEL_SUBOPTION_VALUE_BOOLEAN &&
+                (schema->default_policy != SIXEL_OPTION_DEFAULT_FIXED ||
+                 (schema->default_value.int_value != 0 &&
+                  schema->default_value.int_value != 1) ||
+                 schema->argument_match_flags != SIXEL_OPTION_MATCH_EXACT ||
+                 schema->environment_match_flags !=
+                    SIXEL_OPTION_MATCH_EXACT)) {
                 return 0;
             }
         }
@@ -4514,7 +4565,8 @@ sixel_option_registry_validate_uncached(void)
             previous_schema = g_options + previous_option_index;
             if (previous_schema->option_id == schema->option_id ||
                 ((previous_schema->scope & schema->scope) != 0u &&
-                 (previous_schema->optflag == schema->optflag ||
+                 ((schema->optflag != SIXEL_OPTION_NO_OPTFLAG &&
+                   previous_schema->optflag == schema->optflag) ||
                   strcmp(previous_schema->option_name,
                          schema->option_name) == 0))) {
                 return 0;
@@ -5105,6 +5157,12 @@ sixel_option_registry_parse_scalar(
     if (environment_value != 0) {
         flags = (unsigned int)schema->environment_range_policy;
     }
+    if (schema->value_kind == SIXEL_SUBOPTION_VALUE_BOOLEAN) {
+        if (!sixel_option_parse_boolean_text(text, &value->int_value)) {
+            goto invalid;
+        }
+        return SIXEL_OK;
+    }
     if (schema->value_kind == SIXEL_SUBOPTION_VALUE_INT) {
         errno = 0;
         parsed_int = strtol(text, &endptr, 10);
@@ -5261,6 +5319,9 @@ sixel_option_encoder_environment_is_present(int optflag)
     size_t index;
 
     index = 0u;
+    if (optflag <= SIXEL_OPTION_NO_OPTFLAG) {
+        return 0;
+    }
     while (index < SIXEL_REGISTRY_ARRAY_LENGTH(g_options)) {
         if (g_options[index].optflag == optflag &&
             (g_options[index].scope &
@@ -5317,7 +5378,8 @@ sixel_option_parse_scalar_argument(
     sixel_option_argument_schema_t const *schema;
 
     schema = sixel_option_registry_get(option_id);
-    if (schema == NULL || !sixel_option_registry_validate()) {
+    if (schema == NULL || schema->optflag == SIXEL_OPTION_NO_OPTFLAG ||
+        !sixel_option_registry_validate()) {
         return SIXEL_BAD_ARGUMENT;
     }
     return sixel_option_registry_parse_scalar(schema,
