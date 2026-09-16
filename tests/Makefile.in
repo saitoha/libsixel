@@ -281,6 +281,25 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/0349_lab_linear_allocation_failure.c \
 	processing/cms/0350_lab_linear_nan_result.c \
 	processing/cms/0351_lab_linear_infinite_result.c \
+	processing/cms/0352_mixed_gray_curv.c \
+	processing/cms/0353_mixed_gray_para0.c \
+	processing/cms/0354_mixed_rgb_curv.c \
+	processing/cms/0355_mixed_rgb_para0_strict.c \
+	processing/cms/0356_mixed_rgb_reuse_generic.c \
+	processing/cms/0357_mixed_rgb_native_strict.c \
+	processing/cms/0358_mixed_gray_reuse.c \
+	processing/cms/0359_mixed_display_p3.c \
+	processing/cms/0360_mixed_pack_allocation.c \
+	processing/cms/0361_mixed_output_allocation.c \
+	processing/cms/0362_mixed_first_create.c \
+	processing/cms/0363_mixed_second_create.c \
+	processing/cms/0364_mixed_late_apply.c \
+	processing/cms/0365_mixed_second_nonfinite.c \
+	processing/cms/0366_mixed_first_nonfinite.c \
+	processing/cms/0367_mixed_second_permutation_allocation.c \
+	processing/cms/mixed_domain_common.c \
+	processing/cms/mixed_domain_common.h \
+	processing/cms/mixed_domain_fault_common.c \
 	loader/libtiff/0184_lab_float_linear_builtin.c \
 	loader/libtiff/0185_lab_float_linear_lcms2.c \
 	loader/libtiff/0186_lab_float_linear_colorsync.c \
@@ -1037,6 +1056,24 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0349_lab_linear_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0350_lab_linear_nan_result.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0351_lab_linear_infinite_result.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0352_mixed_gray_curv.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0353_mixed_gray_para0.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0354_mixed_rgb_curv.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0355_mixed_rgb_para0_strict.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0356_mixed_rgb_reuse_generic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0357_mixed_rgb_native_strict.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0358_mixed_gray_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0359_mixed_display_p3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0360_mixed_pack_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0361_mixed_output_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0362_mixed_first_create.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0363_mixed_second_create.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0364_mixed_late_apply.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0365_mixed_second_nonfinite.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0366_mixed_first_nonfinite.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0367_mixed_second_permutation_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-mixed_domain_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-mixed_domain_fault_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0184_lab_float_linear_builtin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0185_lab_float_linear_lcms2.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0186_lab_float_linear_colorsync.$(OBJEXT) \
@@ -2169,8 +2206,26 @@ am__depfiles_remade =  \
 	processing/cms/$(DEPDIR)/test_runner-0349_lab_linear_allocation_failure.Po \
 	processing/cms/$(DEPDIR)/test_runner-0350_lab_linear_nan_result.Po \
 	processing/cms/$(DEPDIR)/test_runner-0351_lab_linear_infinite_result.Po \
+	processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Po \
+	processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Po \
+	processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Po \
+	processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Po \
+	processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Po \
+	processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Po \
+	processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Po \
+	processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Po \
+	processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Po \
+	processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Po \
+	processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Po \
+	processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Po \
+	processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Po \
+	processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Po \
+	processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Po \
+	processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Po \
 	processing/cms/$(DEPDIR)/test_runner-lab_linear_fault_test_common.Po \
 	processing/cms/$(DEPDIR)/test_runner-lab_linear_test_common.Po \
+	processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Po \
+	processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po \
@@ -3624,6 +3679,24 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0349_LAB_LINEAR_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0350_LAB_LINEAR_NAN_RESULT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0351_LAB_LINEAR_INFINITE_RESULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0352_MIXED_GRAY_CURV \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0353_MIXED_GRAY_PARA0 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0354_MIXED_RGB_CURV \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0355_MIXED_RGB_PARA0_STRICT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0356_MIXED_RGB_REUSE_GENERIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0357_MIXED_RGB_NATIVE_STRICT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0358_MIXED_GRAY_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0359_MIXED_DISPLAY_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0360_MIXED_PACK_ALLOCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0361_MIXED_OUTPUT_ALLOCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0362_MIXED_FIRST_CREATE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0363_MIXED_SECOND_CREATE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0364_MIXED_LATE_APPLY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0365_MIXED_SECOND_NONFINITE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0366_MIXED_FIRST_NONFINITE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0367_MIXED_SECOND_PERMUTATION_ALLOCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_MIXED_DOMAIN_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_MIXED_DOMAIN_FAULT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0184_LAB_FLOAT_LINEAR_BUILTIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0185_LAB_FLOAT_LINEAR_LCMS2 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0186_LAB_FLOAT_LINEAR_COLORSYNC \
@@ -3983,6 +4056,25 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0349_lab_linear_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0350_lab_linear_nan_result.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0351_lab_linear_infinite_result.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0352_mixed_gray_curv.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0353_mixed_gray_para0.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0354_mixed_rgb_curv.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0355_mixed_rgb_para0_strict.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0356_mixed_rgb_reuse_generic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0357_mixed_rgb_native_strict.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0358_mixed_gray_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0359_mixed_display_p3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0360_mixed_pack_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0361_mixed_output_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0362_mixed_first_create.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0363_mixed_second_create.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0364_mixed_late_apply.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0365_mixed_second_nonfinite.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0366_mixed_first_nonfinite.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0367_mixed_second_permutation_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/mixed_domain_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/mixed_domain_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/mixed_domain_fault_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0184_lab_float_linear_builtin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0185_lab_float_linear_lcms2.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0186_lab_float_linear_colorsync.c \
@@ -5275,6 +5367,60 @@ processing/cms/test_runner-0350_lab_linear_nan_result.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/cms/test_runner-0351_lab_linear_infinite_result.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0352_mixed_gray_curv.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0353_mixed_gray_para0.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0354_mixed_rgb_curv.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0355_mixed_rgb_para0_strict.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0356_mixed_rgb_reuse_generic.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0357_mixed_rgb_native_strict.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0358_mixed_gray_reuse.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0359_mixed_display_p3.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0360_mixed_pack_allocation.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0361_mixed_output_allocation.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0362_mixed_first_create.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0363_mixed_second_create.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0364_mixed_late_apply.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0365_mixed_second_nonfinite.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0366_mixed_first_nonfinite.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0367_mixed_second_permutation_allocation.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-mixed_domain_common.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-mixed_domain_fault_common.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 loader/libtiff/test_runner-0184_lab_float_linear_builtin.$(OBJEXT):  \
@@ -7742,8 +7888,26 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0349_lab_linear_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0350_lab_linear_nan_result.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0351_lab_linear_infinite_result.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-lab_linear_fault_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-lab_linear_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po@am__quote@ # am--include-marker
@@ -10297,6 +10461,258 @@ processing/cms/test_runner-0351_lab_linear_infinite_result.obj: processing/cms/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0351_lab_linear_infinite_result.c' object='processing/cms/test_runner-0351_lab_linear_infinite_result.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0351_lab_linear_infinite_result.obj `if test -f 'processing/cms/0351_lab_linear_infinite_result.c'; then $(CYGPATH_W) 'processing/cms/0351_lab_linear_infinite_result.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0351_lab_linear_infinite_result.c'; fi`
+
+processing/cms/test_runner-0352_mixed_gray_curv.o: processing/cms/0352_mixed_gray_curv.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0352_mixed_gray_curv.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Tpo -c -o processing/cms/test_runner-0352_mixed_gray_curv.o `test -f 'processing/cms/0352_mixed_gray_curv.c' || echo '$(srcdir)/'`processing/cms/0352_mixed_gray_curv.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Tpo processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0352_mixed_gray_curv.c' object='processing/cms/test_runner-0352_mixed_gray_curv.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0352_mixed_gray_curv.o `test -f 'processing/cms/0352_mixed_gray_curv.c' || echo '$(srcdir)/'`processing/cms/0352_mixed_gray_curv.c
+
+processing/cms/test_runner-0352_mixed_gray_curv.obj: processing/cms/0352_mixed_gray_curv.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0352_mixed_gray_curv.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Tpo -c -o processing/cms/test_runner-0352_mixed_gray_curv.obj `if test -f 'processing/cms/0352_mixed_gray_curv.c'; then $(CYGPATH_W) 'processing/cms/0352_mixed_gray_curv.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0352_mixed_gray_curv.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Tpo processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0352_mixed_gray_curv.c' object='processing/cms/test_runner-0352_mixed_gray_curv.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0352_mixed_gray_curv.obj `if test -f 'processing/cms/0352_mixed_gray_curv.c'; then $(CYGPATH_W) 'processing/cms/0352_mixed_gray_curv.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0352_mixed_gray_curv.c'; fi`
+
+processing/cms/test_runner-0353_mixed_gray_para0.o: processing/cms/0353_mixed_gray_para0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0353_mixed_gray_para0.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Tpo -c -o processing/cms/test_runner-0353_mixed_gray_para0.o `test -f 'processing/cms/0353_mixed_gray_para0.c' || echo '$(srcdir)/'`processing/cms/0353_mixed_gray_para0.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Tpo processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0353_mixed_gray_para0.c' object='processing/cms/test_runner-0353_mixed_gray_para0.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0353_mixed_gray_para0.o `test -f 'processing/cms/0353_mixed_gray_para0.c' || echo '$(srcdir)/'`processing/cms/0353_mixed_gray_para0.c
+
+processing/cms/test_runner-0353_mixed_gray_para0.obj: processing/cms/0353_mixed_gray_para0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0353_mixed_gray_para0.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Tpo -c -o processing/cms/test_runner-0353_mixed_gray_para0.obj `if test -f 'processing/cms/0353_mixed_gray_para0.c'; then $(CYGPATH_W) 'processing/cms/0353_mixed_gray_para0.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0353_mixed_gray_para0.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Tpo processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0353_mixed_gray_para0.c' object='processing/cms/test_runner-0353_mixed_gray_para0.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0353_mixed_gray_para0.obj `if test -f 'processing/cms/0353_mixed_gray_para0.c'; then $(CYGPATH_W) 'processing/cms/0353_mixed_gray_para0.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0353_mixed_gray_para0.c'; fi`
+
+processing/cms/test_runner-0354_mixed_rgb_curv.o: processing/cms/0354_mixed_rgb_curv.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0354_mixed_rgb_curv.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Tpo -c -o processing/cms/test_runner-0354_mixed_rgb_curv.o `test -f 'processing/cms/0354_mixed_rgb_curv.c' || echo '$(srcdir)/'`processing/cms/0354_mixed_rgb_curv.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Tpo processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0354_mixed_rgb_curv.c' object='processing/cms/test_runner-0354_mixed_rgb_curv.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0354_mixed_rgb_curv.o `test -f 'processing/cms/0354_mixed_rgb_curv.c' || echo '$(srcdir)/'`processing/cms/0354_mixed_rgb_curv.c
+
+processing/cms/test_runner-0354_mixed_rgb_curv.obj: processing/cms/0354_mixed_rgb_curv.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0354_mixed_rgb_curv.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Tpo -c -o processing/cms/test_runner-0354_mixed_rgb_curv.obj `if test -f 'processing/cms/0354_mixed_rgb_curv.c'; then $(CYGPATH_W) 'processing/cms/0354_mixed_rgb_curv.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0354_mixed_rgb_curv.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Tpo processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0354_mixed_rgb_curv.c' object='processing/cms/test_runner-0354_mixed_rgb_curv.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0354_mixed_rgb_curv.obj `if test -f 'processing/cms/0354_mixed_rgb_curv.c'; then $(CYGPATH_W) 'processing/cms/0354_mixed_rgb_curv.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0354_mixed_rgb_curv.c'; fi`
+
+processing/cms/test_runner-0355_mixed_rgb_para0_strict.o: processing/cms/0355_mixed_rgb_para0_strict.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0355_mixed_rgb_para0_strict.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Tpo -c -o processing/cms/test_runner-0355_mixed_rgb_para0_strict.o `test -f 'processing/cms/0355_mixed_rgb_para0_strict.c' || echo '$(srcdir)/'`processing/cms/0355_mixed_rgb_para0_strict.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Tpo processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0355_mixed_rgb_para0_strict.c' object='processing/cms/test_runner-0355_mixed_rgb_para0_strict.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0355_mixed_rgb_para0_strict.o `test -f 'processing/cms/0355_mixed_rgb_para0_strict.c' || echo '$(srcdir)/'`processing/cms/0355_mixed_rgb_para0_strict.c
+
+processing/cms/test_runner-0355_mixed_rgb_para0_strict.obj: processing/cms/0355_mixed_rgb_para0_strict.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0355_mixed_rgb_para0_strict.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Tpo -c -o processing/cms/test_runner-0355_mixed_rgb_para0_strict.obj `if test -f 'processing/cms/0355_mixed_rgb_para0_strict.c'; then $(CYGPATH_W) 'processing/cms/0355_mixed_rgb_para0_strict.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0355_mixed_rgb_para0_strict.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Tpo processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0355_mixed_rgb_para0_strict.c' object='processing/cms/test_runner-0355_mixed_rgb_para0_strict.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0355_mixed_rgb_para0_strict.obj `if test -f 'processing/cms/0355_mixed_rgb_para0_strict.c'; then $(CYGPATH_W) 'processing/cms/0355_mixed_rgb_para0_strict.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0355_mixed_rgb_para0_strict.c'; fi`
+
+processing/cms/test_runner-0356_mixed_rgb_reuse_generic.o: processing/cms/0356_mixed_rgb_reuse_generic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0356_mixed_rgb_reuse_generic.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Tpo -c -o processing/cms/test_runner-0356_mixed_rgb_reuse_generic.o `test -f 'processing/cms/0356_mixed_rgb_reuse_generic.c' || echo '$(srcdir)/'`processing/cms/0356_mixed_rgb_reuse_generic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Tpo processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0356_mixed_rgb_reuse_generic.c' object='processing/cms/test_runner-0356_mixed_rgb_reuse_generic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0356_mixed_rgb_reuse_generic.o `test -f 'processing/cms/0356_mixed_rgb_reuse_generic.c' || echo '$(srcdir)/'`processing/cms/0356_mixed_rgb_reuse_generic.c
+
+processing/cms/test_runner-0356_mixed_rgb_reuse_generic.obj: processing/cms/0356_mixed_rgb_reuse_generic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0356_mixed_rgb_reuse_generic.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Tpo -c -o processing/cms/test_runner-0356_mixed_rgb_reuse_generic.obj `if test -f 'processing/cms/0356_mixed_rgb_reuse_generic.c'; then $(CYGPATH_W) 'processing/cms/0356_mixed_rgb_reuse_generic.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0356_mixed_rgb_reuse_generic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Tpo processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0356_mixed_rgb_reuse_generic.c' object='processing/cms/test_runner-0356_mixed_rgb_reuse_generic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0356_mixed_rgb_reuse_generic.obj `if test -f 'processing/cms/0356_mixed_rgb_reuse_generic.c'; then $(CYGPATH_W) 'processing/cms/0356_mixed_rgb_reuse_generic.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0356_mixed_rgb_reuse_generic.c'; fi`
+
+processing/cms/test_runner-0357_mixed_rgb_native_strict.o: processing/cms/0357_mixed_rgb_native_strict.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0357_mixed_rgb_native_strict.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Tpo -c -o processing/cms/test_runner-0357_mixed_rgb_native_strict.o `test -f 'processing/cms/0357_mixed_rgb_native_strict.c' || echo '$(srcdir)/'`processing/cms/0357_mixed_rgb_native_strict.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Tpo processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0357_mixed_rgb_native_strict.c' object='processing/cms/test_runner-0357_mixed_rgb_native_strict.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0357_mixed_rgb_native_strict.o `test -f 'processing/cms/0357_mixed_rgb_native_strict.c' || echo '$(srcdir)/'`processing/cms/0357_mixed_rgb_native_strict.c
+
+processing/cms/test_runner-0357_mixed_rgb_native_strict.obj: processing/cms/0357_mixed_rgb_native_strict.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0357_mixed_rgb_native_strict.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Tpo -c -o processing/cms/test_runner-0357_mixed_rgb_native_strict.obj `if test -f 'processing/cms/0357_mixed_rgb_native_strict.c'; then $(CYGPATH_W) 'processing/cms/0357_mixed_rgb_native_strict.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0357_mixed_rgb_native_strict.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Tpo processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0357_mixed_rgb_native_strict.c' object='processing/cms/test_runner-0357_mixed_rgb_native_strict.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0357_mixed_rgb_native_strict.obj `if test -f 'processing/cms/0357_mixed_rgb_native_strict.c'; then $(CYGPATH_W) 'processing/cms/0357_mixed_rgb_native_strict.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0357_mixed_rgb_native_strict.c'; fi`
+
+processing/cms/test_runner-0358_mixed_gray_reuse.o: processing/cms/0358_mixed_gray_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0358_mixed_gray_reuse.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Tpo -c -o processing/cms/test_runner-0358_mixed_gray_reuse.o `test -f 'processing/cms/0358_mixed_gray_reuse.c' || echo '$(srcdir)/'`processing/cms/0358_mixed_gray_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Tpo processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0358_mixed_gray_reuse.c' object='processing/cms/test_runner-0358_mixed_gray_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0358_mixed_gray_reuse.o `test -f 'processing/cms/0358_mixed_gray_reuse.c' || echo '$(srcdir)/'`processing/cms/0358_mixed_gray_reuse.c
+
+processing/cms/test_runner-0358_mixed_gray_reuse.obj: processing/cms/0358_mixed_gray_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0358_mixed_gray_reuse.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Tpo -c -o processing/cms/test_runner-0358_mixed_gray_reuse.obj `if test -f 'processing/cms/0358_mixed_gray_reuse.c'; then $(CYGPATH_W) 'processing/cms/0358_mixed_gray_reuse.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0358_mixed_gray_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Tpo processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0358_mixed_gray_reuse.c' object='processing/cms/test_runner-0358_mixed_gray_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0358_mixed_gray_reuse.obj `if test -f 'processing/cms/0358_mixed_gray_reuse.c'; then $(CYGPATH_W) 'processing/cms/0358_mixed_gray_reuse.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0358_mixed_gray_reuse.c'; fi`
+
+processing/cms/test_runner-0359_mixed_display_p3.o: processing/cms/0359_mixed_display_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0359_mixed_display_p3.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Tpo -c -o processing/cms/test_runner-0359_mixed_display_p3.o `test -f 'processing/cms/0359_mixed_display_p3.c' || echo '$(srcdir)/'`processing/cms/0359_mixed_display_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Tpo processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0359_mixed_display_p3.c' object='processing/cms/test_runner-0359_mixed_display_p3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0359_mixed_display_p3.o `test -f 'processing/cms/0359_mixed_display_p3.c' || echo '$(srcdir)/'`processing/cms/0359_mixed_display_p3.c
+
+processing/cms/test_runner-0359_mixed_display_p3.obj: processing/cms/0359_mixed_display_p3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0359_mixed_display_p3.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Tpo -c -o processing/cms/test_runner-0359_mixed_display_p3.obj `if test -f 'processing/cms/0359_mixed_display_p3.c'; then $(CYGPATH_W) 'processing/cms/0359_mixed_display_p3.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0359_mixed_display_p3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Tpo processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0359_mixed_display_p3.c' object='processing/cms/test_runner-0359_mixed_display_p3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0359_mixed_display_p3.obj `if test -f 'processing/cms/0359_mixed_display_p3.c'; then $(CYGPATH_W) 'processing/cms/0359_mixed_display_p3.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0359_mixed_display_p3.c'; fi`
+
+processing/cms/test_runner-0360_mixed_pack_allocation.o: processing/cms/0360_mixed_pack_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0360_mixed_pack_allocation.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Tpo -c -o processing/cms/test_runner-0360_mixed_pack_allocation.o `test -f 'processing/cms/0360_mixed_pack_allocation.c' || echo '$(srcdir)/'`processing/cms/0360_mixed_pack_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Tpo processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0360_mixed_pack_allocation.c' object='processing/cms/test_runner-0360_mixed_pack_allocation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0360_mixed_pack_allocation.o `test -f 'processing/cms/0360_mixed_pack_allocation.c' || echo '$(srcdir)/'`processing/cms/0360_mixed_pack_allocation.c
+
+processing/cms/test_runner-0360_mixed_pack_allocation.obj: processing/cms/0360_mixed_pack_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0360_mixed_pack_allocation.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Tpo -c -o processing/cms/test_runner-0360_mixed_pack_allocation.obj `if test -f 'processing/cms/0360_mixed_pack_allocation.c'; then $(CYGPATH_W) 'processing/cms/0360_mixed_pack_allocation.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0360_mixed_pack_allocation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Tpo processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0360_mixed_pack_allocation.c' object='processing/cms/test_runner-0360_mixed_pack_allocation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0360_mixed_pack_allocation.obj `if test -f 'processing/cms/0360_mixed_pack_allocation.c'; then $(CYGPATH_W) 'processing/cms/0360_mixed_pack_allocation.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0360_mixed_pack_allocation.c'; fi`
+
+processing/cms/test_runner-0361_mixed_output_allocation.o: processing/cms/0361_mixed_output_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0361_mixed_output_allocation.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Tpo -c -o processing/cms/test_runner-0361_mixed_output_allocation.o `test -f 'processing/cms/0361_mixed_output_allocation.c' || echo '$(srcdir)/'`processing/cms/0361_mixed_output_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Tpo processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0361_mixed_output_allocation.c' object='processing/cms/test_runner-0361_mixed_output_allocation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0361_mixed_output_allocation.o `test -f 'processing/cms/0361_mixed_output_allocation.c' || echo '$(srcdir)/'`processing/cms/0361_mixed_output_allocation.c
+
+processing/cms/test_runner-0361_mixed_output_allocation.obj: processing/cms/0361_mixed_output_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0361_mixed_output_allocation.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Tpo -c -o processing/cms/test_runner-0361_mixed_output_allocation.obj `if test -f 'processing/cms/0361_mixed_output_allocation.c'; then $(CYGPATH_W) 'processing/cms/0361_mixed_output_allocation.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0361_mixed_output_allocation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Tpo processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0361_mixed_output_allocation.c' object='processing/cms/test_runner-0361_mixed_output_allocation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0361_mixed_output_allocation.obj `if test -f 'processing/cms/0361_mixed_output_allocation.c'; then $(CYGPATH_W) 'processing/cms/0361_mixed_output_allocation.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0361_mixed_output_allocation.c'; fi`
+
+processing/cms/test_runner-0362_mixed_first_create.o: processing/cms/0362_mixed_first_create.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0362_mixed_first_create.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Tpo -c -o processing/cms/test_runner-0362_mixed_first_create.o `test -f 'processing/cms/0362_mixed_first_create.c' || echo '$(srcdir)/'`processing/cms/0362_mixed_first_create.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Tpo processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0362_mixed_first_create.c' object='processing/cms/test_runner-0362_mixed_first_create.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0362_mixed_first_create.o `test -f 'processing/cms/0362_mixed_first_create.c' || echo '$(srcdir)/'`processing/cms/0362_mixed_first_create.c
+
+processing/cms/test_runner-0362_mixed_first_create.obj: processing/cms/0362_mixed_first_create.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0362_mixed_first_create.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Tpo -c -o processing/cms/test_runner-0362_mixed_first_create.obj `if test -f 'processing/cms/0362_mixed_first_create.c'; then $(CYGPATH_W) 'processing/cms/0362_mixed_first_create.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0362_mixed_first_create.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Tpo processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0362_mixed_first_create.c' object='processing/cms/test_runner-0362_mixed_first_create.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0362_mixed_first_create.obj `if test -f 'processing/cms/0362_mixed_first_create.c'; then $(CYGPATH_W) 'processing/cms/0362_mixed_first_create.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0362_mixed_first_create.c'; fi`
+
+processing/cms/test_runner-0363_mixed_second_create.o: processing/cms/0363_mixed_second_create.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0363_mixed_second_create.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Tpo -c -o processing/cms/test_runner-0363_mixed_second_create.o `test -f 'processing/cms/0363_mixed_second_create.c' || echo '$(srcdir)/'`processing/cms/0363_mixed_second_create.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Tpo processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0363_mixed_second_create.c' object='processing/cms/test_runner-0363_mixed_second_create.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0363_mixed_second_create.o `test -f 'processing/cms/0363_mixed_second_create.c' || echo '$(srcdir)/'`processing/cms/0363_mixed_second_create.c
+
+processing/cms/test_runner-0363_mixed_second_create.obj: processing/cms/0363_mixed_second_create.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0363_mixed_second_create.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Tpo -c -o processing/cms/test_runner-0363_mixed_second_create.obj `if test -f 'processing/cms/0363_mixed_second_create.c'; then $(CYGPATH_W) 'processing/cms/0363_mixed_second_create.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0363_mixed_second_create.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Tpo processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0363_mixed_second_create.c' object='processing/cms/test_runner-0363_mixed_second_create.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0363_mixed_second_create.obj `if test -f 'processing/cms/0363_mixed_second_create.c'; then $(CYGPATH_W) 'processing/cms/0363_mixed_second_create.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0363_mixed_second_create.c'; fi`
+
+processing/cms/test_runner-0364_mixed_late_apply.o: processing/cms/0364_mixed_late_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0364_mixed_late_apply.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Tpo -c -o processing/cms/test_runner-0364_mixed_late_apply.o `test -f 'processing/cms/0364_mixed_late_apply.c' || echo '$(srcdir)/'`processing/cms/0364_mixed_late_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Tpo processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0364_mixed_late_apply.c' object='processing/cms/test_runner-0364_mixed_late_apply.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0364_mixed_late_apply.o `test -f 'processing/cms/0364_mixed_late_apply.c' || echo '$(srcdir)/'`processing/cms/0364_mixed_late_apply.c
+
+processing/cms/test_runner-0364_mixed_late_apply.obj: processing/cms/0364_mixed_late_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0364_mixed_late_apply.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Tpo -c -o processing/cms/test_runner-0364_mixed_late_apply.obj `if test -f 'processing/cms/0364_mixed_late_apply.c'; then $(CYGPATH_W) 'processing/cms/0364_mixed_late_apply.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0364_mixed_late_apply.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Tpo processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0364_mixed_late_apply.c' object='processing/cms/test_runner-0364_mixed_late_apply.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0364_mixed_late_apply.obj `if test -f 'processing/cms/0364_mixed_late_apply.c'; then $(CYGPATH_W) 'processing/cms/0364_mixed_late_apply.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0364_mixed_late_apply.c'; fi`
+
+processing/cms/test_runner-0365_mixed_second_nonfinite.o: processing/cms/0365_mixed_second_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0365_mixed_second_nonfinite.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Tpo -c -o processing/cms/test_runner-0365_mixed_second_nonfinite.o `test -f 'processing/cms/0365_mixed_second_nonfinite.c' || echo '$(srcdir)/'`processing/cms/0365_mixed_second_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Tpo processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0365_mixed_second_nonfinite.c' object='processing/cms/test_runner-0365_mixed_second_nonfinite.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0365_mixed_second_nonfinite.o `test -f 'processing/cms/0365_mixed_second_nonfinite.c' || echo '$(srcdir)/'`processing/cms/0365_mixed_second_nonfinite.c
+
+processing/cms/test_runner-0365_mixed_second_nonfinite.obj: processing/cms/0365_mixed_second_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0365_mixed_second_nonfinite.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Tpo -c -o processing/cms/test_runner-0365_mixed_second_nonfinite.obj `if test -f 'processing/cms/0365_mixed_second_nonfinite.c'; then $(CYGPATH_W) 'processing/cms/0365_mixed_second_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0365_mixed_second_nonfinite.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Tpo processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0365_mixed_second_nonfinite.c' object='processing/cms/test_runner-0365_mixed_second_nonfinite.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0365_mixed_second_nonfinite.obj `if test -f 'processing/cms/0365_mixed_second_nonfinite.c'; then $(CYGPATH_W) 'processing/cms/0365_mixed_second_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0365_mixed_second_nonfinite.c'; fi`
+
+processing/cms/test_runner-0366_mixed_first_nonfinite.o: processing/cms/0366_mixed_first_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0366_mixed_first_nonfinite.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Tpo -c -o processing/cms/test_runner-0366_mixed_first_nonfinite.o `test -f 'processing/cms/0366_mixed_first_nonfinite.c' || echo '$(srcdir)/'`processing/cms/0366_mixed_first_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Tpo processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0366_mixed_first_nonfinite.c' object='processing/cms/test_runner-0366_mixed_first_nonfinite.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0366_mixed_first_nonfinite.o `test -f 'processing/cms/0366_mixed_first_nonfinite.c' || echo '$(srcdir)/'`processing/cms/0366_mixed_first_nonfinite.c
+
+processing/cms/test_runner-0366_mixed_first_nonfinite.obj: processing/cms/0366_mixed_first_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0366_mixed_first_nonfinite.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Tpo -c -o processing/cms/test_runner-0366_mixed_first_nonfinite.obj `if test -f 'processing/cms/0366_mixed_first_nonfinite.c'; then $(CYGPATH_W) 'processing/cms/0366_mixed_first_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0366_mixed_first_nonfinite.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Tpo processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0366_mixed_first_nonfinite.c' object='processing/cms/test_runner-0366_mixed_first_nonfinite.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0366_mixed_first_nonfinite.obj `if test -f 'processing/cms/0366_mixed_first_nonfinite.c'; then $(CYGPATH_W) 'processing/cms/0366_mixed_first_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0366_mixed_first_nonfinite.c'; fi`
+
+processing/cms/test_runner-0367_mixed_second_permutation_allocation.o: processing/cms/0367_mixed_second_permutation_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0367_mixed_second_permutation_allocation.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Tpo -c -o processing/cms/test_runner-0367_mixed_second_permutation_allocation.o `test -f 'processing/cms/0367_mixed_second_permutation_allocation.c' || echo '$(srcdir)/'`processing/cms/0367_mixed_second_permutation_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Tpo processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0367_mixed_second_permutation_allocation.c' object='processing/cms/test_runner-0367_mixed_second_permutation_allocation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0367_mixed_second_permutation_allocation.o `test -f 'processing/cms/0367_mixed_second_permutation_allocation.c' || echo '$(srcdir)/'`processing/cms/0367_mixed_second_permutation_allocation.c
+
+processing/cms/test_runner-0367_mixed_second_permutation_allocation.obj: processing/cms/0367_mixed_second_permutation_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0367_mixed_second_permutation_allocation.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Tpo -c -o processing/cms/test_runner-0367_mixed_second_permutation_allocation.obj `if test -f 'processing/cms/0367_mixed_second_permutation_allocation.c'; then $(CYGPATH_W) 'processing/cms/0367_mixed_second_permutation_allocation.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0367_mixed_second_permutation_allocation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Tpo processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0367_mixed_second_permutation_allocation.c' object='processing/cms/test_runner-0367_mixed_second_permutation_allocation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0367_mixed_second_permutation_allocation.obj `if test -f 'processing/cms/0367_mixed_second_permutation_allocation.c'; then $(CYGPATH_W) 'processing/cms/0367_mixed_second_permutation_allocation.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0367_mixed_second_permutation_allocation.c'; fi`
+
+processing/cms/test_runner-mixed_domain_common.o: processing/cms/mixed_domain_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-mixed_domain_common.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Tpo -c -o processing/cms/test_runner-mixed_domain_common.o `test -f 'processing/cms/mixed_domain_common.c' || echo '$(srcdir)/'`processing/cms/mixed_domain_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Tpo processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/mixed_domain_common.c' object='processing/cms/test_runner-mixed_domain_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-mixed_domain_common.o `test -f 'processing/cms/mixed_domain_common.c' || echo '$(srcdir)/'`processing/cms/mixed_domain_common.c
+
+processing/cms/test_runner-mixed_domain_common.obj: processing/cms/mixed_domain_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-mixed_domain_common.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Tpo -c -o processing/cms/test_runner-mixed_domain_common.obj `if test -f 'processing/cms/mixed_domain_common.c'; then $(CYGPATH_W) 'processing/cms/mixed_domain_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/mixed_domain_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Tpo processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/mixed_domain_common.c' object='processing/cms/test_runner-mixed_domain_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-mixed_domain_common.obj `if test -f 'processing/cms/mixed_domain_common.c'; then $(CYGPATH_W) 'processing/cms/mixed_domain_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/mixed_domain_common.c'; fi`
+
+processing/cms/test_runner-mixed_domain_fault_common.o: processing/cms/mixed_domain_fault_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-mixed_domain_fault_common.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Tpo -c -o processing/cms/test_runner-mixed_domain_fault_common.o `test -f 'processing/cms/mixed_domain_fault_common.c' || echo '$(srcdir)/'`processing/cms/mixed_domain_fault_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Tpo processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/mixed_domain_fault_common.c' object='processing/cms/test_runner-mixed_domain_fault_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-mixed_domain_fault_common.o `test -f 'processing/cms/mixed_domain_fault_common.c' || echo '$(srcdir)/'`processing/cms/mixed_domain_fault_common.c
+
+processing/cms/test_runner-mixed_domain_fault_common.obj: processing/cms/mixed_domain_fault_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-mixed_domain_fault_common.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Tpo -c -o processing/cms/test_runner-mixed_domain_fault_common.obj `if test -f 'processing/cms/mixed_domain_fault_common.c'; then $(CYGPATH_W) 'processing/cms/mixed_domain_fault_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/mixed_domain_fault_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Tpo processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/mixed_domain_fault_common.c' object='processing/cms/test_runner-mixed_domain_fault_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-mixed_domain_fault_common.obj `if test -f 'processing/cms/mixed_domain_fault_common.c'; then $(CYGPATH_W) 'processing/cms/mixed_domain_fault_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/mixed_domain_fault_common.c'; fi`
 
 loader/libtiff/test_runner-0184_lab_float_linear_builtin.o: loader/libtiff/0184_lab_float_linear_builtin.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0184_lab_float_linear_builtin.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0184_lab_float_linear_builtin.Tpo -c -o loader/libtiff/test_runner-0184_lab_float_linear_builtin.o `test -f 'loader/libtiff/0184_lab_float_linear_builtin.c' || echo '$(srcdir)/'`loader/libtiff/0184_lab_float_linear_builtin.c
@@ -19069,8 +19485,26 @@ distclean: distclean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0349_lab_linear_allocation_failure.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0350_lab_linear_nan_result.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0351_lab_linear_infinite_result.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-lab_linear_fault_test_common.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-lab_linear_test_common.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
@@ -19838,8 +20272,26 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0349_lab_linear_allocation_failure.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0350_lab_linear_nan_result.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0351_lab_linear_infinite_result.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0352_mixed_gray_curv.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0353_mixed_gray_para0.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0354_mixed_rgb_curv.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0355_mixed_rgb_para0_strict.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0356_mixed_rgb_reuse_generic.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0357_mixed_rgb_native_strict.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0358_mixed_gray_reuse.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0359_mixed_display_p3.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0360_mixed_pack_allocation.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0361_mixed_output_allocation.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0362_mixed_first_create.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0363_mixed_second_create.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0364_mixed_late_apply.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0365_mixed_second_nonfinite.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0366_mixed_first_nonfinite.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0367_mixed_second_permutation_allocation.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-lab_linear_fault_test_common.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-lab_linear_test_common.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-mixed_domain_fault_common.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po

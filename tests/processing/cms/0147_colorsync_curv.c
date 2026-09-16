@@ -108,6 +108,7 @@ test_cms_0147(int argc, char **argv)
     int strict;
     int control;
     int pass;
+    int p;
     int ok;
 
     if (argc != 4) {
@@ -147,7 +148,17 @@ test_cms_0147(int argc, char **argv)
             }
         }
     } else if (control >= 5) {
-        input[3] = input[4] = input[5] = control == 5 ? -0.25f : 1.25f;
+        /* Every pixel stays outside the curve-rewrite domain; these
+         * uniform curves require no channel exchange. Keep negative dark
+         * samples and -0.25, and in-range RGB neighbors in each triplet. */
+        for (p = 0; p < COLOR_CURV_SAMPLES; ++p) {
+            input[p * 3 + 1] = control == 5
+                ? (p == 1 ? -0.25f : -0.001f) : 1.25f;
+            if (gray) {
+                input[p * 3] = input[p * 3 + 1];
+                input[p * 3 + 2] = input[p * 3 + 1];
+            }
+        }
     }
     memcpy(original, bytes, length);
     source = sixel_cms_open_profile_from_mem(bytes, length);

@@ -1,6 +1,7 @@
 #!/bin/sh
 # Policy: docs/loader/color-management.md
 # ColorSync curv rgb above one passthrough preserves its value or native behavior contract.
+# Every pixel has an outside source component; mixed pixels have separate tests.
 set -eux
 result=0
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \

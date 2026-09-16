@@ -35,9 +35,21 @@ test "${observed#*"|ok=1"}" != "$observed" || {
     echo "not ok 1 - unexpected native apply result"
     exit 0
 }
-test "$observed" = "${observed#*"event=source-profile-adapter"}" || {
+test "${observed#*"to=original"}" != "$observed" || {
     echo "$trace" >&2
-    echo "not ok 1 - mixed device domain unexpectedly prepared"
+    echo "not ok 1 - mixed device domain preparation differs"
+    exit 0
+}
+remaining=${observed#*'LSXCMS2|event=apply|engine=colorsync|'}
+test "$remaining" != "$observed" || {
+    echo "$trace" >&2
+    echo "not ok 1 - expected native group did not apply"
+    exit 0
+}
+observed=$remaining
+test "${observed#*'LSXCMS2|event=apply|'}" = "$observed" || {
+    echo "$trace" >&2
+    echo "not ok 1 - unexpected additional CMS apply"
     exit 0
 }
 echo "ok 1 - managed gray mixed native"

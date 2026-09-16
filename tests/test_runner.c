@@ -933,6 +933,22 @@ int test_cms_0348_lab_linear(int argc, char **argv);
 int test_cms_0349_lab_linear(int argc, char **argv);
 int test_cms_0350_lab_linear(int argc, char **argv);
 int test_cms_0351_lab_linear(int argc, char **argv);
+int test_cms_0352_mixed(int argc, char **argv);
+int test_cms_0353_mixed(int argc, char **argv);
+int test_cms_0354_mixed(int argc, char **argv);
+int test_cms_0355_mixed(int argc, char **argv);
+int test_cms_0356_mixed(int argc, char **argv);
+int test_cms_0357_mixed(int argc, char **argv);
+int test_cms_0358_mixed(int argc, char **argv);
+int test_cms_0359_mixed(int argc, char **argv);
+int test_cms_0360_mixed(int argc, char **argv);
+int test_cms_0361_mixed(int argc, char **argv);
+int test_cms_0362_mixed(int argc, char **argv);
+int test_cms_0363_mixed(int argc, char **argv);
+int test_cms_0364_mixed(int argc, char **argv);
+int test_cms_0365_mixed(int argc, char **argv);
+int test_cms_0366_mixed(int argc, char **argv);
+int test_cms_0367_mixed(int argc, char **argv);
 int test_loader_0184_lab_linear(int argc, char **argv);
 int test_loader_0185_lab_linear(int argc, char **argv);
 int test_loader_0186_lab_linear(int argc, char **argv);
@@ -2124,6 +2140,38 @@ static test_entry_t const test_entries[] = {
       test_cms_0350_lab_linear },
     { "cms/0351_lab_linear_infinite_result",
       test_cms_0351_lab_linear },
+    { "cms/0352_mixed_gray_curv",
+      test_cms_0352_mixed },
+    { "cms/0353_mixed_gray_para0",
+      test_cms_0353_mixed },
+    { "cms/0354_mixed_rgb_curv",
+      test_cms_0354_mixed },
+    { "cms/0355_mixed_rgb_para0_strict",
+      test_cms_0355_mixed },
+    { "cms/0356_mixed_rgb_reuse_generic",
+      test_cms_0356_mixed },
+    { "cms/0357_mixed_rgb_native_strict",
+      test_cms_0357_mixed },
+    { "cms/0358_mixed_gray_reuse",
+      test_cms_0358_mixed },
+    { "cms/0359_mixed_display_p3",
+      test_cms_0359_mixed },
+    { "cms/0360_mixed_pack_allocation",
+      test_cms_0360_mixed },
+    { "cms/0361_mixed_output_allocation",
+      test_cms_0361_mixed },
+    { "cms/0362_mixed_first_create",
+      test_cms_0362_mixed },
+    { "cms/0363_mixed_second_create",
+      test_cms_0363_mixed },
+    { "cms/0364_mixed_late_apply",
+      test_cms_0364_mixed },
+    { "cms/0365_mixed_second_nonfinite",
+      test_cms_0365_mixed },
+    { "cms/0366_mixed_first_nonfinite",
+      test_cms_0366_mixed },
+    { "cms/0367_mixed_second_permutation_allocation",
+      test_cms_0367_mixed },
     { "loader/0184_lab_float_linear_builtin",
       test_loader_0184_lab_linear },
     { "loader/0185_lab_float_linear_lcms2",

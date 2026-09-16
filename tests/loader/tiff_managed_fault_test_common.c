@@ -300,6 +300,8 @@ mf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define sixel_cms_open_profile_from_mem mf_local_98
 #define sixel_cms_parse_icc_colorspace_signature mf_local_99
 #define sixel_cms_prepare_linear_gray mf_local_100
+#define sixel_cms_linear_unit_pixel tmf_mixed_unit
+#define sixel_cms_apply_linear_colorsync tmf_mixed_apply
 #define sixel_cms_prepare_linear_rgb mf_local_101
 #define sixel_cms_profile mf_local_102
 #define sixel_cms_profile_backend mf_local_103
@@ -650,6 +652,8 @@ mf_linear(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cms_open_profile_from_mem
 #undef sixel_cms_parse_icc_colorspace_signature
 #undef sixel_cms_prepare_linear_gray
+#undef sixel_cms_linear_unit_pixel
+#undef sixel_cms_apply_linear_colorsync
 #undef sixel_cms_prepare_linear_rgb
 #undef sixel_cms_profile
 #undef sixel_cms_profile_backend

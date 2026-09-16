@@ -24,6 +24,7 @@ test_cms_0130(int argc, char **argv)
     float expected[18];
     int variant;
     int strict;
+    int p;
     int ok;
 
     if (argc != 3) {
@@ -53,7 +54,14 @@ test_cms_0130(int argc, char **argv)
     } else if (variant >= 6) {
         bytes = color_rgb_power_profiles[33].bytes;
         length = color_rgb_power_profiles[33].length;
-        pixels[7] = variant == 6 ? -0.25f : 1.25f;
+        /* Every triplet stays outside the curve-rewrite domain. These
+         * uniform curves require no channel exchange. Preserve in-range
+         * neighboring components and negative darks; mixed-buffer
+         * eligibility is covered by separate value tests. */
+        for (p = 0; p < 6; ++p) {
+            pixels[p * 3 + 1] = variant == 6
+                ? (p == 2 ? -0.25f : -0.001f) : 1.25f;
+        }
     }
     source = variant == 0 ? sixel_cms_create_srgb_profile()
         : sixel_cms_open_profile_from_mem(bytes, length);

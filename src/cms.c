@@ -4455,6 +4455,8 @@ sixel_cms_trace_gamma(ColorSyncProfileRef profile, float const *pixels,
  * A nonlinear RGB profile with identity
  * blue can also produce constant blue. Move a nonidentity channel to that
  * slot by exchanging BOTH source sample bits and matrix/TRC tag bytes.
+ * For a permutation P, (M P^-1)(P f(x)) = M f(x): each original curve still
+ * sees the same source component, including negative native-domain values.
  * No matrix coefficient, source sample, or transfer value is recalculated.
  * Native arithmetic still has its own precision limits after this boundary. */
 static int
@@ -4495,6 +4497,7 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
     int kind;
     int change_curve;
     int native_gamma;
+    int keep_curves;
     int ok;
 
     *owned = NULL;
@@ -4562,6 +4565,20 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
         change_curve |= !native_gamma && kind != 3;
         order[c] = c;
     }
+    /* Curve spelling is equivalent only on [0,1]. Channel permutation is
+     * equivalent for every finite triplet when original TRC/XYZ payloads
+     * travel with the original sample bits, including the native toe. */
+    keep_curves = native_gamma;
+    for (i = 0u; i < count * 3u; ++i) {
+        if (!isfinite(pixels[i])) {
+            ok = 1;
+            goto cleanup;
+        }
+        if (pixels[i] < 0.0f || pixels[i] > 1.0f) {
+            keep_curves = 1;
+        }
+    }
+    change_curve &= !keep_curves;
     swap_channel = 3u;
     if (gamma[2] == 65536u) {
         if (gamma[0] != 65536u) {
@@ -4575,17 +4592,9 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
             sixel_trace_topic_message("loader",
                 "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
                 "path=rgb-pure-gamma|curve=original|order=012");
-            sixel_cms_trace_gamma(profile->colorsync_handle, pixels,
-                                     count, 0);
         }
         ok = 1;
         goto cleanup;
-    }
-    for (i = 0u; i < count * 3u; ++i) {
-        if (!isfinite(pixels[i]) || pixels[i] < 0.0f || pixels[i] > 1.0f) {
-            ok = 1;
-            goto cleanup;
-        }
     }
     /* Require the complete matrix/white tag set. Presence and copying are
      * separate checks so an allocation failure is not a missing-tag skip. */
@@ -4639,7 +4648,7 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
         }
     }
     for (c = 0u; c < 3u; ++c) {
-        if (native_gamma) {
+        if (keep_curves) {
             /* Move original payload bytes with their samples and XYZ tags. */
             replacement = CFDataCreateCopy(NULL, curves[order[c]]);
         } else {
@@ -4681,14 +4690,13 @@ sixel_cms_prepare_linear_rgb(sixel_cms_profile_t const *profile,
     prepared->colorsync_handle = copy;
     *owned = copy;
     *reordered = samples;
-    sixel_cms_trace_gamma(copy, samples != NULL ? samples : pixels, count, 0);
     copy = NULL;
     samples = NULL;
     ok = 1;
     sixel_trace_topic_message("loader",
         "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
         "path=rgb-pure-gamma|curve=%s|order=%u%u%u",
-        native_gamma ? "original" : "para3", (unsigned int)order[0],
+        keep_curves ? "original" : "para3", (unsigned int)order[0],
         (unsigned int)order[1],
         (unsigned int)order[2]);
 
@@ -4807,7 +4815,6 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
             "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
             "path=gray-pure-gamma|tag=kTRC|from=%s|to=original",
             kind < 0 ? "curv" : "para0");
-        sixel_cms_trace_gamma(profile->colorsync_handle, pixels, count, 1);
         CFRelease(tag);
         return 1;
     }
@@ -4844,9 +4851,194 @@ sixel_cms_prepare_linear_gray(sixel_cms_profile_t const *profile,
         "LSXCMS2|event=source-profile-adapter|engine=colorsync|"
         "path=gray-pure-gamma|tag=kTRC|from=%s|to=para3",
         kind < 0 ? "curv" : "para0");
-    sixel_cms_trace_gamma(copy, pixels, count, 1);
     return 1;
 }
+/* A pixel's eligibility cannot depend on other pixels in the same call.
+ * Gray has one source component; RGB uses its complete device triplet.
+ * A mixed RGB triplet keeps its original curves on every component. */
+static int
+sixel_cms_linear_unit_pixel(float const *source, size_t channels)
+{
+    size_t c;
+
+    for (c = 0u; c < channels; ++c) {
+        if (!isfinite(source[c]) || source[c] < 0.0f || source[c] > 1.0f) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* Prepare disjoint normalized and extended groups. Only the first permits
+ * equivalent curve spelling; the second retains original curves while an
+ * equivalent RGB channel permutation may still be needed. At most two
+ * groups are applied, never a retry after failure. All writes target
+ * caller-owned transactional scratch. Pure-domain and preparation-ineligible
+ * profiles retain one native apply. */
+static int
+sixel_cms_apply_linear_colorsync(sixel_cms_profile_t const *source_profile,
+    sixel_cms_profile_t const *destination, sixel_cms_pixel_format_t format,
+    float const *source, float *output, size_t count, int strict)
+{
+    sixel_cms_profile_t prepared;
+    sixel_cms_profile_t const *active_profile;
+    sixel_cms_transform_t *transform;
+    ColorSyncMutableProfileRef owned;
+    float *reordered;
+    float *packed;
+    float *group_output;
+    float const *active_source;
+    float *active_output;
+    size_t channels;
+    size_t units;
+    size_t first;
+    size_t other;
+    size_t index;
+    size_t active_count;
+    size_t i;
+    int mixed;
+    int ok;
+
+    owned = NULL;
+    reordered = NULL;
+    packed = NULL;
+    group_output = NULL;
+    transform = NULL;
+    ok = 0;
+    channels = format == SIXEL_CMS_PIXELFORMAT_GRAY_F32 ? 1u : 3u;
+    units = 0u;
+    for (i = 0u; i < count; ++i) {
+        units += sixel_cms_linear_unit_pixel(source + i * channels,
+                                                channels) != 0;
+    }
+    mixed = units != 0u && units != count;
+    active_source = source;
+    active_count = count;
+    if (mixed) {
+        packed = (float *)malloc(count * channels * sizeof(float));
+        if (packed == NULL) {
+            goto cleanup;
+        }
+        first = 0u;
+        other = units;
+        for (i = 0u; i < count; ++i) {
+            index = sixel_cms_linear_unit_pixel(source + i * channels,
+                channels) ? first++ : other++;
+            memcpy(packed + index * channels, source + i * channels,
+                   channels * sizeof(float));
+        }
+        active_source = packed;
+        active_count = units;
+    }
+    active_profile = source_profile;
+    if (channels == 1u) {
+        if (!sixel_cms_prepare_linear_gray(source_profile, active_source,
+                                          active_count, &prepared, &owned)) {
+            goto cleanup;
+        }
+    } else if (!sixel_cms_prepare_linear_rgb(source_profile, active_source,
+            active_count, &prepared, &owned, &reordered)) {
+        goto cleanup;
+    }
+    if (owned != NULL) {
+        active_profile = &prepared;
+        if (reordered != NULL) {
+            active_source = reordered;
+        }
+    } else {
+        /* No adaptation is needed: preserve the original single batch. */
+        active_source = source;
+        active_count = count;
+        mixed = 0;
+    }
+    active_output = output;
+    if (mixed) {
+        group_output = (float *)malloc(count * 3u * sizeof(float));
+        if (group_output == NULL) {
+            goto cleanup;
+        }
+        active_output = group_output;
+    }
+    transform = strict
+        ? sixel_cms_create_transform_colorsync(active_profile, format,
+              destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0)
+        : sixel_cms_create_transform(active_profile, format, destination,
+              SIXEL_CMS_PIXELFORMAT_RGB_F32, 0);
+    if (transform == NULL) {
+        goto cleanup;
+    }
+    sixel_cms_trace_gamma(active_profile->colorsync_handle, active_source,
+                            active_count, channels == 1u);
+    if (!sixel_cms_do_transform(transform, active_source, active_output,
+                                active_count)) {
+        goto cleanup;
+    }
+    if (mixed) {
+        /* A successful native status does not make nonfinite output valid. */
+        for (i = 0u; i < active_count * 3u; ++i) {
+            if (!isfinite(group_output[i])) {
+                goto cleanup;
+            }
+        }
+        sixel_cms_delete_transform(transform);
+        transform = NULL;
+        if (owned != NULL) {
+            CFRelease(owned);
+            owned = NULL;
+        }
+        free(reordered);
+        reordered = NULL;
+        active_profile = source_profile;
+        active_source = packed + units * channels;
+        active_count = count - units;
+        /* Extended Gray needs no adaptation. Extended RGB can need the
+         * same paired permutation, but its original curve bytes must stay. */
+        if (channels == 3u && !sixel_cms_prepare_linear_rgb(source_profile,
+                active_source, active_count, &prepared, &owned, &reordered)) {
+            goto cleanup;
+        }
+        if (owned != NULL) {
+            active_profile = &prepared;
+            if (reordered != NULL) {
+                active_source = reordered;
+            }
+        }
+        transform = strict
+            ? sixel_cms_create_transform_colorsync(active_profile, format,
+                  destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0)
+            : sixel_cms_create_transform(active_profile, format, destination,
+                  SIXEL_CMS_PIXELFORMAT_RGB_F32, 0);
+        if (transform == NULL) {
+            goto cleanup;
+        }
+        sixel_cms_trace_gamma(active_profile->colorsync_handle,
+            active_source, active_count, channels == 1u);
+        if (!sixel_cms_do_transform(transform, active_source,
+                group_output + units * 3u, active_count)) {
+            goto cleanup;
+        }
+        first = 0u;
+        other = units;
+        for (i = 0u; i < count; ++i) {
+            index = sixel_cms_linear_unit_pixel(source + i * channels,
+                channels) ? first++ : other++;
+            memcpy(output + i * 3u, group_output + index * 3u,
+                   3u * sizeof(float));
+        }
+    }
+    ok = 1;
+
+cleanup:
+    sixel_cms_delete_transform(transform);
+    if (owned != NULL) {
+        CFRelease(owned);
+    }
+    free(reordered);
+    free(group_output);
+    free(packed);
+    return ok;
+}
+
 #endif
 
 int
@@ -4860,12 +5052,6 @@ sixel_cms_convert_colorsync_linear(float *pixels,
 #if SIXEL_CMS_HAVE_COLORSYNC
     sixel_cms_profile_t *source;
     sixel_cms_profile_t *destination;
-    sixel_cms_profile_t const *transform_source;
-    sixel_cms_profile_t prepared;
-    sixel_cms_transform_t *transform;
-    ColorSyncMutableProfileRef owned_profile;
-    float const *transform_input;
-    float *reordered;
     float *output;
     size_t count;
     size_t i;
@@ -4873,9 +5059,6 @@ sixel_cms_convert_colorsync_linear(float *pixels,
 
     source = NULL;
     destination = NULL;
-    transform = NULL;
-    owned_profile = NULL;
-    reordered = NULL;
     output = NULL;
     converted = 0;
     if (pixels == NULL || width <= 0 || height <= 0 ||
@@ -4921,27 +5104,10 @@ sixel_cms_convert_colorsync_linear(float *pixels,
             SIXEL_SRGB_BLUE_X, SIXEL_SRGB_BLUE_Y)) {
         goto cleanup;
     }
-    transform_source = source;
-    transform_input = pixels;
-    if (!sixel_cms_prepare_linear_rgb(source, pixels, count, &prepared,
-                                        &owned_profile, &reordered)) {
-        goto cleanup;
-    }
-    if (owned_profile != NULL) {
-        transform_source = &prepared;
-    }
-    if (reordered != NULL) {
-        transform_input = reordered;
-    }
-    transform = sixel_cms_create_transform_colorsync(transform_source,
-        SIXEL_CMS_PIXELFORMAT_RGB_F32, destination,
-        SIXEL_CMS_PIXELFORMAT_RGB_F32, SIXEL_CMS_TRANSFORM_DEFAULT);
-    if (transform == NULL) {
-        goto cleanup;
-    }
     output = (float *)malloc(count * 3u * sizeof(float));
-    if (output == NULL ||
-        !sixel_cms_do_transform(transform, transform_input, output, count)) {
+    if (output == NULL || !sixel_cms_apply_linear_colorsync(source,
+            destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, pixels, output,
+            count, 1)) {
         goto cleanup;
     }
     for (i = 0u; i < count * 3u; ++i) {
@@ -4956,12 +5122,6 @@ sixel_cms_convert_colorsync_linear(float *pixels,
 
 cleanup:
     free(output);
-    sixel_cms_delete_transform(transform);
-    /* Transforms borrow the prepared profile. Release it only afterwards. */
-    if (owned_profile != NULL) {
-        CFRelease(owned_profile);
-    }
-    free(reordered);
     sixel_cms_close_profile(destination);
     sixel_cms_close_profile(source);
     return converted;
@@ -4985,12 +5145,6 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
 {
     sixel_cms_profile_t *dst_profile;
     sixel_cms_transform_t *transform;
-    sixel_cms_profile_t const *transform_source;
-#if SIXEL_CMS_HAVE_COLORSYNC
-    sixel_cms_profile_t prepared;
-    ColorSyncMutableProfileRef owned_profile;
-    float *reordered;
-#endif
     sixel_cms_color_space_t source_space;
     sixel_cms_pixel_format_t source_format;
     float const *source;
@@ -5005,11 +5159,6 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
     gray = NULL;
     output = NULL;
     converted = 0;
-    transform_source = src_profile;
-#if SIXEL_CMS_HAVE_COLORSYNC
-    owned_profile = NULL;
-    reordered = NULL;
-#endif
     if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
         return 0;
     }
@@ -5050,35 +5199,12 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
         }
         source = gray;
         source_format = SIXEL_CMS_PIXELFORMAT_GRAY_F32;
-#if SIXEL_CMS_HAVE_COLORSYNC
-        if (!sixel_cms_prepare_linear_gray(src_profile, gray, pixel_count,
-                                            &prepared, &owned_profile)) {
-            goto cleanup;
-        }
-        if (owned_profile != NULL) {
-            transform_source = &prepared;
-        }
-#endif
     }
-#if SIXEL_CMS_HAVE_COLORSYNC
-    if (source_space == SIXEL_CMS_COLORSPACE_RGB) {
-        if (!sixel_cms_prepare_linear_rgb(src_profile, source, pixel_count,
-                                            &prepared, &owned_profile,
-                                            &reordered)) {
-            goto cleanup;
-        }
-        if (owned_profile != NULL) {
-            transform_source = &prepared;
-        }
-        if (reordered != NULL) {
-            source = reordered;
-        }
-    }
-#endif
     /*
      * A native apply may fail after writing a prefix. Publish only a complete
      * finite result, so the loader's format-specific fallback still sees
-     * original source samples. This does not retry another CMS transform.
+     * original source samples. A disjoint ColorSync group is not a retry;
+     * no further transform is attempted after a failure.
      */
     output = (float *)malloc(pixel_count * 3u * sizeof(float));
     if (output == NULL) {
@@ -5088,13 +5214,23 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
     if (dst_profile == NULL) {
         goto cleanup;
     }
-    transform = sixel_cms_create_transform(transform_source, source_format,
-                                           dst_profile,
-                                           SIXEL_CMS_PIXELFORMAT_RGB_F32,
-                                           SIXEL_CMS_TRANSFORM_DEFAULT);
-    if (transform == NULL ||
-        !sixel_cms_do_transform(transform, source, output, pixel_count)) {
-        goto cleanup;
+#if SIXEL_CMS_HAVE_COLORSYNC
+    if (src_profile->backend == SIXEL_CMS_PROFILE_BACKEND_COLORSYNC &&
+        (source_space == SIXEL_CMS_COLORSPACE_RGB ||
+         source_space == SIXEL_CMS_COLORSPACE_GRAY)) {
+        if (!sixel_cms_apply_linear_colorsync(src_profile, dst_profile,
+                source_format, source, output, pixel_count, 0)) {
+            goto cleanup;
+        }
+    } else
+#endif
+    {
+        transform = sixel_cms_create_transform(src_profile, source_format,
+            dst_profile, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0);
+        if (transform == NULL ||
+            !sixel_cms_do_transform(transform, source, output, pixel_count)) {
+            goto cleanup;
+        }
     }
     for (i = 0u; i < pixel_count * 3u; ++i) {
         if (!isfinite(output[i])) {
@@ -5107,12 +5243,6 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
 cleanup:
     sixel_cms_delete_transform(transform);
     sixel_cms_close_profile(dst_profile);
-#if SIXEL_CMS_HAVE_COLORSYNC
-    if (owned_profile != NULL) {
-        CFRelease(owned_profile);
-    }
-    free(reordered);
-#endif
     free(output);
     free(gray);
     return converted;

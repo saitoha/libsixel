@@ -79,11 +79,17 @@ tm_capture(sixel_frame_t *frame, void *context)
     sixel_frame_t wrong;
     sixel_frame_t reference;
     size_t bytes;
+    size_t i;
+    size_t c;
+    float source;
+    float const *pixels;
+    double expected;
+    double allowance;
     int ok;
 
     ctx = context;
     ++ctx->calls;
-    if (ctx->native == 1) {
+    if (ctx->native == 1 || ctx->native == 3) {
         /* The native comparison only replaces values, never metadata. */
         reference = *frame;
         reference.pixels.u8ptr = (unsigned char *)tm_cases[ctx->fixture].source;
@@ -93,7 +99,27 @@ tm_capture(sixel_frame_t *frame, void *context)
              frame->colorspace == SIXEL_COLORSPACE_LINEAR &&
              tiff_managed_check(&reference, ctx->fixture, ctx->engine, 1);
         bytes = (size_t)frame->width * frame->height * 3u * sizeof(float);
-        ok = ok && memcmp(frame->pixels.u8ptr, ctx->reference, bytes) == 0;
+        if (ctx->native == 1) {
+            ok = ok && memcmp(frame->pixels.u8ptr, ctx->reference, bytes) == 0;
+        } else {
+            /* Mixed Gray/default prepares only normalized original samples.
+             * Keep the same-time native control for the extended domain;
+             * its toe is never used as a normalized colorimetric oracle. */
+            pixels = (float const *)frame->pixels.u8ptr;
+            for (i = 0u; ok && i < bytes / (3u * sizeof(float)); ++i) {
+                memcpy(&source, tm_cases[ctx->fixture].source + i * 3u,
+                       sizeof(source));
+                for (c = 0u; ok && c < 3u; ++c) {
+                    expected = source >= 0.0f && source <= 1.0f
+                        ? tm_cases[ctx->fixture].expected[1][i * 3u + c]
+                        : ctx->reference[i * 3u + c];
+                    allowance = source >= 0.0f && source <= 1.0f
+                        ? fabs(expected) * tm_native_relative : 0.0;
+                    ok = isfinite(pixels[i * 3u + c]) &&
+                        fabs(pixels[i * 3u + c] - expected) <= allowance;
+                }
+            }
+        }
     } else {
         ok = tiff_managed_check(frame, ctx->fixture, ctx->engine, 0);
         if (ok && ctx->native == 2) {
@@ -159,7 +185,7 @@ tiff_managed_values(int argc, char **argv, int fixture, int engine,
     context.fixture = fixture;
     context.engine = engine;
     context.native = native;
-    ok = native != 1 || tm_native(&context);
+    ok = (native != 1 && native != 3) || tm_native(&context);
     fprintf(stderr, "TMVALUE|reference=%d|case-begin\n", ok);
     snprintf(order, sizeof(order),
         "libtiff:cms_engine=%s:cms_target=linear:prefer_8bit=0!",

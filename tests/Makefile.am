@@ -759,6 +759,24 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0349_LAB_LINEAR_ALLOCATION_FAILURE \
     -DBUILD_TEST_0350_LAB_LINEAR_NAN_RESULT \
     -DBUILD_TEST_0351_LAB_LINEAR_INFINITE_RESULT \
+    -DBUILD_TEST_0352_MIXED_GRAY_CURV \
+    -DBUILD_TEST_0353_MIXED_GRAY_PARA0 \
+    -DBUILD_TEST_0354_MIXED_RGB_CURV \
+    -DBUILD_TEST_0355_MIXED_RGB_PARA0_STRICT \
+    -DBUILD_TEST_0356_MIXED_RGB_REUSE_GENERIC \
+    -DBUILD_TEST_0357_MIXED_RGB_NATIVE_STRICT \
+    -DBUILD_TEST_0358_MIXED_GRAY_REUSE \
+    -DBUILD_TEST_0359_MIXED_DISPLAY_P3 \
+    -DBUILD_TEST_0360_MIXED_PACK_ALLOCATION \
+    -DBUILD_TEST_0361_MIXED_OUTPUT_ALLOCATION \
+    -DBUILD_TEST_0362_MIXED_FIRST_CREATE \
+    -DBUILD_TEST_0363_MIXED_SECOND_CREATE \
+    -DBUILD_TEST_0364_MIXED_LATE_APPLY \
+    -DBUILD_TEST_0365_MIXED_SECOND_NONFINITE \
+    -DBUILD_TEST_0366_MIXED_FIRST_NONFINITE \
+    -DBUILD_TEST_0367_MIXED_SECOND_PERMUTATION_ALLOCATION \
+    -DBUILD_MIXED_DOMAIN_COMMON \
+    -DBUILD_MIXED_DOMAIN_FAULT_COMMON \
     -DBUILD_TEST_0184_LAB_FLOAT_LINEAR_BUILTIN \
     -DBUILD_TEST_0185_LAB_FLOAT_LINEAR_LCMS2 \
     -DBUILD_TEST_0186_LAB_FLOAT_LINEAR_COLORSYNC \
@@ -1093,6 +1111,25 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0349_lab_linear_allocation_failure.c \
     processing/cms/0350_lab_linear_nan_result.c \
     processing/cms/0351_lab_linear_infinite_result.c \
+    processing/cms/0352_mixed_gray_curv.c \
+    processing/cms/0353_mixed_gray_para0.c \
+    processing/cms/0354_mixed_rgb_curv.c \
+    processing/cms/0355_mixed_rgb_para0_strict.c \
+    processing/cms/0356_mixed_rgb_reuse_generic.c \
+    processing/cms/0357_mixed_rgb_native_strict.c \
+    processing/cms/0358_mixed_gray_reuse.c \
+    processing/cms/0359_mixed_display_p3.c \
+    processing/cms/0360_mixed_pack_allocation.c \
+    processing/cms/0361_mixed_output_allocation.c \
+    processing/cms/0362_mixed_first_create.c \
+    processing/cms/0363_mixed_second_create.c \
+    processing/cms/0364_mixed_late_apply.c \
+    processing/cms/0365_mixed_second_nonfinite.c \
+    processing/cms/0366_mixed_first_nonfinite.c \
+    processing/cms/0367_mixed_second_permutation_allocation.c \
+    processing/cms/mixed_domain_common.c \
+    processing/cms/mixed_domain_common.h \
+    processing/cms/mixed_domain_fault_common.c \
     loader/libtiff/0184_lab_float_linear_builtin.c \
     loader/libtiff/0185_lab_float_linear_lcms2.c \
     loader/libtiff/0186_lab_float_linear_colorsync.c \

@@ -236,6 +236,8 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cms_open_profile_from_mem clf_local_98
 #define sixel_cms_parse_icc_colorspace_signature clf_local_99
 #define sixel_cms_prepare_linear_gray clf_local_100
+#define sixel_cms_linear_unit_pixel clf_mixed_unit
+#define sixel_cms_apply_linear_colorsync clf_mixed_apply
 #define sixel_cms_prepare_linear_rgb clf_local_101
 #define sixel_cms_profile clf_local_102
 #define sixel_cms_profile_backend clf_local_103
@@ -568,6 +570,8 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #undef sixel_cms_open_profile_from_mem
 #undef sixel_cms_parse_icc_colorspace_signature
 #undef sixel_cms_prepare_linear_gray
+#undef sixel_cms_linear_unit_pixel
+#undef sixel_cms_apply_linear_colorsync
 #undef sixel_cms_prepare_linear_rgb
 #undef sixel_cms_profile
 #undef sixel_cms_profile_backend
