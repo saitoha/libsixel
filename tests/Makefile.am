@@ -802,6 +802,31 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0224_LOGLUV_NAN_REJECTED \
     -DBUILD_TEST_0225_LOGLUV_INFINITY_REJECTED \
     -DBUILD_TEST_0226_LOGLUV_TARGET_FAILURE \
+    -DBUILD_TEST_0227_FLOAT_RGB_LE \
+    -DBUILD_TEST_0228_FLOAT_RGB_BE \
+    -DBUILD_TEST_0229_FLOAT_BLACK_LE \
+    -DBUILD_TEST_0230_FLOAT_BLACK_BE \
+    -DBUILD_TEST_0231_FLOAT_WHITE_LE \
+    -DBUILD_TEST_0232_FLOAT_WHITE_BE \
+    -DBUILD_TEST_0233_FLOAT_RGB_ORIENTATION3 \
+    -DBUILD_TEST_0234_FLOAT_BLACK_ORIENTATION2 \
+    -DBUILD_TEST_0235_FLOAT_WHITE_ORIENTATION4 \
+    -DBUILD_TEST_0236_FLOAT_RANGE_TAGS \
+    -DBUILD_TEST_0237_FLOAT_NONE_WITH_ICC \
+    -DBUILD_TEST_0238_FLOAT_RGB_INVALID_ICC \
+    -DBUILD_TEST_0239_FLOAT_BLACK_INVALID_ICC \
+    -DBUILD_TEST_0240_FLOAT_WHITE_MISMATCH_ICC \
+    -DBUILD_TEST_0241_FLOAT_DIMENSIONS_CONTROL \
+    -DBUILD_TEST_0242_FLOAT_GAMMA_TARGET \
+    -DBUILD_TEST_0243_FLOAT_BYTE_PREFERENCE \
+    -DBUILD_TEST_0244_FLOAT_OKLAB_TARGET \
+    -DBUILD_TEST_0245_FLOAT_RGB_LATE_NAN \
+    -DBUILD_TEST_0246_FLOAT_BLACK_LATE_INFINITY \
+    -DBUILD_TEST_0247_FLOAT_WHITE_LATE_INFINITY \
+    -DBUILD_TEST_0248_FLOAT_EARLY_FAILURE_CONTROL \
+    -DBUILD_TEST_0249_FLOAT_LATE_READ_FAILURE \
+    -DBUILD_TIFF_FLOAT_TEST_COMMON \
+    -DBUILD_TIFF_FLOAT_FAULT_TEST_COMMON \
     -DBUILD_TIFF_LOGLUV_TEST_COMMON \
     -DBUILD_TIFF_LOGLUV_FAULT_TEST_COMMON \
     -DBUILD_LAB_LINEAR_TEST_COMMON \
@@ -1074,6 +1099,32 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0224_logluv_nan_rejected.c \
     loader/libtiff/0225_logluv_infinity_rejected.c \
     loader/libtiff/0226_logluv_target_failure.c \
+    loader/libtiff/0227_float_rgb_le.c \
+    loader/libtiff/0228_float_rgb_be.c \
+    loader/libtiff/0229_float_black_le.c \
+    loader/libtiff/0230_float_black_be.c \
+    loader/libtiff/0231_float_white_le.c \
+    loader/libtiff/0232_float_white_be.c \
+    loader/libtiff/0233_float_rgb_orientation3.c \
+    loader/libtiff/0234_float_black_orientation2.c \
+    loader/libtiff/0235_float_white_orientation4.c \
+    loader/libtiff/0236_float_range_tags.c \
+    loader/libtiff/0237_float_none_with_icc.c \
+    loader/libtiff/0238_float_rgb_invalid_icc.c \
+    loader/libtiff/0239_float_black_invalid_icc.c \
+    loader/libtiff/0240_float_white_mismatch_icc.c \
+    loader/libtiff/0241_float_dimensions_control.c \
+    loader/libtiff/0242_float_gamma_target.c \
+    loader/libtiff/0243_float_byte_preference.c \
+    loader/libtiff/0244_float_oklab_target.c \
+    loader/libtiff/0245_float_rgb_late_nan.c \
+    loader/libtiff/0246_float_black_late_infinity.c \
+    loader/libtiff/0247_float_white_late_infinity.c \
+    loader/libtiff/0248_float_early_failure_control.c \
+    loader/libtiff/0249_float_late_read_failure.c \
+    loader/tiff_float_test_common.c \
+    loader/tiff_float_test_common.h \
+    loader/tiff_float_fault_test_common.c \
     loader/tiff_logluv_test_common.c \
     loader/tiff_logluv_test_common.h \
     loader/tiff_logluv_fault_test_common.c \
