@@ -105,13 +105,6 @@ def build_values(linear_profile, pack_profile, fixed):
     assert len(samples) == 272
     sample_bounds, sample_ideal = [], []
     frame_bounds = []
-    # Independently reviewed Apple named sRGB matrix, frozen as a test
-    # allowance, never sampled from the factory under test at runtime.
-    # macOS 26.5.1 profile SHA256:
-    # 2b3aa1645779a9e634744faf9b01e9102b0c9b88fd6deced7934df86b949af7e
-    named_columns = [(28578, 14581, 912), (25241, 46981, 6362), (9376, 3972, 46799)]
-    named = list(map(list, zip(*[[D(v) / 65536 for v in col] for col in named_columns])))
-    named_inverse = inverse(normalize(named))
     for i, sample in enumerate(samples):
         physical = [D.from_float(v) * (100 if c == 0 else 128)
                     for c, v in enumerate(sample)]
@@ -123,12 +116,7 @@ def build_values(linear_profile, pack_profile, fixed):
         sample_bounds.append([bounds(linear_models), bounds(gamma_models)])
         sample_ideal.append([linear_models[0], gamma_models[0]])
         if i < 256:
-            models = [gamma_models[0], [gamma(v) for v in apply(named_inverse, xyz)]]
-            lo, hi = bounds(models)
-            # Mirror the mathematical bounded transfer contract, without
-            # calling the production helper or using its output as a golden.
-            frame_bounds.append([[bounded_decode(v) for v in lo],
-                                 [bounded_decode(v) for v in hi]])
+            frame_bounds.append(bounds(linear_models))
     header = '/* Independent fixed targets and Lab/XYZ/RGB value intervals. */\n'
     header += array('cs_lab_source', 'float', samples)
     header += array('cs_lab_bounds', 'double', sample_bounds)
@@ -143,9 +131,7 @@ def build_values(linear_profile, pack_profile, fixed):
         fixed_target_sha256={k: hashlib.sha256(v).hexdigest() for k, v in
                              [('linear', linear_profile), ('gamma', gamma_profile)]},
         fixed_matrix=matrix, fixed_parameters=stored_parameters,
-        frame_named_matrix_columns_s15fixed16=named_columns,
-        frame_named_profile_sha256='2b3aa1645779a9e634744faf9b01e9102b0c9b88fd6deced7934df86b949af7e',
-        model='Independent original Lab/XYZ; fixed target ICC matrices/parametric inverse; canonical ideal included. Frame allowance uses reviewed static named-sRGB coefficients, never live factory output.',
+        model='Independent original Lab/XYZ; fixed target ICC matrices/parametric inverse; canonical ideal included. Frame allowance uses the independent fixed linear target models, never live factory output.',
         float_margin='max(1, triplet magnitude) * 64 / 2^24; scoped, not a universal CMM bound')
     return {'colorsync-lab.h': header.encode(),
             'colorsync-lab.json': (json.dumps(record, indent=2, default=str) + '\n').encode(),

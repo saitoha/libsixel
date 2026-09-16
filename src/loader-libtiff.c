@@ -23,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  *
  * libtiff-backed loader helpers. The implementation stays close to other
- * loader backends so the rest of libsixel continues to operate on decoded
- * RGBA buffers and consistent metadata.
+ * loader backends so the rest of libsixel receives decoded byte or float
+ * buffers with consistent metadata.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -965,10 +965,12 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
 
     if (icc_profile != NULL && icc_profile_length > 0u &&
         tiff_photometric_allows_embedded_icc(photometric, 1)) {
-        if (decode_mode == TIFF_DECODE_RGB_UINT) {
-            /* Preserve the original normalized words through a direct
-             * linear destination. The shared helper publishes only complete
-             * output; failure keeps device samples without a legacy retry. */
+        if (decode_mode == TIFF_DECODE_RGB_UINT ||
+            decode_mode == TIFF_DECODE_LAB_UINT ||
+            decode_mode == TIFF_DECODE_LAB_FLOAT32) {
+            /* Retain normalized RGB or Lab through a direct linear apply.
+             * Success publishes finite extended RGB. Failure preserves the
+             * source samples for the existing format-specific fallback. */
             cms_converted = sixel_cms_convert_to_linearrgb_with_profile_bytes(
                 (unsigned char *)float_pixels,
                 (int)width,
@@ -987,14 +989,17 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         }
     }
 
-    /* RGB_UINT already contains linear CMS output, including signed gamut.
-     * The older helper below is retained only for the other decode modes. */
-    if (cms_converted && decode_mode != TIFF_DECODE_RGB_UINT) {
+    /* RGB_UINT and Lab already contain linear CMS output with signed gamut.
+     * Only failed Lab conversion should enter the original Lab fallback. */
+    if (cms_converted && decode_mode != TIFF_DECODE_RGB_UINT &&
+        decode_mode != TIFF_DECODE_LAB_UINT &&
+        decode_mode != TIFF_DECODE_LAB_FLOAT32) {
         status = tiff_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
-    } else if (float_colorspace == SIXEL_COLORSPACE_CIELAB) {
+    } else if (!cms_converted &&
+               float_colorspace == SIXEL_COLORSPACE_CIELAB) {
         status = sixel_helper_convert_colorspace((unsigned char *)float_pixels,
                                                  float_bytes,
                                                  float_pixelformat,

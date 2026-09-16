@@ -15,33 +15,49 @@ if test ! -f "$makefile_am"; then
 fi
 
 if missing_defines=$(awk '
-function remember_source(path, basename, macro, parts, part_count) {
+# Match gen-amalgamation.sh: numbered test basenames use BUILD_TEST_,
+# other test/support basenames use BUILD_, and include fragments have no
+# standalone guard. External always-included src units need no define.
+function remember_source(path, basename, macro, parts, part_count, external) {
+    external = sub(/^\$\(top_srcdir\)\//, "", path)
+    if (path ~ /\.inc\.c$/) {
+        return
+    }
+    if (external && path !~ /^(tests|gdk-pixbuf-loader)\// &&
+        path !~ /^assessment\/(assessment|color)\.c$/ &&
+        path !~ /^converters\/(cli|path|aborttrace|completion_utils|malloc_stub|compat)\.c$/) {
+        return
+    }
     part_count = split(path, parts, "/")
     basename = parts[part_count]
-    sub(/\.c$/, "", basename)
-    macro = "BUILD_TEST_" toupper(basename)
-    gsub(/[^A-Z0-9]/, "_", macro)
-    sources[macro] = path
+    sub(/\.[cm]$/, "", basename)
+    macro = toupper(basename)
+    gsub(/[^A-Z0-9_]/, "_", macro)
+    if (macro ~ /^[0-9]/) {
+        macro = "TEST_" macro
+    }
+    sources["BUILD_" macro] = path
 }
 function scan_sources(line, token) {
-    while (match(line, /[A-Za-z0-9_.\/-]*[0-9]{4}_[A-Za-z0-9_.-]+\.c/)) {
+    while (match(line, /(\$\(top_srcdir\)\/)?[A-Za-z0-9_.\/-]+\.[cm]([[:space:]]|$)/)) {
         token = substr(line, RSTART, RLENGTH)
+        sub(/[[:space:]]+$/, "", token)
         remember_source(token)
         line = substr(line, RSTART + RLENGTH)
     }
 }
 function scan_defines(line, token) {
-    while (match(line, /-DBUILD_TEST_[A-Z0-9_]+/)) {
+    while (match(line, /-DBUILD_[A-Z0-9_]+/)) {
         token = substr(line, RSTART + 2, RLENGTH - 2)
         defines[token] = 1
         line = substr(line, RSTART + RLENGTH)
     }
 }
 {
-    if ($0 ~ /^[[:space:]]*test_runner_SOURCES[[:space:]]*=/) {
+    if ($0 ~ /^[[:space:]]*test_runner_SOURCES[[:space:]]*\+?=/) {
         in_sources = 1
     }
-    if ($0 ~ /^[[:space:]]*TEST_RUNNER_AMALGAMATION_DEFINES[[:space:]]*=/) {
+    if ($0 ~ /^[[:space:]]*TEST_RUNNER_AMALGAMATION_DEFINES[[:space:]]*\+?=/) {
         in_defines = 1
     }
 

@@ -6,9 +6,10 @@ import hashlib
 import json
 import struct
 
-from generate_colorsync_lab_tests import bounds, bounded_decode, normalize
+from generate_colorsync_lab_tests import bounds
+from generate_tiff_lab_linear_tests import linear_bounds, linear_matrices
 from generate_lcms_input_tests import array
-from generate_tiff_fixtures import apply, destination_matrix, f32, inverse
+from generate_tiff_fixtures import apply, f32
 from generate_tiff_icc_tests import gamma, lab_xyz, read_tiff
 
 
@@ -66,23 +67,20 @@ def encode_tiff(raw, endian, profile=b''):
             + b''.join(row[1] for row in table) + bytes(4) + payload + words)
 
 
-def build(colorsync_record):
+def build(linear_profile):
     with localcontext() as context:
         context.prec = 90
-        return build_values(json.loads(colorsync_record))
+        return build_values(linear_profile)
 
 
-def build_values(colorsync_record):
+def build_values(linear_profile):
     raw, physical, mid_raw, mid_physical = samples()
     # The existing identity Lab profile is only input data. Expectations use
     # independent physical Lab formulas, never production/native CMS output.
     profile = read_tiff('lab_high_precision_icc.tiff', True)['profile']
     assert hashlib.sha256(profile).hexdigest() == (
         '42831b7c1a5fb25d738bd5c09c67343363f897f63053f808f2b3315fc4ef8215')
-    matrix = inverse(destination_matrix())
-    columns = colorsync_record['frame_named_matrix_columns_s15fixed16']
-    named = inverse(normalize(list(map(list, zip(*[
-        [D(v) / 65536 for v in column] for column in columns])))))
+    matrices = linear_matrices(linear_profile)
     fallback = [[D(v) for v in row] for row in
                 [['3.2404542', '-1.5371385', '-.4985314'],
                  ['-.9692660', '1.8760108', '.0415560'],
@@ -106,31 +104,9 @@ def build_values(colorsync_record):
 
     limits = [[], [], [], []]
     for lab in physical:
-        source_xyz = xyz(lab)
-        ideal = apply(matrix, source_xyz)
-        bounded = list(map(clip, ideal))
-        margin = max(map(abs, bounded)) * D(64) / 2**24
         limits[0].append(fallback_bounds(lab))
-        limits[1].append([[v - margin for v in bounded],
-                          [v + margin for v in bounded]])
-        # Existing LCMS one-bin Lab interval, propagated monotonically
-        # through XYZ and then through the signed RGB matrix coefficients.
-        lightness, a, b = [D.from_float(v) * (100 if c == 0 else 128)
-                           for c, v in enumerate(units(lab))]
-        dl, dab = D(100) / 65535, D(255) / 65535
-        xyz_lo = lab_xyz([lightness - dl, a - dab, b + dab])
-        xyz_hi = lab_xyz([lightness + dl, a + dab, b - dab])
-        lo = [sum(v * (xyz_lo[j] if v >= 0 else xyz_hi[j])
-                  for j, v in enumerate(row)) for row in matrix]
-        hi = [sum(v * (xyz_hi[j] if v >= 0 else xyz_lo[j])
-                  for j, v in enumerate(row)) for row in matrix]
-        margin = max(map(abs, ideal)) * D(64) / 2**24
-        limits[2].append([[clip(v - margin) for v in lo],
-                          [clip(v + margin) for v in hi]])
-        lo, hi = bounds([[gamma(v) for v in apply(m, source_xyz)]
-                         for m in (matrix, named)])
-        limits[3].append([[bounded_decode(v) for v in lo],
-                          [bounded_decode(v) for v in hi]])
+        for engine, interval in enumerate(linear_bounds(units(lab), matrices), 1):
+            limits[engine].append(interval)
     mid_limits = [fallback_bounds(lab) for lab in mid_physical]
     icc_indices = [0, 1, 2, 5, 6, 7, 8, 11, 12, 13, 14]
     header = ('/* Offline physical Lab formulas; no CMM-derived expected values. */\n'
@@ -149,12 +125,12 @@ def build_values(colorsync_record):
     record = dict(generator='tools/generate_tiff_lab16_tests.py',
         decimal_digits=90, raw=raw, physical=physical, normalized=list(map(units, physical)),
         midpoint_raw=mid_raw, midpoint_physical=mid_physical,
-        modes=['untagged D65 gamma', 'builtin bounded linear',
-               'LCMS bounded linear', 'ColorSync bounded linear'],
+        modes=['untagged D65 gamma', 'builtin direct linear',
+               'LCMS direct linear', 'ColorSync direct linear'],
         bounds=limits, midpoint_bounds=mid_limits, icc_indices=icc_indices,
         contract='Photometric8 CIELAB16: L unsigned /65535; twos-complement a/b physical signed/256, facade signed/32768; uint16 containers preserve raw words.',
         independence='Literal words and physical values are specified together; expected RGB uses physical Lab formulas, not a decoder/CMM/reversed encoder.',
-        budgets='Existing 64u32 path-specific intervals; LCMS one encoded Lab bin; ColorSync canonical/named-sRGB interval. No fitted tolerance.',
+        budgets='Existing 64u32 path-specific intervals; LCMS one encoded Lab bin; ColorSync canonical/stored/D50-row-normalized linear profile interval. No fitted tolerance.',
         profile_sha256=hashlib.sha256(profile).hexdigest(),
         fixtures_sha256={n: hashlib.sha256(data).hexdigest() for n, data in outputs.items()
                         if n.endswith('.tif')})

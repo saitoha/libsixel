@@ -5014,7 +5014,8 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
         return 0;
     }
     if (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-        pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
+        pixelformat != SIXEL_PIXELFORMAT_CIELABFLOAT32) {
         return 0;
     }
     if ((size_t)width > SIZE_MAX / (size_t)height) {
@@ -5025,12 +5026,18 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
         return 0;
     }
     source_space = sixel_cms_get_color_space(src_profile);
-    if (source_space != SIXEL_CMS_COLORSPACE_RGB &&
-        source_space != SIXEL_CMS_COLORSPACE_GRAY) {
+    if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
+        if (source_space != SIXEL_CMS_COLORSPACE_LAB) {
+            return 0;
+        }
+    } else if (source_space != SIXEL_CMS_COLORSPACE_RGB &&
+               source_space != SIXEL_CMS_COLORSPACE_GRAY) {
         return 0;
     }
     source = (float const *)pixels;
-    source_format = SIXEL_CMS_PIXELFORMAT_RGB_F32;
+    source_format = pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32
+                  ? SIXEL_CMS_PIXELFORMAT_LAB_F32
+                  : SIXEL_CMS_PIXELFORMAT_RGB_F32;
     if (source_space == SIXEL_CMS_COLORSPACE_GRAY) {
         /* PNG expands gray into RGB before this shared profile boundary.
          * Pack original gray samples without an intervening byte view. */
@@ -5070,8 +5077,8 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
 #endif
     /*
      * A native apply may fail after writing a prefix. Publish only a complete
-     * finite result, so the loader's existing metadata fallback still sees
-     * original device samples. This does not retry another CMS transform.
+     * finite result, so the loader's format-specific fallback still sees
+     * original normalized samples. This does not retry another CMS transform.
      */
     output = (float *)malloc(pixel_count * 3u * sizeof(float));
     if (output == NULL) {

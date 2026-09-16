@@ -49,13 +49,6 @@ cms_input_frame_capture(sixel_frame_t *frame, void *context)
                 lo = top[0][channel] * alpha + lo * (1.0 - alpha);
                 hi = top[1][channel] * alpha + hi * (1.0 - alpha);
             }
-            if (state->mode == 3) {
-                /* The existing TIFF Lab adapter decodes native gamma RGB
-                 * through its bounded-linear helper. This test preserves
-                 * that separate adapter limit rather than changing it. */
-                lo = lo < 0.0 ? 0.0 : lo > 1.0 ? 1.0 : lo;
-                hi = hi < 0.0 ? 0.0 : hi > 1.0 ? 1.0 : hi;
-            }
             if (!isfinite(pixels[pixel * 3u + channel]) ||
                 pixels[pixel * 3u + channel] < lo ||
                 pixels[pixel * 3u + channel] > hi) {

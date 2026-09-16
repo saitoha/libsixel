@@ -925,6 +925,30 @@ int test_cms_0340(int argc, char **argv);
 int test_cms_0341(int argc, char **argv);
 int test_cms_0342(int argc, char **argv);
 int test_cms_0343(int argc, char **argv);
+int test_cms_0344_lab_linear(int argc, char **argv);
+int test_cms_0345_lab_linear(int argc, char **argv);
+int test_cms_0346_lab_linear(int argc, char **argv);
+int test_cms_0347_lab_linear(int argc, char **argv);
+int test_cms_0348_lab_linear(int argc, char **argv);
+int test_cms_0349_lab_linear(int argc, char **argv);
+int test_cms_0350_lab_linear(int argc, char **argv);
+int test_cms_0351_lab_linear(int argc, char **argv);
+int test_loader_0184_lab_linear(int argc, char **argv);
+int test_loader_0185_lab_linear(int argc, char **argv);
+int test_loader_0186_lab_linear(int argc, char **argv);
+int test_loader_0187_lab_linear(int argc, char **argv);
+int test_loader_0188_lab_linear(int argc, char **argv);
+int test_loader_0189_lab_linear(int argc, char **argv);
+int test_loader_0190_lab_linear(int argc, char **argv);
+int test_loader_0191_lab_linear(int argc, char **argv);
+int test_loader_0192_lab_linear(int argc, char **argv);
+int test_loader_0193_lab_linear(int argc, char **argv);
+int test_loader_0194_lab_linear(int argc, char **argv);
+int test_loader_0195_lab_linear(int argc, char **argv);
+int test_loader_0196_lab_linear(int argc, char **argv);
+int test_loader_0197_lab_linear(int argc, char **argv);
+int test_loader_0198_lab_linear(int argc, char **argv);
+int test_loader_0199_lab_linear(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -1999,6 +2023,54 @@ static test_entry_t const test_entries[] = {
       test_cms_0342 },
     { "cms/0343_colorsync_profile_format_scope",
       test_cms_0343 },
+    { "cms/0344_lab_linear_profile_builtin",
+      test_cms_0344_lab_linear },
+    { "cms/0345_lab_linear_profile_lcms2",
+      test_cms_0345_lab_linear },
+    { "cms/0346_lab_linear_profile_colorsync",
+      test_cms_0346_lab_linear },
+    { "cms/0347_lab_linear_late_builtin",
+      test_cms_0347_lab_linear },
+    { "cms/0348_lab_linear_late_colorsync",
+      test_cms_0348_lab_linear },
+    { "cms/0349_lab_linear_allocation_failure",
+      test_cms_0349_lab_linear },
+    { "cms/0350_lab_linear_nan_result",
+      test_cms_0350_lab_linear },
+    { "cms/0351_lab_linear_infinite_result",
+      test_cms_0351_lab_linear },
+    { "loader/0184_lab_float_linear_builtin",
+      test_loader_0184_lab_linear },
+    { "loader/0185_lab_float_linear_lcms2",
+      test_loader_0185_lab_linear },
+    { "loader/0186_lab_float_linear_colorsync",
+      test_loader_0186_lab_linear },
+    { "loader/0187_lab_word_linear_builtin",
+      test_loader_0187_lab_linear },
+    { "loader/0188_lab_word_linear_lcms2",
+      test_loader_0188_lab_linear },
+    { "loader/0189_lab_word_linear_colorsync",
+      test_loader_0189_lab_linear },
+    { "loader/0190_lab_float_late_builtin",
+      test_loader_0190_lab_linear },
+    { "loader/0191_lab_float_late_colorsync",
+      test_loader_0191_lab_linear },
+    { "loader/0192_lab_float_allocation_failure",
+      test_loader_0192_lab_linear },
+    { "loader/0193_lab_float_nan_result",
+      test_loader_0193_lab_linear },
+    { "loader/0194_lab_float_infinite_result",
+      test_loader_0194_lab_linear },
+    { "loader/0195_lab_word_late_builtin",
+      test_loader_0195_lab_linear },
+    { "loader/0196_lab_word_late_colorsync",
+      test_loader_0196_lab_linear },
+    { "loader/0197_lab_word_allocation_failure",
+      test_loader_0197_lab_linear },
+    { "loader/0198_lab_word_nan_result",
+      test_loader_0198_lab_linear },
+    { "loader/0199_lab_word_infinite_result",
+      test_loader_0199_lab_linear },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

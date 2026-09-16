@@ -751,6 +751,32 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0341_COLORSYNC_GRAY_FLOAT_PROFILE_FORMAT_GAMMA \
     -DBUILD_TEST_0342_BUILTIN_PROFILE_FORMAT_SCOPE \
     -DBUILD_TEST_0343_COLORSYNC_PROFILE_FORMAT_SCOPE \
+    -DBUILD_TEST_0344_LAB_LINEAR_PROFILE_BUILTIN \
+    -DBUILD_TEST_0345_LAB_LINEAR_PROFILE_LCMS2 \
+    -DBUILD_TEST_0346_LAB_LINEAR_PROFILE_COLORSYNC \
+    -DBUILD_TEST_0347_LAB_LINEAR_LATE_BUILTIN \
+    -DBUILD_TEST_0348_LAB_LINEAR_LATE_COLORSYNC \
+    -DBUILD_TEST_0349_LAB_LINEAR_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0350_LAB_LINEAR_NAN_RESULT \
+    -DBUILD_TEST_0351_LAB_LINEAR_INFINITE_RESULT \
+    -DBUILD_TEST_0184_LAB_FLOAT_LINEAR_BUILTIN \
+    -DBUILD_TEST_0185_LAB_FLOAT_LINEAR_LCMS2 \
+    -DBUILD_TEST_0186_LAB_FLOAT_LINEAR_COLORSYNC \
+    -DBUILD_TEST_0187_LAB_WORD_LINEAR_BUILTIN \
+    -DBUILD_TEST_0188_LAB_WORD_LINEAR_LCMS2 \
+    -DBUILD_TEST_0189_LAB_WORD_LINEAR_COLORSYNC \
+    -DBUILD_TEST_0190_LAB_FLOAT_LATE_BUILTIN \
+    -DBUILD_TEST_0191_LAB_FLOAT_LATE_COLORSYNC \
+    -DBUILD_TEST_0192_LAB_FLOAT_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0193_LAB_FLOAT_NAN_RESULT \
+    -DBUILD_TEST_0194_LAB_FLOAT_INFINITE_RESULT \
+    -DBUILD_TEST_0195_LAB_WORD_LATE_BUILTIN \
+    -DBUILD_TEST_0196_LAB_WORD_LATE_COLORSYNC \
+    -DBUILD_TEST_0197_LAB_WORD_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0198_LAB_WORD_NAN_RESULT \
+    -DBUILD_TEST_0199_LAB_WORD_INFINITE_RESULT \
+    -DBUILD_LAB_LINEAR_TEST_COMMON \
+    -DBUILD_LAB_LINEAR_FAULT_TEST_COMMON \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
     -DBUILD_TEST_0187_COREGRAPHICS_PNG \
     -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -779,6 +805,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0210_PNG_ARITH_LOADER \
     -DBUILD_TEST_0211_PNG_ARITH_UNAVAILABLE \
     -DBUILD_TEST_0212_PNG_ARITH_TINY \
+    -DBUILD_PATH \
+    -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
+    -DBUILD_RESAMPLING_EXACT_TEST_DRIVER \
+    -DBUILD_RESAMPLING_MEASUREMENT_TEST_DRIVER \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -964,6 +994,34 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0341_colorsync_gray_float_profile_format_gamma.c \
     processing/cms/0342_builtin_profile_format_scope.c \
     processing/cms/0343_colorsync_profile_format_scope.c \
+    processing/cms/0344_lab_linear_profile_builtin.c \
+    processing/cms/0345_lab_linear_profile_lcms2.c \
+    processing/cms/0346_lab_linear_profile_colorsync.c \
+    processing/cms/0347_lab_linear_late_builtin.c \
+    processing/cms/0348_lab_linear_late_colorsync.c \
+    processing/cms/0349_lab_linear_allocation_failure.c \
+    processing/cms/0350_lab_linear_nan_result.c \
+    processing/cms/0351_lab_linear_infinite_result.c \
+    loader/libtiff/0184_lab_float_linear_builtin.c \
+    loader/libtiff/0185_lab_float_linear_lcms2.c \
+    loader/libtiff/0186_lab_float_linear_colorsync.c \
+    loader/libtiff/0187_lab_word_linear_builtin.c \
+    loader/libtiff/0188_lab_word_linear_lcms2.c \
+    loader/libtiff/0189_lab_word_linear_colorsync.c \
+    loader/libtiff/0190_lab_float_late_builtin.c \
+    loader/libtiff/0191_lab_float_late_colorsync.c \
+    loader/libtiff/0192_lab_float_allocation_failure.c \
+    loader/libtiff/0193_lab_float_nan_result.c \
+    loader/libtiff/0194_lab_float_infinite_result.c \
+    loader/libtiff/0195_lab_word_late_builtin.c \
+    loader/libtiff/0196_lab_word_late_colorsync.c \
+    loader/libtiff/0197_lab_word_allocation_failure.c \
+    loader/libtiff/0198_lab_word_nan_result.c \
+    loader/libtiff/0199_lab_word_infinite_result.c \
+    processing/cms/lab_linear_test_common.c \
+    processing/cms/lab_linear_test_common.h \
+    processing/cms/lab_linear_fault_test_common.c \
+    processing/cms/lab_linear_fault_test_common.h \
     processing/cms/colorsync_gray8_common.h \
     processing/cms/colorsync_channels_common.h \
     processing/cms/colorsync_channel_scope_common.h \

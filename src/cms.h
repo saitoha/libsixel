@@ -117,8 +117,10 @@ sixel_cms_create_linear_srgb_profile(void);
 SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_create_cielab_d50_profile(void);
 
-/* Convert normalized source RGB (or replicated gray) to linear sRGB.
- * Failure leaves all input samples unchanged; no second CMS apply is tried. */
+/* Convert normalized RGB, replicated gray or Lab to linear sRGB.
+ * Lab uses L/100, a/128 and b/128 with a matching Lab source profile.
+ * Publish only a complete finite result, retaining extended RGB values.
+ * Failure leaves input unchanged; no second CMS apply is attempted. */
 SIXEL_INTERNAL_API int
 sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
                                        int width,

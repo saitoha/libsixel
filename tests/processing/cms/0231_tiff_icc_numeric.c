@@ -76,15 +76,9 @@ tiff_icc_capture_lab(sixel_frame_t *frame, void *context)
     }
     pixels = (float const *)sixel_frame_get_pixels(frame);
     for (pixel = 0; pixel < TIFF_ICC_LAB_COUNT; ++pixel) {
-        /* This adapter still publishes bounded linear Lab output. The
-         * signed endpoint checks above are a separate CMS contract. */
+        /* Expected linear values precede final display-gamut handling. */
         for (channel = 0; channel < 3; ++channel) {
             expected[channel] = tiff_icc_lab_linear[pixel][channel];
-            if (expected[channel] < 0.0) {
-                expected[channel] = 0.0;
-            } else if (expected[channel] > 1.0) {
-                expected[channel] = 1.0;
-            }
         }
         tolerance = tiff_icc_scale(expected) * tiff_icc_float_relative;
         for (channel = 0; channel < 3; ++channel) {

@@ -3355,7 +3355,7 @@
     "lcms-expanding-alias.json": "34fd707e4733a871bbbb5b52387a0cb586f9b6b484d930efdd73f6907028690a",
     "lcms-input-units.json": "427f432f0ffe643968819d495acded3cae1cdbcd5cc9b0b5913aef139275cec2",
     "builtin-device.json": "870418292202bb607733760a06ac9880b95e601a5be3445e671bee12c3ddac64",
-    "colorsync-lab.json": "984fb0035a008cd579189f233412c42089bde54595edc78446973eedc9ffbf7c",
+    "colorsync-lab.json": "c1fccfc217ce5efde3614578a6b383b123be58f8b532b484708957833b2957d2",
     "tiff-icc.json": "ab831a5025ff524b25e0b911b50c3da9941bd1bd571abb34b9fe7cdda794e017",
     "gray-samples.json": "298ab55f167e3015156dae54bd71be4f1314da12590b7db09cda46d59e348f36"
   }
