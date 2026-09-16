@@ -1,10 +1,10 @@
 #!/bin/sh
 # Policy: docs/loader/color-management.md
-# Verify float rgb invalid icc.
+# Verify float rgb invalid source.
 set -eux
 result=0
 trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    loader/0238_float_rgb_invalid_icc \
+    loader/0238_float_rgb_invalid_source \
     "${TOP_SRCDIR}/tests/data/color-numeric/tiff-float-rgb-invalid.tif" 2>&1) || result=$?
 test "$result" -ne 77 || {
     echo "1..0 # SKIP libtiff is unavailable"
@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - float rgb invalid icc"
+    echo "not ok 1 - float rgb invalid source"
     exit 0
 }
 test "${trace#*"TFLOAT|control=1|case-begin"}" != "$trace" || {
@@ -45,5 +45,5 @@ test "${observed#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$observed" || {
     echo "not ok 1 - libtiff did not deliver the frame"
     exit 0
 }
-echo "ok 1 - float rgb invalid icc"
+echo "ok 1 - float rgb invalid source"
 exit 0

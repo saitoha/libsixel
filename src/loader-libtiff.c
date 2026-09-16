@@ -719,7 +719,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     double rgb_unit[3];
     double lab_unit[3];
     int cms_converted;
-    int unmanaged_float;
+    int native_float;
     int float_colorspace;
     int float_pixelformat;
     enum {
@@ -766,7 +766,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     lab_unit[1] = 0.0;
     lab_unit[2] = 0.0;
     cms_converted = 0;
-    unmanaged_float = 0;
+    native_float = 0;
     float_colorspace = SIXEL_COLORSPACE_GAMMA;
     float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     decode_mode = TIFF_DECODE_UNSUPPORTED;
@@ -881,11 +881,10 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     if (decode_mode == TIFF_DECODE_UNSUPPORTED) {
         return SIXEL_FALSE;
     }
-    /* Absence at this boundary includes cms none, but not failed CMS. */
-    unmanaged_float =
-        (decode_mode == TIFF_DECODE_RGB_FLOAT32 ||
-         decode_mode == TIFF_DECODE_GRAY_FLOAT32) &&
-        (icc_profile == NULL || icc_profile_length == 0u);
+    /* Native float samples must reach the CMS without a unit clamp. */
+    native_float =
+        decode_mode == TIFF_DECODE_RGB_FLOAT32 ||
+        decode_mode == TIFF_DECODE_GRAY_FLOAT32;
     if (decode_mode == TIFF_DECODE_LAB_UINT ||
         decode_mode == TIFF_DECODE_LAB_FLOAT32) {
         float_colorspace = SIXEL_COLORSPACE_CIELAB;
@@ -1030,7 +1029,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
                 float_pixels[dst_base + 0u] = (float)lab_unit[0];
                 float_pixels[dst_base + 1u] = (float)lab_unit[1];
                 float_pixels[dst_base + 2u] = (float)lab_unit[2];
-            } else if (unmanaged_float) {
+            } else if (native_float) {
                 /* Preserve finite native words; no gamut or byte boundary. */
                 if (!isfinite(rgb_unit[0]) || !isfinite(rgb_unit[1]) ||
                     !isfinite(rgb_unit[2]) ||
@@ -1075,9 +1074,11 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     if (icc_profile != NULL && icc_profile_length > 0u &&
         tiff_photometric_allows_embedded_icc(photometric, 1)) {
         if (decode_mode == TIFF_DECODE_RGB_UINT ||
+            decode_mode == TIFF_DECODE_RGB_FLOAT32 ||
+            decode_mode == TIFF_DECODE_GRAY_FLOAT32 ||
             decode_mode == TIFF_DECODE_LAB_UINT ||
             decode_mode == TIFF_DECODE_LAB_FLOAT32) {
-            /* Retain normalized RGB or Lab through a direct linear apply.
+            /* Retain device RGB/Gray or Lab through a direct linear apply.
              * Success publishes finite extended RGB. Failure preserves the
              * source samples for the existing format-specific fallback. */
             cms_converted = sixel_cms_convert_to_linearrgb_with_profile_bytes(
@@ -1098,9 +1099,11 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         }
     }
 
-    /* RGB_UINT and Lab already contain linear CMS output with signed gamut.
+    /* RGB, float Gray and Lab already contain signed linear CMS output.
      * Only failed Lab conversion should enter the original Lab fallback. */
     if (cms_converted && decode_mode != TIFF_DECODE_RGB_UINT &&
+        decode_mode != TIFF_DECODE_RGB_FLOAT32 &&
+        decode_mode != TIFF_DECODE_GRAY_FLOAT32 &&
         decode_mode != TIFF_DECODE_LAB_UINT &&
         decode_mode != TIFF_DECODE_LAB_FLOAT32) {
         status = tiff_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);

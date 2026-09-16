@@ -999,6 +999,36 @@ int test_loader_0246_tfloat(int argc, char **argv);
 int test_loader_0247_tfloat(int argc, char **argv);
 int test_loader_0248_tfloat(int argc, char **argv);
 int test_loader_0249_tfloat(int argc, char **argv);
+int test_loader_0250_mfloat(int argc, char **argv);
+int test_loader_0251_mfloat(int argc, char **argv);
+int test_loader_0252_mfloat(int argc, char **argv);
+int test_loader_0253_mfloat(int argc, char **argv);
+int test_loader_0254_mfloat(int argc, char **argv);
+int test_loader_0255_mfloat(int argc, char **argv);
+int test_loader_0256_mfloat(int argc, char **argv);
+int test_loader_0257_mfloat(int argc, char **argv);
+int test_loader_0258_mfloat(int argc, char **argv);
+int test_loader_0259_mfloat(int argc, char **argv);
+int test_loader_0260_mfloat(int argc, char **argv);
+int test_loader_0261_mfloat(int argc, char **argv);
+int test_loader_0262_mfloat(int argc, char **argv);
+int test_loader_0263_mfloat(int argc, char **argv);
+int test_loader_0264_mfloat(int argc, char **argv);
+int test_loader_0265_mfloat(int argc, char **argv);
+int test_loader_0266_mfloat(int argc, char **argv);
+int test_loader_0267_mfloat(int argc, char **argv);
+int test_loader_0268_mfloat(int argc, char **argv);
+int test_loader_0269_mfloat(int argc, char **argv);
+int test_loader_0270_mfloat(int argc, char **argv);
+int test_loader_0271_mfloat(int argc, char **argv);
+int test_loader_0272_mfloat(int argc, char **argv);
+int test_loader_0273_mfloat(int argc, char **argv);
+int test_loader_0274_mfloat(int argc, char **argv);
+int test_loader_0275_mfloat(int argc, char **argv);
+int test_loader_0276_mfloat(int argc, char **argv);
+int test_loader_0277_mfloat(int argc, char **argv);
+int test_loader_0278_mfloat(int argc, char **argv);
+int test_loader_0279_mfloat(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -2197,11 +2227,11 @@ static test_entry_t const test_entries[] = {
       test_loader_0236_tfloat },
     { "loader/0237_float_none_with_icc",
       test_loader_0237_tfloat },
-    { "loader/0238_float_rgb_invalid_icc",
+    { "loader/0238_float_rgb_invalid_source",
       test_loader_0238_tfloat },
-    { "loader/0239_float_black_invalid_icc",
+    { "loader/0239_float_black_invalid_source",
       test_loader_0239_tfloat },
-    { "loader/0240_float_white_mismatch_icc",
+    { "loader/0240_float_white_mismatch_source",
       test_loader_0240_tfloat },
     { "loader/0241_float_dimensions_control",
       test_loader_0241_tfloat },
@@ -2221,6 +2251,66 @@ static test_entry_t const test_entries[] = {
       test_loader_0248_tfloat },
     { "loader/0249_float_late_read_failure",
       test_loader_0249_tfloat },
+    { "loader/0250_managed_rgb_builtin",
+      test_loader_0250_mfloat },
+    { "loader/0251_managed_rgb_lcms2",
+      test_loader_0251_mfloat },
+    { "loader/0252_managed_rgb_colorsync",
+      test_loader_0252_mfloat },
+    { "loader/0253_managed_black_builtin",
+      test_loader_0253_mfloat },
+    { "loader/0254_managed_black_lcms2",
+      test_loader_0254_mfloat },
+    { "loader/0255_managed_black_colorsync",
+      test_loader_0255_mfloat },
+    { "loader/0256_managed_white_builtin",
+      test_loader_0256_mfloat },
+    { "loader/0257_managed_white_lcms2",
+      test_loader_0257_mfloat },
+    { "loader/0258_managed_white_colorsync",
+      test_loader_0258_mfloat },
+    { "loader/0259_managed_rgb_be_o3",
+      test_loader_0259_mfloat },
+    { "loader/0260_managed_white_be_o4",
+      test_loader_0260_mfloat },
+    { "loader/0261_managed_table_builtin",
+      test_loader_0261_mfloat },
+    { "loader/0262_managed_table_lcms2",
+      test_loader_0262_mfloat },
+    { "loader/0263_managed_rgb_late_builtin",
+      test_loader_0263_mfloat },
+    { "loader/0264_managed_black_late_builtin",
+      test_loader_0264_mfloat },
+    { "loader/0265_managed_white_late_colorsync",
+      test_loader_0265_mfloat },
+    { "loader/0266_managed_rgb_late_colorsync",
+      test_loader_0266_mfloat },
+    { "loader/0267_managed_rgb_nan_lcms2",
+      test_loader_0267_mfloat },
+    { "loader/0268_managed_black_nan_colorsync",
+      test_loader_0268_mfloat },
+    { "loader/0269_managed_early_control",
+      test_loader_0269_mfloat },
+    { "loader/0270_managed_rgb_input_nan",
+      test_loader_0270_mfloat },
+    { "loader/0271_managed_black_input_infinity",
+      test_loader_0271_mfloat },
+    { "loader/0272_managed_white_input_infinity",
+      test_loader_0272_mfloat },
+    { "loader/0273_managed_gray_native_gamma",
+      test_loader_0273_mfloat },
+    { "loader/0274_managed_gray_mixed_default",
+      test_loader_0274_mfloat },
+    { "loader/0275_managed_gray_mixed_native",
+      test_loader_0275_mfloat },
+    { "loader/0276_managed_mixed_builtin",
+      test_loader_0276_mfloat },
+    { "loader/0277_managed_mixed_lcms2",
+      test_loader_0277_mfloat },
+    { "loader/0278_managed_extended_lcms2",
+      test_loader_0278_mfloat },
+    { "loader/0279_managed_dimensions_control",
+      test_loader_0279_mfloat },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

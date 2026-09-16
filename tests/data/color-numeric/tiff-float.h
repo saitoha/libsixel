@@ -56,57 +56,5 @@ static uint32_t const tuf_white[24] = {
     0x7f7fffffu,
     0x3f400000u
 };
-static uint32_t const tuf_clamped[24] = {
-    0x00000000u,
-    0x80000000u,
-    0x00000000u,
-    0x3f000000u,
-    0x3f800000u,
-    0x00000001u,
-    0x00000000u,
-    0x007fffffu,
-    0x00000000u,
-    0x00800000u,
-    0x00000000u,
-    0x3f7fffffu,
-    0x3f800000u,
-    0x3f800000u,
-    0x33000000u,
-    0x00000000u,
-    0x33800000u,
-    0x00000000u,
-    0x3f800000u,
-    0x00000000u,
-    0x3f800000u,
-    0x3f800000u,
-    0x00000000u,
-    0x3e800000u
-};
-static uint32_t const tuf_white_clamped[24] = {
-    0x3f800000u,
-    0x3f800000u,
-    0x3f800000u,
-    0x3f000000u,
-    0x00000000u,
-    0x3f800000u,
-    0x3f800000u,
-    0x3f800000u,
-    0x3f800000u,
-    0x3f800000u,
-    0x3f800000u,
-    0x33800000u,
-    0x00000000u,
-    0x00000000u,
-    0x3f800000u,
-    0x3f800000u,
-    0x3f7fffffu,
-    0x3f800000u,
-    0x00000000u,
-    0x3f800000u,
-    0x00000000u,
-    0x00000000u,
-    0x3f800000u,
-    0x3f400000u
-};
 #endif
 #endif

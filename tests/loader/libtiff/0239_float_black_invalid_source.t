@@ -1,11 +1,11 @@
 #!/bin/sh
 # Policy: docs/loader/color-management.md
-# Verify float white mismatch icc.
+# Verify float black invalid source.
 set -eux
 result=0
 trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    loader/0240_float_white_mismatch_icc \
-    "${TOP_SRCDIR}/tests/data/color-numeric/tiff-float-white-mismatch.tif" 2>&1) || result=$?
+    loader/0239_float_black_invalid_source \
+    "${TOP_SRCDIR}/tests/data/color-numeric/tiff-float-black-invalid.tif" 2>&1) || result=$?
 test "$result" -ne 77 || {
     echo "1..0 # SKIP libtiff is unavailable"
     set -v
@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - float white mismatch icc"
+    echo "not ok 1 - float black invalid source"
     exit 0
 }
 test "${trace#*"TFLOAT|control=1|case-begin"}" != "$trace" || {
@@ -35,14 +35,9 @@ test "${control#*"|ok=1"}" != "$control" || {
     exit 0
 }
 observed=${trace#*"TFLOAT|control=1|case-begin"}
-test "${observed#*"reason=source-profile-format"}" != "$observed" || {
+test "$observed" = "${observed#*"LSXCMS2|event=apply"}" || {
     echo "$trace" >&2
-    echo "not ok 1 - profile mismatch did not reach rejection"
-    exit 0
-}
-test "${observed#*"|ok=0"}" != "$observed" || {
-    echo "$trace" >&2
-    echo "not ok 1 - mismatched apply did not fail"
+    echo "not ok 1 - unexpected CMS application"
     exit 0
 }
 test "${observed#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$observed" || {
@@ -50,5 +45,5 @@ test "${observed#*"LSXLOAD1|event=ok|loader=libtiff|"}" != "$observed" || {
     echo "not ok 1 - libtiff did not deliver the frame"
     exit 0
 }
-echo "ok 1 - float white mismatch icc"
+echo "ok 1 - float black invalid source"
 exit 0

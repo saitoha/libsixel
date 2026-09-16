@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* One independently reported unmanaged float contract. */
+/* Failed managed ICC conversion preserves the original float samples. */
 #include "tests/loader/tiff_float_test_common.h"
 
 int

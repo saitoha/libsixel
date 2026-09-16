@@ -47,10 +47,6 @@ tuf_check(sixel_frame_t const *frame, int variant)
         return 0;
     }
     expected = photo == 0 ? tuf_white : tuf_words;
-    if (variant >= 11 && variant <= 13) {
-        /* ICC bytes were supplied: retain the old managed-failure clamp. */
-        expected = photo == 0 ? tuf_white_clamped : tuf_clamped;
-    }
     pixels = sixel_frame_get_pixels((sixel_frame_t *)frame);
     count = (size_t)width * (size_t)height;
     for (i = 0u; i < count; ++i) {

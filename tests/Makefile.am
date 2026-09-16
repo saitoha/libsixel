@@ -813,9 +813,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0235_FLOAT_WHITE_ORIENTATION4 \
     -DBUILD_TEST_0236_FLOAT_RANGE_TAGS \
     -DBUILD_TEST_0237_FLOAT_NONE_WITH_ICC \
-    -DBUILD_TEST_0238_FLOAT_RGB_INVALID_ICC \
-    -DBUILD_TEST_0239_FLOAT_BLACK_INVALID_ICC \
-    -DBUILD_TEST_0240_FLOAT_WHITE_MISMATCH_ICC \
+    -DBUILD_TEST_0238_FLOAT_RGB_INVALID_SOURCE \
+    -DBUILD_TEST_0239_FLOAT_BLACK_INVALID_SOURCE \
+    -DBUILD_TEST_0240_FLOAT_WHITE_MISMATCH_SOURCE \
     -DBUILD_TEST_0241_FLOAT_DIMENSIONS_CONTROL \
     -DBUILD_TEST_0242_FLOAT_GAMMA_TARGET \
     -DBUILD_TEST_0243_FLOAT_BYTE_PREFERENCE \
@@ -827,6 +827,38 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0249_FLOAT_LATE_READ_FAILURE \
     -DBUILD_TIFF_FLOAT_TEST_COMMON \
     -DBUILD_TIFF_FLOAT_FAULT_TEST_COMMON \
+    -DBUILD_TEST_0250_MANAGED_RGB_BUILTIN \
+    -DBUILD_TEST_0251_MANAGED_RGB_LCMS2 \
+    -DBUILD_TEST_0252_MANAGED_RGB_COLORSYNC \
+    -DBUILD_TEST_0253_MANAGED_BLACK_BUILTIN \
+    -DBUILD_TEST_0254_MANAGED_BLACK_LCMS2 \
+    -DBUILD_TEST_0255_MANAGED_BLACK_COLORSYNC \
+    -DBUILD_TEST_0256_MANAGED_WHITE_BUILTIN \
+    -DBUILD_TEST_0257_MANAGED_WHITE_LCMS2 \
+    -DBUILD_TEST_0258_MANAGED_WHITE_COLORSYNC \
+    -DBUILD_TEST_0259_MANAGED_RGB_BE_O3 \
+    -DBUILD_TEST_0260_MANAGED_WHITE_BE_O4 \
+    -DBUILD_TEST_0261_MANAGED_TABLE_BUILTIN \
+    -DBUILD_TEST_0262_MANAGED_TABLE_LCMS2 \
+    -DBUILD_TEST_0263_MANAGED_RGB_LATE_BUILTIN \
+    -DBUILD_TEST_0264_MANAGED_BLACK_LATE_BUILTIN \
+    -DBUILD_TEST_0265_MANAGED_WHITE_LATE_COLORSYNC \
+    -DBUILD_TEST_0266_MANAGED_RGB_LATE_COLORSYNC \
+    -DBUILD_TEST_0267_MANAGED_RGB_NAN_LCMS2 \
+    -DBUILD_TEST_0268_MANAGED_BLACK_NAN_COLORSYNC \
+    -DBUILD_TEST_0269_MANAGED_EARLY_CONTROL \
+    -DBUILD_TEST_0270_MANAGED_RGB_INPUT_NAN \
+    -DBUILD_TEST_0271_MANAGED_BLACK_INPUT_INFINITY \
+    -DBUILD_TEST_0272_MANAGED_WHITE_INPUT_INFINITY \
+    -DBUILD_TEST_0273_MANAGED_GRAY_NATIVE_GAMMA \
+    -DBUILD_TEST_0274_MANAGED_GRAY_MIXED_DEFAULT \
+    -DBUILD_TEST_0275_MANAGED_GRAY_MIXED_NATIVE \
+    -DBUILD_TEST_0276_MANAGED_MIXED_BUILTIN \
+    -DBUILD_TEST_0277_MANAGED_MIXED_LCMS2 \
+    -DBUILD_TEST_0278_MANAGED_EXTENDED_LCMS2 \
+    -DBUILD_TEST_0279_MANAGED_DIMENSIONS_CONTROL \
+    -DBUILD_TIFF_MANAGED_TEST_COMMON \
+    -DBUILD_TIFF_MANAGED_FAULT_TEST_COMMON \
     -DBUILD_TIFF_LOGLUV_TEST_COMMON \
     -DBUILD_TIFF_LOGLUV_FAULT_TEST_COMMON \
     -DBUILD_LAB_LINEAR_TEST_COMMON \
@@ -1110,9 +1142,9 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0235_float_white_orientation4.c \
     loader/libtiff/0236_float_range_tags.c \
     loader/libtiff/0237_float_none_with_icc.c \
-    loader/libtiff/0238_float_rgb_invalid_icc.c \
-    loader/libtiff/0239_float_black_invalid_icc.c \
-    loader/libtiff/0240_float_white_mismatch_icc.c \
+    loader/libtiff/0238_float_rgb_invalid_source.c \
+    loader/libtiff/0239_float_black_invalid_source.c \
+    loader/libtiff/0240_float_white_mismatch_source.c \
     loader/libtiff/0241_float_dimensions_control.c \
     loader/libtiff/0242_float_gamma_target.c \
     loader/libtiff/0243_float_byte_preference.c \
@@ -1125,6 +1157,39 @@ test_runner_SOURCES = test_runner.c \
     loader/tiff_float_test_common.c \
     loader/tiff_float_test_common.h \
     loader/tiff_float_fault_test_common.c \
+    loader/libtiff/0250_managed_rgb_builtin.c \
+    loader/libtiff/0251_managed_rgb_lcms2.c \
+    loader/libtiff/0252_managed_rgb_colorsync.c \
+    loader/libtiff/0253_managed_black_builtin.c \
+    loader/libtiff/0254_managed_black_lcms2.c \
+    loader/libtiff/0255_managed_black_colorsync.c \
+    loader/libtiff/0256_managed_white_builtin.c \
+    loader/libtiff/0257_managed_white_lcms2.c \
+    loader/libtiff/0258_managed_white_colorsync.c \
+    loader/libtiff/0259_managed_rgb_be_o3.c \
+    loader/libtiff/0260_managed_white_be_o4.c \
+    loader/libtiff/0261_managed_table_builtin.c \
+    loader/libtiff/0262_managed_table_lcms2.c \
+    loader/libtiff/0263_managed_rgb_late_builtin.c \
+    loader/libtiff/0264_managed_black_late_builtin.c \
+    loader/libtiff/0265_managed_white_late_colorsync.c \
+    loader/libtiff/0266_managed_rgb_late_colorsync.c \
+    loader/libtiff/0267_managed_rgb_nan_lcms2.c \
+    loader/libtiff/0268_managed_black_nan_colorsync.c \
+    loader/libtiff/0269_managed_early_control.c \
+    loader/libtiff/0270_managed_rgb_input_nan.c \
+    loader/libtiff/0271_managed_black_input_infinity.c \
+    loader/libtiff/0272_managed_white_input_infinity.c \
+    loader/libtiff/0273_managed_gray_native_gamma.c \
+    loader/libtiff/0274_managed_gray_mixed_default.c \
+    loader/libtiff/0275_managed_gray_mixed_native.c \
+    loader/libtiff/0276_managed_mixed_builtin.c \
+    loader/libtiff/0277_managed_mixed_lcms2.c \
+    loader/libtiff/0278_managed_extended_lcms2.c \
+    loader/libtiff/0279_managed_dimensions_control.c \
+    loader/tiff_managed_test_common.c \
+    loader/tiff_managed_test_common.h \
+    loader/tiff_managed_fault_test_common.c \
     loader/tiff_logluv_test_common.c \
     loader/tiff_logluv_test_common.h \
     loader/tiff_logluv_fault_test_common.c \

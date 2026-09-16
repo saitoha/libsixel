@@ -158,9 +158,6 @@ def build(profile, cmyk):
         data = write_tiff(raw, photo, endian, orientation, rows, icc, metadata)
         outputs['tiff-float-' + name + '.tif'] = data
         frame_words = expected(raw, photo, orientation) if poison is None else None
-        if name.endswith(('invalid', 'mismatch')):
-            frame_words = [0 if rational(v)<0 else 0x3f800000
-                           if rational(v)>1 else v for v in frame_words]
         records.append(dict(name=name, photo=photo, endian=endian,
             orientation=orientation, rows=rows, raw=[f'{v:08x}' for v in raw],
             expected=[f'{v:08x}' for v in frame_words] if frame_words is not None else None,
@@ -186,15 +183,10 @@ def build(profile, cmyk):
         return ('static uint32_t const '+name+'[24] = {\n' +
                 ',\n'.join('    0x%08xu' % v for v in values) + '\n};\n')
 
-    # Failed managed conversion keeps the old post-polarity unit clamp.
-    clamped = lambda values: [0 if rational(v)<0 else 0x3f800000
-                             if rational(v)>1 else v for v in values]
     header = ('/* Generated offline: literal words and exact rational 1-x. */\n'
               '#ifndef SIXEL_TIFF_FLOAT_VALUES_H\n'
               '#define SIXEL_TIFF_FLOAT_VALUES_H\n#include <stdint.h>\n' +
-              array('tuf_words', WORDS) + array('tuf_white', WHITE) +
-              array('tuf_clamped', clamped(WORDS)) +
-              array('tuf_white_clamped', clamped(WHITE)) + '#endif\n')
+              array('tuf_words', WORDS) + array('tuf_white', WHITE) + '#endif\n')
     outputs['tiff-float.h'] = header.encode()
     record = dict(generator='tools/generate_tiff_float_tests.py',
         rounding='Exact Fraction quotient/remainder ties-to-even, separately checked by binary-search nearest-neighbor distances',

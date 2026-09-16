@@ -5078,7 +5078,7 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
     /*
      * A native apply may fail after writing a prefix. Publish only a complete
      * finite result, so the loader's format-specific fallback still sees
-     * original normalized samples. This does not retry another CMS transform.
+     * original source samples. This does not retry another CMS transform.
      */
     output = (float *)malloc(pixel_count * 3u * sizeof(float));
     if (output == NULL) {
