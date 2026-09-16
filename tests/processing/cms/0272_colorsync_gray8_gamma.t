@@ -1,0 +1,40 @@
+#!/bin/sh
+# Policy: docs/loader/color-management.md
+# Verify normalized device inputs with independent ICC precision intervals.
+set -eux
+result=0
+trace=$(SIXEL_LOADER_CMS_RENDERING_INTENT=relative! SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cms/0272_colorsync_gray8_gamma 2>&1) || result=$?
+test "$result" -ne 77 || {
+    echo "1..0 # SKIP ColorSync unavailable"
+    set -v
+    exit 0
+}
+echo "1..1"
+set -v
+test "$result" -eq 0 || {
+    echo "$trace" >&2
+    echo "not ok 1 - 0272_colorsync_gray8_gamma Gray8 values and buffer integrity"
+    exit 0
+}
+test "${trace#*"LSXCMS2|event=apply|engine=colorsync|path=external|src=1|dst=4|ok=1"}" != "$trace" || {
+    echo "$trace" >&2
+    echo "not ok 1 - ColorSync transform did not apply"
+    exit 0
+}
+test "${trace#*"LSXCMS2|event=source-promotion|engine=colorsync|src=1|dst=4|via=float32"}" != "$trace" || {
+    echo "$trace" >&2
+    echo "not ok 1 - Gray8 source was not promoted"
+    exit 0
+}
+test "${trace#*"LSXCMS1|intent_order=relative|exclusive=1"}" != "$trace" || {
+    echo "$trace" >&2
+    echo "not ok 1 - relative intent was not selected"
+    exit 0
+}
+test "${trace#*"values-and-guards-verified"}" != "$trace" || {
+    echo "$trace" >&2
+    echo "not ok 1 - independent values were not checked"
+    exit 0
+}
+echo "ok 1 - 0272_colorsync_gray8_gamma Gray8 values and buffer integrity"
+exit 0

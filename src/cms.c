@@ -3840,7 +3840,8 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         }
 
         if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
-            (transform->src_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
+            (transform->src_format == SIXEL_CMS_PIXELFORMAT_GRAY_8 ||
+             transform->src_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
              transform->src_format == SIXEL_CMS_PIXELFORMAT_RGBA_8 ||
              transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_8 ||
              transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_16)) {

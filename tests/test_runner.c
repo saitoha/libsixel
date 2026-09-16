@@ -845,6 +845,10 @@ int test_cms_0266(int argc, char **argv);
 int test_cms_0267(int argc, char **argv);
 int test_cms_0268(int argc, char **argv);
 int test_cms_0269(int argc, char **argv);
+int test_cms_0270(int argc, char **argv);
+int test_cms_0271(int argc, char **argv);
+int test_cms_0272(int argc, char **argv);
+int test_cms_0273(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -1760,6 +1764,14 @@ static test_entry_t const test_entries[] = {
       test_cms_0268 },
     { "cms/0269_lcms_gray_float_gamma_alias_reject",
       test_cms_0269 },
+    { "cms/0270_colorsync_gray8_linear",
+      test_cms_0270 },
+    { "cms/0271_colorsync_gray8_linear_alias",
+      test_cms_0271 },
+    { "cms/0272_colorsync_gray8_gamma",
+      test_cms_0272 },
+    { "cms/0273_colorsync_gray8_gamma_alias",
+      test_cms_0273 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

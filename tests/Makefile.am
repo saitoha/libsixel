@@ -671,6 +671,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0267_LCMS_CMYK_WORD_GAMMA_ALIAS_REJECT \
     -DBUILD_TEST_0268_LCMS_GRAY_FLOAT_LINEAR_ALIAS_REJECT \
     -DBUILD_TEST_0269_LCMS_GRAY_FLOAT_GAMMA_ALIAS_REJECT \
+    -DBUILD_TEST_0270_COLORSYNC_GRAY8_LINEAR \
+    -DBUILD_TEST_0271_COLORSYNC_GRAY8_LINEAR_ALIAS \
+    -DBUILD_TEST_0272_COLORSYNC_GRAY8_GAMMA \
+    -DBUILD_TEST_0273_COLORSYNC_GRAY8_GAMMA_ALIAS \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
     -DBUILD_TEST_0187_COREGRAPHICS_PNG \
     -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -802,6 +806,11 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0268_lcms_gray_float_linear_alias_reject.c \
     processing/cms/0269_lcms_gray_float_gamma_alias_reject.c \
     processing/cms/lcms_expanding_alias_common.h \
+    processing/cms/0270_colorsync_gray8_linear.c \
+    processing/cms/0271_colorsync_gray8_linear_alias.c \
+    processing/cms/0272_colorsync_gray8_gamma.c \
+    processing/cms/0273_colorsync_gray8_gamma_alias.c \
+    processing/cms/colorsync_gray8_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \
