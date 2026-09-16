@@ -31,6 +31,7 @@ EXTRA_DIST = libsixel-config.in \
     generate_tiff_managed_fixtures.py \
     generate_tiff_byte_fixtures.py \
     generate_tiff_alpha_fixtures.py \
+    generate_tiff_legacy_fixtures.py \
     tiff_managed_reference.py \
              generate_lcms_input_tests.py \
              generate_colorsync_lab_tests.py \

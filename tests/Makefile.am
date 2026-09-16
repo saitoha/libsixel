@@ -961,6 +961,24 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0363_ALPHA16_PLANE_ALLOCATION_FAILURE \
     -DBUILD_TEST_0364_ALPHA16_LATE_SCANLINE_FAILURE \
     -DBUILD_TEST_0365_ALPHA_FLOAT32_REJECTED \
+    -DBUILD_TEST_0366_LEGACY_BUILTIN_SUCCESS \
+    -DBUILD_TEST_0367_LEGACY_LCMS2_SUCCESS \
+    -DBUILD_TEST_0368_LEGACY_COLORSYNC_SUCCESS \
+    -DBUILD_TEST_0369_LEGACY_RGB_BUILTIN_FAILURE \
+    -DBUILD_TEST_0370_LEGACY_RGB_LCMS2_FAILURE \
+    -DBUILD_TEST_0371_LEGACY_RGB_COLORSYNC_FAILURE \
+    -DBUILD_TEST_0372_LEGACY_GRAY_BUILTIN_FAILURE \
+    -DBUILD_TEST_0373_LEGACY_GRAY_LCMS2_FAILURE \
+    -DBUILD_TEST_0374_LEGACY_GRAY_COLORSYNC_FAILURE \
+    -DBUILD_TEST_0375_LEGACY_RGB_PROFILE_GUARD \
+    -DBUILD_TEST_0376_LEGACY_GRAY_PROFILE_GUARD \
+    -DBUILD_TEST_0377_LEGACY_RGB_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0378_LEGACY_GRAY_INPUT_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0379_LEGACY_GRAY_OUTPUT_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0380_LEGACY_RGB_TRANSFORM_FAILURE \
+    -DBUILD_TEST_0381_LEGACY_GRAY_TRANSFORM_FAILURE \
+    -DBUILD_TEST_0382_LEGACY_ALPHA_PRESERVED \
+    -DBUILD_TIFF_LEGACY_TEST_COMMON \
     -DBUILD_TIFF_ALPHA_TEST_COMMON \
     -DBUILD_TIFF_ALPHA_FAULT_TEST_COMMON \
     -DBUILD_TIFF_BYTE_TEST_COMMON \
@@ -1400,6 +1418,25 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0363_alpha16_plane_allocation_failure.c \
     loader/libtiff/0364_alpha16_late_scanline_failure.c \
     loader/libtiff/0365_alpha_float32_rejected.c \
+    loader/libtiff/0366_legacy_builtin_success.c \
+    loader/libtiff/0367_legacy_lcms2_success.c \
+    loader/libtiff/0368_legacy_colorsync_success.c \
+    loader/libtiff/0369_legacy_rgb_builtin_failure.c \
+    loader/libtiff/0370_legacy_rgb_lcms2_failure.c \
+    loader/libtiff/0371_legacy_rgb_colorsync_failure.c \
+    loader/libtiff/0372_legacy_gray_builtin_failure.c \
+    loader/libtiff/0373_legacy_gray_lcms2_failure.c \
+    loader/libtiff/0374_legacy_gray_colorsync_failure.c \
+    loader/libtiff/0375_legacy_rgb_profile_guard.c \
+    loader/libtiff/0376_legacy_gray_profile_guard.c \
+    loader/libtiff/0377_legacy_rgb_allocation_failure.c \
+    loader/libtiff/0378_legacy_gray_input_allocation_failure.c \
+    loader/libtiff/0379_legacy_gray_output_allocation_failure.c \
+    loader/libtiff/0380_legacy_rgb_transform_failure.c \
+    loader/libtiff/0381_legacy_gray_transform_failure.c \
+    loader/libtiff/0382_legacy_alpha_preserved.c \
+    loader/tiff_legacy_test_common.c \
+    loader/tiff_legacy_test_common.h \
     loader/tiff_alpha_test_common.c \
     loader/tiff_alpha_test_common.h \
     loader/tiff_alpha_fault_test_common.c \

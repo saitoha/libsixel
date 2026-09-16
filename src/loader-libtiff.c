@@ -99,6 +99,7 @@ typedef struct tiff_memory_chunk {
  *
  * The alpha channel is preserved while only color channels are transformed.
  * Invalid or unsupported profiles are ignored to preserve compatibility.
+ * Optional CMS failures retain the complete decoded source, including alpha.
  */
 static void
 tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
@@ -115,6 +116,7 @@ tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
     size_t pixel_count;
     unsigned char *gray_in;
     unsigned char *rgb_out;
+    unsigned char *rgba_out;
     size_t i;
     int treat_as_gray;
     int treat_as_rgb;
@@ -126,12 +128,20 @@ tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
     pixel_count = 0;
     gray_in = NULL;
     rgb_out = NULL;
+    rgba_out = NULL;
     i = 0u;
     treat_as_gray = 0;
     treat_as_rgb = 0;
 
     if (pixels == NULL || width <= 0 || height <= 0 ||
         profile == NULL || profile_length == 0u) {
+        return;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / 4u) {
         return;
     }
 
@@ -145,7 +155,6 @@ tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
         goto cleanup;
     }
 
-    pixel_count = (size_t)width * (size_t)height;
     switch (photometric) {
     case PHOTOMETRIC_MINISWHITE:
     case PHOTOMETRIC_MINISBLACK:
@@ -180,7 +189,11 @@ tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
         if (transform == NULL) {
             goto cleanup;
         }
-        sixel_cms_do_transform(transform, gray_in, rgb_out, pixel_count);
+        /* A failed apply may have written only a prefix of this scratch. */
+        if (!sixel_cms_do_transform(transform, gray_in, rgb_out,
+                                    pixel_count)) {
+            goto cleanup;
+        }
         for (i = 0u; i < pixel_count; ++i) {
             pixels[i * 4u + 0u] = rgb_out[i * 3u + 0u];
             pixels[i * 4u + 1u] = rgb_out[i * 3u + 1u];
@@ -190,6 +203,13 @@ tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
         if (src_colorspace != SIXEL_CMS_COLORSPACE_RGB) {
             goto cleanup;
         }
+        /* Keep the existing in-place CMS call inside private storage so a
+         * partial failure cannot mix source and transformed caller pixels. */
+        rgba_out = (unsigned char *)malloc(pixel_count * 4u);
+        if (rgba_out == NULL) {
+            goto cleanup;
+        }
+        memcpy(rgba_out, pixels, pixel_count * 4u);
         transform = sixel_cms_create_transform(src_profile,
                                        SIXEL_CMS_PIXELFORMAT_RGBA_8,
                                        dst_profile,
@@ -198,10 +218,23 @@ tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
         if (transform == NULL) {
             goto cleanup;
         }
-        sixel_cms_do_transform(transform, pixels, pixels, pixel_count);
+        if (!sixel_cms_do_transform(transform, rgba_out, rgba_out,
+                                    pixel_count)) {
+            goto cleanup;
+        }
+        /* Only color results are committed. Preserve original alpha even
+         * if a successful backend disregards COPY_ALPHA in its scratch. */
+        for (i = 0u; i < pixel_count; ++i) {
+            pixels[i * 4u + 0u] = rgba_out[i * 4u + 0u];
+            pixels[i * 4u + 1u] = rgba_out[i * 4u + 1u];
+            pixels[i * 4u + 2u] = rgba_out[i * 4u + 2u];
+        }
     }
 
 cleanup:
+    if (rgba_out != NULL) {
+        free(rgba_out);
+    }
     if (rgb_out != NULL) {
         free(rgb_out);
     }
@@ -266,6 +299,9 @@ tiff_convert_embedded_icc_to_srgb_nolcms(unsigned char *pixels,
                                          uint32_t profile_length,
                                          uint16_t photometric)
 {
+    sixel_cms_profile_t *source;
+    sixel_cms_color_space_t source_space;
+    sixel_cms_color_space_t expected;
     unsigned char *rgb_pixels;
     size_t pixel_count;
     size_t rgb_bytes;
@@ -274,6 +310,9 @@ tiff_convert_embedded_icc_to_srgb_nolcms(unsigned char *pixels,
     size_t dst_offset;
     int converted;
 
+    source = NULL;
+    source_space = SIXEL_CMS_COLORSPACE_UNKNOWN;
+    expected = SIXEL_CMS_COLORSPACE_RGB;
     rgb_pixels = NULL;
     pixel_count = 0u;
     rgb_bytes = 0u;
@@ -299,6 +338,22 @@ tiff_convert_embedded_icc_to_srgb_nolcms(unsigned char *pixels,
         return;
     }
     rgb_bytes = pixel_count * 3u;
+
+    /* Expanded Gray bytes still describe a Gray source. Match the native
+     * helper's source/profile guard before using the generic RGB buffer. */
+    if (photometric == PHOTOMETRIC_MINISWHITE ||
+        photometric == PHOTOMETRIC_MINISBLACK) {
+        expected = SIXEL_CMS_COLORSPACE_GRAY;
+    }
+    source = sixel_cms_open_profile_from_mem(profile, profile_length);
+    if (source == NULL) {
+        return;
+    }
+    source_space = sixel_cms_get_color_space(source);
+    sixel_cms_close_profile(source);
+    if (source_space != expected) {
+        return;
+    }
 
     rgb_pixels = (unsigned char *)malloc(rgb_bytes);
     if (rgb_pixels == NULL) {
