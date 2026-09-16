@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/diagnostics.md
 # Preserve the img2sixel diagnostic for an invalid thread token.
 
 set -eux

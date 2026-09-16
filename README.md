@@ -582,7 +582,7 @@ Options:
                            selects the last ID.
 -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
                            [[deprecated]] accepted but ignored.
-                           COMPLEXIONSCORE must be 1 or more.
+                           The ignored argument is not numerically validated.
 -g, --ignore-delay         render GIF animation without delay
 -S, --static               render animated GIF as a static image
 -d DIFFUSION, --diffusion=DIFFUSION
@@ -888,10 +888,7 @@ safe distance.
   set this to 0 to allow the OS to migrate those jobs.
 * `SIXEL_LOG_PATH` writes a JSON timeline log that can be consumed
   by `tools/timeline.py`; the log is silent when unset.
-* `SIXEL_LOG_LINES` controls per-line logging when
-  `SIXEL_LOG_PATH` is set.  Use 0 to suppress line events, or a
-  positive integer to log every Nth line (unset logs every line and may be
-  heavy).
+* `SIXEL_LOG_LINES` controls per-line logging when `SIXEL_LOG_PATH` is set. Unset or empty disables line events; use a positive integer to log every Nth line. Legacy zero, negative, and invalid values enable every-line logging, which can be expensive.
 
 The *certlut* policy divides the RGB cube into 64×64×64 top level
 cells (6 bits per channel).  Each top level cell spans a 4×4×4 region;

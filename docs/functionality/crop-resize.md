@@ -158,6 +158,8 @@ The broader storage contract and main-pipeline precision effects are described i
 
 ## Relationship with the SIMD policy
 
+The [runtime policy guide](../cli/runtime-policy.md) covers the complete `-j` interface, its encoder/decoder scopes, scheduling thresholds, environment precedence, and distinction from the thread budget.
+
 The base of `-j POLICY[:KEY=VALUE]` selects a runtime SIMD ceiling: `auto`, `none`/`scalar`, `sse2`, `avx`, or `neon`. The `resize_precision` suboption selects the semantic policy path. The two decisions are related because byte and float32 filtered resamplers have eligible scalar and SIMD implementations, but neither decision replaces the other.
 
 In the measured default-gamma path:

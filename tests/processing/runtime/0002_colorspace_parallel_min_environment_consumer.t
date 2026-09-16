@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/runtime-policy.md
 # Verify the colorspace threshold environment reaches its consumer.
 
 set -eux

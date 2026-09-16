@@ -1,5 +1,7 @@
 # Threading
 
+For the user-facing scheduling/SIMD controls and trace-capture workflow, see [runtime execution policy](../cli/runtime-policy.md) and [diagnostics and logs](../cli/diagnostics.md).
+
 libsixel uses several short-lived worker groups rather than one global thread
 pool. Start with the terminology and execution model before interpreting a
 timeline or changing a thread-count policy.

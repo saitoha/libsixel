@@ -2,6 +2,8 @@
 
 ## Purpose
 
+For the compiled palette families and the distinct `-e`/`-i` monochrome output mode, see [built-in palettes and monochrome output](fixed-palettes.md).
+
 `img2sixel` normally constructs a palette from each input image. The external-palette options separate palette design from palette application:
 
 ```text

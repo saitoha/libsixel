@@ -659,6 +659,20 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/functionality/terminal-macros.md \
 	docs/functionality/animation.md \
 	docs/functionality/drcs.md \
+	docs/functionality/fixed-palettes.md \
+	docs/cli/clipboard.md \
+	docs/cli/diagnostics.md \
+	docs/cli/runtime-policy.md \
+	docs/loader/libjpeg.md \
+	docs/loader/libwebp.md \
+	docs/loader/libtiff.md \
+	docs/loader/librsvg.md \
+	docs/loader/wic.md \
+	docs/loader/coregraphics.md \
+	docs/loader/gdk-pixbuf2.md \
+	docs/loader/gd.md \
+	docs/loader/quicklook.md \
+	docs/loader/gnome-thumbnailer.md \
 	docs/functionality/or-mode/grid-example/input.png \
 	docs/functionality/or-mode/grid-example/normal.six \
 	docs/functionality/or-mode/grid-example/or.six \

@@ -31,6 +31,8 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Functionality
 
+- [Built-in palettes and monochrome output](functionality/fixed-palettes.md) explains `-b`, `-e`, `-i`, palette families, foreground-mask output, construction bypass, and downstream controls.
+
 - [Functional overview](functionality/overview.md) describes the product
   capabilities, major components, data flow, and architectural boundaries.
 - [Encoding pipeline](functionality/encoding-pipeline.md) connects loading,
@@ -75,6 +77,10 @@ are grouped by domain so each area can grow without overloading one document.
 
 ## Image loading
 
+- Codec adapters: [libjpeg](loader/libjpeg.md), [libwebp](loader/libwebp.md), [libtiff](loader/libtiff.md), and [librsvg](loader/librsvg.md) describe accepted routes, precision, metadata, animation/rasterization boundaries, and backend-specific controls.
+- Framework adapters: [WIC](loader/wic.md), [CoreGraphics/ImageIO](loader/coregraphics.md), [GdkPixbuf](loader/gdk-pixbuf2.md), and [GD](loader/gd.md) distinguish host/library capabilities from libsixel integration and fallback behavior.
+- Preview adapters: [Quick Look](loader/quicklook.md) and [Freedesktop thumbnailers](loader/gnome-thumbnailer.md) explain provider discovery, raster resolution, external execution, and metadata boundaries.
+
 - [Network access](loader/network-access.md) explains img2sixel's libcurl, libfetch, WinHTTP, and Emscripten bindings, build-dependent URL schemes and TLS support, backend selection, and the behavior and risks of `-k` certificate-verification bypass.
 - [Image loader architecture](loader/README.md) explains the compiled loader registry, `-L` chain construction, predicate and fallback control flow, typed frame outputs, backend inventory, and quality/security tradeoffs.
 - [libpng image loader](loader/libpng.md) separates desired PNG/APNG behavior from current implementation gaps, then documents format support, precision, CMS, alpha/background handling, animation, and test coverage.
@@ -95,6 +101,10 @@ are grouped by domain so each area can grow without overloading one document.
 - [PNG writer](writers/png.md) defines the libpng and builtin writer backends, indexed and direct 8-bit output, and the post-SIXEL PNG snapshot path used by `img2sixel`.
 
 ## Command-line interface
+
+- [Clipboard input and output](cli/clipboard.md) explains `-y`, pseudo targets, system/file backends, platform payloads, and headless workflows.
+- [Diagnostics and logs](cli/diagnostics.md) explains `-x`, `-J`, `-v`, code reporting, trace topics, and timeline capture and interpretation.
+- [Runtime execution policy](cli/runtime-policy.md) explains `-j`, SIMD ceilings, scheduling thresholds, resize precision, process scope, and encoder/decoder differences.
 
 - [CLI design policy](cli/design-policy.md) defines option design,
   compatibility, parsing, diagnostics, and documentation synchronization.

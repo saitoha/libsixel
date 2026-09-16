@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/diagnostics.md
 # Verify the timeline log path option matches its environment variable.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/runtime-policy.md
 # Verify the resize precision environment reaches the planner.
 
 set -eux

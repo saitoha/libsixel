@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/fixed-palettes.md
 # Verify monochrome SIXEL mode does not emit palette slot definitions.
 set -eux
 

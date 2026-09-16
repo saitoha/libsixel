@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/clipboard.md
 # Pin the legacy file/fake clipboard backend environment spellings.
 
 set -eux

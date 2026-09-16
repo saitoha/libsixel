@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/fixed-palettes.md
 # Verify explicit 5bit lookup reaches built-in palette application.
 set -eux
 

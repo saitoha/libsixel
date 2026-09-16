@@ -151,8 +151,9 @@ canvas dimensions matter.
 
 Repeat counts are untrusted input. Implementations must detect numeric overflow
 and apply documented image-size and resource limits before expanding a run.
-Some historical devices limit the repeat argument to 255; libsixel exposes a
-compatibility option for that restriction.
+Some historical devices limit the repeat argument to 255. `img2sixel -R` / `--gri-limit` splits longer runs so that each emitted repeat argument is at most 255. For example, a run otherwise represented by `!510~` can become `!255~!255~`. A short remainder may be written as literal data characters instead of another repeat command. The image dimensions and painted masks are unchanged, although the byte stream can grow.
+
+The CLI does not impose this restriction by default. `-R` is an explicit encoder compatibility setting, not receiver capability detection, a 255-pixel image-width limit, or a change to the decoder's input resource limits. It is independent of `-7`/`-8`, which select the DCS/ST control-byte representation. In the C output API, `sixel_output_set_gri_arg_limit()` selects the writer policy explicitly. The run-splitting implementation is in [`encoder-core-encode.c`](../src/encoder-core-encode.c).
 
 #### Set Raster Attributes: `"`
 

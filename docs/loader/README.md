@@ -71,17 +71,17 @@ The registry order below is also the automatic priority order for components pre
 | Loader name | Availability | Primary role | Representative output character |
 | --- | --- | --- | --- |
 | [`libpng`](libpng.md) | With libpng | PNG and APNG | Indexed or RGB/RGBA; static 16-bit and CMS paths can produce float32. APNG has a separate RGBA8 pipeline. |
-| `libjpeg` | With libjpeg | JPEG, including library-supported high-depth variants | RGB float32 on precision-preserving paths; CMS may produce a typed target colorspace. |
-| `libwebp` | With libwebp | Static and animated WebP | RGB/RGBA or indexed animation frames; float32 after supported color management. |
-| `libtiff` | With libtiff | TIFF | RGB/RGBA or float32, including source- or CMS-derived typed colorspaces. |
-| `librsvg` | With librsvg | SVG and permitted SVGZ/resource modes | Rasterized gamma RGB or RGBA frames. |
+| [`libjpeg`](libjpeg.md) | With libjpeg | JPEG, including library-supported high-depth variants | RGB float32 on precision-preserving paths; CMS may produce a typed target colorspace. |
+| [`libwebp`](libwebp.md) | With libwebp | Static and animated WebP | RGB/RGBA or indexed animation frames; float32 after supported color management. |
+| [`libtiff`](libtiff.md) | With libtiff | TIFF | RGB/RGBA or float32, including source- or CMS-derived typed colorspaces. |
+| [`librsvg`](librsvg.md) | With librsvg | SVG and permitted SVGZ/resource modes | Rasterized gamma RGB or RGBA frames. |
 | [`builtin`](builtin.md) | Always | In-tree SIXEL, PNM/PAM, GIF, WebP, PNG/APNG, JPEG, HDR, PSD, BMP, TGA, and PIC paths | Indexed, byte RGB/RGBA, generic float32, or typed float32 depending on format and policy. |
-| `wic` | Windows Imaging Component build | Windows codecs and containers, including ICO selection | Framework-decoded RGBA frames followed by common normalization. |
-| `coregraphics` | CoreGraphics/ImageIO build | Apple platform image sources | Indexed, byte RGB, or linear float32 according to source and conversion path. |
-| `gdk-pixbuf2` | With GdkPixbuf | Formats supplied by installed GdkPixbuf modules | RGB or linear float32 frames after loader normalization. |
-| `gd` | With GD | The formats enabled in the linked GD library | Indexed, RGB, or linear float32 according to source and conversion path. |
-| `quicklook` | CoreGraphics plus Quick Look | Apple preview providers for otherwise unsupported documents | Rasterized gamma RGB/RGBA preview frames. |
-| `gnome-thumbnailer` | Freedesktop thumbnailing build; explicit only | Desktop thumbnailer definitions and external thumbnailer commands | The returned PNG is decoded through builtin, so its final type follows that path. |
+| [`wic`](wic.md) | Windows Imaging Component build | Windows codecs and containers, including ICO selection | Framework-decoded RGBA frames followed by common normalization. |
+| [`coregraphics`](coregraphics.md) | CoreGraphics/ImageIO build | Apple platform image sources | Indexed, byte RGB, or linear float32 according to source and conversion path. |
+| [`gdk-pixbuf2`](gdk-pixbuf2.md) | With GdkPixbuf | Formats supplied by installed GdkPixbuf modules | RGB or linear float32 frames after loader normalization. |
+| [`gd`](gd.md) | With GD | The formats enabled in the linked GD library | Indexed, RGB, or linear float32 according to source and conversion path. |
+| [`quicklook`](quicklook.md) | CoreGraphics plus Quick Look | Apple preview providers for otherwise unsupported documents | Rasterized gamma RGB/RGBA preview frames. |
+| [`gnome-thumbnailer`](gnome-thumbnailer.md) | Freedesktop thumbnailing build; explicit only | Desktop thumbnailer definitions and external thumbnailer commands | The returned PNG is decoded through builtin, so its final type follows that path. |
 
 Framework and plugin loaders inherit part of their effective format support from the host. A build-time name therefore identifies a component, not a permanent promise that every installation recognizes the same extensions.
 
@@ -109,6 +109,10 @@ Those benefits do not make builtin inherently safer. Every in-tree parser, decom
 ## Backend documentation boundaries
 
 The shared manager contract stays here. Each detailed backend document should separately specify its recognized formats, depth and colorspace behavior, implementation of shared format metadata policy, animation model, alpha representation, suboptions, fallback statuses, host dependencies, security considerations, and implementation/test landmarks. The current detailed backend references are:
+
+- Codec adapters: [libjpeg](libjpeg.md), [libwebp](libwebp.md), [libtiff](libtiff.md), and [librsvg](librsvg.md).
+- Framework adapters: [WIC](wic.md), [CoreGraphics/ImageIO](coregraphics.md), [GdkPixbuf](gdk-pixbuf2.md), and [GD](gd.md).
+- Preview adapters: [Quick Look](quicklook.md) and [Freedesktop thumbnailers](gnome-thumbnailer.md).
 
 - [libpng Image Loader](libpng.md), including alpha/background policy, source precision, shared static/APNG CMS, and input validation.
 - [Builtin Image Loader](builtin.md), including its stb_image lineage and format-specific extraction history.

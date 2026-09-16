@@ -120,20 +120,26 @@ corresponding profile defaults.
 
 The independent [`-F` final merge policy](merge-policy.md) explains the oversplit size, Ward reduction criterion, optional Lloyd polishing, quantizer interactions, and measured cost and quality. It is a post-solver policy even when a `-Q` profile supplies its defaults.
 
-If splits remain reasonably balanced, each occupied histogram cell
-participates in approximately `log K` partition levels, giving usual
-`O(S log K)` splitting work. Repeatedly peeling off a very small box can reach
-`O(S K)`. Histogram clearing and ingestion add `Theta(N + B)`, where `B` is the
-number of addressable histogram cells. PCA selection is normally linear per
-box, but a fallback may sort, so the balanced bound is not a hard bound for
-every path.
+If splits remain reasonably balanced, each occupied histogram cell participates in approximately `log K` partition levels, giving usual `O(S log K)` splitting work. Repeatedly peeling off a very small box can reach `O(S K)`. Histogram clearing and ingestion add `Theta(N + B)`, where `B` is the number of addressable histogram cells. PCA selection is normally linear per box, but a fallback may sort, so the balanced bound is not a hard bound for every path.
 
-Median cut is deterministic for fixed inputs and settings, but it has no
-general guarantee of minimizing squared error or maximum radius. Its appeal is
-bounded work, balanced coverage of occupied regions, and compatibility with
-the quantizer descended from Netpbm. The original algorithm and design tradeoff
-are described by Heckbert in
-[Color Image Quantization for Frame Buffer Display](https://publications.ri.cmu.edu/color-image-quantization-for-frame-buffer-display).
+Median cut is deterministic for fixed inputs and settings, but it has no general guarantee of minimizing squared error or maximum radius. Its appeal is bounded work, balanced coverage of occupied regions, and compatibility with the quantizer descended from Netpbm. The original algorithm and design tradeoff are described by Heckbert in [Color Image Quantization for Frame Buffer Display](https://publications.ri.cmu.edu/color-image-quantization-for-frame-buffer-display).
+
+### Explicit split and representative controls: `-f` and `-s`
+
+`-f` / `--find-largest` selects the Heckbert box-splitting method. `norm` compares channel ranges, `lum` uses luminance-oriented weighting, and `pca` estimates the first principal direction and splits around a weighted median. `auto` defers to automatic/default resolution; it is not a fourth mathematical split method. An explicit split setting is retained when a Heckbert profile supplies defaults. Degenerate partitions can trigger the implementation's fallback directions, so selecting PCA does not guarantee that every individual split uses a principal axis.
+
+`-s` / `--select-color` selects the representative of a completed box: `center` uses the box center, `average` averages its represented colors, and `histogram` weights them by their occurrence counts. `auto` resolves to the default center representative. The distinction between `average` and `histogram` matters when a rare color and a frequent color occupy the same box.
+
+```sh
+img2sixel -Q heckbert:profile=compat -f pca -s histogram \
+    -p 32 -F none image.png
+```
+
+These are palette-construction controls, not alternatives to nearest-color lookup or diffusion. They can act with the default requested palette size; an explicit `-p` is not required to enable construction. They do not configure the objectives of K-means, K-medoids, or K-center, and fixed palettes bypass their consumer. A subsequent merge/refinement stage can change the representatives, so keep `-F` fixed when comparing `-s`. Repeating either selector replaces its earlier value.
+
+### Deprecated complexion score
+
+`-C` / `--complexion-score` remains accepted for compatibility, but the current encoder ignores its argument. It does not apply a skin-tone preference, affect palette distance, or replace a color-space policy. The setter does not numerically validate the ignored value. New commands should express their actual palette, color-space, and lookup choices instead.
 
 ## `kmeans`: centroid optimization
 
@@ -636,6 +642,8 @@ runs. Durable replacement results should retain the documented 2/9 protocol
 and must pass `tools/check_quantize_model_measurements.py`.
 
 ## Bypassing construction
+
+See [built-in palettes and monochrome output](fixed-palettes.md) for the palette families, `-e`/`-i` foreground-mask semantics, and controls that still act after construction is bypassed.
 
 Monochrome, built-in palette, and palette-map modes supply palette entries
 instead of deriving them from the source image. They therefore bypass or

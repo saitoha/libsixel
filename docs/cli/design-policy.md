@@ -221,6 +221,8 @@ The [CLI-program abort-trace policy](abort-trace.md) applies those rules to othe
 
 ### Pseudo targets
 
+The [clipboard guide](clipboard.md) gives converter commands, system/file backend selection, format negotiation boundaries, and platform-specific behavior.
+
 `clipboard:` is a pseudo path accepted wherever a converter accepts a supported input or output target. As an input it reads a compatible image or text payload from the selected clipboard backend; as an output it publishes the generated payload. A documented format prefix can be combined with it, for example `png:clipboard:`, to select the clipboard representation.
 
 The marker must terminate the operand and is interpreted as a pseudo target rather than a filesystem path or remote URL. It is distinct from the `-` standard-stream sentinel. Clipboard backend policy is configured by `-y` / `--clipboard-policy`, its typed suboptions, and corresponding environment variables. An explicit marker avoids probing the filesystem or guessing from content where an output should go.

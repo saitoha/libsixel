@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/runtime-policy.md
 # Verify the SIMD level environment reaches CPU dispatch.
 
 set -eux

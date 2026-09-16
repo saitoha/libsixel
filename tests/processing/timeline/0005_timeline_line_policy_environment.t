@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/diagnostics.md
 # Pin the legacy SIXEL_LOG_LINES parsing contract.
 
 set -eux

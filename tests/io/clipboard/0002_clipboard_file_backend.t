@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/clipboard.md
 # TAP test verifying the file-backed clipboard backend used by local tests.
 # Policy: docs/cli/design-policy.md
 
