@@ -488,6 +488,7 @@ EXTRA_DIST = libsixel-config.in \
              generate_lcms_input_tests.py \
              generate_colorsync_lab_tests.py \
              generate_colorsync_gray_tests.py \
+             generate_colorsync_channel_tests.py \
              generate_builtin_device_tests.py \
              generate_lcms_alias_tests.py \
              verify_jpeg_color_source.c \

@@ -211,7 +211,11 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
 /* LCMS rejects exact src == dst expansion from GRAY_8, RGB_8, RGBA_8,
  * CMYK_8, CMYK_16 or GRAY_F32 to RGB_F32 before any write, even for one
  * pixel. Separate buffers and the CMYK_F32/LAB_F32 alias adapters remain
- * supported. This rule does not define partial-overlap behavior. */
+ * supported. This rule does not define partial-overlap behavior.
+ * ColorSync integer-promotion and LAB_F32 adapters to RGB_F32 require
+ * matching native ICC source colorant counts, excluding RGBA alpha. An
+ * unavailable or unequal native count fails before any source/output write;
+ * matching UNKNOWN profile domains keep their native conversion paths. */
 SIXEL_INTERNAL_API int
 sixel_cms_do_transform(sixel_cms_transform_t const *transform,
                        void const *src,

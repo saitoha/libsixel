@@ -637,6 +637,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0195_LCMS_CMYK32_MAIN \
     -DBUILD_TEST_0196_LCMS_CMYK32_MISSING \
     -DBUILD_TEST_0197_LCMS_CMYK32_LAYERS \
+    -DBUILD_TEST_0198_COLORSYNC_CMYK8_CHANNEL_FALLBACK \
+    -DBUILD_TEST_0199_COLORSYNC_CMYK16_CHANNEL_FALLBACK \
     -DBUILD_TEST_0172_LCMS_LAB_FRAME \
     -DBUILD_TEST_0173_COLORSYNC_LAB_FRAME \
     -DBUILD_TEST_0238_LCMS_CMYK_LINEAR \
@@ -675,6 +677,20 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0271_COLORSYNC_GRAY8_LINEAR_ALIAS \
     -DBUILD_TEST_0272_COLORSYNC_GRAY8_GAMMA \
     -DBUILD_TEST_0273_COLORSYNC_GRAY8_GAMMA_ALIAS \
+    -DBUILD_TEST_0274_COLORSYNC_GRAY8_CHANNELS_LINEAR \
+    -DBUILD_TEST_0275_COLORSYNC_GRAY8_CHANNELS_GAMMA \
+    -DBUILD_TEST_0276_COLORSYNC_RGB8_CHANNELS_LINEAR \
+    -DBUILD_TEST_0277_COLORSYNC_RGB8_CHANNELS_GAMMA \
+    -DBUILD_TEST_0278_COLORSYNC_RGBA8_CHANNELS_LINEAR \
+    -DBUILD_TEST_0279_COLORSYNC_RGBA8_CHANNELS_GAMMA \
+    -DBUILD_TEST_0280_COLORSYNC_CMYK8_CHANNELS_LINEAR \
+    -DBUILD_TEST_0281_COLORSYNC_CMYK8_CHANNELS_GAMMA \
+    -DBUILD_TEST_0282_COLORSYNC_CMYK16_CHANNELS_LINEAR \
+    -DBUILD_TEST_0283_COLORSYNC_CMYK16_CHANNELS_GAMMA \
+    -DBUILD_TEST_0284_COLORSYNC_LAB_FLOAT_CHANNELS_LINEAR \
+    -DBUILD_TEST_0285_COLORSYNC_LAB_FLOAT_CHANNELS_GAMMA \
+    -DBUILD_TEST_0286_COLORSYNC_CHANNELS_SCOPE_LINEAR \
+    -DBUILD_TEST_0287_COLORSYNC_CHANNELS_SCOPE_GAMMA \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
     -DBUILD_TEST_0187_COREGRAPHICS_PNG \
     -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -767,9 +783,12 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0195_lcms_cmyk32_main.c \
     loader/builtin/0196_lcms_cmyk32_missing.c \
     loader/builtin/0197_lcms_cmyk32_layers.c \
+    loader/builtin/0198_colorsync_cmyk8_channel_fallback.c \
+    loader/builtin/0199_colorsync_cmyk16_channel_fallback.c \
     loader/libtiff/0172_lcms_lab_frame.c \
     loader/libtiff/0173_colorsync_lab_frame.c \
     loader/cms_input_frame_common.h \
+    loader/colorsync_channel_frame_common.h \
     processing/cms/0238_lcms_cmyk_linear.c \
     processing/cms/0239_lcms_cmyk_linear_alias.c \
     processing/cms/0240_lcms_cmyk_gamma.c \
@@ -810,7 +829,23 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0271_colorsync_gray8_linear_alias.c \
     processing/cms/0272_colorsync_gray8_gamma.c \
     processing/cms/0273_colorsync_gray8_gamma_alias.c \
+    processing/cms/0274_colorsync_gray8_channels_linear.c \
+    processing/cms/0275_colorsync_gray8_channels_gamma.c \
+    processing/cms/0276_colorsync_rgb8_channels_linear.c \
+    processing/cms/0277_colorsync_rgb8_channels_gamma.c \
+    processing/cms/0278_colorsync_rgba8_channels_linear.c \
+    processing/cms/0279_colorsync_rgba8_channels_gamma.c \
+    processing/cms/0280_colorsync_cmyk8_channels_linear.c \
+    processing/cms/0281_colorsync_cmyk8_channels_gamma.c \
+    processing/cms/0282_colorsync_cmyk16_channels_linear.c \
+    processing/cms/0283_colorsync_cmyk16_channels_gamma.c \
+    processing/cms/0284_colorsync_lab_float_channels_linear.c \
+    processing/cms/0285_colorsync_lab_float_channels_gamma.c \
+    processing/cms/0286_colorsync_channels_scope_linear.c \
+    processing/cms/0287_colorsync_channels_scope_gamma.c \
     processing/cms/colorsync_gray8_common.h \
+    processing/cms/colorsync_channels_common.h \
+    processing/cms/colorsync_channel_scope_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \

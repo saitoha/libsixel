@@ -120,6 +120,7 @@ struct sixel_cms_transform {
     ColorSyncDataDepth dst_depth;
     ColorSyncDataLayout src_layout;
     ColorSyncDataLayout dst_layout;
+    size_t native_src_channels;
     size_t src_bytes_per_pixel;
     size_t dst_bytes_per_pixel;
 #endif
@@ -1904,6 +1905,56 @@ sixel_cms_create_transform_lcms2(sixel_cms_profile_t const *src_profile,
 #endif
 
 #if SIXEL_CMS_HAVE_COLORSYNC
+static size_t
+sixel_cms_colorsync_profile_channels(ColorSyncProfileRef profile)
+{
+    CFDataRef header;
+    uint32_t signature;
+    unsigned int first;
+
+    /* CopyHeader returns host-endian ICC fields. The native profile's
+     * data-space signature also covers domains such as XYZ that the
+     * facade deliberately reports as UNKNOWN. Alpha is not a colorant. */
+    header = ColorSyncProfileCopyHeader(profile);
+    if (header == NULL) {
+        return 0u;
+    }
+    signature = 0u;
+    if (CFDataGetLength(header) >= 20) {
+        memcpy(&signature, CFDataGetBytePtr(header) + 16,
+               sizeof(signature));
+    }
+    CFRelease(header);
+    switch (signature) {
+    case 0x47524159u: /* GRAY */
+        return 1u;
+    case 0x434d594bu: /* CMYK */
+        return 4u;
+    case 0x58595a20u: /* XYZ */
+    case 0x4c616220u: /* Lab */
+    case 0x4c757620u: /* Luv */
+    case 0x59436272u: /* YCbr */
+    case 0x59787920u: /* Yxy */
+    case 0x52474220u: /* RGB */
+    case 0x48535620u: /* HSV */
+    case 0x484c5320u: /* HLS */
+    case 0x434d5920u: /* CMY */
+        return 3u;
+    default:
+        /* ICC xCLR signatures enumerate two through fifteen colorants. */
+        first = signature >> 24;
+        if ((signature & 0x00ffffffu) == 0x00434c52u) {
+            if (first >= '2' && first <= '9') {
+                return first - '0';
+            }
+            if (first >= 'A' && first <= 'F') {
+                return first - 'A' + 10u;
+            }
+        }
+        return 0u;
+    }
+}
+
 static sixel_cms_transform_t *
 sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
                                      sixel_cms_pixel_format_t src_format,
@@ -1973,6 +2024,9 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
         free(transform);
         return NULL;
     }
+
+    transform->native_src_channels = sixel_cms_colorsync_profile_channels(
+        src_profile->colorsync_handle);
 
     return transform;
 }
@@ -3606,6 +3660,25 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
 
 #if SIXEL_CMS_HAVE_COLORSYNC
 static int
+sixel_cms_colorsync_source_matches(
+    sixel_cms_transform_t const *transform, size_t channels)
+{
+    /* A scratch row must contain exactly the colorants consumed by the
+     * native ICC transform. Otherwise ColorSync can read unfilled scratch
+     * components despite reporting success. Reject before any write. */
+    if (transform->native_src_channels != channels) {
+        loader_trace_message("LSXCMS2|event=reject|engine=colorsync|"
+            "reason=native-source-channels|src=%d|dst=%d|"
+            "native=%lu|expected=%lu", transform->src_format,
+            transform->dst_format,
+            (unsigned long)transform->native_src_channels,
+            (unsigned long)channels);
+        return 0;
+    }
+    return 1;
+}
+
+static int
 sixel_cms_colorsync_promote_source(
     sixel_cms_transform_t const *transform,
     void const *src, void *dst, size_t count)
@@ -3633,6 +3706,11 @@ sixel_cms_colorsync_promote_source(
         peak = 65535.0;
     }
     if (channels == 0u || channels > 4u) {
+        return 0;
+    }
+    if (!sixel_cms_colorsync_source_matches(transform,
+            channels - (transform->src_format
+                        == SIXEL_CMS_PIXELFORMAT_RGBA_8 ? 1u : 0u))) {
         return 0;
     }
     source8 = (unsigned char const *)src;
@@ -3686,8 +3764,12 @@ sixel_cms_colorsync_lab_units(sixel_cms_transform_t const *transform,
     /* The facade stores L/100, a/128, b/128. Native ColorSync float Lab
      * uses the same L coordinate, but centers a/b at 0.5 with a physical
      * span of 255. This is neither LCMS physical Lab nor the unsigned ICC
-     * LUT encoding with an offset of 128. Change only these input units;
-     * leave native domain handling and extended RGB output untouched. */
+     * LUT encoding with an offset of 128. For a matching native source
+     * layout, change only these input units; preserve native value
+     * handling and extended RGB output. */
+    if (!sixel_cms_colorsync_source_matches(transform, 3u)) {
+        return 0;
+    }
     source = src;
     target = dst;
     for (first = 0u; first < count; first += batch) {

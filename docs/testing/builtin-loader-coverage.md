@@ -12,7 +12,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 
 | Area | Tests | Direct values | Quality floor | Trace/status | Accept/reject | Robustness | Other/smoke |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| [Shared loader integration and policy](../loader/builtin.md) | 52 | 1 | 3 | 1 | 4 | 0 | 43 |
+| [Shared loader integration and policy](../loader/builtin.md) | 54 | 1 | 3 | 1 | 4 | 0 | 45 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
 | [PNG and APNG](../loader/builtin/png.md) | 282 | 22 | 59 | 0 | 13 | 7 | 181 |
@@ -24,7 +24,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 27 | 11 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2194** | **468** | **724** | **652** | **53** | **13** | **284** |
+| **Total** | **2196** | **468** | **724** | **652** | **53** | **13** | **286** |
 
 ## Complete inventory
 
@@ -88,6 +88,8 @@ Primary implementation context: [Builtin Image Loader](../loader/builtin.md).
 | [tests/loader/builtin/2211_loader_builtin_lcms_cmyk32_main.t](../../tests/loader/builtin/2211_loader_builtin_lcms_cmyk32_main.t) | Verify a public float frame after an actual LCMS device-unit transform. | Other integration/smoke | Policy-linked: [`docs/loader/color-management.md`](../loader/color-management.md) |
 | [tests/loader/builtin/2212_loader_builtin_lcms_cmyk32_missing.t](../../tests/loader/builtin/2212_loader_builtin_lcms_cmyk32_missing.t) | Verify a public float frame after an actual LCMS device-unit transform. | Other integration/smoke | Policy-linked: [`docs/loader/color-management.md`](../loader/color-management.md) |
 | [tests/loader/builtin/2213_loader_builtin_lcms_cmyk32_layers.t](../../tests/loader/builtin/2213_loader_builtin_lcms_cmyk32_layers.t) | Verify a public float frame after an actual LCMS device-unit transform. | Other integration/smoke | Policy-linked: [`docs/loader/color-management.md`](../loader/color-management.md) |
+| [tests/loader/builtin/2214_loader_builtin_colorsync_cmyk8_channel_fallback.t](../../tests/loader/builtin/2214_loader_builtin_colorsync_cmyk8_channel_fallback.t) | original-input CMYK8 fallback values and frame format. | Other integration/smoke | Policy-linked: [`docs/loader/color-management.md`](../loader/color-management.md) |
+| [tests/loader/builtin/2215_loader_builtin_colorsync_cmyk16_channel_fallback.t](../../tests/loader/builtin/2215_loader_builtin_colorsync_cmyk16_channel_fallback.t) | original-input CMYK16 fallback values and frame format. | Other integration/smoke | Policy-linked: [`docs/loader/color-management.md`](../loader/color-management.md) |
 
 ### Netpbm
 

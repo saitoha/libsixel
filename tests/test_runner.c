@@ -811,6 +811,8 @@ int test_cms_0231(int argc, char **argv);
 int test_loader_0195_main(int argc, char **argv);
 int test_loader_0196_missing(int argc, char **argv);
 int test_loader_0197_layers(int argc, char **argv);
+int test_loader_0198_channels(int argc, char **argv);
+int test_loader_0199_channels(int argc, char **argv);
 int test_loader_0172_lab(int argc, char **argv);
 int test_loader_0173_lab(int argc, char **argv);
 int test_cms_0238(int argc, char **argv);
@@ -849,6 +851,20 @@ int test_cms_0270(int argc, char **argv);
 int test_cms_0271(int argc, char **argv);
 int test_cms_0272(int argc, char **argv);
 int test_cms_0273(int argc, char **argv);
+int test_cms_0274(int argc, char **argv);
+int test_cms_0275(int argc, char **argv);
+int test_cms_0276(int argc, char **argv);
+int test_cms_0277(int argc, char **argv);
+int test_cms_0278(int argc, char **argv);
+int test_cms_0279(int argc, char **argv);
+int test_cms_0280(int argc, char **argv);
+int test_cms_0281(int argc, char **argv);
+int test_cms_0282(int argc, char **argv);
+int test_cms_0283(int argc, char **argv);
+int test_cms_0284(int argc, char **argv);
+int test_cms_0285(int argc, char **argv);
+int test_cms_0286(int argc, char **argv);
+int test_cms_0287(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -1710,6 +1726,10 @@ static test_entry_t const test_entries[] = {
     { "loader/0195_lcms_cmyk32_main", test_loader_0195_main },
     { "loader/0196_lcms_cmyk32_missing", test_loader_0196_missing },
     { "loader/0197_lcms_cmyk32_layers", test_loader_0197_layers },
+    { "loader/0198_colorsync_cmyk8_channel_fallback",
+      test_loader_0198_channels },
+    { "loader/0199_colorsync_cmyk16_channel_fallback",
+      test_loader_0199_channels },
     { "loader/0172_lcms_lab_frame", test_loader_0172_lab },
     { "loader/0173_colorsync_lab_frame", test_loader_0173_lab },
     { "cms/0238_lcms_cmyk_linear", test_cms_0238 },
@@ -1772,6 +1792,34 @@ static test_entry_t const test_entries[] = {
       test_cms_0272 },
     { "cms/0273_colorsync_gray8_gamma_alias",
       test_cms_0273 },
+    { "cms/0274_colorsync_gray8_channels_linear",
+      test_cms_0274 },
+    { "cms/0275_colorsync_gray8_channels_gamma",
+      test_cms_0275 },
+    { "cms/0276_colorsync_rgb8_channels_linear",
+      test_cms_0276 },
+    { "cms/0277_colorsync_rgb8_channels_gamma",
+      test_cms_0277 },
+    { "cms/0278_colorsync_rgba8_channels_linear",
+      test_cms_0278 },
+    { "cms/0279_colorsync_rgba8_channels_gamma",
+      test_cms_0279 },
+    { "cms/0280_colorsync_cmyk8_channels_linear",
+      test_cms_0280 },
+    { "cms/0281_colorsync_cmyk8_channels_gamma",
+      test_cms_0281 },
+    { "cms/0282_colorsync_cmyk16_channels_linear",
+      test_cms_0282 },
+    { "cms/0283_colorsync_cmyk16_channels_gamma",
+      test_cms_0283 },
+    { "cms/0284_colorsync_lab_float_channels_linear",
+      test_cms_0284 },
+    { "cms/0285_colorsync_lab_float_channels_gamma",
+      test_cms_0285 },
+    { "cms/0286_colorsync_channels_scope_linear",
+      test_cms_0286 },
+    { "cms/0287_colorsync_channels_scope_gamma",
+      test_cms_0287 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

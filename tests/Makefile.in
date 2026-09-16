@@ -152,9 +152,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/0195_lcms_cmyk32_main.c \
 	loader/builtin/0196_lcms_cmyk32_missing.c \
 	loader/builtin/0197_lcms_cmyk32_layers.c \
+	loader/builtin/0198_colorsync_cmyk8_channel_fallback.c \
+	loader/builtin/0199_colorsync_cmyk16_channel_fallback.c \
 	loader/libtiff/0172_lcms_lab_frame.c \
 	loader/libtiff/0173_colorsync_lab_frame.c \
 	loader/cms_input_frame_common.h \
+	loader/colorsync_channel_frame_common.h \
 	processing/cms/0238_lcms_cmyk_linear.c \
 	processing/cms/0239_lcms_cmyk_linear_alias.c \
 	processing/cms/0240_lcms_cmyk_gamma.c \
@@ -195,7 +198,23 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/0271_colorsync_gray8_linear_alias.c \
 	processing/cms/0272_colorsync_gray8_gamma.c \
 	processing/cms/0273_colorsync_gray8_gamma_alias.c \
+	processing/cms/0274_colorsync_gray8_channels_linear.c \
+	processing/cms/0275_colorsync_gray8_channels_gamma.c \
+	processing/cms/0276_colorsync_rgb8_channels_linear.c \
+	processing/cms/0277_colorsync_rgb8_channels_gamma.c \
+	processing/cms/0278_colorsync_rgba8_channels_linear.c \
+	processing/cms/0279_colorsync_rgba8_channels_gamma.c \
+	processing/cms/0280_colorsync_cmyk8_channels_linear.c \
+	processing/cms/0281_colorsync_cmyk8_channels_gamma.c \
+	processing/cms/0282_colorsync_cmyk16_channels_linear.c \
+	processing/cms/0283_colorsync_cmyk16_channels_gamma.c \
+	processing/cms/0284_colorsync_lab_float_channels_linear.c \
+	processing/cms/0285_colorsync_lab_float_channels_gamma.c \
+	processing/cms/0286_colorsync_channels_scope_linear.c \
+	processing/cms/0287_colorsync_channels_scope_gamma.c \
 	processing/cms/colorsync_gray8_common.h \
+	processing/cms/colorsync_channels_common.h \
+	processing/cms/colorsync_channel_scope_common.h \
 	processing/colorspace/0012_extended_failure_atomic.c \
 	processing/cms/0008_invalid_rgb_definition.c \
 	processing/cms/0009_icc_length_ownership.c \
@@ -711,6 +730,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0195_lcms_cmyk32_main.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0196_lcms_cmyk32_missing.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0197_lcms_cmyk32_layers.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0172_lcms_lab_frame.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0173_colorsync_lab_frame.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0238_lcms_cmyk_linear.$(OBJEXT) \
@@ -749,6 +770,20 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0271_colorsync_gray8_linear_alias.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0272_colorsync_gray8_gamma.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0273_colorsync_gray8_gamma_alias.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0274_colorsync_gray8_channels_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0286_colorsync_channels_scope_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0287_colorsync_channels_scope_gamma.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0009_icc_length_ownership.$(OBJEXT) \
@@ -1445,6 +1480,8 @@ am__depfiles_remade =  \
 	loader/builtin/$(DEPDIR)/test_runner-0195_lcms_cmyk32_main.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0196_lcms_cmyk32_missing.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0197_lcms_cmyk32_layers.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Po \
 	loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po \
@@ -1581,6 +1618,20 @@ am__depfiles_remade =  \
 	processing/cms/$(DEPDIR)/test_runner-0271_colorsync_gray8_linear_alias.Po \
 	processing/cms/$(DEPDIR)/test_runner-0272_colorsync_gray8_gamma.Po \
 	processing/cms/$(DEPDIR)/test_runner-0273_colorsync_gray8_gamma_alias.Po \
+	processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Po \
+	processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Po \
+	processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Po \
+	processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Po \
+	processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Po \
+	processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Po \
+	processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Po \
+	processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Po \
+	processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Po \
+	processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Po \
+	processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Po \
+	processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Po \
+	processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Po \
+	processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po \
@@ -2912,6 +2963,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0195_LCMS_CMYK32_MAIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0196_LCMS_CMYK32_MISSING \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0197_LCMS_CMYK32_LAYERS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0198_COLORSYNC_CMYK8_CHANNEL_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0199_COLORSYNC_CMYK16_CHANNEL_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0172_LCMS_LAB_FRAME \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0173_COLORSYNC_LAB_FRAME \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0238_LCMS_CMYK_LINEAR \
@@ -2950,6 +3003,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0271_COLORSYNC_GRAY8_LINEAR_ALIAS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0272_COLORSYNC_GRAY8_GAMMA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0273_COLORSYNC_GRAY8_GAMMA_ALIAS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0274_COLORSYNC_GRAY8_CHANNELS_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0275_COLORSYNC_GRAY8_CHANNELS_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0276_COLORSYNC_RGB8_CHANNELS_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0277_COLORSYNC_RGB8_CHANNELS_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0278_COLORSYNC_RGBA8_CHANNELS_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0279_COLORSYNC_RGBA8_CHANNELS_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0280_COLORSYNC_CMYK8_CHANNELS_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0281_COLORSYNC_CMYK8_CHANNELS_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0282_COLORSYNC_CMYK16_CHANNELS_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0283_COLORSYNC_CMYK16_CHANNELS_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0284_COLORSYNC_LAB_FLOAT_CHANNELS_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0285_COLORSYNC_LAB_FLOAT_CHANNELS_GAMMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0286_COLORSYNC_CHANNELS_SCOPE_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0287_COLORSYNC_CHANNELS_SCOPE_GAMMA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0186_PNG_BYTE_TARGET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0187_COREGRAPHICS_PNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -3067,9 +3134,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0195_lcms_cmyk32_main.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0196_lcms_cmyk32_missing.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0197_lcms_cmyk32_layers.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0198_colorsync_cmyk8_channel_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0199_colorsync_cmyk16_channel_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0172_lcms_lab_frame.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0173_colorsync_lab_frame.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/cms_input_frame_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/colorsync_channel_frame_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0238_lcms_cmyk_linear.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0239_lcms_cmyk_linear_alias.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0240_lcms_cmyk_gamma.c \
@@ -3110,7 +3180,23 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0271_colorsync_gray8_linear_alias.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0272_colorsync_gray8_gamma.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0273_colorsync_gray8_gamma_alias.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0274_colorsync_gray8_channels_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0275_colorsync_gray8_channels_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0276_colorsync_rgb8_channels_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0277_colorsync_rgb8_channels_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0278_colorsync_rgba8_channels_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0279_colorsync_rgba8_channels_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0280_colorsync_cmyk8_channels_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0281_colorsync_cmyk8_channels_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0282_colorsync_cmyk16_channels_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0283_colorsync_cmyk16_channels_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0284_colorsync_lab_float_channels_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0285_colorsync_lab_float_channels_gamma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0286_colorsync_channels_scope_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0287_colorsync_channels_scope_gamma.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/colorsync_gray8_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/colorsync_channels_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/colorsync_channel_scope_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0008_invalid_rgb_definition.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0009_icc_length_ownership.c \
@@ -3908,6 +3994,12 @@ loader/builtin/test_runner-0196_lcms_cmyk32_missing.$(OBJEXT):  \
 loader/builtin/test_runner-0197_lcms_cmyk32_layers.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
 loader/libtiff/$(am__dirstamp):
 	@$(MKDIR_P) loader/libtiff
 	@: >>loader/libtiff/$(am__dirstamp)
@@ -4026,6 +4118,48 @@ processing/cms/test_runner-0272_colorsync_gray8_gamma.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/cms/test_runner-0273_colorsync_gray8_gamma_alias.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0274_colorsync_gray8_channels_linear.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0286_colorsync_channels_scope_linear.$(OBJEXT):  \
+	processing/cms/$(am__dirstamp) \
+	processing/cms/$(DEPDIR)/$(am__dirstamp)
+processing/cms/test_runner-0287_colorsync_channels_scope_gamma.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/$(am__dirstamp):
@@ -5845,6 +5979,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0195_lcms_cmyk32_main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0196_lcms_cmyk32_missing.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0197_lcms_cmyk32_layers.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po@am__quote@ # am--include-marker
@@ -5981,6 +6117,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0271_colorsync_gray8_linear_alias.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0272_colorsync_gray8_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0273_colorsync_gray8_gamma_alias.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po@am__quote@ # am--include-marker
@@ -6827,6 +6977,34 @@ loader/builtin/test_runner-0197_lcms_cmyk32_layers.obj: loader/builtin/0197_lcms
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0197_lcms_cmyk32_layers.obj `if test -f 'loader/builtin/0197_lcms_cmyk32_layers.c'; then $(CYGPATH_W) 'loader/builtin/0197_lcms_cmyk32_layers.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0197_lcms_cmyk32_layers.c'; fi`
 
+loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.o: loader/builtin/0198_colorsync_cmyk8_channel_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Tpo -c -o loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.o `test -f 'loader/builtin/0198_colorsync_cmyk8_channel_fallback.c' || echo '$(srcdir)/'`loader/builtin/0198_colorsync_cmyk8_channel_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Tpo loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0198_colorsync_cmyk8_channel_fallback.c' object='loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.o `test -f 'loader/builtin/0198_colorsync_cmyk8_channel_fallback.c' || echo '$(srcdir)/'`loader/builtin/0198_colorsync_cmyk8_channel_fallback.c
+
+loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.obj: loader/builtin/0198_colorsync_cmyk8_channel_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Tpo -c -o loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.obj `if test -f 'loader/builtin/0198_colorsync_cmyk8_channel_fallback.c'; then $(CYGPATH_W) 'loader/builtin/0198_colorsync_cmyk8_channel_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0198_colorsync_cmyk8_channel_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Tpo loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0198_colorsync_cmyk8_channel_fallback.c' object='loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0198_colorsync_cmyk8_channel_fallback.obj `if test -f 'loader/builtin/0198_colorsync_cmyk8_channel_fallback.c'; then $(CYGPATH_W) 'loader/builtin/0198_colorsync_cmyk8_channel_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0198_colorsync_cmyk8_channel_fallback.c'; fi`
+
+loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.o: loader/builtin/0199_colorsync_cmyk16_channel_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Tpo -c -o loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.o `test -f 'loader/builtin/0199_colorsync_cmyk16_channel_fallback.c' || echo '$(srcdir)/'`loader/builtin/0199_colorsync_cmyk16_channel_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Tpo loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0199_colorsync_cmyk16_channel_fallback.c' object='loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.o `test -f 'loader/builtin/0199_colorsync_cmyk16_channel_fallback.c' || echo '$(srcdir)/'`loader/builtin/0199_colorsync_cmyk16_channel_fallback.c
+
+loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.obj: loader/builtin/0199_colorsync_cmyk16_channel_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Tpo -c -o loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.obj `if test -f 'loader/builtin/0199_colorsync_cmyk16_channel_fallback.c'; then $(CYGPATH_W) 'loader/builtin/0199_colorsync_cmyk16_channel_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0199_colorsync_cmyk16_channel_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Tpo loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0199_colorsync_cmyk16_channel_fallback.c' object='loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0199_colorsync_cmyk16_channel_fallback.obj `if test -f 'loader/builtin/0199_colorsync_cmyk16_channel_fallback.c'; then $(CYGPATH_W) 'loader/builtin/0199_colorsync_cmyk16_channel_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0199_colorsync_cmyk16_channel_fallback.c'; fi`
+
 loader/libtiff/test_runner-0172_lcms_lab_frame.o: loader/libtiff/0172_lcms_lab_frame.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0172_lcms_lab_frame.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0172_lcms_lab_frame.Tpo -c -o loader/libtiff/test_runner-0172_lcms_lab_frame.o `test -f 'loader/libtiff/0172_lcms_lab_frame.c' || echo '$(srcdir)/'`loader/libtiff/0172_lcms_lab_frame.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0172_lcms_lab_frame.Tpo loader/libtiff/$(DEPDIR)/test_runner-0172_lcms_lab_frame.Po
@@ -7358,6 +7536,202 @@ processing/cms/test_runner-0273_colorsync_gray8_gamma_alias.obj: processing/cms/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0273_colorsync_gray8_gamma_alias.c' object='processing/cms/test_runner-0273_colorsync_gray8_gamma_alias.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0273_colorsync_gray8_gamma_alias.obj `if test -f 'processing/cms/0273_colorsync_gray8_gamma_alias.c'; then $(CYGPATH_W) 'processing/cms/0273_colorsync_gray8_gamma_alias.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0273_colorsync_gray8_gamma_alias.c'; fi`
+
+processing/cms/test_runner-0274_colorsync_gray8_channels_linear.o: processing/cms/0274_colorsync_gray8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0274_colorsync_gray8_channels_linear.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Tpo -c -o processing/cms/test_runner-0274_colorsync_gray8_channels_linear.o `test -f 'processing/cms/0274_colorsync_gray8_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0274_colorsync_gray8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0274_colorsync_gray8_channels_linear.c' object='processing/cms/test_runner-0274_colorsync_gray8_channels_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0274_colorsync_gray8_channels_linear.o `test -f 'processing/cms/0274_colorsync_gray8_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0274_colorsync_gray8_channels_linear.c
+
+processing/cms/test_runner-0274_colorsync_gray8_channels_linear.obj: processing/cms/0274_colorsync_gray8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0274_colorsync_gray8_channels_linear.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Tpo -c -o processing/cms/test_runner-0274_colorsync_gray8_channels_linear.obj `if test -f 'processing/cms/0274_colorsync_gray8_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0274_colorsync_gray8_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0274_colorsync_gray8_channels_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0274_colorsync_gray8_channels_linear.c' object='processing/cms/test_runner-0274_colorsync_gray8_channels_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0274_colorsync_gray8_channels_linear.obj `if test -f 'processing/cms/0274_colorsync_gray8_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0274_colorsync_gray8_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0274_colorsync_gray8_channels_linear.c'; fi`
+
+processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.o: processing/cms/0275_colorsync_gray8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Tpo -c -o processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.o `test -f 'processing/cms/0275_colorsync_gray8_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0275_colorsync_gray8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0275_colorsync_gray8_channels_gamma.c' object='processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.o `test -f 'processing/cms/0275_colorsync_gray8_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0275_colorsync_gray8_channels_gamma.c
+
+processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.obj: processing/cms/0275_colorsync_gray8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Tpo -c -o processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.obj `if test -f 'processing/cms/0275_colorsync_gray8_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0275_colorsync_gray8_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0275_colorsync_gray8_channels_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0275_colorsync_gray8_channels_gamma.c' object='processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0275_colorsync_gray8_channels_gamma.obj `if test -f 'processing/cms/0275_colorsync_gray8_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0275_colorsync_gray8_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0275_colorsync_gray8_channels_gamma.c'; fi`
+
+processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.o: processing/cms/0276_colorsync_rgb8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Tpo -c -o processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.o `test -f 'processing/cms/0276_colorsync_rgb8_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0276_colorsync_rgb8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0276_colorsync_rgb8_channels_linear.c' object='processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.o `test -f 'processing/cms/0276_colorsync_rgb8_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0276_colorsync_rgb8_channels_linear.c
+
+processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.obj: processing/cms/0276_colorsync_rgb8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Tpo -c -o processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.obj `if test -f 'processing/cms/0276_colorsync_rgb8_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0276_colorsync_rgb8_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0276_colorsync_rgb8_channels_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0276_colorsync_rgb8_channels_linear.c' object='processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0276_colorsync_rgb8_channels_linear.obj `if test -f 'processing/cms/0276_colorsync_rgb8_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0276_colorsync_rgb8_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0276_colorsync_rgb8_channels_linear.c'; fi`
+
+processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.o: processing/cms/0277_colorsync_rgb8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Tpo -c -o processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.o `test -f 'processing/cms/0277_colorsync_rgb8_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0277_colorsync_rgb8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0277_colorsync_rgb8_channels_gamma.c' object='processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.o `test -f 'processing/cms/0277_colorsync_rgb8_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0277_colorsync_rgb8_channels_gamma.c
+
+processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.obj: processing/cms/0277_colorsync_rgb8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Tpo -c -o processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.obj `if test -f 'processing/cms/0277_colorsync_rgb8_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0277_colorsync_rgb8_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0277_colorsync_rgb8_channels_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0277_colorsync_rgb8_channels_gamma.c' object='processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0277_colorsync_rgb8_channels_gamma.obj `if test -f 'processing/cms/0277_colorsync_rgb8_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0277_colorsync_rgb8_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0277_colorsync_rgb8_channels_gamma.c'; fi`
+
+processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.o: processing/cms/0278_colorsync_rgba8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Tpo -c -o processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.o `test -f 'processing/cms/0278_colorsync_rgba8_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0278_colorsync_rgba8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0278_colorsync_rgba8_channels_linear.c' object='processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.o `test -f 'processing/cms/0278_colorsync_rgba8_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0278_colorsync_rgba8_channels_linear.c
+
+processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.obj: processing/cms/0278_colorsync_rgba8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Tpo -c -o processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.obj `if test -f 'processing/cms/0278_colorsync_rgba8_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0278_colorsync_rgba8_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0278_colorsync_rgba8_channels_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0278_colorsync_rgba8_channels_linear.c' object='processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0278_colorsync_rgba8_channels_linear.obj `if test -f 'processing/cms/0278_colorsync_rgba8_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0278_colorsync_rgba8_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0278_colorsync_rgba8_channels_linear.c'; fi`
+
+processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.o: processing/cms/0279_colorsync_rgba8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Tpo -c -o processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.o `test -f 'processing/cms/0279_colorsync_rgba8_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0279_colorsync_rgba8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0279_colorsync_rgba8_channels_gamma.c' object='processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.o `test -f 'processing/cms/0279_colorsync_rgba8_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0279_colorsync_rgba8_channels_gamma.c
+
+processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.obj: processing/cms/0279_colorsync_rgba8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Tpo -c -o processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.obj `if test -f 'processing/cms/0279_colorsync_rgba8_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0279_colorsync_rgba8_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0279_colorsync_rgba8_channels_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0279_colorsync_rgba8_channels_gamma.c' object='processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0279_colorsync_rgba8_channels_gamma.obj `if test -f 'processing/cms/0279_colorsync_rgba8_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0279_colorsync_rgba8_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0279_colorsync_rgba8_channels_gamma.c'; fi`
+
+processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.o: processing/cms/0280_colorsync_cmyk8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Tpo -c -o processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.o `test -f 'processing/cms/0280_colorsync_cmyk8_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0280_colorsync_cmyk8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0280_colorsync_cmyk8_channels_linear.c' object='processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.o `test -f 'processing/cms/0280_colorsync_cmyk8_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0280_colorsync_cmyk8_channels_linear.c
+
+processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.obj: processing/cms/0280_colorsync_cmyk8_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Tpo -c -o processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.obj `if test -f 'processing/cms/0280_colorsync_cmyk8_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0280_colorsync_cmyk8_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0280_colorsync_cmyk8_channels_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0280_colorsync_cmyk8_channels_linear.c' object='processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0280_colorsync_cmyk8_channels_linear.obj `if test -f 'processing/cms/0280_colorsync_cmyk8_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0280_colorsync_cmyk8_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0280_colorsync_cmyk8_channels_linear.c'; fi`
+
+processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.o: processing/cms/0281_colorsync_cmyk8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Tpo -c -o processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.o `test -f 'processing/cms/0281_colorsync_cmyk8_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0281_colorsync_cmyk8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0281_colorsync_cmyk8_channels_gamma.c' object='processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.o `test -f 'processing/cms/0281_colorsync_cmyk8_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0281_colorsync_cmyk8_channels_gamma.c
+
+processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.obj: processing/cms/0281_colorsync_cmyk8_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Tpo -c -o processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.obj `if test -f 'processing/cms/0281_colorsync_cmyk8_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0281_colorsync_cmyk8_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0281_colorsync_cmyk8_channels_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0281_colorsync_cmyk8_channels_gamma.c' object='processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0281_colorsync_cmyk8_channels_gamma.obj `if test -f 'processing/cms/0281_colorsync_cmyk8_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0281_colorsync_cmyk8_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0281_colorsync_cmyk8_channels_gamma.c'; fi`
+
+processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.o: processing/cms/0282_colorsync_cmyk16_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Tpo -c -o processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.o `test -f 'processing/cms/0282_colorsync_cmyk16_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0282_colorsync_cmyk16_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0282_colorsync_cmyk16_channels_linear.c' object='processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.o `test -f 'processing/cms/0282_colorsync_cmyk16_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0282_colorsync_cmyk16_channels_linear.c
+
+processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.obj: processing/cms/0282_colorsync_cmyk16_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Tpo -c -o processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.obj `if test -f 'processing/cms/0282_colorsync_cmyk16_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0282_colorsync_cmyk16_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0282_colorsync_cmyk16_channels_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0282_colorsync_cmyk16_channels_linear.c' object='processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0282_colorsync_cmyk16_channels_linear.obj `if test -f 'processing/cms/0282_colorsync_cmyk16_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0282_colorsync_cmyk16_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0282_colorsync_cmyk16_channels_linear.c'; fi`
+
+processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.o: processing/cms/0283_colorsync_cmyk16_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Tpo -c -o processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.o `test -f 'processing/cms/0283_colorsync_cmyk16_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0283_colorsync_cmyk16_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0283_colorsync_cmyk16_channels_gamma.c' object='processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.o `test -f 'processing/cms/0283_colorsync_cmyk16_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0283_colorsync_cmyk16_channels_gamma.c
+
+processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.obj: processing/cms/0283_colorsync_cmyk16_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Tpo -c -o processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.obj `if test -f 'processing/cms/0283_colorsync_cmyk16_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0283_colorsync_cmyk16_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0283_colorsync_cmyk16_channels_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0283_colorsync_cmyk16_channels_gamma.c' object='processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0283_colorsync_cmyk16_channels_gamma.obj `if test -f 'processing/cms/0283_colorsync_cmyk16_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0283_colorsync_cmyk16_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0283_colorsync_cmyk16_channels_gamma.c'; fi`
+
+processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.o: processing/cms/0284_colorsync_lab_float_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Tpo -c -o processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.o `test -f 'processing/cms/0284_colorsync_lab_float_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0284_colorsync_lab_float_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0284_colorsync_lab_float_channels_linear.c' object='processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.o `test -f 'processing/cms/0284_colorsync_lab_float_channels_linear.c' || echo '$(srcdir)/'`processing/cms/0284_colorsync_lab_float_channels_linear.c
+
+processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.obj: processing/cms/0284_colorsync_lab_float_channels_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Tpo -c -o processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.obj `if test -f 'processing/cms/0284_colorsync_lab_float_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0284_colorsync_lab_float_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0284_colorsync_lab_float_channels_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0284_colorsync_lab_float_channels_linear.c' object='processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0284_colorsync_lab_float_channels_linear.obj `if test -f 'processing/cms/0284_colorsync_lab_float_channels_linear.c'; then $(CYGPATH_W) 'processing/cms/0284_colorsync_lab_float_channels_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0284_colorsync_lab_float_channels_linear.c'; fi`
+
+processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.o: processing/cms/0285_colorsync_lab_float_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Tpo -c -o processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.o `test -f 'processing/cms/0285_colorsync_lab_float_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0285_colorsync_lab_float_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0285_colorsync_lab_float_channels_gamma.c' object='processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.o `test -f 'processing/cms/0285_colorsync_lab_float_channels_gamma.c' || echo '$(srcdir)/'`processing/cms/0285_colorsync_lab_float_channels_gamma.c
+
+processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.obj: processing/cms/0285_colorsync_lab_float_channels_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Tpo -c -o processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.obj `if test -f 'processing/cms/0285_colorsync_lab_float_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0285_colorsync_lab_float_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0285_colorsync_lab_float_channels_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0285_colorsync_lab_float_channels_gamma.c' object='processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0285_colorsync_lab_float_channels_gamma.obj `if test -f 'processing/cms/0285_colorsync_lab_float_channels_gamma.c'; then $(CYGPATH_W) 'processing/cms/0285_colorsync_lab_float_channels_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0285_colorsync_lab_float_channels_gamma.c'; fi`
+
+processing/cms/test_runner-0286_colorsync_channels_scope_linear.o: processing/cms/0286_colorsync_channels_scope_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0286_colorsync_channels_scope_linear.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Tpo -c -o processing/cms/test_runner-0286_colorsync_channels_scope_linear.o `test -f 'processing/cms/0286_colorsync_channels_scope_linear.c' || echo '$(srcdir)/'`processing/cms/0286_colorsync_channels_scope_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0286_colorsync_channels_scope_linear.c' object='processing/cms/test_runner-0286_colorsync_channels_scope_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0286_colorsync_channels_scope_linear.o `test -f 'processing/cms/0286_colorsync_channels_scope_linear.c' || echo '$(srcdir)/'`processing/cms/0286_colorsync_channels_scope_linear.c
+
+processing/cms/test_runner-0286_colorsync_channels_scope_linear.obj: processing/cms/0286_colorsync_channels_scope_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0286_colorsync_channels_scope_linear.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Tpo -c -o processing/cms/test_runner-0286_colorsync_channels_scope_linear.obj `if test -f 'processing/cms/0286_colorsync_channels_scope_linear.c'; then $(CYGPATH_W) 'processing/cms/0286_colorsync_channels_scope_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0286_colorsync_channels_scope_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Tpo processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0286_colorsync_channels_scope_linear.c' object='processing/cms/test_runner-0286_colorsync_channels_scope_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0286_colorsync_channels_scope_linear.obj `if test -f 'processing/cms/0286_colorsync_channels_scope_linear.c'; then $(CYGPATH_W) 'processing/cms/0286_colorsync_channels_scope_linear.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0286_colorsync_channels_scope_linear.c'; fi`
+
+processing/cms/test_runner-0287_colorsync_channels_scope_gamma.o: processing/cms/0287_colorsync_channels_scope_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0287_colorsync_channels_scope_gamma.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Tpo -c -o processing/cms/test_runner-0287_colorsync_channels_scope_gamma.o `test -f 'processing/cms/0287_colorsync_channels_scope_gamma.c' || echo '$(srcdir)/'`processing/cms/0287_colorsync_channels_scope_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0287_colorsync_channels_scope_gamma.c' object='processing/cms/test_runner-0287_colorsync_channels_scope_gamma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0287_colorsync_channels_scope_gamma.o `test -f 'processing/cms/0287_colorsync_channels_scope_gamma.c' || echo '$(srcdir)/'`processing/cms/0287_colorsync_channels_scope_gamma.c
+
+processing/cms/test_runner-0287_colorsync_channels_scope_gamma.obj: processing/cms/0287_colorsync_channels_scope_gamma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0287_colorsync_channels_scope_gamma.obj -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Tpo -c -o processing/cms/test_runner-0287_colorsync_channels_scope_gamma.obj `if test -f 'processing/cms/0287_colorsync_channels_scope_gamma.c'; then $(CYGPATH_W) 'processing/cms/0287_colorsync_channels_scope_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0287_colorsync_channels_scope_gamma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Tpo processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/cms/0287_colorsync_channels_scope_gamma.c' object='processing/cms/test_runner-0287_colorsync_channels_scope_gamma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/cms/test_runner-0287_colorsync_channels_scope_gamma.obj `if test -f 'processing/cms/0287_colorsync_channels_scope_gamma.c'; then $(CYGPATH_W) 'processing/cms/0287_colorsync_channels_scope_gamma.c'; else $(CYGPATH_W) '$(srcdir)/processing/cms/0287_colorsync_channels_scope_gamma.c'; fi`
 
 processing/colorspace/test_runner-0012_extended_failure_atomic.o: processing/colorspace/0012_extended_failure_atomic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0012_extended_failure_atomic.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Tpo -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.o `test -f 'processing/colorspace/0012_extended_failure_atomic.c' || echo '$(srcdir)/'`processing/colorspace/0012_extended_failure_atomic.c
@@ -14277,6 +14651,8 @@ distclean: distclean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0195_lcms_cmyk32_main.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0196_lcms_cmyk32_missing.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0197_lcms_cmyk32_layers.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po
@@ -14413,6 +14789,20 @@ distclean: distclean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0271_colorsync_gray8_linear_alias.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0272_colorsync_gray8_gamma.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0273_colorsync_gray8_gamma_alias.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
@@ -14853,6 +15243,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0195_lcms_cmyk32_main.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0196_lcms_cmyk32_missing.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0197_lcms_cmyk32_layers.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0198_colorsync_cmyk8_channel_fallback.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0199_colorsync_cmyk16_channel_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-jpeg_lossless_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_gif_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-loader_builtin_memory_test_common.Po
@@ -14989,6 +15381,20 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0271_colorsync_gray8_linear_alias.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0272_colorsync_gray8_gamma.Po
 	-rm -f processing/cms/$(DEPDIR)/test_runner-0273_colorsync_gray8_gamma_alias.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0274_colorsync_gray8_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0275_colorsync_gray8_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0276_colorsync_rgb8_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0277_colorsync_rgb8_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0278_colorsync_rgba8_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0279_colorsync_rgba8_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0280_colorsync_cmyk8_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0281_colorsync_cmyk8_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0282_colorsync_cmyk16_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0283_colorsync_cmyk16_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0284_colorsync_lab_float_channels_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0285_colorsync_lab_float_channels_gamma.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0286_colorsync_channels_scope_linear.Po
+	-rm -f processing/cms/$(DEPDIR)/test_runner-0287_colorsync_channels_scope_gamma.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0001_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0002_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0003_din99d_byte.Po
