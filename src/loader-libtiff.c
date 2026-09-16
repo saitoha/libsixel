@@ -389,10 +389,16 @@ tiff_decode_lab_u16_l(uint16_t value)
 static double
 tiff_decode_lab_u16_ab(uint16_t value)
 {
-    double normalized;
+    int32_t signed_value;
 
-    normalized = (double)value / 65535.0;
-    return tiff_clamp_lab_ab((normalized - 0.5) * 2.0);
+    /* TIFF CIELAB16 stores physical a/b times 256 as signed words.
+     * Widen before subtracting to avoid implementation-defined narrowing.
+     * The shared Lab facade represents physical a/b divided by 128. */
+    signed_value = (int32_t)value;
+    if (value >= 32768u) {
+        signed_value -= 65536;
+    }
+    return (double)signed_value / 32768.0;
 }
 
 static int

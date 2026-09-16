@@ -818,6 +818,7 @@ int test_loader_0201_profile(int argc, char **argv);
 int test_loader_0202_profile(int argc, char **argv);
 int test_loader_0172_lab(int argc, char **argv);
 int test_loader_0173_lab(int argc, char **argv);
+int test_loader_0174_lab16(int argc, char **argv);
 int test_cms_0238(int argc, char **argv);
 int test_cms_0239(int argc, char **argv);
 int test_cms_0240(int argc, char **argv);
@@ -1797,6 +1798,7 @@ static test_entry_t const test_entries[] = {
       test_loader_0202_profile },
     { "loader/0172_lcms_lab_frame", test_loader_0172_lab },
     { "loader/0173_colorsync_lab_frame", test_loader_0173_lab },
+    { "loader/0174_lab16_signed_values", test_loader_0174_lab16 },
     { "cms/0238_lcms_cmyk_linear", test_cms_0238 },
     { "cms/0239_lcms_cmyk_linear_alias", test_cms_0239 },
     { "cms/0240_lcms_cmyk_gamma", test_cms_0240 },

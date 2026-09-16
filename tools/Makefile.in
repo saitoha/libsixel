@@ -485,6 +485,7 @@ EXTRA_DIST = libsixel-config.in \
              generate_png_arithmetic_tests.py \
              generate_tiff_fixtures.py \
              generate_tiff_icc_tests.py \
+             generate_tiff_lab16_tests.py \
              generate_lcms_input_tests.py \
              generate_colorsync_lab_tests.py \
              generate_colorsync_gray_tests.py \

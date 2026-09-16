@@ -644,6 +644,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0202_COLORSYNC_CMYK32_PROFILE_LAYERS \
     -DBUILD_TEST_0172_LCMS_LAB_FRAME \
     -DBUILD_TEST_0173_COLORSYNC_LAB_FRAME \
+    -DBUILD_TEST_0174_LAB16_SIGNED_VALUES \
     -DBUILD_TEST_0238_LCMS_CMYK_LINEAR \
     -DBUILD_TEST_0239_LCMS_CMYK_LINEAR_ALIAS \
     -DBUILD_TEST_0240_LCMS_CMYK_GAMMA \
@@ -849,6 +850,7 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0202_colorsync_cmyk32_profile_layers.c \
     loader/libtiff/0172_lcms_lab_frame.c \
     loader/libtiff/0173_colorsync_lab_frame.c \
+    loader/libtiff/0174_lab16_signed_values.c \
     loader/cms_input_frame_common.h \
     loader/colorsync_channel_frame_common.h \
     loader/profile_format_frame_common.h \

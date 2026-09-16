@@ -159,6 +159,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/0202_colorsync_cmyk32_profile_layers.c \
 	loader/libtiff/0172_lcms_lab_frame.c \
 	loader/libtiff/0173_colorsync_lab_frame.c \
+	loader/libtiff/0174_lab16_signed_values.c \
 	loader/cms_input_frame_common.h \
 	loader/colorsync_channel_frame_common.h \
 	loader/profile_format_frame_common.h \
@@ -799,6 +800,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0202_colorsync_cmyk32_profile_layers.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0172_lcms_lab_frame.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0173_colorsync_lab_frame.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0174_lab16_signed_values.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0238_lcms_cmyk_linear.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0239_lcms_cmyk_linear_alias.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0240_lcms_cmyk_gamma.$(OBJEXT) \
@@ -1647,6 +1649,7 @@ am__depfiles_remade =  \
 	loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po \
 	loader/libtiff/$(DEPDIR)/test_runner-0172_lcms_lab_frame.Po \
 	loader/libtiff/$(DEPDIR)/test_runner-0173_colorsync_lab_frame.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po \
@@ -3150,6 +3153,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0202_COLORSYNC_CMYK32_PROFILE_LAYERS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0172_LCMS_LAB_FRAME \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0173_COLORSYNC_LAB_FRAME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0174_LAB16_SIGNED_VALUES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0238_LCMS_CMYK_LINEAR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0239_LCMS_CMYK_LINEAR_ALIAS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0240_LCMS_CMYK_GAMMA \
@@ -3380,6 +3384,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0202_colorsync_cmyk32_profile_layers.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0172_lcms_lab_frame.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0173_colorsync_lab_frame.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0174_lab16_signed_values.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/cms_input_frame_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/colorsync_channel_frame_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/profile_format_frame_common.h \
@@ -4320,6 +4325,9 @@ loader/libtiff/test_runner-0172_lcms_lab_frame.$(OBJEXT):  \
 	loader/libtiff/$(am__dirstamp) \
 	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
 loader/libtiff/test_runner-0173_colorsync_lab_frame.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0174_lab16_signed_values.$(OBJEXT):  \
 	loader/libtiff/$(am__dirstamp) \
 	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
 processing/cms/test_runner-0238_lcms_cmyk_linear.$(OBJEXT):  \
@@ -6503,6 +6511,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0172_lcms_lab_frame.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0173_colorsync_lab_frame.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
@@ -7611,6 +7620,20 @@ loader/libtiff/test_runner-0173_colorsync_lab_frame.obj: loader/libtiff/0173_col
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0173_colorsync_lab_frame.c' object='loader/libtiff/test_runner-0173_colorsync_lab_frame.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0173_colorsync_lab_frame.obj `if test -f 'loader/libtiff/0173_colorsync_lab_frame.c'; then $(CYGPATH_W) 'loader/libtiff/0173_colorsync_lab_frame.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0173_colorsync_lab_frame.c'; fi`
+
+loader/libtiff/test_runner-0174_lab16_signed_values.o: loader/libtiff/0174_lab16_signed_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0174_lab16_signed_values.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Tpo -c -o loader/libtiff/test_runner-0174_lab16_signed_values.o `test -f 'loader/libtiff/0174_lab16_signed_values.c' || echo '$(srcdir)/'`loader/libtiff/0174_lab16_signed_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Tpo loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0174_lab16_signed_values.c' object='loader/libtiff/test_runner-0174_lab16_signed_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0174_lab16_signed_values.o `test -f 'loader/libtiff/0174_lab16_signed_values.c' || echo '$(srcdir)/'`loader/libtiff/0174_lab16_signed_values.c
+
+loader/libtiff/test_runner-0174_lab16_signed_values.obj: loader/libtiff/0174_lab16_signed_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0174_lab16_signed_values.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Tpo -c -o loader/libtiff/test_runner-0174_lab16_signed_values.obj `if test -f 'loader/libtiff/0174_lab16_signed_values.c'; then $(CYGPATH_W) 'loader/libtiff/0174_lab16_signed_values.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0174_lab16_signed_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Tpo loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0174_lab16_signed_values.c' object='loader/libtiff/test_runner-0174_lab16_signed_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0174_lab16_signed_values.obj `if test -f 'loader/libtiff/0174_lab16_signed_values.c'; then $(CYGPATH_W) 'loader/libtiff/0174_lab16_signed_values.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0174_lab16_signed_values.c'; fi`
 
 processing/cms/test_runner-0238_lcms_cmyk_linear.o: processing/cms/0238_lcms_cmyk_linear.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0238_lcms_cmyk_linear.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0238_lcms_cmyk_linear.Tpo -c -o processing/cms/test_runner-0238_lcms_cmyk_linear.o `test -f 'processing/cms/0238_lcms_cmyk_linear.c' || echo '$(srcdir)/'`processing/cms/0238_lcms_cmyk_linear.c
@@ -16060,6 +16083,7 @@ distclean: distclean-am
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0172_lcms_lab_frame.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0173_colorsync_lab_frame.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
@@ -16711,6 +16735,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0142_rgb16_source.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0172_lcms_lab_frame.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0173_colorsync_lab_frame.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0174_lab16_signed_values.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po

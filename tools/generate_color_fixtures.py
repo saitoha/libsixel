@@ -1800,6 +1800,8 @@ def main():
     outputs.update(cli_rgb_oracles())
     from generate_colorsync_lab_tests import build as colorsync_lab_tests
     outputs.update(colorsync_lab_tests(outputs['cli-rgb.icc'], pack_profile, fixed))
+    from generate_tiff_lab16_tests import build as tiff_lab16_tests
+    outputs.update(tiff_lab16_tests(outputs['colorsync-lab.json']))
     from generate_colorsync_gray_tests import build as colorsync_gray_tests
     outputs.update(colorsync_gray_tests(outputs['gray-gamma2.icc'],
         outputs['colorsync-lab-linear.icc'], outputs['colorsync-lab-gamma.icc'],

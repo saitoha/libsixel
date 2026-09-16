@@ -310,13 +310,32 @@ The libtiff loader converts eligible unsigned 16-bit RGB samples directly from t
 
 With CMS disabled, no embedded ICC, an unusable profile or a failed shared conversion, this branch publishes the original normalized source bits as `RGBFLOAT32` with the existing `GAMMA` marker. These unmanaged device values are not a color-correct replacement for an unavailable ICC conversion. A failed direct-linear conversion does not retry the adapter's legacy ICC helper. Existing shared profile-factory behavior is unchanged; this is not a general guarantee that every native profile-construction failure is fatal or prevents all common-layer fallbacks. The ColorSync preparation failure caused by an invalid native-gamma setting retains its diagnostic while the TIFF loader keeps its existing successful unmanaged-frame fallback.
 
-This change does not repair or expand TIFF gray, IEEE float, Lab, byte, alpha, planar, tiled or orientation 5–8 paths. Those paths retain their existing decoders and precision boundaries. In particular, the float decoder's input clamp and the libtiff RGBA8 fallback remain distinct limitations. TIFF WhitePoint/PrimaryChromaticities/TransferFunction metadata is not newly interpreted by this high-precision path, and multi-directory handling is not added.
+The direct-linear RGB16 path does not expand TIFF gray, IEEE float, Lab, byte, alpha, planar, tiled or orientation 5–8 support. TIFF CIELAB16 has the separate signed-word contract below. The float decoder's input clamp and the libtiff RGBA8 fallback remain distinct limitations. TIFF WhitePoint/PrimaryChromaticities/TransferFunction metadata is not newly interpreted by the RGB16 path, and multi-directory handling is not added.
 
 The [literal fixtures and independent values](../../tests/data/color-numeric/tiff-rgb16.json) come from an [offline serializer and oracle](../../tools/generate_tiff_fixtures.py) that does not call libtiff, libsixel or another CMM. It evaluates the original ICC fixed-point TRC/XYZ tags and the first binary32 normalization of each integer with 80-digit Decimal arithmetic and a cofactor inverse, then rounds the expected linear result to binary32. The original six-pixel P3 fixture and its 18 expected components are retained; separate dark/knee and ordinary sRGB fixtures supplement it. Runtime tests require the public frame, coordinates, exact unmanaged source bits, actual libtiff selection and actual requested CMS application, rather than deriving expected values from a production CMS roundtrip.
 
 Numeric tests reuse the existing per-triplet magnitude policy. The builtin/LCMS2 relative allowance is `64 * 2^-24` (`3.814697265625e-6`), matching `color_gray_float_relative`; the ColorSync allowance matches `color_rgb_power_relative` (`0.00032384445817172029`) and its fixed-point matrix/float composition. Each component's error is bounded by the maximum absolute expected component in that pixel times the allowance. There is no absolute floor for dark pixels, and black must be exactly zero. These are declared test allowances, not proven error bounds for opaque native CMS arithmetic. A preparation-failure test requires the ColorSync-specific diagnostic as well as original bits and the unmanaged frame type, so merely disabling CMS cannot satisfy it. Partial-write native-apply failures are a separate shared-helper atomicity concern.
 
 Canonical frame accuracy and final displayed SIXEL quality are separate measurements. Retaining an out-of-range linear component does not by itself prove an improvement after display-gamut handling, palette reduction and dithering.
+
+### TIFF CIELAB16 signed input contract
+
+For eligible high-precision TIFF input with `PhotometricInterpretation=8` (CIELAB), L is an unsigned 16-bit value, normalized internally as `L/65535`. The a/b words are two's-complement signed 16-bit values: physical a/b is `signed_word/256`, and the shared `LAB_F32` representation is `signed_word/32768`, equivalent to physical a/b divided by 128. This is the storage convention documented by [libtiff's TIFFCIELab16ToXYZ](https://gitlab.com/libtiff/libtiff/-/raw/v4.7.2/libtiff/tif_color.c). The container type and the interpretation are separate: retaining the decoded bit pattern in `uint16_t` is valid, provided a/b is subsequently interpreted with this signed rule. The loader widens the word to `int32_t` and subtracts 65536 at or above 32768, avoiding an implementation-defined narrowing cast. File byte order does not change the decoded values.
+
+| Component and stored word | Physical Lab value | Internal normalized value |
+| --- | --- | --- |
+| L `0x0000` / `0xffff` | 0 / 100 | 0 / 1 |
+| a/b `0x0000` | 0 | 0 |
+| a/b `0x0100` / `0xff00` | +1 / -1 | +1/128 / -1/128 |
+| a/b `0x0001` / `0xffff` | +1/256 / -1/256 | +1/32768 / -1/32768 |
+| a/b `0x7fff` | 127.99609375 | 32767/32768 |
+| a/b `0x8000` | -128 | -1 |
+
+The loader applies this storage contract before handing samples to a CMS or the existing no-ICC fallback. A successful ICC conversion retains the existing bounded `LINEARRGBFLOAT32`/`LINEAR` publication path; an untagged input uses the existing D65 Lab fallback and publishes `RGBFLOAT32`/`GAMMA`. These output policies are separate from signed-word decoding. The contract does not add ICCLAB (`PhotometricInterpretation=9`), change float32 Lab heuristics, or expand the existing strip/orientation/extra-sample eligibility. It requires no new high-precision arithmetic dependency.
+
+The contract, decoder, fixtures, oracle and public-frame tests must agree. The [offline generator](../../tools/generate_tiff_lab16_tests.py) fixes literal raw words and their physical values from this storage contract, then derives expected RGB with independent Lab/XYZ/matrix/transfer formulas. Expected values are independent of the implementation under test, not independent of the storage contract; they are never obtained by reversing the decoder or measuring another CMM. The [fixture/value record](../../tests/data/color-numeric/tiff-lab16.json) retains source words, normalized values, profile hash, endian fixture hashes and numeric intervals. `python3 tools/generate_color_fixtures.py --check` verifies deterministic regeneration together with the other color fixtures.
+
+Public-frame tests protect a/b zero, sign boundaries, one storage LSB, unsigned L endpoints, both byte orders, metadata and actual requested CMS execution. Four untagged tests cover all signed extrema and additional +/-64 physical chroma values that distinguish division by 32768 from division by 32767. Six ICC tests cover the three engines in both byte orders, checking eleven interior/neutral/L-endpoint pixels numerically and all fifteen pixels for finiteness. Their existing path-specific allowances remain unchanged: builtin relative 64-binary32-unit roundoff, LCMS one encoded Lab bin plus the relative allowance, and ColorSync the existing canonical/named-sRGB interval. Extreme-chroma equivalence across all native engines is not asserted by these ICC tests. The stricter untagged public values protect one-LSB preservation even where an ICC quantization interval could accept its loss. These are value and route contracts; final palette quantization and perceptual image quality are separate measurements.
 
 ### Normalized float input units at the LCMS boundary
 
@@ -794,6 +813,21 @@ The unsupported-feature list above is an implementation audit, not a guarantee t
 | TIFF16-27 | Invalid ICC with requested lcms2 retains exact normalized RGB16 source bits and RGBFLOAT32/GAMMA without a CMS apply. | [tests/loader/libtiff/0168_rgb16_invalid_icc_lcms2.t](../../tests/loader/libtiff/0168_rgb16_invalid_icc_lcms2.t) |
 | TIFF16-28 | Invalid ICC with requested colorsync retains exact normalized RGB16 source bits and RGBFLOAT32/GAMMA without a CMS apply. | [tests/loader/libtiff/0169_rgb16_invalid_icc_colorsync.t](../../tests/loader/libtiff/0169_rgb16_invalid_icc_colorsync.t) |
 | TIFF16-29 | A real ColorSync preparation failure produces its specific diagnostic, preserves all original source bits as RGBFLOAT32/GAMMA, and performs no CMS apply. | [tests/loader/libtiff/0170_rgb16_prepare_failure_colorsync.t](../../tests/loader/libtiff/0170_rgb16_prepare_failure_colorsync.t) |
+
+### TIFF CIELAB16 input contract tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TL16-01 | Little-endian signed CIELAB16 boundaries and unsigned L endpoints produce independent untagged gamma frame values without CMS. | [tests/loader/libtiff/0174_lab16_untagged_le.t](../../tests/loader/libtiff/0174_lab16_untagged_le.t) |
+| TL16-02 | Big-endian signed CIELAB16 boundaries and unsigned L endpoints produce the same untagged value contract. | [tests/loader/libtiff/0175_lab16_untagged_be.t](../../tests/loader/libtiff/0175_lab16_untagged_be.t) |
+| TL16-03 | Little-endian CIELAB16 produces independent bounded-linear values through actual builtin CMS. | [tests/loader/libtiff/0176_lab16_builtin_le.t](../../tests/loader/libtiff/0176_lab16_builtin_le.t) |
+| TL16-04 | Big-endian CIELAB16 produces independent bounded-linear values through actual builtin CMS. | [tests/loader/libtiff/0177_lab16_builtin_be.t](../../tests/loader/libtiff/0177_lab16_builtin_be.t) |
+| TL16-05 | Little-endian CIELAB16 produces independent bounded-linear values through actual LCMS. | [tests/loader/libtiff/0178_lab16_lcms2_le.t](../../tests/loader/libtiff/0178_lab16_lcms2_le.t) |
+| TL16-06 | Big-endian CIELAB16 produces independent bounded-linear values through actual LCMS. | [tests/loader/libtiff/0179_lab16_lcms2_be.t](../../tests/loader/libtiff/0179_lab16_lcms2_be.t) |
+| TL16-07 | Little-endian CIELAB16 produces independent bounded-linear values through actual ColorSync. | [tests/loader/libtiff/0180_lab16_colorsync_le.t](../../tests/loader/libtiff/0180_lab16_colorsync_le.t) |
+| TL16-08 | Big-endian CIELAB16 produces independent bounded-linear values through actual ColorSync. | [tests/loader/libtiff/0181_lab16_colorsync_be.t](../../tests/loader/libtiff/0181_lab16_colorsync_be.t) |
+| TL16-09 | Little-endian +/-64 physical chroma protects the signed-word scale in nonclipped untagged frame components. | [tests/loader/libtiff/0182_lab16_midpoint_le.t](../../tests/loader/libtiff/0182_lab16_midpoint_le.t) |
+| TL16-10 | Big-endian +/-64 physical chroma protects the same signed-word scale. | [tests/loader/libtiff/0183_lab16_midpoint_be.t](../../tests/loader/libtiff/0183_lab16_midpoint_be.t) |
 
 ### TIFF ICC numerical input contracts
 
