@@ -4,6 +4,8 @@ For engine selection and its limits, read [Loader CMS: builtin and Little CMS](c
 
 ## Scope
 
+For URL input, [Network access](network-access.md) describes the transport bindings, supported-scheme differences, and `-k` certificate-verification behavior and risks. Transport selection happens before image decoding and is independent of `-L`.
+
 Image loading in libsixel is an ordered component pipeline rather than one decoder hidden behind a uniform RGBA buffer. The loader manager builds a candidate chain, gives each candidate an opportunity to recognize and decode the input, and returns the first accepted frame. Each backend implements shared format metadata policy and owns format recognition, decoding, animation delivery, orientation, alpha finalization, and any CMS path that it supports.
 
 This document defines that shared architecture and the `-L` policy surface. Backend-specific parsing and format behavior belongs in the [libpng Image Loader](libpng.md) and [Builtin Image Loader](builtin.md) references.

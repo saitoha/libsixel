@@ -31,6 +31,26 @@ SIXEL sequence.  When reading, the converter probes for PNG data first,
 falls back to TIFF, and finally consumes UTF-8 strings if no image payload
 is present.
 
+.SS "Network input"
+Input operands containing \(dq://\(dq are passed to the compiled network
+bindings, in this order: WinHTTP, libcurl, then libfetch. The first successful
+fetch is used; a failed attempt can fall back to the next compiled binding.
+The \fB-L\fP option selects image decoders, not network bindings.
+The fetched resource must still contain a supported image format.
+.PP
+WinHTTP accepts HTTP and HTTPS. libcurl can support additional schemes such
+as FTP, FTPS, file, SFTP, and SCP, depending on its version, build options,
+and linked TLS or SSH backend. Native libfetch provides HTTP, FTP, and file
+access, with HTTPS dependent on its implementation and TLS-enabled build.
+The Emscripten libfetch option uses the runtime Fetch API instead of BSD
+libfetch and remains subject to runtime access restrictions.
+.PP
+Use \fB--version\fP to see which bindings were compiled in. Their presence
+does not enumerate all supported schemes or identify the successful binding.
+Even file:// input requires a suitable binding; an ordinary local path does
+not. Redirects, proxies, and certificate trust configuration are
+backend-dependent. See \fB-k\fP for the certificate-verification bypass.
+
 
 .SH "COMMAND-LINE OPTIONS"
 \fIimg2sixel\fP has the following command-line options:
@@ -391,8 +411,22 @@ This option is mutually exclusive with \fB-b\fP, \fB-m\fP, and
 \fB-I\fP. Repeating \fB-e\fP is allowed.
 .TP 5
 .B \-k, \-\-insecure
-allow to connect to SSL sites without certs
-(enabled only when configured with a supported network backend)
+skip HTTPS server certificate verification where supported.
+Verification is normally enabled. Disabling it allows server impersonation,
+interception of requests, and replacement of the downloaded image, even
+though HTTPS still uses encryption. Use only for temporary diagnostics
+against a controlled endpoint; repair the certificate or trust configuration
+for normal use.
+.IP
+For an original URL beginning with lowercase https://, libcurl disables
+certificate-chain and hostname verification. Native libfetch temporarily
+sets SSL_NO_VERIFY_PEER and SSL_NO_VERIFY_HOSTNAME; their effect depends on
+the linked implementation. An initial HTTP URL redirected to HTTPS, an
+uppercase HTTPS scheme, or FTPS does not activate these two bindings' bypass.
+WinHTTP requests ignoring unknown-CA, invalid-date, and hostname errors.
+Emscripten ignores this option and retains runtime certificate policy.
+This option does not supply a client certificate, disable SSH host-key
+verification, or enable a missing protocol or TLS backend.
 .TP 5
 .B \-i, \-\-invert
 assume the terminal background color is white.

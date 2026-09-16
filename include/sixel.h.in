@@ -320,7 +320,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_MAPFILE           ('m')  /* -m FILE, --mapfile=FILE: specify set of colors */
 #define SIXEL_OPTFLAG_MAPFILE_OUTPUT    ('M')  /* -M FILE, --mapfile-output=FILE: export palette file */
 #define SIXEL_OPTFLAG_MONOCHROME        ('e')  /* -e, --monochrome: output monochrome sixel image */
-#define SIXEL_OPTFLAG_INSECURE          ('k')  /* -k, --insecure: allow to connect to SSL sites without certs */
+#define SIXEL_OPTFLAG_INSECURE          ('k')
+    /* -k, --insecure: skip HTTPS certificate checks where supported (unsafe). */
 #define SIXEL_OPTFLAG_INVERT            ('i')  /* -i, --invert: assume the terminal background color */
 #define SIXEL_OPTFLAG_HIGH_COLOR        ('I')  /* -I, --high-color: output 15bpp sixel image */
 #define SIXEL_OPTFLAG_USE_MACRO         ('u')  /* -u, --use-macro: use DECDMAC and DECINVM sequences */

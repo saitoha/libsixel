@@ -472,8 +472,10 @@ static cli_option_help_t const g_option_help_table[] = {
         'k',
         "insecure",
         "-k, --insecure\n"
-        "    allow to connect to SSL sites without certs(enabled only when configured with a\n"
-        "    supported network backend)\n"
+        "    skip HTTPS server certificate verification where supported.\n"
+        "    This permits server impersonation and image tampering.\n"
+        "    libcurl/libfetch require an initial lowercase https:// URL;\n"
+        "    Emscripten ignores -k. Verification is normally enabled.\n"
     },
     {
         'i',
