@@ -18,6 +18,7 @@ noinst_PROGRAMS += lso-timeout
 endif
 
 EXTRA_DIST = libsixel-config.in \
+             check_tap_executable.py \
              generate_color_fixtures.py \
              generate_png_chrm_fixtures.py \
              generate_png_arithmetic_tests.py \

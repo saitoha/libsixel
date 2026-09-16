@@ -21,6 +21,10 @@ Shell TAP tests normally declare `1..1`. A whole-file skip declares `1..0 # SKIP
 
 ## Shell TAP tests
 
+Shell TAP files under `tests/` must be stored with Git mode `100755` and normally have filesystem mode `0755`. Set that mode when creating or generating a test. Both the Autotools and Meson harnesses explicitly invoke a shell, so a passing test through either harness does not detect missing execute permissions.
+
+`staticcheck-test-executable` checks the current source tree without a legacy exception list. On POSIX it checks the owner execute bit on regular files, including uncommitted changes and allowing normal umask differences; when Git cannot track filesystem modes (`core.filemode=false`), it also checks index mode `100755`. On native Windows the Git index supplies the executable mode: add new tests and use `git update-index --chmod=+x -- <path>` when necessary. Extracted source distributions use POSIX permissions; a Git-free native Windows tree reports a skip because neither source of executable metadata is available. POSIX checks are not skipped merely because `core.filemode` is false.
+
 ### Required structure
 
 Every `*.t` shell test must begin with `set -eux`. Print the TAP plan and then enable `set -v` so CI logs show the executed source. The test must read from top to bottom; do not define shell functions.
@@ -161,6 +165,7 @@ Each automated contract has a stable ID and an owning static check. The reciproc
 | TG-07 | Shell TAP tests do not use `for` or `until` loops; heredoc payloads in other languages are excluded. | [tests/_static/sh/staticcheck-test-no-for-until.sh](../../tests/_static/sh/staticcheck-test-no-for-until.sh) |
 | TG-08 | Aborttrace TAP tests that invoke the shared abort helper retain early whole-file skips for both Wine runtime prefixes. | [tests/_static/sh/staticcheck-aborttrace-wine-skip.sh](../../tests/_static/sh/staticcheck-aborttrace-wine-skip.sh) |
 | TG-09 | Marked test-plan inventories and their complete glob-scoped test sets carry exact reciprocal links without duplicate entries. | [tests/_static/sh/staticcheck-test-plan-links.sh](../../tests/_static/sh/staticcheck-test-plan-links.sh) |
+| TG-10 | Shell TAP sources retain executable filesystem or Git modes on the supported checkout and distribution paths. | [tests/_static/sh/staticcheck-test-executable.sh](../../tests/_static/sh/staticcheck-test-executable.sh) |
 
 ### Coverage boundary
 

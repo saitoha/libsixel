@@ -1034,6 +1034,11 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-test-executable',
+    [meson.current_source_dir() / '_static/sh/staticcheck-test-executable.sh',
+      meson.project_source_root(), python_for_tests_path],
+  ],
+  [
     'staticcheck-artifact-local-dir-mkdir',
     [meson.current_source_dir() / '_static/sh/staticcheck-artifact-local-dir-mkdir.sh',
       meson.project_source_root()],

@@ -480,6 +480,7 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 bin_SCRIPTS = libsixel-config $(am__append_1)
 EXTRA_DIST = libsixel-config.in \
+             check_tap_executable.py \
              generate_color_fixtures.py \
              generate_png_chrm_fixtures.py \
              generate_png_arithmetic_tests.py \

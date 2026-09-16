@@ -1777,6 +1777,7 @@ AM_LOG_FLAGS =
 	staticcheck-interframe-no-compat-getenv-symbol \
 	staticcheck-aborttrace-wine-skip \
 	staticcheck-test-plan-single \
+	staticcheck-test-executable \
 	staticcheck-test-webp-serial-unique \
 	staticcheck-test-no-grep-awk \
 	staticcheck-test-no-for-until \
@@ -1852,6 +1853,7 @@ staticcheck-interframe-c-h-pair-sync \
 staticcheck-interframe-no-compat-getenv-symbol \
 staticcheck-aborttrace-wine-skip \
 staticcheck-test-plan-single \
+	staticcheck-test-executable \
 staticcheck-test-webp-serial-unique \
 staticcheck-test-no-grep-awk \
 staticcheck-test-no-for-until \
@@ -2418,6 +2420,17 @@ staticcheck-test-plan-single:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-plan-single.sh" \
 		"$(abs_top_srcdir)"
+
+staticcheck-test-executable:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-executable" \
+		--log-file staticcheck-test-executable.log \
+		--trs-file staticcheck-test-executable.trs \
+		--enable-hard-errors \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-executable.sh" \
+		"$(abs_top_srcdir)" "$(PYTHON)"
 
 staticcheck-test-webp-serial-unique:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -3445,6 +3458,11 @@ check-php: prepare-binding-artifacts
 TEST_DATA_DIRS = data
 
 EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
+    meson.build \
+    docs/consistency/0004_envvars_vs_help.t \
+    loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t \
+    loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t \
+    quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t \
     $(HELPER_FILES) \
     loader/builtin/0014_loader_builtin_pixelformat_common.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_hdr.inc.c \
@@ -3523,6 +3541,7 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh \
     _static/sh/staticcheck-aborttrace-wine-skip.sh \
     _static/sh/staticcheck-test-plan-single.sh \
+    _static/sh/staticcheck-test-executable.sh \
     _static/sh/staticcheck-test-webp-serial-unique.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \
     _static/sh/staticcheck-test-no-for-until.sh \

@@ -588,6 +588,10 @@ run_case_tap "staticcheck-test-plan-single" \
     "$src_root/tests/_static/sh/staticcheck-test-plan-single.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-executable" \
+    "$src_root/tests/_static/sh/staticcheck-test-executable.sh" \
+    "$src_root" "$python_bin" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-webp-serial-unique" \
     "$src_root/tests/_static/sh/staticcheck-test-webp-serial-unique.sh" \
     "$src_root" || fail_and_exit $?
