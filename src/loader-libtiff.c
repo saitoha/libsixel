@@ -666,11 +666,41 @@ tiff_logluv_xyz_to_linear(float const xyz[3], double rgb[3])
            isfinite(rgb[2]) && fabs(rgb[2]) <= FLT_MAX;
 }
 
+/* Keep the byte-path photometric/profile check before the shared float
+ * boundary. Expanded Gray samples are RGB-shaped storage, not an RGB source
+ * definition. An inapplicable profile leaves all normalized source values
+ * untouched, identically in builds with and without Little CMS. */
+static int
+tiff_convert_byte_samples_to_linear(float *pixels, int width, int height,
+                                   void const *profile, uint32_t length,
+                                   uint16_t photometric)
+{
+    sixel_cms_profile_t *source;
+    sixel_cms_color_space_t expected;
+    int converted;
+
+    source = NULL;
+    converted = 0;
+    expected = photometric == PHOTOMETRIC_RGB
+             ? SIXEL_CMS_COLORSPACE_RGB : SIXEL_CMS_COLORSPACE_GRAY;
+    source = sixel_cms_open_profile_from_mem(profile, length);
+    if (source == NULL) {
+        return 0;
+    }
+    if (sixel_cms_get_color_space(source) == expected) {
+        converted = sixel_cms_convert_profile_to_linearrgb(
+            (unsigned char *)pixels, width, height,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, source);
+    }
+    sixel_cms_close_profile(source);
+    return converted;
+}
+
 /*
  * Decode selected high-precision TIFF layouts directly into float32 buffers.
  *
  * Supported source layouts:
- *   - RGB/Gray integer (16-bit, contiguous, no alpha)
+ *   - RGB/Gray integer (8/16-bit, contiguous, no alpha)
  *   - RGB/Gray float32 (SampleFormat=IEEEFP, contiguous, no alpha)
  *   - CIELAB integer/float32 (16-bit or float32, contiguous, no alpha)
  *   - LogLuv SGILOG/SGILOG24 via decoded XYZ float32, contiguous, no alpha
@@ -688,7 +718,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
                              uint32_t           /* in */  icc_profile_length,
                              uint16_t           /* in */  photometric,
                              sixel_allocator_t  /* in */  *allocator,
-                             int                /* out */ *pnative_xyz)
+                             int                /* out */ *pnegotiate_target)
 {
     SIXELSTATUS status;
     tsize_t scanline_size;
@@ -712,6 +742,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     uint32_t dst_y;
     size_t src_base;
     size_t dst_base;
+    size_t component;
     unsigned char const *row_u8;
     uint16_t const *row_u16;
     float const *row_f32;
@@ -771,11 +802,11 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     decode_mode = TIFF_DECODE_UNSUPPORTED;
 
-    if (result == NULL || ppixelformat == NULL || pnative_xyz == NULL ||
+    if (result == NULL || ppixelformat == NULL || pnegotiate_target == NULL ||
         tif == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    *pnative_xyz = 0;
+    *pnegotiate_target = 0;
     if (width == 0u || height == 0u) {
         return SIXEL_FALSE;
     }
@@ -798,7 +829,11 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         sample_format = SAMPLEFORMAT_UINT;
     }
     if (photometric != PHOTOMETRIC_LOGLUV && bits_per_sample <= 8u &&
-        sample_format != SAMPLEFORMAT_IEEEFP) {
+        sample_format != SAMPLEFORMAT_IEEEFP &&
+        !(bits_per_sample == 8u && sample_format == SAMPLEFORMAT_UINT &&
+          (photometric == PHOTOMETRIC_RGB ||
+           photometric == PHOTOMETRIC_MINISBLACK ||
+           photometric == PHOTOMETRIC_MINISWHITE))) {
         return SIXEL_FALSE;
     }
     if (planar_config != PLANARCONFIG_CONTIG ||
@@ -847,7 +882,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
             samples_per_pixel >= 3u) {
             decode_mode = TIFF_DECODE_RGB_FLOAT32;
         } else if (sample_format == SAMPLEFORMAT_UINT &&
-                   bits_per_sample == 16u &&
+                   (bits_per_sample == 8u || bits_per_sample == 16u) &&
                    samples_per_pixel >= 3u) {
             decode_mode = TIFF_DECODE_RGB_UINT;
         }
@@ -860,7 +895,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         if (sample_format == SAMPLEFORMAT_IEEEFP && bits_per_sample == 32u) {
             decode_mode = TIFF_DECODE_GRAY_FLOAT32;
         } else if (sample_format == SAMPLEFORMAT_UINT &&
-                   bits_per_sample == 16u) {
+                   (bits_per_sample == 8u || bits_per_sample == 16u)) {
             decode_mode = TIFF_DECODE_GRAY_UINT;
         }
         break;
@@ -1073,7 +1108,13 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
 
     if (icc_profile != NULL && icc_profile_length > 0u &&
         tiff_photometric_allows_embedded_icc(photometric, 1)) {
-        if (decode_mode == TIFF_DECODE_RGB_UINT ||
+        if (bits_per_sample == 8u &&
+            (decode_mode == TIFF_DECODE_RGB_UINT ||
+             decode_mode == TIFF_DECODE_GRAY_UINT)) {
+            cms_converted = tiff_convert_byte_samples_to_linear(
+                float_pixels, (int)width, (int)height, icc_profile,
+                icc_profile_length, photometric);
+        } else if (decode_mode == TIFF_DECODE_RGB_UINT ||
             decode_mode == TIFF_DECODE_GRAY_UINT ||
             decode_mode == TIFF_DECODE_RGB_FLOAT32 ||
             decode_mode == TIFF_DECODE_GRAY_FLOAT32 ||
@@ -1125,10 +1166,26 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     }
 
     *result = (unsigned char *)float_pixels;
-    *pnative_xyz = decode_mode == TIFF_DECODE_LOGLUV_FLOAT32;
-    *ppixelformat = cms_converted || *pnative_xyz
+    *pnegotiate_target = decode_mode == TIFF_DECODE_LOGLUV_FLOAT32 ||
+        (cms_converted && bits_per_sample == 8u &&
+         (decode_mode == TIFF_DECODE_RGB_UINT ||
+          decode_mode == TIFF_DECODE_GRAY_UINT));
+    *ppixelformat = cms_converted || *pnegotiate_target
                   ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                   : SIXEL_PIXELFORMAT_RGBFLOAT32;
+    if (!cms_converted && bits_per_sample == 8u &&
+        (decode_mode == TIFF_DECODE_RGB_UINT ||
+         decode_mode == TIFF_DECODE_GRAY_UINT)) {
+        /* These are unchanged original byte samples, not CMS output.
+         * Normalization roundoff is far below a half-byte; reconstructing
+         * them exactly preserves the unmanaged byte-pipeline behavior.
+         * Forward compaction never overwrites an unread float sample. */
+        for (component = 0u; component < pixel_count * 3u; ++component) {
+            ((unsigned char *)float_pixels)[component] = (unsigned char)(
+                (double)float_pixels[component] * 255.0 + 0.5);
+        }
+        *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+    }
     float_pixels = NULL;
     status = SIXEL_OK;
 
@@ -1161,7 +1218,7 @@ load_tiff(unsigned char      /* out */ **result,
           int                /* out */ *ppixelformat,
           sixel_allocator_t  /* in */  *allocator,
           int                /* in */  enable_cms,
-          int                /* out */ *pnative_xyz)
+          int                /* out */ *pnegotiate_target)
 {
     SIXELSTATUS status;
     TIFF *tif;
@@ -1266,7 +1323,7 @@ load_tiff(unsigned char      /* out */ **result,
                                                             : 0u,
                                                          photometric,
                                                          allocator,
-                                                         pnative_xyz);
+                                                         pnegotiate_target);
     if (high_precision_status == SIXEL_OK) {
         *result = pixels;
         *pwidth = (int)width;
@@ -1388,13 +1445,13 @@ load_with_libtiff(
     sixel_frame_t *frame;
     unsigned char *pixels;
     int pixelformat;
-    int native_xyz;
+    int negotiate_target;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
     pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    native_xyz = 0;
+    negotiate_target = 0;
 
     (void)fstatic;
     (void)fuse_palette;
@@ -1420,7 +1477,7 @@ load_with_libtiff(
                        &pixelformat,
                        allocator,
                        enable_cms,
-                       &native_xyz);
+                       &negotiate_target);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1452,10 +1509,11 @@ load_with_libtiff(
         }
     }
 
-    if (native_xyz) {
-        /* Only the native LogLuv route negotiates this target here. The
-         * frame converter retains extended float values and owns the
-         * deliberate byte boundary selected by prefer_8bit. */
+    if (negotiate_target) {
+        /* Native XYZ and managed byte RGB/Gray establish canonical linear
+         * float samples first. Working coordinates and an explicit final
+         * byte boundary apply only after successful source interpretation.
+         * Failed byte ICC input restores original RGB888/GAMMA samples. */
         status = sixel_frame_set_pixelformat(
             frame, loader_cms_target_pixelformat());
         if (SIXEL_FAILED(status)) {

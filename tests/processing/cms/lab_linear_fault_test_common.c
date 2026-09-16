@@ -466,7 +466,9 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #undef ColorSyncTransformConvert
 #if HAVE_LIBTIFF
 #define tiff_logluv_xyz_to_linear clf_logluv_xyz_to_linear
+#define tiff_convert_byte_samples_to_linear llbf_byte
 #include "src/loader-libtiff.c"
+#undef tiff_convert_byte_samples_to_linear
 #undef tiff_logluv_xyz_to_linear
 #endif
 #undef SIXEL_CMS_PROFILE_BACKEND_BUILTIN

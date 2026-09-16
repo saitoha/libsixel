@@ -1811,6 +1811,8 @@ def main():
     outputs.update(tiff_float_tests(profile, outputs['cmyk.icc']))
     from generate_tiff_managed_fixtures import build as tiff_managed
     outputs.update(tiff_managed(profile, outputs['gray-gamma2.icc']))
+    from generate_tiff_byte_fixtures import build as tiff_byte
+    outputs.update(tiff_byte(profile, outputs['gray-gamma2.icc']))
     from generate_colorsync_gray_tests import build as colorsync_gray_tests
     outputs.update(colorsync_gray_tests(outputs['gray-gamma2.icc'],
         outputs['colorsync-lab-linear.icc'], outputs['colorsync-lab-gamma.icc'],

@@ -13,7 +13,7 @@ img2sixel -L 'libtiff:cms_engine=builtin!' image.tif
 
 | Route | Scope |
 | --- | --- |
-| High-precision scanlines | Selected contiguous RGB/grayscale 16-bit integer or float32 layouts, and selected 16-bit/float32 CIELAB layouts, without extra alpha samples. Supported orientation and scanline-layout checks also apply. |
+| High-precision scanlines | Selected contiguous RGB/grayscale 8/16-bit integer or float32 layouts, and selected 16-bit/float32 CIELAB layouts, without extra alpha samples. Supported orientation and scanline-layout checks also apply. |
 | `TIFFReadRGBAImageOriented` | The general libtiff conversion fallback for combinations outside the direct path. Its RGBA result is an 8-bit representation; later promotion to float32 does not recover discarded source precision. |
 | Loader-manager fallback | A different backend may be tried only according to the shared failure/callback rules. This is separate from choosing libtiff's internal RGBA route. |
 
@@ -45,7 +45,8 @@ The **high-precision layout** is contiguous strips, orientation 1–4, no extra 
 | CIELAB unsigned 16-bit, high-precision layout | Implemented: unsigned L and signed a/b words decoded into the internal Lab representation | Implemented: applicable Lab profile through the shared direct-linear helper | The signed-word convention and fallback are defined by [CIELAB16](color-management.md#tiff-cielab16-signed-input-contract) and [Lab publication](color-management.md#tiff-lab-direct-linear-publication-and-recovery). |
 | CIELAB IEEE float32, high-precision layout | Implemented: existing Lab sample normalization | Implemented: applicable Lab profile through the shared direct-linear helper | This retains the existing input normalization convention; it does not promise arbitrary extended Lab input. See [Lab publication](color-management.md#tiff-lab-direct-linear-publication-and-recovery). |
 | LogLuv with SGILOG / SGILOG24, contiguous strips, three channels, no extras, orientation 1–4 | Implemented: libtiff decoded XYZ float32 converted to canonical linear RGB | Not applied by design: this path interprets native XYZ, not device samples through ICC | Stored-coordinate scale and finite extended RGB are retained. See [LogLuv policy](color-management.md#logluv-stored-coordinate-and-exposure-policy). |
-| RGB / MINISBLACK / MINISWHITE on the RGBA8 path, including accepted low-bit or byte inputs and other layouts | Delegated: requires successful libtiff RGBA8 decoding | Implemented after RGBA8 decoding, subject to profile compatibility | Original high-depth values and extended range cannot be restored after this byte boundary. This is CMS-connected, but not a precision-preserving path. |
+| RGB / MINISBLACK / MINISWHITE UINT8, high-precision layout | Implemented from original scanlines | Implemented with a matching RGB/Gray profile through the shared direct-linear helper | Successful interpretation retains extended linear float values before final target negotiation. Unmanaged or failed interpretation restores exact RGB888/GAMMA source bytes. |
+| RGB / MINISBLACK / MINISWHITE on the RGBA8 path, including accepted low-bit inputs and byte layouts outside the direct path | Delegated: requires successful libtiff RGBA8 decoding | Implemented after RGBA8 decoding, subject to profile compatibility | Original high-depth values and extended range cannot be restored after this byte boundary. This is CMS-connected, but not a precision-preserving path. |
 | Palette TIFF on the RGBA8 path | Delegated: libtiff expands the palette to RGBA8 | Implemented for an applicable RGB profile after expansion | The palette and source precision are no longer retained as the original indexed representation. |
 | YCbCr TIFF on the RGBA8 path | Delegated: libtiff converts components to RGBA8 | Implemented for an applicable RGB profile after component conversion | This does not provide an original-YCbCr-domain ICC input path or recover source precision lost during decoding. |
 | **CIELAB 8-bit**, or CIELAB outside the high-precision layout | Delegated: requires successful libtiff RGBA8 decoding | **Not implemented:** the byte-path photometric gates skip the embedded Lab ICC | A readable image can be returned without applying its embedded profile. Correct integration needs original Lab samples before RGB conversion. |
@@ -61,9 +62,21 @@ CIELAB8 and CMYK are implementation omissions inside a loader that already has C
 
 Both byte-helper build variants omit those photometric cases: `tiff_convert_embedded_icc_to_srgb()` does not select a Lab/CMYK transform, and `tiff_photometric_allows_embedded_icc(..., 0)` rejects them for the other variant. Selecting a different CMS engine cannot add the missing original-sample connection.
 
-For the implemented high-precision RGB/Gray paths, successful ICC conversion publishes `LINEARRGBFLOAT32` / `LINEAR`. With no applicable conversion, they publish their original normalized integer or polarity-adjusted floating-point samples as `RGBFLOAT32` / `GAMMA`. Lab has its own format-specific fallback. The fallback `GAMMA` marker does not establish calibrated sRGB primaries for a device-specific source. The shared helper publishes only a complete finite result and preserves original samples on failure; it does not make every embedded profile acceptable.
+For the implemented 16-bit and float32 RGB/Gray paths, successful ICC conversion publishes `LINEARRGBFLOAT32` / `LINEAR`. With no applicable conversion, they publish their original normalized integer or polarity-adjusted floating-point samples as `RGBFLOAT32` / `GAMMA`. Lab has its own format-specific fallback. The fallback `GAMMA` marker does not establish calibrated sRGB primaries for a device-specific source. The shared helper publishes only a complete finite result and preserves original samples on failure; it does not make every embedded profile acceptable.
 
-`cms_target` and `prefer_8bit` are not evidence that a particular TIFF branch performed a transform. Native LogLuv has an explicit final target-negotiation step; the other paths retain their own publication contracts. Alpha handling after RGBA8 decoding likewise cannot recover the samples lost at the byte boundary.
+`cms_target` and `prefer_8bit` are not evidence that a particular TIFF branch performed a transform. Native LogLuv and successfully managed eligible RGB/Gray8 have an explicit final target-negotiation step; the other paths retain their own publication contracts. Alpha handling after RGBA8 decoding likewise cannot recover the samples lost at the byte boundary.
+
+## Original byte samples and final publication
+
+The direct byte route accepts unsigned 8-bit RGB3 or MINISBLACK/MINISWHITE1 in contiguous strips, without extra samples, in orientations 1–4. Existing VOID-as-UINT interpretation remains supported. Even an all-255 alpha extra is outside this route. Palette, YCbCr, low-bit, planar/tiled, orientation 5–8 and alpha paths retain their separate limitations; this contract does not close them.
+
+Each original byte is normalized once into float32. MINISWHITE polarity is applied before its Gray ICC curve. An RGB source requires an RGB profile and a grayscale source requires a Gray profile, consistently with and without external CMMs. A complete, finite ICC result establishes LINEARRGBFLOAT32/LINEAR; the existing frame converter then honors `cms_target` or the deliberate final byte boundary requested by `prefer_8bit`. Negative and above-one managed values survive until an explicitly selected byte conversion.
+
+With CMS `none`, absent, invalid or mismatched ICC, or failed optional CMS work, the complete normalized original source survives. The adapter reconstructs those original bytes exactly and publishes RGB888/GAMMA. It does not publish unmanaged float merely because its decoder used a float workspace, nor does it negotiate a requested target after failed interpretation. This preserves the existing unmanaged downstream precision/lookup selection. The GAMMA marker does not assert calibrated sRGB source primaries. Mandatory decoder allocation/read errors terminate the selected decode without callback or RGBA retry.
+
+A resolved background leaves eligible opaque samples unchanged. Bypassing the RGBA convenience path intentionally removes its former alpha-255 right-shift attenuation, which could darken a component by one byte level even for an opaque input. Alpha-bearing inputs remain outside this guarantee.
+
+The decoder allocates 12 bytes per pixel plus a scanline. CMS retains its separate transactional float result and, for Gray, its packed source. Although unmanaged fallback has a 3-byte-per-pixel payload, the compacted allocation retains its original 12-byte-per-pixel capacity until release. This is not a memory reduction and adds no arbitrary-precision runtime library. The [numeric and final-output distinction](color-management.md#tiff-original-byte-rgb-and-gray-input) also applies: more accurate intermediate samples do not guarantee a visible improvement after palette quantization.
 
 ## Implementation and verification references
 
@@ -74,3 +87,36 @@ For the common downstream representation and resize promotion rules, see [pixel-
 The owning adapter is [`src/loader-libtiff.c`](../../src/loader-libtiff.c): `tiff_try_load_high_precision()` selects the native scanline paths, `load_tiff()` selects RGBA8 fallback, and the two byte ICC helpers enforce their photometric gates. The direct-linear conversion and publication helper is in [`src/cms.c`](../../src/cms.c).
 
 The [TIFF test directory](../../tests/loader/libtiff/) contains numerical, metadata, recovery and quality tests. Their documented contracts and reciprocal test links are maintained in [Loader Color Management: test coverage](color-management.md#test-coverage). Independent sample-value tests protect arithmetic and source retention; image-similarity tests cover their stated perceptual floor. Neither the directory's existence nor a CMS engine name proves coverage for an unimplemented or unverified row above.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| CMS-339 | RGB original bytes produce independently bounded canonical values through actual builtin, with exact frame metadata and no opaque-background attenuation. | [tests/loader/libtiff/0285_byte_rgb_builtin.t](../../tests/loader/libtiff/0285_byte_rgb_builtin.t) |
+| CMS-340 | RGB original bytes produce independently bounded canonical values through actual LCMS, with exact frame metadata and no opaque-background attenuation. | [tests/loader/libtiff/0286_byte_rgb_lcms2.t](../../tests/loader/libtiff/0286_byte_rgb_lcms2.t) |
+| CMS-341 | RGB original bytes produce independently bounded canonical values through actual ColorSync, with exact frame metadata and no opaque-background attenuation. | [tests/loader/libtiff/0287_byte_rgb_colorsync.t](../../tests/loader/libtiff/0287_byte_rgb_colorsync.t) |
+| CMS-342 | MINISBLACK original bytes produce independently bounded canonical values through actual builtin, with exact frame metadata and no opaque-background attenuation. | [tests/loader/libtiff/0288_byte_black_builtin.t](../../tests/loader/libtiff/0288_byte_black_builtin.t) |
+| CMS-343 | MINISBLACK original bytes produce independently bounded canonical values through actual LCMS, with exact frame metadata and no opaque-background attenuation. | [tests/loader/libtiff/0289_byte_black_lcms2.t](../../tests/loader/libtiff/0289_byte_black_lcms2.t) |
+| CMS-344 | MINISBLACK original bytes produce independently bounded canonical values through actual ColorSync, with exact frame metadata and no opaque-background attenuation. | [tests/loader/libtiff/0290_byte_black_colorsync.t](../../tests/loader/libtiff/0290_byte_black_colorsync.t) |
+| CMS-345 | MINISWHITE original bytes produce independently bounded canonical values through actual builtin, with exact frame metadata and no opaque-background attenuation. | [tests/loader/libtiff/0291_byte_white_builtin.t](../../tests/loader/libtiff/0291_byte_white_builtin.t) |
+| CMS-346 | MINISWHITE original bytes produce independently bounded canonical values through actual LCMS, with exact frame metadata and no opaque-background attenuation. | [tests/loader/libtiff/0292_byte_white_lcms2.t](../../tests/loader/libtiff/0292_byte_white_lcms2.t) |
+| CMS-347 | MINISWHITE original bytes produce independently bounded canonical values through actual ColorSync, with exact frame metadata and no opaque-background attenuation. | [tests/loader/libtiff/0293_byte_white_colorsync.t](../../tests/loader/libtiff/0293_byte_white_colorsync.t) |
+| CMS-348 | RGB retains every original byte across all 256 levels for none/absent/invalid/mismatched ICC, without CMS apply or target negotiation. | [tests/loader/libtiff/0294_byte_rgb_fallback.t](../../tests/loader/libtiff/0294_byte_rgb_fallback.t) |
+| CMS-349 | MINISBLACK retains every original byte across all 256 levels for none/absent/invalid/mismatched ICC, without CMS apply or target negotiation. | [tests/loader/libtiff/0295_byte_black_fallback.t](../../tests/loader/libtiff/0295_byte_black_fallback.t) |
+| CMS-350 | MINISWHITE retains every original byte across all 256 levels for none/absent/invalid/mismatched ICC, without CMS apply or target negotiation. | [tests/loader/libtiff/0296_byte_white_fallback.t](../../tests/loader/libtiff/0296_byte_white_fallback.t) |
+| CMS-351 | Orientations 1–4 map original RGB/Gray samples independently; UINT and VOID select the same direct route. | [tests/loader/libtiff/0297_byte_orientation_void.t](../../tests/loader/libtiff/0297_byte_orientation_void.t) |
+| CMS-352 | Managed gamma float publication follows the independently encoded canonical values. | [tests/loader/libtiff/0298_byte_gamma_target.t](../../tests/loader/libtiff/0298_byte_gamma_target.t) |
+| CMS-353 | Explicit final byte preference clamps and rounds only after successful canonical ICC interpretation. | [tests/loader/libtiff/0299_byte_final_byte_target.t](../../tests/loader/libtiff/0299_byte_final_byte_target.t) |
+| CMS-354 | RGB discards qualified partial/nonfinite CMS output, preserves all caller source bits before compaction, restores exact source bytes, and permits recovery. | [tests/loader/libtiff/0300_byte_rgb_late_failure.t](../../tests/loader/libtiff/0300_byte_rgb_late_failure.t) |
+| CMS-355 | MINISBLACK discards qualified partial/nonfinite CMS output, preserves all caller source bits before compaction, restores exact source bytes, and permits recovery. | [tests/loader/libtiff/0301_byte_black_late_failure.t](../../tests/loader/libtiff/0301_byte_black_late_failure.t) |
+| CMS-356 | MINISWHITE discards qualified partial/nonfinite CMS output, preserves all caller source bits before compaction, restores exact source bytes, and permits recovery. | [tests/loader/libtiff/0302_byte_white_late_failure.t](../../tests/loader/libtiff/0302_byte_white_late_failure.t) |
+| CMS-357 | Mandatory selected byte-image allocation failure has no callback or RGBA retry and releases decoder allocations. | [tests/loader/libtiff/0303_byte_decode_allocation_failure.t](../../tests/loader/libtiff/0303_byte_decode_allocation_failure.t) |
+| CMS-358 | A real first scanline precedes the injected read failure; the selected decode has no callback or RGBA retry and releases allocations. | [tests/loader/libtiff/0304_byte_decode_read_failure.t](../../tests/loader/libtiff/0304_byte_decode_read_failure.t) |
+
+### Quality regression and defensive coverage
+
+The existing perceptual tests retain their references and thresholds; their separate inventory is in [Loader Color Management](color-management.md#test-coverage). Malformed and unsupported-layout cases remain in the [libtiff test category](../../tests/loader/libtiff/). The twenty contracts above cover only their stated direct byte route, not all TIFF combinations.

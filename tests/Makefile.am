@@ -880,6 +880,28 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0282_GRAY16_BLACK_COLORSYNC \
     -DBUILD_TEST_0283_GRAY16_WHITE_LATE_BUILTIN \
     -DBUILD_TEST_0284_GRAY16_BLACK_NAN_LCMS2 \
+    -DBUILD_TEST_0285_BYTE_RGB_BUILTIN \
+    -DBUILD_TEST_0286_BYTE_RGB_LCMS2 \
+    -DBUILD_TEST_0287_BYTE_RGB_COLORSYNC \
+    -DBUILD_TEST_0288_BYTE_BLACK_BUILTIN \
+    -DBUILD_TEST_0289_BYTE_BLACK_LCMS2 \
+    -DBUILD_TEST_0290_BYTE_BLACK_COLORSYNC \
+    -DBUILD_TEST_0291_BYTE_WHITE_BUILTIN \
+    -DBUILD_TEST_0292_BYTE_WHITE_LCMS2 \
+    -DBUILD_TEST_0293_BYTE_WHITE_COLORSYNC \
+    -DBUILD_TEST_0294_BYTE_RGB_FALLBACK \
+    -DBUILD_TEST_0295_BYTE_BLACK_FALLBACK \
+    -DBUILD_TEST_0296_BYTE_WHITE_FALLBACK \
+    -DBUILD_TEST_0297_BYTE_ORIENTATION_VOID \
+    -DBUILD_TEST_0298_BYTE_GAMMA_TARGET \
+    -DBUILD_TEST_0299_BYTE_FINAL_BYTE_TARGET \
+    -DBUILD_TEST_0300_BYTE_RGB_LATE_FAILURE \
+    -DBUILD_TEST_0301_BYTE_BLACK_LATE_FAILURE \
+    -DBUILD_TEST_0302_BYTE_WHITE_LATE_FAILURE \
+    -DBUILD_TEST_0303_BYTE_DECODE_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0304_BYTE_DECODE_READ_FAILURE \
+    -DBUILD_TIFF_BYTE_TEST_COMMON \
+    -DBUILD_TIFF_BYTE_FAULT_TEST_COMMON \
     -DBUILD_TIFF_MANAGED_TEST_COMMON \
     -DBUILD_TIFF_MANAGED_FAULT_TEST_COMMON \
     -DBUILD_TIFF_LOGLUV_TEST_COMMON \
@@ -1234,6 +1256,29 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0282_gray16_black_colorsync.c \
     loader/libtiff/0283_gray16_white_late_builtin.c \
     loader/libtiff/0284_gray16_black_nan_lcms2.c \
+    loader/libtiff/0285_byte_rgb_builtin.c \
+    loader/libtiff/0286_byte_rgb_lcms2.c \
+    loader/libtiff/0287_byte_rgb_colorsync.c \
+    loader/libtiff/0288_byte_black_builtin.c \
+    loader/libtiff/0289_byte_black_lcms2.c \
+    loader/libtiff/0290_byte_black_colorsync.c \
+    loader/libtiff/0291_byte_white_builtin.c \
+    loader/libtiff/0292_byte_white_lcms2.c \
+    loader/libtiff/0293_byte_white_colorsync.c \
+    loader/libtiff/0294_byte_rgb_fallback.c \
+    loader/libtiff/0295_byte_black_fallback.c \
+    loader/libtiff/0296_byte_white_fallback.c \
+    loader/libtiff/0297_byte_orientation_void.c \
+    loader/libtiff/0298_byte_gamma_target.c \
+    loader/libtiff/0299_byte_final_byte_target.c \
+    loader/libtiff/0300_byte_rgb_late_failure.c \
+    loader/libtiff/0301_byte_black_late_failure.c \
+    loader/libtiff/0302_byte_white_late_failure.c \
+    loader/libtiff/0303_byte_decode_allocation_failure.c \
+    loader/libtiff/0304_byte_decode_read_failure.c \
+    loader/tiff_byte_test_common.c \
+    loader/tiff_byte_test_common.h \
+    loader/tiff_byte_fault_test_common.c \
     loader/tiff_managed_test_common.c \
     loader/tiff_managed_test_common.h \
     loader/tiff_managed_fault_test_common.c \

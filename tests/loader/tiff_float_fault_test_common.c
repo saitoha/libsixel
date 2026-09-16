@@ -148,7 +148,9 @@ uf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define tiff_try_load_high_precision uff_local_38
 #define TIFFReadScanline uf_read
 #define TIFFReadRGBAImageOriented uf_rgba_read
+#define tiff_convert_byte_samples_to_linear uff_byte
 #include "src/loader-libtiff.c"
+#undef tiff_convert_byte_samples_to_linear
 #undef TIFFReadRGBAImageOriented
 #undef TIFFReadScanline
 #undef g_sixel_loader_libtiff_vtbl
