@@ -17,7 +17,7 @@ img2sixel -L 'libtiff:cms_engine=builtin!' image.tif
 | `TIFFReadRGBAImageOriented` | The general libtiff conversion fallback for combinations outside the direct path. Its RGBA result is an 8-bit representation; later promotion to float32 does not recover discarded source precision. |
 | Loader-manager fallback | A different backend may be tried only according to the shared failure/callback rules. This is separate from choosing libtiff's internal RGBA route. |
 
-The direct CIELAB path retains a typed Lab representation where applicable, rather than presenting Lab channel bytes as sRGB. RGB/gray paths and profile conversion have their own normalization. Inspect emitted `pixelformat` and `colorspace`; a `.tif` extension is not sufficient to infer either.
+The direct CIELAB path keeps typed Lab as an internal source representation until CMS is attempted. Successful CMS conversion publishes `LINEARRGBFLOAT32` / `LINEAR`; when ICC conversion is inapplicable or fails, the existing Lab-to-gamma-RGB fallback publishes `RGBFLOAT32` / `GAMMA` if that fallback succeeds. The emitted frame does not retain the internal Lab representation. RGB/gray paths and profile conversion have their own normalization. Inspect emitted `pixelformat` and `colorspace`; a `.tif` extension is not sufficient to infer either.
 
 TIFF orientation is handled in the decode paths. The direct path has narrower layout/orientation eligibility than the convenience reader, so changing tags can change both geometry handling and precision route. This backend does not expose the JPEG-style `orientation` suboption in the current registry.
 
