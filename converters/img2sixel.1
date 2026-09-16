@@ -1219,14 +1219,29 @@ set the default loader CMS backend for this process by exporting
 \fBauto\fP prefers lcms2, then ColorSync (macOS), then builtin.
 .TP 5
 .B \-@ \fIMMV:CHARSET:PATH\fP, \-\-drcs=\fIMMV:CHARSET:PATH\fP
-emit extended DRCS tiles instead of a regular SIXEL image (experimental).
-This option accepts arguments in the form \fIMMV:CHARSET:PATH\fP. MMV picks the
-Unicode mapping revision (0..2, default 2). CHARSET chooses the DRCS slot
-(1-126 when MMV=0, 1-63 when MMV=1, 1-158 when MMV=2; default 1). PATH reroutes
-tile data; use "-" to reuse standard output or leave it blank to discard tiles.
+emit experimental DRCS-SIXEL glyph definitions to the normal output
+(standard output or the path selected by \fB\-o\fP).
+This option requires an argument in the form \fIMMV:CHARSET:PATH\fP.
+MMV selects ISO 2022 character output (0) or Unicode mapping 1, 2, or 3
+(default 2). CHARSET chooses the starting set (default 1): 1..126 for MMV=0,
+1..63 for MMV=1, 1..158 for MMV=2, or 1..697 for MMV=3.
 .br
-This option requires the terminal to report pixel cell size via
-.B TIOCGWINSZ
+PATH receives the display characters, not the glyph definitions.
+Use "-" for standard output; a blank or omitted PATH suppresses character
+output while still producing definitions. A named PATH is created or truncated
+when the option is applied. For example, \fB\-\-drcs=2:1:-\fP defines and
+displays the image, while \fB\-\-drcs=2:1:tiles.txt\fP saves the display
+characters for later reuse after the definitions have been loaded.
+.br
+The terminal must support DRCS-SIXEL and the selected mapping; ordinary SIXEL
+support alone is insufficient. The converter does not allocate disjoint
+charsets for successive images or restore mapping modes afterward.
+.br
+This option requires a controlling \fB/dev/tty\fP reporting both character
+and pixel dimensions via \fBTIOCGWINSZ\fP, even with file output.
+It is incompatible with \fB\-u\fP and \fB\-n\fP.
+See \fBdocs/functionality/drcs.md\fP for mapping modes, cell layout, and current
+experimental implementation defects.
 .TP 5
 .B \-O, \-\-ormode
 This option enables sixel output in "ormode". ormode is a SIXEL graphics

@@ -101,6 +101,8 @@ Proposal and specification years are distinct from the subsequent release dates.
 
 Araki Ken's [DRCS-SIXEL account](https://qiita.com/arakiken/items/626b02cd857d20c12fbc), published in 2018 and updated for v3 in 2026, explains how the original image-glyph extension, Unicode mapping, and later revisions fit together. This work remains much better known in the Japanese-language terminal community than elsewhere. Current libsixel preserves a practical connection to this work through the experimental `img2sixel -@` (`--drcs`) output mode.
 
+The [DRCS-SIXEL output guide](functionality/drcs.md) describes that option's definition/character streams, mapping choices, cell geometry, and current support boundaries.
+
 ## kmiya's `sixel`
 
 kmiya's `sixel` was a compact C encoder and decoder distributed from

@@ -1112,10 +1112,13 @@ static cli_option_help_t const g_option_help_table[] = {
         '@',
         "drcs",
         "-@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH\n"
-        "    emit DRCS tiles instead of SIXEL output. MMV selects the mapping revision (0..2,\n"
-        "    default 2). CHARSET chooses the slot (1-126 when MMV=0, 1-63 when MMV=1, 1-158 when\n"
-        "    MMV=2; default 1). PATH routes tile data (\"-\" keeps stdout; blank disables the\n"
-        "    external sink).\n"
+        "    emit experimental DRCS-SIXEL glyph definitions to the normal\n"
+        "    output. MMV selects ISO 2022 (0) or Unicode mapping 1..3\n"
+        "    (default 2). CHARSET selects the starting set (default 1):\n"
+        "      MMV=0: 1..126; MMV=1: 1..63; MMV=2: 1..158; MMV=3: 1..697.\n"
+        "    PATH receives display characters, not glyph definitions.\n"
+        "    Use \"-\" for stdout; blank/omitted suppresses character output.\n"
+        "    Requires /dev/tty pixel geometry; incompatible with -u/-n.\n"
     },
     {
         'O',

@@ -2,6 +2,8 @@
 
 `img2sixel -u` can store animation frames in terminal macros and replay them by number. `img2sixel -n NUMBER` selects a single macro number and suppresses automatic invocation, so an application can preload an image and display it later. These options require a receiver that supports both SIXEL and terminal macros. Ordinary SIXEL support alone is insufficient.
 
+For glyph-based image reuse, see [DRCS-SIXEL output](drcs.md). That path displays downloaded tiles as text characters and cannot be combined with `-u` or `-n`.
+
 ## What is stored
 
 A terminal macro stores a sequence of terminal input bytes. DECDMAC defines those bytes, and DECINVM asks the terminal to process them. In libsixel, the stored bytes are a complete SIXEL image, including its SIXEL DCS introducer, palette and bitmap commands, and string terminator. This describes the protocol-level contents; a receiver can optimize image replay by retaining a decoded picture, as [mlterm does](#mlterm-image-reuse-on-invocation). Invocation does not automatically save and restore cursor or palette state. See the DEC [DECDMAC](https://vt100.net/docs/vt510-rm/DECDMAC.html) and [DECINVM](https://vt100.net/docs/vt510-rm/DECINVM.html) definitions.

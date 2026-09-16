@@ -1118,7 +1118,7 @@ _arguments -S -s -A "-*" -S \
   {-v,--verbose}'[show debugging information]' \
   {-L,--loaders=}'[override loader priority order]':loaders:_loaders \
   {-#,--cms-engine=}'[set default loader CMS backend]':cmsengine:_cmsengine \
-  {-@,--drcs}'[emit DRCS tiles via MMV:CHARSET:PATH (defaults 2:1:, "-" keeps stdout)]' \
+  {-@,--drcs}'[define DRCS glyphs; MMV:CHARSET:PATH (0..3; PATH receives display text)]' \
   {-O,--ormode}'[output ormode sixel image]' \
   {-X,--clustering-colorspace=}'[select palette clustering color space (ignored with -b, -m, or -e)]':colorspace:_clusteringcolorspace \
   {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
