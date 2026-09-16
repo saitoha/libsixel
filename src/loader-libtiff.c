@@ -59,6 +59,7 @@
 
 #include "allocator.h"
 #include "cms.h"
+#include "colorspace.h"
 #include "chunk-view.h"
 #include "frame-private.h"
 #include "frame-factory.h"
@@ -696,6 +697,217 @@ tiff_convert_byte_samples_to_linear(float *pixels, int width, int height,
     return converted;
 }
 
+/* Read declared byte alpha before libtiff's RGBA convenience conversion.
+ * RGB and Gray convenience readers do not share association behavior. Keep
+ * original alpha separate until source interpretation and composition end. */
+static SIXELSTATUS
+tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
+                     uint32_t width, uint32_t height, int *ppixelformat,
+                     void const *profile, uint32_t profile_length,
+                     uint16_t photometric, sixel_allocator_t *allocator,
+                     int *pnegotiate_target, unsigned char **pmask,
+                     unsigned char const *bgcolor)
+{
+    SIXELSTATUS status;
+    unsigned char *row;
+    unsigned char *alpha;
+    float *pixels;
+    uint16_t bits;
+    uint16_t samples;
+    uint16_t format;
+    uint16_t planar;
+    uint16_t orientation;
+    uint16_t extras;
+    uint16_t *extra_info;
+    tsize_t row_size;
+    size_t count;
+    size_t source;
+    size_t destination;
+    size_t i;
+    size_t channel;
+    uint32_t x;
+    uint32_t y;
+    uint32_t dx;
+    uint32_t dy;
+    unsigned int a;
+    unsigned int numerator;
+    unsigned int denominator;
+    double background[3];
+    double value;
+    double coverage;
+    int rgb;
+    int associated;
+    int all_opaque;
+    int managed;
+    int preserve_zero;
+    int has_mask;
+    int composed;
+
+    status = SIXEL_FALSE;
+    row = NULL;
+    alpha = NULL;
+    pixels = NULL;
+    bits = 1u;
+    samples = 1u;
+    format = SAMPLEFORMAT_UINT;
+    planar = PLANARCONFIG_CONTIG;
+    orientation = ORIENTATION_TOPLEFT;
+    extras = 0u;
+    extra_info = NULL;
+    all_opaque = 1;
+    managed = 0;
+    has_mask = 0;
+    composed = 0;
+
+    rgb = photometric == PHOTOMETRIC_RGB;
+    if (!rgb && photometric != PHOTOMETRIC_MINISBLACK &&
+        photometric != PHOTOMETRIC_MINISWHITE) {
+        return SIXEL_FALSE;
+    }
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE, &bits);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &samples);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLEFORMAT, &format);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_PLANARCONFIG, &planar);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_ORIENTATION, &orientation);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_EXTRASAMPLES,
+                               &extras, &extra_info);
+    if (bits != 8u ||
+        (format != SAMPLEFORMAT_UINT && format != SAMPLEFORMAT_VOID) ||
+        samples != (rgb ? 4u : 2u) || extras != 1u || extra_info == NULL ||
+        (extra_info[0] != EXTRASAMPLE_ASSOCALPHA &&
+         extra_info[0] != EXTRASAMPLE_UNASSALPHA) ||
+        planar != PLANARCONFIG_CONTIG || TIFFIsTiled(tif) ||
+        !tiff_orientation_is_supported(orientation)) {
+        return SIXEL_FALSE;
+    }
+    associated = extra_info[0] == EXTRASAMPLE_ASSOCALPHA;
+    if (width == 0u || height == 0u ||
+        (size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    count = (size_t)width * height;
+    if (count > SIZE_MAX / (3u * sizeof(float)) ||
+        (size_t)width > SIZE_MAX / samples) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    row_size = TIFFScanlineSize(tif);
+    if (row_size <= 0 || (size_t)row_size < (size_t)width * samples) {
+        return SIXEL_TIFF_ERROR;
+    }
+
+    /* After accepting the source layout, every read/allocation failure is
+     * terminal. Retrying RGBA could silently replace the source contract. */
+    row = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                 (size_t)row_size);
+    pixels = (float *)sixel_allocator_malloc(allocator,
+                                             count * 3u * sizeof(float));
+    alpha = (unsigned char *)sixel_allocator_malloc(allocator, count);
+    if (row == NULL || pixels == NULL || alpha == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+    for (y = 0u; y < height; ++y) {
+        if (TIFFReadScanline(tif, row, y, 0) < 0) {
+            sixel_helper_set_additional_message(
+                "load_tiff: alpha TIFFReadScanline() failed.");
+            status = SIXEL_TIFF_ERROR;
+            goto cleanup;
+        }
+        for (x = 0u; x < width; ++x) {
+            source = (size_t)x * samples;
+            tiff_map_scanline_coordinates(orientation, width, height,
+                                          x, y, &dx, &dy);
+            destination = (size_t)dy * width + dx;
+            a = row[source + samples - 1u];
+            alpha[destination] = (unsigned char)a;
+            all_opaque &= a == 255u;
+            denominator = associated ? a : 255u;
+            for (channel = 0u; channel < 3u; ++channel) {
+                numerator = row[source + (rgb ? channel : 0u)];
+                if (photometric == PHOTOMETRIC_MINISWHITE) {
+                    /* Use the reviewed libvips-compatible Gray order:
+                     * undo storage polarity before undoing association. */
+                    numerator = 255u - numerator;
+                }
+                /* One rounding from the original integer ratio. Values
+                 * above one are valid associated-source coordinates. */
+                pixels[destination * 3u + channel] = denominator == 0u
+                    ? 0.0f : (float)((double)numerator / denominator);
+            }
+        }
+    }
+    if (profile != NULL && profile_length > 0u) {
+        managed = tiff_convert_byte_samples_to_linear(
+            pixels, (int)width, (int)height, profile, profile_length,
+            photometric);
+    }
+
+    preserve_zero = bgcolor == NULL ||
+        loader_transparent_policy() != SIXEL_ALPHA_POLICY_COMPOSITE;
+    for (channel = 0u; channel < 3u; ++channel) {
+        background[channel] = bgcolor == NULL ? 0.0
+            : (double)bgcolor[channel] / 255.0;
+        if (loader_background_colorspace() != SIXEL_COLORSPACE_LINEAR) {
+            background[channel] =
+                sixel_color_decode_srgb(background[channel]);
+        }
+    }
+    for (i = 0u; i < count; ++i) {
+        a = alpha[i];
+        /* Retain the stored alpha through CMS, then reuse its allocation
+         * for the binary mask after this pixel's blend is complete. */
+        if (bgcolor != NULL && a < 255u && (a != 0u || !preserve_zero)) {
+            coverage = (double)a / 255.0;
+            for (channel = 0u; channel < 3u; ++channel) {
+                value = pixels[i * 3u + channel];
+                if (!managed) {
+                    value = sixel_color_decode_srgb(value);
+                }
+                value = coverage * value +
+                    (1.0 - coverage) * background[channel];
+                if (!managed) {
+                    value = sixel_color_encode_srgb(value);
+                }
+                if (!isfinite(value) || fabs(value) > FLT_MAX) {
+                    status = SIXEL_TIFF_ERROR;
+                    goto cleanup;
+                }
+                pixels[i * 3u + channel] = (float)value;
+            }
+            composed = 1;
+        }
+        alpha[i] = a == 0u && preserve_zero ? 1u : 0u;
+        has_mask |= alpha[i] != 0u;
+    }
+
+    *ppixelformat = managed ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+                           : SIXEL_PIXELFORMAT_RGBFLOAT32;
+    if (!managed && (all_opaque || (!associated && !composed))) {
+        /* No fractional color was created. Preserve the same exact byte
+         * publication as opaque input, including all255 associated alpha. */
+        for (i = 0u; i < count * 3u; ++i) {
+            ((unsigned char *)pixels)[i] = (unsigned char)(
+                (double)pixels[i] * 255.0 + 0.5);
+        }
+        *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+    }
+    if (has_mask) {
+        *pmask = alpha;
+        alpha = NULL;
+    }
+    *pnegotiate_target = managed;
+    *result = (unsigned char *)pixels;
+    pixels = NULL;
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_allocator_free(allocator, row);
+    sixel_allocator_free(allocator, pixels);
+    sixel_allocator_free(allocator, alpha);
+    return status;
+}
+
+
 /*
  * Decode selected high-precision TIFF layouts directly into float32 buffers.
  *
@@ -1201,12 +1413,12 @@ cleanup:
 }
 
 /*
- * Decode a TIFF stream into an RGBA buffer.
+ * Decode a TIFF stream into owned byte or float color pixels.
  *
  * The memory-backed TIFF client uses the following flow:
  *
  *    +-----------+     +-----------------+     +--------------------+
- *    | TIFF data | --> | libtiff decode | --> | RGBA pixel buffer  |
+ *    | TIFF data | --> | libtiff decode  | --> | byte/float + mask  |
  *    +-----------+     +-----------------+     +--------------------+
  */
 static SIXELSTATUS
@@ -1218,7 +1430,9 @@ load_tiff(unsigned char      /* out */ **result,
           int                /* out */ *ppixelformat,
           sixel_allocator_t  /* in */  *allocator,
           int                /* in */  enable_cms,
-          int                /* out */ *pnegotiate_target)
+          int                /* out */ *pnegotiate_target,
+          unsigned char      /* out */ **pmask,
+          unsigned char const /* in */ *bgcolor)
 {
     SIXELSTATUS status;
     TIFF *tif;
@@ -1308,6 +1522,23 @@ load_tiff(unsigned char      /* out */ **result,
                            TIFFTAG_ICCPROFILE,
                            &icc_profile_length,
                            &icc_profile);
+    }
+
+    high_precision_status = tiff_try_load_alpha8(
+        &pixels, tif, width, height, ppixelformat,
+        enable_cms ? icc_profile : NULL,
+        enable_cms ? icc_profile_length : 0u,
+        photometric, allocator, pnegotiate_target, pmask, bgcolor);
+    if (high_precision_status == SIXEL_OK) {
+        *result = pixels;
+        *pwidth = (int)width;
+        *pheight = (int)height;
+        status = SIXEL_OK;
+        goto cleanup;
+    }
+    if (high_precision_status != SIXEL_FALSE) {
+        status = high_precision_status;
+        goto cleanup;
     }
 
     high_precision_status = tiff_try_load_high_precision(&pixels,
@@ -1444,12 +1675,14 @@ load_with_libtiff(
     SIXELSTATUS status;
     sixel_frame_t *frame;
     unsigned char *pixels;
+    unsigned char *mask;
     int pixelformat;
     int negotiate_target;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
+    mask = NULL;
     pixelformat = SIXEL_PIXELFORMAT_RGB888;
     negotiate_target = 0;
 
@@ -1477,7 +1710,9 @@ load_with_libtiff(
                        &pixelformat,
                        allocator,
                        enable_cms,
-                       &negotiate_target);
+                       &negotiate_target,
+                       &mask,
+                       bgcolor);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1501,6 +1736,13 @@ load_with_libtiff(
         goto end;
     }
     pixels = NULL;
+    if (mask != NULL) {
+        frame->transparent_mask = mask;
+        frame->transparent_mask_size =
+            (size_t)frame->width * (size_t)frame->height;
+        frame->alpha_zero_is_transparent = 1;
+        mask = NULL;
+    }
 
     if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         status = sixel_frame_strip_alpha(frame, bgcolor);
@@ -1510,10 +1752,11 @@ load_with_libtiff(
     }
 
     if (negotiate_target) {
-        /* Native XYZ and managed byte RGB/Gray establish canonical linear
-         * float samples first. Working coordinates and an explicit final
-         * byte boundary apply only after successful source interpretation.
-         * Failed byte ICC input restores original RGB888/GAMMA samples. */
+        /* Native XYZ and managed RGB/Gray establish canonical linear
+         * samples before target conversion. Alpha-bearing input also
+         * resolves background composition before this final boundary.
+         * Failed byte ICC input keeps its original straight-source values
+         * in gamma byte or float storage, depending on source fractions. */
         status = sixel_frame_set_pixelformat(
             frame, loader_cms_target_pixelformat());
         if (SIXEL_FAILED(status)) {
@@ -1529,6 +1772,7 @@ load_with_libtiff(
     status = SIXEL_OK;
 
 end:
+    sixel_allocator_free(allocator, mask);
     sixel_frame_unref(frame);
 
     return status;

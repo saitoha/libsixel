@@ -54,6 +54,8 @@ The encoder trusts that frame state. It reserves a key color only when the frame
 
 The builtin RGBA and non-indexed PNG paths preserve source RGB for alpha-zero pixels under `clear` and `keep`, while still compositing partial alpha over an available background. Under `composite`, they composite all alpha, including alpha zero, and clear the mask after successful composition.
 
+Eligible RGB/Gray8 TIFF alpha scanlines retain original alpha while reversing source association and applying CMS. Background composition follows canonical linear conversion, with the background interpreted independently. Exact-zero masks and partial-alpha behavior follow the policies above; unmanaged all-255 input stays exact byte RGB. See the [TIFF source and publication contract](libtiff.md#original-byte-alpha-and-composition) for eligibility, fallback representation and remaining high-depth limitations.
+
 ## Related options
 
 `--transparent-offset` and 6delta output require `keep` because their retained pixels rely on the `P2=1` image-plane request. `auto` selects `keep` for either feature. Explicit `clear` and `composite` are rejected when either feature is active.
@@ -87,6 +89,7 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | AP-17 | Partial-alpha composition uses the selected background colorspace. | [tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t](../../tests/cli/options/regression/0098_loader_background_colorspace_image_regression.t) |
 | AP-18 | Transparent offset rejects an explicit `clear` policy. | [tests/quant/palette/usage/0189_transparent_offset_clear_policy_conflict.t](../../tests/quant/palette/usage/0189_transparent_offset_clear_policy_conflict.t) |
 | AP-19 | 6delta rejects an explicit `composite` policy. | [tests/quant/palette/usage/0190_6delta_composite_policy_conflict.t](../../tests/quant/palette/usage/0190_6delta_composite_policy_conflict.t) |
+| AP-20 | Eligible TIFF byte alpha preserves zero coverage and composes partial alpha under default/auto/clear/keep/composite, with absent or resolved background. | [tests/loader/libtiff/0318_alpha_policy.t](../../tests/loader/libtiff/0318_alpha_policy.t) |
 
 ### Coverage audit boundary
 

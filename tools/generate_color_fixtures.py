@@ -1813,6 +1813,8 @@ def main():
     outputs.update(tiff_managed(profile, outputs['gray-gamma2.icc']))
     from generate_tiff_byte_fixtures import build as tiff_byte
     outputs.update(tiff_byte(profile, outputs['gray-gamma2.icc']))
+    from generate_tiff_alpha_fixtures import build as tiff_alpha
+    outputs.update(tiff_alpha(profile, outputs['gray-gamma2.icc']))
     from generate_colorsync_gray_tests import build as colorsync_gray_tests
     outputs.update(colorsync_gray_tests(outputs['gray-gamma2.icc'],
         outputs['colorsync-lab-linear.icc'], outputs['colorsync-lab-gamma.icc'],

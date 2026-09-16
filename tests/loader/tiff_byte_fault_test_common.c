@@ -595,7 +595,9 @@ bf_linear(unsigned char *pixels, int width, int height, int format,
 #define TIFFReadRGBAImageOriented bf_rgba_read
 #define tiff_logluv_xyz_to_linear bf_logluv_xyz
 #define tiff_convert_byte_samples_to_linear bf_byte
+#define tiff_try_load_alpha8 bf_alpha
 #include "src/loader-libtiff.c"
+#undef tiff_try_load_alpha8
 #undef tiff_convert_byte_samples_to_linear
 #undef tiff_logluv_xyz_to_linear
 #undef TIFFReadScanline

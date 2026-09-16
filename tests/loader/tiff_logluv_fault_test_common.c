@@ -231,7 +231,9 @@ tlf_target(sixel_frame_t *frame, int format)
 #define sixel_allocator_malloc tlf_allocate
 #define sixel_frame_set_pixelformat tlf_target
 #define tiff_convert_byte_samples_to_linear luf_byte
+#define tiff_try_load_alpha8 luf_alpha
 #include "src/loader-libtiff.c"
+#undef tiff_try_load_alpha8
 #undef tiff_convert_byte_samples_to_linear
 #undef g_sixel_loader_libtiff_vtbl
 #undef load_tiff
