@@ -81,19 +81,21 @@ assert WHITE == [neighbor(1-rational(w)) for w in WORDS]
 
 
 def write_tiff(raw, photo, endian='<', orientation=1, rows=1,
-               icc=None, metadata=False):
+               icc=None, metadata=False, bits=32, height=None):
     """Serialize uncompressed words directly, without a TIFF or CMS library."""
     samples = 3 if photo == 2 else 1
-    width, height = (4, 2) if samples == 3 else (6, 4)
+    width = 4 if samples == 3 else 6
+    height = height if height is not None else 2 if samples == 3 else 4
+    assert bits in (16, 32)
     assert len(raw) == width*height*samples
-    chunks = [b''.join(struct.pack(endian+'I', value) for value in
+    chunks = [b''.join(struct.pack(endian+('H' if bits == 16 else 'I'), value) for value in
                       raw[y*width*samples:min(height, y+rows)*width*samples])
               for y in range(0, height, rows)]
-    tags = {256: (4, [width]), 257: (4, [height]), 258: (3, [32]*samples),
+    tags = {256: (4, [width]), 257: (4, [height]), 258: (3, [bits]*samples),
             259: (3, [1]), 262: (3, [photo]), 273: (4, [0]*len(chunks)),
             274: (3, [orientation]), 277: (3, [samples]), 278: (4, [rows]),
             279: (4, [len(chunk) for chunk in chunks]), 284: (3, [1]),
-            339: (3, [3]*samples)}
+            339: (3, [1 if bits == 16 else 3]*samples)}
     if icc is not None:
         tags[34675] = (7, icc)
     if metadata:

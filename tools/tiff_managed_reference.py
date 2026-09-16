@@ -80,16 +80,26 @@ def tiff(blob):
     w, h = (vals(256)[0], vals(257)[0])
     ch = vals(277)[0]
     raw = b''.join((blob[o:o + n] for o, n in zip(vals(273), vals(279))))
-    words = list(struct.unpack(endian + 'I' * (len(raw) // 4), raw))
-    floats = [struct.unpack('>f', struct.pack('>I', x))[0] for x in words]
+    bits = vals(258)[0]
     photo = vals(262)[0]
     orientation = vals(274)[0]
-    triples = [floats[i:i + 3] for i in range(0, len(floats), 3)] if ch == 3 else [[x if photo == 1 else struct.unpack('>f', struct.pack('>I', nearest_rational(F(1) - F.from_float(x))))[0]] * 3 for x in floats]
+    if bits == 16:
+        assert ch == 1 and photo in (0, 1) and vals(339) == [1]
+        words = list(struct.unpack(endian + 'H' * (len(raw) // 2), raw))
+        # Apply polarity to the exact normalized integer before binary32
+        # rounding. Do not reuse the serializer's floating-point operations.
+        samples = [F(x if photo == 1 else 65535-x, 65535) for x in words]
+        triples = [[struct.unpack('>f', struct.pack('>I', nearest_rational(x)))[0]] * 3 for x in samples]
+    else:
+        assert bits == 32
+        words = list(struct.unpack(endian + 'I' * (len(raw) // 4), raw))
+        floats = [struct.unpack('>f', struct.pack('>I', x))[0] for x in words]
+        triples = [floats[i:i + 3] for i in range(0, len(floats), 3)] if ch == 3 else [[x if photo == 1 else struct.unpack('>f', struct.pack('>I', nearest_rational(F(1) - F.from_float(x))))[0]] * 3 for x in floats]
     mapped = [None] * (w * h)
     for y in range(h):
         for x in range(w):
             mapped[(h - 1 - y if orientation in [3, 4] else y) * w + (w - 1 - x if orientation in [2, 3] else x)] = triples[y * w + x]
-    return dict(width=w, height=h, photo=photo, words=words, triples=mapped, icc=tags.get(34675, (0, 0, None))[2])
+    return dict(width=w, height=h, photo=photo, bits=bits, words=words, triples=mapped, icc=tags.get(34675, (0, 0, None))[2])
 
 def tags(p):
     out = {}

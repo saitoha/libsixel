@@ -1074,6 +1074,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     if (icc_profile != NULL && icc_profile_length > 0u &&
         tiff_photometric_allows_embedded_icc(photometric, 1)) {
         if (decode_mode == TIFF_DECODE_RGB_UINT ||
+            decode_mode == TIFF_DECODE_GRAY_UINT ||
             decode_mode == TIFF_DECODE_RGB_FLOAT32 ||
             decode_mode == TIFF_DECODE_GRAY_FLOAT32 ||
             decode_mode == TIFF_DECODE_LAB_UINT ||
@@ -1099,9 +1100,10 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         }
     }
 
-    /* RGB, float Gray and Lab already contain signed linear CMS output.
+    /* RGB, Gray and Lab already contain signed linear CMS output.
      * Only failed Lab conversion should enter the original Lab fallback. */
     if (cms_converted && decode_mode != TIFF_DECODE_RGB_UINT &&
+        decode_mode != TIFF_DECODE_GRAY_UINT &&
         decode_mode != TIFF_DECODE_RGB_FLOAT32 &&
         decode_mode != TIFF_DECODE_GRAY_FLOAT32 &&
         decode_mode != TIFF_DECODE_LAB_UINT &&

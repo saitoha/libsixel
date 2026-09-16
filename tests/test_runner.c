@@ -1029,6 +1029,11 @@ int test_loader_0276_mfloat(int argc, char **argv);
 int test_loader_0277_mfloat(int argc, char **argv);
 int test_loader_0278_mfloat(int argc, char **argv);
 int test_loader_0279_mfloat(int argc, char **argv);
+int test_loader_0280_gray16(int argc, char **argv);
+int test_loader_0281_gray16(int argc, char **argv);
+int test_loader_0282_gray16(int argc, char **argv);
+int test_loader_0283_gray16(int argc, char **argv);
+int test_loader_0284_gray16(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -2311,6 +2316,16 @@ static test_entry_t const test_entries[] = {
       test_loader_0278_mfloat },
     { "loader/0279_managed_dimensions_control",
       test_loader_0279_mfloat },
+    { "loader/0280_gray16_white_builtin",
+      test_loader_0280_gray16 },
+    { "loader/0281_gray16_black_lcms2",
+      test_loader_0281_gray16 },
+    { "loader/0282_gray16_black_colorsync",
+      test_loader_0282_gray16 },
+    { "loader/0283_gray16_white_late_builtin",
+      test_loader_0283_gray16 },
+    { "loader/0284_gray16_black_nan_lcms2",
+      test_loader_0284_gray16 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

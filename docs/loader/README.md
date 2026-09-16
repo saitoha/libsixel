@@ -75,7 +75,7 @@ The registry order below is also the automatic priority order for components pre
 | [`libpng`](libpng.md) | With libpng | PNG and APNG | Indexed or RGB/RGBA; static 16-bit and CMS paths can produce float32. APNG has a separate RGBA8 pipeline. |
 | [`libjpeg`](libjpeg.md) | With libjpeg | JPEG, including library-supported high-depth variants | RGB float32 on precision-preserving paths; CMS may produce a typed target colorspace. |
 | [`libwebp`](libwebp.md) | With libwebp | Static and animated WebP | RGB/RGBA or indexed animation frames; float32 after supported color management. |
-| [`libtiff`](libtiff.md) | With libtiff | TIFF | RGB/RGBA or float32, including source- or CMS-derived typed colorspaces. |
+| [`libtiff`](libtiff.md) | With libtiff | TIFF | Selected high-precision paths and an RGBA8 fallback; embedded ICC is not connected for every photometric type. See the [format/CMS support table](libtiff.md#format-and-color-management-support). |
 | [`librsvg`](librsvg.md) | With librsvg | SVG and permitted SVGZ/resource modes | Rasterized gamma RGB or RGBA frames. |
 | [`builtin`](builtin.md) | Always | In-tree SIXEL, PNM/PAM, GIF, WebP, PNG/APNG, JPEG, HDR, PSD, BMP, TGA, and PIC paths | Indexed, byte RGB/RGBA, generic float32, or typed float32 depending on format and policy. |
 | [`wic`](wic.md) | Windows Imaging Component build | Windows codecs and containers, including ICO selection | Framework-decoded RGBA frames followed by common normalization. |
@@ -88,6 +88,8 @@ The registry order below is also the automatic priority order for components pre
 Framework and plugin loaders inherit part of their effective format support from the host. A build-time name therefore identifies a component, not a permanent promise that every installation recognizes the same extensions.
 
 See [Animation playback](../functionality/animation.md) for the loader/format support matrix, loop and delay metadata, still-frame extraction, and GdkPixbuf's finite-loop and iterator limitations. Successful still-image loading does not establish animation support.
+
+Read format support and color-management support separately. Backend tables should distinguish implemented decoding, implemented ICC application, missing integration and unverified combinations. For example, the [TIFF table](libtiff.md#format-and-color-management-support) records CIELAB8 and CMYK decoding separately from their missing embedded-ICC connection. At loader level, the current [WIC](../../src/loader-wic.c), [GD](../../src/loader-gd.c) and [GdkPixbuf](../../src/loader-gdk-pixbuf2.c) adapters do not implement embedded-ICC conversion; a format converter or gamma normalization alone does not establish that connection.
 
 ## The output is a typed frame, not universal RGBA
 
@@ -117,6 +119,7 @@ The shared manager contract stays here. Each detailed backend document should se
 - Preview adapters: [Quick Look](quicklook.md) and [Freedesktop thumbnailers](gnome-thumbnailer.md).
 
 - [libpng Image Loader](libpng.md), including alpha/background policy, source precision, shared static/APNG CMS, and input validation.
+- [libtiff format and color-management support](libtiff.md#format-and-color-management-support), with a format-by-format table separating implemented decoding, ICC integration, precision limits and missing or unverified paths.
 - [Builtin Image Loader](builtin.md), including its stb_image lineage and format-specific extraction history.
 - [Builtin Format Components](builtin/README.md), indexing the exact accepted variants, metadata semantics, output precision/colorspace, history, and unsupported features of each builtin decoder family.
 

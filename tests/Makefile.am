@@ -857,6 +857,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0277_MANAGED_MIXED_LCMS2 \
     -DBUILD_TEST_0278_MANAGED_EXTENDED_LCMS2 \
     -DBUILD_TEST_0279_MANAGED_DIMENSIONS_CONTROL \
+    -DBUILD_TEST_0280_GRAY16_WHITE_BUILTIN \
+    -DBUILD_TEST_0281_GRAY16_BLACK_LCMS2 \
+    -DBUILD_TEST_0282_GRAY16_BLACK_COLORSYNC \
+    -DBUILD_TEST_0283_GRAY16_WHITE_LATE_BUILTIN \
+    -DBUILD_TEST_0284_GRAY16_BLACK_NAN_LCMS2 \
     -DBUILD_TIFF_MANAGED_TEST_COMMON \
     -DBUILD_TIFF_MANAGED_FAULT_TEST_COMMON \
     -DBUILD_TIFF_LOGLUV_TEST_COMMON \
@@ -1187,6 +1192,11 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0277_managed_mixed_lcms2.c \
     loader/libtiff/0278_managed_extended_lcms2.c \
     loader/libtiff/0279_managed_dimensions_control.c \
+    loader/libtiff/0280_gray16_white_builtin.c \
+    loader/libtiff/0281_gray16_black_lcms2.c \
+    loader/libtiff/0282_gray16_black_colorsync.c \
+    loader/libtiff/0283_gray16_white_late_builtin.c \
+    loader/libtiff/0284_gray16_black_nan_lcms2.c \
     loader/tiff_managed_test_common.c \
     loader/tiff_managed_test_common.h \
     loader/tiff_managed_fault_test_common.c \

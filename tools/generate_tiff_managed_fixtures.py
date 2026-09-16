@@ -31,6 +31,11 @@ def build(p3, gray):
     struct.pack_into('>I', table, 0, len(table))
     table[84:100] = bytes(16)
     specs = [('rgb', rgb, 2, p3, '<', 1, None), ('black', black, 1, gray, '<', 1, None), ('white', black, 0, gray, '<', 1, None), ('rgb-be-o3', rgb, 2, p3, '>', 3, None), ('white-be-o4', black, 0, gray, '>', 4, None), ('table', rgb, 2, bytes(table), '<', 1, None), ('mixed', mixed, 1, gray, '<', 1, None), ('extended', extended, 2, p3, '<', 1, None), ('rgb-nan', rgb, 2, p3, '<', 1, 2143363909), ('black-pinf', black, 1, gray, '<', 1, 2139095040), ('white-ninf', black, 0, gray, '>', 1, 4286578688)]
+    # Reuse the reviewed six-word Gray16 fixtures, with both polarities.
+    words16 = [0, 1, 128, 4096, 32768, 65535]
+    specs = [(*spec, 32) for spec in specs]
+    specs += [('gray16-black', words16, 1, gray, '<', 1, None, 16),
+              ('gray16-white', words16, 0, gray, '<', 1, None, 16)]
     eps = F(64, 2 ** 24)
     norm = max((sum(map(abs, row)) for row in ref.D))
     # A half-LSB table input error is amplified by the source matrix first.
@@ -47,12 +52,13 @@ def build(p3, gray):
     matrix = norm * 4 * q / (1 - norm * 3 * q)
     native = (1 + matrix) * (1 + eps) - 1
     header = '/* Offline independent ICC/TIFF-byte oracle; no CMM values. */\n#ifndef SIXEL_TIFF_MANAGED_VALUES_H\n#define SIXEL_TIFF_MANAGED_VALUES_H\n#include <stdint.h>\nstatic double const tm_float_relative = %.17g;\nstatic double const tm_native_relative = %.17g;\nstatic double const tm_table_absolute = %.17g;\n' % (float(eps), float(native), float(norm / F(65535)))
-    header += 'static struct {\n    char const *file;\n    int width;\n    int height;\n    int photo;\n    uint32_t stored[24];\n    uint32_t source[72];\n    double expected[2][72];\n} const tm_cases[] = {\n'
-    for name, values, photo, profile, endian, orientation, poison in specs:
-        words = [struct.unpack('>I', struct.pack('>f', x))[0] for x in values]
+    header += 'static struct {\n    char const *file;\n    int width;\n    int height;\n    int photo;\n    int bits;\n    uint32_t stored[24];\n    uint32_t source[72];\n    double expected[2][72];\n} const tm_cases[] = {\n'
+    for name, values, photo, profile, endian, orientation, poison, bits in specs:
+        words = values if bits == 16 else [struct.unpack('>I', struct.pack('>f', x))[0] for x in values]
         if poison is not None:
             words[-1] = poison
-        blob = write_tiff(words, photo, endian, orientation, icc=profile)
+        blob = write_tiff(words, photo, endian, orientation, icc=profile,
+                          bits=bits, height=1 if bits == 16 else None)
         filename = 'tiff-managed-' + name + '.tif'
         outputs[filename] = blob
         if poison is not None:
@@ -60,7 +66,7 @@ def build(p3, gray):
         parsed = ref.tiff(blob)
         source = [struct.pack('>f', v).hex() for rgb_value in parsed['triples'] for v in rgb_value]
         expected = [ref.expected(parsed, clamp) for clamp in [True, False]]
-        header += '    { "%s", %d, %d, %d, {\n' % (filename, parsed['width'], parsed['height'], photo)
+        header += '    { "%s", %d, %d, %d, %d, {\n' % (filename, parsed['width'], parsed['height'], photo, bits)
         header += ',\n'.join(('        0x%08xu' % v for v in words)) + '\n    }, {\n'
         header += ',\n'.join(('        0x' + v + 'u' for v in source)) + '\n    }, {\n'
         for array in expected:

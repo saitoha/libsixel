@@ -164,6 +164,7 @@ mf_read(TIFF *tif, void *data, uint32_t row, uint16_t sample)
     uint16_t channels;
     uint32_t word;
     uint32_t expected;
+    size_t sample_bytes;
     size_t first;
     size_t i;
     int ok;
@@ -174,8 +175,14 @@ mf_read(TIFF *tif, void *data, uint32_t row, uint16_t sample)
     TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
     TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
     first = (size_t)row * width * channels;
+    sample_bytes = (size_t)tm_cases[mf_fixture].bits / 8u;
     for (i = 0u; i < (size_t)width * channels; ++i) {
-        memcpy(&word, (unsigned char *)data + i * sizeof(word), sizeof(word));
+        /* libtiff returns host-endian words, including UINT16 fixtures. */
+        word = sample_bytes == 2u ? ((uint16_t const *)data)[i] : 0u;
+        if (sample_bytes == sizeof(word)) {
+            memcpy(&word, (unsigned char *)data + i * sample_bytes,
+                   sizeof(word));
+        }
         expected = first + i == 23u && mf_bad ? mf_bad :
             first + i < 24u ? tm_cases[mf_fixture].stored[first + i] : 0u;
         mf_matched += word == expected;
