@@ -54,7 +54,7 @@ The encoder trusts that frame state. It reserves a key color only when the frame
 
 The builtin RGBA and non-indexed PNG paths preserve source RGB for alpha-zero pixels under `clear` and `keep`, while still compositing partial alpha over an available background. Under `composite`, they composite all alpha, including alpha zero, and clear the mask after successful composition.
 
-Eligible RGB/Gray8 TIFF alpha scanlines retain original alpha while reversing source association and applying CMS. Background composition follows canonical linear conversion, with the background interpreted independently. Exact-zero masks and partial-alpha behavior follow the policies above; unmanaged all-255 input stays exact byte RGB. See the [TIFF source and publication contract](libtiff.md#original-byte-alpha-and-composition) for eligibility, fallback representation and remaining high-depth limitations.
+Eligible RGB/Gray8/16 TIFF alpha scanlines retain original alpha while reversing source association and applying CMS. Background composition follows canonical linear conversion, with the background interpreted independently. Exact-zero masks and partial-alpha behavior follow the policies above; unmanaged 8-bit all-255 input stays exact byte RGB, while UINT16 alpha retains float RGB even when all alpha words are 65535. Original 1/65535 alpha remains nonzero. See the [TIFF source and publication contract](libtiff.md#original-integer-alpha-and-composition) for eligibility, fallback representation and remaining layout and sample-format limitations.
 
 ## Related options
 
@@ -90,6 +90,7 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | AP-18 | Transparent offset rejects an explicit `clear` policy. | [tests/quant/palette/usage/0189_transparent_offset_clear_policy_conflict.t](../../tests/quant/palette/usage/0189_transparent_offset_clear_policy_conflict.t) |
 | AP-19 | 6delta rejects an explicit `composite` policy. | [tests/quant/palette/usage/0190_6delta_composite_policy_conflict.t](../../tests/quant/palette/usage/0190_6delta_composite_policy_conflict.t) |
 | AP-20 | Eligible TIFF byte alpha preserves zero coverage and composes partial alpha under default/auto/clear/keep/composite, with absent or resolved background. | [tests/loader/libtiff/0318_alpha_policy.t](../../tests/loader/libtiff/0318_alpha_policy.t) |
+| AP-21 | Eligible TIFF UINT16 alpha preserves original nonzero coverage and composes partial alpha under default/auto/clear/keep/composite, with absent or resolved background. | [tests/loader/libtiff/0348_alpha16_policy.t](../../tests/loader/libtiff/0348_alpha16_policy.t) |
 
 ### Coverage audit boundary
 

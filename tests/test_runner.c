@@ -1100,6 +1100,37 @@ int test_loader_0331_alpha(int argc, char **argv);
 int test_loader_0332_alpha(int argc, char **argv);
 int test_loader_0333_alpha(int argc, char **argv);
 int test_loader_0334_alpha(int argc, char **argv);
+int test_loader_0335_alpha16(int argc, char **argv);
+int test_loader_0336_alpha16(int argc, char **argv);
+int test_loader_0337_alpha16(int argc, char **argv);
+int test_loader_0338_alpha16(int argc, char **argv);
+int test_loader_0339_alpha16(int argc, char **argv);
+int test_loader_0340_alpha16(int argc, char **argv);
+int test_loader_0341_alpha16(int argc, char **argv);
+int test_loader_0342_alpha16(int argc, char **argv);
+int test_loader_0343_alpha16(int argc, char **argv);
+int test_loader_0344_alpha16(int argc, char **argv);
+int test_loader_0345_alpha16(int argc, char **argv);
+int test_loader_0346_alpha16(int argc, char **argv);
+int test_loader_0347_alpha16(int argc, char **argv);
+int test_loader_0348_alpha16(int argc, char **argv);
+int test_loader_0349_alpha16(int argc, char **argv);
+int test_loader_0350_alpha16(int argc, char **argv);
+int test_loader_0351_alpha16(int argc, char **argv);
+int test_loader_0352_alpha16(int argc, char **argv);
+int test_loader_0353_alpha16(int argc, char **argv);
+int test_loader_0354_alpha16(int argc, char **argv);
+int test_loader_0355_alpha16(int argc, char **argv);
+int test_loader_0356_alpha16(int argc, char **argv);
+int test_loader_0357_alpha16(int argc, char **argv);
+int test_loader_0358_alpha16(int argc, char **argv);
+int test_loader_0359_alpha16(int argc, char **argv);
+int test_loader_0360_alpha16(int argc, char **argv);
+int test_loader_0361_alpha16(int argc, char **argv);
+int test_loader_0362_alpha16(int argc, char **argv);
+int test_loader_0363_alpha16(int argc, char **argv);
+int test_loader_0364_alpha16(int argc, char **argv);
+int test_loader_0365_alpha16(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -2524,6 +2555,68 @@ static test_entry_t const test_entries[] = {
       test_loader_0333_alpha },
     { "loader/0334_alpha_late_scanline_failure",
       test_loader_0334_alpha },
+    { "loader/0335_alpha16_rgb_builtin",
+      test_loader_0335_alpha16 },
+    { "loader/0336_alpha16_rgb_lcms2",
+      test_loader_0336_alpha16 },
+    { "loader/0337_alpha16_rgb_colorsync",
+      test_loader_0337_alpha16 },
+    { "loader/0338_alpha16_black_builtin",
+      test_loader_0338_alpha16 },
+    { "loader/0339_alpha16_black_lcms2",
+      test_loader_0339_alpha16 },
+    { "loader/0340_alpha16_black_colorsync",
+      test_loader_0340_alpha16 },
+    { "loader/0341_alpha16_white_builtin",
+      test_loader_0341_alpha16 },
+    { "loader/0342_alpha16_white_lcms2",
+      test_loader_0342_alpha16 },
+    { "loader/0343_alpha16_white_colorsync",
+      test_loader_0343_alpha16 },
+    { "loader/0344_alpha16_rgb_fallback",
+      test_loader_0344_alpha16 },
+    { "loader/0345_alpha16_black_fallback",
+      test_loader_0345_alpha16 },
+    { "loader/0346_alpha16_white_fallback",
+      test_loader_0346_alpha16 },
+    { "loader/0347_alpha16_orientation_void",
+      test_loader_0347_alpha16 },
+    { "loader/0348_alpha16_policy",
+      test_loader_0348_alpha16 },
+    { "loader/0349_alpha16_gamma_target",
+      test_loader_0349_alpha16 },
+    { "loader/0350_alpha16_final_byte_target",
+      test_loader_0350_alpha16 },
+    { "loader/0351_alpha16_working_targets",
+      test_loader_0351_alpha16 },
+    { "loader/0352_alpha16_rgb_builtin_failure",
+      test_loader_0352_alpha16 },
+    { "loader/0353_alpha16_rgb_lcms2_failure",
+      test_loader_0353_alpha16 },
+    { "loader/0354_alpha16_rgb_colorsync_failure",
+      test_loader_0354_alpha16 },
+    { "loader/0355_alpha16_black_builtin_failure",
+      test_loader_0355_alpha16 },
+    { "loader/0356_alpha16_black_lcms2_failure",
+      test_loader_0356_alpha16 },
+    { "loader/0357_alpha16_black_colorsync_failure",
+      test_loader_0357_alpha16 },
+    { "loader/0358_alpha16_white_builtin_failure",
+      test_loader_0358_alpha16 },
+    { "loader/0359_alpha16_white_lcms2_failure",
+      test_loader_0359_alpha16 },
+    { "loader/0360_alpha16_white_colorsync_failure",
+      test_loader_0360_alpha16 },
+    { "loader/0361_alpha16_row_allocation_failure",
+      test_loader_0361_alpha16 },
+    { "loader/0362_alpha16_color_allocation_failure",
+      test_loader_0362_alpha16 },
+    { "loader/0363_alpha16_plane_allocation_failure",
+      test_loader_0363_alpha16 },
+    { "loader/0364_alpha16_late_scanline_failure",
+      test_loader_0364_alpha16 },
+    { "loader/0365_alpha_float32_rejected",
+      test_loader_0365_alpha16 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

@@ -4,4 +4,6 @@
 #include "src/frame-private.h"
 int tiff_alpha_test(int, char **, int, int, int);
 int tiff_alpha_fault(int, char **, int, int, int);
+int tiff_alpha16_test(int, char **, int, int, int);
+int tiff_alpha16_fault(int, char **, int, int, int);
 #endif

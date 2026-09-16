@@ -230,11 +230,11 @@ tlf_target(sixel_frame_t *frame, int format)
 #define TIFFReadRGBAImageOriented tlf_rgba
 #define sixel_allocator_malloc tlf_allocate
 #define sixel_frame_set_pixelformat tlf_target
-#define tiff_convert_byte_samples_to_linear luf_byte
-#define tiff_try_load_alpha8 luf_alpha
+#define tiff_convert_samples_to_linear luf_byte
+#define tiff_try_load_integer_alpha luf_alpha
 #include "src/loader-libtiff.c"
-#undef tiff_try_load_alpha8
-#undef tiff_convert_byte_samples_to_linear
+#undef tiff_try_load_integer_alpha
+#undef tiff_convert_samples_to_linear
 #undef g_sixel_loader_libtiff_vtbl
 #undef load_tiff
 #undef load_with_libtiff

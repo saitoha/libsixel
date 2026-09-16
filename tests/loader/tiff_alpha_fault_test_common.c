@@ -112,12 +112,14 @@ af_image_malloc(size_t n)
         ++af_injected;
         return NULL;
     }
-    if (af_armed && af_mode == 6 && af_color_allocated && n == af_n) {
+    if (af_armed && af_mode == 6 && af_color_allocated &&
+        n == af_n * (size_t)(ta_cases[af_fixture].bits / 8)) {
         ++af_injected;
         return NULL;
     }
     if (af_armed && af_mode == 7 && !af_color_allocated &&
-        n == (ta_cases[af_fixture].photo == 2 ? 8u : 4u)) {
+        n == (ta_cases[af_fixture].photo == 2 ? 8u : 4u) *
+        (size_t)(ta_cases[af_fixture].bits / 8)) {
         ++af_injected;
         return NULL;
     }
@@ -126,7 +128,10 @@ af_image_malloc(size_t n)
     if (af_armed && n == 12u * sizeof(float) && p != NULL) {
         af_color_allocated = 1;
     }
-    if (af_armed && af_color_allocated && n == af_n) { af_alpha = p; }
+    if (af_armed && af_color_allocated &&
+        n == af_n * (size_t)(ta_cases[af_fixture].bits / 8)) {
+        af_alpha = p;
+    }
     return p;
 }
 
@@ -233,7 +238,7 @@ af_read(TIFF *tif, void *data, uint32_t row, uint16_t sample)
 {
     uint32_t width;
     uint16_t channels;
-    unsigned char word;
+    uint16_t word;
     uint32_t expected;
     size_t first;
     size_t i;
@@ -250,7 +255,8 @@ af_read(TIFF *tif, void *data, uint32_t row, uint16_t sample)
     TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
     first = (size_t)row * width * channels;
     for (i = 0u; i < (size_t)width * channels; ++i) {
-        word = ((unsigned char const *)data)[i];
+        word = ta_cases[af_fixture].bits == 16
+            ? ((uint16_t const *)data)[i] : ((unsigned char const *)data)[i];
         expected = ta_cases[af_fixture].stored[first + i];
         af_matched += word == expected;
     }
@@ -604,7 +610,9 @@ af_linear(unsigned char *pixels, int width, int height, int format,
           sixel_cms_profile_t *profile)
 {
     unsigned char before[12u * sizeof(float)];
-    unsigned char before_alpha[4];
+    unsigned char before_alpha[8];
+    size_t alpha_bytes;
+    unsigned int alpha;
     size_t i;
     size_t channels;
     int ok;
@@ -614,15 +622,18 @@ af_linear(unsigned char *pixels, int width, int height, int format,
     af_source_ok &= memcmp(before, ta_cases[af_fixture].source,
                            sizeof(before)) == 0;
     if (af_alpha == NULL) { return 0; }
-    memcpy(before_alpha, af_alpha, sizeof(before_alpha));
+    alpha_bytes = af_n * (size_t)(ta_cases[af_fixture].bits / 8);
+    memcpy(before_alpha, af_alpha, alpha_bytes);
     channels = ta_cases[af_fixture].photo == 2 ? 4u : 2u;
     for (i = 0u; i < 4u; ++i) {
-        af_alpha_ok &= af_alpha[i] == ta_cases[af_fixture].stored[
+        alpha = ta_cases[af_fixture].bits == 16
+            ? ((uint16_t const *)af_alpha)[i] : af_alpha[i];
+        af_alpha_ok &= alpha == ta_cases[af_fixture].stored[
             i * channels + channels - 1u];
     }
     ok = af_local_59(pixels, width, height, format, profile);
     af_cms_result = ok;
-    af_alpha_ok &= memcmp(before_alpha, af_alpha, sizeof(before_alpha)) == 0;
+    af_alpha_ok &= memcmp(before_alpha, af_alpha, alpha_bytes) == 0;
     af_rollback = ok || memcmp(before, pixels, sizeof(before)) == 0;
     return ok;
 }
@@ -632,11 +643,11 @@ af_linear(unsigned char *pixels, int width, int height, int format,
 #define TIFFReadScanline af_read
 #define TIFFReadRGBAImageOriented af_rgba_read
 #define tiff_logluv_xyz_to_linear af_logluv_xyz
-#define tiff_convert_byte_samples_to_linear af_byte
-#define tiff_try_load_alpha8 af_load_alpha
+#define tiff_convert_samples_to_linear af_byte
+#define tiff_try_load_integer_alpha af_load_alpha
 #include "src/loader-libtiff.c"
-#undef tiff_try_load_alpha8
-#undef tiff_convert_byte_samples_to_linear
+#undef tiff_try_load_integer_alpha
+#undef tiff_convert_samples_to_linear
 #undef tiff_logluv_xyz_to_linear
 #undef TIFFReadScanline
 #undef TIFFReadRGBAImageOriented
@@ -836,7 +847,7 @@ af_capture(sixel_frame_t *frame, void *context)
     (void)context;
     ++af_calls;
     fallback = af_phase == 1;
-    floating = !fallback ||
+    floating = ta_cases[af_fixture].bits == 16 || !fallback ||
         (!ta_cases[af_fixture].opaque &&
          (ta_cases[af_fixture].associated || af_background));
     masked = !af_background && !ta_cases[af_fixture].opaque;
@@ -951,7 +962,10 @@ af_run(char const *directory, int fixture, int engine, int mode,
     af_background = background_on;
     snprintf(path, sizeof(path), "%s/tiff-alpha-%s-%s.tif", directory,
         ta_cases[fixture].name, ta_cases[fixture].opaque ? "icc" : "o1-s1");
-    af_n = 4u;
+    /* Fault witnesses are the four-pixel normal and opaque rows. The
+     * ten-pixel boundary rows belong to the source/composition observer. */
+    af_n = (size_t)ta_cases[fixture].count;
+    if (af_n != 4u) { return 0; }
     allocator = NULL;
     chunk = NULL;
     component = NULL;
@@ -1031,8 +1045,8 @@ cleanup:
 #endif
 
 
-int
-tiff_alpha_fault(int argc, char **argv, int photo, int engine, int mode)
+static int
+af_test(int argc, char **argv, int photo, int engine, int mode, int bits)
 {
 #if HAVE_LIBTIFF
     int previous_policy;
@@ -1041,9 +1055,11 @@ tiff_alpha_fault(int argc, char **argv, int photo, int engine, int mode)
     int background;
     int fixture;
     int injected_mode;
+    int offset;
     int ok;
 
     if (argc != 2) { return 2; }
+    offset = bits == 16 ? 20 : 0;
     previous_policy = loader_transparent_policy();
     previous_background = loader_background_colorspace();
     sixel_helper_set_loader_transparent_policy(SIXEL_ALPHA_POLICY_COMPOSITE);
@@ -1054,7 +1070,7 @@ tiff_alpha_fault(int argc, char **argv, int photo, int engine, int mode)
          * and without background, then both opaque association controls.
          * ColorSync observes both real-prefix and finite-result rejection. */
         for (association = 0; ok == 1 && association < 2; ++association) {
-            fixture = photo * 2 + association;
+            fixture = offset + photo * 2 + association;
             injected_mode = engine == 3 || (engine == 4 && association)
                 ? 3 : 1;
             for (background = 0; ok == 1 && background < 2; ++background) {
@@ -1062,13 +1078,14 @@ tiff_alpha_fault(int argc, char **argv, int photo, int engine, int mode)
                             background);
             }
             if (ok == 1) {
-                ok = af_run(argv[1], fixture + 8, engine, injected_mode,
-                            association);
+                ok = af_run(argv[1], fixture + (bits == 16 ? 12 : 8),
+                            engine, injected_mode, association);
             }
         }
     } else {
         injected_mode = mode == 1 ? 7 : mode == 2 ? 4 : mode == 3 ? 6 : 5;
-        for (fixture = 0; ok == 1 && fixture < 6; fixture += 2) {
+        for (fixture = offset; ok == 1 && fixture < offset + 6;
+             fixture += 2) {
             ok = af_run(argv[1], fixture, 2, injected_mode, 0);
         }
     }
@@ -1077,6 +1094,19 @@ tiff_alpha_fault(int argc, char **argv, int photo, int engine, int mode)
     return ok == 77 ? 77 : ok == 1 ? 0 : 1;
 #else
     (void)argc; (void)argv; (void)photo; (void)engine; (void)mode;
+    (void)bits;
     return 77;
 #endif
+}
+
+int
+tiff_alpha_fault(int argc, char **argv, int photo, int engine, int mode)
+{
+    return af_test(argc, argv, photo, engine, mode, 8);
+}
+
+int
+tiff_alpha16_fault(int argc, char **argv, int photo, int engine, int mode)
+{
+    return af_test(argc, argv, photo, engine, mode, 16);
 }

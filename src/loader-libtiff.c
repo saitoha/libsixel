@@ -667,14 +667,14 @@ tiff_logluv_xyz_to_linear(float const xyz[3], double rgb[3])
            isfinite(rgb[2]) && fabs(rgb[2]) <= FLT_MAX;
 }
 
-/* Keep the byte-path photometric/profile check before the shared float
+/* Keep the integer-path photometric/profile check before the shared float
  * boundary. Expanded Gray samples are RGB-shaped storage, not an RGB source
  * definition. An inapplicable profile leaves all normalized source values
  * untouched, identically in builds with and without Little CMS. */
 static int
-tiff_convert_byte_samples_to_linear(float *pixels, int width, int height,
-                                   void const *profile, uint32_t length,
-                                   uint16_t photometric)
+tiff_convert_samples_to_linear(float *pixels, int width, int height,
+                               void const *profile, uint32_t length,
+                               uint16_t photometric)
 {
     sixel_cms_profile_t *source;
     sixel_cms_color_space_t expected;
@@ -697,21 +697,22 @@ tiff_convert_byte_samples_to_linear(float *pixels, int width, int height,
     return converted;
 }
 
-/* Read declared byte alpha before libtiff's RGBA convenience conversion.
+/* Read declared integer alpha before libtiff's RGBA convenience conversion.
  * RGB and Gray convenience readers do not share association behavior. Keep
  * original alpha separate until source interpretation and composition end. */
 static SIXELSTATUS
-tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
-                     uint32_t width, uint32_t height, int *ppixelformat,
-                     void const *profile, uint32_t profile_length,
-                     uint16_t photometric, sixel_allocator_t *allocator,
-                     int *pnegotiate_target, unsigned char **pmask,
-                     unsigned char const *bgcolor)
+tiff_try_load_integer_alpha(unsigned char **result, TIFF *tif,
+                            uint32_t width, uint32_t height, int *ppixelformat,
+                            void const *profile, uint32_t profile_length,
+                            uint16_t photometric, sixel_allocator_t *allocator,
+                            int *pnegotiate_target, unsigned char **pmask,
+                            unsigned char const *bgcolor)
 {
     SIXELSTATUS status;
     unsigned char *row;
     unsigned char *alpha;
     float *pixels;
+    uint16_t const *row_u16;
     uint16_t bits;
     uint16_t samples;
     uint16_t format;
@@ -721,6 +722,7 @@ tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
     uint16_t *extra_info;
     tsize_t row_size;
     size_t count;
+    size_t sample_bytes;
     size_t source;
     size_t destination;
     size_t i;
@@ -730,6 +732,7 @@ tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
     uint32_t dx;
     uint32_t dy;
     unsigned int a;
+    unsigned int maximum;
     unsigned int numerator;
     unsigned int denominator;
     double background[3];
@@ -771,7 +774,7 @@ tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
     (void)TIFFGetFieldDefaulted(tif, TIFFTAG_ORIENTATION, &orientation);
     (void)TIFFGetFieldDefaulted(tif, TIFFTAG_EXTRASAMPLES,
                                &extras, &extra_info);
-    if (bits != 8u ||
+    if ((bits != 8u && bits != 16u) ||
         (format != SAMPLEFORMAT_UINT && format != SAMPLEFORMAT_VOID) ||
         samples != (rgb ? 4u : 2u) || extras != 1u || extra_info == NULL ||
         (extra_info[0] != EXTRASAMPLE_ASSOCALPHA &&
@@ -781,17 +784,20 @@ tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
         return SIXEL_FALSE;
     }
     associated = extra_info[0] == EXTRASAMPLE_ASSOCALPHA;
+    sample_bytes = bits / 8u;
+    maximum = bits == 8u ? 255u : 65535u;
     if (width == 0u || height == 0u ||
         (size_t)width > SIZE_MAX / (size_t)height) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     count = (size_t)width * height;
     if (count > SIZE_MAX / (3u * sizeof(float)) ||
-        (size_t)width > SIZE_MAX / samples) {
+        (size_t)width > SIZE_MAX / samples / sample_bytes) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     row_size = TIFFScanlineSize(tif);
-    if (row_size <= 0 || (size_t)row_size < (size_t)width * samples) {
+    if (row_size <= 0 ||
+        (size_t)row_size < (size_t)width * samples * sample_bytes) {
         return SIXEL_TIFF_ERROR;
     }
 
@@ -801,11 +807,14 @@ tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
                                                  (size_t)row_size);
     pixels = (float *)sixel_allocator_malloc(allocator,
                                              count * 3u * sizeof(float));
-    alpha = (unsigned char *)sixel_allocator_malloc(allocator, count);
+    alpha = (unsigned char *)sixel_allocator_malloc(
+        allocator, count * sample_bytes);
     if (row == NULL || pixels == NULL || alpha == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
     }
+    /* TIFFReadScanline returns native-endian UINT16 samples. */
+    row_u16 = (uint16_t const *)row;
     for (y = 0u; y < height; ++y) {
         if (TIFFReadScanline(tif, row, y, 0) < 0) {
             sixel_helper_set_additional_message(
@@ -818,16 +827,23 @@ tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
             tiff_map_scanline_coordinates(orientation, width, height,
                                           x, y, &dx, &dy);
             destination = (size_t)dy * width + dx;
-            a = row[source + samples - 1u];
-            alpha[destination] = (unsigned char)a;
-            all_opaque &= a == 255u;
-            denominator = associated ? a : 255u;
+            a = bits == 8u ? row[source + samples - 1u]
+                           : row_u16[source + samples - 1u];
+            if (bits == 8u) {
+                alpha[destination] = (unsigned char)a;
+            } else {
+                ((uint16_t *)alpha)[destination] = (uint16_t)a;
+            }
+            all_opaque &= a == maximum;
+            denominator = associated ? a : maximum;
             for (channel = 0u; channel < 3u; ++channel) {
-                numerator = row[source + (rgb ? channel : 0u)];
+                numerator = bits == 8u
+                    ? row[source + (rgb ? channel : 0u)]
+                    : row_u16[source + (rgb ? channel : 0u)];
                 if (photometric == PHOTOMETRIC_MINISWHITE) {
                     /* Use the reviewed libvips-compatible Gray order:
                      * undo storage polarity before undoing association. */
-                    numerator = 255u - numerator;
+                    numerator = maximum - numerator;
                 }
                 /* One rounding from the original integer ratio. Values
                  * above one are valid associated-source coordinates. */
@@ -837,7 +853,7 @@ tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
         }
     }
     if (profile != NULL && profile_length > 0u) {
-        managed = tiff_convert_byte_samples_to_linear(
+        managed = tiff_convert_samples_to_linear(
             pixels, (int)width, (int)height, profile, profile_length,
             photometric);
     }
@@ -853,11 +869,12 @@ tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
         }
     }
     for (i = 0u; i < count; ++i) {
-        a = alpha[i];
-        /* Retain the stored alpha through CMS, then reuse its allocation
-         * for the binary mask after this pixel's blend is complete. */
-        if (bgcolor != NULL && a < 255u && (a != 0u || !preserve_zero)) {
-            coverage = (double)a / 255.0;
+        a = bits == 8u ? alpha[i] : ((uint16_t const *)alpha)[i];
+        /* Retain original alpha through CMS. After consuming element i,
+         * byte i can hold its mask without overwriting an unread UINT16.
+         * Only exact source zero is masked, never a rounded byte zero. */
+        if (bgcolor != NULL && a < maximum && (a != 0u || !preserve_zero)) {
+            coverage = (double)a / maximum;
             for (channel = 0u; channel < 3u; ++channel) {
                 value = pixels[i * 3u + channel];
                 if (!managed) {
@@ -882,9 +899,11 @@ tiff_try_load_alpha8(unsigned char **result, TIFF *tif,
 
     *ppixelformat = managed ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                            : SIXEL_PIXELFORMAT_RGBFLOAT32;
-    if (!managed && (all_opaque || (!associated && !composed))) {
-        /* No fractional color was created. Preserve the same exact byte
-         * publication as opaque input, including all255 associated alpha. */
+    if (bits == 8u && !managed &&
+        (all_opaque || (!associated && !composed))) {
+        /* Only original byte sources can compact without precision
+         * loss, including all255 associated alpha. UINT16 stays float even
+         * when fully opaque, matching the existing opaque16 source path. */
         for (i = 0u; i < count * 3u; ++i) {
             ((unsigned char *)pixels)[i] = (unsigned char)(
                 (double)pixels[i] * 255.0 + 0.5);
@@ -1323,7 +1342,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         if (bits_per_sample == 8u &&
             (decode_mode == TIFF_DECODE_RGB_UINT ||
              decode_mode == TIFF_DECODE_GRAY_UINT)) {
-            cms_converted = tiff_convert_byte_samples_to_linear(
+            cms_converted = tiff_convert_samples_to_linear(
                 float_pixels, (int)width, (int)height, icc_profile,
                 icc_profile_length, photometric);
         } else if (decode_mode == TIFF_DECODE_RGB_UINT ||
@@ -1524,7 +1543,7 @@ load_tiff(unsigned char      /* out */ **result,
                            &icc_profile);
     }
 
-    high_precision_status = tiff_try_load_alpha8(
+    high_precision_status = tiff_try_load_integer_alpha(
         &pixels, tif, width, height, ppixelformat,
         enable_cms ? icc_profile : NULL,
         enable_cms ? icc_profile_length : 0u,

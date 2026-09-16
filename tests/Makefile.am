@@ -930,6 +930,37 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0332_ALPHA_COLOR_ALLOCATION_FAILURE \
     -DBUILD_TEST_0333_ALPHA_PLANE_ALLOCATION_FAILURE \
     -DBUILD_TEST_0334_ALPHA_LATE_SCANLINE_FAILURE \
+    -DBUILD_TEST_0335_ALPHA16_RGB_BUILTIN \
+    -DBUILD_TEST_0336_ALPHA16_RGB_LCMS2 \
+    -DBUILD_TEST_0337_ALPHA16_RGB_COLORSYNC \
+    -DBUILD_TEST_0338_ALPHA16_BLACK_BUILTIN \
+    -DBUILD_TEST_0339_ALPHA16_BLACK_LCMS2 \
+    -DBUILD_TEST_0340_ALPHA16_BLACK_COLORSYNC \
+    -DBUILD_TEST_0341_ALPHA16_WHITE_BUILTIN \
+    -DBUILD_TEST_0342_ALPHA16_WHITE_LCMS2 \
+    -DBUILD_TEST_0343_ALPHA16_WHITE_COLORSYNC \
+    -DBUILD_TEST_0344_ALPHA16_RGB_FALLBACK \
+    -DBUILD_TEST_0345_ALPHA16_BLACK_FALLBACK \
+    -DBUILD_TEST_0346_ALPHA16_WHITE_FALLBACK \
+    -DBUILD_TEST_0347_ALPHA16_ORIENTATION_VOID \
+    -DBUILD_TEST_0348_ALPHA16_POLICY \
+    -DBUILD_TEST_0349_ALPHA16_GAMMA_TARGET \
+    -DBUILD_TEST_0350_ALPHA16_FINAL_BYTE_TARGET \
+    -DBUILD_TEST_0351_ALPHA16_WORKING_TARGETS \
+    -DBUILD_TEST_0352_ALPHA16_RGB_BUILTIN_FAILURE \
+    -DBUILD_TEST_0353_ALPHA16_RGB_LCMS2_FAILURE \
+    -DBUILD_TEST_0354_ALPHA16_RGB_COLORSYNC_FAILURE \
+    -DBUILD_TEST_0355_ALPHA16_BLACK_BUILTIN_FAILURE \
+    -DBUILD_TEST_0356_ALPHA16_BLACK_LCMS2_FAILURE \
+    -DBUILD_TEST_0357_ALPHA16_BLACK_COLORSYNC_FAILURE \
+    -DBUILD_TEST_0358_ALPHA16_WHITE_BUILTIN_FAILURE \
+    -DBUILD_TEST_0359_ALPHA16_WHITE_LCMS2_FAILURE \
+    -DBUILD_TEST_0360_ALPHA16_WHITE_COLORSYNC_FAILURE \
+    -DBUILD_TEST_0361_ALPHA16_ROW_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0362_ALPHA16_COLOR_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0363_ALPHA16_PLANE_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0364_ALPHA16_LATE_SCANLINE_FAILURE \
+    -DBUILD_TEST_0365_ALPHA_FLOAT32_REJECTED \
     -DBUILD_TIFF_ALPHA_TEST_COMMON \
     -DBUILD_TIFF_ALPHA_FAULT_TEST_COMMON \
     -DBUILD_TIFF_BYTE_TEST_COMMON \
@@ -1338,6 +1369,37 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0332_alpha_color_allocation_failure.c \
     loader/libtiff/0333_alpha_plane_allocation_failure.c \
     loader/libtiff/0334_alpha_late_scanline_failure.c \
+    loader/libtiff/0335_alpha16_rgb_builtin.c \
+    loader/libtiff/0336_alpha16_rgb_lcms2.c \
+    loader/libtiff/0337_alpha16_rgb_colorsync.c \
+    loader/libtiff/0338_alpha16_black_builtin.c \
+    loader/libtiff/0339_alpha16_black_lcms2.c \
+    loader/libtiff/0340_alpha16_black_colorsync.c \
+    loader/libtiff/0341_alpha16_white_builtin.c \
+    loader/libtiff/0342_alpha16_white_lcms2.c \
+    loader/libtiff/0343_alpha16_white_colorsync.c \
+    loader/libtiff/0344_alpha16_rgb_fallback.c \
+    loader/libtiff/0345_alpha16_black_fallback.c \
+    loader/libtiff/0346_alpha16_white_fallback.c \
+    loader/libtiff/0347_alpha16_orientation_void.c \
+    loader/libtiff/0348_alpha16_policy.c \
+    loader/libtiff/0349_alpha16_gamma_target.c \
+    loader/libtiff/0350_alpha16_final_byte_target.c \
+    loader/libtiff/0351_alpha16_working_targets.c \
+    loader/libtiff/0352_alpha16_rgb_builtin_failure.c \
+    loader/libtiff/0353_alpha16_rgb_lcms2_failure.c \
+    loader/libtiff/0354_alpha16_rgb_colorsync_failure.c \
+    loader/libtiff/0355_alpha16_black_builtin_failure.c \
+    loader/libtiff/0356_alpha16_black_lcms2_failure.c \
+    loader/libtiff/0357_alpha16_black_colorsync_failure.c \
+    loader/libtiff/0358_alpha16_white_builtin_failure.c \
+    loader/libtiff/0359_alpha16_white_lcms2_failure.c \
+    loader/libtiff/0360_alpha16_white_colorsync_failure.c \
+    loader/libtiff/0361_alpha16_row_allocation_failure.c \
+    loader/libtiff/0362_alpha16_color_allocation_failure.c \
+    loader/libtiff/0363_alpha16_plane_allocation_failure.c \
+    loader/libtiff/0364_alpha16_late_scanline_failure.c \
+    loader/libtiff/0365_alpha_float32_rejected.c \
     loader/tiff_alpha_test_common.c \
     loader/tiff_alpha_test_common.h \
     loader/tiff_alpha_fault_test_common.c \
