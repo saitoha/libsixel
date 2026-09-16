@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/animation.md
 # Policy: docs/loader/libpng.md
 # TAP test: APNG frame_no sequence stays loop-local and monotonic.
 

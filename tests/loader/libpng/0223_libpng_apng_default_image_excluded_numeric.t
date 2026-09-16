@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/animation.md
 # Policy: docs/loader/libpng.md
 # Verify libpng apng default image excluded numeric with an in-memory specimen.
 set -eux

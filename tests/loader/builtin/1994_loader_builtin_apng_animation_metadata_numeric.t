@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/animation.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Policy: docs/loader/builtin/png.md
 # Verify APNG delay, frame, loop, and multiframe metadata exactly.

@@ -1,5 +1,7 @@
 # Animation Threading
 
+For input formats, loader support, playback controls, timing, and output-state interactions, see [Animation playback in img2sixel](../functionality/animation.md). This document covers scheduling and frame ownership.
+
 ## Current frame pipeline
 
 For supported multi-frame loaders, the loader callback can hand frames to one

@@ -42,6 +42,8 @@ img2sixel -u -lforce animation.gif
 
 `-u` selects the output mechanism; `-l` selects the loop policy. It does not make the terminal run an autonomous animation. The host continues sending invocations and controlling delays. The macro output path is shared by decoded frames and is not inherently restricted to GIF; whether another format supplies an animation depends on the selected, compiled loader.
 
+The [animation guide](animation.md) describes those loader differences, the GIF exception for missing loop metadata, and the interaction between `-T` and first-pass macro numbering.
+
 For a two-frame animation with IDs zero and one, the relevant output order is:
 
 ```text

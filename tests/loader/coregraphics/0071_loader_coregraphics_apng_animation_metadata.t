@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/animation.md
 set -eux
 
 test "${HAVE_COREGRAPHICS-}" = 1 || {

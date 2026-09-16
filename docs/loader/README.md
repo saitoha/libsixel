@@ -85,6 +85,8 @@ The registry order below is also the automatic priority order for components pre
 
 Framework and plugin loaders inherit part of their effective format support from the host. A build-time name therefore identifies a component, not a permanent promise that every installation recognizes the same extensions.
 
+See [Animation playback](../functionality/animation.md) for the loader/format support matrix, loop and delay metadata, still-frame extraction, and GdkPixbuf's finite-loop and iterator limitations. Successful still-image loading does not establish animation support.
+
 ## The output is a typed frame, not universal RGBA
 
 The stable handoff records dimensions, storage kind, `pixelformat`, `colorspace`, animation timing, palette metadata, a possible transparent palette index, alpha-zero interpretation, and an optional transparency mask. Common representations include:

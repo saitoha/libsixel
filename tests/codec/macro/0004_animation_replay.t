@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/animation.md
 # Policy: docs/functionality/terminal-macros.md
 # Verify the second animation pass invokes existing IDs without definitions.
 

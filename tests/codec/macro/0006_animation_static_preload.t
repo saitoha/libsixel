@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/animation.md
 # Policy: docs/functionality/terminal-macros.md
 # Verify static selection preloads only the first animation frame.
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/functionality/animation.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin APNG frame_no sequence stays loop-local and monotonic.
 

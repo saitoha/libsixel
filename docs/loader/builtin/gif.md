@@ -73,7 +73,7 @@ img2sixel -Lbuiltin:background_policy=explicit_first! -B '#202020' animation.gif
 | --- | --- |
 | `-S`, `--static` | Emits the first frame selected by `-T` and stops. Earlier frames are still decoded when required to build the selected composited canvas. |
 | `-T N`, `--start-frame=N` | On the first playback loop, skips emission before absolute zero-based `N`; negative values count from the end and require a preliminary frame count. Out-of-range values fail. Later loops start at frame 0. |
-| `-l auto|force|disable` | `disable` stops after one pass. `auto` follows a positive `NETSCAPE2.0` count and otherwise follows stream semantics. `force` keeps replaying a multiframe stream until cancellation even when the file declares a finite count. A one-frame stream is never replayed as animation. |
+| `-l auto|force|disable` | `disable` stops after one pass. `auto` treats a positive `NETSCAPE2.0` count as that many total passes and zero as indefinite playback. `force` overrides a finite count when the extension is present. Without a recognized loop extension, all three modes currently stop after one pass. A one-frame stream is never replayed as animation. |
 | `-g`, `--ignore-delay` | Leaves parsed delays intact but makes the encoder skip presentation sleeps. It does not alter GIF parsing or disposal. |
 | `-B COLOR` | Supplies an explicit composition/disposal background. Without one, transparent pixels can remain transparent and the file background can participate according to policy. |
 | `background_policy=file_first|explicit_first` | Chooses whether a valid Logical Screen background or `-B` wins where GIF requires a background. |
@@ -83,6 +83,8 @@ img2sixel -Lbuiltin:background_policy=explicit_first! -B '#202020' animation.gif
 | CMS, orientation, PNG, HDR, PNM, and BMP suboptions | No effect: this GIF path has no interpreted ICC/Exif source and none of those grammars apply. |
 
 `NETSCAPE2.0` counts and `-l` interact at playback time; `-S` wins earlier by stopping after one emitted frame. Cancellation is checked during decode and replay, including forced indefinite looping.
+
+See [Animation playback](../../functionality/animation.md) for cross-loader differences, timing, and output-state interactions. In particular, the builtin parser's finite-count behavior is not available through the generic GdkPixbuf animation API.
 
 ## Unsupported behavior and security boundary
 
