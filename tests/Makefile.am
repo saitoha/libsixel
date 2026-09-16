@@ -639,6 +639,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0197_LCMS_CMYK32_LAYERS \
     -DBUILD_TEST_0198_COLORSYNC_CMYK8_CHANNEL_FALLBACK \
     -DBUILD_TEST_0199_COLORSYNC_CMYK16_CHANNEL_FALLBACK \
+    -DBUILD_TEST_0200_COLORSYNC_CMYK32_PROFILE_MAIN \
+    -DBUILD_TEST_0201_COLORSYNC_CMYK32_PROFILE_MISSING \
+    -DBUILD_TEST_0202_COLORSYNC_CMYK32_PROFILE_LAYERS \
     -DBUILD_TEST_0172_LCMS_LAB_FRAME \
     -DBUILD_TEST_0173_COLORSYNC_LAB_FRAME \
     -DBUILD_TEST_0238_LCMS_CMYK_LINEAR \
@@ -691,6 +694,62 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0285_COLORSYNC_LAB_FLOAT_CHANNELS_GAMMA \
     -DBUILD_TEST_0286_COLORSYNC_CHANNELS_SCOPE_LINEAR \
     -DBUILD_TEST_0287_COLORSYNC_CHANNELS_SCOPE_GAMMA \
+    -DBUILD_TEST_0288_BUILTIN_GRAY8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0289_BUILTIN_GRAY8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0290_BUILTIN_RGB8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0291_BUILTIN_RGB8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0292_BUILTIN_RGBA8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0293_BUILTIN_RGBA8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0294_BUILTIN_RGB_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0295_BUILTIN_RGB_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0296_BUILTIN_CMYK8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0297_BUILTIN_CMYK8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0298_BUILTIN_CMYK16_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0299_BUILTIN_CMYK16_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0300_BUILTIN_CMYK_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0301_BUILTIN_CMYK_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0302_BUILTIN_LAB_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0303_BUILTIN_LAB_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0304_BUILTIN_GRAY_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0305_BUILTIN_GRAY_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0306_LCMS2_GRAY8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0307_LCMS2_GRAY8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0308_LCMS2_RGB8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0309_LCMS2_RGB8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0310_LCMS2_RGBA8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0311_LCMS2_RGBA8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0312_LCMS2_RGB_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0313_LCMS2_RGB_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0314_LCMS2_CMYK8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0315_LCMS2_CMYK8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0316_LCMS2_CMYK16_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0317_LCMS2_CMYK16_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0318_LCMS2_CMYK_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0319_LCMS2_CMYK_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0320_LCMS2_LAB_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0321_LCMS2_LAB_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0322_LCMS2_GRAY_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0323_LCMS2_GRAY_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0324_COLORSYNC_GRAY8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0325_COLORSYNC_GRAY8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0326_COLORSYNC_RGB8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0327_COLORSYNC_RGB8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0328_COLORSYNC_RGBA8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0329_COLORSYNC_RGBA8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0330_COLORSYNC_RGB_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0331_COLORSYNC_RGB_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0332_COLORSYNC_CMYK8_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0333_COLORSYNC_CMYK8_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0334_COLORSYNC_CMYK16_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0335_COLORSYNC_CMYK16_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0336_COLORSYNC_CMYK_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0337_COLORSYNC_CMYK_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0338_COLORSYNC_LAB_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0339_COLORSYNC_LAB_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0340_COLORSYNC_GRAY_FLOAT_PROFILE_FORMAT_LINEAR \
+    -DBUILD_TEST_0341_COLORSYNC_GRAY_FLOAT_PROFILE_FORMAT_GAMMA \
+    -DBUILD_TEST_0342_BUILTIN_PROFILE_FORMAT_SCOPE \
+    -DBUILD_TEST_0343_COLORSYNC_PROFILE_FORMAT_SCOPE \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
     -DBUILD_TEST_0187_COREGRAPHICS_PNG \
     -DBUILD_TEST_0188_COLORSYNC_LINEAR \
@@ -785,10 +844,14 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0197_lcms_cmyk32_layers.c \
     loader/builtin/0198_colorsync_cmyk8_channel_fallback.c \
     loader/builtin/0199_colorsync_cmyk16_channel_fallback.c \
+    loader/builtin/0200_colorsync_cmyk32_profile_main.c \
+    loader/builtin/0201_colorsync_cmyk32_profile_missing.c \
+    loader/builtin/0202_colorsync_cmyk32_profile_layers.c \
     loader/libtiff/0172_lcms_lab_frame.c \
     loader/libtiff/0173_colorsync_lab_frame.c \
     loader/cms_input_frame_common.h \
     loader/colorsync_channel_frame_common.h \
+    loader/profile_format_frame_common.h \
     processing/cms/0238_lcms_cmyk_linear.c \
     processing/cms/0239_lcms_cmyk_linear_alias.c \
     processing/cms/0240_lcms_cmyk_gamma.c \
@@ -843,9 +906,67 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/0285_colorsync_lab_float_channels_gamma.c \
     processing/cms/0286_colorsync_channels_scope_linear.c \
     processing/cms/0287_colorsync_channels_scope_gamma.c \
+    processing/cms/0288_builtin_gray8_profile_format_linear.c \
+    processing/cms/0289_builtin_gray8_profile_format_gamma.c \
+    processing/cms/0290_builtin_rgb8_profile_format_linear.c \
+    processing/cms/0291_builtin_rgb8_profile_format_gamma.c \
+    processing/cms/0292_builtin_rgba8_profile_format_linear.c \
+    processing/cms/0293_builtin_rgba8_profile_format_gamma.c \
+    processing/cms/0294_builtin_rgb_float_profile_format_linear.c \
+    processing/cms/0295_builtin_rgb_float_profile_format_gamma.c \
+    processing/cms/0296_builtin_cmyk8_profile_format_linear.c \
+    processing/cms/0297_builtin_cmyk8_profile_format_gamma.c \
+    processing/cms/0298_builtin_cmyk16_profile_format_linear.c \
+    processing/cms/0299_builtin_cmyk16_profile_format_gamma.c \
+    processing/cms/0300_builtin_cmyk_float_profile_format_linear.c \
+    processing/cms/0301_builtin_cmyk_float_profile_format_gamma.c \
+    processing/cms/0302_builtin_lab_float_profile_format_linear.c \
+    processing/cms/0303_builtin_lab_float_profile_format_gamma.c \
+    processing/cms/0304_builtin_gray_float_profile_format_linear.c \
+    processing/cms/0305_builtin_gray_float_profile_format_gamma.c \
+    processing/cms/0306_lcms2_gray8_profile_format_linear.c \
+    processing/cms/0307_lcms2_gray8_profile_format_gamma.c \
+    processing/cms/0308_lcms2_rgb8_profile_format_linear.c \
+    processing/cms/0309_lcms2_rgb8_profile_format_gamma.c \
+    processing/cms/0310_lcms2_rgba8_profile_format_linear.c \
+    processing/cms/0311_lcms2_rgba8_profile_format_gamma.c \
+    processing/cms/0312_lcms2_rgb_float_profile_format_linear.c \
+    processing/cms/0313_lcms2_rgb_float_profile_format_gamma.c \
+    processing/cms/0314_lcms2_cmyk8_profile_format_linear.c \
+    processing/cms/0315_lcms2_cmyk8_profile_format_gamma.c \
+    processing/cms/0316_lcms2_cmyk16_profile_format_linear.c \
+    processing/cms/0317_lcms2_cmyk16_profile_format_gamma.c \
+    processing/cms/0318_lcms2_cmyk_float_profile_format_linear.c \
+    processing/cms/0319_lcms2_cmyk_float_profile_format_gamma.c \
+    processing/cms/0320_lcms2_lab_float_profile_format_linear.c \
+    processing/cms/0321_lcms2_lab_float_profile_format_gamma.c \
+    processing/cms/0322_lcms2_gray_float_profile_format_linear.c \
+    processing/cms/0323_lcms2_gray_float_profile_format_gamma.c \
+    processing/cms/0324_colorsync_gray8_profile_format_linear.c \
+    processing/cms/0325_colorsync_gray8_profile_format_gamma.c \
+    processing/cms/0326_colorsync_rgb8_profile_format_linear.c \
+    processing/cms/0327_colorsync_rgb8_profile_format_gamma.c \
+    processing/cms/0328_colorsync_rgba8_profile_format_linear.c \
+    processing/cms/0329_colorsync_rgba8_profile_format_gamma.c \
+    processing/cms/0330_colorsync_rgb_float_profile_format_linear.c \
+    processing/cms/0331_colorsync_rgb_float_profile_format_gamma.c \
+    processing/cms/0332_colorsync_cmyk8_profile_format_linear.c \
+    processing/cms/0333_colorsync_cmyk8_profile_format_gamma.c \
+    processing/cms/0334_colorsync_cmyk16_profile_format_linear.c \
+    processing/cms/0335_colorsync_cmyk16_profile_format_gamma.c \
+    processing/cms/0336_colorsync_cmyk_float_profile_format_linear.c \
+    processing/cms/0337_colorsync_cmyk_float_profile_format_gamma.c \
+    processing/cms/0338_colorsync_lab_float_profile_format_linear.c \
+    processing/cms/0339_colorsync_lab_float_profile_format_gamma.c \
+    processing/cms/0340_colorsync_gray_float_profile_format_linear.c \
+    processing/cms/0341_colorsync_gray_float_profile_format_gamma.c \
+    processing/cms/0342_builtin_profile_format_scope.c \
+    processing/cms/0343_colorsync_profile_format_scope.c \
     processing/cms/colorsync_gray8_common.h \
     processing/cms/colorsync_channels_common.h \
     processing/cms/colorsync_channel_scope_common.h \
+    processing/cms/profile_format_common.h \
+    processing/cms/profile_format_scope_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \

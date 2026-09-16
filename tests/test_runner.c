@@ -813,6 +813,9 @@ int test_loader_0196_missing(int argc, char **argv);
 int test_loader_0197_layers(int argc, char **argv);
 int test_loader_0198_channels(int argc, char **argv);
 int test_loader_0199_channels(int argc, char **argv);
+int test_loader_0200_profile(int argc, char **argv);
+int test_loader_0201_profile(int argc, char **argv);
+int test_loader_0202_profile(int argc, char **argv);
 int test_loader_0172_lab(int argc, char **argv);
 int test_loader_0173_lab(int argc, char **argv);
 int test_cms_0238(int argc, char **argv);
@@ -865,6 +868,62 @@ int test_cms_0284(int argc, char **argv);
 int test_cms_0285(int argc, char **argv);
 int test_cms_0286(int argc, char **argv);
 int test_cms_0287(int argc, char **argv);
+int test_cms_0288(int argc, char **argv);
+int test_cms_0289(int argc, char **argv);
+int test_cms_0290(int argc, char **argv);
+int test_cms_0291(int argc, char **argv);
+int test_cms_0292(int argc, char **argv);
+int test_cms_0293(int argc, char **argv);
+int test_cms_0294(int argc, char **argv);
+int test_cms_0295(int argc, char **argv);
+int test_cms_0296(int argc, char **argv);
+int test_cms_0297(int argc, char **argv);
+int test_cms_0298(int argc, char **argv);
+int test_cms_0299(int argc, char **argv);
+int test_cms_0300(int argc, char **argv);
+int test_cms_0301(int argc, char **argv);
+int test_cms_0302(int argc, char **argv);
+int test_cms_0303(int argc, char **argv);
+int test_cms_0304(int argc, char **argv);
+int test_cms_0305(int argc, char **argv);
+int test_cms_0306(int argc, char **argv);
+int test_cms_0307(int argc, char **argv);
+int test_cms_0308(int argc, char **argv);
+int test_cms_0309(int argc, char **argv);
+int test_cms_0310(int argc, char **argv);
+int test_cms_0311(int argc, char **argv);
+int test_cms_0312(int argc, char **argv);
+int test_cms_0313(int argc, char **argv);
+int test_cms_0314(int argc, char **argv);
+int test_cms_0315(int argc, char **argv);
+int test_cms_0316(int argc, char **argv);
+int test_cms_0317(int argc, char **argv);
+int test_cms_0318(int argc, char **argv);
+int test_cms_0319(int argc, char **argv);
+int test_cms_0320(int argc, char **argv);
+int test_cms_0321(int argc, char **argv);
+int test_cms_0322(int argc, char **argv);
+int test_cms_0323(int argc, char **argv);
+int test_cms_0324(int argc, char **argv);
+int test_cms_0325(int argc, char **argv);
+int test_cms_0326(int argc, char **argv);
+int test_cms_0327(int argc, char **argv);
+int test_cms_0328(int argc, char **argv);
+int test_cms_0329(int argc, char **argv);
+int test_cms_0330(int argc, char **argv);
+int test_cms_0331(int argc, char **argv);
+int test_cms_0332(int argc, char **argv);
+int test_cms_0333(int argc, char **argv);
+int test_cms_0334(int argc, char **argv);
+int test_cms_0335(int argc, char **argv);
+int test_cms_0336(int argc, char **argv);
+int test_cms_0337(int argc, char **argv);
+int test_cms_0338(int argc, char **argv);
+int test_cms_0339(int argc, char **argv);
+int test_cms_0340(int argc, char **argv);
+int test_cms_0341(int argc, char **argv);
+int test_cms_0342(int argc, char **argv);
+int test_cms_0343(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -1730,6 +1789,12 @@ static test_entry_t const test_entries[] = {
       test_loader_0198_channels },
     { "loader/0199_colorsync_cmyk16_channel_fallback",
       test_loader_0199_channels },
+    { "loader/0200_colorsync_cmyk32_profile_main",
+      test_loader_0200_profile },
+    { "loader/0201_colorsync_cmyk32_profile_missing",
+      test_loader_0201_profile },
+    { "loader/0202_colorsync_cmyk32_profile_layers",
+      test_loader_0202_profile },
     { "loader/0172_lcms_lab_frame", test_loader_0172_lab },
     { "loader/0173_colorsync_lab_frame", test_loader_0173_lab },
     { "cms/0238_lcms_cmyk_linear", test_cms_0238 },
@@ -1820,6 +1885,118 @@ static test_entry_t const test_entries[] = {
       test_cms_0286 },
     { "cms/0287_colorsync_channels_scope_gamma",
       test_cms_0287 },
+    { "cms/0288_builtin_gray8_profile_format_linear",
+      test_cms_0288 },
+    { "cms/0289_builtin_gray8_profile_format_gamma",
+      test_cms_0289 },
+    { "cms/0290_builtin_rgb8_profile_format_linear",
+      test_cms_0290 },
+    { "cms/0291_builtin_rgb8_profile_format_gamma",
+      test_cms_0291 },
+    { "cms/0292_builtin_rgba8_profile_format_linear",
+      test_cms_0292 },
+    { "cms/0293_builtin_rgba8_profile_format_gamma",
+      test_cms_0293 },
+    { "cms/0294_builtin_rgb_float_profile_format_linear",
+      test_cms_0294 },
+    { "cms/0295_builtin_rgb_float_profile_format_gamma",
+      test_cms_0295 },
+    { "cms/0296_builtin_cmyk8_profile_format_linear",
+      test_cms_0296 },
+    { "cms/0297_builtin_cmyk8_profile_format_gamma",
+      test_cms_0297 },
+    { "cms/0298_builtin_cmyk16_profile_format_linear",
+      test_cms_0298 },
+    { "cms/0299_builtin_cmyk16_profile_format_gamma",
+      test_cms_0299 },
+    { "cms/0300_builtin_cmyk_float_profile_format_linear",
+      test_cms_0300 },
+    { "cms/0301_builtin_cmyk_float_profile_format_gamma",
+      test_cms_0301 },
+    { "cms/0302_builtin_lab_float_profile_format_linear",
+      test_cms_0302 },
+    { "cms/0303_builtin_lab_float_profile_format_gamma",
+      test_cms_0303 },
+    { "cms/0304_builtin_gray_float_profile_format_linear",
+      test_cms_0304 },
+    { "cms/0305_builtin_gray_float_profile_format_gamma",
+      test_cms_0305 },
+    { "cms/0306_lcms2_gray8_profile_format_linear",
+      test_cms_0306 },
+    { "cms/0307_lcms2_gray8_profile_format_gamma",
+      test_cms_0307 },
+    { "cms/0308_lcms2_rgb8_profile_format_linear",
+      test_cms_0308 },
+    { "cms/0309_lcms2_rgb8_profile_format_gamma",
+      test_cms_0309 },
+    { "cms/0310_lcms2_rgba8_profile_format_linear",
+      test_cms_0310 },
+    { "cms/0311_lcms2_rgba8_profile_format_gamma",
+      test_cms_0311 },
+    { "cms/0312_lcms2_rgb_float_profile_format_linear",
+      test_cms_0312 },
+    { "cms/0313_lcms2_rgb_float_profile_format_gamma",
+      test_cms_0313 },
+    { "cms/0314_lcms2_cmyk8_profile_format_linear",
+      test_cms_0314 },
+    { "cms/0315_lcms2_cmyk8_profile_format_gamma",
+      test_cms_0315 },
+    { "cms/0316_lcms2_cmyk16_profile_format_linear",
+      test_cms_0316 },
+    { "cms/0317_lcms2_cmyk16_profile_format_gamma",
+      test_cms_0317 },
+    { "cms/0318_lcms2_cmyk_float_profile_format_linear",
+      test_cms_0318 },
+    { "cms/0319_lcms2_cmyk_float_profile_format_gamma",
+      test_cms_0319 },
+    { "cms/0320_lcms2_lab_float_profile_format_linear",
+      test_cms_0320 },
+    { "cms/0321_lcms2_lab_float_profile_format_gamma",
+      test_cms_0321 },
+    { "cms/0322_lcms2_gray_float_profile_format_linear",
+      test_cms_0322 },
+    { "cms/0323_lcms2_gray_float_profile_format_gamma",
+      test_cms_0323 },
+    { "cms/0324_colorsync_gray8_profile_format_linear",
+      test_cms_0324 },
+    { "cms/0325_colorsync_gray8_profile_format_gamma",
+      test_cms_0325 },
+    { "cms/0326_colorsync_rgb8_profile_format_linear",
+      test_cms_0326 },
+    { "cms/0327_colorsync_rgb8_profile_format_gamma",
+      test_cms_0327 },
+    { "cms/0328_colorsync_rgba8_profile_format_linear",
+      test_cms_0328 },
+    { "cms/0329_colorsync_rgba8_profile_format_gamma",
+      test_cms_0329 },
+    { "cms/0330_colorsync_rgb_float_profile_format_linear",
+      test_cms_0330 },
+    { "cms/0331_colorsync_rgb_float_profile_format_gamma",
+      test_cms_0331 },
+    { "cms/0332_colorsync_cmyk8_profile_format_linear",
+      test_cms_0332 },
+    { "cms/0333_colorsync_cmyk8_profile_format_gamma",
+      test_cms_0333 },
+    { "cms/0334_colorsync_cmyk16_profile_format_linear",
+      test_cms_0334 },
+    { "cms/0335_colorsync_cmyk16_profile_format_gamma",
+      test_cms_0335 },
+    { "cms/0336_colorsync_cmyk_float_profile_format_linear",
+      test_cms_0336 },
+    { "cms/0337_colorsync_cmyk_float_profile_format_gamma",
+      test_cms_0337 },
+    { "cms/0338_colorsync_lab_float_profile_format_linear",
+      test_cms_0338 },
+    { "cms/0339_colorsync_lab_float_profile_format_gamma",
+      test_cms_0339 },
+    { "cms/0340_colorsync_gray_float_profile_format_linear",
+      test_cms_0340 },
+    { "cms/0341_colorsync_gray_float_profile_format_gamma",
+      test_cms_0341 },
+    { "cms/0342_builtin_profile_format_scope",
+      test_cms_0342 },
+    { "cms/0343_colorsync_profile_format_scope",
+      test_cms_0343 },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },

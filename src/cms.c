@@ -3850,8 +3850,51 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
                        void *dst,
                        size_t pixel_count)
 {
+    sixel_cms_color_space_t expected;
+    sixel_cms_color_space_t actual;
+
     if (transform == NULL || src == NULL || dst == NULL || pixel_count == 0u) {
         return 0;
+    }
+
+    /* This preflight covers known source domains for float RGB output.
+     * Unknown domains/formats and legacy byte convenience conversions
+     * retain their backend decisions; reject before any destination write. */
+    if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
+        expected = SIXEL_CMS_COLORSPACE_UNKNOWN;
+        switch (transform->src_format) {
+        case SIXEL_CMS_PIXELFORMAT_GRAY_8:
+        case SIXEL_CMS_PIXELFORMAT_GRAY_F32:
+            expected = SIXEL_CMS_COLORSPACE_GRAY;
+            break;
+        case SIXEL_CMS_PIXELFORMAT_RGB_8:
+        case SIXEL_CMS_PIXELFORMAT_RGBA_8:
+        case SIXEL_CMS_PIXELFORMAT_RGB_F32:
+            expected = SIXEL_CMS_COLORSPACE_RGB;
+            break;
+        case SIXEL_CMS_PIXELFORMAT_CMYK_8:
+        case SIXEL_CMS_PIXELFORMAT_CMYK_16:
+        case SIXEL_CMS_PIXELFORMAT_CMYK_F32:
+            expected = SIXEL_CMS_COLORSPACE_CMYK;
+            break;
+        case SIXEL_CMS_PIXELFORMAT_LAB_F32:
+            expected = SIXEL_CMS_COLORSPACE_LAB;
+            break;
+        default:
+            break;
+        }
+        actual = sixel_cms_get_color_space(transform->src_profile);
+        if (expected != SIXEL_CMS_COLORSPACE_UNKNOWN &&
+            actual != SIXEL_CMS_COLORSPACE_UNKNOWN && actual != expected) {
+            loader_trace_message("LSXCMS2|event=reject|engine=%s|"
+                "reason=source-profile-format|src=%d|dst=%d|"
+                "profile=%d|expected=%d",
+                sixel_cms_engine_to_string(
+                    sixel_cms_transform_engine(transform)),
+                transform->src_format, transform->dst_format, actual,
+                expected);
+            return 0;
+        }
     }
 
 #if HAVE_LCMS2

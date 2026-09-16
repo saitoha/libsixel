@@ -1806,6 +1806,8 @@ def main():
         pack_profile, fixed))
     from generate_colorsync_channel_tests import build as colorsync_channel_tests
     outputs.update(colorsync_channel_tests(outputs, pack_profile, fixed))
+    from generate_profile_format_tests import build as profile_format_tests
+    outputs.update(profile_format_tests(outputs))
     outputs.update(hdr_sample_oracles())
     outputs.update(palette_export_oracles())
     # Keep the exact M0 parser probes, explicitly outside conformance and
