@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -222,6 +223,10 @@ static int
 tiff_photometric_allows_embedded_icc(uint16_t photometric,
                                      int high_precision_path)
 {
+    if (photometric == PHOTOMETRIC_LOGLUV) {
+        /* Decoded native XYZ is neither device RGB nor ICC D50 PCS. */
+        return 0;
+    }
     if (photometric == PHOTOMETRIC_CIELAB) {
         return high_precision_path ? 1 : 0;
     }
@@ -633,6 +638,34 @@ tiff_memory_unmap(thandle_t handle, tdata_t data, toff_t size)
     (void)size;
 }
 
+/* Express stored XYZ in the canonical sRGB destination basis. D65 belongs
+ * to that basis, not to an inferred source white. No CAT, exposure scaling,
+ * profile apply or unit clipping belongs at this native decode boundary. */
+static int
+tiff_logluv_xyz_to_linear(float const xyz[3], double rgb[3])
+{
+    double x;
+    double y;
+    double z;
+
+    x = xyz[0];
+    y = xyz[1];
+    z = xyz[2];
+    if (!isfinite(x) || !isfinite(y) || !isfinite(z)) {
+        return 0;
+    }
+    rgb[0] = 3.240969941904521 * x - 1.537383177570093 * y
+           - 0.498610760293003 * z;
+    rgb[1] = -0.969243636280880 * x + 1.875967501507721 * y
+           + 0.041555057407176 * z;
+    rgb[2] = 0.055630079696993 * x - 0.203976958888977 * y
+           + 1.056971514242878 * z;
+    /* Reject an unrepresentable result before narrowing to float. */
+    return isfinite(rgb[0]) && fabs(rgb[0]) <= FLT_MAX &&
+           isfinite(rgb[1]) && fabs(rgb[1]) <= FLT_MAX &&
+           isfinite(rgb[2]) && fabs(rgb[2]) <= FLT_MAX;
+}
+
 /*
  * Decode selected high-precision TIFF layouts directly into float32 buffers.
  *
@@ -640,6 +673,7 @@ tiff_memory_unmap(thandle_t handle, tdata_t data, toff_t size)
  *   - RGB/Gray integer (16-bit, contiguous, no alpha)
  *   - RGB/Gray float32 (SampleFormat=IEEEFP, contiguous, no alpha)
  *   - CIELAB integer/float32 (16-bit or float32, contiguous, no alpha)
+ *   - LogLuv SGILOG/SGILOG24 via decoded XYZ float32, contiguous, no alpha
  *
  * The function returns SIXEL_FALSE for unsupported combinations so callers can
  * safely fall back to TIFFReadRGBAImageOriented().
@@ -653,7 +687,8 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
                              void const         /* in */  *icc_profile,
                              uint32_t           /* in */  icc_profile_length,
                              uint16_t           /* in */  photometric,
-                             sixel_allocator_t  /* in */  *allocator)
+                             sixel_allocator_t  /* in */  *allocator,
+                             int                /* out */ *pnative_xyz)
 {
     SIXELSTATUS status;
     tsize_t scanline_size;
@@ -664,6 +699,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     uint16_t sample_format;
     uint16_t planar_config;
     uint16_t orientation;
+    uint16_t compression;
     uint16_t extrasamples;
     uint16_t *extrasample_info;
     size_t pixel_count;
@@ -692,7 +728,8 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         TIFF_DECODE_RGB_FLOAT32,
         TIFF_DECODE_GRAY_FLOAT32,
         TIFF_DECODE_LAB_UINT,
-        TIFF_DECODE_LAB_FLOAT32
+        TIFF_DECODE_LAB_FLOAT32,
+        TIFF_DECODE_LOGLUV_FLOAT32
     } decode_mode;
 
     status = SIXEL_FALSE;
@@ -704,6 +741,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     sample_format = SAMPLEFORMAT_UINT;
     planar_config = PLANARCONFIG_CONTIG;
     orientation = ORIENTATION_TOPLEFT;
+    compression = COMPRESSION_NONE;
     extrasamples = 0u;
     extrasample_info = NULL;
     pixel_count = 0u;
@@ -731,10 +769,11 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     decode_mode = TIFF_DECODE_UNSUPPORTED;
 
-    if (result == NULL || ppixelformat == NULL ||
+    if (result == NULL || ppixelformat == NULL || pnative_xyz == NULL ||
         tif == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    *pnative_xyz = 0;
     if (width == 0u || height == 0u) {
         return SIXEL_FALSE;
     }
@@ -756,7 +795,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     if (sample_format == SAMPLEFORMAT_VOID) {
         sample_format = SAMPLEFORMAT_UINT;
     }
-    if (bits_per_sample <= 8u &&
+    if (photometric != PHOTOMETRIC_LOGLUV && bits_per_sample <= 8u &&
         sample_format != SAMPLEFORMAT_IEEEFP) {
         return SIXEL_FALSE;
     }
@@ -775,6 +814,29 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     }
 
     switch (photometric) {
+    case PHOTOMETRIC_LOGLUV:
+        (void)TIFFGetFieldDefaulted(tif, TIFFTAG_COMPRESSION, &compression);
+        if (samples_per_pixel != 3u ||
+            (compression != COMPRESSION_SGILOG &&
+             compression != COMPRESSION_SGILOG24)) {
+            return SIXEL_FALSE;
+        }
+        /* All unsupported-layout exits precede this state mutation. From
+         * here, failure is terminal: an RGBA retry could consume a different
+         * interface or a partially read codec stream. */
+        if (!TIFFSetField(tif, TIFFTAG_SGILOGDATAFMT, SGILOGDATAFMT_FLOAT) ||
+            !TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE,
+                                    &bits_per_sample) ||
+            !TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLEFORMAT,
+                                    &sample_format) ||
+            !TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL,
+                                    &samples_per_pixel) ||
+            bits_per_sample != 32u || sample_format != SAMPLEFORMAT_IEEEFP ||
+            samples_per_pixel != 3u) {
+            return SIXEL_TIFF_ERROR;
+        }
+        decode_mode = TIFF_DECODE_LOGLUV_FLOAT32;
+        break;
     case PHOTOMETRIC_RGB:
         if (samples_per_pixel > 3u) {
             return SIXEL_FALSE;
@@ -831,6 +893,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     case TIFF_DECODE_RGB_FLOAT32:
     case TIFF_DECODE_GRAY_FLOAT32:
     case TIFF_DECODE_LAB_FLOAT32:
+    case TIFF_DECODE_LOGLUV_FLOAT32:
         if (row_sample_count > SIZE_MAX / sizeof(float)) {
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
@@ -855,7 +918,8 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     scanline_size = TIFFScanlineSize(tif);
     if (scanline_size <= 0 ||
         required_scanline_bytes > (size_t)scanline_size) {
-        return SIXEL_FALSE;
+        return decode_mode == TIFF_DECODE_LOGLUV_FLOAT32
+             ? SIXEL_TIFF_ERROR : SIXEL_FALSE;
     }
 
     scanline = (unsigned char *)sixel_allocator_malloc(allocator,
@@ -892,6 +956,13 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
             dst_base = ((size_t)dst_y * (size_t)width + (size_t)dst_x) * 3u;
 
             switch (decode_mode) {
+            case TIFF_DECODE_LOGLUV_FLOAT32:
+                if (!tiff_logluv_xyz_to_linear(row_f32 + src_base,
+                                               rgb_unit)) {
+                    status = SIXEL_TIFF_ERROR;
+                    goto cleanup;
+                }
+                break;
             case TIFF_DECODE_RGB_UINT:
                 if (bits_per_sample == 16u) {
                     rgb_unit[0] = (double)row_u16[src_base + 0u] / 65535.0;
@@ -952,6 +1023,11 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
                 float_pixels[dst_base + 0u] = (float)lab_unit[0];
                 float_pixels[dst_base + 1u] = (float)lab_unit[1];
                 float_pixels[dst_base + 2u] = (float)lab_unit[2];
+            } else if (decode_mode == TIFF_DECODE_LOGLUV_FLOAT32) {
+                /* Native XYZ conversion is already finite and linear. */
+                float_pixels[dst_base + 0u] = (float)rgb_unit[0];
+                float_pixels[dst_base + 1u] = (float)rgb_unit[1];
+                float_pixels[dst_base + 2u] = (float)rgb_unit[2];
             } else {
                 float_pixels[dst_base + 0u] =
                     (float)tiff_clamp_unit(rgb_unit[0]);
@@ -1011,7 +1087,8 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     }
 
     *result = (unsigned char *)float_pixels;
-    *ppixelformat = cms_converted
+    *pnative_xyz = decode_mode == TIFF_DECODE_LOGLUV_FLOAT32;
+    *ppixelformat = cms_converted || *pnative_xyz
                   ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                   : SIXEL_PIXELFORMAT_RGBFLOAT32;
     float_pixels = NULL;
@@ -1045,7 +1122,8 @@ load_tiff(unsigned char      /* out */ **result,
           int                /* out */ *pheight,
           int                /* out */ *ppixelformat,
           sixel_allocator_t  /* in */  *allocator,
-          int                /* in */  enable_cms)
+          int                /* in */  enable_cms,
+          int                /* out */ *pnative_xyz)
 {
     SIXELSTATUS status;
     TIFF *tif;
@@ -1149,7 +1227,8 @@ load_tiff(unsigned char      /* out */ **result,
                                                             ? icc_profile_length
                                                             : 0u,
                                                          photometric,
-                                                         allocator);
+                                                         allocator,
+                                                         pnative_xyz);
     if (high_precision_status == SIXEL_OK) {
         *result = pixels;
         *pwidth = (int)width;
@@ -1271,11 +1350,13 @@ load_with_libtiff(
     sixel_frame_t *frame;
     unsigned char *pixels;
     int pixelformat;
+    int native_xyz;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
     pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    native_xyz = 0;
 
     (void)fstatic;
     (void)fuse_palette;
@@ -1300,7 +1381,8 @@ load_with_libtiff(
                        &frame->height,
                        &pixelformat,
                        allocator,
-                       enable_cms);
+                       enable_cms,
+                       &native_xyz);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1327,6 +1409,17 @@ load_with_libtiff(
 
     if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         status = sixel_frame_strip_alpha(frame, bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
+    if (native_xyz) {
+        /* Only the native LogLuv route negotiates this target here. The
+         * frame converter retains extended float values and owns the
+         * deliberate byte boundary selected by prefer_8bit. */
+        status = sixel_frame_set_pixelformat(
+            frame, loader_cms_target_pixelformat());
         if (SIXEL_FAILED(status)) {
             goto end;
         }

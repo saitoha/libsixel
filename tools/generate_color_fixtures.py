@@ -1805,6 +1805,8 @@ def main():
     from generate_tiff_lab_linear_tests import build as tiff_lab_linear_tests
     outputs.update(tiff_lab_linear_tests(outputs['colorsync-lab.json'],
                                         outputs['cli-rgb.icc']))
+    from generate_tiff_logluv_tests import build as tiff_logluv_tests
+    outputs.update(tiff_logluv_tests(profile, opponents, encode))
     from generate_colorsync_gray_tests import build as colorsync_gray_tests
     outputs.update(colorsync_gray_tests(outputs['gray-gamma2.icc'],
         outputs['colorsync-lab-linear.icc'], outputs['colorsync-lab-gamma.icc'],

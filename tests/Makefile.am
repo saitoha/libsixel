@@ -775,6 +775,35 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0197_LAB_WORD_ALLOCATION_FAILURE \
     -DBUILD_TEST_0198_LAB_WORD_NAN_RESULT \
     -DBUILD_TEST_0199_LAB_WORD_INFINITE_RESULT \
+    -DBUILD_TEST_0200_LOGLUV32_LINEAR \
+    -DBUILD_TEST_0201_LOGLUV24_LINEAR \
+    -DBUILD_TEST_0202_LOGLUV_ROWS2 \
+    -DBUILD_TEST_0203_LOGLUV_ORIENTATION2 \
+    -DBUILD_TEST_0204_LOGLUV_ORIENTATION3 \
+    -DBUILD_TEST_0205_LOGLUV_ORIENTATION4 \
+    -DBUILD_TEST_0206_LOGLUV_CMS_NONE \
+    -DBUILD_TEST_0207_LOGLUV_ICC_IGNORED \
+    -DBUILD_TEST_0208_LOGLUV_WHITEPOINT_IGNORED \
+    -DBUILD_TEST_0209_LOGLUV_STONITS_SCALE \
+    -DBUILD_TEST_0210_LOGLUV_GAMMA_TARGET \
+    -DBUILD_TEST_0211_LOGLUV_BYTE_TARGET \
+    -DBUILD_TEST_0212_LOGLUV_CIELAB_TARGET \
+    -DBUILD_TEST_0213_LOGLUV_OKLAB_TARGET \
+    -DBUILD_TEST_0214_LOGLUV_DIN99D_TARGET \
+    -DBUILD_TEST_0215_LOGLUV_TILE_FALLBACK \
+    -DBUILD_TEST_0216_LOGLUV_LCMS_NO_APPLY \
+    -DBUILD_TEST_0217_LOGLUV_COLORSYNC_NO_APPLY \
+    -DBUILD_TEST_0218_LOGLUV_FLOAT_REQUEST_FAILURE \
+    -DBUILD_TEST_0219_LOGLUV_INTERFACE_FAILURE \
+    -DBUILD_TEST_0220_LOGLUV_SCANLINE_SIZE_FAILURE \
+    -DBUILD_TEST_0221_LOGLUV_ROW_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0222_LOGLUV_IMAGE_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0223_LOGLUV_LATE_READ_FAILURE \
+    -DBUILD_TEST_0224_LOGLUV_NAN_REJECTED \
+    -DBUILD_TEST_0225_LOGLUV_INFINITY_REJECTED \
+    -DBUILD_TEST_0226_LOGLUV_TARGET_FAILURE \
+    -DBUILD_TIFF_LOGLUV_TEST_COMMON \
+    -DBUILD_TIFF_LOGLUV_FAULT_TEST_COMMON \
     -DBUILD_LAB_LINEAR_TEST_COMMON \
     -DBUILD_LAB_LINEAR_FAULT_TEST_COMMON \
     -DBUILD_TEST_0186_PNG_BYTE_TARGET \
@@ -1018,6 +1047,36 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0197_lab_word_allocation_failure.c \
     loader/libtiff/0198_lab_word_nan_result.c \
     loader/libtiff/0199_lab_word_infinite_result.c \
+    loader/libtiff/0200_logluv32_linear.c \
+    loader/libtiff/0201_logluv24_linear.c \
+    loader/libtiff/0202_logluv_rows2.c \
+    loader/libtiff/0203_logluv_orientation2.c \
+    loader/libtiff/0204_logluv_orientation3.c \
+    loader/libtiff/0205_logluv_orientation4.c \
+    loader/libtiff/0206_logluv_cms_none.c \
+    loader/libtiff/0207_logluv_icc_ignored.c \
+    loader/libtiff/0208_logluv_whitepoint_ignored.c \
+    loader/libtiff/0209_logluv_stonits_scale.c \
+    loader/libtiff/0210_logluv_gamma_target.c \
+    loader/libtiff/0211_logluv_byte_target.c \
+    loader/libtiff/0212_logluv_cielab_target.c \
+    loader/libtiff/0213_logluv_oklab_target.c \
+    loader/libtiff/0214_logluv_din99d_target.c \
+    loader/libtiff/0215_logluv_tile_fallback.c \
+    loader/libtiff/0216_logluv_lcms_no_apply.c \
+    loader/libtiff/0217_logluv_colorsync_no_apply.c \
+    loader/libtiff/0218_logluv_float_request_failure.c \
+    loader/libtiff/0219_logluv_interface_failure.c \
+    loader/libtiff/0220_logluv_scanline_size_failure.c \
+    loader/libtiff/0221_logluv_row_allocation_failure.c \
+    loader/libtiff/0222_logluv_image_allocation_failure.c \
+    loader/libtiff/0223_logluv_late_read_failure.c \
+    loader/libtiff/0224_logluv_nan_rejected.c \
+    loader/libtiff/0225_logluv_infinity_rejected.c \
+    loader/libtiff/0226_logluv_target_failure.c \
+    loader/tiff_logluv_test_common.c \
+    loader/tiff_logluv_test_common.h \
+    loader/tiff_logluv_fault_test_common.c \
     processing/cms/lab_linear_test_common.c \
     processing/cms/lab_linear_test_common.h \
     processing/cms/lab_linear_fault_test_common.c \

@@ -463,7 +463,9 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #undef sixel_icc_apply_device_to_xyz_d50_with_a2b_slot
 #undef ColorSyncTransformConvert
 #if HAVE_LIBTIFF
+#define tiff_logluv_xyz_to_linear clf_logluv_xyz_to_linear
 #include "src/loader-libtiff.c"
+#undef tiff_logluv_xyz_to_linear
 #endif
 #undef SIXEL_CMS_PROFILE_BACKEND_BUILTIN
 #undef SIXEL_CMS_PROFILE_BACKEND_COLORSYNC

@@ -393,6 +393,18 @@ The [original float Lab TIFF](../../tests/data/colormgmt/input/custom/lab_high_p
 
 Double curve/PCS comparisons use a relative allowance of `64 * 2^-53`; float endpoints use `64 * 2^-24`. Vector comparisons scale to the largest expected component magnitude, while scalar curves scale to their expected magnitude. Black is exact and there is no absolute dark floor. These value tests are separate from the `0.98` MS-SSIM quality floors. The RGB quality reference is an independently computed, sRGB-tagged PNG, generated from the original source values and ICC equations without the current loader or encoder. The Lab quality test retains its separate existing SIXEL reference. Both quality tests require an actual builtin CMS apply through libtiff, so a similar-looking unmanaged or alternate-engine image cannot satisfy the route assertion.
 
+## LogLuv stored-coordinate and exposure policy
+
+For TIFF LogLuv (`PhotometricInterpretation=32845`) with SGILOG or SGILOG24 compression, three contiguous channels, strips, no extra samples and orientation 1–4, the libtiff loader requests `SGILOGDATAFMT_FLOAT` and converts the decoded numerical XYZ coordinates directly into the canonical linear-sRGB destination basis. It preserves the stored exposure scale and finite negative or above-one RGB components. The published default is LINEARRGBFLOAT32/LINEAR. `cms_target` selects a subsequent float frame representation; `prefer_8bit` is an explicit final byte boundary. Disabling ICC/CMS does not disable native XYZ interpretation.
+
+This is a stored-coordinate loader policy, not an assertion that every file contains unadapted absolute scene colorimetry. The D65 white in the destination matrix specifies the output RGB basis, not the source illuminant. The loader performs no chromatic adaptation, WHITEPOINT reconstruction, normalization by luminance, StoNits multiplication, ICC reinterpretation or tone mapping. In particular, an optional E-normalized authoring convention can encode intended white as XYZ=(1,1,1); preserving those coordinates will not render that vector as neutral sRGB white. This can visibly differ from libtiff's former approximate E-neutral, gamma-2.0 display path. The policy does not establish perceptual superiority for arbitrary input images.
+
+The codec's FLOAT pseudo-tag selects the application interface; it does not mean that float XYZ triples are stored in the file. SGILOG and SGILOG24 quantize log luminance and chromaticity differently, and the loader preserves the decoded cell centers rather than undoing that loss. The float decoder also maps nonpositive encoded luminance to black; the loader cannot recover it. This differs from retaining negative RGB coordinates derived from positive decoded XYZ. StoNits, when present, calibrates decoded Y=1 to cd/m². The relative RGB frame has no corresponding absolute display-luminance contract, so the tag does not rescale its pixels. WHITEPOINT and embedded ICC similarly do not alter this native-coordinate mapping; no profile is applied to XYZ as if it were RGB or to the already converted RGB a second time.
+
+Unsupported tile, planar, extra-sample or orientation layouts retain existing fallback behavior and its limits; fallback does not imply support for every malformed or rotated layout. Eligibility is checked before the FLOAT pseudo-tag changes decoder state. Once that request begins, failed interface validation, size checks, allocation, scanline reads, finite-value checks or final target conversion fail the load without a callback. The loader does not retry the RGBA decoder after a partially changed or consumed LogLuv decode. Only this native LogLuv route applies the new post-initialization target step; other TIFF routes retain their contracts.
+
+The regression oracle separates codec quantization from loader arithmetic: prescribed XYZ values and actual packed words determine decoded centers independently, then a matrix derived from sRGB primaries and destination white determines expected linear coordinates. Encoding error is not absorbed by widening the existing floating-point arithmetic budget. The [libtiff codec source](https://gitlab.com/libtiff/libtiff/-/raw/v4.7.2/libtiff/tif_luv.c) and [original LogLuv description](https://www.anyhere.com/gward/pixformat/tiffluv.html) describe the storage and calibration conventions.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -827,6 +839,40 @@ The unsupported-feature list above is an implementation audit, not a guarantee t
 | TIFF16-27 | Invalid ICC with requested lcms2 retains exact normalized RGB16 source bits and RGBFLOAT32/GAMMA without a CMS apply. | [tests/loader/libtiff/0168_rgb16_invalid_icc_lcms2.t](../../tests/loader/libtiff/0168_rgb16_invalid_icc_lcms2.t) |
 | TIFF16-28 | Invalid ICC with requested colorsync retains exact normalized RGB16 source bits and RGBFLOAT32/GAMMA without a CMS apply. | [tests/loader/libtiff/0169_rgb16_invalid_icc_colorsync.t](../../tests/loader/libtiff/0169_rgb16_invalid_icc_colorsync.t) |
 | TIFF16-29 | A real ColorSync preparation failure produces its specific diagnostic, preserves all original source bits as RGBFLOAT32/GAMMA, and performs no CMS apply. | [tests/loader/libtiff/0170_rgb16_prepare_failure_colorsync.t](../../tests/loader/libtiff/0170_rgb16_prepare_failure_colorsync.t) |
+
+### TIFF LogLuv publication and recovery tests
+
+Each numerical case observes the ordinary public loader and checks a successful CMS trace control before requiring zero CMS applies in the native route. Failure cases separately qualify the injection stage and observe zero callbacks, no RGBA retry, allocator cleanup, and subsequent recovery.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TLOG-01 | SGILOG32 publishes independent finite extended linear RGB with exact frame metadata. | [tests/loader/libtiff/0200_logluv32_linear.t](../../tests/loader/libtiff/0200_logluv32_linear.t) |
+| TLOG-02 | SGILOG24 uses independent codebook cell values and linear RGB expectations. | [tests/loader/libtiff/0201_logluv24_linear.t](../../tests/loader/libtiff/0201_logluv24_linear.t) |
+| TLOG-03 | Multiple rows per strip preserve every pixel in row order. | [tests/loader/libtiff/0202_logluv_rows2.t](../../tests/loader/libtiff/0202_logluv_rows2.t) |
+| TLOG-04 | Top-right orientation reverses columns only. | [tests/loader/libtiff/0203_logluv_orientation2.t](../../tests/loader/libtiff/0203_logluv_orientation2.t) |
+| TLOG-05 | Bottom-right orientation reverses both axes. | [tests/loader/libtiff/0204_logluv_orientation3.t](../../tests/loader/libtiff/0204_logluv_orientation3.t) |
+| TLOG-06 | Bottom-left orientation reverses rows only. | [tests/loader/libtiff/0205_logluv_orientation4.t](../../tests/loader/libtiff/0205_logluv_orientation4.t) |
+| TLOG-07 | Disabling CMS preserves the native stored-coordinate interpretation. | [tests/loader/libtiff/0206_logluv_cms_none.t](../../tests/loader/libtiff/0206_logluv_cms_none.t) |
+| TLOG-08 | An embedded RGB ICC profile cannot reinterpret native XYZ. | [tests/loader/libtiff/0207_logluv_icc_ignored.t](../../tests/loader/libtiff/0207_logluv_icc_ignored.t) |
+| TLOG-09 | WHITEPOINT does not introduce a guessed adaptation transform. | [tests/loader/libtiff/0208_logluv_whitepoint_ignored.t](../../tests/loader/libtiff/0208_logluv_whitepoint_ignored.t) |
+| TLOG-10 | StoNits preserves stored relative exposure without scaling. | [tests/loader/libtiff/0209_logluv_stonits_scale.t](../../tests/loader/libtiff/0209_logluv_stonits_scale.t) |
+| TLOG-11 | The gamma float target retains finite negative and extended values. | [tests/loader/libtiff/0210_logluv_gamma_target.t](../../tests/loader/libtiff/0210_logluv_gamma_target.t) |
+| TLOG-12 | Explicit byte preference clamps and encodes only at final publication. | [tests/loader/libtiff/0211_logluv_byte_target.t](../../tests/loader/libtiff/0211_logluv_byte_target.t) |
+| TLOG-13 | The CIELAB target uses the normal post-init frame conversion. | [tests/loader/libtiff/0212_logluv_cielab_target.t](../../tests/loader/libtiff/0212_logluv_cielab_target.t) |
+| TLOG-14 | The Oklab target uses the normal post-init frame conversion. | [tests/loader/libtiff/0213_logluv_oklab_target.t](../../tests/loader/libtiff/0213_logluv_oklab_target.t) |
+| TLOG-15 | The DIN99d target uses the normal post-init frame conversion. | [tests/loader/libtiff/0214_logluv_din99d_target.t](../../tests/loader/libtiff/0214_logluv_din99d_target.t) |
+| TLOG-16 | Tiled LogLuv remains on the legacy RGBA fallback before FLOAT mutation. | [tests/loader/libtiff/0215_logluv_tile_fallback.t](../../tests/loader/libtiff/0215_logluv_tile_fallback.t) |
+| TLOG-17 | Selecting LittleCMS cannot cause a second CMS apply to native XYZ. | [tests/loader/libtiff/0216_logluv_lcms_no_apply.t](../../tests/loader/libtiff/0216_logluv_lcms_no_apply.t) |
+| TLOG-18 | Selecting ColorSync cannot cause a second CMS apply to native XYZ. | [tests/loader/libtiff/0217_logluv_colorsync_no_apply.t](../../tests/loader/libtiff/0217_logluv_colorsync_no_apply.t) |
+| TLOG-19 | A FLOAT request failure after mutation publishes no callback and never retries RGBA. | [tests/loader/libtiff/0218_logluv_float_request_failure.t](../../tests/loader/libtiff/0218_logluv_float_request_failure.t) |
+| TLOG-20 | An invalid interface after FLOAT mutation publishes no callback and never retries RGBA. | [tests/loader/libtiff/0219_logluv_interface_failure.t](../../tests/loader/libtiff/0219_logluv_interface_failure.t) |
+| TLOG-21 | An invalid scanline size after FLOAT mutation publishes no callback and never retries RGBA. | [tests/loader/libtiff/0220_logluv_scanline_size_failure.t](../../tests/loader/libtiff/0220_logluv_scanline_size_failure.t) |
+| TLOG-22 | A qualified scanline allocation failure publishes no callback and recovers on the next load. | [tests/loader/libtiff/0221_logluv_row_allocation_failure.t](../../tests/loader/libtiff/0221_logluv_row_allocation_failure.t) |
+| TLOG-23 | A qualified output allocation failure publishes no callback and recovers on the next load. | [tests/loader/libtiff/0222_logluv_image_allocation_failure.t](../../tests/loader/libtiff/0222_logluv_image_allocation_failure.t) |
+| TLOG-24 | A read failure after one valid row publishes no partial callback and never retries RGBA. | [tests/loader/libtiff/0223_logluv_late_read_failure.t](../../tests/loader/libtiff/0223_logluv_late_read_failure.t) |
+| TLOG-25 | A NaN in the last decoded sample is rejected without publishing a callback. | [tests/loader/libtiff/0224_logluv_nan_rejected.t](../../tests/loader/libtiff/0224_logluv_nan_rejected.t) |
+| TLOG-26 | An infinity in the last decoded sample is rejected without publishing a callback. | [tests/loader/libtiff/0225_logluv_infinity_rejected.t](../../tests/loader/libtiff/0225_logluv_infinity_rejected.t) |
+| TLOG-27 | A target conversion failure after a fully valid native frame publishes no callback. | [tests/loader/libtiff/0226_logluv_target_failure.t](../../tests/loader/libtiff/0226_logluv_target_failure.t) |
 
 ### TIFF Lab direct-linear publication and recovery tests
 

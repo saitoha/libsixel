@@ -297,6 +297,36 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libtiff/0197_lab_word_allocation_failure.c \
 	loader/libtiff/0198_lab_word_nan_result.c \
 	loader/libtiff/0199_lab_word_infinite_result.c \
+	loader/libtiff/0200_logluv32_linear.c \
+	loader/libtiff/0201_logluv24_linear.c \
+	loader/libtiff/0202_logluv_rows2.c \
+	loader/libtiff/0203_logluv_orientation2.c \
+	loader/libtiff/0204_logluv_orientation3.c \
+	loader/libtiff/0205_logluv_orientation4.c \
+	loader/libtiff/0206_logluv_cms_none.c \
+	loader/libtiff/0207_logluv_icc_ignored.c \
+	loader/libtiff/0208_logluv_whitepoint_ignored.c \
+	loader/libtiff/0209_logluv_stonits_scale.c \
+	loader/libtiff/0210_logluv_gamma_target.c \
+	loader/libtiff/0211_logluv_byte_target.c \
+	loader/libtiff/0212_logluv_cielab_target.c \
+	loader/libtiff/0213_logluv_oklab_target.c \
+	loader/libtiff/0214_logluv_din99d_target.c \
+	loader/libtiff/0215_logluv_tile_fallback.c \
+	loader/libtiff/0216_logluv_lcms_no_apply.c \
+	loader/libtiff/0217_logluv_colorsync_no_apply.c \
+	loader/libtiff/0218_logluv_float_request_failure.c \
+	loader/libtiff/0219_logluv_interface_failure.c \
+	loader/libtiff/0220_logluv_scanline_size_failure.c \
+	loader/libtiff/0221_logluv_row_allocation_failure.c \
+	loader/libtiff/0222_logluv_image_allocation_failure.c \
+	loader/libtiff/0223_logluv_late_read_failure.c \
+	loader/libtiff/0224_logluv_nan_rejected.c \
+	loader/libtiff/0225_logluv_infinity_rejected.c \
+	loader/libtiff/0226_logluv_target_failure.c \
+	loader/tiff_logluv_test_common.c \
+	loader/tiff_logluv_test_common.h \
+	loader/tiff_logluv_fault_test_common.c \
 	processing/cms/lab_linear_test_common.c \
 	processing/cms/lab_linear_test_common.h \
 	processing/cms/lab_linear_fault_test_common.c \
@@ -959,6 +989,35 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0197_lab_word_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0198_lab_word_nan_result.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0199_lab_word_infinite_result.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0200_logluv32_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0201_logluv24_linear.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0202_logluv_rows2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0203_logluv_orientation2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0204_logluv_orientation3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0205_logluv_orientation4.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0206_logluv_cms_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0207_logluv_icc_ignored.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0209_logluv_stonits_scale.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0210_logluv_gamma_target.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0211_logluv_byte_target.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0212_logluv_cielab_target.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0213_logluv_oklab_target.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0214_logluv_din99d_target.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0215_logluv_tile_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0216_logluv_lcms_no_apply.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0218_logluv_float_request_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0219_logluv_interface_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0220_logluv_scanline_size_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0221_logluv_row_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0222_logluv_image_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0223_logluv_late_read_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0224_logluv_nan_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0225_logluv_infinity_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0226_logluv_target_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-tiff_logluv_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-tiff_logluv_fault_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-lab_linear_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-lab_linear_fault_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
@@ -1534,6 +1593,8 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po \
 	loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po \
 	loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po \
+	loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Po \
+	loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po \
@@ -1720,6 +1781,33 @@ am__depfiles_remade =  \
 	loader/libtiff/$(DEPDIR)/test_runner-0197_lab_word_allocation_failure.Po \
 	loader/libtiff/$(DEPDIR)/test_runner-0198_lab_word_nan_result.Po \
 	loader/libtiff/$(DEPDIR)/test_runner-0199_lab_word_infinite_result.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po \
@@ -3364,6 +3452,35 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0197_LAB_WORD_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0198_LAB_WORD_NAN_RESULT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0199_LAB_WORD_INFINITE_RESULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0200_LOGLUV32_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0201_LOGLUV24_LINEAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0202_LOGLUV_ROWS2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0203_LOGLUV_ORIENTATION2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0204_LOGLUV_ORIENTATION3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0205_LOGLUV_ORIENTATION4 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0206_LOGLUV_CMS_NONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0207_LOGLUV_ICC_IGNORED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0208_LOGLUV_WHITEPOINT_IGNORED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0209_LOGLUV_STONITS_SCALE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0210_LOGLUV_GAMMA_TARGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0211_LOGLUV_BYTE_TARGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0212_LOGLUV_CIELAB_TARGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0213_LOGLUV_OKLAB_TARGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0214_LOGLUV_DIN99D_TARGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0215_LOGLUV_TILE_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0216_LOGLUV_LCMS_NO_APPLY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0217_LOGLUV_COLORSYNC_NO_APPLY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0218_LOGLUV_FLOAT_REQUEST_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0219_LOGLUV_INTERFACE_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0220_LOGLUV_SCANLINE_SIZE_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0221_LOGLUV_ROW_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0222_LOGLUV_IMAGE_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0223_LOGLUV_LATE_READ_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0224_LOGLUV_NAN_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0225_LOGLUV_INFINITY_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0226_LOGLUV_TARGET_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TIFF_LOGLUV_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TIFF_LOGLUV_FAULT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_LAB_LINEAR_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_LAB_LINEAR_FAULT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0186_PNG_BYTE_TARGET \
@@ -3632,6 +3749,36 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0197_lab_word_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0198_lab_word_nan_result.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0199_lab_word_infinite_result.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0200_logluv32_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0201_logluv24_linear.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0202_logluv_rows2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0203_logluv_orientation2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0204_logluv_orientation3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0205_logluv_orientation4.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0206_logluv_cms_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0207_logluv_icc_ignored.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0208_logluv_whitepoint_ignored.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0209_logluv_stonits_scale.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0210_logluv_gamma_target.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0211_logluv_byte_target.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0212_logluv_cielab_target.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0213_logluv_oklab_target.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0214_logluv_din99d_target.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0215_logluv_tile_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0216_logluv_lcms_no_apply.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0217_logluv_colorsync_no_apply.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0218_logluv_float_request_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0219_logluv_interface_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0220_logluv_scanline_size_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0221_logluv_row_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0222_logluv_image_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0223_logluv_late_read_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0224_logluv_nan_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0225_logluv_infinity_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0226_logluv_target_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/tiff_logluv_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/tiff_logluv_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/tiff_logluv_fault_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/lab_linear_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/lab_linear_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/lab_linear_fault_test_common.c \
@@ -4858,6 +5005,97 @@ loader/libtiff/test_runner-0198_lab_word_nan_result.$(OBJEXT):  \
 loader/libtiff/test_runner-0199_lab_word_infinite_result.$(OBJEXT):  \
 	loader/libtiff/$(am__dirstamp) \
 	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0200_logluv32_linear.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0201_logluv24_linear.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0202_logluv_rows2.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0203_logluv_orientation2.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0204_logluv_orientation3.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0205_logluv_orientation4.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0206_logluv_cms_none.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0207_logluv_icc_ignored.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0209_logluv_stonits_scale.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0210_logluv_gamma_target.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0211_logluv_byte_target.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0212_logluv_cielab_target.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0213_logluv_oklab_target.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0214_logluv_din99d_target.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0215_logluv_tile_fallback.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0216_logluv_lcms_no_apply.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0218_logluv_float_request_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0219_logluv_interface_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0220_logluv_scanline_size_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0221_logluv_row_allocation_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0222_logluv_image_allocation_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0223_logluv_late_read_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0224_logluv_nan_rejected.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0225_logluv_infinity_rejected.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0226_logluv_target_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/$(am__dirstamp):
+	@$(MKDIR_P) loader
+	@: >>loader/$(am__dirstamp)
+loader/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/$(DEPDIR)
+	@: >>loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-tiff_logluv_test_common.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-tiff_logluv_fault_test_common.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 processing/cms/test_runner-lab_linear_test_common.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
@@ -5849,12 +6087,6 @@ loader/builtin/test_runner-0122_loader_builtin_tga_truncated_direct_reject.$(OBJ
 loader/builtin/test_runner-0123_loader_builtin_tga_rle_overrun_reject.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
-loader/$(am__dirstamp):
-	@$(MKDIR_P) loader
-	@: >>loader/$(am__dirstamp)
-loader/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) loader/$(DEPDIR)
-	@: >>loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-0124_loader_manager_open_plan.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-0125_loader_manager_closed_plan.$(OBJEXT):  \
@@ -6558,6 +6790,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po@am__quote@ # am--include-marker
@@ -6744,6 +6978,33 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0197_lab_word_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0198_lab_word_nan_result.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0199_lab_word_infinite_result.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
@@ -9696,6 +9957,412 @@ loader/libtiff/test_runner-0199_lab_word_infinite_result.obj: loader/libtiff/019
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0199_lab_word_infinite_result.c' object='loader/libtiff/test_runner-0199_lab_word_infinite_result.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0199_lab_word_infinite_result.obj `if test -f 'loader/libtiff/0199_lab_word_infinite_result.c'; then $(CYGPATH_W) 'loader/libtiff/0199_lab_word_infinite_result.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0199_lab_word_infinite_result.c'; fi`
+
+loader/libtiff/test_runner-0200_logluv32_linear.o: loader/libtiff/0200_logluv32_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0200_logluv32_linear.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Tpo -c -o loader/libtiff/test_runner-0200_logluv32_linear.o `test -f 'loader/libtiff/0200_logluv32_linear.c' || echo '$(srcdir)/'`loader/libtiff/0200_logluv32_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Tpo loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0200_logluv32_linear.c' object='loader/libtiff/test_runner-0200_logluv32_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0200_logluv32_linear.o `test -f 'loader/libtiff/0200_logluv32_linear.c' || echo '$(srcdir)/'`loader/libtiff/0200_logluv32_linear.c
+
+loader/libtiff/test_runner-0200_logluv32_linear.obj: loader/libtiff/0200_logluv32_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0200_logluv32_linear.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Tpo -c -o loader/libtiff/test_runner-0200_logluv32_linear.obj `if test -f 'loader/libtiff/0200_logluv32_linear.c'; then $(CYGPATH_W) 'loader/libtiff/0200_logluv32_linear.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0200_logluv32_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Tpo loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0200_logluv32_linear.c' object='loader/libtiff/test_runner-0200_logluv32_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0200_logluv32_linear.obj `if test -f 'loader/libtiff/0200_logluv32_linear.c'; then $(CYGPATH_W) 'loader/libtiff/0200_logluv32_linear.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0200_logluv32_linear.c'; fi`
+
+loader/libtiff/test_runner-0201_logluv24_linear.o: loader/libtiff/0201_logluv24_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0201_logluv24_linear.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Tpo -c -o loader/libtiff/test_runner-0201_logluv24_linear.o `test -f 'loader/libtiff/0201_logluv24_linear.c' || echo '$(srcdir)/'`loader/libtiff/0201_logluv24_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Tpo loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0201_logluv24_linear.c' object='loader/libtiff/test_runner-0201_logluv24_linear.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0201_logluv24_linear.o `test -f 'loader/libtiff/0201_logluv24_linear.c' || echo '$(srcdir)/'`loader/libtiff/0201_logluv24_linear.c
+
+loader/libtiff/test_runner-0201_logluv24_linear.obj: loader/libtiff/0201_logluv24_linear.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0201_logluv24_linear.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Tpo -c -o loader/libtiff/test_runner-0201_logluv24_linear.obj `if test -f 'loader/libtiff/0201_logluv24_linear.c'; then $(CYGPATH_W) 'loader/libtiff/0201_logluv24_linear.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0201_logluv24_linear.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Tpo loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0201_logluv24_linear.c' object='loader/libtiff/test_runner-0201_logluv24_linear.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0201_logluv24_linear.obj `if test -f 'loader/libtiff/0201_logluv24_linear.c'; then $(CYGPATH_W) 'loader/libtiff/0201_logluv24_linear.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0201_logluv24_linear.c'; fi`
+
+loader/libtiff/test_runner-0202_logluv_rows2.o: loader/libtiff/0202_logluv_rows2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0202_logluv_rows2.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Tpo -c -o loader/libtiff/test_runner-0202_logluv_rows2.o `test -f 'loader/libtiff/0202_logluv_rows2.c' || echo '$(srcdir)/'`loader/libtiff/0202_logluv_rows2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Tpo loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0202_logluv_rows2.c' object='loader/libtiff/test_runner-0202_logluv_rows2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0202_logluv_rows2.o `test -f 'loader/libtiff/0202_logluv_rows2.c' || echo '$(srcdir)/'`loader/libtiff/0202_logluv_rows2.c
+
+loader/libtiff/test_runner-0202_logluv_rows2.obj: loader/libtiff/0202_logluv_rows2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0202_logluv_rows2.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Tpo -c -o loader/libtiff/test_runner-0202_logluv_rows2.obj `if test -f 'loader/libtiff/0202_logluv_rows2.c'; then $(CYGPATH_W) 'loader/libtiff/0202_logluv_rows2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0202_logluv_rows2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Tpo loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0202_logluv_rows2.c' object='loader/libtiff/test_runner-0202_logluv_rows2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0202_logluv_rows2.obj `if test -f 'loader/libtiff/0202_logluv_rows2.c'; then $(CYGPATH_W) 'loader/libtiff/0202_logluv_rows2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0202_logluv_rows2.c'; fi`
+
+loader/libtiff/test_runner-0203_logluv_orientation2.o: loader/libtiff/0203_logluv_orientation2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0203_logluv_orientation2.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Tpo -c -o loader/libtiff/test_runner-0203_logluv_orientation2.o `test -f 'loader/libtiff/0203_logluv_orientation2.c' || echo '$(srcdir)/'`loader/libtiff/0203_logluv_orientation2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Tpo loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0203_logluv_orientation2.c' object='loader/libtiff/test_runner-0203_logluv_orientation2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0203_logluv_orientation2.o `test -f 'loader/libtiff/0203_logluv_orientation2.c' || echo '$(srcdir)/'`loader/libtiff/0203_logluv_orientation2.c
+
+loader/libtiff/test_runner-0203_logluv_orientation2.obj: loader/libtiff/0203_logluv_orientation2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0203_logluv_orientation2.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Tpo -c -o loader/libtiff/test_runner-0203_logluv_orientation2.obj `if test -f 'loader/libtiff/0203_logluv_orientation2.c'; then $(CYGPATH_W) 'loader/libtiff/0203_logluv_orientation2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0203_logluv_orientation2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Tpo loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0203_logluv_orientation2.c' object='loader/libtiff/test_runner-0203_logluv_orientation2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0203_logluv_orientation2.obj `if test -f 'loader/libtiff/0203_logluv_orientation2.c'; then $(CYGPATH_W) 'loader/libtiff/0203_logluv_orientation2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0203_logluv_orientation2.c'; fi`
+
+loader/libtiff/test_runner-0204_logluv_orientation3.o: loader/libtiff/0204_logluv_orientation3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0204_logluv_orientation3.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Tpo -c -o loader/libtiff/test_runner-0204_logluv_orientation3.o `test -f 'loader/libtiff/0204_logluv_orientation3.c' || echo '$(srcdir)/'`loader/libtiff/0204_logluv_orientation3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Tpo loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0204_logluv_orientation3.c' object='loader/libtiff/test_runner-0204_logluv_orientation3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0204_logluv_orientation3.o `test -f 'loader/libtiff/0204_logluv_orientation3.c' || echo '$(srcdir)/'`loader/libtiff/0204_logluv_orientation3.c
+
+loader/libtiff/test_runner-0204_logluv_orientation3.obj: loader/libtiff/0204_logluv_orientation3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0204_logluv_orientation3.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Tpo -c -o loader/libtiff/test_runner-0204_logluv_orientation3.obj `if test -f 'loader/libtiff/0204_logluv_orientation3.c'; then $(CYGPATH_W) 'loader/libtiff/0204_logluv_orientation3.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0204_logluv_orientation3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Tpo loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0204_logluv_orientation3.c' object='loader/libtiff/test_runner-0204_logluv_orientation3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0204_logluv_orientation3.obj `if test -f 'loader/libtiff/0204_logluv_orientation3.c'; then $(CYGPATH_W) 'loader/libtiff/0204_logluv_orientation3.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0204_logluv_orientation3.c'; fi`
+
+loader/libtiff/test_runner-0205_logluv_orientation4.o: loader/libtiff/0205_logluv_orientation4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0205_logluv_orientation4.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Tpo -c -o loader/libtiff/test_runner-0205_logluv_orientation4.o `test -f 'loader/libtiff/0205_logluv_orientation4.c' || echo '$(srcdir)/'`loader/libtiff/0205_logluv_orientation4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Tpo loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0205_logluv_orientation4.c' object='loader/libtiff/test_runner-0205_logluv_orientation4.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0205_logluv_orientation4.o `test -f 'loader/libtiff/0205_logluv_orientation4.c' || echo '$(srcdir)/'`loader/libtiff/0205_logluv_orientation4.c
+
+loader/libtiff/test_runner-0205_logluv_orientation4.obj: loader/libtiff/0205_logluv_orientation4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0205_logluv_orientation4.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Tpo -c -o loader/libtiff/test_runner-0205_logluv_orientation4.obj `if test -f 'loader/libtiff/0205_logluv_orientation4.c'; then $(CYGPATH_W) 'loader/libtiff/0205_logluv_orientation4.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0205_logluv_orientation4.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Tpo loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0205_logluv_orientation4.c' object='loader/libtiff/test_runner-0205_logluv_orientation4.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0205_logluv_orientation4.obj `if test -f 'loader/libtiff/0205_logluv_orientation4.c'; then $(CYGPATH_W) 'loader/libtiff/0205_logluv_orientation4.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0205_logluv_orientation4.c'; fi`
+
+loader/libtiff/test_runner-0206_logluv_cms_none.o: loader/libtiff/0206_logluv_cms_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0206_logluv_cms_none.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Tpo -c -o loader/libtiff/test_runner-0206_logluv_cms_none.o `test -f 'loader/libtiff/0206_logluv_cms_none.c' || echo '$(srcdir)/'`loader/libtiff/0206_logluv_cms_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Tpo loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0206_logluv_cms_none.c' object='loader/libtiff/test_runner-0206_logluv_cms_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0206_logluv_cms_none.o `test -f 'loader/libtiff/0206_logluv_cms_none.c' || echo '$(srcdir)/'`loader/libtiff/0206_logluv_cms_none.c
+
+loader/libtiff/test_runner-0206_logluv_cms_none.obj: loader/libtiff/0206_logluv_cms_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0206_logluv_cms_none.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Tpo -c -o loader/libtiff/test_runner-0206_logluv_cms_none.obj `if test -f 'loader/libtiff/0206_logluv_cms_none.c'; then $(CYGPATH_W) 'loader/libtiff/0206_logluv_cms_none.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0206_logluv_cms_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Tpo loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0206_logluv_cms_none.c' object='loader/libtiff/test_runner-0206_logluv_cms_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0206_logluv_cms_none.obj `if test -f 'loader/libtiff/0206_logluv_cms_none.c'; then $(CYGPATH_W) 'loader/libtiff/0206_logluv_cms_none.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0206_logluv_cms_none.c'; fi`
+
+loader/libtiff/test_runner-0207_logluv_icc_ignored.o: loader/libtiff/0207_logluv_icc_ignored.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0207_logluv_icc_ignored.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Tpo -c -o loader/libtiff/test_runner-0207_logluv_icc_ignored.o `test -f 'loader/libtiff/0207_logluv_icc_ignored.c' || echo '$(srcdir)/'`loader/libtiff/0207_logluv_icc_ignored.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Tpo loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0207_logluv_icc_ignored.c' object='loader/libtiff/test_runner-0207_logluv_icc_ignored.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0207_logluv_icc_ignored.o `test -f 'loader/libtiff/0207_logluv_icc_ignored.c' || echo '$(srcdir)/'`loader/libtiff/0207_logluv_icc_ignored.c
+
+loader/libtiff/test_runner-0207_logluv_icc_ignored.obj: loader/libtiff/0207_logluv_icc_ignored.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0207_logluv_icc_ignored.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Tpo -c -o loader/libtiff/test_runner-0207_logluv_icc_ignored.obj `if test -f 'loader/libtiff/0207_logluv_icc_ignored.c'; then $(CYGPATH_W) 'loader/libtiff/0207_logluv_icc_ignored.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0207_logluv_icc_ignored.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Tpo loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0207_logluv_icc_ignored.c' object='loader/libtiff/test_runner-0207_logluv_icc_ignored.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0207_logluv_icc_ignored.obj `if test -f 'loader/libtiff/0207_logluv_icc_ignored.c'; then $(CYGPATH_W) 'loader/libtiff/0207_logluv_icc_ignored.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0207_logluv_icc_ignored.c'; fi`
+
+loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.o: loader/libtiff/0208_logluv_whitepoint_ignored.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Tpo -c -o loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.o `test -f 'loader/libtiff/0208_logluv_whitepoint_ignored.c' || echo '$(srcdir)/'`loader/libtiff/0208_logluv_whitepoint_ignored.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Tpo loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0208_logluv_whitepoint_ignored.c' object='loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.o `test -f 'loader/libtiff/0208_logluv_whitepoint_ignored.c' || echo '$(srcdir)/'`loader/libtiff/0208_logluv_whitepoint_ignored.c
+
+loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.obj: loader/libtiff/0208_logluv_whitepoint_ignored.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Tpo -c -o loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.obj `if test -f 'loader/libtiff/0208_logluv_whitepoint_ignored.c'; then $(CYGPATH_W) 'loader/libtiff/0208_logluv_whitepoint_ignored.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0208_logluv_whitepoint_ignored.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Tpo loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0208_logluv_whitepoint_ignored.c' object='loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0208_logluv_whitepoint_ignored.obj `if test -f 'loader/libtiff/0208_logluv_whitepoint_ignored.c'; then $(CYGPATH_W) 'loader/libtiff/0208_logluv_whitepoint_ignored.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0208_logluv_whitepoint_ignored.c'; fi`
+
+loader/libtiff/test_runner-0209_logluv_stonits_scale.o: loader/libtiff/0209_logluv_stonits_scale.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0209_logluv_stonits_scale.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Tpo -c -o loader/libtiff/test_runner-0209_logluv_stonits_scale.o `test -f 'loader/libtiff/0209_logluv_stonits_scale.c' || echo '$(srcdir)/'`loader/libtiff/0209_logluv_stonits_scale.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Tpo loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0209_logluv_stonits_scale.c' object='loader/libtiff/test_runner-0209_logluv_stonits_scale.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0209_logluv_stonits_scale.o `test -f 'loader/libtiff/0209_logluv_stonits_scale.c' || echo '$(srcdir)/'`loader/libtiff/0209_logluv_stonits_scale.c
+
+loader/libtiff/test_runner-0209_logluv_stonits_scale.obj: loader/libtiff/0209_logluv_stonits_scale.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0209_logluv_stonits_scale.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Tpo -c -o loader/libtiff/test_runner-0209_logluv_stonits_scale.obj `if test -f 'loader/libtiff/0209_logluv_stonits_scale.c'; then $(CYGPATH_W) 'loader/libtiff/0209_logluv_stonits_scale.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0209_logluv_stonits_scale.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Tpo loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0209_logluv_stonits_scale.c' object='loader/libtiff/test_runner-0209_logluv_stonits_scale.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0209_logluv_stonits_scale.obj `if test -f 'loader/libtiff/0209_logluv_stonits_scale.c'; then $(CYGPATH_W) 'loader/libtiff/0209_logluv_stonits_scale.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0209_logluv_stonits_scale.c'; fi`
+
+loader/libtiff/test_runner-0210_logluv_gamma_target.o: loader/libtiff/0210_logluv_gamma_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0210_logluv_gamma_target.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Tpo -c -o loader/libtiff/test_runner-0210_logluv_gamma_target.o `test -f 'loader/libtiff/0210_logluv_gamma_target.c' || echo '$(srcdir)/'`loader/libtiff/0210_logluv_gamma_target.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0210_logluv_gamma_target.c' object='loader/libtiff/test_runner-0210_logluv_gamma_target.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0210_logluv_gamma_target.o `test -f 'loader/libtiff/0210_logluv_gamma_target.c' || echo '$(srcdir)/'`loader/libtiff/0210_logluv_gamma_target.c
+
+loader/libtiff/test_runner-0210_logluv_gamma_target.obj: loader/libtiff/0210_logluv_gamma_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0210_logluv_gamma_target.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Tpo -c -o loader/libtiff/test_runner-0210_logluv_gamma_target.obj `if test -f 'loader/libtiff/0210_logluv_gamma_target.c'; then $(CYGPATH_W) 'loader/libtiff/0210_logluv_gamma_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0210_logluv_gamma_target.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0210_logluv_gamma_target.c' object='loader/libtiff/test_runner-0210_logluv_gamma_target.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0210_logluv_gamma_target.obj `if test -f 'loader/libtiff/0210_logluv_gamma_target.c'; then $(CYGPATH_W) 'loader/libtiff/0210_logluv_gamma_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0210_logluv_gamma_target.c'; fi`
+
+loader/libtiff/test_runner-0211_logluv_byte_target.o: loader/libtiff/0211_logluv_byte_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0211_logluv_byte_target.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Tpo -c -o loader/libtiff/test_runner-0211_logluv_byte_target.o `test -f 'loader/libtiff/0211_logluv_byte_target.c' || echo '$(srcdir)/'`loader/libtiff/0211_logluv_byte_target.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0211_logluv_byte_target.c' object='loader/libtiff/test_runner-0211_logluv_byte_target.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0211_logluv_byte_target.o `test -f 'loader/libtiff/0211_logluv_byte_target.c' || echo '$(srcdir)/'`loader/libtiff/0211_logluv_byte_target.c
+
+loader/libtiff/test_runner-0211_logluv_byte_target.obj: loader/libtiff/0211_logluv_byte_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0211_logluv_byte_target.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Tpo -c -o loader/libtiff/test_runner-0211_logluv_byte_target.obj `if test -f 'loader/libtiff/0211_logluv_byte_target.c'; then $(CYGPATH_W) 'loader/libtiff/0211_logluv_byte_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0211_logluv_byte_target.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0211_logluv_byte_target.c' object='loader/libtiff/test_runner-0211_logluv_byte_target.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0211_logluv_byte_target.obj `if test -f 'loader/libtiff/0211_logluv_byte_target.c'; then $(CYGPATH_W) 'loader/libtiff/0211_logluv_byte_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0211_logluv_byte_target.c'; fi`
+
+loader/libtiff/test_runner-0212_logluv_cielab_target.o: loader/libtiff/0212_logluv_cielab_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0212_logluv_cielab_target.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Tpo -c -o loader/libtiff/test_runner-0212_logluv_cielab_target.o `test -f 'loader/libtiff/0212_logluv_cielab_target.c' || echo '$(srcdir)/'`loader/libtiff/0212_logluv_cielab_target.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0212_logluv_cielab_target.c' object='loader/libtiff/test_runner-0212_logluv_cielab_target.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0212_logluv_cielab_target.o `test -f 'loader/libtiff/0212_logluv_cielab_target.c' || echo '$(srcdir)/'`loader/libtiff/0212_logluv_cielab_target.c
+
+loader/libtiff/test_runner-0212_logluv_cielab_target.obj: loader/libtiff/0212_logluv_cielab_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0212_logluv_cielab_target.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Tpo -c -o loader/libtiff/test_runner-0212_logluv_cielab_target.obj `if test -f 'loader/libtiff/0212_logluv_cielab_target.c'; then $(CYGPATH_W) 'loader/libtiff/0212_logluv_cielab_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0212_logluv_cielab_target.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0212_logluv_cielab_target.c' object='loader/libtiff/test_runner-0212_logluv_cielab_target.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0212_logluv_cielab_target.obj `if test -f 'loader/libtiff/0212_logluv_cielab_target.c'; then $(CYGPATH_W) 'loader/libtiff/0212_logluv_cielab_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0212_logluv_cielab_target.c'; fi`
+
+loader/libtiff/test_runner-0213_logluv_oklab_target.o: loader/libtiff/0213_logluv_oklab_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0213_logluv_oklab_target.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Tpo -c -o loader/libtiff/test_runner-0213_logluv_oklab_target.o `test -f 'loader/libtiff/0213_logluv_oklab_target.c' || echo '$(srcdir)/'`loader/libtiff/0213_logluv_oklab_target.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0213_logluv_oklab_target.c' object='loader/libtiff/test_runner-0213_logluv_oklab_target.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0213_logluv_oklab_target.o `test -f 'loader/libtiff/0213_logluv_oklab_target.c' || echo '$(srcdir)/'`loader/libtiff/0213_logluv_oklab_target.c
+
+loader/libtiff/test_runner-0213_logluv_oklab_target.obj: loader/libtiff/0213_logluv_oklab_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0213_logluv_oklab_target.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Tpo -c -o loader/libtiff/test_runner-0213_logluv_oklab_target.obj `if test -f 'loader/libtiff/0213_logluv_oklab_target.c'; then $(CYGPATH_W) 'loader/libtiff/0213_logluv_oklab_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0213_logluv_oklab_target.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0213_logluv_oklab_target.c' object='loader/libtiff/test_runner-0213_logluv_oklab_target.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0213_logluv_oklab_target.obj `if test -f 'loader/libtiff/0213_logluv_oklab_target.c'; then $(CYGPATH_W) 'loader/libtiff/0213_logluv_oklab_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0213_logluv_oklab_target.c'; fi`
+
+loader/libtiff/test_runner-0214_logluv_din99d_target.o: loader/libtiff/0214_logluv_din99d_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0214_logluv_din99d_target.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Tpo -c -o loader/libtiff/test_runner-0214_logluv_din99d_target.o `test -f 'loader/libtiff/0214_logluv_din99d_target.c' || echo '$(srcdir)/'`loader/libtiff/0214_logluv_din99d_target.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0214_logluv_din99d_target.c' object='loader/libtiff/test_runner-0214_logluv_din99d_target.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0214_logluv_din99d_target.o `test -f 'loader/libtiff/0214_logluv_din99d_target.c' || echo '$(srcdir)/'`loader/libtiff/0214_logluv_din99d_target.c
+
+loader/libtiff/test_runner-0214_logluv_din99d_target.obj: loader/libtiff/0214_logluv_din99d_target.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0214_logluv_din99d_target.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Tpo -c -o loader/libtiff/test_runner-0214_logluv_din99d_target.obj `if test -f 'loader/libtiff/0214_logluv_din99d_target.c'; then $(CYGPATH_W) 'loader/libtiff/0214_logluv_din99d_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0214_logluv_din99d_target.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Tpo loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0214_logluv_din99d_target.c' object='loader/libtiff/test_runner-0214_logluv_din99d_target.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0214_logluv_din99d_target.obj `if test -f 'loader/libtiff/0214_logluv_din99d_target.c'; then $(CYGPATH_W) 'loader/libtiff/0214_logluv_din99d_target.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0214_logluv_din99d_target.c'; fi`
+
+loader/libtiff/test_runner-0215_logluv_tile_fallback.o: loader/libtiff/0215_logluv_tile_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0215_logluv_tile_fallback.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Tpo -c -o loader/libtiff/test_runner-0215_logluv_tile_fallback.o `test -f 'loader/libtiff/0215_logluv_tile_fallback.c' || echo '$(srcdir)/'`loader/libtiff/0215_logluv_tile_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Tpo loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0215_logluv_tile_fallback.c' object='loader/libtiff/test_runner-0215_logluv_tile_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0215_logluv_tile_fallback.o `test -f 'loader/libtiff/0215_logluv_tile_fallback.c' || echo '$(srcdir)/'`loader/libtiff/0215_logluv_tile_fallback.c
+
+loader/libtiff/test_runner-0215_logluv_tile_fallback.obj: loader/libtiff/0215_logluv_tile_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0215_logluv_tile_fallback.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Tpo -c -o loader/libtiff/test_runner-0215_logluv_tile_fallback.obj `if test -f 'loader/libtiff/0215_logluv_tile_fallback.c'; then $(CYGPATH_W) 'loader/libtiff/0215_logluv_tile_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0215_logluv_tile_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Tpo loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0215_logluv_tile_fallback.c' object='loader/libtiff/test_runner-0215_logluv_tile_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0215_logluv_tile_fallback.obj `if test -f 'loader/libtiff/0215_logluv_tile_fallback.c'; then $(CYGPATH_W) 'loader/libtiff/0215_logluv_tile_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0215_logluv_tile_fallback.c'; fi`
+
+loader/libtiff/test_runner-0216_logluv_lcms_no_apply.o: loader/libtiff/0216_logluv_lcms_no_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0216_logluv_lcms_no_apply.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Tpo -c -o loader/libtiff/test_runner-0216_logluv_lcms_no_apply.o `test -f 'loader/libtiff/0216_logluv_lcms_no_apply.c' || echo '$(srcdir)/'`loader/libtiff/0216_logluv_lcms_no_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Tpo loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0216_logluv_lcms_no_apply.c' object='loader/libtiff/test_runner-0216_logluv_lcms_no_apply.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0216_logluv_lcms_no_apply.o `test -f 'loader/libtiff/0216_logluv_lcms_no_apply.c' || echo '$(srcdir)/'`loader/libtiff/0216_logluv_lcms_no_apply.c
+
+loader/libtiff/test_runner-0216_logluv_lcms_no_apply.obj: loader/libtiff/0216_logluv_lcms_no_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0216_logluv_lcms_no_apply.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Tpo -c -o loader/libtiff/test_runner-0216_logluv_lcms_no_apply.obj `if test -f 'loader/libtiff/0216_logluv_lcms_no_apply.c'; then $(CYGPATH_W) 'loader/libtiff/0216_logluv_lcms_no_apply.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0216_logluv_lcms_no_apply.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Tpo loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0216_logluv_lcms_no_apply.c' object='loader/libtiff/test_runner-0216_logluv_lcms_no_apply.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0216_logluv_lcms_no_apply.obj `if test -f 'loader/libtiff/0216_logluv_lcms_no_apply.c'; then $(CYGPATH_W) 'loader/libtiff/0216_logluv_lcms_no_apply.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0216_logluv_lcms_no_apply.c'; fi`
+
+loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.o: loader/libtiff/0217_logluv_colorsync_no_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Tpo -c -o loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.o `test -f 'loader/libtiff/0217_logluv_colorsync_no_apply.c' || echo '$(srcdir)/'`loader/libtiff/0217_logluv_colorsync_no_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Tpo loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0217_logluv_colorsync_no_apply.c' object='loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.o `test -f 'loader/libtiff/0217_logluv_colorsync_no_apply.c' || echo '$(srcdir)/'`loader/libtiff/0217_logluv_colorsync_no_apply.c
+
+loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.obj: loader/libtiff/0217_logluv_colorsync_no_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Tpo -c -o loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.obj `if test -f 'loader/libtiff/0217_logluv_colorsync_no_apply.c'; then $(CYGPATH_W) 'loader/libtiff/0217_logluv_colorsync_no_apply.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0217_logluv_colorsync_no_apply.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Tpo loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0217_logluv_colorsync_no_apply.c' object='loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0217_logluv_colorsync_no_apply.obj `if test -f 'loader/libtiff/0217_logluv_colorsync_no_apply.c'; then $(CYGPATH_W) 'loader/libtiff/0217_logluv_colorsync_no_apply.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0217_logluv_colorsync_no_apply.c'; fi`
+
+loader/libtiff/test_runner-0218_logluv_float_request_failure.o: loader/libtiff/0218_logluv_float_request_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0218_logluv_float_request_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Tpo -c -o loader/libtiff/test_runner-0218_logluv_float_request_failure.o `test -f 'loader/libtiff/0218_logluv_float_request_failure.c' || echo '$(srcdir)/'`loader/libtiff/0218_logluv_float_request_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0218_logluv_float_request_failure.c' object='loader/libtiff/test_runner-0218_logluv_float_request_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0218_logluv_float_request_failure.o `test -f 'loader/libtiff/0218_logluv_float_request_failure.c' || echo '$(srcdir)/'`loader/libtiff/0218_logluv_float_request_failure.c
+
+loader/libtiff/test_runner-0218_logluv_float_request_failure.obj: loader/libtiff/0218_logluv_float_request_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0218_logluv_float_request_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Tpo -c -o loader/libtiff/test_runner-0218_logluv_float_request_failure.obj `if test -f 'loader/libtiff/0218_logluv_float_request_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0218_logluv_float_request_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0218_logluv_float_request_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0218_logluv_float_request_failure.c' object='loader/libtiff/test_runner-0218_logluv_float_request_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0218_logluv_float_request_failure.obj `if test -f 'loader/libtiff/0218_logluv_float_request_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0218_logluv_float_request_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0218_logluv_float_request_failure.c'; fi`
+
+loader/libtiff/test_runner-0219_logluv_interface_failure.o: loader/libtiff/0219_logluv_interface_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0219_logluv_interface_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Tpo -c -o loader/libtiff/test_runner-0219_logluv_interface_failure.o `test -f 'loader/libtiff/0219_logluv_interface_failure.c' || echo '$(srcdir)/'`loader/libtiff/0219_logluv_interface_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0219_logluv_interface_failure.c' object='loader/libtiff/test_runner-0219_logluv_interface_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0219_logluv_interface_failure.o `test -f 'loader/libtiff/0219_logluv_interface_failure.c' || echo '$(srcdir)/'`loader/libtiff/0219_logluv_interface_failure.c
+
+loader/libtiff/test_runner-0219_logluv_interface_failure.obj: loader/libtiff/0219_logluv_interface_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0219_logluv_interface_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Tpo -c -o loader/libtiff/test_runner-0219_logluv_interface_failure.obj `if test -f 'loader/libtiff/0219_logluv_interface_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0219_logluv_interface_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0219_logluv_interface_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0219_logluv_interface_failure.c' object='loader/libtiff/test_runner-0219_logluv_interface_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0219_logluv_interface_failure.obj `if test -f 'loader/libtiff/0219_logluv_interface_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0219_logluv_interface_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0219_logluv_interface_failure.c'; fi`
+
+loader/libtiff/test_runner-0220_logluv_scanline_size_failure.o: loader/libtiff/0220_logluv_scanline_size_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0220_logluv_scanline_size_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Tpo -c -o loader/libtiff/test_runner-0220_logluv_scanline_size_failure.o `test -f 'loader/libtiff/0220_logluv_scanline_size_failure.c' || echo '$(srcdir)/'`loader/libtiff/0220_logluv_scanline_size_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0220_logluv_scanline_size_failure.c' object='loader/libtiff/test_runner-0220_logluv_scanline_size_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0220_logluv_scanline_size_failure.o `test -f 'loader/libtiff/0220_logluv_scanline_size_failure.c' || echo '$(srcdir)/'`loader/libtiff/0220_logluv_scanline_size_failure.c
+
+loader/libtiff/test_runner-0220_logluv_scanline_size_failure.obj: loader/libtiff/0220_logluv_scanline_size_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0220_logluv_scanline_size_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Tpo -c -o loader/libtiff/test_runner-0220_logluv_scanline_size_failure.obj `if test -f 'loader/libtiff/0220_logluv_scanline_size_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0220_logluv_scanline_size_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0220_logluv_scanline_size_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0220_logluv_scanline_size_failure.c' object='loader/libtiff/test_runner-0220_logluv_scanline_size_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0220_logluv_scanline_size_failure.obj `if test -f 'loader/libtiff/0220_logluv_scanline_size_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0220_logluv_scanline_size_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0220_logluv_scanline_size_failure.c'; fi`
+
+loader/libtiff/test_runner-0221_logluv_row_allocation_failure.o: loader/libtiff/0221_logluv_row_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0221_logluv_row_allocation_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Tpo -c -o loader/libtiff/test_runner-0221_logluv_row_allocation_failure.o `test -f 'loader/libtiff/0221_logluv_row_allocation_failure.c' || echo '$(srcdir)/'`loader/libtiff/0221_logluv_row_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0221_logluv_row_allocation_failure.c' object='loader/libtiff/test_runner-0221_logluv_row_allocation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0221_logluv_row_allocation_failure.o `test -f 'loader/libtiff/0221_logluv_row_allocation_failure.c' || echo '$(srcdir)/'`loader/libtiff/0221_logluv_row_allocation_failure.c
+
+loader/libtiff/test_runner-0221_logluv_row_allocation_failure.obj: loader/libtiff/0221_logluv_row_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0221_logluv_row_allocation_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Tpo -c -o loader/libtiff/test_runner-0221_logluv_row_allocation_failure.obj `if test -f 'loader/libtiff/0221_logluv_row_allocation_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0221_logluv_row_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0221_logluv_row_allocation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0221_logluv_row_allocation_failure.c' object='loader/libtiff/test_runner-0221_logluv_row_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0221_logluv_row_allocation_failure.obj `if test -f 'loader/libtiff/0221_logluv_row_allocation_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0221_logluv_row_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0221_logluv_row_allocation_failure.c'; fi`
+
+loader/libtiff/test_runner-0222_logluv_image_allocation_failure.o: loader/libtiff/0222_logluv_image_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0222_logluv_image_allocation_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Tpo -c -o loader/libtiff/test_runner-0222_logluv_image_allocation_failure.o `test -f 'loader/libtiff/0222_logluv_image_allocation_failure.c' || echo '$(srcdir)/'`loader/libtiff/0222_logluv_image_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0222_logluv_image_allocation_failure.c' object='loader/libtiff/test_runner-0222_logluv_image_allocation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0222_logluv_image_allocation_failure.o `test -f 'loader/libtiff/0222_logluv_image_allocation_failure.c' || echo '$(srcdir)/'`loader/libtiff/0222_logluv_image_allocation_failure.c
+
+loader/libtiff/test_runner-0222_logluv_image_allocation_failure.obj: loader/libtiff/0222_logluv_image_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0222_logluv_image_allocation_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Tpo -c -o loader/libtiff/test_runner-0222_logluv_image_allocation_failure.obj `if test -f 'loader/libtiff/0222_logluv_image_allocation_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0222_logluv_image_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0222_logluv_image_allocation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0222_logluv_image_allocation_failure.c' object='loader/libtiff/test_runner-0222_logluv_image_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0222_logluv_image_allocation_failure.obj `if test -f 'loader/libtiff/0222_logluv_image_allocation_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0222_logluv_image_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0222_logluv_image_allocation_failure.c'; fi`
+
+loader/libtiff/test_runner-0223_logluv_late_read_failure.o: loader/libtiff/0223_logluv_late_read_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0223_logluv_late_read_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Tpo -c -o loader/libtiff/test_runner-0223_logluv_late_read_failure.o `test -f 'loader/libtiff/0223_logluv_late_read_failure.c' || echo '$(srcdir)/'`loader/libtiff/0223_logluv_late_read_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0223_logluv_late_read_failure.c' object='loader/libtiff/test_runner-0223_logluv_late_read_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0223_logluv_late_read_failure.o `test -f 'loader/libtiff/0223_logluv_late_read_failure.c' || echo '$(srcdir)/'`loader/libtiff/0223_logluv_late_read_failure.c
+
+loader/libtiff/test_runner-0223_logluv_late_read_failure.obj: loader/libtiff/0223_logluv_late_read_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0223_logluv_late_read_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Tpo -c -o loader/libtiff/test_runner-0223_logluv_late_read_failure.obj `if test -f 'loader/libtiff/0223_logluv_late_read_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0223_logluv_late_read_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0223_logluv_late_read_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0223_logluv_late_read_failure.c' object='loader/libtiff/test_runner-0223_logluv_late_read_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0223_logluv_late_read_failure.obj `if test -f 'loader/libtiff/0223_logluv_late_read_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0223_logluv_late_read_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0223_logluv_late_read_failure.c'; fi`
+
+loader/libtiff/test_runner-0224_logluv_nan_rejected.o: loader/libtiff/0224_logluv_nan_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0224_logluv_nan_rejected.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Tpo -c -o loader/libtiff/test_runner-0224_logluv_nan_rejected.o `test -f 'loader/libtiff/0224_logluv_nan_rejected.c' || echo '$(srcdir)/'`loader/libtiff/0224_logluv_nan_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Tpo loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0224_logluv_nan_rejected.c' object='loader/libtiff/test_runner-0224_logluv_nan_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0224_logluv_nan_rejected.o `test -f 'loader/libtiff/0224_logluv_nan_rejected.c' || echo '$(srcdir)/'`loader/libtiff/0224_logluv_nan_rejected.c
+
+loader/libtiff/test_runner-0224_logluv_nan_rejected.obj: loader/libtiff/0224_logluv_nan_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0224_logluv_nan_rejected.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Tpo -c -o loader/libtiff/test_runner-0224_logluv_nan_rejected.obj `if test -f 'loader/libtiff/0224_logluv_nan_rejected.c'; then $(CYGPATH_W) 'loader/libtiff/0224_logluv_nan_rejected.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0224_logluv_nan_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Tpo loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0224_logluv_nan_rejected.c' object='loader/libtiff/test_runner-0224_logluv_nan_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0224_logluv_nan_rejected.obj `if test -f 'loader/libtiff/0224_logluv_nan_rejected.c'; then $(CYGPATH_W) 'loader/libtiff/0224_logluv_nan_rejected.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0224_logluv_nan_rejected.c'; fi`
+
+loader/libtiff/test_runner-0225_logluv_infinity_rejected.o: loader/libtiff/0225_logluv_infinity_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0225_logluv_infinity_rejected.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Tpo -c -o loader/libtiff/test_runner-0225_logluv_infinity_rejected.o `test -f 'loader/libtiff/0225_logluv_infinity_rejected.c' || echo '$(srcdir)/'`loader/libtiff/0225_logluv_infinity_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Tpo loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0225_logluv_infinity_rejected.c' object='loader/libtiff/test_runner-0225_logluv_infinity_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0225_logluv_infinity_rejected.o `test -f 'loader/libtiff/0225_logluv_infinity_rejected.c' || echo '$(srcdir)/'`loader/libtiff/0225_logluv_infinity_rejected.c
+
+loader/libtiff/test_runner-0225_logluv_infinity_rejected.obj: loader/libtiff/0225_logluv_infinity_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0225_logluv_infinity_rejected.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Tpo -c -o loader/libtiff/test_runner-0225_logluv_infinity_rejected.obj `if test -f 'loader/libtiff/0225_logluv_infinity_rejected.c'; then $(CYGPATH_W) 'loader/libtiff/0225_logluv_infinity_rejected.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0225_logluv_infinity_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Tpo loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0225_logluv_infinity_rejected.c' object='loader/libtiff/test_runner-0225_logluv_infinity_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0225_logluv_infinity_rejected.obj `if test -f 'loader/libtiff/0225_logluv_infinity_rejected.c'; then $(CYGPATH_W) 'loader/libtiff/0225_logluv_infinity_rejected.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0225_logluv_infinity_rejected.c'; fi`
+
+loader/libtiff/test_runner-0226_logluv_target_failure.o: loader/libtiff/0226_logluv_target_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0226_logluv_target_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Tpo -c -o loader/libtiff/test_runner-0226_logluv_target_failure.o `test -f 'loader/libtiff/0226_logluv_target_failure.c' || echo '$(srcdir)/'`loader/libtiff/0226_logluv_target_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0226_logluv_target_failure.c' object='loader/libtiff/test_runner-0226_logluv_target_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0226_logluv_target_failure.o `test -f 'loader/libtiff/0226_logluv_target_failure.c' || echo '$(srcdir)/'`loader/libtiff/0226_logluv_target_failure.c
+
+loader/libtiff/test_runner-0226_logluv_target_failure.obj: loader/libtiff/0226_logluv_target_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0226_logluv_target_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Tpo -c -o loader/libtiff/test_runner-0226_logluv_target_failure.obj `if test -f 'loader/libtiff/0226_logluv_target_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0226_logluv_target_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0226_logluv_target_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0226_logluv_target_failure.c' object='loader/libtiff/test_runner-0226_logluv_target_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0226_logluv_target_failure.obj `if test -f 'loader/libtiff/0226_logluv_target_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0226_logluv_target_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0226_logluv_target_failure.c'; fi`
+
+loader/test_runner-tiff_logluv_test_common.o: loader/tiff_logluv_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-tiff_logluv_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Tpo -c -o loader/test_runner-tiff_logluv_test_common.o `test -f 'loader/tiff_logluv_test_common.c' || echo '$(srcdir)/'`loader/tiff_logluv_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Tpo loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/tiff_logluv_test_common.c' object='loader/test_runner-tiff_logluv_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-tiff_logluv_test_common.o `test -f 'loader/tiff_logluv_test_common.c' || echo '$(srcdir)/'`loader/tiff_logluv_test_common.c
+
+loader/test_runner-tiff_logluv_test_common.obj: loader/tiff_logluv_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-tiff_logluv_test_common.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Tpo -c -o loader/test_runner-tiff_logluv_test_common.obj `if test -f 'loader/tiff_logluv_test_common.c'; then $(CYGPATH_W) 'loader/tiff_logluv_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/tiff_logluv_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Tpo loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/tiff_logluv_test_common.c' object='loader/test_runner-tiff_logluv_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-tiff_logluv_test_common.obj `if test -f 'loader/tiff_logluv_test_common.c'; then $(CYGPATH_W) 'loader/tiff_logluv_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/tiff_logluv_test_common.c'; fi`
+
+loader/test_runner-tiff_logluv_fault_test_common.o: loader/tiff_logluv_fault_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-tiff_logluv_fault_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Tpo -c -o loader/test_runner-tiff_logluv_fault_test_common.o `test -f 'loader/tiff_logluv_fault_test_common.c' || echo '$(srcdir)/'`loader/tiff_logluv_fault_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Tpo loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/tiff_logluv_fault_test_common.c' object='loader/test_runner-tiff_logluv_fault_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-tiff_logluv_fault_test_common.o `test -f 'loader/tiff_logluv_fault_test_common.c' || echo '$(srcdir)/'`loader/tiff_logluv_fault_test_common.c
+
+loader/test_runner-tiff_logluv_fault_test_common.obj: loader/tiff_logluv_fault_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-tiff_logluv_fault_test_common.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Tpo -c -o loader/test_runner-tiff_logluv_fault_test_common.obj `if test -f 'loader/tiff_logluv_fault_test_common.c'; then $(CYGPATH_W) 'loader/tiff_logluv_fault_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/tiff_logluv_fault_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Tpo loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/tiff_logluv_fault_test_common.c' object='loader/test_runner-tiff_logluv_fault_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-tiff_logluv_fault_test_common.obj `if test -f 'loader/tiff_logluv_fault_test_common.c'; then $(CYGPATH_W) 'loader/tiff_logluv_fault_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/tiff_logluv_fault_test_common.c'; fi`
 
 processing/cms/test_runner-lab_linear_test_common.o: processing/cms/lab_linear_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-lab_linear_test_common.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-lab_linear_test_common.Tpo -c -o processing/cms/test_runner-lab_linear_test_common.o `test -f 'processing/cms/lab_linear_test_common.c' || echo '$(srcdir)/'`processing/cms/lab_linear_test_common.c
@@ -16520,6 +17187,8 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
@@ -16706,6 +17375,33 @@ distclean: distclean-am
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0197_lab_word_allocation_failure.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0198_lab_word_nan_result.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0199_lab_word_infinite_result.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
@@ -17198,6 +17894,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-tiff_logluv_fault_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-tiff_logluv_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
@@ -17384,6 +18082,33 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0197_lab_word_allocation_failure.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0198_lab_word_nan_result.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0199_lab_word_infinite_result.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0200_logluv32_linear.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0201_logluv24_linear.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0202_logluv_rows2.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0203_logluv_orientation2.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0204_logluv_orientation3.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0205_logluv_orientation4.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0206_logluv_cms_none.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0207_logluv_icc_ignored.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0208_logluv_whitepoint_ignored.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0209_logluv_stonits_scale.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0210_logluv_gamma_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0211_logluv_byte_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0212_logluv_cielab_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0213_logluv_oklab_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0214_logluv_din99d_target.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0215_logluv_tile_fallback.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0216_logluv_lcms_no_apply.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0217_logluv_colorsync_no_apply.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0218_logluv_float_request_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0219_logluv_interface_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0220_logluv_scanline_size_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0221_logluv_row_allocation_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0222_logluv_image_allocation_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0223_logluv_late_read_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0224_logluv_nan_rejected.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0225_logluv_infinity_rejected.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0226_logluv_target_failure.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po

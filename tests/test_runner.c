@@ -949,6 +949,33 @@ int test_loader_0196_lab_linear(int argc, char **argv);
 int test_loader_0197_lab_linear(int argc, char **argv);
 int test_loader_0198_lab_linear(int argc, char **argv);
 int test_loader_0199_lab_linear(int argc, char **argv);
+int test_loader_0200_logluv(int argc, char **argv);
+int test_loader_0201_logluv(int argc, char **argv);
+int test_loader_0202_logluv(int argc, char **argv);
+int test_loader_0203_logluv(int argc, char **argv);
+int test_loader_0204_logluv(int argc, char **argv);
+int test_loader_0205_logluv(int argc, char **argv);
+int test_loader_0206_logluv(int argc, char **argv);
+int test_loader_0207_logluv(int argc, char **argv);
+int test_loader_0208_logluv(int argc, char **argv);
+int test_loader_0209_logluv(int argc, char **argv);
+int test_loader_0210_logluv(int argc, char **argv);
+int test_loader_0211_logluv(int argc, char **argv);
+int test_loader_0212_logluv(int argc, char **argv);
+int test_loader_0213_logluv(int argc, char **argv);
+int test_loader_0214_logluv(int argc, char **argv);
+int test_loader_0215_logluv(int argc, char **argv);
+int test_loader_0216_logluv(int argc, char **argv);
+int test_loader_0217_logluv(int argc, char **argv);
+int test_loader_0218_logluv(int argc, char **argv);
+int test_loader_0219_logluv(int argc, char **argv);
+int test_loader_0220_logluv(int argc, char **argv);
+int test_loader_0221_logluv(int argc, char **argv);
+int test_loader_0222_logluv(int argc, char **argv);
+int test_loader_0223_logluv(int argc, char **argv);
+int test_loader_0224_logluv(int argc, char **argv);
+int test_loader_0225_logluv(int argc, char **argv);
+int test_loader_0226_logluv(int argc, char **argv);
 int test_loader_0186_png_byte_target(int argc, char **argv);
 int test_loader_0187_coregraphics_png(int argc, char **argv);
 int test_loader_0188_colorsync_linear(int argc, char **argv);
@@ -2071,6 +2098,60 @@ static test_entry_t const test_entries[] = {
       test_loader_0198_lab_linear },
     { "loader/0199_lab_word_infinite_result",
       test_loader_0199_lab_linear },
+    { "loader/0200_logluv32_linear",
+      test_loader_0200_logluv },
+    { "loader/0201_logluv24_linear",
+      test_loader_0201_logluv },
+    { "loader/0202_logluv_rows2",
+      test_loader_0202_logluv },
+    { "loader/0203_logluv_orientation2",
+      test_loader_0203_logluv },
+    { "loader/0204_logluv_orientation3",
+      test_loader_0204_logluv },
+    { "loader/0205_logluv_orientation4",
+      test_loader_0205_logluv },
+    { "loader/0206_logluv_cms_none",
+      test_loader_0206_logluv },
+    { "loader/0207_logluv_icc_ignored",
+      test_loader_0207_logluv },
+    { "loader/0208_logluv_whitepoint_ignored",
+      test_loader_0208_logluv },
+    { "loader/0209_logluv_stonits_scale",
+      test_loader_0209_logluv },
+    { "loader/0210_logluv_gamma_target",
+      test_loader_0210_logluv },
+    { "loader/0211_logluv_byte_target",
+      test_loader_0211_logluv },
+    { "loader/0212_logluv_cielab_target",
+      test_loader_0212_logluv },
+    { "loader/0213_logluv_oklab_target",
+      test_loader_0213_logluv },
+    { "loader/0214_logluv_din99d_target",
+      test_loader_0214_logluv },
+    { "loader/0215_logluv_tile_fallback",
+      test_loader_0215_logluv },
+    { "loader/0216_logluv_lcms_no_apply",
+      test_loader_0216_logluv },
+    { "loader/0217_logluv_colorsync_no_apply",
+      test_loader_0217_logluv },
+    { "loader/0218_logluv_float_request_failure",
+      test_loader_0218_logluv },
+    { "loader/0219_logluv_interface_failure",
+      test_loader_0219_logluv },
+    { "loader/0220_logluv_scanline_size_failure",
+      test_loader_0220_logluv },
+    { "loader/0221_logluv_row_allocation_failure",
+      test_loader_0221_logluv },
+    { "loader/0222_logluv_image_allocation_failure",
+      test_loader_0222_logluv },
+    { "loader/0223_logluv_late_read_failure",
+      test_loader_0223_logluv },
+    { "loader/0224_logluv_nan_rejected",
+      test_loader_0224_logluv },
+    { "loader/0225_logluv_infinity_rejected",
+      test_loader_0225_logluv },
+    { "loader/0226_logluv_target_failure",
+      test_loader_0226_logluv },
     { "loader/0186_png_byte_target", test_loader_0186_png_byte_target },
     { "loader/0187_coregraphics_png", test_loader_0187_coregraphics_png },
     { "loader/0188_colorsync_linear", test_loader_0188_colorsync_linear },
