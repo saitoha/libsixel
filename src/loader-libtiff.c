@@ -1956,17 +1956,25 @@ load_tiff(unsigned char      /* out */ **result,
     size_t pixel_bytes;
     size_t index;
     unsigned char *pixels;
+    float *decoded_rgb;
     uint32_t pixel;
     size_t offset;
     SIXELSTATUS high_precision_status;
     uint32_t icc_profile_length;
     void *icc_profile;
     uint16_t photometric;
+    uint16_t bits_per_sample;
+    uint16_t samples_per_pixel;
+    uint16_t sample_format;
+    uint16_t extra_samples;
+    uint16_t *extra_types;
+    int opaque_ycbcr;
 
     status = SIXEL_TIFF_ERROR;
     tif = NULL;
     raster = NULL;
     pixels = NULL;
+    decoded_rgb = NULL;
     width = 0;
     height = 0;
     pixel_count = 0;
@@ -1975,6 +1983,10 @@ load_tiff(unsigned char      /* out */ **result,
     icc_profile_length = 0u;
     icc_profile = NULL;
     photometric = (uint16_t)0xffffu;
+    bits_per_sample = samples_per_pixel = extra_samples = 0u;
+    sample_format = SAMPLEFORMAT_UINT;
+    extra_types = NULL;
+    opaque_ycbcr = 0;
 
     chunk.buffer = buffer;
     chunk.size = (toff_t)size;
@@ -2140,25 +2152,80 @@ load_tiff(unsigned char      /* out */ **result,
         pixels[offset + 3] = TIFFGetA(pixel);
     }
 
+    /* Keep the established decoded-RGB profile domain for opaque YCbCr8.
+     * libtiff still owns component conversion and its first byte rounding;
+     * promoting that raster cannot recover original YCbCr precision. Only
+     * the following CMS stage gains an extended linear publication. */
+    if (photometric == PHOTOMETRIC_YCBCR) {
+        (void)TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE,
+                                    &bits_per_sample);
+        (void)TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL,
+                                    &samples_per_pixel);
+        (void)TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLEFORMAT,
+                                    &sample_format);
+        (void)TIFFGetField(tif, TIFFTAG_EXTRASAMPLES,
+                           &extra_samples, &extra_types);
+        opaque_ycbcr = bits_per_sample == 8u && samples_per_pixel == 3u &&
+            extra_samples == 0u && (sample_format == SAMPLEFORMAT_UINT ||
+                                   sample_format == SAMPLEFORMAT_VOID);
+        for (index = 0u; opaque_ycbcr && index < pixel_count; ++index) {
+            opaque_ycbcr = pixels[index * 4u + 3u] == 255u;
+        }
+    }
+    if (opaque_ycbcr) {
+        /* The RGBA source remains intact through optional CMS work. A
+         * failed scratch allocation/profile/apply keeps every source byte
+         * and must not retry the old bounded byte transform. */
+        if (enable_cms && icc_profile != NULL && icc_profile_length > 0u &&
+            pixel_count <= SIZE_MAX / (3u * sizeof(float))) {
+            decoded_rgb = (float *)sixel_allocator_malloc(
+                allocator, pixel_count * 3u * sizeof(float));
+            if (decoded_rgb != NULL) {
+                for (index = 0u; index < pixel_count * 3u; ++index) {
+                    decoded_rgb[index] = (float)((double)pixels[
+                        index / 3u * 4u + index % 3u] / 255.0);
+                }
+                /* The original photometric is YCbCr, but the actual CMS
+                 * input is now decoded RGB; require an RGB ICC profile. */
+                if (tiff_convert_samples_to_linear(decoded_rgb,
+                    (int)width, (int)height, icc_profile,
+                    icc_profile_length, PHOTOMETRIC_RGB)) {
+                    sixel_allocator_free(allocator, pixels);
+                    pixels = (unsigned char *)decoded_rgb;
+                    decoded_rgb = NULL;
+                    *result = pixels;
+                    *pwidth = (int)width;
+                    *pheight = (int)height;
+                    *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+                    *pnegotiate_target = 1;
+                    status = SIXEL_OK;
+                    goto cleanup;
+                }
+                sixel_allocator_free(allocator, decoded_rgb);
+                decoded_rgb = NULL;
+            }
+        }
+    } else {
 #if HAVE_LCMS2
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        tiff_convert_embedded_icc_to_srgb(pixels,
-                                          (int)width,
-                                          (int)height,
-                                          icc_profile,
-                                          icc_profile_length,
-                                          photometric);
-    }
+        if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
+            tiff_convert_embedded_icc_to_srgb(pixels,
+                                              (int)width,
+                                              (int)height,
+                                              icc_profile,
+                                              icc_profile_length,
+                                              photometric);
+        }
 #else
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        tiff_convert_embedded_icc_to_srgb_nolcms(pixels,
-                                                 (int)width,
-                                                 (int)height,
-                                                 icc_profile,
-                                                 icc_profile_length,
-                                                 photometric);
-    }
+        if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
+            tiff_convert_embedded_icc_to_srgb_nolcms(pixels,
+                                                     (int)width,
+                                                     (int)height,
+                                                     icc_profile,
+                                                     icc_profile_length,
+                                                     photometric);
+        }
 #endif
+    }
 
     *result = pixels;
     *pwidth = (int)width;

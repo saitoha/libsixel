@@ -489,46 +489,6 @@ lc_strip(sixel_frame_t *frame, unsigned char *background)
 #undef sixel_cms_convert_to_srgb_with_profile_bytes
 
 
-static SIXELSTATUS
-lc_capture(sixel_frame_t *frame, void *context)
-{
-    unsigned char const *pixels;
-    size_t i;
-    size_t channel;
-
-    (void)context;
-    ++lc.calls;
-    pixels = sixel_frame_get_pixels(frame);
-    lc.ok &= frame->width == tl_cases[lc.fixture].width &&
-        frame->height == tl_cases[lc.fixture].height &&
-        sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 &&
-        frame->colorspace == SIXEL_COLORSPACE_GAMMA;
-    for (i = 0u; i < lc.n && lc.ok; ++i) {
-        for (channel = 0u; channel < 3u; ++channel) {
-            lc.ok &= pixels[i * 3u + channel] ==
-                (lc.managed ? lc.expected : lc.raw)[i * 4u + channel];
-        }
-    }
-    if (lc.baseline) {
-        lc.base_alpha = frame->alpha_zero_is_transparent;
-        lc.base_mask_size = frame->transparent_mask_size;
-        lc.ok &= lc.base_mask_size <= sizeof(lc.base_mask);
-        if (lc.ok && lc.base_mask_size != 0u) {
-            memcpy(lc.base_mask, frame->transparent_mask, lc.base_mask_size);
-        }
-    } else {
-        /* Compare against this input's unmanaged frame; do not turn the
-         * known absence of a legacy alpha mask into a required contract. */
-        lc.ok &= lc.base_alpha == frame->alpha_zero_is_transparent &&
-                 lc.base_mask_size == frame->transparent_mask_size;
-        if (lc.ok && lc.base_mask_size != 0u) {
-            lc.ok &= memcmp(lc.base_mask, frame->transparent_mask,
-                            lc.base_mask_size) == 0;
-        }
-    }
-    return SIXEL_OK;
-}
-
 static int
 lc_reference(void)
 {
@@ -601,8 +561,8 @@ cleanup:
 
 /* Integer source families now bypass the legacy public path. Keep their
  * real RGBA decoder and actual CMS-helper fault coverage at helper scope;
- * the new layout tests own original-source/public-frame behavior. YCbCr
- * still exercises the actual component below. No public route is forced. */
+ * layout and decoded-YCbCr tests own their public-frame behavior. No
+ * obsolete public byte route is forced to preserve these helper checks. */
 static SIXELSTATUS
 lc_helper_load(sixel_chunk_t *chunk, int cms)
 {
@@ -676,9 +636,7 @@ lc_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
         SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS, &cms);
     lc.armed = 1;
     if (SIXEL_SUCCEEDED(status)) {
-        status = tl_cases[lc.fixture].photo == PHOTOMETRIC_YCBCR
-            ? component->vtbl->load(component, chunk, lc_capture, NULL)
-            : lc_helper_load(chunk, cms);
+        status = lc_helper_load(chunk, cms);
     }
     lc.armed = 0;
     ok = status == SIXEL_OK && lc.ok && lc.calls == 1 && lc.reads == 1 &&
@@ -692,8 +650,7 @@ lc_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
     if (mode == 6) { ok &= lc.poisoned == (int)lc.n; }
     fprintf(stderr, "LC1|scope=%s|mode=%d|calls=%d|real=%d|alloc=%d|"
         "profiles=%d|transforms=%d|alpha=%d|ok=%d\n",
-        tl_cases[lc.fixture].photo == PHOTOMETRIC_YCBCR
-            ? "public" : "helper", mode,
+        "helper", mode,
         lc.api_calls, lc.real_pixels, lc.allocations, lc.profiles,
         lc.transforms, lc.poisoned, ok);
     lc_end(ok);

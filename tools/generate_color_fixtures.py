@@ -1821,6 +1821,8 @@ def main():
     outputs.update(tiff_separate16(profile, outputs['gray-gamma2.icc']))
     from generate_tiff_layout_fixtures import build as tiff_layout
     outputs.update(tiff_layout(profile, outputs['gray-gamma2.icc']))
+    from generate_tiff_ycbcr_tests import build as tiff_ycbcr_tests
+    outputs.update(tiff_ycbcr_tests(outputs))
     from generate_cli_color_fixtures import build as cli_color_fixtures
     outputs.update(cli_color_fixtures(outputs))
     from generate_colorsync_gray_tests import build as colorsync_gray_tests

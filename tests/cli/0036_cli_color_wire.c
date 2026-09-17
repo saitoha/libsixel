@@ -89,6 +89,7 @@ test_cli_0036_color_wire(int argc, char **argv)
     unsigned char painted[96];
     char loader_record[96];
     char const *trace;
+    char const *loader;
     char const *p;
     char const *end;
     int values[6];
@@ -110,19 +111,21 @@ test_cli_0036_color_wire(int argc, char **argv)
     if (argc != 3) {
         return cli_wire_error("expected loader name and captured CLI output");
     }
-    specimen = strcmp(argv[1], "libtiff") == 0 ? 1 : 0;
+    specimen = strcmp(argv[1], "libtiff-ycbcr") == 0 ? 2
+             : strcmp(argv[1], "libtiff") == 0 ? 1 : 0;
+    loader = specimen == 2 ? "libtiff" : argv[1];
     if (specimen == 0 && strcmp(argv[1], "libpng") != 0 &&
         strcmp(argv[1], "builtin") != 0) {
         return cli_wire_error("unknown loader");
     }
     trace = argv[2];
     snprintf(loader_record, sizeof(loader_record),
-             "LSXLOAD1|event=try|loader=%s|code=L_TRY", argv[1]);
+             "LSXLOAD1|event=try|loader=%s|code=L_TRY", loader);
     if (!cli_wire_record(trace, loader_record)) {
         return cli_wire_error("selected loader was not attempted");
     }
     snprintf(loader_record, sizeof(loader_record),
-             "LSXLOAD1|event=ok|loader=%s|code=L_OK", argv[1]);
+             "LSXLOAD1|event=ok|loader=%s|code=L_OK", loader);
     if (cli_wire_count(trace, "LSXLOAD1|event=try|") != 1 ||
         cli_wire_count(trace, "LSXLOAD1|event=ok|") != 1 ||
         !cli_wire_record(trace, loader_record) ||

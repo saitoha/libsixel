@@ -13,7 +13,7 @@ import tiff_managed_reference as reference
 
 
 INPUTS = ('png-samples.json', 'png-p3-16-rgba.png', 'tiff-layout.json',
-          'tiff-layout-rgb16-o6.tif', 'display-p3.icc')
+          'tiff-layout-rgb16-o6.tif', 'display-p3.icc', 'tiff-ycbcr.json')
 
 
 def embedded_profile(blob):
@@ -99,6 +99,14 @@ def build(inputs):
                           width=8, height=12, source_width=2, scale=4,
                           hidden=[0] * 6, linear=[list(map(str, p)) for p in triples],
                           p2=0, wire=[wire_color(p) for p in triples]))
+
+    ycbcr = json.loads(inputs['tiff-ycbcr.json'])
+    triples = [ycbcr['linear'][i:i + 3] for i in range(0, 18, 3)]
+    cases.append(dict(name='tiff-ycbcr-rgb8',
+                      source='tiff-legacy-ycbcr8-111.tif', width=6, height=4,
+                      source_width=3, scale=2, hidden=[0] * 6, p2=0,
+                      linear=[list(map(str, p)) for p in triples],
+                      wire=ycbcr['wire']))
 
     header = ('/* Generated independently; do not copy encoder output here. */\n'
               'static struct {\n'

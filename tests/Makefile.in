@@ -592,6 +592,16 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libtiff/0464_layout_gray_cms_fallback.c \
 	loader/libtiff/0465_layout_palette_cms_fallback.c \
 	loader/libtiff/0466_layout_alpha_cms_fallback.c \
+	loader/tiff_ycbcr_test_common.c \
+	loader/tiff_ycbcr_test_common.h \
+	loader/libtiff/0467_ycbcr_builtin.c \
+	loader/libtiff/0468_ycbcr_lcms2.c \
+	loader/libtiff/0469_ycbcr_colorsync.c \
+	loader/libtiff/0470_ycbcr_profile_guard.c \
+	loader/libtiff/0471_ycbcr_prefix_failure.c \
+	loader/libtiff/0472_ycbcr_allocation_failure.c \
+	loader/libtiff/0473_ycbcr_profile_failure.c \
+	loader/libtiff/0474_ycbcr_targets.c \
 	loader/tiff_alpha_test_common.c \
 	loader/tiff_alpha_test_common.h \
 	loader/tiff_alpha_fault_test_common.c \
@@ -1555,6 +1565,15 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0464_layout_gray_cms_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0465_layout_palette_cms_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0466_layout_alpha_cms_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-tiff_ycbcr_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0467_ycbcr_builtin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0468_ycbcr_lcms2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0469_ycbcr_colorsync.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0470_ycbcr_profile_guard.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0471_ycbcr_prefix_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0472_ycbcr_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0473_ycbcr_profile_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libtiff/test_runner-0474_ycbcr_targets.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-tiff_alpha_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-tiff_alpha_fault_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-tiff_byte_test_common.$(OBJEXT) \
@@ -2153,6 +2172,7 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-tiff_managed_fault_test_common.Po \
 	loader/$(DEPDIR)/test_runner-tiff_managed_test_common.Po \
 	loader/$(DEPDIR)/test_runner-tiff_separate16_test_common.Po \
+	loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po \
@@ -2606,6 +2626,14 @@ am__depfiles_remade =  \
 	loader/libtiff/$(DEPDIR)/test_runner-0464_layout_gray_cms_fallback.Po \
 	loader/libtiff/$(DEPDIR)/test_runner-0465_layout_palette_cms_fallback.Po \
 	loader/libtiff/$(DEPDIR)/test_runner-0466_layout_alpha_cms_fallback.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Po \
+	loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po \
@@ -4505,6 +4533,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0412_SEPARATE16_EXCLUDED_LAYOUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TIFF_SEPARATE16_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TIFF_LAYOUT_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TIFF_YCBCR_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0413_LAYOUT_RGB8_TILE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0414_LAYOUT_RGB16_TILE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0415_LAYOUT_BLACK8_TILE \
@@ -4559,6 +4588,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0464_LAYOUT_GRAY_CMS_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0465_LAYOUT_PALETTE_CMS_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0466_LAYOUT_ALPHA_CMS_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0467_YCBCR_BUILTIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0468_YCBCR_LCMS2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0469_YCBCR_COLORSYNC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0470_YCBCR_PROFILE_GUARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0471_YCBCR_PREFIX_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0472_YCBCR_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0473_YCBCR_PROFILE_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0474_YCBCR_TARGETS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TIFF_ALPHA_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TIFF_ALPHA_FAULT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TIFF_BYTE_TEST_COMMON \
@@ -5130,6 +5167,16 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0464_layout_gray_cms_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0465_layout_palette_cms_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0466_layout_alpha_cms_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/tiff_ycbcr_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/tiff_ycbcr_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0467_ycbcr_builtin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0468_ycbcr_lcms2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0469_ycbcr_colorsync.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0470_ycbcr_profile_guard.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0471_ycbcr_prefix_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0472_ycbcr_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0473_ycbcr_profile_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libtiff/0474_ycbcr_targets.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/tiff_alpha_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/tiff_alpha_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/tiff_alpha_fault_test_common.c \
@@ -7246,6 +7293,32 @@ loader/libtiff/test_runner-0465_layout_palette_cms_fallback.$(OBJEXT):  \
 loader/libtiff/test_runner-0466_layout_alpha_cms_fallback.$(OBJEXT):  \
 	loader/libtiff/$(am__dirstamp) \
 	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-tiff_ycbcr_test_common.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0467_ycbcr_builtin.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0468_ycbcr_lcms2.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0469_ycbcr_colorsync.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0470_ycbcr_profile_guard.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0471_ycbcr_prefix_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0472_ycbcr_allocation_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0473_ycbcr_profile_failure.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
+loader/libtiff/test_runner-0474_ycbcr_targets.$(OBJEXT):  \
+	loader/libtiff/$(am__dirstamp) \
+	loader/libtiff/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-tiff_alpha_test_common.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-tiff_alpha_fault_test_common.$(OBJEXT):  \
@@ -8972,6 +9045,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_managed_fault_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_managed_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_separate16_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po@am__quote@ # am--include-marker
@@ -9425,6 +9499,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0464_layout_gray_cms_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0465_layout_palette_cms_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0466_layout_alpha_cms_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
@@ -16456,6 +16538,132 @@ loader/libtiff/test_runner-0466_layout_alpha_cms_fallback.obj: loader/libtiff/04
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0466_layout_alpha_cms_fallback.obj `if test -f 'loader/libtiff/0466_layout_alpha_cms_fallback.c'; then $(CYGPATH_W) 'loader/libtiff/0466_layout_alpha_cms_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0466_layout_alpha_cms_fallback.c'; fi`
 
+loader/test_runner-tiff_ycbcr_test_common.o: loader/tiff_ycbcr_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-tiff_ycbcr_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Tpo -c -o loader/test_runner-tiff_ycbcr_test_common.o `test -f 'loader/tiff_ycbcr_test_common.c' || echo '$(srcdir)/'`loader/tiff_ycbcr_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Tpo loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/tiff_ycbcr_test_common.c' object='loader/test_runner-tiff_ycbcr_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-tiff_ycbcr_test_common.o `test -f 'loader/tiff_ycbcr_test_common.c' || echo '$(srcdir)/'`loader/tiff_ycbcr_test_common.c
+
+loader/test_runner-tiff_ycbcr_test_common.obj: loader/tiff_ycbcr_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-tiff_ycbcr_test_common.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Tpo -c -o loader/test_runner-tiff_ycbcr_test_common.obj `if test -f 'loader/tiff_ycbcr_test_common.c'; then $(CYGPATH_W) 'loader/tiff_ycbcr_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/tiff_ycbcr_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Tpo loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/tiff_ycbcr_test_common.c' object='loader/test_runner-tiff_ycbcr_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-tiff_ycbcr_test_common.obj `if test -f 'loader/tiff_ycbcr_test_common.c'; then $(CYGPATH_W) 'loader/tiff_ycbcr_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/tiff_ycbcr_test_common.c'; fi`
+
+loader/libtiff/test_runner-0467_ycbcr_builtin.o: loader/libtiff/0467_ycbcr_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0467_ycbcr_builtin.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Tpo -c -o loader/libtiff/test_runner-0467_ycbcr_builtin.o `test -f 'loader/libtiff/0467_ycbcr_builtin.c' || echo '$(srcdir)/'`loader/libtiff/0467_ycbcr_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Tpo loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0467_ycbcr_builtin.c' object='loader/libtiff/test_runner-0467_ycbcr_builtin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0467_ycbcr_builtin.o `test -f 'loader/libtiff/0467_ycbcr_builtin.c' || echo '$(srcdir)/'`loader/libtiff/0467_ycbcr_builtin.c
+
+loader/libtiff/test_runner-0467_ycbcr_builtin.obj: loader/libtiff/0467_ycbcr_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0467_ycbcr_builtin.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Tpo -c -o loader/libtiff/test_runner-0467_ycbcr_builtin.obj `if test -f 'loader/libtiff/0467_ycbcr_builtin.c'; then $(CYGPATH_W) 'loader/libtiff/0467_ycbcr_builtin.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0467_ycbcr_builtin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Tpo loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0467_ycbcr_builtin.c' object='loader/libtiff/test_runner-0467_ycbcr_builtin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0467_ycbcr_builtin.obj `if test -f 'loader/libtiff/0467_ycbcr_builtin.c'; then $(CYGPATH_W) 'loader/libtiff/0467_ycbcr_builtin.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0467_ycbcr_builtin.c'; fi`
+
+loader/libtiff/test_runner-0468_ycbcr_lcms2.o: loader/libtiff/0468_ycbcr_lcms2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0468_ycbcr_lcms2.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Tpo -c -o loader/libtiff/test_runner-0468_ycbcr_lcms2.o `test -f 'loader/libtiff/0468_ycbcr_lcms2.c' || echo '$(srcdir)/'`loader/libtiff/0468_ycbcr_lcms2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Tpo loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0468_ycbcr_lcms2.c' object='loader/libtiff/test_runner-0468_ycbcr_lcms2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0468_ycbcr_lcms2.o `test -f 'loader/libtiff/0468_ycbcr_lcms2.c' || echo '$(srcdir)/'`loader/libtiff/0468_ycbcr_lcms2.c
+
+loader/libtiff/test_runner-0468_ycbcr_lcms2.obj: loader/libtiff/0468_ycbcr_lcms2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0468_ycbcr_lcms2.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Tpo -c -o loader/libtiff/test_runner-0468_ycbcr_lcms2.obj `if test -f 'loader/libtiff/0468_ycbcr_lcms2.c'; then $(CYGPATH_W) 'loader/libtiff/0468_ycbcr_lcms2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0468_ycbcr_lcms2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Tpo loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0468_ycbcr_lcms2.c' object='loader/libtiff/test_runner-0468_ycbcr_lcms2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0468_ycbcr_lcms2.obj `if test -f 'loader/libtiff/0468_ycbcr_lcms2.c'; then $(CYGPATH_W) 'loader/libtiff/0468_ycbcr_lcms2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0468_ycbcr_lcms2.c'; fi`
+
+loader/libtiff/test_runner-0469_ycbcr_colorsync.o: loader/libtiff/0469_ycbcr_colorsync.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0469_ycbcr_colorsync.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Tpo -c -o loader/libtiff/test_runner-0469_ycbcr_colorsync.o `test -f 'loader/libtiff/0469_ycbcr_colorsync.c' || echo '$(srcdir)/'`loader/libtiff/0469_ycbcr_colorsync.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Tpo loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0469_ycbcr_colorsync.c' object='loader/libtiff/test_runner-0469_ycbcr_colorsync.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0469_ycbcr_colorsync.o `test -f 'loader/libtiff/0469_ycbcr_colorsync.c' || echo '$(srcdir)/'`loader/libtiff/0469_ycbcr_colorsync.c
+
+loader/libtiff/test_runner-0469_ycbcr_colorsync.obj: loader/libtiff/0469_ycbcr_colorsync.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0469_ycbcr_colorsync.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Tpo -c -o loader/libtiff/test_runner-0469_ycbcr_colorsync.obj `if test -f 'loader/libtiff/0469_ycbcr_colorsync.c'; then $(CYGPATH_W) 'loader/libtiff/0469_ycbcr_colorsync.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0469_ycbcr_colorsync.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Tpo loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0469_ycbcr_colorsync.c' object='loader/libtiff/test_runner-0469_ycbcr_colorsync.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0469_ycbcr_colorsync.obj `if test -f 'loader/libtiff/0469_ycbcr_colorsync.c'; then $(CYGPATH_W) 'loader/libtiff/0469_ycbcr_colorsync.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0469_ycbcr_colorsync.c'; fi`
+
+loader/libtiff/test_runner-0470_ycbcr_profile_guard.o: loader/libtiff/0470_ycbcr_profile_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0470_ycbcr_profile_guard.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Tpo -c -o loader/libtiff/test_runner-0470_ycbcr_profile_guard.o `test -f 'loader/libtiff/0470_ycbcr_profile_guard.c' || echo '$(srcdir)/'`loader/libtiff/0470_ycbcr_profile_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Tpo loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0470_ycbcr_profile_guard.c' object='loader/libtiff/test_runner-0470_ycbcr_profile_guard.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0470_ycbcr_profile_guard.o `test -f 'loader/libtiff/0470_ycbcr_profile_guard.c' || echo '$(srcdir)/'`loader/libtiff/0470_ycbcr_profile_guard.c
+
+loader/libtiff/test_runner-0470_ycbcr_profile_guard.obj: loader/libtiff/0470_ycbcr_profile_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0470_ycbcr_profile_guard.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Tpo -c -o loader/libtiff/test_runner-0470_ycbcr_profile_guard.obj `if test -f 'loader/libtiff/0470_ycbcr_profile_guard.c'; then $(CYGPATH_W) 'loader/libtiff/0470_ycbcr_profile_guard.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0470_ycbcr_profile_guard.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Tpo loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0470_ycbcr_profile_guard.c' object='loader/libtiff/test_runner-0470_ycbcr_profile_guard.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0470_ycbcr_profile_guard.obj `if test -f 'loader/libtiff/0470_ycbcr_profile_guard.c'; then $(CYGPATH_W) 'loader/libtiff/0470_ycbcr_profile_guard.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0470_ycbcr_profile_guard.c'; fi`
+
+loader/libtiff/test_runner-0471_ycbcr_prefix_failure.o: loader/libtiff/0471_ycbcr_prefix_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0471_ycbcr_prefix_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Tpo -c -o loader/libtiff/test_runner-0471_ycbcr_prefix_failure.o `test -f 'loader/libtiff/0471_ycbcr_prefix_failure.c' || echo '$(srcdir)/'`loader/libtiff/0471_ycbcr_prefix_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0471_ycbcr_prefix_failure.c' object='loader/libtiff/test_runner-0471_ycbcr_prefix_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0471_ycbcr_prefix_failure.o `test -f 'loader/libtiff/0471_ycbcr_prefix_failure.c' || echo '$(srcdir)/'`loader/libtiff/0471_ycbcr_prefix_failure.c
+
+loader/libtiff/test_runner-0471_ycbcr_prefix_failure.obj: loader/libtiff/0471_ycbcr_prefix_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0471_ycbcr_prefix_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Tpo -c -o loader/libtiff/test_runner-0471_ycbcr_prefix_failure.obj `if test -f 'loader/libtiff/0471_ycbcr_prefix_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0471_ycbcr_prefix_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0471_ycbcr_prefix_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0471_ycbcr_prefix_failure.c' object='loader/libtiff/test_runner-0471_ycbcr_prefix_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0471_ycbcr_prefix_failure.obj `if test -f 'loader/libtiff/0471_ycbcr_prefix_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0471_ycbcr_prefix_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0471_ycbcr_prefix_failure.c'; fi`
+
+loader/libtiff/test_runner-0472_ycbcr_allocation_failure.o: loader/libtiff/0472_ycbcr_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0472_ycbcr_allocation_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Tpo -c -o loader/libtiff/test_runner-0472_ycbcr_allocation_failure.o `test -f 'loader/libtiff/0472_ycbcr_allocation_failure.c' || echo '$(srcdir)/'`loader/libtiff/0472_ycbcr_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0472_ycbcr_allocation_failure.c' object='loader/libtiff/test_runner-0472_ycbcr_allocation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0472_ycbcr_allocation_failure.o `test -f 'loader/libtiff/0472_ycbcr_allocation_failure.c' || echo '$(srcdir)/'`loader/libtiff/0472_ycbcr_allocation_failure.c
+
+loader/libtiff/test_runner-0472_ycbcr_allocation_failure.obj: loader/libtiff/0472_ycbcr_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0472_ycbcr_allocation_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Tpo -c -o loader/libtiff/test_runner-0472_ycbcr_allocation_failure.obj `if test -f 'loader/libtiff/0472_ycbcr_allocation_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0472_ycbcr_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0472_ycbcr_allocation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0472_ycbcr_allocation_failure.c' object='loader/libtiff/test_runner-0472_ycbcr_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0472_ycbcr_allocation_failure.obj `if test -f 'loader/libtiff/0472_ycbcr_allocation_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0472_ycbcr_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0472_ycbcr_allocation_failure.c'; fi`
+
+loader/libtiff/test_runner-0473_ycbcr_profile_failure.o: loader/libtiff/0473_ycbcr_profile_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0473_ycbcr_profile_failure.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Tpo -c -o loader/libtiff/test_runner-0473_ycbcr_profile_failure.o `test -f 'loader/libtiff/0473_ycbcr_profile_failure.c' || echo '$(srcdir)/'`loader/libtiff/0473_ycbcr_profile_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0473_ycbcr_profile_failure.c' object='loader/libtiff/test_runner-0473_ycbcr_profile_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0473_ycbcr_profile_failure.o `test -f 'loader/libtiff/0473_ycbcr_profile_failure.c' || echo '$(srcdir)/'`loader/libtiff/0473_ycbcr_profile_failure.c
+
+loader/libtiff/test_runner-0473_ycbcr_profile_failure.obj: loader/libtiff/0473_ycbcr_profile_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0473_ycbcr_profile_failure.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Tpo -c -o loader/libtiff/test_runner-0473_ycbcr_profile_failure.obj `if test -f 'loader/libtiff/0473_ycbcr_profile_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0473_ycbcr_profile_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0473_ycbcr_profile_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Tpo loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0473_ycbcr_profile_failure.c' object='loader/libtiff/test_runner-0473_ycbcr_profile_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0473_ycbcr_profile_failure.obj `if test -f 'loader/libtiff/0473_ycbcr_profile_failure.c'; then $(CYGPATH_W) 'loader/libtiff/0473_ycbcr_profile_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0473_ycbcr_profile_failure.c'; fi`
+
+loader/libtiff/test_runner-0474_ycbcr_targets.o: loader/libtiff/0474_ycbcr_targets.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0474_ycbcr_targets.o -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Tpo -c -o loader/libtiff/test_runner-0474_ycbcr_targets.o `test -f 'loader/libtiff/0474_ycbcr_targets.c' || echo '$(srcdir)/'`loader/libtiff/0474_ycbcr_targets.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Tpo loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0474_ycbcr_targets.c' object='loader/libtiff/test_runner-0474_ycbcr_targets.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0474_ycbcr_targets.o `test -f 'loader/libtiff/0474_ycbcr_targets.c' || echo '$(srcdir)/'`loader/libtiff/0474_ycbcr_targets.c
+
+loader/libtiff/test_runner-0474_ycbcr_targets.obj: loader/libtiff/0474_ycbcr_targets.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libtiff/test_runner-0474_ycbcr_targets.obj -MD -MP -MF loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Tpo -c -o loader/libtiff/test_runner-0474_ycbcr_targets.obj `if test -f 'loader/libtiff/0474_ycbcr_targets.c'; then $(CYGPATH_W) 'loader/libtiff/0474_ycbcr_targets.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0474_ycbcr_targets.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Tpo loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libtiff/0474_ycbcr_targets.c' object='loader/libtiff/test_runner-0474_ycbcr_targets.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libtiff/test_runner-0474_ycbcr_targets.obj `if test -f 'loader/libtiff/0474_ycbcr_targets.c'; then $(CYGPATH_W) 'loader/libtiff/0474_ycbcr_targets.c'; else $(CYGPATH_W) '$(srcdir)/loader/libtiff/0474_ycbcr_targets.c'; fi`
+
 loader/test_runner-tiff_alpha_test_common.o: loader/tiff_alpha_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-tiff_alpha_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Tpo -c -o loader/test_runner-tiff_alpha_test_common.o `test -f 'loader/tiff_alpha_test_common.c' || echo '$(srcdir)/'`loader/tiff_alpha_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Tpo loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Po
@@ -23419,6 +23627,7 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_managed_fault_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_managed_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_separate16_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
@@ -23872,6 +24081,14 @@ distclean: distclean-am
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0464_layout_gray_cms_fallback.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0465_layout_palette_cms_fallback.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0466_layout_alpha_cms_fallback.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
@@ -24396,6 +24613,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_managed_fault_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_managed_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_separate16_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-tiff_ycbcr_test_common.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
@@ -24849,6 +25067,14 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0464_layout_gray_cms_fallback.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0465_layout_palette_cms_fallback.Po
 	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0466_layout_alpha_cms_fallback.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0467_ycbcr_builtin.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0468_ycbcr_lcms2.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0469_ycbcr_colorsync.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0470_ycbcr_profile_guard.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0471_ycbcr_prefix_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0472_ycbcr_allocation_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0473_ycbcr_profile_failure.Po
+	-rm -f loader/libtiff/$(DEPDIR)/test_runner-0474_ycbcr_targets.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po

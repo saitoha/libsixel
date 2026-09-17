@@ -1203,6 +1203,14 @@ int test_loader_0463_layout(int argc, char **argv);
 int test_loader_0464_layout(int argc, char **argv);
 int test_loader_0465_layout(int argc, char **argv);
 int test_loader_0466_layout(int argc, char **argv);
+int test_loader_0467_ycbcr(int argc, char **argv);
+int test_loader_0468_ycbcr(int argc, char **argv);
+int test_loader_0469_ycbcr(int argc, char **argv);
+int test_loader_0470_ycbcr(int argc, char **argv);
+int test_loader_0471_ycbcr(int argc, char **argv);
+int test_loader_0472_ycbcr(int argc, char **argv);
+int test_loader_0473_ycbcr(int argc, char **argv);
+int test_loader_0474_ycbcr(int argc, char **argv);
 int test_loader_0383_sep16(int argc, char **argv);
 int test_loader_0384_sep16(int argc, char **argv);
 int test_loader_0385_sep16(int argc, char **argv);
@@ -2862,6 +2870,22 @@ static test_entry_t const test_entries[] = {
       test_loader_0465_layout },
     { "loader/0466_layout_alpha_cms_fallback",
       test_loader_0466_layout },
+    { "loader/0467_ycbcr_builtin",
+      test_loader_0467_ycbcr },
+    { "loader/0468_ycbcr_lcms2",
+      test_loader_0468_ycbcr },
+    { "loader/0469_ycbcr_colorsync",
+      test_loader_0469_ycbcr },
+    { "loader/0470_ycbcr_profile_guard",
+      test_loader_0470_ycbcr },
+    { "loader/0471_ycbcr_prefix_failure",
+      test_loader_0471_ycbcr },
+    { "loader/0472_ycbcr_allocation_failure",
+      test_loader_0472_ycbcr },
+    { "loader/0473_ycbcr_profile_failure",
+      test_loader_0473_ycbcr },
+    { "loader/0474_ycbcr_targets",
+      test_loader_0474_ycbcr },
     { "loader/0383_separate16_rgb_source",
       test_loader_0383_sep16 },
     { "loader/0384_separate16_black_source",

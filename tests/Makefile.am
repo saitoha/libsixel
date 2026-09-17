@@ -1012,6 +1012,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0412_SEPARATE16_EXCLUDED_LAYOUTS \
     -DBUILD_TIFF_SEPARATE16_TEST_COMMON \
     -DBUILD_TIFF_LAYOUT_TEST_COMMON \
+    -DBUILD_TIFF_YCBCR_TEST_COMMON \
     -DBUILD_TEST_0413_LAYOUT_RGB8_TILE \
     -DBUILD_TEST_0414_LAYOUT_RGB16_TILE \
     -DBUILD_TEST_0415_LAYOUT_BLACK8_TILE \
@@ -1066,6 +1067,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0464_LAYOUT_GRAY_CMS_FALLBACK \
     -DBUILD_TEST_0465_LAYOUT_PALETTE_CMS_FALLBACK \
     -DBUILD_TEST_0466_LAYOUT_ALPHA_CMS_FALLBACK \
+    -DBUILD_TEST_0467_YCBCR_BUILTIN \
+    -DBUILD_TEST_0468_YCBCR_LCMS2 \
+    -DBUILD_TEST_0469_YCBCR_COLORSYNC \
+    -DBUILD_TEST_0470_YCBCR_PROFILE_GUARD \
+    -DBUILD_TEST_0471_YCBCR_PREFIX_FAILURE \
+    -DBUILD_TEST_0472_YCBCR_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0473_YCBCR_PROFILE_FAILURE \
+    -DBUILD_TEST_0474_YCBCR_TARGETS \
     -DBUILD_TIFF_ALPHA_TEST_COMMON \
     -DBUILD_TIFF_ALPHA_FAULT_TEST_COMMON \
     -DBUILD_TIFF_BYTE_TEST_COMMON \
@@ -1612,6 +1621,16 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0464_layout_gray_cms_fallback.c \
     loader/libtiff/0465_layout_palette_cms_fallback.c \
     loader/libtiff/0466_layout_alpha_cms_fallback.c \
+    loader/tiff_ycbcr_test_common.c \
+    loader/tiff_ycbcr_test_common.h \
+    loader/libtiff/0467_ycbcr_builtin.c \
+    loader/libtiff/0468_ycbcr_lcms2.c \
+    loader/libtiff/0469_ycbcr_colorsync.c \
+    loader/libtiff/0470_ycbcr_profile_guard.c \
+    loader/libtiff/0471_ycbcr_prefix_failure.c \
+    loader/libtiff/0472_ycbcr_allocation_failure.c \
+    loader/libtiff/0473_ycbcr_profile_failure.c \
+    loader/libtiff/0474_ycbcr_targets.c \
     loader/tiff_alpha_test_common.c \
     loader/tiff_alpha_test_common.h \
     loader/tiff_alpha_fault_test_common.c \

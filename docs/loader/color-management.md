@@ -1307,3 +1307,19 @@ These helper and loader observations protect the direct-linear contract above. F
 | TG16-03 | MINISBLACK UINT16 dark values and exact black match the stored gamma2 profile through actual ColorSync and existing gray preparation. | [tests/loader/libtiff/0282_gray16_black_colorsync.t](../../tests/loader/libtiff/0282_gray16_black_colorsync.t) |
 | TG16-04 | Qualified late builtin failure preserves all original normalized MINISWHITE samples, releases scratch, performs no legacy retry and recovers. | [tests/loader/libtiff/0283_gray16_white_late_builtin.t](../../tests/loader/libtiff/0283_gray16_white_late_builtin.t) |
 | TG16-05 | Successful LCMS apply followed by a nonfinite result preserves all original normalized MINISBLACK samples and recovers without legacy retry. | [tests/loader/libtiff/0284_gray16_black_nan_lcms2.t](../../tests/loader/libtiff/0284_gray16_black_nan_lcms2.t) |
+
+### TIFF decoded YCbCr publication
+
+Opaque YCbCr8 retains libtiff's decoded RGB8 source boundary, then performs matching RGB ICC conversion into canonical extended linear float before requested target conversion. Failed optional work retains the complete decoded source. This is a post-decode CMS publication contract; original YCbCr conversion precision remains separate. See [the loader contract](libtiff.md#decoded-ycbcr-rgb8-publication). Unsupported ICCLAB8, ITULAB8 and separate CIELAB16 inputs, unsupported LOGL source precision/color management, and unsupported Lab16 orientation-6 display geometry are explicitly listed in the loader capability inventory. Readable LOGL is not described as color-managed.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| CMS-524 | Decoded RGB8 enters the builtin float CMM unchanged; independent stored-ICC bounds and extended linear publication hold. | [tests/loader/libtiff/0467_ycbcr_builtin.t](../../tests/loader/libtiff/0467_ycbcr_builtin.t) |
+| CMS-525 | The selected Little CMS path receives the same decoded RGB float input and publishes its complete direct-linear result. | [tests/loader/libtiff/0468_ycbcr_lcms2.t](../../tests/loader/libtiff/0468_ycbcr_lcms2.t) |
+| CMS-526 | The selected ColorSync path receives the same decoded RGB float input and publishes its complete direct-linear result. | [tests/loader/libtiff/0469_ycbcr_colorsync.t](../../tests/loader/libtiff/0469_ycbcr_colorsync.t) |
+| CMS-527 | CMS none and absent, invalid or incompatible Gray profiles retain every decoded RGB8 byte and perform no apply; matching-profile reuse recovers. | [tests/loader/libtiff/0470_ycbcr_profile_guard.t](../../tests/loader/libtiff/0470_ycbcr_profile_guard.t) |
+| CMS-528 | A real changed two-pixel CMM prefix followed by failure retains the complete decoded source and the same component recovers. | [tests/loader/libtiff/0471_ycbcr_prefix_failure.t](../../tests/loader/libtiff/0471_ycbcr_prefix_failure.t) |
+| CMS-529 | Optional decoded-float allocation failure preserves all decoded RGB8 values and same-component recovery. | [tests/loader/libtiff/0472_ycbcr_allocation_failure.t](../../tests/loader/libtiff/0472_ycbcr_allocation_failure.t) |
+| CMS-530 | Optional profile creation failure preserves all decoded RGB8 values without an apply or byte-CMM retry and the component recovers. | [tests/loader/libtiff/0473_ycbcr_profile_failure.t](../../tests/loader/libtiff/0473_ycbcr_profile_failure.t) |
+| CMS-531 | Gamma float, explicit RGB byte and Oklab targets are negotiated only after complete canonical linear CMS publication. | [tests/loader/libtiff/0474_ycbcr_targets.t](../../tests/loader/libtiff/0474_ycbcr_targets.t) |
+| CMS-532 | One actual decoded-YCbCr CLI conversion preserves independent RGB101 values, dimensions, coverage, P2 and actual builtin float CMS application. | [tests/cli/color/0004_libtiff_ycbcr_wire.t](../../tests/cli/color/0004_libtiff_ycbcr_wire.t) |

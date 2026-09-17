@@ -1,7 +1,7 @@
 #!/bin/sh
 # Policy: docs/loader/libtiff.md
 # Policy: docs/loader/color-management.md
-# Verify legacy gray lcms2 failure at the actual helper; only YCbCr retains public legacy coverage.
+# Verify legacy gray lcms2 failure at the actual helper; public source/frame contracts have separate owners.
 set -eux
 export SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA=0
 unset SIXEL_ALPHA_POLICY
