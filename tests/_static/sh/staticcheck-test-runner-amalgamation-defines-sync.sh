@@ -25,7 +25,7 @@ function remember_source(path, basename, macro, parts, part_count, external) {
     }
     if (external && path !~ /^(tests|gdk-pixbuf-loader)\// &&
         path !~ /^assessment\/(assessment|color)\.c$/ &&
-        path !~ /^converters\/(cli|path|aborttrace|completion_utils|malloc_stub|compat|terminal-color)\.c$/) {
+        path !~ /^converters\/(cli|path|aborttrace|completion_utils|malloc_stub|compat|terminal-color|terminal-color-tty)\.c$/) {
         return
     }
     part_count = split(path, parts, "/")

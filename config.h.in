@@ -51,6 +51,12 @@
 /* whether Windows clipboard backend is available */
 #undef HAVE_CLIPBOARD_WINDOWS
 
+/* Define to 1 for CLI scripted pseudo-terminal tests. */
+#undef HAVE_CLI_COLOR_PTY
+
+/* Define to 1 for CLI nonblocking foreground terminal I/O. */
+#undef HAVE_CLI_COLOR_TTY
+
 /* Define if clock exists */
 #undef HAVE_CLOCK
 

@@ -142,6 +142,7 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkglibexecdir)" \
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS) $(pkglibexec_PROGRAMS)
 am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 	$(srcdir)/terminal-color.c $(srcdir)/terminal-color.h \
+	$(srcdir)/terminal-color-tty.c $(srcdir)/terminal-color-tty.h \
 	$(srcdir)/completion_utils.c $(srcdir)/completion_utils.h \
 	$(srcdir)/compat.c $(srcdir)/compat.h $(srcdir)/path.c \
 	$(srcdir)/path.h $(srcdir)/cli.c $(srcdir)/cli.h \
@@ -150,6 +151,7 @@ am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 	$(srcdir)/aborttrace.h
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS = img2sixel-img2sixel.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-terminal-color.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-terminal-color-tty.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-completion_utils.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-compat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-path.$(OBJEXT) \
@@ -242,6 +244,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/img2sixel-img2sixel.Po \
 	./$(DEPDIR)/img2sixel-malloc_stub.Po \
 	./$(DEPDIR)/img2sixel-path.Po \
+	./$(DEPDIR)/img2sixel-terminal-color-tty.Po \
 	./$(DEPDIR)/img2sixel-terminal-color.Po \
 	./$(DEPDIR)/sixel2png-aborttrace.Po \
 	./$(DEPDIR)/sixel2png-cli.Po \
@@ -665,6 +668,8 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color-tty.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color-tty.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/compat.c \
@@ -937,6 +942,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-img2sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-malloc_stub.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-path.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-terminal-color-tty.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-terminal-color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-cli.Po@am__quote@ # am--include-marker
@@ -1000,6 +1006,20 @@ img2sixel-terminal-color.obj: terminal-color.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='terminal-color.c' object='img2sixel-terminal-color.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-terminal-color.obj `if test -f 'terminal-color.c'; then $(CYGPATH_W) 'terminal-color.c'; else $(CYGPATH_W) '$(srcdir)/terminal-color.c'; fi`
+
+img2sixel-terminal-color-tty.o: terminal-color-tty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-terminal-color-tty.o -MD -MP -MF $(DEPDIR)/img2sixel-terminal-color-tty.Tpo -c -o img2sixel-terminal-color-tty.o `test -f 'terminal-color-tty.c' || echo '$(srcdir)/'`terminal-color-tty.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-terminal-color-tty.Tpo $(DEPDIR)/img2sixel-terminal-color-tty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='terminal-color-tty.c' object='img2sixel-terminal-color-tty.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-terminal-color-tty.o `test -f 'terminal-color-tty.c' || echo '$(srcdir)/'`terminal-color-tty.c
+
+img2sixel-terminal-color-tty.obj: terminal-color-tty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-terminal-color-tty.obj -MD -MP -MF $(DEPDIR)/img2sixel-terminal-color-tty.Tpo -c -o img2sixel-terminal-color-tty.obj `if test -f 'terminal-color-tty.c'; then $(CYGPATH_W) 'terminal-color-tty.c'; else $(CYGPATH_W) '$(srcdir)/terminal-color-tty.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-terminal-color-tty.Tpo $(DEPDIR)/img2sixel-terminal-color-tty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='terminal-color-tty.c' object='img2sixel-terminal-color-tty.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-terminal-color-tty.obj `if test -f 'terminal-color-tty.c'; then $(CYGPATH_W) 'terminal-color-tty.c'; else $(CYGPATH_W) '$(srcdir)/terminal-color-tty.c'; fi`
 
 img2sixel-completion_utils.o: completion_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-completion_utils.o -MD -MP -MF $(DEPDIR)/img2sixel-completion_utils.Tpo -c -o img2sixel-completion_utils.o `test -f 'completion_utils.c' || echo '$(srcdir)/'`completion_utils.c
@@ -1480,6 +1500,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
 	-rm -f ./$(DEPDIR)/img2sixel-path.Po
+	-rm -f ./$(DEPDIR)/img2sixel-terminal-color-tty.Po
 	-rm -f ./$(DEPDIR)/img2sixel-terminal-color.Po
 	-rm -f ./$(DEPDIR)/sixel2png-aborttrace.Po
 	-rm -f ./$(DEPDIR)/sixel2png-cli.Po
@@ -1541,6 +1562,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
 	-rm -f ./$(DEPDIR)/img2sixel-path.Po
+	-rm -f ./$(DEPDIR)/img2sixel-terminal-color-tty.Po
 	-rm -f ./$(DEPDIR)/img2sixel-terminal-color.Po
 	-rm -f ./$(DEPDIR)/sixel2png-aborttrace.Po
 	-rm -f ./$(DEPDIR)/sixel2png-cli.Po

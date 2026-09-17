@@ -2870,6 +2870,28 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          gettimeofday \
                         ])
 
+AC_CACHE_CHECK([for CLI nonblocking foreground terminal I/O],
+  [sixel_cv_cli_color_tty], [
+  AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#include "$srcdir/build-aux/cli-color-tty-probe.c"
+  ]])], [sixel_cv_cli_color_tty=yes], [sixel_cv_cli_color_tty=no])
+])
+AS_IF([test "x$sixel_cv_cli_color_tty" = xyes], [
+  AC_DEFINE([HAVE_CLI_COLOR_TTY], [1],
+            [Define to 1 for CLI nonblocking foreground terminal I/O.])
+  AC_CACHE_CHECK([for CLI scripted pseudo-terminal tests],
+    [sixel_cv_cli_color_pty], [
+    AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#define IMG2SIXEL_COLOR_PTY_PROBE 1
+#include "$srcdir/build-aux/cli-color-tty-probe.c"
+    ]])], [sixel_cv_cli_color_pty=yes], [sixel_cv_cli_color_pty=no])
+  ])
+  AS_IF([test "x$sixel_cv_cli_color_pty" = xyes], [
+    AC_DEFINE([HAVE_CLI_COLOR_PTY], [1],
+              [Define to 1 for CLI scripted pseudo-terminal tests.])
+  ])
+])
+
 AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
   # OpenVMS CRTL exposes several POSIX names through headers rather than as
   # plain lowercase linker symbols.  Re-check those functions with the normal

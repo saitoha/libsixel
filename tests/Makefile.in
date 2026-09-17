@@ -658,7 +658,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	cli/0034_cli_terminal_policy_option.c \
 	cli/0035_cli_lookup_policy_initial_prefixes.c \
 	cli/0036_cli_color_wire.c cli/0037_cli_color_parser.c \
-	processing/filter/0001_filter_clip.c \
+	cli/0038_cli_color_tty.c processing/filter/0001_filter_clip.c \
 	processing/filter/0002_filter_sample.c \
 	processing/filter/0003_filter_resize.c \
 	processing/filter/0004_filter_colors.c \
@@ -1130,6 +1130,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/aborttrace.c \
 	$(top_srcdir)/converters/cli.c \
 	$(top_srcdir)/converters/terminal-color.c \
+	$(top_srcdir)/converters/terminal-color-tty.c \
 	$(top_srcdir)/converters/path.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
@@ -1660,6 +1661,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0035_cli_lookup_policy_initial_prefixes.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0036_cli_color_wire.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0037_cli_color_parser.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0038_cli_color_tty.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0001_filter_clip.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0002_filter_sample.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0003_filter_resize.$(OBJEXT) \
@@ -2109,6 +2111,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-aborttrace.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-cli.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-terminal-color.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-terminal-color-tty.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-path.$(OBJEXT)
 am__objects_2 =  \
 	$(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT)
@@ -2181,6 +2184,7 @@ am__depfiles_remade =  \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po \
+	$(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color.Po \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po \
 	$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po \
@@ -2194,6 +2198,7 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po \
 	cli/$(DEPDIR)/test_runner-0036_cli_color_wire.Po \
 	cli/$(DEPDIR)/test_runner-0037_cli_color_parser.Po \
+	cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
@@ -4138,6 +4143,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_CLI_LOOKUP_POLICY_INITIAL_PREFIXES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_CLI_COLOR_WIRE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_CLI_COLOR_PARSER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_CLI_COLOR_TTY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_P3_PRECISION_CONTRACT \
@@ -4789,7 +4795,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RESAMPLING_MEASUREMENT_TEST_DRIVER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TERMINAL_COLOR
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TERMINAL_COLOR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TERMINAL_COLOR_TTY
 
 # Numeric and fault-injection helpers include CMS, PNG and TIFF directly;
 # their optional headers are also required in the normal runner build.
@@ -5391,6 +5398,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0035_cli_lookup_policy_initial_prefixes.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0036_cli_color_wire.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0037_cli_color_parser.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    cli/0038_cli_color_tty.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0001_filter_clip.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0002_filter_sample.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0003_filter_resize.c \
@@ -5864,6 +5872,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/cli.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/terminal-color.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/terminal-color-tty.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/path.c
 
 @OPENVMS_GNV_FALSE@test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -7674,6 +7683,8 @@ cli/test_runner-0036_cli_color_wire.$(OBJEXT): cli/$(am__dirstamp) \
 	cli/$(DEPDIR)/$(am__dirstamp)
 cli/test_runner-0037_cli_color_parser.$(OBJEXT): cli/$(am__dirstamp) \
 	cli/$(DEPDIR)/$(am__dirstamp)
+cli/test_runner-0038_cli_color_tty.$(OBJEXT): cli/$(am__dirstamp) \
+	cli/$(DEPDIR)/$(am__dirstamp)
 processing/filter/$(am__dirstamp):
 	@$(MKDIR_P) processing/filter
 	@: >>processing/filter/$(am__dirstamp)
@@ -9223,6 +9234,9 @@ $(top_builddir)/converters/test_runner-cli.$(OBJEXT):  \
 $(top_builddir)/converters/test_runner-terminal-color.$(OBJEXT):  \
 	$(top_builddir)/converters/$(am__dirstamp) \
 	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/converters/test_runner-terminal-color-tty.$(OBJEXT):  \
+	$(top_builddir)/converters/$(am__dirstamp) \
+	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/converters/test_runner-path.$(OBJEXT):  \
 	$(top_builddir)/converters/$(am__dirstamp) \
 	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
@@ -9303,6 +9317,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po@am__quote@ # am--include-marker
@@ -9316,6 +9331,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0036_cli_color_wire.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0037_cli_color_parser.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
@@ -17684,6 +17700,20 @@ cli/test_runner-0037_cli_color_parser.obj: cli/0037_cli_color_parser.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0037_cli_color_parser.obj `if test -f 'cli/0037_cli_color_parser.c'; then $(CYGPATH_W) 'cli/0037_cli_color_parser.c'; else $(CYGPATH_W) '$(srcdir)/cli/0037_cli_color_parser.c'; fi`
 
+cli/test_runner-0038_cli_color_tty.o: cli/0038_cli_color_tty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0038_cli_color_tty.o -MD -MP -MF cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Tpo -c -o cli/test_runner-0038_cli_color_tty.o `test -f 'cli/0038_cli_color_tty.c' || echo '$(srcdir)/'`cli/0038_cli_color_tty.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Tpo cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0038_cli_color_tty.c' object='cli/test_runner-0038_cli_color_tty.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0038_cli_color_tty.o `test -f 'cli/0038_cli_color_tty.c' || echo '$(srcdir)/'`cli/0038_cli_color_tty.c
+
+cli/test_runner-0038_cli_color_tty.obj: cli/0038_cli_color_tty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0038_cli_color_tty.obj -MD -MP -MF cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Tpo -c -o cli/test_runner-0038_cli_color_tty.obj `if test -f 'cli/0038_cli_color_tty.c'; then $(CYGPATH_W) 'cli/0038_cli_color_tty.c'; else $(CYGPATH_W) '$(srcdir)/cli/0038_cli_color_tty.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Tpo cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0038_cli_color_tty.c' object='cli/test_runner-0038_cli_color_tty.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0038_cli_color_tty.obj `if test -f 'cli/0038_cli_color_tty.c'; then $(CYGPATH_W) 'cli/0038_cli_color_tty.c'; else $(CYGPATH_W) '$(srcdir)/cli/0038_cli_color_tty.c'; fi`
+
 processing/filter/test_runner-0001_filter_clip.o: processing/filter/0001_filter_clip.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0001_filter_clip.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Tpo -c -o processing/filter/test_runner-0001_filter_clip.o `test -f 'processing/filter/0001_filter_clip.c' || echo '$(srcdir)/'`processing/filter/0001_filter_clip.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Tpo processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
@@ -23970,6 +24000,20 @@ $(top_builddir)/converters/test_runner-terminal-color.obj: $(top_builddir)/conve
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-terminal-color.obj `if test -f '$(top_builddir)/converters/terminal-color.c'; then $(CYGPATH_W) '$(top_builddir)/converters/terminal-color.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/terminal-color.c'; fi`
 
+$(top_builddir)/converters/test_runner-terminal-color-tty.o: $(top_builddir)/converters/terminal-color-tty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-terminal-color-tty.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Tpo -c -o $(top_builddir)/converters/test_runner-terminal-color-tty.o `test -f '$(top_builddir)/converters/terminal-color-tty.c' || echo '$(srcdir)/'`$(top_builddir)/converters/terminal-color-tty.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/terminal-color-tty.c' object='$(top_builddir)/converters/test_runner-terminal-color-tty.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-terminal-color-tty.o `test -f '$(top_builddir)/converters/terminal-color-tty.c' || echo '$(srcdir)/'`$(top_builddir)/converters/terminal-color-tty.c
+
+$(top_builddir)/converters/test_runner-terminal-color-tty.obj: $(top_builddir)/converters/terminal-color-tty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-terminal-color-tty.obj -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Tpo -c -o $(top_builddir)/converters/test_runner-terminal-color-tty.obj `if test -f '$(top_builddir)/converters/terminal-color-tty.c'; then $(CYGPATH_W) '$(top_builddir)/converters/terminal-color-tty.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/terminal-color-tty.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/terminal-color-tty.c' object='$(top_builddir)/converters/test_runner-terminal-color-tty.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-terminal-color-tty.obj `if test -f '$(top_builddir)/converters/terminal-color-tty.c'; then $(CYGPATH_W) '$(top_builddir)/converters/terminal-color-tty.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/terminal-color-tty.c'; fi`
+
 $(top_builddir)/converters/test_runner-path.o: $(top_builddir)/converters/path.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-path.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Tpo -c -o $(top_builddir)/converters/test_runner-path.o `test -f '$(top_builddir)/converters/path.c' || echo '$(srcdir)/'`$(top_builddir)/converters/path.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
@@ -24446,6 +24490,7 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
@@ -24459,6 +24504,7 @@ distclean: distclean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0036_cli_color_wire.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0037_cli_color_parser.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
@@ -25469,6 +25515,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-path.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color-tty.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
@@ -25482,6 +25529,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0035_cli_lookup_policy_initial_prefixes.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0036_cli_color_wire.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0037_cli_color_parser.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po

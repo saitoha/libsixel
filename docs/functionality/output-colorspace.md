@@ -140,6 +140,10 @@ For a color-preserving sRGB comparison, generate `-Ugamma` output and set and ve
 
 The current `img2sixel -Udisplay-p3` and `-Ugamma` options perform none of these color-protocol exchanges. A controller must manage the transaction and error cleanup; interactive `printf`/`cat` commands do not provide complete framing, correlation, or restoration. The proposed `-Uauto` CLI flow is described in the proposal and is not an implemented option in this revision. A timeout or malformed response never proves that a receiver is using sRGB.
 
+The planned automatic route is limited to images sent to stdout as a TTY. File/pipe destinations keep the interchange default, gamma sRGB, regardless of a terminal attached to stderr. An explicit `-Udisplay-p3` remains a user-selected representation even when saving a file; it requires a consumer that knows how to interpret that file.
+
+During the planned POSIX query phases, the CLI temporarily disables the terminal's suspend character so a protocol SUB byte reaches the reply parser without suspending the process or flushing input. A keyboard suspend key, normally Ctrl-Z, consequently becomes protocol input during those phases. Each request/reply exchange shares one deadline across its request write and reply reads; a separate control write has its own deadline. Each deadline can be configured up to ten seconds, and a phase containing multiple exchanges has no combined ten-second limit. The original suspend character and other terminal settings are restored before synchronous encoding and during cleanup. Signal handling remains enabled, and SIGINT or SIGTERM can cancel the exchange.
+
 ## Precision, rounding, and cost
 
 The legacy output encoder converts a private palette copy and preserves the reusable dither palette in working coordinates. When a usable float32 palette is available, it converts those typed values before packing bytes. Otherwise it converts the byte palette. The P3 path commits its RGB101 palette before lookup. Increasing working precision can reduce conversion rounding, but it cannot increase the precision of SIXEL's integer percentage fields.

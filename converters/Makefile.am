@@ -121,6 +121,8 @@ else
 img2sixel_SOURCES = $(srcdir)/img2sixel.c \
                     $(srcdir)/terminal-color.c \
                     $(srcdir)/terminal-color.h \
+                    $(srcdir)/terminal-color-tty.c \
+                    $(srcdir)/terminal-color-tty.h \
                     $(srcdir)/completion_utils.c \
                     $(srcdir)/completion_utils.h \
                     $(srcdir)/compat.c \

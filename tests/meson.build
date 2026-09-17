@@ -209,6 +209,7 @@ test_runner_sources = test_runner_tests_sources + files(
   '../converters/aborttrace.c',
   '../converters/cli.c',
   '../converters/terminal-color.c',
+  '../converters/terminal-color-tty.c',
   '../assessment/assessment.c',
   '../assessment/color.c',
   '../converters/path.c',

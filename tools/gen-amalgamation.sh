@@ -510,6 +510,10 @@ emit_all_headers() {
                 emit_header_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR)"
                 ;;
+            converters/terminal-color-tty.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR_TTY)"
+                ;;
             converters/cli.h)
                 emit_header_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_CLI)"
@@ -579,6 +583,10 @@ emit_all_units() {
             converters/terminal-color.c)
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR)"
+                ;;
+            converters/terminal-color-tty.c)
+                emit_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR_TTY)"
                 ;;
             src/threadpool.c)
                 emit_unit "${unit}" "SIXEL_ENABLE_THREADS"

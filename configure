@@ -21286,6 +21286,78 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for CLI nonblocking foreground terminal I/O" >&5
+printf %s "checking for CLI nonblocking foreground terminal I/O... " >&6; }
+if test ${sixel_cv_cli_color_tty+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include "$srcdir/build-aux/cli-color-tty-probe.c"
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_cv_cli_color_tty=yes
+else case e in #(
+  e) sixel_cv_cli_color_tty=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_cli_color_tty" >&5
+printf "%s\n" "$sixel_cv_cli_color_tty" >&6; }
+if test "x$sixel_cv_cli_color_tty" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_CLI_COLOR_TTY 1" >>confdefs.h
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for CLI scripted pseudo-terminal tests" >&5
+printf %s "checking for CLI scripted pseudo-terminal tests... " >&6; }
+if test ${sixel_cv_cli_color_pty+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define IMG2SIXEL_COLOR_PTY_PROBE 1
+#include "$srcdir/build-aux/cli-color-tty-probe.c"
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_cv_cli_color_pty=yes
+else case e in #(
+  e) sixel_cv_cli_color_pty=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_cli_color_pty" >&5
+printf "%s\n" "$sixel_cv_cli_color_pty" >&6; }
+  if test "x$sixel_cv_cli_color_pty" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_CLI_COLOR_PTY 1" >>confdefs.h
+
+
+fi
+
+fi
+
 if test "x$sixel_openvms_mode" = "xyes"
 then :
 

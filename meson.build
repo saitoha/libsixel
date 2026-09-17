@@ -724,6 +724,17 @@ foreach h : std_headers
 endforeach
 
 # miscellaneous functions
+# Keep the CLI transport probe separate from the library TTY feature macros.
+# Both build systems compile this exact surface; neither executes the probe.
+color_tty_probe = files('build-aux/cli-color-tty-probe.c')[0]
+if cc.links(color_tty_probe, name: 'CLI nonblocking foreground terminal I/O')
+  conf.set('HAVE_CLI_COLOR_TTY', 1)
+  if cc.links(color_tty_probe, args: ['-DIMG2SIXEL_COLOR_PTY_PROBE'],
+              name: 'CLI scripted pseudo-terminal tests')
+    conf.set('HAVE_CLI_COLOR_PTY', 1)
+  endif
+endif
+
 extra_funcs = [
   'assert',
   'malloc',
