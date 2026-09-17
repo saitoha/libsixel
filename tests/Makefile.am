@@ -505,6 +505,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0036_CLI_COLOR_WIRE \
     -DBUILD_TEST_0037_CLI_COLOR_PARSER \
     -DBUILD_TEST_0038_CLI_COLOR_TTY \
+    -DBUILD_TEST_0039_CLI_COLOR_AUTO \
+    -DBUILD_TEST_0040_CLI_COLOR_JOB \
     -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
     -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
     -DBUILD_TEST_0059_P3_PRECISION_CONTRACT \
@@ -1729,6 +1731,8 @@ test_runner_SOURCES = test_runner.c \
     cli/0036_cli_color_wire.c \
     cli/0037_cli_color_parser.c \
     cli/0038_cli_color_tty.c \
+    cli/0039_cli_color_auto.c \
+    cli/0040_cli_color_job.c \
     processing/filter/0001_filter_clip.c \
     processing/filter/0002_filter_sample.c \
     processing/filter/0003_filter_resize.c \

@@ -1013,5 +1013,82 @@ awk -v registry_file="$registry_file" \
     exit 0
 }
 
+# Terminal auto intent is a CLI-only extension of -U. Audit its typed
+# converter-owned row and discovery/image observations without moving it
+# into the library registry or exposing auto through the library setopt API.
+awk -v color_file="$src_root/converters/terminal-color-job.c" \
+    -v help_file="$help_file" -v man_file="$man_file" \
+    -v bash_file="$src_root/converters/shell-completion/bash/img2sixel" \
+    -v zsh_file="$src_root/converters/shell-completion/zsh/_img2sixel" '
+function fail(message) { print "# " message; failed = 1 }
+function inspect(text, fields, count, i) {
+    sub(/^.*IMG2SIXEL_REGISTRY_COLOR_INT\(/, "", text)
+    sub(/\),[[:space:]]*$/, "", text)
+    gsub(/[[:space:]]|"|\047/, "", text)
+    count = split(text, fields, ",")
+    if (count != 9 || fields[1] != "auto" ||
+        fields[2] !~ /^[a-z][a-z0-9_]*$/ || fields[3] !~ /^[A-Z]$/ ||
+        fields[4] !~ /^SIXEL_[A-Z0-9_]+$/ ||
+        fields[5] !~ /^[a-z][a-z0-9_]*$/ ||
+        fields[6] !~ /^[a-z][a-z0-9_]*$/ ||
+        fields[7] !~ /^[0-9]+$/ || fields[8] !~ /^[0-9]+$/ ||
+        fields[9] !~ /^[0-9]+$/ || fields[7] + 0 > fields[9] + 0 ||
+        fields[9] + 0 > fields[8] + 0) {
+        fail("invalid converter color registry row")
+    }
+    key = fields[2]; short = fields[3]; env = fields[4]; initial = fields[9]
+    ++rows
+}
+FILENAME == color_file {
+    if (/g_img2sixel_color_policy_keys\[\][[:space:]]*=[[:space:]]*\{/) {
+        table = 1; next
+    }
+    if (table && /^[[:space:]]*};/) { table = 0; next }
+    if (table && /IMG2SIXEL_REGISTRY_COLOR_INT\(/) {
+        row = $0; in_row = 1; next
+    }
+    if (table && in_row) {
+        row = row " " $0
+        if (/\),[[:space:]]*$/) { inspect(row); in_row = 0 }
+        next
+    }
+    if (table && /[^[:space:]]/) fail("unregistered converter color row")
+    next
+}
+/^# CLI-color: auto:/ { observed[$4] = 1 }
+{
+    text = $0
+    gsub(/[^[:alnum:]_=]/, "", text)
+    surface[FILENAME] = surface[FILENAME] text
+}
+END {
+    if (rows != 1 || in_row) fail("missing or incomplete color registry")
+    if (index(surface[help_file], key "=" short) == 0 ||
+        index(surface[man_file], key "=" short) == 0 ||
+        index(surface[help_file], env) == 0 ||
+        index(surface[man_file], env) == 0) {
+        fail("color suboption help/manual mapping is incomplete")
+    }
+    if (index(surface[bash_file], key "=") == 0 ||
+        index(surface[zsh_file], key "=") == 0 ||
+        index(surface[bash_file], short initial) == 0 ||
+        index(surface[zsh_file], short initial) == 0) {
+        fail("color suboption completion is incomplete")
+    }
+    if (!observed["long"] || !observed["compact"] ||
+        !observed["environment"] || !observed["precedence"] ||
+        !observed["invalid"]) {
+        fail("color suboption lacks real CLI image observations")
+    }
+    exit failed ? 1 : 0
+}
+' "$src_root/converters/terminal-color-job.c" "$help_file" "$man_file" \
+    "$src_root/converters/shell-completion/bash/img2sixel" \
+    "$src_root/converters/shell-completion/zsh/_img2sixel" \
+    "$src_root/tests/cli/color/session/"*.t || {
+    echo "not ok 1 - suboptions use one complete registry"
+    exit 0
+}
+
 echo "ok 1 - suboptions use one complete registry"
 exit 0

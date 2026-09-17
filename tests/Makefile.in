@@ -658,7 +658,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	cli/0034_cli_terminal_policy_option.c \
 	cli/0035_cli_lookup_policy_initial_prefixes.c \
 	cli/0036_cli_color_wire.c cli/0037_cli_color_parser.c \
-	cli/0038_cli_color_tty.c processing/filter/0001_filter_clip.c \
+	cli/0038_cli_color_tty.c cli/0039_cli_color_auto.c \
+	cli/0040_cli_color_job.c processing/filter/0001_filter_clip.c \
 	processing/filter/0002_filter_sample.c \
 	processing/filter/0003_filter_resize.c \
 	processing/filter/0004_filter_colors.c \
@@ -1662,6 +1663,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0036_cli_color_wire.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0037_cli_color_parser.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0038_cli_color_tty.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0039_cli_color_auto.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0040_cli_color_job.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0001_filter_clip.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0002_filter_sample.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0003_filter_resize.$(OBJEXT) \
@@ -2199,6 +2202,8 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0036_cli_color_wire.Po \
 	cli/$(DEPDIR)/test_runner-0037_cli_color_parser.Po \
 	cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po \
+	cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po \
+	cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
@@ -4144,6 +4149,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_CLI_COLOR_WIRE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_CLI_COLOR_PARSER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_CLI_COLOR_TTY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_CLI_COLOR_AUTO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_CLI_COLOR_JOB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_P3_PRECISION_CONTRACT \
@@ -5399,6 +5406,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0036_cli_color_wire.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0037_cli_color_parser.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0038_cli_color_tty.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    cli/0039_cli_color_auto.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    cli/0040_cli_color_job.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0001_filter_clip.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0002_filter_sample.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0003_filter_resize.c \
@@ -7685,6 +7694,10 @@ cli/test_runner-0037_cli_color_parser.$(OBJEXT): cli/$(am__dirstamp) \
 	cli/$(DEPDIR)/$(am__dirstamp)
 cli/test_runner-0038_cli_color_tty.$(OBJEXT): cli/$(am__dirstamp) \
 	cli/$(DEPDIR)/$(am__dirstamp)
+cli/test_runner-0039_cli_color_auto.$(OBJEXT): cli/$(am__dirstamp) \
+	cli/$(DEPDIR)/$(am__dirstamp)
+cli/test_runner-0040_cli_color_job.$(OBJEXT): cli/$(am__dirstamp) \
+	cli/$(DEPDIR)/$(am__dirstamp)
 processing/filter/$(am__dirstamp):
 	@$(MKDIR_P) processing/filter
 	@: >>processing/filter/$(am__dirstamp)
@@ -9332,6 +9345,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0036_cli_color_wire.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0037_cli_color_parser.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
@@ -17714,6 +17729,34 @@ cli/test_runner-0038_cli_color_tty.obj: cli/0038_cli_color_tty.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0038_cli_color_tty.obj `if test -f 'cli/0038_cli_color_tty.c'; then $(CYGPATH_W) 'cli/0038_cli_color_tty.c'; else $(CYGPATH_W) '$(srcdir)/cli/0038_cli_color_tty.c'; fi`
 
+cli/test_runner-0039_cli_color_auto.o: cli/0039_cli_color_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0039_cli_color_auto.o -MD -MP -MF cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Tpo -c -o cli/test_runner-0039_cli_color_auto.o `test -f 'cli/0039_cli_color_auto.c' || echo '$(srcdir)/'`cli/0039_cli_color_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Tpo cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0039_cli_color_auto.c' object='cli/test_runner-0039_cli_color_auto.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0039_cli_color_auto.o `test -f 'cli/0039_cli_color_auto.c' || echo '$(srcdir)/'`cli/0039_cli_color_auto.c
+
+cli/test_runner-0039_cli_color_auto.obj: cli/0039_cli_color_auto.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0039_cli_color_auto.obj -MD -MP -MF cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Tpo -c -o cli/test_runner-0039_cli_color_auto.obj `if test -f 'cli/0039_cli_color_auto.c'; then $(CYGPATH_W) 'cli/0039_cli_color_auto.c'; else $(CYGPATH_W) '$(srcdir)/cli/0039_cli_color_auto.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Tpo cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0039_cli_color_auto.c' object='cli/test_runner-0039_cli_color_auto.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0039_cli_color_auto.obj `if test -f 'cli/0039_cli_color_auto.c'; then $(CYGPATH_W) 'cli/0039_cli_color_auto.c'; else $(CYGPATH_W) '$(srcdir)/cli/0039_cli_color_auto.c'; fi`
+
+cli/test_runner-0040_cli_color_job.o: cli/0040_cli_color_job.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0040_cli_color_job.o -MD -MP -MF cli/$(DEPDIR)/test_runner-0040_cli_color_job.Tpo -c -o cli/test_runner-0040_cli_color_job.o `test -f 'cli/0040_cli_color_job.c' || echo '$(srcdir)/'`cli/0040_cli_color_job.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0040_cli_color_job.Tpo cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0040_cli_color_job.c' object='cli/test_runner-0040_cli_color_job.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0040_cli_color_job.o `test -f 'cli/0040_cli_color_job.c' || echo '$(srcdir)/'`cli/0040_cli_color_job.c
+
+cli/test_runner-0040_cli_color_job.obj: cli/0040_cli_color_job.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0040_cli_color_job.obj -MD -MP -MF cli/$(DEPDIR)/test_runner-0040_cli_color_job.Tpo -c -o cli/test_runner-0040_cli_color_job.obj `if test -f 'cli/0040_cli_color_job.c'; then $(CYGPATH_W) 'cli/0040_cli_color_job.c'; else $(CYGPATH_W) '$(srcdir)/cli/0040_cli_color_job.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0040_cli_color_job.Tpo cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0040_cli_color_job.c' object='cli/test_runner-0040_cli_color_job.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0040_cli_color_job.obj `if test -f 'cli/0040_cli_color_job.c'; then $(CYGPATH_W) 'cli/0040_cli_color_job.c'; else $(CYGPATH_W) '$(srcdir)/cli/0040_cli_color_job.c'; fi`
+
 processing/filter/test_runner-0001_filter_clip.o: processing/filter/0001_filter_clip.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0001_filter_clip.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Tpo -c -o processing/filter/test_runner-0001_filter_clip.o `test -f 'processing/filter/0001_filter_clip.c' || echo '$(srcdir)/'`processing/filter/0001_filter_clip.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Tpo processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
@@ -24505,6 +24548,8 @@ distclean: distclean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0036_cli_color_wire.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0037_cli_color_parser.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
@@ -25530,6 +25575,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0036_cli_color_wire.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0037_cli_color_parser.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po

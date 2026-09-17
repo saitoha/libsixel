@@ -508,11 +508,15 @@ emit_all_headers() {
             # BUILD_CLI in test_runner amalgamation) keep typedef contracts.
             converters/terminal-color.h)
                 emit_header_unit "${unit}" \
-                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR)"
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR) || defined(BUILD_TEST_0040_CLI_COLOR_JOB)"
                 ;;
             converters/terminal-color-tty.h)
                 emit_header_unit "${unit}" \
-                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR_TTY)"
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR_TTY) || defined(BUILD_TEST_0040_CLI_COLOR_JOB)"
+                ;;
+            converters/terminal-color-job.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_TEST_0040_CLI_COLOR_JOB)"
                 ;;
             converters/cli.h)
                 emit_header_unit "${unit}" \
@@ -587,6 +591,9 @@ emit_all_units() {
             converters/terminal-color-tty.c)
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR_TTY)"
+                ;;
+            converters/terminal-color-job.c)
+                emit_unit "${unit}" "defined(BUILD_IMG2SIXEL)"
                 ;;
             src/threadpool.c)
                 emit_unit "${unit}" "SIXEL_ENABLE_THREADS"

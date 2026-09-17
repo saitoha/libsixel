@@ -1017,10 +1017,23 @@ _img2sixel()
         return 0
         ;;
     -U|--output-colorspace)
+        if [[ $cur == *:* ]]; then
+            local color_prefix
+            case ${cur%%:*} in
+            [aA]|[aA][uU]|[aA][uU][tT]|[aA][uU][tT][oO]) ;;
+            *) return 0 ;;
+            esac
+            color_prefix=${cur%:*}:
+            COMPREPLY=( $( compgen -W "${color_prefix}timeout_ms=200
+                                       ${color_prefix}T200" -- "$cur" ) )
+            compopt -o nospace 2>/dev/null
+            return 0
+        fi
         COMPREPLY=( $( compgen -W 'gamma \
                                    linear \
                                    smpte-c \
-                                   display-p3' -- "$cur" ) )
+                                   display-p3 \
+                                   auto' -- "$cur" ) )
         return 0
         ;;
     -w|--width|-h|--height)

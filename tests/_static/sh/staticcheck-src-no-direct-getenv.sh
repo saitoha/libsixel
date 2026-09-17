@@ -14,6 +14,7 @@ getenv_argument_matches=
 internal_name_matches=
 registry_file=$src_dir/options-registry.c
 completion_registry_file=$converters_dir/completion_utils.c
+color_registry_file=$converters_dir/terminal-color-job.c
 
 echo "1..1"
 set -v
@@ -138,6 +139,7 @@ test -z "$internal_name_matches" || {
 # prefix macros cannot hide a registry-owned name.
 getenv_argument_matches=$(awk \
     -v registry_file="$registry_file" \
+    -v color_registry_file="$color_registry_file" \
     -v completion_registry_file="$completion_registry_file" '
 FILENAME == registry_file {
     line = $0
@@ -148,8 +150,8 @@ FILENAME == registry_file {
     }
     next
 }
-FILENAME == completion_registry_file {
-    if ($0 ~ /g_img2sixel_completion_policy_keys\[\]/) {
+FILENAME == completion_registry_file || FILENAME == color_registry_file {
+    if ($0 ~ /g_img2sixel_(completion|color)_policy_keys\[\]/) {
         in_completion_registry = 1
     }
     if (in_completion_registry) {
@@ -211,7 +213,7 @@ function argument_is_reviewed(file, argument) {
     if (file ~ /\/img2sixel\.c$/ && argument == "constchar*name") {
         return 1
     }
-    if (file ~ /\/completion_utils\.c$/ &&
+    if (file ~ /\/(completion_utils|terminal-color-job)\.c$/ &&
         argument == "key->environment") {
         return 1
     }
@@ -302,7 +304,7 @@ FILENAME ~ /\/(compat_stub|compat)\.[ch]$/ {
         call = ""
     }
 }
-' "$registry_file" "$completion_registry_file" \
+' "$registry_file" "$completion_registry_file" "$color_registry_file" \
     "$src_dir"/*.[ch] "$converters_dir"/*.[ch])
 
 test -z "$getenv_argument_matches" || {

@@ -252,12 +252,24 @@ _workingcolorspace() {
 }
 
 _outputcolorspace() {
+  local current prefix
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    case ${current%%:*} in
+      [aA]|[aA][uU]|[aA][uU][tT]|[aA][uU][tT][oO]) ;;
+      *) return ;;
+    esac
+    prefix=${current%:*}:
+    compadd -- "${prefix}timeout_ms=200" "${prefix}T200"
+    return
+  fi
   _values \
     'OUTPUTCOLORSPACE' \
     'gamma[sRGB gamma encoded output (default)]' \
     'linear[linear RGB output]' \
     'smpte-c[SMPTE-C gamma encoded output]' \
-    'display-p3[Display P3: limited CPU float palette path]'
+    'display-p3[Display P3: limited CPU float palette path]' \
+    'auto[negotiate only with the stdout image terminal]'
 }
 
 _quantizemodel() {

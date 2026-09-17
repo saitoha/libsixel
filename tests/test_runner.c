@@ -409,6 +409,8 @@ int test_cli_0035_lookup_initials(int argc, char **argv);
 int test_cli_0036_color_wire(int argc, char **argv);
 int test_cli_0037_color_parser(int argc, char **argv);
 int test_cli_0038_color_tty(int argc, char **argv);
+int test_cli_0039_color_auto(int argc, char **argv);
+int test_cli_0040_color_job(int argc, char **argv);
 int test_palette_0051_p3_contract(int argc, char **argv);
 int test_palette_0054_p3_encoder(int argc, char **argv);
 int test_palette_0059_p3_precision(int argc, char **argv);
@@ -1821,6 +1823,8 @@ static test_entry_t const test_entries[] = {
     { "cli/0036_cli_color_wire", test_cli_0036_color_wire },
     { "cli/0037_cli_color_parser", test_cli_0037_color_parser },
     { "cli/0038_cli_color_tty", test_cli_0038_color_tty },
+    { "cli/0039_cli_color_auto", test_cli_0039_color_auto },
+    { "cli/0040_cli_color_job", test_cli_0040_color_job },
     { "palette/0051_p3_palette_contract", test_palette_0051_p3_contract },
     { "palette/0054_p3_encoder_contract", test_palette_0054_p3_encoder },
     { "palette/0059_p3_precision_contract", test_palette_0059_p3_precision },

@@ -1308,6 +1308,28 @@ smpte-c -> SMPTE-C gamma encoded output
 .br
 display-p3 -> Display P3 output for the limited CPU float palette path
 .br
+auto[:timeout_ms=N] -> negotiate with the image destination on stdout
+.br
+The CLI-only auto choice uses the same stdout terminal for queries and
+image output. File/pipe destinations use gamma without color queries,
+even when stderr is a terminal. Any outfile argument other than an exact
+"-" excludes auto negotiation, including "-o file -o -".
+Explicit color-space choices do not negotiate and remain honored for files.
+A final auto request cannot be combined with DRCS output (-@);
+this combination fails before color queries or image output.
+.br
+The auto suboption timeout_ms=T accepts decimal milliseconds in 1..10000,
+with a default of 200 per request/reply exchange or separate control write.
+Its long form is timeout_ms=N and its compact form is TN.
+CLI values override SIXEL_OUTPUT_COLORSPACE and
+SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS.
+.br
+Auto saves, sets and verifies the terminal policy around each synchronous
+encode, then restores its exact original value. Only complete initial
+silence or a valid unavailable response permits unconfirmed gamma fallback;
+partial or malformed replies fail before image output. Timeout retires
+further queries; restoration then uses a bounded write without verification.
+.br
 Display P3 requires automatic or float precision, gamma or linear working
 coordinates, linear clustering, K-means, exact lookup, full-frame sampling,
 none or FS dithering, no binning, merge, cover or snap, and RGB SIXEL output.
@@ -1502,6 +1524,17 @@ Set to "1" to enable or "0" to disable it. The
 suppress verbose PSD trace lines while preserving the LSXPSD1 summary.
 Set to "1" to enable or "0" to disable it. The
 \fB\-x *:psd_header_only=0|1\fP suboption takes precedence.
+.TP 5
+.B SIXEL_OUTPUT_COLORSPACE
+Set the img2sixel output color-space name, including auto.
+The value is a base name without suboptions; explicit \fB-U\fP wins.
+Empty or unset leaves the gamma default. This is a CLI setting, not a
+library terminal-discovery policy.
+.TP 5
+.B SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS
+Set the auto exchange/write deadline to a decimal integer in 1..10000
+milliseconds. Empty or unset defaults to 200. The CLI suboption
+\fB-Uauto:timeout_ms=N\fP (or \fB-Uauto:TN\fP) takes precedence.
 .TP 5
 .B IMG2SIXEL_COMPLETION_BASH
 .br

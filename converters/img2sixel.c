@@ -74,6 +74,7 @@
 #include "malloc_stub.h"
 #include "getopt_stub.h"
 #include "completion_utils.h"
+#include "terminal-color-job.h"
 #include "aborttrace.h"
 #include "cli.h"
 
@@ -1165,6 +1166,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "      linear  -> linear RGB color space\n"
         "      smpte-c -> SMPTE-C gamma color space\n"
         "      display-p3 -> Display P3 (limited CPU float palette path)\n"
+        "      auto[:timeout_ms=N] -> negotiate only with stdout's TTY\n"
+        "    auto: timeout_ms=T, decimal 1..10000, default 200 ms per\n"
+        "    exchange/write; file/pipe output uses gamma, no stderr fallback\n"
+        "    auto cannot be combined with DRCS output (-@)\n"
+        "    CLI overrides SIXEL_OUTPUT_COLORSPACE and the auto timeout\n"
+        "    SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS environment value\n"
         "    P3: auto/float precision, linear clustering, gamma/linear\n"
         "    working space, exact lookup, none/fs dither; no binning, merge,\n"
         "    cover or snap; explicit 8bit and -m/-M unsupported\n"
@@ -1297,6 +1304,18 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_CLIPBOARD_BACKEND=file. The backend stores image/text payloads\n"
         "as files under this path. The -y file:directory=PATH suboption\n"
         "takes precedence."
+    },
+    {
+        "SIXEL_OUTPUT_COLORSPACE",
+        "img2sixel output color-space choice, including CLI-only auto.\n"
+        "Explicit -U wins; empty means the gamma default. Set the timeout\n"
+        "separately; this variable takes a base name without suboptions."
+    },
+    {
+        "SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS",
+        "img2sixel auto exchange/write deadline in milliseconds.\n"
+        "Decimal 1..10000; empty/unset defaults to 200.\n"
+        "-Uauto:timeout_ms=N (or :TN) overrides this value."
     },
     {
         "IMG2SIXEL_COMPLETION_BASH",
@@ -3372,6 +3391,8 @@ img2sixel_main(int argc, char *argv[])
     int parse_terminal_optind;
     int option_parse_failed;
     img2sixel_parsed_option_t current_option;
+    img2sixel_color_job_t color_job;
+    SIXELSTATUS color_cleanup_status;
 
     n = 0;
     completion_cli_result = 0;
@@ -3393,6 +3414,7 @@ img2sixel_main(int argc, char *argv[])
     current_option.optopt_value = 0;
     current_option.argument = NULL;
     current_option.token = NULL;
+    img2sixel_color_job_init(&color_job);
 
     sixel_tty_init_output_device(STDERR_FILENO);
 
@@ -3629,7 +3651,9 @@ img2sixel_main(int argc, char *argv[])
             goto end;
 
         default:
-            status = sixel_encoder_setopt(encoder, n, optarg);
+            status = n == SIXEL_OPTFLAG_OUTPUT_COLORSPACE
+                ? img2sixel_color_job_option(&color_job, encoder, optarg)
+                : sixel_encoder_setopt(encoder, n, optarg);
             if (SIXEL_FAILED(status)) {
                 detail_buffer[0] = '\0';
                 detail_source = sixel_helper_get_additional_message();
@@ -3651,6 +3675,11 @@ img2sixel_main(int argc, char *argv[])
                     option_parse_failed = 1;
                 }
                 goto error;
+            }
+            if (n == SIXEL_OPTFLAG_OUTFILE) {
+                img2sixel_color_job_outfile(&color_job, optarg);
+            } else if (n == SIXEL_OPTFLAG_DRCS) {
+                color_job.drcs = 1;
             }
             break;
         }
@@ -3676,19 +3705,32 @@ img2sixel_main(int argc, char *argv[])
         goto error;
     }
 #endif
+    status = img2sixel_color_job_prepare(&color_job, encoder, STDOUT_FILENO,
+#if HAVE_SIGNAL
+                                         signal_cancel_callback,
+#else
+                                         NULL,
+#endif
+                                         NULL);
+    if (SIXEL_FAILED(status)) {
+        option_parse_failed = status == SIXEL_BAD_ARGUMENT;
+        goto error;
+    }
     img2sixel_trace_topic_message("lifecycle",
                                  "encoding dispatch: optind=%d argc=%d",
                                  optind,
                                  argc);
     if (optind >= argc) {
-        status = sixel_encoder_encode(encoder, NULL);
-        if (SIXEL_FAILED(status)) {
+        status = img2sixel_color_job_encode(&color_job, encoder, NULL);
+        if (SIXEL_FAILED(status) ||
+            (color_job.automatic && status == SIXEL_INTERRUPTED)) {
             goto error;
         }
     } else {
         for (n = optind; n < argc; n++) {
-            status = sixel_encoder_encode(encoder, argv[n]);
-            if (SIXEL_FAILED(status)) {
+            status = img2sixel_color_job_encode(&color_job, encoder, argv[n]);
+            if (SIXEL_FAILED(status) ||
+                (color_job.automatic && status == SIXEL_INTERRUPTED)) {
                 goto error;
             }
         }
@@ -3750,6 +3792,13 @@ unknown_option_error:
     goto end;
 
 end:
+    color_cleanup_status = img2sixel_color_job_close(&color_job);
+    if (SIXEL_FAILED(color_cleanup_status)) {
+        fprintf(stderr, "Terminal color transport cleanup failed.\n");
+        if (status == SIXEL_OK) {
+            status = color_cleanup_status;
+        }
+    }
     img2sixel_trace_topic_message("lifecycle",
                                  "begin cleanup: status=%d",
                                  status);
