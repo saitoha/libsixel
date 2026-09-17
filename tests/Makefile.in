@@ -757,6 +757,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/geometry/resampling_measurement_test_driver.c \
 	processing/planner/0001_resize_linear_float32.c \
 	processing/planner/0002_resize_allocation_failure.c \
+	processing/precision/precision_frame_common.h \
+	processing/precision/0001_gamma_byte_boundary.c \
+	processing/precision/0002_linear_byte_boundary.c \
+	processing/precision/0003_auto_float_source.c \
+	processing/precision/0004_non_gamma_float_work.c \
+	processing/precision/0005_resize_float_override.c \
+	processing/precision/0006_resize_linear_byte_work.c \
+	processing/precision/0007_resize_preserve_byte_work.c \
+	processing/precision/0008_explicit_float_preserve.c \
 	processing/chunk/0001_chunk_factory.c \
 	processing/timeline/0001_timeline_logger_factory.c \
 	processing/timeline/0002_timeline_parallel_encode_decode.c \
@@ -1723,6 +1732,14 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/geometry/test_runner-resampling_measurement_test_driver.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/planner/test_runner-0001_resize_linear_float32.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/planner/test_runner-0002_resize_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0001_gamma_byte_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0002_linear_byte_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0003_auto_float_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0004_non_gamma_float_work.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0005_resize_float_override.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0006_resize_linear_byte_work.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0007_resize_preserve_byte_work.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/precision/test_runner-0008_explicit_float_preserve.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0001_timeline_logger_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0002_timeline_parallel_encode_decode.$(OBJEXT) \
@@ -3015,6 +3032,14 @@ am__depfiles_remade =  \
 	processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po \
 	processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po \
 	processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po \
+	processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Po \
+	processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Po \
+	processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po \
+	processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Po \
+	processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Po \
+	processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Po \
+	processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Po \
+	processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Po \
 	processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po \
 	processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po \
 	processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po \
@@ -3959,6 +3984,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0178_FRAME_FLOAT_BYTE_BOUNDARY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GAMMA_BYTE_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LINEAR_BYTE_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_AUTO_FLOAT_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_NON_GAMMA_FLOAT_WORK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_RESIZE_FLOAT_OVERRIDE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_RESIZE_LINEAR_BYTE_WORK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_RESIZE_PRESERVE_BYTE_WORK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_EXPLICIT_FLOAT_PRESERVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
@@ -5364,6 +5397,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/geometry/resampling_measurement_test_driver.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/planner/0001_resize_linear_float32.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/planner/0002_resize_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/precision_frame_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0001_gamma_byte_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0002_linear_byte_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0003_auto_float_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0004_non_gamma_float_work.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0005_resize_float_override.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0006_resize_linear_byte_work.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0007_resize_preserve_byte_work.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/precision/0008_explicit_float_preserve.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0001_timeline_logger_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0002_timeline_parallel_encode_decode.c \
@@ -7848,6 +7890,36 @@ processing/planner/test_runner-0001_resize_linear_float32.$(OBJEXT):  \
 processing/planner/test_runner-0002_resize_allocation_failure.$(OBJEXT):  \
 	processing/planner/$(am__dirstamp) \
 	processing/planner/$(DEPDIR)/$(am__dirstamp)
+processing/precision/$(am__dirstamp):
+	@$(MKDIR_P) processing/precision
+	@: >>processing/precision/$(am__dirstamp)
+processing/precision/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/precision/$(DEPDIR)
+	@: >>processing/precision/$(DEPDIR)/$(am__dirstamp)
+processing/precision/test_runner-0001_gamma_byte_boundary.$(OBJEXT):  \
+	processing/precision/$(am__dirstamp) \
+	processing/precision/$(DEPDIR)/$(am__dirstamp)
+processing/precision/test_runner-0002_linear_byte_boundary.$(OBJEXT):  \
+	processing/precision/$(am__dirstamp) \
+	processing/precision/$(DEPDIR)/$(am__dirstamp)
+processing/precision/test_runner-0003_auto_float_source.$(OBJEXT):  \
+	processing/precision/$(am__dirstamp) \
+	processing/precision/$(DEPDIR)/$(am__dirstamp)
+processing/precision/test_runner-0004_non_gamma_float_work.$(OBJEXT):  \
+	processing/precision/$(am__dirstamp) \
+	processing/precision/$(DEPDIR)/$(am__dirstamp)
+processing/precision/test_runner-0005_resize_float_override.$(OBJEXT):  \
+	processing/precision/$(am__dirstamp) \
+	processing/precision/$(DEPDIR)/$(am__dirstamp)
+processing/precision/test_runner-0006_resize_linear_byte_work.$(OBJEXT):  \
+	processing/precision/$(am__dirstamp) \
+	processing/precision/$(DEPDIR)/$(am__dirstamp)
+processing/precision/test_runner-0007_resize_preserve_byte_work.$(OBJEXT):  \
+	processing/precision/$(am__dirstamp) \
+	processing/precision/$(DEPDIR)/$(am__dirstamp)
+processing/precision/test_runner-0008_explicit_float_preserve.$(OBJEXT):  \
+	processing/precision/$(am__dirstamp) \
+	processing/precision/$(DEPDIR)/$(am__dirstamp)
 processing/chunk/$(am__dirstamp):
 	@$(MKDIR_P) processing/chunk
 	@: >>processing/chunk/$(am__dirstamp)
@@ -9014,6 +9086,7 @@ mostlyclean-compile:
 	-rm -f processing/gpu-palette/*.$(OBJEXT)
 	-rm -f processing/lookup/*.$(OBJEXT)
 	-rm -f processing/planner/*.$(OBJEXT)
+	-rm -f processing/precision/*.$(OBJEXT)
 	-rm -f processing/scale/*.$(OBJEXT)
 	-rm -f processing/sixel-writer/*.$(OBJEXT)
 	-rm -f processing/threadpool/*.$(OBJEXT)
@@ -9928,6 +10001,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po@am__quote@ # am--include-marker
@@ -18711,6 +18792,118 @@ processing/planner/test_runner-0002_resize_allocation_failure.obj: processing/pl
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/planner/test_runner-0002_resize_allocation_failure.obj `if test -f 'processing/planner/0002_resize_allocation_failure.c'; then $(CYGPATH_W) 'processing/planner/0002_resize_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/planner/0002_resize_allocation_failure.c'; fi`
 
+processing/precision/test_runner-0001_gamma_byte_boundary.o: processing/precision/0001_gamma_byte_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0001_gamma_byte_boundary.o -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Tpo -c -o processing/precision/test_runner-0001_gamma_byte_boundary.o `test -f 'processing/precision/0001_gamma_byte_boundary.c' || echo '$(srcdir)/'`processing/precision/0001_gamma_byte_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Tpo processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0001_gamma_byte_boundary.c' object='processing/precision/test_runner-0001_gamma_byte_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0001_gamma_byte_boundary.o `test -f 'processing/precision/0001_gamma_byte_boundary.c' || echo '$(srcdir)/'`processing/precision/0001_gamma_byte_boundary.c
+
+processing/precision/test_runner-0001_gamma_byte_boundary.obj: processing/precision/0001_gamma_byte_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0001_gamma_byte_boundary.obj -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Tpo -c -o processing/precision/test_runner-0001_gamma_byte_boundary.obj `if test -f 'processing/precision/0001_gamma_byte_boundary.c'; then $(CYGPATH_W) 'processing/precision/0001_gamma_byte_boundary.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0001_gamma_byte_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Tpo processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0001_gamma_byte_boundary.c' object='processing/precision/test_runner-0001_gamma_byte_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0001_gamma_byte_boundary.obj `if test -f 'processing/precision/0001_gamma_byte_boundary.c'; then $(CYGPATH_W) 'processing/precision/0001_gamma_byte_boundary.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0001_gamma_byte_boundary.c'; fi`
+
+processing/precision/test_runner-0002_linear_byte_boundary.o: processing/precision/0002_linear_byte_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0002_linear_byte_boundary.o -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Tpo -c -o processing/precision/test_runner-0002_linear_byte_boundary.o `test -f 'processing/precision/0002_linear_byte_boundary.c' || echo '$(srcdir)/'`processing/precision/0002_linear_byte_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Tpo processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0002_linear_byte_boundary.c' object='processing/precision/test_runner-0002_linear_byte_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0002_linear_byte_boundary.o `test -f 'processing/precision/0002_linear_byte_boundary.c' || echo '$(srcdir)/'`processing/precision/0002_linear_byte_boundary.c
+
+processing/precision/test_runner-0002_linear_byte_boundary.obj: processing/precision/0002_linear_byte_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0002_linear_byte_boundary.obj -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Tpo -c -o processing/precision/test_runner-0002_linear_byte_boundary.obj `if test -f 'processing/precision/0002_linear_byte_boundary.c'; then $(CYGPATH_W) 'processing/precision/0002_linear_byte_boundary.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0002_linear_byte_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Tpo processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0002_linear_byte_boundary.c' object='processing/precision/test_runner-0002_linear_byte_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0002_linear_byte_boundary.obj `if test -f 'processing/precision/0002_linear_byte_boundary.c'; then $(CYGPATH_W) 'processing/precision/0002_linear_byte_boundary.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0002_linear_byte_boundary.c'; fi`
+
+processing/precision/test_runner-0003_auto_float_source.o: processing/precision/0003_auto_float_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0003_auto_float_source.o -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Tpo -c -o processing/precision/test_runner-0003_auto_float_source.o `test -f 'processing/precision/0003_auto_float_source.c' || echo '$(srcdir)/'`processing/precision/0003_auto_float_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Tpo processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0003_auto_float_source.c' object='processing/precision/test_runner-0003_auto_float_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0003_auto_float_source.o `test -f 'processing/precision/0003_auto_float_source.c' || echo '$(srcdir)/'`processing/precision/0003_auto_float_source.c
+
+processing/precision/test_runner-0003_auto_float_source.obj: processing/precision/0003_auto_float_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0003_auto_float_source.obj -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Tpo -c -o processing/precision/test_runner-0003_auto_float_source.obj `if test -f 'processing/precision/0003_auto_float_source.c'; then $(CYGPATH_W) 'processing/precision/0003_auto_float_source.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0003_auto_float_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Tpo processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0003_auto_float_source.c' object='processing/precision/test_runner-0003_auto_float_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0003_auto_float_source.obj `if test -f 'processing/precision/0003_auto_float_source.c'; then $(CYGPATH_W) 'processing/precision/0003_auto_float_source.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0003_auto_float_source.c'; fi`
+
+processing/precision/test_runner-0004_non_gamma_float_work.o: processing/precision/0004_non_gamma_float_work.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0004_non_gamma_float_work.o -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Tpo -c -o processing/precision/test_runner-0004_non_gamma_float_work.o `test -f 'processing/precision/0004_non_gamma_float_work.c' || echo '$(srcdir)/'`processing/precision/0004_non_gamma_float_work.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Tpo processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0004_non_gamma_float_work.c' object='processing/precision/test_runner-0004_non_gamma_float_work.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0004_non_gamma_float_work.o `test -f 'processing/precision/0004_non_gamma_float_work.c' || echo '$(srcdir)/'`processing/precision/0004_non_gamma_float_work.c
+
+processing/precision/test_runner-0004_non_gamma_float_work.obj: processing/precision/0004_non_gamma_float_work.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0004_non_gamma_float_work.obj -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Tpo -c -o processing/precision/test_runner-0004_non_gamma_float_work.obj `if test -f 'processing/precision/0004_non_gamma_float_work.c'; then $(CYGPATH_W) 'processing/precision/0004_non_gamma_float_work.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0004_non_gamma_float_work.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Tpo processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0004_non_gamma_float_work.c' object='processing/precision/test_runner-0004_non_gamma_float_work.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0004_non_gamma_float_work.obj `if test -f 'processing/precision/0004_non_gamma_float_work.c'; then $(CYGPATH_W) 'processing/precision/0004_non_gamma_float_work.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0004_non_gamma_float_work.c'; fi`
+
+processing/precision/test_runner-0005_resize_float_override.o: processing/precision/0005_resize_float_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0005_resize_float_override.o -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Tpo -c -o processing/precision/test_runner-0005_resize_float_override.o `test -f 'processing/precision/0005_resize_float_override.c' || echo '$(srcdir)/'`processing/precision/0005_resize_float_override.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Tpo processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0005_resize_float_override.c' object='processing/precision/test_runner-0005_resize_float_override.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0005_resize_float_override.o `test -f 'processing/precision/0005_resize_float_override.c' || echo '$(srcdir)/'`processing/precision/0005_resize_float_override.c
+
+processing/precision/test_runner-0005_resize_float_override.obj: processing/precision/0005_resize_float_override.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0005_resize_float_override.obj -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Tpo -c -o processing/precision/test_runner-0005_resize_float_override.obj `if test -f 'processing/precision/0005_resize_float_override.c'; then $(CYGPATH_W) 'processing/precision/0005_resize_float_override.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0005_resize_float_override.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Tpo processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0005_resize_float_override.c' object='processing/precision/test_runner-0005_resize_float_override.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0005_resize_float_override.obj `if test -f 'processing/precision/0005_resize_float_override.c'; then $(CYGPATH_W) 'processing/precision/0005_resize_float_override.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0005_resize_float_override.c'; fi`
+
+processing/precision/test_runner-0006_resize_linear_byte_work.o: processing/precision/0006_resize_linear_byte_work.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0006_resize_linear_byte_work.o -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Tpo -c -o processing/precision/test_runner-0006_resize_linear_byte_work.o `test -f 'processing/precision/0006_resize_linear_byte_work.c' || echo '$(srcdir)/'`processing/precision/0006_resize_linear_byte_work.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Tpo processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0006_resize_linear_byte_work.c' object='processing/precision/test_runner-0006_resize_linear_byte_work.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0006_resize_linear_byte_work.o `test -f 'processing/precision/0006_resize_linear_byte_work.c' || echo '$(srcdir)/'`processing/precision/0006_resize_linear_byte_work.c
+
+processing/precision/test_runner-0006_resize_linear_byte_work.obj: processing/precision/0006_resize_linear_byte_work.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0006_resize_linear_byte_work.obj -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Tpo -c -o processing/precision/test_runner-0006_resize_linear_byte_work.obj `if test -f 'processing/precision/0006_resize_linear_byte_work.c'; then $(CYGPATH_W) 'processing/precision/0006_resize_linear_byte_work.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0006_resize_linear_byte_work.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Tpo processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0006_resize_linear_byte_work.c' object='processing/precision/test_runner-0006_resize_linear_byte_work.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0006_resize_linear_byte_work.obj `if test -f 'processing/precision/0006_resize_linear_byte_work.c'; then $(CYGPATH_W) 'processing/precision/0006_resize_linear_byte_work.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0006_resize_linear_byte_work.c'; fi`
+
+processing/precision/test_runner-0007_resize_preserve_byte_work.o: processing/precision/0007_resize_preserve_byte_work.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0007_resize_preserve_byte_work.o -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Tpo -c -o processing/precision/test_runner-0007_resize_preserve_byte_work.o `test -f 'processing/precision/0007_resize_preserve_byte_work.c' || echo '$(srcdir)/'`processing/precision/0007_resize_preserve_byte_work.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Tpo processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0007_resize_preserve_byte_work.c' object='processing/precision/test_runner-0007_resize_preserve_byte_work.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0007_resize_preserve_byte_work.o `test -f 'processing/precision/0007_resize_preserve_byte_work.c' || echo '$(srcdir)/'`processing/precision/0007_resize_preserve_byte_work.c
+
+processing/precision/test_runner-0007_resize_preserve_byte_work.obj: processing/precision/0007_resize_preserve_byte_work.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0007_resize_preserve_byte_work.obj -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Tpo -c -o processing/precision/test_runner-0007_resize_preserve_byte_work.obj `if test -f 'processing/precision/0007_resize_preserve_byte_work.c'; then $(CYGPATH_W) 'processing/precision/0007_resize_preserve_byte_work.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0007_resize_preserve_byte_work.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Tpo processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0007_resize_preserve_byte_work.c' object='processing/precision/test_runner-0007_resize_preserve_byte_work.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0007_resize_preserve_byte_work.obj `if test -f 'processing/precision/0007_resize_preserve_byte_work.c'; then $(CYGPATH_W) 'processing/precision/0007_resize_preserve_byte_work.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0007_resize_preserve_byte_work.c'; fi`
+
+processing/precision/test_runner-0008_explicit_float_preserve.o: processing/precision/0008_explicit_float_preserve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0008_explicit_float_preserve.o -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Tpo -c -o processing/precision/test_runner-0008_explicit_float_preserve.o `test -f 'processing/precision/0008_explicit_float_preserve.c' || echo '$(srcdir)/'`processing/precision/0008_explicit_float_preserve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Tpo processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0008_explicit_float_preserve.c' object='processing/precision/test_runner-0008_explicit_float_preserve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0008_explicit_float_preserve.o `test -f 'processing/precision/0008_explicit_float_preserve.c' || echo '$(srcdir)/'`processing/precision/0008_explicit_float_preserve.c
+
+processing/precision/test_runner-0008_explicit_float_preserve.obj: processing/precision/0008_explicit_float_preserve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/precision/test_runner-0008_explicit_float_preserve.obj -MD -MP -MF processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Tpo -c -o processing/precision/test_runner-0008_explicit_float_preserve.obj `if test -f 'processing/precision/0008_explicit_float_preserve.c'; then $(CYGPATH_W) 'processing/precision/0008_explicit_float_preserve.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0008_explicit_float_preserve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Tpo processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/precision/0008_explicit_float_preserve.c' object='processing/precision/test_runner-0008_explicit_float_preserve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/precision/test_runner-0008_explicit_float_preserve.obj `if test -f 'processing/precision/0008_explicit_float_preserve.c'; then $(CYGPATH_W) 'processing/precision/0008_explicit_float_preserve.c'; else $(CYGPATH_W) '$(srcdir)/processing/precision/0008_explicit_float_preserve.c'; fi`
+
 processing/chunk/test_runner-0001_chunk_factory.o: processing/chunk/0001_chunk_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/chunk/test_runner-0001_chunk_factory.o -MD -MP -MF processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Tpo -c -o processing/chunk/test_runner-0001_chunk_factory.o `test -f 'processing/chunk/0001_chunk_factory.c' || echo '$(srcdir)/'`processing/chunk/0001_chunk_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Tpo processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
@@ -23672,6 +23865,8 @@ distclean-generic:
 	-$(am__rm_f) processing/lookup/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(am__dirstamp)
+	-$(am__rm_f) processing/precision/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/precision/$(am__dirstamp)
 	-$(am__rm_f) processing/scale/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/scale/$(am__dirstamp)
 	-$(am__rm_f) processing/sixel-writer/$(DEPDIR)/$(am__dirstamp)
@@ -24600,6 +24795,14 @@ distclean: distclean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po
@@ -25592,6 +25795,14 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po
 	-rm -f processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0001_gamma_byte_boundary.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0002_linear_byte_boundary.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0004_non_gamma_float_work.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0005_resize_float_override.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0006_resize_linear_byte_work.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0007_resize_preserve_byte_work.Po
+	-rm -f processing/precision/$(DEPDIR)/test_runner-0008_explicit_float_preserve.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0002_parallel_min_bytes_environment.Po
 	-rm -f processing/scale/$(DEPDIR)/test_runner-0003_resample_allocation_failure.Po

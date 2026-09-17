@@ -419,6 +419,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0178_FRAME_FLOAT_BYTE_BOUNDARY \
     -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
     -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0001_GAMMA_BYTE_BOUNDARY \
+    -DBUILD_TEST_0002_LINEAR_BYTE_BOUNDARY \
+    -DBUILD_TEST_0003_AUTO_FLOAT_SOURCE \
+    -DBUILD_TEST_0004_NON_GAMMA_FLOAT_WORK \
+    -DBUILD_TEST_0005_RESIZE_FLOAT_OVERRIDE \
+    -DBUILD_TEST_0006_RESIZE_LINEAR_BYTE_WORK \
+    -DBUILD_TEST_0007_RESIZE_PRESERVE_BYTE_WORK \
+    -DBUILD_TEST_0008_EXPLICIT_FLOAT_PRESERVE \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
     -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
     -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
@@ -1794,6 +1802,15 @@ test_runner_SOURCES = test_runner.c \
     processing/geometry/resampling_measurement_test_driver.c \
     processing/planner/0001_resize_linear_float32.c \
     processing/planner/0002_resize_allocation_failure.c \
+    processing/precision/precision_frame_common.h \
+    processing/precision/0001_gamma_byte_boundary.c \
+    processing/precision/0002_linear_byte_boundary.c \
+    processing/precision/0003_auto_float_source.c \
+    processing/precision/0004_non_gamma_float_work.c \
+    processing/precision/0005_resize_float_override.c \
+    processing/precision/0006_resize_linear_byte_work.c \
+    processing/precision/0007_resize_preserve_byte_work.c \
+    processing/precision/0008_explicit_float_preserve.c \
     processing/chunk/0001_chunk_factory.c \
     processing/timeline/0001_timeline_logger_factory.c \
     processing/timeline/0002_timeline_parallel_encode_decode.c \

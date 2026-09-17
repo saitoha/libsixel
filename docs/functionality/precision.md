@@ -21,16 +21,19 @@ precision and the effective working format.
 
 ## Requested precision and effective format
 
-With `-Wgamma`, the two explicit base modes have distinct planner contracts:
+With ordinary output and `-Wgamma`, the two explicit base modes have distinct planner contracts. The resize override shown below remains an independent float requirement:
 
 | CLI request | Effective shared working format | Main sample representation |
 | --- | --- | --- |
-| `--precision=8bit` | `rgb888` | three unsigned 8-bit gamma-sRGB channels |
+| `--precision=8bit`, without `resize_precision=float` | `rgb888`, including float loader input | three unsigned 8-bit gamma-sRGB channels |
+| `--precision=8bit` with `resize_precision=float` | `rgb-f32` | the explicit resize float-work requirement is retained |
 | `--precision=float32` | `rgb-f32` | three float32 gamma-sRGB channels |
 
 For the [selected Display P3 output path](output-colorspace.md#display-p3-selected-cpu-float-path), `auto` or an unspecified precision requires float even with `-Wgamma`. An explicit `8bit` request is rejected in that path. Leaving P3 removes only the output requirement and retains the selected precision and working-space requirements.
 
-Repeated precision options replace the base request for all output spaces. `--precision=float --precision=auto -Wgamma` restores the automatic byte preference for ordinary output, while a non-gamma working space or P3 output can still require effective float. Previously `auto` left an earlier explicit request unchanged; it now clears that request. This is an intentional repeated-option behavior change, including when P3 was never selected.
+`auto` retains a float source. An explicit `8bit` request uses the existing coordinate-aware frame byte boundary after any temporary linear resize; it does not first round the source coordinates as though they were gamma bytes. `resize_precision=preserve` preserves the resize input representation and applies the requested working representation afterward. Explicit `float32` is retained even with `preserve` or `linear` resize. Non-gamma working spaces and P3 keep their independent float requirements.
+
+Repeated precision options replace the base request for all output spaces. `--precision=float --precision=auto -Wgamma` clears the explicit float request; automatic precision still retains a float source, while byte input can use byte work for ordinary output. A non-gamma working space or P3 output can independently require effective float. Previously `auto` left an earlier explicit request unchanged; it now clears that request. This is an intentional repeated-option behavior change, including when P3 was never selected.
 
 A non-gamma working color space such as `-Wlinear` or `-Woklab` requires floating-point samples. It promotes the effective shared path to the matching typed format, such as `linear-f32` or `oklab-f32`, even when the base request is `--precision=8bit`. Such a command is useful, but it is not an 8-bit-versus-float32 experiment.
 
@@ -44,11 +47,10 @@ promoting an otherwise gamma `rgb888` main path. Their matched `--precision`
 pairs compare the shared pipeline before and after the same float32 clustering
 stage, not two numeric representations of that stage.
 
-Use verbose planner output to audit the effective path. A controlled 8-bit
-run must contain:
+Use verbose planner output to audit the effective path. A controlled 8-bit run must report this working field; the loader and resize formats can independently be float:
 
 ```text
-formats: source=rgb888 work=rgb888 scale_out=rgb888
+work=rgb888
 ```
 
 The corresponding float32 run must report `work=rgb-f32`. Measurement scripts
@@ -246,3 +248,20 @@ the one-command wrapper is
 [`tools/reproduce_precision_measurements.sh`](../../tools/reproduce_precision_measurements.sh),
 and the artifact contract is enforced by
 [`tools/check_precision_measurements.py`](../../tools/check_precision_measurements.py).
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| EP-01 | Explicit gamma byte work uses exact stored gamma floats and one final byte rounding. | [tests/processing/precision/0001_gamma_byte_boundary.t](../../tests/processing/precision/0001_gamma_byte_boundary.t) |
+| EP-02 | Explicit gamma byte work converts linear coordinates before clipping and rounding. | [tests/processing/precision/0002_linear_byte_boundary.t](../../tests/processing/precision/0002_linear_byte_boundary.t) |
+| EP-03 | Automatic precision retains the float source representation. | [tests/processing/precision/0003_auto_float_source.t](../../tests/processing/precision/0003_auto_float_source.t) |
+| EP-04 | A non-gamma working space retains its float requirement over an explicit byte request. | [tests/processing/precision/0004_non_gamma_float_work.t](../../tests/processing/precision/0004_non_gamma_float_work.t) |
+| EP-05 | Explicit float resize retains gamma float working storage after resampling. | [tests/processing/precision/0005_resize_float_override.t](../../tests/processing/precision/0005_resize_float_override.t) |
+| EP-06 | Temporary linear resize returns to the requested byte working storage. | [tests/processing/precision/0006_resize_linear_byte_work.t](../../tests/processing/precision/0006_resize_linear_byte_work.t) |
+| EP-07 | Preserve resize retains linear float input until the final requested byte conversion. | [tests/processing/precision/0007_resize_preserve_byte_work.t](../../tests/processing/precision/0007_resize_preserve_byte_work.t) |
+| EP-08 | An explicit float request survives preserve resize. | [tests/processing/precision/0008_explicit_float_preserve.t](../../tests/processing/precision/0008_explicit_float_preserve.t) |
+
+These tests pass prepared float frames through the public encoder, inspect the resulting frame storage and samples, and use the independent [frame byte fixtures](../../tests/data/color-numeric/frame-byte.json). Constant nearest-neighbor footprints isolate the resize storage boundary from interpolation weights. Existing [option-order tests](../../tests/cli/options/matching/) cover repeated precision and working-space requests; selected P3 rejection remains covered by the [output-color contract](output-colorspace.md#test-coverage).

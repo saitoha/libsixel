@@ -654,7 +654,6 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     resize_mode = SIXEL_PLANNER_RESIZE_MODE_PRESERVE;
     colorspace_after_scale = 0;
     colorspace_before_scale = 0;
-    prefer_float32_effective = prefer_float32;
     working_colorspace_effective = encoder->working_colorspace;
     source_pixelformat = sixel_frame_get_pixelformat(frame);
     source_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(source_pixelformat);
@@ -684,13 +683,18 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
         : 0;
     source_colorspace = sixel_frame_get_colorspace(frame);
     prefer_float32 = encoder->prefer_float32;
-    if (source_is_float32) {
+    if (source_is_float32
+        && encoder->precision_requested != SIXEL_OPTION_PRECISION_8BIT) {
         /*
-         * Loader-originated float buffers must stay float through the planner
-         * path so pre-plan does not down-convert them to RGB888 before dither.
+         * Auto precision retains loader float samples. An explicit byte
+         * request instead uses the intentional frame conversion boundary;
+         * working-space and resize float requirements still take priority.
          */
         prefer_float32 = 1;
     }
+    /* Preserve the requested work precision even when resize itself uses
+     * preserve or a temporary linear buffer instead of float-work mode. */
+    prefer_float32_effective = prefer_float32;
     scale_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     scale_input_pixelformat = sixel_frame_get_pixelformat(frame);
     float_resize_required = (planner->scale_active != 0) ? 1 : 0;
@@ -715,13 +719,6 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     target_pixelformat = sixel_planner_pixelformat_for_colorspace(
         working_colorspace_effective,
         prefer_float32_effective);
-    if (source_is_float32
-        && !SIXEL_PIXELFORMAT_IS_FLOAT32(target_pixelformat)) {
-        target_pixelformat = sixel_planner_pixelformat_for_colorspace(
-            working_colorspace_effective,
-            1);
-        prefer_float32_effective = 1;
-    }
 
     /*
      * PAL sources that already satisfy the requested palette size do not need

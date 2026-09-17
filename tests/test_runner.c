@@ -289,6 +289,14 @@ int test_geometry_resampling_exact(int argc, char **argv);
 int test_geometry_resampling_measurement_baseline(int argc, char **argv);
 int test_plan_0001_resize_linear_float32(int argc, char **argv);
 int test_plan_0002_resize_alloc_failure(int argc, char **argv);
+int test_precision_0001(int argc, char **argv);
+int test_precision_0002(int argc, char **argv);
+int test_precision_0003(int argc, char **argv);
+int test_precision_0004(int argc, char **argv);
+int test_precision_0005(int argc, char **argv);
+int test_precision_0006(int argc, char **argv);
+int test_precision_0007(int argc, char **argv);
+int test_precision_0008(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
 int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
 int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
@@ -1535,6 +1543,14 @@ static test_entry_t const test_entries[] = {
       test_plan_0001_resize_linear_float32 },
     { "planner/0002_resize_allocation_failure",
       test_plan_0002_resize_alloc_failure },
+    { "precision/0001_gamma_byte_boundary", test_precision_0001 },
+    { "precision/0002_linear_byte_boundary", test_precision_0002 },
+    { "precision/0003_auto_float_source", test_precision_0003 },
+    { "precision/0004_non_gamma_float_work", test_precision_0004 },
+    { "precision/0005_resize_float_override", test_precision_0005 },
+    { "precision/0006_resize_linear_byte_work", test_precision_0006 },
+    { "precision/0007_resize_preserve_byte_work", test_precision_0007 },
+    { "precision/0008_explicit_float_preserve", test_precision_0008 },
     { "chunk/0001_chunk_factory", test_chunk_0001_chunk_factory },
     { "timeline/0001_timeline_logger_factory",
       test_timeline_0001_timeline_logger_factory },

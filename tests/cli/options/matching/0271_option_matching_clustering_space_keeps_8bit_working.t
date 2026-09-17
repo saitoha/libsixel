@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify clustering colorspace does not promote the main image pipeline.
+# Verify clustering colorspace does not promote explicit byte working data.
 
 set -eux
 
@@ -19,7 +19,8 @@ planner_log=$(set +xv; SIXEL_FLOAT32_DITHER=0 \
     echo "not ok 1 - clustering colorspace conversion failed"
     exit 0
 }
-test "${planner_log#*source=rgb888 work=rgb888*}" != "${planner_log}" || {
+# Loader float publication is independent of the requested working format.
+test "${planner_log#*work=rgb888*}" != "${planner_log}" || {
     echo "not ok 1 - clustering colorspace promoted the main pipeline"
     exit 0
 }
