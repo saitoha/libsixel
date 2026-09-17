@@ -506,6 +506,10 @@ emit_all_headers() {
             # Keep converter helper headers gated by the same feature macros
             # as their implementation units so partial builds (for example
             # BUILD_CLI in test_runner amalgamation) keep typedef contracts.
+            converters/terminal-color.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR)"
+                ;;
             converters/cli.h)
                 emit_header_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_CLI)"
@@ -571,6 +575,10 @@ emit_all_units() {
                         ;;
                 esac
                 emit_unit "${unit}" "defined(BUILD_${guard})"
+                ;;
+            converters/terminal-color.c)
+                emit_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_TERMINAL_COLOR)"
                 ;;
             src/threadpool.c)
                 emit_unit "${unit}" "SIXEL_ENABLE_THREADS"

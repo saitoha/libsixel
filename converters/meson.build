@@ -57,7 +57,7 @@ endif
 
 img2sixel_deps = []
 if img2sixel_opt.enabled()
-  img2sixel_core_sources = ['img2sixel.c', 'completion_utils.c', 'compat.c', 'path.c', completion_embed]
+  img2sixel_core_sources = ['img2sixel.c', 'terminal-color.c', 'completion_utils.c', 'compat.c', 'path.c', completion_embed]
   img2sixel_core_sources += sources_common + aborttrace_sources
   if amalgamated_tools_enabled
     img2sixel_exe = executable('img2sixel',

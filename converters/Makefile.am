@@ -119,6 +119,8 @@ img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(AMALGAMATION_TOOL_LIBS)
 else
 img2sixel_SOURCES = $(srcdir)/img2sixel.c \
+                    $(srcdir)/terminal-color.c \
+                    $(srcdir)/terminal-color.h \
                     $(srcdir)/completion_utils.c \
                     $(srcdir)/completion_utils.h \
                     $(srcdir)/compat.c \
