@@ -495,6 +495,8 @@ cleanup:
     return converted;
 }
 
+#endif
+
 static int
 jpeg_convert_icc_cmyk8_to_srgb_f32(float *dst_pixels,
                                    unsigned char const *src_pixels,
@@ -544,6 +546,7 @@ cleanup:
     return converted;
 }
 
+#if HAVE_LCMS2
 static int
 jpeg_convert_icc_cmyk16_to_srgb_f32(float *dst_pixels,
                                     uint16_t const *src_pixels,
@@ -801,6 +804,8 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
                                        int height,
                                        sixel_allocator_t *allocator,
                                        int enable_cms,
+                                       int icc_cmyk,
+                                       int icc_inverted_cmyk,
                                        unsigned char const *icc_profile,
                                        unsigned int icc_profile_length
                                        )
@@ -808,10 +813,16 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
     SIXELSTATUS status;
     size_t pixel_count;
     size_t float_bytes;
+    size_t sample;
     unsigned char *cmyk_pixels;
     float *float_pixels;
     int cms_converted;
+    int normalize_cmyk;
 
+    /* The old YCCK route remains separate without Little CMS. */
+#if HAVE_LCMS2
+    (void)icc_cmyk;
+#endif
     status = SIXEL_OK;
     pixel_count = 0u;
     float_bytes = 0u;
@@ -828,7 +839,8 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
     }
 
     pixel_count = (size_t)width * (size_t)height;
-    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float)) ||
+        pixel_count > SIZE_MAX / 4u) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     float_bytes = pixel_count * 3u * sizeof(float);
@@ -842,8 +854,26 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
         return SIXEL_BAD_ALLOCATION;
     }
 
-#if HAVE_LCMS2
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
+    /* libjpeg leaves Adobe CMYK scanlines inverted. ICC device coordinates
+     * instead express ink coverage, with zero meaning no ink. Only normalize
+     * the owned temporary source around the existing ICC attempt; the legacy
+     * unprofiled conversion below must still receive its original samples. */
+    normalize_cmyk = icc_inverted_cmyk && enable_cms &&
+        icc_profile != NULL && icc_profile_length > 0u;
+    if (normalize_cmyk) {
+        for (sample = 0u; sample < pixel_count * 4u; ++sample) {
+            cmyk_pixels[sample] = (unsigned char)(255u - cmyk_pixels[sample]);
+        }
+    }
+
+    /* ICC interpretation belongs to the shared facade even when its
+     * builtin backend is the only available CMS. Preserve the historical
+     * direct YCCK connection in builds without Little CMS. */
+    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u
+#if !HAVE_LCMS2
+        && icc_cmyk
+#endif
+        ) {
         if (jpeg_convert_icc_cmyk8_to_srgb_f32(float_pixels,
                                                cmyk_pixels,
                                                pixel_count,
@@ -852,10 +882,10 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
             cms_converted = 1;
         }
     }
-#endif
 
 #if !HAVE_LCMS2
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
+    if (!icc_cmyk && enable_cms &&
+        icc_profile != NULL && icc_profile_length > 0u) {
         if (jpeg_convert_icc_cmyk8_to_srgb_f32_nolcms(float_pixels,
                                                       cmyk_pixels,
                                                       pixel_count,
@@ -867,6 +897,15 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
 #endif
 
     if (!cms_converted) {
+        /* Profile rejection and transform failure both use the established
+         * fallback. Restore before it reads the source to avoid a second,
+         * unintended polarity change on this recovery path. */
+        if (normalize_cmyk) {
+            for (sample = 0u; sample < pixel_count * 4u; ++sample) {
+                cmyk_pixels[sample] =
+                    (unsigned char)(255u - cmyk_pixels[sample]);
+            }
+        }
         jpeg_unpack_cmyk8_to_rgbf32(float_pixels, cmyk_pixels, pixel_count);
     }
 
@@ -1225,6 +1264,8 @@ load_jpeg(unsigned char **result,
     struct jpeg_decompress_struct cinfo;
     sixel_loader_libjpeg_error_context_t jerr;
     int data_precision;
+    int icc_cmyk;
+    int icc_inverted_cmyk;
     volatile int decode_cmyk;
     unsigned int output_components;
     volatile int jpeg_failed;
@@ -1239,6 +1280,8 @@ load_jpeg(unsigned char **result,
     size = 0u;
     buffer = NULL;
     data_precision = 8;
+    icc_cmyk = 0;
+    icc_inverted_cmyk = 0;
     decode_cmyk = 0;
     output_components = 0u;
     jpeg_failed = 0;
@@ -1290,6 +1333,12 @@ load_jpeg(unsigned char **result,
     jpeg_start_decompress(&cinfo);
     data_precision = cinfo.data_precision;
     output_components = cinfo.output_components;
+    /* Keep this correction specific to ordinary Adobe 8-bit CMYK. YCCK and
+     * the separate higher-precision paths retain their existing policies. */
+    icc_cmyk = data_precision == 8 &&
+        cinfo.jpeg_color_space == JCS_CMYK;
+    icc_inverted_cmyk = icc_cmyk && cinfo.saw_Adobe_marker &&
+        cinfo.Adobe_transform == 0;
 
     if ((!decode_cmyk && output_components != 3u) ||
         (decode_cmyk && output_components != 4u)) {
@@ -1356,6 +1405,8 @@ load_jpeg(unsigned char **result,
                                                             *pheight,
                                                             allocator,
                                                             enable_cms,
+                                                            icc_cmyk,
+                                                            icc_inverted_cmyk,
                                                             icc_profile,
                                                             icc_profile_length
                                                             );

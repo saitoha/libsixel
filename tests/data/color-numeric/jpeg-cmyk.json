@@ -1,0 +1,45 @@
+{
+  "generator": "tools/generate_jpeg_cmyk_tests.py",
+  "input": "tests/data/colormgmt/input/custom/cmyk_mft2_valid.jpg",
+  "input_sha256": "6f0a6de6d0194c50907ef0b9ccf0e1bca8046f99a697139e4965d5fe9f0ae536",
+  "coding_sha256": "b35e275156ea232dd7ff0154c160346aea29efd4b519a6b16b8bf48405d8589a",
+  "raw_sha256": "d9181daebcedecd8868da14fbcfba501ab70181fce363e1362c3d294dc48b808",
+  "width": 32,
+  "height": 32,
+  "source_probe": "tools/verify_jpeg_cmyk_source.c",
+  "source_decoder": "libjpeg-turbo 3.2.0; JCS_CMYK; JDCT_ISLOW",
+  "arithmetic": "80-digit Decimal; affine PCS and independently derived D50 sRGB inverse",
+  "profile_sha256": "eb1634b28ce1e4d478d56fe87a257b1e9c29f7649ed2274d7aec11d1f6e1a631",
+  "marker": "Adobe APP14 transform 0; only APP2 replacement or APP14 removal",
+  "bounds": {
+    "rounding": "64u32 relative for float evaluation and sRGB libm roundtrip",
+    "external_PCS": "additional two u1.15 PCS bins propagated through inverse D50 sRGB",
+    "external_linear": [
+      0.00031995174482675037,
+      0.00017872998047633527,
+      0.00010416940516063808
+    ]
+  },
+  "fallback": "Historical c*k, m*k, y*k; CMS-off gamma, CMS-on sRGB EOTF",
+  "legacy_profile": {
+    "sha256": "28aab53b41186afce76caf1966eb5174e4fdcb20256308c68fec73b32dbbfd2d",
+    "status": "Historical incomplete ICC, builtin default legacy acceptance only",
+    "reference": "Direct RGB101 SIXEL; Decimal mft2 and Adobe complement; no CMM or encoder",
+    "clipping": "Existing bounded legacy transform; not the affine profile contract"
+  },
+  "missing_intent": "Complete profile with A2B1 renamed to A2B2; A2B0 unchanged",
+  "files": {
+    "jpeg-cmyk-affine-plain.jpg": "5d888a93b9c68d8e4b687bb96381576151bae4983329fa4054a60426fd227046",
+    "jpeg-cmyk-absent-plain.jpg": "b35e275156ea232dd7ff0154c160346aea29efd4b519a6b16b8bf48405d8589a",
+    "jpeg-cmyk-rejected-plain.jpg": "0429e740255297d01e8c5f3555b9bec9751d930a59e957cc281d90e945d99a2b",
+    "jpeg-cmyk-missing-intent-plain.jpg": "f1afb4c182265cc330eee7610eab6416f8715dfe348910a44b4f561fc4b35f8d",
+    "jpeg-cmyk-plain-reference.png": "42b1cf5875f8e758e59e326e7ca2aa4e75a54aada8e61d24c278b02494eba613",
+    "jpeg-cmyk-affine-adobe.jpg": "dd48db8aaa1cc77ac62b36e32db6a1572b8960cec016b9190f7368df285c6cdf",
+    "jpeg-cmyk-absent-adobe.jpg": "f35a93a80e46e5783d97b9f80b255dbd3641a17ef7cbd9d606b1f09bafe958b7",
+    "jpeg-cmyk-rejected-adobe.jpg": "0d6264ecab81b5112be6ba3c8e74cca8c4e116239a331ca94d46283a3036a514",
+    "jpeg-cmyk-missing-intent-adobe.jpg": "dee8364f2b7531ac94bbca9c5d208cd9cfe4cc74dbb73733ff266e4290afdc8c",
+    "jpeg-cmyk-adobe-reference.png": "7badf6fb91223401a40afd362aa35b414ccffce4766a70243472940b61f76202",
+    "../colormgmt/reference/custom/cmyk_mft2_valid_builtin.six": "7382ef823816c2ee4e0e75ec2944114442073850a357f7888069508d45d9c5be",
+    "jpeg-cmyk.h": "daa0b429ed007dc399517b78eddb71c66046db1b17106a708a6b6f702fc5bd4c"
+  }
+}

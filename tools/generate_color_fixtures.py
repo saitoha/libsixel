@@ -1844,6 +1844,8 @@ def main():
     from generate_png_arithmetic_tests import build as png_arithmetic_fixtures
     outputs.update(png_arithmetic_fixtures())
     outputs.update(jpeg_sample_oracles())
+    from generate_jpeg_cmyk_tests import build as jpeg_cmyk_tests
+    outputs.update(jpeg_cmyk_tests(outputs['cmyk.icc'], outputs['cmyk.json']))
     from generate_tiff_fixtures import build as tiff_fixtures
     outputs.update(tiff_fixtures(profile))
     from generate_tiff_icc_tests import build as tiff_icc_tests
@@ -1926,6 +1928,7 @@ def main():
             if path.read_bytes() != content:
                 raise SystemExit(f'stale fixture: {path}')
         else:
+            path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(content)
     print('Independent color fixtures verified' if args.check else
           'Independent color fixtures generated')

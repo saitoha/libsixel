@@ -422,6 +422,25 @@ int test_loader_0011_loader_gd_pixelformat(int argc, char **argv);
 int test_loader_libpng_contract(int argc, char **argv);
 int test_loader_0012_loader_libpng_pixelformat(int argc, char **argv);
 int test_loader_0013_loader_libjpeg_pixelformat(int argc, char **argv);
+int test_jc_0001(int argc, char **argv);
+int test_jc_0002(int argc, char **argv);
+int test_jc_0003(int argc, char **argv);
+int test_jc_0004(int argc, char **argv);
+int test_jc_0005(int argc, char **argv);
+int test_jc_0006(int argc, char **argv);
+int test_jc_0007(int argc, char **argv);
+int test_jc_0008(int argc, char **argv);
+int test_jc_0009(int argc, char **argv);
+int test_jc_0010(int argc, char **argv);
+int test_jc_0011(int argc, char **argv);
+int test_jc_0012(int argc, char **argv);
+int test_jc_0013(int argc, char **argv);
+int test_jc_0014(int argc, char **argv);
+int test_jc_0015(int argc, char **argv);
+int test_jc_0016(int argc, char **argv);
+int test_jc_0017(int argc, char **argv);
+int test_jc_0018(int argc, char **argv);
+int test_jc_0019(int argc, char **argv);
 int test_loader_0014_loader_builtin_pixelformat(int argc, char **argv);
 int test_loader_0015_loader_quicklook_pixelformat(int argc, char **argv);
 int test_loader_0016_loader_gnome_thumbnailer_pixelformat(int argc,
@@ -1583,6 +1602,25 @@ static test_entry_t const test_entries[] = {
     { "decoder/0053_percentage_rgb8", test_pmap_0053 },
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },
     { "colorspace/0013_black_log1p_model", test_color_0013 },
+    { "jpeg-cmyk/0001_affine_adobe_builtin", test_jc_0001 },
+    { "jpeg-cmyk/0002_affine_plain_builtin", test_jc_0002 },
+    { "jpeg-cmyk/0003_affine_adobe_lcms2", test_jc_0003 },
+    { "jpeg-cmyk/0004_affine_plain_lcms2", test_jc_0004 },
+    { "jpeg-cmyk/0005_affine_adobe_colorsync", test_jc_0005 },
+    { "jpeg-cmyk/0006_affine_plain_colorsync", test_jc_0006 },
+    { "jpeg-cmyk/0007_cms_disabled_adobe", test_jc_0007 },
+    { "jpeg-cmyk/0008_cms_disabled_plain", test_jc_0008 },
+    { "jpeg-cmyk/0009_profile_absent_adobe", test_jc_0009 },
+    { "jpeg-cmyk/0010_profile_absent_plain", test_jc_0010 },
+    { "jpeg-cmyk/0011_profile_rejected_adobe", test_jc_0011 },
+    { "jpeg-cmyk/0012_profile_rejected_plain", test_jc_0012 },
+    { "jpeg-cmyk/0013_apply_failure_adobe", test_jc_0013 },
+    { "jpeg-cmyk/0014_apply_failure_plain", test_jc_0014 },
+    { "jpeg-cmyk/0015_device_source", test_jc_0015 },
+    { "jpeg-cmyk/0016_legacy_default_values", test_jc_0016 },
+    { "jpeg-cmyk/0017_legacy_strict_apply_failure", test_jc_0017 },
+    { "jpeg-cmyk/0018_legacy_lcms2_rejection", test_jc_0018 },
+    { "jpeg-cmyk/0019_legacy_colorsync_rejection", test_jc_0019 },
     { "png-keycolor/0001_frame_samples", test_png_key_0001 },
     { "png-keycolor/0002_paint_mask", test_png_key_0002 },
     { "cms/0008_invalid_rgb_definition", test_cdef_0008 },

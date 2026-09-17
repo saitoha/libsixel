@@ -859,6 +859,26 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0012_loader_libpng_pixelformat.c \
 	loader/libpng/0023_loader_libpng_contract.c \
 	loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+	loader/jpeg_cmyk_test_common.c loader/jpeg_cmyk_test_common.h \
+	loader/libjpeg/cmyk/0001_affine_adobe_builtin.c \
+	loader/libjpeg/cmyk/0002_affine_plain_builtin.c \
+	loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c \
+	loader/libjpeg/cmyk/0004_affine_plain_lcms2.c \
+	loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c \
+	loader/libjpeg/cmyk/0006_affine_plain_colorsync.c \
+	loader/libjpeg/cmyk/0007_cms_disabled_adobe.c \
+	loader/libjpeg/cmyk/0008_cms_disabled_plain.c \
+	loader/libjpeg/cmyk/0009_profile_absent_adobe.c \
+	loader/libjpeg/cmyk/0010_profile_absent_plain.c \
+	loader/libjpeg/cmyk/0011_profile_rejected_adobe.c \
+	loader/libjpeg/cmyk/0012_profile_rejected_plain.c \
+	loader/libjpeg/cmyk/0013_apply_failure_adobe.c \
+	loader/libjpeg/cmyk/0014_apply_failure_plain.c \
+	loader/libjpeg/cmyk/0015_device_source.c \
+	loader/libjpeg/cmyk/0016_legacy_default_values.c \
+	loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c \
+	loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c \
+	loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c \
 	loader/builtin/0014_loader_builtin_pixelformat.c \
 	loader/builtin/loader_builtin_memory_test_common.c \
 	loader/builtin/loader_builtin_memory_test_common.h \
@@ -1832,6 +1852,26 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0023_loader_libpng_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-jpeg_cmyk_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0015_device_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-loader_builtin_memory_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-jpeg_lossless_test_common.$(OBJEXT) \
@@ -2197,6 +2237,7 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po \
 	loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po \
 	loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po \
+	loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po \
 	loader/$(DEPDIR)/test_runner-tiff_alpha_fault_test_common.Po \
 	loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Po \
 	loader/$(DEPDIR)/test_runner-tiff_byte_fault_test_common.Po \
@@ -2349,6 +2390,25 @@ am__depfiles_remade =  \
 	loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po \
 	loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po \
 	loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Po \
+	loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po \
@@ -4705,6 +4765,26 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0212_PNG_ARITH_TINY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PATH \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_CMYK_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_AFFINE_ADOBE_BUILTIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_AFFINE_PLAIN_BUILTIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_AFFINE_ADOBE_LCMS2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_AFFINE_PLAIN_LCMS2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_AFFINE_ADOBE_COLORSYNC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_AFFINE_PLAIN_COLORSYNC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_CMS_DISABLED_ADOBE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_CMS_DISABLED_PLAIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PROFILE_ABSENT_ADOBE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_PROFILE_ABSENT_PLAIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_PROFILE_REJECTED_ADOBE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_PROFILE_REJECTED_PLAIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_APPLY_FAILURE_ADOBE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_APPLY_FAILURE_PLAIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_DEVICE_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_LEGACY_DEFAULT_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_LEGACY_STRICT_APPLY_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_LEGACY_LCMS2_REJECTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_LEGACY_COLORSYNC_REJECTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RESAMPLING_EXACT_TEST_DRIVER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RESAMPLING_MEASUREMENT_TEST_DRIVER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
@@ -4714,6 +4794,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Numeric and fault-injection helpers include CMS, PNG and TIFF directly;
 # their optional headers are also required in the normal runner build.
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(LIBJPEG_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(LIBPNG_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(LCMS2_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(LIBTIFF_CFLAGS) \
@@ -5511,6 +5592,27 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0012_loader_libpng_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0023_loader_libpng_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/jpeg_cmyk_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/jpeg_cmyk_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0001_affine_adobe_builtin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0002_affine_plain_builtin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0004_affine_plain_lcms2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0006_affine_plain_colorsync.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0007_cms_disabled_adobe.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0008_cms_disabled_plain.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0009_profile_absent_adobe.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0010_profile_absent_plain.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0011_profile_rejected_adobe.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0012_profile_rejected_plain.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0013_apply_failure_adobe.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0014_apply_failure_plain.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0015_device_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0016_legacy_default_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0014_loader_builtin_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/loader_builtin_memory_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/loader_builtin_memory_test_common.h \
@@ -8291,6 +8393,71 @@ loader/libjpeg/$(DEPDIR)/$(am__dirstamp):
 loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT):  \
 	loader/libjpeg/$(am__dirstamp) \
 	loader/libjpeg/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-jpeg_cmyk_test_common.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/$(am__dirstamp):
+	@$(MKDIR_P) loader/libjpeg/cmyk
+	@: >>loader/libjpeg/cmyk/$(am__dirstamp)
+loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/libjpeg/cmyk/$(DEPDIR)
+	@: >>loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0015_device_source.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.$(OBJEXT):  \
+	loader/libjpeg/cmyk/$(am__dirstamp) \
+	loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
 loader/builtin/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
@@ -9093,6 +9260,7 @@ mostlyclean-compile:
 	-rm -f loader/gdk-pixbuf2/*.$(OBJEXT)
 	-rm -f loader/gnome-thumbnailer/*.$(OBJEXT)
 	-rm -f loader/libjpeg/*.$(OBJEXT)
+	-rm -f loader/libjpeg/cmyk/*.$(OBJEXT)
 	-rm -f loader/libpng/*.$(OBJEXT)
 	-rm -f loader/libpng/keycolor/*.$(OBJEXT)
 	-rm -f loader/librsvg/*.$(OBJEXT)
@@ -9191,6 +9359,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_alpha_fault_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_byte_fault_test_common.Po@am__quote@ # am--include-marker
@@ -9343,6 +9512,25 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po@am__quote@ # am--include-marker
@@ -20184,6 +20372,286 @@ loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj: loader/libjpeg/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj `if test -f 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; fi`
 
+loader/test_runner-jpeg_cmyk_test_common.o: loader/jpeg_cmyk_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-jpeg_cmyk_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Tpo -c -o loader/test_runner-jpeg_cmyk_test_common.o `test -f 'loader/jpeg_cmyk_test_common.c' || echo '$(srcdir)/'`loader/jpeg_cmyk_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Tpo loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/jpeg_cmyk_test_common.c' object='loader/test_runner-jpeg_cmyk_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-jpeg_cmyk_test_common.o `test -f 'loader/jpeg_cmyk_test_common.c' || echo '$(srcdir)/'`loader/jpeg_cmyk_test_common.c
+
+loader/test_runner-jpeg_cmyk_test_common.obj: loader/jpeg_cmyk_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-jpeg_cmyk_test_common.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Tpo -c -o loader/test_runner-jpeg_cmyk_test_common.obj `if test -f 'loader/jpeg_cmyk_test_common.c'; then $(CYGPATH_W) 'loader/jpeg_cmyk_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/jpeg_cmyk_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Tpo loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/jpeg_cmyk_test_common.c' object='loader/test_runner-jpeg_cmyk_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-jpeg_cmyk_test_common.obj `if test -f 'loader/jpeg_cmyk_test_common.c'; then $(CYGPATH_W) 'loader/jpeg_cmyk_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/jpeg_cmyk_test_common.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.o: loader/libjpeg/cmyk/0001_affine_adobe_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Tpo -c -o loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.o `test -f 'loader/libjpeg/cmyk/0001_affine_adobe_builtin.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0001_affine_adobe_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0001_affine_adobe_builtin.c' object='loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.o `test -f 'loader/libjpeg/cmyk/0001_affine_adobe_builtin.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0001_affine_adobe_builtin.c
+
+loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.obj: loader/libjpeg/cmyk/0001_affine_adobe_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Tpo -c -o loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.obj `if test -f 'loader/libjpeg/cmyk/0001_affine_adobe_builtin.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0001_affine_adobe_builtin.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0001_affine_adobe_builtin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0001_affine_adobe_builtin.c' object='loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.obj `if test -f 'loader/libjpeg/cmyk/0001_affine_adobe_builtin.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0001_affine_adobe_builtin.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0001_affine_adobe_builtin.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.o: loader/libjpeg/cmyk/0002_affine_plain_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Tpo -c -o loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.o `test -f 'loader/libjpeg/cmyk/0002_affine_plain_builtin.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0002_affine_plain_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0002_affine_plain_builtin.c' object='loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.o `test -f 'loader/libjpeg/cmyk/0002_affine_plain_builtin.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0002_affine_plain_builtin.c
+
+loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.obj: loader/libjpeg/cmyk/0002_affine_plain_builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Tpo -c -o loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.obj `if test -f 'loader/libjpeg/cmyk/0002_affine_plain_builtin.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0002_affine_plain_builtin.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0002_affine_plain_builtin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0002_affine_plain_builtin.c' object='loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.obj `if test -f 'loader/libjpeg/cmyk/0002_affine_plain_builtin.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0002_affine_plain_builtin.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0002_affine_plain_builtin.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.o: loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Tpo -c -o loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.o `test -f 'loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c' object='loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.o `test -f 'loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c
+
+loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.obj: loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Tpo -c -o loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.obj `if test -f 'loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c' object='loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.obj `if test -f 'loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.o: loader/libjpeg/cmyk/0004_affine_plain_lcms2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Tpo -c -o loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.o `test -f 'loader/libjpeg/cmyk/0004_affine_plain_lcms2.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0004_affine_plain_lcms2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0004_affine_plain_lcms2.c' object='loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.o `test -f 'loader/libjpeg/cmyk/0004_affine_plain_lcms2.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0004_affine_plain_lcms2.c
+
+loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.obj: loader/libjpeg/cmyk/0004_affine_plain_lcms2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Tpo -c -o loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.obj `if test -f 'loader/libjpeg/cmyk/0004_affine_plain_lcms2.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0004_affine_plain_lcms2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0004_affine_plain_lcms2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0004_affine_plain_lcms2.c' object='loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0004_affine_plain_lcms2.obj `if test -f 'loader/libjpeg/cmyk/0004_affine_plain_lcms2.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0004_affine_plain_lcms2.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0004_affine_plain_lcms2.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.o: loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Tpo -c -o loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.o `test -f 'loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c' object='loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.o `test -f 'loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c
+
+loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.obj: loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Tpo -c -o loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.obj `if test -f 'loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c' object='loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0005_affine_adobe_colorsync.obj `if test -f 'loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.o: loader/libjpeg/cmyk/0006_affine_plain_colorsync.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Tpo -c -o loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.o `test -f 'loader/libjpeg/cmyk/0006_affine_plain_colorsync.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0006_affine_plain_colorsync.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0006_affine_plain_colorsync.c' object='loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.o `test -f 'loader/libjpeg/cmyk/0006_affine_plain_colorsync.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0006_affine_plain_colorsync.c
+
+loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.obj: loader/libjpeg/cmyk/0006_affine_plain_colorsync.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Tpo -c -o loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.obj `if test -f 'loader/libjpeg/cmyk/0006_affine_plain_colorsync.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0006_affine_plain_colorsync.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0006_affine_plain_colorsync.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0006_affine_plain_colorsync.c' object='loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0006_affine_plain_colorsync.obj `if test -f 'loader/libjpeg/cmyk/0006_affine_plain_colorsync.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0006_affine_plain_colorsync.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0006_affine_plain_colorsync.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.o: loader/libjpeg/cmyk/0007_cms_disabled_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Tpo -c -o loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.o `test -f 'loader/libjpeg/cmyk/0007_cms_disabled_adobe.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0007_cms_disabled_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0007_cms_disabled_adobe.c' object='loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.o `test -f 'loader/libjpeg/cmyk/0007_cms_disabled_adobe.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0007_cms_disabled_adobe.c
+
+loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.obj: loader/libjpeg/cmyk/0007_cms_disabled_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Tpo -c -o loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.obj `if test -f 'loader/libjpeg/cmyk/0007_cms_disabled_adobe.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0007_cms_disabled_adobe.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0007_cms_disabled_adobe.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0007_cms_disabled_adobe.c' object='loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0007_cms_disabled_adobe.obj `if test -f 'loader/libjpeg/cmyk/0007_cms_disabled_adobe.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0007_cms_disabled_adobe.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0007_cms_disabled_adobe.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.o: loader/libjpeg/cmyk/0008_cms_disabled_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Tpo -c -o loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.o `test -f 'loader/libjpeg/cmyk/0008_cms_disabled_plain.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0008_cms_disabled_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0008_cms_disabled_plain.c' object='loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.o `test -f 'loader/libjpeg/cmyk/0008_cms_disabled_plain.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0008_cms_disabled_plain.c
+
+loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.obj: loader/libjpeg/cmyk/0008_cms_disabled_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Tpo -c -o loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.obj `if test -f 'loader/libjpeg/cmyk/0008_cms_disabled_plain.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0008_cms_disabled_plain.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0008_cms_disabled_plain.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0008_cms_disabled_plain.c' object='loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0008_cms_disabled_plain.obj `if test -f 'loader/libjpeg/cmyk/0008_cms_disabled_plain.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0008_cms_disabled_plain.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0008_cms_disabled_plain.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.o: loader/libjpeg/cmyk/0009_profile_absent_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Tpo -c -o loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.o `test -f 'loader/libjpeg/cmyk/0009_profile_absent_adobe.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0009_profile_absent_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0009_profile_absent_adobe.c' object='loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.o `test -f 'loader/libjpeg/cmyk/0009_profile_absent_adobe.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0009_profile_absent_adobe.c
+
+loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.obj: loader/libjpeg/cmyk/0009_profile_absent_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Tpo -c -o loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.obj `if test -f 'loader/libjpeg/cmyk/0009_profile_absent_adobe.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0009_profile_absent_adobe.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0009_profile_absent_adobe.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0009_profile_absent_adobe.c' object='loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0009_profile_absent_adobe.obj `if test -f 'loader/libjpeg/cmyk/0009_profile_absent_adobe.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0009_profile_absent_adobe.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0009_profile_absent_adobe.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.o: loader/libjpeg/cmyk/0010_profile_absent_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Tpo -c -o loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.o `test -f 'loader/libjpeg/cmyk/0010_profile_absent_plain.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0010_profile_absent_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0010_profile_absent_plain.c' object='loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.o `test -f 'loader/libjpeg/cmyk/0010_profile_absent_plain.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0010_profile_absent_plain.c
+
+loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.obj: loader/libjpeg/cmyk/0010_profile_absent_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Tpo -c -o loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.obj `if test -f 'loader/libjpeg/cmyk/0010_profile_absent_plain.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0010_profile_absent_plain.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0010_profile_absent_plain.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0010_profile_absent_plain.c' object='loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0010_profile_absent_plain.obj `if test -f 'loader/libjpeg/cmyk/0010_profile_absent_plain.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0010_profile_absent_plain.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0010_profile_absent_plain.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.o: loader/libjpeg/cmyk/0011_profile_rejected_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Tpo -c -o loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.o `test -f 'loader/libjpeg/cmyk/0011_profile_rejected_adobe.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0011_profile_rejected_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0011_profile_rejected_adobe.c' object='loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.o `test -f 'loader/libjpeg/cmyk/0011_profile_rejected_adobe.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0011_profile_rejected_adobe.c
+
+loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.obj: loader/libjpeg/cmyk/0011_profile_rejected_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Tpo -c -o loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.obj `if test -f 'loader/libjpeg/cmyk/0011_profile_rejected_adobe.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0011_profile_rejected_adobe.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0011_profile_rejected_adobe.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0011_profile_rejected_adobe.c' object='loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0011_profile_rejected_adobe.obj `if test -f 'loader/libjpeg/cmyk/0011_profile_rejected_adobe.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0011_profile_rejected_adobe.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0011_profile_rejected_adobe.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.o: loader/libjpeg/cmyk/0012_profile_rejected_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Tpo -c -o loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.o `test -f 'loader/libjpeg/cmyk/0012_profile_rejected_plain.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0012_profile_rejected_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0012_profile_rejected_plain.c' object='loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.o `test -f 'loader/libjpeg/cmyk/0012_profile_rejected_plain.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0012_profile_rejected_plain.c
+
+loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.obj: loader/libjpeg/cmyk/0012_profile_rejected_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Tpo -c -o loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.obj `if test -f 'loader/libjpeg/cmyk/0012_profile_rejected_plain.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0012_profile_rejected_plain.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0012_profile_rejected_plain.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0012_profile_rejected_plain.c' object='loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0012_profile_rejected_plain.obj `if test -f 'loader/libjpeg/cmyk/0012_profile_rejected_plain.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0012_profile_rejected_plain.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0012_profile_rejected_plain.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.o: loader/libjpeg/cmyk/0013_apply_failure_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Tpo -c -o loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.o `test -f 'loader/libjpeg/cmyk/0013_apply_failure_adobe.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0013_apply_failure_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0013_apply_failure_adobe.c' object='loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.o `test -f 'loader/libjpeg/cmyk/0013_apply_failure_adobe.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0013_apply_failure_adobe.c
+
+loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.obj: loader/libjpeg/cmyk/0013_apply_failure_adobe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Tpo -c -o loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.obj `if test -f 'loader/libjpeg/cmyk/0013_apply_failure_adobe.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0013_apply_failure_adobe.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0013_apply_failure_adobe.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0013_apply_failure_adobe.c' object='loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0013_apply_failure_adobe.obj `if test -f 'loader/libjpeg/cmyk/0013_apply_failure_adobe.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0013_apply_failure_adobe.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0013_apply_failure_adobe.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.o: loader/libjpeg/cmyk/0014_apply_failure_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Tpo -c -o loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.o `test -f 'loader/libjpeg/cmyk/0014_apply_failure_plain.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0014_apply_failure_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0014_apply_failure_plain.c' object='loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.o `test -f 'loader/libjpeg/cmyk/0014_apply_failure_plain.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0014_apply_failure_plain.c
+
+loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.obj: loader/libjpeg/cmyk/0014_apply_failure_plain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Tpo -c -o loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.obj `if test -f 'loader/libjpeg/cmyk/0014_apply_failure_plain.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0014_apply_failure_plain.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0014_apply_failure_plain.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0014_apply_failure_plain.c' object='loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0014_apply_failure_plain.obj `if test -f 'loader/libjpeg/cmyk/0014_apply_failure_plain.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0014_apply_failure_plain.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0014_apply_failure_plain.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0015_device_source.o: loader/libjpeg/cmyk/0015_device_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0015_device_source.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Tpo -c -o loader/libjpeg/cmyk/test_runner-0015_device_source.o `test -f 'loader/libjpeg/cmyk/0015_device_source.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0015_device_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0015_device_source.c' object='loader/libjpeg/cmyk/test_runner-0015_device_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0015_device_source.o `test -f 'loader/libjpeg/cmyk/0015_device_source.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0015_device_source.c
+
+loader/libjpeg/cmyk/test_runner-0015_device_source.obj: loader/libjpeg/cmyk/0015_device_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0015_device_source.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Tpo -c -o loader/libjpeg/cmyk/test_runner-0015_device_source.obj `if test -f 'loader/libjpeg/cmyk/0015_device_source.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0015_device_source.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0015_device_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0015_device_source.c' object='loader/libjpeg/cmyk/test_runner-0015_device_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0015_device_source.obj `if test -f 'loader/libjpeg/cmyk/0015_device_source.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0015_device_source.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0015_device_source.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.o: loader/libjpeg/cmyk/0016_legacy_default_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Tpo -c -o loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.o `test -f 'loader/libjpeg/cmyk/0016_legacy_default_values.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0016_legacy_default_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0016_legacy_default_values.c' object='loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.o `test -f 'loader/libjpeg/cmyk/0016_legacy_default_values.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0016_legacy_default_values.c
+
+loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.obj: loader/libjpeg/cmyk/0016_legacy_default_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Tpo -c -o loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.obj `if test -f 'loader/libjpeg/cmyk/0016_legacy_default_values.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0016_legacy_default_values.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0016_legacy_default_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0016_legacy_default_values.c' object='loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0016_legacy_default_values.obj `if test -f 'loader/libjpeg/cmyk/0016_legacy_default_values.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0016_legacy_default_values.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0016_legacy_default_values.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.o: loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Tpo -c -o loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.o `test -f 'loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c' object='loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.o `test -f 'loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c
+
+loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.obj: loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Tpo -c -o loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.obj `if test -f 'loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c' object='loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0017_legacy_strict_apply_failure.obj `if test -f 'loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.o: loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Tpo -c -o loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.o `test -f 'loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c' object='loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.o `test -f 'loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c
+
+loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.obj: loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Tpo -c -o loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.obj `if test -f 'loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c' object='loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0018_legacy_lcms2_rejection.obj `if test -f 'loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c'; fi`
+
+loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.o: loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Tpo -c -o loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.o `test -f 'loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c' object='loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.o `test -f 'loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c
+
+loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.obj: loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.obj -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Tpo -c -o loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.obj `if test -f 'loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c' object='loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/cmyk/test_runner-0019_legacy_colorsync_rejection.obj `if test -f 'loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c'; then $(CYGPATH_W) 'loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c'; fi`
+
 loader/builtin/test_runner-0014_loader_builtin_pixelformat.o: loader/builtin/0014_loader_builtin_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0014_loader_builtin_pixelformat.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo -c -o loader/builtin/test_runner-0014_loader_builtin_pixelformat.o `test -f 'loader/builtin/0014_loader_builtin_pixelformat.c' || echo '$(srcdir)/'`loader/builtin/0014_loader_builtin_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
@@ -23895,6 +24363,8 @@ distclean-generic:
 	-$(am__rm_f) loader/gnome-thumbnailer/$(am__dirstamp)
 	-$(am__rm_f) loader/libjpeg/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/libjpeg/$(am__dirstamp)
+	-$(am__rm_f) loader/libjpeg/cmyk/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/libjpeg/cmyk/$(am__dirstamp)
 	-$(am__rm_f) loader/libpng/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/libpng/$(am__dirstamp)
 	-$(am__rm_f) loader/libpng/keycolor/$(DEPDIR)/$(am__dirstamp)
@@ -24032,6 +24502,7 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_alpha_fault_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_byte_fault_test_common.Po
@@ -24184,6 +24655,25 @@ distclean: distclean-am
 	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
 	-rm -f loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po
@@ -25035,6 +25525,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0125_loader_manager_closed_plan.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_alpha_fault_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_byte_fault_test_common.Po
@@ -25187,6 +25678,25 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
 	-rm -f loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0002_affine_plain_builtin.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0003_affine_adobe_lcms2.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0004_affine_plain_lcms2.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0005_affine_adobe_colorsync.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0006_affine_plain_colorsync.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0007_cms_disabled_adobe.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0008_cms_disabled_plain.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0009_profile_absent_adobe.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0010_profile_absent_plain.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0011_profile_rejected_adobe.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0012_profile_rejected_plain.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0013_apply_failure_adobe.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0014_apply_failure_plain.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0015_device_source.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0016_legacy_default_values.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0017_legacy_strict_apply_failure.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0018_legacy_lcms2_rejection.Po
+	-rm -f loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0019_legacy_colorsync_rejection.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0023_loader_libpng_contract.Po

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libjpeg.md
 # Verify libjpeg builtin CMS path renders embedded CMYK mft2 ICC profile.
 
 set -eux

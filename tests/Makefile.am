@@ -1131,6 +1131,26 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0212_PNG_ARITH_TINY \
     -DBUILD_PATH \
     -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
+    -DBUILD_JPEG_CMYK_TEST_COMMON \
+    -DBUILD_TEST_0001_AFFINE_ADOBE_BUILTIN \
+    -DBUILD_TEST_0002_AFFINE_PLAIN_BUILTIN \
+    -DBUILD_TEST_0003_AFFINE_ADOBE_LCMS2 \
+    -DBUILD_TEST_0004_AFFINE_PLAIN_LCMS2 \
+    -DBUILD_TEST_0005_AFFINE_ADOBE_COLORSYNC \
+    -DBUILD_TEST_0006_AFFINE_PLAIN_COLORSYNC \
+    -DBUILD_TEST_0007_CMS_DISABLED_ADOBE \
+    -DBUILD_TEST_0008_CMS_DISABLED_PLAIN \
+    -DBUILD_TEST_0009_PROFILE_ABSENT_ADOBE \
+    -DBUILD_TEST_0010_PROFILE_ABSENT_PLAIN \
+    -DBUILD_TEST_0011_PROFILE_REJECTED_ADOBE \
+    -DBUILD_TEST_0012_PROFILE_REJECTED_PLAIN \
+    -DBUILD_TEST_0013_APPLY_FAILURE_ADOBE \
+    -DBUILD_TEST_0014_APPLY_FAILURE_PLAIN \
+    -DBUILD_TEST_0015_DEVICE_SOURCE \
+    -DBUILD_TEST_0016_LEGACY_DEFAULT_VALUES \
+    -DBUILD_TEST_0017_LEGACY_STRICT_APPLY_FAILURE \
+    -DBUILD_TEST_0018_LEGACY_LCMS2_REJECTION \
+    -DBUILD_TEST_0019_LEGACY_COLORSYNC_REJECTION \
     -DBUILD_RESAMPLING_EXACT_TEST_DRIVER \
     -DBUILD_RESAMPLING_MEASUREMENT_TEST_DRIVER \
     -DBUILD_ABORTTRACE \
@@ -1907,6 +1927,27 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0012_loader_libpng_pixelformat.c \
     loader/libpng/0023_loader_libpng_contract.c \
     loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+    loader/jpeg_cmyk_test_common.c \
+    loader/jpeg_cmyk_test_common.h \
+    loader/libjpeg/cmyk/0001_affine_adobe_builtin.c \
+    loader/libjpeg/cmyk/0002_affine_plain_builtin.c \
+    loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c \
+    loader/libjpeg/cmyk/0004_affine_plain_lcms2.c \
+    loader/libjpeg/cmyk/0005_affine_adobe_colorsync.c \
+    loader/libjpeg/cmyk/0006_affine_plain_colorsync.c \
+    loader/libjpeg/cmyk/0007_cms_disabled_adobe.c \
+    loader/libjpeg/cmyk/0008_cms_disabled_plain.c \
+    loader/libjpeg/cmyk/0009_profile_absent_adobe.c \
+    loader/libjpeg/cmyk/0010_profile_absent_plain.c \
+    loader/libjpeg/cmyk/0011_profile_rejected_adobe.c \
+    loader/libjpeg/cmyk/0012_profile_rejected_plain.c \
+    loader/libjpeg/cmyk/0013_apply_failure_adobe.c \
+    loader/libjpeg/cmyk/0014_apply_failure_plain.c \
+    loader/libjpeg/cmyk/0015_device_source.c \
+    loader/libjpeg/cmyk/0016_legacy_default_values.c \
+    loader/libjpeg/cmyk/0017_legacy_strict_apply_failure.c \
+    loader/libjpeg/cmyk/0018_legacy_lcms2_rejection.c \
+    loader/libjpeg/cmyk/0019_legacy_colorsync_rejection.c \
     loader/builtin/0014_loader_builtin_pixelformat.c \
     loader/builtin/loader_builtin_memory_test_common.c \
     loader/builtin/loader_builtin_memory_test_common.h \
@@ -2162,6 +2203,7 @@ test_runner_SOURCES = test_runner.c \
 # Numeric and fault-injection helpers include CMS, PNG and TIFF directly;
 # their optional headers are also required in the normal runner build.
 test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
+    $(LIBJPEG_CFLAGS) \
     $(LIBPNG_CFLAGS) \
     $(LCMS2_CFLAGS) \
     $(LIBTIFF_CFLAGS) \

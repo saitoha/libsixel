@@ -21,6 +21,7 @@ EXTRA_DIST = libsixel-config.in \
              check_tap_executable.py \
              verify_color_oracles.py \
              generate_color_fixtures.py \
+             generate_jpeg_cmyk_tests.py \
              generate_cli_color_fixtures.py \
              generate_png_chrm_fixtures.py \
              generate_png_arithmetic_tests.py \
@@ -46,6 +47,7 @@ EXTRA_DIST = libsixel-config.in \
              generate_builtin_device_tests.py \
              generate_lcms_alias_tests.py \
              verify_jpeg_color_source.c \
+             verify_jpeg_cmyk_source.c \
              build-docs \
              docs/mkdocs_hooks.py \
              docs/requirements.txt \
