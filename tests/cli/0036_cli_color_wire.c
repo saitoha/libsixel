@@ -107,6 +107,7 @@ test_cli_0036_color_wire(int argc, char **argv)
     int i;
     int c;
     int source;
+    int cms_expected;
 
     if (argc != 3) {
         return cli_wire_error("expected loader name and captured CLI output");
@@ -114,6 +115,20 @@ test_cli_0036_color_wire(int argc, char **argv)
     specimen = strcmp(argv[1], "libtiff-ycbcr") == 0 ? 2
              : strcmp(argv[1], "libtiff") == 0 ? 1 : 0;
     loader = specimen == 2 ? "libtiff" : argv[1];
+    if (strcmp(argv[1], "libpng-p3-8") == 0) {
+        specimen = 3;
+        loader = "libpng";
+    } else if (strcmp(argv[1], "libpng-p3-16") == 0) {
+        specimen = 4;
+        loader = "libpng";
+    } else if (strcmp(argv[1], "libpng-srgb-p3") == 0) {
+        specimen = 5;
+        loader = "libpng";
+    } else if (strcmp(argv[1], "libtiff-p3") == 0) {
+        specimen = 6;
+        loader = "libtiff";
+    }
+    cms_expected = specimen == 5 ? 0 : 1;
     if (specimen == 0 && strcmp(argv[1], "libpng") != 0 &&
         strcmp(argv[1], "builtin") != 0) {
         return cli_wire_error("unknown loader");
@@ -129,9 +144,10 @@ test_cli_0036_color_wire(int argc, char **argv)
     if (cli_wire_count(trace, "LSXLOAD1|event=try|") != 1 ||
         cli_wire_count(trace, "LSXLOAD1|event=ok|") != 1 ||
         !cli_wire_record(trace, loader_record) ||
-        cli_wire_count(trace, "LSXCMS2|event=apply|") != 1 ||
-        !cli_wire_record(trace, "LSXCMS2|event=apply|engine=builtin|"
-                         "path=extended-rgb|src=4|dst=4|ok=1")) {
+        cli_wire_count(trace, "LSXCMS2|event=apply|") != cms_expected ||
+        (cms_expected != 0 && !cli_wire_record(trace,
+            "LSXCMS2|event=apply|engine=builtin|"
+            "path=extended-rgb|src=4|dst=4|ok=1"))) {
         return cli_wire_error("wrong actual loader or CMS application");
     }
     p = strstr(trace, "\033P");

@@ -1123,6 +1123,7 @@ typedef struct sixel_palette_kmeans_build_request {
     int quality_mode;
     int force_palette;
     int use_reversible;
+    int preserve_extended_rgb;
     int final_merge_mode;
     sixel_palette_binning_state_t *binning_state;
     sixel_allocator_t *allocator;
@@ -1149,6 +1150,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     int quality_mode;
     int force_palette;
     int use_reversible;
+    int preserve_extended_rgb;
     int final_merge_mode;
     sixel_palette_binning_state_t *binning_state;
     sixel_allocator_t *allocator;
@@ -1308,6 +1310,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     quality_mode = request->quality_mode;
     force_palette = request->force_palette;
     use_reversible = request->use_reversible;
+    preserve_extended_rgb = request->preserve_extended_rgb;
     final_merge_mode = request->final_merge_mode;
     binning_state = request->binning_state;
     allocator = request->allocator;
@@ -1927,7 +1930,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                                        distance_cache,
                                                        allocator,
                                                        init_type,
-                                                       rng_state_ptr);
+                                                       rng_state_ptr,
+                                                       preserve_extended_rgb);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2201,11 +2205,15 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     snapped_center[channel] = channel_sum[channel]
                         / cluster_weight;
                 }
-                sixel_palette_snap_triple(
-                    snapped_center,
-                    use_reversible,
-                    pixelformat,
-                    SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
+                /* The legacy snap helper clamps even with snapping disabled.
+                 * Extended centers must survive every Lloyd update. */
+                if (preserve_extended_rgb == 0) {
+                    sixel_palette_snap_triple(
+                        snapped_center,
+                        use_reversible,
+                        pixelformat,
+                        SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
+                }
                 for (channel = 0u; channel < 3u; ++channel) {
                     diff = previous_center[channel] - snapped_center[channel];
                     delta += diff * diff;
@@ -2914,7 +2922,10 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     pixelformat,
                     (int)channel,
                     (float)update);
-                float_palette[center_index * 3U + channel] = clamped;
+                /* Extended RGB centers own their source coordinates. The
+                 * byte view below is only a compatibility projection. */
+                float_palette[center_index * 3U + channel] =
+                    preserve_extended_rgb != 0 ? (float)update : clamped;
             }
             if (input_is_) {
                 update = (double)sixel_pixelformat_float_channel_to_byte(
@@ -3291,6 +3302,7 @@ sixel_palette_build_kmeans_internal(
     build_request.quality_mode = SIXEL_PALETTE_CONTEXT(palette)->quality_mode;
     build_request.force_palette = SIXEL_PALETTE_CONTEXT(palette)->force_palette;
     build_request.use_reversible = reversible_for_quantizer;
+    build_request.preserve_extended_rgb = context->preserve_extended_rgb;
     build_request.final_merge_mode = SIXEL_PALETTE_CONTEXT(palette)
         ->final_merge_mode;
     build_request.binning_state =

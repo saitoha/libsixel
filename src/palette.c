@@ -75,6 +75,9 @@
 #include "status.h"
 #include "compat_stub.h"
 #include "timeline-logger.h"
+#include "cms.h"
+#include "colorspace.h"
+#include "pixelformat.h"
 
 /*
  * IDL usage in this unit
@@ -689,6 +692,9 @@ sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
                 return status;
             }
             context->lut_policy = saved_lut_policy;
+            if (context->preserve_extended_rgb != 0) {
+                return status;
+            }
             /*
              * Each engine retry owns a fresh binning attempt.  A failed
              * float32 solver may already have executed the filter, so the
@@ -720,6 +726,10 @@ sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
                 ++context->attempt->quantizer_retry_count;
             }
         }
+    }
+
+    if (context->preserve_extended_rgb != 0) {
+        return status;
     }
 
     /*
@@ -1206,6 +1216,7 @@ sixel_palette_factory_new(sixel_allocator_t *allocator, void **object)
     memset(&storage->build_attempt, 0, sizeof(storage->build_attempt));
     storage->build_attempt_active = 0;
     storage->build_context = NULL;
+    storage->output_rgb101_count = 0U;
     sixel_allocator_ref(allocator);
 
     *object = &storage->palette_interface;
@@ -1414,6 +1425,7 @@ sixel_palette_resize(sixel_palette_t *palette,
     storage->entry_count = colors;
     storage->requested_colors = colors;
     storage->depth = depth;
+    storage->output_rgb101_count = 0U;
 
     return SIXEL_OK;
 }
@@ -1479,6 +1491,7 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
     }
 
     if (colors == 0U || depth == 0 || entries == NULL) {
+        storage->output_rgb101_count = 0U;
         if (storage->entries_float32 != NULL) {
             sixel_allocator_free(work_allocator,
                                  storage->entries_float32);
@@ -1503,6 +1516,7 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
     }
     storage->entries_float32_size = payload_size;
     storage->float_depth = depth;
+    storage->output_rgb101_count = 0U;
 
     return SIXEL_OK;
 }
@@ -1525,9 +1539,10 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
  * the generated metadata so the caller can publish it without recomputing.
  */
 static SIXELSTATUS
-sixel_palette_vtbl_generate(
+sixel_palette_generate_internal(
     sixel_palette_t *palette,
-    sixel_palette_generate_request_t const *request)
+    sixel_palette_generate_request_t const *request,
+    int preserve_extended_rgb)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_palette_storage_t *storage;
@@ -1546,6 +1561,7 @@ sixel_palette_vtbl_generate(
         return SIXEL_BAD_ARGUMENT;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
+    storage->output_rgb101_count = 0U;
     if (storage->build_context != NULL) {
         sixel_helper_set_additional_message(
             "sixel_palette_generate: palette build is already active.");
@@ -1569,6 +1585,7 @@ sixel_palette_vtbl_generate(
     context.quality_mode = request->quality_mode;
     context.force_palette = request->force_palette;
     context.use_reversible = request->use_reversible;
+    context.preserve_extended_rgb = preserve_extended_rgb;
     context.quantize_model = request->quantize_model;
     context.final_merge_mode = request->final_merge_mode;
     context.lut_policy = request->lut_policy;
@@ -1630,6 +1647,10 @@ sixel_palette_vtbl_generate(
                                                       work_allocator,
                                                       request->prefer_float32);
         goto after_quantizer;
+    }
+
+    if (preserve_extended_rgb != 0) {
+        goto end;
     }
 
     status = sixel_palette_apply_mediancut_engine(palette,
@@ -1805,6 +1826,164 @@ end:
     }
     storage->build_context = NULL;
     return status;
+}
+
+static SIXELSTATUS
+sixel_palette_vtbl_generate(
+    sixel_palette_t *palette,
+    sixel_palette_generate_request_t const *request)
+{
+    return sixel_palette_generate_internal(palette, request, 0);
+}
+
+SIXELSTATUS
+sixel_palette_generate_extended(
+    sixel_palette_t *palette,
+    sixel_palette_generate_request_t const *request)
+{
+    sixel_palette_storage_t *storage;
+
+    if (palette == NULL || request == NULL || request->prefer_float32 == 0 ||
+            request->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
+            request->use_reversible != 0 ||
+            request->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
+            (request->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
+             request->pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage->build_attempt_active == 0 ||
+            storage->build_attempt.binning.policy.requested !=
+                SIXEL_PALETTE_BINNING_NONE ||
+            sixel_get_kmeans_feedback_mode() !=
+                SIXEL_PALETTE_KMEANS_FEEDBACK_OFF) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    /* The opt-in is a call argument, not retained instance or thread state.
+     * Every return clears the ordinary attempt-local build context. */
+    return sixel_palette_generate_internal(palette, request, 1);
+}
+
+SIXELSTATUS
+sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace)
+{
+    sixel_palette_storage_t *storage;
+    sixel_color_def_t *srgb;
+    sixel_color_def_t *p3;
+    sixel_color_xform_t *forward;
+    sixel_color_xform_t *inverse;
+    SIXELSTATUS status;
+    float canonical[SIXEL_PALETTE_MAX * 3];
+    unsigned char codes[SIXEL_PALETTE_MAX * 3];
+    unsigned char bytes[SIXEL_PALETTE_MAX * 3];
+    double source[3];
+    double gamma[3];
+    double output[3];
+    unsigned int index;
+    unsigned int channel;
+    unsigned int offset;
+    int pixelformat;
+
+    if (palette == NULL ||
+            (source_colorspace != SIXEL_COLORSPACE_LINEAR &&
+             source_colorspace != SIXEL_COLORSPACE_GAMMA)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage->entries == NULL || storage->entries_float32 == NULL ||
+            storage->entry_count == 0U ||
+            storage->entry_count > SIXEL_PALETTE_MAX ||
+            storage->depth != 3 ||
+            storage->float_depth != (int)(3U * sizeof(float)) ||
+            storage->entries_float32_size <
+                storage->entry_count * 3U * sizeof(float)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = SIXEL_BAD_ALLOCATION;
+    srgb = sixel_cdef_name("srgb");
+    p3 = sixel_cdef_name("display-p3");
+    forward = NULL;
+    inverse = NULL;
+    if (srgb == NULL || p3 == NULL) {
+        goto end;
+    }
+    forward = sixel_cxform_new(srgb, p3, 1);
+    inverse = sixel_cxform_new(p3, srgb, 1);
+    if (forward == NULL || inverse == NULL) {
+        goto end;
+    }
+    pixelformat = source_colorspace == SIXEL_COLORSPACE_LINEAR
+        ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 : SIXEL_PIXELFORMAT_RGBFLOAT32;
+    status = SIXEL_BAD_INPUT;
+    for (index = 0U; index < storage->entry_count; ++index) {
+        offset = index * 3U;
+        for (channel = 0U; channel < 3U; ++channel) {
+            source[channel] = storage->entries_float32[offset + channel];
+        }
+        if (!sixel_color_convert(gamma, source, source_colorspace,
+                                  SIXEL_COLORSPACE_GAMMA) ||
+                !sixel_cxform_apply(forward, gamma, output)) {
+            goto end;
+        }
+        /* This is the only gamut clamp and output quantization. Keep the
+         * integer codes so writer and lookup cannot round independently. */
+        for (channel = 0U; channel < 3U; ++channel) {
+            if (output[channel] < 0.0) {
+                output[channel] = 0.0;
+            } else if (output[channel] > 1.0) {
+                output[channel] = 1.0;
+            }
+            codes[offset + channel] =
+                (unsigned char)(output[channel] * 100.0 + 0.5);
+            output[channel] = (double)codes[offset + channel] / 100.0;
+        }
+        if (!sixel_cxform_apply(inverse, output, gamma) ||
+                !sixel_color_convert(source, gamma, SIXEL_COLORSPACE_GAMMA,
+                                      source_colorspace)) {
+            goto end;
+        }
+        for (channel = 0U; channel < 3U; ++channel) {
+            canonical[offset + channel] = (float)source[channel];
+            bytes[offset + channel] =
+                sixel_pixelformat_float_channel_to_byte(
+                    pixelformat, (int)channel, canonical[offset + channel]);
+        }
+    }
+    /* Publish the three views atomically only after every transform succeeds.
+     * Their indices remain identical; callers must not compact/reorder them. */
+    memcpy(storage->entries, bytes, storage->entry_count * 3U);
+    memcpy(storage->entries_float32, canonical,
+           storage->entry_count * 3U * sizeof(float));
+    memcpy(storage->output_rgb101, codes, storage->entry_count * 3U);
+    storage->output_rgb101_count = storage->entry_count;
+    status = SIXEL_OK;
+end:
+    sixel_cxform_free(forward);
+    sixel_cxform_free(inverse);
+    sixel_cdef_free(srgb);
+    sixel_cdef_free(p3);
+    return status;
+}
+
+SIXELSTATUS
+sixel_palette_get_rgb101(sixel_palette_t const *palette,
+                         unsigned char const **entries, unsigned int *count)
+{
+    sixel_palette_storage_t const *storage;
+
+    if (palette == NULL || entries == NULL || count == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *entries = NULL;
+    *count = 0U;
+    storage = SIXEL_PALETTE_STORAGE_CONST(palette);
+    if (storage->output_rgb101_count == 0U ||
+            storage->output_rgb101_count != storage->entry_count) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    *entries = storage->output_rgb101;
+    *count = storage->output_rgb101_count;
+    return SIXEL_OK;
 }
 
 /* emacs Local Variables:      */

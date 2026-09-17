@@ -44,6 +44,7 @@ typedef struct sixel_palette_build_context {
     int final_merge_mode;
     int lut_policy;
     sixel_palette_build_attempt_t *attempt;
+    int preserve_extended_rgb;
 } sixel_palette_build_context_t;
 
 typedef struct sixel_palette_storage {
@@ -62,6 +63,9 @@ typedef struct sixel_palette_storage {
     sixel_palette_build_attempt_t build_attempt;
     int build_attempt_active;
     sixel_palette_build_context_t *build_context;
+    /* Final output codes are distinct from the canonical float/byte views. */
+    unsigned char output_rgb101[SIXEL_PALETTE_MAX * 3];
+    unsigned int output_rgb101_count;
 } sixel_palette_storage_t;
 
 static inline sixel_palette_storage_t *

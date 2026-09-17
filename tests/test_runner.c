@@ -396,6 +396,8 @@ int test_cli_0033_consumer_scope(int argc, char **argv);
 int test_cli_0034_cli_terminal_policy_option(int argc, char **argv);
 int test_cli_0035_lookup_initials(int argc, char **argv);
 int test_cli_0036_color_wire(int argc, char **argv);
+int test_palette_0051_p3_contract(int argc, char **argv);
+int test_palette_0054_p3_encoder(int argc, char **argv);
 int test_security_0001_issue222_encoder_encode_bytes_packed_g1(int argc,
                                                                 char **argv);
 
@@ -1753,6 +1755,8 @@ static test_entry_t const test_entries[] = {
     { "cli/0035_cli_lookup_policy_initial_prefixes",
       test_cli_0035_lookup_initials },
     { "cli/0036_cli_color_wire", test_cli_0036_color_wire },
+    { "palette/0051_p3_palette_contract", test_palette_0051_p3_contract },
+    { "palette/0054_p3_encoder_contract", test_palette_0054_p3_encoder },
     { "loader/0008_loader_coregraphics_pixelformat",
       test_loader_0008_loader_coregraphics_pixelformat },
     { "loader/0009_loader_wic_pixelformat",

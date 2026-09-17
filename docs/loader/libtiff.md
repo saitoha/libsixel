@@ -9,6 +9,8 @@ img2sixel -L 'libtiff:cms_engine=builtin!' image.tif
 
 `!` fixes the backend for inspection. Compression availability depends on the linked libtiff build. This adapter processes the current image directory and does not enumerate pages into an animation; `-T` is not a TIFF page selector here.
 
+The [selected Display P3 output path](../functionality/output-colorspace.md#display-p3-selected-cpu-float-path) connects opaque static RGB samples through builtin CMS, CPU float K-means and exact lookup to final P3 RGB101 SIXEL. Its explicitly selected libtiff cases do not extend this guarantee to every source domain or encoder policy.
+
 ## Precision and fallback inside the adapter
 
 | Route | Scope |

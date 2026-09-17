@@ -279,6 +279,8 @@ struct sixel_dither {
     sixel_timeline_logger_t *pipeline_logger; /* parallel timeline logger */
     sixel_dither_frame_context_t frame_context; /* encoder frame metadata */
     sixel_dither_interframe_state_t interframe_state; /* reserved interframe */
+    /* Private job contract carried unchanged to the encoder core. */
+    int output_color_definition;
 };
 
 #ifdef __cplusplus

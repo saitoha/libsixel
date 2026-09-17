@@ -82,6 +82,29 @@ sixel_palette_build_attempt_finish(
     sixel_palette_t *palette,
     sixel_palette_build_attempt_t *attempt);
 
+/* Private job policy; it is never a frame coordinate-space identifier. */
+enum sixel_palette_output_definition {
+    SIXEL_PALETTE_OUTPUT_LEGACY = 0,
+    SIXEL_PALETTE_OUTPUT_DISPLAY_P3 = 1
+};
+
+/* Keep the installed generate request ABI unchanged. This private entry
+ * requires the CPU float K-means path and forbids byte solver fallback. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_generate_extended(
+    sixel_palette_t *palette,
+    sixel_palette_generate_request_t const *request);
+
+/* Commit P3 RGB101 codes and their inverse canonical float coordinates
+ * together. The byte entries are only a compatibility projection. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace);
+
+/* Borrow immutable wire codes until the next palette initialization. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_get_rgb101(sixel_palette_t const *palette,
+                         unsigned char const **entries, unsigned int *count);
+
 
 #ifdef __cplusplus
 }

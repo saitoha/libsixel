@@ -208,7 +208,8 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                       double *distance_cache,
                                       sixel_allocator_t *allocator,
                                       sixel_kmeans_init_type init_type,
-                                      uint32_t *rng_state);
+                                      uint32_t *rng_state,
+                                      int preserve_extended_rgb);
 
 #ifdef __cplusplus
 }

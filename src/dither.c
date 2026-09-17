@@ -2028,6 +2028,7 @@ sixel_dither_new(
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppdither)->prefer_float32 = 0;
     (*ppdither)->palette_snap_exact = 0;
+    (*ppdither)->output_color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_override = 0;
@@ -2516,6 +2517,10 @@ sixel_dither_initialize_internal(
             palette_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
             input_pixels = (unsigned char *)float_pixels;
         } else {
+            if (dither->output_color_definition ==
+                    SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+                goto end;
+            }
             prefer_float32 = 0;
             status = SIXEL_OK;
         }
@@ -2555,8 +2560,13 @@ sixel_dither_initialize_internal(
         }
         palette_attempt_active = 1;
     }
-    status = dither->palette->vtbl->generate(dither->palette,
-                                             &palette_request);
+    if (dither->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3) {
+        status = sixel_palette_generate_extended(dither->palette,
+                                                   &palette_request);
+    } else {
+        status = dither->palette->vtbl->generate(dither->palette,
+                                                 &palette_request);
+    }
     if (palette_attempt_active != 0) {
         attempt_status = sixel_palette_build_attempt_finish(
             dither->palette,
@@ -2581,10 +2591,12 @@ sixel_dither_initialize_internal(
      * A snapped typed palette has an explicit palette_pixelformat domain.
      * Preserve that authoritative view: packing perceptual coordinates to
      * bytes here would move the selected RGB fixed points off the safe grid.
-     * Keep the existing byte-derived path when snapping is disabled.
+     * The private extended RGB path likewise owns a typed float view even
+     * without snapping. Other unsnapped paths retain byte-derived behavior.
      */
-    if (!palette_request.use_reversible
-            || !SIXEL_PIXELFORMAT_IS_FLOAT32(palette_pixelformat)) {
+    if (dither->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+            (!palette_request.use_reversible ||
+             !SIXEL_PIXELFORMAT_IS_FLOAT32(palette_pixelformat))) {
         memset(&drop_float_request, 0, sizeof(drop_float_request));
         status = dither->palette->vtbl->init_entries_float32(
             dither->palette,
@@ -4133,6 +4145,14 @@ sixel_dither_apply_palette_with_mode(
                 || palette_has_float != 0)) {
         prefer_float_pipeline = 1;
     }
+    if (dither->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+            (!prefer_float_pipeline || !source_has_float ||
+             !palette_has_float || dither->optimized != 0)) {
+        sixel_helper_set_additional_message(
+            "display-p3 requires authoritative float lookup and palette.");
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
     if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888) {
         input_pixels = pixels;
     } else if (SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat)
@@ -4537,7 +4557,8 @@ sixel_dither_apply_palette_with_mode(
         ncolors <= keycolor_for_mask) {
         ncolors = keycolor_for_mask + 1;
     }
-    if (dither->force_palette != 0 && palette_entry_limit > 0) {
+    if ((dither->force_palette != 0 || dither->output_color_definition ==
+            SIXEL_PALETTE_OUTPUT_DISPLAY_P3) && palette_entry_limit > 0) {
         /*
          * Keep output palette slots stable for forced-palette mode.
          * Index resolution may touch fewer colors per frame, but callers
@@ -4548,7 +4569,10 @@ sixel_dither_apply_palette_with_mode(
     }
 
     dither->ncolors = ncolors;
-    if (ncolors >= 0 &&
+    /* The P3 owner already committed all three views in a fixed order.
+     * Reinitializing even identical byte entries invalidates its wire codes. */
+    if (dither->output_color_definition != SIXEL_PALETTE_OUTPUT_DISPLAY_P3 &&
+            ncolors >= 0 &&
             entries_view.entries != NULL &&
             entries_view.depth > 0 &&
             (size_t)ncolors <= palette_entry_capacity) {

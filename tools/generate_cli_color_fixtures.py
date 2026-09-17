@@ -13,7 +13,8 @@ import tiff_managed_reference as reference
 
 
 INPUTS = ('png-samples.json', 'png-p3-16-rgba.png', 'tiff-layout.json',
-          'tiff-layout-rgb16-o6.tif', 'display-p3.icc', 'tiff-ycbcr.json')
+          'tiff-layout-rgb16-o6.tif', 'display-p3.icc', 'tiff-ycbcr.json',
+          'png-p3-8-rgb.png', 'png-p3-16-rgb.png', 'png-raw-8-rgb.png')
 
 
 def embedded_profile(blob):
@@ -54,6 +55,23 @@ def wire_color(linear):
         assert abs(percent - (D(rounded) + D('.5'))) > D('.01')
         result.append(rounded)
     return result
+
+
+def p3_matrix():
+    """Derive the ideal P3/D65 basis independently of CMS implementation."""
+    columns = [reference.xyz(reference.F(x), reference.F(y))
+               for x, y in [('.68', '.32'), ('.265', '.69'), ('.15', '.06')]]
+    unscaled = list(map(list, zip(*columns)))
+    scale = reference.mv(reference.inv(unscaled), reference.white)
+    return [[unscaled[i][j] * scale[j] for j in range(3)] for i in range(3)]
+
+
+def p3_wire_color(linear):
+    conversion = reference.matmul(reference.inv(p3_matrix()), reference.native)
+    output = reference.mv(conversion, list(map(reference.F, linear)))
+    # P3 and sRGB use the same transfer function. The matrix must precede
+    # this final gamut clamp; clamping canonical RGB destroys P3 primaries.
+    return wire_color([D(x.numerator) / D(x.denominator) for x in output])
 
 
 def build(inputs):
@@ -108,6 +126,36 @@ def build(inputs):
                       linear=[list(map(str, p)) for p in triples],
                       wire=ycbcr['wire']))
 
+    with localcontext() as context:
+        context.prec = 60
+        for name in ('png-p3-8-rgb.png', 'png-p3-16-rgb.png',
+                     'png-raw-8-rgb.png'):
+            item = next(x for x in png['pngs'] if x['file'] == name)
+            assert hashlib.sha256(inputs[name]).hexdigest() == item['sha256']
+            maximum = 65535 if '16' in name else 255
+            samples = [[struct.unpack('>f', struct.pack('>I',
+                        reference.nearest_rational(reference.F(x, maximum))))[0]
+                        for x in rgb] for rgb in item['samples']]
+            if 'raw' in name:
+                triples = [[D(str(x)) / D('12.92') if D(str(x)) <= D('.04045')
+                            else ((D(str(x)) + D('.055')) / D('1.055')) ** D('2.4')
+                            for x in rgb] for rgb in samples]
+            else:
+                assert embedded_profile(inputs[name]) == inputs['display-p3.icc']
+                flat = reference.expected(dict(icc=inputs['display-p3.icc'],
+                                                triples=samples))
+                triples = [flat[i:i + 3] for i in range(0, len(flat), 3)]
+            cases.append(dict(name=name[:-4] + '-output-p3', source=name,
+                              width=4, height=2, source_width=4, scale=1,
+                              hidden=[0] * 8, p2=0,
+                              linear=[list(map(str, rgb)) for rgb in triples],
+                              wire=[p3_wire_color(rgb) for rgb in triples]))
+        triples = cases[1]['linear']
+        cases.append(dict(name='tiff-rgb16-o6-output-p3', source=tiff['file'],
+                          width=2, height=3, source_width=2, scale=1,
+                          hidden=[0] * 6, p2=0, linear=triples,
+                          wire=[p3_wire_color(rgb) for rgb in triples]))
+
     header = ('/* Generated independently; do not copy encoder output here. */\n'
               'static struct {\n'
               '    int width, height, source_width, scale, count, p2;\n'
@@ -127,13 +175,29 @@ def build(inputs):
                   method='Existing independent PNG frame values; original TIFF '
                          'UINT16/F32 and stored-ICC rational/Decimal oracle; '
                          'linear black composition, nearest sample replication, '
-                         'sRGB transfer and nearest integer percent.',
+                         'sRGB transfer and nearest integer percent; selected '
+                         'P3 cases use the independently derived ideal P3/D65 '
+                         'matrix before the final output gamut clamp.',
                   scope='Selected CLI wire values, not a perceptual guarantee '
                         'or complete coverage of intermediate precision.',
                   input_sha256={n: hashlib.sha256(inputs[n]).hexdigest()
                                 for n in INPUTS}, cases=cases)
+    with localcontext() as context:
+        context.prec = 60
+        inverse = reference.matmul(reference.inv(reference.native), p3_matrix())
+        red = reference.mv(inverse, [reference.F(1), reference.F(0), reference.F(0)])
+        palette_header = '/* Independently derived ideal P3 output coordinates. */\n'
+        palette_header += 'static double const color_p3_red_linear[3] = {\n'
+        palette_header += ''.join('    ' + str(D(x.numerator) / D(x.denominator)) + ',\n'
+                                  for x in red)
+        palette_header += '};\nstatic double const color_p3_gray_linear[2] = {\n'
+        palette_header += ''.join('    ' + str(((D(x) + D('.055')) / D('1.055'))
+                                              ** D('2.4')) + ',\n'
+                                  for x in ('.35', '.37'))
+        palette_header += '};\n'
     return {'cli-color-wire.h': header.encode(),
-            'cli-color-wire.json': (json.dumps(record, indent=2) + '\n').encode()}
+            'cli-color-wire.json': (json.dumps(record, indent=2) + '\n').encode(),
+            'p3-palette.h': palette_header.encode()}
 
 
 def main():

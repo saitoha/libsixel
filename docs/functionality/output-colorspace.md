@@ -1,6 +1,6 @@
 # Output Color Space
 
-`img2sixel -U` selects the RGB representation of the palette written to a SIXEL stream or exported with `-M`. For normal terminal display and reusable palette files, leave it at its default, `gamma`. Use another output space only when the consumer's interpretation of those numbers is known.
+`img2sixel -U` selects the RGB representation of the palette written to a SIXEL stream. The legacy output choices also apply to palette export with `-M`; the limited Display P3 path rejects palette interchange. For normal terminal display and reusable palette files, leave it at its default, `gamma`. Use another output space only when the consumer's interpretation of those numbers is known.
 
 ```text
 -U COLORSPACE
@@ -12,12 +12,13 @@
 | `gamma` | Gamma-encoded sRGB channels. | Default output for consumers expecting ordinary RGB code values. |
 | `linear` | Linear-light RGB with the sRGB primary basis. | A consumer explicitly configured to interpret linear-light channel values. |
 | `smpte-c` | libsixel's SMPTE-C primary conversion and gamma encoding. | A consumer expecting that specific RGB representation. |
+| `display-p3` | Standard Display P3 primaries, D65 white and sRGB transfer encoding. | The [limited CPU float path](#display-p3-selected-cpu-float-path) and a receiver explicitly configured for P3 input. |
 
 The parser also accepts `smptec` as an alias for `smpte-c`, folds letter case, and uses the shared [choice prefix-matching policy](../cli/prefix-matching.md). Full names are preferable in durable commands. A repeated `-U` replaces the earlier value. `oklab`, `cielab`, and `din99d` are working/clustering choices, not accepted output choices. `-U` takes a required name, not a numeric gamma exponent or an ICC profile path.
 
 ## Where the conversion happens
 
-For the ordinary palette encoder, the relevant data flow is:
+For the legacy `gamma`, `linear` and `smpte-c` palette paths, the relevant data flow is:
 
 ```text
 Loaded image with a known color interpretation
@@ -37,7 +38,7 @@ Loaded image with a known color interpretation
                          SIXEL color definitions / -M palette file
 ```
 
-`-X` controls the geometry used to construct a palette. `-W` controls the geometry used to choose a palette index and propagate dither error. `-U` converts the resulting palette for output; it does not rerun either operation. Changing only `-U` can therefore change the displayed colors while retaining the index assignments for a static image. This is a stage boundary, not a promise that complete SIXEL byte streams or stateful delta sequences remain identical.
+`-X` controls the geometry used to construct a palette. `-W` controls the geometry used to choose a palette index and propagate dither error. In these legacy paths, `-U` converts the resulting palette for output; it does not rerun either operation. Changing only `-U` can therefore change the displayed colors while retaining the index assignments for a static image. The P3 path instead finalizes the sent palette before lookup, as described below.
 
 Unlike the implicit coupling from an explicit `-W` to an unspecified `-X`, `-U` does not change either earlier choice. For example:
 
@@ -47,7 +48,7 @@ img2sixel -Xgamma -Woklab -Ugamma image.png
 
 This builds the palette in gamma coordinates, applies it in Oklab, and writes gamma RGB output. Keeping `-Ugamma` does not cancel the effect of `-Woklab`. Conversely, `-Ulinear` alone does not make lookup, dithering, resize, or alpha compositing operate in linear light. Those stages have their own controls; see [Working color space](working-colorspace.md), [Crop and resize](crop-resize.md), and [Alpha policy](../loader/alpha-policy.md).
 
-## What the three representations mean
+## Legacy representations
 
 ### `gamma`: sRGB encoding
 
@@ -79,6 +80,30 @@ The current implementation first converts the working color to linear sRGB, appl
 
 Consequently, `-Usmpte-c` can change channel balance as well as tone response. It is not an alternative spelling for `gamma`, a generic CRT correction, an HDR mode, or a destination ICC transform. The fixed matrix and curve describe libsixel's implementation; this option does not measure or calibrate a monitor, or establish that a particular DEC terminal expects these values.
 
+## `display-p3`: selected CPU float path
+
+The initial P3 path supports opaque static RGB input with explicit float precision, linear clustering and working coordinates, CPU K-means with full-frame sampling and no binning, exact `none` lookup, and no dithering, merge, cover or snap. It emits normal RGB SIXEL. K-means feedback is disabled. Other combinations fail before SIXEL output starts; in particular, `-m` and `-M` cannot read or export unmarked P3 palette values. Gamma working coordinates, automatic precision selection, other quantizers, GPU, high-color, HLS, DRCS, macros, delta encoding, animation and alpha-bearing frames are outside this initial path.
+
+The selected loader integration tests use libpng P3 ICC RGB8/RGB16, an untagged sRGB RGB8 PNG, and a static RGB16 TIFF with orientation 6. They explicitly select builtin CMS, canonical linear output and `prefer_8bit=0`. These tests do not establish wide-gamut support for every loader, source domain, resizing filter or optional backend. The accepted opaque RGB frame storage forms are RGB888, RGBFLOAT32 and LINEARRGBFLOAT32; the selected encoder path converts them to linear float coordinates before palette construction.
+
+```sh
+./converters/img2sixel --threads=1 \
+  -L 'libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
+  -j scalar:resize_precision=float --precision=float \
+  -Q kmeans:seed=1 -X linear -W linear -U display-p3 \
+  --sampling-policy=full-frame --binning-policy=none \
+  -F none -a off -_ none '-~none' -d none -t rgb \
+  tests/data/color-numeric/png-p3-16-rgb.png > output.six
+```
+
+The frame remains in canonical sRGB coordinates, including negative and above-one components needed to represent P3 colors. The output definition is a separate job policy. K-means retains these extended values through seeding, Lloyd updates and float palette export. It cannot silently retry a byte solver when the float path fails.
+
+Before index selection, the palette owner converts the canonical palette to P3, clamps only to the destination gamut, and rounds each channel to an integer in `0..100`. It stores these exact codes. It also converts the stored codes back to canonical float coordinates for exact lookup. The byte palette is only a compatibility projection. Lookup therefore selects among the colors that the stream will actually send. The writer consumes the stored RGB101 codes without another color transform or byte round trip; palette compaction, reordering and cache reuse are disabled in this path.
+
+This distinction is observable even within sRGB: linear gray centers `0.1` and `0.11` become P3 code values `35%` and `37%`. Their decoded midpoint moves above `0.106`, so that input must select the first sent color although it was closer to the second original center. The direct palette test protects this index change and the inverse canonical values. P3 primary and intermediate-color wire tests independently protect the destination conversion; they do not infer correctness from a perceptual similarity score.
+
+Repeated `-U` settings replace the output definition. Reusing one encoder and output object for P3, gamma and P3 again restores the corresponding behavior on each job. The private precision opt-in is scoped to one palette-generation call and does not change the installed component request structures.
+
 ## SIXEL syntax and receiver interpretation
 
 With `-t rgb`, a palette definition has this form:
@@ -87,7 +112,7 @@ With `-t rgb`, a palette definition has this form:
 # index ; 2 ; red ; green ; blue
 ```
 
-Each RGB component is an integer percentage in `0..100`. The `2` selects the RGB form of the color definition. It does not identify sRGB, linear RGB, SMPTE-C, a transfer curve, or a display profile. SIXEL provides no ICC payload or output-space tag for the receiver to recover the `-U` setting. See [SIXEL color registers](../sixel-format.md#graphics-color-introducer).
+Each RGB component is an integer percentage in `0..100`. The `2` selects the RGB form of the color definition. It does not identify sRGB, linear RGB, SMPTE-C, Display P3, a transfer curve, or a display profile. SIXEL provides no ICC payload or output-space tag for the receiver to recover the `-U` setting. See [SIXEL color registers](../sixel-format.md#graphics-color-introducer).
 
 `-t hls` instead serializes the converted output RGB triplet as DEC HLS coordinates. It changes the syntax of the color definition; it does not make `-U` an HLS working-space selector or add color-management metadata.
 
@@ -95,7 +120,7 @@ Display behavior therefore depends on the receiving terminal and display stack. 
 
 ## Precision, rounding, and cost
 
-The output encoder converts a private palette copy and preserves the reusable dither palette in working coordinates. When a usable float32 palette is available, it converts those typed values before packing bytes. Otherwise it converts the byte palette. Increasing working precision can reduce conversion rounding, but it cannot increase the precision of SIXEL's integer percentage fields.
+The legacy output encoder converts a private palette copy and preserves the reusable dither palette in working coordinates. When a usable float32 palette is available, it converts those typed values before packing bytes. Otherwise it converts the byte palette. The P3 path commits its RGB101 palette before lookup. Increasing working precision can reduce conversion rounding, but it cannot increase the precision of SIXEL's integer percentage fields.
 
 For RGB definitions, the byte path rounds a channel `b` with integer arithmetic:
 
@@ -111,7 +136,7 @@ For `K` palette entries, this conversion is `O(K)` work and uses `O(K)` palette 
 
 ## Fixed palettes and palette export
 
-`-M` writes the selected output RGB representation into ACT, PAL, RIFF PAL, or GPL entries. In particular, `-Wcielab -Ugamma -M gpl:palette.gpl` converts the working palette back to gamma RGB instead of exporting internal Lab coordinates. File format selection and palette reuse are covered by [External palette input and output](external-palettes.md).
+For the legacy output choices, `-M` writes the selected output RGB representation into ACT, PAL, RIFF PAL, or GPL entries. In particular, `-Wcielab -Ugamma -M gpl:palette.gpl` converts the working palette back to gamma RGB instead of exporting internal Lab coordinates. `display-p3` rejects both `-m` and `-M` before output because these formats do not preserve its color definition. File format selection and palette reuse are covered by [External palette input and output](external-palettes.md).
 
 These exports do not record a `-U` selection for later automatic recovery. Keep `-Ugamma` for normal interchange. Exporting linear or SMPTE-C values and importing the file later with default settings does not automatically invert the earlier transform.
 
@@ -156,7 +181,7 @@ To inspect the wire definitions, replace `-M pal:- -o /dev/null` with `-o output
 
 The conversion described here belongs to `sixel_encode_dither`, including ordinary generated and supplied palette output. An option being accepted does not establish that every alternate encoder consumes it.
 
-The current `-I` [high-color path](high-color.md) dispatches to `sixel_encode_highcolor`, which normalizes pixel format and emits changing palette registers without the `source_colorspace` to output `colorspace` conversion above. Changing only `-U` currently does not provide the requested output-space conversion on that path. This is an implementation gap, not a compatibility guarantee that `-U` should remain ineffective there.
+The current `-I` [high-color path](high-color.md) dispatches to `sixel_encode_highcolor`, which normalizes pixel format and emits changing palette registers without the legacy `source_colorspace` to output `colorspace` conversion above. Changing only a legacy `-U` choice currently does not provide the requested output-space conversion on that path. This is an implementation gap. The P3 path explicitly rejects high-color output.
 
 Likewise, `-U` does not configure decoder interpretation, embed an output ICC profile, change loader CMS, or replace the [PNG writer's snapshot policy](../writers/png.md). The static-image stage explanation should not be extended to [delta encoding](delta-encoding.md) without accounting for its retained display-color state across frames.
 
@@ -174,12 +199,24 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 | OC-04 | A PNG image mapfile exports the exact expected converted palette under `-Wlinear -Ulinear` with CMS disabled. | [tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t) |
 | OC-05 | The corresponding PNG image-mapfile path remains deterministic when ICC metadata is present but CMS is explicitly disabled. | [tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t](../../tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t) |
 | OC-06 | Exact snap after SMPTE-C output conversion gives matching reversible ACT channels and SIXEL RGB definitions. | [tests/quant/palette/0047_snap_smptec_grid.t](../../tests/quant/palette/0047_snap_smptec_grid.t) |
+| OC-07 | P3 ICC RGB8 PNG produces independently derived P3 RGB101 values through the actual libpng/builtin CMS path. | [tests/cli/color/0005_libpng_p3_8_wire.t](../../tests/cli/color/0005_libpng_p3_8_wire.t) |
+| OC-08 | The corresponding RGB16 PNG retains its original sample precision through P3 RGB101 output. | [tests/cli/color/0006_libpng_p3_16_wire.t](../../tests/cli/color/0006_libpng_p3_16_wire.t) |
+| OC-09 | Untagged sRGB PNG colors are converted to P3 rather than reinterpreted as P3 values. | [tests/cli/color/0007_libpng_srgb_to_p3_wire.t](../../tests/cli/color/0007_libpng_srgb_to_p3_wire.t) |
+| OC-10 | P3 ICC RGB16 TIFF orientation 6 preserves displayed geometry and independently derived P3 RGB101 values. | [tests/cli/color/0008_libtiff_p3_16_wire.t](../../tests/cli/color/0008_libtiff_p3_16_wire.t) |
+| OC-11 | Extended canonical primary values survive K-means and the stored RGB101 inverse reconstructs the expected canonical float palette. | [tests/quant/palette/0051_p3_palette_values.t](../../tests/quant/palette/0051_p3_palette_values.t) |
+| OC-12 | Exact lookup selects the inverse of the sent RGB101 palette, including a decision that changes after output quantization. | [tests/quant/palette/0052_p3_sent_palette_lookup.t](../../tests/quant/palette/0052_p3_sent_palette_lookup.t) |
+| OC-13 | A float solver allocation failure cannot succeed through a byte retry; ordinary generation and later P3 generation recover without a leaked opt-in or stale wire palette. | [tests/quant/palette/0053_p3_palette_failure_reset.t](../../tests/quant/palette/0053_p3_palette_failure_reset.t) |
+| OC-14 | One encoder and output object can encode P3, gamma and P3 again with the correct restored interpretation. | [tests/quant/palette/0054_p3_encoder_reuse.t](../../tests/quant/palette/0054_p3_encoder_reuse.t) |
+| OC-15 | P3 mapfile input is rejected before the writer starts. | [tests/quant/palette/0055_p3_mapfile_rejected.t](../../tests/quant/palette/0055_p3_mapfile_rejected.t) |
+| OC-16 | P3 palette export is rejected before the writer starts. | [tests/quant/palette/0056_p3_palette_export_rejected.t](../../tests/quant/palette/0056_p3_palette_export_rejected.t) |
+| OC-17 | Dithering outside the initial P3 path is rejected before the writer starts. | [tests/quant/palette/0057_p3_diffusion_rejected.t](../../tests/quant/palette/0057_p3_diffusion_rejected.t) |
+| OC-18 | Gamma working coordinates outside the initial P3 path are rejected before the writer starts. | [tests/quant/palette/0058_p3_gamma_working_rejected.t](../../tests/quant/palette/0058_p3_gamma_working_rejected.t) |
 
 ### Coverage audit boundary
 
 The first five tests assert exact exported entries. OC-06 checks the output grid and export/wire agreement; it does not independently validate the SMPTE-C conversion matrix. OC-02 and OC-03 establish byte preservation for the named configurations, not perceptual correctness of all non-gamma fixed-palette combinations. OC-05 is not evidence that a CMS transform ran.
 
-Defaults, alias and case handling, invalid values, repeated-option precedence, unchanged static index assignment, the numeric example, and the high-color gap are inspectable in the owning code or reproducible with CLI probes, but are not each covered by an independent `-U` regression in this inventory. Multi-input/animation reuse and cross-frame delta interactions also lack an exhaustive output-space matrix here. Receiver color management remains a manual integration observation. No image-quality threshold or terminal-compatibility result is inferred from the exact palette checks.
+P3 values, lookup and reuse are directly covered by OC-07 through OC-18. General defaults, alias and case handling, invalid values, legacy repeated-option precedence, unchanged legacy static index assignment, the numeric example, and the high-color gap are inspectable in the owning code or reproducible with CLI probes, but are not each covered by an independent `-U` regression in this inventory. Multi-input/animation reuse and cross-frame delta interactions also lack an exhaustive output-space matrix here. Receiver color management remains a manual integration observation. No image-quality threshold or terminal-compatibility result is inferred from the exact palette checks.
 
 ## Implementation references
 

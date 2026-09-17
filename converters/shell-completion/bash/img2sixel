@@ -1019,7 +1019,8 @@ _img2sixel()
     -U|--output-colorspace)
         COMPREPLY=( $( compgen -W 'gamma \
                                    linear \
-                                   smpte-c' -- "$cur" ) )
+                                   smpte-c \
+                                   display-p3' -- "$cur" ) )
         return 0
         ;;
     -w|--width|-h|--height)

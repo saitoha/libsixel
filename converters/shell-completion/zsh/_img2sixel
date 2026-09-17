@@ -256,7 +256,8 @@ _outputcolorspace() {
     'OUTPUTCOLORSPACE' \
     'gamma[sRGB gamma encoded output (default)]' \
     'linear[linear RGB output]' \
-    'smpte-c[SMPTE-C gamma encoded output]'
+    'smpte-c[SMPTE-C gamma encoded output]' \
+    'display-p3[Display P3: limited CPU float palette path]'
 }
 
 _quantizemodel() {

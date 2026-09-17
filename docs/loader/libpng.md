@@ -2,6 +2,8 @@
 
 The `libpng` loader decodes PNG scanlines with the external libpng library and implements APNG playback in [`loader-libpng.c`](../../src/loader-libpng.c). libsixel owns frame representation, color management, alpha/background normalization, orientation, and delivery. An APNG-patched libpng is not required.
 
+The [selected Display P3 output path](../functionality/output-colorspace.md#display-p3-selected-cpu-float-path) connects opaque static RGB samples through builtin CMS, CPU float K-means and exact lookup to final P3 RGB101 SIXEL. Its explicitly selected libpng cases do not extend this guarantee to every source domain or encoder policy.
+
 ## Origin and stages of support
 
 The initial libpng reader was developed with [yaft's source](https://github.com/uobikiemukot/yaft) as a reference, as recalled by libsixel's maintainer. The [2014-10-20 introduction](https://github.com/saitoha/libsixel/commit/1dc22c25810f08c345be36e707abe76b9970e16e) records the implementation in `converters/loader.c`; that commit establishes the date and initial behavior, while the yaft attribution comes from the maintainer's account. This is the origin of the PNG adapter, distinct from the [SIXEL encoder's lineage](../project-history.md#kmiyas-sixel).

@@ -492,6 +492,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0034_CLI_TERMINAL_POLICY_OPTION \
     -DBUILD_TEST_0035_CLI_LOOKUP_POLICY_INITIAL_PREFIXES \
     -DBUILD_TEST_0036_CLI_COLOR_WIRE \
+    -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
+    -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
     -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
     -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
     -DBUILD_TEST_0052_LOADER_OSC11_QUERY_CONTROL \
@@ -2102,6 +2104,8 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0044_kcenter_packed_alpha_layouts.c \
     quant/palette/0045_snap_output_grid.c \
     quant/palette/0048_snap_partial_once.c \
+    quant/palette/0051_p3_palette_contract.c \
+    quant/palette/0054_p3_encoder_contract.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \

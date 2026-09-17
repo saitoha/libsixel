@@ -1164,6 +1164,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "      gamma   -> sRGB gamma(default)\n"
         "      linear  -> linear RGB color space\n"
         "      smpte-c -> SMPTE-C gamma color space\n"
+        "      display-p3 -> Display P3 (limited CPU float palette path)\n"
+        "    display-p3 requires explicit float/linear K-means, exact lookup,\n"
+        "    no dithering, binning, merge, cover or snap; -m/-M unsupported\n"
     },
     {
         '1',

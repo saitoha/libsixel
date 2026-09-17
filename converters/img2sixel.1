@@ -1305,6 +1305,13 @@ gamma   -> sRGB gamma encoded output (default)
 linear  -> linear RGB output
 .br
 smpte-c -> SMPTE-C gamma encoded output
+.br
+display-p3 -> Display P3 output for the limited CPU float palette path
+.br
+Display P3 requires explicit float precision, linear working and clustering
+coordinates, K-means, exact lookup, full-frame sampling, no binning, dithering,
+merge, cover or snap, and RGB SIXEL output. Palette input and export with
+\fB-m\fP or \fB-M\fP are unsupported with Display P3.
 .TP 5
 .B \-K \fIauto[:KEY=PATH]\fP, \-\-completion\-policy=\fIauto[:KEY=PATH]\fP
 select completion source and install paths.

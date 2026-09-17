@@ -382,6 +382,8 @@ struct sixel_encoder {
     int parallel_job_id;
     int palette_job_enabled;
     sixel_encoding_planner_t planner;
+    /* Output interpretation is separate from frame/working coordinates. */
+    int output_color_definition;
 };
 
 

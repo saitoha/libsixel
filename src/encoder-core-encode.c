@@ -4557,10 +4557,17 @@ sixel_encode_dither(
     sixel_timeline_logger_t *logger = NULL;
     SIXELSTATUS close_status;
     int image_started;
+    unsigned char const *output_rgb101;
+    unsigned int output_rgb101_count;
+    int output_is_p3;
 
     if (output == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    output_rgb101 = NULL;
+    output_rgb101_count = 0U;
+    output_is_p3 = dither->output_color_definition ==
+        SIXEL_PALETTE_OUTPUT_DISPLAY_P3;
 
     /*
      * Preserve the effective geometry for the post-encode contract trace.
@@ -4841,7 +4848,27 @@ sixel_encode_dither(
                palette_float_view.entries,
                palette_float_bytes);
     }
-    if (palette_entries != NULL && palette_entries_float32 != NULL
+    if (output_is_p3) {
+        status = sixel_palette_get_rgb101(palette_obj, &output_rgb101,
+                                           &output_rgb101_count);
+        if (SIXEL_FAILED(status) || palette_entries_float32 == NULL ||
+                output_rgb101_count != palette_count ||
+                palette_float_count != palette_count) {
+            status = SIXEL_LOGIC_ERROR;
+            goto end;
+        }
+        /* Lookup already used the inverse of these exact stored codes.
+         * Never re-transform, clamp to canonical RGB, or sync from bytes. */
+        for (palette_index = 0U; palette_index < palette_count * 3U;
+                ++palette_index) {
+            palette_entries_float32[palette_index] =
+                (float)output_rgb101[palette_index] / 100.0f;
+            palette_entries[palette_index] = (unsigned char)(
+                (output_rgb101[palette_index] * 255U + 50U) / 100U);
+        }
+    }
+    if (!output_is_p3 &&
+            palette_entries != NULL && palette_entries_float32 != NULL
             && palette_count == palette_float_count
             && palette_count > 0U
             && !sixel_palette_float32_matches_u8(
@@ -4854,7 +4881,7 @@ sixel_encode_dither(
                                            palette_count,
                                            palette_float_pixelformat);
     }
-    if (palette_entries != NULL && palette_count > 0U
+    if (!output_is_p3 && palette_entries != NULL && palette_count > 0U
             && output != NULL
             && output->source_colorspace != output->colorspace) {
         palette_bytes = palette_count * 3U;
@@ -4908,7 +4935,7 @@ sixel_encode_dither(
             }
         }
     }
-    if (dither->palette_snap_exact != 0) {
+    if (!output_is_p3 && dither->palette_snap_exact != 0) {
         sixel_palette_snap_output(palette_entries, palette_entries_float32,
                                    (unsigned int)palette_count);
     }
