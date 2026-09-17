@@ -2132,7 +2132,12 @@ test_runner_SOURCES = test_runner.c \
     $(top_srcdir)/converters/aborttrace.c \
     $(top_srcdir)/converters/cli.c \
     $(top_srcdir)/converters/path.c
+# Numeric and fault-injection helpers include CMS, PNG and TIFF directly;
+# their optional headers are also required in the normal runner build.
 test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
+    $(LIBPNG_CFLAGS) \
+    $(LCMS2_CFLAGS) \
+    $(LIBTIFF_CFLAGS) \
     $(LIBWEBP_CFLAGS) \
     $(GDK_PIXBUF_CFLAGS) \
     -DGDK_PIXBUF_ENABLE_BACKEND \
