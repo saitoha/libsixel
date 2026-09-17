@@ -623,6 +623,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/profile_format_common.h \
 	processing/cms/profile_format_scope_common.h \
 	processing/colorspace/0012_extended_failure_atomic.c \
+	processing/colorspace/0013_black_log1p_model.c \
 	loader/libpng/keycolor/0001_frame_samples.c \
 	loader/libpng/keycolor/0002_paint_mask.c \
 	processing/cms/0008_invalid_rgb_definition.c \
@@ -1603,6 +1604,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-lab_linear_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-lab_linear_fault_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0013_black_log1p_model.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/keycolor/test_runner-0001_frame_samples.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/keycolor/test_runner-0002_paint_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT) \
@@ -2877,6 +2879,7 @@ am__depfiles_remade =  \
 	processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po \
 	processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po \
+	processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po \
@@ -4000,6 +4003,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_RESIZE_LINEAR_BYTE_WORK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_RESIZE_PRESERVE_BYTE_WORK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_EXPLICIT_FLOAT_PRESERVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_BLACK_LOG1P_MODEL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
@@ -5270,6 +5274,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/profile_format_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/profile_format_scope_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0013_black_log1p_model.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/keycolor/0001_frame_samples.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/keycolor/0002_paint_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0008_invalid_rgb_definition.c \
@@ -7436,6 +7441,9 @@ processing/colorspace/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) processing/colorspace/$(DEPDIR)
 	@: >>processing/colorspace/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT):  \
+	processing/colorspace/$(am__dirstamp) \
+	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/test_runner-0013_black_log1p_model.$(OBJEXT):  \
 	processing/colorspace/$(am__dirstamp) \
 	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
 loader/libpng/keycolor/$(am__dirstamp):
@@ -9865,6 +9873,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po@am__quote@ # am--include-marker
@@ -16982,6 +16991,20 @@ processing/colorspace/test_runner-0012_extended_failure_atomic.obj: processing/c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0012_extended_failure_atomic.c' object='processing/colorspace/test_runner-0012_extended_failure_atomic.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.obj `if test -f 'processing/colorspace/0012_extended_failure_atomic.c'; then $(CYGPATH_W) 'processing/colorspace/0012_extended_failure_atomic.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0012_extended_failure_atomic.c'; fi`
+
+processing/colorspace/test_runner-0013_black_log1p_model.o: processing/colorspace/0013_black_log1p_model.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0013_black_log1p_model.o -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Tpo -c -o processing/colorspace/test_runner-0013_black_log1p_model.o `test -f 'processing/colorspace/0013_black_log1p_model.c' || echo '$(srcdir)/'`processing/colorspace/0013_black_log1p_model.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Tpo processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0013_black_log1p_model.c' object='processing/colorspace/test_runner-0013_black_log1p_model.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0013_black_log1p_model.o `test -f 'processing/colorspace/0013_black_log1p_model.c' || echo '$(srcdir)/'`processing/colorspace/0013_black_log1p_model.c
+
+processing/colorspace/test_runner-0013_black_log1p_model.obj: processing/colorspace/0013_black_log1p_model.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/test_runner-0013_black_log1p_model.obj -MD -MP -MF processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Tpo -c -o processing/colorspace/test_runner-0013_black_log1p_model.obj `if test -f 'processing/colorspace/0013_black_log1p_model.c'; then $(CYGPATH_W) 'processing/colorspace/0013_black_log1p_model.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0013_black_log1p_model.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Tpo processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/0013_black_log1p_model.c' object='processing/colorspace/test_runner-0013_black_log1p_model.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0013_black_log1p_model.obj `if test -f 'processing/colorspace/0013_black_log1p_model.c'; then $(CYGPATH_W) 'processing/colorspace/0013_black_log1p_model.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0013_black_log1p_model.c'; fi`
 
 loader/libpng/keycolor/test_runner-0001_frame_samples.o: loader/libpng/keycolor/0001_frame_samples.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/keycolor/test_runner-0001_frame_samples.o -MD -MP -MF loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Tpo -c -o loader/libpng/keycolor/test_runner-0001_frame_samples.o `test -f 'loader/libpng/keycolor/0001_frame_samples.c' || echo '$(srcdir)/'`loader/libpng/keycolor/0001_frame_samples.c
@@ -24691,6 +24714,7 @@ distclean: distclean-am
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po
@@ -25693,6 +25717,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0010_extended_din99d_forward.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0011_extended_din99d_inverse.Po
 	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0012_extended_failure_atomic.Po
+	-rm -f processing/colorspace/$(DEPDIR)/test_runner-0013_black_log1p_model.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0003_decoder_ormode_wide_overlay.Po

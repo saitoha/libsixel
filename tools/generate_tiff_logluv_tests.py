@@ -3,6 +3,7 @@
 from decimal import Decimal as D, ROUND_FLOOR, localcontext
 import hashlib
 import json
+import math
 import struct
 
 from generate_lcms_input_tests import array
@@ -16,6 +17,60 @@ UV_ROWS = [(130, '.009016', 170, 12209),
            (161, '.016994', 31, 16237),
            (141, '.002389', 170, 14121),
            (156, '.003246', 69, 15964)]
+
+
+def black_lightness_model():
+    """Bound cancellation at zero without relaxing other sample intervals."""
+    with localcontext() as context:
+        context.prec = 110
+        u, u32 = D(2)**-53, D(2)**-24
+        gamma = lambda n: n*u/(1-n*u)
+        f0 = D(16)/116
+        ef = gamma(1)*abs(f0)
+        # Cover the rounded f0, multiply and cancellation, with or without FMA.
+        estar = 116*ef + gamma(2)*(116*(abs(f0)+ef)+16)
+        el = estar/100*(1+gamma(1))*(1+u32) + D(2)**-150
+        c1, c2 = D.from_float(325.22), D.from_float(.0036)
+        zmax = abs(c2)*estar*(1+gamma(1))
+        # The finite log1p probe checks this existing 64u32 tolerance on the
+        # running libm. This is not a claim about ISO C or fast-math accuracy.
+        ed = abs(c1)*(-(1-zmax).ln())*(1+64*u32)*(1+gamma(1))**2/100
+        ed = ed*(1+u32) + D(2)**-150
+
+        def outward(value, upper):
+            rounded = float(value)
+            if (D.from_float(rounded) < value if upper else
+                    D.from_float(rounded) > value):
+                rounded = math.nextafter(rounded, math.inf if upper else -math.inf)
+            return rounded
+
+        residual = 116*D.from_float(float(f0))-16
+        zres = float(c2*residual)
+        probes = []
+        for z in (0., -0., zres, -zres, float(zmax), -float(zmax)):
+            exact = (1+D.from_float(z)).ln()
+            budget = abs(exact)*64*u32
+            probes.append(dict(bits=struct.unpack('>Q', struct.pack('>d', z))[0],
+                input=z.hex(), exact=str(exact),
+                lo=outward(exact-budget, False), hi=outward(exact+budget, True)))
+        bounds = [outward(el, True), outward(ed, True)]
+        record = dict(model='Binary64 RN with or without FMA; binary32 RN publication',
+            libm_model='Finite log1p probes within 64u32 relative error; no fast-math',
+            gamma_n='n*u/(1-n*u)', u=str(u), u32=str(u32),
+            E_star=str(estar), E_L32=str(el), zmax=str(zmax), E_D32=str(ed),
+            bounds=bounds, fma_residual=str(residual), probes=probes)
+        header = ('/* Generated cancellation bounds and finite libm probes. */\n'
+                  + 'static double const color_black_l_bounds[2] = {\n'
+                  + ''.join('    %.17g,\n' % bound for bound in bounds)
+                  + '};\n'
+                  + 'static struct color_black_log_probe {\n'
+                    '    uint64_t bits;\n    double lo;\n    double hi;\n'
+                    '} const color_black_log_probes[] = {\n')
+        for p in probes:
+            header += '    { UINT64_C(0x%016x),\n      %.17g, %.17g },\n' % (
+                p['bits'], p['lo'], p['hi'])
+        header += '};\n'
+        return bounds, record, header
 
 
 def floor(value):
@@ -118,6 +173,7 @@ def build(profile, opponents, encode):
 
 
 def values(profile, opponents, encode):
+    black_bounds, black_model, black_header = black_lightness_model()
     literal = ['0 0 0', '.2 .2 .2', '1 1 1', '2 2 2',
                '.95047 1 1.08883', '.1 .8 .1', '.45 .2 .02', '.8 4 1']
     samples = [[binary32(v) for v in row.split()] for row in literal]
@@ -138,12 +194,15 @@ def values(profile, opponents, encode):
         targets = [linear, gamma, [r[1] for r in opponent],
                    [r[0] for r in opponent], [r[2] for r in opponent]]
         limits = []
-        for target in targets:
+        for target_index, target in enumerate(targets):
             block = []
-            for row in target:
+            for sample_index, row in enumerate(target):
                 row = [v if isinstance(v,D) else D.from_float(v) for v in row]
                 budget = max(map(abs,row))*D(64)/2**24
                 block.append([[v-budget for v in row], [v+budget for v in row]])
+                if sample_index == 0 and target_index in (2, 4):
+                    bound = D.from_float(black_bounds[target_index == 4])
+                    block[-1][0][0], block[-1][1][0] = -bound, bound
             limits.append(block)
         rgb8 = [[floor(min(D(1), max(D(0), v))*255+D('.5')) for v in row] for row in gamma]
         legacy_matrix = [[D(v) for v in row.split()] for row in
@@ -166,13 +225,15 @@ def values(profile, opponents, encode):
               + array('tlog_legacy', 'unsigned char', all_legacy)
               + array('tlog_icc', 'unsigned char', list(profile)))
     outputs['tiff-logluv.h'] = header.encode()
+    outputs['black-lightness.h'] = black_header.encode()
     record = dict(generator='tools/generate_tiff_logluv_tests.py', decimal_digits=90,
         prescribed_xyz=literal, input_float32=samples, words=all_words,
         decoded_xyz=all_xyz, matrix=matrix, bounds=all_limits, bytes=all_bytes,
         legacy_bytes=all_legacy, targets=['linear','gamma','cielab','oklab','din99d'],
         uv_rows=UV_ROWS, codec='NODITHER cell centers; SGILOG24 binary32 codebook constants',
         policy='Stored XYZ and relative exposure; no CAT, ICC apply or StoNits scaling',
-        budget='64u32 relative to each target triplet; storage quantization is separate',
+        budget='64u32 relative to each target triplet; only black Lab/DIN99d L adds the derived absolute cancellation bound; storage quantization is separate',
+        black_lightness=black_model,
         independence='No libtiff/CMM/production output; literal packet TIFF writer and independent XYZ/matrix formulas',
         profile_sha256=hashlib.sha256(profile).hexdigest(),
         fixtures_sha256={name:hashlib.sha256(data).hexdigest() for name,data in outputs.items() if name.endswith('.tif')})

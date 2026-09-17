@@ -119,6 +119,7 @@ int test_cdef_0006(int argc, char **argv);
 int test_cdef_0007(int argc, char **argv);
 int test_icc_0009(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
+int test_color_0013(int argc, char **argv);
 int test_png_key_0001(int argc, char **argv);
 int test_png_key_0002(int argc, char **argv);
 int test_cdef_0008(int argc, char **argv);
@@ -1581,6 +1582,7 @@ static test_entry_t const test_entries[] = {
     { "colorspace/0003_din99d_byte", test_color_0003_din99d_byte },
     { "decoder/0053_percentage_rgb8", test_pmap_0053 },
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },
+    { "colorspace/0013_black_log1p_model", test_color_0013 },
     { "png-keycolor/0001_frame_samples", test_png_key_0001 },
     { "png-keycolor/0002_paint_mask", test_png_key_0002 },
     { "cms/0008_invalid_rgb_definition", test_cdef_0008 },

@@ -429,6 +429,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0006_RESIZE_LINEAR_BYTE_WORK \
     -DBUILD_TEST_0007_RESIZE_PRESERVE_BYTE_WORK \
     -DBUILD_TEST_0008_EXPLICIT_FLOAT_PRESERVE \
+    -DBUILD_TEST_0013_BLACK_LOG1P_MODEL \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
     -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
     -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
@@ -1669,6 +1670,7 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/profile_format_common.h \
     processing/cms/profile_format_scope_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
+    processing/colorspace/0013_black_log1p_model.c \
     loader/libpng/keycolor/0001_frame_samples.c \
     loader/libpng/keycolor/0002_paint_mask.c \
     processing/cms/0008_invalid_rgb_definition.c \

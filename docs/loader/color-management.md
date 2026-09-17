@@ -475,6 +475,10 @@ Unsupported tile, planar, extra-sample or orientation layouts retain existing fa
 
 The regression oracle separates codec quantization from loader arithmetic: prescribed XYZ values and actual packed words determine decoded centers independently, then a matrix derived from sRGB primaries and destination white determines expected linear coordinates. Encoding error is not absorbed by widening the existing floating-point arithmetic budget. The [libtiff codec source](https://gitlab.com/libtiff/libtiff/-/raw/v4.7.2/libtiff/tif_luv.c) and [original LogLuv description](https://www.anyhere.com/gward/pixformat/tiffluv.html) describe the storage and calibration conventions.
 
+Black requires an absolute arithmetic allowance for the CIELAB and DIN99d lightness components: `116 * f(0) - 16` can leave a residual when `f(0) = 16/116` is rounded and the final operations are contracted into an FMA. The [oracle generator](../../tools/generate_tiff_logluv_tests.py) derives the allowance from binary64 round-to-nearest operation bounds, propagates it through normalized lightness and the DIN99d `log1p` formula, and includes binary32 publication rounding. Its outward-rounded bounds are `8.881784726396848e-17` for normalized CIELAB L and `1.0398762171365921e-16` for normalized DIN99d L. The mathematical reference remains zero; other black channels and all nonblack intervals retain their existing bounds. This test model covers arithmetic with or without contraction, not arbitrary fast-math reassociation, and it does not clamp production values.
+
+The DIN99d allowance assumes the existing `64u32` relative error budget for `log1p` at the finite inputs near black used by the model. A runtime probe checks positive and negative zero, both signs of the cancellation witness, and both signs of the model endpoint against independent Decimal bounds. The probe verifies the supported execution environment; it does not claim an ISO C accuracy guarantee for libm.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -1231,6 +1235,7 @@ Each numerical case observes the ordinary public loader and checks a successful 
 | TLOG-25 | A NaN in the last decoded sample is rejected without publishing a callback. | [tests/loader/libtiff/0224_logluv_nan_rejected.t](../../tests/loader/libtiff/0224_logluv_nan_rejected.t) |
 | TLOG-26 | An infinity in the last decoded sample is rejected without publishing a callback. | [tests/loader/libtiff/0225_logluv_infinity_rejected.t](../../tests/loader/libtiff/0225_logluv_infinity_rejected.t) |
 | TLOG-27 | A target conversion failure after a fully valid native frame publishes no callback. | [tests/loader/libtiff/0226_logluv_target_failure.t](../../tests/loader/libtiff/0226_logluv_target_failure.t) |
+| TLOG-28 | Runtime log1p near black satisfies the finite error model used by the independent CIELAB and DIN99d black-lightness bounds. | [tests/processing/colorspace/0013_black_log1p_model.t](../../tests/processing/colorspace/0013_black_log1p_model.t) |
 
 ### TIFF Lab direct-linear publication and recovery tests
 
