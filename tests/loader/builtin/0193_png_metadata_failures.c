@@ -7,6 +7,7 @@
 #include "config.h"
 #endif
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include "src/cms.h"
