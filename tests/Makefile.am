@@ -419,8 +419,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0178_FRAME_FLOAT_BYTE_BOUNDARY \
     -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
     -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0001_FRAME_SAMPLES \
     -DBUILD_TEST_0001_GAMMA_BYTE_BOUNDARY \
     -DBUILD_TEST_0002_LINEAR_BYTE_BOUNDARY \
+    -DBUILD_TEST_0002_PAINT_MASK \
     -DBUILD_TEST_0003_AUTO_FLOAT_SOURCE \
     -DBUILD_TEST_0004_NON_GAMMA_FLOAT_WORK \
     -DBUILD_TEST_0005_RESIZE_FLOAT_OVERRIDE \
@@ -1667,6 +1669,8 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/profile_format_common.h \
     processing/cms/profile_format_scope_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
+    loader/libpng/keycolor/0001_frame_samples.c \
+    loader/libpng/keycolor/0002_paint_mask.c \
     processing/cms/0008_invalid_rgb_definition.c \
     processing/cms/0009_icc_length_ownership.c \
     processing/cms/0010_p3_float_roundtrip.c \

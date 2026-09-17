@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify PNG keycolor policy through short and environment paths.
+# Verify PNG keycolor optimization invariance and option precedence.
+# Policy: docs/loader/libpng.md
 # Registry row: SIXEL_OPTION_SCHEMA_LOADERS|NULL|trns_keycolor
 # Registry binding: png_trns_keycolor
 
@@ -28,7 +29,8 @@ env_output="${artifact_dir}/0099-loader-png-trns-keycolor-env-$$.six"
 control_output="${artifact_dir}/0099-loader-png-trns-keycolor-control-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Goff -dnone \
+    --env "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0" \
     "-Llibpng:K1:cms_engine=none!" "${input_image}" \
     2>&1 >"${short_output}") || {
     echo "not ok" 1 - "trns_keycolor short conversion failed"
@@ -41,7 +43,7 @@ test "${short_trace#*LSXSUB1|*key=trns_keycolor|stored=1|binding=png_trns_keycol
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Goff -dnone \
     --env "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1" \
     "-Llibpng:cms_engine=none!" "${input_image}" \
     2>&1 >"${env_output}") || {
@@ -54,10 +56,17 @@ test "${env_trace#*LSXSUB1|*key=trns_keycolor|stored=1|binding=png_trns_keycolor
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+control_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Goff -dnone \
+    --env "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1" \
     "-Llibpng:K0:cms_engine=none!" "${input_image}" \
-    >"${control_output}" || {
+    2>&1 >"${control_output}") || {
     echo "not ok" 1 - "trns_keycolor control conversion failed"
+    exit 0
+}
+
+test "${control_trace#*LSXSUB1|*key=trns_keycolor|stored=1|binding=png_trns_keycolor|value=0*}" != "${control_trace}" || {
+    echo "not ok 1 - explicit K0 did not override the enabled environment"
     exit 0
 }
 
@@ -66,8 +75,8 @@ cmp -s "${short_output}" "${env_output}" || {
     exit 0
 }
 
-cmp -s "${short_output}" "${control_output}" && {
-    echo "not ok" 1 - "trns_keycolor did not affect image output"
+cmp -s "${short_output}" "${control_output}" || {
+    echo "not ok" 1 - "trns_keycolor changed image output"
     exit 0
 }
 

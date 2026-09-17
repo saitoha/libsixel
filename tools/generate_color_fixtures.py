@@ -1131,6 +1131,58 @@ def palette_export_oracles():
     return {'palette-export.json': (json.dumps(record, indent=2) + '\n').encode()}
 
 
+def png_keycolor_oracle():
+    """Read the original PNG using only chunk, filter and Decimal formulas."""
+    from generate_lcms_input_tests import array
+    path = ROOT / 'images/pngsuite/transparency/tbrn2c08.png'
+    data = path.read_bytes()
+    chunks, offset = {}, 8
+    assert data[:8] == b'\x89PNG\r\n\x1a\n'
+    while offset < len(data):
+        size = struct.unpack_from('>I', data, offset)[0]
+        tag = data[offset+4:offset+8]
+        payload = data[offset+8:offset+8+size]
+        assert zlib.crc32(tag+payload) == struct.unpack_from('>I', data, offset+8+size)[0]
+        chunks.setdefault(tag, []).append(payload)
+        offset += size+12
+    assert struct.unpack('>IIBBBBB', chunks[b'IHDR'][0]) == (32, 32, 8, 2, 0, 0, 0)
+    key = struct.unpack('>3H', chunks[b'tRNS'][0])
+    assert key == (255, 255, 255)
+    scanlines = zlib.decompress(b''.join(chunks[b'IDAT']))
+    assert len(scanlines) == 32*97
+    raster, previous = [], [0]*96
+    for y in range(32):
+        mode = scanlines[y*97]
+        row = list(scanlines[y*97+1:(y+1)*97])
+        for i, value in enumerate(row):
+            left = row[i-3] if i >= 3 else 0
+            up, corner = previous[i], previous[i-3] if i >= 3 else 0
+            prediction = left+up-corner
+            distances = [abs(prediction-v) for v in (left, up, corner)]
+            paeth = (left, up, corner)[distances.index(min(distances))]
+            row[i] = (value+(0, left, up, (left+up)//2, paeth)[mode]) % 256
+        raster.extend([row[i:i+3] for i in range(0, 96, 3)])
+        previous = row
+    linear = []
+    for byte in range(256):
+        value = D(byte)/255
+        value = value/D('12.92') if value <= D('.04045') else ((value+D('.055'))/D('1.055'))**D('2.4')
+        budget = abs(value)*64/2**24
+        linear.append([float(value-budget), float(value+budget)])
+    header = ('/* Original PNG bytes and independent sRGB decoding. */\n'
+              + array('color_key_rgb', 'unsigned char', raster)
+              + array('color_key_linear', 'double', linear))
+    record = dict(fixture=str(path.relative_to(ROOT)),
+        sha256=hashlib.sha256(data).hexdigest(), trns=key,
+        transparent_pixels=sum(tuple(rgb) == key for rgb in raster),
+        method='stdlib PNG chunks, CRC, inflate and inverse filters; Decimal sRGB EOTF for cms_engine=none',
+        budget='64u32 relative for opaque linear samples; exact source-derived coverage',
+        decimal_digits=getcontext().prec)
+    assert record['transparent_pixels'] == 453
+    return {'png-keycolor.h': header.encode(),
+            'png-keycolor.json': (json.dumps(record, indent=2)+'\n').encode()}
+
+
 def legacy_png_icc_oracle():
     """Recompute the existing PNG probe without a decoder or CMS oracle."""
     path = ROOT / 'tests/data/inputs/formats/map8_embedded_icc.png'
@@ -1788,6 +1840,7 @@ def main():
     outputs.update(png_palette_oracles(power_outputs['rgb-power.json']))
     from generate_png_chrm_fixtures import build as png_chrm_fixtures
     outputs.update(png_chrm_fixtures(outputs['palette-trns-cms.png']))
+    outputs.update(png_keycolor_oracle())
     from generate_png_arithmetic_tests import build as png_arithmetic_fixtures
     outputs.update(png_arithmetic_fixtures())
     outputs.update(jpeg_sample_oracles())

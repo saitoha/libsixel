@@ -623,6 +623,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/cms/profile_format_common.h \
 	processing/cms/profile_format_scope_common.h \
 	processing/colorspace/0012_extended_failure_atomic.c \
+	loader/libpng/keycolor/0001_frame_samples.c \
+	loader/libpng/keycolor/0002_paint_mask.c \
 	processing/cms/0008_invalid_rgb_definition.c \
 	processing/cms/0009_icc_length_ownership.c \
 	processing/cms/0010_p3_float_roundtrip.c \
@@ -1601,6 +1603,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-lab_linear_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-lab_linear_fault_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/keycolor/test_runner-0001_frame_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/keycolor/test_runner-0002_paint_mask.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0009_icc_length_ownership.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0010_p3_float_roundtrip.$(OBJEXT) \
@@ -2365,6 +2369,8 @@ am__depfiles_remade =  \
 	loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po \
 	loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po \
+	loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Po \
+	loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po \
@@ -3984,8 +3990,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0178_FRAME_FLOAT_BYTE_BOUNDARY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_SAMPLES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GAMMA_BYTE_BOUNDARY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LINEAR_BYTE_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PAINT_MASK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_AUTO_FLOAT_SOURCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_NON_GAMMA_FLOAT_WORK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_RESIZE_FLOAT_OVERRIDE \
@@ -5262,6 +5270,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/profile_format_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/profile_format_scope_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/keycolor/0001_frame_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/keycolor/0002_paint_mask.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0008_invalid_rgb_definition.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0009_icc_length_ownership.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0010_p3_float_roundtrip.c \
@@ -7428,6 +7438,18 @@ processing/colorspace/$(DEPDIR)/$(am__dirstamp):
 processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT):  \
 	processing/colorspace/$(am__dirstamp) \
 	processing/colorspace/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/keycolor/$(am__dirstamp):
+	@$(MKDIR_P) loader/libpng/keycolor
+	@: >>loader/libpng/keycolor/$(am__dirstamp)
+loader/libpng/keycolor/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/libpng/keycolor/$(DEPDIR)
+	@: >>loader/libpng/keycolor/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/keycolor/test_runner-0001_frame_samples.$(OBJEXT):  \
+	loader/libpng/keycolor/$(am__dirstamp) \
+	loader/libpng/keycolor/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/keycolor/test_runner-0002_paint_mask.$(OBJEXT):  \
+	loader/libpng/keycolor/$(am__dirstamp) \
+	loader/libpng/keycolor/$(DEPDIR)/$(am__dirstamp)
 processing/cms/test_runner-0008_invalid_rgb_definition.$(OBJEXT):  \
 	processing/cms/$(am__dirstamp) \
 	processing/cms/$(DEPDIR)/$(am__dirstamp)
@@ -9064,6 +9086,7 @@ mostlyclean-compile:
 	-rm -f loader/gnome-thumbnailer/*.$(OBJEXT)
 	-rm -f loader/libjpeg/*.$(OBJEXT)
 	-rm -f loader/libpng/*.$(OBJEXT)
+	-rm -f loader/libpng/keycolor/*.$(OBJEXT)
 	-rm -f loader/librsvg/*.$(OBJEXT)
 	-rm -f loader/libtiff/*.$(OBJEXT)
 	-rm -f loader/libwebp/*.$(OBJEXT)
@@ -9334,6 +9357,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po@am__quote@ # am--include-marker
@@ -16958,6 +16983,34 @@ processing/colorspace/test_runner-0012_extended_failure_atomic.obj: processing/c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/test_runner-0012_extended_failure_atomic.obj `if test -f 'processing/colorspace/0012_extended_failure_atomic.c'; then $(CYGPATH_W) 'processing/colorspace/0012_extended_failure_atomic.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/0012_extended_failure_atomic.c'; fi`
 
+loader/libpng/keycolor/test_runner-0001_frame_samples.o: loader/libpng/keycolor/0001_frame_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/keycolor/test_runner-0001_frame_samples.o -MD -MP -MF loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Tpo -c -o loader/libpng/keycolor/test_runner-0001_frame_samples.o `test -f 'loader/libpng/keycolor/0001_frame_samples.c' || echo '$(srcdir)/'`loader/libpng/keycolor/0001_frame_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Tpo loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/keycolor/0001_frame_samples.c' object='loader/libpng/keycolor/test_runner-0001_frame_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/keycolor/test_runner-0001_frame_samples.o `test -f 'loader/libpng/keycolor/0001_frame_samples.c' || echo '$(srcdir)/'`loader/libpng/keycolor/0001_frame_samples.c
+
+loader/libpng/keycolor/test_runner-0001_frame_samples.obj: loader/libpng/keycolor/0001_frame_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/keycolor/test_runner-0001_frame_samples.obj -MD -MP -MF loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Tpo -c -o loader/libpng/keycolor/test_runner-0001_frame_samples.obj `if test -f 'loader/libpng/keycolor/0001_frame_samples.c'; then $(CYGPATH_W) 'loader/libpng/keycolor/0001_frame_samples.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/keycolor/0001_frame_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Tpo loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/keycolor/0001_frame_samples.c' object='loader/libpng/keycolor/test_runner-0001_frame_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/keycolor/test_runner-0001_frame_samples.obj `if test -f 'loader/libpng/keycolor/0001_frame_samples.c'; then $(CYGPATH_W) 'loader/libpng/keycolor/0001_frame_samples.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/keycolor/0001_frame_samples.c'; fi`
+
+loader/libpng/keycolor/test_runner-0002_paint_mask.o: loader/libpng/keycolor/0002_paint_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/keycolor/test_runner-0002_paint_mask.o -MD -MP -MF loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Tpo -c -o loader/libpng/keycolor/test_runner-0002_paint_mask.o `test -f 'loader/libpng/keycolor/0002_paint_mask.c' || echo '$(srcdir)/'`loader/libpng/keycolor/0002_paint_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Tpo loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/keycolor/0002_paint_mask.c' object='loader/libpng/keycolor/test_runner-0002_paint_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/keycolor/test_runner-0002_paint_mask.o `test -f 'loader/libpng/keycolor/0002_paint_mask.c' || echo '$(srcdir)/'`loader/libpng/keycolor/0002_paint_mask.c
+
+loader/libpng/keycolor/test_runner-0002_paint_mask.obj: loader/libpng/keycolor/0002_paint_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/keycolor/test_runner-0002_paint_mask.obj -MD -MP -MF loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Tpo -c -o loader/libpng/keycolor/test_runner-0002_paint_mask.obj `if test -f 'loader/libpng/keycolor/0002_paint_mask.c'; then $(CYGPATH_W) 'loader/libpng/keycolor/0002_paint_mask.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/keycolor/0002_paint_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Tpo loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/keycolor/0002_paint_mask.c' object='loader/libpng/keycolor/test_runner-0002_paint_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/keycolor/test_runner-0002_paint_mask.obj `if test -f 'loader/libpng/keycolor/0002_paint_mask.c'; then $(CYGPATH_W) 'loader/libpng/keycolor/0002_paint_mask.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/keycolor/0002_paint_mask.c'; fi`
+
 processing/cms/test_runner-0008_invalid_rgb_definition.o: processing/cms/0008_invalid_rgb_definition.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0008_invalid_rgb_definition.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Tpo -c -o processing/cms/test_runner-0008_invalid_rgb_definition.o `test -f 'processing/cms/0008_invalid_rgb_definition.c' || echo '$(srcdir)/'`processing/cms/0008_invalid_rgb_definition.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Tpo processing/cms/$(DEPDIR)/test_runner-0008_invalid_rgb_definition.Po
@@ -23821,6 +23874,8 @@ distclean-generic:
 	-$(am__rm_f) loader/libjpeg/$(am__dirstamp)
 	-$(am__rm_f) loader/libpng/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/libpng/$(am__dirstamp)
+	-$(am__rm_f) loader/libpng/keycolor/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/libpng/keycolor/$(am__dirstamp)
 	-$(am__rm_f) loader/librsvg/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/librsvg/$(am__dirstamp)
 	-$(am__rm_f) loader/libtiff/$(DEPDIR)/$(am__dirstamp)
@@ -24128,6 +24183,8 @@ distclean: distclean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po
+	-rm -f loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Po
+	-rm -f loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
@@ -25128,6 +25185,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0211_png_arith_unavailable.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0212_png_arith_tiny.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-png_arithmetic_test_common.Po
+	-rm -f loader/libpng/keycolor/$(DEPDIR)/test_runner-0001_frame_samples.Po
+	-rm -f loader/libpng/keycolor/$(DEPDIR)/test_runner-0002_paint_mask.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po

@@ -1,0 +1,13 @@
+{
+  "fixture": "images/pngsuite/transparency/tbrn2c08.png",
+  "sha256": "8223d8b0c5f84b149f0c1f0e1f658346e07fcbd03ffc02b2e9eeea1481eb19bf",
+  "trns": [
+    255,
+    255,
+    255
+  ],
+  "transparent_pixels": 453,
+  "method": "stdlib PNG chunks, CRC, inflate and inverse filters; Decimal sRGB EOTF for cms_engine=none",
+  "budget": "64u32 relative for opaque linear samples; exact source-derived coverage",
+  "decimal_digits": 60
+}

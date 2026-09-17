@@ -200,6 +200,9 @@ Direct probes inspect frame samples, masks, timing, and callback counts rather t
 | LP-35 | A raster error in the second APNG frame unwinds through libpng and returns the error after exactly one callback, without static/backend fallback. | [tests/loader/libpng/0260_libpng_apng_longjmp.t](../../tests/loader/libpng/0260_libpng_apng_longjmp.t) |
 | LP-36 | Without liblcms2, direct gAMA 45455 preserves original source, canonical linear and requested gamma float values, and rounds the explicit byte target without an intermediate gamma float store. | [tests/loader/unit/0283_libpng_gama45455_byte_target.t](../../tests/loader/unit/0283_libpng_gama45455_byte_target.t) |
 | LP-37 | Without liblcms2, direct gAMA 33333 preserves original source, canonical linear and requested gamma float values, and rounds the explicit byte target without an intermediate gamma float store. | [tests/loader/unit/0284_libpng_gama33333_byte_target.t](../../tests/loader/unit/0284_libpng_gama33333_byte_target.t) |
+| LP-38 | RGB tRNS key-color optimization leaves SIXEL unchanged; explicit K1 and K0 override conflicting environment values, while the original image-quality floor remains 0.98. | [tests/cli/options/regression/0099_loader_png_trns_keycolor_optimization_invariance.t](../../tests/cli/options/regression/0099_loader_png_trns_keycolor_optimization_invariance.t) |
+| LP-39 | Both K settings publish every source-derived hole and independent opaque linear RGB sample for the RGB tRNS fixture under cms_engine=none. | [tests/loader/libpng/keycolor/0001_frame_samples.t](../../tests/loader/libpng/keycolor/0001_frame_samples.t) |
+| LP-40 | The corresponding CLI stream requests P2=0 and paints exactly the opaque source pixels, independently of palette RGB. | [tests/loader/libpng/keycolor/0002_paint_mask.t](../../tests/loader/libpng/keycolor/0002_paint_mask.t) |
 
 ### CLI numeric and structural tests
 
