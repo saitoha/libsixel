@@ -45,6 +45,7 @@ Start from the [documentation index](README.md). Read the relevant document befo
 - Link to owning code, test categories, or workflows when that makes a claim verifiable.
 - Update the relevant document in the same change when a long-lived policy or architecture boundary changes.
 - Keep issue investigations, temporary measurements, rollout logs, and private task reports in a local backup or external tracking system, not in `docs/`.
+- Describe experimental terminal extensions through receiver-independent protocol proposals. Do not name private consumers, link to their repositories, or include their launch commands, internal interfaces, or integration records in public documentation or commit messages. Separate proposed behavior from implemented libsixel behavior.
 
 ## Documentation-to-test traceability
 

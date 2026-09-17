@@ -12,6 +12,7 @@ are grouped by domain so each area can grow without overloading one document.
 - [SIXEL format](sixel-format.md) is a practical guide to the DEC SIXEL wire
   format, its control functions, rendering model, and interoperability limits.
 - [SIXEL codec comparison](sixel-format/comparison.md) compares quality, encoding and decoding latency, 7-bit transport size, thread budgets, and repeated generations with JPEG, GIF, PNG, and WebP.
+- [Terminal graphics color management proposal](protocols/graphics-color-management.md) defines receiver-independent color policy, device-input RGB discovery, simple RGB and ICC descriptions, filter-status queries, and the proposed application negotiation flow.
 
 ## Requirements and support
 

@@ -122,6 +122,24 @@ Each RGB component is an integer percentage in `0..100`. The `2` selects the RGB
 
 Display behavior therefore depends on the receiving terminal and display stack. A browser preview or a decoded PNG that treats all three streams as ordinary RGB does not show three correctly color-managed renditions. For a meaningful comparison of alternative output spaces, the consumer must know the chosen space outside the SIXEL stream.
 
+### Negotiation through the proposed color protocol
+
+The [Terminal graphics color management proposal](../protocols/graphics-color-management.md) defines a receiver-independent agreement for these RGB numbers. It separates an explicit sRGB policy from a reported device-input definition, provides DECRQSS save/restore for each target's policy, and specifies dedicated color-definition queries. Protocol support must be established by the session's replies; a P3-capable display alone does not establish the receiver's input interpretation.
+
+For ordinary SIXEL, a controller using this proposal can display the selected `-Udisplay-p3` output with the following transaction. `CSI`, `DCS`, and `ST` denote the control bytes defined in the proposal, and `M` is the exact saved policy.
+
+| Step | Exchange or action |
+| --- | --- |
+| Discover target 1 | Send `CSI ?1./r`; require a complete valid reply with `A=1`, `S2=1`, and `C=4`. For example, `DCS 1;1;1;1;4./r ST` also advertises expansion support. |
+| Save policy | Send `DCS $q1./p ST`; save `M` from `DCS 1$r1;M./p ST`, preserving `0` versus `1`. |
+| Select device input | Send `CSI 1;2./p`; query again and require policy `2`. |
+| Display | Send the bytes generated with `-Udisplay-p3`; new RGB definitions are interpreted as standard Display P3. |
+| Restore | Send `CSI 1;M./p`; verify the saved value, including on recoverable errors. |
+
+For a color-preserving sRGB comparison, generate `-Ugamma` output and set and verify policy `1`. Feeding gamma sRGB values under a P3 device policy reinterprets those values in the wider basis; it does not establish correct sRGB rendering. Policy `3` explicitly requests the proposal's component expansion and serves a different purpose from source-to-destination color conversion.
+
+The current `img2sixel -Udisplay-p3` and `-Ugamma` options perform none of these color-protocol exchanges. A controller must manage the transaction and error cleanup; interactive `printf`/`cat` commands do not provide complete framing, correlation, or restoration. The proposed `-Uauto` CLI flow is described in the proposal and is not an implemented option in this revision. A timeout or malformed response never proves that a receiver is using sRGB.
+
 ## Precision, rounding, and cost
 
 The legacy output encoder converts a private palette copy and preserves the reusable dither palette in working coordinates. When a usable float32 palette is available, it converts those typed values before packing bytes. Otherwise it converts the byte palette. The P3 path commits its RGB101 palette before lookup. Increasing working precision can reduce conversion rounding, but it cannot increase the precision of SIXEL's integer percentage fields.
@@ -230,7 +248,7 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 
 The first five tests assert exact exported entries. OC-06 checks the output grid and export/wire agreement; it does not independently validate the SMPTE-C conversion matrix. OC-02 and OC-03 establish byte preservation for the named configurations, not perceptual correctness of all non-gamma fixed-palette combinations. OC-05 is not evidence that a CMS transform ran.
 
-P3 values, lookup and reuse are directly covered by OC-07 through OC-28. General defaults, alias and case handling, invalid values, legacy repeated-option precedence, unchanged legacy static index assignment, the numeric example, and the high-color gap are inspectable in the owning code or reproducible with CLI probes, but are not each covered by an independent `-U` regression in this inventory. Multi-input/animation reuse and cross-frame delta interactions also lack an exhaustive output-space matrix here. Receiver color management remains a manual integration observation. No image-quality threshold or terminal-compatibility result is inferred from the exact palette checks.
+P3 values, lookup and reuse are directly covered by OC-07 through OC-28. General defaults, alias and case handling, invalid values, legacy repeated-option precedence, unchanged legacy static index assignment, the numeric example, and the high-color gap are inspectable in the owning code or reproducible with CLI probes, but are not each covered by an independent `-U` regression in this inventory. Multi-input/animation reuse and cross-frame delta interactions also lack an exhaustive output-space matrix here. The proposed receiver protocol has no established automated end-to-end coverage in this inventory. No image-quality threshold or terminal-compatibility result is inferred from the exact palette checks.
 
 ## Implementation references
 

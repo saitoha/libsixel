@@ -73,6 +73,7 @@ EXTRA_DIST = LICENSE build.md build-aux/depcomp \
 	docs/platform-support.md \
 	docs/project-history.md \
 	docs/sixel-format.md \
+	docs/protocols/graphics-color-management.md \
 	docs/functionality/high-color.md \
 	docs/functionality/high-color/measurement.md \
 	docs/functionality/high-color/measurements/high-color-comparison.csv \
