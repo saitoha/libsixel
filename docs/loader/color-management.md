@@ -1087,6 +1087,16 @@ These tests reuse existing profiles and independent normalized expectations. Ext
 | CMS-519 | Failed CMS retains the entire original source and mask without target conversion; same-component recovery. | [tests/loader/libtiff/0465_layout_palette_cms_fallback.t](../../tests/loader/libtiff/0465_layout_palette_cms_fallback.t) |
 | CMS-520 | Failed CMS retains the entire original source and mask without target conversion; same-component recovery. | [tests/loader/libtiff/0466_layout_alpha_cms_fallback.t](../../tests/loader/libtiff/0466_layout_alpha_cms_fallback.t) |
 
+### CLI numeric and structural contracts
+
+These three focused tests use one exclusive loader and one real CLI conversion each. Independent source/frame values and stored ICC fields determine the RGB101 expectations; palette numbering and serialization order are not goldens. The reader resolves each palette entry at paint time before comparing the final raster. Explicit scalar float processing, Heckbert, gamma working/output space, nearest resampling and no dither keep the observations finite. Their exact wire values and coverage are separate from both pre-encoder numeric probes and MS-SSIM quality floors. They qualify the existing sRGB SIXEL boundary, not Display-P3 device output. The [expectation generator](../../tools/generate_cli_color_fixtures.py) is also part of the common color-fixture generator; `python3 tools/generate_cli_color_fixtures.py --check` verifies these two small expectation tables without rebuilding other fixtures.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| CMS-521 | Exclusive libpng and actual builtin CMS preserve the derived RGB16/alpha RGB101 raster, transparent holes, P2 and enlarged dimensions. | [tests/cli/color/0001_libpng_rgba16_wire.t](../../tests/cli/color/0001_libpng_rgba16_wire.t) |
+| CMS-522 | Exclusive libtiff and actual builtin CMS preserve the derived RGB16 RGB101 raster through orientation 6 and nearest enlargement, with full coverage and default P2. | [tests/cli/color/0002_libtiff_oriented16_wire.t](../../tests/cli/color/0002_libtiff_oriented16_wire.t) |
+| CMS-523 | Exclusive builtin PNG and actual builtin CMS preserve the derived RGB16/alpha RGB101 raster, transparent holes, P2 and enlarged dimensions. | [tests/cli/color/0003_builtin_png_rgba16_wire.t](../../tests/cli/color/0003_builtin_png_rgba16_wire.t) |
+
 ### TIFF RGB16 input contract tests
 
 | ID | Contract | Owning test |

@@ -151,7 +151,7 @@ The ledger distinguishes observations by their assertion, not merely by the inpu
 | Source, CMS, and frame values | [Shared PNG source-sample contracts](png-color-metadata.md#test-coverage) and the behavioral contracts below | Original integer samples, independently derived linear values, alpha and masks, background composition, target conversion, and the stated engine/fallback behavior at the inspected boundary. Native CMS tolerances are explicit numerical budgets, not perceptual thresholds. |
 | cHRM arithmetic and accepted metadata | [Arithmetic certificates](../testing/png-chrm-arithmetic.md) and [metadata boundary tests](../testing/png-chrm-boundaries.md) | The specified arithmetic dispatch, rounding, accepted/rejected input, and source-to-frame values. These do not qualify every ICC transform. |
 | Encoded-image quality | [Shared PNG quality matrix](png-color-metadata.md#quality-regression-tests) and the quality regressions below | Only the stated MS-SSIM floor against the selected reference. This cannot establish low-bit retention, exact samples, a particular CMS backend, or the absence of an intermediate clamp. |
-| CLI and SIXEL behavior | Selected behavioral entries below | Only the asserted wire properties, such as P2 or output invariance. Equal streams from two paths do not independently prove shared CMS arithmetic; frame assertions alone do not cover the intervening resize, quantization, and wire rounding. |
+| CLI and SIXEL behavior | Selected behavioral entries below | The named RGB101, coverage, P2 and dimension assertions below cover the selected complete CLI path. Equal streams from two paths alone do not independently prove shared CMS arithmetic; frame assertions alone do not cover the intervening resize, quantization, and wire rounding. |
 | Independent oracle audit | Command below | Consistency of stored expectations with a separately implemented mathematical derivation. It does not execute the loader. |
 
 <!-- test-coverage: enforced -->
@@ -198,6 +198,14 @@ Direct probes inspect frame samples, masks, timing, and callback counts rather t
 | LP-35 | A raster error in the second APNG frame unwinds through libpng and returns the error after exactly one callback, without static/backend fallback. | [tests/loader/libpng/0260_libpng_apng_longjmp.t](../../tests/loader/libpng/0260_libpng_apng_longjmp.t) |
 | LP-36 | Without liblcms2, direct gAMA 45455 preserves original source, canonical linear and requested gamma float values, and rounds the explicit byte target without an intermediate gamma float store. | [tests/loader/unit/0283_libpng_gama45455_byte_target.t](../../tests/loader/unit/0283_libpng_gama45455_byte_target.t) |
 | LP-37 | Without liblcms2, direct gAMA 33333 preserves original source, canonical linear and requested gamma float values, and rounds the explicit byte target without an intermediate gamma float store. | [tests/loader/unit/0284_libpng_gama33333_byte_target.t](../../tests/loader/unit/0284_libpng_gama33333_byte_target.t) |
+
+### CLI numeric and structural tests
+
+The selected RGB16 Display-P3 ICC fixture is converted by the exclusive libpng loader and actual builtin CMS, composited over explicit black, and enlarged from 4x2 to 8x4 with nearest resampling. Scalar float processing, Heckbert, gamma working/output coordinates and no dither isolate the existing sRGB RGB101 wire boundary. The [derived expectations](../../tests/data/color-numeric/cli-color-wire.json) start from independent source/frame values, not captured SIXEL. The wire reader resolves palette values when each pixel is painted and checks every final RGB101 value, alpha-zero hole, raster dimension and P2. This complements the source/frame contracts and MS-SSIM regressions; it does not qualify Display-P3 device output or every resize/quantization policy.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| LPW-01 | RGB16 ICC and partial alpha reach the actual CLI wire with independent RGB101 values, four retained holes, dimensions 8x4 and P2=1. | [tests/cli/color/0001_libpng_rgba16_wire.t](../../tests/cli/color/0001_libpng_rgba16_wire.t) |
 
 ### Quality regression tests
 

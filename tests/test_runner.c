@@ -395,6 +395,7 @@ int test_cli_0032_cli_gpu_policy_option(int argc, char **argv);
 int test_cli_0033_consumer_scope(int argc, char **argv);
 int test_cli_0034_cli_terminal_policy_option(int argc, char **argv);
 int test_cli_0035_lookup_initials(int argc, char **argv);
+int test_cli_0036_color_wire(int argc, char **argv);
 int test_security_0001_issue222_encoder_encode_bytes_packed_g1(int argc,
                                                                 char **argv);
 
@@ -1743,6 +1744,7 @@ static test_entry_t const test_entries[] = {
       test_cli_0034_cli_terminal_policy_option },
     { "cli/0035_cli_lookup_policy_initial_prefixes",
       test_cli_0035_lookup_initials },
+    { "cli/0036_cli_color_wire", test_cli_0036_color_wire },
     { "loader/0008_loader_coregraphics_pixelformat",
       test_loader_0008_loader_coregraphics_pixelformat },
     { "loader/0009_loader_wic_pixelformat",

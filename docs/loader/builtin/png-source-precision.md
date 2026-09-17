@@ -49,7 +49,7 @@ This ledger covers the builtin **PNG loader**, including cases that select built
 | Original samples and CMS values | The behavioral tests compare inspected source/frame values with the independent expectations described above. Some require exact binary32 or byte results; native transformations use their stated numerical tolerances. Neither is an MS-SSIM assertion. |
 | Alpha, metadata, target, and failure recovery | Direct mask, metadata, callback, engine-trace, and restored-sample assertions protect the named boundary. The same fixture can support several distinct assertions without making their guarantees interchangeable. |
 | Encoded-image quality | The shared PNG quality matrix protects perceptual floors separately. A quality pass cannot replace a source-sample, extended-range, or actual-engine check. |
-| CLI through SIXEL | Frame probes stop before encoder resize, palette construction, and 101-level wire rounding. Output invariance protects the compared behavior, but two paths can share the same arithmetic error. Whole-path numeric claims need their own wire assertions as well as the independent source/frame oracle. |
+| CLI through SIXEL | Frame probes stop before encoder resize, palette construction, and 101-level wire rounding. Output invariance protects the compared behavior, but two paths can share the same arithmetic error. The focused CLI contract below adds its own independent RGB101 and coverage assertions for one selected path; the source/frame tests retain their broader numeric ownership. |
 | Expected-value derivation | Fixture regeneration checks consistency with the generator. A separately implemented oracle or a source-byte causal experiment provides additional evidence and should not be counted as another normal runtime test unless it is registered as one. The [independent oracle audit](../libpng.md#independent-oracle-audit) preserves the rational-certificate and exhaustive UINT16 checks; it does not execute this decoder. |
 
 <!-- test-coverage: enforced -->
@@ -361,6 +361,14 @@ Each numeric observation verifies the declared frame format/colorspace, all RGB 
 | BPNG-294 | Release PNG singular_rgba16 ownership after callback failure. | [tests/loader/builtin/2208_loader_builtin_png_metadata_singular_rgba16_callback_failure.t](../../../tests/loader/builtin/2208_loader_builtin_png_metadata_singular_rgba16_callback_failure.t) |
 | BPNG-295 | Release PNG indexed ownership after allocation failure. | [tests/loader/builtin/2209_loader_builtin_png_metadata_indexed_allocation_failure.t](../../../tests/loader/builtin/2209_loader_builtin_png_metadata_indexed_allocation_failure.t) |
 | BPNG-296 | Release PNG indexed ownership after callback failure. | [tests/loader/builtin/2210_loader_builtin_png_metadata_indexed_callback_failure.t](../../../tests/loader/builtin/2210_loader_builtin_png_metadata_indexed_callback_failure.t) |
+
+### CLI numeric and structural tests
+
+The exclusive builtin PNG loader and actual builtin CMS convert the existing 4x2 RGB16 Display-P3 ICC/alpha fixture to an 8x4 nearest-resampled frame over explicit black. The scalar float/Heckbert/gamma/no-dither path is compared with [independently derived RGB101 expectations](../../../tests/data/color-numeric/cli-color-wire.json). Palette selection is resolved at paint time, then all final pixels, four retained alpha-zero holes, raster dimensions and P2=1 are checked. This finite sRGB wire regression complements the source/frame expectations and MS-SSIM floors; it does not qualify Display-P3 device output or the full encoder policy space.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| BPNGW-01 | Builtin PNG RGB16 ICC and partial alpha reach the actual CLI wire with independent RGB101 values, retained holes, dimensions 8x4 and P2=1. | [tests/cli/color/0003_builtin_png_rgba16_wire.t](../../../tests/cli/color/0003_builtin_png_rgba16_wire.t) |
 
 ### Quality regression tests
 

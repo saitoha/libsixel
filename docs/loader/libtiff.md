@@ -336,6 +336,18 @@ The [TIFF test directory](../../tests/loader/libtiff/) contains numerical, metad
 | CMS-519 | Failed CMS retains the entire original source and mask without target conversion; same-component recovery. | [tests/loader/libtiff/0465_layout_palette_cms_fallback.t](../../tests/loader/libtiff/0465_layout_palette_cms_fallback.t) |
 | CMS-520 | Failed CMS retains the entire original source and mask without target conversion; same-component recovery. | [tests/loader/libtiff/0466_layout_alpha_cms_fallback.t](../../tests/loader/libtiff/0466_layout_alpha_cms_fallback.t) |
 
-### Quality regression and defensive coverage
+### CLI numeric and structural tests
 
-The existing perceptual tests retain their references and thresholds; their separate inventory is in [Loader Color Management](color-management.md#test-coverage). Malformed and unsupported-layout cases remain in the [libtiff test category](../../tests/loader/libtiff/). Each contract above covers only its stated route and observation, not all TIFF combinations.
+The selected original RGB16 ICC input passes through the exclusive libtiff loader and actual builtin CMS, orientation 6 maps 3x2 to 2x3, and nearest resampling enlarges it to 8x12. Scalar float processing, Heckbert, gamma working/output coordinates and no dither expose the existing sRGB RGB101 wire boundary. The [derived expectations](../../tests/data/color-numeric/cli-color-wire.json) use original integers, independent F32 rounding and the stored-ICC mathematical oracle. The wire reader applies palette changes at paint time and checks every final pixel, full coverage, dimensions and the opaque default P2. This is distinct from source/frame precision and MS-SSIM observations and does not qualify Display-P3 device output or all layouts and resamplers.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TIFFW-01 | Original RGB16 orientation 6 and actual CMS reach independent RGB101 values at every enlarged 8x12 pixel, with full coverage and default P2=0. | [tests/cli/color/0002_libtiff_oriented16_wire.t](../../tests/cli/color/0002_libtiff_oriented16_wire.t) |
+
+### Quality regression tests
+
+The existing perceptual tests retain their references and thresholds; their separate inventory is in [Loader Color Management](color-management.md#test-coverage). They do not substitute for the source/frame or CLI RGB101 expectations above.
+
+### Defensive and malformed-input tests
+
+Malformed and unsupported-layout cases remain in the [libtiff test category](../../tests/loader/libtiff/). Each contract above covers only its stated route and observation, not all TIFF combinations.
