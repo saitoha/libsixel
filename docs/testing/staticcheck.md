@@ -17,6 +17,7 @@ The target deliberately spans more than conventional lint:
 | External lint and syntax | Shell, workflow, spelling, and language syntax accepted by maintained tools. | ShellCheck, actionlint, codespell, and Python compile checks. |
 | Source and architecture boundaries | Forbidden dependencies, private includes, exported symbols, component ownership, and guarded implementation paths. | Text inspection, C AST queries, symbol inspection, and strict compile probes. |
 | IDL, schema, and generated artifacts | A declarative source remains authoritative and every derived representation is current. | Regenerate into a temporary file and compare, or compare registry projections. |
+| Numerical expectation data | Stored color certificates and source-value tables agree with an independent mathematical derivation. | Exact rational matrix calculations, binary32 rounding-cell checks, and exhaustive UINT16 normalization and polarity checks. |
 | Cross-surface interface consistency | CLI help, manuals, completion, public headers, bindings, build descriptions, and platform metadata describe the same contract. | Normalize each representation and compare complete inventories. |
 | Test meta-checks | Tests themselves follow plan, structure, registration, portability, artifact, and source-list rules. | Inspect the test corpus and its Autotools, Meson, runner, and amalgamation registrations. |
 | Documentation traceability | Durable policy claims link to their evidence, while exhaustive suite inventories keep every defensive and supplementary test discoverable without turning it into a public contract. | Compare enforced behavioral inventories with reciprocal `Policy:` comments and marked test-plan inventories with reciprocal `Test-plan:` comments. |
@@ -77,6 +78,17 @@ make -C tests staticcheck-docs-bash-vs-zsh-completion
 ```
 
 The umbrella target remains the completion criterion because a focused check does not expose interactions with other repository invariants.
+
+The color expectation audits also have individual targets:
+
+```sh
+make -C tests staticcheck-png-color-oracles
+make -C tests staticcheck-tiff-uint16-oracles
+meson compile -C build staticcheck-png-color-oracles
+meson compile -C build staticcheck-tiff-uint16-oracles
+```
+
+Both targets run the [independent oracle auditor](../../tools/verify_color_oracles.py) with the configured host Python interpreter and only its standard library. The PNG check independently derives the stored cHRM exact values, error bounds, and binary32 rounding certificates. The TIFF check covers every UINT16 normalization and MINISWHITE complement, then the separate-plane source tables for orientations 1–4. These checks require neither optional image libraries nor a CMS or built converter; a missing Python interpreter is reported as a skip. A mismatch fails the target and the umbrella suite. They verify stored expectations, while loader value assertions and final-image MS-SSIM regressions remain separate runtime observations.
 
 ## Adding or changing a staticcheck
 

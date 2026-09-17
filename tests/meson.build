@@ -1064,6 +1064,26 @@ foreach static_case : staticcheck_cases
   run_target(static_case[0], command: [sh] + static_case[1])
 endforeach
 
+# These audits inspect stored expectations without invoking the built library.
+foreach oracle_case : [
+  ['staticcheck-png-color-oracles', 'png'],
+  ['staticcheck-tiff-uint16-oracles', 'uint16'],
+]
+  if python_for_tests_path != ''
+    run_target(oracle_case[0], command: [
+      python_for_tests_path,
+      meson.project_source_root() / 'tools/verify_color_oracles.py',
+      '--source-root', meson.project_source_root(),
+      '--kind', oracle_case[1],
+    ])
+  else
+    run_target(oracle_case[0], command: [
+      sh, '-c', 'echo "SKIP $1: python interpreter not found"',
+      'staticcheck-oracle', oracle_case[0],
+    ])
+  endif
+endforeach
+
 run_target('staticcheck',
   command: [
     sh,

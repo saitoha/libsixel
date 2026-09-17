@@ -40,6 +40,18 @@ Builtin and Little CMS cases compare the requested output against independent so
 
 ## Test coverage
 
+This ledger covers the builtin **PNG loader**, including cases that select builtin, Little CMS, or ColorSync as the CMS engine. A builtin-loader pass is not automatically a test of builtin-CMS arithmetic, and a builtin-CMS test through libpng does not prove this loader entrance. The [complete builtin-loader inventory](../../testing/builtin-loader-coverage.md) classifies assertion mechanisms for its directory; the source-precision contracts below also own tests in the separate loader-unit category.
+
+### Assertion boundaries
+
+| Observation | Evidence and limit |
+| --- | --- |
+| Original samples and CMS values | The behavioral tests compare inspected source/frame values with the independent expectations described above. Some require exact binary32 or byte results; native transformations use their stated numerical tolerances. Neither is an MS-SSIM assertion. |
+| Alpha, metadata, target, and failure recovery | Direct mask, metadata, callback, engine-trace, and restored-sample assertions protect the named boundary. The same fixture can support several distinct assertions without making their guarantees interchangeable. |
+| Encoded-image quality | The shared PNG quality matrix protects perceptual floors separately. A quality pass cannot replace a source-sample, extended-range, or actual-engine check. |
+| CLI through SIXEL | Frame probes stop before encoder resize, palette construction, and 101-level wire rounding. Output invariance protects the compared behavior, but two paths can share the same arithmetic error. Whole-path numeric claims need their own wire assertions as well as the independent source/frame oracle. |
+| Expected-value derivation | Fixture regeneration checks consistency with the generator. A separately implemented oracle or a source-byte causal experiment provides additional evidence and should not be counted as another normal runtime test unless it is registered as one. The [independent oracle audit](../libpng.md#independent-oracle-audit) preserves the rational-certificate and exhaustive UINT16 checks; it does not execute this decoder. |
+
 <!-- test-coverage: enforced -->
 
 ### Behavioral contract tests
@@ -349,3 +361,11 @@ Each numeric observation verifies the declared frame format/colorspace, all RGB 
 | BPNG-294 | Release PNG singular_rgba16 ownership after callback failure. | [tests/loader/builtin/2208_loader_builtin_png_metadata_singular_rgba16_callback_failure.t](../../../tests/loader/builtin/2208_loader_builtin_png_metadata_singular_rgba16_callback_failure.t) |
 | BPNG-295 | Release PNG indexed ownership after allocation failure. | [tests/loader/builtin/2209_loader_builtin_png_metadata_indexed_allocation_failure.t](../../../tests/loader/builtin/2209_loader_builtin_png_metadata_indexed_allocation_failure.t) |
 | BPNG-296 | Release PNG indexed ownership after callback failure. | [tests/loader/builtin/2210_loader_builtin_png_metadata_indexed_callback_failure.t](../../../tests/loader/builtin/2210_loader_builtin_png_metadata_indexed_callback_failure.t) |
+
+### Quality regression tests
+
+The [shared PNG quality regression matrix](../png-color-metadata.md#quality-regression-tests) owns the metadata reference-image MS-SSIM tests. Additional builtin PNG/APNG quality cases are identified by assertion mechanism in the [builtin-loader inventory](../../testing/builtin-loader-coverage.md). They are separate from the source/frame expected-value tests above, even when they use the same PNG metadata or CMS setting. Neither a perceptual floor nor a byte-equality comparison between two encoder runs is an independent numerical CMS oracle.
+
+### Coverage boundary
+
+Run the relevant cases with the builtin loader selected explicitly and with both liblcms2-enabled and disabled builds: the metadata facade and direct gAMA/cHRM paths differ. An unavailable external engine must be reported as a skip, and a resolved-engine setting alone does not prove that engine executed; the engine-specific tests require actual apply records. These static nonindexed source contracts do not qualify all builtin formats, every ICC dialect, or the separate APNG byte canvas. Fault-injection and restoration assertions protect their stated failure boundaries; archived mutation/build evidence is revision-specific and is not a substitute for running the registered tests.

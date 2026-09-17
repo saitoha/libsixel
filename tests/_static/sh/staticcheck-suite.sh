@@ -538,6 +538,18 @@ run_case_tap "staticcheck-python-compileall" \
     "$src_root/tests/_static/sh/staticcheck-python-compileall.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?
 
+if tool_is_available "$python_bin"; then
+    run_case_plain "staticcheck-png-color-oracles" \
+        "$python_bin" "$src_root/tools/verify_color_oracles.py" \
+        --source-root "$src_root" --kind png || fail_and_exit $?
+    run_case_plain "staticcheck-tiff-uint16-oracles" \
+        "$python_bin" "$src_root/tools/verify_color_oracles.py" \
+        --source-root "$src_root" --kind uint16 || fail_and_exit $?
+else
+    run_case_skip "staticcheck-png-color-oracles" "python interpreter not found"
+    run_case_skip "staticcheck-tiff-uint16-oracles" "python interpreter not found"
+fi
+
 run_case_tap "staticcheck-actionlint" \
     "$src_root/tests/_static/sh/staticcheck-actionlint.sh" \
     "$src_root" "$actionlint_bin" || fail_and_exit $?

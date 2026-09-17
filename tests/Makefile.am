@@ -2164,6 +2164,8 @@ AM_LOG_FLAGS =
 	staticcheck-shellcheck \
 	staticcheck-codespell \
 	staticcheck-python-compileall \
+	staticcheck-png-color-oracles \
+	staticcheck-tiff-uint16-oracles \
 	staticcheck-private-includes \
 	staticcheck-src-no-direct-getenv \
 	staticcheck-test-no-direct-getenv \
@@ -2395,6 +2397,13 @@ staticcheck-python-compileall:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-python-compileall.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-png-color-oracles staticcheck-tiff-uint16-oracles:
+	@test -n "$(PYTHON_STATICCHECK)" || { \
+		echo "SKIP $@: python interpreter not found"; exit 0; }; \
+	"$(PYTHON_STATICCHECK)" "$(top_srcdir)/tools/verify_color_oracles.py" \
+		--source-root "$(abs_top_srcdir)" \
+		--kind $(if $(filter staticcheck-png-color-oracles,$@),png,uint16)
 
 staticcheck-private-includes:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \

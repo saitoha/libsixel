@@ -144,6 +144,16 @@ Static classification does not allocate either animation canvas or rebuild IDAT 
 
 ## Test coverage
 
+The ledger distinguishes observations by their assertion, not merely by the input image or selected CMS. A quality regression and a numerical contract using the same image protect different properties and must remain separate entries.
+
+| Verification layer | Where to find it | What a pass establishes |
+| --- | --- | --- |
+| Source, CMS, and frame values | [Shared PNG source-sample contracts](png-color-metadata.md#test-coverage) and the behavioral contracts below | Original integer samples, independently derived linear values, alpha and masks, background composition, target conversion, and the stated engine/fallback behavior at the inspected boundary. Native CMS tolerances are explicit numerical budgets, not perceptual thresholds. |
+| cHRM arithmetic and accepted metadata | [Arithmetic certificates](../testing/png-chrm-arithmetic.md) and [metadata boundary tests](../testing/png-chrm-boundaries.md) | The specified arithmetic dispatch, rounding, accepted/rejected input, and source-to-frame values. These do not qualify every ICC transform. |
+| Encoded-image quality | [Shared PNG quality matrix](png-color-metadata.md#quality-regression-tests) and the quality regressions below | Only the stated MS-SSIM floor against the selected reference. This cannot establish low-bit retention, exact samples, a particular CMS backend, or the absence of an intermediate clamp. |
+| CLI and SIXEL behavior | Selected behavioral entries below | Only the asserted wire properties, such as P2 or output invariance. Equal streams from two paths do not independently prove shared CMS arithmetic; frame assertions alone do not cover the intervening resize, quantization, and wire rounding. |
+| Independent oracle audit | Command below | Consistency of stored expectations with a separately implemented mathematical derivation. It does not execute the loader. |
+
 <!-- test-coverage: enforced -->
 
 ### Behavioral contract tests
@@ -206,6 +216,14 @@ The [libpng test category](../../tests/loader/libpng) additionally covers invali
 Run the category with `HAVE_LIBPNG=1` and with both Little-CMS-enabled and disabled builds. Builtin-only skips do not validate this adapter. The numerical probes deliberately use small independently constructed inputs, including low-bit pairs, fractional blends, and a valid gray ICC profile. Broader encoded-output and MS-SSIM comparisons do not replace those exact observations. The [shared PNG color-metadata document](png-color-metadata.md#test-coverage) owns the cross-decoder matrix and exact CMS-priority probes.
 
 The suite does not exhaust every color-type/depth/interlace combination, every ICC dialect or engine-specific rounding rule, all eight orientations, or the exact 64 MiB cache boundary. The cache allocation probe covers initial pointer-array allocation failure and selected samples, masks, timing, and numbering; it does not prove complete frame equality, partial-cache cleanup, or the size boundary. Occupied-canvas restoration, original fdAT checksums, and static/late-APNG libpng raster error unwinding have dedicated probes. The older short malformed-stream probe remains supplementary and does not itself exercise longjmp. External terminal rendering and OSC 11 round trips remain outside these in-memory tests. The former byte-composition reference observation LPQ-02 is superseded by LP-21's numerical contract.
+
+### Independent oracle audit
+
+`make staticcheck` runs `staticcheck-png-color-oracles` and `staticcheck-tiff-uint16-oracles`; both are also available as individual [Autotools and Meson targets](../testing/staticcheck.md#running-the-target). An inconsistent expectation fails the suite. The checks use only the host Python standard library and run even when optional PNG, TIFF, or CMS components are disabled.
+
+Run `python3 tools/verify_color_oracles.py --kind png` from the source root to check the stored [arithmetic certificates](../../tests/data/color-numeric/png-arithmetic-certificates.json). The [auditor](../../tools/verify_color_oracles.py) uses exact rational Cramer's-rule/cofactor calculations instead of the fixture generator's Gaussian solve, independently decodes and rounds binary32 values, and checks both endpoints of each certified error enclosure. It checks the stored dispatch, tiny-input, and original-integer loader certificates without calling a fixture generator, loader, or CMS. The arithmetic TAPs remain responsible for comparing the implementation with those expectations.
+
+Running the auditor without `--kind` also exhaustively checks all 65,536 UINT16 normalization values and MINISWHITE complements, plus the stored separate-plane TIFF source tables for orientations 1–4. This calculation verifies expected-value data separately from the per-image runtime tests. It is neither an MS-SSIM test nor a claim that every TIFF layout or alpha ratio has been executed. Historical mutation runs and build identities qualify a particular reviewed revision; they do not add current runtime coverage to this ledger.
 
 ### cHRM arithmetic contract tests
 
