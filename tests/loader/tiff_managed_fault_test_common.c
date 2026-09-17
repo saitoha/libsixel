@@ -560,7 +560,16 @@ mf_profile_linear(unsigned char *pixels, int width, int height, int format,
 #define tiff_convert_samples_to_linear mf_byte
 #define tiff_try_load_integer_alpha mf_alpha
 #define tiff_read_separate_uint16 b1_namespace_5
+#define tiff_publish_integer_alpha til_ns_8_0
+#define tiff_integer_layout_t til_ns_8_1
+#define tiff_scatter_integer_row til_ns_8_2
+#define tiff_try_load_integer_layouts til_ns_8_3
 #include "src/loader-libtiff.c"
+#undef tiff_publish_integer_alpha
+#undef tiff_integer_layout_t
+#undef tiff_scatter_integer_row
+#undef tiff_try_load_integer_layouts
+
 #undef tiff_read_separate_uint16
 #undef tiff_try_load_integer_alpha
 #undef tiff_convert_samples_to_linear

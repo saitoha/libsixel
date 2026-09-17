@@ -333,16 +333,15 @@ ts_rgba(TIFF *tif, uint32_t w, uint32_t h, uint32_t *raster,
 }
 
 static int
-ts_target(void)
+ts_target_format(void)
 {
-    /* Pin the requested test policy independently of ambient environment. */
-    return ts.target ? ts.target : SIXEL_COLORSPACE_LINEAR;
-}
-
-static int
-ts_prefer(void)
-{
-    return ts.prefer;
+    /* Intercept the getter actually called by the adapter. Intercepting
+     * only colorspace/prefer getters in this translation unit misses the
+     * target-format helper compiled in the shared library. */
+    return ts.prefer ? SIXEL_PIXELFORMAT_RGB888
+         : ts.target == SIXEL_COLORSPACE_OKLAB
+         ? SIXEL_PIXELFORMAT_OKLABFLOAT32
+         : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
 }
 
 static int
@@ -717,19 +716,26 @@ ts_linear(unsigned char *pixels, int width, int height, int format,
 #define TIFFScanlineSize ts_size
 #define TIFFReadRGBAImageOriented ts_rgba
 #define TIFFIsTiled ts_tiled
-#define loader_cms_target_colorspace ts_target
-#define loader_cms_prefer_8bit ts_prefer
+#define loader_cms_target_pixelformat ts_target_format
 #define tiff_logluv_xyz_to_linear ts_logluv
 #define tiff_convert_samples_to_linear ts_samples
 #define tiff_try_load_integer_alpha ts_alpha
 #define tiff_read_separate_uint16 ts_separate
+#define tiff_publish_integer_alpha til_ns_2_0
+#define tiff_integer_layout_t til_ns_2_1
+#define tiff_scatter_integer_row til_ns_2_2
+#define tiff_try_load_integer_layouts til_ns_2_3
 #include "src/loader-libtiff.c"
+#undef tiff_publish_integer_alpha
+#undef tiff_integer_layout_t
+#undef tiff_scatter_integer_row
+#undef tiff_try_load_integer_layouts
+
 #undef tiff_read_separate_uint16
 #undef tiff_try_load_integer_alpha
 #undef tiff_convert_samples_to_linear
 #undef tiff_logluv_xyz_to_linear
-#undef loader_cms_target_colorspace
-#undef loader_cms_prefer_8bit
+#undef loader_cms_target_pixelformat
 #undef TIFFIsTiled
 #undef TIFFReadScanline
 #undef TIFFScanlineSize
@@ -1366,7 +1372,10 @@ tiff_separate16_test(int argc, char **argv, int observation)
         return 0;
     }
     if (observation == 29) {
-        for (i = 0; i < 9; ++i) {
+        /* Separate8, tiles, alpha and orientations now have their own
+         * original-source layout tests. Retain only the still-delegated
+         * separate float and incompatible extra-sample witnesses here. */
+        for (i = 2; i <= 8; i += 6) {
             result = ts_excluded(argv[1], i);
             if (result != 0) { return result; }
         }

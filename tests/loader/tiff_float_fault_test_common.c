@@ -151,7 +151,16 @@ uf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define tiff_convert_samples_to_linear uff_byte
 #define tiff_try_load_integer_alpha uff_alpha
 #define tiff_read_separate_uint16 b1_namespace_0
+#define tiff_publish_integer_alpha til_ns_6_0
+#define tiff_integer_layout_t til_ns_6_1
+#define tiff_scatter_integer_row til_ns_6_2
+#define tiff_try_load_integer_layouts til_ns_6_3
 #include "src/loader-libtiff.c"
+#undef tiff_publish_integer_alpha
+#undef tiff_integer_layout_t
+#undef tiff_scatter_integer_row
+#undef tiff_try_load_integer_layouts
+
 #undef tiff_read_separate_uint16
 #undef tiff_try_load_integer_alpha
 #undef tiff_convert_samples_to_linear

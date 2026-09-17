@@ -1,7 +1,7 @@
 #!/bin/sh
 # Policy: docs/loader/libtiff.md
 # Policy: docs/loader/color-management.md
-# Excluded byte, tile, float, extras and orientation layouts retain their live legacy outcome.
+# Unmatched separate float and extra samples retain live legacy delegation.
 set -eux
 export SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA=0
 unset SIXEL_ALPHA_POLICY

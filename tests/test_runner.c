@@ -1148,6 +1148,60 @@ int test_loader_0379_legacy(int argc, char **argv);
 int test_loader_0380_legacy(int argc, char **argv);
 int test_loader_0381_legacy(int argc, char **argv);
 int test_loader_0382_legacy(int argc, char **argv);
+int test_loader_0413_layout(int argc, char **argv);
+int test_loader_0414_layout(int argc, char **argv);
+int test_loader_0415_layout(int argc, char **argv);
+int test_loader_0416_layout(int argc, char **argv);
+int test_loader_0417_layout(int argc, char **argv);
+int test_loader_0418_layout(int argc, char **argv);
+int test_loader_0419_layout(int argc, char **argv);
+int test_loader_0420_layout(int argc, char **argv);
+int test_loader_0421_layout(int argc, char **argv);
+int test_loader_0422_layout(int argc, char **argv);
+int test_loader_0423_layout(int argc, char **argv);
+int test_loader_0424_layout(int argc, char **argv);
+int test_loader_0425_layout(int argc, char **argv);
+int test_loader_0426_layout(int argc, char **argv);
+int test_loader_0427_layout(int argc, char **argv);
+int test_loader_0428_layout(int argc, char **argv);
+int test_loader_0429_layout(int argc, char **argv);
+int test_loader_0430_layout(int argc, char **argv);
+int test_loader_0431_layout(int argc, char **argv);
+int test_loader_0432_layout(int argc, char **argv);
+int test_loader_0433_layout(int argc, char **argv);
+int test_loader_0434_layout(int argc, char **argv);
+int test_loader_0435_layout(int argc, char **argv);
+int test_loader_0436_layout(int argc, char **argv);
+int test_loader_0437_layout(int argc, char **argv);
+int test_loader_0438_layout(int argc, char **argv);
+int test_loader_0439_layout(int argc, char **argv);
+int test_loader_0440_layout(int argc, char **argv);
+int test_loader_0441_layout(int argc, char **argv);
+int test_loader_0442_layout(int argc, char **argv);
+int test_loader_0443_layout(int argc, char **argv);
+int test_loader_0444_layout(int argc, char **argv);
+int test_loader_0445_layout(int argc, char **argv);
+int test_loader_0446_layout(int argc, char **argv);
+int test_loader_0447_layout(int argc, char **argv);
+int test_loader_0448_layout(int argc, char **argv);
+int test_loader_0449_layout(int argc, char **argv);
+int test_loader_0450_layout(int argc, char **argv);
+int test_loader_0451_layout(int argc, char **argv);
+int test_loader_0452_layout(int argc, char **argv);
+int test_loader_0453_layout(int argc, char **argv);
+int test_loader_0454_layout(int argc, char **argv);
+int test_loader_0455_layout(int argc, char **argv);
+int test_loader_0456_layout(int argc, char **argv);
+int test_loader_0457_layout(int argc, char **argv);
+int test_loader_0458_layout(int argc, char **argv);
+int test_loader_0459_layout(int argc, char **argv);
+int test_loader_0460_layout(int argc, char **argv);
+int test_loader_0461_layout(int argc, char **argv);
+int test_loader_0462_layout(int argc, char **argv);
+int test_loader_0463_layout(int argc, char **argv);
+int test_loader_0464_layout(int argc, char **argv);
+int test_loader_0465_layout(int argc, char **argv);
+int test_loader_0466_layout(int argc, char **argv);
 int test_loader_0383_sep16(int argc, char **argv);
 int test_loader_0384_sep16(int argc, char **argv);
 int test_loader_0385_sep16(int argc, char **argv);
@@ -2698,6 +2752,114 @@ static test_entry_t const test_entries[] = {
       test_loader_0381_legacy },
     { "loader/0382_legacy_alpha_preserved",
       test_loader_0382_legacy },
+    { "loader/0413_layout_rgb8_tile",
+      test_loader_0413_layout },
+    { "loader/0414_layout_rgb16_tile",
+      test_loader_0414_layout },
+    { "loader/0415_layout_black8_tile",
+      test_loader_0415_layout },
+    { "loader/0416_layout_black16_tile",
+      test_loader_0416_layout },
+    { "loader/0417_layout_white8_tile",
+      test_loader_0417_layout },
+    { "loader/0418_layout_white16_tile",
+      test_loader_0418_layout },
+    { "loader/0419_layout_rgb8_planar",
+      test_loader_0419_layout },
+    { "loader/0420_layout_rgb8_o5",
+      test_loader_0420_layout },
+    { "loader/0421_layout_rgb8_o6",
+      test_loader_0421_layout },
+    { "loader/0422_layout_rgb8_o7",
+      test_loader_0422_layout },
+    { "loader/0423_layout_rgb8_o8",
+      test_loader_0423_layout },
+    { "loader/0424_layout_rgb16_o6",
+      test_loader_0424_layout },
+    { "loader/0425_layout_white16_o8",
+      test_loader_0425_layout },
+    { "loader/0426_layout_black1_levels",
+      test_loader_0426_layout },
+    { "loader/0427_layout_black2_levels",
+      test_loader_0427_layout },
+    { "loader/0428_layout_black4_levels",
+      test_loader_0428_layout },
+    { "loader/0429_layout_white1_levels",
+      test_loader_0429_layout },
+    { "loader/0430_layout_white2_levels",
+      test_loader_0430_layout },
+    { "loader/0431_layout_white4_levels",
+      test_loader_0431_layout },
+    { "loader/0432_layout_palette4_map16",
+      test_loader_0432_layout },
+    { "loader/0433_layout_rgb8_tile_packbits",
+      test_loader_0433_layout },
+    { "loader/0434_layout_rgb16_tile_packbits",
+      test_loader_0434_layout },
+    { "loader/0435_layout_black8_tile_packbits",
+      test_loader_0435_layout },
+    { "loader/0436_layout_black16_tile_packbits",
+      test_loader_0436_layout },
+    { "loader/0437_layout_white8_tile_packbits",
+      test_loader_0437_layout },
+    { "loader/0438_layout_white16_tile_packbits",
+      test_loader_0438_layout },
+    { "loader/0439_layout_rgb8_planar_alpha",
+      test_loader_0439_layout },
+    { "loader/0440_layout_rgb16_tile_mismatch",
+      test_loader_0440_layout },
+    { "loader/0441_layout_black4_levels_mismatch",
+      test_loader_0441_layout },
+    { "loader/0442_layout_palette4_map16_mismatch",
+      test_loader_0442_layout },
+    { "loader/0443_layout_rgb16_tile_absent",
+      test_loader_0443_layout },
+    { "loader/0444_layout_rgb16_tile_invalid",
+      test_loader_0444_layout },
+    { "loader/0445_layout_rgb16_multitile_alpha",
+      test_loader_0445_layout },
+    { "loader/0446_layout_palette16_index",
+      test_loader_0446_layout },
+    { "loader/0447_layout_white2_fillorder2",
+      test_loader_0447_layout },
+    { "loader/0448_layout_lcms2",
+      test_loader_0448_layout },
+    { "loader/0449_layout_colorsync",
+      test_loader_0449_layout },
+    { "loader/0450_layout_geometry_target",
+      test_loader_0450_layout },
+    { "loader/0451_layout_gray_palette_target",
+      test_loader_0451_layout },
+    { "loader/0452_layout_alpha_target",
+      test_loader_0452_layout },
+    { "loader/0453_layout_buffer_allocation",
+      test_loader_0453_layout },
+    { "loader/0454_layout_color_allocation",
+      test_loader_0454_layout },
+    { "loader/0455_layout_alpha_allocation",
+      test_loader_0455_layout },
+    { "loader/0456_layout_zero_row_size",
+      test_loader_0456_layout },
+    { "loader/0457_layout_zero_tile_size",
+      test_loader_0457_layout },
+    { "loader/0458_layout_short_tile_row",
+      test_loader_0458_layout },
+    { "loader/0459_layout_later_row",
+      test_loader_0459_layout },
+    { "loader/0460_layout_later_plane",
+      test_loader_0460_layout },
+    { "loader/0461_layout_later_tile",
+      test_loader_0461_layout },
+    { "loader/0462_layout_short_tile_decode",
+      test_loader_0462_layout },
+    { "loader/0463_layout_rgb_cms_fallback",
+      test_loader_0463_layout },
+    { "loader/0464_layout_gray_cms_fallback",
+      test_loader_0464_layout },
+    { "loader/0465_layout_palette_cms_fallback",
+      test_loader_0465_layout },
+    { "loader/0466_layout_alpha_cms_fallback",
+      test_loader_0466_layout },
     { "loader/0383_separate16_rgb_source",
       test_loader_0383_sep16 },
     { "loader/0384_separate16_black_source",

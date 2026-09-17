@@ -424,7 +424,16 @@ lc_strip(sixel_frame_t *frame, unsigned char *background)
 #define sixel_cms_convert_to_srgb_with_profile_bytes lc_convert
 #endif
 #define tiff_read_separate_uint16 b1_namespace_1
+#define tiff_publish_integer_alpha til_ns_0_0
+#define tiff_integer_layout_t til_ns_0_1
+#define tiff_scatter_integer_row til_ns_0_2
+#define tiff_try_load_integer_layouts til_ns_0_3
 #include "src/loader-libtiff.c"
+#undef tiff_publish_integer_alpha
+#undef tiff_integer_layout_t
+#undef tiff_scatter_integer_row
+#undef tiff_try_load_integer_layouts
+
 #undef tiff_read_separate_uint16
 #undef g_sixel_loader_libtiff_vtbl
 #undef load_tiff
@@ -590,6 +599,59 @@ cleanup:
     return ok;
 }
 
+/* Integer source families now bypass the legacy public path. Keep their
+ * real RGBA decoder and actual CMS-helper fault coverage at helper scope;
+ * the new layout tests own original-source/public-frame behavior. YCbCr
+ * still exercises the actual component below. No public route is forced. */
+static SIXELSTATUS
+lc_helper_load(sixel_chunk_t *chunk, int cms)
+{
+    lc_local_25 memory;
+    TIFF *tif;
+    uint32_t raster[16];
+    unsigned char pixels[64];
+    size_t i;
+    size_t channel;
+    int ok;
+
+    memory.buffer = sixel_chunk_get_buffer(chunk);
+    memory.size = (toff_t)sixel_chunk_get_size(chunk);
+    memory.offset = 0;
+    tif = TIFFClientOpen("legacy-helper", "r", (thandle_t)&memory,
+        lc_local_28, lc_local_32, lc_local_29, lc_local_26,
+        lc_local_30, lc_local_27, lc_local_31);
+    if (tif == NULL) { return SIXEL_TIFF_ERROR; }
+    ok = lc_rgba(tif, (uint32_t)tl_cases[lc.fixture].width,
+        (uint32_t)tl_cases[lc.fixture].height, raster, ORIENTATION_TOPLEFT, 0);
+    if (ok) {
+        memcpy(pixels, lc.raw, lc.n * 4u);
+        if (cms) {
+#if HAVE_LCMS2
+            lc_local_17(pixels, tl_cases[lc.fixture].width,
+                tl_cases[lc.fixture].height, lc.profile,
+                (uint32_t)lc.profile_size,
+                (uint16_t)tl_cases[lc.fixture].photo);
+#else
+            lc_local_19(pixels, tl_cases[lc.fixture].width,
+                tl_cases[lc.fixture].height, lc.profile,
+                (uint32_t)lc.profile_size,
+                (uint16_t)tl_cases[lc.fixture].photo);
+#endif
+        }
+        ++lc.calls;
+        ++lc.endpoints;
+        for (i = 0u; i < lc.n; ++i) {
+            for (channel = 0u; channel < 4u; ++channel) {
+                lc.ok &= pixels[i * 4u + channel] ==
+                    (lc.managed && channel < 3u ? lc.expected : lc.raw)
+                    [i * 4u + channel];
+            }
+        }
+    }
+    TIFFClose(tif);
+    return ok && lc.ok ? SIXEL_OK : SIXEL_TIFF_ERROR;
+}
+
 static int
 lc_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
         int cms, int mode, int baseline)
@@ -614,7 +676,9 @@ lc_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
         SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS, &cms);
     lc.armed = 1;
     if (SIXEL_SUCCEEDED(status)) {
-        status = component->vtbl->load(component, chunk, lc_capture, NULL);
+        status = tl_cases[lc.fixture].photo == PHOTOMETRIC_YCBCR
+            ? component->vtbl->load(component, chunk, lc_capture, NULL)
+            : lc_helper_load(chunk, cms);
     }
     lc.armed = 0;
     ok = status == SIXEL_OK && lc.ok && lc.calls == 1 && lc.reads == 1 &&
@@ -626,8 +690,10 @@ lc_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
     if (mode == 1) { ok &= lc.injected == 1 && lc.changed; }
     if (mode >= 3 && mode <= 5) { ok &= lc.injected == 1; }
     if (mode == 6) { ok &= lc.poisoned == (int)lc.n; }
-    fprintf(stderr, "LC1|helper|mode=%d|calls=%d|real=%d|alloc=%d|"
-        "profiles=%d|transforms=%d|alpha=%d|ok=%d\n", mode,
+    fprintf(stderr, "LC1|scope=%s|mode=%d|calls=%d|real=%d|alloc=%d|"
+        "profiles=%d|transforms=%d|alpha=%d|ok=%d\n",
+        tl_cases[lc.fixture].photo == PHOTOMETRIC_YCBCR
+            ? "public" : "helper", mode,
         lc.api_calls, lc.real_pixels, lc.allocations, lc.profiles,
         lc.transforms, lc.poisoned, ok);
     lc_end(ok);

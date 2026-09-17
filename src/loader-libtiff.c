@@ -752,6 +752,111 @@ tiff_convert_samples_to_linear(float *pixels, int width, int height,
     return converted;
 }
 
+/* Finish normalized integer alpha using the same transaction, background
+ * and mask policy for contiguous, separate and tiled source storage. The
+ * caller retains both allocations on failure; success transfers color and
+ * transfers alpha only when it becomes a public binary mask. */
+static SIXELSTATUS
+tiff_publish_integer_alpha(unsigned char **result, float **ppixels,
+                            unsigned char **palpha, uint32_t width,
+                            uint32_t height, uint16_t bits,
+                            uint16_t photometric, int associated,
+                            int all_opaque, void const *profile,
+                            uint32_t profile_length, int *ppixelformat,
+                            int *pnegotiate_target, unsigned char **pmask,
+                            unsigned char const *bgcolor)
+{
+    SIXELSTATUS status;
+    float *pixels;
+    unsigned char *alpha;
+    size_t count;
+    size_t i;
+    size_t channel;
+    unsigned int a;
+    unsigned int maximum;
+    double background[3];
+    double value;
+    double coverage;
+    int managed;
+    int preserve_zero;
+    int has_mask;
+    int composed;
+
+    pixels = *ppixels;
+    alpha = *palpha;
+    count = (size_t)width * height;
+    maximum = bits == 8u ? 255u : 65535u;
+    managed = has_mask = composed = 0;
+    if (profile != NULL && profile_length > 0u) {
+        managed = tiff_convert_samples_to_linear(
+            pixels, (int)width, (int)height, profile, profile_length,
+            photometric);
+    }
+
+    preserve_zero = bgcolor == NULL ||
+        loader_transparent_policy() != SIXEL_ALPHA_POLICY_COMPOSITE;
+    for (channel = 0u; channel < 3u; ++channel) {
+        background[channel] = bgcolor == NULL ? 0.0
+            : (double)bgcolor[channel] / 255.0;
+        if (loader_background_colorspace() != SIXEL_COLORSPACE_LINEAR) {
+            background[channel] =
+                sixel_color_decode_srgb(background[channel]);
+        }
+    }
+    for (i = 0u; i < count; ++i) {
+        a = bits == 8u ? alpha[i] : ((uint16_t const *)alpha)[i];
+        /* Retain original alpha through CMS. After consuming element i,
+         * byte i can hold its mask without overwriting an unread UINT16.
+         * Only exact source zero is masked, never a rounded byte zero. */
+        if (bgcolor != NULL && a < maximum && (a != 0u || !preserve_zero)) {
+            coverage = (double)a / maximum;
+            for (channel = 0u; channel < 3u; ++channel) {
+                value = pixels[i * 3u + channel];
+                if (!managed) {
+                    value = sixel_color_decode_srgb(value);
+                }
+                value = coverage * value +
+                    (1.0 - coverage) * background[channel];
+                if (!managed) {
+                    value = sixel_color_encode_srgb(value);
+                }
+                if (!isfinite(value) || fabs(value) > FLT_MAX) {
+                    status = SIXEL_TIFF_ERROR;
+                    return status;
+                }
+                pixels[i * 3u + channel] = (float)value;
+            }
+            composed = 1;
+        }
+        alpha[i] = a == 0u && preserve_zero ? 1u : 0u;
+        has_mask |= alpha[i] != 0u;
+    }
+
+    *ppixelformat = managed ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+                           : SIXEL_PIXELFORMAT_RGBFLOAT32;
+    if (bits == 8u && !managed &&
+        (all_opaque || (!associated && !composed))) {
+        /* Only original byte sources can compact without precision
+         * loss, including all255 associated alpha. UINT16 stays float even
+         * when fully opaque, matching the existing opaque16 source path. */
+        for (i = 0u; i < count * 3u; ++i) {
+            ((unsigned char *)pixels)[i] = (unsigned char)(
+                (double)pixels[i] * 255.0 + 0.5);
+        }
+        *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+    }
+    if (has_mask) {
+        *pmask = alpha;
+        *palpha = NULL;
+    }
+    *pnegotiate_target = managed;
+    *result = (unsigned char *)pixels;
+    *ppixels = NULL;
+    status = SIXEL_OK;
+
+    return status;
+}
+
 /* Read declared integer alpha before libtiff's RGBA convenience conversion.
  * RGB and Gray convenience readers do not share association behavior. Keep
  * original alpha separate until source interpretation and composition end. */
@@ -780,7 +885,6 @@ tiff_try_load_integer_alpha(unsigned char **result, TIFF *tif,
     size_t sample_bytes;
     size_t source;
     size_t destination;
-    size_t i;
     size_t channel;
     uint32_t x;
     uint32_t y;
@@ -790,16 +894,9 @@ tiff_try_load_integer_alpha(unsigned char **result, TIFF *tif,
     unsigned int maximum;
     unsigned int numerator;
     unsigned int denominator;
-    double background[3];
-    double value;
-    double coverage;
     int rgb;
     int associated;
     int all_opaque;
-    int managed;
-    int preserve_zero;
-    int has_mask;
-    int composed;
 
     status = SIXEL_FALSE;
     row = NULL;
@@ -813,9 +910,6 @@ tiff_try_load_integer_alpha(unsigned char **result, TIFF *tif,
     extras = 0u;
     extra_info = NULL;
     all_opaque = 1;
-    managed = 0;
-    has_mask = 0;
-    composed = 0;
 
     rgb = photometric == PHOTOMETRIC_RGB;
     if (!rgb && photometric != PHOTOMETRIC_MINISBLACK &&
@@ -907,72 +1001,10 @@ tiff_try_load_integer_alpha(unsigned char **result, TIFF *tif,
             }
         }
     }
-    if (profile != NULL && profile_length > 0u) {
-        managed = tiff_convert_samples_to_linear(
-            pixels, (int)width, (int)height, profile, profile_length,
-            photometric);
-    }
-
-    preserve_zero = bgcolor == NULL ||
-        loader_transparent_policy() != SIXEL_ALPHA_POLICY_COMPOSITE;
-    for (channel = 0u; channel < 3u; ++channel) {
-        background[channel] = bgcolor == NULL ? 0.0
-            : (double)bgcolor[channel] / 255.0;
-        if (loader_background_colorspace() != SIXEL_COLORSPACE_LINEAR) {
-            background[channel] =
-                sixel_color_decode_srgb(background[channel]);
-        }
-    }
-    for (i = 0u; i < count; ++i) {
-        a = bits == 8u ? alpha[i] : ((uint16_t const *)alpha)[i];
-        /* Retain original alpha through CMS. After consuming element i,
-         * byte i can hold its mask without overwriting an unread UINT16.
-         * Only exact source zero is masked, never a rounded byte zero. */
-        if (bgcolor != NULL && a < maximum && (a != 0u || !preserve_zero)) {
-            coverage = (double)a / maximum;
-            for (channel = 0u; channel < 3u; ++channel) {
-                value = pixels[i * 3u + channel];
-                if (!managed) {
-                    value = sixel_color_decode_srgb(value);
-                }
-                value = coverage * value +
-                    (1.0 - coverage) * background[channel];
-                if (!managed) {
-                    value = sixel_color_encode_srgb(value);
-                }
-                if (!isfinite(value) || fabs(value) > FLT_MAX) {
-                    status = SIXEL_TIFF_ERROR;
-                    goto cleanup;
-                }
-                pixels[i * 3u + channel] = (float)value;
-            }
-            composed = 1;
-        }
-        alpha[i] = a == 0u && preserve_zero ? 1u : 0u;
-        has_mask |= alpha[i] != 0u;
-    }
-
-    *ppixelformat = managed ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-                           : SIXEL_PIXELFORMAT_RGBFLOAT32;
-    if (bits == 8u && !managed &&
-        (all_opaque || (!associated && !composed))) {
-        /* Only original byte sources can compact without precision
-         * loss, including all255 associated alpha. UINT16 stays float even
-         * when fully opaque, matching the existing opaque16 source path. */
-        for (i = 0u; i < count * 3u; ++i) {
-            ((unsigned char *)pixels)[i] = (unsigned char)(
-                (double)pixels[i] * 255.0 + 0.5);
-        }
-        *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
-    }
-    if (has_mask) {
-        *pmask = alpha;
-        alpha = NULL;
-    }
-    *pnegotiate_target = managed;
-    *result = (unsigned char *)pixels;
-    pixels = NULL;
-    status = SIXEL_OK;
+    status = tiff_publish_integer_alpha(result, &pixels, &alpha,
+        width, height, bits, photometric, associated, all_opaque,
+        profile, profile_length, ppixelformat, pnegotiate_target,
+        pmask, bgcolor);
 
 cleanup:
     sixel_allocator_free(allocator, row);
@@ -1032,6 +1064,343 @@ tiff_read_separate_uint16(float *pixels, TIFF *tif, unsigned char *scanline,
     return SIXEL_OK;
 }
 
+
+/* The residual integer reader separates storage addressing from source
+ * interpretation. Integer numerators fit exactly in F32, so separate alpha
+ * can arrive in a later plane without rounding the final color/alpha ratio
+ * twice or allocating another full-image integer buffer. */
+typedef struct {
+    uint32_t width, height, output_width, output_height;
+    uint16_t bits, samples, planar, orientation, photometric;
+    int has_alpha, associated;
+    uint16_t *map[3];
+    float *pixels;
+    unsigned char *alpha;
+} tiff_integer_layout_t;
+
+static void
+tiff_scatter_integer_row(tiff_integer_layout_t *layout,
+                         unsigned char const *row, uint32_t left,
+                         uint32_t y, uint32_t columns, uint16_t plane)
+{
+    uint32_t x;
+    uint32_t dx;
+    uint32_t dy;
+    uint16_t first;
+    uint16_t last;
+    uint16_t channel;
+    uint16_t word;
+    unsigned int value;
+    unsigned int maximum;
+    size_t sample;
+    size_t bit;
+    size_t destination;
+    size_t c;
+
+    maximum = (1u << layout->bits) - 1u;
+    first = layout->planar == PLANARCONFIG_SEPARATE ? plane : 0u;
+    last = layout->planar == PLANARCONFIG_SEPARATE
+         ? (uint16_t)(plane + 1u) : layout->samples;
+    for (x = 0u; x < columns; ++x) {
+        /* Orient physical source coordinates once. The output stride is
+         * shared by color, alpha, CMS dimensions and public frame metadata. */
+        tiff_map_scanline_coordinates(layout->orientation,
+            layout->width, layout->height, left + x, y, &dx, &dy);
+        switch (layout->orientation) {
+        case ORIENTATION_LEFTTOP:
+            dx = y;
+            dy = left + x;
+            break;
+        case ORIENTATION_RIGHTTOP:
+            dx = layout->height - 1u - y;
+            dy = left + x;
+            break;
+        case ORIENTATION_RIGHTBOT:
+            dx = layout->height - 1u - y;
+            dy = layout->width - 1u - left - x;
+            break;
+        case ORIENTATION_LEFTBOT:
+            dx = y;
+            dy = layout->width - 1u - left - x;
+            break;
+        default:
+            break;
+        }
+        destination = (size_t)dy * layout->output_width + dx;
+        for (channel = first; channel < last; ++channel) {
+            sample = layout->planar == PLANARCONFIG_SEPARATE ? x
+                   : (size_t)x * layout->samples + channel;
+            if (layout->bits == 16u) {
+                /* Decoded words are native-endian. memcpy also handles
+                 * any row alignment without an unaligned typed access. */
+                memcpy(&word, row + sample * sizeof(word), sizeof(word));
+                value = word;
+            } else if (layout->bits == 8u) {
+                value = row[sample];
+            } else {
+                /* TIFFClientOpen("r") uses the default B decoded order:
+                 * MSB first, independent of host byte order and the file's
+                 * FillOrder. Libtiff has already reversed file bits. */
+                bit = sample * layout->bits;
+                value = (row[bit / 8u] >>
+                         (8u - layout->bits - bit % 8u)) & maximum;
+            }
+            if (layout->has_alpha && channel + 1u == layout->samples) {
+                if (layout->bits == 8u) {
+                    layout->alpha[destination] = (unsigned char)value;
+                } else {
+                    ((uint16_t *)layout->alpha)[destination] =
+                        (uint16_t)value;
+                }
+            } else if (layout->photometric == PHOTOMETRIC_RGB) {
+                layout->pixels[destination * 3u + channel] = (float)value;
+            } else {
+                for (c = 0u; c < 3u; ++c) {
+                    layout->pixels[destination * 3u + c] =
+                        layout->photometric == PHOTOMETRIC_PALETTE
+                        ? (float)layout->map[c][value] : (float)value;
+                }
+            }
+        }
+    }
+}
+
+static SIXELSTATUS
+tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
+                              uint32_t width, uint32_t height,
+                              int *ppixelformat, void const *profile,
+                              uint32_t profile_length, uint16_t photometric,
+                              sixel_allocator_t *allocator,
+                              int *pnegotiate_target, unsigned char **pmask,
+                              unsigned char const *bgcolor,
+                              int *pwidth, int *pheight)
+{
+    tiff_integer_layout_t layout;
+    SIXELSTATUS status;
+    unsigned char *buffer;
+    uint16_t format;
+    uint16_t extras;
+    uint16_t *extra_info;
+    uint16_t plane;
+    uint16_t planes;
+    uint32_t block_width;
+    uint32_t block_height;
+    uint32_t depth;
+    uint32_t tile_depth;
+    uint32_t left;
+    uint32_t top;
+    uint32_t y;
+    uint32_t columns;
+    tmsize_t row_size;
+    tmsize_t buffer_size;
+    tmsize_t decoded;
+    size_t count;
+    size_t row_samples;
+    size_t minimum_row;
+    size_t i;
+    size_t c;
+    unsigned int maximum;
+    unsigned int numerator;
+    unsigned int denominator;
+    unsigned int a;
+    int rgb;
+    int palette;
+    int tiled;
+    int managed;
+    int all_opaque;
+
+    memset(&layout, 0, sizeof(layout));
+    layout.width = width;
+    layout.height = height;
+    layout.bits = layout.samples = 1u;
+    layout.planar = PLANARCONFIG_CONTIG;
+    layout.orientation = ORIENTATION_TOPLEFT;
+    layout.photometric = photometric;
+    format = SAMPLEFORMAT_UINT;
+    extras = 0u;
+    extra_info = NULL;
+    buffer = NULL;
+    status = SIXEL_FALSE;
+    managed = 0;
+    all_opaque = 1;
+    depth = tile_depth = 1u;
+    rgb = photometric == PHOTOMETRIC_RGB;
+    palette = photometric == PHOTOMETRIC_PALETTE;
+    if (!rgb && !palette && photometric != PHOTOMETRIC_MINISBLACK &&
+        photometric != PHOTOMETRIC_MINISWHITE) {
+        return SIXEL_FALSE;
+    }
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE, &layout.bits);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &layout.samples);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLEFORMAT, &format);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_PLANARCONFIG, &layout.planar);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_ORIENTATION, &layout.orientation);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_EXTRASAMPLES,
+                               &extras, &extra_info);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_IMAGEDEPTH, &depth);
+    (void)TIFFGetFieldDefaulted(tif, TIFFTAG_TILEDEPTH, &tile_depth);
+    tiled = TIFFIsTiled(tif);
+    if ((format != SAMPLEFORMAT_UINT && format != SAMPLEFORMAT_VOID) ||
+        (layout.bits != 1u && layout.bits != 2u && layout.bits != 4u &&
+         layout.bits != 8u && layout.bits != 16u) ||
+        (rgb && layout.bits < 8u) ||
+        (layout.planar != PLANARCONFIG_CONTIG &&
+         layout.planar != PLANARCONFIG_SEPARATE) ||
+        layout.orientation < 1u || layout.orientation > 8u ||
+        depth != 1u || (tiled && tile_depth != 1u)) {
+        return SIXEL_FALSE;
+    }
+    layout.has_alpha = extras == 1u && extra_info != NULL &&
+        (extra_info[0] == EXTRASAMPLE_ASSOCALPHA ||
+         extra_info[0] == EXTRASAMPLE_UNASSALPHA);
+    if ((extras != 0u && !layout.has_alpha) ||
+        (layout.has_alpha && (palette || layout.bits < 8u)) ||
+        layout.samples != (rgb ? 3u : 1u) + layout.has_alpha) {
+        return SIXEL_FALSE;
+    }
+    /* Established contiguous and separate opaque16 readers retain their
+     * gates, fault behavior and target policy. Float/Lab/LogLuv also remain
+     * outside this integer reader, including their legacy delegation. */
+    if (!tiled && layout.orientation <= 4u && !palette &&
+        layout.bits >= 8u &&
+        (layout.planar == PLANARCONFIG_CONTIG ||
+         (layout.bits == 16u && !layout.has_alpha))) {
+        return SIXEL_FALSE;
+    }
+    if (palette && !TIFFGetField(tif, TIFFTAG_COLORMAP,
+                                &layout.map[0], &layout.map[1],
+                                &layout.map[2])) {
+        return SIXEL_TIFF_ERROR;
+    }
+    layout.associated = layout.has_alpha &&
+        extra_info[0] == EXTRASAMPLE_ASSOCALPHA;
+    layout.output_width = layout.orientation >= 5u ? height : width;
+    layout.output_height = layout.orientation >= 5u ? width : height;
+    if (width == 0u || height == 0u ||
+        (size_t)width > SIZE_MAX / height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    count = (size_t)width * height;
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    block_width = width;
+    block_height = 1u;
+    if (tiled &&
+        (!TIFFGetField(tif, TIFFTAG_TILEWIDTH, &block_width) ||
+         !TIFFGetField(tif, TIFFTAG_TILELENGTH, &block_height))) {
+        return SIXEL_TIFF_ERROR;
+    }
+    if (block_width == 0u || block_height == 0u ||
+        block_width > INT_MAX || block_height > INT_MAX) {
+        return SIXEL_TIFF_ERROR;
+    }
+    planes = layout.planar == PLANARCONFIG_SEPARATE ? layout.samples : 1u;
+    row_samples = layout.planar == PLANARCONFIG_SEPARATE
+                ? 1u : layout.samples;
+    if ((size_t)block_width > (SIZE_MAX - 7u) /
+        row_samples / layout.bits) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    minimum_row = ((size_t)block_width * row_samples * layout.bits + 7u) / 8u;
+    row_size = tiled ? TIFFTileRowSize(tif) : TIFFScanlineSize(tif);
+    buffer_size = tiled ? TIFFTileSize(tif) : row_size;
+    if (row_size <= 0 || buffer_size <= 0 ||
+        (size_t)row_size < minimum_row ||
+        (size_t)row_size > SIZE_MAX / block_height ||
+        (size_t)buffer_size != (size_t)row_size * block_height) {
+        return SIXEL_TIFF_ERROR;
+    }
+
+    /* Selection is complete. Every subsequent source failure is terminal,
+     * including a short decoded tile; no convenience-RGBA retry is safe. */
+    buffer = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                     (size_t)buffer_size);
+    layout.pixels = (float *)sixel_allocator_malloc(allocator,
+                                                   count * 3u * sizeof(float));
+    if (layout.has_alpha) {
+        layout.alpha = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                count * (layout.bits / 8u));
+    }
+    if (buffer == NULL || layout.pixels == NULL ||
+        (layout.has_alpha && layout.alpha == NULL)) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+    for (plane = 0u; plane < planes; ++plane) {
+        for (top = 0u; top < height; top += block_height) {
+            for (left = 0u; left < width; left += block_width) {
+                decoded = tiled
+                    ? TIFFReadTile(tif, buffer, left, top, 0u, plane)
+                    : TIFFReadScanline(tif, buffer, top, plane);
+                if (decoded != (tiled ? buffer_size : 1)) {
+                    status = SIXEL_TIFF_ERROR;
+                    goto cleanup;
+                }
+                columns = width - left < block_width
+                        ? width - left : block_width;
+                for (y = 0u; y < block_height && y < height - top; ++y) {
+                    tiff_scatter_integer_row(&layout,
+                        buffer + (size_t)y * (size_t)row_size,
+                        left, top + y, columns, plane);
+                }
+            }
+        }
+    }
+    maximum = palette ? 65535u : (1u << layout.bits) - 1u;
+    for (i = 0u; i < count; ++i) {
+        a = !layout.has_alpha ? maximum : layout.bits == 8u
+          ? layout.alpha[i] : ((uint16_t const *)layout.alpha)[i];
+        all_opaque &= a == maximum;
+        denominator = layout.associated ? a : maximum;
+        for (c = 0u; c < 3u; ++c) {
+            numerator = (unsigned int)layout.pixels[i * 3u + c];
+            if (photometric == PHOTOMETRIC_MINISWHITE) {
+                numerator = maximum - numerator;
+            }
+            layout.pixels[i * 3u + c] = denominator == 0u ? 0.0f
+                : (float)((double)numerator / denominator);
+        }
+    }
+    if (layout.has_alpha) {
+        status = tiff_publish_integer_alpha(result, &layout.pixels,
+            &layout.alpha, layout.output_width, layout.output_height,
+            layout.bits, photometric, layout.associated, all_opaque,
+            profile, profile_length, ppixelformat, pnegotiate_target,
+            pmask, bgcolor);
+        if (SIXEL_FAILED(status)) { goto cleanup; }
+    } else {
+        if (profile != NULL && profile_length > 0u) {
+            managed = tiff_convert_samples_to_linear(layout.pixels,
+                (int)layout.output_width, (int)layout.output_height,
+                profile, profile_length,
+                palette ? PHOTOMETRIC_RGB : photometric);
+        }
+        *ppixelformat = managed ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+                               : SIXEL_PIXELFORMAT_RGBFLOAT32;
+        if (!managed && !palette && layout.bits <= 8u) {
+            /* All legal 1/2/4-bit Gray levels also have an exact byte
+             * representation. Only these unchanged source levels compact. */
+            for (i = 0u; i < count * 3u; ++i) {
+                ((unsigned char *)layout.pixels)[i] = (unsigned char)(
+                    (double)layout.pixels[i] * 255.0 + 0.5);
+            }
+            *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+        }
+        *pnegotiate_target = managed && (layout.bits <= 8u || palette);
+        *result = (unsigned char *)layout.pixels;
+        layout.pixels = NULL;
+    }
+    *pwidth = (int)layout.output_width;
+    *pheight = (int)layout.output_height;
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_allocator_free(allocator, buffer);
+    sixel_allocator_free(allocator, layout.pixels);
+    sixel_allocator_free(allocator, layout.alpha);
+    return status;
+}
 
 /*
  * Decode selected high-precision TIFF layouts directly into float32 buffers.
@@ -1665,6 +2034,22 @@ load_tiff(unsigned char      /* out */ **result,
                            TIFFTAG_ICCPROFILE,
                            &icc_profile_length,
                            &icc_profile);
+    }
+
+    high_precision_status = tiff_try_load_integer_layouts(
+        &pixels, tif, width, height, ppixelformat,
+        enable_cms ? icc_profile : NULL,
+        enable_cms ? icc_profile_length : 0u,
+        photometric, allocator, pnegotiate_target, pmask, bgcolor,
+        pwidth, pheight);
+    if (high_precision_status == SIXEL_OK) {
+        *result = pixels;
+        status = SIXEL_OK;
+        goto cleanup;
+    }
+    if (high_precision_status != SIXEL_FALSE) {
+        status = high_precision_status;
+        goto cleanup;
     }
 
     high_precision_status = tiff_try_load_integer_alpha(

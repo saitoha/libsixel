@@ -1010,6 +1010,61 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0411_SEPARATE16_TARGET_POLICY \
     -DBUILD_TEST_0412_SEPARATE16_EXCLUDED_LAYOUTS \
     -DBUILD_TIFF_SEPARATE16_TEST_COMMON \
+    -DBUILD_TIFF_LAYOUT_TEST_COMMON \
+    -DBUILD_TEST_0413_LAYOUT_RGB8_TILE \
+    -DBUILD_TEST_0414_LAYOUT_RGB16_TILE \
+    -DBUILD_TEST_0415_LAYOUT_BLACK8_TILE \
+    -DBUILD_TEST_0416_LAYOUT_BLACK16_TILE \
+    -DBUILD_TEST_0417_LAYOUT_WHITE8_TILE \
+    -DBUILD_TEST_0418_LAYOUT_WHITE16_TILE \
+    -DBUILD_TEST_0419_LAYOUT_RGB8_PLANAR \
+    -DBUILD_TEST_0420_LAYOUT_RGB8_O5 \
+    -DBUILD_TEST_0421_LAYOUT_RGB8_O6 \
+    -DBUILD_TEST_0422_LAYOUT_RGB8_O7 \
+    -DBUILD_TEST_0423_LAYOUT_RGB8_O8 \
+    -DBUILD_TEST_0424_LAYOUT_RGB16_O6 \
+    -DBUILD_TEST_0425_LAYOUT_WHITE16_O8 \
+    -DBUILD_TEST_0426_LAYOUT_BLACK1_LEVELS \
+    -DBUILD_TEST_0427_LAYOUT_BLACK2_LEVELS \
+    -DBUILD_TEST_0428_LAYOUT_BLACK4_LEVELS \
+    -DBUILD_TEST_0429_LAYOUT_WHITE1_LEVELS \
+    -DBUILD_TEST_0430_LAYOUT_WHITE2_LEVELS \
+    -DBUILD_TEST_0431_LAYOUT_WHITE4_LEVELS \
+    -DBUILD_TEST_0432_LAYOUT_PALETTE4_MAP16 \
+    -DBUILD_TEST_0433_LAYOUT_RGB8_TILE_PACKBITS \
+    -DBUILD_TEST_0434_LAYOUT_RGB16_TILE_PACKBITS \
+    -DBUILD_TEST_0435_LAYOUT_BLACK8_TILE_PACKBITS \
+    -DBUILD_TEST_0436_LAYOUT_BLACK16_TILE_PACKBITS \
+    -DBUILD_TEST_0437_LAYOUT_WHITE8_TILE_PACKBITS \
+    -DBUILD_TEST_0438_LAYOUT_WHITE16_TILE_PACKBITS \
+    -DBUILD_TEST_0439_LAYOUT_RGB8_PLANAR_ALPHA \
+    -DBUILD_TEST_0440_LAYOUT_RGB16_TILE_MISMATCH \
+    -DBUILD_TEST_0441_LAYOUT_BLACK4_LEVELS_MISMATCH \
+    -DBUILD_TEST_0442_LAYOUT_PALETTE4_MAP16_MISMATCH \
+    -DBUILD_TEST_0443_LAYOUT_RGB16_TILE_ABSENT \
+    -DBUILD_TEST_0444_LAYOUT_RGB16_TILE_INVALID \
+    -DBUILD_TEST_0445_LAYOUT_RGB16_MULTITILE_ALPHA \
+    -DBUILD_TEST_0446_LAYOUT_PALETTE16_INDEX \
+    -DBUILD_TEST_0447_LAYOUT_WHITE2_FILLORDER2 \
+    -DBUILD_TEST_0448_LAYOUT_LCMS2 \
+    -DBUILD_TEST_0449_LAYOUT_COLORSYNC \
+    -DBUILD_TEST_0450_LAYOUT_GEOMETRY_TARGET \
+    -DBUILD_TEST_0451_LAYOUT_GRAY_PALETTE_TARGET \
+    -DBUILD_TEST_0452_LAYOUT_ALPHA_TARGET \
+    -DBUILD_TEST_0453_LAYOUT_BUFFER_ALLOCATION \
+    -DBUILD_TEST_0454_LAYOUT_COLOR_ALLOCATION \
+    -DBUILD_TEST_0455_LAYOUT_ALPHA_ALLOCATION \
+    -DBUILD_TEST_0456_LAYOUT_ZERO_ROW_SIZE \
+    -DBUILD_TEST_0457_LAYOUT_ZERO_TILE_SIZE \
+    -DBUILD_TEST_0458_LAYOUT_SHORT_TILE_ROW \
+    -DBUILD_TEST_0459_LAYOUT_LATER_ROW \
+    -DBUILD_TEST_0460_LAYOUT_LATER_PLANE \
+    -DBUILD_TEST_0461_LAYOUT_LATER_TILE \
+    -DBUILD_TEST_0462_LAYOUT_SHORT_TILE_DECODE \
+    -DBUILD_TEST_0463_LAYOUT_RGB_CMS_FALLBACK \
+    -DBUILD_TEST_0464_LAYOUT_GRAY_CMS_FALLBACK \
+    -DBUILD_TEST_0465_LAYOUT_PALETTE_CMS_FALLBACK \
+    -DBUILD_TEST_0466_LAYOUT_ALPHA_CMS_FALLBACK \
     -DBUILD_TIFF_ALPHA_TEST_COMMON \
     -DBUILD_TIFF_ALPHA_FAULT_TEST_COMMON \
     -DBUILD_TIFF_BYTE_TEST_COMMON \
@@ -1500,6 +1555,62 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0412_separate16_excluded_layouts.c \
     loader/tiff_separate16_test_common.c \
     loader/tiff_separate16_test_common.h \
+    loader/tiff_layout_test_common.c \
+    loader/tiff_layout_test_common.h \
+    loader/libtiff/0413_layout_rgb8_tile.c \
+    loader/libtiff/0414_layout_rgb16_tile.c \
+    loader/libtiff/0415_layout_black8_tile.c \
+    loader/libtiff/0416_layout_black16_tile.c \
+    loader/libtiff/0417_layout_white8_tile.c \
+    loader/libtiff/0418_layout_white16_tile.c \
+    loader/libtiff/0419_layout_rgb8_planar.c \
+    loader/libtiff/0420_layout_rgb8_o5.c \
+    loader/libtiff/0421_layout_rgb8_o6.c \
+    loader/libtiff/0422_layout_rgb8_o7.c \
+    loader/libtiff/0423_layout_rgb8_o8.c \
+    loader/libtiff/0424_layout_rgb16_o6.c \
+    loader/libtiff/0425_layout_white16_o8.c \
+    loader/libtiff/0426_layout_black1_levels.c \
+    loader/libtiff/0427_layout_black2_levels.c \
+    loader/libtiff/0428_layout_black4_levels.c \
+    loader/libtiff/0429_layout_white1_levels.c \
+    loader/libtiff/0430_layout_white2_levels.c \
+    loader/libtiff/0431_layout_white4_levels.c \
+    loader/libtiff/0432_layout_palette4_map16.c \
+    loader/libtiff/0433_layout_rgb8_tile_packbits.c \
+    loader/libtiff/0434_layout_rgb16_tile_packbits.c \
+    loader/libtiff/0435_layout_black8_tile_packbits.c \
+    loader/libtiff/0436_layout_black16_tile_packbits.c \
+    loader/libtiff/0437_layout_white8_tile_packbits.c \
+    loader/libtiff/0438_layout_white16_tile_packbits.c \
+    loader/libtiff/0439_layout_rgb8_planar_alpha.c \
+    loader/libtiff/0440_layout_rgb16_tile_mismatch.c \
+    loader/libtiff/0441_layout_black4_levels_mismatch.c \
+    loader/libtiff/0442_layout_palette4_map16_mismatch.c \
+    loader/libtiff/0443_layout_rgb16_tile_absent.c \
+    loader/libtiff/0444_layout_rgb16_tile_invalid.c \
+    loader/libtiff/0445_layout_rgb16_multitile_alpha.c \
+    loader/libtiff/0446_layout_palette16_index.c \
+    loader/libtiff/0447_layout_white2_fillorder2.c \
+    loader/libtiff/0448_layout_lcms2.c \
+    loader/libtiff/0449_layout_colorsync.c \
+    loader/libtiff/0450_layout_geometry_target.c \
+    loader/libtiff/0451_layout_gray_palette_target.c \
+    loader/libtiff/0452_layout_alpha_target.c \
+    loader/libtiff/0453_layout_buffer_allocation.c \
+    loader/libtiff/0454_layout_color_allocation.c \
+    loader/libtiff/0455_layout_alpha_allocation.c \
+    loader/libtiff/0456_layout_zero_row_size.c \
+    loader/libtiff/0457_layout_zero_tile_size.c \
+    loader/libtiff/0458_layout_short_tile_row.c \
+    loader/libtiff/0459_layout_later_row.c \
+    loader/libtiff/0460_layout_later_plane.c \
+    loader/libtiff/0461_layout_later_tile.c \
+    loader/libtiff/0462_layout_short_tile_decode.c \
+    loader/libtiff/0463_layout_rgb_cms_fallback.c \
+    loader/libtiff/0464_layout_gray_cms_fallback.c \
+    loader/libtiff/0465_layout_palette_cms_fallback.c \
+    loader/libtiff/0466_layout_alpha_cms_fallback.c \
     loader/tiff_alpha_test_common.c \
     loader/tiff_alpha_test_common.h \
     loader/tiff_alpha_fault_test_common.c \
