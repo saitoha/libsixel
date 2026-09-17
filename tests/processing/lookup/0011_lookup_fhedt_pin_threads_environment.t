@@ -12,13 +12,22 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
     --env "SIXEL_FHEDT_PIN_THREADS=0" \
     --env "SIXEL_LOOKUP_FHEDT_PIN_THREADS=1" -p 16 "-~fhedt" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "FHEDT pin_threads environment conversion failed"
     exit 0
 }
+test "${trace#*work=rgb888*}" != "${trace}" || {
+    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    exit 0
+}
+test "${trace#*LSXLUT2|phase=palette-apply|selected=lookup/fhedt.8bit|explicit=1*}" != "${trace}" || {
+    echo "not ok 1 - explicit byte lookup missed palette application"
+    exit 0
+}
+
 test "${trace#*LSXFHD1|precision=8bit|*pin_threads=1*}" != "${trace}" || {
     echo "not ok" 1 - "canonical FHEDT pin_threads did not win"
     exit 0

@@ -76,7 +76,7 @@ Palette tables and `sixel_dither_get()` are in [`dither.c`](../../src/dither.c),
 | ID | Observation | Owning test |
 | --- | --- | --- |
 | FP-01 | Monochrome with the tested `-Acomposite` setting requests `P2=1` and emits no palette commands. | [tests/quant/palette/usage/0165_monochrome_sixel_mode_no_palette_slots.t](../../tests/quant/palette/usage/0165_monochrome_sixel_mode_no_palette_slots.t) |
-| FP-02 | Explicit lookup changes the built-in-palette application path. | [tests/quant/palette/usage/0192_builtin_explicit_lookup_policy_applied.t](../../tests/quant/palette/usage/0192_builtin_explicit_lookup_policy_applied.t) |
+| FP-02 | Explicit lookup reaches the matching byte or float32 built-in-palette application path. | [tests/quant/palette/usage/0192_builtin_explicit_lookup_policy_applied.t](../../tests/quant/palette/usage/0192_builtin_explicit_lookup_policy_applied.t) |
 | FP-03 | Explicit diffusion changes fixed-palette output. | [tests/quant/palette/usage/0141_builtin_palette_explicit_dither_changes_output.t](../../tests/quant/palette/usage/0141_builtin_palette_explicit_dither_changes_output.t) |
 | FP-04 | Explicit snap policies are bypassed for a built-in palette. | [tests/quant/palette/usage/0195_builtin_snap_policy_bypassed.t](../../tests/quant/palette/usage/0195_builtin_snap_policy_bypassed.t) |
 

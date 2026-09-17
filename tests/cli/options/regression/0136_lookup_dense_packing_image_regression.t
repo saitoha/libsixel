@@ -15,17 +15,27 @@ echo "1..1"
 set -v
 
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0136-dense-packing-short-$$.six"
 env_output="${artifact_dir}/0136-dense-packing-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
     "-~5bit:Pmorton" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "5bit packing short conversion failed"
     exit 0
 }
+test "${short_trace#*work=rgb888*}" != "${short_trace}" || {
+    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    exit 0
+}
+test "${short_trace#*LSXLUT2|phase=palette-apply|selected=lookup/5bit.8bit|explicit=1*}" != "${short_trace}" || {
+    echo "not ok 1 - explicit byte lookup missed palette application"
+    exit 0
+}
+
 test "${short_trace#*LSXSUB1|*key=packing|stored=1|binding=lut_policy_packing,lut_policy_packing_override|value=1*}" != "${short_trace}" || {
     echo "not ok" 1 - "5bit packing short value was not stored"
     exit 0
@@ -37,12 +47,21 @@ test "${short_trace#*LSXLUT1|*packing=morton*}" != \
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" "-~5bit" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "5bit packing environment conversion failed"
     exit 0
 }
+test "${env_trace#*work=rgb888*}" != "${env_trace}" || {
+    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    exit 0
+}
+test "${env_trace#*LSXLUT2|phase=palette-apply|selected=lookup/5bit.8bit|explicit=1*}" != "${env_trace}" || {
+    echo "not ok 1 - explicit byte lookup missed palette application"
+    exit 0
+}
+
 test "${env_trace#*LSXSUB1|*key=packing|stored=1|binding=lut_policy_packing,lut_policy_packing_override|value=1*}" != "${env_trace}" || {
     echo "not ok" 1 - "5bit packing environment value was not stored"
     exit 0
@@ -60,7 +79,7 @@ cmp -s "${short_output}" "${env_output}" || {
 
 bit6_short_trace=$(set +xv; \
     SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
     "-~6bit:Pmorton" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "6bit packing short conversion failed"
     exit 0
@@ -77,7 +96,7 @@ test "${bit6_short_trace#*LSXLUT1|*packing=morton*}" != \
 
 bit6_env_trace=$(set +xv; \
     SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" "-~6bit" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "6bit packing environment conversion failed"
@@ -94,7 +113,7 @@ test "${bit6_env_trace#*LSXLUT1|*packing=morton*}" != \
 }
 
 set +e
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-~fhedt:Pmorton" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma "-~fhedt:Pmorton" \
     "${input_image}" >/dev/null 2>&1
 invalid_status=$?
 set -e

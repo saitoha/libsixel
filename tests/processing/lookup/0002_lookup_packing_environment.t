@@ -14,12 +14,21 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 
 bit5_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" -p 16 "-~5bit" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "5bit packing environment conversion failed"
     exit 0
 }
+test "${bit5_trace#*work=rgb888*}" != "${bit5_trace}" || {
+    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    exit 0
+}
+test "${bit5_trace#*LSXLUT2|phase=palette-apply|selected=lookup/5bit.8bit|explicit=1*}" != "${bit5_trace}" || {
+    echo "not ok 1 - explicit byte lookup missed palette application"
+    exit 0
+}
+
 test "${bit5_trace#*LSXLUT1|policy=5bit|packing=morton*}" != \
     "${bit5_trace}" || {
     echo "not ok" 1 - "5bit packing environment was not consumed"
@@ -27,12 +36,21 @@ test "${bit5_trace#*LSXLUT1|policy=5bit|packing=morton*}" != \
 }
 
 bit6_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -v --precision=8bit -Wgamma \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" -p 16 "-~6bit" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "6bit packing environment conversion failed"
     exit 0
 }
+test "${bit6_trace#*work=rgb888*}" != "${bit6_trace}" || {
+    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    exit 0
+}
+test "${bit6_trace#*LSXLUT2|phase=palette-apply|selected=lookup/6bit.8bit|explicit=1*}" != "${bit6_trace}" || {
+    echo "not ok 1 - explicit byte lookup missed palette application"
+    exit 0
+}
+
 test "${bit6_trace#*LSXLUT1|policy=6bit|packing=morton*}" != \
     "${bit6_trace}" || {
     echo "not ok" 1 - "6bit packing environment was not consumed"
