@@ -1308,9 +1308,10 @@ smpte-c -> SMPTE-C gamma encoded output
 .br
 display-p3 -> Display P3 output for the limited CPU float palette path
 .br
-Display P3 requires explicit float precision, linear working and clustering
-coordinates, K-means, exact lookup, full-frame sampling, no binning, dithering,
-merge, cover or snap, and RGB SIXEL output. Palette input and export with
+Display P3 requires automatic or float precision, gamma or linear working
+coordinates, linear clustering, K-means, exact lookup, full-frame sampling,
+none or FS dithering, no binning, merge, cover or snap, and RGB SIXEL output.
+Explicit 8bit precision and palette input or export with
 \fB-m\fP or \fB-M\fP are unsupported with Display P3.
 .TP 5
 .B \-K \fIauto[:KEY=PATH]\fP, \-\-completion\-policy=\fIauto[:KEY=PATH]\fP

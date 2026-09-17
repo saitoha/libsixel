@@ -28,6 +28,10 @@ With `-Wgamma`, the two explicit base modes have distinct planner contracts:
 | `--precision=8bit` | `rgb888` | three unsigned 8-bit gamma-sRGB channels |
 | `--precision=float32` | `rgb-f32` | three float32 gamma-sRGB channels |
 
+For the [selected Display P3 output path](output-colorspace.md#display-p3-selected-cpu-float-path), `auto` or an unspecified precision requires float even with `-Wgamma`. An explicit `8bit` request is rejected in that path. Leaving P3 removes only the output requirement and retains the selected precision and working-space requirements.
+
+Repeated precision options replace the base request for all output spaces. `--precision=float --precision=auto -Wgamma` restores the automatic byte preference for ordinary output, while a non-gamma working space or P3 output can still require effective float. Previously `auto` left an earlier explicit request unchanged; it now clears that request. This is an intentional repeated-option behavior change, including when P3 was never selected.
+
 A non-gamma working color space such as `-Wlinear` or `-Woklab` requires floating-point samples. It promotes the effective shared path to the matching typed format, such as `linear-f32` or `oklab-f32`, even when the base request is `--precision=8bit`. Such a command is useful, but it is not an 8-bit-versus-float32 experiment.
 
 `-X` has a different role. It selects the coordinates used to construct the

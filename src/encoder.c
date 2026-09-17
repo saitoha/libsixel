@@ -111,6 +111,7 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "pixelformat.h"
+#include "colorspace.h"
 #include "pthread-once.h"
 #include "clipboard.h"
 #include "compat_stub.h"
@@ -3209,7 +3210,8 @@ end:
  */
 static SIXELSTATUS
 sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
-                                       int target_colorspace)
+                                        int target_colorspace,
+                                        int preserve_extended_rgb)
 {
     SIXELSTATUS status;
     int source_colorspace;
@@ -3271,11 +3273,17 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
         ? (unsigned char *)view.pixels_float32
         : view.pixels;
 
-    status = sixel_helper_convert_colorspace(pixels,
-                                             pixel_bytes,
-                                             pixelformat,
-                                             source_colorspace,
-                                             target_colorspace);
+    if (preserve_extended_rgb && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        status = sixel_color_convert_rgbf32((float *)pixels, pixel_total,
+                                            source_colorspace,
+                                            target_colorspace);
+    } else {
+        status = sixel_helper_convert_colorspace(pixels,
+                                                 pixel_bytes,
+                                                 pixelformat,
+                                                 source_colorspace,
+                                                 target_colorspace);
+    }
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -3286,13 +3294,15 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
 
 /*
  * Recolor the generated palette into the working colorspace so dithering and
- * LUT builders share the same color interpretation.  Serialization performs
- * the later working-to-output conversion on a copy of these entries.
+ * LUT builders share the same color interpretation. Legacy serialization
+ * converts a copy to output coordinates. P3 prepares its sent palette before
+ * lookup, preserving extended values through this intermediate conversion.
  */
 static SIXELSTATUS
 sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
                                          int source_colorspace,
-                                         int target_colorspace)
+                                         int target_colorspace,
+                                         int preserve_extended_rgb)
 {
     SIXELSTATUS status;
     size_t palette_count;
@@ -3352,12 +3362,18 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
         }
         source_pixelformat =
             sixel_encoder_pixelformat_for_colorspace(source_colorspace, 1);
-        status = sixel_helper_convert_colorspace(
-            (unsigned char *)float32_view.entries,
-            palette_float_bytes,
-            source_pixelformat,
-            source_colorspace,
-            target_colorspace);
+        if (preserve_extended_rgb) {
+            /* P3 palette coordinates may lie outside the sRGB cube. */
+            status = sixel_color_convert_rgbf32(float32_view.entries,
+                palette_count, source_colorspace, target_colorspace);
+        } else {
+            status = sixel_helper_convert_colorspace(
+                (unsigned char *)float32_view.entries,
+                palette_float_bytes,
+                source_pixelformat,
+                source_colorspace,
+                target_colorspace);
+        }
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -3393,18 +3409,24 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
     return status;
 }
 
+static void
+sixel_encoder_update_precision(sixel_encoder_t *encoder)
+{
+    /* Output requirements affect the effective format, never the request. */
+    encoder->prefer_float32 = encoder->precision_prefer_float32 ||
+        encoder->force_float32_colorspace ||
+        encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_DISPLAY_P3;
+}
+
 static SIXELSTATUS
 sixel_encoder_apply_precision_override(
     sixel_encoder_t *encoder,
     sixel_option_precision_mode_t mode)
 {
-    if (mode == SIXEL_OPTION_PRECISION_AUTO) {
-        return SIXEL_OK;
-    }
-
     if (mode == SIXEL_OPTION_PRECISION_FLOAT32) {
         encoder->precision_prefer_float32 = 1;
-    } else if (mode == SIXEL_OPTION_PRECISION_8BIT) {
+    } else if (mode == SIXEL_OPTION_PRECISION_8BIT ||
+            mode == SIXEL_OPTION_PRECISION_AUTO) {
         encoder->precision_prefer_float32 = 0;
     } else {
         sixel_helper_set_additional_message(
@@ -3417,8 +3439,8 @@ sixel_encoder_apply_precision_override(
      * Keeping both states makes repeated -W and --precision options resolve
      * identically regardless of their order.
      */
-    encoder->prefer_float32 = encoder->precision_prefer_float32
-        || encoder->force_float32_colorspace;
+    encoder->precision_requested = mode;
+    sixel_encoder_update_precision(encoder);
 
     return SIXEL_OK;
 }
@@ -6844,8 +6866,14 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             "display-p3 does not support -m/-M palette interchange.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (encoder->precision_prefer_float32 == 0 ||
-            encoder->working_colorspace != SIXEL_COLORSPACE_LINEAR ||
+    if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
+        sixel_helper_set_additional_message(
+            "display-p3 requires float precision; use --precision=auto "
+            "or --precision=float instead of an explicit 8bit request.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((encoder->working_colorspace != SIXEL_COLORSPACE_LINEAR &&
+             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) ||
             encoder->clustering_colorspace != SIXEL_COLORSPACE_LINEAR ||
             encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
             encoder->quantize_model_kmeans_feedback_mode !=
@@ -6854,7 +6882,8 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             encoder->palette_binning_policy != SIXEL_PALETTE_BINNING_NONE ||
             encoder->palette_sampling_policy !=
                 SIXEL_PALETTE_SAMPLING_FULL_FRAME ||
-            encoder->method_for_diffuse != SIXEL_DIFFUSE_NONE ||
+            (encoder->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
+             encoder->method_for_diffuse != SIXEL_DIFFUSE_FS) ||
             encoder->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
             encoder->cover_policy != SIXEL_PALETTE_COVER_OFF ||
             encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE ||
@@ -6867,9 +6896,9 @@ sixel_encoder_validate_p3(sixel_encoder_t const *encoder)
             encoder->capture_quantized != 0) {
         sixel_helper_set_additional_message(
             "display-p3 requires the CPU float K-means pilot: "
-            "--precision=float -Xlinear -Wlinear -Qkmeans -~none "
+            "--precision=auto|float -Xlinear -Wlinear|gamma -Qkmeans -~none "
             "--binning-policy=none --sampling-policy=full-frame "
-            "-dnone -Fnone -aoff -_none -trgb and normal SIXEL output.");
+            "-dnone|fs -Fnone -aoff -_none -trgb and normal SIXEL output.");
         return SIXEL_BAD_ARGUMENT;
     }
     return SIXEL_OK;
@@ -7242,7 +7271,9 @@ sixel_encoder_prepare_palette(
                 != clustering_colorspace) {
             status = sixel_encoder_convert_frame_colorspace(
                 palette_frame,
-                clustering_colorspace);
+                clustering_colorspace,
+                encoder->output_color_definition ==
+                    SIXEL_PALETTE_OUTPUT_DISPLAY_P3);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -7628,7 +7659,9 @@ sixel_encoder_prepare_palette(
         status = sixel_encoder_convert_palette_colorspace(
             (*dither)->palette,
             clustering_colorspace,
-            working_colorspace);
+            working_colorspace,
+            encoder->output_color_definition ==
+                SIXEL_PALETTE_OUTPUT_DISPLAY_P3);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -9171,6 +9204,7 @@ sixel_encoder_new(
     (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->output_color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppencoder)->precision_prefer_float32 = 0;
+    (*ppencoder)->precision_requested = SIXEL_OPTION_PRECISION_AUTO;
     (*ppencoder)->prefer_float32        = 0;
     (*ppencoder)->ormode                = 0;
     (*ppencoder)->transparent_policy = SIXEL_ALPHA_POLICY_AUTO;
@@ -9245,6 +9279,7 @@ sixel_encoder_new(
         NULL,
         0u);
     if (env_result == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        (*ppencoder)->precision_requested = env_value.int_value;
         prefer_float32 =
             env_value.int_value == SIXEL_OPTION_PRECISION_FLOAT32;
     }
@@ -12124,8 +12159,7 @@ sixel_encoder_setopt(
             }
             encoder->force_float32_colorspace =
                 match_value != SIXEL_COLORSPACE_GAMMA;
-            encoder->prefer_float32 = encoder->precision_prefer_float32
-                || encoder->force_float32_colorspace;
+            sixel_encoder_update_precision(encoder);
         }
         break;
     case SIXEL_OPTFLAG_OUTPUT_COLORSPACE:  /* U */
@@ -12162,6 +12196,7 @@ sixel_encoder_setopt(
                 ? SIXEL_PALETTE_OUTPUT_DISPLAY_P3 : SIXEL_PALETTE_OUTPUT_LEGACY;
             encoder->output_colorspace = match_value == -1
                 ? SIXEL_COLORSPACE_GAMMA : match_value;
+            sixel_encoder_update_precision(encoder);
         }
         break;
     case SIXEL_OPTFLAG_ORMODE:  /* O */

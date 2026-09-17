@@ -39,6 +39,7 @@
 #include "dither.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
+#include "palette.h"
 #include "sixel_atomic.h"
 
 /*
@@ -60,6 +61,7 @@ typedef struct sixel_dither_policy_fs_context {
     struct sixel_lookup_policy_interface *lookup_policy;
     int pixelformat;
     int float_depth;
+    int preserve_extended_rgb;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -513,7 +515,8 @@ fs_error_diffuse_float(float *data,
                     float numerator,
                     int denominator,
                     int pixelformat,
-                    int channel_index)
+                    int channel_index,
+                    int preserve_extended_rgb)
 {
     float *channel;
     float delta;
@@ -521,9 +524,13 @@ fs_error_diffuse_float(float *data,
     channel = data + ((size_t)pos * (size_t)depth);
     delta = error * ((float)numerator / (float)denominator);
     *channel += delta;
-    *channel = sixel_pixelformat_float_channel_clamp(pixelformat,
-                                                     channel_index,
-                                                     *channel);
+    /* P3 errors live in canonical coordinates, beyond the sRGB cube.
+     * The consumer validates finiteness before the next lookup. */
+    if (!preserve_extended_rgb) {
+        *channel = sixel_pixelformat_float_channel_clamp(pixelformat,
+                                                       channel_index,
+                                                       *channel);
+    }
 }
 
 static void
@@ -560,7 +567,8 @@ fs_diffuse_fs_float(float *data,
                  int pixelformat,
                  int channel_index,
                  int absolute_y,
-                 sixel_dither_perturb_t const *perturb)
+                 sixel_dither_perturb_t const *perturb,
+                 int preserve_extended_rgb)
 {
     int pos;
     int forward;
@@ -575,20 +583,24 @@ fs_diffuse_fs_float(float *data,
         step = forward ? 1 : -1;
         if (x + step >= 0 && x + step < width) {
             fs_error_diffuse_float(data, pos + step, depth, error,
-                                  weights[0], 1, pixelformat, channel_index);
+                                  weights[0], 1, pixelformat, channel_index,
+                                  preserve_extended_rgb);
         }
         if (y < height - 1) {
             if (x - step >= 0 && x - step < width) {
                 fs_error_diffuse_float(data, pos + width - step,
                                       depth, error, weights[1], 1,
-                                      pixelformat, channel_index);
+                                      pixelformat, channel_index,
+                                      preserve_extended_rgb);
             }
             fs_error_diffuse_float(data, pos + width, depth, error,
-                                  weights[2], 1, pixelformat, channel_index);
+                                  weights[2], 1, pixelformat, channel_index,
+                                  preserve_extended_rgb);
             if (x + step >= 0 && x + step < width) {
                 fs_error_diffuse_float(data, pos + width + step,
                                       depth, error, weights[3], 1,
-                                      pixelformat, channel_index);
+                                      pixelformat, channel_index,
+                                      preserve_extended_rgb);
             }
         }
         return;
@@ -604,7 +616,8 @@ fs_diffuse_fs_float(float *data,
                                 7,
                                 16,
                                 pixelformat,
-                                channel_index);
+                                channel_index,
+                                preserve_extended_rgb);
         }
         if (y < height - 1) {
             if (x > 0) {
@@ -615,7 +628,8 @@ fs_diffuse_fs_float(float *data,
                                     3,
                                     16,
                                     pixelformat,
-                                    channel_index);
+                                    channel_index,
+                                preserve_extended_rgb);
             }
             fs_error_diffuse_float(data,
                                 pos + width,
@@ -624,7 +638,8 @@ fs_diffuse_fs_float(float *data,
                                 5,
                                 16,
                                 pixelformat,
-                                channel_index);
+                                channel_index,
+                                preserve_extended_rgb);
             if (x < width - 1) {
                 fs_error_diffuse_float(data,
                                     pos + width + 1,
@@ -633,7 +648,8 @@ fs_diffuse_fs_float(float *data,
                                     1,
                                     16,
                                     pixelformat,
-                                    channel_index);
+                                    channel_index,
+                                preserve_extended_rgb);
             }
         }
     } else {
@@ -645,7 +661,8 @@ fs_diffuse_fs_float(float *data,
                                 7,
                                 16,
                                 pixelformat,
-                                channel_index);
+                                channel_index,
+                                preserve_extended_rgb);
         }
         if (y < height - 1) {
             if (x < width - 1) {
@@ -656,7 +673,8 @@ fs_diffuse_fs_float(float *data,
                                     3,
                                     16,
                                     pixelformat,
-                                    channel_index);
+                                    channel_index,
+                                preserve_extended_rgb);
             }
             fs_error_diffuse_float(data,
                                 pos + width,
@@ -665,7 +683,8 @@ fs_diffuse_fs_float(float *data,
                                 5,
                                 16,
                                 pixelformat,
-                                channel_index);
+                                channel_index,
+                                preserve_extended_rgb);
             if (x > 0) {
                 fs_error_diffuse_float(data,
                                     pos + width - 1,
@@ -674,7 +693,8 @@ fs_diffuse_fs_float(float *data,
                                     1,
                                     16,
                                     pixelformat,
-                                    channel_index);
+                                    channel_index,
+                                preserve_extended_rgb);
             }
         }
     }
@@ -793,6 +813,12 @@ sixel_dither_apply_fs_float32(
             source_pixel = data + base;
             for (n = 0; n < context->depth; ++n) {
                 working_float[n] = source_pixel[n];
+                if (context->preserve_extended_rgb &&
+                        !isfinite(working_float[n])) {
+                    sixel_helper_set_additional_message(
+                        "P3 diffusion: nonfinite working sample.");
+                    return SIXEL_BAD_INPUT;
+                }
             }
 
             lookup_pixel = (unsigned char const *)(void const *)
@@ -820,6 +846,11 @@ sixel_dither_apply_fs_float32(
                                   palette_value_u8);
                     }
                 error = working_float[n] - palette_value_float;
+                if (context->preserve_extended_rgb && !isfinite(error)) {
+                    sixel_helper_set_additional_message(
+                        "P3 diffusion: nonfinite error.");
+                    return SIXEL_BAD_INPUT;
+                }
                 source_pixel[n] = palette_value_float;
                 fs_diffuse_fs_float(data + (size_t)n,
                           context->width,
@@ -832,7 +863,8 @@ sixel_dither_apply_fs_float32(
                           context->pixelformat,
                           n,
                           absolute_y,
-                          &context->perturb);
+                          &context->perturb,
+                          context->preserve_extended_rgb);
             }
         }
         if (absolute_y >= context->output_start) {
@@ -997,6 +1029,8 @@ sixel_dither_policy_fs_build_context(
 
     dither = request->dither;
     if (dither != NULL) {
+        context->preserve_extended_rgb = dither->output_color_definition ==
+            SIXEL_PALETTE_OUTPUT_DISPLAY_P3;
         sixel_dither_perturb_init(&context->perturb,
                                   dither->diffusion_perturb,
                                   dither->diffusion_perturb_seed);

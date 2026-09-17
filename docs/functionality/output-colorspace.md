@@ -82,17 +82,17 @@ Consequently, `-Usmpte-c` can change channel balance as well as tone response. I
 
 ## `display-p3`: selected CPU float path
 
-The initial P3 path supports opaque static RGB input with explicit float precision, linear clustering and working coordinates, CPU K-means with full-frame sampling and no binning, exact `none` lookup, and no dithering, merge, cover or snap. It emits normal RGB SIXEL. K-means feedback is disabled. Other combinations fail before SIXEL output starts; in particular, `-m` and `-M` cannot read or export unmarked P3 palette values. Gamma working coordinates, automatic precision selection, other quantizers, GPU, high-color, HLS, DRCS, macros, delta encoding, animation and alpha-bearing frames are outside this initial path.
+The selected P3 path supports opaque static RGB input, automatic or explicit float precision, linear clustering, linear or gamma working coordinates, CPU K-means with full-frame sampling and no binning, exact `none` lookup, and either no dithering or CPU Floyd–Steinberg (`-d fs`). Merge, cover and snap are disabled. It emits normal RGB SIXEL. K-means feedback is disabled. Other combinations fail before SIXEL output starts; in particular, `-m` and `-M` cannot read or export unmarked P3 palette values. Other quantizers and dither methods, GPU, high-color, HLS, DRCS, macros, delta encoding, animation and alpha-bearing frames are outside this selected path.
 
 The selected loader integration tests use libpng P3 ICC RGB8/RGB16, an untagged sRGB RGB8 PNG, and a static RGB16 TIFF with orientation 6. They explicitly select builtin CMS, canonical linear output and `prefer_8bit=0`. These tests do not establish wide-gamut support for every loader, source domain, resizing filter or optional backend. The accepted opaque RGB frame storage forms are RGB888, RGBFLOAT32 and LINEARRGBFLOAT32; the selected encoder path converts them to linear float coordinates before palette construction.
 
 ```sh
 ./converters/img2sixel --threads=1 \
   -L 'libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
-  -j scalar:resize_precision=float --precision=float \
-  -Q kmeans:seed=1 -X linear -W linear -U display-p3 \
+  -j scalar:resize_precision=float --precision=auto \
+  -Q kmeans:seed=1 -X linear -W gamma -U display-p3 \
   --sampling-policy=full-frame --binning-policy=none \
-  -F none -a off -_ none '-~none' -d none -t rgb \
+  -F none -a off -_ none '-~none' -d fs -t rgb \
   tests/data/color-numeric/png-p3-16-rgb.png > output.six
 ```
 
@@ -101,6 +101,10 @@ The frame remains in canonical sRGB coordinates, including negative and above-on
 Before index selection, the palette owner converts the canonical palette to P3, clamps only to the destination gamut, and rounds each channel to an integer in `0..100`. It stores these exact codes. It also converts the stored codes back to canonical float coordinates for exact lookup. The byte palette is only a compatibility projection. Lookup therefore selects among the colors that the stream will actually send. The writer consumes the stored RGB101 codes without another color transform or byte round trip; palette compaction, reordering and cache reuse are disabled in this path.
 
 This distinction is observable even within sRGB: linear gray centers `0.1` and `0.11` become P3 code values `35%` and `37%`. Their decoded midpoint moves above `0.106`, so that input must select the first sent color although it was closer to the second original center. The direct palette test protects this index change and the inverse canonical values. P3 primary and intermediate-color wire tests independently protect the destination conversion; they do not infer correctness from a perceptual similarity score.
+
+With `--precision=auto` or no precision option, P3 requires an effective float working format even for `-Wgamma`. An explicit `--precision=8bit` is rejected before output; a later `--precision=auto` clears that request. Requested precision stays separate from this output requirement, so leaving P3 restores the effective format required by the remaining precision and working-space settings. An explicit float request remains float after leaving P3; automatic gamma working coordinates return to the ordinary byte preference.
+
+Gamma working coordinates use the existing sRGB transfer function with sign-preserving extended values. FS computes its error against the inverse of the actual sent palette and propagates it without an intermediate sRGB gamut clamp. For example, errors `(0.125, -0.125, 0.0625)` sent to a following source `(1, -0.03125, 0.125)` with the FS right-neighbor weight `7/16` produce `(1.0546875, -0.0859375, 0.15234375)` before that next lookup. The direct test observes this input to the real lookup. The CLI two-color test checks independently derived source-group means, paint-time wire agreement with a raster FS reference calculation, and actual FS dispatch. Its painted result is also unchanged when error propagation is omitted, so detecting missing propagation or an intermediate clamp belongs to the direct next-lookup test and its code mutations. The other few-color CLI witnesses can optimize FS away because every source color fits in the palette; they establish option acceptance and wire values, not error diffusion. Nonfinite working samples or errors fail instead of entering lookup, and a later valid apply on the same policy recovers. The ordinary non-P3 FS path retains its existing channel clamp.
 
 Repeated `-U` settings replace the output definition. Reusing one encoder and output object for P3, gamma and P3 again restores the corresponding behavior on each job. The private precision opt-in is scoped to one palette-generation call and does not change the installed component request structures.
 
@@ -209,14 +213,24 @@ Likewise, `-U` does not configure decoder interpretation, embed an output ICC pr
 | OC-14 | One encoder and output object can encode P3, gamma and P3 again with the correct restored interpretation. | [tests/quant/palette/0054_p3_encoder_reuse.t](../../tests/quant/palette/0054_p3_encoder_reuse.t) |
 | OC-15 | P3 mapfile input is rejected before the writer starts. | [tests/quant/palette/0055_p3_mapfile_rejected.t](../../tests/quant/palette/0055_p3_mapfile_rejected.t) |
 | OC-16 | P3 palette export is rejected before the writer starts. | [tests/quant/palette/0056_p3_palette_export_rejected.t](../../tests/quant/palette/0056_p3_palette_export_rejected.t) |
-| OC-17 | Dithering outside the initial P3 path is rejected before the writer starts. | [tests/quant/palette/0057_p3_diffusion_rejected.t](../../tests/quant/palette/0057_p3_diffusion_rejected.t) |
-| OC-18 | Gamma working coordinates outside the initial P3 path are rejected before the writer starts. | [tests/quant/palette/0058_p3_gamma_working_rejected.t](../../tests/quant/palette/0058_p3_gamma_working_rejected.t) |
+| OC-17 | Unsupported Atkinson dithering is rejected before the P3 writer starts. | [tests/quant/palette/0057_p3_unsupported_diffusion_rejected.t](../../tests/quant/palette/0057_p3_unsupported_diffusion_rejected.t) |
+| OC-18 | Gamma working coordinates retain the extended canonical P3 red through its final (100,0,0) wire value. | [tests/quant/palette/0058_p3_gamma_working.t](../../tests/quant/palette/0058_p3_gamma_working.t) |
+| OC-19 | Automatic P3 precision promotes gamma working coordinates to float without changing the base request. | [tests/quant/palette/0059_p3_precision_auto.t](../../tests/quant/palette/0059_p3_precision_auto.t) |
+| OC-20 | An explicit P3 byte request fails before output with an actionable precision diagnostic. | [tests/quant/palette/0060_p3_precision_8bit_rejected.t](../../tests/quant/palette/0060_p3_precision_8bit_rejected.t) |
+| OC-21 | Automatic reset, explicit float/byte requests and leaving/reentering P3 preserve requested and effective state on one encoder. | [tests/quant/palette/0061_p3_precision_reuse.t](../../tests/quant/palette/0061_p3_precision_reuse.t) |
+| OC-22 | Nonzero FS errors reach the next real lookup with independently derived extended values. | [tests/quant/palette/0062_p3_fs_error.t](../../tests/quant/palette/0062_p3_fs_error.t) |
+| OC-23 | The ordinary non-P3 FS path retains its existing bounded channel values. | [tests/quant/palette/0063_p3_fs_legacy_control.t](../../tests/quant/palette/0063_p3_fs_legacy_control.t) |
+| OC-24 | A nonfinite P3 sample fails before lookup and the same policy subsequently processes valid samples. | [tests/quant/palette/0064_p3_fs_nonfinite_recovery.t](../../tests/quant/palette/0064_p3_fs_nonfinite_recovery.t) |
+| OC-25 | P3 RGB8 PNG retains independent RGB101 values with gamma working coordinates and automatic precision. | [tests/cli/color/0009_libpng_p3_gamma_auto_wire.t](../../tests/cli/color/0009_libpng_p3_gamma_auto_wire.t) |
+| OC-26 | P3 RGB16 PNG reduced to two colors matches independent source-group means and the paint-time wire from a raster FS reference calculation, and reports actual FS dispatch; this fixture does not independently detect omitted error propagation. | [tests/cli/color/0010_libpng_p3_gamma_fs_wire.t](../../tests/cli/color/0010_libpng_p3_gamma_fs_wire.t) |
+| OC-27 | Untagged sRGB PNG is color-converted to independent P3 RGB101 values with automatic gamma processing and an accepted FS request; the few-color optimization needs no dithering. | [tests/cli/color/0011_libpng_srgb_to_p3_fs_wire.t](../../tests/cli/color/0011_libpng_srgb_to_p3_fs_wire.t) |
+| OC-28 | Oriented RGB16 TIFF retains geometry and independent P3 RGB101 with automatic linear processing and an accepted FS request; the few-color optimization needs no dithering. | [tests/cli/color/0012_libtiff_p3_auto_fs_wire.t](../../tests/cli/color/0012_libtiff_p3_auto_fs_wire.t) |
 
 ### Coverage audit boundary
 
 The first five tests assert exact exported entries. OC-06 checks the output grid and export/wire agreement; it does not independently validate the SMPTE-C conversion matrix. OC-02 and OC-03 establish byte preservation for the named configurations, not perceptual correctness of all non-gamma fixed-palette combinations. OC-05 is not evidence that a CMS transform ran.
 
-P3 values, lookup and reuse are directly covered by OC-07 through OC-18. General defaults, alias and case handling, invalid values, legacy repeated-option precedence, unchanged legacy static index assignment, the numeric example, and the high-color gap are inspectable in the owning code or reproducible with CLI probes, but are not each covered by an independent `-U` regression in this inventory. Multi-input/animation reuse and cross-frame delta interactions also lack an exhaustive output-space matrix here. Receiver color management remains a manual integration observation. No image-quality threshold or terminal-compatibility result is inferred from the exact palette checks.
+P3 values, lookup and reuse are directly covered by OC-07 through OC-28. General defaults, alias and case handling, invalid values, legacy repeated-option precedence, unchanged legacy static index assignment, the numeric example, and the high-color gap are inspectable in the owning code or reproducible with CLI probes, but are not each covered by an independent `-U` regression in this inventory. Multi-input/animation reuse and cross-frame delta interactions also lack an exhaustive output-space matrix here. Receiver color management remains a manual integration observation. No image-quality threshold or terminal-compatibility result is inferred from the exact palette checks.
 
 ## Implementation references
 

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "tests/data/color-numeric/p3-palette.h"
 
 typedef struct p3_capture {
     char bytes[2048];
@@ -88,7 +89,7 @@ test_palette_0054_p3_encoder(int argc, char **argv)
             value = "pal:-";
         } else if (strcmp(argv[1], "diffusion") == 0) {
             flag = 'd';
-            value = "fs";
+            value = "atkinson";
         } else if (strcmp(argv[1], "working") == 0) {
             flag = 'W';
             value = "gamma";
@@ -104,9 +105,23 @@ test_palette_0054_p3_encoder(int argc, char **argv)
         source[0] = 1.0f;
         source[1] = 0.0f;
         source[2] = 0.0f;
+        if (strcmp(argv[1], "working") == 0) {
+            for (index = 0; index < 3; ++index) {
+                source[index] = (float)color_p3_red_linear[index];
+            }
+        }
         if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
                 SIXEL_FAILED(sixel_frame_init_borrowed(frame, source, 1, 1,
                     SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1))) {
+            goto end;
+        }
+        if (strcmp(argv[1], "working") == 0) {
+            status = sixel_encoder_encode_frame(encoder, frame, output);
+            if (SIXEL_FAILED(status) ||
+                    strstr(capture.bytes, "#0;2;100;0;0") == NULL) {
+                goto end;
+            }
+            result = EXIT_SUCCESS;
             goto end;
         }
         if (strcmp(argv[1], "reuse") != 0) {

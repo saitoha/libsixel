@@ -384,6 +384,8 @@ struct sixel_encoder {
     sixel_encoding_planner_t planner;
     /* Output interpretation is separate from frame/working coordinates. */
     int output_color_definition;
+    /* Keep an explicit byte request distinct from automatic selection. */
+    int precision_requested;
 };
 
 

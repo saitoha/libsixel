@@ -156,6 +156,70 @@ def build(inputs):
                           hidden=[0] * 6, p2=0, linear=triples,
                           wire=[p3_wire_color(rgb) for rgb in triples]))
 
+
+    with localcontext() as context:
+        context.prec = 60
+        # This selected seed has two stable linear clusters: the first red
+        # sample and the other seven samples. Derive both centers from those
+        # source groups and independently verify their nearest-center cells.
+        source = cases[4]
+        points = [[D(x) for x in rgb] for rgb in source['linear']]
+        centers = [points[0], [sum(rgb[c] for rgb in points[1:]) / D(7)
+                               for c in range(3)]]
+        cluster_margins = []
+        for index, point in enumerate(points):
+            distances = [sum((point[c] - center[c]) ** 2 for c in range(3))
+                         for center in centers]
+            owner = 0 if index == 0 else 1
+            assert distances[owner] < distances[1 - owner]
+            cluster_margins.append(str(abs(distances[0] - distances[1])))
+        palette = [p3_wire_color(rgb) for rgb in centers]
+        to_native = reference.matmul(reference.inv(reference.native), p3_matrix())
+
+        def encode_extended(value):
+            absolute = abs(value)
+            result = (D('12.92') * absolute if absolute <= D('.0031308') else
+                      D('1.055') * absolute ** (D(1) / D('2.4')) - D('.055'))
+            return result if value >= 0 else -result
+
+        sent = []
+        for rgb in palette:
+            gamma = [D(x) / 100 for x in rgb]
+            linear_p3 = [x / D('12.92') if x <= D('.04045') else
+                         ((x + D('.055')) / D('1.055')) ** D('2.4')
+                         for x in gamma]
+            canonical = reference.mv(to_native, list(map(reference.F, linear_p3)))
+            sent.append([encode_extended(D(x.numerator) / D(x.denominator))
+                         for x in canonical])
+        working = [[encode_extended(x) for x in rgb] for rgb in points]
+        painted = []
+        fs_margins = []
+        # Independent raster FS, exact rational weights and Decimal error.
+        for y in range(2):
+            for x in range(4):
+                index = y * 4 + x
+                distances = [sum((working[index][c] - color[c]) ** 2
+                                 for c in range(3)) for color in sent]
+                owner = 0 if distances[0] < distances[1] else 1
+                fs_margins.append(str(abs(distances[0] - distances[1])))
+                assert abs(distances[0] - distances[1]) > D('.001')
+                painted.append(palette[owner])
+                error = [working[index][c] - sent[owner][c] for c in range(3)]
+                for dx, dy, numerator in ((1, 0, 7), (-1, 1, 3),
+                                          (0, 1, 5), (1, 1, 1)):
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < 4 and ny < 2:
+                        for c in range(3):
+                            working[ny * 4 + nx][c] += error[c] * D(numerator) / 16
+        cases.append(dict(name='png-p3-16-two-cluster-fs-output-p3',
+                          source=source['source'], width=4, height=2,
+                          source_width=4, scale=1, hidden=[0] * 8, p2=0,
+                          cluster_members=[[0], list(range(1, 8))],
+                          centers_linear=[list(map(str, rgb)) for rgb in centers],
+                          cluster_distance_margins=cluster_margins,
+                          fs_lookup_distance_margins=fs_margins,
+                          linear=source['linear'], wire=painted))
+
     header = ('/* Generated independently; do not copy encoder output here. */\n'
               'static struct {\n'
               '    int width, height, source_width, scale, count, p2;\n'

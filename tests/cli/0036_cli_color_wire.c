@@ -128,12 +128,20 @@ test_cli_0036_color_wire(int argc, char **argv)
         specimen = 6;
         loader = "libtiff";
     }
+    if (strcmp(argv[1], "libpng-p3-16-fs2") == 0) {
+        specimen = 7;
+        loader = "libpng";
+    }
     cms_expected = specimen == 5 ? 0 : 1;
     if (specimen == 0 && strcmp(argv[1], "libpng") != 0 &&
         strcmp(argv[1], "builtin") != 0) {
         return cli_wire_error("unknown loader");
     }
     trace = argv[2];
+    if (specimen == 7 && (cli_wire_count(trace, "LSXDTH1|") != 1 ||
+            strstr(trace, "LSXDTH1|rc=0|diffuse=fs|scan=raster|") == NULL)) {
+        return cli_wire_error("actual Floyd-Steinberg dispatch missing");
+    }
     snprintf(loader_record, sizeof(loader_record),
              "LSXLOAD1|event=try|loader=%s|code=L_TRY", loader);
     if (!cli_wire_record(trace, loader_record)) {
