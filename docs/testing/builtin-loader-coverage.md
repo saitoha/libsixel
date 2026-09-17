@@ -15,7 +15,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Shared loader integration and policy](../loader/builtin.md) | 57 | 1 | 3 | 1 | 4 | 0 | 48 |
 | [Netpbm](../loader/builtin/netpbm.md) | 36 | 36 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 36 | 8 | 3 | 2 | 2 | 2 | 19 |
-| [PNG and APNG](../loader/builtin/png.md) | 282 | 22 | 59 | 0 | 13 | 7 | 181 |
+| [PNG and APNG](../loader/builtin/png.md) | 288 | 22 | 59 | 0 | 13 | 7 | 187 |
 | [JPEG](../loader/builtin/jpeg.md) | 33 | 12 | 14 | 1 | 2 | 0 | 4 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 266 | 219 | 37 | 1 | 5 | 0 | 4 |
 | [PSD and PSB](../loader/builtin/psd.md) | 994 | 13 | 551 | 402 | 9 | 3 | 16 |
@@ -24,7 +24,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 27 | 11 | 8 | 0 | 4 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 10 | 1 | 0 | 14 | 0 | 8 |
-| **Total** | **2199** | **468** | **724** | **652** | **53** | **13** | **289** |
+| **Total** | **2205** | **468** | **724** | **652** | **53** | **13** | **295** |
 
 ## Complete inventory
 
@@ -468,6 +468,12 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader/builtin/2208_loader_builtin_png_metadata_singular_rgba16_callback_failure.t](../../tests/loader/builtin/2208_loader_builtin_png_metadata_singular_rgba16_callback_failure.t) | Release PNG singular_rgba16 ownership after callback failure. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
 | [tests/loader/builtin/2209_loader_builtin_png_metadata_indexed_allocation_failure.t](../../tests/loader/builtin/2209_loader_builtin_png_metadata_indexed_allocation_failure.t) | Release PNG indexed ownership after allocation failure. | Robustness/liveness | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
 | [tests/loader/builtin/2210_loader_builtin_png_metadata_indexed_callback_failure.t](../../tests/loader/builtin/2210_loader_builtin_png_metadata_indexed_callback_failure.t) | Release PNG indexed ownership after callback failure. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
+| [tests/loader/builtin/2211_loader_builtin_png_gamma_byte_prefix_failure.t](../../tests/loader/builtin/2211_loader_builtin_png_gamma_byte_prefix_failure.t) | Preserve every source component after a qualified gamma byte prefix failure. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
+| [tests/loader/builtin/2212_loader_builtin_png_gamma_float_prefix_failure.t](../../tests/loader/builtin/2212_loader_builtin_png_gamma_float_prefix_failure.t) | Preserve every source component after a qualified gamma float prefix failure. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
+| [tests/loader/builtin/2213_loader_builtin_png_icc_byte_prefix_failure.t](../../tests/loader/builtin/2213_loader_builtin_png_icc_byte_prefix_failure.t) | Preserve every source component after a qualified icc byte prefix failure. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
+| [tests/loader/builtin/2214_loader_builtin_png_icc_float_prefix_failure.t](../../tests/loader/builtin/2214_loader_builtin_png_icc_float_prefix_failure.t) | Preserve every source component after a qualified icc float prefix failure. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
+| [tests/loader/builtin/2215_loader_builtin_png_metadata_boundary_palette_colorsync.t](../../tests/loader/builtin/2215_loader_builtin_png_metadata_boundary_palette_colorsync.t) | Inspect PNG metadata boundary-palette with colorsync. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
+| [tests/loader/builtin/2216_loader_builtin_png_metadata_boundary_apng_colorsync.t](../../tests/loader/builtin/2216_loader_builtin_png_metadata_boundary_apng_colorsync.t) | Inspect PNG metadata boundary-apng with colorsync. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
 
 ### JPEG
 

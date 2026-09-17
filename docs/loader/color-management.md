@@ -8,6 +8,12 @@ The [libpng adapter](libpng.md#color-management-and-precision) shares color inte
 
 The builtin gray TRC fallback scales the PCS D50 white, rather than treating the profile's `wtpt` media white as PCS coordinates. This keeps valid gray profiles neutral when they carry a D65 media white. The libpng float-gray regression probes exercise this conversion with and without Little CMS; the [Little CMS gray input pipeline](https://github.com/mm2/Little-CMS/blob/master/src/cmsio1.c) uses the same PCS-illuminant interpretation.
 
+## Shared CMS boundary and future execution stage
+
+Participating loader adapters select source definitions through `cms.c`. They do not call the private ICC parser/evaluator or native CMM transform APIs directly. This includes builtin PNG palettes/APNG rectangles/nested BMP rasters, PNG gAMA/cHRM in either build, and libjpeg CMYK/YCCK at supported precisions. The private ICC implementation remains an engine owned by the facade. TIFF's floating RGB/Gray/Lab routes already exhaust the eligible photometric modes; there is no secondary legacy ICC retry after a failed common transform. Source normalization, unmanaged transfer decoding and format-specific fallback remain loader responsibilities.
+
+CMS still runs inside those loaders. A future independent execution stage needs an owned decoder result containing original sample precision and polarity, source profile/color metadata, alpha, background and animation-rectangle information, plus whether a decoder already applied color management. Moving CMS after a composed APNG callback would lose the current normalize-before-blend boundary or apply it twice. The [encoder execution map](../functionality/encoder-execution-map.md) distinguishes its descriptive planner graph from the executable scheduler: current execution LOAD is a no-op after frame delivery, and adaptive sampling can read before PREPLAN. A real future CMS stage must precede both sampling/preplan consumers; adding a graph label alone does not establish that execution boundary. No such DAG migration is implemented here.
+
 ## Why loader CMS matters
 
 Loader CMS primarily protects the intended color interpretation of input images. Files authored for wider RGB gamuts or different transfer functions cannot safely be treated as ordinary sRGB just because they decode to three channels. Interpreting those samples directly as sRGB can change hue, saturation, brightness, and the balance between colors. CMS uses an applicable source profile or supported color metadata to normalize those samples into libsixel's known sRGB basis before the encoder makes palette and dithering decisions. Its purpose here is faithful normalization, not increasing saturation or extending the display gamut.
@@ -482,6 +488,13 @@ The DIN99d allowance assumes the existing `64u32` relative error budget for `log
 ## Test coverage
 
 <!-- test-coverage: enforced -->
+
+### Shared loader boundary
+
+| ID | Contract | Owning check |
+| --- | --- | --- |
+| CMSB-01 | Loader/from adapters cannot directly reference private ICC or native CMM evaluators; the shared facade owns evaluation. | [tests/_static/sh/staticcheck-loader-cms-boundary.sh](../../tests/_static/sh/staticcheck-loader-cms-boundary.sh) |
+
 
 ### Behavioral contract tests
 

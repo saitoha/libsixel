@@ -1135,6 +1135,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_PATH \
     -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
     -DBUILD_JPEG_CMYK_TEST_COMMON \
+    -DBUILD_JPEG_PRECISION_FAULT_TEST_COMMON \
     -DBUILD_TEST_0001_AFFINE_ADOBE_BUILTIN \
     -DBUILD_TEST_0002_AFFINE_PLAIN_BUILTIN \
     -DBUILD_TEST_0003_AFFINE_ADOBE_LCMS2 \
@@ -1935,6 +1936,7 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0023_loader_libpng_contract.c \
     loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
     loader/jpeg_cmyk_test_common.c \
+    loader/jpeg_precision_fault_test_common.c \
     loader/jpeg_cmyk_test_common.h \
     loader/libjpeg/cmyk/0001_affine_adobe_builtin.c \
     loader/libjpeg/cmyk/0002_affine_plain_builtin.c \
@@ -2278,6 +2280,7 @@ AM_LOG_FLAGS =
 	staticcheck-png-color-oracles \
 	staticcheck-tiff-uint16-oracles \
 	staticcheck-private-includes \
+staticcheck-loader-cms-boundary \
 	staticcheck-src-no-direct-getenv \
 	staticcheck-test-no-direct-getenv \
 	staticcheck-c-ast \
@@ -2352,6 +2355,7 @@ staticcheck-shellcheck \
 staticcheck-codespell \
 staticcheck-python-compileall \
 staticcheck-private-includes \
+staticcheck-loader-cms-boundary \
 staticcheck-src-no-direct-getenv \
 staticcheck-test-no-direct-getenv \
 staticcheck-c-ast \
@@ -2525,6 +2529,16 @@ staticcheck-private-includes:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-private-includes.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-loader-cms-boundary:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-loader-cms-boundary" \
+		--log-file staticcheck-loader-cms-boundary.log \
+		--trs-file staticcheck-loader-cms-boundary.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-loader-cms-boundary.sh" \
+		"$(abs_top_srcdir)"
 
 staticcheck-src-no-direct-getenv:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -4040,6 +4054,8 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-c-ast.sh \
     _static/python/staticcheck_c_ast.py \
 	_static/sh/staticcheck-private-includes.sh \
+    _static/sh/staticcheck-loader-cms-boundary.sh \
+    _static/awk/loader-cms-boundary.awk \
 	_static/sh/staticcheck-src-no-direct-getenv.sh \
 	_static/sh/staticcheck-test-no-direct-getenv.sh \
 	_static/sh/staticcheck-test-runner-dllexport.sh \

@@ -507,9 +507,7 @@ ts_tiled(TIFF *tif)
 #define tiff_clamp_lab_ab ts_local_151
 #define tiff_clamp_unit ts_local_152
 #define tiff_convert_embedded_icc_to_srgb ts_local_153
-#define tiff_convert_embedded_icc_to_srgb_float32 ts_local_154
 #define tiff_convert_embedded_icc_to_srgb_nolcms ts_local_155
-#define tiff_convert_rgbf32_gamma_to_linear ts_local_156
 #define tiff_decode_lab_u16_ab ts_local_157
 #define tiff_decode_lab_u16_l ts_local_158
 #define tiff_map_scanline_coordinates ts_local_159
@@ -897,9 +895,7 @@ ts_linear(unsigned char *pixels, int width, int height, int format,
 #undef tiff_clamp_lab_ab
 #undef tiff_clamp_unit
 #undef tiff_convert_embedded_icc_to_srgb
-#undef tiff_convert_embedded_icc_to_srgb_float32
 #undef tiff_convert_embedded_icc_to_srgb_nolcms
-#undef tiff_convert_rgbf32_gamma_to_linear
 #undef tiff_decode_lab_u16_ab
 #undef tiff_decode_lab_u16_l
 #undef tiff_map_scanline_coordinates

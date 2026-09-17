@@ -182,9 +182,7 @@ ti_target_format(void)
 #define tiff_clamp_lab_ab ti_local_15
 #define tiff_clamp_unit ti_local_16
 #define tiff_convert_embedded_icc_to_srgb ti_local_17
-#define tiff_convert_embedded_icc_to_srgb_float32 ti_local_18
 #define tiff_convert_embedded_icc_to_srgb_nolcms ti_local_19
-#define tiff_convert_rgbf32_gamma_to_linear ti_local_20
 #define tiff_decode_lab_u16_ab ti_local_21
 #define tiff_decode_lab_u16_l ti_local_22
 #define tiff_map_scanline_coordinates ti_local_23
@@ -242,9 +240,7 @@ ti_target_format(void)
 #undef tiff_clamp_lab_ab
 #undef tiff_clamp_unit
 #undef tiff_convert_embedded_icc_to_srgb
-#undef tiff_convert_embedded_icc_to_srgb_float32
 #undef tiff_convert_embedded_icc_to_srgb_nolcms
-#undef tiff_convert_rgbf32_gamma_to_linear
 #undef tiff_decode_lab_u16_ab
 #undef tiff_decode_lab_u16_l
 #undef tiff_map_scanline_coordinates

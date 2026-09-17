@@ -291,9 +291,7 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define tiff_clamp_lab_ab clf_local_151
 #define tiff_clamp_unit clf_local_152
 #define tiff_convert_embedded_icc_to_srgb clf_local_153
-#define tiff_convert_embedded_icc_to_srgb_float32 clf_local_154
 #define tiff_convert_embedded_icc_to_srgb_nolcms clf_local_155
-#define tiff_convert_rgbf32_gamma_to_linear clf_local_156
 #define tiff_decode_lab_u16_ab clf_local_157
 #define tiff_decode_lab_u16_l clf_local_158
 #define tiff_map_scanline_coordinates clf_local_159
@@ -640,9 +638,7 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #undef tiff_clamp_lab_ab
 #undef tiff_clamp_unit
 #undef tiff_convert_embedded_icc_to_srgb
-#undef tiff_convert_embedded_icc_to_srgb_float32
 #undef tiff_convert_embedded_icc_to_srgb_nolcms
-#undef tiff_convert_rgbf32_gamma_to_linear
 #undef tiff_decode_lab_u16_ab
 #undef tiff_decode_lab_u16_l
 #undef tiff_map_scanline_coordinates

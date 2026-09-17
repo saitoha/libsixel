@@ -17,7 +17,6 @@
 #include "src/loader-common.h"
 #include "tests/data/color-numeric/png-metadata.h"
 
-#if HAVE_LCMS2
 static color_png_metadata_t const *pmfi_source;
 static int pmfi_mode;
 static int pmfi_factory_calls;
@@ -108,13 +107,24 @@ pmfi_load8(unsigned char const *buffer, int length, int *width,
     return pixels;
 }
 
+char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
+    int length, int initial_size, int *out_length, int header);
+void stbi_image_free(void *pixels);
+
 static char *
 pmfi_inflate(char const *buffer, int length, int initial_size,
                int *out_length, int header)
 {
-    (void)buffer; (void)length; (void)initial_size; (void)header;
-    *out_length = 0;
-    return NULL;
+    char *decoded;
+    char *owned;
+
+    decoded = stbi_zlib_decode_malloc_guesssize_headerflag(buffer,
+        length, initial_size, out_length, header);
+    if (decoded == NULL) { return NULL; }
+    owned = pmfi_malloc((size_t)*out_length);
+    if (owned != NULL) { memcpy(owned, decoded, (size_t)*out_length); }
+    stbi_image_free(decoded);
+    return owned;
 }
 
 static sixel_cms_profile_t *
@@ -124,7 +134,8 @@ pmfi_factory(double gamma, double wx, double wy, double rx, double ry,
     sixel_cms_profile_t *profile;
 
     ++pmfi_factory_calls;
-    if (pmfi_mode == 1 || pmfi_mode == 2 || pmfi_mode >= 6) {
+    if (pmfi_mode == 1 || pmfi_mode == 2 ||
+        pmfi_mode == 6 || pmfi_mode == 7) {
         return NULL;
     }
     profile = sixel_cms_create_rgb_profile_from_gamma_chrm(gamma,
@@ -165,6 +176,40 @@ pmfi_apply(unsigned char *pixels, int width, int height, int format,
     return result;
 }
 
+/* Qualify the actual byte/float transform before injecting its failure.
+ * A backend rejection is not evidence that a partial write was rolled back. */
+static int
+pmfi_apply_srgb(unsigned char *pixels, int width, int height, int format,
+                  sixel_cms_profile_t *profile)
+{
+    int result;
+
+    result = sixel_cms_convert_profile_to_srgb(pixels, width, height,
+                                               format, profile);
+    ++pmfi_apply_calls;
+    if (result && pmfi_mode >= 8) {
+        pixels[0] ^= 0x5au;
+        return 0;
+    }
+    return result;
+}
+
+static int
+pmfi_apply_icc(unsigned char *pixels, int width, int height, int format,
+                 unsigned char const *profile, size_t profile_size)
+{
+    int result;
+
+    result = sixel_cms_convert_to_srgb_with_profile_bytes(pixels,
+        width, height, format, profile, profile_size);
+    ++pmfi_apply_calls;
+    if (result && pmfi_mode >= 10) {
+        pixels[0] ^= 0x5au;
+        return 0;
+    }
+    return result;
+}
+
 /* Keep the test namespace isolated in ordinary and amalgamated builds. */
 #define sixel_frompng_extract_icc pmfi_extract_icc
 #define sixel_frompng_build_chrm_to_srgb_matrix pmfi_chrm_matrix
@@ -180,14 +225,10 @@ pmfi_apply(unsigned char *pixels, int width, int height, int format,
 #define sixel_frompng_apply_colorspace_fallback pmfi_fallback
 #define sixel_frompng_apply_colorspace_fallback_pixelformat pmfi_fallback_format
 #define sixel_frompng_parse_transfer_chunks pmfi_parse_transfer_chunks
-#define sixel_frompng_apply_gama_to_srgb_u8 pmfi_gamma_byte
-#define sixel_frompng_apply_gama_to_srgb_float32 pmfi_gamma_float
 #define sixel_frompng_clamp_unit pmfi_clamp_unit
 #define sixel_frompng_decode_srgb_unit pmfi_decode_srgb_unit
-#define sixel_frompng_encode_srgb_unit pmfi_encode_srgb_unit
 #define sixel_frompng_decode_source_unit pmfi_decode_source_unit
 #define sixel_frompng_invert_3x3 pmfi_invert_3x3
-#define sixel_frompng_apply_linear_matrix_triplet pmfi_matrix_triplet
 #define sixel_frompng_select_source pmfi_select_source
 #define sixel_frompng_normalize_samples pmfi_normalize_samples
 #define sixel_frompng_decode_samples pmfi_decode_samples
@@ -204,7 +245,9 @@ pmfi_apply(unsigned char *pixels, int width, int height, int format,
 #define stbi_zlib_decode_malloc_guesssize_headerflag pmfi_inflate
 #define sixel_cms_create_rgb_profile_from_gamma_chrm pmfi_factory
 #define sixel_cms_convert_profile_to_linearrgb pmfi_apply
+#define sixel_cms_convert_profile_to_srgb pmfi_apply_srgb
 #define sixel_cms_close_profile pmfi_close
+#define sixel_cms_convert_to_srgb_with_profile_bytes pmfi_apply_icc
 
 #include "src/frompng.c"
 
@@ -222,14 +265,10 @@ pmfi_apply(unsigned char *pixels, int width, int height, int format,
 #undef sixel_frompng_apply_colorspace_fallback
 #undef sixel_frompng_apply_colorspace_fallback_pixelformat
 #undef sixel_frompng_parse_transfer_chunks
-#undef sixel_frompng_apply_gama_to_srgb_u8
-#undef sixel_frompng_apply_gama_to_srgb_float32
 #undef sixel_frompng_clamp_unit
 #undef sixel_frompng_decode_srgb_unit
-#undef sixel_frompng_encode_srgb_unit
 #undef sixel_frompng_decode_source_unit
 #undef sixel_frompng_invert_3x3
-#undef sixel_frompng_apply_linear_matrix_triplet
 #undef sixel_frompng_select_source
 #undef sixel_frompng_normalize_samples
 #undef sixel_frompng_decode_samples
@@ -246,14 +285,63 @@ pmfi_apply(unsigned char *pixels, int width, int height, int format,
 #undef stbi_zlib_decode_malloc_guesssize_headerflag
 #undef sixel_cms_create_rgb_profile_from_gamma_chrm
 #undef sixel_cms_convert_profile_to_linearrgb
+#undef sixel_cms_convert_profile_to_srgb
 #undef sixel_cms_close_profile
+#undef sixel_cms_convert_to_srgb_with_profile_bytes
 
-#endif
+
+static int
+pmfi_byte_failure(int mode, sixel_allocator_t *allocator,
+                     sixel_chunk_t const *chunk)
+{
+    unsigned char const *container;
+    size_t container_size;
+    unsigned char source8[24];
+    unsigned char pixels8[24];
+    float source32[24];
+    float pixels32[24];
+    color_png_metadata_t const *source;
+    unsigned char *pixels;
+    void const *original;
+    size_t bytes;
+    int format;
+    int i;
+
+    source = &color_png_metadata[0];
+    container = chunk != NULL ? sixel_chunk_get_buffer(chunk) : source->bytes;
+    container_size = chunk != NULL ? sixel_chunk_get_size(chunk)
+                                  : source->length;
+    for (i = 0; i < 24; ++i) {
+        source8[i] = (unsigned char)source->rgba[i / 3 * 4 + i % 3];
+        source32[i] = (float)((double)source8[i] / 255.0);
+    }
+    pixels = (mode & 1) == 0 ? pixels8 : (unsigned char *)pixels32;
+    original = (mode & 1) == 0 ? (void const *)source8 : source32;
+    bytes = (mode & 1) == 0 ? sizeof(source8) : sizeof(source32);
+    format = (mode & 1) == 0 ? SIXEL_PIXELFORMAT_RGB888
+                       : SIXEL_PIXELFORMAT_RGBFLOAT32;
+    memcpy(pixels, original, bytes);
+    pmfi_mode = 0;
+    if (!pmfi_fallback_format(pixels, 8, 1, format, container,
+                               container_size, allocator) ||
+        memcmp(pixels, original, bytes) == 0) {
+        return 1;
+    }
+    memcpy(pixels, original, bytes);
+    pmfi_mode = mode;
+    if (pmfi_fallback_format(pixels, 8, 1, format, container,
+                              container_size, allocator) ||
+        memcmp(pixels, original, bytes) != 0 || pmfi_apply_calls != 2 ||
+        pmfi_factory_calls != (mode >= 10 ? 0 : 2) ||
+        pmfi_profile_live != 0) {
+        return 1;
+    }
+    return 0;
+}
 
 int
 test_loader_0193_png_metadata_failures(int argc, char **argv)
 {
-#if HAVE_LCMS2
     sixel_chunk_t *chunk;
     sixel_allocator_t *allocator;
     sixel_frame_t *frame;
@@ -269,9 +357,9 @@ test_loader_0193_png_metadata_failures(int argc, char **argv)
     int factory_count;
     int apply_count;
 
-    if (argc != 2) { return 1; }
+    if (argc != 2 && argc != 3) { return 1; }
     pmfi_mode = atoi(argv[1]);
-    if (pmfi_mode < 0 || pmfi_mode > 7) { return 1; }
+    if (pmfi_mode < 0 || pmfi_mode > 11) { return 1; }
     fixture = pmfi_mode == 1 ? 0 : pmfi_mode == 6 ? 1 :
         pmfi_mode == 7 ? 17 : 16;
     pmfi_source = &color_png_metadata[fixture];
@@ -290,6 +378,18 @@ test_loader_0193_png_metadata_failures(int argc, char **argv)
     status = sixel_allocator_new(&allocator, pmfi_malloc, pmfi_calloc,
         pmfi_realloc, pmfi_free);
     if (SIXEL_FAILED(status)) { goto cleanup; }
+    if (pmfi_mode >= 8) {
+        factory_count = pmfi_mode >= 10 ? 0 : 2;
+        apply_count = 2;
+        if (pmfi_mode >= 10) {
+            if (argc != 3) { goto cleanup; }
+            status = sixel_chunk_create_from_source(&chunk, argv[2], 0,
+                                                      NULL, allocator);
+            if (SIXEL_FAILED(status)) { goto cleanup; }
+        }
+        result = pmfi_byte_failure(pmfi_mode, allocator, chunk);
+        goto cleanup;
+    }
     status = sixel_frame_new(&frame, allocator);
     if (SIXEL_FAILED(status)) { goto cleanup; }
     status = sixel_chunk_create_from_memory(&chunk, pmfi_source->bytes,
@@ -344,9 +444,4 @@ cleanup:
             pmfi_profile_live);
     }
     return result;
-#else
-    (void)argc;
-    (void)argv;
-    return 77;
-#endif
 }

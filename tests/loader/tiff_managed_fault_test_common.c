@@ -33,7 +33,6 @@ static size_t mf_curve_calls;
 static size_t mf_reject;
 static size_t mf_calls;
 static size_t mf_cms_calls;
-static size_t mf_legacy_calls;
 static size_t mf_poison;
 static size_t mf_allocated;
 static size_t mf_freed;
@@ -149,13 +148,6 @@ mf_lcms(cmsHTRANSFORM tr, void const *src, void *dst, cmsUInt32Number n)
     }
 }
 #endif
-
-static int
-mf_legacy(float *pixels, size_t n, sixel_icc_profile_t const *profile)
-{
-    ++mf_legacy_calls;
-    return sixel_icc_apply_rgb_float32(pixels, n, profile);
-}
 
 static int
 mf_read(TIFF *tif, void *data, uint32_t row, uint16_t sample)
@@ -355,9 +347,7 @@ mf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define tiff_clamp_lab_ab mf_local_151
 #define tiff_clamp_unit mf_local_152
 #define tiff_convert_embedded_icc_to_srgb mf_local_153
-#define tiff_convert_embedded_icc_to_srgb_float32 mf_local_154
 #define tiff_convert_embedded_icc_to_srgb_nolcms mf_local_155
-#define tiff_convert_rgbf32_gamma_to_linear mf_local_156
 #define tiff_decode_lab_u16_ab mf_local_157
 #define tiff_decode_lab_u16_l mf_local_158
 #define tiff_map_scanline_coordinates mf_local_159
@@ -553,7 +543,8 @@ mf_profile_linear(unsigned char *pixels, int width, int height, int format,
 #define sixel_cms_convert_profile_to_linearrgb mf_profile_linear
 #undef sixel_cms_convert_to_linearrgb_with_profile_bytes
 #define sixel_cms_convert_to_linearrgb_with_profile_bytes mf_linear
-#define sixel_icc_apply_rgb_float32 mf_legacy
+/* A loader-owned ICC retry must fail compilation, even in fault tests. */
+#define sixel_icc_apply_rgb_float32(...) SIXEL_LOADER_MUST_USE_CMS_FACADE
 #define TIFFReadScanline mf_read
 #define TIFFReadRGBAImageOriented mf_rgba_read
 #define tiff_logluv_xyz_to_linear mf_logluv_xyz
@@ -734,9 +725,7 @@ mf_profile_linear(unsigned char *pixels, int width, int height, int format,
 #undef tiff_clamp_lab_ab
 #undef tiff_clamp_unit
 #undef tiff_convert_embedded_icc_to_srgb
-#undef tiff_convert_embedded_icc_to_srgb_float32
 #undef tiff_convert_embedded_icc_to_srgb_nolcms
-#undef tiff_convert_rgbf32_gamma_to_linear
 #undef tiff_decode_lab_u16_ab
 #undef tiff_decode_lab_u16_l
 #undef tiff_map_scanline_coordinates
@@ -778,7 +767,7 @@ mf_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
     mf_phase = phase;
     mf_mode = mode;
     mf_success = mf_curve_calls = mf_reject = mf_calls = mf_cms_calls = 0u;
-    mf_legacy_calls = mf_poison = mf_allocated = mf_freed = 0u;
+    mf_poison = mf_allocated = mf_freed = 0u;
     mf_reads = mf_matched = mf_seen = mf_rgba = 0u;
     mf_segment = mf_changed = mf_remainder = mf_frame_ok = 0;
     mf_scratch = NULL;
@@ -790,10 +779,10 @@ mf_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
     status = component->vtbl->load(component, chunk, mf_capture, NULL);
     fprintf(stderr, "TMFAULT|phase=%d|mode=%d|status=%x|calls=%zu|"
         "success=%zu|reject=%zu|segment=%d|changed=%d|remainder=%d|"
-        "alloc=%zu|freed=%zu|legacy=%zu|cms=%zu|poison=%zu|"
+        "alloc=%zu|freed=%zu|cms=%zu|poison=%zu|"
         "read=%zu|matched=%zu|seen=%zu|rgba=%zu|frame=%d\n",
         phase, mode, status, mf_calls, mf_success, mf_reject, mf_segment,
-        mf_changed, mf_remainder, mf_allocated, mf_freed, mf_legacy_calls,
+        mf_changed, mf_remainder, mf_allocated, mf_freed,
         mf_cms_calls, mf_poison, mf_reads, mf_matched, mf_seen, mf_rgba,
         mf_frame_ok);
     return status;
@@ -845,8 +834,7 @@ tiff_managed_failure(int argc, char **argv, int fixture, int engine,
     component = object;
     status = mf_load(component, chunk, 0, 0);
     normal = status == SIXEL_OK && mf_calls == 1u && mf_frame_ok &&
-        mf_allocated == 1u && mf_freed == 1u && mf_scratch == NULL &&
-        mf_legacy_calls == 0u;
+        mf_allocated == 1u && mf_freed == 1u && mf_scratch == NULL;
     memcpy(saved, mf_frame, mf_n * 3u * sizeof(float));
     if (mode == 4) {
         if (SIXEL_FAILED(sixel_chunk_create_from_source(&bad_chunk, argv[2],
@@ -876,7 +864,7 @@ tiff_managed_failure(int argc, char **argv, int fixture, int engine,
                  mf_segment && mf_changed;
         }
     }
-    ok = ok && mf_rgba == 0u && mf_legacy_calls == 0u;
+    ok = ok && mf_rgba == 0u;
     fprintf(stderr, "TMFAULT|qualified=%d|accepted=%d\n", qualified, ok);
     mf_bad = 0u;
     status = mf_load(component, chunk, 2, 0);

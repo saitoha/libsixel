@@ -13,9 +13,8 @@
 #include "src/loader-manager.h"
 #include "tests/data/color-numeric/png-byte-target.h"
 
-#if !HAVE_LCMS2
-/* These specimens fix the direct gAMA contract. The lcms-enabled build has
- * a separate chunk-profile/fallback policy, covered by source CMS tests. */
+/* These specimens preserve the source-to-target rounding contract. The
+ * builtin loader now selects a shared source profile in either build. */
 typedef struct {
     int index;
     int stage;
@@ -70,16 +69,10 @@ png_byte_capture(sixel_frame_t *frame, void *context)
     }
     return SIXEL_OK;
 }
-#endif
 
 int
 test_loader_0186_png_byte_target(int argc, char **argv)
 {
-#if HAVE_LCMS2
-    (void)argc;
-    (void)argv;
-    return 77;
-#else
     png_byte_test_t probe;
     sixel_cms_engine_t previous;
     sixel_loader_t *loader;
@@ -92,6 +85,10 @@ test_loader_0186_png_byte_target(int argc, char **argv)
                       strcmp(argv[2], "1") != 0)) {
         return 1;
     }
+#if HAVE_LCMS2
+    /* The libpng calibrated-profile path has separate precision coverage. */
+    if (strcmp(argv[1], "builtin") != 0) { return 77; }
+#endif
     if (!loader_manager_entry_available(argv[1])) {
         return 77;
     }
@@ -139,5 +136,4 @@ end:
     sixel_loader_unref(loader);
     sixel_cms_set_engine(previous);
     return SIXEL_FAILED(status) || probe.calls != 4;
-#endif
 }

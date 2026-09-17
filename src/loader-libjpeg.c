@@ -55,8 +55,6 @@
 #include "allocator.h"
 #include "cms.h"
 #include "chunk-view.h"
-#include "icc-apply.h"
-#include "icc-parse.h"
 #include "loader-common.h"
 #include "loader.h"
 #include "frame-private.h"
@@ -546,7 +544,6 @@ cleanup:
     return converted;
 }
 
-#if HAVE_LCMS2
 static int
 jpeg_convert_icc_cmyk16_to_srgb_f32(float *dst_pixels,
                                     uint16_t const *src_pixels,
@@ -595,84 +592,6 @@ cleanup:
     sixel_cms_close_profile(src_profile);
     return converted;
 }
-#endif
-
-#if !HAVE_LCMS2
-static int
-jpeg_convert_icc_cmyk8_to_srgb_f32_nolcms(float *dst_pixels,
-                                          unsigned char const *src_pixels,
-                                          size_t pixel_count,
-                                          unsigned char const *profile_data,
-                                          size_t profile_length)
-{
-    sixel_icc_profile_t profile;
-    int parsed;
-    int converted;
-
-    memset(&profile, 0, sizeof(profile));
-    parsed = 0;
-    converted = 0;
-    if (dst_pixels == NULL || src_pixels == NULL ||
-        pixel_count == 0u || profile_data == NULL || profile_length == 0u) {
-        return 0;
-    }
-
-    if (!sixel_icc_parse_profile(profile_data, profile_length, &profile)) {
-        goto cleanup;
-    }
-    parsed = 1;
-    if (profile.kind == SIXEL_ICC_PROFILE_KIND_CMYK) {
-        converted = sixel_icc_apply_cmyk_u8_to_rgb_float32(dst_pixels,
-                                                            src_pixels,
-                                                            pixel_count,
-                                                            &profile);
-    }
-
-cleanup:
-    if (parsed) {
-        sixel_icc_profile_destroy(&profile);
-    }
-    return converted;
-}
-
-static int
-jpeg_convert_icc_cmyk16_to_srgb_f32_nolcms(float *dst_pixels,
-                                           uint16_t const *src_pixels,
-                                           size_t pixel_count,
-                                           unsigned char const *profile_data,
-                                           size_t profile_length)
-{
-    sixel_icc_profile_t profile;
-    int parsed;
-    int converted;
-
-    memset(&profile, 0, sizeof(profile));
-    parsed = 0;
-    converted = 0;
-    if (dst_pixels == NULL || src_pixels == NULL ||
-        pixel_count == 0u || profile_data == NULL || profile_length == 0u) {
-        return 0;
-    }
-
-    if (!sixel_icc_parse_profile(profile_data, profile_length, &profile)) {
-        goto cleanup;
-    }
-    parsed = 1;
-    if (profile.kind == SIXEL_ICC_PROFILE_KIND_CMYK) {
-        converted = sixel_icc_apply_cmyk_u16_to_rgb_float32(dst_pixels,
-                                                             src_pixels,
-                                                             pixel_count,
-                                                             &profile);
-    }
-
-cleanup:
-    if (parsed) {
-        sixel_icc_profile_destroy(&profile);
-    }
-    return converted;
-}
-#endif
-
 static SIXELSTATUS
 jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
                                       int width,
@@ -804,7 +723,6 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
                                        int height,
                                        sixel_allocator_t *allocator,
                                        int enable_cms,
-                                       int icc_cmyk,
                                        int icc_inverted_cmyk,
                                        unsigned char const *icc_profile,
                                        unsigned int icc_profile_length
@@ -819,10 +737,6 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
     int cms_converted;
     int normalize_cmyk;
 
-    /* The old YCCK route remains separate without Little CMS. */
-#if HAVE_LCMS2
-    (void)icc_cmyk;
-#endif
     status = SIXEL_OK;
     pixel_count = 0u;
     float_bytes = 0u;
@@ -866,14 +780,9 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
         }
     }
 
-    /* ICC interpretation belongs to the shared facade even when its
-     * builtin backend is the only available CMS. Preserve the historical
-     * direct YCCK connection in builds without Little CMS. */
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u
-#if !HAVE_LCMS2
-        && icc_cmyk
-#endif
-        ) {
+    /* CMYK and the decoder's YCCK-to-CMYK output use the selected facade
+     * engine and rendering intent in every build. */
+    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
         if (jpeg_convert_icc_cmyk8_to_srgb_f32(float_pixels,
                                                cmyk_pixels,
                                                pixel_count,
@@ -882,19 +791,6 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
             cms_converted = 1;
         }
     }
-
-#if !HAVE_LCMS2
-    if (!icc_cmyk && enable_cms &&
-        icc_profile != NULL && icc_profile_length > 0u) {
-        if (jpeg_convert_icc_cmyk8_to_srgb_f32_nolcms(float_pixels,
-                                                      cmyk_pixels,
-                                                      pixel_count,
-                                                      icc_profile,
-                                                      (size_t)icc_profile_length)) {
-            cms_converted = 1;
-        }
-    }
-#endif
 
     if (!cms_converted) {
         /* Profile rejection and transform failure both use the established
@@ -908,19 +804,6 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
         }
         jpeg_unpack_cmyk8_to_rgbf32(float_pixels, cmyk_pixels, pixel_count);
     }
-
-#if !HAVE_LCMS2
-    if (!cms_converted &&
-        enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        sixel_cms_convert_to_srgb_with_profile_bytes(
-            (unsigned char *)float_pixels,
-            width,
-            height,
-            SIXEL_PIXELFORMAT_RGBFLOAT32,
-            icc_profile,
-            (size_t)icc_profile_length);
-    }
-#endif
 
     if (enable_cms) {
         status = jpeg_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
@@ -941,6 +824,7 @@ jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
                                       int height,
                                       sixel_allocator_t *allocator,
                                       int enable_cms,
+                                      int icc_inverted_cmyk,
                                       unsigned char const *icc_profile,
                                       unsigned int icc_profile_length
                                       )
@@ -948,9 +832,11 @@ jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
     SIXELSTATUS status;
     size_t pixel_count;
     size_t float_bytes;
+    size_t sample;
     uint16_t *cmyk_pixels;
     float *float_pixels;
     int cms_converted;
+    int normalize_cmyk;
 
     status = SIXEL_OK;
     pixel_count = 0u;
@@ -968,7 +854,8 @@ jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
     }
 
     pixel_count = (size_t)width * (size_t)height;
-    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float)) ||
+        pixel_count > SIZE_MAX / (4u * sizeof(uint16_t))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     float_bytes = pixel_count * 3u * sizeof(float);
@@ -982,7 +869,16 @@ jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
         return SIXEL_BAD_ALLOCATION;
     }
 
-#if HAVE_LCMS2
+    /* The decoder has already expanded 12-bit values to full uint16 units.
+     * Complement that full range only for the managed Adobe interpretation;
+     * unprofiled/failed conversion must still read original decoder samples. */
+    normalize_cmyk = icc_inverted_cmyk && enable_cms &&
+        icc_profile != NULL && icc_profile_length > 0u;
+    if (normalize_cmyk) {
+        for (sample = 0u; sample < pixel_count * 4u; ++sample) {
+            cmyk_pixels[sample] = (uint16_t)(65535u - cmyk_pixels[sample]);
+        }
+    }
     if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
         if (jpeg_convert_icc_cmyk16_to_srgb_f32(float_pixels,
                                                 cmyk_pixels,
@@ -992,36 +888,16 @@ jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
             cms_converted = 1;
         }
     }
-#endif
-
-#if !HAVE_LCMS2
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        if (jpeg_convert_icc_cmyk16_to_srgb_f32_nolcms(float_pixels,
-                                                       cmyk_pixels,
-                                                       pixel_count,
-                                                       icc_profile,
-                                                       (size_t)icc_profile_length)) {
-            cms_converted = 1;
-        }
-    }
-#endif
 
     if (!cms_converted) {
+        if (normalize_cmyk) {
+            for (sample = 0u; sample < pixel_count * 4u; ++sample) {
+                cmyk_pixels[sample] =
+                    (uint16_t)(65535u - cmyk_pixels[sample]);
+            }
+        }
         jpeg_unpack_cmyk16_to_rgbf32(float_pixels, cmyk_pixels, pixel_count);
     }
-
-#if !HAVE_LCMS2
-    if (!cms_converted &&
-        enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        sixel_cms_convert_to_srgb_with_profile_bytes(
-            (unsigned char *)float_pixels,
-            width,
-            height,
-            SIXEL_PIXELFORMAT_RGBFLOAT32,
-            icc_profile,
-            (size_t)icc_profile_length);
-    }
-#endif
 
     if (enable_cms) {
         status = jpeg_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
@@ -1051,6 +927,9 @@ jpeg_decode_to_float32_from_precision(struct jpeg_decompress_struct *cinfo,
 #endif
 #if SIXEL_LIBJPEG_HAS_JPEG16
     J16SAMPARRAY buffer16;
+    size_t column;
+    size_t destination;
+    float gray;
 #endif
 
 #if SIXEL_LIBJPEG_HAS_JPEG12 || SIXEL_LIBJPEG_HAS_JPEG16
@@ -1065,7 +944,9 @@ jpeg_decode_to_float32_from_precision(struct jpeg_decompress_struct *cinfo,
     buffer16 = NULL;
 #endif
 
-    if (cinfo == NULL || dst == NULL || cinfo->output_components != 3) {
+    if (cinfo == NULL || dst == NULL ||
+        (cinfo->output_components != 3 &&
+         !(data_precision == 16 && cinfo->output_components == 1))) {
         return SIXEL_BAD_ARGUMENT;
     }
     if ((size_t)cinfo->output_width > SIZE_MAX / (size_t)cinfo->output_height) {
@@ -1116,9 +997,21 @@ jpeg_decode_to_float32_from_precision(struct jpeg_decompress_struct *cinfo,
                 return SIXEL_BAD_INPUT;
             }
             row_index = (size_t)cinfo->output_scanline - 1u;
-            jpeg_unpack_rgb16_to_rgbf32(dst + row_index * pixel_count * 3u,
-                                        buffer16[0],
-                                        pixel_count);
+            if (cinfo->output_components == 1) {
+                /* Expand original Gray16 directly; no byte intermediary or
+                 * unsupported native lossless Gray-to-RGB conversion. */
+                for (column = 0u; column < pixel_count; ++column) {
+                    gray = (float)buffer16[0][column] / 65535.0f;
+                    destination = (row_index * pixel_count + column) * 3u;
+                    dst[destination] = gray;
+                    dst[destination + 1u] = gray;
+                    dst[destination + 2u] = gray;
+                }
+            } else {
+                jpeg_unpack_rgb16_to_rgbf32(
+                    dst + row_index * pixel_count * 3u, buffer16[0],
+                    pixel_count);
+            }
         }
         return SIXEL_OK;
     }
@@ -1264,9 +1157,9 @@ load_jpeg(unsigned char **result,
     struct jpeg_decompress_struct cinfo;
     sixel_loader_libjpeg_error_context_t jerr;
     int data_precision;
-    int icc_cmyk;
     int icc_inverted_cmyk;
     volatile int decode_cmyk;
+    volatile int decode_gray16;
     unsigned int output_components;
     volatile int jpeg_failed;
     unsigned char * volatile icc_profile;
@@ -1280,9 +1173,9 @@ load_jpeg(unsigned char **result,
     size = 0u;
     buffer = NULL;
     data_precision = 8;
-    icc_cmyk = 0;
     icc_inverted_cmyk = 0;
     decode_cmyk = 0;
+    decode_gray16 = 0;
     output_components = 0u;
     jpeg_failed = 0;
     icc_profile_tmp = NULL;
@@ -1327,20 +1220,26 @@ load_jpeg(unsigned char **result,
     if (cinfo.num_components == 4) {
         cinfo.out_color_space = JCS_CMYK;
         decode_cmyk = 1;
+    } else if (cinfo.data_precision == 16 &&
+               cinfo.jpeg_color_space == JCS_GRAYSCALE) {
+        /* The 16-bit lossless API only admits native source components. */
+        cinfo.out_color_space = JCS_GRAYSCALE;
+        decode_gray16 = 1;
     } else {
         cinfo.out_color_space = JCS_RGB;
     }
     jpeg_start_decompress(&cinfo);
     data_precision = cinfo.data_precision;
     output_components = cinfo.output_components;
-    /* Keep this correction specific to ordinary Adobe 8-bit CMYK. YCCK and
-     * the separate higher-precision paths retain their existing policies. */
-    icc_cmyk = data_precision == 8 &&
-        cinfo.jpeg_color_space == JCS_CMYK;
-    icc_inverted_cmyk = icc_cmyk && cinfo.saw_Adobe_marker &&
-        cinfo.Adobe_transform == 0;
+    /* libjpeg's Adobe CMYK and YCCK-to-CMYK output share inverted device
+     * coordinates at every precision. The CMS facade expects ink coverage.
+     * Marker-absent input and the established non-ICC fallback stay intact. */
+    icc_inverted_cmyk = cinfo.saw_Adobe_marker &&
+        ((cinfo.jpeg_color_space == JCS_CMYK && cinfo.Adobe_transform == 0) ||
+         (cinfo.jpeg_color_space == JCS_YCCK && cinfo.Adobe_transform == 2));
 
-    if ((!decode_cmyk && output_components != 3u) ||
+    if ((!decode_cmyk && !decode_gray16 && output_components != 3u) ||
+        (decode_gray16 && output_components != 1u) ||
         (decode_cmyk && output_components != 4u)) {
         sixel_helper_set_additional_message(
             "load_jpeg: unknown pixel format.");
@@ -1405,7 +1304,6 @@ load_jpeg(unsigned char **result,
                                                             *pheight,
                                                             allocator,
                                                             enable_cms,
-                                                            icc_cmyk,
                                                             icc_inverted_cmyk,
                                                             icc_profile,
                                                             icc_profile_length
@@ -1449,6 +1347,7 @@ load_jpeg(unsigned char **result,
                                                            *pheight,
                                                            allocator,
                                                            enable_cms,
+                                                           icc_inverted_cmyk,
                                                            icc_profile,
                                                            icc_profile_length
                                                            );

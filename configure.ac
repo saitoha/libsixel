@@ -4275,11 +4275,13 @@ if test x$with_jpeg != xno; then
 #include <jpeglib.h>
                 ]],
                 [[
-#if !defined(J12SAMPLE) || !defined(MAXJ12SAMPLE)
-# error "missing J12SAMPLE/MAXJ12SAMPLE"
+#if !defined(MAXJ12SAMPLE)
+# error "missing MAXJ12SAMPLE"
 #endif
                     j_decompress_ptr cinfo = (j_decompress_ptr)0;
-                    J12SAMPARRAY scanlines = (J12SAMPARRAY)0;
+                    J12SAMPLE sample = MAXJ12SAMPLE;
+                    J12SAMPROW row = &sample;
+                    J12SAMPARRAY scanlines = &row;
                     (void)jpeg12_read_scanlines(cinfo, scanlines, (JDIMENSION)0);
                 ]])],
             [have_jpeg12_api=yes],
@@ -4294,11 +4296,13 @@ if test x$with_jpeg != xno; then
 #include <jpeglib.h>
                 ]],
                 [[
-#if !defined(J16SAMPLE) || !defined(MAXJ16SAMPLE)
-# error "missing J16SAMPLE/MAXJ16SAMPLE"
+#if !defined(MAXJ16SAMPLE)
+# error "missing MAXJ16SAMPLE"
 #endif
                     j_decompress_ptr cinfo = (j_decompress_ptr)0;
-                    J16SAMPARRAY scanlines = (J16SAMPARRAY)0;
+                    J16SAMPLE sample = MAXJ16SAMPLE;
+                    J16SAMPROW row = &sample;
+                    J16SAMPARRAY scanlines = &row;
                     (void)jpeg16_read_scanlines(cinfo, scanlines, (JDIMENSION)0);
                 ]])],
             [have_jpeg16_api=yes],

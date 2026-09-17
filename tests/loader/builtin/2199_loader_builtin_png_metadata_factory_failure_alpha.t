@@ -11,11 +11,6 @@ output=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
 status=$?
 set -e
 printf '%s\n' "$output" >&2
-test "$status" -ne 77 || {
-    echo "1..0 # SKIP required CMS build path is unavailable"
-    set -v
-    exit 0
-}
 echo "1..1"
 set -v
 test "$status" -eq 0 || {

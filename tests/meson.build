@@ -722,6 +722,11 @@ staticcheck_cases = [
       python_for_tests_path],
   ],
   [
+    'staticcheck-loader-cms-boundary',
+    [meson.current_source_dir() / '_static/sh/staticcheck-loader-cms-boundary.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-private-includes',
     [meson.current_source_dir() / '_static/sh/staticcheck-private-includes.sh',
       meson.project_source_root(),

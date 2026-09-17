@@ -4,6 +4,7 @@
 #include "config.h"
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "src/cms.h"
 #include "src/compat_stub.h"
@@ -14,9 +15,12 @@
 #if HAVE_JPEG
 #include <jpeglib.h>
 #include "tests/data/color-numeric/jpeg-cmyk.h"
+#include "tests/data/color-numeric/jpeg-precision.h"
 
 typedef struct jpeg_cmyk_context {
     int adobe;
+    int extended;
+    int fixture;
     int engine;
     int mode;
     int calls;
@@ -33,11 +37,16 @@ jc_capture(sixel_frame_t *frame, void *context)
     size_t i;
     size_t c;
     int disabled;
+    int dimension;
+    size_t count;
+    size_t witness;
 
     ctx = context;
     ++ctx->calls;
     disabled = ctx->mode == 1;
-    if (frame->width != 32 || frame->height != 32 ||
+    dimension = ctx->extended ? 64 : 32;
+    count = (size_t)dimension * dimension;
+    if (frame->width != dimension || frame->height != dimension ||
         frame->pixelformat != (disabled ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
                               SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
         frame->colorspace != (disabled ? SIXEL_COLORSPACE_GAMMA :
@@ -51,13 +60,25 @@ jc_capture(sixel_frame_t *frame, void *context)
     }
     pixels = (float const *)sixel_frame_get_pixels(frame);
     if (pixels == NULL) { return SIXEL_BAD_INPUT; }
-    /* Geometry above fixes the full 1024-pixel extent. Every component is
+    /* Geometry above fixes the complete source extent. Every component is
      * visited, including finite checks; no paired short iterator is used. */
-    for (i = 0u; i < 1024u; ++i) {
+    witness = 0u;
+    for (i = 0u; i < count; ++i) {
         for (c = 0u; c < 3u; ++c) {
-            expected = ctx->mode == 0 ? jc_linear[ctx->adobe][i][c] :
-                       ctx->mode == 5 ? jc_legacy[i][c] :
-                       jc_fallback[!disabled][i][c];
+            if (!isfinite(pixels[i * 3u + c])) { return SIXEL_BAD_INPUT; }
+            if (ctx->extended && (witness >= 32u ||
+                                  i != jp_witness[witness])) {
+                continue;
+            }
+            if (ctx->extended) {
+                expected = ctx->mode == 0 ?
+                    jp_linear[ctx->fixture][witness][c] :
+                    jp_fallback[ctx->fixture][!disabled][witness][c];
+            } else {
+                expected = ctx->mode == 0 ? jc_linear[ctx->adobe][i][c] :
+                           ctx->mode == 5 ? jc_legacy[i][c] :
+                           jc_fallback[!disabled][i][c];
+            }
             bound = fabs(expected) * jc_rounding;
             if (ctx->mode == 0 && ctx->engine != SIXEL_CMS_ENGINE_BUILTIN) {
                 bound += jc_pcs_bound[c];
@@ -71,8 +92,13 @@ jc_capture(sixel_frame_t *frame, void *context)
                 return SIXEL_BAD_INPUT;
             }
         }
+        if (ctx->extended && witness < 32u && i == jp_witness[witness]) {
+            ++witness;
+        }
     }
-    fprintf(stderr, "JCMYK|samples=3072|finite=1|interval=1\n");
+    if (ctx->extended && witness != 32u) { return SIXEL_BAD_INPUT; }
+    fprintf(stderr, "JCMYK|samples=%zu|finite=1|interval=1\n",
+        (ctx->extended ? witness : count) * 3u);
     return SIXEL_OK;
 }
 
@@ -128,6 +154,8 @@ jpeg_cmyk_values(int argc, char **argv, int adobe, int engine, int mode)
     ok = (int)sixel_cms_get_engine() == engine;
     sixel_cms_set_engine(previous);
     if (!ok) { return 77; }
+    context.extended = 0;
+    context.fixture = 0;
     context.adobe = adobe;
     context.engine = engine;
     suffix = adobe ? "adobe" : "plain";
@@ -235,6 +263,73 @@ jpeg_cmyk_source(int argc, char **argv)
         if (!ok) { return 1; }
     }
     return 0;
+#else
+    (void)argc;
+    (void)argv;
+    return 77;
+#endif
+}
+
+/* One selected precision/engine/failure observation per TAP invocation. */
+int
+test_jc_precision(int argc, char **argv)
+{
+#if HAVE_JPEG
+    static char const *const names[] = {
+        "8bit-ycck-seq444", "12bit-cmyk-seq444",
+        "12bit-ycck-seq444", "16bit-cmyk-lossless"
+    };
+    static char const *const kinds[] = {
+        "affine", "affine", "absent", "rejected", "missing-intent"
+    };
+    jpeg_cmyk_context_t context;
+    sixel_cms_engine_t previous;
+    char path[4096];
+    char order[160];
+    int fixture;
+    int engine;
+    int mode;
+    int length;
+    int available;
+
+    if (argc != 5) { return 2; }
+    fixture = atoi(argv[2]);
+    engine = atoi(argv[3]);
+    mode = atoi(argv[4]);
+    if (fixture < 0 || fixture > 3 || mode < 0 || mode > 4) { return 2; }
+#if !HAVE_JPEG12_API
+    if (fixture == 1 || fixture == 2) { return 77; }
+#endif
+#if !HAVE_JPEG16_API
+    if (fixture == 3) { return 77; }
+#endif
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine((sixel_cms_engine_t)engine);
+    available = (int)sixel_cms_get_engine() == engine;
+    sixel_cms_set_engine(previous);
+    if (!available) { return 77; }
+    context.adobe = 1;
+    context.extended = 1;
+    context.fixture = fixture;
+    context.engine = engine;
+    snprintf(order, sizeof(order),
+        "libjpeg:cms_engine=%s:cms_intent=relative!!",
+        sixel_cms_engine_to_string((sixel_cms_engine_t)engine));
+    if (mode == 4) {
+        length = snprintf(path, sizeof(path),
+            "%s/tests/data/color-numeric/jpeg-precision-%s-affine.jpg",
+            argv[1], names[fixture]);
+        if (length < 0 || (size_t)length >= sizeof(path)) { return 2; }
+        context.mode = 0;
+        if (!jc_load(path, order, &context)) { return 1; }
+    }
+    length = snprintf(path, sizeof(path),
+        "%s/tests/data/color-numeric/jpeg-precision-%s-%s.jpg",
+        argv[1], names[fixture], kinds[mode]);
+    if (length < 0 || (size_t)length >= sizeof(path)) { return 2; }
+    context.mode = mode;
+    fprintf(stderr, "JCMYK|target-begin\n");
+    return jc_load(path, order, &context) ? 0 : 1;
 #else
     (void)argc;
     (void)argv;

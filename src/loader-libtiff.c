@@ -63,8 +63,6 @@
 #include "chunk-view.h"
 #include "frame-private.h"
 #include "frame-factory.h"
-#include "icc-apply.h"
-#include "icc-parse.h"
 #include "loader-common.h"
 #include "loader-libtiff.h"
 #include "timeline-logger.h"
@@ -512,79 +510,6 @@ tiff_map_scanline_coordinates(uint16_t orientation,
     if (dst_y != NULL) {
         *dst_y = mapped_y;
     }
-}
-
-static int
-tiff_convert_embedded_icc_to_srgb_float32(float *pixels,
-                                          int width,
-                                          int height,
-                                          int pixelformat,
-                                          void const *profile,
-                                          uint32_t profile_length)
-{
-    int converted;
-    int parsed;
-    size_t pixel_count;
-    sixel_icc_profile_t parsed_profile;
-
-    converted = 0;
-    parsed = 0;
-    pixel_count = 0u;
-    memset(&parsed_profile, 0, sizeof(parsed_profile));
-    if (pixels == NULL || width <= 0 || height <= 0 ||
-        profile == NULL || profile_length == 0u) {
-        return 0;
-    }
-    if ((size_t)width > SIZE_MAX / (size_t)height) {
-        return 0;
-    }
-    pixel_count = (size_t)width * (size_t)height;
-
-    converted = sixel_cms_convert_to_srgb_with_profile_bytes(
-        (unsigned char *)pixels,
-        width,
-        height,
-        pixelformat,
-        (unsigned char const *)profile,
-        (size_t)profile_length);
-    if (!converted &&
-        pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-        sixel_icc_parse_profile(profile, (size_t)profile_length, &parsed_profile)) {
-        parsed = 1;
-        if (parsed_profile.kind == SIXEL_ICC_PROFILE_KIND_RGB
-            || parsed_profile.kind == SIXEL_ICC_PROFILE_KIND_GRAY) {
-            converted = sixel_icc_apply_rgb_float32(pixels,
-                                                    pixel_count,
-                                                    &parsed_profile);
-        }
-    }
-
-    if (parsed) {
-        sixel_icc_profile_destroy(&parsed_profile);
-    }
-    return converted;
-}
-
-static SIXELSTATUS
-tiff_convert_rgbf32_gamma_to_linear(float *pixels,
-                                    size_t pixel_count)
-{
-    size_t float_bytes;
-
-    float_bytes = 0u;
-    if (pixels == NULL || pixel_count == 0u) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    float_bytes = pixel_count * 3u * sizeof(float);
-
-    return sixel_helper_convert_colorspace((unsigned char *)pixels,
-                                           float_bytes,
-                                           SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                           SIXEL_COLORSPACE_GAMMA,
-                                           SIXEL_COLORSPACE_LINEAR);
 }
 
 static tsize_t
@@ -1854,31 +1779,12 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
                 float_pixelformat,
                 (unsigned char const *)icc_profile,
                 (size_t)icc_profile_length);
-        } else {
-            cms_converted = tiff_convert_embedded_icc_to_srgb_float32(
-                float_pixels,
-                (int)width,
-                (int)height,
-                float_pixelformat,
-                icc_profile,
-                icc_profile_length);
         }
     }
 
     /* RGB, Gray and Lab already contain signed linear CMS output.
      * Only failed Lab conversion should enter the original Lab fallback. */
-    if (cms_converted && decode_mode != TIFF_DECODE_RGB_UINT &&
-        decode_mode != TIFF_DECODE_GRAY_UINT &&
-        decode_mode != TIFF_DECODE_RGB_FLOAT32 &&
-        decode_mode != TIFF_DECODE_GRAY_FLOAT32 &&
-        decode_mode != TIFF_DECODE_LAB_UINT &&
-        decode_mode != TIFF_DECODE_LAB_FLOAT32) {
-        status = tiff_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
-        if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-    } else if (!cms_converted &&
-               float_colorspace == SIXEL_COLORSPACE_CIELAB) {
+    if (!cms_converted && float_colorspace == SIXEL_COLORSPACE_CIELAB) {
         status = sixel_helper_convert_colorspace((unsigned char *)float_pixels,
                                                  float_bytes,
                                                  float_pixelformat,

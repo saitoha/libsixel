@@ -1647,6 +1647,7 @@ def png_metadata_oracles():
         '    float explicit_gamma[24], explicit_linear[24];\n'
         '    unsigned short rgba[32];\n'
         '    unsigned char byte_rgb[24];\n'
+        '    unsigned char native_byte_low[24], native_byte_high[24];\n'
         '} color_png_metadata_t;\n')
     for number, r in enumerate(records):
         data = outputs[r['file']]
@@ -1678,6 +1679,7 @@ def png_metadata_oracles():
                 linear = composite(linear, linear[4])
                 gamma = composite(gamma, gamma[4])
             byte_rgb = []
+            native_low, native_high = [], []
             # Only the paired gAMA/cHRM palette and APNG tests consume this
             # legacy byte projection; canonical tests use the arrays above.
             m = [[N(v) for v in row] for row in o['matrix']] if valid else None
@@ -1689,6 +1691,13 @@ def png_metadata_oracles():
                     c = max(N(0), min(N(1), c))
                     e = N('12.92') * c if c <= N('.0031308') else N('1.055') * c ** (N(1) / N('2.4')) - N('.055')
                     byte_rgb.append(int(e * 255 + N('.5')))
+                    # Native RGB8 packing does not promise our nearest-byte
+                    # rounding. Bound its quantization by adjacent integers
+                    # derived from the continuous Decimal color, not a fitted
+                    # +/-1 tolerance around a measured native byte.
+                    lower = int(e * 255)
+                    native_low.append(lower)
+                    native_high.append(lower + (e * 255 != lower))
             rgba = [v for p in r['pixels'] for v in p]
             arrays = [linear, gamma, units, srgb, explicit_gamma, explicit_linear]
             header += f'    {{ color_pm_{number}, sizeof(color_pm_{number}),\n'
@@ -1697,13 +1706,16 @@ def png_metadata_oracles():
                 flat = [v for row in values for v in row]
                 header += '      {\n' + ''.join(('        ' + ', '.join((float(v).hex() + 'f' for v in flat[i:i + 3])) + ',\n' for i in range(0, 24, 3))) + '      },\n'
             header += '      {\n' + ''.join(('        ' + ', '.join(map(str, rgba[i:i + 8])) + ',\n' for i in range(0, 32, 8))) + '      },\n'
-            header += '      {\n' + ''.join(('        ' + ', '.join(map(str, byte_rgb[i:i + 8])) + ',\n' for i in range(0, 24, 8))) + '      } },\n'
+            for values in (byte_rgb, native_low, native_high):
+                header += '      {\n' + ''.join(('        ' + ', '.join(map(str, values[i:i + 8])) + ',\n' for i in range(0, 24, 8))) + '      },\n'
+            header += '    },\n'
             r['expected'] = {
                 name: [[float(v) for v in row] for row in values]
                 for name, values in zip([
                     'linear', 'gamma_fallback', 'normalized_source',
                     'default_srgb', 'explicit_gamma', 'explicit_linear'], arrays)}
             r['expected']['byte_rgb'] = byte_rgb
+            r['expected']['native_byte_interval'] = [native_low, native_high]
     header += '};\n#endif /* COLOR_PNG_METADATA_H */\n'
     outputs['png-metadata.h'] = header.encode()
     outputs['png-metadata.json'] = (json.dumps({
@@ -1846,6 +1858,8 @@ def main():
     outputs.update(jpeg_sample_oracles())
     from generate_jpeg_cmyk_tests import build as jpeg_cmyk_tests
     outputs.update(jpeg_cmyk_tests(outputs['cmyk.icc'], outputs['cmyk.json']))
+    from generate_jpeg_precision_tests import build as jpeg_precision_tests
+    outputs.update(jpeg_precision_tests(outputs['cmyk.icc'], outputs['cmyk.json']))
     from generate_tiff_fixtures import build as tiff_fixtures
     outputs.update(tiff_fixtures(profile))
     from generate_tiff_icc_tests import build as tiff_icc_tests

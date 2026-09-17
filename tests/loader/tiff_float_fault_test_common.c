@@ -125,9 +125,7 @@ uf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define tiff_clamp_lab_ab uff_local_15
 #define tiff_clamp_unit uff_local_16
 #define tiff_convert_embedded_icc_to_srgb uff_local_17
-#define tiff_convert_embedded_icc_to_srgb_float32 uff_local_18
 #define tiff_convert_embedded_icc_to_srgb_nolcms uff_local_19
-#define tiff_convert_rgbf32_gamma_to_linear uff_local_20
 #define tiff_decode_lab_u16_ab uff_local_21
 #define tiff_decode_lab_u16_l uff_local_22
 #define tiff_logluv_xyz_to_linear uff_local_23
@@ -184,9 +182,7 @@ uf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #undef tiff_clamp_lab_ab
 #undef tiff_clamp_unit
 #undef tiff_convert_embedded_icc_to_srgb
-#undef tiff_convert_embedded_icc_to_srgb_float32
 #undef tiff_convert_embedded_icc_to_srgb_nolcms
-#undef tiff_convert_rgbf32_gamma_to_linear
 #undef tiff_decode_lab_u16_ab
 #undef tiff_decode_lab_u16_l
 #undef tiff_logluv_xyz_to_linear

@@ -386,9 +386,7 @@ lc_strip(sixel_frame_t *frame, unsigned char *background)
 #define tiff_clamp_lab_ab lc_local_15
 #define tiff_clamp_unit lc_local_16
 #define tiff_convert_embedded_icc_to_srgb lc_local_17
-#define tiff_convert_embedded_icc_to_srgb_float32 lc_local_18
 #define tiff_convert_embedded_icc_to_srgb_nolcms lc_local_19
-#define tiff_convert_rgbf32_gamma_to_linear lc_local_20
 #define tiff_decode_lab_u16_ab lc_local_21
 #define tiff_decode_lab_u16_l lc_local_22
 #define tiff_map_scanline_coordinates lc_local_23
@@ -453,9 +451,7 @@ lc_strip(sixel_frame_t *frame, unsigned char *background)
 #undef tiff_clamp_lab_ab
 #undef tiff_clamp_unit
 #undef tiff_convert_embedded_icc_to_srgb
-#undef tiff_convert_embedded_icc_to_srgb_float32
 #undef tiff_convert_embedded_icc_to_srgb_nolcms
-#undef tiff_convert_rgbf32_gamma_to_linear
 #undef tiff_decode_lab_u16_ab
 #undef tiff_decode_lab_u16_l
 #undef tiff_map_scanline_coordinates

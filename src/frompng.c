@@ -45,8 +45,6 @@
 #include "allocator.h"
 #include "chunk-view.h"
 #include "cms.h"
-#include "icc-apply.h"
-#include "icc-parse.h"
 #include "compat_stub.h"
 #include "frompng.h"
 #include "frame-private.h"
@@ -85,7 +83,6 @@ static int
 sixel_frompng_build_chrm_to_srgb_matrix(uint32_t const chrm_xy[8],
                                         double source_to_srgb[3][3]);
 
-#if HAVE_LCMS2
 static uint32_t
 sixel_frompng_read_be32(unsigned char const *p)
 {
@@ -410,7 +407,6 @@ sixel_frompng_resolve_background(unsigned char const *buffer,
     bg16[2] = 0u;
 }
 
-
 static int
 sixel_frompng_detect_chunk_flags(unsigned char const *buffer,
                                  size_t size,
@@ -457,11 +453,25 @@ sixel_frompng_detect_chunk_flags(unsigned char const *buffer,
             *has_iccp = 1;
         } else if (memcmp(chunk_type, "sRGB", 4u) == 0) {
             *has_srgb = 1;
-        } else if (memcmp(chunk_type, "cHRM", 4u) == 0) {
+        } else if (memcmp(chunk_type, "cHRM", 4u) == 0
+#if !HAVE_LCMS2
+                   && chunk_length >= 32u
+#endif
+                   ) {
             *has_chrm = 1;
-        } else if (memcmp(chunk_type, "gAMA", 4u) == 0) {
+        } else if (memcmp(chunk_type, "gAMA", 4u) == 0
+#if !HAVE_LCMS2
+                   && chunk_length >= 4u
+#endif
+                   ) {
             *has_gama = 1;
         }
+#if !HAVE_LCMS2
+        /* Preserve the original bounded metadata policy in this build. */
+        if (memcmp(chunk_type, "IEND", 4u) == 0) {
+            break;
+        }
+#endif
         offset += chunk_total;
     }
 
@@ -562,6 +572,11 @@ sixel_frompng_build_profile_from_chunks(unsigned char const *buffer,
                 / 100000.0;
             has_gama = 1;
         }
+#if !HAVE_LCMS2
+        if (memcmp(chunk_type, "IEND", 4u) == 0) {
+            break;
+        }
+#endif
         offset += chunk_total;
     }
 
@@ -584,11 +599,26 @@ sixel_frompng_build_profile_from_chunks(unsigned char const *buffer,
 
     /* Metadata rejection is independent of a later allocation or CMM
      * failure. Only this result authorizes the opaque gAMA fallback. */
-    if (invalid_chrm != NULL && has_chrm &&
+    if (has_chrm &&
         !sixel_frompng_build_chrm_to_srgb_matrix(chrm_grid,
                                                   validation_matrix)) {
-        *invalid_chrm = 1;
-        return 0;
+        if (invalid_chrm != NULL) {
+            *invalid_chrm = 1;
+            return 0;
+        }
+#if !HAVE_LCMS2
+        /* The byte helper historically ignores invalid primaries but still
+         * honors gAMA. Build that interpretation through the same facade;
+         * this is metadata rejection, never a retry after a CMM failure. */
+        white_x = 0.3127;
+        white_y = 0.3290;
+        red_x = 0.6400;
+        red_y = 0.3300;
+        green_x = 0.3000;
+        green_y = 0.6000;
+        blue_x = 0.1500;
+        blue_y = 0.0600;
+#endif
     }
 
     built_profile = sixel_cms_create_rgb_profile_from_gamma_chrm(file_gamma,
@@ -618,6 +648,10 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                                                  sixel_allocator_t *allocator)
 {
     unsigned char *icc_profile;
+    unsigned char *staged;
+    size_t pixel_count;
+    size_t pixel_bytes;
+    size_t sample_bytes;
     size_t icc_profile_length;
     sixel_cms_profile_t *chunk_profile;
     int has_iccp;
@@ -626,6 +660,7 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
     int has_gama;
     int converted;
 
+    staged = NULL;
     icc_profile = NULL;
     icc_profile_length = 0u;
     chunk_profile = NULL;
@@ -639,6 +674,20 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
             || buffer == NULL || allocator == NULL) {
         return 0;
     }
+    if (pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
+        pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        return 0;
+    }
+    sample_bytes = pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
+        ? sizeof(float) : 1u;
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return 0;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / (3u * sample_bytes)) {
+        return 0;
+    }
+    pixel_bytes = pixel_count * 3u * sample_bytes;
     if (!sixel_frompng_detect_chunk_flags(buffer,
                                           size,
                                           &has_iccp,
@@ -650,13 +699,23 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
     if (has_iccp && has_srgb && has_chrm) {
         return 0;
     }
+    if (!has_iccp && (has_srgb || !has_gama)) {
+        return 0;
+    }
+    /* CMM failure can leave a modified prefix. Keep all source samples owned
+     * by the caller intact until the complete transform has succeeded. */
+    staged = sixel_allocator_malloc(allocator, pixel_bytes);
+    if (staged == NULL) {
+        return 0;
+    }
+    memcpy(staged, pixels, pixel_bytes);
     if (has_iccp) {
         if (sixel_frompng_extract_icc(buffer,
                                       size,
                                       &icc_profile,
                                       &icc_profile_length)) {
             converted = sixel_cms_convert_to_srgb_with_profile_bytes(
-                pixels,
+                staged,
                 width,
                 height,
                 pixelformat,
@@ -670,16 +729,18 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                                                           size,
                 &chunk_profile, NULL)) {
         converted = sixel_cms_convert_profile_to_srgb(
-            pixels,
+            staged,
             width,
             height,
             pixelformat,
             chunk_profile);
         sixel_cms_close_profile(chunk_profile);
     }
-    if (icc_profile != NULL) {
-        sixel_allocator_free(allocator, icc_profile);
+    if (converted) {
+        memcpy(pixels, staged, pixel_bytes);
     }
+    stbi_image_free(icc_profile);
+    sixel_allocator_free(allocator, staged);
     return converted;
 }
 
@@ -719,487 +780,6 @@ sixel_frompng_apply_colorspace_fallback_pixelformat(
                                                             size,
                                                             allocator);
 }
-#else
-static int
-sixel_frompng_parse_transfer_chunks(unsigned char const *buffer,
-                                    size_t size,
-                                    int *has_srgb,
-                                    int *has_gama,
-                                    double *file_gamma,
-                                    int *has_iccp,
-                                    int *has_chrm,
-                                    uint32_t chrm_xy[8]);
-
-static void
-sixel_frompng_apply_gama_to_srgb_u8(unsigned char *pixels,
-                                    size_t pixel_count,
-                                    double file_gamma,
-                                    int apply_chrm_matrix,
-                                    double source_to_srgb[3][3]);
-
-static void
-sixel_frompng_apply_gama_to_srgb_float32(float *pixels,
-                                         size_t pixel_count,
-                                         double file_gamma,
-                                         int apply_chrm_matrix,
-                                         double source_to_srgb[3][3]);
-
-void
-sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
-                                        int width,
-                                        int height,
-                                        unsigned char const *buffer,
-                                        size_t size,
-                                        sixel_allocator_t *allocator)
-{
-    (void)sixel_frompng_apply_colorspace_fallback_pixelformat(
-        pixels,
-        width,
-        height,
-        SIXEL_PIXELFORMAT_RGB888,
-        buffer,
-        size,
-        allocator);
-}
-
-int
-sixel_frompng_apply_colorspace_fallback_pixelformat(
-    unsigned char *pixels,
-    int width,
-    int height,
-    int pixelformat,
-    unsigned char const *buffer,
-    size_t size,
-    sixel_allocator_t *allocator)
-{
-    size_t pixel_count;
-    int has_srgb_chunk;
-    int has_gama_chunk;
-    int has_iccp_chunk;
-    int has_chrm_chunk;
-    double file_gamma;
-    int cms_applied;
-    uint32_t source_chrm_xy[8];
-    double source_to_srgb_matrix[3][3];
-    int apply_chrm_matrix;
-    sixel_icc_profile_t icc_profile;
-    int has_icc_profile;
-
-    if (pixels == NULL || width <= 0 || height <= 0 || buffer == NULL) {
-        return 0;
-    }
-    if (pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
-        pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
-        return 0;
-    }
-    if ((size_t)width > SIZE_MAX / (size_t)height) {
-        return 0;
-    }
-    pixel_count = (size_t)width * (size_t)height;
-    if (pixel_count > SIZE_MAX / 3u) {
-        return 0;
-    }
-
-    has_srgb_chunk = 0;
-    has_gama_chunk = 0;
-    has_iccp_chunk = 0;
-    has_chrm_chunk = 0;
-    file_gamma = 0.0;
-    cms_applied = 0;
-    apply_chrm_matrix = 0;
-    has_icc_profile = 0;
-    memset(source_chrm_xy, 0, sizeof(source_chrm_xy));
-    memset(source_to_srgb_matrix, 0, sizeof(source_to_srgb_matrix));
-    memset(&icc_profile, 0, sizeof(icc_profile));
-
-    if (!sixel_frompng_parse_transfer_chunks(buffer,
-                                             size,
-                                             &has_srgb_chunk,
-                                             &has_gama_chunk,
-                                             &file_gamma,
-                                             &has_iccp_chunk,
-                                             &has_chrm_chunk,
-                                             source_chrm_xy)) {
-        return 0;
-    }
-
-    if (has_iccp_chunk &&
-        !(has_srgb_chunk && has_chrm_chunk) &&
-        sixel_icc_parse_png_iccp(buffer, size, &icc_profile)) {
-        has_icc_profile = 1;
-        if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
-            if (sixel_icc_apply_rgb_float32((float *)pixels,
-                                            pixel_count,
-                                            &icc_profile)) {
-                cms_applied = 1;
-            }
-        } else if (sixel_icc_apply_rgb_u8(pixels, pixel_count, &icc_profile)) {
-            cms_applied = 1;
-        }
-    }
-    if (!cms_applied &&
-        !has_iccp_chunk &&
-        !has_srgb_chunk &&
-        has_gama_chunk &&
-        file_gamma > 0.0) {
-        if (has_chrm_chunk) {
-            apply_chrm_matrix =
-                sixel_frompng_build_chrm_to_srgb_matrix(source_chrm_xy,
-                                                        source_to_srgb_matrix);
-        }
-        if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
-            sixel_frompng_apply_gama_to_srgb_float32(
-                (float *)pixels,
-                pixel_count,
-                file_gamma,
-                apply_chrm_matrix,
-                source_to_srgb_matrix);
-        } else {
-            sixel_frompng_apply_gama_to_srgb_u8(
-                pixels,
-                pixel_count,
-                file_gamma,
-                apply_chrm_matrix,
-                source_to_srgb_matrix);
-        }
-        cms_applied = 1;
-    }
-
-    if (has_icc_profile) {
-        sixel_icc_profile_destroy(&icc_profile);
-    }
-
-    (void)allocator;
-    return cms_applied;
-}
-#endif  /* HAVE_LCMS2 */
-
-#if !HAVE_LCMS2
-static uint32_t
-sixel_frompng_read_be32(unsigned char const *p)
-{
-    return ((uint32_t)p[0] << 24)
-        | ((uint32_t)p[1] << 16)
-        | ((uint32_t)p[2] << 8)
-        | (uint32_t)p[3];
-}
-
-static uint16_t
-sixel_frompng_read_be16(unsigned char const *p)
-{
-    return (uint16_t)(((uint16_t)p[0] << 8) | (uint16_t)p[1]);
-}
-
-static int
-sixel_frompng_parse_ihdr(unsigned char const *buffer,
-                         size_t size,
-                         unsigned char *bitdepth,
-                         unsigned char *color_type)
-{
-    static unsigned char const png_signature[8] = {
-        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
-    };
-    if (buffer == NULL || bitdepth == NULL || color_type == NULL) {
-        return 0;
-    }
-    if (size < 8u + 12u + 13u) {
-        return 0;
-    }
-    if (memcmp(buffer, png_signature, sizeof(png_signature)) != 0) {
-        return 0;
-    }
-    if (sixel_frompng_read_be32(buffer + 8u) != 13u) {
-        return 0;
-    }
-    if (memcmp(buffer + 12u, "IHDR", 4u) != 0) {
-        return 0;
-    }
-
-    *bitdepth = buffer[24u];
-    *color_type = buffer[25u];
-    return 1;
-}
-
-static void
-sixel_frompng_expand_sample_to_bg(uint16_t sample,
-                                  unsigned char bitdepth,
-                                  unsigned char *out8,
-                                  uint16_t *out16)
-{
-    unsigned int max_value;
-    unsigned int value8;
-    unsigned int value16;
-
-    value8 = 0u;
-    value16 = 0u;
-    if (bitdepth == 16u) {
-        value16 = (unsigned int)sample;
-        value8 = value16 >> 8;
-    } else {
-        max_value = (1u << bitdepth) - 1u;
-        if (max_value == 0u) {
-            value8 = 0u;
-            value16 = 0u;
-        } else {
-            value8 = ((unsigned int)sample * 255u + max_value / 2u) / max_value;
-            value16 = ((unsigned int)sample * 65535u + max_value / 2u)
-                / max_value;
-        }
-    }
-    *out8 = (unsigned char)value8;
-    *out16 = (uint16_t)value16;
-}
-
-static int
-sixel_frompng_parse_bkgd(unsigned char const *buffer,
-                         size_t size,
-                         unsigned char bg8[3],
-                         uint16_t bg16[3])
-{
-    unsigned char bitdepth;
-    unsigned char color_type;
-    size_t offset;
-    uint32_t chunk_length;
-    size_t chunk_total;
-    unsigned char const *chunk_type;
-    unsigned char const *chunk_data;
-    unsigned char const *plte_data;
-    size_t plte_entries;
-    unsigned char const *bkgd_data;
-    uint32_t bkgd_length;
-    unsigned int index;
-    uint16_t gray16;
-    uint16_t red16;
-    uint16_t green16;
-    uint16_t blue16;
-    unsigned char gray8;
-    unsigned char red8;
-    unsigned char green8;
-    unsigned char blue8;
-
-    bitdepth = 0u;
-    color_type = 0u;
-    offset = 0u;
-    chunk_length = 0u;
-    chunk_total = 0u;
-    chunk_type = NULL;
-    chunk_data = NULL;
-    plte_data = NULL;
-    plte_entries = 0u;
-    bkgd_data = NULL;
-    bkgd_length = 0u;
-    index = 0u;
-    gray16 = 0u;
-    red16 = 0u;
-    green16 = 0u;
-    blue16 = 0u;
-    gray8 = 0u;
-    red8 = 0u;
-    green8 = 0u;
-    blue8 = 0u;
-
-    if (bg8 == NULL || bg16 == NULL) {
-        return 0;
-    }
-    if (!sixel_frompng_parse_ihdr(buffer, size, &bitdepth, &color_type)) {
-        return 0;
-    }
-    if (bitdepth != 1u &&
-        bitdepth != 2u &&
-        bitdepth != 4u &&
-        bitdepth != 8u &&
-        bitdepth != 16u) {
-        return 0;
-    }
-
-    offset = 8u;
-    while (offset + 12u <= size) {
-        chunk_length = sixel_frompng_read_be32(buffer + offset);
-        chunk_total = (size_t)chunk_length + 12u;
-        if (chunk_total > size - offset) {
-            return 0;
-        }
-        chunk_type = buffer + offset + 4u;
-        chunk_data = buffer + offset + 8u;
-
-        if (memcmp(chunk_type, "PLTE", 4u) == 0) {
-            plte_data = chunk_data;
-            plte_entries = (size_t)chunk_length / 3u;
-        } else if (memcmp(chunk_type, "bKGD", 4u) == 0) {
-            bkgd_data = chunk_data;
-            bkgd_length = chunk_length;
-        } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
-            break;
-        }
-        offset += chunk_total;
-    }
-
-    if (bkgd_data == NULL) {
-        return 0;
-    }
-
-    switch (color_type) {
-    case 0u: /* grayscale */
-    case 4u: /* grayscale + alpha */
-        if (bkgd_length < 2u) {
-            return 0;
-        }
-        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data),
-                                          bitdepth,
-                                          &gray8,
-                                          &gray16);
-        bg8[0] = gray8;
-        bg8[1] = gray8;
-        bg8[2] = gray8;
-        bg16[0] = gray16;
-        bg16[1] = gray16;
-        bg16[2] = gray16;
-        return 1;
-    case 2u: /* rgb */
-    case 6u: /* rgba */
-        if (bkgd_length < 6u) {
-            return 0;
-        }
-        sixel_frompng_expand_sample_to_bg(
-            sixel_frompng_read_be16(bkgd_data + 0u),
-                                          bitdepth,
-                                          &red8,
-                                          &red16);
-        sixel_frompng_expand_sample_to_bg(
-            sixel_frompng_read_be16(bkgd_data + 2u),
-                                          bitdepth,
-                                          &green8,
-                                          &green16);
-        sixel_frompng_expand_sample_to_bg(
-            sixel_frompng_read_be16(bkgd_data + 4u),
-                                          bitdepth,
-                                          &blue8,
-                                          &blue16);
-        bg8[0] = red8;
-        bg8[1] = green8;
-        bg8[2] = blue8;
-        bg16[0] = red16;
-        bg16[1] = green16;
-        bg16[2] = blue16;
-        return 1;
-    case 3u: /* indexed */
-        if (bkgd_length < 1u || plte_data == NULL) {
-            return 0;
-        }
-        index = (unsigned int)bkgd_data[0];
-        if ((size_t)index >= plte_entries) {
-            return 0;
-        }
-        red8 = plte_data[(size_t)index * 3u + 0u];
-        green8 = plte_data[(size_t)index * 3u + 1u];
-        blue8 = plte_data[(size_t)index * 3u + 2u];
-        bg8[0] = red8;
-        bg8[1] = green8;
-        bg8[2] = blue8;
-        bg16[0] = (uint16_t)((unsigned int)red8 * 257u);
-        bg16[1] = (uint16_t)((unsigned int)green8 * 257u);
-        bg16[2] = (uint16_t)((unsigned int)blue8 * 257u);
-        return 1;
-    default:
-        return 0;
-    }
-}
-
-static void
-sixel_frompng_resolve_background(unsigned char const *buffer,
-                                 size_t size,
-                                 unsigned char const *bgcolor,
-                                 int bgcolor_source,
-                                 unsigned char bg8[3],
-                                 uint16_t bg16[3],
-                                 int *background_from_file,
-                                 int *has_background)
-{
-    unsigned char file_bg8[3];
-    uint16_t file_bg16[3];
-    int has_file_background;
-    int has_explicit_background;
-    int policy;
-    int use_file_background;
-    int use_explicit_background;
-
-    file_bg8[0] = 0u;
-    file_bg8[1] = 0u;
-    file_bg8[2] = 0u;
-    file_bg16[0] = 0u;
-    file_bg16[1] = 0u;
-    file_bg16[2] = 0u;
-    has_file_background = 0;
-    has_explicit_background = 0;
-    policy = SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
-    use_file_background = 0;
-    use_explicit_background = 0;
-    if (background_from_file != NULL) {
-        *background_from_file = 0;
-    }
-    if (has_background != NULL) {
-        *has_background = 0;
-    }
-    if (bgcolor != NULL) {
-        has_explicit_background = 1;
-    }
-    has_file_background = sixel_frompng_parse_bkgd(buffer,
-                                                   size,
-                                                   file_bg8,
-                                                   file_bg16);
-    policy = loader_background_policy();
-    if (policy == SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST) {
-        if (has_explicit_background != 0) {
-            use_explicit_background = 1;
-        } else if (has_file_background != 0) {
-            use_file_background = 1;
-        }
-    } else {
-        if (has_file_background != 0) {
-            use_file_background = 1;
-        } else if (has_explicit_background != 0) {
-            use_explicit_background = 1;
-        }
-    }
-
-    if (use_explicit_background != 0) {
-        (void)bgcolor_source;
-        bg8[0] = bgcolor[0];
-        bg8[1] = bgcolor[1];
-        bg8[2] = bgcolor[2];
-        bg16[0] = (uint16_t)((unsigned int)bgcolor[0] * 257u);
-        bg16[1] = (uint16_t)((unsigned int)bgcolor[1] * 257u);
-        bg16[2] = (uint16_t)((unsigned int)bgcolor[2] * 257u);
-        if (has_background != NULL) {
-            *has_background = 1;
-        }
-        return;
-    }
-    if (use_file_background != 0) {
-        bg8[0] = file_bg8[0];
-        bg8[1] = file_bg8[1];
-        bg8[2] = file_bg8[2];
-        bg16[0] = file_bg16[0];
-        bg16[1] = file_bg16[1];
-        bg16[2] = file_bg16[2];
-        if (background_from_file != NULL) {
-            *background_from_file = 1;
-        }
-        if (has_background != NULL) {
-            *has_background = 1;
-        }
-        return;
-    }
-
-    bg8[0] = 0u;
-    bg8[1] = 0u;
-    bg8[2] = 0u;
-    bg16[0] = 0u;
-    bg16[1] = 0u;
-    bg16[2] = 0u;
-}
-
-#endif  /* !HAVE_LCMS2 */
 
 static int
 sixel_frompng_extract_icc(unsigned char const *buffer,
@@ -1320,18 +900,6 @@ sixel_frompng_decode_srgb_unit(double value)
     }
     return pow((value + 0.055) / 1.055, 2.4);
 }
-
-#if !HAVE_LCMS2
-static double
-sixel_frompng_encode_srgb_unit(double value)
-{
-    value = sixel_frompng_clamp_unit(value);
-    if (value <= 0.0031308) {
-        return value * 12.92;
-    }
-    return 1.055 * pow(value, 1.0 / 2.4) - 0.055;
-}
-#endif  /* !HAVE_LCMS2 */
 
 static double
 sixel_frompng_decode_source_unit(double value, int transfer_mode,
@@ -1568,118 +1136,13 @@ sixel_frompng_build_chrm_to_srgb_matrix(uint32_t const chrm_xy[8],
     return 1;
 }
 
-#if !HAVE_LCMS2
-static void
-sixel_frompng_apply_linear_matrix_triplet(double rgb[3],
-                                          double source_to_srgb[3][3])
-{
-    double in_r;
-    double in_g;
-    double in_b;
-    double out_r;
-    double out_g;
-    double out_b;
-
-    if (rgb == NULL || source_to_srgb == NULL) {
-        return;
-    }
-
-    in_r = rgb[0];
-    in_g = rgb[1];
-    in_b = rgb[2];
-    out_r = source_to_srgb[0][0] * in_r
-          + source_to_srgb[0][1] * in_g
-          + source_to_srgb[0][2] * in_b;
-    out_g = source_to_srgb[1][0] * in_r
-          + source_to_srgb[1][1] * in_g
-          + source_to_srgb[1][2] * in_b;
-    out_b = source_to_srgb[2][0] * in_r
-          + source_to_srgb[2][1] * in_g
-          + source_to_srgb[2][2] * in_b;
-    rgb[0] = sixel_frompng_clamp_unit(out_r);
-    rgb[1] = sixel_frompng_clamp_unit(out_g);
-    rgb[2] = sixel_frompng_clamp_unit(out_b);
-}
-
-static void
-sixel_frompng_apply_gama_to_srgb_float32(float *pixels,
-                                         size_t pixel_count,
-                                         double file_gamma,
-                                         int apply_chrm_matrix,
-                                         double source_to_srgb[3][3])
-{
-    size_t index;
-    size_t offset;
-    double linear[3];
-    double srgb[3];
-    int channel;
-
-    if (pixels == NULL || file_gamma <= 0.0) {
-        return;
-    }
-    for (index = 0u; index < pixel_count; ++index) {
-        offset = index * 3u;
-        for (channel = 0; channel < 3; ++channel) {
-            linear[channel] = sixel_frompng_decode_source_unit(
-                (double)pixels[offset + (size_t)channel],
-                SIXEL_FROMPNG_TRANSFER_GAMA,
-                file_gamma);
-        }
-        if (apply_chrm_matrix && source_to_srgb != NULL) {
-            sixel_frompng_apply_linear_matrix_triplet(linear, source_to_srgb);
-        }
-        for (channel = 0; channel < 3; ++channel) {
-            srgb[channel] = sixel_frompng_encode_srgb_unit(linear[channel]);
-            pixels[offset + (size_t)channel] = (float)srgb[channel];
-        }
-    }
-}
-
-static void
-sixel_frompng_apply_gama_to_srgb_u8(unsigned char *pixels,
-                                    size_t pixel_count,
-                                    double file_gamma,
-                                    int apply_chrm_matrix,
-                                    double source_to_srgb[3][3])
-{
-    size_t index;
-    size_t offset;
-    double linear[3];
-    double srgb[3];
-    int channel;
-
-    if (pixels == NULL || file_gamma <= 0.0) {
-        return;
-    }
-    for (index = 0u; index < pixel_count; ++index) {
-        offset = index * 3u;
-        for (channel = 0; channel < 3; ++channel) {
-            linear[channel] = sixel_frompng_decode_source_unit(
-                (double)pixels[offset + (size_t)channel] / 255.0,
-                SIXEL_FROMPNG_TRANSFER_GAMA,
-                file_gamma);
-        }
-        if (apply_chrm_matrix && source_to_srgb != NULL) {
-            sixel_frompng_apply_linear_matrix_triplet(linear, source_to_srgb);
-        }
-        for (channel = 0; channel < 3; ++channel) {
-            srgb[channel] = sixel_frompng_encode_srgb_unit(linear[channel]);
-            pixels[offset + (size_t)channel] = (unsigned char)(
-                sixel_frompng_clamp_unit(srgb[channel]) * 255.0 + 0.5);
-        }
-    }
-}
-#endif  /* !HAVE_LCMS2 */
-
-/* Keep container policy separate from the selected profile evaluator. These
- * fallback fields describe the old builtin path, including its build-specific
- * gAMA fallback after an unavailable transform. They are not a second CMS. */
+/* Container fallback decoding is independent of CMS. A failed transform
+ * may still need the source transfer for alpha composition, but never a
+ * second profile evaluator or a second source-to-destination matrix. */
 typedef struct {
     sixel_cms_profile_t *profile;
     int transfer_mode;
-    int has_matrix;
     double file_gamma;
-    double matrix[3][3];
 } sixel_frompng_source_t;
 
 static void
@@ -1693,14 +1156,12 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
     int has_gama;
     int has_iccp;
     int has_chrm;
-#if HAVE_LCMS2
     int flags_valid;
     int flag_iccp;
     int flag_srgb;
     int flag_chrm;
     int flag_gama;
     int invalid_chrm;
-#endif
     uint32_t chrm_xy[8];
 
     memset(source, 0, sizeof(*source));
@@ -1711,9 +1172,8 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
     icc_size = 0u;
     (void)sixel_frompng_parse_transfer_chunks(buffer, size, &has_srgb,
         &has_gama, &source->file_gamma, &has_iccp, &has_chrm, chrm_xy);
-#if HAVE_LCMS2
-    /* Retain the raw-chunk coexistence decision used by this build. The
-     * legacy scanner also accepts late chunks; do not move that boundary. */
+    /* Preserve each build's metadata coexistence and end-of-container
+     * policy while routing the selected interpretation to the same CMS. */
     invalid_chrm = 0;
     flags_valid = sixel_frompng_detect_chunk_flags(buffer, size,
         &flag_iccp, &flag_srgb, &flag_chrm, &flag_gama);
@@ -1733,22 +1193,6 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
         source->file_gamma > 0.0) {
         source->transfer_mode = SIXEL_FROMPNG_TRANSFER_GAMA;
     }
-#else
-    (void)has_alpha;
-    if (has_iccp && !(has_srgb && has_chrm) &&
-        sixel_frompng_extract_icc(buffer, size, &icc, &icc_size)) {
-        /* Use the selected engine even without liblcms2. Parsing an ICC
-         * privately here would silently bypass a requested ColorSync apply. */
-        source->profile = sixel_cms_open_profile_from_mem(icc, icc_size);
-    }
-    if (!has_iccp && !has_srgb && has_gama && source->file_gamma > 0.0) {
-        source->transfer_mode = SIXEL_FROMPNG_TRANSFER_GAMA;
-        if (has_chrm) {
-            source->has_matrix = sixel_frompng_build_chrm_to_srgb_matrix(
-                chrm_xy, source->matrix);
-        }
-    }
-#endif
     stbi_image_free(icc);
 }
 
@@ -1775,32 +1219,7 @@ sixel_frompng_decode_samples(float *pixels, size_t count,
                               sixel_frompng_source_t const *source)
 {
     size_t i;
-#if !HAVE_LCMS2
-    double rgb[3];
-    int row;
-#endif
 
-#if !HAVE_LCMS2
-    if (source->has_matrix) {
-        /* Keep the decoded triplet in double until the final linear F32
-         * store. Canonical output retains extended components; the legacy
-         * palette/APNG byte projection has its own bounded output. */
-        for (i = 0u; i < count; ++i) {
-            for (row = 0; row < 3; ++row) {
-                rgb[row] = sixel_frompng_decode_source_unit(
-                    pixels[i * 3u + row], source->transfer_mode,
-                    source->file_gamma);
-            }
-            for (row = 0; row < 3; ++row) {
-                pixels[i * 3u + row] = (float)(
-                    source->matrix[row][0] * rgb[0] +
-                    source->matrix[row][1] * rgb[1] +
-                    source->matrix[row][2] * rgb[2]);
-            }
-        }
-        return;
-    }
-#endif
     for (i = 0u; i < count * 3u; ++i) {
         pixels[i] = (float)sixel_frompng_decode_source_unit(pixels[i],
             source->transfer_mode, source->file_gamma);

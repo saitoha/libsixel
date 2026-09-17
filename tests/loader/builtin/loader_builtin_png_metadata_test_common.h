@@ -134,8 +134,18 @@ png_metadata_check(int fixture, int engine, int background)
     }
     if (fixture >= 38) {
         byte_rgb = fixture == 38 ? probe.palette[0] : probe.rgb[0];
-        if (memcmp(byte_rgb, source->byte_rgb, 24) != 0) {
-            return 1;
+        for (c = 0; c < 24; ++c) {
+            /* Native RGB8 packing has its own integer quantization boundary.
+             * The two candidates come from continuous source-derived color,
+             * not a tolerance fitted to these observed native output bytes. */
+            if (engine == SIXEL_CMS_ENGINE_COLORSYNC) {
+                if (byte_rgb[c] < source->native_byte_low[c] ||
+                    byte_rgb[c] > source->native_byte_high[c]) {
+                    return 1;
+                }
+            } else if (byte_rgb[c] != source->byte_rgb[c]) {
+                return 1;
+            }
         }
     } else if (format == SIXEL_PIXELFORMAT_RGB888) {
         if (probe.rgb_size[0] != 24) {
@@ -152,11 +162,8 @@ png_metadata_check(int fixture, int engine, int background)
         if (probe.rgb_size[0] != 24 * sizeof(float)) {
             return 1;
         }
-        direct = 1;
-#if HAVE_LCMS2
         direct = engine == SIXEL_CMS_ENGINE_NONE || !source->transfer ||
             !source->usable_profile;
-#endif
         /* Preserve the source-derived error budgets; arbitrary multiples
          * of machine epsilon do not justify widening these bounds. */
         tolerance = engine == SIXEL_CMS_ENGINE_COLORSYNC
@@ -186,12 +193,10 @@ png_metadata_check(int fixture, int engine, int background)
     /* TAP checks actual event=apply records against this selected path.
      * Source-profile-adapter and parser diagnostics never count as applies. */
     apply_count = 0;
-#if HAVE_LCMS2
     if (engine != SIXEL_CMS_ENGINE_NONE && source->transfer &&
         source->usable_profile) {
         apply_count = source->background && has_alpha ? 2 : 1;
     }
-#endif
     evaluator = apply_count ? sixel_cms_engine_to_string(engine) : "direct";
     printf("PNGMETA|evaluator=%s|applies=%d\n", evaluator, apply_count);
     return 0;

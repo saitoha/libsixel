@@ -41,7 +41,6 @@ static size_t af_curve_calls;
 static size_t af_reject;
 static size_t af_calls;
 static size_t af_cms_calls;
-static size_t af_legacy_calls;
 static size_t af_poison;
 static size_t af_allocated;
 static size_t af_freed;
@@ -225,13 +224,6 @@ af_lcms(cmsHTRANSFORM tr, void const *src, void *dst, cmsUInt32Number n)
     }
 }
 #endif
-
-static int
-af_legacy(float *pixels, size_t n, sixel_icc_profile_t const *profile)
-{
-    ++af_legacy_calls;
-    return sixel_icc_apply_rgb_float32(pixels, n, profile);
-}
 
 static int
 af_read(TIFF *tif, void *data, uint32_t row, uint16_t sample)
@@ -427,9 +419,7 @@ af_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define tiff_clamp_lab_ab af_local_151
 #define tiff_clamp_unit af_local_152
 #define tiff_convert_embedded_icc_to_srgb af_local_153
-#define tiff_convert_embedded_icc_to_srgb_float32 af_local_154
 #define tiff_convert_embedded_icc_to_srgb_nolcms af_local_155
-#define tiff_convert_rgbf32_gamma_to_linear af_local_156
 #define tiff_decode_lab_u16_ab af_local_157
 #define tiff_decode_lab_u16_l af_local_158
 #define tiff_map_scanline_coordinates af_local_159
@@ -639,7 +629,8 @@ af_linear(unsigned char *pixels, int width, int height, int format,
 }
 #undef sixel_cms_convert_profile_to_linearrgb
 #define sixel_cms_convert_profile_to_linearrgb af_linear
-#define sixel_icc_apply_rgb_float32 af_legacy
+/* A loader-owned ICC retry must fail compilation, even in fault tests. */
+#define sixel_icc_apply_rgb_float32(...) SIXEL_LOADER_MUST_USE_CMS_FACADE
 #define TIFFReadScanline af_read
 #define TIFFReadRGBAImageOriented af_rgba_read
 #define tiff_logluv_xyz_to_linear af_logluv_xyz
@@ -820,9 +811,7 @@ af_linear(unsigned char *pixels, int width, int height, int format,
 #undef tiff_clamp_lab_ab
 #undef tiff_clamp_unit
 #undef tiff_convert_embedded_icc_to_srgb
-#undef tiff_convert_embedded_icc_to_srgb_float32
 #undef tiff_convert_embedded_icc_to_srgb_nolcms
-#undef tiff_convert_rgbf32_gamma_to_linear
 #undef tiff_decode_lab_u16_ab
 #undef tiff_decode_lab_u16_l
 #undef tiff_map_scanline_coordinates
@@ -921,7 +910,7 @@ af_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
     af_phase = phase;
     af_mode = mode;
     af_success = af_curve_calls = af_reject = af_calls = af_cms_calls = 0u;
-    af_legacy_calls = af_poison = af_allocated = af_freed = 0u;
+    af_poison = af_allocated = af_freed = 0u;
     af_reads = af_matched = af_seen = af_rgba = 0u;
     af_segment = af_changed = af_remainder = af_frame_ok = 0;
     af_scratch = NULL;
@@ -939,11 +928,11 @@ af_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
     af_armed = 0;
     fprintf(stderr, "AFAULT|phase=%d|mode=%d|status=%x|calls=%zu|"
         "success=%zu|reject=%zu|segment=%d|changed=%d|remainder=%d|"
-        "alloc=%zu|freed=%zu|legacy=%zu|cms=%zu|poison=%zu|"
+        "alloc=%zu|freed=%zu|cms=%zu|poison=%zu|"
         "read=%zu|matched=%zu|rgba=%zu|frame=%d|source=%d|alpha=%d|"
         "cms-result=%d|rollback=%d\n",
         phase, mode, status, af_calls, af_success, af_reject, af_segment,
-        af_changed, af_remainder, af_allocated, af_freed, af_legacy_calls,
+        af_changed, af_remainder, af_allocated, af_freed,
         af_cms_calls, af_poison, af_reads, af_matched, af_rgba,
         af_frame_ok, af_source_ok, af_alpha_ok, af_cms_result, af_rollback);
     return status;
@@ -1006,8 +995,8 @@ af_run(char const *directory, int fixture, int engine, int mode,
     status = af_load(component, chunk, 0, 0);
     normal = status == SIXEL_OK && af_calls == 1u && af_frame_ok &&
         af_allocated == 1u && af_freed == 1u && af_scratch == NULL &&
-        af_matched == expected_samples && af_legacy_calls == 0u &&
-        af_cms_calls == 1u && af_rgba == 0u && af_source_ok && af_alpha_ok &&
+        af_matched == expected_samples && af_cms_calls == 1u &&
+        af_rgba == 0u && af_source_ok && af_alpha_ok &&
         af_success == af_n &&
         af_reads == (ta_cases[af_fixture].opaque ? 1u : 2u);
     memcpy(saved, af_frame, sizeof(saved));
@@ -1021,8 +1010,7 @@ af_run(char const *directory, int fixture, int engine, int mode,
         ok = status == SIXEL_OK && af_calls == 1u && af_frame_ok &&
             af_allocated == 1u && af_freed == 1u && af_scratch == NULL &&
             af_cms_calls == 1u && af_rollback && af_rgba == 0u &&
-            af_matched == expected_samples && af_legacy_calls == 0u &&
-            af_source_ok && af_alpha_ok;
+            af_matched == expected_samples && af_source_ok && af_alpha_ok;
         if (mode == 1) {
             ok &= af_success == 2u && af_reject > 0u &&
                   af_segment && af_changed && af_remainder;
@@ -1037,7 +1025,7 @@ af_run(char const *directory, int fixture, int engine, int mode,
         memcmp(af_frame, saved, sizeof(saved)) == 0 && af_allocated == 1u &&
         af_freed == 1u && af_scratch == NULL && af_source_ok && af_alpha_ok &&
         af_success == af_n && af_cms_calls == 1u &&
-        af_legacy_calls == 0u && af_rgba == 0u &&
+        af_rgba == 0u &&
         af_reads == (ta_cases[af_fixture].opaque ? 1u : 2u) &&
         af_matched == expected_samples;
     ok = ok && normal && recovered;
@@ -1054,7 +1042,6 @@ cleanup:
     return ok && af_live == 0u ? 1 : 0;
 }
 #endif
-
 
 static int
 af_test(int argc, char **argv, int photo, int engine, int mode, int bits)

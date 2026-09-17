@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/loader/builtin/png-source-precision.md
-# Verify builtin direct gAMA 45455 rounds only at the final byte target.
+# Verify builtin gAMA 45455 rounds only at the final byte target.
 set -eux
 echo "1..1"
 set -v
@@ -11,7 +11,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-byte-target-0.png" \
     || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP direct gAMA contract or requested loader is unavailable"
+    echo "ok 1 # SKIP gAMA contract or requested loader is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {

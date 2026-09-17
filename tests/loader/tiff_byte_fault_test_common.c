@@ -34,7 +34,6 @@ static size_t bf_curve_calls;
 static size_t bf_reject;
 static size_t bf_calls;
 static size_t bf_cms_calls;
-static size_t bf_legacy_calls;
 static size_t bf_poison;
 static size_t bf_allocated;
 static size_t bf_freed;
@@ -196,13 +195,6 @@ bf_lcms(cmsHTRANSFORM tr, void const *src, void *dst, cmsUInt32Number n)
     }
 }
 #endif
-
-static int
-bf_legacy(float *pixels, size_t n, sixel_icc_profile_t const *profile)
-{
-    ++bf_legacy_calls;
-    return sixel_icc_apply_rgb_float32(pixels, n, profile);
-}
 
 static int
 bf_read(TIFF *tif, void *data, uint32_t row, uint16_t sample)
@@ -397,9 +389,7 @@ bf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define tiff_clamp_lab_ab bf_local_151
 #define tiff_clamp_unit bf_local_152
 #define tiff_convert_embedded_icc_to_srgb bf_local_153
-#define tiff_convert_embedded_icc_to_srgb_float32 bf_local_154
 #define tiff_convert_embedded_icc_to_srgb_nolcms bf_local_155
-#define tiff_convert_rgbf32_gamma_to_linear bf_local_156
 #define tiff_decode_lab_u16_ab bf_local_157
 #define tiff_decode_lab_u16_l bf_local_158
 #define tiff_map_scanline_coordinates bf_local_159
@@ -590,7 +580,8 @@ bf_linear(unsigned char *pixels, int width, int height, int format,
 }
 #undef sixel_cms_convert_profile_to_linearrgb
 #define sixel_cms_convert_profile_to_linearrgb bf_linear
-#define sixel_icc_apply_rgb_float32 bf_legacy
+/* A loader-owned ICC retry must fail compilation, even in fault tests. */
+#define sixel_icc_apply_rgb_float32(...) SIXEL_LOADER_MUST_USE_CMS_FACADE
 #define TIFFReadScanline bf_read
 #define TIFFReadRGBAImageOriented bf_rgba_read
 #define tiff_logluv_xyz_to_linear bf_logluv_xyz
@@ -771,9 +762,7 @@ bf_linear(unsigned char *pixels, int width, int height, int format,
 #undef tiff_clamp_lab_ab
 #undef tiff_clamp_unit
 #undef tiff_convert_embedded_icc_to_srgb
-#undef tiff_convert_embedded_icc_to_srgb_float32
 #undef tiff_convert_embedded_icc_to_srgb_nolcms
-#undef tiff_convert_rgbf32_gamma_to_linear
 #undef tiff_decode_lab_u16_ab
 #undef tiff_decode_lab_u16_l
 #undef tiff_map_scanline_coordinates
@@ -815,7 +804,7 @@ bf_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
     bf_phase = phase;
     bf_mode = mode;
     bf_success = bf_curve_calls = bf_reject = bf_calls = bf_cms_calls = 0u;
-    bf_legacy_calls = bf_poison = bf_allocated = bf_freed = 0u;
+    bf_poison = bf_allocated = bf_freed = 0u;
     bf_reads = bf_matched = bf_seen = bf_rgba = 0u;
     bf_segment = bf_changed = bf_remainder = bf_frame_ok = 0;
     bf_scratch = NULL;
@@ -830,10 +819,10 @@ bf_load(sixel_loader_component_t *component, sixel_chunk_t *chunk,
     bf_armed = 0;
     fprintf(stderr, "TBFAULT|phase=%d|mode=%d|status=%x|calls=%zu|"
         "success=%zu|reject=%zu|segment=%d|changed=%d|remainder=%d|"
-        "alloc=%zu|freed=%zu|legacy=%zu|cms=%zu|poison=%zu|"
+        "alloc=%zu|freed=%zu|cms=%zu|poison=%zu|"
         "read=%zu|matched=%zu|seen=%zu|rgba=%zu|frame=%d\n",
         phase, mode, status, bf_calls, bf_success, bf_reject, bf_segment,
-        bf_changed, bf_remainder, bf_allocated, bf_freed, bf_legacy_calls,
+        bf_changed, bf_remainder, bf_allocated, bf_freed,
         bf_cms_calls, bf_poison, bf_reads, bf_matched, bf_seen, bf_rgba,
         bf_frame_ok);
     return status;
@@ -896,7 +885,7 @@ bf_run(char const *path, int fixture, int engine, int mode)
     baseline = status == SIXEL_OK && bf_calls == 1u && bf_frame_ok &&
         bf_allocated == 1u && bf_freed == 1u && bf_scratch == NULL &&
         bf_matched == (tb_cases[fixture].photo == 2 ? 18u : 6u) &&
-        bf_legacy_calls == 0u && bf_cms_calls == 1u && bf_rgba == 0u;
+        bf_cms_calls == 1u && bf_rgba == 0u;
     memcpy(saved, bf_frame, sizeof(saved));
     status = bf_load(component, chunk, 1, mode);
     qualified = bf_success == 2u && bf_reject > 0u &&
@@ -904,8 +893,7 @@ bf_run(char const *path, int fixture, int engine, int mode)
     ok = status == SIXEL_OK && bf_calls == 1u && bf_frame_ok &&
          bf_allocated == 1u && bf_freed == 1u && bf_scratch == NULL &&
          bf_cms_calls == 1u && bf_rollback && bf_rgba == 0u &&
-         bf_matched == (tb_cases[fixture].photo == 2 ? 18u : 6u) &&
-         bf_legacy_calls == 0u;
+         bf_matched == (tb_cases[fixture].photo == 2 ? 18u : 6u);
     if (mode == 1) { ok = ok && qualified; }
     if (mode == 3) {
         ok = ok && bf_success == bf_n && bf_poison == 1u &&

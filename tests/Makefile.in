@@ -860,7 +860,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0012_loader_libpng_pixelformat.c \
 	loader/libpng/0023_loader_libpng_contract.c \
 	loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
-	loader/jpeg_cmyk_test_common.c loader/jpeg_cmyk_test_common.h \
+	loader/jpeg_cmyk_test_common.c \
+	loader/jpeg_precision_fault_test_common.c \
+	loader/jpeg_cmyk_test_common.h \
 	loader/libjpeg/cmyk/0001_affine_adobe_builtin.c \
 	loader/libjpeg/cmyk/0002_affine_plain_builtin.c \
 	loader/libjpeg/cmyk/0003_affine_adobe_lcms2.c \
@@ -1858,6 +1860,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0023_loader_libpng_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-jpeg_cmyk_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-jpeg_precision_fault_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0002_affine_plain_builtin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/cmyk/test_runner-0003_affine_adobe_lcms2.$(OBJEXT) \
@@ -2248,6 +2251,7 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po \
 	loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po \
 	loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po \
+	loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Po \
 	loader/$(DEPDIR)/test_runner-tiff_alpha_fault_test_common.Po \
 	loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Po \
 	loader/$(DEPDIR)/test_runner-tiff_byte_fault_test_common.Po \
@@ -4779,6 +4783,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PATH \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_LOSSLESS_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_CMYK_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_JPEG_PRECISION_FAULT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_AFFINE_ADOBE_BUILTIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_AFFINE_PLAIN_BUILTIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_AFFINE_ADOBE_LCMS2 \
@@ -5610,6 +5615,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0023_loader_libpng_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/jpeg_cmyk_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/jpeg_precision_fault_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/jpeg_cmyk_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0001_affine_adobe_builtin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/cmyk/0002_affine_plain_builtin.c \
@@ -5942,6 +5948,8 @@ EXTRA_DIST = loader/libpng/chrm_trace_control.sh \
     _static/sh/staticcheck-c-ast.sh \
     _static/python/staticcheck_c_ast.py \
 	_static/sh/staticcheck-private-includes.sh \
+    _static/sh/staticcheck-loader-cms-boundary.sh \
+    _static/awk/loader-cms-boundary.awk \
 	_static/sh/staticcheck-src-no-direct-getenv.sh \
 	_static/sh/staticcheck-test-no-direct-getenv.sh \
 	_static/sh/staticcheck-test-runner-dllexport.sh \
@@ -8419,6 +8427,8 @@ loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT):  \
 	loader/libjpeg/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-jpeg_cmyk_test_common.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-jpeg_precision_fault_test_common.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/libjpeg/cmyk/$(am__dirstamp):
 	@$(MKDIR_P) loader/libjpeg/cmyk
 	@: >>loader/libjpeg/cmyk/$(am__dirstamp)
@@ -9391,6 +9401,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_alpha_fault_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-tiff_byte_fault_test_common.Po@am__quote@ # am--include-marker
@@ -20459,6 +20470,20 @@ loader/test_runner-jpeg_cmyk_test_common.obj: loader/jpeg_cmyk_test_common.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-jpeg_cmyk_test_common.obj `if test -f 'loader/jpeg_cmyk_test_common.c'; then $(CYGPATH_W) 'loader/jpeg_cmyk_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/jpeg_cmyk_test_common.c'; fi`
 
+loader/test_runner-jpeg_precision_fault_test_common.o: loader/jpeg_precision_fault_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-jpeg_precision_fault_test_common.o -MD -MP -MF loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Tpo -c -o loader/test_runner-jpeg_precision_fault_test_common.o `test -f 'loader/jpeg_precision_fault_test_common.c' || echo '$(srcdir)/'`loader/jpeg_precision_fault_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Tpo loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/jpeg_precision_fault_test_common.c' object='loader/test_runner-jpeg_precision_fault_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-jpeg_precision_fault_test_common.o `test -f 'loader/jpeg_precision_fault_test_common.c' || echo '$(srcdir)/'`loader/jpeg_precision_fault_test_common.c
+
+loader/test_runner-jpeg_precision_fault_test_common.obj: loader/jpeg_precision_fault_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-jpeg_precision_fault_test_common.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Tpo -c -o loader/test_runner-jpeg_precision_fault_test_common.obj `if test -f 'loader/jpeg_precision_fault_test_common.c'; then $(CYGPATH_W) 'loader/jpeg_precision_fault_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/jpeg_precision_fault_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Tpo loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/jpeg_precision_fault_test_common.c' object='loader/test_runner-jpeg_precision_fault_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-jpeg_precision_fault_test_common.obj `if test -f 'loader/jpeg_precision_fault_test_common.c'; then $(CYGPATH_W) 'loader/jpeg_precision_fault_test_common.c'; else $(CYGPATH_W) '$(srcdir)/loader/jpeg_precision_fault_test_common.c'; fi`
+
 loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.o: loader/libjpeg/cmyk/0001_affine_adobe_builtin.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.o -MD -MP -MF loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Tpo -c -o loader/libjpeg/cmyk/test_runner-0001_affine_adobe_builtin.o `test -f 'loader/libjpeg/cmyk/0001_affine_adobe_builtin.c' || echo '$(srcdir)/'`loader/libjpeg/cmyk/0001_affine_adobe_builtin.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Tpo loader/libjpeg/cmyk/$(DEPDIR)/test_runner-0001_affine_adobe_builtin.Po
@@ -24594,6 +24619,7 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_alpha_fault_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_byte_fault_test_common.Po
@@ -25621,6 +25647,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0126_loader_manager_fallback_status.Po
 	-rm -f loader/$(DEPDIR)/test_runner-gif_bgcolor_canvas_fill_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-jpeg_cmyk_test_common.Po
+	-rm -f loader/$(DEPDIR)/test_runner-jpeg_precision_fault_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_alpha_fault_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_alpha_test_common.Po
 	-rm -f loader/$(DEPDIR)/test_runner-tiff_byte_fault_test_common.Po
@@ -26592,6 +26619,7 @@ SIXEL_INSTALLCHECK ?= 0
 	staticcheck-png-color-oracles \
 	staticcheck-tiff-uint16-oracles \
 	staticcheck-private-includes \
+staticcheck-loader-cms-boundary \
 	staticcheck-src-no-direct-getenv \
 	staticcheck-test-no-direct-getenv \
 	staticcheck-c-ast \
@@ -26666,6 +26694,7 @@ staticcheck-shellcheck \
 staticcheck-codespell \
 staticcheck-python-compileall \
 staticcheck-private-includes \
+staticcheck-loader-cms-boundary \
 staticcheck-src-no-direct-getenv \
 staticcheck-test-no-direct-getenv \
 staticcheck-c-ast \
@@ -26838,6 +26867,16 @@ staticcheck-private-includes:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-private-includes.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-loader-cms-boundary:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-loader-cms-boundary" \
+		--log-file staticcheck-loader-cms-boundary.log \
+		--trs-file staticcheck-loader-cms-boundary.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-loader-cms-boundary.sh" \
+		"$(abs_top_srcdir)"
 
 staticcheck-src-no-direct-getenv:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \

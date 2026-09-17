@@ -425,6 +425,9 @@ int test_loader_0011_loader_gd_pixelformat(int argc, char **argv);
 int test_loader_libpng_contract(int argc, char **argv);
 int test_loader_0012_loader_libpng_pixelformat(int argc, char **argv);
 int test_loader_0013_loader_libjpeg_pixelformat(int argc, char **argv);
+int test_jp_gray16(int argc, char **argv);
+int test_jp_fault(int argc, char **argv);
+int test_jc_precision(int argc, char **argv);
 int test_jc_0001(int argc, char **argv);
 int test_jc_0002(int argc, char **argv);
 int test_jc_0003(int argc, char **argv);
@@ -1605,6 +1608,9 @@ static test_entry_t const test_entries[] = {
     { "decoder/0053_percentage_rgb8", test_pmap_0053 },
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },
     { "colorspace/0013_black_log1p_model", test_color_0013 },
+    { "jpeg-cmyk/gray16-source", test_jp_gray16 },
+    { "jpeg-cmyk/prefix-failure", test_jp_fault },
+    { "jpeg-cmyk/precision", test_jc_precision },
     { "jpeg-cmyk/0001_affine_adobe_builtin", test_jc_0001 },
     { "jpeg-cmyk/0002_affine_plain_builtin", test_jc_0002 },
     { "jpeg-cmyk/0003_affine_adobe_lcms2", test_jc_0003 },

@@ -202,9 +202,7 @@ tlf_target(sixel_frame_t *frame, int format)
 #define tiff_clamp_lab_ab tlf_local_15
 #define tiff_clamp_unit tlf_local_16
 #define tiff_convert_embedded_icc_to_srgb tlf_local_17
-#define tiff_convert_embedded_icc_to_srgb_float32 tlf_local_18
 #define tiff_convert_embedded_icc_to_srgb_nolcms tlf_local_19
-#define tiff_convert_rgbf32_gamma_to_linear tlf_local_20
 #define tiff_decode_lab_u16_ab tlf_local_21
 #define tiff_decode_lab_u16_l tlf_local_22
 #define tiff_logluv_xyz_to_linear tlf_local_23
@@ -264,9 +262,7 @@ tlf_target(sixel_frame_t *frame, int format)
 #undef tiff_clamp_lab_ab
 #undef tiff_clamp_unit
 #undef tiff_convert_embedded_icc_to_srgb
-#undef tiff_convert_embedded_icc_to_srgb_float32
 #undef tiff_convert_embedded_icc_to_srgb_nolcms
-#undef tiff_convert_rgbf32_gamma_to_linear
 #undef tiff_decode_lab_u16_ab
 #undef tiff_decode_lab_u16_l
 #undef tiff_logluv_xyz_to_linear

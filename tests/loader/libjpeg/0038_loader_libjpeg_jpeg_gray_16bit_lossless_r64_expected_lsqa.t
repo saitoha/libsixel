@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/loader/libjpeg.md
 # Verify libjpeg loader decodes 16-bit grayscale lossless JPEG with restart
 # markers and keeps stable quality against a fixed expected PNM reference.
 
