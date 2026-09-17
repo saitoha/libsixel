@@ -1,0 +1,842 @@
+{
+  "generator": "tools/generate_tiff_separate16_fixtures.py",
+  "oracle": "Literal source integers and exact rational-to-binary32 ties-to-even; direct16 output comparisons qualify the adapter, not CMM accuracy.",
+  "fixtures": [
+    {
+      "name": "rgb16-planar",
+      "photo": 2,
+      "planar": 2,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "match",
+      "samples": [
+        [
+          0,
+          1,
+          256
+        ],
+        [
+          257,
+          32897,
+          16449
+        ],
+        [
+          65535,
+          32768,
+          8225
+        ],
+        [
+          129,
+          65534,
+          128
+        ],
+        [
+          32767,
+          128,
+          65535
+        ],
+        [
+          32896,
+          16448,
+          8224
+        ]
+      ],
+      "file": "tiff-separate16-rgb16-planar.tif",
+      "sha256": "d449993fc20a8fd119e0f704fcef590cc8c527cec85c9e262c0c253fae101e71",
+      "profile_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
+      "source_words": [
+        "00000000",
+        "37800080",
+        "3b800080",
+        "3b808081",
+        "3f008181",
+        "3e808281",
+        "3f800000",
+        "3f000080",
+        "3e008481",
+        "3b010081",
+        "3f7fff00",
+        "3b000080",
+        "3effff00",
+        "3b000080",
+        "3f800000",
+        "3f008081",
+        "3e808081",
+        "3e008081"
+      ]
+    },
+    {
+      "name": "rgb16-planar-mismatch",
+      "photo": 2,
+      "planar": 2,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "mismatch",
+      "samples": [
+        [
+          0,
+          1,
+          256
+        ],
+        [
+          257,
+          32897,
+          16449
+        ],
+        [
+          65535,
+          32768,
+          8225
+        ],
+        [
+          129,
+          65534,
+          128
+        ],
+        [
+          32767,
+          128,
+          65535
+        ],
+        [
+          32896,
+          16448,
+          8224
+        ]
+      ],
+      "file": "tiff-separate16-rgb16-planar-mismatch.tif",
+      "sha256": "4f57e22a517c2b6a62bc75e2fc7ed98592c530922a377728f8bb0461d84ba727",
+      "profile_sha256": "90a2dd266f37cd996e024fff47ed1e2adfbdac83090508759ed6817a0b5bbb84",
+      "source_words": [
+        "00000000",
+        "37800080",
+        "3b800080",
+        "3b808081",
+        "3f008181",
+        "3e808281",
+        "3f800000",
+        "3f000080",
+        "3e008481",
+        "3b010081",
+        "3f7fff00",
+        "3b000080",
+        "3effff00",
+        "3b000080",
+        "3f800000",
+        "3f008081",
+        "3e808081",
+        "3e008081"
+      ]
+    },
+    {
+      "name": "rgb16-planar-absent",
+      "photo": 2,
+      "planar": 2,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "absent",
+      "samples": [
+        [
+          0,
+          1,
+          256
+        ],
+        [
+          257,
+          32897,
+          16449
+        ],
+        [
+          65535,
+          32768,
+          8225
+        ],
+        [
+          129,
+          65534,
+          128
+        ],
+        [
+          32767,
+          128,
+          65535
+        ],
+        [
+          32896,
+          16448,
+          8224
+        ]
+      ],
+      "file": "tiff-separate16-rgb16-planar-absent.tif",
+      "sha256": "f24fe49e6d7125ec7e4a76e8debfb2bc0bc7a510bdb3aa11bc8440f5fa42a4ee",
+      "profile_sha256": null,
+      "source_words": [
+        "00000000",
+        "37800080",
+        "3b800080",
+        "3b808081",
+        "3f008181",
+        "3e808281",
+        "3f800000",
+        "3f000080",
+        "3e008481",
+        "3b010081",
+        "3f7fff00",
+        "3b000080",
+        "3effff00",
+        "3b000080",
+        "3f800000",
+        "3f008081",
+        "3e808081",
+        "3e008081"
+      ]
+    },
+    {
+      "name": "rgb16-planar-invalid",
+      "photo": 2,
+      "planar": 2,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "invalid",
+      "samples": [
+        [
+          0,
+          1,
+          256
+        ],
+        [
+          257,
+          32897,
+          16449
+        ],
+        [
+          65535,
+          32768,
+          8225
+        ],
+        [
+          129,
+          65534,
+          128
+        ],
+        [
+          32767,
+          128,
+          65535
+        ],
+        [
+          32896,
+          16448,
+          8224
+        ]
+      ],
+      "file": "tiff-separate16-rgb16-planar-invalid.tif",
+      "sha256": "b266d0f73ac5d5ddb15b92a65155ac2e375c8ed6f6f1f1d395c26634365adbb2",
+      "profile_sha256": "dc7db5e75f07b4c4f5a77e30f3535bcb9f0af73b401ed35fb76592698f13945c",
+      "source_words": [
+        "00000000",
+        "37800080",
+        "3b800080",
+        "3b808081",
+        "3f008181",
+        "3e808281",
+        "3f800000",
+        "3f000080",
+        "3e008481",
+        "3b010081",
+        "3f7fff00",
+        "3b000080",
+        "3effff00",
+        "3b000080",
+        "3f800000",
+        "3f008081",
+        "3e808081",
+        "3e008081"
+      ]
+    },
+    {
+      "name": "black16-planar-o2",
+      "photo": 1,
+      "planar": 2,
+      "orientation": 2,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "match",
+      "samples": [
+        [
+          0
+        ],
+        [
+          257
+        ],
+        [
+          65535
+        ],
+        [
+          129
+        ],
+        [
+          32767
+        ],
+        [
+          32896
+        ]
+      ],
+      "file": "tiff-separate16-black16-planar-o2.tif",
+      "sha256": "02b45debe3f54a9f7d6b7c646fba2bce969926ec907803c632ce79e8f524ee30",
+      "profile_sha256": "90a2dd266f37cd996e024fff47ed1e2adfbdac83090508759ed6817a0b5bbb84",
+      "source_words": [
+        "3f800000",
+        "3f800000",
+        "3f800000",
+        "3b808081",
+        "3b808081",
+        "3b808081",
+        "00000000",
+        "00000000",
+        "00000000",
+        "3f008081",
+        "3f008081",
+        "3f008081",
+        "3effff00",
+        "3effff00",
+        "3effff00",
+        "3b010081",
+        "3b010081",
+        "3b010081"
+      ]
+    },
+    {
+      "name": "white16-planar-o4",
+      "photo": 0,
+      "planar": 2,
+      "orientation": 4,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "match",
+      "samples": [
+        [
+          65535
+        ],
+        [
+          65278
+        ],
+        [
+          0
+        ],
+        [
+          65406
+        ],
+        [
+          32768
+        ],
+        [
+          32639
+        ]
+      ],
+      "file": "tiff-separate16-white16-planar-o4.tif",
+      "sha256": "83e13bc47ca4b29cc207b18601656fa1feb9ff4c15264bb644c82f47a744803e",
+      "profile_sha256": "90a2dd266f37cd996e024fff47ed1e2adfbdac83090508759ed6817a0b5bbb84",
+      "source_words": [
+        "3b010081",
+        "3b010081",
+        "3b010081",
+        "3effff00",
+        "3effff00",
+        "3effff00",
+        "3f008081",
+        "3f008081",
+        "3f008081",
+        "00000000",
+        "00000000",
+        "00000000",
+        "3b808081",
+        "3b808081",
+        "3b808081",
+        "3f800000",
+        "3f800000",
+        "3f800000"
+      ]
+    },
+    {
+      "name": "rgb16-planar-o3",
+      "photo": 2,
+      "planar": 2,
+      "orientation": 3,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "match",
+      "samples": [
+        [
+          0,
+          1,
+          256
+        ],
+        [
+          257,
+          32897,
+          16449
+        ],
+        [
+          65535,
+          32768,
+          8225
+        ],
+        [
+          129,
+          65534,
+          128
+        ],
+        [
+          32767,
+          128,
+          65535
+        ],
+        [
+          32896,
+          16448,
+          8224
+        ]
+      ],
+      "file": "tiff-separate16-rgb16-planar-o3.tif",
+      "sha256": "a003cc02a2387821295f9058ef38d80aaaf9490de04ab3cbeacb25d937f2edfd",
+      "profile_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
+      "source_words": [
+        "3f008081",
+        "3e808081",
+        "3e008081",
+        "3effff00",
+        "3b000080",
+        "3f800000",
+        "3b010081",
+        "3f7fff00",
+        "3b000080",
+        "3f800000",
+        "3f000080",
+        "3e008481",
+        "3b808081",
+        "3f008181",
+        "3e808281",
+        "00000000",
+        "37800080",
+        "3b800080"
+      ]
+    },
+    {
+      "name": "rgb16-planar-packbits-rows2",
+      "photo": 2,
+      "planar": 2,
+      "orientation": 1,
+      "compression": 32773,
+      "sample_format": 1,
+      "profile": "match",
+      "samples": [
+        [
+          0,
+          1,
+          256
+        ],
+        [
+          257,
+          32897,
+          16449
+        ],
+        [
+          65535,
+          32768,
+          8225
+        ],
+        [
+          129,
+          65534,
+          128
+        ],
+        [
+          32767,
+          128,
+          65535
+        ],
+        [
+          32896,
+          16448,
+          8224
+        ]
+      ],
+      "file": "tiff-separate16-rgb16-planar-packbits-rows2.tif",
+      "sha256": "2a64ac4250682b79a0409172dd838d3dc586464990ddef84f42cd4c25e8df28f",
+      "profile_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
+      "source_words": [
+        "00000000",
+        "37800080",
+        "3b800080",
+        "3b808081",
+        "3f008181",
+        "3e808281",
+        "3f800000",
+        "3f000080",
+        "3e008481",
+        "3b010081",
+        "3f7fff00",
+        "3b000080",
+        "3effff00",
+        "3b000080",
+        "3f800000",
+        "3f008081",
+        "3e808081",
+        "3e008081"
+      ]
+    },
+    {
+      "name": "rgb16-planar-void",
+      "photo": 2,
+      "planar": 2,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 4,
+      "profile": "match",
+      "samples": [
+        [
+          0,
+          1,
+          256
+        ],
+        [
+          257,
+          32897,
+          16449
+        ],
+        [
+          65535,
+          32768,
+          8225
+        ],
+        [
+          129,
+          65534,
+          128
+        ],
+        [
+          32767,
+          128,
+          65535
+        ],
+        [
+          32896,
+          16448,
+          8224
+        ]
+      ],
+      "file": "tiff-separate16-rgb16-planar-void.tif",
+      "sha256": "113032bbaf8e294d51d4b86767bf88fb67873efb45141afb17e7aa3ca34c7c36",
+      "profile_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
+      "source_words": [
+        "00000000",
+        "37800080",
+        "3b800080",
+        "3b808081",
+        "3f008181",
+        "3e808281",
+        "3f800000",
+        "3f000080",
+        "3e008481",
+        "3b010081",
+        "3f7fff00",
+        "3b000080",
+        "3effff00",
+        "3b000080",
+        "3f800000",
+        "3f008081",
+        "3e808081",
+        "3e008081"
+      ]
+    },
+    {
+      "name": "rgb16-control",
+      "photo": 2,
+      "planar": 1,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "match",
+      "samples": [
+        [
+          0,
+          1,
+          256
+        ],
+        [
+          257,
+          32897,
+          16449
+        ],
+        [
+          65535,
+          32768,
+          8225
+        ],
+        [
+          129,
+          65534,
+          128
+        ],
+        [
+          32767,
+          128,
+          65535
+        ],
+        [
+          32896,
+          16448,
+          8224
+        ]
+      ],
+      "file": "tiff-separate16-rgb16-control.tif",
+      "sha256": "e7e926fce853cf6c45380a770255ab357726798aad27e92d5da3475ac88d066c",
+      "profile_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
+      "source_words": [
+        "00000000",
+        "37800080",
+        "3b800080",
+        "3b808081",
+        "3f008181",
+        "3e808281",
+        "3f800000",
+        "3f000080",
+        "3e008481",
+        "3b010081",
+        "3f7fff00",
+        "3b000080",
+        "3effff00",
+        "3b000080",
+        "3f800000",
+        "3f008081",
+        "3e808081",
+        "3e008081"
+      ]
+    },
+    {
+      "name": "black16-control",
+      "photo": 1,
+      "planar": 1,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "match",
+      "samples": [
+        [
+          0
+        ],
+        [
+          257
+        ],
+        [
+          65535
+        ],
+        [
+          129
+        ],
+        [
+          32767
+        ],
+        [
+          32896
+        ]
+      ],
+      "file": "tiff-separate16-black16-control.tif",
+      "sha256": "ec5de7eeae2bebcf7b2cca0f97bfc5469f381cbfcda9b8b384b86a69b8cc9d1c",
+      "profile_sha256": "90a2dd266f37cd996e024fff47ed1e2adfbdac83090508759ed6817a0b5bbb84",
+      "source_words": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "3b808081",
+        "3b808081",
+        "3b808081",
+        "3f800000",
+        "3f800000",
+        "3f800000",
+        "3b010081",
+        "3b010081",
+        "3b010081",
+        "3effff00",
+        "3effff00",
+        "3effff00",
+        "3f008081",
+        "3f008081",
+        "3f008081"
+      ]
+    },
+    {
+      "name": "white16-control",
+      "photo": 0,
+      "planar": 1,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "match",
+      "samples": [
+        [
+          65535
+        ],
+        [
+          65278
+        ],
+        [
+          0
+        ],
+        [
+          65406
+        ],
+        [
+          32768
+        ],
+        [
+          32639
+        ]
+      ],
+      "file": "tiff-separate16-white16-control.tif",
+      "sha256": "2809e51864606e0c7821df58ada71c52598ad598b900d269efecbdfa66e20bc5",
+      "profile_sha256": "90a2dd266f37cd996e024fff47ed1e2adfbdac83090508759ed6817a0b5bbb84",
+      "source_words": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "3b808081",
+        "3b808081",
+        "3b808081",
+        "3f800000",
+        "3f800000",
+        "3f800000",
+        "3b010081",
+        "3b010081",
+        "3b010081",
+        "3effff00",
+        "3effff00",
+        "3effff00",
+        "3f008081",
+        "3f008081",
+        "3f008081"
+      ]
+    },
+    {
+      "name": "rgb16-control-mismatch",
+      "photo": 2,
+      "planar": 1,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "mismatch",
+      "samples": [
+        [
+          0,
+          1,
+          256
+        ],
+        [
+          257,
+          32897,
+          16449
+        ],
+        [
+          65535,
+          32768,
+          8225
+        ],
+        [
+          129,
+          65534,
+          128
+        ],
+        [
+          32767,
+          128,
+          65535
+        ],
+        [
+          32896,
+          16448,
+          8224
+        ]
+      ],
+      "file": "tiff-separate16-rgb16-control-mismatch.tif",
+      "sha256": "56afb254b56717b564b5c4a4d59a7338deca4dc0e188d3df0ed61eafe7b1028c",
+      "profile_sha256": "90a2dd266f37cd996e024fff47ed1e2adfbdac83090508759ed6817a0b5bbb84",
+      "source_words": [
+        "00000000",
+        "37800080",
+        "3b800080",
+        "3b808081",
+        "3f008181",
+        "3e808281",
+        "3f800000",
+        "3f000080",
+        "3e008481",
+        "3b010081",
+        "3f7fff00",
+        "3b000080",
+        "3effff00",
+        "3b000080",
+        "3f800000",
+        "3f008081",
+        "3e808081",
+        "3e008081"
+      ]
+    },
+    {
+      "name": "black16-control-mismatch",
+      "photo": 1,
+      "planar": 1,
+      "orientation": 1,
+      "compression": 1,
+      "sample_format": 1,
+      "profile": "mismatch",
+      "samples": [
+        [
+          0
+        ],
+        [
+          257
+        ],
+        [
+          65535
+        ],
+        [
+          129
+        ],
+        [
+          32767
+        ],
+        [
+          32896
+        ]
+      ],
+      "file": "tiff-separate16-black16-control-mismatch.tif",
+      "sha256": "c4f19f518fe0002e9b24e33ebbc555bc54cf7a67c638d570046bfc8a4676b511",
+      "profile_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
+      "source_words": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "3b808081",
+        "3b808081",
+        "3b808081",
+        "3f800000",
+        "3f800000",
+        "3f800000",
+        "3b010081",
+        "3b010081",
+        "3b010081",
+        "3effff00",
+        "3effff00",
+        "3effff00",
+        "3f008081",
+        "3f008081",
+        "3f008081"
+      ]
+    }
+  ]
+}

@@ -423,7 +423,9 @@ lc_strip(sixel_frame_t *frame, unsigned char *background)
 #else
 #define sixel_cms_convert_to_srgb_with_profile_bytes lc_convert
 #endif
+#define tiff_read_separate_uint16 b1_namespace_1
 #include "src/loader-libtiff.c"
+#undef tiff_read_separate_uint16
 #undef g_sixel_loader_libtiff_vtbl
 #undef load_tiff
 #undef load_with_libtiff

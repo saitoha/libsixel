@@ -468,7 +468,9 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #define tiff_logluv_xyz_to_linear clf_logluv_xyz_to_linear
 #define tiff_convert_samples_to_linear llbf_byte
 #define tiff_try_load_integer_alpha llbf_alpha
+#define tiff_read_separate_uint16 b1_namespace_6
 #include "src/loader-libtiff.c"
+#undef tiff_read_separate_uint16
 #undef tiff_try_load_integer_alpha
 #undef tiff_convert_samples_to_linear
 #undef tiff_logluv_xyz_to_linear

@@ -3,40 +3,40 @@
   "oracle": "Literal original samples and TIFF tags; no CMM or TIFF writer. C tests verify decoded original strips independently before using the current libtiff RGBA control for transaction checks.",
   "cases": [
     {
-      "name": "rgb16-planar",
+      "name": "rgb8-planar",
       "photo": 2,
-      "bits": 16,
+      "bits": 8,
       "planar": 2,
       "samples": [
         [
           0,
           1,
-          256
+          2
         ],
         [
-          257,
-          32897,
-          16449
+          17,
+          63,
+          129
         ],
         [
-          65535,
-          32768,
-          8225
+          255,
+          128,
+          64
         ],
         [
-          129,
-          65534,
+          1,
+          255,
+          31
+        ],
+        [
+          254,
+          0,
           128
         ],
         [
-          32767,
           128,
-          65535
-        ],
-        [
-          32896,
-          16448,
-          8224
+          64,
+          32
         ]
       ],
       "width": 3,
@@ -316,40 +316,40 @@
       "colormap": []
     },
     {
-      "name": "rgb16-planar-mismatch",
+      "name": "rgb8-planar-mismatch",
       "photo": 2,
-      "bits": 16,
+      "bits": 8,
       "planar": 2,
       "samples": [
         [
           0,
           1,
-          256
+          2
         ],
         [
-          257,
-          32897,
-          16449
+          17,
+          63,
+          129
         ],
         [
-          65535,
-          32768,
-          8225
+          255,
+          128,
+          64
         ],
         [
-          129,
-          65534,
+          1,
+          255,
+          31
+        ],
+        [
+          254,
+          0,
           128
         ],
         [
-          32767,
           128,
-          65535
-        ],
-        [
-          32896,
-          16448,
-          8224
+          64,
+          32
         ]
       ],
       "width": 3,
@@ -581,8 +581,8 @@
   ],
   "fixtures": [
     {
-      "file": "tiff-legacy-rgb16-planar.tif",
-      "sha256": "d449993fc20a8fd119e0f704fcef590cc8c527cec85c9e262c0c253fae101e71",
+      "file": "tiff-legacy-rgb8-planar.tif",
+      "sha256": "5b470420699d2365644d5f3c4ba88425f86d9fa193802c3d3b4e4ba674cf6cb5",
       "profile_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96"
     },
     {
@@ -606,8 +606,8 @@
       "profile_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96"
     },
     {
-      "file": "tiff-legacy-rgb16-planar-mismatch.tif",
-      "sha256": "4f57e22a517c2b6a62bc75e2fc7ed98592c530922a377728f8bb0461d84ba727",
+      "file": "tiff-legacy-rgb8-planar-mismatch.tif",
+      "sha256": "a00a672c50b3d52c1accfa3e113343decea2494abb939415e393336b1ad68d78",
       "profile_sha256": "90a2dd266f37cd996e024fff47ed1e2adfbdac83090508759ed6817a0b5bbb84"
     },
     {

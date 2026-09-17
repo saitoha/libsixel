@@ -539,6 +539,18 @@ mf_linear(unsigned char *pixels, int width, int height, int format,
     ++mf_cms_calls;
     return mf_local_63(pixels, width, height, format, profile, size);
 }
+/* Integer sources now validate a borrowed profile before entering the same
+ * transaction. Count that actual entry without weakening the existing
+ * prefix, nonfinite, complete-source and recovery observations. */
+static int
+mf_profile_linear(unsigned char *pixels, int width, int height, int format,
+                  sixel_cms_profile_t *profile)
+{
+    ++mf_cms_calls;
+    return mf_local_59(pixels, width, height, format, profile);
+}
+#undef sixel_cms_convert_profile_to_linearrgb
+#define sixel_cms_convert_profile_to_linearrgb mf_profile_linear
 #undef sixel_cms_convert_to_linearrgb_with_profile_bytes
 #define sixel_cms_convert_to_linearrgb_with_profile_bytes mf_linear
 #define sixel_icc_apply_rgb_float32 mf_legacy
@@ -547,7 +559,9 @@ mf_linear(unsigned char *pixels, int width, int height, int format,
 #define tiff_logluv_xyz_to_linear mf_logluv_xyz
 #define tiff_convert_samples_to_linear mf_byte
 #define tiff_try_load_integer_alpha mf_alpha
+#define tiff_read_separate_uint16 b1_namespace_5
 #include "src/loader-libtiff.c"
+#undef tiff_read_separate_uint16
 #undef tiff_try_load_integer_alpha
 #undef tiff_convert_samples_to_linear
 #undef tiff_logluv_xyz_to_linear

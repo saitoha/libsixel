@@ -232,7 +232,9 @@ tlf_target(sixel_frame_t *frame, int format)
 #define sixel_frame_set_pixelformat tlf_target
 #define tiff_convert_samples_to_linear luf_byte
 #define tiff_try_load_integer_alpha luf_alpha
+#define tiff_read_separate_uint16 b1_namespace_2
 #include "src/loader-libtiff.c"
+#undef tiff_read_separate_uint16
 #undef tiff_try_load_integer_alpha
 #undef tiff_convert_samples_to_linear
 #undef g_sixel_loader_libtiff_vtbl

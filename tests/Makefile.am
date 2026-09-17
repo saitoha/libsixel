@@ -979,6 +979,37 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0381_LEGACY_GRAY_TRANSFORM_FAILURE \
     -DBUILD_TEST_0382_LEGACY_ALPHA_PRESERVED \
     -DBUILD_TIFF_LEGACY_TEST_COMMON \
+    -DBUILD_TEST_0383_SEPARATE16_RGB_SOURCE \
+    -DBUILD_TEST_0384_SEPARATE16_BLACK_SOURCE \
+    -DBUILD_TEST_0385_SEPARATE16_WHITE_SOURCE \
+    -DBUILD_TEST_0386_SEPARATE16_ORIENTATION3 \
+    -DBUILD_TEST_0387_SEPARATE16_VOID \
+    -DBUILD_TEST_0388_SEPARATE16_PACKBITS_ORDER \
+    -DBUILD_TEST_0389_SEPARATE16_BUILTIN \
+    -DBUILD_TEST_0390_SEPARATE16_LCMS2 \
+    -DBUILD_TEST_0391_SEPARATE16_COLORSYNC \
+    -DBUILD_TEST_0392_SEPARATE16_RGB_PROFILE_GUARD \
+    -DBUILD_TEST_0393_SEPARATE16_GRAY_PROFILE_GUARD \
+    -DBUILD_TEST_0394_SEPARATE16_ABSENT_PROFILE \
+    -DBUILD_TEST_0395_SEPARATE16_INVALID_PROFILE \
+    -DBUILD_TEST_0396_SEPARATE16_ROW_ALLOCATION \
+    -DBUILD_TEST_0397_SEPARATE16_SOURCE_ALLOCATION \
+    -DBUILD_TEST_0398_SEPARATE16_ZERO_ROW_SIZE \
+    -DBUILD_TEST_0399_SEPARATE16_NEGATIVE_ROW_SIZE \
+    -DBUILD_TEST_0400_SEPARATE16_SHORT_ROW_SIZE \
+    -DBUILD_TEST_0401_SEPARATE16_LATER_ROW_FAILURE \
+    -DBUILD_TEST_0402_SEPARATE16_LATER_PLANE_FAILURE \
+    -DBUILD_TEST_0403_SEPARATE16_RGB_CMS_ALLOCATION \
+    -DBUILD_TEST_0404_SEPARATE16_GRAY_PACK_ALLOCATION \
+    -DBUILD_TEST_0405_SEPARATE16_GRAY_CMS_ALLOCATION \
+    -DBUILD_TEST_0406_SEPARATE16_TARGET_FAILURE \
+    -DBUILD_TEST_0407_SEPARATE16_BUILTIN_PREFIX \
+    -DBUILD_TEST_0408_SEPARATE16_LCMS2_PREFIX \
+    -DBUILD_TEST_0409_SEPARATE16_COLORSYNC_PREFIX \
+    -DBUILD_TEST_0410_SEPARATE16_NONFINITE_RESULT \
+    -DBUILD_TEST_0411_SEPARATE16_TARGET_POLICY \
+    -DBUILD_TEST_0412_SEPARATE16_EXCLUDED_LAYOUTS \
+    -DBUILD_TIFF_SEPARATE16_TEST_COMMON \
     -DBUILD_TIFF_ALPHA_TEST_COMMON \
     -DBUILD_TIFF_ALPHA_FAULT_TEST_COMMON \
     -DBUILD_TIFF_BYTE_TEST_COMMON \
@@ -1437,6 +1468,38 @@ test_runner_SOURCES = test_runner.c \
     loader/libtiff/0382_legacy_alpha_preserved.c \
     loader/tiff_legacy_test_common.c \
     loader/tiff_legacy_test_common.h \
+    loader/libtiff/0383_separate16_rgb_source.c \
+    loader/libtiff/0384_separate16_black_source.c \
+    loader/libtiff/0385_separate16_white_source.c \
+    loader/libtiff/0386_separate16_orientation3.c \
+    loader/libtiff/0387_separate16_void.c \
+    loader/libtiff/0388_separate16_packbits_order.c \
+    loader/libtiff/0389_separate16_builtin.c \
+    loader/libtiff/0390_separate16_lcms2.c \
+    loader/libtiff/0391_separate16_colorsync.c \
+    loader/libtiff/0392_separate16_rgb_profile_guard.c \
+    loader/libtiff/0393_separate16_gray_profile_guard.c \
+    loader/libtiff/0394_separate16_absent_profile.c \
+    loader/libtiff/0395_separate16_invalid_profile.c \
+    loader/libtiff/0396_separate16_row_allocation.c \
+    loader/libtiff/0397_separate16_source_allocation.c \
+    loader/libtiff/0398_separate16_zero_row_size.c \
+    loader/libtiff/0399_separate16_negative_row_size.c \
+    loader/libtiff/0400_separate16_short_row_size.c \
+    loader/libtiff/0401_separate16_later_row_failure.c \
+    loader/libtiff/0402_separate16_later_plane_failure.c \
+    loader/libtiff/0403_separate16_rgb_cms_allocation.c \
+    loader/libtiff/0404_separate16_gray_pack_allocation.c \
+    loader/libtiff/0405_separate16_gray_cms_allocation.c \
+    loader/libtiff/0406_separate16_target_failure.c \
+    loader/libtiff/0407_separate16_builtin_prefix.c \
+    loader/libtiff/0408_separate16_lcms2_prefix.c \
+    loader/libtiff/0409_separate16_colorsync_prefix.c \
+    loader/libtiff/0410_separate16_nonfinite_result.c \
+    loader/libtiff/0411_separate16_target_policy.c \
+    loader/libtiff/0412_separate16_excluded_layouts.c \
+    loader/tiff_separate16_test_common.c \
+    loader/tiff_separate16_test_common.h \
     loader/tiff_alpha_test_common.c \
     loader/tiff_alpha_test_common.h \
     loader/tiff_alpha_fault_test_common.c \

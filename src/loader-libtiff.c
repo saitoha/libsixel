@@ -982,11 +982,63 @@ cleanup:
 }
 
 
+/* Read accepted opaque separate UINT16 strips in codec-sequential order.
+ * The caller validates layout, dimensions, row size and owned buffers first.
+ * A plane must finish before another starts: alternating planes per row can
+ * require unsupported random access inside a compressed multi-row strip. */
+static SIXELSTATUS
+tiff_read_separate_uint16(float *pixels, TIFF *tif, unsigned char *scanline,
+                          uint32_t width, uint32_t height,
+                          uint16_t samples, uint16_t photometric,
+                          uint16_t orientation)
+{
+    uint16_t const *words;
+    uint16_t plane;
+    uint32_t x;
+    uint32_t y;
+    uint32_t dst_x;
+    uint32_t dst_y;
+    size_t destination;
+    double unit;
+
+    words = (uint16_t const *)scanline;
+    for (plane = 0u; plane < samples; ++plane) {
+        for (y = 0u; y < height; ++y) {
+            if (TIFFReadScanline(tif, scanline, y, plane) != 1) {
+                sixel_helper_set_additional_message(
+                    "load_tiff: TIFFReadScanline() failed.");
+                return SIXEL_TIFF_ERROR;
+            }
+            for (x = 0u; x < width; ++x) {
+                tiff_map_scanline_coordinates(orientation, width, height,
+                                              x, y, &dst_x, &dst_y);
+                destination = ((size_t)dst_y * width + dst_x) * 3u;
+                /* Native-endian original words reach float storage once.
+                 * Gray polarity precedes CMS; equal RGB-shaped components
+                 * still describe one Gray source coordinate. */
+                unit = photometric == PHOTOMETRIC_MINISWHITE
+                    ? (double)(65535u - words[x]) / 65535.0
+                    : (double)words[x] / 65535.0;
+                if (photometric == PHOTOMETRIC_RGB) {
+                    pixels[destination + plane] = (float)unit;
+                } else {
+                    pixels[destination] = (float)unit;
+                    pixels[destination + 1u] = (float)unit;
+                    pixels[destination + 2u] = (float)unit;
+                }
+            }
+        }
+    }
+    return SIXEL_OK;
+}
+
+
 /*
  * Decode selected high-precision TIFF layouts directly into float32 buffers.
  *
  * Supported source layouts:
- *   - RGB/Gray integer (8/16-bit, contiguous, no alpha)
+ *   - RGB/Gray integer (8/16-bit contiguous or 16-bit separate strips,
+ *     no alpha, orientation 1-4)
  *   - RGB/Gray float32 (SampleFormat=IEEEFP, contiguous, no alpha)
  *   - CIELAB integer/float32 (16-bit or float32, contiguous, no alpha)
  *   - LogLuv SGILOG/SGILOG24 via decoded XYZ float32, contiguous, no alpha
@@ -1036,6 +1088,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     double rgb_unit[3];
     double lab_unit[3];
     int cms_converted;
+    int separate_uint16;
     int native_float;
     int float_colorspace;
     int float_pixelformat;
@@ -1083,6 +1136,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     lab_unit[1] = 0.0;
     lab_unit[2] = 0.0;
     cms_converted = 0;
+    separate_uint16 = 0;
     native_float = 0;
     float_colorspace = SIXEL_COLORSPACE_GAMMA;
     float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
@@ -1122,7 +1176,14 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
            photometric == PHOTOMETRIC_MINISWHITE))) {
         return SIXEL_FALSE;
     }
-    if (planar_config != PLANARCONFIG_CONTIG ||
+    /* Do not widen the existing float, alpha or tiled source routes.
+     * Extra-sample rejection below also precedes every read or allocation. */
+    separate_uint16 = planar_config == PLANARCONFIG_SEPARATE &&
+        bits_per_sample == 16u && sample_format == SAMPLEFORMAT_UINT &&
+        ((photometric == PHOTOMETRIC_RGB && samples_per_pixel == 3u) ||
+         ((photometric == PHOTOMETRIC_MINISBLACK ||
+           photometric == PHOTOMETRIC_MINISWHITE) && samples_per_pixel == 1u));
+    if ((planar_config != PLANARCONFIG_CONTIG && !separate_uint16) ||
         TIFFIsTiled(tif) ||
         !tiff_orientation_is_supported(orientation)) {
         return SIXEL_FALSE;
@@ -1215,7 +1276,8 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     if ((size_t)width > SIZE_MAX / (size_t)samples_per_pixel) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    row_sample_count = (size_t)width * (size_t)samples_per_pixel;
+    row_sample_count = (size_t)width *
+        (separate_uint16 ? 1u : (size_t)samples_per_pixel);
     switch (decode_mode) {
     case TIFF_DECODE_RGB_FLOAT32:
     case TIFF_DECODE_GRAY_FLOAT32:
@@ -1245,7 +1307,8 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     scanline_size = TIFFScanlineSize(tif);
     if (scanline_size <= 0 ||
         required_scanline_bytes > (size_t)scanline_size) {
-        return decode_mode == TIFF_DECODE_LOGLUV_FLOAT32
+        /* An eligible separate source cannot retry via byte RGBA. */
+        return separate_uint16 || decode_mode == TIFF_DECODE_LOGLUV_FLOAT32
              ? SIXEL_TIFF_ERROR : SIXEL_FALSE;
     }
 
@@ -1260,7 +1323,16 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         goto cleanup;
     }
 
-    for (y = 0u; y < height; ++y) {
+    if (separate_uint16) {
+        status = tiff_read_separate_uint16(float_pixels, tif, scanline,
+            width, height, samples_per_pixel, photometric, orientation);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+
+    /* Contiguous modes retain their existing sample interpretation. */
+    for (y = 0u; !separate_uint16 && y < height; ++y) {
         if (TIFFReadScanline(tif, scanline, y, 0) < 0) {
             sixel_helper_set_additional_message(
                 "load_tiff: TIFFReadScanline() failed.");
@@ -1394,15 +1466,12 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
 
     if (icc_profile != NULL && icc_profile_length > 0u &&
         tiff_photometric_allows_embedded_icc(photometric, 1)) {
-        if (bits_per_sample == 8u &&
-            (decode_mode == TIFF_DECODE_RGB_UINT ||
-             decode_mode == TIFF_DECODE_GRAY_UINT)) {
+        if (decode_mode == TIFF_DECODE_RGB_UINT ||
+            decode_mode == TIFF_DECODE_GRAY_UINT) {
             cms_converted = tiff_convert_samples_to_linear(
                 float_pixels, (int)width, (int)height, icc_profile,
                 icc_profile_length, photometric);
-        } else if (decode_mode == TIFF_DECODE_RGB_UINT ||
-            decode_mode == TIFF_DECODE_GRAY_UINT ||
-            decode_mode == TIFF_DECODE_RGB_FLOAT32 ||
+        } else if (decode_mode == TIFF_DECODE_RGB_FLOAT32 ||
             decode_mode == TIFF_DECODE_GRAY_FLOAT32 ||
             decode_mode == TIFF_DECODE_LAB_UINT ||
             decode_mode == TIFF_DECODE_LAB_FLOAT32) {
