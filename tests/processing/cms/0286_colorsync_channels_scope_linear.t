@@ -16,45 +16,71 @@ test "$result" -eq 0 || {
     echo "not ok 1 - UNKNOWN native values, channel layout, and rejection reason"
     exit 0
 }
-test "${trace#*"LSXCMS1|intent_order=relative|exclusive=1"}" != "$trace" || {
-    echo "$trace" >&2
-    echo "not ok 1 - missing expected contract trace"
-    exit 0
-}
-test "${trace#*"xyz-values-native-units-and-guards-verified"}" != "$trace" || {
-    echo "$trace" >&2
-    echo "not ok 1 - missing expected contract trace"
-    exit 0
-}
-test "${trace#*"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=1|dst=4|native=3|expected=1"}" != "$trace" || {
-    echo "$trace" >&2
-    echo "not ok 1 - missing expected contract trace"
-    exit 0
-}
-test "${trace#*"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=2|dst=4|native=4|expected=3"}" != "$trace" || {
-    echo "$trace" >&2
-    echo "not ok 1 - missing expected contract trace"
-    exit 0
-}
-test "${trace#*"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=3|dst=4|native=4|expected=3"}" != "$trace" || {
-    echo "$trace" >&2
-    echo "not ok 1 - missing expected contract trace"
-    exit 0
-}
-test "${trace#*"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=5|dst=4|native=3|expected=4"}" != "$trace" || {
-    echo "$trace" >&2
-    echo "not ok 1 - missing expected contract trace"
-    exit 0
-}
-test "${trace#*"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=6|dst=4|native=3|expected=4"}" != "$trace" || {
-    echo "$trace" >&2
-    echo "not ok 1 - missing expected contract trace"
-    exit 0
-}
-test "${trace#*"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=8|dst=4|native=4|expected=3"}" != "$trace" || {
-    echo "$trace" >&2
-    echo "not ok 1 - missing expected contract trace"
-    exit 0
-}
+# Match the trace directly. Shortest-prefix removal repeatedly scans long
+# prefixes in some shells and makes these presence checks quadratic.
+case "$trace" in
+    *"LSXCMS1|intent_order=relative|exclusive=1"*) ;;
+    *)
+        echo "$trace" >&2
+        echo "not ok 1 - missing expected contract trace"
+        exit 0
+    ;;
+esac
+case "$trace" in
+    *"xyz-values-native-units-and-guards-verified"*) ;;
+    *)
+        echo "$trace" >&2
+        echo "not ok 1 - missing expected contract trace"
+        exit 0
+    ;;
+esac
+case "$trace" in
+    *"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=1|dst=4|native=3|expected=1"*) ;;
+    *)
+        echo "$trace" >&2
+        echo "not ok 1 - missing expected contract trace"
+        exit 0
+    ;;
+esac
+case "$trace" in
+    *"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=2|dst=4|native=4|expected=3"*) ;;
+    *)
+        echo "$trace" >&2
+        echo "not ok 1 - missing expected contract trace"
+        exit 0
+    ;;
+esac
+case "$trace" in
+    *"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=3|dst=4|native=4|expected=3"*) ;;
+    *)
+        echo "$trace" >&2
+        echo "not ok 1 - missing expected contract trace"
+        exit 0
+    ;;
+esac
+case "$trace" in
+    *"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=5|dst=4|native=3|expected=4"*) ;;
+    *)
+        echo "$trace" >&2
+        echo "not ok 1 - missing expected contract trace"
+        exit 0
+    ;;
+esac
+case "$trace" in
+    *"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=6|dst=4|native=3|expected=4"*) ;;
+    *)
+        echo "$trace" >&2
+        echo "not ok 1 - missing expected contract trace"
+        exit 0
+    ;;
+esac
+case "$trace" in
+    *"LSXCMS2|event=reject|engine=colorsync|reason=native-source-channels|src=8|dst=4|native=4|expected=3"*) ;;
+    *)
+        echo "$trace" >&2
+        echo "not ok 1 - missing expected contract trace"
+        exit 0
+    ;;
+esac
 echo "ok 1 - 0286_colorsync_channels_scope_linear UNKNOWN native values, channel layout, and rejection reason"
 exit 0
